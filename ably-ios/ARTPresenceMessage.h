@@ -29,5 +29,6 @@ typedef NS_ENUM(NSUInteger, ARTPresenceMessageAction) {
 
 - (ARTPresenceMessage *)decode:(id<ARTPayloadEncoder>)encoder;
 - (ARTPresenceMessage *)encode:(id<ARTPayloadEncoder>)encoder;
+- (id) content;
 
 @end
