@@ -1,4 +1,2 @@
 language: objective-c
-script:
-  - xctool -workspace ably-ios.xcworkspace -scheme ably -sdk iphonesumulator7.0 ONLY_ACTIVE_ARCH=NO
-  - xctool test -workspace ably-ios.xcworkspace -scheme ably -sdk iphonesumulator7.0 ONLY_ACTIVE_ARCH=NO
+script: xcodebuild -workspace ably-ios.xcworkspace -scheme ably -sdk iphonesimulator7.1 ONLY_ACTIVE_ARCH=NO
