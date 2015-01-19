@@ -84,6 +84,13 @@
     [self waitForExpectationsWithTimeout:20.0 handler:nil];
 }
 
+- (void) testAttachOnce {
+    //VXTODO
+
+}
+
+
+
 - (void)testAttachBeforeConnectBinary {
     XCTestExpectation *expectation = [self expectationWithDescription:@"attach_before_connect"];
     [self withRealtime:^(ARTRealtime *realtime) {
@@ -119,6 +126,147 @@
     }];
 
     [self waitForExpectationsWithTimeout:20.0 handler:nil];
+}
+
+
+- (void) testAttachDetachAttach {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"attach_detach_attach"];
+    [self withRealtime:^(ARTRealtime *realtime) {
+        ARTRealtimeChannel *channel = [realtime channel:@"attach_detach_attach"];
+        [channel attach];
+        __block BOOL attached = false;
+        __block int attachCount =0;
+        [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus status) {
+            if (state == ARTRealtimeChannelAttached) {
+                attachCount++;
+                attached = true;
+                if(attachCount ==1) {
+                    [channel detach];
+                }
+                else if( attachCount ==2 ) {
+                    [expectation fulfill];
+                }
+            }
+            if (attached && state == ARTRealtimeChannelDetached) {
+                [channel attach];
+            }
+        }];
+    }];
+    
+    [self waitForExpectationsWithTimeout:20.0 handler:nil];
+}
+
+-(void) testSkipsFromDetachingToAttaching {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"detaching_to_attaching"];
+    [self withRealtime:^(ARTRealtime *realtime) {
+        ARTRealtimeChannel *channel = [realtime channel:@"detaching_to_attaching"];
+        [channel attach];
+        __block BOOL firstAttach = YES;
+        [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus status) {
+            if (state == ARTRealtimeChannelAttached) {
+                firstAttach = NO;
+                [channel detach];
+            }
+            if(state == ARTRealtimeChannelDetaching) {
+                [channel attach];
+            }
+            if(state == ARTRealtimeChannelDetached) {
+                XCTFail(@"Should not have reached detached state");
+            }
+            if(!firstAttach && state == ARTRealtimeChannelAttaching) {
+                [expectation fulfill];
+            }
+        }];
+    }];
+    
+    [self waitForExpectationsWithTimeout:20.0 handler:nil];
+    
+}
+
+- (void) testAttachMultipleChannels {
+    //VXTODO
+}
+
+
+- (void)testDetach {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"detach"];
+    [self withRealtime:^(ARTRealtime *realtime) {
+        
+        [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
+            if (state == ARTRealtimeConnected) {
+                ARTRealtimeChannel *channel = [realtime channel:@"detach"];
+                [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus reason) {
+                    if (state == ARTRealtimeChannelAttached) {
+                        [channel detach];
+                    }
+                    else if(state == ARTRealtimeChannelDetached) {
+                        [expectation fulfill];
+                    }
+                }];
+                [channel attach];
+            }
+        }];
+    }];
+    
+    [self waitForExpectationsWithTimeout:20.0 handler:nil];
+}
+- (void)testDetaching {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"detach"];
+    [self withRealtime:^(ARTRealtime *realtime) {
+        __block BOOL detachingHit = NO;
+        [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
+            if (state == ARTRealtimeConnected) {
+                ARTRealtimeChannel *channel = [realtime channel:@"detach"];
+                [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus reason) {
+                    if (state == ARTRealtimeChannelAttached) {
+                        [channel detach];
+                    }
+                    else if(state == ARTRealtimeChannelDetaching) {
+                        detachingHit = YES;
+                    }
+                    else if(state == ARTRealtimeChannelDetached) {
+                        if(detachingHit) {
+                            [expectation fulfill];
+                        }
+                        else {
+                            XCTFail(@"Detaching state not emitted prior to detached");
+                        }
+                    }
+                }];
+                [channel attach];
+            }
+        }];
+    }];
+    
+    [self waitForExpectationsWithTimeout:20.0 handler:nil];
+}
+
+-(void) testSkipsFromAttachingToDetaching {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"attaching_to_detaching"];
+    [self withRealtime:^(ARTRealtime *realtime) {
+        ARTRealtimeChannel *channel = [realtime channel:@"attaching_to_detaching"];
+        [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus status) {
+            if (state == ARTRealtimeChannelAttached) {
+                XCTFail(@"Should not have made it to attached");
+            }
+            if( state == ARTRealtimeChannelAttaching) {
+                [channel detach];
+            }
+            if(state == ARTRealtimeChannelDetaching) {
+                [expectation fulfill];
+            }
+            if(state == ARTRealtimeChannelDetached) {
+                XCTFail(@"Should not have made it to detached");
+                
+            }
+        }];
+        [channel attach];
+    }];
+    [self waitForExpectationsWithTimeout:20.0 handler:nil];
+}
+
+-(void)testDetachingIgnoresDetach {
+    //VXTODO
 }
 
 - (void)testPublish {

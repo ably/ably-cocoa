@@ -106,8 +106,8 @@
                     ARTMessage *m0 = messages[0];
                     ARTMessage *m1 = messages[1];
 
-                    XCTAssertEqualObjects(@"testString2", m0.payload);
-                    XCTAssertEqualObjects(@"testString", m1.payload);
+                    XCTAssertEqualObjects(@"testString2", [m0 content]);
+                    XCTAssertEqualObjects(@"testString", [m1 content]);
 
                     [expectation fulfill];
                 }];
@@ -131,21 +131,22 @@
             ARTPresenceMessage *p2 = presence[2];
             ARTPresenceMessage *p3 = presence[3];
 
+
             // This is assuming the results are coming back sorted by clientId
             // in alphabetical order. This seems to be the case at the time of
             // writing, but may change in the future
 
             XCTAssertEqualObjects(@"client_bool", p0.clientId);
-            XCTAssertEqualObjects(@"true", p0.payload);
+            XCTAssertEqualObjects(@"true", [p0 content]);
 
             XCTAssertEqualObjects(@"client_int", p1.clientId);
-            XCTAssertEqualObjects(@"24", p1.payload);
+            XCTAssertEqualObjects(@"24", [p1 content]);
 
             XCTAssertEqualObjects(@"client_json", p2.clientId);
-            XCTAssertEqualObjects(@"{\"test\":\"This is a JSONObject clientData payload\"}", p2.payload);
+            XCTAssertEqualObjects(@"{\"test\":\"This is a JSONObject clientData payload\"}", [p2 content]);
 
             XCTAssertEqualObjects(@"client_string", p3.clientId);
-            XCTAssertEqualObjects(@"This is a string clientData payload", p3.payload);
+            XCTAssertEqualObjects(@"This is a string clientData payload", [p3 content]);
 
 
             [expectation fulfill];

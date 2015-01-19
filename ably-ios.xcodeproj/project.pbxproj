@@ -34,7 +34,6 @@
 		96A507BE1A3791490077CDF8 /* ARTRealtime.m in Sources */ = {isa = PBXBuildFile; fileRef = 96A507BC1A3791490077CDF8 /* ARTRealtime.m */; };
 		96BF61371A35B2AB004CF2B3 /* ably-ios.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF61361A35B2AB004CF2B3 /* ably-ios.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		96BF613D1A35B2AB004CF2B3 /* ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* ably.framework */; };
-		96BF61441A35B2AB004CF2B3 /* ably_iosTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 96BF61431A35B2AB004CF2B3 /* ably_iosTests.m */; };
 		96BF61531A35B39C004CF2B3 /* ARTRest.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF61511A35B39C004CF2B3 /* ARTRest.h */; };
 		96BF61541A35B39C004CF2B3 /* ARTRest.m in Sources */ = {isa = PBXBuildFile; fileRef = 96BF61521A35B39C004CF2B3 /* ARTRest.m */; };
 		96BF61581A35B52C004CF2B3 /* ARTHttp.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF61561A35B52C004CF2B3 /* ARTHttp.h */; };
@@ -100,7 +99,6 @@
 		96BF61361A35B2AB004CF2B3 /* ably-ios.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ably-ios.h"; sourceTree = "<group>"; };
 		96BF613C1A35B2AB004CF2B3 /* ablyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ablyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		96BF61421A35B2AB004CF2B3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		96BF61431A35B2AB004CF2B3 /* ably_iosTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ably_iosTests.m; sourceTree = "<group>"; };
 		96BF61511A35B39C004CF2B3 /* ARTRest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTRest.h; sourceTree = "<group>"; };
 		96BF61521A35B39C004CF2B3 /* ARTRest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRest.m; sourceTree = "<group>"; };
 		96BF61551A35B40E004CF2B3 /* ARTStatus.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTStatus.h; sourceTree = "<group>"; };
@@ -226,7 +224,6 @@
 		96BF61401A35B2AB004CF2B3 /* ably-iosTests */ = {
 			isa = PBXGroup;
 			children = (
-				96BF61431A35B2AB004CF2B3 /* ably_iosTests.m */,
 				96BF61411A35B2AB004CF2B3 /* Supporting Files */,
 				96BF615A1A35B9ED004CF2B3 /* ARTHttpTest.m */,
 				96BF61601A35C332004CF2B3 /* ARTRestTest.m */,
@@ -454,7 +451,6 @@
 			files = (
 				96E4083C1A38622D00087F77 /* ARTAppSetup.m in Sources */,
 				96BF61611A35C332004CF2B3 /* ARTRestTest.m in Sources */,
-				96BF61441A35B2AB004CF2B3 /* ably_iosTests.m in Sources */,
 				96E408361A38595F00087F77 /* ARTRealtimeTest.m in Sources */,
 				96BF615B1A35B9ED004CF2B3 /* ARTHttpTest.m in Sources */,
 			);

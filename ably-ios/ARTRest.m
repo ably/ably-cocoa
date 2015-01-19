@@ -71,8 +71,7 @@
 - (id<ARTCancellable>)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb {
     ARTMessage *message = [[ARTMessage alloc] init];
     message.name = name;
-    message.payload = payload;
-
+    message.payload =[ARTPayload payloadWithPayload:payload encoding:@""];
     message = [message encode:self.payloadEncoder];
 
     NSData *encodedMessage = [self.rest.defaultEncoder encodeMessage:message];
