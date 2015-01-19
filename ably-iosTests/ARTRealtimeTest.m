@@ -84,6 +84,19 @@
     [self waitForExpectationsWithTimeout:20.0 handler:nil];
 }
 
+- (void) testAttachOnce {
+    //VXTODO
+
+}
+
+- (void) testAttachToChannel {
+    //VXOTDOO
+}
+
+- (void) testAttachToChannelAndCallsback {
+    //VXOTDOO
+}
+
 - (void)testAttachBeforeConnectBinary {
     XCTestExpectation *expectation = [self expectationWithDescription:@"attach_before_connect"];
     [self withRealtime:^(ARTRealtime *realtime) {
@@ -119,6 +132,64 @@
     }];
 
     [self waitForExpectationsWithTimeout:20.0 handler:nil];
+}
+
+- (void) testAttachDetachAttach {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"attach_detach_attach"];
+    [self withRealtime:^(ARTRealtime *realtime) {
+        ARTRealtimeChannel *channel = [realtime channel:@"attach_detach_attach"];
+        [channel attach];
+        __block BOOL attached = false;
+        __block int attachCount =0;
+        [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus status) {
+            if (state == ARTRealtimeChannelAttached) {
+                attachCount++;
+                attached = true;
+                if(attachCount ==1) {
+                    [channel detach];
+                }
+                else if( attachCount ==2 ) {
+                    [expectation fulfill];
+                }
+            }
+            if (attached && state == ARTRealtimeChannelDetached) {
+                [channel attach];
+            }
+        }];
+    }];
+    
+    [self waitForExpectationsWithTimeout:20.0 handler:nil];
+}
+
+-(void) testSkipsFromDetachingToAttaching {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"detaching_to_attaching"];
+    [self withRealtime:^(ARTRealtime *realtime) {
+        ARTRealtimeChannel *channel = [realtime channel:@"detaching_to_attaching"];
+        [channel attach];
+        __block BOOL firstAttach = YES;
+        [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus status) {
+            if (state == ARTRealtimeChannelAttached) {
+                firstAttach = NO;
+                [channel detach];
+            }
+            if(state == ARTRealtimeChannelDetaching) {
+                [channel attach];
+            }
+            if(state == ARTRealtimeChannelDetached) {
+                XCTFail(@"Should not have reached detached state");
+            }
+            if(!firstAttach && state == ARTRealtimeChannelAttaching) {
+                [expectation fulfill];
+            }
+        }];
+    }];
+    
+    [self waitForExpectationsWithTimeout:20.0 handler:nil];
+    
+}
+
+- (void) testAttachMultipleChannels {
+    //VXTODO
 }
 
 - (void)testPublish {
