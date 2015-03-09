@@ -12,6 +12,8 @@
 #import "ARTRealtime.h"
 #import "ARTAppSetup.h"
 
+
+
 @interface ARTRealtimeTest : XCTestCase {
     ARTRealtime *_realtime;
     ARTOptions *_options;
@@ -69,6 +71,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"attach"];
     [self withRealtime:^(ARTRealtime *realtime) {
         [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
+            NSLog(@"testAttach constate: %@", [ARTRealtime ARTRealtimeStateToStr:state]);
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime channel:@"attach"];
                 [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus reason) {
@@ -78,6 +81,9 @@
                 }];
                 [channel attach];
             }
+            else {
+                
+            }
         }];
     }];
 
@@ -86,6 +92,7 @@
 
 - (void) testAttachOnce {
     //VXTODO
+    XCTFail(@"TODO IMPLMEMENT");
 
 }
 
@@ -130,6 +137,10 @@
 
 
 - (void) testAttachDetachAttach {
+    
+    XCTFail(@"TODO THIS CRASHES");
+    return;
+    
     XCTestExpectation *expectation = [self expectationWithDescription:@"attach_detach_attach"];
     [self withRealtime:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime channel:@"attach_detach_attach"];
@@ -189,6 +200,9 @@
 
 
 - (void)testDetach {
+    
+    XCTFail(@"TODO THIS CRASHES");
+    return;
     XCTestExpectation *expectation = [self expectationWithDescription:@"detach"];
     [self withRealtime:^(ARTRealtime *realtime) {
         
@@ -210,7 +224,10 @@
     
     [self waitForExpectationsWithTimeout:20.0 handler:nil];
 }
+
 - (void)testDetaching {
+    XCTFail(@"TODO THIS CRASHES");
+    return;
     XCTestExpectation *expectation = [self expectationWithDescription:@"detach"];
     [self withRealtime:^(ARTRealtime *realtime) {
         __block BOOL detachingHit = NO;
@@ -266,6 +283,7 @@
 }
 
 -(void)testDetachingIgnoresDetach {
+    XCTFail(@"TODO IMPLMENMENT");
     //VXTODO
 }
 
@@ -340,10 +358,15 @@
 }
 
 - (void)testPublish_10_1000 {
+    XCTFail(@"TODO THIS CRASHES");
+    return;
     [self multipleSendName:@"multiple_send_10_1000" count:10 delay:1000];
 }
 
 - (void)testPublish_20_200 {
+
+    XCTFail(@"TODO THIS CRASHES");
+    return;
     [self multipleSendName:@"multiple_send_20_200" count:20 delay:200];
 }
 

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1C5DA0151A6E5FA400A2B7EF /* ably.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* ably.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		1CDA610B1A86A37B00146680 /* ARTRealtimeAuthTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CDA610A1A86A37B00146680 /* ARTRealtimeAuthTest.m */; };
 		960D07931A45F1D800ED8C8C /* ARTCrypto.h in Headers */ = {isa = PBXBuildFile; fileRef = 960D07911A45F1D800ED8C8C /* ARTCrypto.h */; };
 		960D07941A45F1D800ED8C8C /* ARTCrypto.m in Sources */ = {isa = PBXBuildFile; fileRef = 960D07921A45F1D800ED8C8C /* ARTCrypto.m */; };
 		960D07971A46FFC300ED8C8C /* ARTRest+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 960D07951A46FFC300ED8C8C /* ARTRest+Private.h */; };
@@ -56,6 +58,17 @@
 		FC78549C1BCD5688539CCBE4 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA6E099E4BC04FC80F845C0 /* libPods.a */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXBuildRule section */
+		1C5DA0131A6E5F2700A2B7EF /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			fileType = pattern.proxy;
+			isEditable = 1;
+			outputFiles = (
+			);
+		};
+/* End PBXBuildRule section */
+
 /* Begin PBXContainerItemProxy section */
 		96BF613E1A35B2AB004CF2B3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -66,9 +79,24 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		1C5DA0141A6E5F8A00A2B7EF /* Copy Files */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				1C5DA0151A6E5FA400A2B7EF /* ably.framework in Copy Files */,
+			);
+			name = "Copy Files";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		143713CCCD056BDB4C1E070F /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
 		1BD00ABE249D4232EB2E44FA /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
+		1CDA610A1A86A37B00146680 /* ARTRealtimeAuthTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimeAuthTest.m; sourceTree = "<group>"; };
 		960D07911A45F1D800ED8C8C /* ARTCrypto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTCrypto.h; sourceTree = "<group>"; };
 		960D07921A45F1D800ED8C8C /* ARTCrypto.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTCrypto.m; sourceTree = "<group>"; };
 		960D07951A46FFC300ED8C8C /* ARTRest+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTRest+Private.h"; sourceTree = "<group>"; };
@@ -230,6 +258,7 @@
 				96E408351A38595F00087F77 /* ARTRealtimeTest.m */,
 				96E4083A1A38622D00087F77 /* ARTAppSetup.h */,
 				96E4083B1A38622D00087F77 /* ARTAppSetup.m */,
+				1CDA610A1A86A37B00146680 /* ARTRealtimeAuthTest.m */,
 			);
 			path = "ably-iosTests";
 			sourceTree = "<group>";
@@ -322,8 +351,10 @@
 				96BF61381A35B2AB004CF2B3 /* Sources */,
 				96BF61391A35B2AB004CF2B3 /* Frameworks */,
 				96BF613A1A35B2AB004CF2B3 /* Resources */,
+				1C5DA0141A6E5F8A00A2B7EF /* Copy Files */,
 			);
 			buildRules = (
+				1C5DA0131A6E5F2700A2B7EF /* PBXBuildRule */,
 			);
 			dependencies = (
 				96BF613F1A35B2AB004CF2B3 /* PBXTargetDependency */,
@@ -453,6 +484,7 @@
 				96BF61611A35C332004CF2B3 /* ARTRestTest.m in Sources */,
 				96E408361A38595F00087F77 /* ARTRealtimeTest.m in Sources */,
 				96BF615B1A35B9ED004CF2B3 /* ARTHttpTest.m in Sources */,
+				1CDA610B1A86A37B00146680 /* ARTRealtimeAuthTest.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -502,7 +534,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -541,7 +573,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";

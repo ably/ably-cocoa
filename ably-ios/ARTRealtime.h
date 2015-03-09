@@ -44,6 +44,8 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
 
 @interface ARTRealtimeChannel : NSObject
 
+
+
 - (void)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb;
 - (void)publish:(id)payload cb:(ARTStatusCallback)cb;
 
@@ -90,5 +92,6 @@ typedef void (^ARTRealtimeChannelStateCb)(ARTRealtimeChannelState, ARTStatus);
 
 typedef void (^ARTRealtimeConnectionStateCb)(ARTRealtimeConnectionState);
 - (id<ARTSubscription>)subscribeToStateChanges:(ARTRealtimeConnectionStateCb)cb;
++(NSString *) ARTRealtimeStateToStr:(ARTRealtimeConnectionState) state;
 
 @end

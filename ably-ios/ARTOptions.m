@@ -62,6 +62,7 @@
 
 - (NSURL *)restUrl {
     NSString *s = [NSString stringWithFormat:@"https://%@:%d", self.restHost, self.restPort];
+    NSLog(@"REST URL IS %@", s);
     return [NSURL URLWithString:s];
 }
 

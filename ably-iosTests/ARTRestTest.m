@@ -65,6 +65,8 @@
     [self waitForExpectationsWithTimeout:20.0 handler:nil];
 }
 
+
+
 - (void)testPublish {
     XCTestExpectation *expectation = [self expectationWithDescription:@"publish"];
     [self withRest:^(ARTRest *rest) {
@@ -79,11 +81,15 @@
 }
 
 - (void)testStats {
+    XCTFail(@"CRASHES");
+    return;
     XCTestExpectation *expectation = [self expectationWithDescription:@"stats"];
+
     [self withRest:^(ARTRest *rest) {
         [rest stats:^(ARTStatus status, id<ARTPaginatedResult> result) {
             XCTAssertEqual(status, ARTStatusOk);
             XCTAssertNotNil([result current]);
+            XCTAssertFalse([result hasNext]);
             [expectation fulfill];
         }];
     }];
@@ -118,12 +124,53 @@
     [self waitForExpectationsWithTimeout:20.0 handler:nil];
 }
 
+- (void) testHistoryBothChannels {
+    XCTFail(@"TODO IMPLEMENT");
+}
+
+-(void) testHistoryForwardPagination {
+        XCTFail(@"TODO IMPLEMENT");
+    
+}
+
+-(void) testHistoryBackwardPagination {
+        XCTFail(@"TODO IMPLEMENT");
+    
+}
+
+-(void) testHistoryLimitedForwardPagination {
+        XCTFail(@"TODO IMPLEMENT");
+    
+}
+
+-(void) testHistoryLimitedBackwardPagination {
+        XCTFail(@"TODO IMPLEMENT");
+    
+}
+
+-(void) testHistoryMessageIds {
+        XCTFail(@"TODO IMPLEMENT");
+    
+}
+
+//VXTODO place in iOS status doc
 - (void)testPresence {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
     [self withRest:^(ARTRest *rest) {
         ARTRestChannel *channel = [rest channel:@"persisted:presence_fixtures"];
         [channel presence:^(ARTStatus status, id<ARTPaginatedResult> result) {
             XCTAssertEqual(status, ARTStatusOk);
+            if(status != ARTStatusOk) {
+
+                //[NSString stringWithFormat:@"status error %d", status];
+                XCTFail(@"wtf");
+                
+                [expectation fulfill];
+                return;
+            }
+
+        
+            NSLog(@"continuing");
             NSArray *presence = [result current];
             XCTAssertEqual(4, presence.count);
             ARTPresenceMessage *p0 = presence[0];
@@ -156,6 +203,7 @@
 }
 
 - (void)testPerformanceExample {
+    XCTFail(@"TODO IMPLEMENT");
     // This is an example of a performance test case.
     [self measureBlock:^{
         // Put the code you want to measure the time of here.

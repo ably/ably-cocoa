@@ -29,7 +29,7 @@
     [super tearDown];
 }
 
-- (void)testExample {
+- (void)testNonExistantPath {
     XCTestExpectation *expectation = [self expectationWithDescription:@"get"];
 
     [self.http makeRequestWithMethod:@"GET" url:[NSURL URLWithString:@"http://rest.ably.io/non-existant-path"] headers:nil body:nil cb:^(ARTHttpResponse *response) {
