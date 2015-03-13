@@ -15,8 +15,10 @@
 #import "ARTAppSetup.h"
 @interface ARTRestChannelPublishTest : XCTestCase
 {
-    ARTRest *_rest;
-    ARTOptions *_options;
+    ARTRest *_restText;
+    ARTRest *_restBinary;
+    ARTOptions *_textOptions;
+    ARTOptions *_binaryOptions;
     float _timeout;
 }
 
@@ -28,32 +30,132 @@
 
 - (void)setUp {
     [super setUp];
-    _options = [[ARTOptions alloc] init];
-    _options.restHost = @"sandbox-rest.ably.io";
+    _textOptions = [[ARTOptions alloc] init];
+    _textOptions.restHost = [ARTAppSetup restHost];
+    _textOptions.binary = false;
+    
+    _binaryOptions = [[ARTOptions alloc] init];
+    _binaryOptions.restHost = [ARTAppSetup restHost];
+    _binaryOptions.binary = true;
+    _timeout = [ARTAppSetup timeout];
 }
 
 - (void)tearDown {
-    _rest = nil;
+    _restBinary = nil;
+    _restText = nil;
+    
     [super tearDown];
 }
 
-- (void)withRest:(void (^)(ARTRest *rest))cb {
-    if (!_rest) {
-        [ARTAppSetup setupApp:_options cb:^(ARTOptions *options) {
+- (void)withRestText:(void (^)(ARTRest *rest))cb {
+    if (!_restText) {
+        [ARTAppSetup setupApp:_textOptions cb:^(ARTOptions *options) {
             if (options) {
-                _rest = [[ARTRest alloc] initWithOptions:options];
+                _restText = [[ARTRest alloc] initWithOptions:options];
             }
-            cb(_rest);
+            cb(_restText);
         }];
         return;
     }
-    cb(_rest);
+    cb(_restText);
 }
+
+- (void)withRestBinary:(void (^)(ARTRest *rest))cb {
+    if (!_restBinary) {
+        [ARTAppSetup setupApp:_binaryOptions cb:^(ARTOptions *options) {
+            if (options) {
+                _restBinary = [[ARTRest alloc] initWithOptions:options];
+            }
+            NSLog(@"BINARY IS A %@", (options.binary ? @"YES" : @"NO"));
+            cb(_restBinary);
+        }];
+        return;
+    }
+    cb(_restText);
+}
+
 - (void)testTypesByText {
-    XCTFail(@"TODO write test");
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
+    [self withRestText:^(ARTRest *rest) {
+        ARTRestChannel *channel = [rest channel:@"persisted:presence_fixtures"];
+        [channel presence:^(ARTStatus status, id<ARTPaginatedResult> result) {
+            XCTAssertEqual(status, ARTStatusOk);
+            if(status != ARTStatusOk) {
+                XCTFail(@"not an ok status");
+                [expectation fulfill];
+                return;
+            }
+            NSArray *presence = [result current];
+            XCTAssertEqual(4, presence.count);
+            ARTPresenceMessage *p0 = presence[0];
+            ARTPresenceMessage *p1 = presence[1];
+            ARTPresenceMessage *p2 = presence[2];
+            ARTPresenceMessage *p3 = presence[3];
+            
+            
+            // This is assuming the results are coming back sorted by clientId
+            // in alphabetical order. This seems to be the case at the time of
+            // writing, but may change in the future
+            
+            XCTAssertEqualObjects(@"client_bool", p0.clientId);
+            XCTAssertEqualObjects(@"true", [p0 content]);
+            
+            XCTAssertEqualObjects(@"client_int", p1.clientId);
+            XCTAssertEqualObjects(@"24", [p1 content]);
+            
+            XCTAssertEqualObjects(@"client_json", p2.clientId);
+            XCTAssertEqualObjects(@"{\"test\":\"This is a JSONObject clientData payload\"}", [p2 content]);
+            
+            XCTAssertEqualObjects(@"client_string", p3.clientId);
+            XCTAssertEqualObjects(@"This is a string clientData payload", [p3 content]);
+            
+            
+            [expectation fulfill];
+        }];
+    }];
+    [self waitForExpectationsWithTimeout:_timeout handler:nil];
 }
 - (void)testTypesByBinary {
-    XCTFail(@"TODO write test");
+    XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
+    [self withRestBinary:^(ARTRest *rest) {
+        ARTRestChannel *channel = [rest channel:@"persisted:presence_fixtures"];
+        [channel presence:^(ARTStatus status, id<ARTPaginatedResult> result) {
+            XCTAssertEqual(status, ARTStatusOk);
+            if(status != ARTStatusOk) {
+                XCTFail(@"not an ok status");
+                [expectation fulfill];
+                return;
+            }
+            NSArray *presence = [result current];
+            XCTAssertEqual(4, presence.count);
+            ARTPresenceMessage *p0 = presence[0];
+            ARTPresenceMessage *p1 = presence[1];
+            ARTPresenceMessage *p2 = presence[2];
+            ARTPresenceMessage *p3 = presence[3];
+            
+            
+            // This is assuming the results are coming back sorted by clientId
+            // in alphabetical order. This seems to be the case at the time of
+            // writing, but may change in the future
+            
+            XCTAssertEqualObjects(@"client_bool", p0.clientId);
+            XCTAssertEqualObjects(@"true", [p0 content]);
+            
+            XCTAssertEqualObjects(@"client_int", p1.clientId);
+            XCTAssertEqualObjects(@"24", [p1 content]);
+            
+            XCTAssertEqualObjects(@"client_json", p2.clientId);
+            XCTAssertEqualObjects(@"{\"test\":\"This is a JSONObject clientData payload\"}", [p2 content]);
+            
+            XCTAssertEqualObjects(@"client_string", p3.clientId);
+            XCTAssertEqualObjects(@"This is a string clientData payload", [p3 content]);
+            
+            
+            [expectation fulfill];
+        }];
+    }];
+    [self waitForExpectationsWithTimeout:_timeout handler:nil];
 }
 
 @end

@@ -17,7 +17,6 @@
 
 @interface ARTRestTimeTest : XCTestCase {
     ARTRest *_rest;
-    ARTOptions *_options;
     float _timeout;
 }
 
@@ -30,8 +29,6 @@
 
 - (void)setUp {
     [super setUp];
-    _options = [[ARTOptions alloc] init];
-    _options.restHost = @"sandbox-rest.ably.io";
 }
 
 - (void)tearDown {
@@ -41,7 +38,7 @@
 
 - (void)withRest:(void (^)(ARTRest *rest))cb {
     if (!_rest) {
-        [ARTAppSetup setupApp:_options cb:^(ARTOptions *options) {
+        [ARTAppSetup setupApp:[ARTAppSetup jsonRestOptions] cb:^(ARTOptions *options) {
             if (options) {
                 _rest = [[ARTRest alloc] initWithOptions:options];
             }
@@ -67,7 +64,7 @@
             [expectation fulfill];
         }];
     }];
-    [self waitForExpectationsWithTimeout:20.0 handler:nil];
+    [self waitForExpectationsWithTimeout:[ARTAppSetup timeout] handler:nil];
 }
 
 - (void)testRestTime {
@@ -87,6 +84,6 @@
             
         }];
     }];
-    [self waitForExpectationsWithTimeout:20.0 handler:nil];
+    [self waitForExpectationsWithTimeout:[ARTAppSetup timeout] handler:nil];
 }
 @end

@@ -52,6 +52,7 @@
 
 - (void)testTypesText {
     XCTFail(@"TODO write test");
+    
 }
 
 - (void)testTypesBinary {

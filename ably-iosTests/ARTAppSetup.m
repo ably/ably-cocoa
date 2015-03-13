@@ -77,6 +77,7 @@
         }
 
         ARTOptions *appOptions = [options clone];
+        NSLog(@"options is cloned frmo %@", appOptions);
         appOptions.authOptions.keyId = keyId;
         appOptions.authOptions.keyValue = keyValue;
 
@@ -98,7 +99,23 @@
     return @"sandbox-rest.ably.io";
 }
 
-+ (float) timeout
++(ARTOptions *) binaryRestOptions
+{
+    ARTOptions * json = [[ARTOptions alloc] init];
+    json.restHost = [ARTAppSetup restHost];
+    json.binary =true;
+    return json;
+}
+
++(ARTOptions *) jsonRestOptions
+{
+    ARTOptions * json = [[ARTOptions alloc] init];
+    json.restHost = [ARTAppSetup restHost];
+    json.binary =false;
+    return json;
+}
+
++(float) timeout
 {
     return 20.0;
     

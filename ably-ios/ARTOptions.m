@@ -49,6 +49,7 @@
     _queueMessages = NO;
     _echoMessages = YES;
     _recover = nil;
+    _binary = false;
     return self;
 }
 
@@ -81,6 +82,7 @@
     options.queueMessages = self.queueMessages;
     options.echoMessages = self.echoMessages;
     options.recover = self.recover;
+    options.binary = self.binary;
 
     return options;
 }

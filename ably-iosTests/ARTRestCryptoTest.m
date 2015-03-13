@@ -13,7 +13,7 @@
 #import "ARTPresenceMessage.h"
 #import "ARTRest.h"
 #import "ARTAppSetup.h"
-@interface ARTRestCrytoTest : XCTestCase {
+@interface ARTRestCryptoTest : XCTestCase {
     ARTRest *_rest;
     ARTOptions *_options;
     float _timeout;
@@ -24,7 +24,7 @@
 
 @end
 
-@implementation ARTRestCrytoTest
+@implementation ARTRestCryptoTest
 
 - (void)setUp {
     [super setUp];

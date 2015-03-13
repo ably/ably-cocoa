@@ -56,28 +56,8 @@
 
 
 
-//TODO RM
-- (void)testSomething {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testSomething"];
-    NSLog(@"ABOUT TO TEST SOMETHING");
-    [self withRest:^(ARTRest *rest) {
-        NSLog(@"WELL THEN");
-        ARTRestChannel *channel = [rest channel:@"test"];
-        [channel publish:@"testString" cb:^(ARTStatus status) {
 
-            NSLog(@"this sux %d", status);
-            XCTAssertEqual(status, ARTStatusOk);
-            if(status == ARTStatusOk) {
-                [expectation fulfill];
-            }
-
-        }];
-    }];
-    
-    [self waitForExpectationsWithTimeout:_timeout handler:nil];
-}
-
-
+//TODO dont think this has a home anywhere
 - (void)testPublish {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testPublish"];
     [self withRest:^(ARTRest *rest) {
@@ -93,7 +73,7 @@
 
 
 
-//VXTODO place in iOS status doc
+//VXTODO RM ONCE THIS IS IN ARTRestPresenceTest
 - (void)testRestPresence {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
     [self withRest:^(ARTRest *rest) {

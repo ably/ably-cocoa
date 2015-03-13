@@ -20,6 +20,7 @@
 @property (readwrite, assign, nonatomic) int realtimePort;
 @property (readwrite, assign, nonatomic) BOOL queueMessages;
 @property (readwrite, assign, nonatomic) BOOL echoMessages;
+@property (readwrite, assign, nonatomic) BOOL binary;
 @property (readwrite, strong, nonatomic) NSString *recover;
 
 - (instancetype)init;

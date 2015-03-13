@@ -16,4 +16,7 @@
 + (NSString *) restHost;
 + (NSString *) realtimeHost;
 + (float) timeout;
+
++(ARTOptions *) jsonRestOptions;
++(ARTOptions *) binaryRestOptions;
 @end

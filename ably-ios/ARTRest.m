@@ -158,6 +158,9 @@
         _baseUrl = [options restUrl];
         _channels = [NSMutableDictionary dictionary];
         _auth = [[ARTAuth alloc] initWithRest:self options:options.authOptions];
+        
+        NSLog(@"TODO read binary encoding flag and pick msgpack encoder");
+        
         id<ARTEncoder> defaultEncoder = [[ARTJsonEncoder alloc] init];
         _encoders = @{
             [defaultEncoder mimeType]: defaultEncoder
