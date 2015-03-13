@@ -174,6 +174,8 @@
         if (nil != options.keyValue && nil == options.clientId) {
             _authMethod = ARTAuthMethodBasic;
             _basicCredentials = [NSString stringWithFormat:@"Basic %@", [[[NSString stringWithFormat:@"%@:%@", options.keyId, options.keyValue] dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0]];
+            
+            NSLog(@"basic credentials are %@", _basicCredentials);
             _keyId = options.keyId;
             _keyValue = options.keyValue;
         } else {
@@ -203,6 +205,7 @@
 }
 
 - (id<ARTCancellable>)authHeaders:(id<ARTCancellable>(^)(NSDictionary *))cb {
+
     switch (self.authMethod) {
         case ARTAuthMethodBasic:
             return cb(@{@"Authorization": self.basicCredentials});

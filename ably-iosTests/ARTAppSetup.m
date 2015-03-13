@@ -59,6 +59,7 @@
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
         NSString *keyId;
         NSString *keyValue;
+        NSLog(@"http Response IS ---- %@", httpResponse);
         if (httpResponse.statusCode < 200 || httpResponse.statusCode >= 300) {
             NSLog(@"Status Code: %ld", (long)httpResponse.statusCode);
             NSLog(@"Body: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
@@ -66,9 +67,15 @@
             return;
         } else {
             NSDictionary *response = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+        
             if (response) {
+                NSLog(@"/apps response is %@", response);
                 NSDictionary *key = response[@"keys"][0];
-                keyId = [NSString stringWithFormat:@"%@.%@", response[@"id"], key[@"id"]];
+                //TODO OLD WAY
+                keyId = [NSString stringWithFormat:@"%@.%@", response[@"appId"], key[@"id"]];
+               // keyId = response[@"appId"];
+//                keyId = response[@"appId"];
+                NSLog(@"keyId is %@", keyId);
                 keyValue = key[@"value"];
             }
         }

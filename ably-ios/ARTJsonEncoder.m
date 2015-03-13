@@ -102,7 +102,7 @@
     if (resp && resp.count == 1) {
         NSNumber *num = resp[0];
         if ([num isKindOfClass:[NSNumber class]]) {
-            NSInteger msSince1970 = [num integerValue];
+            long long msSince1970 = [num longLongValue];
             return [NSDate dateWithTimeIntervalSince1970:(msSince1970 / 1000.0)];
         }
     }
@@ -497,7 +497,9 @@
 }
 
 - (id)decode:(NSData *)data {
-    return [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+    id obj = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+    NSLog(@"decoded obj is %@", obj);
+    return obj;
 }
 
 - (NSDictionary *)decodeDictionary:(NSData *)data {

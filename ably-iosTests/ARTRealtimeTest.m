@@ -19,13 +19,19 @@
     ARTOptions *_options;
 }
 
+
 - (void)multipleSendName:(NSString *)name count:(int)count delay:(int)delay;
 - (void)repeat:(int)count delay:(NSTimeInterval)delay block:(void(^)(int i))block;
 - (void)repeat:(int)count i:(int)i delay:(NSTimeInterval)delay block:(void (^)(int))block;
 
 @end
 
+
+const float TIMEOUT= 10.0;
+
+
 @implementation ARTRealtimeTest
+
 
 - (void)setUp {
     [super setUp];
@@ -54,17 +60,19 @@
 
 - (void)testTime {
     XCTestExpectation *expectation = [self expectationWithDescription:@"time"];
-
     [self withRealtime:^(ARTRealtime *realtime) {
         [realtime time:^(ARTStatus status, NSDate *date) {
+            NSLog(@"status in test time %d", status);
             XCTAssert(status == ARTStatusOk);
             // Expect local clock and server clock to be synced within 5 seconds
             XCTAssertEqualWithAccuracy([date timeIntervalSinceNow], 0.0, 5.0);
-            [expectation fulfill];
+            if(status == ARTStatusOk) {
+                [expectation fulfill];
+            }
         }];
     }];
 
-    [self waitForExpectationsWithTimeout:20.0 handler:nil];
+    [self waitForExpectationsWithTimeout:TIMEOUT handler:nil];
 }
 
 - (void)testAttach {
@@ -87,12 +95,32 @@
         }];
     }];
 
-    [self waitForExpectationsWithTimeout:20.0 handler:nil];
+    [self waitForExpectationsWithTimeout:TIMEOUT handler:nil];
 }
 
 - (void) testAttachOnce {
-    //VXTODO
-    XCTFail(@"TODO IMPLMEMENT");
+    XCTestExpectation *expectation = [self expectationWithDescription:@"attachOnce"];
+    [self withRealtime:^(ARTRealtime *realtime) {
+        [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
+            NSLog(@"testAttach constate: %@", [ARTRealtime ARTRealtimeStateToStr:state]);
+            if (state == ARTRealtimeConnected) {
+                ARTRealtimeChannel *channel = [realtime channel:@"attach"];
+
+                [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus reason) {
+                    if(state == ARTRealtimeChannelAttaching) {
+                        [channel attach];
+                    }
+                    if (state == ARTRealtimeChannelAttached) {
+                        [channel attach];
+                        [expectation fulfill];
+                    }
+                }];
+                [channel attach];
+            }
+        }];
+    }];
+    
+    [self waitForExpectationsWithTimeout:TIMEOUT handler:nil];
 
 }
 
@@ -111,7 +139,7 @@
         }];
     }];
 
-    [self waitForExpectationsWithTimeout:20.0 handler:nil];
+    [self waitForExpectationsWithTimeout:TIMEOUT handler:nil];
 }
 
 - (void)testAttachDetach {
@@ -132,15 +160,12 @@
         }];
     }];
 
-    [self waitForExpectationsWithTimeout:20.0 handler:nil];
+    [self waitForExpectationsWithTimeout:TIMEOUT handler:nil];
 }
 
 
 - (void) testAttachDetachAttach {
-    
-    XCTFail(@"TODO THIS CRASHES");
-    return;
-    
+
     XCTestExpectation *expectation = [self expectationWithDescription:@"attach_detach_attach"];
     [self withRealtime:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime channel:@"attach_detach_attach"];
@@ -163,8 +188,7 @@
             }
         }];
     }];
-    
-    [self waitForExpectationsWithTimeout:20.0 handler:nil];
+    [self waitForExpectationsWithTimeout:TIMEOUT handler:nil];
 }
 
 -(void) testSkipsFromDetachingToAttaching {
@@ -190,19 +214,41 @@
         }];
     }];
     
-    [self waitForExpectationsWithTimeout:20.0 handler:nil];
+    [self waitForExpectationsWithTimeout:TIMEOUT handler:nil];
     
 }
 
 - (void) testAttachMultipleChannels {
+//TODO
+    XCTestExpectation *expectation1 = [self expectationWithDescription:@"test_attach_multiple1"];
+    XCTestExpectation *expectation2 = [self expectationWithDescription:@"test_attach_multiple2"];
+    [self withRealtime:^(ARTRealtime *realtime) {
+        ARTRealtimeChannel *channel1 = [realtime channel:@"test_attach_multiple1"];
+        [channel1 attach];
+        ARTRealtimeChannel *channel2 = [realtime channel:@"test_attach_multiple2"];
+        [channel2 attach];
+
+        [channel1 subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus status) {
+            if (state == ARTRealtimeChannelAttached) {
+                [expectation1 fulfill];
+            }
+        }];
+        [channel2 subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus status) {
+            if (state == ARTRealtimeChannelAttached) {
+                [expectation2 fulfill];
+            }
+        }];
+    }];
+    
+    [self waitForExpectationsWithTimeout:TIMEOUT handler:nil];
     //VXTODO
 }
 
 
 - (void)testDetach {
     
-    XCTFail(@"TODO THIS CRASHES");
-    return;
+  //  XCTFail(@"TODO THIS CRASHES");
+  //  return;
     XCTestExpectation *expectation = [self expectationWithDescription:@"detach"];
     [self withRealtime:^(ARTRealtime *realtime) {
         
@@ -222,12 +268,12 @@
         }];
     }];
     
-    [self waitForExpectationsWithTimeout:20.0 handler:nil];
+    [self waitForExpectationsWithTimeout:TIMEOUT handler:nil];
 }
 
 - (void)testDetaching {
-    XCTFail(@"TODO THIS CRASHES");
-    return;
+  //  XCTFail(@"TODO THIS CRASHES");
+  //  return;
     XCTestExpectation *expectation = [self expectationWithDescription:@"detach"];
     [self withRealtime:^(ARTRealtime *realtime) {
         __block BOOL detachingHit = NO;
@@ -255,7 +301,7 @@
         }];
     }];
     
-    [self waitForExpectationsWithTimeout:20.0 handler:nil];
+    [self waitForExpectationsWithTimeout:TIMEOUT handler:nil];
 }
 
 -(void) testSkipsFromAttachingToDetaching {
@@ -279,12 +325,35 @@
         }];
         [channel attach];
     }];
-    [self waitForExpectationsWithTimeout:20.0 handler:nil];
+    [self waitForExpectationsWithTimeout:TIMEOUT handler:nil];
 }
 
 -(void)testDetachingIgnoresDetach {
-    XCTFail(@"TODO IMPLMENMENT");
-    //VXTODO
+    
+    XCTestExpectation *expectation = [self expectationWithDescription:@"testDetachingIgnoresDetach"];
+    [self withRealtime:^(ARTRealtime *realtime) {
+        [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
+            
+            if (state == ARTRealtimeConnected) {
+                ARTRealtimeChannel *channel = [realtime channel:@"testDetachingIgnoresDetach"];
+                [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus reason) {
+
+                    if (state == ARTRealtimeChannelAttached) {
+                        [channel detach];
+                    }
+                    if( state == ARTRealtimeChannelDetaching) {
+                        [channel detach];
+                    }
+                    if(state == ARTRealtimeChannelDetached) {
+                        [expectation fulfill];
+                    }
+                }];
+                [channel attach];
+            }
+        }];
+    }];
+    
+    [self waitForExpectationsWithTimeout:TIMEOUT handler:nil];
 }
 
 - (void)testPublish {
@@ -302,7 +371,7 @@
         }];
     }];
 
-    [self waitForExpectationsWithTimeout:20.0 handler:nil];
+    [self waitForExpectationsWithTimeout:TIMEOUT handler:nil];
 }
 
 - (void)repeat:(int)count delay:(NSTimeInterval)delay block:(void (^)(int))block {
@@ -327,7 +396,7 @@
     [self withRealtime:^(ARTRealtime *realtime) {
         [e fulfill];
     }];
-    [self waitForExpectationsWithTimeout:20.0 handler:nil];
+    [self waitForExpectationsWithTimeout:TIMEOUT handler:nil];
 
     [self withRealtime:^(ARTRealtime *realtime) {
         XCTestExpectation *expectation = [self expectationWithDescription:@"multiple_send"];
@@ -358,15 +427,15 @@
 }
 
 - (void)testPublish_10_1000 {
-    XCTFail(@"TODO THIS CRASHES");
-    return;
+  //  XCTFail(@"TODO THIS CRASHES");
+   // return;
     [self multipleSendName:@"multiple_send_10_1000" count:10 delay:1000];
 }
 
 - (void)testPublish_20_200 {
 
-    XCTFail(@"TODO THIS CRASHES");
-    return;
+   // XCTFail(@"TODO THIS CRASHES");
+   // return;
     [self multipleSendName:@"multiple_send_20_200" count:20 delay:200];
 }
 
@@ -382,6 +451,99 @@
     }];
 
     [self waitForExpectationsWithTimeout:10.0 handler:nil];
+}
+
+- (void)testHistory {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"testHistory"];
+    [self withRealtime:^(ARTRealtime  *realtime) {
+        ARTRealtimeChannel *channel = [realtime channel:@"persisted:testHistory"];
+        [channel publish:@"testString" cb:^(ARTStatus status) {
+            XCTAssertEqual(status, ARTStatusOk);
+            [channel publish:@"testString2" cb:^(ARTStatus status) {
+                XCTAssertEqual(status, ARTStatusOk);
+                [channel history:^(ARTStatus status, id<ARTPaginatedResult> result) {
+                    XCTAssertEqual(status, ARTStatusOk);
+                    NSArray *messages = [result current];
+                    XCTAssertEqual(2, messages.count);
+                    ARTMessage *m0 = messages[0];
+                    ARTMessage *m1 = messages[1];
+                    
+                    XCTAssertEqualObjects(@"testString2", [m0 content]);
+                    XCTAssertEqualObjects(@"testString", [m1 content]);
+                    
+                    [expectation fulfill];
+                }];
+            }];
+        }];
+    }];
+    [self waitForExpectationsWithTimeout:TIMEOUT handler:nil];
+}
+
+
+- (void) testHistoryBothChannels {
+    XCTestExpectation *expectation1 = [self expectationWithDescription:@"historyBothChanels1"];
+    XCTestExpectation *expectation2 = [self expectationWithDescription:@"historyBothChanels2"];
+    [self withRealtime:^(ARTRealtime  *realtime) {
+        NSString * both = @"historyBoth";
+        ARTRealtimeChannel *channel1 = [realtime channel:both];
+        ARTRealtimeChannel *channel2 = [realtime channel:both];
+        [channel1 publish:@"testString" cb:^(ARTStatus status) {
+            XCTAssertEqual(status, ARTStatusOk);
+            [channel2 publish:@"testString2" cb:^(ARTStatus status) {
+                XCTAssertEqual(status, ARTStatusOk);
+                [channel1 history:^(ARTStatus status, id<ARTPaginatedResult> result) {
+                    XCTAssertEqual(status, ARTStatusOk);
+                    NSArray *messages = [result current];
+                    XCTAssertEqual(2, messages.count);
+                    ARTMessage *m0 = messages[0];
+                    ARTMessage *m1 = messages[1];
+                    XCTAssertEqualObjects(@"testString2", [m0 content]);
+                    XCTAssertEqualObjects(@"testString", [m1 content]);
+                    [expectation1 fulfill];
+                    
+                }];
+                [channel2 history:^(ARTStatus status, id<ARTPaginatedResult> result) {
+                    XCTAssertEqual(status, ARTStatusOk);
+                    NSArray *messages = [result current];
+                    XCTAssertEqual(2, messages.count);
+                    ARTMessage *m0 = messages[0];
+                    ARTMessage *m1 = messages[1];
+                    XCTAssertEqualObjects(@"testString2", [m0 content]);
+                    XCTAssertEqualObjects(@"testString", [m1 content]);
+                    [expectation2 fulfill];
+                    
+                    
+                }];
+            }];
+        }];
+    }];
+    [self waitForExpectationsWithTimeout:TIMEOUT handler:nil];
+}
+
+-(void) testHistoryForwardPagination {
+    XCTFail(@"TODO this is same as Rest. copy?");
+    return;
+
+}
+
+-(void) testHistoryBackwardPagination {
+    XCTFail(@"TODO same as rest. copy?");
+    
+}
+
+-(void) testHistoryLimitedForwardPagination {
+    XCTFail(@"TODO IMPLEMENT");
+    
+}
+
+-(void) testHistoryLimitedBackwardPagination {
+    XCTFail(@"TODO IMPLEMENT");
+    
+}
+
+-(void) testHistoryMessageIds {
+    XCTFail(@"TODO IMPLEMENT");
+    
 }
 
 - (void)testPerformanceExample {
