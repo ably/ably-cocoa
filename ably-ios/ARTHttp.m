@@ -190,27 +190,27 @@
     NSURLSessionDataTask *task = [self.urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
         NSLog(@"HTTP RESPONSE IN MAKE REQUEST, error %@, res %@", error, response);
-        NSLog(@"TODO RM THIS");
-        {
+        if(error) {
+            //TODO send error?
+            cb([ARTHttpResponse responseWithStatus:ARTStatusError headers:nil body:nil]);
+        }
+        else {
             if(artRequest.body) {
                 ARTJsonEncoder * encoder =[[ARTJsonEncoder alloc] init];
-                
                 NSLog(@"decoded is %@", [encoder decodeMessage:data]);
                 
             }
-        
-        
-        }
-        if (httpResponse) {
-            int status = (int)httpResponse.statusCode;
-            NSLog(@"http resonse status is %d", status);
-            CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
-                cb([ARTHttpResponse responseWithStatus:status headers:httpResponse.allHeaderFields body:data]);
-            });
-        } else {
-            CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
-                cb([ARTHttpResponse response]);
-            });
+            if (httpResponse) {
+                int status = (int)httpResponse.statusCode;
+                NSLog(@"http resonse status is %d", status);
+                CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
+                    cb([ARTHttpResponse responseWithStatus:status headers:httpResponse.allHeaderFields body:data]);
+                });
+            } else {
+                CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
+                    cb([ARTHttpResponse response]);
+                });
+            }
         }
         CFRunLoopWakeUp(rl);
         CFRelease(rl);

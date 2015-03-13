@@ -13,5 +13,7 @@
 @interface ARTAppSetup : NSObject
 
 + (void)setupApp:(ARTOptions *)options cb:(void(^)(ARTOptions *options))cb;
-
++ (NSString *) restHost;
++ (NSString *) realtimeHost;
++ (float) timeout;
 @end

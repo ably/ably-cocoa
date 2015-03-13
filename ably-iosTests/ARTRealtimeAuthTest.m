@@ -25,16 +25,53 @@
     [super tearDown];
 }
 
-- (void)testExample {
-    // This is an example of a functional test case.
-    XCTAssert(YES, @"Pass");
+- (void)testInitKeyOnly {
+    XCTFail(@"TODO write test");
 }
 
-- (void)testPerformanceExample {
-    // This is an example of a performance test case.
-    [self measureBlock:^{
-        // Put the code you want to measure the time of here.
-    }];
+- (void)testTokenOnly {
+    XCTFail(@"TODO write test");
 }
+- (void)testTokenCallback {
+    XCTFail(@"TODO write test");
+}
+- (void)testKeyClientIdChoosesToken {
+    XCTFail(@"TODO write test");
+}
+- (void)testWithToken {
+    XCTFail(@"TODO write test");
+}
+- (void)testTokenServer {
+    XCTFail(@"TODO write test");
+}
+- (void)testAuthURLOnTokenRequest {
+    XCTFail(@"TODO write test");
+}
+- (void)testAuthURLHandledOnReturnToken {
+    XCTFail(@"TODO write test");
+}
+- (void)testAuthURLHandledOnReturnErr {
+    XCTFail(@"TODO write test");
+}
+- (void)testAuthURLPassedParams {
+    XCTFail(@"TODO write test");
+}
+- (void)testAuthURLHeaders {
+    XCTFail(@"TODO write test");
+}
+- (void)testAuthCallbackOnTokenRequest {
+    XCTFail(@"TODO write test");
+}
+- (void)testAuthCallbackOnReturnToken {
+    XCTFail(@"TODO write test");
+}
+- (void)testAuthCallbackTokenExpire {
+    XCTFail(@"TODO write test");
+}
+- (void)testAuthCallbackErr {
+    XCTFail(@"TODO write test");
+}
+
+
 
 @end

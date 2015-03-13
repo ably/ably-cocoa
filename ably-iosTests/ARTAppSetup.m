@@ -69,13 +69,9 @@
             NSDictionary *response = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
         
             if (response) {
-                NSLog(@"/apps response is %@", response);
                 NSDictionary *key = response[@"keys"][0];
-                //TODO OLD WAY
                 keyId = [NSString stringWithFormat:@"%@.%@", response[@"appId"], key[@"id"]];
-               // keyId = response[@"appId"];
-//                keyId = response[@"appId"];
-                NSLog(@"keyId is %@", keyId);
+
                 keyValue = key[@"value"];
             }
         }
@@ -92,4 +88,19 @@
     [task resume];
 }
 
++ (NSString *) realtimeHost
+{
+    return @"sandbox-realtime.ably.io";
+}
+
++ (NSString *) restHost
+{
+    return @"sandbox-rest.ably.io";
+}
+
++ (float) timeout
+{
+    return 20.0;
+    
+}
 @end

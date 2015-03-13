@@ -18,20 +18,22 @@
 @interface ARTRestTest : XCTestCase {
     ARTRest *_rest;
     ARTOptions *_options;
+    float _timeout;
 }
 
 - (void)withRest:(void(^)(ARTRest *))cb;
 
 @end
 
-const float REST_TIMEOUT =10.0;
+//const float REST_TIMEOUT =[ARTAppSetup timeout];
 
 @implementation ARTRestTest
 
 - (void)setUp {
     [super setUp];
     _options = [[ARTOptions alloc] init];
-    _options.restHost = @"sandbox-rest.ably.io";
+    _options.restHost = [ARTAppSetup restHost];
+    _timeout = [ARTAppSetup timeout];
 }
 
 - (void)tearDown {
@@ -52,25 +54,7 @@ const float REST_TIMEOUT =10.0;
     cb(_rest);
 }
 
-- (void)testRestTime {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testTime"];
 
-    [self withRest:^(ARTRest *rest) {
-        [rest time:^(ARTStatus status, NSDate *date) {
-            NSLog(@"status is %d", status);
-            NSLog(@"nsdate is %@", date);
-            XCTAssert(status == ARTStatusOk);
-            // Expect local clock and server clock to be synced within 5 seconds
-            XCTAssertEqualWithAccuracy([date timeIntervalSinceNow], 0.0, 5.0);
-
-            if(status == ARTStatusOk) {
-                [expectation fulfill];
-            }
-
-        }];
-    }];
-    [self waitForExpectationsWithTimeout:REST_TIMEOUT handler:nil];
-}
 
 //TODO RM
 - (void)testSomething {
@@ -90,7 +74,7 @@ const float REST_TIMEOUT =10.0;
         }];
     }];
     
-    [self waitForExpectationsWithTimeout:REST_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:_timeout handler:nil];
 }
 
 
@@ -104,21 +88,7 @@ const float REST_TIMEOUT =10.0;
         }];
     }];
 
-    [self waitForExpectationsWithTimeout:REST_TIMEOUT handler:nil];
-}
-
-- (void)testRestStats {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"stats"];
-    [self withRest:^(ARTRest *rest) {
-        [rest stats:^(ARTStatus status, id<ARTPaginatedResult> result) {
-            XCTAssertEqual(status, ARTStatusOk);
-            XCTAssertNotNil([result current]);
-            XCTAssertFalse([result hasNext]);
-            [expectation fulfill];
-        }];
-    }];
-
-    [self waitForExpectationsWithTimeout:REST_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:_timeout handler:nil];
 }
 
 
@@ -163,7 +133,7 @@ const float REST_TIMEOUT =10.0;
             [expectation fulfill];
         }];
     }];
-    [self waitForExpectationsWithTimeout:REST_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:_timeout handler:nil];
 }
 
 
@@ -225,7 +195,7 @@ const float REST_TIMEOUT =10.0;
         }];
     }];
     //TODO TIMER
-    [self waitForExpectationsWithTimeout:REST_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:_timeout handler:nil];
 }
 
 
@@ -286,7 +256,7 @@ const float REST_TIMEOUT =10.0;
         }];
     }];
     
-    [self waitForExpectationsWithTimeout:REST_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:_timeout handler:nil];
 }
 
 
@@ -312,13 +282,88 @@ const float REST_TIMEOUT =10.0;
         }];
     }];
     
-    [self waitForExpectationsWithTimeout:REST_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:_timeout handler:nil];
 }
+
+
+
 
 -(void) testChannel
 {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"testChannel"];
+    [self withRest:^(ARTRest *rest) {
+        ARTRestChannel *channel = [rest channel:@"testChannel"];
+        
+        /**
+         TODO show that cipher params works.
+         */
+
+            [expectation fulfill];
+    }];
     
+    [self waitForExpectationsWithTimeout:_timeout handler:nil];
+
+}
+
+
+- (void)testRestStats {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"stats"];
+    [self withRest:^(ARTRest *rest) {
+        [rest stats:^(ARTStatus status, id<ARTPaginatedResult> result) {
+            XCTAssertEqual(status, ARTStatusOk);
+            XCTAssertNotNil([result current]);
+            XCTAssertFalse([result hasNext]);
+            [expectation fulfill];
+        }];
+    }];
+    
+    [self waitForExpectationsWithTimeout:_timeout handler:nil];
+}
+
+
+
+
+//TODO move this into the setup section of the test? Will this impact realtime?
+-(void) populateStats:(ARTRest *) rest channel:(ARTRestChannel *) channel
+{
+    //TODO put some stats into the app so that I can pull it out again and verify it works.
+    /*
+    ARTMessage *message = [[ARTMessage alloc] init];
+    message.name = name;
+    message.payload =[ARTPayload payloadWithPayload:payload encoding:@""];
+    message = [message encode:channel.payloadEncoder];
+    
+    NSData *encodedMessage = [self.rest.defaultEncoder encodeMessage:message];
+    NSDictionary *headers = @{@"Content-Type":rest.defaultEncoding};
+    
+    NSString *path = [NSString stringWithFormat:@"%@/stats", channel.basePath];
+    return [self.rest post:path headers:headers body:encodedMessage authenticated:YES cb:^(ARTHttpResponse *response) {
+        ARTStatus status = response.status >= 200 && response.status < 300 ? ARTStatusOk : ARTStatusError;
+        NSLog(@"publish response is %@", response);
+        cb(status);
+    }];
+     */
     
 }
+
+- (void)testRestStatsWithParams {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"stats"];
+    [self withRest:^(ARTRest *rest) {
+        [rest statsWithParams:@{@"limit" : @"1"} cb:^(ARTStatus status, id<ARTPaginatedResult> result) {
+            XCTAssertEqual(status, ARTStatusOk);
+            XCTAssertNotNil([result current]);
+            XCTAssertFalse([result hasNext]);
+            NSArray * page = [result current];
+            NSLog(@"page is %@", page);
+            [expectation fulfill];
+        }];
+    }];
+    
+    [self waitForExpectationsWithTimeout:_timeout handler:nil];
+}
+
+
+
+
 
 @end
