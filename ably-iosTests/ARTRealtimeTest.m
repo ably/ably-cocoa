@@ -79,7 +79,7 @@ const float TIMEOUT= 10.0;
     XCTestExpectation *expectation = [self expectationWithDescription:@"attach"];
     [self withRealtime:^(ARTRealtime *realtime) {
         [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
-            NSLog(@"testAttach constate: %@", [ARTRealtime ARTRealtimeStateToStr:state]);
+            NSLog(@"testAttach constate...: %@", [ARTRealtime ARTRealtimeStateToStr:state]);
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime channel:@"attach"];
                 [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus reason) {
@@ -102,7 +102,7 @@ const float TIMEOUT= 10.0;
     XCTestExpectation *expectation = [self expectationWithDescription:@"attachOnce"];
     [self withRealtime:^(ARTRealtime *realtime) {
         [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
-            NSLog(@"testAttach constate: %@", [ARTRealtime ARTRealtimeStateToStr:state]);
+            NSLog(@"testAttach constateOnce: %@", [ARTRealtime ARTRealtimeStateToStr:state]);
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime channel:@"attach"];
 
@@ -427,15 +427,15 @@ const float TIMEOUT= 10.0;
 }
 
 - (void)testPublish_10_1000 {
-  //  XCTFail(@"TODO THIS CRASHES");
-   // return;
+    XCTFail(@"TODO THIS CRASHES");
+    return;
     [self multipleSendName:@"multiple_send_10_1000" count:10 delay:1000];
 }
 
 - (void)testPublish_20_200 {
 
-   // XCTFail(@"TODO THIS CRASHES");
-   // return;
+    XCTFail(@"TODO THIS CRASHES");
+    return;
     [self multipleSendName:@"multiple_send_20_200" count:20 delay:200];
 }
 

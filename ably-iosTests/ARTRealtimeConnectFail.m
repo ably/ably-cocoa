@@ -1,24 +1,19 @@
 //
-//  ARTRealtimeChannelTest.m
+//  ARTRealtimeConnectFail.m
 //  ably-ios
 //
-//  Created by vic on 13/03/2015.
+//  Created by vic on 16/03/2015.
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
-#import "ARTMessage.h"
-#import "ARTOptions.h"
-#import "ARTPresenceMessage.h"
-#import "ARTRest.h"
-#import "ARTAppSetup.h"
 
-@interface ARTRealtimeChannelTest : XCTestCase
+@interface ARTRealtimeConnectFail : XCTestCase
 
 @end
 
-@implementation ARTRealtimeChannelTest
+@implementation ARTRealtimeConnectFail
 
 - (void)setUp {
     [super setUp];
@@ -30,29 +25,30 @@
     [super tearDown];
 }
 
-- (void)testAttachBinary {
+- (void)testNotFoundErr {
+    XCTFail(@"TODO write test");
+}
+- (void)testAuthErr {
     XCTFail(@"TODO write test");
 }
 
-- (void)testAttachText {
+- (void)testDisonnectFail {
     XCTFail(@"TODO write test");
 }
-- (void)testAttachBeforeConnectBinary {
+
+- (void)testSuspendedFail {
     XCTFail(@"TODO write test");
 }
-- (void)testAttachBeforeConnectText {
+- (void)testTokenExpireFail {
     XCTFail(@"TODO write test");
 }
-- (void)testAttacDetachBinary{
+- (void)testInvalidRecoverFail {
     XCTFail(@"TODO write test");
 }
-- (void)testAttacDetachText{
+- (void)testUnknownRecoverFail {
     XCTFail(@"TODO write test");
 }
-- (void)testSubscribeUnsubscribe{
-    XCTFail(@"TODO write test");
-}
-- (void)testAttachFail{
-    XCTFail(@"TODO write test");
-}
+
+
+
 @end
