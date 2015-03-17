@@ -13,7 +13,7 @@
 #import "ARTOptions.h"
 #import "ARTPresenceMessage.h"
 #import "ARTRest.h"
-#import "ARTAppSetup.h"
+#import "ARTTestUtil.h"
 
 @interface ARTRestTimeTest : XCTestCase {
     ARTRest *_rest;
@@ -38,7 +38,7 @@
 
 - (void)withRest:(void (^)(ARTRest *rest))cb {
     if (!_rest) {
-        [ARTAppSetup setupApp:[ARTAppSetup jsonRestOptions] cb:^(ARTOptions *options) {
+        [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
             if (options) {
                 _rest = [[ARTRest alloc] initWithOptions:options];
             }
@@ -55,7 +55,7 @@
     ARTOptions * badOptions = [[ARTOptions alloc] init];
     badOptions.restHost = @"this.host.does.not.exist";
     
-    [ARTAppSetup setupApp:badOptions cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:badOptions cb:^(ARTOptions *options) {
         ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
         [rest time:^(ARTStatus status, NSDate *date) {
             NSLog(@"status bad host is %d", status);
@@ -64,7 +64,7 @@
             [expectation fulfill];
         }];
     }];
-    [self waitForExpectationsWithTimeout:[ARTAppSetup timeout] handler:nil];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 - (void)testRestTime {
@@ -84,6 +84,6 @@
             
         }];
     }];
-    [self waitForExpectationsWithTimeout:[ARTAppSetup timeout] handler:nil];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 @end

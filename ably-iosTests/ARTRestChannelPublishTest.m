@@ -12,7 +12,7 @@
 #import "ARTOptions.h"
 #import "ARTPresenceMessage.h"
 #import "ARTRest.h"
-#import "ARTAppSetup.h"
+#import "ARTTestUtil.h"
 @interface ARTRestChannelPublishTest : XCTestCase
 {
     ARTRest *_restText;
@@ -22,7 +22,6 @@
     float _timeout;
 }
 
-- (void)withRest:(void(^)(ARTRest *))cb;
 
 @end
 
@@ -31,13 +30,13 @@
 - (void)setUp {
     [super setUp];
     _textOptions = [[ARTOptions alloc] init];
-    _textOptions.restHost = [ARTAppSetup restHost];
+    _textOptions.restHost = [ARTTestUtil restHost];
     _textOptions.binary = false;
     
     _binaryOptions = [[ARTOptions alloc] init];
-    _binaryOptions.restHost = [ARTAppSetup restHost];
+    _binaryOptions.restHost = [ARTTestUtil restHost];
     _binaryOptions.binary = true;
-    _timeout = [ARTAppSetup timeout];
+    _timeout = [ARTTestUtil timeout];
 }
 
 - (void)tearDown {
@@ -49,7 +48,7 @@
 
 - (void)withRestText:(void (^)(ARTRest *rest))cb {
     if (!_restText) {
-        [ARTAppSetup setupApp:_textOptions cb:^(ARTOptions *options) {
+        [ARTTestUtil setupApp:_textOptions cb:^(ARTOptions *options) {
             if (options) {
                 _restText = [[ARTRest alloc] initWithOptions:options];
             }
@@ -62,7 +61,7 @@
 
 - (void)withRestBinary:(void (^)(ARTRest *rest))cb {
     if (!_restBinary) {
-        [ARTAppSetup setupApp:_binaryOptions cb:^(ARTOptions *options) {
+        [ARTTestUtil setupApp:_binaryOptions cb:^(ARTOptions *options) {
             if (options) {
                 _restBinary = [[ARTRest alloc] initWithOptions:options];
             }
@@ -117,10 +116,16 @@
     [self waitForExpectationsWithTimeout:_timeout handler:nil];
 }
 - (void)testTypesByBinary {
+    
+    XCTFail(@"TODO Crashes in websocket");
+    return;
+    
     XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
     [self withRestBinary:^(ARTRest *rest) {
+        NSLog(@"withRestbinary");
         ARTRestChannel *channel = [rest channel:@"persisted:presence_fixtures"];
         [channel presence:^(ARTStatus status, id<ARTPaginatedResult> result) {
+                    NSLog(@"presence...");
             XCTAssertEqual(status, ARTStatusOk);
             if(status != ARTStatusOk) {
                 XCTFail(@"not an ok status");

@@ -71,6 +71,9 @@ enum {
 
             NSMutableDictionary *queryParams = [NSMutableDictionary dictionaryWithDictionary:authParams];
             
+            
+            //TODO thers an echo messages flag as well here.
+            
             if(options.binary) {
                 queryParams[@"format"] = @"msgpack";
             }

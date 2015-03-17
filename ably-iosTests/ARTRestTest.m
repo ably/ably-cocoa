@@ -13,7 +13,7 @@
 #import "ARTOptions.h"
 #import "ARTPresenceMessage.h"
 #import "ARTRest.h"
-#import "ARTAppSetup.h"
+#import "ARTTestUtil.h"
 
 @interface ARTRestTest : XCTestCase {
     ARTRest *_rest;
@@ -25,15 +25,15 @@
 
 @end
 
-//const float REST_TIMEOUT =[ARTAppSetup timeout];
+//const float REST_TIMEOUT =[ARTTestUtil timeout];
 
 @implementation ARTRestTest
 
 - (void)setUp {
     [super setUp];
     _options = [[ARTOptions alloc] init];
-    _options.restHost = [ARTAppSetup restHost];
-    _timeout = [ARTAppSetup timeout];
+    _options.restHost = [ARTTestUtil restHost];
+    _timeout = [ARTTestUtil timeout];
 }
 
 - (void)tearDown {
@@ -43,7 +43,7 @@
 
 - (void)withRest:(void (^)(ARTRest *rest))cb {
     if (!_rest) {
-        [ARTAppSetup setupApp:_options cb:^(ARTOptions *options) {
+        [ARTTestUtil setupApp:_options cb:^(ARTOptions *options) {
             if (options) {
                 _rest = [[ARTRest alloc] initWithOptions:options];
             }
@@ -64,7 +64,15 @@
         ARTRestChannel *channel = [rest channel:@"test"];
         [channel publish:@"testString" cb:^(ARTStatus status) {
             XCTAssertEqual(status, ARTStatusOk);
-            [expectation fulfill];
+            if(status == ARTStatusOk) {
+                [expectation fulfill];
+            }
+            else {
+                XCTFail(@"wrong status %d", status);
+            }
+ 
+
+
         }];
     }];
 
@@ -118,130 +126,9 @@
 
 
 
-//TODO put into ios status doc
--(void) testHistoryForwardPagination
-{
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryForwardPagination"];
-    [self withRest:^(ARTRest  *rest) {
-        ARTRestChannel *channel = [rest channel:@"histChan"];
-        [channel publish:@"testString1" cb:^(ARTStatus status) {
-            XCTAssertEqual(status, ARTStatusOk);
-            [channel publish:@"testString2" cb:^(ARTStatus status) {
-                XCTAssertEqual(status, ARTStatusOk);
-                [channel publish:@"testString3" cb:^(ARTStatus status) {
-                    XCTAssertEqual(status, ARTStatusOk);
-                    [channel publish:@"testString4" cb:^(ARTStatus status) {
-                        XCTAssertEqual(status, ARTStatusOk);
-                        [channel publish:@"testString5" cb:^(ARTStatus status) {
-                            XCTAssertEqual(status, ARTStatusOk);
-                            [channel historyWithParams:@{@"limit" : @"2",
-                                                         @"direction" : @"forwards"} cb:^(ARTStatus status, id<ARTPaginatedResult> result) {
-                                XCTAssertEqual(status, ARTStatusOk);
-                                XCTAssertTrue([result hasFirst]);
-                                XCTAssertTrue([result hasNext]);
-                                NSArray * page = [result current];
-                                XCTAssertEqual([page count], 2);
-                                ARTMessage * firstMessage = [page objectAtIndex:0];
-                                ARTMessage * secondMessage =[page objectAtIndex:1];
-                                XCTAssertEqualObjects(@"testString1", [firstMessage content]);
-                                XCTAssertEqualObjects(@"testString2", [secondMessage content]);
-                                [result getNext:^(ARTStatus status, id<ARTPaginatedResult> result2) {
-                                    XCTAssertEqual(status, ARTStatusOk);
-                                    XCTAssertTrue([result2 hasFirst]);
-                                    NSArray * page = [result2 current];
-                                    XCTAssertEqual([page count], 2);
-                                    ARTMessage * firstMessage = [page objectAtIndex:0];
-                                    ARTMessage * secondMessage =[page objectAtIndex:1];
-                                    XCTAssertEqualObjects(@"testString3", [firstMessage content]);
-                                    XCTAssertEqualObjects(@"testString4", [secondMessage content]);
-                                    
-                                    [result2 getNext:^(ARTStatus status, id<ARTPaginatedResult> result3) {
-                                        XCTAssertEqual(status, ARTStatusOk);
-                                        XCTAssertTrue([result3 hasFirst]);
-                                        XCTAssertFalse([result3 hasNext]);
-                                        NSArray * page = [result3 current];
-                                        XCTAssertEqual([page count], 1);
-                                        ARTMessage * firstMessage = [page objectAtIndex:0];
-                                        XCTAssertEqualObjects(@"testString5", [firstMessage content]);
-                                        [expectation fulfill];
-                                    }];
-                                }];
-                                 
-                            }];
-                        }];
-                    }];
-                }];
-            }];
-        }];
-    }];
-    //TODO TIMER
-    [self waitForExpectationsWithTimeout:_timeout handler:nil];
-}
 
 
-//TODO ios status doc
--(void) testHistoryBackwardPagination
-{
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryBackwardagination"];
-    [self withRest:^(ARTRest  *rest) {
-        ARTRestChannel *channel = [rest channel:@"histBackChan"];
-        [channel publish:@"testString1" cb:^(ARTStatus status) {
-            XCTAssertEqual(status, ARTStatusOk);
-            [channel publish:@"testString2" cb:^(ARTStatus status) {
-                XCTAssertEqual(status, ARTStatusOk);
-                [channel publish:@"testString3" cb:^(ARTStatus status) {
-                    XCTAssertEqual(status, ARTStatusOk);
-                    [channel publish:@"testString4" cb:^(ARTStatus status) {
-                        XCTAssertEqual(status, ARTStatusOk);
-                        [channel publish:@"testString5" cb:^(ARTStatus status) {
-                            XCTAssertEqual(status, ARTStatusOk);
-                            [channel historyWithParams:@{@"limit" : @"2",
-                                                         @"direction" : @"backwards"} cb:^(ARTStatus status, id<ARTPaginatedResult> result) {
-                                                             XCTAssertEqual(status, ARTStatusOk);
-                                                             XCTAssertTrue([result hasFirst]);
-                                                             XCTAssertTrue([result hasNext]);
-                                                             NSArray * page = [result current];
-                                                             XCTAssertEqual([page count], 2);
-                                                             ARTMessage * firstMessage = [page objectAtIndex:0];
-                                                             ARTMessage * secondMessage =[page objectAtIndex:1];
-                                                             XCTAssertEqualObjects(@"testString5", [firstMessage content]);
-                                                             XCTAssertEqualObjects(@"testString4", [secondMessage content]);
-                                                             [result getNext:^(ARTStatus status, id<ARTPaginatedResult> result2) {
-                                                                 XCTAssertEqual(status, ARTStatusOk);
-                                                                 XCTAssertTrue([result2 hasFirst]);
-                                                                 NSArray * page = [result2 current];
-                                                                 XCTAssertEqual([page count], 2);
-                                                                 ARTMessage * firstMessage = [page objectAtIndex:0];
-                                                                 ARTMessage * secondMessage =[page objectAtIndex:1];
-                                                                 XCTAssertEqualObjects(@"testString3", [firstMessage content]);
-                                                                 XCTAssertEqualObjects(@"testString2", [secondMessage content]);
-                                                                 
-                                                                 [result2 getNext:^(ARTStatus status, id<ARTPaginatedResult> result3) {
-                                                                     XCTAssertEqual(status, ARTStatusOk);
-                                                                     XCTAssertTrue([result3 hasFirst]);
-                                                                     XCTAssertFalse([result3 hasNext]);
-                                                                     NSArray * page = [result3 current];
-                                                                     XCTAssertEqual([page count], 1);
-                                                                     ARTMessage * firstMessage = [page objectAtIndex:0];
-                                                                     XCTAssertEqualObjects(@"testString1", [firstMessage content]);
-                                                                     [expectation fulfill];
-                                                                 }];
-                                                             }];
-                                                             
-                                                         }];
-                        }];
-                    }];
-                }];
-            }];
-        }];
-    }];
-    
-    [self waitForExpectationsWithTimeout:_timeout handler:nil];
-}
-
-
-
-
+/*
 -(void) testPresenceHistory
 {//- (id<ARTCancellable>)presenceHistory:(ARTPaginatedResultCb)cb {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testPresenceHistory"];
@@ -265,7 +152,7 @@
     [self waitForExpectationsWithTimeout:_timeout handler:nil];
 }
 
-
+*/
 
 
 -(void) testChannel
@@ -306,6 +193,7 @@
 //TODO move this into the setup section of the test? Will this impact realtime?
 -(void) populateStats:(ARTRest *) rest channel:(ARTRestChannel *) channel
 {
+
     //TODO put some stats into the app so that I can pull it out again and verify it works.
     /*
     ARTMessage *message = [[ARTMessage alloc] init];

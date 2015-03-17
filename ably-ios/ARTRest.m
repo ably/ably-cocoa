@@ -13,6 +13,7 @@
 #import "ARTHttp.h"
 #import "ARTEncoder.h"
 #import "ARTJsonEncoder.h"
+#import "ARTMsgPackEncoder.h"
 #import "ARTMessage.h"
 #import "ARTHttpPaginatedResult.h"
 #import "ARTStats.h"
@@ -28,6 +29,7 @@
 @property (readonly, weak, nonatomic) ARTRest *rest;
 @property (readonly, strong, nonatomic) NSString *name;
 @property (readonly, strong, nonatomic) NSString *basePath;
+
 @property (readonly, strong, nonatomic) id<ARTPayloadEncoder> payloadEncoder;
 
 - (instancetype)initWithRest:(ARTRest *)rest name:(NSString *)name cipherParams:(ARTCipherParams *)cipherParams;
@@ -77,6 +79,7 @@
     NSData *encodedMessage = [self.rest.defaultEncoder encodeMessage:message];
     NSDictionary *headers = @{@"Content-Type":self.rest.defaultEncoding};
 
+    NSLog(@"headers for publish is %@", headers);
     NSString *path = [NSString stringWithFormat:@"%@/messages", self.basePath];
     return [self.rest post:path headers:headers body:encodedMessage authenticated:YES cb:^(ARTHttpResponse *response) {
         ARTStatus status = response.status >= 200 && response.status < 300 ? ARTStatusOk : ARTStatusError;
@@ -159,13 +162,14 @@
         _channels = [NSMutableDictionary dictionary];
         _auth = [[ARTAuth alloc] initWithRest:self options:options.authOptions];
         
-        NSLog(@"TODO read binary encoding flag and pick msgpack encoder");
-        
         id<ARTEncoder> defaultEncoder = [[ARTJsonEncoder alloc] init];
+        id<ARTEncoder> msgpackEncoder  = [[ARTMsgPackEncoder alloc] init];
         _encoders = @{
-            [defaultEncoder mimeType]: defaultEncoder
+            [defaultEncoder mimeType]: defaultEncoder,
+            [msgpackEncoder mimeType] : msgpackEncoder
         };
-        _defaultEncoding = [defaultEncoder mimeType];
+        
+        _defaultEncoding = options.binary ? [msgpackEncoder mimeType] :[defaultEncoder mimeType];
     }
     return self;
 }

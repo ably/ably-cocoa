@@ -12,7 +12,7 @@
 #import "ARTOptions.h"
 #import "ARTPresenceMessage.h"
 #import "ARTRest.h"
-#import "ARTAppSetup.h"
+#import "ARTTestUtil.h"
 @interface ARTRestCapabilityTest : XCTestCase {
     ARTRest *_rest;
     ARTOptions *_options;
@@ -39,7 +39,7 @@
 
 - (void)withRest:(void (^)(ARTRest *rest))cb {
     if (!_rest) {
-        [ARTAppSetup setupApp:_options cb:^(ARTOptions *options) {
+        [ARTTestUtil setupApp:_options cb:^(ARTOptions *options) {
             if (options) {
                 _rest = [[ARTRest alloc] initWithOptions:options];
             }

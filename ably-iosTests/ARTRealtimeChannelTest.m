@@ -12,7 +12,7 @@
 #import "ARTOptions.h"
 #import "ARTPresenceMessage.h"
 #import "ARTRest.h"
-#import "ARTAppSetup.h"
+#import "ARTTestUtil.h"
 
 @interface ARTRealtimeChannelTest : XCTestCase
 

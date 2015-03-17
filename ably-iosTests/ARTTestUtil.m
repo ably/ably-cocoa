@@ -1,14 +1,14 @@
 //
-//  ARTAppSetup.m
+//  ARTTestUtil.m
 //  ably-ios
 //
 //  Created by Jason Choy on 10/12/2014.
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "ARTAppSetup.h"
+#import "ARTTestUtil.h"
 
-@implementation ARTAppSetup
+@implementation ARTTestUtil
 
 + (void)setupApp:(ARTOptions *)options cb:(void (^)(ARTOptions *))cb {
     NSDictionary *capability = @{
@@ -47,15 +47,28 @@
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
     req.HTTPMethod = @"POST";
     req.HTTPBody = appSpecData;
-    [req setValue:@"application/json" forHTTPHeaderField:@"Accept"];
-    [req setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+    if(options.binary) {
+        [req setValue:@"application/x-msgpack,application/json" forHTTPHeaderField:@"Accept"];
+        [req setValue:@"application/x-msgpack" forHTTPHeaderField:@"Content-Type"];
+
+        
+    }
+    else {
+        [req setValue:@"application/json" forHTTPHeaderField:@"Accept"];
+        [req setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+
+        
+    }
 
     NSLog(@"Creating test app. URL: %@, Method: %@, Body: %@, Headers: %@", req.URL, req.HTTPMethod, [[NSString alloc] initWithData:req.HTTPBody encoding:NSUTF8StringEncoding], req.allHTTPHeaderFields);
 
     CFRunLoopRef rl = CFRunLoopGetCurrent();
 
     NSURLSession *urlSession = [NSURLSession sharedSession];
+    
+    
     NSURLSessionDataTask *task = [urlSession dataTaskWithRequest:req completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        NSLog(@"url session completion handler called");
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
         NSString *keyId;
         NSString *keyValue;
@@ -82,6 +95,7 @@
         appOptions.authOptions.keyValue = keyValue;
 
         CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
+            NSLog(@"performing block");
             cb(appOptions);
         });
         CFRunLoopWakeUp(rl);
@@ -102,7 +116,7 @@
 +(ARTOptions *) binaryRestOptions
 {
     ARTOptions * json = [[ARTOptions alloc] init];
-    json.restHost = [ARTAppSetup restHost];
+    json.restHost = [ARTTestUtil restHost];
     json.binary =true;
     return json;
 }
@@ -110,14 +124,37 @@
 +(ARTOptions *) jsonRestOptions
 {
     ARTOptions * json = [[ARTOptions alloc] init];
-    json.restHost = [ARTAppSetup restHost];
+    json.restHost = [ARTTestUtil restHost];
     json.binary =false;
     return json;
 }
 
 +(float) timeout
 {
-    return 20.0;
+    return 60.0;
     
+}
+
+
++ (void)repeat:(int)count delay:(NSTimeInterval)delay block:(void (^)(int))block {
+    [ARTTestUtil repeat:count i:0 delay:delay block:block];
+}
+
+
++ (void)repeat:(int)count i:(int)i delay:(NSTimeInterval)delay block:(void (^)(int))block {
+    if (count == 0) {
+        return;
+    }
+    NSLog(@"count: %d, i: %d", count, i);
+    block(i);
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [ARTTestUtil repeat:(count - 1) i:(i + 1) delay:delay block:block];
+    });
+}
+
++(long long) nowMilli
+{
+    NSDate * date = [NSDate date];
+    return [date timeIntervalSince1970]*1000;
 }
 @end

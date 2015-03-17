@@ -173,7 +173,7 @@
 
     request.HTTPBody = artRequest.body;
     NSLog(@"request is %@", request);
-    NSLog(@"art request is %@", artRequest.headers);
+    NSLog(@"art request headers is %@", artRequest.headers);
     NSLog(@"TODO RM THIS");
     {
         
