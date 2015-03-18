@@ -71,7 +71,7 @@ const float BIG_SLEEP = 3.0;
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
     
     [self withRest:^(ARTRest *rest) {
-        __weak  XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_first_batch"];
+          XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_first_batch"];
         ARTRestChannel *channel = [rest channel:@"test_history_time_forwards"];
         
         int firstBatchTotal =3;
@@ -96,7 +96,7 @@ const float BIG_SLEEP = 3.0;
             }
         }
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-        __weak  XCTestExpectation *secondExpecation = [self expectationWithDescription:@"send_second_batch"];
+          XCTestExpectation *secondExpecation = [self expectationWithDescription:@"send_second_batch"];
         //send second batch (which we will retrieve via interval history request
         {
             
@@ -118,7 +118,7 @@ const float BIG_SLEEP = 3.0;
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
         sleep(BIG_SLEEP);
         intervalEnd = [ARTTestUtil nowMilli];
-        __weak  XCTestExpectation *thirdExpectation = [self expectationWithDescription:@"send_third_batch"];
+          XCTestExpectation *thirdExpectation = [self expectationWithDescription:@"send_third_batch"];
         //send third batch, which we won't receieve in the history request
         {
             __block int numReceived3 =0;
@@ -178,7 +178,7 @@ const float BIG_SLEEP = 3.0;
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
     
     [self withRest:^(ARTRest *rest) {
-        __weak  XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_first_batch"];
+          XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_first_batch"];
         ARTRestChannel *channel = [rest channel:@"test_history_time_forwards"];
  
         int firstBatchTotal =10;
@@ -205,7 +205,7 @@ const float BIG_SLEEP = 3.0;
             }
         }
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-        __weak  XCTestExpectation *secondExpecation = [self expectationWithDescription:@"send_second_batch"];
+          XCTestExpectation *secondExpecation = [self expectationWithDescription:@"send_second_batch"];
         //send second batch (which we will retrieve via interval history request
         {
             sleep(BIG_SLEEP);
@@ -227,7 +227,8 @@ const float BIG_SLEEP = 3.0;
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
         sleep(BIG_SLEEP);
         intervalEnd = [ARTTestUtil nowMilli];
-        __weak  XCTestExpectation *thirdExpectation = [self expectationWithDescription:@"send_third_batch"];
+        
+        XCTestExpectation *thirdExpectation = [self expectationWithDescription:@"send_third_batch"];
         //send third batch, which we won't receieve in the history request
         {
             __block int numReceived3 =0;

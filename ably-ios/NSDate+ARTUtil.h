@@ -16,4 +16,15 @@
 - (NSNumber *)artToNumberMs;
 - (NSInteger)artToIntegerMs;
 
+
+typedef enum {
+    GranularityMinutes,
+    GranularityHours,
+    GranularityDays,
+    GranularityMonth,
+
+} Granularity;
+
+-(NSString *) toIntervalFormat:(Granularity) granularity;
+
 @end
