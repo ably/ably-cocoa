@@ -52,17 +52,22 @@
     return !!self.relNext;
 }
 
-- (void)getFirst:(ARTPaginatedResultCb)cb {
 
+//TODO test
+- (void)getFirst:(ARTPaginatedResultCb)cb {
+    [ARTHttpPaginatedResult makePaginatedRequest:self.http request:self.relFirst responseProcessor:self.responseProcessor cb:cb];
 }
 
-- (void)getCurrent:(ARTPaginatedResultCb)cb {
 
+//TODO Test
+- (void)getCurrent:(ARTPaginatedResultCb)cb {
+    [ARTHttpPaginatedResult makePaginatedRequest:self.http request:self.relCurrent responseProcessor:self.responseProcessor cb:cb];
 }
 
 - (void)getNext:(ARTPaginatedResultCb)cb {
-    
+    [ARTHttpPaginatedResult makePaginatedRequest:self.http request:self.relNext responseProcessor:self.responseProcessor cb:cb];
 }
+
 
 + (id<ARTCancellable>)makePaginatedRequest:(ARTHttp *)http request:(ARTHttpRequest *)request responseProcessor:(ARTHttpResponseProcessor)responseProcessor cb:(ARTPaginatedResultCb)cb {
     return [http makeRequest:request cb:^(ARTHttpResponse *response) {

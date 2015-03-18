@@ -8,6 +8,7 @@
 
 #import "ARTHttp.h"
 
+#include "ARTJsonEncoder.h" //TODO RM
 @interface ARTHttp ()
 
 @property (readonly, strong, nonatomic) NSURL *baseUrl;
@@ -160,8 +161,10 @@
 - (id<ARTCancellable>)makeRequest:(ARTHttpRequest *)artRequest cb:(void (^)(ARTHttpResponse *))cb {
     NSAssert([artRequest.method isEqualToString:@"GET"] || [artRequest.method isEqualToString:@"POST"], @"Http method must be GET or POST");
 
+    NSLog(@"req url is %@, method %@", artRequest.url, artRequest.method);
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:artRequest.url];
     request.HTTPMethod = artRequest.method;
+
     
     for (NSString *headerName in artRequest.headers) {
         NSString *headerValue = [artRequest.headers objectForKey:headerName];
@@ -169,20 +172,45 @@
     }
 
     request.HTTPBody = artRequest.body;
+    NSLog(@"request is %@", request);
+    NSLog(@"art request headers is %@", artRequest.headers);
+    NSLog(@"TODO RM THIS");
+    {
+        
+        if(artRequest.body) {
+            ARTJsonEncoder * encoder =[[ARTJsonEncoder alloc] init];
+        
+            NSLog(@"decoded request is %@", [encoder decodeMessage:artRequest.body]);
+            
+        }
+    }
 
     CFRunLoopRef rl = CFRunLoopGetCurrent();
     CFRetain(rl);
     NSURLSessionDataTask *task = [self.urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-        if (httpResponse) {
-            int status = (int)httpResponse.statusCode;
-            CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
-                cb([ARTHttpResponse responseWithStatus:status headers:httpResponse.allHeaderFields body:data]);
-            });
-        } else {
-            CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
-                cb([ARTHttpResponse response]);
-            });
+        NSLog(@"HTTP RESPONSE IN MAKE REQUEST, error %@, res %@", error, response);
+        if(error) {
+            //TODO send error?
+            cb([ARTHttpResponse responseWithStatus:ARTStatusError headers:nil body:nil]);
+        }
+        else {
+            if(artRequest.body) {
+                ARTJsonEncoder * encoder =[[ARTJsonEncoder alloc] init];
+                NSLog(@"decoded is %@", [encoder decodeMessage:data]);
+                
+            }
+            if (httpResponse) {
+                int status = (int)httpResponse.statusCode;
+                NSLog(@"http resonse status is %d", status);
+                CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
+                    cb([ARTHttpResponse responseWithStatus:status headers:httpResponse.allHeaderFields body:data]);
+                });
+            } else {
+                CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
+                    cb([ARTHttpResponse response]);
+                });
+            }
         }
         CFRunLoopWakeUp(rl);
         CFRelease(rl);

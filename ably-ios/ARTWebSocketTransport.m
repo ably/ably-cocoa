@@ -9,7 +9,6 @@
 #import "ARTWebSocketTransport.h"
 
 #import <SocketRocket/SRWebSocket.h>
-
 #import "ARTOptions.h"
 #import "ARTRest.h"
 #import "ARTRest+Private.h"
@@ -55,10 +54,7 @@ enum {
         __weak ARTWebSocketTransport *wSelf = self;
         __weak ARTRest *wRest = rest;
 
-        // TODO: We currently only support the json protocol
-        // If msgpack is added get this from the options
-        BOOL binary = NO;
-
+        
         BOOL echoMessages = options.echoMessages;
         NSString *clientId = options.clientId;
 
@@ -74,9 +70,20 @@ enum {
             }
 
             NSMutableDictionary *queryParams = [NSMutableDictionary dictionaryWithDictionary:authParams];
-            if (!binary) {
-                queryParams[@"binary"] = @"false"; // We only support json for now
+            
+            
+            //TODO thers an echo messages flag as well here.
+            
+            if(options.binary) {
+                queryParams[@"format"] = @"msgpack";
             }
+            
+            //TODO DELETE
+            /*
+            if (!binary) {
+                queryParams[@"binary"] =@"false"; // We only support json for now
+            }
+             */
 
             if (!echoMessages) {
                 queryParams[@"echo"] = @"false";

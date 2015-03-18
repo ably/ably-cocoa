@@ -23,5 +23,6 @@
 
 - (ARTMessage *)decode:(id<ARTPayloadEncoder>)encoder;
 - (ARTMessage *)encode:(id<ARTPayloadEncoder>)encoder;
+- (id) content;
 
 @end

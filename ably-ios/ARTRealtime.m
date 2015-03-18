@@ -1214,5 +1214,39 @@
 - (void)realtimeTransportTooBig:(id<ARTRealtimeTransport>)transport {
     [self transition:ARTRealtimeFailed];
 }
++(NSString *) ARTRealtimeStateToStr:(ARTRealtimeConnectionState) state
+{
+    /*
+
+    ARTRealtimeInitialized,
+    ARTRealtimeConnecting,
+    ARTRealtimeConnected,
+    ARTRealtimeDisconnected,
+    ARTRealtimeSuspended,
+    ARTRealtimeClosed,
+    ARTRealtimeFailed
+    
+          */
+    switch(state)
+    {
+        case ARTRealtimeInitialized:
+            return @"ARTRealtimeInitialized";
+        case ARTRealtimeConnecting:
+            return @"ARTRealtimeConnecting";
+        case ARTRealtimeConnected:
+            return @"ARTRealtimeConnected";
+        case ARTRealtimeDisconnected:
+            return @"ARTRealtimeDisconnected";
+        case ARTRealtimeSuspended:
+            return @"ARTRealtimeSuspended";
+        case ARTRealtimeClosed:
+            return @"ARTRealtimeClosed";
+        case ARTRealtimeFailed:
+            return @"ARTRealtimeFailed";
+        default:
+            return @"unknown connectionstate";
+        
+    }
+}
 
 @end

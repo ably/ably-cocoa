@@ -52,4 +52,8 @@
     return [self messageWithPayload:payload];
 }
 
+- (id) content {
+    return self.payload.payload;
+}
+
 @end

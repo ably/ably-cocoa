@@ -29,7 +29,7 @@
     [super tearDown];
 }
 
-- (void)testExample {
+- (void)testNonExistantPath {
     XCTestExpectation *expectation = [self expectationWithDescription:@"get"];
 
     [self.http makeRequestWithMethod:@"GET" url:[NSURL URLWithString:@"http://rest.ably.io/non-existant-path"] headers:nil body:nil cb:^(ARTHttpResponse *response) {
@@ -40,11 +40,5 @@
     [self waitForExpectationsWithTimeout:10.0 handler:nil];
 }
 
-- (void)testPerformanceExample {
-    // This is an example of a performance test case.
-    [self measureBlock:^{
-        // Put the code you want to measure the time of here.
-    }];
-}
 
 @end

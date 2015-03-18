@@ -49,6 +49,7 @@
     _queueMessages = NO;
     _echoMessages = YES;
     _recover = nil;
+    _binary = false;
     return self;
 }
 
@@ -62,6 +63,7 @@
 
 - (NSURL *)restUrl {
     NSString *s = [NSString stringWithFormat:@"https://%@:%d", self.restHost, self.restPort];
+    NSLog(@"REST URL IS %@", s);
     return [NSURL URLWithString:s];
 }
 
@@ -80,6 +82,7 @@
     options.queueMessages = self.queueMessages;
     options.echoMessages = self.echoMessages;
     options.recover = self.recover;
+    options.binary = self.binary;
 
     return options;
 }
