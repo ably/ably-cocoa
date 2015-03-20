@@ -270,6 +270,7 @@
             NSAssert(NO, @"Invalid algorithm");
             return nil;
     }
+    NSLog(@"CIPHER NAME IS %@", algo);
     return [NSString stringWithFormat:@"%@-cbc", algo];
 }
 

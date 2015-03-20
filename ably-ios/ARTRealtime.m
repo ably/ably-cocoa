@@ -725,6 +725,7 @@
 }
 
 - (void)dealloc {
+    NSLog(@"DEALOC OF ARCREALTIME");
     // Custom dealloc required to release CoreFoundation objects
     [self cancelConnectTimer];
     [self cancelSuspendTimer];

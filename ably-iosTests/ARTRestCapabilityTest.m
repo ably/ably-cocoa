@@ -59,7 +59,7 @@
 - (void)testAuthEmptyOps {
     XCTFail(@"TODO write test");
 }
-- (void)testAthEmptyPaths {
+- (void)testAuthEmptyPaths {
     XCTFail(@"TODO write test");
 }
 - (void)testAuthNonEmptyOps {

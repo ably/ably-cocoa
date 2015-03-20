@@ -52,10 +52,32 @@
 - (void)testPublishText {
     XCTFail(@"TODO write test");
 }
-- (void)testPublishBinary {
+
+- (void)testPublishText256 {
     XCTFail(@"TODO write test");
 }
-- (void)testPublishText256 {
+
+
+
+
+- (void)testPublishKeyMismatch {
+    XCTFail(@"TODO write test");
+}
+
+
+- (void)testEncrypedUnHandled {
+    XCTFail(@"TODO write test");
+}
+
+/*
+ - (void)testSendUnencrypted {
+ XCTFail(@"TODO write test");
+ }
+ */
+
+/*
+ //msgpack not implemented
+- (void)testBinaryAndText {
     XCTFail(@"TODO write test");
 }
 
@@ -67,23 +89,9 @@
     XCTFail(@"TODO write test");
 }
 
-- (void)testBinaryAndText {
+- (void)testPublishBinary {
     XCTFail(@"TODO write test");
 }
 
-- (void)testPublishKeyMismatch {
-    XCTFail(@"TODO write test");
-}
-
-- (void)testSendUnencrypted {
-    XCTFail(@"TODO write test");
-}
-
-- (void)testEncrypedUnHandled {
-    XCTFail(@"TODO write test");
-}
-
-
-
-
+*/
 @end

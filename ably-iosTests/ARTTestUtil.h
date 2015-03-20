@@ -17,8 +17,12 @@
 + (NSString *) realtimeHost;
 + (float) timeout;
 
+
++(ARTOptions *) jsonRealtimeOptions;
 +(ARTOptions *) jsonRestOptions;
 +(ARTOptions *) binaryRestOptions;
++(ARTOptions *) binaryRealtimeOptions;
+
 
 +(void)repeat:(int)count i:(int)i delay:(NSTimeInterval)delay block:(void (^)(int))block;
 +(void)repeat:(int)count delay:(NSTimeInterval)delay block:(void (^)(int))block ;

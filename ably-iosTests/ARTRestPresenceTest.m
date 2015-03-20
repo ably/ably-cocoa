@@ -55,15 +55,10 @@
     
 }
 
-- (void)testTypesBinary {
-    XCTFail(@"TODO write test");
-}
 - (void)testHistoryText {
     XCTFail(@"TODO write test");
 }
-- (void)testHistoryBinary {
-    XCTFail(@"TODO write test");
-}
+
 - (void)testHistoryForwardText {
     XCTFail(@"TODO write test");
 }
@@ -80,5 +75,12 @@
     XCTFail(@"TODO write test");
 }
 
-
+/*
+- (void)testHistoryBinary {
+    XCTFail(@"TODO write test");
+}
+- (void)testTypesBinary {
+    XCTFail(@"TODO write test");
+}
+*/
 @end

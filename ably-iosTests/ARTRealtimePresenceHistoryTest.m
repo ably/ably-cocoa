@@ -24,16 +24,11 @@
     [super tearDown];
 }
 
-- (void)testSimpleBinary {
-    XCTFail(@"TODO write test");
-}
+
 - (void)testSimpleText {
     XCTFail(@"TODO write test");
 }
 
-- (void)testTypesBinary {
-    XCTFail(@"TODO write test");
-}
 
 - (void)testTypesText {
     XCTFail(@"TODO write test");
@@ -47,25 +42,10 @@
     XCTFail(@"TODO write test");
 }
 
-- (void)testWaitBinary {
-    XCTFail(@"TODO write test");
-}
-
 - (void)testWaitTextBackward {
     XCTFail(@"TODO write test");
 }
 
-- (void)testWaitBinaryForward {
-    XCTFail(@"TODO write test");
-}
-
-- (void)testMixedBinaryBackward {
-    XCTFail(@"TODO write test");
-}
-
-- (void)testMixedBinaryForward {
-    XCTFail(@"TODO write test");
-}
 
 - (void)testLimitForward {
     XCTFail(@"TODO write test");
@@ -99,5 +79,33 @@
 }
 
 
+/* 
+ //msgpack not implemented yet
+- (void)testTypesBinary {
+    XCTFail(@"TODO write test");
+}
+
+
+- (void)testWaitBinary {
+    XCTFail(@"TODO write test");
+}
+
+- (void)testSimpleBinary {
+    XCTFail(@"TODO write test");
+}
+
+- (void)testWaitBinaryForward {
+    XCTFail(@"TODO write test");
+}
+
+- (void)testMixedBinaryBackward {
+    XCTFail(@"TODO write test");
+}
+
+- (void)testMixedBinaryForward {
+    XCTFail(@"TODO write test");
+}
+
+ */
 
 @end

@@ -31,9 +31,7 @@
 - (void)testEnterBeforeAttach {
     XCTFail(@"TODO write test");
 }
-- (void)testMultipleBinary {
-    XCTFail(@"TODO write test");
-}
+
 - (void)testEnterBeforeConnect {
     XCTFail(@"TODO write test");
 }
@@ -73,8 +71,6 @@
     XCTFail(@"TODO write test");
 }
 
-
-
 //requires rest as well i guess
 - (void)testRestEnterMultiple {
     XCTFail(@"TODO write test");
@@ -88,5 +84,11 @@
 }
 
 
+/* msgpack not implemented yet
+- (void)testMultipleBinary {
+    XCTFail(@"TODO write test");
+}
+
+ */
 
 @end

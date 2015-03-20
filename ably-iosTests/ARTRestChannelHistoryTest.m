@@ -61,6 +61,7 @@ const float BIG_SLEEP = 3.0;
 -(void) testTimeBackwards
 {
 
+                NSLog(@"TEST testTimeBackwards");
     XCTestExpectation *e = [self expectationWithDescription:@"realtime"];
     
     //TODO whats this for.
@@ -168,6 +169,8 @@ const float BIG_SLEEP = 3.0;
 
 -(void) testTimeForwards
 {
+    
+    NSLog(@"TEST TIME FORWRDS");
     XCTestExpectation *e = [self expectationWithDescription:@"realtime"];
     
     //TODO whats this for.
@@ -280,6 +283,7 @@ const float BIG_SLEEP = 3.0;
 //TODO I've merged tests here into 2.
 -(void) testHistoryForwardPagination
 {
+        NSLog(@"TEST testHistoryForwardPagination");
     XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryForwardPagination"];
     [self withRest:^(ARTRest  *rest) {
         ARTRestChannel *channel = [rest channel:@"histChan"];
@@ -351,6 +355,7 @@ const float BIG_SLEEP = 3.0;
 //TODO ios status doc
 -(void) testHistoryBackwardPagination
 {
+            NSLog(@"TEST testHistoryBackwardPagination");
     XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryBackwardagination"];
     [self withRest:^(ARTRest  *rest) {
         ARTRestChannel *channel = [rest channel:@"histBackChan"];

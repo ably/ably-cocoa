@@ -24,13 +24,7 @@
     [super tearDown];
 }
 
-- (void)testSingleSendBinary{
-    XCTFail(@"TODO write test");
-}
 - (void)testSingleSendText {
-    XCTFail(@"TODO write test");
-}
-- (void)testSingleSendBinary256 {
     XCTFail(@"TODO write test");
 }
 
@@ -38,15 +32,7 @@
     XCTFail(@"TODO write test");
 }
 
-- (void)testMultipleSendBinary_2_200 {
-    XCTFail(@"TODO write test");
-}
-
 - (void)testMultipleSendText_2_200 {
-    XCTFail(@"TODO write test");
-}
-
-- (void)testMultipleSendBinary_20_100 {
     XCTFail(@"TODO write test");
 }
 
@@ -54,20 +40,12 @@
     XCTFail(@"TODO write test");
 }
 
-- (void)testSingleBinaryText {
-    XCTFail(@"TODO write test");
-}
-- (void)testSingleTextBinary {
-    XCTFail(@"TODO write test");
-}
 
 - (void)testSingleKeyMismatch {
     XCTFail(@"TODO write test");
 }
 
-- (void)testSingleUnencrypted {
-    XCTFail(@"TODO write test");
-}
+
 
 - (void)testEncryptedUnhandled {
     XCTFail(@"TODO write test");
@@ -77,7 +55,36 @@
     XCTFail(@"TODO write test");
 }
 
+/*
+- (void)testSingleUnencrypted {
+    XCTFail(@"TODO write test");
+}
+ */
 
+/*
+ //msgpack not implemented yet.
+- (void)testMultipleSendBinary_2_200 {
+    XCTFail(@"TODO write test");
+}
+- (void)testMultipleSendBinary_20_100 {
+    XCTFail(@"TODO write test");
+}
+
+- (void)testSingleBinaryText {
+    XCTFail(@"TODO write test");
+}
+
+- (void)testSingleTextBinary {
+    XCTFail(@"TODO write test");
+}
+
+- (void)testSingleSendBinary256 {
+    XCTFail(@"TODO write test");
+}
+- (void)testSingleSendBinary{
+    XCTFail(@"TODO write test");
+}
+*/
 
 
 @end

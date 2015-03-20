@@ -25,15 +25,11 @@
     [super tearDown];
 }
 
-- (void)testConnectBinary{
-    XCTFail(@"TODO write test");
-}
+
 - (void)testConnectText{
     XCTFail(@"TODO write test");
 }
-- (void)testConnectHeartbeatBinary {
-    XCTFail(@"TODO write test");
-}
+
 - (void)testConnectHeartbeatText {
     XCTFail(@"TODO write test");
 }
@@ -41,4 +37,17 @@
     XCTFail(@"TODO write test");
 }
 
+
+
+/*
+ //msgpack not implemented yet
+ 
+- (void)testConnectHeartbeatBinary {
+    XCTFail(@"TODO write test");
+}
+- (void)testConnectBinary{
+    XCTFail(@"TODO write test");
+}
+ 
+ */
 @end

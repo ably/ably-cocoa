@@ -57,6 +57,8 @@ const float TIMEOUT= 20.0;
     cb(_realtime);
 }
 
+
+//TODO RM?
 - (void)testTime {
       XCTestExpectation *expectation = [self expectationWithDescription:@"time"];
     [self withRealtime:^(ARTRealtime *realtime) {
@@ -74,30 +76,7 @@ const float TIMEOUT= 20.0;
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-- (void)testAttach {
-    XCTFail(@"TODO crashes in websocket");
-    return;
-      XCTestExpectation *expectation = [self expectationWithDescription:@"attach"];
-    [self withRealtime:^(ARTRealtime *realtime) {
-        [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
-            NSLog(@"testAttach constate...: %@", [ARTRealtime ARTRealtimeStateToStr:state]);
-            if (state == ARTRealtimeConnected) {
-                ARTRealtimeChannel *channel = [realtime channel:@"attach"];
-                [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus reason) {
-                    if (state == ARTRealtimeChannelAttached) {
-                        [expectation fulfill];
-                    }
-                }];
-                [channel attach];
-            }
-            else {
-                
-            }
-        }];
-    }];
 
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-}
 
 - (void) testAttachOnce {
       XCTestExpectation *expectation = [self expectationWithDescription:@"attachOnce"];
@@ -126,71 +105,6 @@ const float TIMEOUT= 20.0;
 }
 
 
-
-- (void)testAttachBeforeConnectBinary {
-      XCTestExpectation *expectation = [self expectationWithDescription:@"attach_before_connect"];
-    [self withRealtime:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel *channel = [realtime channel:@"attach_before_connect"];
-        [channel attach];
-
-        [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus status) {
-            if (state == ARTRealtimeChannelAttached) {
-                [expectation fulfill];
-            }
-        }];
-    }];
-
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-}
-
-- (void)testAttachDetach {
-      XCTestExpectation *expectation = [self expectationWithDescription:@"attach_detach"];
-    [self withRealtime:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel *channel = [realtime channel:@"attach_detach"];
-        [channel attach];
-
-        __block BOOL attached = NO;
-        [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus status) {
-            if (state == ARTRealtimeChannelAttached) {
-                attached = YES;
-                [channel detach];
-            }
-            if (attached && state == ARTRealtimeChannelDetached) {
-                [expectation fulfill];
-            }
-        }];
-    }];
-
-    [self waitForExpectationsWithTimeout:TIMEOUT handler:nil];
-}
-
-
-- (void) testAttachDetachAttach {
-
-      XCTestExpectation *expectation = [self expectationWithDescription:@"attach_detach_attach"];
-    [self withRealtime:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel *channel = [realtime channel:@"attach_detach_attach"];
-        [channel attach];
-        __block BOOL attached = false;
-        __block int attachCount =0;
-        [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus status) {
-            if (state == ARTRealtimeChannelAttached) {
-                attachCount++;
-                attached = true;
-                if(attachCount ==1) {
-                    [channel detach];
-                }
-                else if( attachCount ==2 ) {
-                    [expectation fulfill];
-                }
-            }
-            if (attached && state == ARTRealtimeChannelDetached) {
-                [channel attach];
-            }
-        }];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-}
 
 -(void) testSkipsFromDetachingToAttaching {
     XCTFail(@"FFS");
@@ -252,9 +166,6 @@ const float TIMEOUT= 20.0;
 
 
 - (void)testDetach {
-    
-  //  XCTFail(@"TODO THIS CRASHES");
-  //  return;
       XCTestExpectation *expectation = [self expectationWithDescription:@"detach"];
     [self withRealtime:^(ARTRealtime *realtime) {
         
@@ -278,8 +189,6 @@ const float TIMEOUT= 20.0;
 }
 
 - (void)testDetaching {
-  //  XCTFail(@"TODO THIS CRASHES");
-  //  return;
       XCTestExpectation *expectation = [self expectationWithDescription:@"detach"];
     [self withRealtime:^(ARTRealtime *realtime) {
         __block BOOL detachingHit = NO;
@@ -362,28 +271,6 @@ const float TIMEOUT= 20.0;
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-- (void)testPublish {
-    NSLog(@"testpublish happening");
-      XCTestExpectation *expectation = [self expectationWithDescription:@"publish"];
-    [self withRealtime:^(ARTRealtime *realtime) {
-            NSLog(@"testpublish happening???");
-        ARTRealtimeChannel *channel = [realtime channel:@"test"];
-        id<ARTSubscription> subscription = [channel subscribe:^(ARTMessage *message) {
-            XCTAssertEqualObjects(message.payload.payload, @"testString");
-            [subscription unsubscribe];
-            [expectation fulfill];
-        }];
-        
-        [channel publish:@"testString" cb:^(ARTStatus status) {
-                        NSLog(@"testpublish happening??? ffs");
-            XCTAssertEqual(status, ARTStatusOk);
-        }];
-    }];
-
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-}
-
-
 
 - (void)multipleSendName:(NSString *)name count:(int)count delay:(int)delay {
     __block int numReceived = 0;
@@ -432,90 +319,8 @@ const float TIMEOUT= 20.0;
 
 
 
-- (void)testStats {
-      XCTestExpectation *expectation = [self expectationWithDescription:@"stats"];
-    
-    [self withRealtime:^(ARTRealtime *realtime) {
-        [realtime stats:^(ARTStatus status, id<ARTPaginatedResult> result) {
-            NSLog(@"stats called back with %@, %d", result, status);
-            XCTAssertEqual(status, ARTStatusOk);
-            XCTAssertNotNil([result current]);
-            if(status == ARTStatusOk) {
-                [expectation fulfill];
-            }
-
-        }];
-    }];
-
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-}
-
-- (void)testHistory {
-      XCTestExpectation *expectation = [self expectationWithDescription:@"testHistory"];
-    [self withRealtime:^(ARTRealtime  *realtime) {
-        ARTRealtimeChannel *channel = [realtime channel:@"persisted:testHistory"];
-        [channel publish:@"testString" cb:^(ARTStatus status) {
-            XCTAssertEqual(status, ARTStatusOk);
-            [channel publish:@"testString2" cb:^(ARTStatus status) {
-                XCTAssertEqual(status, ARTStatusOk);
-                [channel history:^(ARTStatus status, id<ARTPaginatedResult> result) {
-                    XCTAssertEqual(status, ARTStatusOk);
-                    NSArray *messages = [result current];
-                    XCTAssertEqual(2, messages.count);
-                    ARTMessage *m0 = messages[0];
-                    ARTMessage *m1 = messages[1];
-                    
-                    XCTAssertEqualObjects(@"testString2", [m0 content]);
-                    XCTAssertEqualObjects(@"testString", [m1 content]);
-                    
-                    [expectation fulfill];
-                }];
-            }];
-        }];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-}
 
 
-- (void) testHistoryBothChannels {
-      XCTestExpectation *expectation1 = [self expectationWithDescription:@"historyBothChanels1"];
-      XCTestExpectation *expectation2 = [self expectationWithDescription:@"historyBothChanels2"];
-    [self withRealtime:^(ARTRealtime  *realtime) {
-        NSString * both = @"historyBoth";
-        ARTRealtimeChannel *channel1 = [realtime channel:both];
-        ARTRealtimeChannel *channel2 = [realtime channel:both];
-        [channel1 publish:@"testString" cb:^(ARTStatus status) {
-            XCTAssertEqual(status, ARTStatusOk);
-            [channel2 publish:@"testString2" cb:^(ARTStatus status) {
-                XCTAssertEqual(status, ARTStatusOk);
-                [channel1 history:^(ARTStatus status, id<ARTPaginatedResult> result) {
-                    XCTAssertEqual(status, ARTStatusOk);
-                    NSArray *messages = [result current];
-                    XCTAssertEqual(2, messages.count);
-                    ARTMessage *m0 = messages[0];
-                    ARTMessage *m1 = messages[1];
-                    XCTAssertEqualObjects(@"testString2", [m0 content]);
-                    XCTAssertEqualObjects(@"testString", [m1 content]);
-                    [expectation1 fulfill];
-                    
-                }];
-                [channel2 history:^(ARTStatus status, id<ARTPaginatedResult> result) {
-                    XCTAssertEqual(status, ARTStatusOk);
-                    NSArray *messages = [result current];
-                    XCTAssertEqual(2, messages.count);
-                    ARTMessage *m0 = messages[0];
-                    ARTMessage *m1 = messages[1];
-                    XCTAssertEqualObjects(@"testString2", [m0 content]);
-                    XCTAssertEqualObjects(@"testString", [m1 content]);
-                    [expectation2 fulfill];
-                    
-                    
-                }];
-            }];
-        }];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-}
 
 
 @end

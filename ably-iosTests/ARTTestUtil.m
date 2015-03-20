@@ -129,9 +129,26 @@
     return json;
 }
 
++(ARTOptions *) jsonRealtimeOptions
+{
+    ARTOptions * json = [[ARTOptions alloc] init];
+    json.realtimeHost = [ARTTestUtil realtimeHost];
+    json.binary =false;
+    return json;
+}
+
++(ARTOptions *) binaryRealtimeOptions
+{
+    ARTOptions * json = [[ARTOptions alloc] init];
+    json.realtimeHost = [ARTTestUtil realtimeHost];
+    json.binary =true;
+    return json;
+}
+
+
 +(float) timeout
 {
-    return 60.0;
+    return 30.0;
     
 }
 
