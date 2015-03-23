@@ -47,11 +47,10 @@
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
     req.HTTPMethod = @"POST";
     req.HTTPBody = appSpecData;
-    if(options.binary) {
+    if(false  ||options.binary) { //msgpack not implemented yet
         [req setValue:@"application/x-msgpack,application/json" forHTTPHeaderField:@"Accept"];
         [req setValue:@"application/x-msgpack" forHTTPHeaderField:@"Content-Type"];
-
-        
+ 
     }
     else {
         [req setValue:@"application/json" forHTTPHeaderField:@"Accept"];
@@ -68,11 +67,9 @@
     
     
     NSURLSessionDataTask *task = [urlSession dataTaskWithRequest:req completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        NSLog(@"url session completion handler called");
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
         NSString *keyId;
         NSString *keyValue;
-        NSLog(@"http Response IS ---- %@", httpResponse);
         if (httpResponse.statusCode < 200 || httpResponse.statusCode >= 300) {
             NSLog(@"Status Code: %ld", (long)httpResponse.statusCode);
             NSLog(@"Body: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
@@ -90,12 +87,10 @@
         }
 
         ARTOptions *appOptions = [options clone];
-        NSLog(@"options is cloned frmo %@", appOptions);
         appOptions.authOptions.keyId = keyId;
         appOptions.authOptions.keyValue = keyValue;
 
         CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
-            NSLog(@"performing block");
             cb(appOptions);
         });
         CFRunLoopWakeUp(rl);
@@ -132,7 +127,9 @@
 +(ARTOptions *) jsonRealtimeOptions
 {
     ARTOptions * json = [[ARTOptions alloc] init];
-    json.realtimeHost = [ARTTestUtil realtimeHost];
+    
+    [json setRealtimeHost:[ARTTestUtil realtimeHost] withRestHost:[ARTTestUtil restHost]];
+
     json.binary =false;
     return json;
 }
@@ -140,17 +137,13 @@
 +(ARTOptions *) binaryRealtimeOptions
 {
     ARTOptions * json = [[ARTOptions alloc] init];
-    json.realtimeHost = [ARTTestUtil realtimeHost];
+    [json setRealtimeHost:[ARTTestUtil realtimeHost] withRestHost:[ARTTestUtil restHost]];
+
     json.binary =true;
     return json;
 }
 
 
-+(float) timeout
-{
-    return 30.0;
-    
-}
 
 
 + (void)repeat:(int)count delay:(NSTimeInterval)delay block:(void (^)(int))block {
@@ -173,4 +166,20 @@
     NSDate * date = [NSDate date];
     return [date timeIntervalSince1970]*1000;
 }
+
++(float) smallSleep
+{
+    return 0.1;
+}
++(float) bigSleep
+{
+    return 1.0;
+    
+}
++(float) timeout
+{
+    return 120.0;
+    
+}
+
 @end

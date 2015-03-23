@@ -812,10 +812,20 @@
             [self startConnectTimer];
 
             // Create transport and initiate connection
-            self.transport.delegate = nil;
-            self.transport = [self createTransport];
-            self.transport.delegate = self;
-            [self.transport connect];
+            
+
+
+            
+            if(!self.transport) {
+                self.transport.delegate = nil;
+                self.transport = [self createTransport];
+                self.transport.delegate = self;
+                [self.transport connect];
+            }
+            else {
+                NSLog(@"transport exists. Did I just save the planet? TODO CHECK");
+            }
+         
             break;
         case ARTRealtimeConnected:
             self.msgSerial = 0;
@@ -1132,6 +1142,7 @@
 }
 
 - (id<ARTRealtimeTransport>)createTransport {
+    NSLog(@"creating artwebsocketTransport");
     ARTWebSocketTransport *websocketTransport = [[ARTWebSocketTransport alloc] initWithRest:self.rest options:self.options];
     return websocketTransport;
 }

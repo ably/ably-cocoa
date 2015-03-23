@@ -60,5 +60,7 @@
 - (void)testLogLevel {
     XCTFail(@"TODO write test");
 }
-
-@end
+-(void) dealloc
+{
+    NSLog(@"KILLING OF inir TEST");
+}@end

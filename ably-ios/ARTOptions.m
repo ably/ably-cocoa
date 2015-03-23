@@ -9,7 +9,10 @@
 #import "ARTOptions.h"
 
 @interface ARTOptions ()
-
+{
+    
+}
+@property (readwrite, strong, nonatomic) NSString *realtimeHost;
 - (instancetype)initDefaults;
 
 @end
@@ -85,6 +88,16 @@
     options.binary = self.binary;
 
     return options;
+}
+
+-(void) setRealtimeHost:(NSString *)realtimeHost withRestHost:(NSString *) restHost
+{
+    self.realtimeHost = realtimeHost;
+    self.restHost = restHost;
+}
+-(NSString *) realtimeHost
+{
+    return _realtimeHost;
 }
 
 @end

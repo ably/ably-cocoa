@@ -50,9 +50,49 @@
     cb(_rest);
 }
 
-- (void)testTypesText {
-    XCTFail(@"TODO write test");
-    
+//VXTODO RM ONCE THIS IS IN ARTRestPresenceTest
+
+//TODO amalgamate or whatever.
+- (void)testTypes {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
+    [self withRest:^(ARTRest *rest) {
+        ARTRestChannel *channel = [rest channel:@"persisted:presence_fixtures"];
+        [channel presence:^(ARTStatus status, id<ARTPaginatedResult> result) {
+            XCTAssertEqual(status, ARTStatusOk);
+            if(status != ARTStatusOk) {
+                XCTFail(@"not an ok status");
+                [expectation fulfill];
+                return;
+            }
+            NSArray *presence = [result current];
+            XCTAssertEqual(4, presence.count);
+            ARTPresenceMessage *p0 = presence[0];
+            ARTPresenceMessage *p1 = presence[1];
+            ARTPresenceMessage *p2 = presence[2];
+            ARTPresenceMessage *p3 = presence[3];
+            
+            
+            // This is assuming the results are coming back sorted by clientId
+            // in alphabetical order. This seems to be the case at the time of
+            // writing, but may change in the future
+            
+            XCTAssertEqualObjects(@"client_bool", p0.clientId);
+            XCTAssertEqualObjects(@"true", [p0 content]);
+            
+            XCTAssertEqualObjects(@"client_int", p1.clientId);
+            XCTAssertEqualObjects(@"24", [p1 content]);
+            
+            XCTAssertEqualObjects(@"client_json", p2.clientId);
+            XCTAssertEqualObjects(@"{\"test\":\"This is a JSONObject clientData payload\"}", [p2 content]);
+            
+            XCTAssertEqualObjects(@"client_string", p3.clientId);
+            XCTAssertEqualObjects(@"This is a string clientData payload", [p3 content]);
+            
+            
+            [expectation fulfill];
+        }];
+    }];
+    [self waitForExpectationsWithTimeout:_timeout handler:nil];
 }
 
 - (void)testHistoryText {

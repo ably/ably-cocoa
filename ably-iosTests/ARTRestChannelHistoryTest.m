@@ -27,8 +27,7 @@
 @implementation ARTRestChannelHistoryTest
 
 
-const float SMALL_SLEEP = 2.00;
-const float BIG_SLEEP = 3.0;
+
 - (void)setUp {
     [super setUp];
     _options = [[ARTOptions alloc] init];
@@ -61,7 +60,7 @@ const float BIG_SLEEP = 3.0;
 -(void) testTimeBackwards
 {
 
-                NSLog(@"TEST testTimeBackwards");
+    NSLog(@"TEST testTimeBackwards");
     XCTestExpectation *e = [self expectationWithDescription:@"realtime"];
     
     //TODO whats this for.
@@ -87,7 +86,7 @@ const float BIG_SLEEP = 3.0;
             for(int i=0; i < firstBatchTotal; i++) {
 
                 NSString * pub = [NSString stringWithFormat:@"test%d", i];
-                sleep(SMALL_SLEEP);
+                sleep([ARTTestUtil smallSleep]);
                 [channel publish:pub cb:^(ARTStatus status) {
                     ++numReceived;
                     if(numReceived ==firstBatchTotal) {
@@ -101,13 +100,13 @@ const float BIG_SLEEP = 3.0;
         //send second batch (which we will retrieve via interval history request
         {
             
-            sleep(BIG_SLEEP);
+            sleep([ARTTestUtil bigSleep]);
             intervalStart  = [ARTTestUtil nowMilli];
             __block int numReceived2 =0;
             
             for(int i=0; i < secondBatchTotal; i++) {
                 NSString * pub = [NSString stringWithFormat:@"second_test%d", i];
-                sleep(SMALL_SLEEP);
+                sleep([ARTTestUtil smallSleep]);
                 [channel publish:pub cb:^(ARTStatus status) {
                     ++numReceived2;
                     if(numReceived2 ==secondBatchTotal) {
@@ -117,7 +116,7 @@ const float BIG_SLEEP = 3.0;
             }
         }
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-        sleep(BIG_SLEEP);
+        sleep([ARTTestUtil bigSleep]);
         intervalEnd = [ARTTestUtil nowMilli];
           XCTestExpectation *thirdExpectation = [self expectationWithDescription:@"send_third_batch"];
         //send third batch, which we won't receieve in the history request
@@ -127,7 +126,7 @@ const float BIG_SLEEP = 3.0;
             for(int i=0; i < thirdBatchTotal; i++) {
                 NSLog(@"third batchb %d", i);
                 NSString * pub = [NSString stringWithFormat:@"third_test%d", i];
-                sleep(SMALL_SLEEP);
+                sleep([ARTTestUtil smallSleep]);
                 [channel publish:pub cb:^(ARTStatus status) {
                     ++numReceived3;
                     if(numReceived3 ==thirdBatchTotal) {
@@ -198,7 +197,7 @@ const float BIG_SLEEP = 3.0;
  
                 NSLog(@"first batch %d", i);
                 NSString * pub = [NSString stringWithFormat:@"test%d", i];
-                sleep(SMALL_SLEEP);
+                sleep([ARTTestUtil smallSleep]);
                 [channel publish:pub cb:^(ARTStatus status) {
                     ++numReceived;
                     if(numReceived ==firstBatchTotal) {
@@ -211,14 +210,14 @@ const float BIG_SLEEP = 3.0;
           XCTestExpectation *secondExpecation = [self expectationWithDescription:@"send_second_batch"];
         //send second batch (which we will retrieve via interval history request
         {
-            sleep(BIG_SLEEP);
+            sleep([ARTTestUtil bigSleep]);
             intervalStart  = [ARTTestUtil nowMilli];
             __block int numReceived2 =0;
 
             for(int i=0; i < secondBatchTotal; i++) {
                 NSLog(@"second batch %d", i);
                 NSString * pub = [NSString stringWithFormat:@"second_test%d", i];
-                sleep(SMALL_SLEEP);
+                sleep([ARTTestUtil smallSleep]);
                 [channel publish:pub cb:^(ARTStatus status) {
                     ++numReceived2;
                     if(numReceived2 ==secondBatchTotal) {
@@ -228,7 +227,7 @@ const float BIG_SLEEP = 3.0;
             }
         }
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-        sleep(BIG_SLEEP);
+        sleep([ARTTestUtil bigSleep]);
         intervalEnd = [ARTTestUtil nowMilli];
         
         XCTestExpectation *thirdExpectation = [self expectationWithDescription:@"send_third_batch"];
@@ -239,7 +238,7 @@ const float BIG_SLEEP = 3.0;
             for(int i=0; i < secondBatchTotal; i++) {
                 NSLog(@"third batch %d", i);
                 NSString * pub = [NSString stringWithFormat:@"third_test%d", i];
-                sleep(SMALL_SLEEP);
+                sleep([ARTTestUtil smallSleep]);
                 [channel publish:pub cb:^(ARTStatus status) {
                     ++numReceived3;
                     if(numReceived3 ==secondBatchTotal) {

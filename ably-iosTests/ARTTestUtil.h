@@ -28,6 +28,8 @@
 +(void)repeat:(int)count delay:(NSTimeInterval)delay block:(void (^)(int))block ;
 
 +(long long) nowMilli;
++(float) smallSleep;
++(float) bigSleep;
 @end
 
 

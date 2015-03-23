@@ -106,14 +106,7 @@
 }
 
 - (NSDate *)decodeTime:(NSData *)data {
-    NSArray *resp = [self decodeArray:data];
-    if (resp && resp.count == 1) {
-        NSNumber *num = resp[0];
-        if ([num isKindOfClass:[NSNumber class]]) {
-            long long msSince1970 = [num longLongValue];
-            return [NSDate dateWithTimeIntervalSince1970:(msSince1970 / 1000.0)];
-        }
-    }
+    //TODO implement
     return nil;
 }
 
@@ -122,391 +115,107 @@
 }
 
 - (ARTMessage *)messageFromDictionary:(NSDictionary *)input {
-    if (![input isKindOfClass:[NSDictionary class]]) {
-        return nil;
-    }
-    
-    ARTMessage *message = [[ARTMessage alloc] init];
-    message.id = [input artString:@"id"];
-    message.name = [input artString:@"name"];
-    message.clientId = [input artString:@"clientId"];
-    message.payload = [self payloadFromDictionary:input];
-    message.timestamp = [input artDate:@"timestamp"];
-    
-    return message;
+    //TODO implement
+    return nil;
 }
 
 - (NSArray *)messagesFromArray:(NSArray *)input {
-    if (![input isKindOfClass:[NSArray class]]) {
-        return nil;
-    }
-    
-    NSMutableArray *output = [NSMutableArray array];
-    for (NSDictionary *item in input) {
-        ARTMessage *message = [self messageFromDictionary:item];
-        if (!message) {
-            return nil;
-        }
-        [output addObject:message];
-    }
-    return output;
+    //TODO implement
+    return nil;
 }
 
 
 
-//TODo this is duplicate from jsonencoder. put somewhere else or rm
 - (ARTPresenceMessage *)presenceMessageFromDictionary:(NSDictionary *)input {
-    if (![input isKindOfClass:[NSDictionary class]]) {
-        return nil;
-    }
-    
-    ARTPresenceMessage *message = [[ARTPresenceMessage alloc] init];
-    message.id = [input artString:@"id"];
-    message.clientId = [input artString:@"clientId"];
-    message.payload = [self payloadFromDictionary:input];
-    message.timestamp = [input artDate:@"timestamp"];
-    
-    int action = [[input artNumber:@"action"] intValue];
-    
-    switch (action) {
-        case 0:
-            message.action = ARTPresenceMessageEnter;
-            break;
-        case 1:
-            message.action = ARTPresenceMessageLeave;
-            break;
-        case 2:
-            message.action = ARTPresenceMessageUpdate;
-            break;
-        default:
-            return nil;
-    }
-    
-    message.memberId = [input artString:@"memberId"];
-    
-    return message;
+    //TODO implement
+    return nil;
 }
 
 
 //TODO dup with json?
 - (NSArray *)presenceMessagesFromArray:(NSArray *)input {
-    if (![input isKindOfClass:[NSArray class]]) {
-        return nil;
-    }
-    
-    NSMutableArray *output = [NSMutableArray array];
-    for (NSDictionary *item in input) {
-        ARTPresenceMessage *message = [self presenceMessageFromDictionary:item];
-        if (!message) {
-            return nil;
-        }
-        [output addObject:message];
-    }
-    return output;
+    //TODO implement
+    return nil;
 }
 
 - (NSDictionary *)messageToDictionary:(ARTMessage *)message {
-    NSMutableDictionary *output = [NSMutableDictionary dictionary];
-    
-    if (message.timestamp) {
-        [output setObject:[message.timestamp artToNumberMs] forKey:@"timestamp"];
-    }
-    
-    if (message.clientId) {
-        [output setObject:message.clientId forKey:@"clientId"];
-    }
-    
-    if (message.payload) {
-        [self writePayload:message.payload toDictionary:output];
-    }
-    
-    if (message.name) {
-        [output setObject:message.name forKey:@"name"];
-    }
-    
-    return output;
+    //TODO implement
+    return nil;
 }
 
 - (NSArray *)messagesToArray:(NSArray *)messages {
-    NSMutableArray *output = [NSMutableArray array];
-    
-    for (ARTMessage *message in messages) {
-        NSDictionary *item = [self messageToDictionary:message];
-        if (!(item)) {
-            return nil;
-        }
-        [output addObject:item];
-    }
-    
-    return output;
+    //TODO implement
+    return nil;
 }
 
 - (NSDictionary *)presenceMessageToDictionary:(ARTPresenceMessage *)message {
-    NSMutableDictionary *output = [NSMutableDictionary dictionary];
-    
-    if (message.timestamp) {
-        [output setObject:[message.timestamp artToNumberMs] forKey:@"timestamp"];
-    }
-    
-    if (message.clientId) {
-        [output setObject:message.clientId forKey:@"clientId"];
-    }
-    
-    if (message.payload) {
-        [self writePayload:message.payload toDictionary:output];
-    }
-    
-    int action = 0;
-    switch (message.action) {
-        case ARTPresenceMessageEnter:
-            action = 0;
-            break;
-        case ARTPresenceMessageLeave:
-            action = 1;
-            break;
-        case ARTPresenceMessageUpdate:
-            action = 2;
-            break;
-        default:
-            return nil;
-    }
-    
-    [output setObject:[NSNumber numberWithInt:action] forKey:@"action"];
-    
-    return output;
+    //TODO implement
+    return nil;
 }
 
 - (NSArray *)presenceMessagesToArray:(NSArray *)messages {
-    NSMutableArray *output = [NSMutableArray array];
-    
-    for (ARTPresenceMessage *message in messages) {
-        NSDictionary *item = [self presenceMessageToDictionary:message];
-        if (!(item)) {
-            return nil;
-        }
-        [output addObject:item];
-    }
-    
-    return output;
+    //TODO implement
+    return nil;
 }
 
 - (NSDictionary *)protocolMessageToDictionary:(ARTProtocolMessage *)message {
-    NSMutableDictionary *output = [NSMutableDictionary dictionary];
-    output[@"action"] = [NSNumber numberWithInt:message.action];
-    output[@"channel"] = message.channel;
-    output[@"msgSerial"] = [NSNumber numberWithLongLong:message.msgSerial];
-    
-    if (message.messages) {
-        output[@"messages"] = [self messagesToArray:message.messages];
-    }
-    
-    if (message.presence) {
-        output[@"presence"] = [self presenceMessagesToArray:message.presence];
-    }
-    
-    return output;
+    //TODO implement
+    return nil;
 }
 
 - (ARTProtocolMessage *)protocolMessageFromDictionary:(NSDictionary *)input {
-    if (![input isKindOfClass:[NSDictionary class]]) {
-        return nil;
-    }
-    
-    ARTProtocolMessage *message = [[ARTProtocolMessage alloc] init];
-    message.action = (ARTProtocolMessageAction)[[input artNumber:@"action"] intValue];
-    message.count = [[input artNumber:@"count"] intValue];
-    // TODO: ERROR, what to do?
-    message.channel = [input artString:@"channel"];
-    message.channelSerial = [input artString:@"channelSerial"];
-    message.connectionId = [input artString:@"connectionId"];
-    message.connectionSerial = [[input artNumber:@"connectionSerial"] longLongValue];
-    message.id = [input artString:@"id"];
-    message.msgSerial = [[input artNumber:@"msgSerial"] longLongValue];
-    message.timestamp = [input artDate:@"timestamp"];
-    message.messages = [self messagesFromArray:[input objectForKey:@"messages"]];
-    message.presence = [self presenceMessagesFromArray:[input objectForKey:@"presence"]];
-    
-    return message;
+    //TODO implement
+    return nil;
 }
 
 - (NSArray *)statsFromArray:(NSArray *)input {
-    if (![input isKindOfClass:[NSArray class]]) {
-        return nil;
-    }
-    
-    NSMutableArray *output = [NSMutableArray array];
-    
-    for (NSDictionary *item in input) {
-        if (![item isKindOfClass:[NSDictionary class]]) {
-            return nil;
-        }
-        ARTStats *statsItem = [self statsFromDictionary:item];
-        if (!statsItem) {
-            return nil;
-        }
-        [output addObject:statsItem];
-    }
-    
-    return output;
+    //TODO implement
+    return nil;
 }
 
 - (ARTStats *)statsFromDictionary:(NSDictionary *)input {
-    if (![input isKindOfClass:[NSDictionary class]]) {
-        return nil;
-    }
-    
-    ARTStatsMessageTypes *all = [self statsMessageTypesFromDictionary:[input objectForKey:@"all"]];
-    ARTStatsMessageTraffic *inbound = [self statsMessageTrafficFromDictionary:[input objectForKey:@"inbound"]];
-    ARTStatsMessageTraffic *outbound = [self statsMessageTrafficFromDictionary:[input objectForKey:@"outbound"]];
-    ARTStatsMessageTypes *persisted = [self statsMessageTypesFromDictionary:[input objectForKey:@"persisted"]];
-    ARTStatsConnectionTypes *connections = [self statsConnectionTypesFromDictionary:[input objectForKey:@"connections"]];
-    ARTStatsResourceCount *channels = [self statsResourceCountFromDictionary:[input objectForKey:@"channels"]];
-    ARTStatsRequestCount *apiRequests = [self statsRequestCountFromDictionary:[input objectForKey:@"apiRequests"]];
-    ARTStatsRequestCount *tokenRequests = [self statsRequestCountFromDictionary:[input objectForKey:@"tokenRequests"]];
-    
-    if (all && inbound && outbound && persisted && connections && channels && apiRequests && tokenRequests) {
-        return [[ARTStats alloc] initWithAll:all inbound:inbound outbound:outbound persisted:persisted connections:connections channels:channels apiRequests:apiRequests tokenRequests:tokenRequests];
-    }
-    
+    //TODO implement
     return nil;
 }
 
 - (ARTStatsMessageTypes *)statsMessageTypesFromDictionary:(NSDictionary *)input {
-    if (![input isKindOfClass:[NSDictionary class]]) {
-        return nil;
-    }
-    
-    ARTStatsMessageCount *all = [self statsMessageCountFromDictionary:[input objectForKey:@"all"]];
-    ARTStatsMessageCount *messages = [self statsMessageCountFromDictionary:[input objectForKey:@"messages"]];
-    ARTStatsMessageCount *presence = [self statsMessageCountFromDictionary:[input objectForKey:@"presence"]];
-    
-    if (all && messages && presence) {
-        return [[ARTStatsMessageTypes alloc] initWithAll:all messages:messages presence:presence];
-    }
-    
+    //TODO implement
     return nil;
 }
 
 - (ARTStatsMessageCount *)statsMessageCountFromDictionary:(NSDictionary *)input {
-    if (![input isKindOfClass:[NSDictionary class]]) {
-        return nil;
-    }
-    
-    NSNumber *count = [input objectForKey:@"count"];
-    NSNumber *data = [input objectForKey:@"data"];
-    
-    if ([count isKindOfClass:[NSNumber class]] && [data isKindOfClass:[NSNumber class]]) {
-        return [[ARTStatsMessageCount alloc] initWithCount:[count doubleValue] data:[data doubleValue]];
-    }
-    
+    //TODO implement
     return nil;
 }
 
 - (ARTStatsMessageTraffic *)statsMessageTrafficFromDictionary:(NSDictionary *)input {
-    if (![input isKindOfClass:[NSDictionary class]]) {
-        return nil;
-    }
-    
-    ARTStatsMessageTypes *all = [self statsMessageTypesFromDictionary:[input objectForKey:@"all"]];
-    ARTStatsMessageTypes *realtime = [self statsMessageTypesFromDictionary:[input objectForKey:@"realtime"]];
-    ARTStatsMessageTypes *rest = [self statsMessageTypesFromDictionary:[input objectForKey:@"rest"]];
-    ARTStatsMessageTypes *push = [self statsMessageTypesFromDictionary:[input objectForKey:@"push"]];
-    ARTStatsMessageTypes *httpStream = [self statsMessageTypesFromDictionary:[input objectForKey:@"httpStream"]];
-    
-    if (all && realtime && rest && push && httpStream) {
-        return [[ARTStatsMessageTraffic alloc] initWithAll:all realtime:realtime rest:rest push:push httpStream:httpStream];
-    }
-    
+    //TODO implement
     return nil;
 }
 
 - (ARTStatsConnectionTypes *)statsConnectionTypesFromDictionary:(NSDictionary *)input {
-    if (![input isKindOfClass:[NSDictionary class]]) {
-        return nil;
-    }
-    
-    ARTStatsResourceCount *all = [self statsResourceCountFromDictionary:[input objectForKey:@"all"]];
-    ARTStatsResourceCount *plain = [self statsResourceCountFromDictionary:[input objectForKey:@"plain"]];
-    ARTStatsResourceCount *tls = [self statsResourceCountFromDictionary:[input objectForKey:@"tls"]];
-    
-    if (all && plain && tls) {
-        return [[ARTStatsConnectionTypes alloc] initWithAll:all plain:plain tls:tls];
-    }
-    
+    //TODO implement
     return nil;
 }
 
 - (ARTStatsResourceCount *)statsResourceCountFromDictionary:(NSDictionary *)input {
-    if (![input isKindOfClass:[NSDictionary class]]) {
-        return nil;
-    }
-    
-    NSNumber *opened = [input objectForKey:@"opened"];
-    NSNumber *peak = [input objectForKey:@"peak"];
-    NSNumber *mean = [input objectForKey:@"mean"];
-    NSNumber *min = [input objectForKey:@"min"];
-    NSNumber *refused = [input objectForKey:@"refused"];
-    
-    if ([opened isKindOfClass:[NSNumber class]] &&
-        [peak isKindOfClass:[NSNumber class]] &&
-        [mean isKindOfClass:[NSNumber class]] &&
-        [min isKindOfClass:[NSNumber class]] &&
-        [refused isKindOfClass:[NSNumber class]]) {
-        return [[ARTStatsResourceCount alloc] initWithOpened:[opened doubleValue] peak:[peak doubleValue] mean:[mean doubleValue] min:[min doubleValue] refused:[refused doubleValue]];
-    }
-    
+    //TODO implement
     return nil;
 }
 
 - (ARTStatsRequestCount *)statsRequestCountFromDictionary:(NSDictionary *)input {
-    if (![input isKindOfClass:[NSDictionary class]]) {
-        return nil;
-    }
-    
-    NSNumber *succeeded = [input objectForKey:@"succeeded"];
-    NSNumber *failed = [input objectForKey:@"failed"];
-    NSNumber *refused = [input objectForKey:@"refused"];
-    
-    if ([succeeded isKindOfClass:[NSNumber class]] &&
-        [failed isKindOfClass:[NSNumber class]] &&
-        [refused isKindOfClass:[NSNumber class]]) {
-        return [[ARTStatsRequestCount alloc] initWithSucceeded:[succeeded doubleValue] failed:[failed doubleValue] refused:[refused doubleValue]];
-    }
-    
+    //TODO implement
     return nil;
 }
 
 - (ARTPayload *)payloadFromDictionary:(NSDictionary *)input {
-    if (![input isKindOfClass:[NSDictionary class]]) {
-        return nil;
-    }
-    
-    NSString *encoding = [input objectForKey:@"encoding"];
-    if (!encoding) {
-        encoding = @"";
-    }
-    
-    id data = [input objectForKey:@"data"];
-    ARTPayload *payload = [ARTPayload payloadWithPayload:data encoding:encoding];
-    ARTPayload *decoded = nil;
-    ARTStatus status = [[ARTBase64PayloadEncoder instance] decode:payload output:&decoded];
-    if (status != ARTStatusOk) {
-        // TODO log
-    }
-    return decoded;
+    //TODO implement
+    return nil;
 }
 
-- (void)writePayload:(ARTPayload *)payload toDictionary:(NSMutableDictionary *)output {
-    ARTPayload *encoded = nil;
-    ARTStatus status = [[ARTBase64PayloadEncoder instance] encode:payload output:&encoded];
-    NSAssert(status == ARTStatusOk, @"Error encoding payload");
-    NSAssert([payload.payload isKindOfClass:[NSString class]], @"Only string or data payloads are accepted");
-    
-    if (encoded.encoding.length) {
-        output[@"encoding"] = encoded.encoding;
-    }
-    
-    output[@"data"] = encoded.payload;
+- (void)writePayload:(ARTPayload *)payload toDictionary:(NSMutableDictionary *) input
+{
+    //TODO implement
 }
 
 - (id)decode:(NSData *)data {

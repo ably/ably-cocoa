@@ -65,7 +65,6 @@
 		96BF615B1A35B9ED004CF2B3 /* ARTHttpTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 96BF615A1A35B9ED004CF2B3 /* ARTHttpTest.m */; };
 		96BF615E1A35C1C8004CF2B3 /* ARTTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF615C1A35C1C8004CF2B3 /* ARTTypes.h */; };
 		96BF615F1A35C1C8004CF2B3 /* ARTTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 96BF615D1A35C1C8004CF2B3 /* ARTTypes.m */; };
-		96BF61611A35C332004CF2B3 /* ARTRestTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 96BF61601A35C332004CF2B3 /* ARTRestTest.m */; };
 		96BF61641A35CDE1004CF2B3 /* ARTMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF61621A35CDE1004CF2B3 /* ARTMessage.h */; };
 		96BF61651A35CDE1004CF2B3 /* ARTMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 96BF61631A35CDE1004CF2B3 /* ARTMessage.m */; };
 		96BF61701A35FB7C004CF2B3 /* ARTAuth.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF616E1A35FB7C004CF2B3 /* ARTAuth.h */; };
@@ -180,7 +179,6 @@
 		96BF615A1A35B9ED004CF2B3 /* ARTHttpTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTHttpTest.m; sourceTree = "<group>"; };
 		96BF615C1A35C1C8004CF2B3 /* ARTTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTTypes.h; sourceTree = "<group>"; };
 		96BF615D1A35C1C8004CF2B3 /* ARTTypes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTTypes.m; sourceTree = "<group>"; };
-		96BF61601A35C332004CF2B3 /* ARTRestTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestTest.m; sourceTree = "<group>"; };
 		96BF61621A35CDE1004CF2B3 /* ARTMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTMessage.h; sourceTree = "<group>"; };
 		96BF61631A35CDE1004CF2B3 /* ARTMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTMessage.m; sourceTree = "<group>"; };
 		96BF616E1A35FB7C004CF2B3 /* ARTAuth.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTAuth.h; sourceTree = "<group>"; };
@@ -337,7 +335,6 @@
 				1C1E52E71AB32E69004A690F /* rest */,
 				96BF61411A35B2AB004CF2B3 /* Supporting Files */,
 				96BF615A1A35B9ED004CF2B3 /* ARTHttpTest.m */,
-				96BF61601A35C332004CF2B3 /* ARTRestTest.m */,
 				96E408351A38595F00087F77 /* ARTRealtimeTest.m */,
 				96E4083A1A38622D00087F77 /* ARTTestUtil.h */,
 				96E4083B1A38622D00087F77 /* ARTTestUtil.m */,
@@ -570,7 +567,6 @@
 				1C1E52EE1AB32EB9004A690F /* ARTRestCapabilityTest.m in Sources */,
 				1C1E52F01AB32EC7004A690F /* ARTRestChannelHistoryTest.m in Sources */,
 				1C52FBA21AB8AF9300F435DE /* ARTRest+Test.m in Sources */,
-				96BF61611A35C332004CF2B3 /* ARTRestTest.m in Sources */,
 				1CC3D94F1AB6FECC0005BEB0 /* ARTRealtimeConnectFail.m in Sources */,
 				1CC3D9591AB701E50005BEB0 /* ARTRealtimePresenceTest.m in Sources */,
 				1CC3D9511AB6FF480005BEB0 /* ARTRealtimeCryptoTest.m in Sources */,

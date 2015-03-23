@@ -8,7 +8,6 @@
 
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
-#import <XCTest/XCTest.h>
 #import "ARTMessage.h"
 #import "ARTOptions.h"
 #import "ARTPresenceMessage.h"
@@ -28,10 +27,12 @@
 @implementation ARTRestTimeTest
 
 - (void)setUp {
+    NSLog(@"resttime setup");
     [super setUp];
 }
 
 - (void)tearDown {
+        NSLog(@"resttime teardown");
     _rest = nil;
     [super tearDown];
 }
@@ -50,7 +51,7 @@
 }
 
 - (void)testRestTimeBadHost {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testTime"];
+    __weak XCTestExpectation *expectationRestTimeBadHost = [self expectationWithDescription:@"testRestTimeBadHost"];
     
     ARTOptions * badOptions = [[ARTOptions alloc] init];
     badOptions.restHost = @"this.host.does.not.exist";
@@ -61,14 +62,18 @@
             NSLog(@"status bad host is %d", status);
             NSLog(@"nsdate is %@", date);
             XCTAssert(status == ARTStatusError);
-            [expectation fulfill];
+            if(expectationRestTimeBadHost) {
+                [expectationRestTimeBadHost fulfill];
+                
+            }
+
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 - (void)testRestTime {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testTime"];
+    __weak XCTestExpectation *expectationRestTime = [self expectationWithDescription:@"testRestTime"];
     
     [self withRest:^(ARTRest *rest) {
         [rest time:^(ARTStatus status, NSDate *date) {
@@ -79,7 +84,10 @@
             XCTAssertEqualWithAccuracy([date timeIntervalSinceNow], 0.0, 5.0);
             
             if(status == ARTStatusOk) {
-                [expectation fulfill];
+                if(expectationRestTime) {
+                    [expectationRestTime fulfill];
+                }
+
             }
             
         }];

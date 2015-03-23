@@ -163,13 +163,13 @@
         _auth = [[ARTAuth alloc] initWithRest:self options:options.authOptions];
         
         id<ARTEncoder> defaultEncoder = [[ARTJsonEncoder alloc] init];
-        id<ARTEncoder> msgpackEncoder  = [[ARTMsgPackEncoder alloc] init];
+ //       id<ARTEncoder> msgpackEncoder  = [[ARTMsgPackEncoder alloc] init];
         _encoders = @{
             [defaultEncoder mimeType]: defaultEncoder,
-            [msgpackEncoder mimeType] : msgpackEncoder
+   //         [msgpackEncoder mimeType] : msgpackEncoder
         };
         
-        _defaultEncoding = options.binary ? [msgpackEncoder mimeType] :[defaultEncoder mimeType];
+        _defaultEncoding = [defaultEncoder mimeType];
     }
     return self;
 }

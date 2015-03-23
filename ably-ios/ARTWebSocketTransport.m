@@ -74,7 +74,7 @@ enum {
             
             //TODO thers an echo messages flag as well here.
             
-            if(options.binary) {
+            if(false || options.binary) {
                 queryParams[@"format"] = @"msgpack";
             }
             
@@ -111,6 +111,8 @@ enum {
 
 - (void)dealloc {
     NSLog(@"DEALLOC of artwebsockettransport.");
+    self.websocket.delegate = nil;
+    self.websocket = nil; //possible circular reference fix. TODO test
 }
 
 - (void)send:(ARTProtocolMessage *)msg {

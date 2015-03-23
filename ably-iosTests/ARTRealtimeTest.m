@@ -16,7 +16,6 @@
 
 @interface ARTRealtimeTest : XCTestCase {
     ARTRealtime *_realtime;
-    ARTOptions *_options;
 }
 
 
@@ -26,27 +25,25 @@
 @end
 
 
-const float TIMEOUT= 20.0;
 
 
 @implementation ARTRealtimeTest
 
 
 - (void)setUp {
+                NSLog(@"realtimetest setup");
     [super setUp];
-    _options = [[ARTOptions alloc] init];
-    _options.restHost = @"sandbox-rest.ably.io";
-    _options.realtimeHost = @"sandbox-realtime.ably.io";
 }
 
 - (void)tearDown {
+            NSLog(@"realtimetest teardown");
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
 }
 
 - (void)withRealtime:(void (^)(ARTRealtime *realtime))cb {
     if (!_realtime) {
-        [ARTTestUtil setupApp:_options cb:^(ARTOptions *options) {
+        [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTOptions *options) {
             if (options) {
                 _realtime = [[ARTRealtime alloc] initWithOptions:options];
             }
@@ -56,29 +53,11 @@ const float TIMEOUT= 20.0;
     }
     cb(_realtime);
 }
-
-
-//TODO RM?
-- (void)testTime {
-      XCTestExpectation *expectation = [self expectationWithDescription:@"time"];
-    [self withRealtime:^(ARTRealtime *realtime) {
-        [realtime time:^(ARTStatus status, NSDate *date) {
-            NSLog(@"status in test time %d", status);
-            XCTAssert(status == ARTStatusOk);
-            // Expect local clock and server clock to be synced within 5 seconds
-            XCTAssertEqualWithAccuracy([date timeIntervalSinceNow], 0.0, 5.0);
-            if(status == ARTStatusOk) {
-                [expectation fulfill];
-            }
-        }];
-    }];
-
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-}
-
+ //TODO PUT BACK
 
 
 - (void) testAttachOnce {
+    NSLog(@"testAttachOnce, which seems to cause the HERE WE ARE __NSCFArray bug. TODO fix properly");
       XCTestExpectation *expectation = [self expectationWithDescription:@"attachOnce"];
     [self withRealtime:^(ARTRealtime *realtime) {
         [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
@@ -107,8 +86,6 @@ const float TIMEOUT= 20.0;
 
 
 -(void) testSkipsFromDetachingToAttaching {
-    XCTFail(@"FFS");
-    return;
       XCTestExpectation *expectation = [self expectationWithDescription:@"detaching_to_attaching"];
     [self withRealtime:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime channel:@"detaching_to_attaching"];
@@ -279,7 +256,7 @@ const float TIMEOUT= 20.0;
     [self withRealtime:^(ARTRealtime *realtime) {
         [e fulfill];
     }];
-    [self waitForExpectationsWithTimeout:TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 
     [self withRealtime:^(ARTRealtime *realtime) {
           XCTestExpectation *expectation = [self expectationWithDescription:@"multiple_send"];

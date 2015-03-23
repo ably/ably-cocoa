@@ -15,7 +15,7 @@
 @property (readwrite, strong, nonatomic) ARTAuthOptions *authOptions;
 @property (readwrite, strong, nonatomic) NSString *clientId;
 @property (readwrite, strong, nonatomic) NSString *restHost;
-@property (readwrite, strong, nonatomic) NSString *realtimeHost;
+
 @property (readwrite, assign, nonatomic) int restPort;
 @property (readwrite, assign, nonatomic) int realtimePort;
 @property (readwrite, assign, nonatomic) BOOL queueMessages;
@@ -25,6 +25,12 @@
 
 - (instancetype)init;
 - (instancetype)initWithKey:(NSString *)key;
+
+
+// realtime requires a rest host so we explictly set both together when using realtime.
+-(void) setRealtimeHost:(NSString *)realtimeHost withRestHost:(NSString *) restHost;
+-(NSString *) realtimeHost;
+
 
 + (instancetype)options;
 + (instancetype)optionsWithKey:(NSString *)key;
