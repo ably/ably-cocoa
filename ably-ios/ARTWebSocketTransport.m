@@ -146,8 +146,6 @@ enum {
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
-    NSLog(@"Received message: %@", message);
-
     ARTWebSocketTransport * __weak weakSelf = self;
 
     CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{

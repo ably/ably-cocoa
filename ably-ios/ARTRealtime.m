@@ -554,6 +554,12 @@
     [self transition:ARTRealtimeChannelDetached status:reason];
 }
 
+-(void) setFailed:(ARTStatus) error
+{
+    [self failQueuedMessages:error];
+    [self transition:ARTRealtimeChannelFailed status:error];
+}
+
 - (void)setSuspended:(ARTStatus)error {
     [self failQueuedMessages:error];
     [self transition:ARTRealtimeChannelDetached status:error];
@@ -851,7 +857,14 @@
         [self failQueuedMessages:[self defaultError]];
         for (NSString *channelName in self.channels) {
             ARTRealtimeChannel *channel = [self.channels objectForKey:channelName];
-            [channel setSuspended:[self defaultError]];
+            if(channel.state == ARTRealtimeChannelInitialised)
+            {
+                [channel setFailed:[self defaultError]];
+            }
+            else
+            {
+                [channel setSuspended:[self defaultError]];
+            }
         }
     }
 

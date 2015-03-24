@@ -51,7 +51,18 @@
     cb(_realtime);
 }
 
-
+- (void)withRealtimeAlt:(TestAlteration) alt cb:(void (^)(ARTRealtime *realtime))cb {
+    if (!_realtime) {
+        [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] withAlteration:alt cb:^(ARTOptions *options) {
+            if (options) {
+                _realtime = [[ARTRealtime alloc] initWithOptions:options];
+            }
+            cb(_realtime);
+        }];
+        return;
+    }
+    cb(_realtime);
+}
 
 
 - (void)testAttach {
@@ -170,11 +181,20 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-
 //TODO switch the keys over and confirm connection doesn't work.
-
-- (void)testAttachFail{
-    XCTFail(@"TODO write test");
+- (void)testAttachFail {
+    NSLog(@"testAttachFail happening");
+    XCTestExpectation *expectation = [self expectationWithDescription:@"testAttachFail"];
+    [self withRealtimeAlt:TestAlterationBadKeyValue cb:^(ARTRealtime *realtime) {
+        ARTRealtimeChannel * channel = [realtime channel:@"invalidChannel"];
+        [channel subscribeToStateChanges:^(ARTRealtimeChannelState channelState, ARTStatus status) {
+          //  NSLog(@"tatsu is %@", [ARTRealtime ARTRealtimeStateToStr:channelState]);
+            NSLog(@"channel state num is %lu", channelState);
+            XCTAssertEqual(ARTRealtimeChannelFailed, channelState);
+            [expectation fulfill];
+        }];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 /*

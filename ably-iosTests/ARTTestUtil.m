@@ -191,11 +191,11 @@
 
 +(float) smallSleep
 {
-    return 1.0;
+    return 0.5;
 }
 +(float) bigSleep
 {
-    return 2.0;
+    return 1.0;
     
 }
 +(float) timeout

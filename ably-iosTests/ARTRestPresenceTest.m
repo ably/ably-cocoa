@@ -16,7 +16,7 @@
 @interface ARTRestPresenceTest : XCTestCase {
     ARTRest *_rest;
     ARTOptions *_options;
-    float _timeout;
+
 }
 
 - (void)withRest:(void(^)(ARTRest *))cb;
@@ -92,7 +92,7 @@
             [expectation fulfill];
         }];
     }];
-    [self waitForExpectationsWithTimeout:_timeout handler:nil];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 - (void)testHistoryText {
