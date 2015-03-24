@@ -13,7 +13,7 @@
 #import "ARTPresenceMessage.h"
 #import "ARTWebSocketTransport.h"
 #import "NSArray+ARTFunctional.h"
-
+#import "ARTRealtime+Test.h"
 @interface ARTQueuedMessage : NSObject
 
 @property (readonly, strong, nonatomic) ARTProtocolMessage *msg;
