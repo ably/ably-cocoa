@@ -82,6 +82,7 @@ typedef void (^ARTRealtimeChannelStateCb)(ARTRealtimeChannelState, ARTStatus);
 - (instancetype)initWithOptions:(ARTOptions *)options;
 
 - (void)close;
+-(void) connect;
 
 - (id<ARTCancellable>)time:(void(^)(ARTStatus status, NSDate *time))cb;
 - (id<ARTCancellable>)stats:(ARTPaginatedResultCb)cb;

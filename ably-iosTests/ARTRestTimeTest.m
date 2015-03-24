@@ -32,7 +32,7 @@
 }
 
 - (void)tearDown {
-        NSLog(@"resttime teardown");
+    NSLog(@"resttime teardown");
     _rest = nil;
     [super tearDown];
 }
@@ -50,6 +50,7 @@
     cb(_rest);
 }
 
+/** ARTRESTTIMETEST **/
 - (void)testRestTimeBadHost {
     __weak XCTestExpectation *expectationRestTimeBadHost = [self expectationWithDescription:@"testRestTimeBadHost"];
     
@@ -59,14 +60,14 @@
     [ARTTestUtil setupApp:badOptions cb:^(ARTOptions *options) {
         ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
         [rest time:^(ARTStatus status, NSDate *date) {
-            NSLog(@"status bad host is %d", status);
+            NSLog(@"status bad host is %lu", status);
             NSLog(@"nsdate is %@", date);
             XCTAssert(status == ARTStatusError);
             if(expectationRestTimeBadHost) {
                 [expectationRestTimeBadHost fulfill];
                 
             }
-
+            
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -87,11 +88,12 @@
                 if(expectationRestTime) {
                     [expectationRestTime fulfill];
                 }
-
+                
             }
             
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
+
 @end

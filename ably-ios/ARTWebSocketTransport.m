@@ -147,10 +147,7 @@ enum {
 
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
     NSLog(@"Received message: %@", message);
-    
-    
-    
-    
+
     ARTWebSocketTransport * __weak weakSelf = self;
 
     CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
@@ -201,9 +198,16 @@ enum {
     ARTWebSocketTransport * __weak weakSelf = self;
     CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
         ARTWebSocketTransport *s = weakSelf;
+        
+        if(error)
+        {
+            //TODO maybe some errors become failed, and some become disconnect?
+            NSLog(@"websocket did fail with error %@", error);
+        }
         if(s)
         {
-            [s.delegate realtimeTransportUnavailable:s];
+            
+            [s.delegate realtimeTransportFailed:s];
         }
         else
         {

@@ -53,11 +53,13 @@
     }
     cb(_realtime);
 }
- //TODO PUT BACK
+
+
+//TODO where do i put all the attachment tests?
 
 
 - (void) testAttachOnce {
-    NSLog(@"testAttachOnce, which seems to cause the HERE WE ARE __NSCFArray bug. TODO fix properly");
+    //NSLog(@"testAttachOnce, which seems to cause the HERE WE ARE __NSCFArray bug. TODO fix properly");
       XCTestExpectation *expectation = [self expectationWithDescription:@"attachOnce"];
     [self withRealtime:^(ARTRealtime *realtime) {
         [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
@@ -248,51 +250,6 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-
-- (void)multipleSendName:(NSString *)name count:(int)count delay:(int)delay {
-    __block int numReceived = 0;
-
-    XCTestExpectation *e = [self expectationWithDescription:@"realtime"];
-    [self withRealtime:^(ARTRealtime *realtime) {
-        [e fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-
-    [self withRealtime:^(ARTRealtime *realtime) {
-          XCTestExpectation *expectation = [self expectationWithDescription:@"multiple_send"];
-        ARTRealtimeChannel *channel = [realtime channel:name];
-
-        [channel attach];
-        [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus status) {
-            if (state == ARTRealtimeChannelAttached) {
-                [channel subscribe:^(ARTMessage *message) {
-                    ++numReceived;
-                    if (numReceived == count) {
-                        [expectation fulfill];
-                    }
-                }];
-
-                [ARTTestUtil repeat:count delay:(delay / 1000.0) block:^(int i) {
-                    NSString *msg = [NSString stringWithFormat:@"Test message (_multiple_send) %d", i];
-                    [channel publish:msg withName:@"test_event" cb:^(ARTStatus status) {
-
-                    }];
-                }];
-            }
-        }];
-        [self waitForExpectationsWithTimeout:((delay / 1000.0) * count * 2) handler:nil];
-    }];
-
-    XCTAssertEqual(numReceived, count);
-}
-
-- (void)testPublish_10_1000 {
-    [self multipleSendName:@"multiple_send_10_1000" count:10 delay:1000];
-}
-
-- (void)testPublish_20_200 {
-    [self multipleSendName:@"multiple_send_20_200" count:20 delay:200];
-}
 
 
 

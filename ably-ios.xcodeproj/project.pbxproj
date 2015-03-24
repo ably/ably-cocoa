@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1C028D121AC02973004431D9 /* ARTAllTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C028D111AC02973004431D9 /* ARTAllTest.m */; };
 		1C1E52EA1AB32EA0004A690F /* ARTRestAppStatsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C1E52E91AB32EA0004A690F /* ARTRestAppStatsTest.m */; };
 		1C1E52EE1AB32EB9004A690F /* ARTRestCapabilityTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C1E52ED1AB32EB9004A690F /* ARTRestCapabilityTest.m */; };
 		1C1E52F01AB32EC7004A690F /* ARTRestChannelHistoryTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C1E52EF1AB32EC7004A690F /* ARTRestChannelHistoryTest.m */; };
@@ -117,6 +118,7 @@
 /* Begin PBXFileReference section */
 		143713CCCD056BDB4C1E070F /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
 		1BD00ABE249D4232EB2E44FA /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
+		1C028D111AC02973004431D9 /* ARTAllTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTAllTest.m; sourceTree = "<group>"; };
 		1C1E52E91AB32EA0004A690F /* ARTRestAppStatsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestAppStatsTest.m; sourceTree = "<group>"; };
 		1C1E52ED1AB32EB9004A690F /* ARTRestCapabilityTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestCapabilityTest.m; sourceTree = "<group>"; };
 		1C1E52EF1AB32EC7004A690F /* ARTRestChannelHistoryTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestChannelHistoryTest.m; sourceTree = "<group>"; };
@@ -340,6 +342,7 @@
 				96E4083B1A38622D00087F77 /* ARTTestUtil.m */,
 				1C52FBA01AB8AF9300F435DE /* ARTRest+Test.h */,
 				1C52FBA11AB8AF9300F435DE /* ARTRest+Test.m */,
+				1C028D111AC02973004431D9 /* ARTAllTest.m */,
 			);
 			path = "ably-iosTests";
 			sourceTree = "<group>";
@@ -573,6 +576,7 @@
 				96E408361A38595F00087F77 /* ARTRealtimeTest.m in Sources */,
 				96BF615B1A35B9ED004CF2B3 /* ARTHttpTest.m in Sources */,
 				1CC3D95B1AB702E30005BEB0 /* ARTRealtimePresenceHistoryTest.m in Sources */,
+				1C028D121AC02973004431D9 /* ARTAllTest.m in Sources */,
 				1CC3D94D1AB6FE700005BEB0 /* ARTRealtimeConnectTest.m in Sources */,
 				1CC3D9551AB700680005BEB0 /* ARTRealtimeInitTest.m in Sources */,
 				1C1E52EA1AB32EA0004A690F /* ARTRestAppStatsTest.m in Sources */,

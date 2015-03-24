@@ -280,7 +280,10 @@
 - (NSDictionary *)protocolMessageToDictionary:(ARTProtocolMessage *)message {
     NSMutableDictionary *output = [NSMutableDictionary dictionary];
     output[@"action"] = [NSNumber numberWithInt:message.action];
-    output[@"channel"] = message.channel;
+    if(message.channel)
+    {
+        output[@"channel"] = message.channel;
+    }
     output[@"msgSerial"] = [NSNumber numberWithLongLong:message.msgSerial];
 
     if (message.messages) {
@@ -498,7 +501,7 @@
 
 - (id)decode:(NSData *)data {
     id obj = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-    NSLog(@"decoded obj is %@", obj);
+   // NSLog(@"decoded obj is %@", obj);
     return obj;
 }
 

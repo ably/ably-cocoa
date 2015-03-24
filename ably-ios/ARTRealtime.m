@@ -780,7 +780,8 @@
 }
 
 - (void)transition:(ARTRealtimeConnectionState)state {
-    NSLog(@"Transition to %lu requested", state);
+    NSLog(@"Transition to %@ requested", [ARTRealtime ARTRealtimeStateToStr:state]);
+
     // On exit logic
     switch (self.state) {
         case ARTRealtimeInitialized:
@@ -812,20 +813,12 @@
             [self startConnectTimer];
 
             // Create transport and initiate connection
-            
-
-
-            
             if(!self.transport) {
                 self.transport.delegate = nil;
                 self.transport = [self createTransport];
                 self.transport.delegate = self;
                 [self.transport connect];
             }
-            else {
-                NSLog(@"transport exists. Did I just save the planet? TODO CHECK");
-            }
-         
             break;
         case ARTRealtimeConnected:
             self.msgSerial = 0;
@@ -1203,7 +1196,7 @@
 }
 
 - (void)realtimeTransportClosed:(id<ARTRealtimeTransport>)transport {
-    [self transition:ARTRealtimeClosed];
+    //Close succeeded. Nothing more to do.
 }
 
 - (void)realtimeTransportDisconnected:(id<ARTRealtimeTransport>)transport {
@@ -1226,19 +1219,9 @@
 - (void)realtimeTransportTooBig:(id<ARTRealtimeTransport>)transport {
     [self transition:ARTRealtimeFailed];
 }
+
 +(NSString *) ARTRealtimeStateToStr:(ARTRealtimeConnectionState) state
 {
-    /*
-
-    ARTRealtimeInitialized,
-    ARTRealtimeConnecting,
-    ARTRealtimeConnected,
-    ARTRealtimeDisconnected,
-    ARTRealtimeSuspended,
-    ARTRealtimeClosed,
-    ARTRealtimeFailed
-    
-          */
     switch(state)
     {
         case ARTRealtimeInitialized:

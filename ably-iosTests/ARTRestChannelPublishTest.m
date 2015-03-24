@@ -73,6 +73,9 @@
     cb(_restText);
 }
 
+
+
+
 - (void)testTypesByText {
 
     XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];

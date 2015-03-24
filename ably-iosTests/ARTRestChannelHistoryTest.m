@@ -72,7 +72,7 @@
     
     [self withRest:^(ARTRest *rest) {
           XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_first_batch"];
-        ARTRestChannel *channel = [rest channel:@"test_history_time_forwards"];
+        ARTRestChannel *channel = [rest channel:@"testTimeBackwards"];
         
         int firstBatchTotal =3;
         int secondBatchTotal =2;
@@ -285,7 +285,7 @@
         NSLog(@"TEST testHistoryForwardPagination");
     XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryForwardPagination"];
     [self withRest:^(ARTRest  *rest) {
-        ARTRestChannel *channel = [rest channel:@"histChan"];
+        ARTRestChannel *channel = [rest channel:@"testHistoryForwardPagination"];
         [channel publish:@"testString1" cb:^(ARTStatus status) {
             XCTAssertEqual(status, ARTStatusOk);
             [channel publish:@"testString2" cb:^(ARTStatus status) {
@@ -357,7 +357,7 @@
             NSLog(@"TEST testHistoryBackwardPagination");
     XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryBackwardagination"];
     [self withRest:^(ARTRest  *rest) {
-        ARTRestChannel *channel = [rest channel:@"histBackChan"];
+        ARTRestChannel *channel = [rest channel:@"testHistoryBackwardPagination"];
         [channel publish:@"testString1" cb:^(ARTStatus status) {
             XCTAssertEqual(status, ARTStatusOk);
             [channel publish:@"testString2" cb:^(ARTStatus status) {
@@ -425,5 +425,9 @@
     
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
+
+
+
+
 
 @end

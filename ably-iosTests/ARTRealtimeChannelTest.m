@@ -27,11 +27,13 @@
 
 
 - (void)setUp {
+
     [super setUp];
 
 }
 
 - (void)tearDown {
+        _realtime = nil;
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
 }
@@ -48,6 +50,9 @@
     }
     cb(_realtime);
 }
+
+
+
 
 - (void)testAttach {
     XCTestExpectation *expectation = [self expectationWithDescription:@"attach"];
@@ -147,7 +152,6 @@
             if([message.payload.payload isEqualToString:@"testString"]) {
                 [subscription unsubscribe];
                 [channel publish:@"This should never arrive" cb:^(ARTStatus status) {
-                    NSLog(@"testpublish happening??? ffs");
                     XCTAssertEqual(status, ARTStatusOk);
                 }];
                 [expectation fulfill];
@@ -157,6 +161,9 @@
                 [expectation fulfill];
             }
             XCTAssertEqualObjects(message.payload.payload, @"testString");
+        }];
+        [channel publish:@"testString" cb:^(ARTStatus status) {
+            XCTAssertEqual(ARTStatusOk, status);
         }];
     }];
     
@@ -169,7 +176,6 @@
 - (void)testAttachFail{
     XCTFail(@"TODO write test");
 }
-
 
 /*
  //msgpack not implemented yet

@@ -28,6 +28,7 @@
 }
 
 - (void)tearDown {
+        _realtime = nil;
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
 }
@@ -239,11 +240,6 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-
--(void) dealloc
-{
-    NSLog(@"KILLING OF OARTREALTIMECHANELHISTORY TEST");
-}
 //TODO ios status doc
 -(void) testHistoryBackwardPagination
 {

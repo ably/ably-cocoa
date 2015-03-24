@@ -10,39 +10,47 @@
 
 @implementation ARTTestUtil
 
-+ (void)setupApp:(ARTOptions *)options cb:(void (^)(ARTOptions *))cb {
+
+
++(void) setupApp:(ARTOptions *)options withAlteration:(TestAlteration) alt cb:(void (^)(ARTOptions *))cb {
     NSDictionary *capability = @{
-        @"cansubscribe:*":@[@"subscribe"],
-        @"canpublish:*":@[@"publish"],
-        @"canpublish:andpresence":@[@"presence",@"publish"]
-    };
-
+                                 @"cansubscribe:*":@[@"subscribe"],
+                                 @"canpublish:*":@[@"publish"],
+                                 @"canpublish:andpresence":@[@"presence",@"publish"]
+                                 };
+    
     NSString *capabilityString = [[NSString alloc] initWithData:[NSJSONSerialization dataWithJSONObject:capability options:0 error:nil] encoding:NSUTF8StringEncoding];
-
+    
     NSDictionary *appSpec = @{
-        @"keys": @[
-            @{},
-            @{@"capability":capabilityString}
-        ],
-        @"namespaces": @[
-            @{@"id": @"persisted", @"persisted":[NSNumber numberWithBool:YES]}
-        ],
-        @"channels": @[
-            @{
-                @"name": @"persisted:presence_fixtures",
-                @"presence": @[
-                    @{@"clientId": @"client_bool", @"data": @"true"},
-                    @{@"clientId": @"client_int", @"data":@"24"},
-                    @{@"clientId": @"client_string", @"data":@"This is a string clientData payload"},
-                    @{@"clientId": @"client_json", @"data":@"{\"test\":\"This is a JSONObject clientData payload\"}"}
-                ]
-            }
-        ]
-    };
-
+                              @"keys": @[
+                                      @{},
+                                      @{@"capability":capabilityString}
+                                      ],
+                              @"namespaces": @[
+                                      @{@"id": @"persisted", @"persisted":[NSNumber numberWithBool:YES]}
+                                      ],
+                              @"channels": @[
+                                      @{
+                                          @"name": @"persisted:presence_fixtures",
+                                          @"presence": @[
+                                                  @{@"clientId": @"client_bool", @"data": @"true"},
+                                                  @{@"clientId": @"client_int", @"data":@"24"},
+                                                  @{@"clientId": @"client_string", @"data":@"This is a string clientData payload"},
+                                                  @{@"clientId": @"client_json", @"data":@"{\"test\":\"This is a JSONObject clientData payload\"}"}
+                                                  ]
+                                          }
+                                      ]
+                              };
+    
     NSData *appSpecData = [NSJSONSerialization dataWithJSONObject:appSpec options:0 error:nil];
     NSLog(@"%@", [[NSString alloc] initWithData:appSpecData encoding:NSUTF8StringEncoding]);
-
+    
+    
+    if(alt ==TestAlterationBadWsHost)
+    {
+        [options setRealtimeHost:[options.realtimeHost stringByAppendingString:@"/badRealtimeEndpoint"] withRestHost:[options.restHost stringByAppendingString:@"/badRestEndpoint"]];
+    }
+    
     NSString *urlStr = [NSString stringWithFormat:@"https://%@:%d/apps", options.restHost, options.restPort];
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
     req.HTTPMethod = @"POST";
@@ -50,19 +58,19 @@
     if(false  ||options.binary) { //msgpack not implemented yet
         [req setValue:@"application/x-msgpack,application/json" forHTTPHeaderField:@"Accept"];
         [req setValue:@"application/x-msgpack" forHTTPHeaderField:@"Content-Type"];
- 
+        
     }
     else {
         [req setValue:@"application/json" forHTTPHeaderField:@"Accept"];
         [req setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-
+        
         
     }
-
+    
     NSLog(@"Creating test app. URL: %@, Method: %@, Body: %@, Headers: %@", req.URL, req.HTTPMethod, [[NSString alloc] initWithData:req.HTTPBody encoding:NSUTF8StringEncoding], req.allHTTPHeaderFields);
-
+    
     CFRunLoopRef rl = CFRunLoopGetCurrent();
-
+    
     NSURLSession *urlSession = [NSURLSession sharedSession];
     
     
@@ -77,26 +85,40 @@
             return;
         } else {
             NSDictionary *response = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-        
+            
             if (response) {
                 NSDictionary *key = response[@"keys"][0];
                 keyId = [NSString stringWithFormat:@"%@.%@", response[@"appId"], key[@"id"]];
-
+                
                 keyValue = key[@"value"];
             }
         }
-
+        
         ARTOptions *appOptions = [options clone];
+
         appOptions.authOptions.keyId = keyId;
         appOptions.authOptions.keyValue = keyValue;
-
+        if(alt == TestAlterationBadKeyId)
+        {
+            appOptions.authOptions.keyId= @"badKeyId";
+        }
+        else if(alt == TestAlterationBadKeyValue)
+        {
+            appOptions.authOptions.keyValue = @"badKeyValue";
+        }
+        
         CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
             cb(appOptions);
         });
         CFRunLoopWakeUp(rl);
     }];
     [task resume];
+
+    
 }
++ (void)setupApp:(ARTOptions *)options cb:(void (^)(ARTOptions *))cb {
+    [ARTTestUtil setupApp:options withAlteration:TestAlterationNone cb:cb];
+   }
 
 + (NSString *) realtimeHost
 {
@@ -169,11 +191,11 @@
 
 +(float) smallSleep
 {
-    return 0.1;
+    return 1.0;
 }
 +(float) bigSleep
 {
-    return 1.0;
+    return 2.0;
     
 }
 +(float) timeout

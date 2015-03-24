@@ -12,7 +12,16 @@
 
 @interface ARTTestUtil : NSObject
 
+typedef NS_ENUM(NSUInteger, TestAlteration) {
+    TestAlterationNone,
+    TestAlterationBadKeyId,
+    TestAlterationBadKeyValue,
+    TestAlterationBadWsHost
+};
+
+
 + (void)setupApp:(ARTOptions *)options cb:(void(^)(ARTOptions *options))cb;
++(void) setupApp:(ARTOptions *)options withAlteration:(TestAlteration) alt cb:(void (^)(ARTOptions *))cb;
 + (NSString *) restHost;
 + (NSString *) realtimeHost;
 + (float) timeout;
