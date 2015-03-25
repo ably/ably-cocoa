@@ -51,7 +51,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
 
 - (void)publishPresenceEnter:(id)data cb:(ARTStatusCallback)cb;
 - (void)publishPresenceUpdate:(id)data cb:(ARTStatusCallback)cb;
-- (void)publishPresenceLeave:(ARTStatusCallback)cb;
+- (void)publishPresenceLeave:(id) data cb:(ARTStatusCallback)cb;
 
 - (id<ARTCancellable>)history:(ARTPaginatedResultCb)cb;
 - (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
@@ -82,7 +82,7 @@ typedef void (^ARTRealtimeChannelStateCb)(ARTRealtimeChannelState, ARTStatus);
 - (instancetype)initWithOptions:(ARTOptions *)options;
 
 - (void)close;
--(void) connect;
+- (void)connect;
 
 - (id<ARTCancellable>)time:(void(^)(ARTStatus status, NSDate *time))cb;
 - (id<ARTCancellable>)stats:(ARTPaginatedResultCb)cb;
@@ -93,6 +93,8 @@ typedef void (^ARTRealtimeChannelStateCb)(ARTRealtimeChannelState, ARTStatus);
 
 typedef void (^ARTRealtimeConnectionStateCb)(ARTRealtimeConnectionState);
 - (id<ARTSubscription>)subscribeToStateChanges:(ARTRealtimeConnectionStateCb)cb;
+
+//TODO rm
 +(NSString *) ARTRealtimeStateToStr:(ARTRealtimeConnectionState) state;
 
 @end

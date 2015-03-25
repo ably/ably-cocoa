@@ -13,7 +13,9 @@
 #import "ARTPresenceMessage.h"
 #import "ARTWebSocketTransport.h"
 #import "NSArray+ARTFunctional.h"
-#import "ARTRealtime+Test.h"
+#import "ARTRealtime+Private.h"
+
+
 @interface ARTQueuedMessage : NSObject
 
 @property (readonly, strong, nonatomic) ARTProtocolMessage *msg;
@@ -75,7 +77,7 @@
 @property (readonly, strong, nonatomic) ARTRealtime *realtime;
 @property (readonly, strong, nonatomic) NSString *name;
 @property (readonly, strong, nonatomic) ARTRestChannel *restChannel;
-@property (readwrite, assign, nonatomic) ARTRealtimeChannelState state;
+@property (readwrite, assign, nonatomic)ARTRealtimeChannelState state;
 @property (readwrite, strong, nonatomic) NSMutableArray *queuedMessages;
 @property (readwrite, strong, nonatomic) NSString *attachSerial;
 @property (readonly, strong, nonatomic) NSMutableDictionary *subscriptions;
@@ -151,14 +153,6 @@
 - (void)cancelSuspendTimer;
 - (void)cancelRetryTimer;
 
-// Transport Events
-- (void)onHeartbeat:(ARTProtocolMessage *)message;
-- (void)onConnected:(ARTProtocolMessage *)message;
-- (void)onDisconnected:(ARTProtocolMessage *)message;
-- (void)onError:(ARTProtocolMessage *)message;
-- (void)onAck:(ARTProtocolMessage *)message;
-- (void)onNack:(ARTProtocolMessage *)message;
-- (void)onChannelMessage:(ARTProtocolMessage *)message;
 
 // Timer events
 - (void)onConnectTimerFired;
@@ -178,6 +172,9 @@
 - (void)failQueuedMessages:(ARTStatus)error;
 - (void)ack:(int64_t)serial count:(int64_t)count;
 - (void)nack:(int64_t)serial count:(int64_t)count;
+
+
+
 
 // util
 - (id<ARTRealtimeTransport>)createTransport;
@@ -351,7 +348,12 @@
     ARTPresenceMessage *msg = [[ARTPresenceMessage alloc] init];
     msg.action = ARTPresenceMessageEnter;
     msg.clientId = self.clientId;
-    msg.payload = data;
+    if(data)
+    {
+        msg.payload = [ARTPayload payloadWithPayload:data encoding:@""];
+    }
+    //TODO do i need to enter this?
+    msg.connectionId = self.realtime.connectionId;
     [self publishPresence:msg cb:cb];
 }
 
@@ -359,14 +361,24 @@
     ARTPresenceMessage *msg = [[ARTPresenceMessage alloc] init];
     msg.action = ARTPresenceMessageUpdate;
     msg.clientId = self.clientId;
-    msg.payload = data;
+    if(data)
+    {
+        msg.payload = [ARTPayload payloadWithPayload:data encoding:@""];
+    }
+    msg.connectionId = self.realtime.connectionId;
+
     [self publishPresence:msg cb:cb];
 }
 
-- (void)publishPresenceLeave:(ARTStatusCallback)cb {
+- (void)publishPresenceLeave:(id) data cb:(ARTStatusCallback)cb {
     ARTPresenceMessage *msg = [[ARTPresenceMessage alloc] init];
     msg.action = ARTPresenceMessageLeave;
+    if(data)
+    {
+        msg.payload= [ARTPayload payloadWithPayload:data encoding:@""];
+    }
     msg.clientId = self.clientId;
+    msg.connectionId = self.realtime.connectionId;
     [self publishPresence:msg cb:cb];
 }
 
@@ -381,7 +393,7 @@
         ARTPayload *encodedPayload = nil;
         ARTStatus status = [self.payloadEncoder encode:msg.payload output:&encodedPayload];
         if (status != ARTStatusOk) {
-            // TODO log
+            NSLog(@"bad status encoding presence message %lu", status);
         }
         msg.payload = encodedPayload;
     }
@@ -389,6 +401,7 @@
     ARTProtocolMessage *pm = [[ARTProtocolMessage alloc] init];
     pm.action = ARTProtocolMessagePresence;
     pm.channel = self.name;
+    //TODO used to be @[msg];
     pm.presence = @[msg];
 
     [self publishProtocolMessage:pm cb:cb];
@@ -416,6 +429,7 @@
         }
         case ARTRealtimeChannelAttached:
         {
+            NSLog(@"sending publish protocol message");
             [self.realtime send:pm cb:cb];
             break;
         }
@@ -713,7 +727,7 @@
         _rest = [[ARTRest alloc] initWithOptions:options];
         _channels = [NSMutableDictionary dictionary];
         _transport = nil;
-        _state = ARTRealtimeInitialized;
+        self.state = ARTRealtimeInitialized;
         _connectTimeout = NULL;
         _suspendTimeout = NULL;
         _retryTimeout = NULL;
@@ -723,6 +737,7 @@
         _pendingMessages = [NSMutableArray array];
         _pendingMessageStartSerial = 0;
         _clientId = options.clientId;
+        NSLog(@"raeltime client id IS %@", _clientId);
         _options = [options clone];
         _stateSubscriptions = [NSMutableArray array];
         [self connect];
@@ -731,14 +746,12 @@
 }
 
 - (void)dealloc {
-    NSLog(@"DEALOC OF ARCREALTIME");
     // Custom dealloc required to release CoreFoundation objects
     [self cancelConnectTimer];
     [self cancelSuspendTimer];
     [self cancelRetryTimer];
 
     self.transport.delegate = nil;
-    // Do not call [super dealloc] explicitly
 }
 
 - (void)connect {
@@ -805,10 +818,12 @@
     [self cancelConnectTimer];
     [self cancelRetryTimer];
 
+    /*
     if (state == ARTRealtimeConnected) {
+        NSLog(@"cancelling suspend timer");
         [self cancelSuspendTimer];
     }
-
+*/
     ARTRealtimeConnectionState previousState = self.state;
     self.state = state;
 
@@ -828,7 +843,7 @@
             break;
         case ARTRealtimeConnected:
             self.msgSerial = 0;
-            [self startSuspendTimer];
+            [self cancelSuspendTimer];
             break;
         case ARTRealtimeClosed:
             [self.transport close:(previousState == ARTRealtimeConnected)];
@@ -874,15 +889,19 @@
 }
 
 - (void)startConnectTimer {
+
     if (!self.connectTimeout) {
+        NSLog(@"connectTimer started");
         self.connectTimeout = [self startTimer:^{
             [self onConnectTimerFired];
-        }interval:15.0]; // TODO set connect timer back to 15
+        }interval:15.0];
     }
 }
 
 - (void)startSuspendTimer {
+    
     if (!self.suspendTimeout) {
+        NSLog(@"suspend timer started");
         self.suspendTimeout = [self startTimer:^{
             [self onSuspendTimerFired];
         }interval:60.0];
@@ -898,11 +917,13 @@
 }
 
 - (void)cancelConnectTimer {
+    NSLog(@"connect timer canceled");
     [self cancelTimer:self.connectTimeout];
     self.connectTimeout = nil;
 }
 
 - (void)cancelSuspendTimer {
+    NSLog(@"suspend timer canceled");
     [self cancelTimer:self.suspendTimeout];
     self.suspendTimeout = nil;
 }
@@ -943,7 +964,7 @@
 
 - (void)onError:(ARTProtocolMessage *)message {
     // TODO work out which states this can be received in
-
+    
     if (message.channel) {
         [self onChannelMessage:message];
     } else {
@@ -965,15 +986,16 @@
 
 - (void)onChannelMessage:(ARTProtocolMessage *)message {
     // TODO work out which states this can be received in
-
+    
     // TODO set connection serial
     if (message.connectionSerial) {
         self.connectionSerial = message.connectionSerial;
     }
-
+    
     ARTRealtimeChannel *channel = [self.channels objectForKey:message.channel];
     [channel onChannelMessage:message];
 }
+
 
 - (void)onConnectTimerFired {
     switch (self.state) {
@@ -987,14 +1009,17 @@
 }
 
 - (void)onSuspendTimerFired {
+    NSLog(@"suspend timeer fired");
     switch (self.state) {
         case ARTRealtimeConnected:
+                NSLog(@"suspend timeer from connected to suspended");
             [self transition:ARTRealtimeSuspended];
             break;
         default:
             // TODO invalid connection state
             break;
     }
+    
 }
 
 - (void)onRetryTimerFired {
@@ -1046,12 +1071,19 @@
         ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg cb:cb];
         [self.pendingMessages addObject:qm];
     }
+    else
+    {
+        NSLog(@"ack not required");
+    }
+
     // TODO: ?? Add cb to the send call? No probably not
     // Wait, we have to do something with the cb!
+    NSLog(@"sending message");
     [self.transport send:msg];
 }
 
 - (void)send:(ARTProtocolMessage *)msg cb:(ARTStatusCallback)cb {
+    NSLog(@"SENDING realtime message %@", msg);
     if ([self shouldSendEvents]) {
         [self sendImpl:msg cb:cb];
     } else if ([self shouldQueueEvents]) {
@@ -1169,6 +1201,12 @@
         CFRunLoopRemoveTimer(CFRunLoopGetCurrent(), timer, kCFRunLoopDefaultMode);
         CFRelease(timer);
     }
+}
+
+
+-(void) testTimerTODORM
+{
+    
 }
 
 - (void)realtimeTransport:(id)transport didReceiveMessage:(ARTProtocolMessage *)message {

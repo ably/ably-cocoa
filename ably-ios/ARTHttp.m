@@ -174,7 +174,6 @@
     request.HTTPBody = artRequest.body;
     NSLog(@"request is %@", request);
     NSLog(@"art request headers is %@", artRequest.headers);
-    NSLog(@"TODO RM THIS");
     {
         
         if(artRequest.body) {

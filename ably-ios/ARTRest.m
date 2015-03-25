@@ -161,7 +161,7 @@
         _baseUrl = [options restUrl];
         _channels = [NSMutableDictionary dictionary];
         _auth = [[ARTAuth alloc] initWithRest:self options:options.authOptions];
-        
+
         id<ARTEncoder> defaultEncoder = [[ARTJsonEncoder alloc] init];
  //       id<ARTEncoder> msgpackEncoder  = [[ARTMsgPackEncoder alloc] init];
         _encoders = @{

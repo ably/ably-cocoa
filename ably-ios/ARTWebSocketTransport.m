@@ -110,13 +110,13 @@ enum {
 }
 
 - (void)dealloc {
-    NSLog(@"DEALLOC of artwebsockettransport.");
     self.websocket.delegate = nil;
     self.websocket = nil; //possible circular reference fix. TODO test
 }
 
 - (void)send:(ARTProtocolMessage *)msg {
     NSData *data = [self.encoder encodeProtocolMessage:msg];
+    NSLog(@"that data is about to get sent alright");
     [self.websocket send:data];
 }
 
@@ -167,11 +167,6 @@ enum {
             ARTProtocolMessage *pm = [s.encoder decodeProtocolMessage:data];
             [s.delegate realtimeTransport:s didReceiveMessage:pm];
         }
-        else
-        {
-            NSLog(@"TODO RM SAVED");
-        }
-        
     });
     CFRunLoopWakeUp(self.rl);
 }
@@ -183,10 +178,6 @@ enum {
         if(s)
         {
             [s.delegate realtimeTransportAvailable:s];
-        }
-        else
-        {
-            NSLog(@"TODO RM SAVED");
         }
     });
     CFRunLoopWakeUp(self.rl);
@@ -204,12 +195,7 @@ enum {
         }
         if(s)
         {
-            
             [s.delegate realtimeTransportFailed:s];
-        }
-        else
-        {
-            NSLog(@"TODO RM SAVED");
         }
     });
     CFRunLoopWakeUp(self.rl);
@@ -221,7 +207,6 @@ enum {
         ARTWebSocketTransport *s = weakSelf;
         if(!s)
         {
-            NSLog(@"TODO RM THIS LINE,  SAVED");
             return;
         }
         switch (code) {

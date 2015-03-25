@@ -144,10 +144,57 @@
     return output;
 }
 
+
+///TOOD put somewhere clever
+-(ARTPresenceMessageAction) presenceMessageActionFromInt:(int) action
+{
+    switch (action) {
+        case 0:
+            return ArtPresenceMessageAbsent;
+            break;
+        case 1:
+            return ArtPresenceMessagePresent;
+            break;
+        case 2:
+            return ARTPresenceMessageEnter;
+            break;
+        case 3:
+            return ARTPresenceMessageLeave;
+            break;
+        case 4:
+            return ARTPresenceMessageUpdate;
+            break;
+        default:
+            break;;
+    }
+    
+    NSLog(@"TODO ERROR, should be unreachable");
+    //TODO lol
+    return ArtPresenceMessageAbsent;
+}
+-(int) intFromPresenceMessageAction:(ARTPresenceMessageAction) action
+{
+    switch (action)
+    {
+        case ArtPresenceMessageAbsent:
+            return 0;
+        case ArtPresenceMessagePresent:
+            return 1;
+        case ARTPresenceMessageEnter:
+            return 2;
+        case ARTPresenceMessageLeave:
+            return 3;
+        case ARTPresenceMessageUpdate:
+            return 4;
+    }
+}
+
 - (ARTPresenceMessage *)presenceMessageFromDictionary:(NSDictionary *)input {
+    NSLog(@"well then");
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
+    NSLog(@"presence message is %@", input);
 
     ARTPresenceMessage *message = [[ARTPresenceMessage alloc] init];
     message.id = [input artString:@"id"];
@@ -157,21 +204,9 @@
 
     int action = [[input artNumber:@"action"] intValue];
 
-    switch (action) {
-        case 0:
-            message.action = ARTPresenceMessageEnter;
-            break;
-        case 1:
-            message.action = ARTPresenceMessageLeave;
-            break;
-        case 2:
-            message.action = ARTPresenceMessageUpdate;
-            break;
-        default:
-            return nil;
-    }
+    message.action = [self presenceMessageActionFromInt:action];
 
-    message.memberId = [input artString:@"memberId"];
+    message.connectionId = [input artString:@"connectionId"];
 
     return message;
 }
@@ -242,21 +277,11 @@
     if (message.payload) {
         [self writePayload:message.payload toDictionary:output];
     }
-
-    int action = 0;
-    switch (message.action) {
-        case ARTPresenceMessageEnter:
-            action = 0;
-            break;
-        case ARTPresenceMessageLeave:
-            action = 1;
-            break;
-        case ARTPresenceMessageUpdate:
-            action = 2;
-            break;
-        default:
-            return nil;
+    if(message.connectionId) {
+        [output setObject:message.connectionId forKey:@"connectionId"];
     }
+
+    int action = [self intFromPresenceMessageAction:message.action];
 
     [output setObject:[NSNumber numberWithInt:action] forKey:@"action"];
     
@@ -268,11 +293,13 @@
 
     for (ARTPresenceMessage *message in messages) {
         NSDictionary *item = [self presenceMessageToDictionary:message];
+        NSLog(@"encoding presence item %@", item);
         if (!(item)) {
             return nil;
         }
         [output addObject:item];
     }
+    NSLog(@"sending this %@", output);
 
     return output;
 }
@@ -292,8 +319,10 @@
 
     if (message.presence) {
         output[@"presence"] = [self presenceMessagesToArray:message.presence];
+        
     }
 
+    NSLog(@"p message to dict %@", output);
     return output;
 }
 
@@ -501,7 +530,7 @@
 
 - (id)decode:(NSData *)data {
     id obj = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-   // NSLog(@"decoded obj is %@", obj);
+    NSLog(@"decoded obj is %@", obj);
     return obj;
 }
 

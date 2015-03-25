@@ -17,6 +17,7 @@
 @interface ARTRealtimeMessageTest : XCTestCase
 {
     ARTRealtime * _realtime;
+    ARTRealtime * _realtime2;
 }
 @end
 
@@ -31,6 +32,7 @@
 
 - (void)tearDown {
     _realtime = nil;
+    _realtime2 = nil;
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
 }
@@ -46,6 +48,18 @@
         return;
     }
     cb(_realtime);
+}
+- (void)withRealtime2:(void (^)(ARTRealtime *realtime))cb {
+    if (!_realtime2) {
+        [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTOptions *options) {
+            if (options) {
+                _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
+            }
+            cb(_realtime2);
+        }];
+        return;
+    }
+    cb(_realtime2);
 }
 
 - (void)multipleSendName:(NSString *)name count:(int)count delay:(int)delay {
@@ -104,18 +118,20 @@
 - (void)testSingleSendEchoText {
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"testSingleSendEchoText"];
+    NSString * channelName = @"testSingleEcho";
     [self withRealtime:^(ARTRealtime *realtime1) {
-        ARTRealtimeChannel *channel = [realtime1 channel:@"testSingleSendEchoText"];
+        ARTRealtimeChannel *channel = [realtime1 channel:channelName];
             [channel subscribe:^(ARTMessage * message) {
                 XCTAssertEqualObjects(message.payload.payload, @"testStringEcho");
+                NSLog(@"recieved testStringEcho!!");
                 [expectation fulfill];
             }];
-        [self withRealtime:^(ARTRealtime *realtime2) {
-            ARTRealtimeChannel *channel = [realtime2 channel:@"testSingleSendEchoText"];
-            [channel subscribe:^(ARTMessage * message) {
+        [self withRealtime2:^(ARTRealtime *realtime2) {
+            ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
+            [channel2 subscribe:^(ARTMessage * message) {
                 XCTAssertEqualObjects(message.payload.payload, @"testStringEcho");
             }];
-            [channel publish:@"testStringEcho" cb:^(ARTStatus status) {
+            [channel2 publish:@"testStringEcho" cb:^(ARTStatus status) {
                 XCTAssertEqual(ARTStatusOk, status);
             }];
         }];

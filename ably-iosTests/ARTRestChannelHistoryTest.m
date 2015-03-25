@@ -73,7 +73,7 @@
     [self withRest:^(ARTRest *rest) {
           XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_first_batch"];
         ARTRestChannel *channel = [rest channel:@"testTimeBackwards"];
-        
+
         int firstBatchTotal =3;
         int secondBatchTotal =2;
         int thirdBatchTotal =1;
@@ -285,6 +285,8 @@
         NSLog(@"TEST testHistoryForwardPagination");
     XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryForwardPagination"];
     [self withRest:^(ARTRest  *rest) {
+        
+        //TODO migrate to my fancy publisher call
         ARTRestChannel *channel = [rest channel:@"testHistoryForwardPagination"];
         [channel publish:@"testString1" cb:^(ARTStatus status) {
             XCTAssertEqual(status, ARTStatusOk);
@@ -357,6 +359,7 @@
             NSLog(@"TEST testHistoryBackwardPagination");
     XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryBackwardagination"];
     [self withRest:^(ARTRest  *rest) {
+                //TODO migrate to my fancy publisher call
         ARTRestChannel *channel = [rest channel:@"testHistoryBackwardPagination"];
         [channel publish:@"testString1" cb:^(ARTStatus status) {
             XCTAssertEqual(status, ARTStatusOk);

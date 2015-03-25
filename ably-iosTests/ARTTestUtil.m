@@ -95,7 +95,7 @@
         }
         
         ARTOptions *appOptions = [options clone];
-
+        
         appOptions.authOptions.keyId = keyId;
         appOptions.authOptions.keyValue = keyValue;
         if(alt == TestAlterationBadKeyId)
@@ -195,7 +195,7 @@
 }
 +(float) bigSleep
 {
-    return 1.0;
+    return 1.0; ///TODO put back to 1.0
     
 }
 +(float) timeout

@@ -46,6 +46,7 @@
  }
 
 - (BOOL)ackRequired {
+    NSLog(@"ack required? Its %lu", self.action);
     return self.action == ARTProtocolMessageMessage || self.action == ARTProtocolMessagePresence;
 }
 

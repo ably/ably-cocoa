@@ -16,6 +16,7 @@
 @interface ARTRealtimeChannelHistoryTest : XCTestCase
 {
     ARTRealtime * _realtime;
+    ARTRealtime * _realtime2;
 }
 @end
 
@@ -28,7 +29,8 @@
 }
 
 - (void)tearDown {
-        _realtime = nil;
+    _realtime = nil;
+    _realtime2 = nil;
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
 }
@@ -44,6 +46,19 @@
         return;
     }
     cb(_realtime);
+}
+
+- (void)withRealtime2:(void (^)(ARTRealtime *realtime))cb {
+    if (!_realtime2) {
+        [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTOptions *options) {
+            if (options) {
+                _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
+            }
+            cb(_realtime2);
+        }];
+        return;
+    }
+    cb(_realtime2);
 }
 
 
@@ -554,6 +569,7 @@
                 NSString * pub = [NSString stringWithFormat:@"test%d", i];
                 sleep([ARTTestUtil smallSleep]);
                 [channel publish:pub cb:^(ARTStatus status) {
+                    XCTAssertEqual(ARTStatusOk, status);
                     ++numReceived;
                     if(numReceived ==firstBatchTotal) {
                         [firstExpectation fulfill];
@@ -564,7 +580,8 @@
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
         XCTestExpectation *secondExpecation = [self expectationWithDescription:@"get_history_channel2"];
                     NSLog(@"making artrealtime2");
-        [self withRealtime:^(ARTRealtime  *realtime2) {
+        [self withRealtime2:^(ARTRealtime  *realtime2) {
+            
             ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
             NSLog(@"making channel 2");
             [channel2 historyWithParams:@{
@@ -575,6 +592,8 @@
                     XCTAssertFalse([result hasNext]);
                     NSArray * page = [result current];
                     XCTAssertTrue(page != nil);
+                                    //TODO realtime2 isnt friends
+                                    //with realtime1. dont know why.
                     XCTAssertEqual([page count], firstBatchTotal);
                     for(int i=0;i < [page count]; i++)
                     {

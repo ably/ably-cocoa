@@ -13,8 +13,7 @@
 
 #import "ARTRealtime.h"
 #import "ARTTestUtil.h"
-#import "ARTRealtime+Test.h"
-
+#import "ARTRealtime+Private.h"
 
 @interface ARTRealtimeRecoverTest : XCTestCase
 {
@@ -63,18 +62,38 @@
 }
 
 - (void)testRecoverDisconnected {
-    //TODO ACTUALLY WRITE
+    //TODO ACTUALLY WRITE this using recover.
     XCTestExpectation *expectation = [self expectationWithDescription:@"testRecoverDisconnected"];
     [self withRealtime:^(ARTRealtime *realtime) {
+
         [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
             NSLog(@"testRecoverDisconnected constate...: %@", [ARTRealtime ARTRealtimeStateToStr:state]);
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime channel:@"attach"];
+                __block bool hasAttached = false;
                 [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus reason) {
+                    NSLog(@"channel state is %lu", state);
                     if (state == ARTRealtimeChannelAttached) {
-                        [realtime fakeDisconnect];
-                        [expectation fulfill];
+                        if(!hasAttached)
+                        {
+                            hasAttached = true;
+                            [realtime onError:nil];
+                        }
+                        else
+                        {
+                            //reconnction succeeded.
+                            XCTFail(@"nearly there. Need to use recover api");
+                            [expectation fulfill];
+                        }
+                        
                     }
+                    if( hasAttached && state == ARTRealtimeChannelDetached) {
+                        NSLog(@"connecting....");
+
+                        [realtime connect];
+                    }
+
+
                 }];
                 [channel attach];
             }
@@ -84,8 +103,8 @@
         }];
     }];
     
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+    
 }
 - (void)testRecoverImplicitConnect {
     XCTFail(@"TODO write test");
