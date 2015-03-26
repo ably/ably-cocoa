@@ -895,9 +895,7 @@
 }
 
 - (void)startConnectTimer {
-
     if (!self.connectTimeout) {
-        NSLog(@"connectTimer started");
         self.connectTimeout = [self startTimer:^{
             [self onConnectTimerFired];
         }interval:15.0];
@@ -907,7 +905,6 @@
 - (void)startSuspendTimer {
     
     if (!self.suspendTimeout) {
-        NSLog(@"suspend timer started");
         self.suspendTimeout = [self startTimer:^{
             [self onSuspendTimerFired];
         }interval:60.0];
@@ -923,13 +920,11 @@
 }
 
 - (void)cancelConnectTimer {
-    NSLog(@"connect timer canceled");
     [self cancelTimer:self.connectTimeout];
     self.connectTimeout = nil;
 }
 
 - (void)cancelSuspendTimer {
-    NSLog(@"suspend timer canceled");
     [self cancelTimer:self.suspendTimeout];
     self.suspendTimeout = nil;
 }

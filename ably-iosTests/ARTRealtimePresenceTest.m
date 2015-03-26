@@ -20,31 +20,27 @@
 {
     ARTRealtime * _realtime;
     ARTRealtime * _realtime2;
-    
+    ARTOptions * _options;
     ARTRest * _rest;
 }
 @end
 
 @implementation ARTRealtimePresenceTest
 
-
 - (void)setUp {
-    
     [super setUp];
-    
 }
 
 - (void)tearDown {
     _realtime = nil;
     _realtime2 = nil;
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
 }
 
--(NSString *) getClientId
-{
+-(NSString *) getClientId {
     return @"theClientId";
 }
+
 - (void)withRealtimeClientId:(void (^)(ARTRealtime *realtime))cb {
     if (!_realtime) {
         ARTOptions * options = [ARTTestUtil jsonRealtimeOptions];
@@ -52,12 +48,18 @@
         [ARTTestUtil setupApp:options cb:^(ARTOptions *options) {
             if (options) {
                 _realtime = [[ARTRealtime alloc] initWithOptions:options];
+                _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
             }
             cb(_realtime);
         }];
         return;
     }
     cb(_realtime);
+}
+
+//only for use after withRealtimeClientId.
+- (void)withRealtimeClientId2:(void (^)(ARTRealtime *realtime))cb {
+    cb(_realtime2);
 }
 
 - (void)withRest:(void (^)(ARTRest *rest))cb {
@@ -73,25 +75,8 @@
     cb(_rest);
 }
 
-- (void)withRealtimeClientId2:(void (^)(ARTRealtime *realtime))cb {
-    if (!_realtime2) {
-        ARTOptions * options = [ARTTestUtil jsonRealtimeOptions];
-        options.clientId = [self getClientId];
-        [ARTTestUtil setupApp:options cb:^(ARTOptions *options) {
-            if (options) {
-                _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
-            }
-            cb(_realtime2);
-        }];
-        return;
-    }
-    cb(_realtime2);
-}
 
-
-//TODO RM
-/*
--(void) testWtfTwoChannels
+-(void) testTwoConnections
 {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testSingleSendEchoText"];
     NSString * channelName = @"testSingleEcho";
@@ -99,10 +84,8 @@
         ARTRealtimeChannel *channel = [realtime1 channel:channelName];
         [channel subscribe:^(ARTMessage * message) {
             XCTAssertEqualObjects([message content], @"testStringEcho");
-            NSLog(@"recieved testStringEcho!!");
             [expectation fulfill];
         }];
-        
         [self withRealtimeClientId2:^(ARTRealtime *realtime2) {
             ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
             [channel2 subscribe:^(ARTMessage * message) {
@@ -115,7 +98,7 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
-*/
+
 
 
 //TODO this is probably too wordy.

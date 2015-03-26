@@ -187,6 +187,7 @@
             } else if (options.authCallback) {
                 _authTokenCb = options.authCallback;
             } else {
+                NSLog(@"TODO handle signtokenrequest callback");
                 /* TODO
                 ARTSignedTokenRequestCb strCb = options.signedTokenRequestCallback ? options.signedTokenRequestCallback : [ARTAuth defaultSignedTokenRequestCallback];
                 _authTokenCb = ^(void(^cb)(ARTAuthToken *)){

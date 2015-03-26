@@ -26,22 +26,18 @@
 @implementation ARTRealtimePresenceHistoryTest
 
 - (void)setUp {
-    
     [super setUp];
-    
 }
 
 - (void)tearDown {
     _realtime = nil;
     _realtime2 = nil;
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
 }
-
--(NSString *) getClientId
-{
+-(NSString *) getClientId {
     return @"theClientId";
 }
+
 - (void)withRealtimeClientId:(void (^)(ARTRealtime *realtime))cb {
     if (!_realtime) {
         ARTOptions * options = [ARTTestUtil jsonRealtimeOptions];
@@ -49,6 +45,7 @@
         [ARTTestUtil setupApp:options cb:^(ARTOptions *options) {
             if (options) {
                 _realtime = [[ARTRealtime alloc] initWithOptions:options];
+                _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
             }
             cb(_realtime);
         }];
@@ -56,6 +53,14 @@
     }
     cb(_realtime);
 }
+
+//only for use after withRealtimeClientId.
+- (void)withRealtimeClientId2:(void (^)(ARTRealtime *realtime))cb {
+    cb(_realtime2);
+}
+
+
+
 
 - (void)withRest:(void (^)(ARTRest *rest))cb {
     if (!_rest) {
@@ -68,21 +73,6 @@
         return;
     }
     cb(_rest);
-}
-
-- (void)withRealtimeClientId2:(void (^)(ARTRealtime *realtime))cb {
-    if (!_realtime2) {
-        ARTOptions * options = [ARTTestUtil jsonRealtimeOptions];
-        options.clientId = [self getClientId];
-        [ARTTestUtil setupApp:options cb:^(ARTOptions *options) {
-            if (options) {
-                _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
-            }
-            cb(_realtime2);
-        }];
-        return;
-    }
-    cb(_realtime2);
 }
 
 -(NSString *) enter1Str
@@ -229,67 +219,121 @@
 - (void)testSecondChannel {
     
     
-    //TODO this requires a second channel.
-    XCTFail(@"needs realtime2");
-    return;
-    
-    
     
     NSString * presenceEnter1 = @"client_has_entered";
     NSString * presenceEnter2 = @"client_has_entered2";
     NSString * presenceUpdate= @"client_has_updated";
-    XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
-    [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel *channel = [realtime channel:@"persisted:testSimpleText"];
-        ARTRealtimeChannel *channel2 = [realtime channel:@"persisted:testSimpleText"];
-        [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
-            if (state == ARTRealtimeConnected) {
-                [channel attach];
-            }
-        }];
-        [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
-            if (state == ARTRealtimeConnected) {
-                [channel attach];
-                [channel2 attach];
-            }
-        }];
-        [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus reason) {
-            if(cState == ARTRealtimeChannelAttached) {
-                [channel publishPresenceEnter:presenceEnter1 cb:^(ARTStatus status) {
-                    XCTAssertEqual(ARTStatusOk, status);
-                    NSLog(@"enter1");
-                    [channel2 publishPresenceEnter:presenceEnter2 cb:^(ARTStatus status) {
+    NSString * channelName = @"testSecondChannel";
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"testSingleSendEchoText"];
+    [self withRealtimeClientId:^(ARTRealtime *realtime1) {
+        ARTRealtimeChannel *channel = [realtime1 channel:channelName];
+       
+    
+        [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState1, ARTStatus reason1) {
+            if(cState1 == ARTRealtimeChannelAttached)
+            {
+                [self withRealtimeClientId2:^(ARTRealtime *realtime2) {
+                    ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
+                    [channel2 publishPresenceEnter:presenceEnter1 cb:^(ARTStatus status) {
                         XCTAssertEqual(ARTStatusOk, status);
-                        NSLog(@"enter2");
-                        [channel2 publishPresenceUpdate:presenceUpdate cb:^(ARTStatus status2) {
-                            NSLog(@"update");
-                            XCTAssertEqual(ARTStatusOk, status2);
-                            [channel presenceHistoryWithParams:@{@"direction" :@"forwards"} cb:^
-                             (ARTStatus status, id<ARTPaginatedResult> result) {
-                                 XCTAssertEqual(status, ARTStatusOk);
-                                 NSArray *messages = [result current];
-                                 XCTAssertEqual(3, messages.count);
-                                 ARTPresenceMessage *m0 = messages[0];
-                                 ARTPresenceMessage *m1 = messages[1];
-                                 ARTPresenceMessage *m2 = messages[2];
-                                 
-                                 XCTAssertEqual(m0.action, ARTPresenceMessageEnter);
-                                 XCTAssertEqualObjects(presenceEnter1, [m0 content]);
-                                 
-                                 XCTAssertEqualObjects(presenceEnter2, [m1 content]);
-                                 XCTAssertEqual(m1.action, ARTPresenceMessageEnter);
-                                 XCTAssertEqualObjects(presenceUpdate, [m2 content]);
-                                 XCTAssertEqual(m2.action, ARTPresenceMessageUpdate);
-                                 [expectation fulfill];
-                             }];
+                        [channel publishPresenceEnter:presenceEnter2 cb:^(ARTStatus status) {
+                            XCTAssertEqual(ARTStatusOk, status);
+                            [channel2 publishPresenceUpdate:presenceUpdate cb:^(ARTStatus status) {
+                                NSLog(@"done sending events on chanel2");
+                                XCTAssertEqual(ARTStatusOk, status);
+                                [channel presenceHistoryWithParams:@{@"direction" :@"forwards"} cb:^
+                                 (ARTStatus status, id<ARTPaginatedResult> result) {
+                                     XCTAssertEqual(status, ARTStatusOk);
+                                     NSArray *messages = [result current];
+                                     XCTAssertEqual(3, messages.count);
+                                     ARTPresenceMessage *m0 = messages[0];
+                                     ARTPresenceMessage *m1 = messages[1];
+                                     ARTPresenceMessage *m2 = messages[2];
+                                     
+                                     XCTAssertEqual(m0.action, ARTPresenceMessageEnter);
+                                     XCTAssertEqualObjects(presenceEnter1, [m0 content]);
+                                     
+                                     XCTAssertEqualObjects(presenceEnter2, [m1 content]);
+                                     XCTAssertEqual(m1.action, ARTPresenceMessageEnter);
+                                     XCTAssertEqualObjects(presenceUpdate, [m2 content]);
+                                     XCTAssertEqual(m2.action, ARTPresenceMessageUpdate);
+                                     [expectation fulfill];
+                                 }];
+                            }];
+                            
                         }];
                     }];
                 }];
             }
         }];
+        [channel attach];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
+
+/*
+- (void)testSecondChannel {
+    
+    NSString * presenceEnter1 = @"client_has_entered";
+    NSString * presenceEnter2 = @"client_has_entered2";
+    NSString * presenceUpdate= @"client_has_updated";
+    NSString * channelName = @"testSecondChannel";
+    XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
+    [self withRealtimeClientId:^(ARTRealtime *realtime) {
+        ARTRealtimeChannel *channel = [realtime channel:channelName];
+        [self withRealtimeClientId2:^(ARTRealtime *realtime2) {
+            ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
+            [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
+                if (state == ARTRealtimeConnected) {
+                    [channel attach];
+                }
+            }];
+            [realtime2 subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
+                if (state == ARTRealtimeConnected) {
+                    [channel attach];
+                    [channel2 attach];
+                }
+            }];
+            [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus reason) {
+                if(cState == ARTRealtimeChannelAttached) {
+                    [channel publishPresenceEnter:presenceEnter1 cb:^(ARTStatus status) {
+                        XCTAssertEqual(ARTStatusOk, status);
+                        NSLog(@"enter1");
+                        [channel2 publishPresenceEnter:presenceEnter2 cb:^(ARTStatus status) {
+                            XCTAssertEqual(ARTStatusOk, status);
+                            NSLog(@"enter2");
+                            [channel2 publishPresenceUpdate:presenceUpdate cb:^(ARTStatus status2) {
+                                NSLog(@"update");
+                                XCTAssertEqual(ARTStatusOk, status2);
+                                [channel2 presenceHistoryWithParams:@{@"direction" :@"forwards"} cb:^
+                                 (ARTStatus status, id<ARTPaginatedResult> result) {
+                                     XCTAssertEqual(status, ARTStatusOk);
+                                     NSArray *messages = [result current];
+                                     XCTAssertEqual(3, messages.count);
+                                     ARTPresenceMessage *m0 = messages[0];
+                                     ARTPresenceMessage *m1 = messages[1];
+                                     ARTPresenceMessage *m2 = messages[2];
+                                     
+                                     XCTAssertEqual(m0.action, ARTPresenceMessageEnter);
+                                     XCTAssertEqualObjects(presenceEnter1, [m0 content]);
+                                     
+                                     XCTAssertEqualObjects(presenceEnter2, [m1 content]);
+                                     XCTAssertEqual(m1.action, ARTPresenceMessageEnter);
+                                     XCTAssertEqualObjects(presenceUpdate, [m2 content]);
+                                     XCTAssertEqual(m2.action, ARTPresenceMessageUpdate);
+                                     [expectation fulfill];
+                                 }];
+                            }];
+                        }];
+                    }];
+                }
+            }];
+        }];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
+ */
 
 - (void)testWaitTextBackward {
     NSString * presenceEnter1 = @"client_has_entered";

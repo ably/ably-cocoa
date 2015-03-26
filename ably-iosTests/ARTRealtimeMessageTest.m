@@ -23,17 +23,13 @@
 
 @implementation ARTRealtimeMessageTest
 
-
 - (void)setUp {
-    
     [super setUp];
-    
 }
 
 - (void)tearDown {
     _realtime = nil;
     _realtime2 = nil;
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
 }
 
@@ -42,6 +38,7 @@
         [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTOptions *options) {
             if (options) {
                 _realtime = [[ARTRealtime alloc] initWithOptions:options];
+                _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
             }
             cb(_realtime);
         }];
@@ -49,16 +46,9 @@
     }
     cb(_realtime);
 }
+
+//only for use after calling withRealtime
 - (void)withRealtime2:(void (^)(ARTRealtime *realtime))cb {
-    if (!_realtime2) {
-        [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTOptions *options) {
-            if (options) {
-                _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
-            }
-            cb(_realtime2);
-        }];
-        return;
-    }
     cb(_realtime2);
 }
 

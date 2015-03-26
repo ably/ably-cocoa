@@ -11,8 +11,8 @@
 @implementation ARTTestUtil
 
 
-
-+(void) setupApp:(ARTOptions *)options withAlteration:(TestAlteration) alt cb:(void (^)(ARTOptions *))cb {
++(void) setupApp:(ARTOptions *)options withAlteration:(TestAlteration) alt  appId:(NSString *) appId cb:(void (^)(ARTOptions *))cb
+{
     NSDictionary *capability = @{
                                  @"cansubscribe:*":@[@"subscribe"],
                                  @"canpublish:*":@[@"publish"],
@@ -88,6 +88,8 @@
             
             if (response) {
                 NSDictionary *key = response[@"keys"][0];
+                NSLog(@"APP ID IS %@", response[@"appId"]);
+//                NSString * theAppId = appId ? appId : response[@"appId"];
                 keyId = [NSString stringWithFormat:@"%@.%@", response[@"appId"], key[@"id"]];
                 
                 keyValue = key[@"value"];
@@ -114,11 +116,21 @@
     }];
     [task resume];
 
-    
 }
+
++(NSString *) appIdFromkeyId:(NSString *) keyId
+{
+    NSArray *array = [keyId componentsSeparatedByString:@"."];
+    return [array objectAtIndex:0];
+}
+
++(void) setupApp:(ARTOptions *)options withAlteration:(TestAlteration) alt cb:(void (^)(ARTOptions *))cb {
+    [ARTTestUtil setupApp:options withAlteration:alt appId:nil cb:cb];
+}
+
 + (void)setupApp:(ARTOptions *)options cb:(void (^)(ARTOptions *))cb {
     [ARTTestUtil setupApp:options withAlteration:TestAlterationNone cb:cb];
-   }
+}
 
 + (NSString *) realtimeHost
 {
