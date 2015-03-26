@@ -56,6 +56,8 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
 - (id<ARTCancellable>)history:(ARTPaginatedResultCb)cb;
 - (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
 
+-(id<ARTCancellable>) presence:(ARTPaginatedResultCb) cb;
+-(id<ARTCancellable>) presenceWithParams:(NSDictionary *) queryParams cb:(ARTPaginatedResultCb) cb;
 - (id<ARTCancellable>)presenceHistory:(ARTPaginatedResultCb)cb;
 - (id<ARTCancellable>)presenceHistoryWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
 

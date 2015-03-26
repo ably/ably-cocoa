@@ -168,8 +168,6 @@
 
 -(void) testTimeForwards
 {
-    
-    NSLog(@"TEST TIME FORWRDS");
     XCTestExpectation *e = [self expectationWithDescription:@"realtime"];
     
     //TODO whats this for.
@@ -189,8 +187,6 @@
         
         //send first batch, which we won't recieve in the history request
         {
-            
-
             __block int numReceived =0;
 
             for(int i=0; i < firstBatchTotal; i++) {
@@ -282,7 +278,7 @@
 //TODO I've merged tests here into 2.
 -(void) testHistoryForwardPagination
 {
-        NSLog(@"TEST testHistoryForwardPagination");
+    NSLog(@"TEST testHistoryForwardPagination");
     XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryForwardPagination"];
     [self withRest:^(ARTRest  *rest) {
         

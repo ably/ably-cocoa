@@ -98,7 +98,7 @@
     [self withRealtimeClientId:^(ARTRealtime *realtime1) {
         ARTRealtimeChannel *channel = [realtime1 channel:channelName];
         [channel subscribe:^(ARTMessage * message) {
-            XCTAssertEqualObjects(message.payload.payload, @"testStringEcho");
+            XCTAssertEqualObjects([message content], @"testStringEcho");
             NSLog(@"recieved testStringEcho!!");
             [expectation fulfill];
         }];
@@ -106,7 +106,7 @@
         [self withRealtimeClientId2:^(ARTRealtime *realtime2) {
             ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
             [channel2 subscribe:^(ARTMessage * message) {
-                XCTAssertEqualObjects(message.payload.payload, @"testStringEcho");
+                XCTAssertEqualObjects([message content], @"testStringEcho");
             }];
             [channel2 publish:@"testStringEcho" cb:^(ARTStatus status) {
                 XCTAssertEqual(ARTStatusOk, status);
@@ -201,8 +201,8 @@
         
         ARTRealtimeChannel *channel = [realtime channel:channelName];
         [channel subscribeToPresence:^(ARTPresenceMessage * message) {
-            NSLog(@"pres recieved %@ conID %@", message.payload.payload, message.connectionId);
-            XCTAssertEqualObjects(message.payload.payload, presenceEnter);
+            NSLog(@"pres recieved %@ conID %@", [message content], message.connectionId);
+            XCTAssertEqualObjects([message content], presenceEnter);
             [expectation fulfill];
         }];
         
@@ -233,8 +233,8 @@
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime channel:channelName];
         [channel subscribeToPresence:^(ARTPresenceMessage * message) {
-            NSLog(@"pres recieved %@ conID %@", message.payload.payload, message.connectionId);
-            XCTAssertEqualObjects(message.payload.payload, presenceEnter);
+            NSLog(@"pres recieved %@ conID %@", [message content], message.connectionId);
+            XCTAssertEqualObjects([message content], presenceEnter);
             [expectation fulfill];
         }];
         
@@ -269,14 +269,14 @@
             
             if(message.action == ARTPresenceMessageEnter)
             {
-                XCTAssertEqualObjects(message.payload.payload, presenceEnter);
+                XCTAssertEqualObjects([message content], presenceEnter);
                 [channel publishPresenceLeave:presenceLeave cb:^(ARTStatus status) {
                     XCTAssertEqual(ARTStatusOk, status);
                 }];
             }
             if(message.action == ARTPresenceMessageLeave)
             {
-                XCTAssertEqualObjects(message.payload.payload, presenceLeave);
+                XCTAssertEqualObjects([message content], presenceLeave);
                 [expectation fulfill];
             }
 
@@ -312,13 +312,13 @@
         ARTRealtimeChannel *channel = [realtime channel:channelName];
         [channel subscribeToPresence:^(ARTPresenceMessage * message) {
             if(message.action == ARTPresenceMessageEnter) {
-                XCTAssertEqualObjects(message.payload.payload, presenceEnter);
+                XCTAssertEqualObjects([message content], presenceEnter);
                 [channel publishPresenceEnter:secondEnter cb:^(ARTStatus status) {
                     XCTAssertEqual(ARTStatusOk, status);
                 }];
             }
             else if(message.action == ARTPresenceMessageUpdate) {
-                XCTAssertEqualObjects(message.payload.payload, secondEnter);
+                XCTAssertEqualObjects([message content], secondEnter);
                 [expectation fulfill];
             }
         }];
@@ -350,13 +350,13 @@
         ARTRealtimeChannel *channel = [realtime channel:channelName];
         [channel subscribeToPresence:^(ARTPresenceMessage * message) {
             if(message.action == ARTPresenceMessageEnter) {
-                XCTAssertEqualObjects(message.payload.payload, presenceEnter);
+                XCTAssertEqualObjects([message content], presenceEnter);
                 [channel publishPresenceUpdate:update cb:^(ARTStatus status) {
                     XCTAssertEqual(ARTStatusOk, status);
                 }];
             }
             else if(message.action == ARTPresenceMessageUpdate) {
-                XCTAssertEqualObjects(message.payload.payload, update);
+                XCTAssertEqualObjects([message content], update);
                 [expectation fulfill];
             }
         }];
@@ -384,13 +384,13 @@
         ARTRealtimeChannel *channel = [realtime channel:channelName];
         [channel subscribeToPresence:^(ARTPresenceMessage * message) {
             if(message.action == ARTPresenceMessageEnter) {
-                XCTAssertEqualObjects(message.payload.payload, presenceEnter);
+                XCTAssertEqualObjects([message content], presenceEnter);
                 [channel publishPresenceUpdate:nil cb:^(ARTStatus status) {
                     XCTAssertEqual(ARTStatusOk, status);
                 }];
             }
             else if(message.action == ARTPresenceMessageUpdate) {
-                XCTAssertEqualObjects(message.payload.payload, nil);
+                XCTAssertEqualObjects([message content], nil);
                 [expectation fulfill];
             }
         }];
@@ -409,6 +409,7 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
+
 //enter_leave_nodata
 -(void) testEnterLeaveWithoutData {
     NSString * channelName = @"testEnterLeaveSimple";
@@ -418,17 +419,14 @@
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime channel:channelName];
         [channel subscribeToPresence:^(ARTPresenceMessage * message) {
-            
-            if(message.action == ARTPresenceMessageEnter)
-            {
-                XCTAssertEqualObjects(message.payload.payload, presenceEnter);
+            if(message.action == ARTPresenceMessageEnter) {
+                XCTAssertEqualObjects([message content], presenceEnter);
                 [channel publishPresenceLeave:nil cb:^(ARTStatus status) {
                     XCTAssertEqual(ARTStatusOk, status);
                 }];
             }
-            if(message.action == ARTPresenceMessageLeave)
-            {
-                XCTAssertEqualObjects(message.payload.payload, presenceEnter);
+            if(message.action == ARTPresenceMessageLeave) {
+                XCTAssertEqualObjects([message content], presenceEnter);
                 NSLog(@"WIN");
                 [expectation fulfill];
             }
@@ -441,20 +439,15 @@
                 [channel attach];
             }
         }];
-
-
         [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus reason) {
-            if(cState == ARTRealtimeChannelAttached)
-            {
+            if(cState == ARTRealtimeChannelAttached) {
                 [channel publishPresenceEnter:presenceEnter cb:^(ARTStatus status) {
                     XCTAssertEqual(ARTStatusOk, status);
                 }];
             }
-            
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    
 }
 
 //update_noenter
@@ -468,7 +461,7 @@
             
             if(message.action == ARTPresenceMessageEnter)
             {
-                XCTAssertEqualObjects(message.payload.payload, update);
+                XCTAssertEqualObjects([message content], update);
                 [expectation fulfill];
             }
         }];
@@ -501,13 +494,13 @@
         ARTRealtimeChannel *channel = [realtime channel:@"testEnterLeaveNoData"];
         [channel subscribeToPresence:^(ARTPresenceMessage * message) {
             if(message.action == ARTPresenceMessageEnter) {
-                XCTAssertEqualObjects(message.payload.payload, enter);
+                XCTAssertEqualObjects([message content], enter);
                 [channel publishPresenceLeave:nil cb:^(ARTStatus status) {
                     XCTAssertEqual(ARTStatusOk, status);
                 }];
             }
             else if(message.action == ARTPresenceMessageLeave) {
-                XCTAssertEqualObjects(message.payload.payload, enter);
+                XCTAssertEqualObjects([message content], enter);
                 [expectation fulfill];
             }
         }];
@@ -525,7 +518,6 @@
                     XCTAssertEqual(ARTStatusOk, status);
                 }];
             }
-            
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -534,22 +526,99 @@
 //realtime_get_simple
 -(void) testEnterAndGet
 {
-    XCTFail(@"TODO write test");
+    NSString * enter = @"enter";
+    XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
+    [self withRealtimeClientId:^(ARTRealtime *realtime) {
+        ARTRealtimeChannel *channel = [realtime channel:@"testEnterAndGet"];
+        [channel subscribeToPresence:^(ARTPresenceMessage * message) {
+            if(message.action == ARTPresenceMessageEnter)  {
+                XCTAssertEqualObjects([message content], enter);
+                [channel presence:^(ARTStatus status, id<ARTPaginatedResult> result) {
+                    XCTAssertEqual(ARTStatusOk, status);
+                    XCTAssertEqual(status, ARTStatusOk);
+                    NSArray *messages = [result current];
+                    XCTAssertEqual(1, messages.count);
+                    ARTPresenceMessage *m0 = messages[0];
+                    
+                    XCTAssertEqual(m0.action, ArtPresenceMessagePresent);
+                    XCTAssertEqualObjects(enter, [m0 content]);
+                    [expectation fulfill];
+                }];
+            }
+        }];
+        
+        [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
+            NSLog(@"testAttach constate...: %@", [ARTRealtime ARTRealtimeStateToStr:state]);
+            if (state == ARTRealtimeConnected) {
+                [channel attach];
+            }
+        }];
+        
+        [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus reason) {
+            if(cState == ARTRealtimeChannelAttached)
+            {
+                [channel publishPresenceEnter:enter cb:^(ARTStatus status) {
+                    XCTAssertEqual(ARTStatusOk, status);
+                }];
+            }
+            
+        }];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 //realtime_get_leave
 -(void) testEnterLeaveAndGet
 {
-    XCTFail(@"TODO write test");
+    NSString * enter = @"enter";
+    NSString * leave = @"bye";
+    XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
+    [self withRealtimeClientId:^(ARTRealtime *realtime) {
+        ARTRealtimeChannel *channel = [realtime channel:@"testEnterAndGet"];
+        [channel subscribeToPresence:^(ARTPresenceMessage * message) {
+            if(message.action == ARTPresenceMessageEnter)  {
+                XCTAssertEqualObjects([message content], enter);
+                
+                [channel publishPresenceLeave:leave cb:^(ARTStatus status) {
+                    XCTAssertEqualObjects([message content], enter);
+                    [channel presence:^(ARTStatus status, id<ARTPaginatedResult> result) {
+                        XCTAssertEqual(ARTStatusOk, status);
+                        XCTAssertEqual(status, ARTStatusOk);
+                        NSArray *messages = [result current];
+                        XCTAssertEqual(0, messages.count);
+                        NSLog(@"no messages %@", messages);
+                        [expectation fulfill];
+                    }];
+                }];
+            }
+        }];
+        
+        [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
+            NSLog(@"testAttach constate...: %@", [ARTRealtime ARTRealtimeStateToStr:state]);
+            if (state == ARTRealtimeConnected) {
+                [channel attach];
+            }
+        }];
+        
+        [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus reason) {
+            if(cState == ARTRealtimeChannelAttached)
+            {
+                [channel publishPresenceEnter:enter cb:^(ARTStatus status) {
+                    XCTAssertEqual(ARTStatusOk, status);
+                }];
+            }
+        }];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 //attach_enter_simple
 - (void)testAttachEnterTwoConnections {
-    XCTFail(@"TODO write test");
+    XCTFail(@"needs realtime2");
 }
 
 //attach_enter_simple
 - (void)testAttachEnterSimple {
-    XCTFail(@"TODO write test");
+    XCTFail(@"needs realtime2");
 }
 
 //attach_enter_multiple
@@ -568,6 +637,8 @@
 //rest_get_simple
 -(void) testRestEnterGet
 {
+    XCTFail(@"needs realtime2");
+    return;
     XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
     
     //TODO do some raeltime stuff then check the rest channel sees the same noise.
@@ -640,11 +711,11 @@
         __block bool  hasEntered = false;
         [channel subscribeToPresence:^(ARTPresenceMessage * message) {
             
-            NSLog(@"channel got message %@", message.payload.payload);
+            NSLog(@"channel got message %@", [message content]);
             if(message.action == ARTPresenceMessageEnter)
             {
                 hasEntered =true;
-                XCTAssertEqualObjects(message.payload.payload, enter);
+                XCTAssertEqualObjects([message content], enter);
                 //[realtime onError:nil];
                 [realtime close];
             }

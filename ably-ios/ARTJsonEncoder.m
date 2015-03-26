@@ -190,12 +190,9 @@
 }
 
 - (ARTPresenceMessage *)presenceMessageFromDictionary:(NSDictionary *)input {
-    NSLog(@"well then");
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
-    NSLog(@"presence message is %@", input);
-
     ARTPresenceMessage *message = [[ARTPresenceMessage alloc] init];
     message.id = [input artString:@"id"];
     message.clientId = [input artString:@"clientId"];
@@ -319,10 +316,7 @@
 
     if (message.presence) {
         output[@"presence"] = [self presenceMessagesToArray:message.presence];
-        
     }
-
-    NSLog(@"p message to dict %@", output);
     return output;
 }
 

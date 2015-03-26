@@ -79,7 +79,7 @@
             ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
             ARTRealtimeChannel *channel = [realtime channel:channelName];
             [channel subscribe:^(ARTMessage * message) {
-                if([message.payload.payload isEqualToString:@"c2message"])
+                if([[message content] isEqualToString:@"c2message"])
                 {
                    // NSLog(@"got c2messge");
                     [channel publish:@"c1SaysThanksForTheMessage" cb:^(ARTStatus status) {
@@ -90,7 +90,7 @@
                 }
             }];
             [channel2 subscribe:^(ARTMessage * message) {
-                if([message.payload.payload isEqualToString:@"c1SaysThanksForTheMessage"])
+                if([[message content] isEqualToString:@"c1SaysThanksForTheMessage"])
                 {
                    // NSLog(@"c2 recieved the thank you");
                     [expectation fulfill];
@@ -222,8 +222,8 @@ NSString * channelName = @"resumeChannel";
             [channel2 attach];
             
             [channel2 subscribe:^(ARTMessage * message) {
-                NSLog(@"channel 2 got %@", message.payload.payload);
-                if([message.payload.payload isEqualToString:@"sentWhileC2IsDown"])
+                NSLog(@"channel 2 got %@", [message content]);
+                if([[message content] isEqualToString:@"sentWhileC2IsDown"])
                 {
                     NSLog(@"recieved message on c2 sent while c2 was down");
                 }
@@ -239,7 +239,7 @@ NSString * channelName = @"resumeChannel";
         XCTestExpectation *expectChannel1GotMessage = [self expectationWithDescription:@"expectChannel1GotMessage"];
         [channel subscribe:^(ARTMessage * message) {
             [expectChannel1GotMessage fulfill];
-            NSLog(@"channel 1 recieved message %@", message.payload.payload);
+            NSLog(@"channel 1 recieved message %@", [message content]);
         }];
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 

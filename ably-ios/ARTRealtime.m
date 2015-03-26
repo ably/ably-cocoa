@@ -401,7 +401,6 @@
     ARTProtocolMessage *pm = [[ARTProtocolMessage alloc] init];
     pm.action = ARTProtocolMessagePresence;
     pm.channel = self.name;
-    //TODO used to be @[msg];
     pm.presence = @[msg];
 
     [self publishProtocolMessage:pm cb:cb];
@@ -446,12 +445,19 @@
     return [self.restChannel historyWithParams:queryParams cb:cb];
 }
 
+-(id<ARTCancellable>) presenceWithParams:(NSDictionary *) queryParams cb:(ARTPaginatedResultCb) cb {
+    return [self.restChannel presenceWithParams:queryParams cb:cb];
+}
+
+-(id<ARTCancellable>) presence:(ARTPaginatedResultCb) cb {
+    return [self.restChannel presence:cb];
+}
 - (id<ARTCancellable>)presenceHistory:(ARTPaginatedResultCb)cb {
     return [self.restChannel presenceHistory:cb];
 }
 
 - (id<ARTCancellable>)presenceHistoryWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb {
-    return [self.restChannel presenceWithParams:queryParams cb:cb];
+    return [self.restChannel presenceHistoryWithParams:queryParams cb:cb];
 }
 
 - (id<ARTSubscription>)subscribe:(ARTRealtimeChannelMessageCb)cb {

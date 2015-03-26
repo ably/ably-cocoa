@@ -306,27 +306,17 @@
                              XCTAssertEqualObjects(@"testString3", [secondMessage content]);
                              [expectation fulfill];
                          }];
-                         
                          //TODO check first link works.
                      }];
                  }];
-                 
              }];
-                        }];
-                    }];
-    /*
-                }];
-            }];
         }];
     }];
-     */
-    
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 -(void) testTimeBackwards
 {
-    
     NSLog(@"TEST testTimeBackwards");
     XCTestExpectation *e = [self expectationWithDescription:@"testTimeBackwards"];
     

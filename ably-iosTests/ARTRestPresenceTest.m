@@ -49,11 +49,7 @@
     }
     cb(_rest);
 }
-
-//VXTODO RM ONCE THIS IS IN ARTRestPresenceTest
-
-//TODO amalgamate or whatever.
-- (void)testTypes {
+- (void)testPresence {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
     [self withRest:^(ARTRest *rest) {
         ARTRestChannel *channel = [rest channel:@"persisted:presence_fixtures"];
@@ -95,24 +91,25 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-- (void)testHistoryText {
-    XCTFail(@"TODO write test");
-}
+- (void)testHistory {
+    
+    XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
+    [self withRest:^(ARTRest *rest) {
+        ARTRestChannel *channel = [rest channel:@"persisted:presence_fixtures"];
+        [channel presenceHistory:^(ARTStatus status, id<ARTPaginatedResult> result) {
+            XCTAssertEqual(status, ARTStatusOk);
+            if(status != ARTStatusOk) {
+                XCTFail(@"not an ok status");
+                [expectation fulfill];
+                return;
+            }
+            NSArray *presence = [result current];
+            XCTAssertEqual(4, presence.count);
+            [expectation fulfill];
 
-- (void)testHistoryForwardText {
-    XCTFail(@"TODO write test");
-}
-- (void)testHistoryBackwardText {
-    XCTFail(@"TODO write test");
-}
-- (void)testHistoryForwardLimit {
-    XCTFail(@"TODO write test");
-}
-- (void)testHistoryPaginationForward {
-    XCTFail(@"TODO write test");
-}
-- (void)testHistoryPaginationBackward {
-    XCTFail(@"TODO write test");
+        }];
+    }];
+     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 /*

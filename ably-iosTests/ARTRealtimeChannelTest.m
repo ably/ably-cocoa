@@ -160,7 +160,7 @@
         ARTRealtimeChannel *channel = [realtime channel:@"test"];
         id<ARTSubscription> subscription = [channel subscribe:^(ARTMessage *message) {
             
-            if([message.payload.payload isEqualToString:@"testString"]) {
+            if([[message content] isEqualToString:@"testString"]) {
                 [subscription unsubscribe];
                 [channel publish:@"This should never arrive" cb:^(ARTStatus status) {
                     XCTAssertEqual(status, ARTStatusOk);
@@ -171,7 +171,7 @@
                 XCTFail(@"unsubscribe failed");
                 [expectation fulfill];
             }
-            XCTAssertEqualObjects(message.payload.payload, @"testString");
+            XCTAssertEqualObjects([message content], @"testString");
         }];
         [channel publish:@"testString" cb:^(ARTStatus status) {
             XCTAssertEqual(ARTStatusOk, status);

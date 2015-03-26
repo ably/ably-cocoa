@@ -104,7 +104,7 @@
     [self withRealtime:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime channel:@"testSingleSendText"];
         [channel subscribe:^(ARTMessage * message) {
-            XCTAssertEqualObjects(message.payload.payload, @"testString");
+            XCTAssertEqualObjects([message content], @"testString");
             [expectation fulfill];
         }];
         [channel publish:@"testString" cb:^(ARTStatus status) {
@@ -122,14 +122,14 @@
     [self withRealtime:^(ARTRealtime *realtime1) {
         ARTRealtimeChannel *channel = [realtime1 channel:channelName];
             [channel subscribe:^(ARTMessage * message) {
-                XCTAssertEqualObjects(message.payload.payload, @"testStringEcho");
+                XCTAssertEqualObjects([message content], @"testStringEcho");
                 NSLog(@"recieved testStringEcho!!");
                 [expectation fulfill];
             }];
         [self withRealtime2:^(ARTRealtime *realtime2) {
             ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
             [channel2 subscribe:^(ARTMessage * message) {
-                XCTAssertEqualObjects(message.payload.payload, @"testStringEcho");
+                XCTAssertEqualObjects([message content], @"testStringEcho");
             }];
             [channel2 publish:@"testStringEcho" cb:^(ARTStatus status) {
                 XCTAssertEqual(ARTStatusOk, status);

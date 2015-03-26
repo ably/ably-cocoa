@@ -175,12 +175,9 @@
     NSLog(@"request is %@", request);
     NSLog(@"art request headers is %@", artRequest.headers);
     {
-        
         if(artRequest.body) {
             ARTJsonEncoder * encoder =[[ARTJsonEncoder alloc] init];
-        
             NSLog(@"decoded request is %@", [encoder decodeMessage:artRequest.body]);
-            
         }
     }
 
