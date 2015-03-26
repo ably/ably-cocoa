@@ -18,6 +18,9 @@
 @interface ARTRealtimeRecoverTest : XCTestCase
 {
     ARTRealtime * _realtime;
+    ARTRealtime * _realtimeRecover;
+    
+    ARTOptions * _options;
 }
 @end
 
@@ -39,6 +42,7 @@
     if (!_realtime) {
         [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTOptions *options) {
             if (options) {
+                _options = options;
                 _realtime = [[ARTRealtime alloc] initWithOptions:options];
             }
             cb(_realtime);
@@ -47,6 +51,13 @@
     }
     cb(_realtime);
 }
+
+- (void)withRealtimeRecover:(NSString *) recover cb:(void (^)(ARTRealtime *realtime))cb {
+    _options.recover = recover;
+    _realtimeRecover = [[ARTRealtime alloc] initWithOptions:_options];
+    cb(_realtimeRecover);
+}
+
 
 - (void)withRealtimeAlt:(TestAlteration) alt cb:(void (^)(ARTRealtime *realtime))cb {
     if (!_realtime) {
@@ -67,6 +78,7 @@
     [self withRealtime:^(ARTRealtime *realtime) {
 
         [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
+
             NSLog(@"testRecoverDisconnected constate...: %@", [ARTRealtime ARTRealtimeStateToStr:state]);
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime channel:@"attach"];
@@ -90,10 +102,17 @@
                     if( hasAttached && state == ARTRealtimeChannelDetached) {
                         NSLog(@"connecting....");
 
-                        [realtime connect];
+                        [self withRealtimeRecover:realtime.recovery cb:^(ARTRealtime *realtime2) {
+                            NSLog(@"RECOVERY MAYBE?");
+                            [realtime2 subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
+                                if(state == ARTRealtimeConnected)
+                                {
+                                    NSLog(@"conenction actheived");
+                                }
+                            }];
+                            
+                        }];
                     }
-
-
                 }];
                 [channel attach];
             }

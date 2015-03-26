@@ -727,6 +727,28 @@
     return [self initWithOptions:[ARTOptions optionsWithKey:key]];
 }
 
+
+-(NSString *) getRecoveryString
+{
+    NSString * str = [self.connectionId stringByAppendingString:[NSString stringWithFormat:@":%lld", self.msgSerial]];
+    return str;
+}
+
+-(NSString *) recovery
+{
+    switch(self.state)
+    {
+        case ARTRealtimeConnecting:
+        case ARTRealtimeConnected:
+        case ARTRealtimeDisconnected:
+        case ARTRealtimeSuspended:
+        case ARTRealtimeFailed:
+            return [self getRecoveryString];
+        default:
+            return nil;
+    }
+}
+
 - (instancetype)initWithOptions:(ARTOptions *)options {
     self = [super init];
     if (self) {

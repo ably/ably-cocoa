@@ -111,12 +111,11 @@ enum {
 
 - (void)dealloc {
     self.websocket.delegate = nil;
-    self.websocket = nil; //possible circular reference fix. TODO test
+    self.websocket = nil;
 }
 
 - (void)send:(ARTProtocolMessage *)msg {
     NSData *data = [self.encoder encodeProtocolMessage:msg];
-    NSLog(@"that data is about to get sent alright");
     [self.websocket send:data];
 }
 
