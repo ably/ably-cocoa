@@ -338,6 +338,7 @@
     message.timestamp = [input artDate:@"timestamp"];
     message.messages = [self messagesFromArray:[input objectForKey:@"messages"]];
     message.presence = [self presenceMessagesFromArray:[input objectForKey:@"presence"]];
+    message.connectionKey = [input artString:@"connectionKey"];
 
     return message;
  }

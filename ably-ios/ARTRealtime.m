@@ -127,6 +127,7 @@
 @property (readwrite, assign, nonatomic) CFRunLoopTimerRef retryTimeout;
 
 @property (readwrite, strong, nonatomic) NSString *connectionId;
+@property (readwrite, strong, nonatomic) NSString *connectionKey; //for recovery
 @property (readwrite, assign, nonatomic) int64_t connectionSerial;
 @property (readwrite, assign, nonatomic) int64_t msgSerial;
 
@@ -728,13 +729,17 @@
 }
 
 
+
 -(NSString *) getRecoveryString
 {
-    NSString * str = [self.connectionId stringByAppendingString:[NSString stringWithFormat:@":%lld", self.msgSerial]];
+    
+    NSString * recStr = self.connectionKey;
+    NSString * str = [recStr stringByAppendingString:[NSString stringWithFormat:@":%lld", self.connectionSerial]];
+    NSLog(@"recovery string is %@", str);
     return str;
 }
 
--(NSString *) recovery
+-(NSString *) getRecovery
 {
     switch(self.state)
     {
@@ -846,12 +851,6 @@
     [self cancelConnectTimer];
     [self cancelRetryTimer];
 
-    /*
-    if (state == ARTRealtimeConnected) {
-        NSLog(@"cancelling suspend timer");
-        [self cancelSuspendTimer];
-    }
-*/
     ARTRealtimeConnectionState previousState = self.state;
     self.state = state;
 
@@ -863,6 +862,15 @@
 
             // Create transport and initiate connection
             if(!self.transport) {
+                
+                //TODO can I resume a failed connection?
+                //TODO can this be infinite? maybe self.resume should be an int.
+                if(previousState == ARTRealtimeFailed || previousState == ARTRealtimeDisconnected) {
+                    NSLog(@"resuming %lld", self.connectionSerial);
+                    //TODO PUT BACK
+                    self.options.resume = [NSString stringWithFormat:@"%lld",self.connectionSerial];
+                    self.options.resumeKey = self.connectionKey;
+                }
                 self.transport.delegate = nil;
                 self.transport = [self createTransport];
                 self.transport.delegate = self;
@@ -964,6 +972,7 @@
     switch (self.state) {
         case ARTRealtimeConnecting:
             self.connectionId = message.connectionId;
+            self.connectionKey = message.connectionKey;
             [self transition:ARTRealtimeConnected];
             break;
         default:
@@ -975,6 +984,9 @@
 - (void)onDisconnected:(ARTProtocolMessage *)message {
     switch (self.state) {
         case ARTRealtimeConnected:
+            NSLog(@"onDisconnceted. lost con Id etc.");
+            
+          
             self.connectionId = nil;
             self.msgSerial = 0;
             [self transition:ARTRealtimeDisconnected];
@@ -1224,12 +1236,6 @@
         CFRunLoopRemoveTimer(CFRunLoopGetCurrent(), timer, kCFRunLoopDefaultMode);
         CFRelease(timer);
     }
-}
-
-
--(void) testTimerTODORM
-{
-    
 }
 
 - (void)realtimeTransport:(id)transport didReceiveMessage:(ARTProtocolMessage *)message {

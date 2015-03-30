@@ -19,6 +19,7 @@
         _channel = nil;
         _channelSerial = nil;
         _connectionId = nil;
+        _connectionKey = nil;
         _connectionSerial = 0;
         _msgSerial = 0;
         _timestamp = nil;

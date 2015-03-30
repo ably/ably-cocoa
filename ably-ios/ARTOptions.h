@@ -21,6 +21,8 @@
 @property (readwrite, assign, nonatomic) BOOL queueMessages;
 @property (readwrite, assign, nonatomic) BOOL echoMessages;
 @property (readwrite, assign, nonatomic) BOOL binary;
+@property (readwrite, assign, nonatomic) NSString *resume;
+@property (readwrite, assign, nonatomic) NSString *resumeKey;
 @property (readwrite, strong, nonatomic) NSString *recover;
 
 - (instancetype)init;

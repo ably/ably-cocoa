@@ -18,7 +18,9 @@
 @interface ARTRealtimeRecoverTest : XCTestCase
 {
     ARTRealtime * _realtime;
+ 
     ARTRealtime * _realtimeRecover;
+    ARTRealtime * _realtimeNonRecovered;
     
     ARTOptions * _options;
 }
@@ -53,9 +55,17 @@
 }
 
 - (void)withRealtimeRecover:(NSString *) recover cb:(void (^)(ARTRealtime *realtime))cb {
+    
     _options.recover = recover;
     _realtimeRecover = [[ARTRealtime alloc] initWithOptions:_options];
     cb(_realtimeRecover);
+}
+- (void)withRealtimeExtra:(void (^)(ARTRealtime *realtime))cb {
+    
+    
+    _options.recover= nil;
+    _realtimeNonRecovered = [[ARTRealtime alloc] initWithOptions:_options];
+    cb(_realtimeNonRecovered);
 }
 
 
@@ -73,60 +83,52 @@
 }
 
 - (void)testRecoverDisconnected {
-    //TODO ACTUALLY WRITE this using recover.
+    NSString * channelName = @"chanName";
+    NSString * c1Message = @"c1 says hi";
+    NSString * c2Message= @"c2 says hi";
     XCTestExpectation *expectation = [self expectationWithDescription:@"testRecoverDisconnected"];
     [self withRealtime:^(ARTRealtime *realtime) {
-
         [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
-
-            NSLog(@"testRecoverDisconnected constate...: %@", [ARTRealtime ARTRealtimeStateToStr:state]);
             if (state == ARTRealtimeConnected) {
-                ARTRealtimeChannel *channel = [realtime channel:@"attach"];
-                __block bool hasAttached = false;
-                [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus reason) {
-                    NSLog(@"channel state is %lu", state);
-                    if (state == ARTRealtimeChannelAttached) {
-                        if(!hasAttached)
-                        {
-                            hasAttached = true;
-                            [realtime onError:nil];
-                        }
-                        else
-                        {
-                            //reconnction succeeded.
-                            XCTFail(@"nearly there. Need to use recover api");
-                            [expectation fulfill];
-                        }
-                        
-                    }
-                    if( hasAttached && state == ARTRealtimeChannelDetached) {
-                        NSLog(@"connecting....");
-
-                        [self withRealtimeRecover:realtime.recovery cb:^(ARTRealtime *realtime2) {
-                            NSLog(@"RECOVERY MAYBE?");
-                            [realtime2 subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
-                                if(state == ARTRealtimeConnected)
-                                {
-                                    NSLog(@"conenction actheived");
-                                }
-                            }];
-                            
-                        }];
-                    }
+                ARTRealtimeChannel *channel = [realtime channel:channelName];
+                [channel publish:c1Message cb:^(ARTStatus status) {
+                    XCTAssertEqual(ARTStatusOk, status);
+                    [realtime onError:nil];
                 }];
-                [channel attach];
             }
-            else {
-                
+            else if(state == ARTRealtimeFailed) {
+                [self withRealtimeExtra:^(ARTRealtime *realtime2) {
+                    [realtime2 subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
+                        ARTRealtimeChannel * c2 = [realtime2 channel:channelName];
+                        [c2 publish:c2Message cb:^(ARTStatus status) {
+                            XCTAssertEqual(ARTStatusOk, status);
+                            [self withRealtimeRecover:[realtime getRecovery] cb:^(ARTRealtime *realtimeRecovered) {
+                                [realtimeRecovered subscribeToStateChanges:^(ARTRealtimeConnectionState cState) {
+                                    if(cState == ARTRealtimeConnected) {
+                                        ARTRealtimeChannel * c3 = [realtimeRecovered channel:channelName];
+                                        [c3 subscribe:^(ARTMessage * message) {
+                                            XCTAssertEqualObjects(c2Message, [message content]);
+                                            [expectation fulfill];
+                                        }];
+                                    }
+                                    
+                                }];
+                            }];
+                        }];
+                    }];
+                }];
             }
         }];
     }];
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:100 handler:nil];
     
 }
+
+//testRecoverDisconnected uses implicit connect, no need for this test.
+/*
 - (void)testRecoverImplicitConnect {
     XCTFail(@"TODO write test");
 }
-
+*/
 @end

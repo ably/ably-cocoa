@@ -49,6 +49,10 @@
 }
 
 - (void)testNotFoundErrBadKeyId {
+    XCTFail(@"TODO testNotFoundErrBadKeyId" );
+    return;
+    
+    
     XCTestExpectation *expectation = [self expectationWithDescription:@"test_connect_text"];
     [self withRealtimeAlt:TestAlterationBadKeyId cb:^(ARTRealtime *realtime) {
         [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
@@ -61,6 +65,10 @@
 }
 
 - (void)testNotFoundErrBadKeyValue {
+    
+    XCTFail(@"testNotFoundErrBadKeyValue");
+    return;
+    
     XCTestExpectation *expectation = [self expectationWithDescription:@"test_connect_text"];
     [self withRealtimeAlt:TestAlterationBadKeyValue cb:^(ARTRealtime *realtime) {
         [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
@@ -75,6 +83,10 @@
 
 - (void)testDisonnectFail {
     
+    XCTFail(@"testDisonnectFail");
+    return;
+    
+
     //TODO write this.
     XCTestExpectation *expectation = [self expectationWithDescription:@"test_connect_text"];
     [self withRealtimeAlt:TestAlterationNone cb:^(ARTRealtime *realtime) {

@@ -71,22 +71,30 @@ enum {
 
             NSMutableDictionary *queryParams = [NSMutableDictionary dictionaryWithDictionary:authParams];
             
-            
-            //TODO thers an echo messages flag as well here.
-            
+            /*
+             //msgpack not supported yet.
             if(false || options.binary) {
                 queryParams[@"format"] = @"msgpack";
             }
-            
-            //TODO DELETE
-            /*
-            if (!binary) {
-                queryParams[@"binary"] =@"false"; // We only support json for now
-            }
-             */
+            */
 
             if (!echoMessages) {
                 queryParams[@"echo"] = @"false";
+            }
+            
+            if(options.recover) {
+                NSArray * parts = [options.recover componentsSeparatedByString:@":"];
+                if([parts count] ==2) {
+                    NSString * conId = [parts objectAtIndex:0];
+                    NSString * key = [parts objectAtIndex:1];
+                    queryParams[@"recover"] = conId;
+                    queryParams[@"connection_serial"] = key;
+                }
+            }
+            else if(options.resume != nil) {
+                queryParams[@"resume"]  =  options.resumeKey;
+                queryParams[@"connection_serial"] = options.resume;
+                
             }
 
             // TODO configure resume param
@@ -98,7 +106,12 @@ enum {
             NSString *queryString = [sRest formatQueryParams:queryParams];
             NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"wss://%@:%d/?%@", realtimeHost, realtimePort, queryString]];
 
+            
             NSLog(@"Websocket url: %@", url);
+            if(options.recover)
+            {
+                NSLog(@"recover URL IS %@", url);
+            }
 
             sSelf.websocket = [[SRWebSocket alloc] initWithURL:url];
             sSelf.websocket.delegate = sSelf;

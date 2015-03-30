@@ -50,9 +50,11 @@
     _restPort = 443;
     _realtimePort = 443;
     _queueMessages = NO;
+    _resume = nil;
     _echoMessages = YES;
     _recover = nil;
     _binary = false;
+    _resumeKey = nil;
     return self;
 }
 
@@ -77,6 +79,7 @@
         return nil;
     }
 
+
     options.clientId = self.clientId;
     options.restHost = self.restHost;
     options.realtimeHost = self.realtimeHost;
@@ -86,6 +89,8 @@
     options.echoMessages = self.echoMessages;
     options.recover = self.recover;
     options.binary = self.binary;
+    options.resume = self.resume;
+    options.resumeKey = self.resumeKey;
 
     return options;
 }
