@@ -14,20 +14,13 @@
 
 
 
-@interface ARTRealtimeTest : XCTestCase {
+@interface ARTRealtimeAttachTest : XCTestCase {
     ARTRealtime *_realtime;
 }
-
-
 - (void)multipleSendName:(NSString *)name count:(int)count delay:(int)delay;
-
-
 @end
 
-
-
-
-@implementation ARTRealtimeTest
+@implementation ARTRealtimeAttachTest
 
 
 - (void)setUp {
@@ -36,7 +29,6 @@
 
 - (void)tearDown {
     _realtime = nil;
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
 }
 
@@ -239,12 +231,5 @@
     
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
-
-
-
-
-
-
-
 
 @end
