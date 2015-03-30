@@ -69,7 +69,6 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"attach"];
     [self withRealtime:^(ARTRealtime *realtime) {
         [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
-            NSLog(@"testAttach constate...: %@", [ARTRealtime ARTRealtimeStateToStr:state]);
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime channel:@"attach"];
                 [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus reason) {
@@ -153,10 +152,8 @@
 }
 
 - (void)testSubscribeUnsubscribe{
-    NSLog(@"testSubscribeUnsubscribe happening");
     XCTestExpectation *expectation = [self expectationWithDescription:@"publish"];
     [self withRealtime:^(ARTRealtime *realtime) {
-        NSLog(@"testSubscribeUnsubscribe happening???");
         ARTRealtimeChannel *channel = [realtime channel:@"test"];
         id<ARTSubscription> subscription = [channel subscribe:^(ARTMessage *message) {
             
@@ -183,13 +180,13 @@
 
 //TODO switch the keys over and confirm connection doesn't work.
 - (void)testAttachFail {
-    NSLog(@"testAttachFail happening");
+    XCTFail(@"TODO");
+    return;
+    
     XCTestExpectation *expectation = [self expectationWithDescription:@"testAttachFail"];
     [self withRealtimeAlt:TestAlterationBadKeyValue cb:^(ARTRealtime *realtime) {
         ARTRealtimeChannel * channel = [realtime channel:@"invalidChannel"];
         [channel subscribeToStateChanges:^(ARTRealtimeChannelState channelState, ARTStatus status) {
-          //  NSLog(@"tatsu is %@", [ARTRealtime ARTRealtimeStateToStr:channelState]);
-            NSLog(@"channel state num is %lu", channelState);
             XCTAssertEqual(ARTRealtimeChannelFailed, channelState);
             [expectation fulfill];
         }];

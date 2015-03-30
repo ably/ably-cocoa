@@ -43,7 +43,7 @@
                               };
     
     NSData *appSpecData = [NSJSONSerialization dataWithJSONObject:appSpec options:0 error:nil];
-    NSLog(@"%@", [[NSString alloc] initWithData:appSpecData encoding:NSUTF8StringEncoding]);
+    NSLog(@" setupApp: %@", [[NSString alloc] initWithData:appSpecData encoding:NSUTF8StringEncoding]);
     
     
     if(alt ==TestAlterationBadWsHost)
@@ -88,8 +88,6 @@
             
             if (response) {
                 NSDictionary *key = response[@"keys"][0];
-                NSLog(@"APP ID IS %@", response[@"appId"]);
-//                NSString * theAppId = appId ? appId : response[@"appId"];
                 keyId = [NSString stringWithFormat:@"%@.%@", response[@"appId"], key[@"id"]];
                 
                 keyValue = key[@"value"];
@@ -203,11 +201,11 @@
 
 +(float) smallSleep
 {
-    return 0.5;
+    return 1.75;
 }
 +(float) bigSleep
 {
-    return 1.0; ///TODO put back to 1.0
+    return 3.0;
     
 }
 +(float) timeout

@@ -27,12 +27,10 @@
 @implementation ARTRestTimeTest
 
 - (void)setUp {
-    NSLog(@"resttime setup");
     [super setUp];
 }
 
 - (void)tearDown {
-    NSLog(@"resttime teardown");
     _rest = nil;
     [super tearDown];
 }
@@ -60,8 +58,6 @@
     [ARTTestUtil setupApp:badOptions cb:^(ARTOptions *options) {
         ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
         [rest time:^(ARTStatus status, NSDate *date) {
-            NSLog(@"status bad host is %lu", status);
-            NSLog(@"nsdate is %@", date);
             XCTAssert(status == ARTStatusError);
             if(expectationRestTimeBadHost) {
                 [expectationRestTimeBadHost fulfill];
@@ -78,8 +74,6 @@
     
     [self withRest:^(ARTRest *rest) {
         [rest time:^(ARTStatus status, NSDate *date) {
-            NSLog(@"status is %d", status);
-            NSLog(@"nsdate is %@", date);
             XCTAssert(status == ARTStatusOk);
             // Expect local clock and server clock to be synced within 5 seconds
             XCTAssertEqualWithAccuracy([date timeIntervalSinceNow], 0.0, 5.0);

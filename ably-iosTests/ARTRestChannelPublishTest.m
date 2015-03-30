@@ -65,7 +65,6 @@
             if (options) {
                 _restBinary = [[ARTRest alloc] initWithOptions:options];
             }
-            NSLog(@"BINARY IS A %@", (options.binary ? @"YES" : @"NO"));
             cb(_restBinary);
         }];
         return;

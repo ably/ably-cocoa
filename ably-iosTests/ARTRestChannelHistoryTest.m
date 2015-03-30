@@ -18,10 +18,6 @@
     ARTOptions *_options;
     float _timeout;
 }
-
-- (void)withRest:(void(^)(ARTRest *))cb;
-- (void)multipleSendName:(NSString *)name count:(int)count delay:(int)delay;
-
 @end
 
 @implementation ARTRestChannelHistoryTest
@@ -51,19 +47,8 @@
     }
     cb(_rest);
 }
-
-
-//TODO testTypes test?
-
-
-
--(void) testTimeBackwards
-{
-
-    NSLog(@"TEST testTimeBackwards");
+-(void) testTimeBackwards {
     XCTestExpectation *e = [self expectationWithDescription:@"realtime"];
-    
-    //TODO whats this for.
     [self withRest:^(ARTRest *realtime) {
         [e fulfill];
     }];
@@ -124,13 +109,11 @@
             __block int numReceived3 =0;
             
             for(int i=0; i < thirdBatchTotal; i++) {
-                NSLog(@"third batchb %d", i);
                 NSString * pub = [NSString stringWithFormat:@"third_test%d", i];
                 sleep([ARTTestUtil smallSleep]);
                 [channel publish:pub cb:^(ARTStatus status) {
                     ++numReceived3;
                     if(numReceived3 ==thirdBatchTotal) {
-                        NSLog(@"third fulfilled backwards");
                         [thirdExpectation fulfill];
                     }
                 }];
@@ -139,8 +122,6 @@
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
         
         XCTestExpectation *fourthExpectation = [self expectationWithDescription:@"send_fourth_batch"];
-        
-        NSLog(@"SENDINGb hsitory in time req %lld %lld", intervalStart, intervalEnd);
         [channel historyWithParams:@{
                                      @"start" : [NSString stringWithFormat:@"%lld", intervalStart],
                                      @"end"   : [NSString stringWithFormat:@"%lld", intervalEnd],
@@ -188,10 +169,7 @@
         //send first batch, which we won't recieve in the history request
         {
             __block int numReceived =0;
-
             for(int i=0; i < firstBatchTotal; i++) {
- 
-                NSLog(@"first batch %d", i);
                 NSString * pub = [NSString stringWithFormat:@"test%d", i];
                 sleep([ARTTestUtil smallSleep]);
                 [channel publish:pub cb:^(ARTStatus status) {
@@ -209,9 +187,7 @@
             sleep([ARTTestUtil bigSleep]);
             intervalStart  = [ARTTestUtil nowMilli];
             __block int numReceived2 =0;
-
             for(int i=0; i < secondBatchTotal; i++) {
-                NSLog(@"second batch %d", i);
                 NSString * pub = [NSString stringWithFormat:@"second_test%d", i];
                 sleep([ARTTestUtil smallSleep]);
                 [channel publish:pub cb:^(ARTStatus status) {
@@ -230,15 +206,12 @@
         //send third batch, which we won't receieve in the history request
         {
             __block int numReceived3 =0;
-            
             for(int i=0; i < secondBatchTotal; i++) {
-                NSLog(@"third batch %d", i);
                 NSString * pub = [NSString stringWithFormat:@"third_test%d", i];
                 sleep([ARTTestUtil smallSleep]);
                 [channel publish:pub cb:^(ARTStatus status) {
                     ++numReceived3;
                     if(numReceived3 ==secondBatchTotal) {
-                        NSLog(@"third fulfilled");
                         [thirdExpectation fulfill];
                     }
                 }];
@@ -247,8 +220,6 @@
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
         
         XCTestExpectation *fourthExpectation = [self expectationWithDescription:@"send_fourth_batch"];
-
-        NSLog(@"SENDING hsitory in time req %lld %lld", intervalStart, intervalEnd);
         [channel historyWithParams:@{
                                      @"start" : [NSString stringWithFormat:@"%lld", intervalStart],
                                      @"end"   : [NSString stringWithFormat:@"%lld", intervalEnd],
@@ -278,7 +249,6 @@
 //TODO I've merged tests here into 2.
 -(void) testHistoryForwardPagination
 {
-    NSLog(@"TEST testHistoryForwardPagination");
     XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryForwardPagination"];
     [self withRest:^(ARTRest  *rest) {
         
@@ -344,15 +314,10 @@
             }];
         }];
     }];
-    //TODO TIMER
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-
-//TODO ios status doc
--(void) testHistoryBackwardPagination
-{
-            NSLog(@"TEST testHistoryBackwardPagination");
+-(void) testHistoryBackwardPagination {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryBackwardagination"];
     [self withRest:^(ARTRest  *rest) {
                 //TODO migrate to my fancy publisher call

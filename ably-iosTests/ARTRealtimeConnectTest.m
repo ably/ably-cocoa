@@ -55,7 +55,6 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"test_connect_text"];
     [self withRealtime:^(ARTRealtime *realtime) {
         [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
-            NSLog(@"testAttach constate...: %@", [ARTRealtime ARTRealtimeStateToStr:state]);
             if (state == ARTRealtimeConnected) {
                 [expectation fulfill];
             }

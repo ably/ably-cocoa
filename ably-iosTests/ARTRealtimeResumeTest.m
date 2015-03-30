@@ -78,7 +78,6 @@
             ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
             [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus reason) {
                 if(cState == ARTRealtimeChannelAttached) {
-                    NSLog(@"c1 attacehd");
                     [channel2 attach];
                     if(disconnectionHappened) {
                         [channel2 publish:message4 cb:^(ARTStatus status) {
@@ -105,19 +104,15 @@
                 if(state == ARTRealtimeFailed) {
                     [channel2 publish:message3 cb:^(ARTStatus status) {
                         XCTAssertEqual(ARTStatusOk, status);
-                        NSLog(@"published messag3 message");
                         [realtime connect];
                     }];
                 }
                 if(state == ARTRealtimeConnected) {
-                    NSLog(@"realtime 1 conneycted");
                     [channel attach];
                 }
             }];
             __block bool firstRecieved = false;
             [channel subscribe:^(ARTMessage * message) {
-
-                NSLog(@"c1 got %@", [message content]);
                 if([[message content] isEqualToString:message1]) {
                     firstRecieved = true;
                     
@@ -151,13 +146,8 @@
             ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
             [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus reason)
             {
-                NSLog(@"channel state is %lu", cState);
                 if(cState == ARTRealtimeChannelAttached) {
-                    NSLog(@"c1 attacehd");
                     [channel2 attach];
-                    [channel2 publish:@"WHAT" cb:^(ARTStatus status) {
-                        XCTAssertEqual(ARTStatusOk, status);
-                    }];
                 }
             }];
             [channel2 subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus reason) {
@@ -172,20 +162,10 @@
                 }
                 
             }];
-            __block bool oneRec = false;
-            __block bool twoRec = false;
-            __block bool threeRec = false;
-            __block bool fourRec = false;
-            
             [channel subscribe:^(ARTMessage * message) {
                 
                 NSString * msg = [message content];
-                NSLog(@"channel got message %@",msg);
-                if([msg isEqualToString:message1]) {
-                    oneRec =true;
-                }
-                else if([msg isEqualToString:message2]) {
-                    twoRec = true;
+                if([msg isEqualToString:message2]) {
                     //disconnect connection1
                     [realtime onError:nil];
                     [channel2 publish:message3 cb:^(ARTStatus status) {
@@ -194,22 +174,14 @@
                         }];
                     }];
                 }
-                else if([msg isEqualToString:message3]) {
-                    threeRec =true;
-                }
-                else if([msg isEqualToString:message4]) {
-                    fourRec = true;
+                if([msg isEqualToString:message4]) {
                     [expectation fulfill];
                 }
             }];
             
             [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
-                NSLog(@"realtime is in state %lu", state);
                 [channel attach];
-
             }];
-
-            
         }];
     }];
     

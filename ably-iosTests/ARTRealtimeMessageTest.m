@@ -113,7 +113,6 @@
         ARTRealtimeChannel *channel = [realtime1 channel:channelName];
             [channel subscribe:^(ARTMessage * message) {
                 XCTAssertEqualObjects([message content], @"testStringEcho");
-                NSLog(@"recieved testStringEcho!!");
                 [expectation fulfill];
             }];
         [self withRealtime2:^(ARTRealtime *realtime2) {

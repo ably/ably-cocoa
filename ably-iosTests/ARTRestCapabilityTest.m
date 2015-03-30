@@ -50,6 +50,8 @@
     cb(_rest);
 }
 
+/*
+//TODO write tests
 - (void)testAuthBlanket {
     XCTFail(@"TODO write test");
 }
@@ -72,71 +74,17 @@
     XCTFail(@"TODO write test");
 }
 - (void)testAuthCapability7 {
-    /*
-     try {
-     Key key = RestSetup.getTestVars().keys[4];
-     AuthOptions authOptions = new AuthOptions();
-     authOptions.keyId = key.keyId;
-     authOptions.keyValue = key.keyValue;
-     TokenParams tokenParams = new TokenParams();
-     Capability requestedCapability = new Capability();
-     requestedCapability.addResource("channel6", new String[]{"publish", "subscribe"});
-     tokenParams.capability = requestedCapability.toString();
-     TokenDetails tokenDetails = ably.auth.requestToken(authOptions, tokenParams);
-     Capability expectedCapability = new Capability();
-     expectedCapability.addResource("channel6", new String[]{"publish", "subscribe"});
-     assertNotNull("Expected token id", tokenDetails.id);
-     assertEquals("Unexpected capability", tokenDetails.capability, expectedCapability.toString());
-     } catch (AblyException e) {
-     e.printStackTrace();
-     fail("authcapability7: Unexpected exception");
-     }
-     */
     XCTFail(@"TODO write test");
 }
 - (void)testAuthWildcardResources {
     XCTFail(@"TODO write test");
 }
 - (void)testAuthCapability9 {
-    /*
-     try {
-     Key key = RestSetup.getTestVars().keys[2];
-     AuthOptions authOptions = new AuthOptions();
-     authOptions.keyId = key.keyId;
-     authOptions.keyValue = key.keyValue;
-     TokenParams tokenParams = new TokenParams();
-     Capability requestedCapability = new Capability();
-     requestedCapability.addResource("canpublish:check", "publish");
-     tokenParams.capability = requestedCapability.toString();
-     TokenDetails tokenDetails = ably.auth.requestToken(authOptions, tokenParams);
-     assertNotNull("Expected token id", tokenDetails.id);
-     assertEquals("Unexpected capability", tokenDetails.capability, requestedCapability.toString());
-     } catch (AblyException e) {
-     e.printStackTrace();
-     fail("authcapability9: Unexpected exception");
-     }
-     */
+
     XCTFail(@"TODO write test");
 }
 - (void)testAuthCapability10 {
-    /*
-     try {
-     Key key = RestSetup.getTestVars().keys[2];
-     AuthOptions authOptions = new AuthOptions();
-     authOptions.keyId = key.keyId;
-     authOptions.keyValue = key.keyValue;
-     TokenParams tokenParams = new TokenParams();
-     Capability requestedCapability = new Capability();
-     requestedCapability.addResource("cansubscribe:*", "subscribe");
-     tokenParams.capability = requestedCapability.toString();
-     TokenDetails tokenDetails = ably.auth.requestToken(authOptions, tokenParams);
-     assertNotNull("Expected token id", tokenDetails.id);
-     assertEquals("Unexpected capability", tokenDetails.capability, requestedCapability.toString());
-     } catch (AblyException e) {
-     e.printStackTrace();
-     fail("authcapability10: Unexpected exception");
-     }
-     */
+
     XCTFail(@"TODO write test");
 }
 - (void)testInvalidCapabilities1 { //java: authinvalid0
@@ -149,6 +97,6 @@
     XCTFail(@"TODO write test");
 }
 
-
+*/
 
 @end

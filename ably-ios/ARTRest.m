@@ -78,12 +78,9 @@
 
     NSData *encodedMessage = [self.rest.defaultEncoder encodeMessage:message];
     NSDictionary *headers = @{@"Content-Type":self.rest.defaultEncoding};
-
-    NSLog(@"headers for publish is %@", headers);
     NSString *path = [NSString stringWithFormat:@"%@/messages", self.basePath];
     return [self.rest post:path headers:headers body:encodedMessage authenticated:YES cb:^(ARTHttpResponse *response) {
         ARTStatus status = response.status >= 200 && response.status < 300 ? ARTStatusOk : ARTStatusError;
-        NSLog(@"publish response is %@", response);
         cb(status);
     }];
 }

@@ -144,38 +144,28 @@
     return output;
 }
 
-
-///TOOD put somewhere clever
 -(ARTPresenceMessageAction) presenceMessageActionFromInt:(int) action
 {
     switch (action) {
         case 0:
             return ArtPresenceMessageAbsent;
-            break;
         case 1:
             return ArtPresenceMessagePresent;
-            break;
         case 2:
             return ARTPresenceMessageEnter;
-            break;
         case 3:
             return ARTPresenceMessageLeave;
-            break;
         case 4:
             return ARTPresenceMessageUpdate;
-            break;
-        default:
-            break;;
     }
-    
-    NSLog(@"TODO ERROR, should be unreachable");
-    //TODO lol
+    NSLog(@"error. enum is probably not up to date");
     return ArtPresenceMessageAbsent;
+    
 }
+
 -(int) intFromPresenceMessageAction:(ARTPresenceMessageAction) action
 {
-    switch (action)
-    {
+    switch (action) {
         case ArtPresenceMessageAbsent:
             return 0;
         case ArtPresenceMessagePresent:
@@ -290,14 +280,11 @@
 
     for (ARTPresenceMessage *message in messages) {
         NSDictionary *item = [self presenceMessageToDictionary:message];
-        NSLog(@"encoding presence item %@", item);
         if (!(item)) {
             return nil;
         }
         [output addObject:item];
     }
-    NSLog(@"sending this %@", output);
-
     return output;
 }
 

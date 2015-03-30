@@ -219,9 +219,7 @@
 }
 
 - (id)decode:(NSData *)data {
-    id obj = [data messagePackParse]; //[NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-    
-    NSLog(@"decoded obj is %@", obj);
+    id obj = [data messagePackParse];     
     return obj;
 }
 

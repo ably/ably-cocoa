@@ -183,9 +183,7 @@
 
 
 //TODO I've merged tests here into 2.
--(void) testHistoryForwardPagination
-{
-    NSLog(@"TEST testHistoryForwardPagination");
+-(void) testHistoryForwardPagination {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryForwardPagination"];
     [self withRealtime:^(ARTRealtime  *realtime) {
         ARTRealtimeChannel *channel = [realtime channel:@"realHistChan"];
@@ -245,10 +243,7 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-//TODO ios status doc
--(void) testHistoryBackwardPagination
-{
-    NSLog(@"TEST testHistoryBackwardPagination");
+-(void) testHistoryBackwardPagination {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryBackwardagination"];
     [self withRealtime:^(ARTRealtime  *realtime) {
         ARTRealtimeChannel *channel = [realtime channel:@"histRealBackChan"];
@@ -305,20 +300,16 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
--(void) testTimeBackwards
-{
-    NSLog(@"TEST testTimeBackwards");
+-(void) testTimeBackwards {
     XCTestExpectation *e = [self expectationWithDescription:@"testTimeBackwards"];
-    
     [self withRealtime:^(ARTRealtime  *realtime) {
         [e fulfill];
     }];
     
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    
       [self withRealtime:^(ARTRealtime  *realtime) {
         XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_first_batch"];
-        ARTRealtimeChannel *channel = [realtime channel:@"test_history_time_forwards"];
+        ARTRealtimeChannel *channel = [realtime channel:@"testTimeBackwards"];
         
         int firstBatchTotal =3;
         int secondBatchTotal =2;
@@ -370,13 +361,11 @@
             __block int numReceived3 =0;
             
             for(int i=0; i < thirdBatchTotal; i++) {
-                NSLog(@"third batchb %d", i);
                 NSString * pub = [NSString stringWithFormat:@"third_test%d", i];
                 sleep([ARTTestUtil smallSleep]);
                 [channel publish:pub cb:^(ARTStatus status) {
                     ++numReceived3;
                     if(numReceived3 ==thirdBatchTotal) {
-                        NSLog(@"third fulfilled backwards");
                         [thirdExpectation fulfill];
                     }
                 }];
@@ -385,8 +374,7 @@
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
         
         XCTestExpectation *fourthExpectation = [self expectationWithDescription:@"send_fourth_batch"];
-        
-        NSLog(@"SENDINGb hsitory in time req %lld %lld", intervalStart, intervalEnd);
+
         [channel historyWithParams:@{
                                      @"start" : [NSString stringWithFormat:@"%lld", intervalStart],
                                      @"end"   : [NSString stringWithFormat:@"%lld", intervalEnd],
@@ -412,13 +400,8 @@
     }];
 }
 
--(void) testTimeForwards
-{
-    
-    NSLog(@"TEST TIME FORWRDS REALTIEME");
+-(void) testTimeForwards {
     XCTestExpectation *e = [self expectationWithDescription:@"testTimeForwards"];
-    
-    //TODO whats this for.
     [self withRealtime:^(ARTRealtime  *realtime) {
         [e fulfill];
     }];
@@ -435,13 +418,8 @@
         
         //send first batch, which we won't recieve in the history request
         {
-            
-            
             __block int numReceived =0;
-            
             for(int i=0; i < firstBatchTotal; i++) {
-                
-                NSLog(@"first batch %d", i);
                 NSString * pub = [NSString stringWithFormat:@"test%d", i];
                 sleep([ARTTestUtil smallSleep]);
                 [channel publish:pub cb:^(ARTStatus status) {
@@ -461,7 +439,6 @@
             __block int numReceived2 =0;
             
             for(int i=0; i < secondBatchTotal; i++) {
-                NSLog(@"second batch %d", i);
                 NSString * pub = [NSString stringWithFormat:@"second_test%d", i];
                 sleep([ARTTestUtil smallSleep]);
                 [channel publish:pub cb:^(ARTStatus status) {
@@ -480,15 +457,12 @@
         //send third batch, which we won't receieve in the history request
         {
             __block int numReceived3 =0;
-            
             for(int i=0; i < secondBatchTotal; i++) {
-                NSLog(@"third batch %d", i);
                 NSString * pub = [NSString stringWithFormat:@"third_test%d", i];
                 sleep([ARTTestUtil smallSleep]);
                 [channel publish:pub cb:^(ARTStatus status) {
                     ++numReceived3;
                     if(numReceived3 ==secondBatchTotal) {
-                        NSLog(@"third fulfilled");
                         [thirdExpectation fulfill];
                     }
                 }];
@@ -497,8 +471,7 @@
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
         
         XCTestExpectation *fourthExpectation = [self expectationWithDescription:@"send_fourth_batch"];
-        
-        NSLog(@"SENDING hsitory in time req %lld %lld", intervalStart, intervalEnd);
+ 
         [channel historyWithParams:@{
                                      @"start" : [NSString stringWithFormat:@"%lld", intervalStart],
                                      @"end"   : [NSString stringWithFormat:@"%lld", intervalEnd],
@@ -559,15 +532,12 @@
         }
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
         XCTestExpectation *secondExpecation = [self expectationWithDescription:@"get_history_channel2"];
-                    NSLog(@"making artrealtime2");
         [self withRealtime2:^(ARTRealtime  *realtime2) {
             
             ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
-            NSLog(@"making channel 2");
             [channel2 historyWithParams:@{
                                      @"direction" : @"backwards"}
                                 cb:^(ARTStatus status, id<ARTPaginatedResult> result) {
-                    NSLog(@"got history for channel2");
                     XCTAssertEqual(status, ARTStatusOk);
                     XCTAssertFalse([result hasNext]);
                     NSArray * page = [result current];
@@ -580,7 +550,6 @@
                         NSString * goalStr = [NSString stringWithFormat:@"test%d",firstBatchTotal -1 - i];
                         
                         ARTMessage * m = [page objectAtIndex:i];
-                        NSLog(@"m content is %@", [m content]);
                         XCTAssertEqualObjects(goalStr, [m content]);
                     }
                     [secondExpecation fulfill];

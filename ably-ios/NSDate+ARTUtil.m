@@ -27,6 +27,7 @@
     return (NSInteger)round([self timeIntervalSince1970] * 1000.0);
 }
 
+
 -(NSString *) toIntervalFormat:(Granularity) granularity {
     /*
      public static enum Granularity {

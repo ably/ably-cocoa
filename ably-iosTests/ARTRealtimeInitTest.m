@@ -80,7 +80,7 @@
 -(void) setupApp:(ARTOptions *)options spec:(NSDictionary *) appSpec cb:(void (^)(ARTOptions *))cb  {
 
     NSData *appSpecData = [NSJSONSerialization dataWithJSONObject:appSpec options:0 error:nil];
-    NSLog(@"%@", [[NSString alloc] initWithData:appSpecData encoding:NSUTF8StringEncoding]);
+    NSLog(@"setting up app: %@", [[NSString alloc] initWithData:appSpecData encoding:NSUTF8StringEncoding]);
     
     
     NSString *urlStr = [NSString stringWithFormat:@"https://%@:%d/apps", options.restHost, options.restPort];
@@ -101,8 +101,8 @@
         NSString *keyId= @"";
         NSString *keyValue= @"";
         if (httpResponse.statusCode < 200 || httpResponse.statusCode >= 300) {
-            NSLog(@"Status Code: %ld", (long)httpResponse.statusCode);
-            NSLog(@"Body: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+//            NSLog(@"Status Code: %ld", (long)httpResponse.statusCode);
+  //          NSLog(@"Body: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             cb(nil);
             return;
         } else {
@@ -133,7 +133,8 @@
 }
 
 - (void)testInitKeyOpts {
-    //TODO actually write thte test.
+    XCTFail(@"TODO ");
+    return;
     XCTestExpectation *expectation = [self expectationWithDescription:@"attach"];
     NSDictionary * standard = [self standardSpec];
     NSMutableDictionary * spec =[NSMutableDictionary dictionary];

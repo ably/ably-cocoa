@@ -429,7 +429,6 @@
         }
         case ARTRealtimeChannelAttached:
         {
-            NSLog(@"sending publish protocol message");
             [self.realtime send:pm cb:cb];
             break;
         }
@@ -735,7 +734,6 @@
     
     NSString * recStr = self.connectionKey;
     NSString * str = [recStr stringByAppendingString:[NSString stringWithFormat:@":%lld", self.connectionSerial]];
-    NSLog(@"recovery string is %@", str);
     return str;
 }
 
@@ -770,7 +768,6 @@
         _pendingMessages = [NSMutableArray array];
         _pendingMessageStartSerial = 0;
         _clientId = options.clientId;
-        NSLog(@"raeltime client id IS %@", _clientId);
         _options = [options clone];
         _stateSubscriptions = [NSMutableArray array];
         [self connect];
@@ -866,8 +863,6 @@
                 //TODO can I resume a failed connection?
                 //TODO can this be infinite? maybe self.resume should be an int.
                 if(previousState == ARTRealtimeFailed || previousState == ARTRealtimeDisconnected) {
-                    NSLog(@"resuming %lld", self.connectionSerial);
-                    //TODO PUT BACK
                     self.options.resume = [NSString stringWithFormat:@"%lld",self.connectionSerial];
                     self.options.resumeKey = self.connectionKey;
                 }
@@ -984,9 +979,6 @@
 - (void)onDisconnected:(ARTProtocolMessage *)message {
     switch (self.state) {
         case ARTRealtimeConnected:
-            NSLog(@"onDisconnceted. lost con Id etc.");
-            
-          
             self.connectionId = nil;
             self.msgSerial = 0;
             [self transition:ARTRealtimeDisconnected];
@@ -1044,10 +1036,8 @@
 }
 
 - (void)onSuspendTimerFired {
-    NSLog(@"suspend timeer fired");
     switch (self.state) {
         case ARTRealtimeConnected:
-                NSLog(@"suspend timeer from connected to suspended");
             [self transition:ARTRealtimeSuspended];
             break;
         default:
@@ -1106,19 +1096,13 @@
         ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg cb:cb];
         [self.pendingMessages addObject:qm];
     }
-    else
-    {
-        NSLog(@"ack not required");
-    }
 
     // TODO: ?? Add cb to the send call? No probably not
     // Wait, we have to do something with the cb!
-    NSLog(@"sending message");
     [self.transport send:msg];
 }
 
 - (void)send:(ARTProtocolMessage *)msg cb:(ARTStatusCallback)cb {
-    NSLog(@"SENDING realtime message %@", msg);
     if ([self shouldSendEvents]) {
         [self sendImpl:msg cb:cb];
     } else if ([self shouldQueueEvents]) {
@@ -1215,7 +1199,6 @@
 }
 
 - (id<ARTRealtimeTransport>)createTransport {
-    NSLog(@"creating artwebsocketTransport");
     ARTWebSocketTransport *websocketTransport = [[ARTWebSocketTransport alloc] initWithRest:self.rest options:self.options];
     return websocketTransport;
 }

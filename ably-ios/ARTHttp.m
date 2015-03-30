@@ -161,7 +161,6 @@
 - (id<ARTCancellable>)makeRequest:(ARTHttpRequest *)artRequest cb:(void (^)(ARTHttpResponse *))cb {
     NSAssert([artRequest.method isEqualToString:@"GET"] || [artRequest.method isEqualToString:@"POST"], @"Http method must be GET or POST");
 
-    NSLog(@"req url is %@, method %@", artRequest.url, artRequest.method);
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:artRequest.url];
     request.HTTPMethod = artRequest.method;
 
@@ -172,14 +171,6 @@
     }
 
     request.HTTPBody = artRequest.body;
-    NSLog(@"request is %@", request);
-    NSLog(@"art request headers is %@", artRequest.headers);
-    {
-        if(artRequest.body) {
-            ARTJsonEncoder * encoder =[[ARTJsonEncoder alloc] init];
-            NSLog(@"decoded request is %@", [encoder decodeMessage:artRequest.body]);
-        }
-    }
 
     CFRunLoopRef rl = CFRunLoopGetCurrent();
     CFRetain(rl);

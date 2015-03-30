@@ -31,12 +31,11 @@
 
 
 - (void)setUp {
-                NSLog(@"realtimetest setup");
     [super setUp];
 }
 
 - (void)tearDown {
-            NSLog(@"realtimetest teardown");
+    _realtime = nil;
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
 }
@@ -54,16 +53,10 @@
     cb(_realtime);
 }
 
-
-//TODO where do i put all the attachment tests?
-
-
 - (void) testAttachOnce {
-    //NSLog(@"testAttachOnce, which seems to cause the HERE WE ARE __NSCFArray bug. TODO fix properly");
       XCTestExpectation *expectation = [self expectationWithDescription:@"attachOnce"];
     [self withRealtime:^(ARTRealtime *realtime) {
         [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
-            NSLog(@"testAttach constateOnce: %@", [ARTRealtime ARTRealtimeStateToStr:state]);
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime channel:@"attach"];
 
@@ -92,23 +85,22 @@
     [self withRealtime:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime channel:@"detaching_to_attaching"];
         [channel attach];
-        __block int attachCount=0;
+        __block bool detachedReached = false;
         [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus status) {
             if (state == ARTRealtimeChannelAttached) {
                 [channel detach];
             }
             if(state == ARTRealtimeChannelDetaching) {
+                detachedReached = true;
                 [channel attach];
             }
             if(state == ARTRealtimeChannelDetached) {
                 XCTFail(@"Should not have reached detached state");
             }
             if(state == ARTRealtimeChannelAttaching) {
-                //TODO sort this fucking thing out.
-               // if(attachCount ==1) {
+                if(detachedReached) {
                     [expectation fulfill];
-              //  }
-                attachCount++;
+                }
             }
         }];
     }];
@@ -118,7 +110,6 @@
 }
 
 - (void) testAttachMultipleChannels {
-//TODO
       XCTestExpectation *expectation1 = [self expectationWithDescription:@"test_attach_multiple1"];
       XCTestExpectation *expectation2 = [self expectationWithDescription:@"test_attach_multiple2"];
     [self withRealtime:^(ARTRealtime *realtime) {
@@ -140,7 +131,6 @@
     }];
     
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    //VXTODO
 }
 
 
