@@ -39,6 +39,7 @@ typedef NS_ENUM(NSUInteger, TestAlteration) {
 +(long long) nowMilli;
 +(float) smallSleep;
 +(float) bigSleep;
+
 @end
 
 

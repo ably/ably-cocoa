@@ -73,6 +73,7 @@
                 ARTRealtimeChannel *channel = [realtime channel:@"attach"];
                 [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus reason) {
                     if (state == ARTRealtimeChannelAttached) {
+
                         [expectation fulfill];
                     }
                 }];
@@ -152,6 +153,9 @@
 }
 
 - (void)testSubscribeUnsubscribe{
+    
+    XCTFail(@"unsubscribe doent work. Even though this test passes");
+    return;
     XCTestExpectation *expectation = [self expectationWithDescription:@"publish"];
     [self withRealtime:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime channel:@"test"];
@@ -166,7 +170,6 @@
             }
             else {
                 XCTFail(@"unsubscribe failed");
-                [expectation fulfill];
             }
             XCTAssertEqualObjects([message content], @"testString");
         }];

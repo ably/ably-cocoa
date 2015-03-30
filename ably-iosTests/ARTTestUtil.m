@@ -10,7 +10,6 @@
 
 @implementation ARTTestUtil
 
-
 +(void) setupApp:(ARTOptions *)options withAlteration:(TestAlteration) alt  appId:(NSString *) appId cb:(void (^)(ARTOptions *))cb
 {
     NSDictionary *capability = @{
@@ -43,7 +42,7 @@
                               };
     
     NSData *appSpecData = [NSJSONSerialization dataWithJSONObject:appSpec options:0 error:nil];
-    NSLog(@" setupApp: %@", [[NSString alloc] initWithData:appSpecData encoding:NSUTF8StringEncoding]);
+    //NSLog(@" setupApp: %@", [[NSString alloc] initWithData:appSpecData encoding:NSUTF8StringEncoding]);
     
     
     if(alt ==TestAlterationBadWsHost)
@@ -67,7 +66,7 @@
         
     }
     
-    NSLog(@"Creating test app. URL: %@, Method: %@, Body: %@, Headers: %@", req.URL, req.HTTPMethod, [[NSString alloc] initWithData:req.HTTPBody encoding:NSUTF8StringEncoding], req.allHTTPHeaderFields);
+  //  NSLog(@"Creating test app. URL: %@, Method: %@, Body: %@, Headers: %@", req.URL, req.HTTPMethod, [[NSString alloc] initWithData:req.HTTPBody encoding:NSUTF8StringEncoding], req.allHTTPHeaderFields);
     
     CFRunLoopRef rl = CFRunLoopGetCurrent();
     
@@ -176,8 +175,6 @@
 }
 
 
-
-
 + (void)repeat:(int)count delay:(NSTimeInterval)delay block:(void (^)(int))block {
     [ARTTestUtil repeat:count i:0 delay:delay block:block];
 }
@@ -213,5 +210,6 @@
     return 120.0;
     
 }
+
 
 @end

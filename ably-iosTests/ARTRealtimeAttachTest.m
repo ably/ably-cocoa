@@ -73,14 +73,17 @@
 
 
 -(void) testSkipsFromDetachingToAttaching {
-      XCTestExpectation *expectation = [self expectationWithDescription:@"detaching_to_attaching"];
+      XCTestExpectation *  expectation = [self expectationWithDescription:@"detaching_to_attaching"];
     [self withRealtime:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime channel:@"detaching_to_attaching"];
         [channel attach];
         __block bool detachedReached = false;
+        
         [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus status) {
             if (state == ARTRealtimeChannelAttached) {
-                [channel detach];
+                if(!detachedReached) {
+                    [channel detach];
+                }
             }
             if(state == ARTRealtimeChannelDetaching) {
                 detachedReached = true;
@@ -91,6 +94,7 @@
             }
             if(state == ARTRealtimeChannelAttaching) {
                 if(detachedReached) {
+                    NSLog(@"test detached reached");
                     [expectation fulfill];
                 }
             }
@@ -98,7 +102,7 @@
     }];
     
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    
+
 }
 
 - (void) testAttachMultipleChannels {
@@ -181,7 +185,7 @@
 }
 
 -(void) testSkipsFromAttachingToDetaching {
-      XCTestExpectation *expectation = [self expectationWithDescription:@"attaching_to_detaching"];
+      XCTestExpectation *  expectation = [self expectationWithDescription:@"attaching_to_detaching"];
     [self withRealtime:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime channel:@"attaching_to_detaching"];
         [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus status) {
@@ -206,7 +210,7 @@
 
 -(void)testDetachingIgnoresDetach {
     
-      XCTestExpectation *expectation = [self expectationWithDescription:@"testDetachingIgnoresDetach"];
+      XCTestExpectation *  expectation = [self expectationWithDescription:@"testDetachingIgnoresDetach"];
     [self withRealtime:^(ARTRealtime *realtime) {
         [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
             

@@ -500,6 +500,7 @@
             [toRemove addObject:name];
         }
     }
+
     [self.subscriptions removeObjectsForKeys:toRemove];
 }
 
