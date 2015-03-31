@@ -501,7 +501,7 @@
     ARTPayload *encoded = nil;
     ARTStatus status = [[ARTBase64PayloadEncoder instance] encode:payload output:&encoded];
     NSAssert(status == ARTStatusOk, @"Error encoding payload");
-    NSAssert([payload.payload isKindOfClass:[NSString class]], @"Only string or data payloads are accepted");
+    NSAssert([payload.payload isKindOfClass:[NSString class]], @"Only string payloads are accepted");
 
     if (encoded.encoding.length) {
         output[@"encoding"] = encoded.encoding;

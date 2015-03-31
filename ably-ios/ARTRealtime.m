@@ -504,6 +504,7 @@
     [self.subscriptions removeObjectsForKeys:toRemove];
 }
 
+
 - (id<ARTSubscription>)subscribeToPresence:(ARTRealtimeChannelPresenceCb)cb {
     ARTRealtimeChannelPresenceSubscription *subscription = [[ARTRealtimeChannelPresenceSubscription alloc] initWithChannel:self cb:cb];
     [self.presenceSubscriptions addObject:subscription];

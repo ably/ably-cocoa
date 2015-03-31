@@ -386,15 +386,28 @@
 {
     return 4;
 }
+
+
+//TOOD consider using a pattern similar to ARTTestUtil testPublish.
 -(void) runTestTimeForwards:(bool) forwards limit:(int) limit cb:(ARTPaginatedResultCb) cb
 {
-    XCTestExpectation * dummyExpectation= [self expectationWithDescription:@"dummyExpectation"];
-    [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        [dummyExpectation fulfill];
+    XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
+    __block long long timeOffset= 0;
+    
+    [self withRealtimeClientId:^(ARTRealtime  *realtime) {
+        [realtime time:^(ARTStatus status, NSDate *time) {
+            XCTAssertEqual(ARTStatusOk, status);
+            long long serverNow= [time timeIntervalSince1970]*1000;
+            long long appNow =[ARTTestUtil nowMilli];
+            timeOffset = serverNow - appNow;
+            
+        }];
+        [e fulfill];
     }];
+
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel *channel = [realtime channel:@"testWaitTextBackward"];
+        ARTRealtimeChannel *channel = [realtime channel:@"testWaitText"];
         [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
             if (state == ARTRealtimeConnected) {
                 [channel attach];
@@ -431,15 +444,20 @@
         
         XCTestExpectation * secondBatchExpectation= [self expectationWithDescription:@"secondBatchExpectation"];
         
+        
+        
+        long long start = [ARTTestUtil nowMilli]+ timeOffset;
         sleep([ARTTestUtil bigSleep]);
-        long long start = [ARTTestUtil nowMilli];
+        
         __block int numReceived=0;
         for(int i=0;i < secondBatchTotal; i++)
         {
             NSString * str = [NSString stringWithFormat:@"second_updates%d", i];
             [channel publishPresenceUpdate:str cb:^(ARTStatus status) {
                 XCTAssertEqual(ARTStatusOk, status);
+                NSLog(@"sleeping");
                 sleep([ARTTestUtil smallSleep]);
+                NSLog(@"done sleeping");
                 numReceived++;
                 if(numReceived == secondBatchTotal) {
                     [secondBatchExpectation fulfill];
@@ -449,8 +467,9 @@
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
         XCTestExpectation * thirdBatchExpectation= [self expectationWithDescription:@"thirdBatchExpectation"];
         
+        NSLog(@"starting third");
         sleep([ARTTestUtil bigSleep]);
-        long long end = [ARTTestUtil nowMilli];
+        long long end = [ARTTestUtil nowMilli] +timeOffset;
         numReceived=0;
         for(int i=0;i < thirdBatchTotal; i++)
         {
@@ -465,6 +484,7 @@
             }];
         }
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+        NSLog(@"ended third");
         XCTestExpectation * historyExpecation= [self expectationWithDescription:@"historyExpecation"];
         [channel presenceHistoryWithParams:@{
                                       @"start" : [NSString stringWithFormat:@"%lld", start],

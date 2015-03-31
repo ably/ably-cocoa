@@ -9,8 +9,15 @@
 #import <Foundation/Foundation.h>
 
 #import "ARTOptions.h"
+@class ARTRestChannel;
+@class XCTestExpectation;
+@class ARTRealtimeChannel;
 
 @interface ARTTestUtil : NSObject
+
+
+
+
 
 typedef NS_ENUM(NSUInteger, TestAlteration) {
     TestAlterationNone,
@@ -39,6 +46,11 @@ typedef NS_ENUM(NSUInteger, TestAlteration) {
 +(long long) nowMilli;
 +(float) smallSleep;
 +(float) bigSleep;
+
++(void) publishRestMessages:(NSString *) prefix count:(int) count channel:(ARTRestChannel *) channel expectation:(XCTestExpectation *) expectation;
+
++(void) publishRealtimeMessages:(NSString *) prefix count:(int) count channel:(ARTRealtimeChannel *) channel expectation:(XCTestExpectation *) expectation;
+
 
 @end
 

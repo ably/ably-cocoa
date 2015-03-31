@@ -8,6 +8,9 @@
 
 #import "ARTTestUtil.h"
 
+#import "ARTRest.h"
+#import "ARTRealtime.h"
+#import <XCTest/XCTest.h>
 @implementation ARTTestUtil
 
 +(void) setupApp:(ARTOptions *)options withAlteration:(TestAlteration) alt  appId:(NSString *) appId cb:(void (^)(ARTOptions *))cb
@@ -198,16 +201,54 @@
 
 +(float) smallSleep
 {
-    return 1.75;
+    return 0.6;
 }
+
 +(float) bigSleep
 {
-    return 3.0;
-    
+    return 1.0;
 }
+
 +(float) timeout
 {
-    return 120.0;
+    return 20.0;
+}
+
++(void) publishRestMessages:(NSString *) prefix count:(int) count channel:(ARTRestChannel *) channel expectation:(XCTestExpectation *) expectation {
+    
+    __block int numReceived = 0;
+    __block __weak ARTStatusCallback weakCb;
+    NSString * pattern = [prefix stringByAppendingString:@"%d"];
+    ARTStatusCallback cb;
+    weakCb = cb = ^(ARTStatus status) {
+        ++numReceived;
+        if(numReceived !=count) {
+            [channel publish:[NSString stringWithFormat:pattern, numReceived] cb:weakCb];
+        }
+        else {
+            [expectation fulfill];
+        }
+    };
+    [channel publish:[NSString stringWithFormat:pattern, numReceived] cb:cb];
+    
+}
+
++(void) publishRealtimeMessages:(NSString *) prefix count:(int) count channel:(ARTRealtimeChannel *) channel expectation:(XCTestExpectation *) expectation {
+    
+    __block int numReceived = 0;
+    __block __weak ARTStatusCallback weakCb;
+    NSString * pattern = [prefix stringByAppendingString:@"%d"];
+    ARTStatusCallback cb;
+    weakCb = cb = ^(ARTStatus status) {
+        ++numReceived;
+        if(numReceived !=count) {
+            [channel publish:[NSString stringWithFormat:pattern, numReceived] cb:weakCb];
+        }
+        else {
+            [expectation fulfill];
+        }
+    };
+    [channel publish:[NSString stringWithFormat:pattern, numReceived] cb:cb];
     
 }
 

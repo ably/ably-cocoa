@@ -24,6 +24,9 @@
     [super tearDown];
 }
 
+
+//TODO implement
+/*
 - (void)testSingleSendText {
     XCTFail(@"TODO write test");
 }
@@ -55,7 +58,6 @@
     XCTFail(@"TODO write test");
 }
 
-/*
 - (void)testSingleUnencrypted {
     XCTFail(@"TODO write test");
 }

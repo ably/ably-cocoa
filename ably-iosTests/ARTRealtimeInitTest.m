@@ -132,6 +132,8 @@
     [task resume];
 }
 
+/*
+ //TODO implement
 - (void)testInitKeyOpts {
     XCTFail(@"TODO ");
     return;
@@ -144,7 +146,6 @@
     
     [self withRealtimeSpec:spec cb:^(ARTRealtime *realtime) {
         [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
-            NSLog(@"testInitKeyStrng constate...: %@", [ARTRealtime ARTRealtimeStateToStr:state]);
             XCTAssertEqual(ARTRealtimeConnected, state);
             [expectation fulfill];
             
@@ -153,7 +154,7 @@
     
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
-
+*/
 
 
 /*

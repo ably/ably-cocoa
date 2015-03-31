@@ -49,6 +49,7 @@
     }
     cb(_rest);
 }
+/* //TODO implement
 - (void)testPublishText {
     XCTFail(@"TODO write test");
 }
@@ -69,7 +70,7 @@
     XCTFail(@"TODO write test");
 }
 
-/*
+
  - (void)testSendUnencrypted {
  XCTFail(@"TODO write test");
  }

@@ -49,6 +49,7 @@
     }
     cb(_rest);
 }
+
 - (void)testPresence {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
     [self withRest:^(ARTRest *rest) {

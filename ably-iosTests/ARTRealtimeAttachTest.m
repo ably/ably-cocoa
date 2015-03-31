@@ -52,13 +52,20 @@
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime channel:@"attach"];
 
+                __block bool hasAttached = false;
                 [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus reason) {
                     if(state == ARTRealtimeChannelAttaching) {
                         [channel attach];
                     }
                     if (state == ARTRealtimeChannelAttached) {
                         [channel attach];
-                        [expectation fulfill];
+                        
+                        if(!hasAttached) {
+                            [expectation fulfill];
+                        }
+                        else {
+                            XCTFail(@"duplicate call to attach shouldnt happen");
+                        }
                     }
                 }];
                 [channel attach];

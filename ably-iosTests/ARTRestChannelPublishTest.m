@@ -72,47 +72,28 @@
     cb(_restText);
 }
 
-
-
-
 - (void)testTypesByText {
 
     XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
+    NSString * message1 = @"message1";
+    NSString * message2 = @"message2";
     [self withRestText:^(ARTRest *rest) {
-        ARTRestChannel *channel = [rest channel:@"persisted:presence_fixtures"];
-        [channel presence:^(ARTStatus status, id<ARTPaginatedResult> result) {
-            XCTAssertEqual(status, ARTStatusOk);
-            if(status != ARTStatusOk) {
-                XCTFail(@"not an ok status");
-                [expectation fulfill];
-                return;
-            }
-            NSArray *presence = [result current];
-            XCTAssertEqual(4, presence.count);
-            ARTPresenceMessage *p0 = presence[0];
-            ARTPresenceMessage *p1 = presence[1];
-            ARTPresenceMessage *p2 = presence[2];
-            ARTPresenceMessage *p3 = presence[3];
-            
-            
-            // This is assuming the results are coming back sorted by clientId
-            // in alphabetical order. This seems to be the case at the time of
-            // writing, but may change in the future
-            
-            XCTAssertEqualObjects(@"client_bool", p0.clientId);
-            XCTAssertEqualObjects(@"true", [p0 content]);
-            
-            XCTAssertEqualObjects(@"client_int", p1.clientId);
-            XCTAssertEqualObjects(@"24", [p1 content]);
-            
-            XCTAssertEqualObjects(@"client_json", p2.clientId);
-            XCTAssertEqualObjects(@"{\"test\":\"This is a JSONObject clientData payload\"}", [p2 content]);
-            
-            XCTAssertEqualObjects(@"client_string", p3.clientId);
-            XCTAssertEqualObjects(@"This is a string clientData payload", [p3 content]);
-            
-            
-            [expectation fulfill];
+        ARTRestChannel *channel = [rest channel:@"testTypesByText"];
+        [channel publish:message1 cb:^(ARTStatus status) {
+            XCTAssertEqual(ARTStatusOk, status);
+            [channel publish:message2 cb:^(ARTStatus status) {
+                XCTAssertEqual(ARTStatusOk, status);
+                [channel historyWithParams:@{ @"direction" : @"forwards"} cb:^(ARTStatus status, id<ARTPaginatedResult> result) {
+                    XCTAssertEqual(status, ARTStatusOk);
+                    NSArray *messages = [result current];
+                    XCTAssertEqual(2, messages.count);
+                    ARTMessage *m0 = messages[0];
+                    ARTMessage *m1 = messages[1];
+                    XCTAssertEqualObjects([m0 content], message1);
+                    XCTAssertEqualObjects([m1 content], message2);
+                    [expectation fulfill];
+                }];
+            }];
         }];
     }];
     [self waitForExpectationsWithTimeout:_timeout handler:nil];
@@ -122,48 +103,6 @@
  //msgpack not implemented yet
 - (void)testTypesByBinary {
 
-    
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
-    [self withRestBinary:^(ARTRest *rest) {
-        NSLog(@"withRestbinary");
-        ARTRestChannel *channel = [rest channel:@"persisted:presence_fixtures"];
-        [channel presence:^(ARTStatus status, id<ARTPaginatedResult> result) {
-                    NSLog(@"presence...");
-            XCTAssertEqual(status, ARTStatusOk);
-            if(status != ARTStatusOk) {
-                XCTFail(@"not an ok status");
-                [expectation fulfill];
-                return;
-            }
-            NSArray *presence = [result current];
-            XCTAssertEqual(4, presence.count);
-            ARTPresenceMessage *p0 = presence[0];
-            ARTPresenceMessage *p1 = presence[1];
-            ARTPresenceMessage *p2 = presence[2];
-            ARTPresenceMessage *p3 = presence[3];
-            
-            
-            // This is assuming the results are coming back sorted by clientId
-            // in alphabetical order. This seems to be the case at the time of
-            // writing, but may change in the future
-            
-            XCTAssertEqualObjects(@"client_bool", p0.clientId);
-            XCTAssertEqualObjects(@"true", [p0 content]);
-            
-            XCTAssertEqualObjects(@"client_int", p1.clientId);
-            XCTAssertEqualObjects(@"24", [p1 content]);
-            
-            XCTAssertEqualObjects(@"client_json", p2.clientId);
-            XCTAssertEqualObjects(@"{\"test\":\"This is a JSONObject clientData payload\"}", [p2 content]);
-            
-            XCTAssertEqualObjects(@"client_string", p3.clientId);
-            XCTAssertEqualObjects(@"This is a string clientData payload", [p3 content]);
-            
-            
-            [expectation fulfill];
-        }];
-    }];
-    [self waitForExpectationsWithTimeout:_timeout handler:nil];
 }
 
  */

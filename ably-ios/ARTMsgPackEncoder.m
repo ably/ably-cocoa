@@ -15,11 +15,12 @@
 #import "NSDictionary+ARTDictionaryUtil.h"
 #import "NSDate+ARTUtil.h"
 
+/*
 #import <msgpack/msgpack.h>
 #import <msgpack/NSData+MessagePack.h>
 #import <msgpack/NSDictionary+MessagePack.h>
 #import <msgpack/NSArray+MessagePack.h>
-
+*/
 
 
 @interface ARTMsgPackEncoder ()
@@ -61,6 +62,10 @@
 
 @implementation ARTMsgPackEncoder
 
+- (NSData *)encode:(id)obj
+{
+    return nil;
+}
 - (NSString *)mimeType {
     return @"application/msgpack";
 }
@@ -219,8 +224,8 @@
 }
 
 - (id)decode:(NSData *)data {
-    id obj = [data messagePackParse];     
-    return obj;
+   // id obj = [data messagePackParse];
+    return nil;
 }
 
 - (NSDictionary *)decodeDictionary:(NSData *)data {
@@ -247,11 +252,11 @@
 
 -(NSData *) encodeDict:(NSDictionary *) obj
 {
-    return [obj messagePack];
+    return nil;//[obj messagePack];
 }
 -(NSData *) encodeArr:(NSArray *) obj
 {
-    return [obj messagePack];
+    return nil;// [obj messagePack];
 }
 
 
