@@ -43,12 +43,27 @@
     return self;
 }
 
+-(NSString * ) defaultRestHost {
+    return @"rest.ably.io";
+}
+-(NSString *) defaultRealtimeHost {
+    return @"realtime.ably.io";
+}
+
+-(int) defaultRestPort {
+    return 443;
+}
+
+-(int) defaultRealtimePort {
+    return 443;
+}
+
 - (instancetype)initDefaults {
     _clientId = nil;
-    _restHost = @"rest.ably.io";
-    _realtimeHost = @"realtime.ably.io";
-    _restPort = 443;
-    _realtimePort = 443;
+    _restHost =  [self defaultRestHost];
+    _realtimeHost = [self defaultRealtimeHost];
+    _restPort = [self defaultRestPort];
+    _realtimePort = [self defaultRealtimePort];
     _queueMessages = NO;
     _resume = nil;
     _echoMessages = YES;

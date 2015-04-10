@@ -17,7 +17,6 @@
 @interface ARTRealtimeAttachTest : XCTestCase {
     ARTRealtime *_realtime;
 }
-- (void)multipleSendName:(NSString *)name count:(int)count delay:(int)delay;
 @end
 
 @implementation ARTRealtimeAttachTest

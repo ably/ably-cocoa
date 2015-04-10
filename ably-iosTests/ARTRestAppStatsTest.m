@@ -17,11 +17,8 @@
 #import "NSDate+ARTUtil.h"
 @interface ARTRestAppStatsTest : XCTestCase {
     ARTRest *_rest;
-   // ARTOptions *_options;
-//    float _timeout;
 }
 
-- (void)withRest:(void(^)(ARTRest *))cb;
 
 
 @end

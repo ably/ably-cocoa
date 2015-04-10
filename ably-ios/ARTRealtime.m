@@ -731,16 +731,13 @@
 
 
 
--(NSString *) getRecoveryString
-{
-    
+-(NSString *) getRecoveryString {
     NSString * recStr = self.connectionKey;
     NSString * str = [recStr stringByAppendingString:[NSString stringWithFormat:@":%lld", self.connectionSerial]];
     return str;
 }
 
--(NSString *) getRecovery
-{
+-(NSString *) getRecovery {
     switch(self.state)
     {
         case ARTRealtimeConnecting:
