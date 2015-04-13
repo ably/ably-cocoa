@@ -81,8 +81,8 @@
         NSString *keyId;
         NSString *keyValue;
         if (httpResponse.statusCode < 200 || httpResponse.statusCode >= 300) {
-            NSLog(@"Status Code: %ld", (long)httpResponse.statusCode);
-            NSLog(@"Body: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            //NSLog(@"Status Code: %ld", (long)httpResponse.statusCode);
+            //NSLog(@"Body: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             cb(nil);
             return;
         } else {
@@ -186,7 +186,6 @@
     if (count == 0) {
         return;
     }
-    NSLog(@"count: %d, i: %d", count, i);
     block(i);
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [ARTTestUtil repeat:(count - 1) i:(i + 1) delay:delay block:block];

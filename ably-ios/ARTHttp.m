@@ -184,7 +184,6 @@
         else {
             if(artRequest.body) {
                 ARTJsonEncoder * encoder =[[ARTJsonEncoder alloc] init];
-                NSLog(@"decoded is %@", [encoder decodeMessage:data]);
                 
             }
             if (httpResponse) {

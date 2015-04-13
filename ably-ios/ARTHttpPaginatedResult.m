@@ -78,7 +78,7 @@
 
         if (response.status < 200 || response.status >= 300) {
             cb(ARTStatusError, nil);
-            NSLog(@"Body: %@", [[NSString alloc] initWithData:response.body encoding:NSUTF8StringEncoding]);
+//            NSLog(@"Body: %@", [[NSString alloc] initWithData:response.body encoding:NSUTF8StringEncoding]);
             return;
         }
 

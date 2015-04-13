@@ -828,7 +828,7 @@
 }
 
 - (void)transition:(ARTRealtimeConnectionState)state {
-    NSLog(@"Transition to %@ requested", [ARTRealtime ARTRealtimeStateToStr:state]);
+//    NSLog(@"Transition to %@ requested", [ARTRealtime ARTRealtimeStateToStr:state]);
 
     // On exit logic
     switch (self.state) {

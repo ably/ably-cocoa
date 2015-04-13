@@ -455,9 +455,7 @@
             NSString * str = [NSString stringWithFormat:@"second_updates%d", i];
             [channel publishPresenceUpdate:str cb:^(ARTStatus status) {
                 XCTAssertEqual(ARTStatusOk, status);
-                NSLog(@"sleeping");
                 sleep([ARTTestUtil smallSleep]);
-                NSLog(@"done sleeping");
                 numReceived++;
                 if(numReceived == secondBatchTotal) {
                     [secondBatchExpectation fulfill];
@@ -467,7 +465,6 @@
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
         XCTestExpectation * thirdBatchExpectation= [self expectationWithDescription:@"thirdBatchExpectation"];
         
-        NSLog(@"starting third");
         sleep([ARTTestUtil bigSleep]);
         long long end = [ARTTestUtil nowMilli] +timeOffset;
         numReceived=0;
@@ -484,7 +481,6 @@
             }];
         }
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-        NSLog(@"ended third");
         XCTestExpectation * historyExpecation= [self expectationWithDescription:@"historyExpecation"];
         [channel presenceHistoryWithParams:@{
                                       @"start" : [NSString stringWithFormat:@"%lld", start],

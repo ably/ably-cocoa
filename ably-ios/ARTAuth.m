@@ -110,7 +110,6 @@
         NSAssert(keyBits.count == 2, @"Invalid key");
         _keyId = keyBits[0];
         _keyValue = keyBits[1];
-        NSLog(@"KEY %@ and VALUE %@", _keyId, _keyValue);
             
     }
     return self;

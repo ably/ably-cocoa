@@ -73,13 +73,13 @@
     [self withRealtime:^(ARTRealtime *realtime) {
         [self withRealtime2:^(ARTRealtime *realtime2) {
             
-            __block bool disconnectionHappened = false;
+            __block int disconnects =0;
             ARTRealtimeChannel *channel = [realtime channel:channelName];
             ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
             [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus reason) {
                 if(cState == ARTRealtimeChannelAttached) {
                     [channel2 attach];
-                    if(disconnectionHappened) {
+                    if(disconnects ==1) {
                         [channel2 publish:message4 cb:^(ARTStatus status) {
                             XCTAssertEqual(ARTStatusOk, status);
                         }];
@@ -92,7 +92,7 @@
                     [channel2 publish:message1 cb:^(ARTStatus status) {
                         [channel2 publish:message2 cb:^(ARTStatus status) {
                             XCTAssertEqual(ARTStatusOk, status);
-                            disconnectionHappened  =true;
+                            disconnects++;
                             [realtime onError:nil];
                         }];
                     }];
@@ -119,7 +119,7 @@
                 }
                 else if([[message content] isEqualToString:message4]) {
                     XCTAssertTrue(firstRecieved);
-                    XCTAssertTrue(disconnectionHappened);
+                    XCTAssertTrue(disconnects>0);
                     [expectation fulfill];
                 }
             }];

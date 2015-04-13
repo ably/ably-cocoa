@@ -17,8 +17,7 @@
 {
     ARTRealtime * _realtime;
     ARTRealtime * _realtime2;
-    
-    int activesTODORM_;
+
 }
 @end
 
@@ -26,15 +25,12 @@
 @implementation ARTRealtimeChannelHistoryTest
 
 - (void)setUp {
-    activesTODORM_++;
     [super setUp];
 }
 
 - (void)tearDown {
-    activesTODORM_--;
     _realtime = nil;
     _realtime2 = nil;
-    NSLog(@"actives is %d", activesTODORM_);
     [super tearDown];
 }
 

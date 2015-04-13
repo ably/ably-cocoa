@@ -100,7 +100,6 @@
             }
             if(state == ARTRealtimeChannelAttaching) {
                 if(detachedReached) {
-                    NSLog(@"test detached reached");
                     [expectation fulfill];
                 }
             }
