@@ -511,9 +511,7 @@
 }
 
 - (id)decode:(NSData *)data {
-    id obj = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-    NSLog(@"decoded obj is %@", obj);
-    return obj;
+    return [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
 }
 
 - (NSDictionary *)decodeDictionary:(NSData *)data {

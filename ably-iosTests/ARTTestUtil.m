@@ -211,7 +211,7 @@
 
 +(float) timeout
 {
-    return 20.0;
+    return 30.0;
 }
 
 +(void) publishRestMessages:(NSString *) prefix count:(int) count channel:(ARTRestChannel *) channel expectation:(XCTestExpectation *) expectation {

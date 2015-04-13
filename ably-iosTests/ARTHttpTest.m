@@ -33,7 +33,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"get"];
 
     [self.http makeRequestWithMethod:@"GET" url:[NSURL URLWithString:@"http://rest.ably.io/non-existant-path"] headers:nil body:nil cb:^(ARTHttpResponse *response) {
-        XCTAssert(response.status == 500);
+        XCTAssertEqual(response.status, 404);
         [expectation fulfill];
     }];
 

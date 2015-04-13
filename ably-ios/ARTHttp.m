@@ -176,7 +176,7 @@
     CFRetain(rl);
     NSURLSessionDataTask *task = [self.urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-        NSLog(@"HTTP RESPONSE IN MAKE REQUEST, error %@, res %@", error, response);
+       // NSLog(@"HTTP RESPONSE IN MAKE REQUEST, error %@, res %@", error, response);
         if(error) {
             //TODO send error?
             cb([ARTHttpResponse responseWithStatus:ARTStatusError headers:nil body:nil]);
@@ -189,7 +189,7 @@
             }
             if (httpResponse) {
                 int status = (int)httpResponse.statusCode;
-                NSLog(@"http resonse status is %d", status);
+              //  NSLog(@"http resonse status is %d", status);
                 CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
                     cb([ARTHttpResponse responseWithStatus:status headers:httpResponse.allHeaderFields body:data]);
                 });
