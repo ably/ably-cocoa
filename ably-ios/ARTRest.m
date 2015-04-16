@@ -22,6 +22,8 @@
 #import "NSDictionary+ARTDictionaryUtil.h"
 #import "NSArray+ARTFunctional.h"
 
+#import "ARTLog.h"
+
 // TODO base accept headers on encoders
 
 @interface ARTRestChannel ()
@@ -57,6 +59,8 @@
 - (instancetype)initWithRest:(ARTRest *)rest name:(NSString *)name cipherParams:(ARTCipherParams *)cipherParams {
     self = [super init];
     if (self) {
+
+        [ARTLog debug:[NSString stringWithFormat:@"ARTRestChannel: instantiating under %@", name]];
         _rest = rest;
         _name = name;
         _basePath = [NSString stringWithFormat:@"/channels/%@", [name stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]]];
@@ -71,6 +75,8 @@
 }
 
 - (id<ARTCancellable>)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb {
+    
+    [ARTLog debug:[NSString stringWithFormat:@"ARTRestChannel: publishing %@ to channel %@", payload, name]];
     ARTMessage *message = [[ARTMessage alloc] init];
     message.name = name;
     message.payload =[ARTPayload payloadWithPayload:payload encoding:@""];
@@ -160,6 +166,7 @@
         _auth = [[ARTAuth alloc] initWithRest:self options:options.authOptions];
 
         id<ARTEncoder> defaultEncoder = [[ARTJsonEncoder alloc] init];
+        //msgpack not supported yet.
  //       id<ARTEncoder> msgpackEncoder  = [[ARTMsgPackEncoder alloc] init];
         _encoders = @{
             [defaultEncoder mimeType]: defaultEncoder,

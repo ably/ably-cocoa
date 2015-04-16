@@ -14,7 +14,7 @@
 #import "ARTWebSocketTransport.h"
 #import "NSArray+ARTFunctional.h"
 #import "ARTRealtime+Private.h"
-
+#import "ARTLog.h"
 
 @interface ARTQueuedMessage : NSObject
 
@@ -394,7 +394,7 @@
         ARTPayload *encodedPayload = nil;
         ARTStatus status = [self.payloadEncoder encode:msg.payload output:&encodedPayload];
         if (status != ARTStatusOk) {
-            NSLog(@"bad status encoding presence message %lu", status);
+            [ARTLog warn:[NSString stringWithFormat:@"bad status encoding presence message %lu", status]];
         }
         msg.payload = encodedPayload;
     }
@@ -828,7 +828,7 @@
 }
 
 - (void)transition:(ARTRealtimeConnectionState)state {
-//    NSLog(@"Transition to %@ requested", [ARTRealtime ARTRealtimeStateToStr:state]);
+    [ARTLog debug:[NSString stringWithFormat:@"Transition to %@ requested", [ARTRealtime ARTRealtimeStateToStr:state]]];
 
     // On exit logic
     switch (self.state) {
@@ -858,8 +858,7 @@
 
             // Create transport and initiate connection
             if(!self.transport) {
-                
-                //TODO can I resume a failed connection?
+            
                 //TODO can this be infinite? maybe self.resume should be an int.
                 if(previousState == ARTRealtimeFailed || previousState == ARTRealtimeDisconnected) {
                     self.options.resume = [NSString stringWithFormat:@"%lld",self.connectionSerial];
@@ -959,6 +958,7 @@
 }
 
 - (void)onHeartbeat:(ARTProtocolMessage *)message {
+    [ARTLog info:@"ARTRealtime heartbeat received"];
     // Ignore
 }
 
@@ -976,6 +976,7 @@
 }
 
 - (void)onDisconnected:(ARTProtocolMessage *)message {
+    [ARTLog info:@"ARTRealtime disconnected"];
     switch (self.state) {
         case ARTRealtimeConnected:
             self.connectionId = nil;
