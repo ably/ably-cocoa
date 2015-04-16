@@ -8,7 +8,7 @@
 
 #import "ARTHttp.h"
 
-#include "ARTJsonEncoder.h" //TODO RM
+#import "ARTLog.h"
 @interface ARTHttp ()
 
 @property (readonly, strong, nonatomic) NSURL *baseUrl;
@@ -176,19 +176,20 @@
     CFRetain(rl);
     NSURLSessionDataTask *task = [self.urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-       // NSLog(@"HTTP RESPONSE IN MAKE REQUEST, error %@, res %@", error, response);
+        
+        [ARTLog debug:
+         [NSString stringWithFormat:@"ARTHttp: Got response %@, error %@",
+          response,error]];
+        
         if(error) {
-            //TODO send error?
+            [ARTLog error:[NSString stringWithFormat:@"ARTHttp receieved error: %@", error]];
             cb([ARTHttpResponse responseWithStatus:ARTStatusError headers:nil body:nil]);
         }
         else {
-            if(artRequest.body) {
-                ARTJsonEncoder * encoder =[[ARTJsonEncoder alloc] init];
-                
-            }
             if (httpResponse) {
                 int status = (int)httpResponse.statusCode;
-              //  NSLog(@"http resonse status is %d", status);
+                [ARTLog verbose:
+                 [NSString stringWithFormat:@"ARTHttp response status is %d", status]];
                 CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
                     cb([ARTHttpResponse responseWithStatus:status headers:httpResponse.allHeaderFields body:data]);
                 });

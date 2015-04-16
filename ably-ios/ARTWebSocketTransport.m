@@ -12,7 +12,7 @@
 #import "ARTOptions.h"
 #import "ARTRest.h"
 #import "ARTRest+Private.h"
-
+#import "ARTLog.h"
 enum {
     ARTWsNeverConnected = -1,
     ARTWsBuggyClose = -2,
@@ -106,7 +106,7 @@ enum {
             NSString *queryString = [sRest formatQueryParams:queryParams];
             NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"wss://%@:%d/?%@", realtimeHost, realtimePort, queryString]];
 
-            NSLog(@"Websocket url: %@", url);
+            [ARTLog debug:[NSString stringWithFormat:@"Websocket url: %@", url]];
             sSelf.websocket = [[SRWebSocket alloc] initWithURL:url];
             sSelf.websocket.delegate = sSelf;
             [sSelf.websocket setDelegateDispatchQueue:sSelf.q];

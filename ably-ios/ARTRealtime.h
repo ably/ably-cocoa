@@ -61,7 +61,6 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
 - (id<ARTCancellable>)presenceHistory:(ARTPaginatedResultCb)cb;
 - (id<ARTCancellable>)presenceHistoryWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
 
-- (id<ARTCancellable>)time:(void(^)(ARTStatus status, NSDate *time))cb;
 
 typedef void (^ARTRealtimeChannelMessageCb)(ARTMessage *);
 - (id<ARTSubscription>)subscribe:(ARTRealtimeChannelMessageCb)cb;

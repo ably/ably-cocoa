@@ -483,7 +483,7 @@
                 [channel presence:^(ARTStatus status, id<ARTPaginatedResult> result) {
                     XCTAssertEqual(ARTStatusOk, status);
                     XCTAssertEqual(status, ARTStatusOk);
-                    NSArray *messages = [result current];
+                    NSArray *messages = [result currentItems];
                     XCTAssertEqual(1, messages.count);
                     ARTPresenceMessage *m0 = messages[0];
                     
@@ -530,7 +530,7 @@
                     [channel presence:^(ARTStatus status, id<ARTPaginatedResult> result) {
                         XCTAssertEqual(ARTStatusOk, status);
                         XCTAssertEqual(status, ARTStatusOk);
-                        NSArray *messages = [result current];
+                        NSArray *messages = [result currentItems];
                         XCTAssertEqual(0, messages.count);
                         [expectation fulfill];
                     }];

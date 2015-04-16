@@ -61,7 +61,7 @@
                 [expectation fulfill];
                 return;
             }
-            NSArray *presence = [result current];
+            NSArray *presence = [result currentItems];
             XCTAssertEqual(4, presence.count);
             ARTPresenceMessage *p0 = presence[0];
             ARTPresenceMessage *p1 = presence[1];
@@ -104,7 +104,7 @@
                 [expectation fulfill];
                 return;
             }
-            NSArray *presence = [result current];
+            NSArray *presence = [result currentItems];
             XCTAssertEqual(4, presence.count);
             [expectation fulfill];
 

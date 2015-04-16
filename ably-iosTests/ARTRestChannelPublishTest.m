@@ -85,7 +85,7 @@
                 XCTAssertEqual(ARTStatusOk, status);
                 [channel historyWithParams:@{ @"direction" : @"forwards"} cb:^(ARTStatus status, id<ARTPaginatedResult> result) {
                     XCTAssertEqual(status, ARTStatusOk);
-                    NSArray *messages = [result current];
+                    NSArray *messages = [result currentItems];
                     XCTAssertEqual(2, messages.count);
                     ARTMessage *m0 = messages[0];
                     ARTMessage *m1 = messages[1];

@@ -13,7 +13,7 @@
 #import "ARTStats.h"
 #import "NSDictionary+ARTDictionaryUtil.h"
 #import "NSDate+ARTUtil.h"
-
+#import "ARTLog.h"
 @interface ARTJsonEncoder ()
 
 - (ARTMessage *)messageFromDictionary:(NSDictionary *)input;
@@ -500,7 +500,11 @@
 - (void)writePayload:(ARTPayload *)payload toDictionary:(NSMutableDictionary *)output {
     ARTPayload *encoded = nil;
     ARTStatus status = [[ARTBase64PayloadEncoder instance] encode:payload output:&encoded];
+    if(status != ARTStatusOk) {
+        [ARTLog error:@"ARTJsonEncoder failed to encode payload"];
+    }
     NSAssert(status == ARTStatusOk, @"Error encoding payload");
+
     NSAssert([payload.payload isKindOfClass:[NSString class]], @"Only string payloads are accepted");
 
     if (encoded.encoding.length) {

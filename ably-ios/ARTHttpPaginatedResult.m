@@ -36,7 +36,7 @@
     return self;
 }
 
-- (id)current {
+- (id)currentItems {
     return self.currentValue;
 }
 
@@ -52,19 +52,15 @@
     return !!self.relNext;
 }
 
-
-//TODO test
-- (void)getFirst:(ARTPaginatedResultCb)cb {
+- (void)getFirstPage:(ARTPaginatedResultCb)cb {
     [ARTHttpPaginatedResult makePaginatedRequest:self.http request:self.relFirst responseProcessor:self.responseProcessor cb:cb];
 }
 
-
-//TODO Test
-- (void)getCurrent:(ARTPaginatedResultCb)cb {
+- (void)getCurrentPage:(ARTPaginatedResultCb)cb {
     [ARTHttpPaginatedResult makePaginatedRequest:self.http request:self.relCurrent responseProcessor:self.responseProcessor cb:cb];
 }
 
-- (void)getNext:(ARTPaginatedResultCb)cb {
+- (void)getNextPage:(ARTPaginatedResultCb)cb {
     [ARTHttpPaginatedResult makePaginatedRequest:self.http request:self.relNext responseProcessor:self.responseProcessor cb:cb];
 }
 

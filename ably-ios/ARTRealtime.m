@@ -394,7 +394,7 @@
         ARTPayload *encodedPayload = nil;
         ARTStatus status = [self.payloadEncoder encode:msg.payload output:&encodedPayload];
         if (status != ARTStatusOk) {
-            [ARTLog warn:[NSString stringWithFormat:@"bad status encoding presence message %lu", status]];
+            [ARTLog warn:[NSString stringWithFormat:@"bad status encoding presence message %d",(int) status]];
         }
         msg.payload = encodedPayload;
     }
@@ -1163,7 +1163,7 @@
     }
 
     if (serial == self.pendingMessageStartSerial) {
-        NSRange ackRange = NSMakeRange(0, count);
+        NSRange ackRange = NSMakeRange(0, (unsigned int) count);
         ackMessages = [self.pendingMessages subarrayWithRange:ackRange];
         [self.pendingMessages removeObjectsInRange:ackRange];
         // TODO what happens if count > pendingMessages.count
@@ -1188,7 +1188,7 @@
         serial = self.pendingMessageStartSerial;
     }
 
-    NSRange nackRange = NSMakeRange(0, count);
+    NSRange nackRange = NSMakeRange(0, (unsigned int) count);
     NSArray *nackMessages = [self.pendingMessages subarrayWithRange:nackRange];
     [self.pendingMessages removeObjectsInRange:nackRange];
     self.pendingMessageStartSerial = serial;

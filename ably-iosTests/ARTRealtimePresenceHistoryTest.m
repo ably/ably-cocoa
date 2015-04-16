@@ -147,7 +147,7 @@
                     XCTAssertEqual(ARTStatusOk, status);
                     [channel presenceHistory:^(ARTStatus status, id<ARTPaginatedResult> result) {
                         XCTAssertEqual(status, ARTStatusOk);
-                        NSArray *messages = [result current];
+                        NSArray *messages = [result currentItems];
                         XCTAssertEqual(1, messages.count);
                         ARTPresenceMessage *m0 = messages[0];
                         XCTAssertEqualObjects(presenceEnter, [m0 content]);
@@ -183,7 +183,7 @@
                             [channel presenceHistoryWithParams:@{@"direction" :@"forwards"} cb:^
                              (ARTStatus status, id<ARTPaginatedResult> result) {
                                  XCTAssertEqual(status, ARTStatusOk);
-                                 NSArray *messages = [result current];
+                                 NSArray *messages = [result currentItems];
                                  XCTAssertEqual(3, messages.count);
                                  ARTPresenceMessage *m0 = messages[0];
                                  ARTPresenceMessage *m1 = messages[1];
@@ -233,7 +233,7 @@
                                 [channel presenceHistoryWithParams:@{@"direction" :@"forwards"} cb:^
                                  (ARTStatus status, id<ARTPaginatedResult> result) {
                                      XCTAssertEqual(status, ARTStatusOk);
-                                     NSArray *messages = [result current];
+                                     NSArray *messages = [result currentItems];
                                      XCTAssertEqual(3, messages.count);
                                      ARTPresenceMessage *m0 = messages[0];
                                      ARTPresenceMessage *m1 = messages[1];
@@ -286,7 +286,7 @@
                             [channel presenceHistoryWithParams:@{@"direction" :@"backwards"} cb:^
                              (ARTStatus status, id<ARTPaginatedResult> result) {
                                  XCTAssertEqual(status, ARTStatusOk);
-                                 NSArray *messages = [result current];
+                                 NSArray *messages = [result currentItems];
                                  XCTAssertEqual(3, messages.count);
                                  ARTPresenceMessage *m0 = messages[0];
                                  ARTPresenceMessage *m1 = messages[1];
@@ -319,7 +319,7 @@
 {
     [self runTestLimit:2 forwards:true cb:^(ARTStatus status, id<ARTPaginatedResult> result) {
         XCTAssertEqual(status, ARTStatusOk);
-        NSArray *messages = [result current];
+        NSArray *messages = [result currentItems];
         XCTAssertEqual(2, messages.count);
         XCTAssert([result hasNext]);
         ARTPresenceMessage *m0 = messages[0];
@@ -331,9 +331,9 @@
         XCTAssertEqualObjects([self enter2Str], [m1 content]);
         XCTAssertEqual(m1.action, ARTPresenceMessageUpdate);
         
-        [result getNext:^(ARTStatus status, id<ARTPaginatedResult> result2) {
+        [result getNextPage:^(ARTStatus status, id<ARTPaginatedResult> result2) {
             
-            NSArray *messages = [result2 current];
+            NSArray *messages = [result2 currentItems];
             XCTAssertEqual(1, messages.count);
             XCTAssertFalse([result2 hasNext]);
             ARTPresenceMessage *m0 = messages[0];
@@ -348,7 +348,7 @@
 - (void)testLimitBackward{
     [self runTestLimit:2 forwards:false cb:^(ARTStatus status, id<ARTPaginatedResult> result) {
         XCTAssertEqual(status, ARTStatusOk);
-        NSArray *messages = [result current];
+        NSArray *messages = [result currentItems];
         XCTAssertEqual(2, messages.count);
         XCTAssert([result hasNext]);
         ARTPresenceMessage *m0 = messages[0];
@@ -360,9 +360,9 @@
         XCTAssertEqualObjects([self enter2Str], [m1 content]);
         XCTAssertEqual(m1.action, ARTPresenceMessageUpdate);
         
-        [result getNext:^(ARTStatus status, id<ARTPaginatedResult> result2) {
+        [result getNextPage:^(ARTStatus status, id<ARTPaginatedResult> result2) {
             
-            NSArray *messages = [result2 current];
+            NSArray *messages = [result2 currentItems];
             XCTAssertEqual(1, messages.count);
             XCTAssertFalse([result2 hasNext]);
             ARTPresenceMessage *m0 = messages[0];
@@ -501,7 +501,7 @@
     [self runTestTimeForwards:true limit:100 cb:^(ARTStatus status, id<ARTPaginatedResult> result) {
         XCTAssertEqual(status, ARTStatusOk);
         XCTAssertFalse([result hasNext]);
-        NSArray * page = [result current];
+        NSArray * page = [result currentItems];
         XCTAssertTrue(page != nil);
         XCTAssertEqual([page count], [self secondBatchSize]);
         for(int i=0;i < [page count]; i++) {
@@ -516,7 +516,7 @@
     [self runTestTimeForwards:false limit:100 cb:^(ARTStatus status, id<ARTPaginatedResult> result) {
         XCTAssertEqual(status, ARTStatusOk);
         XCTAssertFalse([result hasNext]);
-        NSArray * page = [result current];
+        NSArray * page = [result currentItems];
         XCTAssertTrue(page != nil);
         XCTAssertEqual([page count], [self secondBatchSize]);
         int topSize = [self secondBatchSize];
@@ -555,7 +555,7 @@
                                         [c2 presenceHistoryWithParams:@{@"direction" : @"forwards"}
                                                                    cb:^(ARTStatus status2, id<ARTPaginatedResult> c2Result) {
                                             XCTAssertEqual(status2, ARTStatusOk);
-                                            NSArray *messages = [c2Result current];
+                                            NSArray *messages = [c2Result currentItems];
                                             XCTAssertEqual(3, messages.count);
                                             XCTAssertFalse([c2Result hasNext]);
                                             ARTPresenceMessage *m0 = messages[0];
