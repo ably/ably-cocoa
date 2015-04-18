@@ -7,7 +7,28 @@
 //
 
 #import <UIKit/UIKit.h>
-
+#import "ARTRest.h"
+#import "ARTStatus.h"
+#import "ARTMessage.h"
+#import "ARTRealtime.h"
+#import "ARTPaginatedResult.h"
+#import "ARTOptions.h"
+/*
+#import ""
+#import ""
+#import ""
+#import ""
+#import ""
+#import ""
+#import ""
+#import ""
+#import ""
+#import ""
+#import ""
+#import ""
+#import ""
+#import ""
+*/
 //! Project version number for ably-ios.
 FOUNDATION_EXPORT double ably_iosVersionNumber;
 

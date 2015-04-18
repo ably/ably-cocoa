@@ -10,6 +10,8 @@
 	<string>ably-ios</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
+		<key>225BF3A080CDE5D7B81A8EFC30321562051C401E</key>
+		<string>https://github.com/ably/ably-common.git</string>
 		<key>773E844C7684ABBBF9034DF49A94314CBF05C668</key>
 		<string>https://github.com/ably/ably-ios.git</string>
 	</dict>
@@ -17,6 +19,8 @@
 	<string>ably-ios.xcworkspace</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
+		<key>225BF3A080CDE5D7B81A8EFC30321562051C401E</key>
+		<string>../ably-common</string>
 		<key>773E844C7684ABBBF9034DF49A94314CBF05C668</key>
 		<string>..</string>
 	</dict>
@@ -28,6 +32,14 @@
 	<string>773E844C7684ABBBF9034DF49A94314CBF05C668</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>225BF3A080CDE5D7B81A8EFC30321562051C401E</string>
+			<key>IDESourceControlWCCName</key>
+			<string>ably-common</string>
+		</dict>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
