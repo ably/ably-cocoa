@@ -7,16 +7,16 @@ An iOS client library for [ably.io](https://www.ably.io), the realtime messaging
 ## Installation
 
 * git clone https://github.com/ably/ably-ios
-* drag ably-ios/ably-ios into your project as a group
+* drag the directory ably-ios/ably-ios into your project as a group
 * git clone https://github.com/square/SocketRocket.git
-* drag SocketRocket/SocketRocket into your project as a group
+* drag the directory SocketRocket/SocketRocket into your project as a group
 
 
 
 ## Using the Realtime API
 
 ### Connection
-'''
+'''objc
      ARTRealtime * client = [[ARTRealtime alloc] initWithKey:@"xxxxx"];
      [client subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
                          if (state == ARTRealtimeConnected) {
@@ -26,7 +26,7 @@ An iOS client library for [ably.io](https://www.ably.io), the realtime messaging
 
 ### Subscribing to a channel
 
-'''
+'''objc
   ARTRealtimeChannel * channel = [client channel:@"test"];
   [channel subscribe:^(ARTMessage * message) {
      NSString * content =[message content];
@@ -35,7 +35,7 @@ An iOS client library for [ably.io](https://www.ably.io), the realtime messaging
 '''
 
 ### Publishing to a channel
-'''
+'''objc
     [channel publish:@"Hello, Channel!" cb:^(ARTStatus status) {
         if(status != ARTStatusOk) {
             //something went wrong.
@@ -44,7 +44,7 @@ An iOS client library for [ably.io](https://www.ably.io), the realtime messaging
 '''
 
 ### Querying the History
-'''
+'''objc
     [channel history:^(ARTStatus status, id<ARTPaginatedResult> messagesPage) {
         XCTAssertEqual(status, ARTStatusOk);
         NSArray *messages = [messagesPage currentItems];
@@ -58,7 +58,7 @@ An iOS client library for [ably.io](https://www.ably.io), the realtime messaging
 '''
 
 ### Presence on a channel
-'''
+'''objc
     ARTOptions * options = [[ARTOptions alloc] initWithKey:@"xxxxx"];
     options.clientId = @"john.doe";
     ARTRealtime * client = [[ARTRealtime alloc] initWithOptions:options];
@@ -71,7 +71,7 @@ An iOS client library for [ably.io](https://www.ably.io), the realtime messaging
 '''
 
 ### Querying the Presence History
-    '''
+'''objc
     [channel presenceHistory:^(ARTStatus status, id<ARTPaginatedResult> presencePage) {
         NSArray *messages = [presencePage currentItems];
         if(messages) {
@@ -83,13 +83,13 @@ An iOS client library for [ably.io](https://www.ably.io), the realtime messaging
 '''
 
 ## Using the REST API
-'''
+'''objc
    ARTRest * client = [ARTRest alloc] initWithKey:@"xxxxx"];
    ARTRestChannel * channel = [client channel:@"test"];
 '''
 
 ## Publishing a message to a channel
-'''
+'''objc
    [channel publish:@"Hello, channel!" cb:^(ARTStatus status){
        if(status != ARTStatusOk) {
            //something went wrong
