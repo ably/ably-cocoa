@@ -10,58 +10,52 @@
 
 #import "ARTRest.h"
 #import "ARTRealtime.h"
+#import "ARTLog.h"
 #import <XCTest/XCTest.h>
+#import "ARTPayload.h"
+
 @implementation ARTTestUtil
 
 
-
-
-+(NSString *) getTestAppString {
-    
-    NSString * path = [[NSBundle mainBundle] pathForResource:@"test-app-setup"
-                                                      ofType:@"json"];
-    NSString* content = [NSString stringWithContentsOfFile:path                                                  encoding:NSUTF8StringEncoding
-                                                     error:NULL];
-    
-    return content;
-
++(ARTCipherPayloadEncoder *) getTestCipherEncoder {
+    ARTCipherPayloadEncoder * e = nil;
+    return e;
 }
+
+
++(NSString *) getFileByName:(NSString *) name {
+    NSString * path =[[[[NSBundle bundleForClass: [self class]] resourcePath] stringByAppendingString:@"/"] stringByAppendingString:name];
+    return  [NSString stringWithContentsOfFile:path
+                                      encoding:NSUTF8StringEncoding
+                                         error:NULL];
+}
+
++(NSString *) getErrorsJson {
+    return [ARTTestUtil getFileByName:@"ably-common/test-resources/errors.json"];
+}
+
++(NSString *) getCrypto256Json {
+    
+   return [ARTTestUtil getFileByName:@"ably-common/test-resources/crypto-data-256.json"];
+}
+
++(NSString *) getTestAppSetupJson {
+    return [ARTTestUtil getFileByName:@"ably-common/test-resources/test-app-setup.json"];
+}
+
++(NSString *) getCrypto128Json {
+    return [ARTTestUtil getFileByName:@"ably-common/test-resources/crypto-data-128.json"];
+}
+
 +(void) setupApp:(ARTOptions *)options withAlteration:(TestAlteration) alt  appId:(NSString *) appId cb:(void (^)(ARTOptions *))cb
 {
+    NSString * str = [ARTTestUtil getTestAppSetupJson];
+    NSData *data = [str dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary * topLevel =[NSJSONSerialization JSONObjectWithData:data  options:NSJSONReadingMutableContainers error:nil];
     
-    //NSString * str = [ARTTestUtil getTestAppString];
-   // NSLog(@" STRRR IS %@", str);
-    NSDictionary *capability = @{
-                                 @"cansubscribe:*":@[@"subscribe"],
-                                 @"canpublish:*":@[@"publish"],
-                                 @"canpublish:andpresence":@[@"presence",@"publish"]
-                                 };
-    
-    NSString *capabilityString = [[NSString alloc] initWithData:[NSJSONSerialization dataWithJSONObject:capability options:0 error:nil] encoding:NSUTF8StringEncoding];
-    
-    NSDictionary *appSpec = @{
-                              @"keys": @[
-                                      @{},
-                                      @{@"capability":capabilityString}
-                                      ],
-                              @"namespaces": @[
-                                      @{@"id": @"persisted", @"persisted":[NSNumber numberWithBool:YES]}
-                                      ],
-                              @"channels": @[
-                                      @{
-                                          @"name": @"persisted:presence_fixtures",
-                                          @"presence": @[
-                                                  @{@"clientId": @"client_bool", @"data": @"true"},
-                                                  @{@"clientId": @"client_int", @"data":@"24"},
-                                                  @{@"clientId": @"client_string", @"data":@"This is a string clientData payload"},
-                                                  @{@"clientId": @"client_json", @"data":@"{\"test\":\"This is a JSONObject clientData payload\"}"}
-                                                  ]
-                                          }
-                                      ]
-                              };
-    
-    NSData *appSpecData = [NSJSONSerialization dataWithJSONObject:appSpec options:0 error:nil];
-    //NSLog(@" setupApp: %@", [[NSString alloc] initWithData:appSpecData encoding:NSUTF8StringEncoding]);
+    NSDictionary * d = [topLevel objectForKey:@"post_apps"];
+    NSData *appSpecData = [NSJSONSerialization dataWithJSONObject:d options:0 error:nil];
+//    NSLog(@" setupApp: %@", [[NSString alloc] initWithData:appSpecData encoding:NSUTF8StringEncoding]);
     
     
     if(alt ==TestAlterationBadWsHost)
@@ -73,19 +67,18 @@
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
     req.HTTPMethod = @"POST";
     req.HTTPBody = appSpecData;
-    if(false  ||options.binary) { //msgpack not implemented yet
+    
+    /*if(false  ||options.binary) { //msgpack not implemented yet
         [req setValue:@"application/x-msgpack,application/json" forHTTPHeaderField:@"Accept"];
         [req setValue:@"application/x-msgpack" forHTTPHeaderField:@"Content-Type"];
-        
     }
-    else {
+    else */
+    {
         [req setValue:@"application/json" forHTTPHeaderField:@"Accept"];
         [req setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-        
-        
     }
     
-  //  NSLog(@"Creating test app. URL: %@, Method: %@, Body: %@, Headers: %@", req.URL, req.HTTPMethod, [[NSString alloc] initWithData:req.HTTPBody encoding:NSUTF8StringEncoding], req.allHTTPHeaderFields);
+   // NSLog(@"Creating test app. URL: %@, Method: %@, Body: %@, Headers: %@", req.URL, req.HTTPMethod, [[NSString alloc] initWithData:req.HTTPBody encoding:NSUTF8StringEncoding], req.allHTTPHeaderFields);
     
     CFRunLoopRef rl = CFRunLoopGetCurrent();
     
@@ -94,35 +87,36 @@
     
     NSURLSessionDataTask *task = [urlSession dataTaskWithRequest:req completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-        NSString *keyId;
-        NSString *keyValue;
+        NSString *keyName;
+        NSString *keySecret;
+        NSString * capability;
         if (httpResponse.statusCode < 200 || httpResponse.statusCode >= 300) {
-            //NSLog(@"Status Code: %ld", (long)httpResponse.statusCode);
-            //NSLog(@"Body: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            NSLog(@"Status Code: %ld", (long)httpResponse.statusCode);
+            NSLog(@"Body: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             cb(nil);
             return;
         } else {
             NSDictionary *response = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-            
             if (response) {
-                NSDictionary *key = response[@"keys"][0];
-                keyId = [NSString stringWithFormat:@"%@.%@", response[@"appId"], key[@"id"]];
-                
-                keyValue = key[@"value"];
+                NSDictionary *key = response[@"keys"][(alt == TestAlterationRestrictCapability ? 1 :0)];
+                keyName = [NSString stringWithFormat:@"%@.%@", response[@"appId"], key[@"id"]];
+                keySecret = key[@"value"];
+                capability = key[@"capability"];
             }
         }
         
         ARTOptions *appOptions = [options clone];
-        
-        appOptions.authOptions.keyId = keyId;
-        appOptions.authOptions.keyValue = keyValue;
+        appOptions.authOptions.keyName = keyName;
+        appOptions.authOptions.keySecret = keySecret;
+        appOptions.authOptions.capability =capability;
+
         if(alt == TestAlterationBadKeyId)
         {
-            appOptions.authOptions.keyId= @"badKeyId";
+            appOptions.authOptions.keyName= @"badKeyName";
         }
         else if(alt == TestAlterationBadKeyValue)
         {
-            appOptions.authOptions.keyValue = @"badKeyValue";
+            appOptions.authOptions.keySecret = @"badKeySecret";
         }
         
         CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
@@ -131,12 +125,10 @@
         CFRunLoopWakeUp(rl);
     }];
     [task resume];
-
 }
 
-+(NSString *) appIdFromkeyId:(NSString *) keyId
-{
-    NSArray *array = [keyId componentsSeparatedByString:@"."];
++(NSString *) appIdFromkeyName:(NSString *) keyName {
+    NSArray *array = [keyName componentsSeparatedByString:@"."];
     return [array objectAtIndex:0];
 }
 
@@ -148,34 +140,29 @@
     [ARTTestUtil setupApp:options withAlteration:TestAlterationNone cb:cb];
 }
 
-+ (NSString *) realtimeHost
-{
++ (NSString *) realtimeHost {
     return @"sandbox-realtime.ably.io";
 }
 
-+ (NSString *) restHost
-{
++ (NSString *) restHost {
     return @"sandbox-rest.ably.io";
 }
 
-+(ARTOptions *) binaryRestOptions
-{
++(ARTOptions *) binaryRestOptions {
     ARTOptions * json = [[ARTOptions alloc] init];
     json.restHost = [ARTTestUtil restHost];
     json.binary =true;
     return json;
 }
 
-+(ARTOptions *) jsonRestOptions
-{
++(ARTOptions *) jsonRestOptions {
     ARTOptions * json = [[ARTOptions alloc] init];
     json.restHost = [ARTTestUtil restHost];
     json.binary =false;
     return json;
 }
 
-+(ARTOptions *) jsonRealtimeOptions
-{
++(ARTOptions *) jsonRealtimeOptions {
     ARTOptions * json = [[ARTOptions alloc] init];
     
     [json setRealtimeHost:[ARTTestUtil realtimeHost] withRestHost:[ARTTestUtil restHost]];
@@ -184,8 +171,7 @@
     return json;
 }
 
-+(ARTOptions *) binaryRealtimeOptions
-{
++(ARTOptions *) binaryRealtimeOptions {
     ARTOptions * json = [[ARTOptions alloc] init];
     [json setRealtimeHost:[ARTTestUtil realtimeHost] withRestHost:[ARTTestUtil restHost]];
 
@@ -208,24 +194,20 @@
     });
 }
 
-+(long long) nowMilli
-{
++(long long) nowMilli {
     NSDate * date = [NSDate date];
     return [date timeIntervalSince1970]*1000;
 }
 
-+(float) smallSleep
-{
++(float) smallSleep {
     return 0.6;
 }
 
-+(float) bigSleep
-{
++(float) bigSleep {
     return 1.0;
 }
 
-+(float) timeout
-{
++(float) timeout {
     return 30.0;
 }
 

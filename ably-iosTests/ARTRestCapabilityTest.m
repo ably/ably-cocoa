@@ -15,12 +15,7 @@
 #import "ARTTestUtil.h"
 @interface ARTRestCapabilityTest : XCTestCase {
     ARTRest *_rest;
-    ARTOptions *_options;
-    float _timeout;
 }
-
-- (void)withRest:(void(^)(ARTRest *))cb;
-
 
 @end
 
@@ -28,8 +23,6 @@
 
 - (void)setUp {
     [super setUp];
-    _options = [[ARTOptions alloc] init];
-    _options.restHost = @"sandbox-rest.ably.io";
 }
 
 - (void)tearDown {
@@ -37,9 +30,11 @@
     [super tearDown];
 }
 
+
 - (void)withRest:(void (^)(ARTRest *rest))cb {
     if (!_rest) {
-        [ARTTestUtil setupApp:_options cb:^(ARTOptions *options) {
+        ARTOptions * theOptions = [ARTTestUtil jsonRestOptions];
+        [ARTTestUtil setupApp:theOptions cb:^(ARTOptions *options) {
             if (options) {
                 _rest = [[ARTRest alloc] initWithOptions:options];
             }
@@ -50,11 +45,42 @@
     cb(_rest);
 }
 
-/*
-//TODO write tests
-- (void)testAuthBlanket {
-    XCTFail(@"TODO write test");
+- (void)withRestRestrictCap:(void (^)(ARTRest *rest))cb {
+    if (!_rest) {
+        ARTOptions * theOptions = [ARTTestUtil jsonRestOptions];
+        [ARTTestUtil setupApp:theOptions withAlteration:TestAlterationRestrictCapability cb:^(ARTOptions *options) {
+            if (options) {
+                options.authOptions.useTokenAuth = true;
+                options.authOptions.clientId = @"clientId";
+                _rest = [[ARTRest alloc] initWithOptions:options];
+            }
+            cb(_rest);
+        }];
+        return;
+    }
+    cb(_rest);
 }
+
+
+- (void)testPublishRestriced {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"testSimpleDisconnected"];
+    [self withRestRestrictCap:^(ARTRest * rest) {
+        ARTRestChannel * channel = [rest channel:@"canpublish:test"];
+        [channel publish:@"publish" cb:^(ARTStatus status) {
+            XCTAssertEqual(status, ARTStatusOk);
+            ARTRestChannel * channel2 = [rest channel:@"cannotPublishToThisChannelName"];
+            [channel2 publish:@"publish" cb:^(ARTStatus status) {
+                XCTAssertEqual(status, ARTStatusError);
+                [expectation fulfill];
+                
+            }];
+            
+        }];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
+
+/*
 - (void)testAuthEqual {
     XCTFail(@"TODO write test");
 }

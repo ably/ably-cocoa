@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "NSDate+ARTUtil.h"
+#import "ARTNSDate+ARTUtil.h"
 
 @implementation NSDate (ARTUtil)
 

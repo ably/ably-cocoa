@@ -49,8 +49,8 @@
     }
     cb(_rest);
 }
-
 - (void)testPresence {
+    
     XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
     [self withRest:^(ARTRest *rest) {
         ARTRestChannel *channel = [rest channel:@"persisted:presence_fixtures"];
@@ -62,28 +62,38 @@
                 return;
             }
             NSArray *presence = [result currentItems];
-            XCTAssertEqual(4, presence.count);
+
+
+            XCTAssertEqual(6, [presence count]);
             ARTPresenceMessage *p0 = presence[0];
-            ARTPresenceMessage *p1 = presence[1];
-            ARTPresenceMessage *p2 = presence[2];
+//            ARTPresenceMessage *p1 = presence[1];
+//            ARTPresenceMessage *p2 = presence[2];
             ARTPresenceMessage *p3 = presence[3];
+            ARTPresenceMessage *p4 = presence[4];
+            ARTPresenceMessage *p5 = presence[5];
             
-            
-            // This is assuming the results are coming back sorted by clientId
-            // in alphabetical order. This seems to be the case at the time of
-            // writing, but may change in the future
             
             XCTAssertEqualObjects(@"client_bool", p0.clientId);
             XCTAssertEqualObjects(@"true", [p0 content]);
             
-            XCTAssertEqualObjects(@"client_int", p1.clientId);
-            XCTAssertEqualObjects(@"24", [p1 content]);
             
-            XCTAssertEqualObjects(@"client_json", p2.clientId);
-            XCTAssertEqualObjects(@"{\"test\":\"This is a JSONObject clientData payload\"}", [p2 content]);
+            //TODO use ARTTestUtil cipher and check they match up.
+            /*
+            XCTAssertEqualObjects(@"client_decoded", p1.clientId);
+            XCTAssertEqualObjects([p1 content], @"{\"example\":{\"json\":\"Object\"}}");
             
-            XCTAssertEqualObjects(@"client_string", p3.clientId);
-            XCTAssertEqualObjects(@"This is a string clientData payload", [p3 content]);
+            XCTAssertEqualObjects(@"client_encoded", p2.clientId);
+            XCTAssertEqualObjects([p2 content], @"HO4cYSP8LybPYBPZPHQOtuD53yrD3YV3NBoTEYBh4U0N1QXHbtkfsDfTspKeLQFt");
+            */
+            
+            XCTAssertEqualObjects(@"client_int", p3.clientId);
+            XCTAssertEqualObjects(@"24", [p3 content]);
+            
+            XCTAssertEqualObjects(@"client_json", p4.clientId);
+            XCTAssertEqualObjects(@"{ \"test\": \"This is a JSONObject clientData payload\"}", [p4 content]);
+            
+            XCTAssertEqualObjects(@"client_string", p5.clientId);
+            XCTAssertEqualObjects(@"This is a string clientData payload", [p5 content]);
             
             
             [expectation fulfill];
@@ -105,7 +115,7 @@
                 return;
             }
             NSArray *presence = [result currentItems];
-            XCTAssertEqual(4, presence.count);
+            XCTAssertEqual(6, [presence count]);
             [expectation fulfill];
 
         }];

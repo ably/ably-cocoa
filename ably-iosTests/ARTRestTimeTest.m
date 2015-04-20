@@ -16,7 +16,6 @@
 
 @interface ARTRestTimeTest : XCTestCase {
     ARTRest *_rest;
-    float _timeout;
 }
 
 - (void)withRest:(void(^)(ARTRest *))cb;
@@ -48,7 +47,6 @@
     cb(_rest);
 }
 
-/** ARTRESTTIMETEST **/
 - (void)testRestTimeBadHost {
     __weak XCTestExpectation *expectationRestTimeBadHost = [self expectationWithDescription:@"testRestTimeBadHost"];
     

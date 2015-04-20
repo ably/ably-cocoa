@@ -14,7 +14,7 @@
 #import "ARTRest.h"
 #import "ARTTestUtil.h"
 #import "ARTStats.h"
-#import "NSDate+ARTUtil.h"
+#import "ARTNSDate+ARTUtil.h"
 @interface ARTRestAppStatsTest : XCTestCase {
     ARTRest *_rest;
 }

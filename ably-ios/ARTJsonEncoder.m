@@ -11,9 +11,12 @@
 #import "ARTPresenceMessage.h"
 #import "ARTProtocolMessage.h"
 #import "ARTStats.h"
-#import "NSDictionary+ARTDictionaryUtil.h"
-#import "NSDate+ARTUtil.h"
+#import "ARTNSDictionary+ARTDictionaryUtil.h"
+#import "ARTNSDate+ARTUtil.h"
 #import "ARTLog.h"
+#import "ARTAuth.h"
+#import "ARTHttp.h"
+
 @interface ARTJsonEncoder ()
 
 - (ARTMessage *)messageFromDictionary:(NSDictionary *)input;
@@ -97,6 +100,10 @@
     return [self protocolMessageFromDictionary:[self decodeDictionary:data]];
 }
 
+- (ARTTokenDetails *) decodeAccessToken:(NSData *) data {
+    return [self tokenFromDictionary:[self decodeDictionary:data]];
+}
+
 - (NSDate *)decodeTime:(NSData *)data {
     NSArray *resp = [self decodeArray:data];
     if (resp && resp.count == 1) {
@@ -158,7 +165,7 @@
         case 4:
             return ARTPresenceMessageUpdate;
     }
-    NSLog(@"error. enum is probably not up to date");
+    [ARTLog error:[NSString stringWithFormat:@"ARTJsonEncoder invalid ARTPresenceMessage action %d", action]];
     return ArtPresenceMessageAbsent;
     
 }
@@ -185,6 +192,7 @@
     }
     ARTPresenceMessage *message = [[ARTPresenceMessage alloc] init];
     message.id = [input artString:@"id"];
+    message.encoding = [input artString:@"encoding"];
     message.clientId = [input artString:@"clientId"];
     message.payload = [self payloadFromDictionary:input];
     message.timestamp = [input artDate:@"timestamp"];
@@ -307,6 +315,20 @@
     return output;
 }
 
+-(ARTTokenDetails *) tokenFromDictionary:(NSDictionary *) input {
+    if (![input isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
+    ARTTokenDetails * tok = [[ARTTokenDetails alloc]
+                          initWithId: [input artString:@"token"]
+                             expires: [[input artNumber:@"expires"] longLongValue]
+                              issued: [[input artNumber:@"issued"] longLongValue]
+                          capability: [input artString:@"capability"]
+                            clientId: [input artString:@"clientId"]];
+    return tok;
+    
+}
+
 - (ARTProtocolMessage *)protocolMessageFromDictionary:(NSDictionary *)input {
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
@@ -315,7 +337,6 @@
     ARTProtocolMessage *message = [[ARTProtocolMessage alloc] init];
     message.action = (ARTProtocolMessageAction)[[input artNumber:@"action"] intValue];
     message.count = [[input artNumber:@"count"] intValue];
-    // TODO: ERROR, what to do?
     message.channel = [input artString:@"channel"];
     message.channelSerial = [input artString:@"channelSerial"];
     message.connectionId = [input artString:@"connectionId"];
@@ -459,6 +480,16 @@
     return nil;
 }
 
+- (ARTHttpError *) decodeError:(NSData *) error {
+    ARTHttpError * e = [[ARTHttpError alloc] init];
+    NSDictionary * d = [[self decodeDictionary:error] valueForKey:@"error"];
+    e.code= [[d artNumber:@"code"] intValue];
+    e.message = [d artString:@"message"];
+    e.statusCode = [[d artNumber:@"statusCode"] intValue];
+    return e;
+
+}
+
 - (ARTStatsRequestCount *)statsRequestCountFromDictionary:(NSDictionary *)input {
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
@@ -473,7 +504,6 @@
         [refused isKindOfClass:[NSNumber class]]) {
         return [[ARTStatsRequestCount alloc] initWithSucceeded:[succeeded doubleValue] failed:[failed doubleValue] refused:[refused doubleValue]];
     }
-    
     return nil;
 }
 
@@ -481,18 +511,16 @@
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
-
     NSString *encoding = [input objectForKey:@"encoding"];
     if (!encoding) {
         encoding = @"";
     }
-
     id data = [input objectForKey:@"data"];
     ARTPayload *payload = [ARTPayload payloadWithPayload:data encoding:encoding];
     ARTPayload *decoded = nil;
     ARTStatus status = [[ARTBase64PayloadEncoder instance] decode:payload output:&decoded];
     if (status != ARTStatusOk) {
-        // TODO log
+        [ARTLog error:[NSString stringWithFormat:@"ARTJsonEncoder failed to decode payload %@", payload]];
     }
     return decoded;
 }
