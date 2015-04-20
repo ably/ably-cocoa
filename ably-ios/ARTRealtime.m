@@ -12,7 +12,7 @@
 #import "ARTMessage.h"
 #import "ARTPresenceMessage.h"
 #import "ARTWebSocketTransport.h"
-#import "NSArray+ARTFunctional.h"
+#import "ARTNSArray+ARTFunctional.h"
 #import "ARTRealtime+Private.h"
 #import "ARTLog.h"
 

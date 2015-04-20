@@ -11,8 +11,8 @@
 #import "ARTPresenceMessage.h"
 #import "ARTProtocolMessage.h"
 #import "ARTStats.h"
-#import "NSDictionary+ARTDictionaryUtil.h"
-#import "NSDate+ARTUtil.h"
+#import "ARTNSDictionary+ARTDictionaryUtil.h"
+#import "ARTNSDate+ARTUtil.h"
 #import "ARTLog.h"
 @interface ARTJsonEncoder ()
 

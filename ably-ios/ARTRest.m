@@ -19,8 +19,8 @@
 #import "ARTStats.h"
 #import "ARTPresenceMessage.h"
 
-#import "NSDictionary+ARTDictionaryUtil.h"
-#import "NSArray+ARTFunctional.h"
+#import "ARTNSDictionary+ARTDictionaryUtil.h"
+#import "ARTNSArray+ARTFunctional.h"
 
 #import "ARTLog.h"
 
