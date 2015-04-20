@@ -13,6 +13,7 @@
 #import "ARTHttp.h"
 #import "ARTEncoder.h"
 #import "ARTJsonEncoder.h"
+#import "ARTMsgPackEncoder.h"
 #import "ARTMessage.h"
 #import "ARTHttpPaginatedResult.h"
 #import "ARTStats.h"
@@ -21,6 +22,8 @@
 #import "NSDictionary+ARTDictionaryUtil.h"
 #import "NSArray+ARTFunctional.h"
 
+#import "ARTLog.h"
+
 // TODO base accept headers on encoders
 
 @interface ARTRestChannel ()
@@ -28,6 +31,7 @@
 @property (readonly, weak, nonatomic) ARTRest *rest;
 @property (readonly, strong, nonatomic) NSString *name;
 @property (readonly, strong, nonatomic) NSString *basePath;
+
 @property (readonly, strong, nonatomic) id<ARTPayloadEncoder> payloadEncoder;
 
 - (instancetype)initWithRest:(ARTRest *)rest name:(NSString *)name cipherParams:(ARTCipherParams *)cipherParams;
@@ -55,6 +59,8 @@
 - (instancetype)initWithRest:(ARTRest *)rest name:(NSString *)name cipherParams:(ARTCipherParams *)cipherParams {
     self = [super init];
     if (self) {
+
+        [ARTLog debug:[NSString stringWithFormat:@"ARTRestChannel: instantiating under %@", name]];
         _rest = rest;
         _name = name;
         _basePath = [NSString stringWithFormat:@"/channels/%@", [name stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]]];
@@ -69,15 +75,15 @@
 }
 
 - (id<ARTCancellable>)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb {
+    
+    [ARTLog debug:[NSString stringWithFormat:@"ARTRestChannel: publishing %@ to channel %@", payload, name]];
     ARTMessage *message = [[ARTMessage alloc] init];
     message.name = name;
-    message.payload = payload;
-
+    message.payload =[ARTPayload payloadWithPayload:payload encoding:@""];
     message = [message encode:self.payloadEncoder];
 
     NSData *encodedMessage = [self.rest.defaultEncoder encodeMessage:message];
     NSDictionary *headers = @{@"Content-Type":self.rest.defaultEncoding};
-
     NSString *path = [NSString stringWithFormat:@"%@/messages", self.basePath];
     return [self.rest post:path headers:headers body:encodedMessage authenticated:YES cb:^(ARTHttpResponse *response) {
         ARTStatus status = response.status >= 200 && response.status < 300 ? ARTStatusOk : ARTStatusError;
@@ -158,10 +164,15 @@
         _baseUrl = [options restUrl];
         _channels = [NSMutableDictionary dictionary];
         _auth = [[ARTAuth alloc] initWithRest:self options:options.authOptions];
+
         id<ARTEncoder> defaultEncoder = [[ARTJsonEncoder alloc] init];
+        //msgpack not supported yet.
+ //       id<ARTEncoder> msgpackEncoder  = [[ARTMsgPackEncoder alloc] init];
         _encoders = @{
-            [defaultEncoder mimeType]: defaultEncoder
+            [defaultEncoder mimeType]: defaultEncoder,
+   //         [msgpackEncoder mimeType] : msgpackEncoder
         };
+        
         _defaultEncoding = [defaultEncoder mimeType];
     }
     return self;

@@ -38,6 +38,7 @@ typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
 @property (readwrite, strong, nonatomic) NSString *channel;
 @property (readwrite, strong, nonatomic) NSString *channelSerial;
 @property (readwrite, strong, nonatomic) NSString *connectionId;
+@property (readwrite, strong, nonatomic) NSString *connectionKey;
 @property (readwrite, assign, nonatomic) int64_t connectionSerial;
 @property (readwrite, assign, nonatomic) int64_t msgSerial;
 @property (readwrite, strong, nonatomic) NSDate *timestamp;

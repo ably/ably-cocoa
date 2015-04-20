@@ -110,6 +110,7 @@
         NSAssert(keyBits.count == 2, @"Invalid key");
         _keyId = keyBits[0];
         _keyValue = keyBits[1];
+            
     }
     return self;
 }
@@ -185,6 +186,7 @@
             } else if (options.authCallback) {
                 _authTokenCb = options.authCallback;
             } else {
+                NSLog(@"TODO handle signtokenrequest callback");
                 /* TODO
                 ARTSignedTokenRequestCb strCb = options.signedTokenRequestCallback ? options.signedTokenRequestCallback : [ARTAuth defaultSignedTokenRequestCallback];
                 _authTokenCb = ^(void(^cb)(ARTAuthToken *)){
@@ -203,6 +205,7 @@
 }
 
 - (id<ARTCancellable>)authHeaders:(id<ARTCancellable>(^)(NSDictionary *))cb {
+
     switch (self.authMethod) {
         case ARTAuthMethodBasic:
             return cb(@{@"Authorization": self.basicCredentials});

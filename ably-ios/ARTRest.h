@@ -31,7 +31,9 @@
 @end
 
 @interface ARTRest : NSObject
+{
 
+}
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithKey:(NSString *)key;
 - (instancetype)initWithOptions:(ARTOptions *)options;
