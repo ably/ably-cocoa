@@ -21,7 +21,7 @@ Pod::Spec.new do |s|
   s.platform     = :ios, '8.0'
   s.requires_arc = true
 
-  s.source_files = 'ably-ios/ART*.{h,m}'
+  s.source_files = 'ably-ios/*.{h,m}'
   s.dependency 'SocketRocket', '~> 0.3.1-beta2'
 
   # s.public_header_files = 'Pod/Classes/**/*.h'
