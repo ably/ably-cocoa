@@ -162,6 +162,9 @@
                 }
                 
             }];
+            
+            //TODO work out why this sometimes gets called twice. rm rec.
+            __block bool rec = false;
             [channel subscribe:^(ARTMessage * message) {
                 
                 NSString * msg = [message content];
@@ -174,7 +177,8 @@
                         }];
                     }];
                 }
-                if([msg isEqualToString:message4]) {
+                if(!rec && [msg isEqualToString:message4]) {
+                    rec = true;
                     [expectation fulfill];
                 }
             }];
