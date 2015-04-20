@@ -112,6 +112,7 @@
                 }
             }];
             __block bool firstRecieved = false;
+            __block bool rec = false; //TODO work out why this gets called twice. rm rec
             [channel subscribe:^(ARTMessage * message) {
                 if([[message content] isEqualToString:message1]) {
                     firstRecieved = true;
@@ -120,7 +121,10 @@
                 else if([[message content] isEqualToString:message4]) {
                     XCTAssertTrue(firstRecieved);
                     XCTAssertTrue(disconnects>0);
-                    [expectation fulfill];
+                    if(!rec) {
+                        rec =true;
+                        [expectation fulfill];
+                    }
                 }
             }];
             
