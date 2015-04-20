@@ -8,12 +8,11 @@
 
 #import "ARTWebSocketTransport.h"
 
-#import <SocketRocket/SRWebSocket.h>
-
+#import "SRWebSocket.h"
 #import "ARTOptions.h"
 #import "ARTRest.h"
 #import "ARTRest+Private.h"
-
+#import "ARTLog.h"
 enum {
     ARTWsNeverConnected = -1,
     ARTWsBuggyClose = -2,
@@ -55,10 +54,7 @@ enum {
         __weak ARTWebSocketTransport *wSelf = self;
         __weak ARTRest *wRest = rest;
 
-        // TODO: We currently only support the json protocol
-        // If msgpack is added get this from the options
-        BOOL binary = NO;
-
+        
         BOOL echoMessages = options.echoMessages;
         NSString *clientId = options.clientId;
 
@@ -74,12 +70,31 @@ enum {
             }
 
             NSMutableDictionary *queryParams = [NSMutableDictionary dictionaryWithDictionary:authParams];
-            if (!binary) {
-                queryParams[@"binary"] = @"false"; // We only support json for now
+            
+            /*
+             //msgpack not supported yet.
+            if(false || options.binary) {
+                queryParams[@"format"] = @"msgpack";
             }
+            */
 
             if (!echoMessages) {
                 queryParams[@"echo"] = @"false";
+            }
+            
+            if(options.recover) {
+                NSArray * parts = [options.recover componentsSeparatedByString:@":"];
+                if([parts count] ==2) {
+                    NSString * conId = [parts objectAtIndex:0];
+                    NSString * key = [parts objectAtIndex:1];
+                    queryParams[@"recover"] = conId;
+                    queryParams[@"connection_serial"] = key;
+                }
+            }
+            else if(options.resume != nil) {
+                queryParams[@"resume"]  =  options.resumeKey;
+                queryParams[@"connection_serial"] = options.resume;
+                
             }
 
             // TODO configure resume param
@@ -91,10 +106,9 @@ enum {
             NSString *queryString = [sRest formatQueryParams:queryParams];
             NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"wss://%@:%d/?%@", realtimeHost, realtimePort, queryString]];
 
-            NSLog(@"Websocket url: %@", url);
-
+            [ARTLog debug:[NSString stringWithFormat:@"Websocket url: %@", url]];
             sSelf.websocket = [[SRWebSocket alloc] initWithURL:url];
-            sSelf.websocket.delegate = self;
+            sSelf.websocket.delegate = sSelf;
             [sSelf.websocket setDelegateDispatchQueue:sSelf.q];
             return nil;
         }];
@@ -103,7 +117,8 @@ enum {
 }
 
 - (void)dealloc {
-    NSLog(@"DEALLOC");
+    self.websocket.delegate = nil;
+    self.websocket = nil;
 }
 
 - (void)send:(ARTProtocolMessage *)msg {
@@ -117,6 +132,7 @@ enum {
 
 - (void)close:(BOOL)sendClose {
     self.closing = YES;
+    
     if (sendClose) {
         ARTProtocolMessage *closeMessage = [[ARTProtocolMessage alloc] init];
         closeMessage.action = ARTProtocolMessageClose;
@@ -136,7 +152,8 @@ enum {
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
-    NSLog(@"Received message: %@", message);
+    ARTWebSocketTransport * __weak weakSelf = self;
+
     CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
         NSData *data = nil;
         if ([message isKindOfClass:[NSString class]]) {
@@ -150,39 +167,64 @@ enum {
             data = message;
         }
 
-        ARTProtocolMessage *pm = [self.encoder decodeProtocolMessage:data];
-
-        [self.delegate realtimeTransport:self didReceiveMessage:pm];
+        ARTWebSocketTransport *s = weakSelf;
+        if(s)
+        {
+            ARTProtocolMessage *pm = [s.encoder decodeProtocolMessage:data];
+            [s.delegate realtimeTransport:s didReceiveMessage:pm];
+        }
     });
     CFRunLoopWakeUp(self.rl);
 }
 
 - (void)webSocketDidOpen:(SRWebSocket *)webSocket {
+    ARTWebSocketTransport * __weak weakSelf = self;
     CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
-        [self.delegate realtimeTransportAvailable:self];
+        ARTWebSocketTransport *s = weakSelf;
+        if(s)
+        {
+            [s.delegate realtimeTransportAvailable:s];
+        }
     });
     CFRunLoopWakeUp(self.rl);
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
+    ARTWebSocketTransport * __weak weakSelf = self;
     CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
-        [self.delegate realtimeTransportUnavailable:self];
+        ARTWebSocketTransport *s = weakSelf;
+        
+        if(error)
+        {
+            //TODO maybe some errors become failed, and some become disconnect?
+            NSLog(@"websocket did fail with error %@", error);
+        }
+        if(s)
+        {
+            [s.delegate realtimeTransportFailed:s];
+        }
     });
     CFRunLoopWakeUp(self.rl);
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
+    ARTWebSocketTransport * __weak weakSelf = self;
     CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
+        ARTWebSocketTransport *s = weakSelf;
+        if(!s)
+        {
+            return;
+        }
         switch (code) {
             case ARTWsCloseNormal:
-                if (self.closing) {
+                if (s.closing) {
                     // OK
-                    [self.delegate realtimeTransportClosed:self];
+                    [s.delegate realtimeTransportClosed:s];
                     break;
                 }
             case ARTWsNeverConnected:
             {
-                [self.delegate realtimeTransportNeverConnected:self];
+                [s.delegate realtimeTransportNeverConnected:s];
                 break;
             }
             case ARTWsBuggyClose:
@@ -190,18 +232,18 @@ enum {
             case ARTWsAbnormalClose:
             {
                 // Connectivity issue
-                [self.delegate realtimeTransportDisconnected:self];
+                [s.delegate realtimeTransportDisconnected:s];
                 break;
             }
             case ARTWsRefuse:
             case ARTWsPolicyValidation:
             {
-                [self.delegate realtimeTransportRefused:self];
+                [s.delegate realtimeTransportRefused:s];
                 break;
             }
             case ARTWsTooBig:
             {
-                [self.delegate realtimeTransportTooBig:self];
+                [s.delegate realtimeTransportTooBig:s];
                 break;
             }
             case ARTWsNoUtf8:
@@ -213,7 +255,7 @@ enum {
             {
                 // Failed
                 // no idea why
-                [self.delegate realtimeTransportFailed:self];
+                [s.delegate realtimeTransportFailed:s];
                 break;
             }
         }

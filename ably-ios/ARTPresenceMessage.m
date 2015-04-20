@@ -18,7 +18,7 @@
         _payload = nil;
         _timestamp = nil;
         _action = ARTPresenceMessageEnter;
-        _memberId = nil;
+        _connectionId = nil;
     }
     return self;
 }
@@ -30,7 +30,7 @@
     m.payload = payload;
     m.timestamp = self.timestamp;
     m.action = self.action;
-    m.memberId = self.memberId;
+    m.connectionId = self.connectionId;
     return m;
 }
 
@@ -50,6 +50,10 @@
         // TODO log
     }
     return [self messageWithPayload:payload];
+}
+
+- (id) content {
+    return self.payload.payload;
 }
 
 @end

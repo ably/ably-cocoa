@@ -8,6 +8,7 @@
 
 #import "ARTHttp.h"
 
+#import "ARTLog.h"
 @interface ARTHttp ()
 
 @property (readonly, strong, nonatomic) NSURL *baseUrl;
@@ -162,6 +163,7 @@
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:artRequest.url];
     request.HTTPMethod = artRequest.method;
+
     
     for (NSString *headerName in artRequest.headers) {
         NSString *headerValue = [artRequest.headers objectForKey:headerName];
@@ -174,15 +176,28 @@
     CFRetain(rl);
     NSURLSessionDataTask *task = [self.urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-        if (httpResponse) {
-            int status = (int)httpResponse.statusCode;
-            CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
-                cb([ARTHttpResponse responseWithStatus:status headers:httpResponse.allHeaderFields body:data]);
-            });
-        } else {
-            CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
-                cb([ARTHttpResponse response]);
-            });
+        
+        [ARTLog debug:
+         [NSString stringWithFormat:@"ARTHttp: Got response %@, error %@",
+          response,error]];
+        
+        if(error) {
+            [ARTLog error:[NSString stringWithFormat:@"ARTHttp receieved error: %@", error]];
+            cb([ARTHttpResponse responseWithStatus:ARTStatusError headers:nil body:nil]);
+        }
+        else {
+            if (httpResponse) {
+                int status = (int)httpResponse.statusCode;
+                [ARTLog verbose:
+                 [NSString stringWithFormat:@"ARTHttp response status is %d", status]];
+                CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
+                    cb([ARTHttpResponse responseWithStatus:status headers:httpResponse.allHeaderFields body:data]);
+                });
+            } else {
+                CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
+                    cb([ARTHttpResponse response]);
+                });
+            }
         }
         CFRunLoopWakeUp(rl);
         CFRelease(rl);

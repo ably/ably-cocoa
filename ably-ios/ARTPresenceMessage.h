@@ -11,6 +11,8 @@
 #import "ARTPayload.h"
 
 typedef NS_ENUM(NSUInteger, ARTPresenceMessageAction) {
+    ArtPresenceMessageAbsent,
+    ArtPresenceMessagePresent,
     ARTPresenceMessageEnter,
     ARTPresenceMessageLeave,
     ARTPresenceMessageUpdate
@@ -23,11 +25,12 @@ typedef NS_ENUM(NSUInteger, ARTPresenceMessageAction) {
 @property (readwrite, strong, nonatomic) ARTPayload *payload;
 @property (readwrite, strong, nonatomic) NSDate *timestamp;
 @property (readwrite, assign, nonatomic) ARTPresenceMessageAction action;
-@property (readwrite, strong, nonatomic) NSString *memberId;
+@property (readwrite, strong, nonatomic) NSString *connectionId;
 
 - (ARTPresenceMessage *)messageWithPayload:(ARTPayload *)payload;
 
 - (ARTPresenceMessage *)decode:(id<ARTPayloadEncoder>)encoder;
 - (ARTPresenceMessage *)encode:(id<ARTPayloadEncoder>)encoder;
+- (id) content;
 
 @end

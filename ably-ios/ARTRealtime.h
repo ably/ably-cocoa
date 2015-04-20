@@ -44,18 +44,23 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
 
 @interface ARTRealtimeChannel : NSObject
 
+
+
 - (void)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb;
 - (void)publish:(id)payload cb:(ARTStatusCallback)cb;
 
 - (void)publishPresenceEnter:(id)data cb:(ARTStatusCallback)cb;
 - (void)publishPresenceUpdate:(id)data cb:(ARTStatusCallback)cb;
-- (void)publishPresenceLeave:(ARTStatusCallback)cb;
+- (void)publishPresenceLeave:(id) data cb:(ARTStatusCallback)cb;
 
 - (id<ARTCancellable>)history:(ARTPaginatedResultCb)cb;
 - (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
 
+-(id<ARTCancellable>) presence:(ARTPaginatedResultCb) cb;
+-(id<ARTCancellable>) presenceWithParams:(NSDictionary *) queryParams cb:(ARTPaginatedResultCb) cb;
 - (id<ARTCancellable>)presenceHistory:(ARTPaginatedResultCb)cb;
 - (id<ARTCancellable>)presenceHistoryWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
+
 
 typedef void (^ARTRealtimeChannelMessageCb)(ARTMessage *);
 - (id<ARTSubscription>)subscribe:(ARTRealtimeChannelMessageCb)cb;
@@ -80,6 +85,8 @@ typedef void (^ARTRealtimeChannelStateCb)(ARTRealtimeChannelState, ARTStatus);
 - (instancetype)initWithOptions:(ARTOptions *)options;
 
 - (void)close;
+- (void)connect;
+-(NSString *) getRecovery;
 
 - (id<ARTCancellable>)time:(void(^)(ARTStatus status, NSDate *time))cb;
 - (id<ARTCancellable>)stats:(ARTPaginatedResultCb)cb;
@@ -90,5 +97,6 @@ typedef void (^ARTRealtimeChannelStateCb)(ARTRealtimeChannelState, ARTStatus);
 
 typedef void (^ARTRealtimeConnectionStateCb)(ARTRealtimeConnectionState);
 - (id<ARTSubscription>)subscribeToStateChanges:(ARTRealtimeConnectionStateCb)cb;
+
 
 @end

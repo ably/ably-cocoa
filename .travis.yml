@@ -1,0 +1,4 @@
+language: objective-c
+script: 
+ - xcodebuild test -workspace ably-ios.xcworkspace -scheme ably -sdk iphonesimulator8.1 ONLY_ACTIVE_ARCH=NO 
+

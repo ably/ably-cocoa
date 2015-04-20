@@ -13,7 +13,7 @@
 #import "ARTStats.h"
 #import "NSDictionary+ARTDictionaryUtil.h"
 #import "NSDate+ARTUtil.h"
-
+#import "ARTLog.h"
 @interface ARTJsonEncoder ()
 
 - (ARTMessage *)messageFromDictionary:(NSDictionary *)input;
@@ -102,7 +102,7 @@
     if (resp && resp.count == 1) {
         NSNumber *num = resp[0];
         if ([num isKindOfClass:[NSNumber class]]) {
-            NSInteger msSince1970 = [num integerValue];
+            long long msSince1970 = [num longLongValue];
             return [NSDate dateWithTimeIntervalSince1970:(msSince1970 / 1000.0)];
         }
     }
@@ -144,11 +144,45 @@
     return output;
 }
 
+-(ARTPresenceMessageAction) presenceMessageActionFromInt:(int) action
+{
+    switch (action) {
+        case 0:
+            return ArtPresenceMessageAbsent;
+        case 1:
+            return ArtPresenceMessagePresent;
+        case 2:
+            return ARTPresenceMessageEnter;
+        case 3:
+            return ARTPresenceMessageLeave;
+        case 4:
+            return ARTPresenceMessageUpdate;
+    }
+    NSLog(@"error. enum is probably not up to date");
+    return ArtPresenceMessageAbsent;
+    
+}
+
+-(int) intFromPresenceMessageAction:(ARTPresenceMessageAction) action
+{
+    switch (action) {
+        case ArtPresenceMessageAbsent:
+            return 0;
+        case ArtPresenceMessagePresent:
+            return 1;
+        case ARTPresenceMessageEnter:
+            return 2;
+        case ARTPresenceMessageLeave:
+            return 3;
+        case ARTPresenceMessageUpdate:
+            return 4;
+    }
+}
+
 - (ARTPresenceMessage *)presenceMessageFromDictionary:(NSDictionary *)input {
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
-
     ARTPresenceMessage *message = [[ARTPresenceMessage alloc] init];
     message.id = [input artString:@"id"];
     message.clientId = [input artString:@"clientId"];
@@ -157,21 +191,9 @@
 
     int action = [[input artNumber:@"action"] intValue];
 
-    switch (action) {
-        case 0:
-            message.action = ARTPresenceMessageEnter;
-            break;
-        case 1:
-            message.action = ARTPresenceMessageLeave;
-            break;
-        case 2:
-            message.action = ARTPresenceMessageUpdate;
-            break;
-        default:
-            return nil;
-    }
+    message.action = [self presenceMessageActionFromInt:action];
 
-    message.memberId = [input artString:@"memberId"];
+    message.connectionId = [input artString:@"connectionId"];
 
     return message;
 }
@@ -242,21 +264,11 @@
     if (message.payload) {
         [self writePayload:message.payload toDictionary:output];
     }
-
-    int action = 0;
-    switch (message.action) {
-        case ARTPresenceMessageEnter:
-            action = 0;
-            break;
-        case ARTPresenceMessageLeave:
-            action = 1;
-            break;
-        case ARTPresenceMessageUpdate:
-            action = 2;
-            break;
-        default:
-            return nil;
+    if(message.connectionId) {
+        [output setObject:message.connectionId forKey:@"connectionId"];
     }
+
+    int action = [self intFromPresenceMessageAction:message.action];
 
     [output setObject:[NSNumber numberWithInt:action] forKey:@"action"];
     
@@ -273,14 +285,16 @@
         }
         [output addObject:item];
     }
-
     return output;
 }
 
 - (NSDictionary *)protocolMessageToDictionary:(ARTProtocolMessage *)message {
     NSMutableDictionary *output = [NSMutableDictionary dictionary];
     output[@"action"] = [NSNumber numberWithInt:message.action];
-    output[@"channel"] = message.channel;
+    if(message.channel)
+    {
+        output[@"channel"] = message.channel;
+    }
     output[@"msgSerial"] = [NSNumber numberWithLongLong:message.msgSerial];
 
     if (message.messages) {
@@ -290,7 +304,6 @@
     if (message.presence) {
         output[@"presence"] = [self presenceMessagesToArray:message.presence];
     }
-
     return output;
 }
 
@@ -312,6 +325,7 @@
     message.timestamp = [input artDate:@"timestamp"];
     message.messages = [self messagesFromArray:[input objectForKey:@"messages"]];
     message.presence = [self presenceMessagesFromArray:[input objectForKey:@"presence"]];
+    message.connectionKey = [input artString:@"connectionKey"];
 
     return message;
  }
@@ -486,8 +500,12 @@
 - (void)writePayload:(ARTPayload *)payload toDictionary:(NSMutableDictionary *)output {
     ARTPayload *encoded = nil;
     ARTStatus status = [[ARTBase64PayloadEncoder instance] encode:payload output:&encoded];
+    if(status != ARTStatusOk) {
+        [ARTLog error:@"ARTJsonEncoder failed to encode payload"];
+    }
     NSAssert(status == ARTStatusOk, @"Error encoding payload");
-    NSAssert([payload.payload isKindOfClass:[NSString class]], @"Only string or data payloads are accepted");
+
+    NSAssert([payload.payload isKindOfClass:[NSString class]], @"Only string payloads are accepted");
 
     if (encoded.encoding.length) {
         output[@"encoding"] = encoded.encoding;

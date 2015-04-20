@@ -36,7 +36,7 @@
     return self;
 }
 
-- (id)current {
+- (id)currentItems {
     return self.currentValue;
 }
 
@@ -52,17 +52,18 @@
     return !!self.relNext;
 }
 
-- (void)getFirst:(ARTPaginatedResultCb)cb {
-
+- (void)getFirstPage:(ARTPaginatedResultCb)cb {
+    [ARTHttpPaginatedResult makePaginatedRequest:self.http request:self.relFirst responseProcessor:self.responseProcessor cb:cb];
 }
 
-- (void)getCurrent:(ARTPaginatedResultCb)cb {
-
+- (void)getCurrentPage:(ARTPaginatedResultCb)cb {
+    [ARTHttpPaginatedResult makePaginatedRequest:self.http request:self.relCurrent responseProcessor:self.responseProcessor cb:cb];
 }
 
-- (void)getNext:(ARTPaginatedResultCb)cb {
-    
+- (void)getNextPage:(ARTPaginatedResultCb)cb {
+    [ARTHttpPaginatedResult makePaginatedRequest:self.http request:self.relNext responseProcessor:self.responseProcessor cb:cb];
 }
+
 
 + (id<ARTCancellable>)makePaginatedRequest:(ARTHttp *)http request:(ARTHttpRequest *)request responseProcessor:(ARTHttpResponseProcessor)responseProcessor cb:(ARTPaginatedResultCb)cb {
     return [http makeRequest:request cb:^(ARTHttpResponse *response) {
@@ -73,7 +74,7 @@
 
         if (response.status < 200 || response.status >= 300) {
             cb(ARTStatusError, nil);
-            NSLog(@"Body: %@", [[NSString alloc] initWithData:response.body encoding:NSUTF8StringEncoding]);
+//            NSLog(@"Body: %@", [[NSString alloc] initWithData:response.body encoding:NSUTF8StringEncoding]);
             return;
         }
 

@@ -12,14 +12,14 @@
 
 @protocol ARTPaginatedResult
 
-- (id)current;
+- (id)currentItems;
 - (BOOL)hasFirst;
 - (BOOL)hasCurrent;
 - (BOOL)hasNext;
 
 typedef void (^ARTPaginatedResultCb)(ARTStatus status, id<ARTPaginatedResult> result);
-- (void)getFirst:(ARTPaginatedResultCb)cb;
-- (void)getCurrent:(ARTPaginatedResultCb)cb;
-- (void)getNext:(ARTPaginatedResultCb)cb;
+- (void)getFirstPage:(ARTPaginatedResultCb)cb;
+- (void)getCurrentPage:(ARTPaginatedResultCb)cb;
+- (void)getNextPage:(ARTPaginatedResultCb)cb;
 
 @end
