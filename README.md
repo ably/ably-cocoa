@@ -19,9 +19,10 @@ An iOS client library for [ably.io](https://www.ably.io), the realtime messaging
 ```
      ARTRealtime * client = [[ARTRealtime alloc] initWithKey:@"xxxxx"];
      [client subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
-                         if (state == ARTRealtimeConnected) {
-                             // you are connected
-                         }];
+         if (state == ARTRealtimeConnected) {
+             // you are connected
+         }
+     }];
 ```
 
 ### Subscribing to a channel
@@ -48,7 +49,6 @@ ARTRealtimeChannel * channel = [client channel:@"test"];
     [channel history:^(ARTStatus status, id<ARTPaginatedResult> messagesPage) {
         XCTAssertEqual(status, ARTStatusOk);
         NSArray *messages = [messagesPage currentItems];
-
         NSLog(@"this page has %d messages", [messages count]);
         ARTMessage *message = messages[0];
         NSString *messageContent = [message content];
