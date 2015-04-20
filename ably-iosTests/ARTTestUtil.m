@@ -29,8 +29,8 @@
 +(void) setupApp:(ARTOptions *)options withAlteration:(TestAlteration) alt  appId:(NSString *) appId cb:(void (^)(ARTOptions *))cb
 {
     
-    NSString * str = [ARTTestUtil getTestAppString];
-    NSLog(@" STRRR IS %@", str);
+    //NSString * str = [ARTTestUtil getTestAppString];
+   // NSLog(@" STRRR IS %@", str);
     NSDictionary *capability = @{
                                  @"cansubscribe:*":@[@"subscribe"],
                                  @"canpublish:*":@[@"publish"],

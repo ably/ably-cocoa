@@ -2,33 +2,12 @@
 //  ably-ios.h
 //  ably-ios
 //
-//  Created by Jason Choy on 08/12/2014.
-//  Copyright (c) 2014 Ably. All rights reserved.
+//  Created by vic on 19/04/2015.
+//  Copyright (c) 2015 Ably. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
-#import "ARTRest.h"
-#import "ARTStatus.h"
-#import "ARTMessage.h"
-#import "ARTRealtime.h"
-#import "ARTPaginatedResult.h"
-#import "ARTOptions.h"
-/*
-#import ""
-#import ""
-#import ""
-#import ""
-#import ""
-#import ""
-#import ""
-#import ""
-#import ""
-#import ""
-#import ""
-#import ""
-#import ""
-#import ""
-*/
+
 //! Project version number for ably-ios.
 FOUNDATION_EXPORT double ably_iosVersionNumber;
 

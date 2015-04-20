@@ -17,7 +17,7 @@
                BlueprintIdentifier = "96BF61301A35B2AB004CF2B3"
                BuildableName = "ably.framework"
                BlueprintName = "ably"
-               ReferencedContainer = "container:ably-ios.xcodeproj">
+               ReferencedContainer = "container:ably.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -31,7 +31,7 @@
                BlueprintIdentifier = "96BF613B1A35B2AB004CF2B3"
                BuildableName = "ablyTests.xctest"
                BlueprintName = "ablyTests"
-               ReferencedContainer = "container:ably-ios.xcodeproj">
+               ReferencedContainer = "container:ably.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -49,7 +49,7 @@
                BlueprintIdentifier = "96BF613B1A35B2AB004CF2B3"
                BuildableName = "ablyTests.xctest"
                BlueprintName = "ablyTests"
-               ReferencedContainer = "container:ably-ios.xcodeproj">
+               ReferencedContainer = "container:ably.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -59,7 +59,7 @@
             BlueprintIdentifier = "96BF61301A35B2AB004CF2B3"
             BuildableName = "ably.framework"
             BlueprintName = "ably"
-            ReferencedContainer = "container:ably-ios.xcodeproj">
+            ReferencedContainer = "container:ably.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </TestAction>
@@ -78,7 +78,7 @@
             BlueprintIdentifier = "96BF61301A35B2AB004CF2B3"
             BuildableName = "ably.framework"
             BlueprintName = "ably"
-            ReferencedContainer = "container:ably-ios.xcodeproj">
+            ReferencedContainer = "container:ably.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -96,7 +96,7 @@
             BlueprintIdentifier = "96BF61301A35B2AB004CF2B3"
             BuildableName = "ably.framework"
             BlueprintName = "ably"
-            ReferencedContainer = "container:ably-ios.xcodeproj">
+            ReferencedContainer = "container:ably.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>

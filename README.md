@@ -7,6 +7,18 @@ This is a generic iOS client library for the Ably REST API.
    This library works on iOS7 and above, and uses SocketRocket: https://github.com/square/SocketRocket
 
 
+##Setup
+
+   - git clone ably-ios
+   - drag ably-ios/ably-ios into your project as a group
+   - git clone https://github.com/square/SocketRocket.git 
+   - drag SocketRocket/SocketRocket into your project as a group
+
+
+##Usage
+See https://www.ably.io/documentation for a quickstart guide
+
+
 ##Limitations
   The following features are not implemented yet:
       msgpack transportation
@@ -16,4 +28,3 @@ This is a generic iOS client library for the Ably REST API.
       app stats
       capability
       token auth
-      ably logging

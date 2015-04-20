@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import <ably/ARTStatus.h>
+#import "ARTStatus.h"
 #import "ARTTypes.h"
 #import "ARTOptions.h"
 #import "ARTPaginatedResult.h"

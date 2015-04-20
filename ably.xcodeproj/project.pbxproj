@@ -6,6 +6,21 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		1C1EC3FB1AE2737800AAADD7 /* ablyaggregate */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 1C1EC3FC1AE2737800AAADD7 /* Build configuration list for PBXAggregateTarget "ablyaggregate" */;
+			buildPhases = (
+				1C1EC43D1AE454DC00AAADD7 /* ShellScript */,
+			);
+			dependencies = (
+				1C1EC4001AE273FB00AAADD7 /* PBXTargetDependency */,
+			);
+			name = ablyaggregate;
+			productName = ablyaggregate;
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXBuildFile section */
 		1C05CF201AC1D7EB00687AC9 /* ARTRealtime+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C05CF1E1AC1D7EB00687AC9 /* ARTRealtime+Private.h */; };
 		1C1E52EA1AB32EA0004A690F /* ARTRestAppStatsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C1E52E91AB32EA0004A690F /* ARTRestAppStatsTest.m */; };
@@ -100,6 +115,13 @@
 /* End PBXBuildRule section */
 
 /* Begin PBXContainerItemProxy section */
+		1C1EC3FF1AE273FB00AAADD7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 96BF61281A35B2AB004CF2B3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 96BF61301A35B2AB004CF2B3;
+			remoteInfo = ably;
+		};
 		96BF613E1A35B2AB004CF2B3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 96BF61281A35B2AB004CF2B3 /* Project object */;
@@ -136,6 +158,10 @@
 		1C1E52F71AB32EF0004A690F /* ARTRestTokenTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestTokenTest.m; sourceTree = "<group>"; };
 		1C1E52F91AB35665004A690F /* ARTRestTimeTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestTimeTest.m; sourceTree = "<group>"; };
 		1C1E53011AB373C5004A690F /* ARTRealtimeChannelTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimeChannelTest.m; sourceTree = "<group>"; };
+		1C1EC4091AE3BFDB00AAADD7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1C1EC40A1AE3BFDB00AAADD7 /* ably-ios.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ably-ios.h"; sourceTree = "<group>"; };
+		1C1EC4161AE3BFDB00AAADD7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1C1EC4171AE3BFDB00AAADD7 /* ably_iosTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ably_iosTests.m; sourceTree = "<group>"; };
 		1C6C18A11ADFDAB100AB79E4 /* ARTLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTLog.h; sourceTree = "<group>"; };
 		1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTLog.m; sourceTree = "<group>"; };
 		1C6C18A61ADFDDBA00AB79E4 /* ARTLogTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTLogTest.m; sourceTree = "<group>"; };
@@ -264,6 +290,40 @@
 			name = realtime;
 			sourceTree = "<group>";
 		};
+		1C1EC4071AE3BFDB00AAADD7 /* ably-ios */ = {
+			isa = PBXGroup;
+			children = (
+				1C1EC40A1AE3BFDB00AAADD7 /* ably-ios.h */,
+				1C1EC4081AE3BFDB00AAADD7 /* Supporting Files */,
+			);
+			path = "ably-ios";
+			sourceTree = "<group>";
+		};
+		1C1EC4081AE3BFDB00AAADD7 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				1C1EC4091AE3BFDB00AAADD7 /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		1C1EC4141AE3BFDB00AAADD7 /* ably-iosTests */ = {
+			isa = PBXGroup;
+			children = (
+				1C1EC4171AE3BFDB00AAADD7 /* ably_iosTests.m */,
+				1C1EC4151AE3BFDB00AAADD7 /* Supporting Files */,
+			);
+			path = "ably-iosTests";
+			sourceTree = "<group>";
+		};
+		1C1EC4151AE3BFDB00AAADD7 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				1C1EC4161AE3BFDB00AAADD7 /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
 		1C75E9EC1AE0165100B2892A /* ably-common */ = {
 			isa = PBXGroup;
 			children = (
@@ -296,6 +356,8 @@
 			children = (
 				96BF61331A35B2AB004CF2B3 /* ably-ios */,
 				96BF61401A35B2AB004CF2B3 /* ably-iosTests */,
+				1C1EC4071AE3BFDB00AAADD7 /* ably-ios */,
+				1C1EC4141AE3BFDB00AAADD7 /* ably-iosTests */,
 				96BF61321A35B2AB004CF2B3 /* Products */,
 				B7FA72C0B06CA0A207042965 /* Pods */,
 				FAFEC5BB8312EB69E84C28D4 /* Frameworks */,
@@ -504,6 +566,9 @@
 				LastUpgradeCheck = 0610;
 				ORGANIZATIONNAME = Ably;
 				TargetAttributes = {
+					1C1EC3FB1AE2737800AAADD7 = {
+						CreatedOnToolsVersion = 6.1.1;
+					};
 					96BF61301A35B2AB004CF2B3 = {
 						CreatedOnToolsVersion = 6.1.1;
 					};
@@ -512,7 +577,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 96BF612B1A35B2AB004CF2B3 /* Build configuration list for PBXProject "ably-ios" */;
+			buildConfigurationList = 96BF612B1A35B2AB004CF2B3 /* Build configuration list for PBXProject "ably" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -526,6 +591,7 @@
 			targets = (
 				96BF61301A35B2AB004CF2B3 /* ably */,
 				96BF613B1A35B2AB004CF2B3 /* ablyTests */,
+				1C1EC3FB1AE2737800AAADD7 /* ablyaggregate */,
 			);
 		};
 /* End PBXProject section */
@@ -566,6 +632,19 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods/Pods-resources.sh\"\n";
 			showEnvVarsInLog = 0;
+		};
+		1C1EC43D1AE454DC00AAADD7 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This script is based on Jacob Van Order's answer on apple dev forums https://devforums.apple.com/message/971277\n# See also http://spin.atomicobject.com/2011/12/13/building-a-universal-framework-for-ios/ for the start\n\n\n# To get this to work with a Xcode 6 Cocoa Touch Framework, create Framework\n# Then create a new Aggregate Target. Throw this script into a Build Script Phrase on the Aggregate\n\n\n######################\n# Options\n######################\n\nREVEAL_ARCHIVE_IN_FINDER=true\n\nFRAMEWORK_NAME=\"${PROJECT_NAME}\"\n\nSIMULATOR_LIBRARY_PATH=\"${BUILD_DIR}/${CONFIGURATION}-iphonesimulator/${FRAMEWORK_NAME}.framework\"\n\nDEVICE_LIBRARY_PATH=\"${BUILD_DIR}/${CONFIGURATION}-iphoneos/${FRAMEWORK_NAME}.framework\"\n\nUNIVERSAL_LIBRARY_DIR=\"${BUILD_DIR}/${CONFIGURATION}-iphoneuniversal\"\n\nFRAMEWORK=\"${UNIVERSAL_LIBRARY_DIR}/${FRAMEWORK_NAME}.framework\"\n\n\n######################\n# Build Frameworks\n######################\n\nxcodebuild -project ${PROJECT_NAME}.xcodeproj -sdk iphonesimulator -target ${PROJECT_NAME} -configuration ${CONFIGURATION} clean build CONFIGURATION_BUILD_DIR=${BUILD_DIR}/${CONFIGURATION}-iphonesimulator | echo\n\nxcodebuild -project ${PROJECT_NAME}.xcodeproj -sdk iphoneos -target ${PROJECT_NAME} -configuration ${CONFIGURATION} clean build CONFIGURATION_BUILD_DIR=${BUILD_DIR}/${CONFIGURATION}-iphoneos | echo\n\n#xcodebuild -target ${PROJECT_NAME} ONLY_ACTIVE_ARCH=NO -configuration ${CONFIGURATION} -sdk iphoneos  BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" | echo\n\n#xcodebuild -target ${PROJECT_NAME} ONLY_ACTIVE_ARCH=NO -configuration ${CONFIGURATION} -sdk iphonesimulator  BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" | echo\n\n\n######################\n# Create directory for universal\n######################\n\nrm -rf \"${UNIVERSAL_LIBRARY_DIR}\"\n\nmkdir \"${UNIVERSAL_LIBRARY_DIR}\"\n\nmkdir \"${FRAMEWORK}\"\n\n\n######################\n# Copy files Framework\n######################\n\ncp -r \"${DEVICE_LIBRARY_PATH}/.\" \"${FRAMEWORK}\"\n\n\n######################\n# Make fat universal binary\n######################\n\nlipo \"${SIMULATOR_LIBRARY_PATH}/${FRAMEWORK_NAME}\" \"${DEVICE_LIBRARY_PATH}/${FRAMEWORK_NAME}\" -create -output \"${FRAMEWORK}/${FRAMEWORK_NAME}\" | echo\n\n\n######################\n# On Release, copy the result to desktop folder\n######################\n\nif [ \"${CONFIGURATION}\" == \"Release\" ]; then\nmkdir \"${HOME}/Desktop/${FRAMEWORK_NAME}-${CONFIGURATION}-iphoneuniversal/\"\ncp -r \"${FRAMEWORK}\" \"${HOME}/Desktop/${FRAMEWORK_NAME}-${CONFIGURATION}-iphoneuniversal/\"\nfi\n\n\n######################\n# If needed, open the Framework folder\n######################\n\nif [ ${REVEAL_ARCHIVE_IN_FINDER} = true ]; then\nif [ \"${CONFIGURATION}\" == \"Release\" ]; then\nopen \"${HOME}/Desktop/${FRAMEWORK_NAME}-${CONFIGURATION}-iphoneuniversal/\"\nelse\nopen \"${UNIVERSAL_LIBRARY_DIR}/\"\nfi\nfi";
 		};
 		79FE055B54B0AB6FDAB24FCE /* Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -647,6 +726,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		1C1EC4001AE273FB00AAADD7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 96BF61301A35B2AB004CF2B3 /* ably */;
+			targetProxy = 1C1EC3FF1AE273FB00AAADD7 /* PBXContainerItemProxy */;
+		};
 		96BF613F1A35B2AB004CF2B3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 96BF61301A35B2AB004CF2B3 /* ably */;
@@ -655,6 +739,33 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		1C1EC3FD1AE2737800AAADD7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					i386,
+					x86_64,
+				);
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALID_ARCHS = "arm64 armv7 armv7s x86_64";
+			};
+			name = Debug;
+		};
+		1C1EC3FE1AE2737800AAADD7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					i386,
+					x86_64,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALID_ARCHS = "arm64 armv7 armv7s x86_64";
+			};
+			name = Release;
+		};
 		96BF61451A35B2AB004CF2B3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -690,7 +801,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -729,7 +840,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -749,10 +860,15 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = "ably-ios/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				ONLY_ACTIVE_ARCH = YES;
+				MACH_O_TYPE = mh_dylib;
+				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SEPARATE_STRIP = YES;
 				SKIP_INSTALL = YES;
+				STRIP_STYLE = all;
+				VALID_ARCHS = "arm64 armv7 armv7s x86_64 i386";
 			};
 			name = Debug;
 		};
@@ -760,16 +876,29 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 1BD00ABE249D4232EB2E44FA /* Pods.release.xcconfig */;
 			buildSettings = {
+				ARCHS = (
+					"$(ARCHS_STANDARD)",
+					i386,
+					x86_64,
+					armv7,
+					armv7s,
+					arm64,
+				);
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = "ably-ios/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MACH_O_TYPE = mh_dylib;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SEPARATE_STRIP = YES;
 				SKIP_INSTALL = YES;
+				STRIP_STYLE = all;
+				VALID_ARCHS = "arm64 armv7 armv7s x86_64 i386";
 			};
 			name = Release;
 		};
@@ -806,7 +935,16 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		96BF612B1A35B2AB004CF2B3 /* Build configuration list for PBXProject "ably-ios" */ = {
+		1C1EC3FC1AE2737800AAADD7 /* Build configuration list for PBXAggregateTarget "ablyaggregate" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1C1EC3FD1AE2737800AAADD7 /* Debug */,
+				1C1EC3FE1AE2737800AAADD7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		96BF612B1A35B2AB004CF2B3 /* Build configuration list for PBXProject "ably" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				96BF61451A35B2AB004CF2B3 /* Debug */,
