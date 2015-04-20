@@ -11,13 +11,96 @@ An iOS client library for [ably.io](https://www.ably.io), the realtime messaging
 * git clone https://github.com/square/SocketRocket.git
 * drag SocketRocket/SocketRocket into your project as a group
 
+
+
+## Using the Realtime API
+
+### Connection
+'''
+     ARTRealtime * client = [[ARTRealtime alloc] initWithKey:@"xxxxx"];
+     [client subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
+                         if (state == ARTRealtimeConnected) {
+                             // you are connected
+                         }];
+'''
+
+### Subscribing to a channel
+
+'''
+  ARTRealtimeChannel * channel = [client channel:@"test"];
+  [channel subscribe:^(ARTMessage * message) {
+     NSString * content =[message content];
+     NSLog(@" message is %@", content);
+  }];
+'''
+
+### Publishing to a channel
+'''
+    [channel publish:@"Hello, Channel!" cb:^(ARTStatus status) {
+        if(status != ARTStatusOk) {
+            //something went wrong.
+        }
+    }];
+'''
+
+### Querying the History
+'''
+    [channel history:^(ARTStatus status, id<ARTPaginatedResult> messagesPage) {
+        XCTAssertEqual(status, ARTStatusOk);
+        NSArray *messages = [messagesPage currentItems];
+
+        NSLog(@"this page has %d messages", [messages count]);
+        ARTMessage *message = messages[0];
+        NSString *messageContent = [message content];
+        NSLog(@"first item is %@", messageContent);
+    }];
+
+'''
+
+### Presence on a channel
+'''
+    ARTOptions * options = [[ARTOptions alloc] initWithKey:@"xxxxx"];
+    options.clientId = @"john.doe";
+    ARTRealtime * client = [[ARTRealtime alloc] initWithOptions:options];
+    ARTRealtimeChannel * channel = [client channel:@"test"];
+    [channel publishPresenceEnter:@"I'm here" cb:^(ARTStatus status) {
+        if(status != ARTStatusOk) {
+            //something went wrong
+        }
+    }];
+'''
+
+### Querying the Presence History
+    '''
+    [channel presenceHistory:^(ARTStatus status, id<ARTPaginatedResult> presencePage) {
+        NSArray *messages = [presencePage currentItems];
+        if(messages) {
+            ARTPresenceMessage *firstMessage = messages[0];
+            NSString * content = [firstMessage content];
+            NSLog(@"first message is %@", content);
+        }
+    }];
+'''
+
+## Using the REST API
+'''
+   ARTRest * client = [ARTRest alloc] initWithKey:@"xxxxx"];
+   ARTRestChannel * channel = [client channel:@"test"];
+'''
+
+## Publishing a message to a channel
+'''
+   [channel publish:@"Hello, channel!" cb:^(ARTStatus status){
+       if(status != ARTStatusOk) {
+           //something went wrong
+       }
+   }];
+
+'''
+
 ## Dependencies
 
-The library works on iOS7 and above, and uses [SocketRocket](https://github.com/square/SocketRocket)
-
-## Usage
-
-See https://www.ably.io/documentation for a quickstart guide
+The library works on iOS8, and uses [SocketRocket](https://github.com/square/SocketRocket)
 
 ## Known limitations
 
