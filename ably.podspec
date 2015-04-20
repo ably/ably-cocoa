@@ -9,7 +9,7 @@
 
 Pod::Spec.new do |s|
   s.name             = "ably"
-  s.version          = "1.0.1"
+  s.version          = "1.0.2"
   s.summary          = "iOS client for Ably: A highly scalable, superfast and secure hosted real-time messaging service"
   s.homepage         = "https://www.ably.io"
   # s.screenshots     = "www.example.com/screenshots_1", "www.example.com/screenshots_2"
