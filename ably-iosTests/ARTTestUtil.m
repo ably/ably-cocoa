@@ -15,33 +15,43 @@
 
 
 
-
-+(NSString *) getTestAppString {
++(NSString *) getErrorsJson {
+    NSString * path =[[[NSBundle bundleForClass: [self class]] resourcePath] stringByAppendingString:@"/errors.json"];
     
-    NSError *error = nil;
-    
-    NSString *yourFolderPath = [[NSBundle mainBundle] resourcePath];
-    
-    NSArray  *yourFolderContents = [[NSFileManager defaultManager]
-                                    contentsOfDirectoryAtPath:yourFolderPath error:&error];
-    
-    NSLog(@"all files %@", yourFolderContents);
- 
-    NSString * path = [[NSBundle mainBundle] pathForResource:@"todorm.txt"
-                                                      ofType:nil];
-    NSLog(@"path is %@", path);
-    NSString* content = [NSString stringWithContentsOfFile:path
+    return  [NSString stringWithContentsOfFile:path
                                                   encoding:NSUTF8StringEncoding
                                                      error:NULL];
-    
-    return content;
-
 }
+
++(NSString *) getCrypto256Json {
+    NSString * path =[[[NSBundle bundleForClass: [self class]] resourcePath] stringByAppendingString:@"/crypto-data-256.json"];
+    
+    return  [NSString stringWithContentsOfFile:path
+                                      encoding:NSUTF8StringEncoding
+                                         error:NULL];
+}
+
++(NSString *) getTestAppSetupJson {
+    NSString * path =[[[NSBundle bundleForClass: [self class]] resourcePath] stringByAppendingString:@"/test-app-setup.json"];
+    
+    return  [NSString stringWithContentsOfFile:path
+                                      encoding:NSUTF8StringEncoding
+                                         error:NULL];
+}
+
+
++(NSString *) getCrypto128Json {
+    NSString * path =[[[NSBundle bundleForClass: [self class]] resourcePath] stringByAppendingString:@"/crypto-data-128.json"];
+    return  [NSString stringWithContentsOfFile:path
+                                      encoding:NSUTF8StringEncoding
+                                         error:NULL];
+}
+
 +(void) setupApp:(ARTOptions *)options withAlteration:(TestAlteration) alt  appId:(NSString *) appId cb:(void (^)(ARTOptions *))cb
 {
     
-    NSString * str = [ARTTestUtil getTestAppString];
-    NSLog(@" STRRR IS %@", str);
+  
+    /*
     NSDictionary *capability = @{
                                  @"cansubscribe:*":@[@"subscribe"],
                                  @"canpublish:*":@[@"publish"],
@@ -49,6 +59,9 @@
                                  };
     
     NSString *capabilityString = [[NSString alloc] initWithData:[NSJSONSerialization dataWithJSONObject:capability options:0 error:nil] encoding:NSUTF8StringEncoding];
+    
+    
+
     
     NSDictionary *appSpec = @{
                               @"keys": @[
@@ -71,8 +84,24 @@
                                       ]
                               };
     
-    NSData *appSpecData = [NSJSONSerialization dataWithJSONObject:appSpec options:0 error:nil];
-    //NSLog(@" setupApp: %@", [[NSString alloc] initWithData:appSpecData encoding:NSUTF8StringEncoding]);
+    */
+
+//    NSData* jsonData = [NSJSONSerialization dataWithJSONObject:response options:0 error:nil];
+//    NSError * error = nil;
+  //  NSDictionary * topLevel =[NSJSONSerialization JSONObjectWithData:jsonData  options:NSJSONReadingMutableContainers error:&error];
+    
+    NSString * str = [ARTTestUtil getTestAppSetupJson];
+   // NSLog(@" STRRR IS %@", str);
+    
+    NSData *data = [str dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary * topLevel =[NSJSONSerialization JSONObjectWithData:data  options:NSJSONReadingMutableContainers error:nil];
+    
+   // NSLog(@"str again is %@", topLevel);
+    
+    NSDictionary * d = [topLevel objectForKey:@"post_apps"];
+
+    NSData *appSpecData = [NSJSONSerialization dataWithJSONObject:d options:0 error:nil];
+    NSLog(@" setupApp: %@", [[NSString alloc] initWithData:appSpecData encoding:NSUTF8StringEncoding]);
     
     
     if(alt ==TestAlterationBadWsHost)

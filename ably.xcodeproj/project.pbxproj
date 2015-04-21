@@ -8,19 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		1C05CF201AC1D7EB00687AC9 /* ARTRealtime+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C05CF1E1AC1D7EB00687AC9 /* ARTRealtime+Private.h */; };
-		1C118A4E1AE63999006AD19E /* errors.json in Resources */ = {isa = PBXBuildFile; fileRef = 1C118A491AE63999006AD19E /* errors.json */; };
-		1C118A4F1AE63999006AD19E /* errors.json in Resources */ = {isa = PBXBuildFile; fileRef = 1C118A491AE63999006AD19E /* errors.json */; };
-		1C118A501AE63999006AD19E /* crypto-data-128.json in Resources */ = {isa = PBXBuildFile; fileRef = 1C118A4B1AE63999006AD19E /* crypto-data-128.json */; };
-		1C118A511AE63999006AD19E /* crypto-data-128.json in Resources */ = {isa = PBXBuildFile; fileRef = 1C118A4B1AE63999006AD19E /* crypto-data-128.json */; };
-		1C118A521AE63999006AD19E /* crypto-data-256.json in Resources */ = {isa = PBXBuildFile; fileRef = 1C118A4C1AE63999006AD19E /* crypto-data-256.json */; };
-		1C118A531AE63999006AD19E /* crypto-data-256.json in Resources */ = {isa = PBXBuildFile; fileRef = 1C118A4C1AE63999006AD19E /* crypto-data-256.json */; };
-		1C118A541AE63999006AD19E /* test-app-setup.json in Resources */ = {isa = PBXBuildFile; fileRef = 1C118A4D1AE63999006AD19E /* test-app-setup.json */; };
-		1C118A551AE63999006AD19E /* test-app-setup.json in Resources */ = {isa = PBXBuildFile; fileRef = 1C118A4D1AE63999006AD19E /* test-app-setup.json */; };
-		1C118A571AE63A28006AD19E /* todorm.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1C118A561AE63A28006AD19E /* todorm.txt */; };
-		1C118A581AE63A28006AD19E /* todorm.txt in Resources */ = {isa = PBXBuildFile; fileRef = 1C118A561AE63A28006AD19E /* todorm.txt */; };
 		1C118A5A1AE63D58006AD19E /* ably-ios.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C118A591AE63D58006AD19E /* ably-ios.h */; };
 		1C118A5C1AE63D89006AD19E /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1C118A5B1AE63D89006AD19E /* Info.plist */; };
 		1C118A5D1AE63D89006AD19E /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1C118A5B1AE63D89006AD19E /* Info.plist */; };
+		1C118AB81AE6485C006AD19E /* ably-common in Resources */ = {isa = PBXBuildFile; fileRef = 1C118AB61AE6485C006AD19E /* ably-common */; };
+		1C118AB91AE6490B006AD19E /* ably-common in Copy Files */ = {isa = PBXBuildFile; fileRef = 1C118AB61AE6485C006AD19E /* ably-common */; };
+		1C118ABB1AE64923006AD19E /* ably-common in Copy Files */ = {isa = PBXBuildFile; fileRef = 1C118AB61AE6485C006AD19E /* ably-common */; };
+		1C118ABC1AE64D96006AD19E /* ably-common in Resources */ = {isa = PBXBuildFile; fileRef = 1C118AB61AE6485C006AD19E /* ably-common */; };
 		1C1E52EA1AB32EA0004A690F /* ARTRestAppStatsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C1E52E91AB32EA0004A690F /* ARTRestAppStatsTest.m */; };
 		1C1E52EE1AB32EB9004A690F /* ARTRestCapabilityTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C1E52ED1AB32EB9004A690F /* ARTRestCapabilityTest.m */; };
 		1C1E52F01AB32EC7004A690F /* ARTRestChannelHistoryTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C1E52EF1AB32EC7004A690F /* ARTRestChannelHistoryTest.m */; };
@@ -118,12 +112,24 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		1C118ABA1AE64919006AD19E /* Copy Files */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+				1C118ABB1AE64923006AD19E /* ably-common in Copy Files */,
+			);
+			name = "Copy Files";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		1C5DA0141A6E5F8A00A2B7EF /* Copy Files */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				1C118AB91AE6490B006AD19E /* ably-common in Copy Files */,
 				1C5DA0151A6E5FA400A2B7EF /* ably.framework in Copy Files */,
 			);
 			name = "Copy Files";
@@ -135,13 +141,9 @@
 		143713CCCD056BDB4C1E070F /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
 		1BD00ABE249D4232EB2E44FA /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
 		1C05CF1E1AC1D7EB00687AC9 /* ARTRealtime+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTRealtime+Private.h"; sourceTree = "<group>"; };
-		1C118A491AE63999006AD19E /* errors.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = errors.json; sourceTree = "<group>"; };
-		1C118A4B1AE63999006AD19E /* crypto-data-128.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "crypto-data-128.json"; sourceTree = "<group>"; };
-		1C118A4C1AE63999006AD19E /* crypto-data-256.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "crypto-data-256.json"; sourceTree = "<group>"; };
-		1C118A4D1AE63999006AD19E /* test-app-setup.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = "test-app-setup.json"; sourceTree = "<group>"; };
-		1C118A561AE63A28006AD19E /* todorm.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = todorm.txt; sourceTree = "<group>"; };
 		1C118A591AE63D58006AD19E /* ably-ios.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ably-ios.h"; sourceTree = "<group>"; };
 		1C118A5B1AE63D89006AD19E /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1C118AB61AE6485C006AD19E /* ably-common */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "ably-common"; sourceTree = "<group>"; };
 		1C1E52E91AB32EA0004A690F /* ARTRestAppStatsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestAppStatsTest.m; sourceTree = "<group>"; };
 		1C1E52ED1AB32EB9004A690F /* ARTRestCapabilityTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestCapabilityTest.m; sourceTree = "<group>"; };
 		1C1E52EF1AB32EC7004A690F /* ARTRestChannelHistoryTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestChannelHistoryTest.m; sourceTree = "<group>"; };
@@ -238,33 +240,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		1C118A471AE63999006AD19E /* ably-common */ = {
-			isa = PBXGroup;
-			children = (
-				1C118A481AE63999006AD19E /* protocol */,
-				1C118A4A1AE63999006AD19E /* test-resources */,
-			);
-			path = "ably-common";
-			sourceTree = SOURCE_ROOT;
-		};
-		1C118A481AE63999006AD19E /* protocol */ = {
-			isa = PBXGroup;
-			children = (
-				1C118A491AE63999006AD19E /* errors.json */,
-			);
-			path = protocol;
-			sourceTree = "<group>";
-		};
-		1C118A4A1AE63999006AD19E /* test-resources */ = {
-			isa = PBXGroup;
-			children = (
-				1C118A4B1AE63999006AD19E /* crypto-data-128.json */,
-				1C118A4C1AE63999006AD19E /* crypto-data-256.json */,
-				1C118A4D1AE63999006AD19E /* test-app-setup.json */,
-			);
-			path = "test-resources";
-			sourceTree = "<group>";
-		};
 		1C1E52E71AB32E69004A690F /* rest */ = {
 			isa = PBXGroup;
 			children = (
@@ -303,7 +278,7 @@
 		96BF61271A35B2AB004CF2B3 = {
 			isa = PBXGroup;
 			children = (
-				1C118A561AE63A28006AD19E /* todorm.txt */,
+				1C118AB61AE6485C006AD19E /* ably-common */,
 				96BF61331A35B2AB004CF2B3 /* ably-ios */,
 				96BF61401A35B2AB004CF2B3 /* ably-iosTests */,
 				96BF61321A35B2AB004CF2B3 /* Products */,
@@ -387,7 +362,6 @@
 		96BF61401A35B2AB004CF2B3 /* ably-iosTests */ = {
 			isa = PBXGroup;
 			children = (
-				1C118A471AE63999006AD19E /* ably-common */,
 				1C1E52E81AB32E6E004A690F /* realtime */,
 				1C1E52E71AB32E69004A690F /* rest */,
 				96BF61411A35B2AB004CF2B3 /* Supporting Files */,
@@ -492,6 +466,7 @@
 				96BF61391A35B2AB004CF2B3 /* Frameworks */,
 				96BF613A1A35B2AB004CF2B3 /* Resources */,
 				1C5DA0141A6E5F8A00A2B7EF /* Copy Files */,
+				1C118ABA1AE64919006AD19E /* Copy Files */,
 			);
 			buildRules = (
 				1C5DA0131A6E5F2700A2B7EF /* PBXBuildRule */,
@@ -545,12 +520,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1C118A571AE63A28006AD19E /* todorm.txt in Resources */,
-				1C118A501AE63999006AD19E /* crypto-data-128.json in Resources */,
+				1C118ABC1AE64D96006AD19E /* ably-common in Resources */,
 				1C118A5C1AE63D89006AD19E /* Info.plist in Resources */,
-				1C118A521AE63999006AD19E /* crypto-data-256.json in Resources */,
-				1C118A4E1AE63999006AD19E /* errors.json in Resources */,
-				1C118A541AE63999006AD19E /* test-app-setup.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -558,12 +529,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1C118A581AE63A28006AD19E /* todorm.txt in Resources */,
-				1C118A511AE63999006AD19E /* crypto-data-128.json in Resources */,
 				1C118A5D1AE63D89006AD19E /* Info.plist in Resources */,
-				1C118A531AE63999006AD19E /* crypto-data-256.json in Resources */,
-				1C118A4F1AE63999006AD19E /* errors.json in Resources */,
-				1C118A551AE63999006AD19E /* test-app-setup.json in Resources */,
+				1C118AB81AE6485C006AD19E /* ably-common in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
