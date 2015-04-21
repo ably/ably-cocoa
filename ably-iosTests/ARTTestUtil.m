@@ -18,9 +18,20 @@
 
 +(NSString *) getTestAppString {
     
-    NSString * path = [[NSBundle mainBundle] pathForResource:@"test-app-setup"
-                                                      ofType:@"json"];
-    NSString* content = [NSString stringWithContentsOfFile:path                                                  encoding:NSUTF8StringEncoding
+    NSError *error = nil;
+    
+    NSString *yourFolderPath = [[NSBundle mainBundle] resourcePath];
+    
+    NSArray  *yourFolderContents = [[NSFileManager defaultManager]
+                                    contentsOfDirectoryAtPath:yourFolderPath error:&error];
+    
+    NSLog(@"all files %@", yourFolderContents);
+ 
+    NSString * path = [[NSBundle mainBundle] pathForResource:@"todorm.txt"
+                                                      ofType:nil];
+    NSLog(@"path is %@", path);
+    NSString* content = [NSString stringWithContentsOfFile:path
+                                                  encoding:NSUTF8StringEncoding
                                                      error:NULL];
     
     return content;
@@ -29,8 +40,8 @@
 +(void) setupApp:(ARTOptions *)options withAlteration:(TestAlteration) alt  appId:(NSString *) appId cb:(void (^)(ARTOptions *))cb
 {
     
-    //NSString * str = [ARTTestUtil getTestAppString];
-   // NSLog(@" STRRR IS %@", str);
+    NSString * str = [ARTTestUtil getTestAppString];
+    NSLog(@" STRRR IS %@", str);
     NSDictionary *capability = @{
                                  @"cansubscribe:*":@[@"subscribe"],
                                  @"canpublish:*":@[@"publish"],
