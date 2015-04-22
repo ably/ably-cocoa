@@ -474,7 +474,6 @@
 
     ARTRealtimeChannelSubscription *subscription = [[ARTRealtimeChannelSubscription alloc] initWithChannel:self cb:cb];
 
-
     for (NSString *name in nameSet) {
         NSMutableArray *subscriptions = [self.subscriptions objectForKey:name];
         if (!subscriptions) {
@@ -959,7 +958,6 @@
 
 - (void)onHeartbeat:(ARTProtocolMessage *)message {
     [ARTLog info:@"ARTRealtime heartbeat received"];
-    // Ignore
 }
 
 - (void)onConnected:(ARTProtocolMessage *)message {

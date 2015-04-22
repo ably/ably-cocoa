@@ -15,8 +15,6 @@
 #import "ARTTestUtil.h"
 @interface ARTRestCapabilityTest : XCTestCase {
     ARTRest *_rest;
-    ARTOptions *_options;
-    float _timeout;
 }
 
 - (void)withRest:(void(^)(ARTRest *))cb;
@@ -28,8 +26,6 @@
 
 - (void)setUp {
     [super setUp];
-    _options = [[ARTOptions alloc] init];
-    _options.restHost = @"sandbox-rest.ably.io";
 }
 
 - (void)tearDown {
@@ -37,9 +33,16 @@
     [super tearDown];
 }
 
-- (void)withRest:(void (^)(ARTRest *rest))cb {
+
+-(NSString *) getClientId {
+    return @"testClientId";
+}
+
+- (void)withRestClientId:(void (^)(ARTRest *rest))cb {
     if (!_rest) {
-        [ARTTestUtil setupApp:_options cb:^(ARTOptions *options) {
+        ARTOptions * theOptions = [ARTTestUtil jsonRestOptions];
+        //theOptions.clientId = [self getClientId];
+        [ARTTestUtil setupApp:theOptions cb:^(ARTOptions *options) {
             if (options) {
                 _rest = [[ARTRest alloc] initWithOptions:options];
             }
@@ -50,11 +53,17 @@
     cb(_rest);
 }
 
-/*
 //TODO write tests
 - (void)testAuthBlanket {
-    XCTFail(@"TODO write test");
+     XCTestExpectation *expectation = [self expectationWithDescription:@"testSimpleDisconnected"];
+    [self withRestClientId:^(ARTRest * rest) {
+        NSLog(@"rest created");
+        XCTFail(@"TODO tokens");
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
+/*
 - (void)testAuthEqual {
     XCTFail(@"TODO write test");
 }
@@ -96,7 +105,7 @@
 - (void)testInvalidCapabilities3 {
     XCTFail(@"TODO write test");
 }
-
 */
+
 
 @end

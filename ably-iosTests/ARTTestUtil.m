@@ -10,6 +10,7 @@
 
 #import "ARTRest.h"
 #import "ARTRealtime.h"
+#import "ARTLog.h"
 #import <XCTest/XCTest.h>
 @implementation ARTTestUtil
 
@@ -49,8 +50,6 @@
 
 +(void) setupApp:(ARTOptions *)options withAlteration:(TestAlteration) alt  appId:(NSString *) appId cb:(void (^)(ARTOptions *))cb
 {
-    
-  
     /*
     NSDictionary *capability = @{
                                  @"cansubscribe:*":@[@"subscribe"],
@@ -85,18 +84,10 @@
                               };
     
     */
-
-//    NSData* jsonData = [NSJSONSerialization dataWithJSONObject:response options:0 error:nil];
-//    NSError * error = nil;
-  //  NSDictionary * topLevel =[NSJSONSerialization JSONObjectWithData:jsonData  options:NSJSONReadingMutableContainers error:&error];
     
     NSString * str = [ARTTestUtil getTestAppSetupJson];
-   // NSLog(@" STRRR IS %@", str);
-    
     NSData *data = [str dataUsingEncoding:NSUTF8StringEncoding];
     NSDictionary * topLevel =[NSJSONSerialization JSONObjectWithData:data  options:NSJSONReadingMutableContainers error:nil];
-    
-   // NSLog(@"str again is %@", topLevel);
     
     NSDictionary * d = [topLevel objectForKey:@"post_apps"];
 
@@ -113,19 +104,18 @@
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
     req.HTTPMethod = @"POST";
     req.HTTPBody = appSpecData;
-    if(false  ||options.binary) { //msgpack not implemented yet
+    
+    /*if(false  ||options.binary) { //msgpack not implemented yet
         [req setValue:@"application/x-msgpack,application/json" forHTTPHeaderField:@"Accept"];
         [req setValue:@"application/x-msgpack" forHTTPHeaderField:@"Content-Type"];
-        
     }
-    else {
+    else */
+    {
         [req setValue:@"application/json" forHTTPHeaderField:@"Accept"];
         [req setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-        
-        
     }
     
-  //  NSLog(@"Creating test app. URL: %@, Method: %@, Body: %@, Headers: %@", req.URL, req.HTTPMethod, [[NSString alloc] initWithData:req.HTTPBody encoding:NSUTF8StringEncoding], req.allHTTPHeaderFields);
+    NSLog(@"Creating test app. URL: %@, Method: %@, Body: %@, Headers: %@", req.URL, req.HTTPMethod, [[NSString alloc] initWithData:req.HTTPBody encoding:NSUTF8StringEncoding], req.allHTTPHeaderFields);
     
     CFRunLoopRef rl = CFRunLoopGetCurrent();
     
@@ -136,26 +126,28 @@
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
         NSString *keyId;
         NSString *keyValue;
+        NSString * capability;
         if (httpResponse.statusCode < 200 || httpResponse.statusCode >= 300) {
-            //NSLog(@"Status Code: %ld", (long)httpResponse.statusCode);
-            //NSLog(@"Body: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+            NSLog(@"Status Code: %ld", (long)httpResponse.statusCode);
+            NSLog(@"Body: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             cb(nil);
             return;
         } else {
             NSDictionary *response = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-            
+            NSLog(@"res is %@", response);
             if (response) {
                 NSDictionary *key = response[@"keys"][0];
                 keyId = [NSString stringWithFormat:@"%@.%@", response[@"appId"], key[@"id"]];
-                
                 keyValue = key[@"value"];
+                capability = key[@"capability"];
             }
         }
         
         ARTOptions *appOptions = [options clone];
-        
         appOptions.authOptions.keyId = keyId;
         appOptions.authOptions.keyValue = keyValue;
+        appOptions.authOptions.capability =capability;
+
         if(alt == TestAlterationBadKeyId)
         {
             appOptions.authOptions.keyId= @"badKeyId";
@@ -171,7 +163,6 @@
         CFRunLoopWakeUp(rl);
     }];
     [task resume];
-
 }
 
 +(NSString *) appIdFromkeyId:(NSString *) keyId

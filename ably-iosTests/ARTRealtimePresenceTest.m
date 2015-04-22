@@ -221,15 +221,13 @@
         ARTRealtimeChannel *channel = [realtime channel:channelName];
         [channel subscribeToPresence:^(ARTPresenceMessage * message) {
             
-            if(message.action == ARTPresenceMessageEnter)
-            {
+            if(message.action == ARTPresenceMessageEnter) {
                 XCTAssertEqualObjects([message content], presenceEnter);
                 [channel publishPresenceLeave:presenceLeave cb:^(ARTStatus status) {
                     XCTAssertEqual(ARTStatusOk, status);
                 }];
             }
-            if(message.action == ARTPresenceMessageLeave)
-            {
+            if(message.action == ARTPresenceMessageLeave) {
                 XCTAssertEqualObjects([message content], presenceLeave);
                 [expectation fulfill];
             }

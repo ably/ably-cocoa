@@ -492,7 +492,7 @@
     ARTPayload *decoded = nil;
     ARTStatus status = [[ARTBase64PayloadEncoder instance] decode:payload output:&decoded];
     if (status != ARTStatusOk) {
-        // TODO log
+        [ARTLog error:[NSString stringWithFormat:@"ARTJsonEncoder failed to decode payload %@", payload]];
     }
     return decoded;
 }

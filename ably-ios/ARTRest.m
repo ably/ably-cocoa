@@ -160,6 +160,7 @@
 - (instancetype)initWithOptions:(ARTOptions *)options {
     self = [super init];
     if (self) {
+        NSLog(@"WTFFFF");
         _http = [[ARTHttp alloc] init];
         _baseUrl = [options restUrl];
         _channels = [NSMutableDictionary dictionary];

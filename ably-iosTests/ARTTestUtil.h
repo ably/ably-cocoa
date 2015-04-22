@@ -51,7 +51,10 @@ typedef NS_ENUM(NSUInteger, TestAlteration) {
 
 +(void) publishRealtimeMessages:(NSString *) prefix count:(int) count channel:(ARTRealtimeChannel *) channel expectation:(XCTestExpectation *) expectation;
 
-
++(NSString *) getCrypto128Json;
++(NSString *) getTestAppSetupJson;
++(NSString *) getCrypto256Json;
++(NSString *) getErrorsJson;
 @end
 
 

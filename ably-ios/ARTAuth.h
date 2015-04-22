@@ -62,6 +62,7 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 @property (readwrite, strong, nonatomic) NSString *keyId;
 @property (readwrite, strong, nonatomic) NSString *keyValue;
 @property (readwrite, strong, nonatomic) NSString *authToken;
+@property (readwrite, strong, nonatomic) NSString *capability;
 @property (readwrite, strong, nonatomic) NSDictionary *authHeaders;
 @property (readwrite, strong, nonatomic) NSString *clientId;
 @property (readwrite, assign, nonatomic) BOOL queryTime;

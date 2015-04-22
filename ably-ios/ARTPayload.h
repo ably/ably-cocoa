@@ -40,7 +40,7 @@
 
 - (ARTStatus)encode:(ARTPayload *)payload output:(ARTPayload *__autoreleasing *)output;
 - (ARTStatus)decode:(ARTPayload *)payload output:(ARTPayload *__autoreleasing *)output;
-
+- (NSString *)name;
 @end
 
 @interface ARTBase64PayloadEncoder : NSObject <ARTPayloadEncoder>

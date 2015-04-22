@@ -99,6 +99,7 @@
         _authToken = nil;
         _authHeaders = nil;
         _clientId = nil;
+        _capability = nil;
     }
     return self;
 }
@@ -182,7 +183,7 @@
             _tokenCbs = [NSMutableArray array];
 
             if (options.authToken) {
-                _authToken = [[ARTAuthToken alloc] initWithId:options.authToken expires:0 issuedAt:0 capability:nil clientId:nil];
+                _authToken = [[ARTAuthToken alloc] initWithId:options.authToken expires:0 issuedAt:0 capability:options.capability clientId:options.clientId];
             } else if (options.authCallback) {
                 _authTokenCb = options.authCallback;
             } else {
@@ -203,6 +204,7 @@
     }
     return self;
 }
+
 
 - (id<ARTCancellable>)authHeaders:(id<ARTCancellable>(^)(NSDictionary *))cb {
 

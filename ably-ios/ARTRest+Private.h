@@ -17,6 +17,7 @@
 
 - (NSString *)formatQueryParams:(NSDictionary *)queryParams;
 
+
 - (NSURL *)resolveUrl:(NSString *)relUrl;
 - (NSURL *)resolveUrl:(NSString *)relUrl queryParams:(NSDictionary *)queryParams;
 
