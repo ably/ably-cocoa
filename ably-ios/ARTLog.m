@@ -11,7 +11,7 @@
 @implementation ARTLog
 
 
-static ARTLogLevel g_logLevel = ArtLogLevelError;
+static ARTLogLevel g_logLevel = ArtLogLevelWarn;
 static ARTLogCallback g_cb = nil;
 
 +(void) setLogLevel:(ARTLogLevel) level {

@@ -99,9 +99,7 @@
         }
         else {
             [encoders addObject:encoder];
-            
         }
-
     }
     return encoders;
 }
@@ -166,15 +164,20 @@
 }
 
 - (ARTStatus)decode:(ARTPayload *)payload output:(ARTPayload *__autoreleasing *)output {
-    if ([ARTBase64PayloadEncoder canDecode:payload]) {
+    if ([[payload.encoding artLastEncoding] isEqualToString:[ARTBase64PayloadEncoder getName]]) {//[ARTBase64PayloadEncoder canDecode:payload]) {
         NSData *decoded = [[NSData alloc] initWithBase64EncodedString:payload.payload options:0];
         if (decoded) {
             *output = [ARTPayload payloadWithPayload:decoded encoding:[payload.encoding artRemoveLastEncoding]];
+            ARTPayload * p = *output;
+            [ARTLog debug:[NSString stringWithFormat:@"base64 payload decoded successfully %@", p.encoding]];
             return ARTStatusOk;
         }
         // Set the output to be the original payload
         *output = payload;
         return ARTStatusError;
+    }
+    else {
+        [ARTLog warn:[NSString stringWithFormat:@"ARTBase64PayloadEncoder cant decode a %@", payload.encoding]];
     }
     *output = payload;
     return ARTStatusOk;
@@ -206,10 +209,14 @@
             NSString *decoded = [[NSString alloc] initWithData:payload.payload encoding:NSUTF8StringEncoding];
             if (decoded) {
                 *output = [ARTPayload payloadWithPayload:decoded encoding:[payload.encoding artRemoveLastEncoding]];
+                [ARTLog debug:@"utf8 payload decoded successfully"];
                 return ARTStatusOk;
             }
         }
         return ARTStatusError;
+    }
+    else {
+        [ARTLog warn:[NSString stringWithFormat:@"ARTUtf8PayloadEncoder cant decode a %@", payload.encoding]];
     }
     return ARTStatusOk;
 }
@@ -266,13 +273,18 @@
     if ([[payload.encoding artLastEncoding] isEqualToString:[ARTJsonPayloadEncoder getName]]) {
         id decoded = nil;
         if ([payload.payload isKindOfClass:[NSString class]]) {
-            decoded = [NSJSONSerialization JSONObjectWithData:payload.payload options:0 error:nil];
+            NSData * d = [payload.payload dataUsingEncoding:NSUTF8StringEncoding];
+            decoded = [NSJSONSerialization JSONObjectWithData:d options:0 error:nil];
+
             if (decoded) {
                 *output = [ARTPayload payloadWithPayload:decoded encoding:[payload.encoding artRemoveLastEncoding]];
                 return ARTStatusOk;
             }
         }
         return ARTStatusError;
+    }
+    else {
+        [ARTLog warn:[NSString stringWithFormat:@"ARTJsonPayloadEncoder cant decode a %@", payload.encoding]];
     }
     return ARTStatusOk;
 }
@@ -310,7 +322,7 @@
         return [ARTCipherPayloadEncoder getName256];
     }
     else {
-        [ARTLog warn:[NSString stringWithFormat:@"ARTPayload: keyLength is invalid %zu", keyLen]];
+        [ARTLog error:[NSString stringWithFormat:@"ARTPayload: keyLength is invalid %zu", keyLen]];
     }
     return @"";
 }
@@ -323,8 +335,12 @@
         ARTStatus status = [self.cipher decrypt:payload.payload output:&decrypted];
         if (status == ARTStatusOk) {
             *output = [ARTPayload payloadWithPayload:decrypted encoding:[payload.encoding artRemoveLastEncoding]];
+            [ARTLog debug:@"cipher payload decoded successfully"];
         }
         return status;
+    }
+    else {
+         [ARTLog warn:[NSString stringWithFormat:@"ARTCipherPayloadEncoder cant decode a %@", payload.encoding]];
     }
     return ARTStatusOk;
 }
@@ -358,6 +374,9 @@
     }
     return self;
 }
+-(NSString *) name {
+    return @"encoderChain"; //TOOD make the encoder chain string eg (json/utf-8/base64)
+}
 
 - (ARTStatus)encode:(ARTPayload *)payload output:(ARTPayload *__autoreleasing *)output {
     ARTStatus status = ARTStatusOk;
@@ -377,11 +396,16 @@
     ARTStatus status = ARTStatusOk;
     *output = payload;
 
+    int count=0;
     for (id<ARTPayloadEncoder> enc in self.encoders.reverseObjectEnumerator) {
+
         status = [enc decode:*output output:output];
         if (status != ARTStatusOk) {
+            ARTPayload * p  = *output;
+            [ARTLog error:[NSString  stringWithFormat:@"ARTPayload: error in ARTPayloadEncoderChain decoding with encoder %d. Remaining encoding jobs are %@", count, p.encoding]];
             break;
         }
+        count++;
     }
 
     return status;
