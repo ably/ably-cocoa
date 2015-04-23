@@ -140,12 +140,12 @@
 
 + (NSString *) realtimeHost
 {
-    return @"sandbox-realtime.ably.io";
+    return @"staging-realtime.ably.io";
 }
 
 + (NSString *) restHost
 {
-    return @"sandbox-rest.ably.io";
+    return @"staging-rest.ably.io";
 }
 
 +(ARTOptions *) binaryRestOptions

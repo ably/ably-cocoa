@@ -322,13 +322,12 @@
         return nil;
     }
     
-    NSString * theId = [input artString:@"id"];
-    NSDictionary * topLevel = [input valueForKey:@"access_token"];
-    ARTAuthToken * tok = [[ARTAuthToken alloc] initWithId: [topLevel artString:@"id"]
-                                                  expires: [[topLevel artNumber:@"expires"] longLongValue]
-                                                 issuedAt: [[topLevel artNumber:@"issued_at"] longLongValue]
-                                               capability: [topLevel artString:@"capability"]
-                                                 clientId: [topLevel artString:@"clientId"]];
+//    NSDictionary * topLevel = [input valueForKey:@"access_token"];
+    ARTAuthToken * tok = [[ARTAuthToken alloc] initWithId: [input artString:@"token"]
+                                                  expires: [[input artNumber:@"expires"] longLongValue]
+                                                 issuedAt: [[input artNumber:@"issued"] longLongValue]
+                                               capability: [input artString:@"capability"]
+                                                 clientId: [input artString:@"clientId"]];
     
     
     return tok;

@@ -23,7 +23,9 @@
 
 @end
 
-you 
+
+@implementation ARTRestTokenTest
+
 - (void)setUp {
     [super setUp];
 }

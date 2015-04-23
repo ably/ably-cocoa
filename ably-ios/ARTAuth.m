@@ -52,6 +52,7 @@
         
         NSData * tokenIdData = [id dataUsingEncoding:NSUTF8StringEncoding];
         NSString *base64Str = [ARTAuth toBase64:tokenIdData];
+        NSLog(@"so input is %@, and base64 is %@", id, base64Str);
         _idB64 = base64Str;
         _expires = expires;
         _issuedAt = issuedAt;
@@ -90,7 +91,7 @@
 
 -(NSDictionary *) asDictionary {
     NSMutableDictionary *reqObj = [NSMutableDictionary dictionary];
-    reqObj[@"id"] = self.keyName;
+    reqObj[@"keyName"] = self.keyName;
     reqObj[@"capability"] = self.capability;
     reqObj[@"ttl"] = [NSNumber numberWithLongLong:self.ttl];
     reqObj[@"clientId"] = self.clientId;
@@ -342,8 +343,8 @@
 //TODO RM reqObj I think.
         NSMutableDictionary *reqObj = [NSMutableDictionary dictionary];
         reqObj[@"key_name"] = keyId;
-        NSString *ttlText = @"3600";
-        int64_t ttl = 3600;
+        NSString *ttlText = @"3600000";
+        int64_t ttl = 3600000;
 //        if (params.ttl) {
   //          ttlText = [NSString stringWithFormat:@"%lld", params.ttl];
     //        reqObj[@"ttl"] = [NSNumber numberWithLongLong:params.ttl];
@@ -366,7 +367,7 @@
                     if (strongRest) {
                         [strongRest time:^(ARTStatus status, NSDate *time) {
                             if (status == ARTStatusOk) {
-                                cb((int64_t)([time timeIntervalSince1970]));
+                                cb((int64_t)([time timeIntervalSince1970] *1000.0));
                             } else {
                                 cb(0);
                             }
@@ -377,7 +378,7 @@
                 };
             } else {
                 timeCb = ^(void(^cb)(int64_t)) {
-                    cb((int64_t)([[NSDate date] timeIntervalSince1970] ));
+                    cb((int64_t)([[NSDate date] timeIntervalSince1970] *1000.0 ));
                 };
             }
         } else {
