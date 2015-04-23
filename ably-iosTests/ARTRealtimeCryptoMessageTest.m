@@ -112,7 +112,7 @@
                 XCTAssertEqualObjects(decOutput.payload, encodableData);
             }
             else if([simpleEncoding isEqualToString:@"json"]) {
-                //we don't want to compare json as strings, but as arrays or dictionarys
+                //we don't want to compare json as strings, but as arrays or dictionarys, so we encode and decode the json from the file.
                 ARTPayload * p =[[ARTPayload alloc] initWithPayload:encodableData encoding:@"json"];
                 ARTJsonPayloadEncoder * e = [ARTJsonPayloadEncoder instance];
                 ARTPayload* jsonOut = nil;

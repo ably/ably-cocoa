@@ -11,11 +11,14 @@
 @class ARTMessage;
 @class ARTPresenceMessage;
 @class ARTProtocolMessage;
-
+@class ARTAuthToken;
 @protocol ARTEncoder
 
 - (NSString *)mimeType;
 
+
+
+- (ARTAuthToken *) decodeAccessToken:(NSData *) data;
 - (ARTMessage *)decodeMessage:(NSData *)data;
 - (NSArray *)decodeMessages:(NSData *)data;
 - (NSData *)encodeMessage:(ARTMessage *)message;

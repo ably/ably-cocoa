@@ -52,7 +52,7 @@
     }
     cb(_rest);
 }
-
+/*
 //TODO write tests
 - (void)testAuthBlanket {
      XCTestExpectation *expectation = [self expectationWithDescription:@"testSimpleDisconnected"];
@@ -63,7 +63,7 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
-/*
+
 - (void)testAuthEqual {
     XCTFail(@"TODO write test");
 }

@@ -14,6 +14,8 @@
 #import "ARTPaginatedResult.h"
 
 @class ARTCipherParams;
+@class ARTAuthToken;
+@class ARTAuthTokenParams;
 
 @interface ARTRestChannel : NSObject
 
@@ -37,6 +39,12 @@
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithKey:(NSString *)key;
 - (instancetype)initWithOptions:(ARTOptions *)options;
+
+
+
+//TODO really not sure about this.
+- (id<ARTCancellable>) token:(ARTAuthTokenParams *) keyId tokenCb:(void (^)(ARTAuthToken *)) cb;
+
 
 - (id<ARTCancellable>)time:(void(^)(ARTStatus status, NSDate *time))cb;
 - (id<ARTCancellable>)stats:(ARTPaginatedResultCb)cb;

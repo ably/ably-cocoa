@@ -12,6 +12,9 @@
 #include <CommonCrypto/CommonHMAC.h>
 
 #import "ARTRest.h"
+#import "ARTPayload.h"
+#import "ARTLog.h"
+
 
 @interface ARTAuthTokenCancellable : NSObject <ARTCancellable>
 
@@ -30,19 +33,15 @@
 
 @property (readonly, weak, nonatomic) ARTRest *rest;
 @property (readwrite, strong, nonatomic) ARTAuthToken *authToken;
-@property (readonly, assign, nonatomic) ARTAuthMethod authMethod;
+@property (assign, nonatomic) ARTAuthMethod authMethod;
 @property (readonly, strong, nonatomic) NSString *basicCredentials;
 @property (readonly, strong, nonatomic) NSString *keyId;
 @property (readonly, strong, nonatomic) NSString *keyValue;
 @property (readonly, strong, nonatomic) ARTAuthCb authTokenCb;
 @property (readwrite, strong, nonatomic) NSMutableArray *tokenCbs;
 @property (readwrite, strong, nonatomic) id<ARTCancellable> tokenRequest;
-
-+ (NSString *)random;
-/*
 + (ARTSignedTokenRequestCb)defaultSignedTokenRequestCallback:(ARTAuthOptions *)authOptions rest:(ARTRest *)rest;
-+ (NSString *)hmacForData:(NSData *)data key:(NSData *)key;
-*/
++ (NSString *)random;
 @end
 
 @implementation ARTAuthToken
@@ -50,7 +49,10 @@
 - (instancetype)initWithId:(NSString *)id expires:(int64_t)expires issuedAt:(int64_t)issuedAt capability:(NSString *)capability clientId:(NSString *)clientId {
     self = [super init];
     if (self) {
-        _id = id;
+        
+        NSData * tokenIdData = [id dataUsingEncoding:NSUTF8StringEncoding];
+        NSString *base64Str = [ARTAuth toBase64:tokenIdData];
+        _idB64 = base64Str;
         _expires = expires;
         _issuedAt = issuedAt;
         _capability = capability;
@@ -67,10 +69,10 @@
 
 @implementation ARTAuthTokenParams
 
-- (instancetype)initWithId:(NSString *)id ttl:(int64_t)ttl capability:(NSString *)capability clientId:(NSString *)clientId timestamp:(int64_t)timestamp nonce:(NSString *)nonce mac:(NSString *)mac {
+- (instancetype)initWithId:(NSString *)keyName ttl:(int64_t)ttl capability:(NSString *)capability clientId:(NSString *)clientId timestamp:(int64_t)timestamp nonce:(NSString *)nonce mac:(NSString *)mac {
     self = [super init];
     if (self) {
-        _id = id;
+        _keyName = keyName;
         _ttl = ttl;
         _capability = capability;
         _clientId = clientId;
@@ -83,6 +85,19 @@
 
 + (instancetype)authTokenParamsWithId:(NSString *)id ttl:(int64_t)ttl capability:(NSString *)capability clientId:(NSString *)clientId timestamp:(int64_t)timestamp nonce:(NSString *)nonce mac:(NSString *)mac {
     return [[ARTAuthTokenParams alloc] initWithId:id ttl:ttl capability:capability clientId:clientId timestamp:timestamp nonce:nonce mac:mac];
+}
+
+
+-(NSDictionary *) asDictionary {
+    NSMutableDictionary *reqObj = [NSMutableDictionary dictionary];
+    reqObj[@"id"] = self.keyName;
+    reqObj[@"capability"] = self.capability;
+    reqObj[@"ttl"] = [NSNumber numberWithLongLong:self.ttl];
+    reqObj[@"clientId"] = self.clientId;
+    reqObj[@"nonce"] = self.nonce;
+    reqObj[@"timestamp"] = [NSNumber numberWithLongLong:self.timestamp];
+    reqObj[@"mac"] = self.mac;
+    return reqObj;
 }
 
 @end
@@ -100,6 +115,7 @@
         _authHeaders = nil;
         _clientId = nil;
         _capability = nil;
+        _useTokenAuth = false;
     }
     return self;
 }
@@ -133,6 +149,7 @@
     clone.authToken = self.authToken;
     clone.authHeaders = self.authHeaders;
     clone.clientId = self.clientId;
+    clone.useTokenAuth =self.useTokenAuth;
     return clone;
 }
 
@@ -173,52 +190,77 @@
         _tokenCbs = nil;
         _tokenRequest = nil;
 
-        if (nil != options.keyValue && nil == options.clientId) {
-            _authMethod = ARTAuthMethodBasic;
+        
+        
+        if (nil != options.keyValue /*&& nil == options.clientId*/) {
+            [ARTLog debug:@"ARTAuth: setting up auth method Basic"];
             _basicCredentials = [NSString stringWithFormat:@"Basic %@", [[[NSString stringWithFormat:@"%@:%@", options.keyId, options.keyValue] dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0]];
             _keyId = options.keyId;
             _keyValue = options.keyValue;
-        } else {
-            _authMethod = ARTAuthMethodToken;
+        }
+        else {
+            [ARTLog warn:@"ARTAuth Error: cannot set up basic auth without a value keyValue. "];
+        }
+    
+        if(options.useTokenAuth) {
+            _authMethod= ARTAuthMethodToken;
+            [ARTLog debug:@"ARTAuth: setting up auth method Token"];
+
             _tokenCbs = [NSMutableArray array];
 
             if (options.authToken) {
+                [ARTLog debug:[NSString stringWithFormat:@"ARTAuth:using provided authToken %@", options.authToken]];
                 _authToken = [[ARTAuthToken alloc] initWithId:options.authToken expires:0 issuedAt:0 capability:options.capability clientId:options.clientId];
             } else if (options.authCallback) {
+                [ARTLog debug:@"ARTAuth: using provided authCallback"];
                 _authTokenCb = options.authCallback;
             } else {
-                NSLog(@"TODO handle signtokenrequest callback");
-                /* TODO
-                ARTSignedTokenRequestCb strCb = options.signedTokenRequestCallback ? options.signedTokenRequestCallback : [ARTAuth defaultSignedTokenRequestCallback];
-                _authTokenCb = ^(void(^cb)(ARTAuthToken *)){
+                [ARTLog debug:@"ARTAuth: signed token request."];
+            
+                __block ARTSignedTokenRequestCb strCb = (options.signedTokenRequestCallback ? options.signedTokenRequestCallback : [ARTAuth defaultSignedTokenRequestCallback:options rest:rest]);
+                __weak ARTRest * weakRest = self.rest;
+                _authTokenCb = ^(void(^cb)(ARTAuthToken *)) {
+                    
                     ARTIndirectCancellable *ic = [[ARTIndirectCancellable alloc] init];
-                    id<ARTCancellable> c = strCb(^(NSString *str) {
-                        NSString *url = [NSString stringWithFormat:@"%@/keys/%@/requestToken"];
+                    ARTAuthTokenParams * tempParamsTODORM = nil;
+
+                    //TODO no need for the doubel params interface, just the cb please.
+                    id<ARTCancellable> c = strCb(tempParamsTODORM,^( ARTAuthTokenParams *params) {
+                        [ARTLog debug:[NSString stringWithFormat:@"ARTAuth tokenRequest strCb got %@", [params asDictionary]]];
+                        ARTRest * r = weakRest;
+                        if(r) {
+                            [r token:params tokenCb:^(ARTAuthToken * token) {
+                                cb(token);
+                            }];
+                        }
+                        else {
+                            [ARTLog debug:@"ARTAuth has no ARTRest"];
+                        }
                     });
                     ic.cancellable = c;
                     return ic;
                 };
-                 */
             }
         }
     }
     return self;
 }
+- (ARTAuthMethod) getAuthMethod {
+    return self.authMethod;
+}
+- (id<ARTCancellable>)authHeadersUseBasic:(BOOL)useBasic cb:(id<ARTCancellable>(^)(NSDictionary *))cb {
 
-
-- (id<ARTCancellable>)authHeaders:(id<ARTCancellable>(^)(NSDictionary *))cb {
-
-    switch (self.authMethod) {
-        case ARTAuthMethodBasic:
-            return cb(@{@"Authorization": self.basicCredentials});
-            return nil;
-        case ARTAuthMethodToken:
-            return [self authToken:^(ARTAuthToken *token) {
-                return cb(@{@"Authorization": [NSString stringWithFormat:@"Bearer %@", token.id]});
-            }];
-        default:
-            NSAssert(NO, @"Invalid auth method");
-            return nil;
+    if(useBasic || self.authMethod == ARTAuthMethodBasic) {
+        return cb(@{@"Authorization": self.basicCredentials});
+    }
+    else if(self.authMethod == ARTAuthMethodToken) {
+        return [self authToken:^(ARTAuthToken *token) {
+            return cb(@{@"Authorization": [NSString stringWithFormat:@"Bearer %@", token.idB64]});
+        }];
+    }
+    else {
+        NSAssert(NO, @"Invalid auth method");
+        return nil;
     }
 }
 
@@ -228,7 +270,7 @@
             return cb(@{@"key_id":self.keyId, @"key_value":self.keyValue});
         case ARTAuthMethodToken:
             return [self authToken:^(ARTAuthToken *token) {
-                return cb(@{@"access_token": token.id});
+                return cb(@{@"access_token": token.idB64});
             }];
         default:
             NSAssert(NO, @"Invalid auth method");
@@ -255,6 +297,7 @@
 
     if (!self.tokenRequest) {
         self.tokenRequest = self.authTokenCb(^(ARTAuthToken *token) {
+            NSLog(@"tokenauth cb");
             self.tokenRequest = nil;
             NSMutableArray *cbs = self.tokenCbs;
             self.tokenCbs = [NSMutableArray array];
@@ -273,39 +316,47 @@
     NSUInteger r2 = arc4random_uniform(100000000);
     return [NSString stringWithFormat:@"%08lu%08lu", (long)r1, (long)r2];
 }
-/* TODO
+
 + (ARTSignedTokenRequestCb)defaultSignedTokenRequestCallback:(ARTAuthOptions *)authOptions rest:(ARTRest *)rest {
-    NSString *keyId = authOptions.keyId;
-    NSString *keyValue = authOptions.keyValue;
-    BOOL queryTime = authOptions.queryTime;
+    
+    //TODO should be block i think.
+     NSString *keyId = authOptions.keyId;
+     NSString *keyValue = authOptions.keyValue;
+     BOOL queryTime = authOptions.queryTime;
+    
+    NSString * theClientId = authOptions.clientId;
 
     __weak ARTRest *weakRest = rest;
 
     NSAssert(keyId && keyValue, @"keyId and keyValue must be set when using the default token auth");
 
-    return ^(ARTAuthTokenParams *params, void(^cb)(NSString *)) {
-        if (params.id && ![params.id isEqualToString:keyId]) {
-            NSLog(@"Params id is not equal to authOptions id");
+    return ^id<ARTCancellable>(ARTAuthTokenParams *params, void(^cb)(ARTAuthTokenParams *)) {
+        
+        
+    
+        if (params.keyName && ![params.keyName isEqualToString:keyId]) {
+            [ARTLog error:[NSString stringWithFormat:@"ARTAuth params keyname %@ is not equal to authOptions id %@", params.keyName, keyId]];
             cb(nil);
-            return;
+            return nil;
         }
-
+//TODO RM reqObj I think.
         NSMutableDictionary *reqObj = [NSMutableDictionary dictionary];
-        reqObj[@"id"] = keyId;
-        NSString *ttlText = @"";
-        if (params.ttl) {
-            ttlText = [NSString stringWithFormat:@"%lld", params.ttl];
-            reqObj[@"ttl"] = [NSNumber numberWithLongLong:params.ttl];
-        }
+        reqObj[@"key_name"] = keyId;
+        NSString *ttlText = @"3600";
+        int64_t ttl = 3600;
+//        if (params.ttl) {
+  //          ttlText = [NSString stringWithFormat:@"%lld", params.ttl];
+    //        reqObj[@"ttl"] = [NSNumber numberWithLongLong:params.ttl];
+    //    }
 
-        NSString *capability = params.capability ? params.capability : @"";
-        reqObj[@"capability"] = capability;
+        NSString *capability = params.capability ? params.capability : @"{\"*\":[\"*\"]}";
+      //  reqObj[@"capability"] = capability;
 
         NSString *clientId = params.clientId ? params.clientId : @"";
-        reqObj[@"client_id"] = clientId;
+      //  reqObj[@"client_id"] = clientId;
 
         NSString *nonce = params.nonce ? params.nonce : [ARTAuth random];
-        reqObj[@"nonce"] = nonce;
+      //  reqObj[@"nonce"] = nonce;
 
         void (^timeCb)(void(^)(int64_t)) = nil;
         if (!params.timestamp) {
@@ -315,7 +366,7 @@
                     if (strongRest) {
                         [strongRest time:^(ARTStatus status, NSDate *time) {
                             if (status == ARTStatusOk) {
-                                cb((int64_t)([time timeIntervalSince1970] * 1000.0));
+                                cb((int64_t)([time timeIntervalSince1970]));
                             } else {
                                 cb(0);
                             }
@@ -326,7 +377,7 @@
                 };
             } else {
                 timeCb = ^(void(^cb)(int64_t)) {
-                    cb((int64_t)([[NSDate date] timeIntervalSince1970] * 1000.0));
+                    cb((int64_t)([[NSDate date] timeIntervalSince1970] ));
                 };
             }
         } else {
@@ -340,14 +391,23 @@
             if ([ic isCancelled]) {
                 return;
             }
+            
+            
 
-            NSString *signText = [NSString stringWithFormat:@"%@\n%@\n%@\n%@\n%lld\n%@\n", keyId, ttlText, capability, clientId, timestamp, nonce];
+            NSString *signText = [NSString stringWithFormat:@"%@\n%@\n%@\n%@\n%lld\n%@\n", keyId, ttlText, capability, theClientId, timestamp, nonce];
+            NSLog(@"signtext is %@", signText);
+           // reqObj[@"timestamp"] = [NSString stringWithFormat:@"%lld", timestamp];
+            NSString * theMac =params.mac ? params.mac : [ARTAuth hmacForData:[signText dataUsingEncoding:NSUTF8StringEncoding] key:[keyValue dataUsingEncoding:NSUTF8StringEncoding]];
+           // reqObj[@"mac"] = theMac;
+            
+         //   NSLog(@"REC IS %@", reqObj);
 
-            reqObj[@"mac"] = params.mac ? params.mac : [ARTAuth hmacForData:[signText dataUsingEncoding:NSUTF8StringEncoding] key:[keyValue dataUsingEncoding:NSUTF8StringEncoding]];
-
-            NSString *signedReq = [[NSString alloc] initWithData:[NSJSONSerialization dataWithJSONObject:reqObj options:0 error:nil] encoding:NSUTF8StringEncoding];
-
-            cb(signedReq);
+          //  NSString *signedReq = [[NSString alloc] initWithData:[NSJSONSerialization dataWithJSONObject:reqObj options:0 error:nil] encoding:NSUTF8StringEncoding];
+            
+            NSLog(@"TODO SET TTL ACCORDINGLY, current default to 3600");
+            ARTAuthTokenParams * p = [[ARTAuthTokenParams alloc] initWithId:keyId ttl:ttl capability:capability clientId:theClientId timestamp:timestamp nonce:nonce mac:theMac];
+            
+            cb(p);
         });
 
         return ic;
@@ -363,11 +423,18 @@
     unsigned char hmac[CC_SHA256_DIGEST_LENGTH];
 
     CCHmac(kCCHmacAlgSHA256, cKey, keyLen, cData, dataLen, hmac);
-
     NSData *mac = [[NSData alloc] initWithBytes:hmac length:sizeof(hmac)];
-
-    return [mac ablyBase64Encode];
+    NSString * str = [ARTAuth toBase64:mac];
+    return str;
 }
- */
+
++(NSString *) toBase64:(NSData *) input {
+    ARTPayload * p = [[ARTPayload alloc] initWithPayload:input encoding:@"base64"];
+    ARTPayload * output = nil;
+    ARTBase64PayloadEncoder * e = [ARTBase64PayloadEncoder instance];
+    [e encode:p output:&output];
+    return output.payload;
+}
+ 
 
 @end

@@ -14,6 +14,8 @@
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
 #import "ARTNSDate+ARTUtil.h"
 #import "ARTLog.h"
+#import "ARTAuth.h"
+
 @interface ARTJsonEncoder ()
 
 - (ARTMessage *)messageFromDictionary:(NSDictionary *)input;
@@ -97,6 +99,10 @@
     return [self protocolMessageFromDictionary:[self decodeDictionary:data]];
 }
 
+- (ARTAuthToken *) decodeAccessToken:(NSData *) data {
+    return [self tokenFromDictionary:[self decodeDictionary:data]];
+}
+
 - (NSDate *)decodeTime:(NSData *)data {
     NSArray *resp = [self decodeArray:data];
     if (resp && resp.count == 1) {
@@ -178,6 +184,8 @@
             return 4;
     }
 }
+
+
 
 - (ARTPresenceMessage *)presenceMessageFromDictionary:(NSDictionary *)input {
     if (![input isKindOfClass:[NSDictionary class]]) {
@@ -305,6 +313,26 @@
         output[@"presence"] = [self presenceMessagesToArray:message.presence];
     }
     return output;
+}
+
+-(ARTAuthToken *) tokenFromDictionary:(NSDictionary *) input {
+    NSLog(@"building token %@", input );
+    if (![input isKindOfClass:[NSDictionary class]]) {
+        NSLog(@"not a dictionary");
+        return nil;
+    }
+    
+    NSString * theId = [input artString:@"id"];
+    NSDictionary * topLevel = [input valueForKey:@"access_token"];
+    ARTAuthToken * tok = [[ARTAuthToken alloc] initWithId: [topLevel artString:@"id"]
+                                                  expires: [[topLevel artNumber:@"expires"] longLongValue]
+                                                 issuedAt: [[topLevel artNumber:@"issued_at"] longLongValue]
+                                               capability: [topLevel artString:@"capability"]
+                                                 clientId: [topLevel artString:@"clientId"]];
+    
+    
+    return tok;
+    
 }
 
 - (ARTProtocolMessage *)protocolMessageFromDictionary:(NSDictionary *)input {
@@ -473,7 +501,6 @@
         [refused isKindOfClass:[NSNumber class]]) {
         return [[ARTStatsRequestCount alloc] initWithSucceeded:[succeeded doubleValue] failed:[failed doubleValue] refused:[refused doubleValue]];
     }
-    
     return nil;
 }
 
@@ -481,12 +508,10 @@
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
-
     NSString *encoding = [input objectForKey:@"encoding"];
     if (!encoding) {
         encoding = @"";
     }
-
     id data = [input objectForKey:@"data"];
     ARTPayload *payload = [ARTPayload payloadWithPayload:data encoding:encoding];
     ARTPayload *decoded = nil;

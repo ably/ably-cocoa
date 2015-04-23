@@ -16,74 +16,34 @@
 
 
 
-+(NSString *) getErrorsJson {
-    NSString * path =[[[NSBundle bundleForClass: [self class]] resourcePath] stringByAppendingString:@"/errors.json"];
+
++(NSString *) getFileByName:(NSString *) name {
+    NSString * path =[[[[NSBundle bundleForClass: [self class]] resourcePath] stringByAppendingString:@"/"] stringByAppendingString:name];
     
     return  [NSString stringWithContentsOfFile:path
-                                                  encoding:NSUTF8StringEncoding
-                                                     error:NULL];
+                                      encoding:NSUTF8StringEncoding
+                                         error:NULL];
+}
+
++(NSString *) getErrorsJson {
+    return [ARTTestUtil getFileByName:@"errors.json"];
 }
 
 +(NSString *) getCrypto256Json {
-    NSString * path =[[[NSBundle bundleForClass: [self class]] resourcePath] stringByAppendingString:@"/crypto-data-256.json"];
     
-    return  [NSString stringWithContentsOfFile:path
-                                      encoding:NSUTF8StringEncoding
-                                         error:NULL];
+   return [ARTTestUtil getFileByName:@"crypto-data-256.json"];
 }
 
 +(NSString *) getTestAppSetupJson {
-    NSString * path =[[[NSBundle bundleForClass: [self class]] resourcePath] stringByAppendingString:@"/test-app-setup.json"];
-    
-    return  [NSString stringWithContentsOfFile:path
-                                      encoding:NSUTF8StringEncoding
-                                         error:NULL];
+    return [ARTTestUtil getFileByName:@"test-app-setup.json"];
 }
 
-
 +(NSString *) getCrypto128Json {
-    NSString * path =[[[NSBundle bundleForClass: [self class]] resourcePath] stringByAppendingString:@"/crypto-data-128.json"];
-    return  [NSString stringWithContentsOfFile:path
-                                      encoding:NSUTF8StringEncoding
-                                         error:NULL];
+    return [ARTTestUtil getFileByName:@"crypto-data-128.json"];
 }
 
 +(void) setupApp:(ARTOptions *)options withAlteration:(TestAlteration) alt  appId:(NSString *) appId cb:(void (^)(ARTOptions *))cb
 {
-    /*
-    NSDictionary *capability = @{
-                                 @"cansubscribe:*":@[@"subscribe"],
-                                 @"canpublish:*":@[@"publish"],
-                                 @"canpublish:andpresence":@[@"presence",@"publish"]
-                                 };
-    
-    NSString *capabilityString = [[NSString alloc] initWithData:[NSJSONSerialization dataWithJSONObject:capability options:0 error:nil] encoding:NSUTF8StringEncoding];
-    
-    
-
-    
-    NSDictionary *appSpec = @{
-                              @"keys": @[
-                                      @{},
-                                      @{@"capability":capabilityString}
-                                      ],
-                              @"namespaces": @[
-                                      @{@"id": @"persisted", @"persisted":[NSNumber numberWithBool:YES]}
-                                      ],
-                              @"channels": @[
-                                      @{
-                                          @"name": @"persisted:presence_fixtures",
-                                          @"presence": @[
-                                                  @{@"clientId": @"client_bool", @"data": @"true"},
-                                                  @{@"clientId": @"client_int", @"data":@"24"},
-                                                  @{@"clientId": @"client_string", @"data":@"This is a string clientData payload"},
-                                                  @{@"clientId": @"client_json", @"data":@"{\"test\":\"This is a JSONObject clientData payload\"}"}
-                                                  ]
-                                          }
-                                      ]
-                              };
-    
-    */
     
     NSString * str = [ARTTestUtil getTestAppSetupJson];
     NSData *data = [str dataUsingEncoding:NSUTF8StringEncoding];
@@ -134,7 +94,6 @@
             return;
         } else {
             NSDictionary *response = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-            NSLog(@"res is %@", response);
             if (response) {
                 NSDictionary *key = response[@"keys"][0];
                 keyId = [NSString stringWithFormat:@"%@.%@", response[@"appId"], key[@"id"]];

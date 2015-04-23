@@ -177,7 +177,7 @@
         return ARTStatusError;
     }
     else {
-        [ARTLog warn:[NSString stringWithFormat:@"ARTBase64PayloadEncoder cant decode a %@", payload.encoding]];
+        [ARTLog debug:[NSString stringWithFormat:@"ARTBase64PayloadEncoder cant decode a %@", payload.encoding]];
     }
     *output = payload;
     return ARTStatusOk;

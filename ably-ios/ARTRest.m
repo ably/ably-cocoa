@@ -24,6 +24,9 @@
 
 #import "ARTLog.h"
 
+
+
+
 // TODO base accept headers on encoders
 
 @interface ARTRestChannel ()
@@ -48,7 +51,7 @@
 @property (readonly, strong, nonatomic) NSDictionary *encoders;
 @property (readonly, strong, nonatomic) NSString *defaultEncoding;
 
-- (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method relUrl:(NSString *)relUrl headers:(NSDictionary *)headers body:(NSData *)body authenticated:(BOOL)authenticated cb:(ARTHttpCb)cb;
+- (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method relUrl:(NSString *)relUrl headers:(NSDictionary *)headers body:(NSData *)body authenticated:(ARTAuthentication)authenticated cb:(ARTHttpCb)cb;
 
 - (NSDictionary *)withAcceptHeader:(NSDictionary *)headers;
 
@@ -85,11 +88,14 @@
     NSData *encodedMessage = [self.rest.defaultEncoder encodeMessage:message];
     NSDictionary *headers = @{@"Content-Type":self.rest.defaultEncoding};
     NSString *path = [NSString stringWithFormat:@"%@/messages", self.basePath];
-    return [self.rest post:path headers:headers body:encodedMessage authenticated:YES cb:^(ARTHttpResponse *response) {
+    return [self.rest post:path headers:headers body:encodedMessage authenticated:ARTAuthenticationOn cb:^(ARTHttpResponse *response) {
         ARTStatus status = response.status >= 200 && response.status < 300 ? ARTStatusOk : ARTStatusError;
         cb(status);
     }];
 }
+
+
+
 
 - (id<ARTCancellable>)publish:(id)payload cb:(ARTStatusCallback)cb {
     return [self publish:payload withName:nil cb:cb];
@@ -160,7 +166,6 @@
 - (instancetype)initWithOptions:(ARTOptions *)options {
     self = [super init];
     if (self) {
-        NSLog(@"WTFFFF");
         _http = [[ARTHttp alloc] init];
         _baseUrl = [options restUrl];
         _channels = [NSMutableDictionary dictionary];
@@ -168,10 +173,10 @@
 
         id<ARTEncoder> defaultEncoder = [[ARTJsonEncoder alloc] init];
         //msgpack not supported yet.
- //       id<ARTEncoder> msgpackEncoder  = [[ARTMsgPackEncoder alloc] init];
+        //id<ARTEncoder> msgpackEncoder  = [[ARTMsgPackEncoder alloc] init];
         _encoders = @{
             [defaultEncoder mimeType]: defaultEncoder,
-   //         [msgpackEncoder mimeType] : msgpackEncoder
+        //[msgpackEncoder mimeType] : msgpackEncoder
         };
         
         _defaultEncoding = [defaultEncoder mimeType];
@@ -179,9 +184,43 @@
     return self;
 }
 
+
+- (id<ARTCancellable>) token:(ARTAuthTokenParams *) params tokenCb:(void (^)(ARTAuthToken *)) cb {
+    NSString * keyPath = [NSString stringWithFormat:@"/keys/%@/requestToken",params.keyName];    
+    NSDictionary * paramsDict = [params asDictionary];
+    
+    NSData * dictData = [NSJSONSerialization dataWithJSONObject:paramsDict options:0 error:nil];
+    
+    NSDictionary *headers = @{@"Content-Type":self.defaultEncoding};
+    return [self post:keyPath headers:headers body:dictData authenticated:ARTAuthenticationUseBasic cb:^(ARTHttpResponse *response) {
+        
+        NSString * str = [[NSString alloc] initWithData:response.body encoding:NSUTF8StringEncoding];
+        NSLog(@"token response is %@", response.description);
+        NSLog(@"token response has %@", str);
+        
+        NSLog(@"anything else? %@", [NSJSONSerialization JSONObjectWithData:response.body options:0 error:nil]);
+        if(response.status == 201) {
+            NSLog(@"we have a successful token request");
+            
+            ARTAuthToken * token =[self.defaultEncoder decodeAccessToken:response.body];
+            NSLog(@"token %@, tokencap %@",token, token.capability);
+            cb(token);
+        }
+        else {
+
+            //TODO consider sending an error;
+            [ARTLog error:@"ARTRest: requestToken Error"];
+            cb(nil);
+            
+        }
+
+    }];
+}
 - (id<ARTCancellable>)time:(void (^)(ARTStatus, NSDate *))cb {
     return [self get:@"/time" authenticated:NO cb:^(ARTHttpResponse *response) {
         NSDate *date = nil;
+        
+        //TODO what status are ok
         if (response.status == 200) {
             date = [self.defaultEncoder decodeTime:response.body];
         }
@@ -220,19 +259,20 @@
     return channel;
 }
 
-- (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method relUrl:(NSString *)relUrl headers:(NSDictionary *)headers body:(NSData *)body authenticated:(BOOL)authenticated cb:(ARTHttpCb)cb {
+- (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method relUrl:(NSString *)relUrl headers:(NSDictionary *)headers body:(NSData *)body authenticated:(ARTAuthentication)authenticated cb:(ARTHttpCb)cb {
     NSURL *url = [self resolveUrl:relUrl];
     headers = [self withAcceptHeader:headers];
 
-    if (authenticated) {
-        return [self withAuthHeaders:^(NSDictionary *authHeaders) {
-            NSMutableDictionary *allHeaders = [NSMutableDictionary dictionary];
-            [allHeaders addEntriesFromDictionary:headers];
-            [allHeaders addEntriesFromDictionary:authHeaders];
-            return [self.http makeRequestWithMethod:method url:url headers:allHeaders body:body cb:cb];
-        }];
-    } else {
+    if (authenticated == ARTAuthenticationOff) {
         return [self.http makeRequestWithMethod:method url:url headers:headers body:body cb:cb];
+    } else {
+        return [self withAuthHeadersUseBasic:(authenticated == ARTAuthenticationUseBasic) cb:^(NSDictionary *authHeaders) {
+        NSMutableDictionary *allHeaders = [NSMutableDictionary dictionary];
+        [allHeaders addEntriesFromDictionary:headers];
+        [allHeaders addEntriesFromDictionary:authHeaders];
+        return [self.http makeRequestWithMethod:method url:url headers:allHeaders body:body cb:cb];
+    }];
+        
     }
 }
 
@@ -294,12 +334,17 @@
     return [self makeRequestWithMethod:@"GET" relUrl:relUrl headers:headers body:nil authenticated:authenticated cb:cb];
 }
 
-- (id<ARTCancellable>)post:(NSString *)relUrl headers:(NSDictionary *)headers body:(NSData *)body authenticated:(BOOL)authenticated cb:(ARTHttpCb)cb {
+- (id<ARTCancellable>)post:(NSString *)relUrl headers:(NSDictionary *)headers body:(NSData *)body authenticated:(ARTAuthentication)authenticated cb:(ARTHttpCb)cb {
     return [self makeRequestWithMethod:@"POST" relUrl:relUrl headers:headers body:body authenticated:authenticated cb:cb];
 }
 
-- (id<ARTCancellable>)withAuthHeaders:(id<ARTCancellable>(^)(NSDictionary *))cb {
-    return [self.auth authHeaders:cb];
+- (id<ARTCancellable>)withAuthHeaders:(id<ARTCancellable>(^)
+     (NSDictionary *))cb {
+    return [self withAuthHeadersUseBasic:false cb:cb];
+}
+
+- (id<ARTCancellable>)withAuthHeadersUseBasic:(BOOL) useBasic cb:(id<ARTCancellable>(^)(NSDictionary *))cb {
+    return [self.auth authHeadersUseBasic:useBasic cb:cb];
 }
 
 - (id<ARTCancellable>)withAuthParams:(id<ARTCancellable>(^)(NSDictionary *))cb {

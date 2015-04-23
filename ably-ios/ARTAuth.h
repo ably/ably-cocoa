@@ -15,7 +15,7 @@
 
 @interface ARTAuthToken : NSObject
 
-@property (readonly, strong, nonatomic) NSString *id;
+@property (readonly, strong, nonatomic) NSString *idB64;
 @property (readonly, assign, nonatomic) int64_t expires;
 @property (readonly, assign, nonatomic) int64_t issuedAt;
 @property (readonly, strong, nonatomic) NSString *capability;
@@ -31,7 +31,7 @@
 
 @interface ARTAuthTokenParams : NSObject
 
-@property (readonly, strong, nonatomic) NSString *id;
+@property (readonly, strong, nonatomic) NSString *keyName;
 @property (readonly, assign, nonatomic) int64_t ttl;
 @property (readonly, strong, nonatomic) NSString *capability;
 @property (readonly, strong, nonatomic) NSString *clientId;
@@ -39,16 +39,18 @@
 @property (readonly, strong, nonatomic) NSString *nonce;
 @property (readonly, strong, nonatomic) NSString *mac;
 
+
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
 - (instancetype)initWithId:(NSString *)id ttl:(int64_t)ttl capability:(NSString *)capability clientId:(NSString *)clientId timestamp:(int64_t)timestamp nonce:(NSString *)nonce mac:(NSString *)mac;
 
 + (instancetype)authTokenParamsWithId:(NSString *)id ttl:(int64_t)ttl capability:(NSString *)capability clientId:(NSString *)clientId timestamp:(int64_t)timestamp nonce:(NSString *)nonce mac:(NSString *)mac;
 
+-(NSDictionary *) asDictionary;
 @end
 
 typedef id<ARTCancellable>(^ARTAuthCb)(void(^continuation)(ARTAuthToken *));
-typedef id<ARTCancellable>(^ARTSignedTokenRequestCb)(ARTAuthTokenParams *tokenParams, void(^continuation)(NSString *));
+typedef id<ARTCancellable>(^ARTSignedTokenRequestCb)(ARTAuthTokenParams *tokenParams, void(^continuation)(ARTAuthTokenParams *));
 typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
     ARTAuthMethodBasic,
     ARTAuthMethodToken
@@ -66,6 +68,8 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 @property (readwrite, strong, nonatomic) NSDictionary *authHeaders;
 @property (readwrite, strong, nonatomic) NSString *clientId;
 @property (readwrite, assign, nonatomic) BOOL queryTime;
+@property (readwrite, assign, nonatomic) BOOL useTokenAuth;
+
 
 - (instancetype)init;
 - (instancetype)initWithKey:(NSString *)key;
@@ -81,9 +85,13 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 
 - (instancetype)initWithRest:(ARTRest *)rest options:(ARTAuthOptions *)options;
 
-- (id<ARTCancellable>)authHeaders:(id<ARTCancellable>(^)(NSDictionary *))cb;
+
+- (ARTAuthMethod) getAuthMethod;
+- (id<ARTCancellable>)authHeadersUseBasic:(BOOL)useBasic cb:(id<ARTCancellable>(^)(NSDictionary *))cb;
 - (id<ARTCancellable>)authParams:(id<ARTCancellable>(^)(NSDictionary *))cb;
 - (id<ARTCancellable>)authToken:(id<ARTCancellable>(^)(ARTAuthToken *))cb;
 - (id<ARTCancellable>)authTokenForceReauth:(BOOL)force cb:(id<ARTCancellable>(^)(ARTAuthToken *))cb;
+
++(NSString *) toBase64:(NSData *) input;
 
 @end
