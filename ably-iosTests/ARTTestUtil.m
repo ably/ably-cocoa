@@ -27,37 +27,42 @@
 +(NSString *) getFileByName:(NSString *) name {
     NSString * path =[[[[NSBundle bundleForClass: [self class]] resourcePath] stringByAppendingString:@"/"] stringByAppendingString:name];
     
+    NSLog(@"using path %@", path);
     return  [NSString stringWithContentsOfFile:path
                                       encoding:NSUTF8StringEncoding
                                          error:NULL];
 }
 
 +(NSString *) getErrorsJson {
-    return [ARTTestUtil getFileByName:@"errors.json"];
+    return [ARTTestUtil getFileByName:@"ably-common/test-resources/errors.json"];
 }
 
 +(NSString *) getCrypto256Json {
     
-   return [ARTTestUtil getFileByName:@"crypto-data-256.json"];
+   return [ARTTestUtil getFileByName:@"ably-common/test-resources/crypto-data-256.json"];
 }
 
 +(NSString *) getTestAppSetupJson {
-    return [ARTTestUtil getFileByName:@"test-app-setup.json"];
+    return [ARTTestUtil getFileByName:@"ably-common/test-resources/test-app-setup.json"];
 }
 
 +(NSString *) getCrypto128Json {
-    return [ARTTestUtil getFileByName:@"crypto-data-128.json"];
+    return [ARTTestUtil getFileByName:@"ably-common/test-resources/crypto-data-128.json"];
 }
 
 +(void) setupApp:(ARTOptions *)options withAlteration:(TestAlteration) alt  appId:(NSString *) appId cb:(void (^)(ARTOptions *))cb
 {
     
     NSString * str = [ARTTestUtil getTestAppSetupJson];
+    NSLog(@"contents of file is %@", str);
     NSData *data = [str dataUsingEncoding:NSUTF8StringEncoding];
     NSDictionary * topLevel =[NSJSONSerialization JSONObjectWithData:data  options:NSJSONReadingMutableContainers error:nil];
     
     NSDictionary * d = [topLevel objectForKey:@"post_apps"];
-
+    NSLog(@"data is %@", topLevel);
+    if(d == nil) {
+        NSLog(@"ERRORRR POST APPS FUCKED");
+    }
     NSData *appSpecData = [NSJSONSerialization dataWithJSONObject:d options:0 error:nil];
     NSLog(@" setupApp: %@", [[NSString alloc] initWithData:appSpecData encoding:NSUTF8StringEncoding]);
     
