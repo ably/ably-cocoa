@@ -18,7 +18,6 @@
 
 
 +(ARTCipherPayloadEncoder *) getTestCipherEncoder {
-    NSLog(@"TODO get cipher");
     ARTCipherPayloadEncoder * e = nil;
     return e;
 }
@@ -26,8 +25,6 @@
 
 +(NSString *) getFileByName:(NSString *) name {
     NSString * path =[[[[NSBundle bundleForClass: [self class]] resourcePath] stringByAppendingString:@"/"] stringByAppendingString:name];
-    
-    NSLog(@"using path %@", path);
     return  [NSString stringWithContentsOfFile:path
                                       encoding:NSUTF8StringEncoding
                                          error:NULL];
@@ -52,14 +49,11 @@
 
 +(void) setupApp:(ARTOptions *)options withAlteration:(TestAlteration) alt  appId:(NSString *) appId cb:(void (^)(ARTOptions *))cb
 {
-    
     NSString * str = [ARTTestUtil getTestAppSetupJson];
-    NSLog(@"contents of file is %@", str);
     NSData *data = [str dataUsingEncoding:NSUTF8StringEncoding];
     NSDictionary * topLevel =[NSJSONSerialization JSONObjectWithData:data  options:NSJSONReadingMutableContainers error:nil];
     
     NSDictionary * d = [topLevel objectForKey:@"post_apps"];
-    NSLog(@"data is %@", topLevel);
     if(d == nil) {
         NSLog(@"ERRORRR POST APPS FUCKED");
     }
@@ -107,7 +101,6 @@
         } else {
             NSDictionary *response = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
             if (response) {
-                NSLog(@"keys arttest is %@", response);
                 NSDictionary *key = response[@"keys"][(alt == TestAlterationRestrictCapability ? 1 :0)];
                 keyId = [NSString stringWithFormat:@"%@.%@", response[@"appId"], key[@"id"]];
                 keyValue = key[@"value"];

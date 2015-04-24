@@ -183,9 +183,6 @@
         *output = payload;
         return ARTStatusError;
     }
-    else {
-        [ARTLog debug:[NSString stringWithFormat:@"ARTBase64PayloadEncoder cant decode a %@", payload.encoding]];
-    }
     *output = payload;
     return ARTStatusOk;
 }
@@ -221,9 +218,6 @@
             }
         }
         return ARTStatusError;
-    }
-    else {
-        [ARTLog warn:[NSString stringWithFormat:@"ARTUtf8PayloadEncoder cant decode a %@", payload.encoding]];
     }
     return ARTStatusOk;
 }
@@ -290,9 +284,6 @@
         }
         return ARTStatusError;
     }
-    else {
-        [ARTLog debug:[NSString stringWithFormat:@"ARTJsonPayloadEncoder cant decode a %@", payload.encoding]];
-    }
     return ARTStatusOk;
 }
 
@@ -345,9 +336,6 @@
             [ARTLog debug:@"cipher payload decoded successfully"];
         }
         return status;
-    }
-    else {
-         [ARTLog warn:[NSString stringWithFormat:@"ARTCipherPayloadEncoder cant decode a %@", payload.encoding]];
     }
     return ARTStatusOk;
 }
