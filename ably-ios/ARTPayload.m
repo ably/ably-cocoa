@@ -132,6 +132,14 @@
     return instance;
 }
 
++(NSString *) toBase64:(NSData *) input {
+    ARTPayload * p = [[ARTPayload alloc] initWithPayload:input encoding:@"base64"];
+    ARTPayload * output = nil;
+    ARTBase64PayloadEncoder * e = [ARTBase64PayloadEncoder instance];
+    [e encode:p output:&output];
+    return output.payload;
+}
+
 +(NSString *) getName {
     return @"base64";
 }
@@ -168,8 +176,7 @@
         NSData *decoded = [[NSData alloc] initWithBase64EncodedString:payload.payload options:0];
         if (decoded) {
             *output = [ARTPayload payloadWithPayload:decoded encoding:[payload.encoding artRemoveLastEncoding]];
-            ARTPayload * p = *output;
-            [ARTLog debug:[NSString stringWithFormat:@"base64 payload decoded successfully %@", p.encoding]];
+            [ARTLog debug:[NSString stringWithFormat:@"ARTBase64PayloadEncoder payload decoded successfully: %@", payload.encoding]];
             return ARTStatusOk;
         }
         // Set the output to be the original payload
@@ -284,7 +291,7 @@
         return ARTStatusError;
     }
     else {
-        [ARTLog warn:[NSString stringWithFormat:@"ARTJsonPayloadEncoder cant decode a %@", payload.encoding]];
+        [ARTLog debug:[NSString stringWithFormat:@"ARTJsonPayloadEncoder cant decode a %@", payload.encoding]];
     }
     return ARTStatusOk;
 }

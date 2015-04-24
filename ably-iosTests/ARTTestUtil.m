@@ -12,9 +12,16 @@
 #import "ARTRealtime.h"
 #import "ARTLog.h"
 #import <XCTest/XCTest.h>
+#import "ARTPayload.h"
+
 @implementation ARTTestUtil
 
 
++(ARTCipherPayloadEncoder *) getTestCipherEncoder {
+    NSLog(@"TODO get cipher");
+    ARTCipherPayloadEncoder * e = nil;
+    return e;
+}
 
 
 +(NSString *) getFileByName:(NSString *) name {
@@ -95,7 +102,8 @@
         } else {
             NSDictionary *response = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
             if (response) {
-                NSDictionary *key = response[@"keys"][0];
+                NSLog(@"keys arttest is %@", response);
+                NSDictionary *key = response[@"keys"][(alt == TestAlterationRestrictCapability ? 1 :0)];
                 keyId = [NSString stringWithFormat:@"%@.%@", response[@"appId"], key[@"id"]];
                 keyValue = key[@"value"];
                 capability = key[@"capability"];

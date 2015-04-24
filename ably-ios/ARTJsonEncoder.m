@@ -192,7 +192,17 @@
         return nil;
     }
     ARTPresenceMessage *message = [[ARTPresenceMessage alloc] init];
-    message.id = [input artString:@"id"];
+    id theId = [input artString:@"id"];
+    
+    NSString * encoding = [input artString:@"encoding"];
+    if(encoding == nil) {
+        message.id = theId;
+    }
+    else {
+        //not sure if theId needs more decoding
+        message.id = theId;
+    }
+    
     message.clientId = [input artString:@"clientId"];
     message.payload = [self payloadFromDictionary:input];
     message.timestamp = [input artDate:@"timestamp"];

@@ -46,7 +46,7 @@
 @interface ARTBase64PayloadEncoder : NSObject <ARTPayloadEncoder>
 
 + (instancetype)instance;
-
++(NSString *) toBase64:(NSData *) input;
 @end
 
 @interface ARTUtf8PayloadEncoder : NSObject <ARTPayloadEncoder>

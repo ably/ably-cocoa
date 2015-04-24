@@ -12,7 +12,7 @@
 @class ARTRestChannel;
 @class XCTestExpectation;
 @class ARTRealtimeChannel;
-
+@class ARTCipherPayloadEncoder;
 @interface ARTTestUtil : NSObject
 
 
@@ -23,12 +23,15 @@ typedef NS_ENUM(NSUInteger, TestAlteration) {
     TestAlterationNone,
     TestAlterationBadKeyId,
     TestAlterationBadKeyValue,
-    TestAlterationBadWsHost
+    TestAlterationBadWsHost,
+    TestAlterationRestrictCapability
 };
 
 
++(ARTCipherPayloadEncoder *) getTestCipherEncoder;
+
 + (void)setupApp:(ARTOptions *)options cb:(void(^)(ARTOptions *options))cb;
-+(void) setupApp:(ARTOptions *)options withAlteration:(TestAlteration) alt cb:(void (^)(ARTOptions *))cb;
++ (void) setupApp:(ARTOptions *)options withAlteration:(TestAlteration) alt cb:(void (^)(ARTOptions *))cb;
 + (NSString *) restHost;
 + (NSString *) realtimeHost;
 + (float) timeout;

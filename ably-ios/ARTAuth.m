@@ -51,8 +51,7 @@
     if (self) {
         
         NSData * tokenIdData = [id dataUsingEncoding:NSUTF8StringEncoding];
-        NSString *base64Str = [ARTAuth toBase64:tokenIdData];
-        NSLog(@"so input is %@, and base64 is %@", id, base64Str);
+        NSString *base64Str = [ARTBase64PayloadEncoder toBase64:tokenIdData];
         _idB64 = base64Str;
         _expires = expires;
         _issuedAt = issuedAt;
@@ -350,7 +349,8 @@
     //        reqObj[@"ttl"] = [NSNumber numberWithLongLong:params.ttl];
     //    }
 
-        NSString *capability = params.capability ? params.capability : @"{\"*\":[\"*\"]}";
+        NSString *capability =authOptions.capability; //params.capability ? params.capability : @"{\"*\":[\"*\"]}";
+    
       //  reqObj[@"capability"] = capability;
 
         NSString *clientId = params.clientId ? params.clientId : @"";
@@ -425,17 +425,11 @@
 
     CCHmac(kCCHmacAlgSHA256, cKey, keyLen, cData, dataLen, hmac);
     NSData *mac = [[NSData alloc] initWithBytes:hmac length:sizeof(hmac)];
-    NSString * str = [ARTAuth toBase64:mac];
+    NSString * str = [ARTBase64PayloadEncoder toBase64:mac];
     return str;
 }
 
-+(NSString *) toBase64:(NSData *) input {
-    ARTPayload * p = [[ARTPayload alloc] initWithPayload:input encoding:@"base64"];
-    ARTPayload * output = nil;
-    ARTBase64PayloadEncoder * e = [ARTBase64PayloadEncoder instance];
-    [e encode:p output:&output];
-    return output.payload;
-}
+
  
 
 @end
