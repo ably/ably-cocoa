@@ -28,7 +28,6 @@
 		1C5DA0151A6E5FA400A2B7EF /* ably.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* ably.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1C6C18A31ADFDAB100AB79E4 /* ARTLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C6C18A11ADFDAB100AB79E4 /* ARTLog.h */; };
 		1C6C18A41ADFDAB100AB79E4 /* ARTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */; };
-		1C6C18A51ADFDAB100AB79E4 /* ARTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */; };
 		1C6C18A71ADFDDBA00AB79E4 /* ARTLogTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C6C18A61ADFDDBA00AB79E4 /* ARTLogTest.m */; };
 		1C8065051AE7C8FA00D49357 /* ARTPayload+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C8065041AE7C8FA00D49357 /* ARTPayload+Private.h */; };
 		1CA5E1C21AB72369006ADD70 /* ARTMsgPackEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CA5E1C01AB72369006ADD70 /* ARTMsgPackEncoder.h */; };
@@ -609,7 +608,6 @@
 				1C1E52EE1AB32EB9004A690F /* ARTRestCapabilityTest.m in Sources */,
 				1C1E52F01AB32EC7004A690F /* ARTRestChannelHistoryTest.m in Sources */,
 				1CC3D94F1AB6FECC0005BEB0 /* ARTRealtimeConnectFail.m in Sources */,
-				1C6C18A51ADFDAB100AB79E4 /* ARTLog.m in Sources */,
 				1CC3D9591AB701E50005BEB0 /* ARTRealtimePresenceTest.m in Sources */,
 				1CC3D9511AB6FF480005BEB0 /* ARTRealtimeCryptoTest.m in Sources */,
 				96E408361A38595F00087F77 /* ARTRealtimeAttachTest.m in Sources */,

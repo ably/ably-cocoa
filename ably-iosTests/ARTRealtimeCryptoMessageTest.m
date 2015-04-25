@@ -19,8 +19,8 @@
 
 - (void)setUp {
     [super setUp];
-    [ARTLog setLogLevel:ArtLogLevelDebug];
-    [ARTLog setLogCallback:nil];
+ //   [ARTLog setLogLevel:ArtLogLevelDebug];
+   // [ARTLog setLogCallback:nil];
     
     // Put setup code here. This method is called before the invocation of each test method in the class.
 }

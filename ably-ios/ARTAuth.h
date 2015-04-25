@@ -50,7 +50,7 @@
 @end
 
 typedef id<ARTCancellable>(^ARTAuthCb)(void(^continuation)(ARTAuthToken *));
-typedef id<ARTCancellable>(^ARTSignedTokenRequestCb)(ARTAuthTokenParams *tokenParams, void(^continuation)(ARTAuthTokenParams *));
+typedef id<ARTCancellable>(^ARTSignedTokenRequestCb)(ARTAuthTokenParams *, void(^continuation)(ARTAuthTokenParams *));
 typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
     ARTAuthMethodBasic,
     ARTAuthMethodToken

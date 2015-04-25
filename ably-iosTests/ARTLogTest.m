@@ -23,6 +23,7 @@
 
 -(void) tearDown {
     [ARTLog setLogCallback:nil];
+    [ARTLog setLogLevel:ArtLogLevelWarn];
 }
 
 - (void)testLogLevelToError {
@@ -75,7 +76,6 @@
     [ARTLog setLogLevel:ArtLogLevelNone];
     [ARTLog verbose:@"v"];
     [ARTLog debug:@"d"];
-
     [ARTLog info:@"i"];
     [ARTLog warn:@"w"];
     [ARTLog error:@"e"];

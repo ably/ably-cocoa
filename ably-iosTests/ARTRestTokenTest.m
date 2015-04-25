@@ -14,6 +14,7 @@
 #import "ARTRest.h"
 #import "ARTTestUtil.h"
 #import "ARTRest+Private.h"
+#import "ARTLog.h"
 @interface ARTRestTokenTest : XCTestCase {
     ARTRest *_rest;
 }
@@ -26,7 +27,9 @@
 
 @implementation ARTRestTokenTest
 
+
 - (void)setUp {
+    //[ARTLog setLogLevel:ArtLogLevelDebug];
     [super setUp];
 }
 
@@ -47,9 +50,6 @@
     }
     cb(_rest);
 }
-
-
-//consider test that auth method token is used in correct cases.
 
 - (void)testTokenSimple{
     XCTestExpectation *expectation = [self expectationWithDescription:@"testRestTimeBadHost"];

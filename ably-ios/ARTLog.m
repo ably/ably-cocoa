@@ -29,6 +29,7 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         logger = [[ARTLog alloc] init];
+        logger.logLevel = ArtLogLevelWarn;
     });
     return logger;
 }

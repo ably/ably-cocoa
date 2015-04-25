@@ -192,7 +192,7 @@
 
         
         
-        if (nil != options.keyValue /*&& nil == options.clientId*/) {
+        if (nil != options.keyValue) {
             [ARTLog debug:@"ARTAuth: setting up auth method Basic"];
             _basicCredentials = [NSString stringWithFormat:@"Basic %@", [[[NSString stringWithFormat:@"%@:%@", options.keyId, options.keyValue] dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0]];
             _keyId = options.keyId;
@@ -216,16 +216,13 @@
                 _authTokenCb = options.authCallback;
             } else {
                 [ARTLog debug:@"ARTAuth: signed token request."];
-            
-                __block ARTSignedTokenRequestCb strCb = (options.signedTokenRequestCallback ? options.signedTokenRequestCallback : [ARTAuth defaultSignedTokenRequestCallback:options rest:rest]);
+                ARTSignedTokenRequestCb strCb = (options.signedTokenRequestCallback ? options.signedTokenRequestCallback : [ARTAuth defaultSignedTokenRequestCallback:options rest:rest]);
                 __weak ARTRest * weakRest = self.rest;
                 _authTokenCb = ^(void(^cb)(ARTAuthToken *)) {
                     
                     ARTIndirectCancellable *ic = [[ARTIndirectCancellable alloc] init];
-                    ARTAuthTokenParams * tempParamsTODORM = nil;
 
-                    //TODO no need for the doubel params interface, just the cb please.
-                    id<ARTCancellable> c = strCb(tempParamsTODORM,^( ARTAuthTokenParams *params) {
+                    id<ARTCancellable> c = strCb(nil,^( ARTAuthTokenParams *params) {
                         [ARTLog debug:[NSString stringWithFormat:@"ARTAuth tokenRequest strCb got %@", [params asDictionary]]];
                         ARTRest * r = weakRest;
                         if(r) {
@@ -381,6 +378,7 @@
             
             cb(p);
         });
+
         return ic;
     };
 }
