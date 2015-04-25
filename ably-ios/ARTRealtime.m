@@ -957,7 +957,7 @@
 }
 
 - (void)onHeartbeat:(ARTProtocolMessage *)message {
-    [ARTLog info:@"ARTRealtime heartbeat received"];
+    [ARTLog verbose:@"ARTRealtime heartbeat received"];
 }
 
 - (void)onConnected:(ARTProtocolMessage *)message {

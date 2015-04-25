@@ -88,9 +88,8 @@
 - (BOOL)ccAlgorithm:(CCAlgorithm *)algorithm {
     if (NSOrderedSame == [self.algorithm compare:@"AES" options:NSCaseInsensitiveSearch]) {
         if ([self.ivSpec.iv length] != 16) {
-            NSLog(@"TODO hardocded 16 fucked my shit up %tu", [self.ivSpec.iv length]);
-            NSLog(@"why is this even here?");
-//            return NO;
+            [ARTLog error:[NSString stringWithFormat:@"ArtCrypto Error iv length is not 16: %d", (int)[self.ivSpec.iv length]]];
+            return NO;
         }
         *algorithm = kCCAlgorithmAES128;
     } else if (NSOrderedSame == [self.algorithm compare:@"DES" options:NSCaseInsensitiveSearch]) {

@@ -184,7 +184,7 @@
     return self;
 }
 
-
+//TODO send an artstatus
 - (id<ARTCancellable>) token:(ARTAuthTokenParams *) params tokenCb:(void (^)(ARTAuthToken *)) cb {
     NSString * keyPath = [NSString stringWithFormat:@"/keys/%@/requestToken",params.keyName];    
     NSDictionary * paramsDict = [params asDictionary];
@@ -195,25 +195,17 @@
     return [self post:keyPath headers:headers body:dictData authenticated:ARTAuthenticationUseBasic cb:^(ARTHttpResponse *response) {
         
         NSString * str = [[NSString alloc] initWithData:response.body encoding:NSUTF8StringEncoding];
-        NSLog(@"token response is %@", response.description);
-        NSLog(@"token response has %@", str);
-        
-        NSLog(@"anything else? %@", [NSJSONSerialization JSONObjectWithData:response.body options:0 error:nil]);
+        [ARTLog verbose:[NSString stringWithFormat:@"ARTRest token is %@", str]];
+
         if(response.status == 201) {
-            NSLog(@"we have a successful token request");
-            
             ARTAuthToken * token =[self.defaultEncoder decodeAccessToken:response.body];
-            NSLog(@"token %@, tokencap %@",token, token.capability);
             cb(token);
         }
         else {
-
-            //TODO consider sending an error;
             [ARTLog error:@"ARTRest: requestToken Error"];
             cb(nil);
             
         }
-
     }];
 }
 - (id<ARTCancellable>)time:(void (^)(ARTStatus, NSDate *))cb {

@@ -52,13 +52,9 @@
 //consider test that auth method token is used in correct cases.
 
 - (void)testTokenSimple{
-    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testRestTimeBadHost"];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"testRestTimeBadHost"];
 
- 
     [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
-     //   options.authOptions.keyValue = nil;
-     //   options.authOptions.clientId = nil;
-        
         options.authOptions.useTokenAuth = true;
         options.authOptions.clientId = @"testToken";
         ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
@@ -66,18 +62,14 @@
         ARTAuth * auth = rest.auth;
         ARTAuthMethod authMethod = [auth getAuthMethod];
         XCTAssertEqual(authMethod, ARTAuthMethodToken);
-      ARTRestChannel * c= [rest channel:@"getChannel"];
+        ARTRestChannel * c= [rest channel:@"getChannel"];
         [c publish:@"something" cb:^(ARTStatus status) {
             XCTAssertEqual(status, ARTStatusOk);
-            NSLog(@"publish worked");
             [expectation fulfill];
            
         }];
-        
-
-        
-    
     }];
+    
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 /*

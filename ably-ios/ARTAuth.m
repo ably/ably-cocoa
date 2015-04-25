@@ -199,7 +199,7 @@
             _keyValue = options.keyValue;
         }
         else {
-            [ARTLog warn:@"ARTAuth Error: cannot set up basic auth without a value keyValue. "];
+            [ARTLog warn:@"ARTAuth Error: cannot set up basic auth without a valid ArtAuthOptions keyValue. "];
         }
     
         if(options.useTokenAuth) {
@@ -297,7 +297,6 @@
 
     if (!self.tokenRequest) {
         self.tokenRequest = self.authTokenCb(^(ARTAuthToken *token) {
-            NSLog(@"tokenauth cb");
             self.tokenRequest = nil;
             NSMutableArray *cbs = self.tokenCbs;
             self.tokenCbs = [NSMutableArray array];
@@ -319,11 +318,9 @@
 
 + (ARTSignedTokenRequestCb)defaultSignedTokenRequestCallback:(ARTAuthOptions *)authOptions rest:(ARTRest *)rest {
     
-    //TODO should be block i think.
-     NSString *keyId = authOptions.keyId;
-     NSString *keyValue = authOptions.keyValue;
-     BOOL queryTime = authOptions.queryTime;
-    
+    NSString *keyId = authOptions.keyId;
+    NSString *keyValue = authOptions.keyValue;
+    BOOL queryTime = authOptions.queryTime;
     NSString * theClientId = authOptions.clientId;
 
     __weak ARTRest *weakRest = rest;
@@ -331,33 +328,18 @@
     NSAssert(keyId && keyValue, @"keyId and keyValue must be set when using the default token auth");
 
     return ^id<ARTCancellable>(ARTAuthTokenParams *params, void(^cb)(ARTAuthTokenParams *)) {
-        
-        
-    
+
         if (params.keyName && ![params.keyName isEqualToString:keyId]) {
             [ARTLog error:[NSString stringWithFormat:@"ARTAuth params keyname %@ is not equal to authOptions id %@", params.keyName, keyId]];
             cb(nil);
             return nil;
         }
-//TODO RM reqObj I think.
-        NSMutableDictionary *reqObj = [NSMutableDictionary dictionary];
-        reqObj[@"key_name"] = keyId;
-        NSString *ttlText = @"3600000";
-        int64_t ttl = 3600000;
-//        if (params.ttl) {
-  //          ttlText = [NSString stringWithFormat:@"%lld", params.ttl];
-    //        reqObj[@"ttl"] = [NSNumber numberWithLongLong:params.ttl];
-    //    }
 
-        NSString *capability =authOptions.capability; //params.capability ? params.capability : @"{\"*\":[\"*\"]}";
-    
-      //  reqObj[@"capability"] = capability;
-
-        NSString *clientId = params.clientId ? params.clientId : @"";
-      //  reqObj[@"client_id"] = clientId;
+        int64_t ttl =params.ttl ? params.ttl :  3600000;
+        NSString *ttlText = [NSString stringWithFormat:@"%lld", ttl];
+        NSString *capability =authOptions.capability;
 
         NSString *nonce = params.nonce ? params.nonce : [ARTAuth random];
-      //  reqObj[@"nonce"] = nonce;
 
         void (^timeCb)(void(^)(int64_t)) = nil;
         if (!params.timestamp) {
@@ -392,25 +374,13 @@
             if ([ic isCancelled]) {
                 return;
             }
-            
-            
 
             NSString *signText = [NSString stringWithFormat:@"%@\n%@\n%@\n%@\n%lld\n%@\n", keyId, ttlText, capability, theClientId, timestamp, nonce];
-            NSLog(@"signtext is %@", signText);
-           // reqObj[@"timestamp"] = [NSString stringWithFormat:@"%lld", timestamp];
             NSString * theMac =params.mac ? params.mac : [ARTAuth hmacForData:[signText dataUsingEncoding:NSUTF8StringEncoding] key:[keyValue dataUsingEncoding:NSUTF8StringEncoding]];
-           // reqObj[@"mac"] = theMac;
-            
-         //   NSLog(@"REC IS %@", reqObj);
-
-          //  NSString *signedReq = [[NSString alloc] initWithData:[NSJSONSerialization dataWithJSONObject:reqObj options:0 error:nil] encoding:NSUTF8StringEncoding];
-            
-            NSLog(@"TODO SET TTL ACCORDINGLY, current default to 3600");
             ARTAuthTokenParams * p = [[ARTAuthTokenParams alloc] initWithId:keyId ttl:ttl capability:capability clientId:theClientId timestamp:timestamp nonce:nonce mac:theMac];
             
             cb(p);
         });
-
         return ic;
     };
 }

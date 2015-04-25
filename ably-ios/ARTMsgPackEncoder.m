@@ -70,6 +70,10 @@
     return @"application/msgpack";
 }
 
+
+-(ARTAuthToken *) decodeAccessToken:(NSData *)data {
+    return nil;
+}
 - (ARTMessage *)decodeMessage:(NSData *)data {
     return [self messageFromDictionary:[self decodeDictionary:data]];
 }

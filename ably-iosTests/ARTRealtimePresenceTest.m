@@ -102,7 +102,6 @@
 
 
 //TODO this is probably too wordy.
-//enter_simple
 - (void)testEnterSimple {
     
     NSString * channelName = @"presTest";
@@ -211,7 +210,6 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-//enter_leave_simple
 - (void)testEnterLeaveSimple {
     NSString * channelName = @"testEnterLeaveSimple";
     NSString * presenceEnter = @"client_has_entered";
@@ -250,7 +248,6 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-//enter_enter_simple
 -(void) testEnterEnter
 {
     NSString * channelName = @"testEnterLeaveSimple";
@@ -287,8 +284,6 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-
-//enter_update_simple
 -(void) testEnterUpdateSimple
 {
     NSString * channelName = @"testEnterLeaveSimple";
@@ -324,6 +319,7 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
+
 -(void) testUpdateNull
 {
     NSString * channelName = @"testEnterLeaveSimple";
@@ -359,7 +355,6 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-//enter_leave_nodata
 -(void) testEnterLeaveWithoutData {
     NSString * channelName = @"testEnterLeaveSimple";
     NSString * presenceEnter = @"client_has_entered";
@@ -397,7 +392,6 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-//update_noenter
 -(void) testUpdateNoEnter
 {
     NSString * update = @"update_message";
@@ -431,7 +425,7 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
-//enter_leave_nodata
+
 -(void) testEnterLeaveNoData
 {
     NSString * enter = @"enter";
@@ -468,7 +462,6 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-//realtime_get_simple
 -(void) testEnterAndGet
 {
     NSString * enter = @"enter";
@@ -511,7 +504,6 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-//realtime_get_leave
 -(void) testEnterLeaveAndGet
 {
     NSString * enter = @"enter";

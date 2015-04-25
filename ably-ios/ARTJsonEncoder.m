@@ -164,7 +164,7 @@
         case 4:
             return ARTPresenceMessageUpdate;
     }
-    NSLog(@"error. enum is probably not up to date");
+    [ARTLog error:[NSString stringWithFormat:@"ARTJsonEncoder invalid ARTPresenceMessage action %d", action]];
     return ArtPresenceMessageAbsent;
     
 }
@@ -202,7 +202,6 @@
         //not sure if theId needs more decoding
         message.id = theId;
     }
-    
     message.clientId = [input artString:@"clientId"];
     message.payload = [self payloadFromDictionary:input];
     message.timestamp = [input artDate:@"timestamp"];
@@ -326,20 +325,15 @@
 }
 
 -(ARTAuthToken *) tokenFromDictionary:(NSDictionary *) input {
-    NSLog(@"building token %@", input );
     if (![input isKindOfClass:[NSDictionary class]]) {
-        NSLog(@"not a dictionary");
         return nil;
     }
-    
-//    NSDictionary * topLevel = [input valueForKey:@"access_token"];
-    ARTAuthToken * tok = [[ARTAuthToken alloc] initWithId: [input artString:@"token"]
-                                                  expires: [[input artNumber:@"expires"] longLongValue]
-                                                 issuedAt: [[input artNumber:@"issued"] longLongValue]
-                                               capability: [input artString:@"capability"]
-                                                 clientId: [input artString:@"clientId"]];
-    
-    
+    ARTAuthToken * tok = [[ARTAuthToken alloc]
+                          initWithId: [input artString:@"token"]
+                             expires: [[input artNumber:@"expires"] longLongValue]
+                            issuedAt: [[input artNumber:@"issued"] longLongValue]
+                          capability: [input artString:@"capability"]
+                            clientId: [input artString:@"clientId"]];
     return tok;
     
 }
@@ -352,7 +346,6 @@
     ARTProtocolMessage *message = [[ARTProtocolMessage alloc] init];
     message.action = (ARTProtocolMessageAction)[[input artNumber:@"action"] intValue];
     message.count = [[input artNumber:@"count"] intValue];
-    // TODO: ERROR, what to do?
     message.channel = [input artString:@"channel"];
     message.channelSerial = [input artString:@"channelSerial"];
     message.connectionId = [input artString:@"connectionId"];

@@ -54,11 +54,8 @@
     NSDictionary * topLevel =[NSJSONSerialization JSONObjectWithData:data  options:NSJSONReadingMutableContainers error:nil];
     
     NSDictionary * d = [topLevel objectForKey:@"post_apps"];
-    if(d == nil) {
-        NSLog(@"ERRORRR POST APPS FUCKED");
-    }
     NSData *appSpecData = [NSJSONSerialization dataWithJSONObject:d options:0 error:nil];
-    NSLog(@" setupApp: %@", [[NSString alloc] initWithData:appSpecData encoding:NSUTF8StringEncoding]);
+//    NSLog(@" setupApp: %@", [[NSString alloc] initWithData:appSpecData encoding:NSUTF8StringEncoding]);
     
     
     if(alt ==TestAlterationBadWsHost)

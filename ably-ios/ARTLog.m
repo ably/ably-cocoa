@@ -8,19 +8,37 @@
 
 #import "ARTLog.h"
 
+@interface ARTLog()
+
+@property (nonatomic, assign) ARTLogLevel logLevel;
+@property (nonatomic, copy) ARTLogCallback cb;
+@end
+
 @implementation ARTLog
 
-
-static ARTLogLevel g_logLevel = ArtLogLevelDebug;
-static ARTLogCallback g_cb = nil;
-
-+(void) setLogLevel:(ARTLogLevel) level {
-    g_logLevel = level;
+-(id) init {
+    self = [super init];
+    if(self) {
+        
+    }
+    return self;
 }
 
++(ARTLog *) instance {
+    static ARTLog * logger = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        logger = [[ARTLog alloc] init];
+    });
+    return logger;
+}
+
++(void) setLogLevel:(ARTLogLevel) level {
+    [ARTLog instance].logLevel = level;
+}
 
 +(void) setLogCallback:(ARTLogCallback) cb {
-    g_cb= cb;
+    [ARTLog instance].cb = cb;
 }
 
 +(void) verbose:(id) str {
@@ -44,13 +62,15 @@ static ARTLogCallback g_cb = nil;
 }
 
 +(void) log:(id) str level:(ARTLogLevel) level {
-    if(level >= g_logLevel) {
-        if(g_cb) {
-            g_cb(str);
+    ARTLog * logger = [ARTLog instance];
+    if(level >= logger.logLevel) {
+        if(logger.cb) {
+            logger.cb(str);
         }
         else {
             NSLog(@"%@", str);
         }
     }
 }
+
 @end

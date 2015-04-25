@@ -92,6 +92,5 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 - (id<ARTCancellable>)authToken:(id<ARTCancellable>(^)(ARTAuthToken *))cb;
 - (id<ARTCancellable>)authTokenForceReauth:(BOOL)force cb:(id<ARTCancellable>(^)(ARTAuthToken *))cb;
 
-+(NSString *) toBase64:(NSData *) input;
 
 @end

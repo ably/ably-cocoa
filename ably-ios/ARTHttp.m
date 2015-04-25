@@ -192,7 +192,7 @@
                 [ARTLog debug:
                  [NSString stringWithFormat:@"ARTHttp response status is %d", status]];
                 
-                NSLog(@"HTTP RESPONSE %@", [NSJSONSerialization JSONObjectWithData:data options:0 error:nil]);
+                //NSLog(@"HTTP RESPONSE %@", [NSJSONSerialization JSONObjectWithData:data options:0 error:nil]);
                 
                 CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
                     cb([ARTHttpResponse responseWithStatus:status headers:httpResponse.allHeaderFields body:data]);

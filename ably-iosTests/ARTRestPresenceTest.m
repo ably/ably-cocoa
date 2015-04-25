@@ -66,8 +66,8 @@
 
             XCTAssertEqual(6, [presence count]);
             ARTPresenceMessage *p0 = presence[0];
-            ARTPresenceMessage *p1 = presence[1];
-            ARTPresenceMessage *p2 = presence[2];
+//            ARTPresenceMessage *p1 = presence[1];
+//            ARTPresenceMessage *p2 = presence[2];
             ARTPresenceMessage *p3 = presence[3];
             ARTPresenceMessage *p4 = presence[4];
             ARTPresenceMessage *p5 = presence[5];
