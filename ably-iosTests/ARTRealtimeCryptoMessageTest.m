@@ -19,20 +19,14 @@
 
 - (void)setUp {
     [super setUp];
- //   [ARTLog setLogLevel:ArtLogLevelDebug];
-   // [ARTLog setLogCallback:nil];
-    
-    // Put setup code here. This method is called before the invocation of each test method in the class.
 }
 
 - (void)tearDown {
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
 }
 
 
 -(void) testCBCParser {
-
     
     NSArray * encoders = [ARTPayload parseEncodingChain:@"utf-8/cipher+aes-128-cbc/base64"
                                                     key:[[NSData alloc] initWithBase64EncodedString:@"WUP6u0K7MXI5Zeo0VppPwg==" options:0]
@@ -49,6 +43,7 @@
 }
 
 -(void) testCBCParser256 {
+    
     NSArray * encoders = [ARTPayload parseEncodingChain:@"utf-8/cipher+aes-256-cbc/base64"
                                                     key:[[NSData alloc] initWithBase64EncodedString:@"o9qXZoPGDNla50VnRwH7cGqIrpyagTxGsRgimKJbY40=" options:0]
                                                      iv:[[NSData alloc] initWithBase64EncodedString:@"HO4cYSP8LybPYBPZPHQOtg==" options:0]];

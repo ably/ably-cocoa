@@ -45,13 +45,13 @@
     cb(_rest);
 }
 
-- (void)withRestRestricCap:(void (^)(ARTRest *rest))cb {
+- (void)withRestRestrictCap:(void (^)(ARTRest *rest))cb {
     if (!_rest) {
         ARTOptions * theOptions = [ARTTestUtil jsonRestOptions];
         [ARTTestUtil setupApp:theOptions withAlteration:TestAlterationRestrictCapability cb:^(ARTOptions *options) {
             if (options) {
                 options.authOptions.useTokenAuth = true;
-                options.authOptions.clientId = @"something";
+                options.authOptions.clientId = @"clientId";
                 _rest = [[ARTRest alloc] initWithOptions:options];
             }
             cb(_rest);
@@ -62,9 +62,9 @@
 }
 
 
-- (void)testAuthBlanket {
+- (void)testPublishRestriced {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testSimpleDisconnected"];
-    [self withRestRestricCap:^(ARTRest * rest) {
+    [self withRestRestrictCap:^(ARTRest * rest) {
         ARTRestChannel * channel = [rest channel:@"canpublish:test"];
         [channel publish:@"publish" cb:^(ARTStatus status) {
             XCTAssertEqual(status, ARTStatusOk);

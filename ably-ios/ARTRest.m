@@ -67,7 +67,6 @@
         _rest = rest;
         _name = name;
         _basePath = [NSString stringWithFormat:@"/channels/%@", [name stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]]];
-        // TODO cipher params!
         _payloadEncoder = [ARTPayload defaultPayloadEncoder:cipherParams];
     }
     return self;
@@ -184,8 +183,7 @@
     return self;
 }
 
-//TODO send an artstatus
-- (id<ARTCancellable>) token:(ARTAuthTokenParams *) params tokenCb:(void (^)(ARTAuthToken *)) cb {
+- (id<ARTCancellable>) token:(ARTAuthTokenParams *) params tokenCb:(void (^)(ARTStatus status, ARTTokenDetails *)) cb {
     NSString * keyPath = [NSString stringWithFormat:@"/keys/%@/requestToken",params.keyName];    
     NSDictionary * paramsDict = [params asDictionary];
     
@@ -198,21 +196,21 @@
         [ARTLog verbose:[NSString stringWithFormat:@"ARTRest token is %@", str]];
 
         if(response.status == 201) {
-            ARTAuthToken * token =[self.defaultEncoder decodeAccessToken:response.body];
-            cb(token);
+            ARTTokenDetails * token =[self.defaultEncoder decodeAccessToken:response.body];
+            cb(ARTStatusOk, token);
         }
         else {
             [ARTLog error:@"ARTRest: requestToken Error"];
-            cb(nil);
+            cb(ARTStatusError, nil);
             
         }
     }];
 }
+
 - (id<ARTCancellable>)time:(void (^)(ARTStatus, NSDate *))cb {
     return [self get:@"/time" authenticated:NO cb:^(ARTHttpResponse *response) {
         NSDate *date = nil;
         
-        //TODO what status are ok
         if (response.status == 200) {
             date = [self.defaultEncoder decodeTime:response.body];
         }

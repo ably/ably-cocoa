@@ -4,14 +4,16 @@
 
 An iOS client library for [ably.io](https://www.ably.io), the realtime messaging service, written in Objective-C.
 
-## Installation
+## CocoaPod Installation
+add pod ably to your Podfile. While ably-ios is in development, use this line instead:
+pod "ably",  :git => 'https://github.com/thevixac/ably-ios.git', :commit => 'be670f5e6c3'
+
+## Manual Installation 
 
 * git clone https://github.com/ably/ably-ios
 * drag the directory ably-ios/ably-ios into your project as a group
 * git clone https://github.com/square/SocketRocket.git
 * drag the directory SocketRocket/SocketRocket into your project as a group
-
-
 
 ## Using the Realtime API
 

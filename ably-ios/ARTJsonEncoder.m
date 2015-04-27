@@ -99,7 +99,7 @@
     return [self protocolMessageFromDictionary:[self decodeDictionary:data]];
 }
 
-- (ARTAuthToken *) decodeAccessToken:(NSData *) data {
+- (ARTTokenDetails *) decodeAccessToken:(NSData *) data {
     return [self tokenFromDictionary:[self decodeDictionary:data]];
 }
 
@@ -324,14 +324,14 @@
     return output;
 }
 
--(ARTAuthToken *) tokenFromDictionary:(NSDictionary *) input {
+-(ARTTokenDetails *) tokenFromDictionary:(NSDictionary *) input {
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
-    ARTAuthToken * tok = [[ARTAuthToken alloc]
+    ARTTokenDetails * tok = [[ARTTokenDetails alloc]
                           initWithId: [input artString:@"token"]
                              expires: [[input artNumber:@"expires"] longLongValue]
-                            issuedAt: [[input artNumber:@"issued"] longLongValue]
+                              issued: [[input artNumber:@"issued"] longLongValue]
                           capability: [input artString:@"capability"]
                             clientId: [input artString:@"clientId"]];
     return tok;

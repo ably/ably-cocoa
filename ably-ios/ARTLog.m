@@ -62,14 +62,34 @@
     [ARTLog log:str level:ArtLogLevelError];
 }
 
++(NSString *) logLevelStr:(ARTLogLevel) level {
+    switch(level) {
+        case ArtLogLevelNone:
+            return @"";
+        case ArtLogLevelVerbose:
+            return @"VERBOSE";
+        case ArtLogLevelDebug:
+            return @"DEBUG";
+        case ArtLogLevelInfo:
+            return @"INFO";
+        case ArtLogLevelWarn:
+            return @"WARN";
+        case ArtLogLevelError:
+            return @"ERROR";
+    }
+    return @"";
+}
+
 +(void) log:(id) str level:(ARTLogLevel) level {
     ARTLog * logger = [ARTLog instance];
+    
+    NSString * res = [NSString stringWithFormat:@"%@: %@",[ARTLog logLevelStr:level],str];
     if(level >= logger.logLevel) {
         if(logger.cb) {
-            logger.cb(str);
+            logger.cb(res);
         }
         else {
-            NSLog(@"%@", str);
+            NSLog(@"%@",res);
         }
     }
 }

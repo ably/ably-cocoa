@@ -71,7 +71,7 @@
 }
 
 
--(ARTAuthToken *) decodeAccessToken:(NSData *)data {
+-(ARTTokenDetails *) decodeAccessToken:(NSData *)data {
     return nil;
 }
 - (ARTMessage *)decodeMessage:(NSData *)data {

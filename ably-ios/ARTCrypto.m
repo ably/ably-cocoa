@@ -156,7 +156,7 @@
     size_t ciphertextBufLen = outputBufLen - self.blockLength;
 
     const void *key = [self.keySpec.key bytes];
-    size_t keyLen = [self.keySpec.key length]; //TODO potentially this should be *8 ([self keyLength]);
+    size_t keyLen = [self.keySpec.key length];
 
     const void *iv = [self.iv bytes];
     const void *dataIn = [plaintext bytes];

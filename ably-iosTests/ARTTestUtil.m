@@ -87,8 +87,8 @@
     
     NSURLSessionDataTask *task = [urlSession dataTaskWithRequest:req completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-        NSString *keyId;
-        NSString *keyValue;
+        NSString *keyName;
+        NSString *keySecret;
         NSString * capability;
         if (httpResponse.statusCode < 200 || httpResponse.statusCode >= 300) {
             NSLog(@"Status Code: %ld", (long)httpResponse.statusCode);
@@ -99,24 +99,24 @@
             NSDictionary *response = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
             if (response) {
                 NSDictionary *key = response[@"keys"][(alt == TestAlterationRestrictCapability ? 1 :0)];
-                keyId = [NSString stringWithFormat:@"%@.%@", response[@"appId"], key[@"id"]];
-                keyValue = key[@"value"];
+                keyName = [NSString stringWithFormat:@"%@.%@", response[@"appId"], key[@"id"]];
+                keySecret = key[@"value"];
                 capability = key[@"capability"];
             }
         }
         
         ARTOptions *appOptions = [options clone];
-        appOptions.authOptions.keyId = keyId;
-        appOptions.authOptions.keyValue = keyValue;
+        appOptions.authOptions.keyName = keyName;
+        appOptions.authOptions.keySecret = keySecret;
         appOptions.authOptions.capability =capability;
 
         if(alt == TestAlterationBadKeyId)
         {
-            appOptions.authOptions.keyId= @"badKeyId";
+            appOptions.authOptions.keyName= @"badKeyName";
         }
         else if(alt == TestAlterationBadKeyValue)
         {
-            appOptions.authOptions.keyValue = @"badKeyValue";
+            appOptions.authOptions.keySecret = @"badKeySecret";
         }
         
         CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
@@ -127,9 +127,8 @@
     [task resume];
 }
 
-+(NSString *) appIdFromkeyId:(NSString *) keyId
-{
-    NSArray *array = [keyId componentsSeparatedByString:@"."];
++(NSString *) appIdFromkeyName:(NSString *) keyName {
+    NSArray *array = [keyName componentsSeparatedByString:@"."];
     return [array objectAtIndex:0];
 }
 
@@ -141,34 +140,29 @@
     [ARTTestUtil setupApp:options withAlteration:TestAlterationNone cb:cb];
 }
 
-+ (NSString *) realtimeHost
-{
-    return @"staging-realtime.ably.io";
++ (NSString *) realtimeHost {
+    return @"sandbox-realtime.ably.io";
 }
 
-+ (NSString *) restHost
-{
-    return @"staging-rest.ably.io";
++ (NSString *) restHost {
+    return @"sandbox-rest.ably.io";
 }
 
-+(ARTOptions *) binaryRestOptions
-{
++(ARTOptions *) binaryRestOptions {
     ARTOptions * json = [[ARTOptions alloc] init];
     json.restHost = [ARTTestUtil restHost];
     json.binary =true;
     return json;
 }
 
-+(ARTOptions *) jsonRestOptions
-{
++(ARTOptions *) jsonRestOptions {
     ARTOptions * json = [[ARTOptions alloc] init];
     json.restHost = [ARTTestUtil restHost];
     json.binary =false;
     return json;
 }
 
-+(ARTOptions *) jsonRealtimeOptions
-{
++(ARTOptions *) jsonRealtimeOptions {
     ARTOptions * json = [[ARTOptions alloc] init];
     
     [json setRealtimeHost:[ARTTestUtil realtimeHost] withRestHost:[ARTTestUtil restHost]];
@@ -177,8 +171,7 @@
     return json;
 }
 
-+(ARTOptions *) binaryRealtimeOptions
-{
++(ARTOptions *) binaryRealtimeOptions {
     ARTOptions * json = [[ARTOptions alloc] init];
     [json setRealtimeHost:[ARTTestUtil realtimeHost] withRestHost:[ARTTestUtil restHost]];
 
@@ -201,24 +194,20 @@
     });
 }
 
-+(long long) nowMilli
-{
++(long long) nowMilli {
     NSDate * date = [NSDate date];
     return [date timeIntervalSince1970]*1000;
 }
 
-+(float) smallSleep
-{
++(float) smallSleep {
     return 0.6;
 }
 
-+(float) bigSleep
-{
++(float) bigSleep {
     return 1.0;
 }
 
-+(float) timeout
-{
++(float) timeout {
     return 30.0;
 }
 

@@ -76,6 +76,7 @@
         return [ARTUtf8PayloadEncoder instance];
     }
     else if([name isEqualToString:@"cipher+aes-256-cbc"] || [name isEqualToString:@"cipher+aes-128-cbc"]){
+        //256 on iOS is handled by passing the keyLength into kCCAlgorithmAES128
         
         ARTIvParameterSpec * ivSpec = [[ARTIvParameterSpec alloc] initWithIv:iv];
         ARTSecretKeySpec * keySpec = [[ARTSecretKeySpec alloc] initWithKey:key algorithm:@"aes"];
@@ -346,7 +347,7 @@
         NSData *encrypted = nil;
         ARTStatus status = [self.cipher encrypt:payload.payload output:&encrypted];
         if (status == ARTStatusOk) {
-            NSString *cipherName = [NSString stringWithFormat:@"cipher+%@", self.cipher.cipherName];
+            NSString *cipherName = [self name];
             *output = [ARTPayload payloadWithPayload:encrypted encoding:[payload.encoding artAddEncoding:cipherName]];
         }
         return status;
@@ -369,8 +370,9 @@
     }
     return self;
 }
+
 -(NSString *) name {
-    return @"encoderChain"; //TOOD make the encoder chain string eg (json/utf-8/base64)
+    return @"chain"; //not used.
 }
 
 - (ARTStatus)encode:(ARTPayload *)payload output:(ARTPayload *__autoreleasing *)output {

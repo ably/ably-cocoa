@@ -27,9 +27,7 @@
 
 @implementation ARTRestTokenTest
 
-
 - (void)setUp {
-    //[ARTLog setLogLevel:ArtLogLevelDebug];
     [super setUp];
 }
 

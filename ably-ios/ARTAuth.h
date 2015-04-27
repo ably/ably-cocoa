@@ -13,19 +13,19 @@
 
 @class ARTRest;
 
-@interface ARTAuthToken : NSObject
+@interface ARTTokenDetails : NSObject
 
-@property (readonly, strong, nonatomic) NSString *idB64;
+@property (readonly, strong, nonatomic) NSString *token;
 @property (readonly, assign, nonatomic) int64_t expires;
-@property (readonly, assign, nonatomic) int64_t issuedAt;
+@property (readonly, assign, nonatomic) int64_t issued;
 @property (readonly, strong, nonatomic) NSString *capability;
 @property (readonly, strong, nonatomic) NSString *clientId;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
-- (instancetype)initWithId:(NSString *)id expires:(int64_t)expires issuedAt:(int64_t)issuedAt capability:(NSString *)capability clientId:(NSString *)clientId;
+- (instancetype)initWithId:(NSString *)id expires:(int64_t)expires issued:(int64_t)issued capability:(NSString *)capability clientId:(NSString *)clientId;
 
-+ (instancetype)authTokenWithId:(NSString *)id expires:(int64_t)expires issuedAt:(int64_t)issuedAt capability:(NSString *)capability clientId:(NSString *)clientId;
++ (instancetype)authTokenWithId:(NSString *)id expires:(int64_t)expires issued:(int64_t)issued capability:(NSString *)capability clientId:(NSString *)clientId;
 
 @end
 
@@ -49,7 +49,7 @@
 -(NSDictionary *) asDictionary;
 @end
 
-typedef id<ARTCancellable>(^ARTAuthCb)(void(^continuation)(ARTAuthToken *));
+typedef id<ARTCancellable>(^ARTAuthCb)(void(^continuation)(ARTStatus,ARTTokenDetails *));
 typedef id<ARTCancellable>(^ARTSignedTokenRequestCb)(ARTAuthTokenParams *, void(^continuation)(ARTAuthTokenParams *));
 typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
     ARTAuthMethodBasic,
@@ -61,9 +61,9 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 @property (readwrite, strong, nonatomic) ARTAuthCb authCallback;
 @property (readwrite, strong, nonatomic) ARTSignedTokenRequestCb signedTokenRequestCallback;
 @property (readwrite, strong, nonatomic) NSURL *authUrl;
-@property (readwrite, strong, nonatomic) NSString *keyId;
-@property (readwrite, strong, nonatomic) NSString *keyValue;
-@property (readwrite, strong, nonatomic) NSString *authToken;
+@property (readwrite, strong, nonatomic) NSString *keyName;
+@property (readwrite, strong, nonatomic) NSString *keySecret;
+@property (readwrite, strong, nonatomic) NSString *token;
 @property (readwrite, strong, nonatomic) NSString *capability;
 @property (readwrite, strong, nonatomic) NSDictionary *authHeaders;
 @property (readwrite, strong, nonatomic) NSString *clientId;
@@ -89,8 +89,8 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 - (ARTAuthMethod) getAuthMethod;
 - (id<ARTCancellable>)authHeadersUseBasic:(BOOL)useBasic cb:(id<ARTCancellable>(^)(NSDictionary *))cb;
 - (id<ARTCancellable>)authParams:(id<ARTCancellable>(^)(NSDictionary *))cb;
-- (id<ARTCancellable>)authToken:(id<ARTCancellable>(^)(ARTAuthToken *))cb;
-- (id<ARTCancellable>)authTokenForceReauth:(BOOL)force cb:(id<ARTCancellable>(^)(ARTAuthToken *))cb;
+- (id<ARTCancellable>)authToken:(id<ARTCancellable>(^)(ARTTokenDetails *))cb;
+- (id<ARTCancellable>)authTokenForceReauth:(BOOL)force cb:(id<ARTCancellable>(^)(ARTTokenDetails *))cb;
 
 
 @end
