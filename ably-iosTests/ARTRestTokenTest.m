@@ -13,10 +13,10 @@
 #import "ARTPresenceMessage.h"
 #import "ARTRest.h"
 #import "ARTTestUtil.h"
+#import "ARTRest+Private.h"
+#import "ARTLog.h"
 @interface ARTRestTokenTest : XCTestCase {
     ARTRest *_rest;
-    ARTOptions *_options;
-    float _timeout;
 }
 
 - (void)withRest:(void(^)(ARTRest *))cb;
@@ -24,22 +24,23 @@
 
 @end
 
+
 @implementation ARTRestTokenTest
 
 - (void)setUp {
+    [ARTLog setLogLevel:ArtLogLevelVerbose];
     [super setUp];
-    _options = [[ARTOptions alloc] init];
-    _options.restHost = @"sandbox-rest.ably.io";
 }
 
 - (void)tearDown {
+    [ARTLog setLogLevel:ArtLogLevelWarn];
     _rest = nil;
     [super tearDown];
 }
 
 - (void)withRest:(void (^)(ARTRest *rest))cb {
     if (!_rest) {
-        [ARTTestUtil setupApp:_options cb:^(ARTOptions *options) {
+        [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
             if (options) {
                 _rest = [[ARTRest alloc] initWithOptions:options];
             }
@@ -49,6 +50,29 @@
     }
     cb(_rest);
 }
+
+- (void)testTokenSimple{
+    XCTestExpectation *expectation = [self expectationWithDescription:@"testRestTimeBadHost"];
+
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+        options.authOptions.useTokenAuth = true;
+        options.authOptions.clientId = @"testToken";
+        ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
+        
+        ARTAuth * auth = rest.auth;
+        ARTAuthMethod authMethod = [auth getAuthMethod];
+        XCTAssertEqual(authMethod, ARTAuthMethodToken);
+        ARTRestChannel * c= [rest channel:@"getChannel"];
+        [c publish:@"something" cb:^(ARTStatus status) {
+            XCTAssertEqual(status, ARTStatusOk);
+            [expectation fulfill];
+           
+        }];
+    }];
+    
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
+
 /*
  //TODO implement
  

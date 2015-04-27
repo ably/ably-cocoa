@@ -14,6 +14,8 @@
 #import "ARTPaginatedResult.h"
 
 @class ARTCipherParams;
+@class ARTTokenDetails;
+@class ARTAuthTokenParams;
 
 @interface ARTRestChannel : NSObject
 
@@ -38,6 +40,8 @@
 - (instancetype)initWithKey:(NSString *)key;
 - (instancetype)initWithOptions:(ARTOptions *)options;
 
+
+- (id<ARTCancellable>) token:(ARTAuthTokenParams *) keyName tokenCb:(void (^)(ARTStatus status, ARTTokenDetails *)) cb;
 - (id<ARTCancellable>)time:(void(^)(ARTStatus status, NSDate *time))cb;
 - (id<ARTCancellable>)stats:(ARTPaginatedResultCb)cb;
 - (id<ARTCancellable>)statsWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;

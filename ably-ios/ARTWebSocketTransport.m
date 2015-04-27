@@ -196,8 +196,8 @@ enum {
         
         if(error)
         {
-            //TODO maybe some errors become failed, and some become disconnect?
-            NSLog(@"websocket did fail with error %@", error);
+            //TODO maybe some errors become failed, and some become disconn
+            [ARTLog error:[NSString stringWithFormat:@"ARTWebSocketTransport: websocket did fail with error %@", error]];
         }
         if(s)
         {

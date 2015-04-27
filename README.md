@@ -4,14 +4,16 @@
 
 An iOS client library for [ably.io](https://www.ably.io), the realtime messaging service, written in Objective-C.
 
-## Installation
+## CocoaPod Installation
+add pod ably to your Podfile. While ably-ios is in development, use this line instead:
+* pod "ably",  :git => 'https://github.com/thevixac/ably-ios.git', :commit => 'be670f5e6c3'
+
+## Manual Installation 
 
 * git clone https://github.com/ably/ably-ios
 * drag the directory ably-ios/ably-ios into your project as a group
 * git clone https://github.com/square/SocketRocket.git
 * drag the directory SocketRocket/SocketRocket into your project as a group
-
-
 
 ## Using the Realtime API
 
@@ -106,14 +108,10 @@ The library works on iOS8, and uses [SocketRocket](https://github.com/square/Soc
 The following features are not implemented yet:
 
 * msgpack transportation
-* 256 cryptography
 
 The following features are do not have sufficient test coverage:
 
-* 128 cryptography
 * app stats
-* capability
-* token auth
 
 ## Support and feedback
 

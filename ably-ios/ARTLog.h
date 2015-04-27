@@ -36,5 +36,4 @@ typedef void(^ARTLogCallback)(id);
 +(void) warn:(id) str;
 +(void) error:(id) str;
 
-
 @end

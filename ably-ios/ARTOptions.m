@@ -35,6 +35,7 @@
     self = [super init];
     if (self) {
         _authOptions = [ARTAuthOptions optionsWithKey:key];
+
         if (!_authOptions) {
             self = nil;
         }
@@ -70,6 +71,7 @@
     _recover = nil;
     _binary = false;
     _resumeKey = nil;
+    
     return self;
 }
 

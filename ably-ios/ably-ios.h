@@ -15,5 +15,3 @@ FOUNDATION_EXPORT double ably_iosVersionNumber;
 FOUNDATION_EXPORT const unsigned char ably_iosVersionString[];
 
 // In this header, you should import all the public headers of your framework using statements like #import <ably_ios/PublicHeader.h>
-
-

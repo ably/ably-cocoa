@@ -48,6 +48,8 @@
 - (ARTStatus)encrypt:(NSData *)plaintext output:(NSData **)output;
 - (ARTStatus)decrypt:(NSData *)ciphertext output:(NSData **)output;
 - (NSString *)cipherName;
+- (size_t) keyLength;
+
 
 @end
 
