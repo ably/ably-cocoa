@@ -78,6 +78,7 @@
         _timestamp = timestamp;
         _nonce = nonce;
         _mac = mac;
+     
     }
     return self;
 }
@@ -89,13 +90,13 @@
 
 -(NSDictionary *) asDictionary {
     NSMutableDictionary *reqObj = [NSMutableDictionary dictionary];
-    reqObj[@"keyName"] = self.keyName;
-    reqObj[@"capability"] = self.capability;
+    reqObj[@"keyName"] = self.keyName ? self.keyName : @"";
+    reqObj[@"capability"] = self.capability ? self.capability : @"";
     reqObj[@"ttl"] = [NSNumber numberWithLongLong:self.ttl];
-    reqObj[@"clientId"] = self.clientId;
-    reqObj[@"nonce"] = self.nonce;
+    reqObj[@"clientId"] = self.clientId ? self.clientId : @"";
+    reqObj[@"nonce"] = self.nonce ? self.nonce : @"";
     reqObj[@"timestamp"] = [NSNumber numberWithLongLong:self.timestamp];
-    reqObj[@"mac"] = self.mac;
+    reqObj[@"mac"] = self.mac ? self.mac : @"";
     return reqObj;
 }
 
@@ -181,25 +182,11 @@
 
 -(bool) shouldUseTokenAuth:(ARTAuthOptions *) options
 {
-    if(options.useTokenAuth){
-        return true;
-    }
-    if(options.clientId) {
-        return true;
-    }
-    if(options.token) {
-        return true;
-    }
-    if(options.authUrl) {
-        return true;
-    }
-    if(options.authCallback) {
-        return true;
-    }
-    if(options.keyName) {
-        return true;
-    }
-    return false;
+    return options.useTokenAuth ||
+           options.clientId     ||
+           options.token        ||
+           options.authUrl      ||
+           options.authCallback;
 }
 
 - (instancetype)initWithRest:(ARTRest *)rest options:(ARTAuthOptions *)options {
@@ -216,14 +203,16 @@
         //or only used to set up TokenAuth
         if (options.keyName != nil) {
             [ARTLog debug:@"ARTAuth: setting up auth method Basic"];
-            _basicCredentials = [NSString stringWithFormat:@"Basic %@", [[[NSString stringWithFormat:@"%@:%@", options.keyName, options.keySecret] dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0]];
+            
+            _basicCredentials = [NSString stringWithFormat:@"Basic %@",
+                                 [[[NSString stringWithFormat:@"%@:%@", options.keyName, options.keySecret] dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0]];
             _keyName = options.keyName;
             _keySecret = options.keySecret;
         }
         else {
-            [ARTLog warn:@"ARTAuth Error: cannot set up basic auth without a valid ArtAuthOptions keyValue. "];
+            [ARTLog warn:@"ARTAuth Error: cannot set up basic auth without a valid ArtAuthOptions key. "];
         }
-        if(options.useTokenAuth) {
+        if([self shouldUseTokenAuth:options]) {
             _authMethod= ARTAuthMethodToken;
             [ARTLog debug:@"ARTAuth: setting up auth method Token"];
             _tokenCbs = [NSMutableArray array];
@@ -258,6 +247,8 @@
                     return ic;
                 };
             }
+        } else {
+            [ARTLog debug:@"ARTAuth is using Basic Authentication only"];
         }
     }
     return self;

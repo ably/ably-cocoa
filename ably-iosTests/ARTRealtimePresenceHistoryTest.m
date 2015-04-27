@@ -14,7 +14,7 @@
 #import "ARTRealtime.h"
 #import "ARTTestUtil.h"
 #import "ARTRest.h"
-
+#import "ARTLog.h"
 @interface ARTRealtimePresenceHistoryTest : XCTestCase
 {
     ARTRealtime * _realtime;

@@ -164,7 +164,6 @@
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:artRequest.url];
     request.HTTPMethod = artRequest.method;
 
-    
     for (NSString *headerName in artRequest.headers) {
         NSString *headerValue = [artRequest.headers objectForKey:headerName];
         [request setValue:headerValue forHTTPHeaderField:headerName];
@@ -190,10 +189,9 @@
             if (httpResponse) {
                 int status = (int)httpResponse.statusCode;
                 [ARTLog debug:
-                 [NSString stringWithFormat:@"ARTHttp response status is %d", status]];
+                [NSString stringWithFormat:@"ARTHttp response status is %d", status]];
                 
-                //NSLog(@"HTTP RESPONSE %@", [NSJSONSerialization JSONObjectWithData:data options:0 error:nil]);
-                
+                [ARTLog verbose:[NSString stringWithFormat:@"ARTHTtp received response %@",[NSJSONSerialization JSONObjectWithData:data options:0 error:nil]]];
                 CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
                     cb([ARTHttpResponse responseWithStatus:status headers:httpResponse.allHeaderFields body:data]);
                 });
