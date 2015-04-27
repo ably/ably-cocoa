@@ -186,23 +186,13 @@
     }
 }
 
-
-
 - (ARTPresenceMessage *)presenceMessageFromDictionary:(NSDictionary *)input {
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
     ARTPresenceMessage *message = [[ARTPresenceMessage alloc] init];
-    id theId = [input artString:@"id"];
-    
-    NSString * encoding = [input artString:@"encoding"];
-    if(encoding == nil) {
-        message.id = theId;
-    }
-    else {
-        //not sure if theId needs more decoding
-        message.id = theId;
-    }
+    message.id = [input artString:@"id"];
+    message.encoding = [input artString:@"encoding"];
     message.clientId = [input artString:@"clientId"];
     message.payload = [self payloadFromDictionary:input];
     message.timestamp = [input artDate:@"timestamp"];

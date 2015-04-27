@@ -22,8 +22,10 @@ typedef NS_ENUM(NSUInteger, ARTPresenceMessageAction) {
 
 @property (readwrite, strong, nonatomic) NSString *id;
 @property (readwrite, strong, nonatomic) NSString *clientId;
+@property (readwrite, strong, nonatomic) NSString *encoding;
 @property (readwrite, strong, nonatomic) ARTPayload *payload;
 @property (readwrite, strong, nonatomic) NSDate *timestamp;
+
 @property (readwrite, assign, nonatomic) ARTPresenceMessageAction action;
 @property (readwrite, strong, nonatomic) NSString *connectionId;
 

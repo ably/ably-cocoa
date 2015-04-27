@@ -19,6 +19,7 @@
         _timestamp = nil;
         _action = ARTPresenceMessageEnter;
         _connectionId = nil;
+        _encoding = nil;
     }
     return self;
 }
@@ -31,6 +32,7 @@
     m.timestamp = self.timestamp;
     m.action = self.action;
     m.connectionId = self.connectionId;
+    m.encoding = self.encoding;
     return m;
 }
 
