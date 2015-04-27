@@ -23,6 +23,7 @@
 #import "ARTNSArray+ARTFunctional.h"
 
 #import "ARTLog.h"
+#import "ARTHttp.h"
 
 
 
@@ -200,7 +201,9 @@
             cb(ARTStatusOk, token);
         }
         else {
-            [ARTLog error:@"ARTRest: requestToken Error"];
+            
+            ARTHttpError * e = [self.defaultEncoder decodeError:response.body];
+            [ARTLog error:[NSString stringWithFormat:@"ARTRest: requestToken Error code: %d, Status %d, Message %@", e.code, e.statusCode, e.message]];
             cb(ARTStatusError, nil);
             
         }

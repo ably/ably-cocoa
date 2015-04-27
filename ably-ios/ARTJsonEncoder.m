@@ -15,6 +15,7 @@
 #import "ARTNSDate+ARTUtil.h"
 #import "ARTLog.h"
 #import "ARTAuth.h"
+#import "ARTHttp.h"
 
 @interface ARTJsonEncoder ()
 
@@ -487,6 +488,16 @@
     }
 
     return nil;
+}
+
+- (ARTHttpError *) decodeError:(NSData *) error {
+    ARTHttpError * e = [[ARTHttpError alloc] init];
+    NSDictionary * d = [[self decodeDictionary:error] valueForKey:@"error"];
+    e.code= [[d artNumber:@"code"] intValue];
+    e.message = [d artString:@"message"];
+    e.statusCode = [[d artNumber:@"statusCode"] intValue];
+    return e;
+
 }
 
 - (ARTStatsRequestCount *)statsRequestCountFromDictionary:(NSDictionary *)input {

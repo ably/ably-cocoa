@@ -12,6 +12,7 @@
 @class ARTPresenceMessage;
 @class ARTProtocolMessage;
 @class ARTTokenDetails;
+@class ARTHttpError;
 @protocol ARTEncoder
 
 - (NSString *)mimeType;
@@ -33,7 +34,7 @@
 - (ARTProtocolMessage *)decodeProtocolMessage:(NSData *)data;
 
 - (NSDate *)decodeTime:(NSData *)data;
-
+- (ARTHttpError *) decodeError:(NSData *) error;
 - (NSArray *)decodeStats:(NSData *)data;
 
 @end

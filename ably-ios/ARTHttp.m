@@ -9,6 +9,12 @@
 #import "ARTHttp.h"
 
 #import "ARTLog.h"
+
+
+@implementation ARTHttpError
+@end
+
+
 @interface ARTHttp ()
 
 @property (readonly, strong, nonatomic) NSURL *baseUrl;

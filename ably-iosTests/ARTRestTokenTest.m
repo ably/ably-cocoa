@@ -28,10 +28,12 @@
 @implementation ARTRestTokenTest
 
 - (void)setUp {
+    [ARTLog setLogLevel:ArtLogLevelVerbose];
     [super setUp];
 }
 
 - (void)tearDown {
+    [ARTLog setLogLevel:ArtLogLevelWarn];
     _rest = nil;
     [super tearDown];
 }
