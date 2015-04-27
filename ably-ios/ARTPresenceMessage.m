@@ -7,7 +7,7 @@
 //
 
 #import "ARTPresenceMessage.h"
-
+#import "ARTLog.h"
 @implementation ARTPresenceMessage
 
 - (instancetype)init {
@@ -38,7 +38,7 @@
     ARTPayload *payload = self.payload;
     ARTStatus status = [encoder decode:payload output:&payload];
     if (status != ARTStatusOk) {
-        // TODO log
+        [ARTLog warn:[NSString stringWithFormat:@"ARTPresenceMessage could not decode payload, ARTStatus: %tu", status]];
     }
     return [self messageWithPayload:payload];
 }
@@ -47,7 +47,7 @@
     ARTPayload *payload = self.payload;
     ARTStatus status = [encoder encode:payload output:&payload];
     if (status != ARTStatusOk) {
-        // TODO log
+        [ARTLog warn:[NSString stringWithFormat:@"ARTPresenceMessage could not encode payload, ARTStatus: %tu", status]];
     }
     return [self messageWithPayload:payload];
 }

@@ -331,7 +331,8 @@
             ARTPayload *encodedPayload = nil;
             ARTStatus status = [self.payloadEncoder encode:message.payload output:&encodedPayload];
             if (status != ARTStatusOk) {
-                // TODO log error message
+                [ARTLog error:[NSString stringWithFormat:@"ARTPresenceMessage: error decoding payload, status: %tu", status]];
+
             }
             return [message messageWithPayload:encodedPayload];
         }];
@@ -551,7 +552,7 @@
             [self onError:message];
             break;
         default:
-            // TODO log?
+            [ARTLog warn:[NSString stringWithFormat:@"ARTRealtime, unknown ARTProtocolMessage action: %tu", message.action]];
             break;
     }
 }
@@ -857,8 +858,7 @@
 
             // Create transport and initiate connection
             if(!self.transport) {
-            
-                //TODO can this be infinite? maybe self.resume should be an int.
+
                 if(previousState == ARTRealtimeFailed || previousState == ARTRealtimeDisconnected) {
                     self.options.resume = [NSString stringWithFormat:@"%lld",self.connectionSerial];
                     self.options.resumeKey = self.connectionKey;

@@ -75,9 +75,9 @@
     else if([name isEqualToString:@"utf-8"]) {
         return [ARTUtf8PayloadEncoder instance];
     }
+    //256 on iOS is handled by passing the keyLength into kCCAlgorithmAES128
     else if([name isEqualToString:@"cipher+aes-256-cbc"] || [name isEqualToString:@"cipher+aes-128-cbc"]){
-        //256 on iOS is handled by passing the keyLength into kCCAlgorithmAES128
-        
+   
         ARTIvParameterSpec * ivSpec = [[ARTIvParameterSpec alloc] initWithIv:iv];
         ARTSecretKeySpec * keySpec = [[ARTSecretKeySpec alloc] initWithKey:key algorithm:@"aes"];
         ARTCipherParams * params =[[ARTCipherParams alloc] initWithAlgorithm:@"aes" keySpec:keySpec ivSpec:ivSpec];
@@ -328,8 +328,9 @@
 
 - (ARTStatus)decode:(ARTPayload *)payload output:(ARTPayload *__autoreleasing *)output {
     *output = payload;
-    if ([payload.payload isKindOfClass:[NSData class]] && [[payload.encoding artLastEncoding] hasPrefix:@"cipher+"]) {
-        // TODO ensure the suffix of ciper+ is the same as cipher.cipherName?
+
+    NSString * cipherName =[payload.encoding artLastEncoding];
+    if ([payload.payload isKindOfClass:[NSData class]] && [cipherName isEqualToString:[self name]]) {
         NSData *decrypted = nil;
         ARTStatus status = [self.cipher decrypt:payload.payload output:&decrypted];
         if (status == ARTStatusOk) {
@@ -338,6 +339,7 @@
         }
         return status;
     }
+
     return ARTStatusOk;
 }
 
