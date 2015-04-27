@@ -116,6 +116,7 @@
         _clientId = nil;
         _capability = nil;
         _useTokenAuth = false;
+        _queryTime = true;
     }
     return self;
 }
@@ -142,12 +143,15 @@
 - (instancetype)clone {
     ARTAuthOptions *clone = [[ARTAuthOptions alloc] init];
     clone.authCallback = self.authCallback;
+    clone.signedTokenRequestCallback = self.signedTokenRequestCallback;
     clone.authUrl = self.authUrl;
     clone.keyName = self.keyName;
     clone.keySecret = self.keySecret;
     clone.token = self.token;
+    clone.capability = self.capability;
     clone.authHeaders = self.authHeaders;
     clone.clientId = self.clientId;
+    clone.queryTime = self.queryTime;
     clone.useTokenAuth =self.useTokenAuth;
     return clone;
 }
@@ -353,6 +357,7 @@
         void (^timeCb)(void(^)(int64_t)) = nil;
         if (!params.timestamp) {
             if (queryTime) {
+                [ARTLog debug:@"ARTAuth: query time is being used"];
                 timeCb = ^(void(^cb)(int64_t)) {
                     ARTRest *strongRest = weakRest;
                     if (strongRest) {
@@ -369,6 +374,7 @@
                 };
             } else {
                 timeCb = ^(void(^cb)(int64_t)) {
+                    [ARTLog debug:@"ARTAuth: client time is being used"];
                     cb((int64_t)([[NSDate date] timeIntervalSince1970] *1000.0 ));
                 };
             }
