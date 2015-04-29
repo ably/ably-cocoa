@@ -12,8 +12,8 @@
 #import "ARTPresenceMessage.h"
 #import "ARTProtocolMessage.h"
 #import "ARTStats.h"
-#import "NSDictionary+ARTDictionaryUtil.h"
-#import "NSDate+ARTUtil.h"
+#import "ARTNSDictionary+ARTDictionaryUtil.h"
+#import "ARTNSDate+ARTUtil.h"
 
 /*
 #import <msgpack/msgpack.h>
@@ -70,6 +70,10 @@
     return @"application/msgpack";
 }
 
+
+-(ARTTokenDetails *) decodeAccessToken:(NSData *)data {
+    return nil;
+}
 - (ARTMessage *)decodeMessage:(NSData *)data {
     return [self messageFromDictionary:[self decodeDictionary:data]];
 }

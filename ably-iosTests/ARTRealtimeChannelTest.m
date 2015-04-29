@@ -152,36 +152,46 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-/*
-- (void)testSubscribeUnsubscribe{
+
+- (void)testSubscribeUnsubscribe {
     
-    XCTFail(@"unsubscribe doent work. Even though this test passes");
-    return;
     XCTestExpectation *expectation = [self expectationWithDescription:@"publish"];
+    NSString * lostMessage = @"lost";
     [self withRealtime:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime channel:@"test"];
-        id<ARTSubscription> subscription = [channel subscribe:^(ARTMessage *message) {
+        id<ARTSubscription> __block subscription = [channel subscribe:^(ARTMessage *message) {
             
             if([[message content] isEqualToString:@"testString"]) {
+                
                 [subscription unsubscribe];
-                [channel publish:@"This should never arrive" cb:^(ARTStatus status) {
+
+                [channel publish:lostMessage cb:^(ARTStatus status) {
                     XCTAssertEqual(status, ARTStatusOk);
                 }];
-                [expectation fulfill];
             }
-            else {
+            else if([[message content] isEqualToString:lostMessage]) {
                 XCTFail(@"unsubscribe failed");
             }
-            XCTAssertEqualObjects([message content], @"testString");
         }];
+
         [channel publish:@"testString" cb:^(ARTStatus status) {
             XCTAssertEqual(ARTStatusOk, status);
+            NSString * finalMessage = @"final";
+            [channel subscribe:^(ARTMessage * message) {
+                if([[message content] isEqualToString:finalMessage]) {
+                    [expectation fulfill];
+                }
+            }];
+            [channel publish:finalMessage cb:^(ARTStatus status) {
+                XCTAssertEqual(ARTStatusOk, status);
+            }];
+            
         }];
     }];
     
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
- */
+ 
 
 //TODO switch the keys over and confirm connection doesn't work.
 /*

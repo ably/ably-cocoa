@@ -9,6 +9,12 @@
 #import "ARTHttp.h"
 
 #import "ARTLog.h"
+
+
+@implementation ARTHttpError
+@end
+
+
 @interface ARTHttp ()
 
 @property (readonly, strong, nonatomic) NSURL *baseUrl;
@@ -164,13 +170,13 @@
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:artRequest.url];
     request.HTTPMethod = artRequest.method;
 
-    
     for (NSString *headerName in artRequest.headers) {
         NSString *headerValue = [artRequest.headers objectForKey:headerName];
         [request setValue:headerValue forHTTPHeaderField:headerName];
     }
 
     request.HTTPBody = artRequest.body;
+    [ARTLog debug:[NSString stringWithFormat:@"ARTHttp: makeRequest %@", [request allHTTPHeaderFields]]];
 
     CFRunLoopRef rl = CFRunLoopGetCurrent();
     CFRetain(rl);
@@ -188,8 +194,10 @@
         else {
             if (httpResponse) {
                 int status = (int)httpResponse.statusCode;
-                [ARTLog verbose:
-                 [NSString stringWithFormat:@"ARTHttp response status is %d", status]];
+                [ARTLog debug:
+                [NSString stringWithFormat:@"ARTHttp response status is %d", status]];
+                
+                [ARTLog verbose:[NSString stringWithFormat:@"ARTHTtp received response %@",[NSJSONSerialization JSONObjectWithData:data options:0 error:nil]]];
                 CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
                     cb([ARTHttpResponse responseWithStatus:status headers:httpResponse.allHeaderFields body:data]);
                 });

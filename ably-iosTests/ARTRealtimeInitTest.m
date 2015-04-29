@@ -98,7 +98,8 @@
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"initWithOptions"];
     [self getBaseOptions:^(ARTOptions * options) {
-        NSString * key  = [[options.authOptions.keyId stringByAppendingString:@":"] stringByAppendingString:options.authOptions.keyValue];
+        NSString * key  = [[options.authOptions.keyName
+                            stringByAppendingString:@":"] stringByAppendingString:options.authOptions.keySecret];
         ARTRealtime * r = [[ARTRealtime alloc] initWithKey:key];
         [r subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
             if(state == ARTRealtimeFailed) { //this doesnt try to connect to sandbox so will fail.

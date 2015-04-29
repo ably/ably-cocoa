@@ -12,7 +12,7 @@
 #import "ARTMessage.h"
 #import "ARTPresenceMessage.h"
 #import "ARTWebSocketTransport.h"
-#import "NSArray+ARTFunctional.h"
+#import "ARTNSArray+ARTFunctional.h"
 #import "ARTRealtime+Private.h"
 #import "ARTLog.h"
 
@@ -331,7 +331,8 @@
             ARTPayload *encodedPayload = nil;
             ARTStatus status = [self.payloadEncoder encode:message.payload output:&encodedPayload];
             if (status != ARTStatusOk) {
-                // TODO log error message
+                [ARTLog error:[NSString stringWithFormat:@"ARTPresenceMessage: error decoding payload, status: %tu", status]];
+
             }
             return [message messageWithPayload:encodedPayload];
         }];
@@ -474,7 +475,6 @@
 
     ARTRealtimeChannelSubscription *subscription = [[ARTRealtimeChannelSubscription alloc] initWithChannel:self cb:cb];
 
-
     for (NSString *name in nameSet) {
         NSMutableArray *subscriptions = [self.subscriptions objectForKey:name];
         if (!subscriptions) {
@@ -552,7 +552,7 @@
             [self onError:message];
             break;
         default:
-            // TODO log?
+            [ARTLog warn:[NSString stringWithFormat:@"ARTRealtime, unknown ARTProtocolMessage action: %tu", message.action]];
             break;
     }
 }
@@ -828,7 +828,7 @@
 }
 
 - (void)transition:(ARTRealtimeConnectionState)state {
-    [ARTLog debug:[NSString stringWithFormat:@"Transition to %@ requested", [ARTRealtime ARTRealtimeStateToStr:state]]];
+    [ARTLog verbose:[NSString stringWithFormat:@"Transition to %@ requested", [ARTRealtime ARTRealtimeStateToStr:state]]];
 
     // On exit logic
     switch (self.state) {
@@ -858,8 +858,7 @@
 
             // Create transport and initiate connection
             if(!self.transport) {
-            
-                //TODO can this be infinite? maybe self.resume should be an int.
+
                 if(previousState == ARTRealtimeFailed || previousState == ARTRealtimeDisconnected) {
                     self.options.resume = [NSString stringWithFormat:@"%lld",self.connectionSerial];
                     self.options.resumeKey = self.connectionKey;
@@ -958,8 +957,7 @@
 }
 
 - (void)onHeartbeat:(ARTProtocolMessage *)message {
-    [ARTLog info:@"ARTRealtime heartbeat received"];
-    // Ignore
+    [ARTLog verbose:@"ARTRealtime heartbeat received"];
 }
 
 - (void)onConnected:(ARTProtocolMessage *)message {

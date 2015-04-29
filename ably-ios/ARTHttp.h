@@ -10,6 +10,14 @@
 
 #import "ARTTypes.h"
 
+
+@interface ARTHttpError : NSObject
+@property (strong, nonatomic) NSString *message;
+@property (assign, nonatomic) int statusCode;
+@property (assign, nonatomic) int code;
+@end
+
+
 @interface ARTHttpRequest : NSObject
 
 @property (readonly, strong, nonatomic) NSString *method;

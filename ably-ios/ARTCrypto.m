@@ -10,6 +10,8 @@
 
 #import <CommonCrypto/CommonCrypto.h>
 
+#import "ARTLog.h"
+
 @interface ARTCipherParams ()
 
 - (BOOL)ccAlgorithm:(CCAlgorithm *)algorithm;
@@ -86,6 +88,7 @@
 - (BOOL)ccAlgorithm:(CCAlgorithm *)algorithm {
     if (NSOrderedSame == [self.algorithm compare:@"AES" options:NSCaseInsensitiveSearch]) {
         if ([self.ivSpec.iv length] != 16) {
+            [ARTLog error:[NSString stringWithFormat:@"ArtCrypto Error iv length is not 16: %d", (int)[self.ivSpec.iv length]]];
             return NO;
         }
         *algorithm = kCCAlgorithmAES128;
@@ -123,9 +126,15 @@
     return self;
 }
 
+-(size_t) keyLength {
+    return [self.keySpec.key length] *8;
+}
+
 + (instancetype)cbcCipherWithParams:(ARTCipherParams *)cipherParams {
     return [[self alloc] initWithCipherParams:cipherParams];
 }
+
+
 
 - (ARTStatus)encrypt:(NSData *)plaintext output:(NSData *__autoreleasing *)output {
     // Encryptions must be serialized as they depend on the final block of the previous iteration
@@ -136,7 +145,7 @@
     void *buf = malloc(outputBufLen);
 
     if (!buf) {
-        // TODO report error?
+        [ARTLog error:@"ARTCrypto error encrypting"];
         return ARTStatusError;
     }
 
@@ -157,13 +166,14 @@
     CCCryptorStatus status = CCCrypt(kCCEncrypt, self.algorithm, kCCOptionPKCS7Padding, key, keyLen, iv, dataIn, dataInLen, ciphertextBuf, ciphertextBufLen, &bytesWritten);
 
     if (status) {
-        // TODO report error accordingly
+        [ARTLog error:[NSString stringWithFormat:@"ARTCrypto error encrypting. Status is %d", status]];
         free(ciphertextBuf);
         return ARTStatusError;
     }
 
     ciphertext = [NSData dataWithBytesNoCopy:buf length:(bytesWritten + self.blockLength) freeWhenDone:YES];
     if (nil == ciphertext) {
+        [ARTLog error:@"ARTCrypto error encrypting. cipher text is nil"];
         free(buf);
         return ARTStatusError;
     }
@@ -174,7 +184,7 @@
     if (newIv) {
         self.iv = newIv;
     } else {
-        // TODO Log error - not much else we can do
+        [ARTLog warn:@"ARTCrypto error encrypting. error updating iv"];
     }
 
     *output = ciphertext;
@@ -205,7 +215,7 @@
     size_t bytesWritten = 0;
 
     if (!buf) {
-        // TODO report error?
+        [ARTLog error:@"ARTCrypto error decrypting."];
         return ARTStatusError;
     }
 
@@ -214,6 +224,7 @@
     CCCryptorStatus status = CCCrypt(kCCDecrypt, self.algorithm, options, key, keyLength, iv, dataIn, dataInLength, buf, outputLength, &bytesWritten);
 
     if (status) {
+        [ARTLog error:[NSString stringWithFormat:@"ARTCrypto error decrypting. Status is %d", status]];
         free(buf);
         return ARTStatusError;
     }
@@ -237,6 +248,7 @@
 
     NSData *plaintext = [NSData dataWithBytesNoCopy:buf length:unpaddedLength freeWhenDone:YES];
     if (!plaintext) {
+        [ARTLog error:@"ARTCrypto error decrypting. plain text is nil"];
         free(buf);
     }
 
@@ -251,6 +263,7 @@
         case kCCAlgorithmAES128:
             algo = @"aes-128";
             break;
+
         case kCCAlgorithmDES:
             algo = @"des";
             break;
@@ -333,7 +346,6 @@
     if (nil == ivData) {
         return nil;
     }
-
     return [self defaultParamsWithKey:key iv:ivData];
 }
 

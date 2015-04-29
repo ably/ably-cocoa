@@ -16,18 +16,16 @@
 
 @implementation ARTLogTest
 
-
 -(void) setUp {
     
 }
 
 -(void) tearDown {
     [ARTLog setLogCallback:nil];
+    [ARTLog setLogLevel:ArtLogLevelWarn];
 }
 
 - (void)testLogLevelToError {
-    // This is an example of a functional test case.
-    
     __block id lastLogged =nil;
     __block int logCount =0;
     [ARTLog setLogCallback:^(id message){
@@ -44,7 +42,7 @@
     XCTAssertEqual(logCount, 0);
     [ARTLog error:@"e"];
     XCTAssertEqual(logCount, 1);
-    XCTAssertEqualObjects(lastLogged, @"e");
+    XCTAssertEqualObjects(lastLogged, @"ERROR: e");
 }
 
 -(void) testLogLevel {
@@ -57,12 +55,12 @@
     [ARTLog setLogLevel:ArtLogLevelDebug];
     [ARTLog verbose:@"v"];
     [ARTLog debug:@"d"];
-    XCTAssertEqualObjects(lastLogged, @"d");
+    XCTAssertEqualObjects(lastLogged, @"DEBUG: d");
     [ARTLog info:@"i"];
     [ARTLog warn:@"w"];
     [ARTLog error:@"e"];
     XCTAssertEqual(logCount, 4);
-    XCTAssertEqualObjects(lastLogged, @"e");
+    XCTAssertEqualObjects(lastLogged, @"ERROR: e");
 }
 
 -(void) testLogLevelNone {
@@ -75,7 +73,6 @@
     [ARTLog setLogLevel:ArtLogLevelNone];
     [ARTLog verbose:@"v"];
     [ARTLog debug:@"d"];
-
     [ARTLog info:@"i"];
     [ARTLog warn:@"w"];
     [ARTLog error:@"e"];

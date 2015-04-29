@@ -67,6 +67,7 @@ typedef void (^ARTRealtimeChannelMessageCb)(ARTMessage *);
 - (id<ARTSubscription>)subscribeToName:(NSString *)name cb:(ARTRealtimeChannelMessageCb)cb ART_WARN_UNUSED_RESULT;
 - (id<ARTSubscription>)subscribeToNames:(NSArray *)names cb:(ARTRealtimeChannelMessageCb)cb ART_WARN_UNUSED_RESULT;
 
+
 typedef void (^ARTRealtimeChannelPresenceCb)(ARTPresenceMessage *);
 - (id<ARTSubscription>)subscribeToPresence:(ARTRealtimeChannelPresenceCb)cb;
 
