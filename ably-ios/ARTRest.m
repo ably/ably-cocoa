@@ -24,9 +24,7 @@
 
 #import "ARTLog.h"
 #import "ARTHttp.h"
-
-
-
+#import "ARTDefault.h"
 
 // TODO base accept headers on encoders
 
@@ -46,16 +44,19 @@
 @interface ARTRest ()
 
 @property (readonly, strong, nonatomic) ARTHttp *http;
-@property (readonly, strong, nonatomic) NSURL *baseUrl;
+@property (readonly, strong, nonatomic) ARTOptions * options;
 @property (readonly, strong, nonatomic) NSMutableDictionary *channels;
-@property (readonly, strong, nonatomic) ARTAuth *auth;
+@property ( strong, nonatomic) ARTAuth *auth;
 @property (readonly, strong, nonatomic) NSDictionary *encoders;
 @property (readonly, strong, nonatomic) NSString *defaultEncoding;
+@property (readwrite, assign, nonatomic) int fallbackCount;
+@property (readwrite, strong, nonatomic) NSURL *baseUrl;
+
 
 - (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method relUrl:(NSString *)relUrl headers:(NSDictionary *)headers body:(NSData *)body authenticated:(ARTAuthentication)authenticated cb:(ARTHttpCb)cb;
 
 - (NSDictionary *)withAcceptHeader:(NSDictionary *)headers;
-
+- (void)throwOnHighLimitCheck:(NSDictionary *) params;
 @end
 
 @implementation ARTRestChannel
@@ -77,28 +78,50 @@
     return [[ARTRestChannel alloc] initWithRest:rest name:name cipherParams:cipherParams];
 }
 
-- (id<ARTCancellable>)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb {
-    
-    [ARTLog debug:[NSString stringWithFormat:@"ARTRestChannel: publishing %@ to channel %@", payload, name]];
-    ARTMessage *message = [[ARTMessage alloc] init];
-    message.name = name;
-    message.payload =[ARTPayload payloadWithPayload:payload encoding:@""];
-    message = [message encode:self.payloadEncoder];
 
+
+- (id<ARTCancellable>)publishMessages:(NSArray *)messages cb:(ARTStatusCallback)cb {
+    NSMutableArray * encodedMessages = [NSMutableArray array];
+    for(int i=0; i < [messages count]; i++) {
+        ARTPayload *encodedPayload = nil;
+
+        ARTPayload * p = [ARTPayload payloadWithPayload:[messages objectAtIndex:i] encoding:self.rest.defaultEncoding];
+        ARTStatus * status = [self.payloadEncoder encode:p output:&encodedPayload];
+        if (status.status != ARTStatusOk) {
+            [ARTLog warn:[NSString stringWithFormat:@"ARTRest publishMessages could not encode message %d", i]];
+        }
+        [encodedMessages addObject:encodedPayload.payload];
+    }
+    
+    //ARTPayload * finalPayload = [ARTPayload payloadWithPayload:encodedMessages encoding:@""];
+    ARTMessage * bigMessage = [ARTMessage messageWithPayload:encodedMessages name:nil];
+    return [self publishMessage:bigMessage cb:cb];
+}
+
+-(id<ARTCancellable>) publishMessage:(ARTMessage *) message cb:(ARTStatusCallback) cb {
     NSData *encodedMessage = [self.rest.defaultEncoder encodeMessage:message];
-    NSDictionary *headers = @{@"Content-Type":self.rest.defaultEncoding};
+    NSString * defaultEncoding = self.rest.defaultEncoding ? self.rest.defaultEncoding :@"";
+    NSDictionary *headers = @{@"Content-Type":defaultEncoding};
     NSString *path = [NSString stringWithFormat:@"%@/messages", self.basePath];
     return [self.rest post:path headers:headers body:encodedMessage authenticated:ARTAuthenticationOn cb:^(ARTHttpResponse *response) {
-        ARTStatus status = response.status >= 200 && response.status < 300 ? ARTStatusOk : ARTStatusError;
+        ARTStatus *status = [ARTStatus state:(response.status >= 200 && response.status < 300 ? ARTStatusOk : ARTStatusError) info:response.error];
         cb(status);
     }];
 }
-
-
-
+- (id<ARTCancellable>)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb {
+    [ARTLog debug:[NSString stringWithFormat:@"ARTRestChannel: publishing '%@' to channel with name '%@'", payload, name]];
+    ARTMessage *message = [ARTMessage messageWithPayload:payload name:name];//[[ARTMessage alloc] init];
+    message = [message encode:self.payloadEncoder];
+    return [self publishMessage:message cb:cb];
+}
 
 - (id<ARTCancellable>)publish:(id)payload cb:(ARTStatusCallback)cb {
-    return [self publish:payload withName:nil cb:cb];
+    if([payload isKindOfClass:[NSArray class]]) {
+        return [self publishMessages:payload cb:cb];
+    }
+    else {
+        return [self publish:payload withName:nil cb:cb];
+    }
 }
 
 - (id<ARTCancellable>)history:(ARTPaginatedResultCb)cb {
@@ -106,6 +129,7 @@
 }
 
 - (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb {
+    [self.rest throwOnHighLimitCheck:queryParams];
     return [self.rest withAuthHeaders:^(NSDictionary *authHeaders) {
         NSString *relUrl = [NSString stringWithFormat:@"%@/messages", self.basePath];
         ARTHttpRequest *req = [[ARTHttpRequest alloc] initWithMethod:@"GET" url:[self.rest resolveUrl:relUrl queryParams:queryParams] headers:authHeaders body:nil];
@@ -120,10 +144,11 @@
 }
 
 - (id<ARTCancellable>)presence:(ARTPaginatedResultCb)cb {
-    return [self presenceWithParams:nil cb:cb];
+    return [self presenceGetWithParams:nil cb:cb];
 }
 
-- (id<ARTCancellable>)presenceWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb {
+- (id<ARTCancellable>)presenceGetWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb {
+    [self.rest throwOnHighLimitCheck:queryParams];
     return [self.rest withAuthHeaders:^(NSDictionary *authHeaders) {
         NSString *relUrl = [NSString stringWithFormat:@"%@/presence", self.basePath];
         ARTHttpRequest *req = [[ARTHttpRequest alloc] initWithMethod:@"GET" url:[self.rest resolveUrl:relUrl queryParams:queryParams] headers:authHeaders body:nil];
@@ -159,58 +184,91 @@
 
 @implementation ARTRest
 
-- (instancetype)initWithKey:(NSString *)key {
-    return [self initWithOptions:[ARTOptions optionsWithKey:key]];
-}
 
-- (instancetype)initWithOptions:(ARTOptions *)options {
+- (instancetype)initNoAuth:(ARTOptions *) options {
     self = [super init];
-    if (self) {
-        _http = [[ARTHttp alloc] init];
-        _baseUrl = [options restUrl];
-        _channels = [NSMutableDictionary dictionary];
-        _auth = [[ARTAuth alloc] initWithRest:self options:options.authOptions];
-
-        id<ARTEncoder> defaultEncoder = [[ARTJsonEncoder alloc] init];
-        //msgpack not supported yet.
-        //id<ARTEncoder> msgpackEncoder  = [[ARTMsgPackEncoder alloc] init];
-        _encoders = @{
-            [defaultEncoder mimeType]: defaultEncoder,
-        //[msgpackEncoder mimeType] : msgpackEncoder
-        };
-        
-        _defaultEncoding = [defaultEncoder mimeType];
+    if(self) {
+        _options = options;
+        self.baseUrl = [options restUrl];
+        [self setup];
     }
     return self;
 }
 
-- (id<ARTCancellable>) token:(ARTAuthTokenParams *) params tokenCb:(void (^)(ARTStatus status, ARTTokenDetails *)) cb {
-    NSString * keyPath = [NSString stringWithFormat:@"/keys/%@/requestToken",params.keyName];    
+-(instancetype) initWithKey:(NSString *) key {
+    return [self initWithOptions:[ARTOptions optionsWithKey:key]];
+}
+
+-(instancetype) initWithOptions:(ARTOptions *) options {
+    ARTRest * r = [[ARTRest alloc] initNoAuth:options];
+    _auth =[[ARTAuth alloc] initWithRest:self options:options.authOptions];
+    return r;
+}
+
+- (void) setup {
+    _http = [[ARTHttp alloc] init];
+    _channels = [NSMutableDictionary dictionary];
+    id<ARTEncoder> defaultEncoder = [[ARTJsonEncoder alloc] init];
+    _encoders = @{
+                  [defaultEncoder mimeType]: defaultEncoder,
+                  };
+    
+    _defaultEncoding = [defaultEncoder mimeType];
+    _fallbackCount = 0;
+    
+}
+
++ (BOOL) isValidKey:(NSString *) key {
+    NSArray *keyBits = [key componentsSeparatedByString:@":"];
+    return keyBits.count == 2;
+}
+
+- (id<ARTCancellable>) token:(ARTAuthTokenParams *) params tokenCb:(void (^)(ARTStatus *status, ARTTokenDetails *)) cb {
+
+    [ARTLog debug:@"ARTRest is requesting a fresh token"];
+    if(![self.auth canRequestToken]) {
+        cb([ARTStatus state:ARTStatusError], nil);
+        id<ARTCancellable> c = nil;
+        return c;
+    }
+
+    NSString * keyPath = [NSString stringWithFormat:@"/keys/%@/requestToken",params.keyName];
+    if([self.auth getAuthOptions].authUrl) {
+        keyPath = [[self.auth getAuthOptions].authUrl absoluteString];
+        [ARTLog info:[NSString stringWithFormat:@"ARTRest is bypassing the default token request URL for this authURL:%@",keyPath]];
+    }
     NSDictionary * paramsDict = [params asDictionary];
     
     NSData * dictData = [NSJSONSerialization dataWithJSONObject:paramsDict options:0 error:nil];
     
     NSDictionary *headers = @{@"Content-Type":self.defaultEncoding};
     return [self post:keyPath headers:headers body:dictData authenticated:ARTAuthenticationUseBasic cb:^(ARTHttpResponse *response) {
-        
+        if(!response.body) {
+            cb([ARTStatus state:ARTStatusError info:response.error], nil);
+            return;
+        }
         NSString * str = [[NSString alloc] initWithData:response.body encoding:NSUTF8StringEncoding];
         [ARTLog verbose:[NSString stringWithFormat:@"ARTRest token is %@", str]];
-
         if(response.status == 201) {
             ARTTokenDetails * token =[self.defaultEncoder decodeAccessToken:response.body];
             cb(ARTStatusOk, token);
         }
         else {
-            
-            ARTHttpError * e = [self.defaultEncoder decodeError:response.body];
+
+            ARTErrorInfo * e = [self.defaultEncoder decodeError:response.body];
             [ARTLog error:[NSString stringWithFormat:@"ARTRest: requestToken Error code: %d, Status %d, Message %@", e.code, e.statusCode, e.message]];
-            cb(ARTStatusError, nil);
-            
+            cb([ARTStatus state:ARTStatusError info:e], nil);
         }
     }];
 }
 
-- (id<ARTCancellable>)time:(void (^)(ARTStatus, NSDate *))cb {
+
+
+-(ARTAuth *) auth {
+    return _auth;
+}
+
+- (id<ARTCancellable>)time:(void (^)(ARTStatus *, NSDate *))cb {
     return [self get:@"/time" authenticated:NO cb:^(ARTHttpResponse *response) {
         NSDate *date = nil;
         
@@ -218,18 +276,39 @@
             date = [self.defaultEncoder decodeTime:response.body];
         }
         if (date) {
-            cb(ARTStatusOk, date);
+            cb([ARTStatus state:ARTStatusOk], date);
         } else {
-            cb(ARTStatusError, nil);
+            cb([ARTStatus state:ARTStatusError info:response.error], nil);
         }
     }];
+}
+
+- (id<ARTCancellable>)internetIsUp:(void (^)(bool isUp)) cb {
+    //TODO use ablys internetisup check
+    [self.http makeRequestWithMethod:@"GET" url:[NSURL URLWithString:@"http://google.com"] headers:nil body:nil cb:^(ARTHttpResponse *response) {
+        cb(response.status == 200);
+    }];
+    return nil;
+     
 }
 
 - (id<ARTCancellable>)stats:(ARTPaginatedResultCb)cb {
     return [self statsWithParams:nil cb:cb];
 }
 
+-(void) throwOnHighLimitCheck:(NSDictionary *) params {
+    NSString * limit = [params valueForKey:@"limit"];
+    if(!limit) {
+        return;
+    }
+    int value = [limit intValue];
+    if(value > 1000) {
+        [NSException raise:@"cannot set a limit over 1000" format:@"%d", value];
+    }
+}
+
 - (id<ARTCancellable>)statsWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb {
+    [self throwOnHighLimitCheck:queryParams];
     return [self withAuthHeaders:^(NSDictionary *authHeaders) {
         ARTHttpRequest *req = [[ARTHttpRequest alloc] initWithMethod:@"GET" url:[self resolveUrl:@"/stats" queryParams:queryParams] headers:authHeaders body:nil];
         return [ARTHttpPaginatedResult makePaginatedRequest:self.http request:req responseProcessor:^(ARTHttpResponse *response) {
@@ -252,20 +331,116 @@
     return channel;
 }
 
+-(bool) getNextFallbackHost  {
+    NSArray * hosts = [ARTDefault fallbackHosts];
+    if(self.fallbackCount >= [hosts count]) {
+        self.fallbackCount =0;
+        self.baseUrl = [self.options restUrl];
+        return false;
+    }
+    NSString * host =[hosts objectAtIndex:self.fallbackCount++];
+    self.baseUrl =[ARTOptions restUrl:host port:self.options.restPort];
+    return true;
+}
+
+-(bool) isAnErrorStatus:(int) status {
+    switch (status) {
+        case 400:
+        case 401:
+        case 403:
+        case 404:
+        case 405:
+        case 500:
+            return true;
+        default:
+            return false;
+    }
+}
+
+-(bool) shouldTryFallback:(ARTHttpResponse *) response {
+    if(![self.options isFallbackPermitted]) {
+        return false;
+    }
+    if(!response.body) { //we didnt hit anything ably. Either bad host or host is down
+        return true;
+    }
+    switch(response.error.code) { //this ably server returned an internal error
+        case 50000:
+        case 50001:
+        case 50002:
+        case 50003:
+            return true;
+        default:
+            return false;
+    }
+}
+
 - (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method relUrl:(NSString *)relUrl headers:(NSDictionary *)headers body:(NSData *)body authenticated:(ARTAuthentication)authenticated cb:(ARTHttpCb)cb {
+    __weak ARTRest * weakSelf = self;
+    ARTHttpCb errorCheckingCb = ^(ARTHttpResponse * response) {
+        ARTRest * s = weakSelf;
+        [ARTLog verbose:[NSString stringWithFormat:@"ARTRest Http response is %d", response.status]];
+        if([s isAnErrorStatus:response.status]) {
+            if(response.body) {
+                ARTErrorInfo * error = [s.defaultEncoder decodeError:response.body];
+                response.error = error;
+                [ARTLog info:[NSString stringWithFormat:@"ARTRest received an error: \n status %d  \n code %d \n message: %@", error.statusCode, error.code, error.message]];
+            }
+        }
+        if([s shouldTryFallback:response]) {
+            if([s getNextFallbackHost]) {
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                    [s makeRequestWithMethod:method relUrl:relUrl headers:headers body:body authenticated:authenticated cb:cb];
+                });
+            }
+            else {
+                [ARTLog warn:@"ARTRest has no more fallback hosts to attempt. Giving up."];
+                cb(response);
+                return;
+            }
+        }
+        else if(response && response.error && response.error.code == 40140) {
+            [ARTLog info:@"requesting new token"];
+            if(![_auth canRequestToken]) {
+                cb(response);
+                return;
+            }
+            [_auth attemptTokenFetch:^() {
+                ARTRest * s = weakSelf;
+                if(s) {
+                    //TODO consider counting this. enough times we give up?
+                    [ARTLog debug:@"ARTRest Token fetch complete. Now trying the same server call again with the new token"];
+                    [s makeRequestWithMethod:method relUrl:relUrl headers:headers body:body authenticated:authenticated cb:cb];
+                }
+                else {
+                    [ARTLog error:@"ARTRest is nil. Can't renew token"];
+                    cb(response);
+                }
+            }];
+        }
+        else {
+            cb(response);
+        }
+    };
+    
     NSURL *url = [self resolveUrl:relUrl];
     headers = [self withAcceptHeader:headers];
 
     if (authenticated == ARTAuthenticationOff) {
-        return [self.http makeRequestWithMethod:method url:url headers:headers body:body cb:cb];
+        return [self.http makeRequestWithMethod:method url:url headers:headers body:body cb:errorCheckingCb];
     } else {
-        return [self withAuthHeadersUseBasic:(authenticated == ARTAuthenticationUseBasic) cb:^(NSDictionary *authHeaders) {
-        NSMutableDictionary *allHeaders = [NSMutableDictionary dictionary];
-        [allHeaders addEntriesFromDictionary:headers];
-        [allHeaders addEntriesFromDictionary:authHeaders];
-        return [self.http makeRequestWithMethod:method url:url headers:allHeaders body:body cb:cb];
-    }];
-        
+        bool useBasic = authenticated == ARTAuthenticationUseBasic;
+        return [self withAuthHeadersUseBasic:useBasic cb:^(NSDictionary *authHeaders) {
+            NSMutableDictionary *allHeaders = [NSMutableDictionary dictionary];
+            [allHeaders addEntriesFromDictionary:headers];
+            [allHeaders addEntriesFromDictionary:authHeaders];
+            if(useBasic) {
+                return [self.http makeRequestWithMethod:method url:url headers:allHeaders body:body cb:errorCheckingCb];
+            }
+            else {
+                return [self.http makeRequestWithMethod:method url:url headers:allHeaders body:body cb:errorCheckingCb];
+            }
+        }];
     }
 }
 
@@ -279,15 +454,28 @@
             [mimeTypes addObject:mimeType];
         }
     }
-
     md[@"Accept"] = [mimeTypes componentsJoinedByString:@","];
 
     return md;
 }
 
+
+
 @end
 
 @implementation ARTRest (Private)
+
+- (id<ARTCancellable>) postTestStats:(NSArray *) stats cb:(void(^)(ARTStatus * status)) cb {
+    NSDictionary *headers = @{@"Content-Type":self.defaultEncoding};
+    NSData * statsData = [NSJSONSerialization dataWithJSONObject:stats options:0 error:nil];
+    return [self post:@"/stats" headers:headers body:statsData authenticated:ARTAuthenticationOn cb:^(ARTHttpResponse *response) {
+        cb([ARTStatus state:ARTStatusOk info:response.error]);
+    }];
+}
+
+- (NSURL *) getBaseURL {
+    return self.baseUrl;
+}
 
 - (id<ARTEncoder>)defaultEncoder {
     return self.encoders[self.defaultEncoding];
@@ -306,7 +494,15 @@
 }
 
 - (NSURL *)resolveUrl:(NSString *)relUrl {
-    return [NSURL URLWithString:relUrl relativeToURL:self.baseUrl];
+    if([relUrl length] ==0) {
+        return self.baseUrl;
+    }
+    if([[relUrl substringWithRange:NSMakeRange(0, 1)] isEqualToString:@"/"]) {
+        return [NSURL URLWithString:relUrl relativeToURL:self.baseUrl];
+    }
+    [ARTLog verbose:@"ARTRest is treating the relative url as the base"];
+    return [NSURL URLWithString:relUrl];
+
 }
 
 - (NSURL *)resolveUrl:(NSString *)relUrl queryParams:(NSDictionary *)queryParams {
@@ -343,5 +539,6 @@
 - (id<ARTCancellable>)withAuthParams:(id<ARTCancellable>(^)(NSDictionary *))cb {
     return [self.auth authParams:cb];
 }
+
 
 @end

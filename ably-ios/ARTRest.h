@@ -26,7 +26,7 @@
 - (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
 
 - (id<ARTCancellable>)presence:(ARTPaginatedResultCb)cb;
-- (id<ARTCancellable>)presenceWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
+- (id<ARTCancellable>)presenceGetWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
 - (id<ARTCancellable>)presenceHistory:(ARTPaginatedResultCb)cb;
 - (id<ARTCancellable>)presenceHistoryWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
 
@@ -36,16 +36,22 @@
 {
 
 }
+
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithKey:(NSString *)key;
-- (instancetype)initWithOptions:(ARTOptions *)options;
+-(instancetype) initWithOptions:(ARTOptions *) options;
+-(instancetype) initWithKey:(NSString *) key;
+- (id<ARTCancellable>) token:(ARTAuthTokenParams *) keyName tokenCb:(void (^)(ARTStatus * status, ARTTokenDetails *)) cb;
 
-
-- (id<ARTCancellable>) token:(ARTAuthTokenParams *) keyName tokenCb:(void (^)(ARTStatus status, ARTTokenDetails *)) cb;
-- (id<ARTCancellable>)time:(void(^)(ARTStatus status, NSDate *time))cb;
+- (id<ARTCancellable>)time:(void(^)(ARTStatus * status, NSDate *time))cb;
 - (id<ARTCancellable>)stats:(ARTPaginatedResultCb)cb;
 - (id<ARTCancellable>)statsWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
+- (id<ARTCancellable>)internetIsUp:(void (^)(bool isUp)) cb;
 - (ARTRestChannel *)channel:(NSString *)channelName;
 - (ARTRestChannel *)channel:(NSString *)channelName cipherParams:(ARTCipherParams *)cipherParams;
+
+
+-(ARTAuth *) auth;
+
+
 
 @end

@@ -13,6 +13,7 @@
 
 @class ARTRest;
 
+
 @interface ARTTokenDetails : NSObject
 
 @property (readonly, strong, nonatomic) NSString *token;
@@ -24,8 +25,6 @@
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
 - (instancetype)initWithId:(NSString *)id expires:(int64_t)expires issued:(int64_t)issued capability:(NSString *)capability clientId:(NSString *)clientId;
-
-+ (instancetype)authTokenWithId:(NSString *)id expires:(int64_t)expires issued:(int64_t)issued capability:(NSString *)capability clientId:(NSString *)clientId;
 
 @end
 
@@ -44,12 +43,10 @@
 
 - (instancetype)initWithId:(NSString *)id ttl:(int64_t)ttl capability:(NSString *)capability clientId:(NSString *)clientId timestamp:(int64_t)timestamp nonce:(NSString *)nonce mac:(NSString *)mac;
 
-+ (instancetype)authTokenParamsWithId:(NSString *)id ttl:(int64_t)ttl capability:(NSString *)capability clientId:(NSString *)clientId timestamp:(int64_t)timestamp nonce:(NSString *)nonce mac:(NSString *)mac;
-
 -(NSDictionary *) asDictionary;
 @end
 
-typedef id<ARTCancellable>(^ARTAuthCb)(void(^continuation)(ARTStatus,ARTTokenDetails *));
+typedef id<ARTCancellable>(^ARTAuthCb)(void(^continuation)(ARTStatus *,ARTTokenDetails *));
 typedef id<ARTCancellable>(^ARTSignedTokenRequestCb)(ARTAuthTokenParams *, void(^continuation)(ARTAuthTokenParams *));
 typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
     ARTAuthMethodBasic,
@@ -65,10 +62,13 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 @property (readwrite, strong, nonatomic) NSString *keySecret;
 @property (readwrite, strong, nonatomic) NSString *token;
 @property (readwrite, strong, nonatomic) NSString *capability;
+@property (readwrite, strong, nonatomic) NSString *nonce;
+@property (readwrite, assign, nonatomic) int64_t ttl;
 @property (readwrite, strong, nonatomic) NSDictionary *authHeaders;
 @property (readwrite, strong, nonatomic) NSString *clientId;
 @property (readwrite, assign, nonatomic) BOOL queryTime;
 @property (readwrite, assign, nonatomic) BOOL useTokenAuth;
+@property (readwrite, assign, nonatomic) ARTTokenDetails * tokenDetails;
 
 
 - (instancetype)init;
@@ -83,14 +83,15 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 
 @interface ARTAuth : NSObject
 
-- (instancetype)initWithRest:(ARTRest *)rest options:(ARTAuthOptions *)options;
-
-
-- (ARTAuthMethod) getAuthMethod;
+- (instancetype)initWithRest:(ARTRest *) rest options:(ARTAuthOptions *) options;
+- (ARTAuthOptions *)getAuthOptions;
+- (ARTAuthMethod)getAuthMethod;
 - (id<ARTCancellable>)authHeadersUseBasic:(BOOL)useBasic cb:(id<ARTCancellable>(^)(NSDictionary *))cb;
 - (id<ARTCancellable>)authParams:(id<ARTCancellable>(^)(NSDictionary *))cb;
-- (id<ARTCancellable>)authToken:(id<ARTCancellable>(^)(ARTTokenDetails *))cb;
+- (id<ARTCancellable>)requestToken:(id<ARTCancellable>(^)(ARTTokenDetails *))cb;
 - (id<ARTCancellable>)authTokenForceReauth:(BOOL)force cb:(id<ARTCancellable>(^)(ARTTokenDetails *))cb;
+- (void)attemptTokenFetch:(void (^)()) cb;
+- (bool)canRequestToken;
 
-
++ (ARTSignedTokenRequestCb)defaultSignedTokenRequestCallback:(ARTAuthOptions *)authOptions rest:(ARTRest *)rest;
 @end
