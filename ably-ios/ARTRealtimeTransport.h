@@ -33,7 +33,9 @@
 @property (readwrite, weak, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
 - (void)send:(ARTProtocolMessage *)msg;
 - (void)connect;
-- (void)close:(BOOL)sendClose;
-- (void)abort:(ARTStatus)reason;
+- (void)sendClose;
+- (void)sendPing;
+- (void)close;
+- (void)abort:(ARTStatus *)reason;
 
 @end

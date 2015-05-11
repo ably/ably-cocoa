@@ -15,13 +15,10 @@
 #import "ARTRealtime.h"
 #import "ARTTestUtil.h"
 
-@interface ARTRealtimeConnectFail : XCTestCase
-{
-    ARTRealtime * _realtime;
-}
+@interface ARTRealtimeConnectFailTest : XCTestCase
 @end
 
-@implementation ARTRealtimeConnectFail
+@implementation ARTRealtimeConnectFailTest
 
 - (void)setUp {
     
@@ -30,23 +27,11 @@
 }
 
 - (void)tearDown {
-    _realtime = nil;
+
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
 }
 
-- (void)withRealtimeAlt:(TestAlteration) alt cb:(void (^)(ARTRealtime *realtime))cb {
-    if (!_realtime) {
-        [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] withAlteration:alt cb:^(ARTOptions *options) {
-            if (options) {
-                _realtime = [[ARTRealtime alloc] initWithOptions:options];
-            }
-            cb(_realtime);
-        }];
-        return;
-    }
-    cb(_realtime);
-}
 
 
 //TODO implement

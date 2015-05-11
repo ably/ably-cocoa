@@ -16,6 +16,7 @@
 #import "ARTLog.h"
 #import "ARTAuth.h"
 #import "ARTHttp.h"
+#import "ARTStatus.h"
 
 @interface ARTJsonEncoder ()
 
@@ -131,6 +132,7 @@
     message.clientId = [input artString:@"clientId"];
     message.payload = [self payloadFromDictionary:input];
     message.timestamp = [input artDate:@"timestamp"];
+    message.connectionId = [input artString:@"connectionId"];
 
     return message;
 }
@@ -319,8 +321,11 @@
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
+    
+    NSData * tokenData = [[input artString:@"token"] dataUsingEncoding:NSUTF8StringEncoding];
+    NSString * token =[ARTBase64PayloadEncoder toBase64:tokenData];
     ARTTokenDetails * tok = [[ARTTokenDetails alloc]
-                          initWithId: [input artString:@"token"]
+                          initWithId: token
                              expires: [[input artNumber:@"expires"] longLongValue]
                               issued: [[input artNumber:@"issued"] longLongValue]
                           capability: [input artString:@"capability"]
@@ -333,20 +338,23 @@
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
-
     ARTProtocolMessage *message = [[ARTProtocolMessage alloc] init];
     message.action = (ARTProtocolMessageAction)[[input artNumber:@"action"] intValue];
     message.count = [[input artNumber:@"count"] intValue];
     message.channel = [input artString:@"channel"];
     message.channelSerial = [input artString:@"channelSerial"];
     message.connectionId = [input artString:@"connectionId"];
-    message.connectionSerial = [[input artNumber:@"connectionSerial"] longLongValue];
+    NSNumber * serial =  [input artNumber:@"connectionSerial"];
+    if(serial) {
+        message.connectionSerial = [serial longLongValue];
+    }
     message.id = [input artString:@"id"];
     message.msgSerial = [[input artNumber:@"msgSerial"] longLongValue];
     message.timestamp = [input artDate:@"timestamp"];
     message.messages = [self messagesFromArray:[input objectForKey:@"messages"]];
     message.presence = [self presenceMessagesFromArray:[input objectForKey:@"presence"]];
     message.connectionKey = [input artString:@"connectionKey"];
+    message.flags = [[input artNumber:@"flags"] longLongValue];
 
     return message;
  }
@@ -376,7 +384,6 @@
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
-
     ARTStatsMessageTypes *all = [self statsMessageTypesFromDictionary:[input objectForKey:@"all"]];
     ARTStatsMessageTraffic *inbound = [self statsMessageTrafficFromDictionary:[input objectForKey:@"inbound"]];
     ARTStatsMessageTraffic *outbound = [self statsMessageTrafficFromDictionary:[input objectForKey:@"outbound"]];
@@ -386,7 +393,7 @@
     ARTStatsRequestCount *apiRequests = [self statsRequestCountFromDictionary:[input objectForKey:@"apiRequests"]];
     ARTStatsRequestCount *tokenRequests = [self statsRequestCountFromDictionary:[input objectForKey:@"tokenRequests"]];
 
-    if (all && inbound && outbound && persisted && connections && channels && apiRequests && tokenRequests) {
+    if (all || inbound || outbound || persisted || connections || channels || apiRequests || tokenRequests) {
         return [[ARTStats alloc] initWithAll:all inbound:inbound outbound:outbound persisted:persisted connections:connections channels:channels apiRequests:apiRequests tokenRequests:tokenRequests];
     }
 
@@ -402,7 +409,7 @@
     ARTStatsMessageCount *messages = [self statsMessageCountFromDictionary:[input objectForKey:@"messages"]];
     ARTStatsMessageCount *presence = [self statsMessageCountFromDictionary:[input objectForKey:@"presence"]];
 
-    if (all && messages && presence) {
+    if (all || messages || presence) {
         return [[ARTStatsMessageTypes alloc] initWithAll:all messages:messages presence:presence];
     }
 
@@ -435,7 +442,7 @@
     ARTStatsMessageTypes *push = [self statsMessageTypesFromDictionary:[input objectForKey:@"push"]];
     ARTStatsMessageTypes *httpStream = [self statsMessageTypesFromDictionary:[input objectForKey:@"httpStream"]];
 
-    if (all && realtime && rest && push && httpStream) {
+    if (all || realtime || rest || push || httpStream) {
         return [[ARTStatsMessageTraffic alloc] initWithAll:all realtime:realtime rest:rest push:push httpStream:httpStream];
     }
 
@@ -451,7 +458,7 @@
     ARTStatsResourceCount *plain = [self statsResourceCountFromDictionary:[input objectForKey:@"plain"]];
     ARTStatsResourceCount *tls = [self statsResourceCountFromDictionary:[input objectForKey:@"tls"]];
 
-    if (all && plain && tls) {
+    if (all || plain || tls) {
         return [[ARTStatsConnectionTypes alloc] initWithAll:all plain:plain tls:tls];
     }
 
@@ -480,8 +487,8 @@
     return nil;
 }
 
-- (ARTHttpError *) decodeError:(NSData *) error {
-    ARTHttpError * e = [[ARTHttpError alloc] init];
+- (ARTErrorInfo *) decodeError:(NSData *) error {
+    ARTErrorInfo * e = [[ARTErrorInfo alloc] init];
     NSDictionary * d = [[self decodeDictionary:error] valueForKey:@"error"];
     e.code= [[d artNumber:@"code"] intValue];
     e.message = [d artString:@"message"];
@@ -518,8 +525,8 @@
     id data = [input objectForKey:@"data"];
     ARTPayload *payload = [ARTPayload payloadWithPayload:data encoding:encoding];
     ARTPayload *decoded = nil;
-    ARTStatus status = [[ARTBase64PayloadEncoder instance] decode:payload output:&decoded];
-    if (status != ARTStatusOk) {
+    ARTStatus *status = [[ARTBase64PayloadEncoder instance] decode:payload output:&decoded];
+    if (status.status != ARTStatusOk) {
         [ARTLog error:[NSString stringWithFormat:@"ARTJsonEncoder failed to decode payload %@", payload]];
     }
     return decoded;
@@ -527,11 +534,11 @@
 
 - (void)writePayload:(ARTPayload *)payload toDictionary:(NSMutableDictionary *)output {
     ARTPayload *encoded = nil;
-    ARTStatus status = [[ARTBase64PayloadEncoder instance] encode:payload output:&encoded];
-    if(status != ARTStatusOk) {
+    ARTStatus *status = [[ARTBase64PayloadEncoder instance] encode:payload output:&encoded];
+    if(status.status != ARTStatusOk) {
         [ARTLog error:@"ARTJsonEncoder failed to encode payload"];
     }
-    NSAssert(status == ARTStatusOk, @"Error encoding payload");
+    NSAssert(status.status == ARTStatusOk, @"Error encoding payload");
 
     NSAssert([payload.payload isKindOfClass:[NSString class]], @"Only string payloads are accepted");
 

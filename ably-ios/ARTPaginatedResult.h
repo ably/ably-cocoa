@@ -17,9 +17,9 @@
 - (BOOL)hasCurrent;
 - (BOOL)hasNext;
 
-typedef void (^ARTPaginatedResultCb)(ARTStatus status, id<ARTPaginatedResult> result);
-- (void)getFirstPage:(ARTPaginatedResultCb)cb;
-- (void)getCurrentPage:(ARTPaginatedResultCb)cb;
-- (void)getNextPage:(ARTPaginatedResultCb)cb;
+typedef void (^ARTPaginatedResultCb)(ARTStatus *status, id<ARTPaginatedResult> result);
+- (void)first:(ARTPaginatedResultCb)cb;
+- (void)current:(ARTPaginatedResultCb)cb;
+- (void)next:(ARTPaginatedResultCb)cb;
 
 @end
