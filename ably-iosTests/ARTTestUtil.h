@@ -9,6 +9,9 @@
 #import <Foundation/Foundation.h>
 
 #import "ARTOptions.h"
+#import "ARTRest.h"
+#import "ARTRealtime.h"
+
 @class ARTRestChannel;
 @class XCTestExpectation;
 @class ARTRealtimeChannel;
@@ -42,6 +45,9 @@ typedef NS_ENUM(NSUInteger, TestAlteration) {
 +(ARTOptions *) binaryRestOptions;
 +(ARTOptions *) binaryRealtimeOptions;
 
+
++(void) testRest:(ARTRestConstructorCb)cb;
++(void) testRealtime:(ARTRealtimeConstructorCb)cb;
 
 +(void)repeat:(int)count i:(int)i delay:(NSTimeInterval)delay block:(void (^)(int))block;
 +(void)repeat:(int)count delay:(NSTimeInterval)delay block:(void (^)(int))block ;

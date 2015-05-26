@@ -7,7 +7,7 @@
 //
 
 #import "ARTOptions.h"
-
+#import "ARTOptions+Private.h"
 @interface ARTOptions ()
 {
     
@@ -18,6 +18,29 @@
 @end
 
 @implementation ARTOptions
+
+
++(NSString *) getDefaultRestHost:(NSString *) replacement modify:(bool) modify {
+    static NSString * restHost =@"rest.ably.io";
+    if (modify) {
+        restHost = replacement;
+    }
+    return restHost;
+}
+
++(NSString *) getDefaultRealtimeHost:(NSString *) replacement modify:(bool) modify {
+    static NSString * realtimeHost =@"realtime.ably.io";
+    if (modify) {
+        realtimeHost = replacement;
+    }
+    return realtimeHost;
+}
+
+
+//TODO get names
++(NSArray *) fallbackRestHosts {
+    return @[@""];
+}
 
 - (instancetype)init {
     self = [super init];
@@ -44,11 +67,15 @@
     return self;
 }
 
+-(NSString *) restHost {
+    return _environment ?[NSString stringWithFormat:@"%@-%@", _environment, _restHost] : _restHost;
+}
+
 -(NSString * ) defaultRestHost {
-    return @"rest.ably.io";
+    return [ARTOptions getDefaultRestHost:@"" modify:false];
 }
 -(NSString *) defaultRealtimeHost {
-    return @"realtime.ably.io";
+    return [ARTOptions getDefaultRealtimeHost:@"" modify:false];
 }
 
 -(int) defaultRestPort {
@@ -65,12 +92,14 @@
     _realtimeHost = [self defaultRealtimeHost];
     _restPort = [self defaultRestPort];
     _realtimePort = [self defaultRealtimePort];
-    _queueMessages = NO;
+    _queueMessages = YES;
     _resume = nil;
     _echoMessages = YES;
     _recover = nil;
     _binary = false;
+    _autoConnect = true;
     _resumeKey = nil;
+    _environment = nil;
     
     return self;
 }
@@ -94,8 +123,7 @@
     if (!options.authOptions) {
         return nil;
     }
-
-
+    
     options.clientId = self.clientId;
     options.restHost = self.restHost;
     options.realtimeHost = self.realtimeHost;
@@ -105,8 +133,10 @@
     options.echoMessages = self.echoMessages;
     options.recover = self.recover;
     options.binary = self.binary;
+    options.autoConnect = self.autoConnect;
     options.resume = self.resume;
     options.resumeKey = self.resumeKey;
+    options.environment = self.environment;
 
     return options;
 }
@@ -116,9 +146,10 @@
     self.realtimeHost = realtimeHost;
     self.restHost = restHost;
 }
+
 -(NSString *) realtimeHost
 {
-    return _realtimeHost;
+    return _environment ?[NSString stringWithFormat:@"%@-%@", _environment, _realtimeHost] : _realtimeHost;
 }
 
 @end

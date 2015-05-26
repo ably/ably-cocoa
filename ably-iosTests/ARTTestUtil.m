@@ -13,7 +13,7 @@
 #import "ARTLog.h"
 #import <XCTest/XCTest.h>
 #import "ARTPayload.h"
-
+#import "ARTLog.h"
 @implementation ARTTestUtil
 
 
@@ -31,7 +31,7 @@
 }
 
 +(NSString *) getErrorsJson {
-    return [ARTTestUtil getFileByName:@"ably-common/test-resources/errors.json"];
+    return [ARTTestUtil getFileByName:@"ably-common/protocol/errors.json"];
 }
 
 +(NSString *) getCrypto256Json {
@@ -50,13 +50,16 @@
 +(void) setupApp:(ARTOptions *)options withAlteration:(TestAlteration) alt  appId:(NSString *) appId cb:(void (^)(ARTOptions *))cb
 {
     NSString * str = [ARTTestUtil getTestAppSetupJson];
+    if(str== nil) {
+        [NSException raise:@"error getting test-app-setup.json loaded. Maybe ably-common is missing" format:@""];
+    }
     NSData *data = [str dataUsingEncoding:NSUTF8StringEncoding];
     NSDictionary * topLevel =[NSJSONSerialization JSONObjectWithData:data  options:NSJSONReadingMutableContainers error:nil];
     
     NSDictionary * d = [topLevel objectForKey:@"post_apps"];
     NSData *appSpecData = [NSJSONSerialization dataWithJSONObject:d options:0 error:nil];
-//    NSLog(@" setupApp: %@", [[NSString alloc] initWithData:appSpecData encoding:NSUTF8StringEncoding]);
     
+    [ARTLog debug:[NSString stringWithFormat:@"setupApp: %@", [[NSString alloc] initWithData:appSpecData encoding:NSUTF8StringEncoding]]];
     
     if(alt ==TestAlterationBadWsHost)
     {
@@ -217,7 +220,7 @@
     __block __weak ARTStatusCallback weakCb;
     NSString * pattern = [prefix stringByAppendingString:@"%d"];
     ARTStatusCallback cb;
-    weakCb = cb = ^(ARTStatus status) {
+    weakCb = cb = ^(ARTStatus *status) {
         ++numReceived;
         if(numReceived !=count) {
             [channel publish:[NSString stringWithFormat:pattern, numReceived] cb:weakCb];
@@ -236,7 +239,7 @@
     __block __weak ARTStatusCallback weakCb;
     NSString * pattern = [prefix stringByAppendingString:@"%d"];
     ARTStatusCallback cb;
-    weakCb = cb = ^(ARTStatus status) {
+    weakCb = cb = ^(ARTStatus *status) {
         ++numReceived;
         if(numReceived !=count) {
             [channel publish:[NSString stringWithFormat:pattern, numReceived] cb:weakCb];
@@ -248,6 +251,17 @@
     [channel publish:[NSString stringWithFormat:pattern, numReceived] cb:cb];
     
 }
-
++(void) testRest:(ARTRestConstructorCb)cb {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+        [ARTRest restWithOptions:options cb:cb];
+    }];
+}
++(void) testRealtime:(ARTRealtimeConstructorCb)cb {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTOptions *options) {
+        [ARTRealtime realtimeWithOptions:options cb:cb];
+    }];
+    
+    
+}
 
 @end

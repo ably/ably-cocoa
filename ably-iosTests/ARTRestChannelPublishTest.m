@@ -13,63 +13,24 @@
 #import "ARTPresenceMessage.h"
 #import "ARTRest.h"
 #import "ARTTestUtil.h"
+#import "ARTPayload+Private.h"
+#import "ARTLog.h"
+
 @interface ARTRestChannelPublishTest : XCTestCase
 {
-    ARTRest *_restText;
-    ARTRest *_restBinary;
-    ARTOptions *_textOptions;
-    ARTOptions *_binaryOptions;
-    float _timeout;
+    ARTRest * _rest;
 }
-
-
 @end
 
 @implementation ARTRestChannelPublishTest
 
 - (void)setUp {
     [super setUp];
-    _textOptions = [[ARTOptions alloc] init];
-    _textOptions.restHost = [ARTTestUtil restHost];
-    _textOptions.binary = false;
-    
-    _binaryOptions = [[ARTOptions alloc] init];
-    _binaryOptions.restHost = [ARTTestUtil restHost];
-    _binaryOptions.binary = true;
-    _timeout = [ARTTestUtil timeout];
 }
 
 - (void)tearDown {
-    _restBinary = nil;
-    _restText = nil;
-    
     [super tearDown];
-}
-
-- (void)withRestText:(void (^)(ARTRest *rest))cb {
-    if (!_restText) {
-        [ARTTestUtil setupApp:_textOptions cb:^(ARTOptions *options) {
-            if (options) {
-                _restText = [[ARTRest alloc] initWithOptions:options];
-            }
-            cb(_restText);
-        }];
-        return;
-    }
-    cb(_restText);
-}
-
-- (void)withRestBinary:(void (^)(ARTRest *rest))cb {
-    if (!_restBinary) {
-        [ARTTestUtil setupApp:_binaryOptions cb:^(ARTOptions *options) {
-            if (options) {
-                _restBinary = [[ARTRest alloc] initWithOptions:options];
-            }
-            cb(_restBinary);
-        }];
-        return;
-    }
-    cb(_restText);
+    _rest = nil;
 }
 
 - (void)testTypesByText {
@@ -77,14 +38,15 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
     NSString * message1 = @"message1";
     NSString * message2 = @"message2";
-    [self withRestText:^(ARTRest *rest) {
+    [ARTTestUtil testRest:^(ARTRest *rest) {
+        _rest = rest;
         ARTRestChannel *channel = [rest channel:@"testTypesByText"];
-        [channel publish:message1 cb:^(ARTStatus status) {
-            XCTAssertEqual(ARTStatusOk, status);
-            [channel publish:message2 cb:^(ARTStatus status) {
-                XCTAssertEqual(ARTStatusOk, status);
-                [channel historyWithParams:@{ @"direction" : @"forwards"} cb:^(ARTStatus status, id<ARTPaginatedResult> result) {
-                    XCTAssertEqual(status, ARTStatusOk);
+        [channel publish:message1 cb:^(ARTStatus *status) {
+            XCTAssertEqual(ARTStatusOk, status.status);
+            [channel publish:message2 cb:^(ARTStatus *status) {
+                XCTAssertEqual(ARTStatusOk, status.status);
+                [channel historyWithParams:@{ @"direction" : @"forwards"} cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
+                    XCTAssertEqual(ARTStatusOk, status.status);
                     NSArray *messages = [result currentItems];
                     XCTAssertEqual(2, messages.count);
                     ARTMessage *m0 = messages[0];
@@ -96,14 +58,51 @@
             }];
         }];
     }];
-    [self waitForExpectationsWithTimeout:_timeout handler:nil];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-/*
- //msgpack not implemented yet
-- (void)testTypesByBinary {
-
+-(void) testPublishArray {
+    XCTFail(@"TODO FINISH. which number is this?");
+    XCTestExpectation *exp = [self expectationWithDescription:@"testPublishArray"];
+    [ARTTestUtil testRest:^(ARTRest *rest) {
+        _rest = rest;
+        ARTRestChannel *channel = [rest channel:@"channel"];
+        NSString * test1 = @"test1";
+        NSString * test2 = @"test2";
+        NSString * test3 = @"test3";
+        NSArray * messages = @[test1, test2, test3];
+        [channel publish:messages cb:^(ARTStatus *status) {
+            XCTAssertEqual(ARTStatusOk, status.status);
+        }];
+        [channel history:^(ARTStatus *status, id<ARTPaginatedResult> result) {
+            XCTAssertEqual(ARTStatusOk, status.status);
+            NSArray *messages = [result currentItems];
+            XCTAssertEqual(2, messages.count);
+            ARTMessage *m0 = messages[0];
+            ARTMessage *m1 = messages[1];
+            ARTMessage *m2 = messages[2];
+            XCTAssertEqualObjects([m0 content], test3);
+            XCTAssertEqualObjects([m1 content], test2);
+            XCTAssertEqualObjects([m2 content], test1);
+            [exp fulfill];
+        }];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
- */
+-(void) testPublishTooManyInArray {
+    XCTestExpectation *exp = [self expectationWithDescription:@"testPublishTooManyInArray"];
+    [ARTTestUtil testRest:^(ARTRest *rest) {
+        _rest = rest;
+        ARTRestChannel *channel = [rest channel:@"channel"];
+        NSArray * messages = @[@"test1", @"test2", @"test3"];
+        [ARTPayload getPayloadArraySizeLimit:2 modify:true];
+        XCTAssertThrows([channel publish:messages cb:^(ARTStatus *status) {}]);
+        [exp fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
+
+
+
 @end

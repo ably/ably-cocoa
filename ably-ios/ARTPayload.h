@@ -25,6 +25,7 @@
 + (instancetype)payloadWithPayload:(id)payload encoding:(NSString *)encoding;
 
 + (id<ARTPayloadEncoder>)defaultPayloadEncoder:(ARTCipherParams *)cipherParams;
++ (size_t) payloadArraySizeLimit;
 
 @end
 
@@ -38,8 +39,8 @@
 
 @protocol ARTPayloadEncoder
 
-- (ARTStatus)encode:(ARTPayload *)payload output:(ARTPayload *__autoreleasing *)output;
-- (ARTStatus)decode:(ARTPayload *)payload output:(ARTPayload *__autoreleasing *)output;
+- (ARTStatus *)encode:(ARTPayload *)payload output:(ARTPayload *__autoreleasing *)output;
+- (ARTStatus *)decode:(ARTPayload *)payload output:(ARTPayload *__autoreleasing *)output;
 - (NSString *)name;
 @end
 
@@ -47,6 +48,7 @@
 
 + (instancetype)instance;
 +(NSString *) toBase64:(NSData *) input;
++(NSString *) fromBase64:(NSString *) base64;
 @end
 
 @interface ARTUtf8PayloadEncoder : NSObject <ARTPayloadEncoder>

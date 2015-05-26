@@ -43,43 +43,35 @@
 - (void)withRealtime:(void (^)(ARTRealtime *realtime))cb {
     if (!_realtime) {
         [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTOptions *options) {
-            if (options) {
-                _options = options;
-                _realtime = [[ARTRealtime alloc] initWithOptions:options];
-            }
-            cb(_realtime);
+            _options = options;
+            [ARTRealtime realtimeWithOptions:_options cb:^(ARTRealtime *realtime) {
+                _realtime = realtime;
+                cb(_realtime);
+            }];
+
         }];
-        return;
     }
-    cb(_realtime);
+    else {
+        cb(_realtime);
+        
+    }
+
 }
 
 - (void)withRealtimeRecover:(NSString *) recover cb:(void (^)(ARTRealtime *realtime))cb {
-    
     _options.recover = recover;
-    _realtimeRecover = [[ARTRealtime alloc] initWithOptions:_options];
-    cb(_realtimeRecover);
+    [ARTRealtime realtimeWithOptions:_options cb:^(ARTRealtime *realtime) {
+        _realtimeRecover = realtime;
+        cb(_realtimeRecover);
+    }];
 }
+
 - (void)withRealtimeExtra:(void (^)(ARTRealtime *realtime))cb {
-    
-    
     _options.recover= nil;
-    _realtimeNonRecovered = [[ARTRealtime alloc] initWithOptions:_options];
-    cb(_realtimeNonRecovered);
-}
-
-
-- (void)withRealtimeAlt:(TestAlteration) alt cb:(void (^)(ARTRealtime *realtime))cb {
-    if (!_realtime) {
-        [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] withAlteration:alt cb:^(ARTOptions *options) {
-            if (options) {
-                _realtime = [[ARTRealtime alloc] initWithOptions:options];
-            }
-            cb(_realtime);
-        }];
-        return;
-    }
-    cb(_realtime);
+    [ARTRealtime realtimeWithOptions:_options cb:^(ARTRealtime *realtime) {
+        _realtimeNonRecovered = realtime;
+        cb(_realtimeNonRecovered);
+    }];
 }
 
 - (void)testRecoverDisconnected {
@@ -88,30 +80,39 @@
     NSString * c2Message= @"c2 says hi";
     XCTestExpectation *expectation = [self expectationWithDescription:@"testRecoverDisconnected"];
     [self withRealtime:^(ARTRealtime *realtime) {
+        _realtime = realtime;
         [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime channel:channelName];
-                [channel publish:c1Message cb:^(ARTStatus status) {
-                    XCTAssertEqual(ARTStatusOk, status);
+                [channel publish:c1Message cb:^(ARTStatus *status) {
+                    XCTAssertEqual(ARTStatusOk, status.status);
                     [realtime onError:nil];
                 }];
             }
             else if(state == ARTRealtimeFailed) {
                 [self withRealtimeExtra:^(ARTRealtime *realtime2) {
+                    ARTRealtimeChannel * c2 = [realtime2 channel:channelName];
                     [realtime2 subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
-                        ARTRealtimeChannel * c2 = [realtime2 channel:channelName];
-                        [c2 publish:c2Message cb:^(ARTStatus status) {
-                            XCTAssertEqual(ARTStatusOk, status);
-                            [self withRealtimeRecover:[realtime getRecovery] cb:^(ARTRealtime *realtimeRecovered) {
+                        [c2 publish:c2Message cb:^(ARTStatus *status) {
+                            XCTAssertEqual(ARTStatusOk, status.status);
+                            [self withRealtimeRecover:[realtime recoveryKey] cb:^(ARTRealtime *realtimeRecovered) {
+                                ARTRealtimeChannel * c3 = [realtimeRecovered channel:channelName];
+                                __block bool gotC1Message = false;
                                 [realtimeRecovered subscribeToStateChanges:^(ARTRealtimeConnectionState cState) {
                                     if(cState == ARTRealtimeConnected) {
-                                        ARTRealtimeChannel * c3 = [realtimeRecovered channel:channelName];
+                                        XCTAssertEqualObjects([realtimeRecovered connectionKey], [realtime connectionKey]);
+                                        XCTAssertEqualObjects([realtimeRecovered connectionId], [realtime connectionId]);
                                         [c3 subscribe:^(ARTMessage * message) {
-                                            XCTAssertEqualObjects(c2Message, [message content]);
-                                            [expectation fulfill];
+                                            if([[message content] isEqualToString:c1Message]) {
+                                                gotC1Message = true;
+                                            }
+                                            else {
+                                                XCTAssertTrue(gotC1Message);
+                                                XCTAssertEqualObjects(c2Message, [message content]);
+                                                [expectation fulfill];
+                                            }
                                         }];
                                     }
-                                    
                                 }];
                             }];
                         }];
@@ -120,15 +121,7 @@
             }
         }];
     }];
-    
     [self waitForExpectationsWithTimeout:100 handler:nil];
-    
 }
 
-//testRecoverDisconnected uses implicit connect, no need for this test.
-/*
-- (void)testRecoverImplicitConnect {
-    XCTFail(@"TODO write test");
-}
-*/
 @end

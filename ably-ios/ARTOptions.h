@@ -21,8 +21,8 @@
 @property (readwrite, assign, nonatomic) BOOL queueMessages;
 @property (readwrite, assign, nonatomic) BOOL echoMessages;
 @property (readwrite, assign, nonatomic) BOOL binary;
-
-//TODO some of these are possibly redundant now
+@property (readwrite, assign, nonatomic) BOOL autoConnect;
+@property (readwrite, strong, nonatomic) NSString *environment;
 @property (readwrite, assign, nonatomic) NSString *resume;
 @property (readwrite, assign, nonatomic) NSString *resumeKey;
 @property (readwrite, strong, nonatomic) NSString *recover;
@@ -34,7 +34,6 @@
 // realtime requires a rest host so we explictly set both together when using realtime.
 -(void) setRealtimeHost:(NSString *)realtimeHost withRestHost:(NSString *) restHost;
 -(NSString *) realtimeHost;
-
 
 + (instancetype)options;
 + (instancetype)optionsWithKey:(NSString *)key;

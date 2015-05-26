@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "ARTStatus.h"
 
-typedef void (^ARTStatusCallback)(ARTStatus status);
+typedef void (^ARTStatusCallback)(ARTStatus * status);
 
 @protocol ARTCancellable
 

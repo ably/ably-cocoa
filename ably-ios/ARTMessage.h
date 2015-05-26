@@ -15,6 +15,7 @@
 @property (readwrite, strong, nonatomic) NSString *id;
 @property (readwrite, strong, nonatomic) NSString *name;
 @property (readwrite, strong, nonatomic) NSString *clientId;
+@property (readwrite, strong, nonatomic) NSString *connectionId;
 @property (readwrite, strong, nonatomic) ARTPayload *payload;
 @property (readwrite, strong, nonatomic) NSDate *timestamp;
 
@@ -25,4 +26,6 @@
 - (ARTMessage *)encode:(id<ARTPayloadEncoder>)encoder;
 - (id) content;
 
++ (ARTMessage *) messageWithPayload:(id) payload name:(NSString *) name;
++ (NSArray *) messagesWithPayloads:(NSArray *) payloads;
 @end
