@@ -9,16 +9,12 @@
 #import "ARTOptions.h"
 #import "ARTOptions+Private.h"
 @interface ARTOptions ()
-{
-    
-}
 @property (readwrite, strong, nonatomic) NSString *realtimeHost;
 - (instancetype)initDefaults;
 
 @end
 
 @implementation ARTOptions
-
 
 +(NSString *) getDefaultRestHost:(NSString *) replacement modify:(bool) modify {
     static NSString * restHost =@"rest.ably.io";
@@ -36,11 +32,10 @@
     return realtimeHost;
 }
 
-
-//TODO get names
-+(NSArray *) fallbackRestHosts {
-    return @[@""];
++(NSArray *) fallbackHosts {
+    return @[@"A.ably-realtime.com", @"B.ably-realtime.com", @"C.ably-realtime.com", @"D.ably-realtime.com", @"E.ably-realtime.com"];
 }
+
 
 - (instancetype)init {
     self = [super init];
@@ -68,12 +63,13 @@
 }
 
 -(NSString *) restHost {
-    return _environment ?[NSString stringWithFormat:@"%@-%@", _environment, _restHost] : _restHost;
+    return _environment ?[NSString stringWithFormat:@"%@-%@", _environment, self.restHost] : self.restHost;
 }
 
 -(NSString * ) defaultRestHost {
     return [ARTOptions getDefaultRestHost:@"" modify:false];
 }
+
 -(NSString *) defaultRealtimeHost {
     return [ARTOptions getDefaultRealtimeHost:@"" modify:false];
 }
@@ -88,7 +84,7 @@
 
 - (instancetype)initDefaults {
     _clientId = nil;
-    _restHost =  [self defaultRestHost];
+    self.restHost =  [self defaultRestHost];
     _realtimeHost = [self defaultRealtimeHost];
     _restPort = [self defaultRestPort];
     _realtimePort = [self defaultRealtimePort];
@@ -100,7 +96,6 @@
     _autoConnect = true;
     _resumeKey = nil;
     _environment = nil;
-    
     return self;
 }
 
@@ -112,9 +107,12 @@
     return [[ARTOptions alloc] initWithKey:key];
 }
 
-- (NSURL *)restUrl {
-    NSString *s = [NSString stringWithFormat:@"https://%@:%d", self.restHost, self.restPort];
++(NSURL *) restUrl:(NSString *) host port:(int) port {
+    NSString *s = [NSString stringWithFormat:@"https://%@:%d", host, port];
     return [NSURL URLWithString:s];
+}
+- (NSURL *)restUrl {
+    return [ARTOptions restUrl:self.restHost port:self.restPort];
 }
 
 - (instancetype)clone {
@@ -147,9 +145,11 @@
     self.restHost = restHost;
 }
 
--(NSString *) realtimeHost
-{
+-(NSString *) realtimeHost {
     return _environment ?[NSString stringWithFormat:@"%@-%@", _environment, _realtimeHost] : _realtimeHost;
 }
 
+-(bool) isFallbackPermitted {
+    return [self.restHost isEqualToString:[self defaultRestHost]];
+}
 @end

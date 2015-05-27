@@ -46,11 +46,13 @@
 @interface ARTRest ()
 
 @property (readonly, strong, nonatomic) ARTHttp *http;
-@property (readonly, strong, nonatomic) NSURL *baseUrl;
+@property (readonly, strong, nonatomic) ARTOptions * options;
 @property (readonly, strong, nonatomic) NSMutableDictionary *channels;
 @property ( strong, nonatomic) ARTAuth *auth;
 @property (readonly, strong, nonatomic) NSDictionary *encoders;
 @property (readonly, strong, nonatomic) NSString *defaultEncoding;
+@property (readwrite, assign, nonatomic) int fallbackCount;
+
 
 - (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method relUrl:(NSString *)relUrl headers:(NSDictionary *)headers body:(NSData *)body authenticated:(ARTAuthentication)authenticated cb:(ARTHttpCb)cb;
 
@@ -191,10 +193,21 @@
 - (instancetype)initNoAuth:(ARTOptions *) options {
     self = [super init];
     if(self) {
-        _baseUrl = [options restUrl];
+        _options = options;
+        self.baseUrl = [options restUrl];
         [self setup];
     }
     return self;
+}
+
+
+-(NSString *) getNextFallback {
+    NSArray * hosts = [ARTOptions fallbackHosts];
+    if(self.fallbackCount >= [hosts count]) {
+        self.fallbackCount = 0;
+        return nil;
+    }
+    return [hosts objectAtIndex:self.fallbackCount++];
 }
 
 + (void)restWithKey:(NSString *) key cb:(ARTRestConstructorCb) cb {
@@ -236,6 +249,7 @@
                   };
     
     _defaultEncoding = [defaultEncoder mimeType];
+    _fallbackCount = 0;
     
 }
 
@@ -334,27 +348,77 @@
     return channel;
 }
 
+
+-(bool) getNextFallbackHost  {
+    NSArray * hosts = [ARTOptions fallbackHosts];
+    if(self.fallbackCount >= [hosts count]) {
+        self.fallbackCount =0;
+        self.baseUrl = [self.options restUrl];
+        return false;
+    }
+    NSString * host =[hosts objectAtIndex:self.fallbackCount++];
+    self.baseUrl =[ARTOptions restUrl:host port:self.options.restPort];
+    return true;
+}
+
+
+
+-(bool) isAnErrorStatus:(int) status {
+    switch (status) {
+        case 400:
+        case 401:
+        case 403:
+        case 404:
+        case 405:
+        case 500:
+            return true;
+        default:
+            return false;
+    }
+}
+
+-(bool) shouldTryFallback:(ARTHttpResponse *) response {
+    if(![self.options isFallbackPermitted]) {
+        return false;
+    }
+    if(!response.body) { //we didnt hit anything ably
+        return true;
+    }
+    switch(response.error.code) { //this ably server returned an internal error
+        case 50000:
+        case 50001:
+        case 50002:
+        case 50003:
+            return true;
+        default:
+            return false;
+    }
+}
+
 - (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method relUrl:(NSString *)relUrl headers:(NSDictionary *)headers body:(NSData *)body authenticated:(ARTAuthentication)authenticated cb:(ARTHttpCb)cb {
-    
-    
     __weak ARTRest * weakSelf = self;
-    ARTHttpCb errorCheckingCb = ^(ARTHttpResponse * response){
-        switch (response.status) {
-            case 400:
-            case 401:
-            case 403:
-            case 404:
-            case 405:
-            case 500:{
-                ARTErrorInfo * error = [self.defaultEncoder decodeError:response.body];
+    ARTHttpCb errorCheckingCb = ^(ARTHttpResponse * response) {
+        NSLog(@"ERROR CHECKING CB");
+        ARTRest * s = weakSelf;
+        [ARTLog verbose:[NSString stringWithFormat:@"ARTRest Http response is %d", response.status]];
+        if([s isAnErrorStatus:response.status]) {
+            if(response.body) {
+                ARTErrorInfo * error = [s.defaultEncoder decodeError:response.body];
                 response.error = error;
                 [ARTLog info:[NSString stringWithFormat:@"ARTRest received an error: \n status %d  \n code %d \n message: %@", error.statusCode, error.code, error.message]];
-                break;
             }
-            default:
-                break;
         }
-        if(response.error && response.error.code == 40140) {
+        if([s shouldTryFallback:response]) {
+            if([s getNextFallbackHost]) {
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+                    [s makeRequestWithMethod:method relUrl:relUrl headers:headers body:body authenticated:authenticated cb:cb];
+                });
+            }
+            else {
+                NSLog(@"THATS ALL THE FALLBACK HOSTS. TODO transition to suspended");
+            }
+        }
+        else if(response.error && response.error.code == 40140) {
 
             if(![_auth canRequestToken]) {
                 cb(response);
@@ -373,7 +437,7 @@
                 }
             }];
         }
-    else {
+        else {
             cb(response);
         }
     };
@@ -382,8 +446,10 @@
     headers = [self withAcceptHeader:headers];
 
     if (authenticated == ARTAuthenticationOff) {
+        NSLog(@"auth is off");
         return [self.http makeRequestWithMethod:method url:url headers:headers body:body cb:errorCheckingCb];
     } else {
+        NSLog(@"auth is on");
         bool useBasic = authenticated == ARTAuthenticationUseBasic;
         return [self withAuthHeadersUseBasic:useBasic cb:^(NSDictionary *authHeaders) {
             NSMutableDictionary *allHeaders = [NSMutableDictionary dictionary];

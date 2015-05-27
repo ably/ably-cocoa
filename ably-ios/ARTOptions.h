@@ -14,10 +14,10 @@
 
 @property (readwrite, strong, nonatomic) ARTAuthOptions *authOptions;
 @property (readwrite, strong, nonatomic) NSString *clientId;
-@property (readwrite, strong, nonatomic) NSString *restHost;
-
+@property ( strong, nonatomic) NSString *restHost;
 @property (readwrite, assign, nonatomic) int restPort;
 @property (readwrite, assign, nonatomic) int realtimePort;
+
 @property (readwrite, assign, nonatomic) BOOL queueMessages;
 @property (readwrite, assign, nonatomic) BOOL echoMessages;
 @property (readwrite, assign, nonatomic) BOOL binary;
@@ -26,20 +26,21 @@
 @property (readwrite, assign, nonatomic) NSString *resume;
 @property (readwrite, assign, nonatomic) NSString *resumeKey;
 @property (readwrite, strong, nonatomic) NSString *recover;
+@property (readonly, strong, nonatomic) NSURL *restUrl;
 
 - (instancetype)init;
 - (instancetype)initWithKey:(NSString *)key;
 
 
 // realtime requires a rest host so we explictly set both together when using realtime.
--(void) setRealtimeHost:(NSString *)realtimeHost withRestHost:(NSString *) restHost;
--(NSString *) realtimeHost;
+- (void) setRealtimeHost:(NSString *)realtimeHost withRestHost:(NSString *) restHost;
+- (NSString *) realtimeHost;
+-(bool) isFallbackPermitted;
 
++ (NSArray *) fallbackHosts;
++ (NSURL *) restUrl:(NSString *) host port:(int) port;
 + (instancetype)options;
 + (instancetype)optionsWithKey:(NSString *)key;
-
-@property (readonly, strong, nonatomic) NSURL *restUrl;
-
 - (instancetype)clone;
 
 @end

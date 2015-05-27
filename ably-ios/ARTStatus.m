@@ -18,12 +18,17 @@
 -(instancetype) initWithState:(ARTState) state {
     self = [super init];
     if(self) {
+        NSLog(@"state is %d",(int) state);
         _status = state;
         _errorInfo = nil;
     }
     return self;
 }
 
+-(void) setStatus:(ARTState)status {
+    NSLog(@"setting state to %d", status);
+    _status = status;
+}
 +(ARTStatus *) state:(ARTState) state {
     return [[ARTStatus alloc] initWithState:state];
 }

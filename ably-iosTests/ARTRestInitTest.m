@@ -26,6 +26,7 @@
 
 - (void)setUp {
     [super setUp];
+    [ARTLog setLogLevel:ArtLogLevelVerbose];
 }
 
 - (void)tearDown {
@@ -156,14 +157,17 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-- (void)testRestTimeBadHost {
+- (void)testRestTimeNoFallbackHost {
     XCTestExpectation *exp = [self expectationWithDescription:@"testRestTimeBadHost"];
     [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
-        options.restHost = @"this.host.does.not.exist";
+        NSString * badHost = @"this.host.does.not.exist";
+        options.restHost = badHost;
         [ARTRest restWithOptions:options cb:^(ARTRest *rest) {
             _rest =rest;
             [rest time:^(ARTStatus *status, NSDate *date) {
                 XCTAssertEqual(ARTStatusError, status.status);
+                XCTAssertEqualObjects(rest.baseUrl, [badHost stringByAppendingString:@":443"]);
+
                 [exp fulfill];
             }];
         }];
@@ -193,6 +197,21 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
-
-
+/*
+- (void)testRestPostFallbackHost {
+    XCTestExpectation *exp = [self expectationWithDescription:@"testRestTimeBadHost"];
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+        options.restHost = @"this.host.does.not.exist";
+        [ARTRest restWithOptions:options cb:^(ARTRest *rest) {
+            _rest =rest;
+            ARTRestChannel * c = [rest channel:@"name"];
+            [c publish:@"something" cb:^(ARTStatus *status) {
+                XCTAssertEqual(ARTStatusOk, status.status);
+                [exp fulfill];
+            }];
+        }];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
+*/ //TODO RM
 @end

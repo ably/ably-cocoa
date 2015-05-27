@@ -10,8 +10,8 @@
 {
     
 }
+-(bool) isFallbackPermitted;
 +(NSString *) getDefaultRestHost:(NSString *) replacement modify:(bool) modify;
 +(NSString *) getDefaultRealtimeHost:(NSString *) replacement modify:(bool) modify;
 
 @end
-

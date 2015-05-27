@@ -25,6 +25,7 @@ typedef NS_ENUM(NSUInteger, ARTAuthentication) {
 
 @property (readonly, strong, nonatomic) id<ARTEncoder> defaultEncoder;
 @property (readonly, strong, nonatomic) ARTAuth *auth;
+@property (readwrite, strong, nonatomic) NSURL *baseUrl;
 
 - (NSString *)formatQueryParams:(NSDictionary *)queryParams;
 

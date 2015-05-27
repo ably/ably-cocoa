@@ -185,25 +185,40 @@
     NSURLSessionDataTask *task = [self.urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
         
+        
+        CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
+            NSLog(@"WTF THIS WORKS");
+            CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
+                NSLog(@"WTF THIS WORKS???");
+            });
+        });
         [ARTLog verbose:
          [NSString stringWithFormat:@"ARTHttp: Got response %@, err %@",
           response,error]];
         
         if(error) {
             [ARTLog error:[NSString stringWithFormat:@"ARTHttp receieved error: %@", error]];
-            cb([ARTHttpResponse responseWithStatus:(int)httpResponse.statusCode headers:nil body:nil]);
+            cb([ARTHttpResponse responseWithStatus:500 headers:nil body:nil]);
         }
         else {
+            NSLog(@"no error");
             if (httpResponse) {
                 int status = (int)httpResponse.statusCode;
+                NSLog(@"we have a erpsonse %d", status);;
                 [ARTLog debug:
                 [NSString stringWithFormat:@"ARTHttp response status is %d", status]];
                 [ARTLog verbose:[NSString stringWithFormat:@"ARTHttp received response %@",[NSJSONSerialization JSONObjectWithData:data options:0 error:nil]]];
                 CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
+                    NSLog(@"WTF THIS ---------");
+                });
+
+                CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
+                    NSLog(@"WELL THEN %d", status);;
                     cb([ARTHttpResponse responseWithStatus:status headers:httpResponse.allHeaderFields body:data]);
                 });
             } else {
                 CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
+                    NSLog(@"THE OTHER THING");
                     cb([ARTHttpResponse response]);
                 });
             }
