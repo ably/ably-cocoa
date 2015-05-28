@@ -23,9 +23,9 @@
 @property (readwrite, assign, nonatomic) BOOL binary;
 @property (readwrite, assign, nonatomic) BOOL autoConnect;
 @property (readwrite, strong, nonatomic) NSString *environment;
-@property (readwrite, assign, nonatomic) NSString *resume;
-@property (readwrite, assign, nonatomic) NSString *resumeKey;
-@property (readwrite, strong, nonatomic) NSString *recover;
+@property (readwrite, assign) int64_t resume;
+@property (readwrite, copy, nonatomic) NSString *resumeKey;
+@property (readwrite, copy, nonatomic) NSString *recover;
 @property (readonly, strong, nonatomic) NSURL *restUrl;
 
 - (instancetype)init;
@@ -37,7 +37,6 @@
 - (NSString *) realtimeHost;
 -(bool) isFallbackPermitted;
 
-+ (NSArray *) fallbackHosts;
 + (NSURL *) restUrl:(NSString *) host port:(int) port;
 + (instancetype)options;
 + (instancetype)optionsWithKey:(NSString *)key;

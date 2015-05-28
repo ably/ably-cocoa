@@ -30,7 +30,7 @@
 @interface ARTHttpResponse : NSObject
 
 @property (readonly, assign, nonatomic) int status;
-@property (assign, nonatomic) ARTErrorInfo *error;
+@property (readwrite, strong, nonatomic) ARTErrorInfo *error;
 @property (readonly, strong, nonatomic) NSDictionary *headers;
 @property (readonly, strong, nonatomic) NSData *body;
 

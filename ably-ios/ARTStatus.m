@@ -11,29 +11,43 @@
 
 
 @implementation ARTErrorInfo
+-(void) setCode:(int) code message:(NSString *) message {
+    _code = code;
+    _statusCode = code / 100;
+    _message = message;
+}
+
+-(void) setCode:(int) code status:(int) status message:(NSString *) message {
+    _code = code;
+    _statusCode = status;
+    _message =message;
+}
+
 @end
 
 @implementation ARTStatus
 
--(instancetype) initWithState:(ARTState) state {
+-(instancetype) init {
     self = [super init];
     if(self) {
-        NSLog(@"state is %d",(int) state);
-        _status = state;
-        _errorInfo = nil;
-    }
+        _status = ARTStatusOk;
+        _errorInfo =[[ARTErrorInfo alloc] init];
+   }
     return self;
 }
 
 -(void) setStatus:(ARTState)status {
-    NSLog(@"setting state to %d", status);
     _status = status;
 }
+
 +(ARTStatus *) state:(ARTState) state {
-    return [[ARTStatus alloc] initWithState:state];
+    ARTStatus *s = [[ARTStatus alloc] init];
+    s.status= state;
+    return s;
 }
+
 +(ARTStatus *) state:(ARTState) state info:(ARTErrorInfo *) info {
-    ARTStatus * s = [[ARTStatus alloc] initWithState:state];
+    ARTStatus * s = [ARTStatus state:state];
     s.errorInfo = info;
     return s;
 }

@@ -25,10 +25,13 @@ typedef NS_ENUM(NSUInteger, ARTState) {
 };
 
 @interface ARTErrorInfo : NSObject
-@property (strong, nonatomic) NSString *message;
-@property (assign, nonatomic) int statusCode;
-@property (assign, nonatomic) int code;
+@property (readonly, copy, nonatomic) NSString *message;
+@property (readonly, assign, nonatomic) int statusCode;
+@property (readonly, assign, nonatomic) int code;
+-(void) setCode:(int) code message:(NSString *) message;
+-(void) setCode:(int) code status:(int) status message:(NSString *) message;
 @end
+
 
 @interface ARTStatus : NSObject {
     

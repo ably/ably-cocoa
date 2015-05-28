@@ -6,12 +6,11 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-@interface ARTOptions (Private)
-{
+@interface ARTOptions (Private) {
     
 }
--(bool) isFallbackPermitted;
-+(NSString *) getDefaultRestHost:(NSString *) replacement modify:(bool) modify;
-+(NSString *) getDefaultRealtimeHost:(NSString *) replacement modify:(bool) modify;
+- (bool)isFallbackPermitted;
++ (NSString *)getDefaultRestHost:(NSString *) replacement modify:(bool) modify;
++ (NSString *)getDefaultRealtimeHost:(NSString *) replacement modify:(bool) modify;
 
 @end

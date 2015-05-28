@@ -118,8 +118,8 @@
                 
                 XCTAssertEqual(2, [items count]);
                 ARTStats * s = [items objectAtIndex:0];
-                XCTAssertEqual(s.all.messages.count, 110.0);
-                XCTAssertEqual(s.inbound.all.messages.count, 110.0);
+                XCTAssertEqual(s.all.messages.count, 70);
+                XCTAssertEqual(s.inbound.all.messages.count, 70);
                 [exp fulfill];
             }];
         }];
@@ -146,6 +146,7 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
+
 -(void) testStatsMonth {
     XCTestExpectation *exp = [self expectationWithDescription:@"init"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
@@ -157,13 +158,24 @@
                 
                 XCTAssertEqual(1, [items count]);
                 ARTStats * s = [items objectAtIndex:0];
-                XCTAssertEqual(s.all.messages.count, 260.0);
-                XCTAssertEqual(s.inbound.all.messages.count, 260.0);
+                XCTAssertEqual(s.all.messages.count, 180);
+                XCTAssertEqual(s.inbound.all.messages.count, 180);
                 [exp fulfill];
             }];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
+
+-(void) testStatsLimit {
+    XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
+    [ARTTestUtil testRest:^(ARTRest *rest) {
+        _rest = rest;
+        XCTAssertThrows([rest statsWithParams:@{@"limit" : @"1001"} cb:^(ARTStatus * s, id<ARTPaginatedResult> r){}]);
+        [exp fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
+
 
 @end

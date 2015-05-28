@@ -9,21 +9,24 @@
 #import <Foundation/Foundation.h>
 
 
-#import "ARTPresenceMessage.h"
-@interface ARTPresenceMap : NSObject
-{
+@class ARTPresenceMessage;
+@interface ARTPresenceMap : NSObject {
     
 }
 
+@property (readwrite, nonatomic, assign) int64_t syncSerial;
+- (ARTPresenceMessage *)getClient:(NSString *) clientId;
+- (void)put:(ARTPresenceMessage *) message;
 
-
-
-
-
-- (NSArray *)getClient:(NSString *) clientId; //returns the current presencestate
-- (bool)put:(ARTPresenceMessage *) message;
-- (NSArray *)values;
-- (bool)remove:(ARTPresenceMessage *) message;
+//of the form <NSString *, ARTPresenceMessage*> where
+// the key is the clientId and the value is the latest relevant ARTPresenceMessage for that clientId.
+- (NSDictionary *) members;
 - (void)startSync;
 - (void)endSync;
+- (BOOL)isSyncComplete;
+- (BOOL) stillSyncing;
+
+typedef void(^VoidCb)();
+- (void) syncMessageProcessed;
+- (void)onSync:(VoidCb) cb;
 @end

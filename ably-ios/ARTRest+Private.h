@@ -8,7 +8,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ARTRest.h"
 #import "ARTEncoder.h"
 
 /**
@@ -25,8 +24,10 @@ typedef NS_ENUM(NSUInteger, ARTAuthentication) {
 
 @property (readonly, strong, nonatomic) id<ARTEncoder> defaultEncoder;
 @property (readonly, strong, nonatomic) ARTAuth *auth;
-@property (readwrite, strong, nonatomic) NSURL *baseUrl;
 
+
+
+- (NSURL *)getBaseURL;
 - (NSString *)formatQueryParams:(NSDictionary *)queryParams;
 
 - (NSURL *)resolveUrl:(NSString *)relUrl;

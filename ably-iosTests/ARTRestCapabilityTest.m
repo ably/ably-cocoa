@@ -38,10 +38,10 @@
             if (options) {
                 options.authOptions.useTokenAuth = true;
                 options.authOptions.clientId = @"clientId";
-                [ARTRest restWithOptions:options cb:^(ARTRest *rest) {
-                    _rest = rest;
-                    cb(_rest);
-                }];
+                
+                ARTRest * r = [[ARTRest alloc] initWithOptions:options];
+                _rest = r;
+                cb(_rest);
             }
         }];
         return;

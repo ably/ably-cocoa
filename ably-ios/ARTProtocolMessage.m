@@ -7,14 +7,14 @@
 //
 
 #import "ARTProtocolMessage.h"
-
+#import "ARTStatus.h"
 @implementation ARTProtocolMessage
 
 - (id)init {
     self = [super init];
     if (self) {
         _count = 0;
-        _error = ARTStatusOk;
+        _error = [[ARTErrorInfo alloc] init];
         _id = nil;
         _channel = nil;
         _channelSerial = nil;
@@ -55,6 +55,9 @@
 
 - (BOOL)ackRequired {
     return self.action == ARTProtocolMessageMessage || self.action == ARTProtocolMessagePresence || self.action == ARTProtocolMessageDetach;
+}
+-(BOOL) syncInOperation {
+    return self.flags & 0x1;
 }
 
 @end

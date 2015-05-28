@@ -46,6 +46,8 @@
 		1CC3D95B1AB702E30005BEB0 /* ARTRealtimePresenceHistoryTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CC3D95A1AB702E30005BEB0 /* ARTRealtimePresenceHistoryTest.m */; };
 		1CC3D95D1AB704080005BEB0 /* ARTRealtimeRecoverTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CC3D95C1AB704080005BEB0 /* ARTRealtimeRecoverTest.m */; };
 		1CC3D95F1AB7043F0005BEB0 /* ARTRealtimeResumeTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CC3D95E1AB7043F0005BEB0 /* ARTRealtimeResumeTest.m */; };
+		1CD8DC9F1B1C7315007EAF36 /* ARTDefault.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */; };
+		1CD8DCA01B1C7315007EAF36 /* ARTDefault.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */; };
 		1CEFC60E1B0F9EF500D84463 /* ARTTokenDetails+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CEFC60D1B0F9EF500D84463 /* ARTTokenDetails+Private.h */; };
 		960D07931A45F1D800ED8C8C /* ARTCrypto.h in Headers */ = {isa = PBXBuildFile; fileRef = 960D07911A45F1D800ED8C8C /* ARTCrypto.h */; };
 		960D07941A45F1D800ED8C8C /* ARTCrypto.m in Sources */ = {isa = PBXBuildFile; fileRef = 960D07921A45F1D800ED8C8C /* ARTCrypto.m */; };
@@ -178,6 +180,8 @@
 		1CC3D95A1AB702E30005BEB0 /* ARTRealtimePresenceHistoryTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimePresenceHistoryTest.m; sourceTree = "<group>"; };
 		1CC3D95C1AB704080005BEB0 /* ARTRealtimeRecoverTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimeRecoverTest.m; sourceTree = "<group>"; };
 		1CC3D95E1AB7043F0005BEB0 /* ARTRealtimeResumeTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimeResumeTest.m; sourceTree = "<group>"; };
+		1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTDefault.h; sourceTree = "<group>"; };
+		1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDefault.m; sourceTree = "<group>"; };
 		1CEFC60D1B0F9EF500D84463 /* ARTTokenDetails+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTTokenDetails+Private.h"; sourceTree = "<group>"; };
 		960D07911A45F1D800ED8C8C /* ARTCrypto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTCrypto.h; sourceTree = "<group>"; };
 		960D07921A45F1D800ED8C8C /* ARTCrypto.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTCrypto.m; sourceTree = "<group>"; };
@@ -363,6 +367,8 @@
 				1CEFC60D1B0F9EF500D84463 /* ARTTokenDetails+Private.h */,
 				1C2B0FFB1B136A6D00E3633C /* ARTPresenceMap.h */,
 				1C2B0FFC1B136A6D00E3633C /* ARTPresenceMap.m */,
+				1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */,
+				1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */,
 			);
 			path = "ably-ios";
 			sourceTree = "<group>";
@@ -436,6 +442,7 @@
 				1C70CB881B020D7F003D295A /* ARTOptions+Private.h in Headers */,
 				96A507A11A377AA50077CDF8 /* ARTPresenceMessage.h in Headers */,
 				1C2B0FFD1B136A6D00E3633C /* ARTPresenceMap.h in Headers */,
+				1CD8DC9F1B1C7315007EAF36 /* ARTDefault.h in Headers */,
 				96A5079D1A371F800077CDF8 /* ARTHttpPaginatedResult.h in Headers */,
 				1C8065051AE7C8FA00D49357 /* ARTPayload+Private.h in Headers */,
 				961343E81A432E7C006DC822 /* ARTPayload.h in Headers */,
@@ -611,6 +618,7 @@
 				96E408441A38939E00087F77 /* ARTProtocolMessage.m in Sources */,
 				96BF61651A35CDE1004CF2B3 /* ARTMessage.m in Sources */,
 				1CA5E1C31AB72369006ADD70 /* ARTMsgPackEncoder.m in Sources */,
+				1CD8DCA01B1C7315007EAF36 /* ARTDefault.m in Sources */,
 				96A5079E1A371F800077CDF8 /* ARTHttpPaginatedResult.m in Sources */,
 				1C6C18A41ADFDAB100AB79E4 /* ARTLog.m in Sources */,
 				96A507BE1A3791490077CDF8 /* ARTRealtime.m in Sources */,

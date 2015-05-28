@@ -87,13 +87,17 @@ enum {
                 if([parts count] ==2) {
                     NSString * conId = [parts objectAtIndex:0];
                     NSString * key = [parts objectAtIndex:1];
+                    [ARTLog info:[NSString stringWithFormat:@"attempting recovery of connection %@", conId]];
                     queryParams[@"recover"] = conId;
                     queryParams[@"connection_serial"] = key;
                 }
+                else {
+                    [ARTLog error:[NSString stringWithFormat:@"recovery string is malformed, ignoring: '%@'", options.recover]];
+                }
             }
-            else if(options.resume != nil) {
+            else if(options.resumeKey != nil) {
                 queryParams[@"resume"]  =  options.resumeKey;
-                queryParams[@"connection_serial"] = options.resume;
+                queryParams[@"connection_serial"] = [NSString stringWithFormat:@"%lld",options.resume];
             }
             if (clientId) {
                 queryParams[@"client_id"] = clientId;

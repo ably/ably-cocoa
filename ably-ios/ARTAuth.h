@@ -83,13 +83,15 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 
 @interface ARTAuth : NSObject
 
--(ARTAuthOptions *) getAuthOptions;
-- (ARTAuthMethod) getAuthMethod;
+- (instancetype)initWithRest:(ARTRest *) rest options:(ARTAuthOptions *) options;
+- (ARTAuthOptions *)getAuthOptions;
+- (ARTAuthMethod)getAuthMethod;
 - (id<ARTCancellable>)authHeadersUseBasic:(BOOL)useBasic cb:(id<ARTCancellable>(^)(NSDictionary *))cb;
 - (id<ARTCancellable>)authParams:(id<ARTCancellable>(^)(NSDictionary *))cb;
-- (id<ARTCancellable>)authToken:(id<ARTCancellable>(^)(ARTTokenDetails *))cb;
+- (id<ARTCancellable>)requestToken:(id<ARTCancellable>(^)(ARTTokenDetails *))cb;
 - (id<ARTCancellable>)authTokenForceReauth:(BOOL)force cb:(id<ARTCancellable>(^)(ARTTokenDetails *))cb;
-- (void) attemptTokenFetch:(void (^)()) cb;
--(bool) canRequestToken;
-+ (void) authWithRest:(ARTRest *) rest options:(ARTAuthOptions *) options cb:(void(^)(ARTAuth * auth)) cb;
+- (void)attemptTokenFetch:(void (^)()) cb;
+- (bool)canRequestToken;
+
++ (ARTSignedTokenRequestCb)defaultSignedTokenRequestCallback:(ARTAuthOptions *)authOptions rest:(ARTRest *)rest;
 @end

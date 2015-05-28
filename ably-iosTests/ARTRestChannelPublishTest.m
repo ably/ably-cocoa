@@ -62,7 +62,7 @@
 }
 
 -(void) testPublishArray {
-    XCTFail(@"TODO FINISH. which number is this?");
+    XCTFail(@"TODO FINISH");
     XCTestExpectation *exp = [self expectationWithDescription:@"testPublishArray"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
@@ -73,18 +73,18 @@
         NSArray * messages = @[test1, test2, test3];
         [channel publish:messages cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStatusOk, status.status);
-        }];
-        [channel history:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-            XCTAssertEqual(ARTStatusOk, status.status);
-            NSArray *messages = [result currentItems];
-            XCTAssertEqual(2, messages.count);
-            ARTMessage *m0 = messages[0];
-            ARTMessage *m1 = messages[1];
-            ARTMessage *m2 = messages[2];
-            XCTAssertEqualObjects([m0 content], test3);
-            XCTAssertEqualObjects([m1 content], test2);
-            XCTAssertEqualObjects([m2 content], test1);
-            [exp fulfill];
+            [channel history:^(ARTStatus *status, id<ARTPaginatedResult> result) {
+                XCTAssertEqual(ARTStatusOk, status.status);
+                NSArray *messages = [result currentItems];
+                XCTAssertEqual(3, messages.count);
+                ARTMessage *m0 = messages[0];
+                ARTMessage *m1 = messages[1];
+                ARTMessage *m2 = messages[2];
+                XCTAssertEqualObjects([m0 content], test3);
+                XCTAssertEqualObjects([m1 content], test2);
+                XCTAssertEqualObjects([m2 content], test1);
+                [exp fulfill];
+            }];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -102,6 +102,18 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
+
+- (void)testPublishUnJsonableType {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
+    [ARTTestUtil testRest:^(ARTRest *rest) {
+        _rest = rest;
+        ARTRestChannel *channel = [rest channel:@"testTypesByText"];
+        XCTAssertThrows([channel publish:channel cb:^(ARTStatus *status){}]);
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
+
 
 
 

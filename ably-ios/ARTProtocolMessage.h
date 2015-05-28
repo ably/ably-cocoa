@@ -38,7 +38,7 @@ typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
 
 @property (readwrite, assign, nonatomic) ARTProtocolMessageAction action;
 @property (readwrite, assign, nonatomic) int count;
-@property (readwrite, assign, nonatomic) ARTStatus * error;
+@property (readwrite, strong, nonatomic) ARTErrorInfo * error;
 @property (readwrite, strong, nonatomic) NSString *id;
 @property (readwrite, strong, nonatomic) NSString *channel;
 @property (readwrite, strong, nonatomic) NSString *channelSerial;
@@ -52,6 +52,8 @@ typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
 @property (readwrite, strong, nonatomic) NSArray *presence;
 @property (readonly, assign, nonatomic) BOOL ackRequired;
 @property (readwrite, assign, nonatomic) int64_t flags;
+
+-(BOOL) syncInOperation;
 
 - (BOOL)mergeFrom:(ARTProtocolMessage *)msg;
 

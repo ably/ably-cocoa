@@ -41,22 +41,21 @@
         options.authOptions.clientId = @"clientIdThatForcesToken";
         const int fiveSecondsMilli = 5000;
         options.authOptions.ttl = fiveSecondsMilli;
-        [ARTRealtime realtimeWithOptions:options cb:^(ARTRealtime *realtime) {
-            _realtime = realtime;
-            ARTAuth * auth = realtime.auth;
-            ARTAuthOptions * authOptions = [auth getAuthOptions];
-            XCTAssertEqual(authOptions.tokenDetails.expires - authOptions.tokenDetails.issued,  fiveSecondsMilli);
-            ARTRealtimeChannel * c= [realtime channel:@"getChannel"];
-            NSString * oldToken = authOptions.tokenDetails.token;
-            [c publish:@"something" cb:^(ARTStatus *status) {
+        ARTRealtime * realtime =[[ARTRealtime alloc] initWithOptions:options];
+        _realtime = realtime;
+        ARTAuth * auth = realtime.auth;
+        ARTAuthOptions * authOptions = [auth getAuthOptions];
+        XCTAssertEqual(authOptions.tokenDetails.expires - authOptions.tokenDetails.issued,  fiveSecondsMilli);
+        ARTRealtimeChannel * c= [realtime channel:@"getChannel"];
+        NSString * oldToken = authOptions.tokenDetails.token;
+        [c publish:@"something" cb:^(ARTStatus *status) {
+            XCTAssertEqual(ARTStatusOk, status.status);
+            sleep(6); // wait for token to expire
+            [c publish:@"somethingElse" cb:^(ARTStatus *status) {
+                NSString * newToken = authOptions.tokenDetails.token;
+                XCTAssertFalse([newToken isEqualToString:oldToken]);
                 XCTAssertEqual(ARTStatusOk, status.status);
-                sleep(6); // wait for token to expire
-                [c publish:@"somethingElse" cb:^(ARTStatus *status) {
-                    NSString * newToken = authOptions.tokenDetails.token;
-                    XCTAssertFalse([newToken isEqualToString:oldToken]);
-                    XCTAssertEqual(ARTStatusOk, status.status);
-                    [exp fulfill];
-                }];
+                [exp fulfill];
             }];
         }];
     }];

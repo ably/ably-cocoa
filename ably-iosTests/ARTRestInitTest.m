@@ -26,7 +26,6 @@
 
 - (void)setUp {
     [super setUp];
-    [ARTLog setLogLevel:ArtLogLevelVerbose];
 }
 
 - (void)tearDown {
@@ -53,14 +52,13 @@
         NSString * keyName = options.authOptions.keyName;
         NSString * keySecret = options.authOptions.keySecret;
         NSString * key = [NSString stringWithFormat:@"%@:%@",keyName, keySecret];
-        [ARTRest restWithKey:key cb:^(ARTRest *rest) {
-            _rest =rest;
-            ARTRestChannel * c = [rest channel:@"test"];
-            XCTAssert(c);
-            [c publish:@"message" cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStatusOk, status.status);
-                [exp fulfill];
-            }];
+        ARTRest * rest = [[ARTRest alloc] initWithKey:key];
+        _rest = rest;
+        ARTRestChannel * c = [rest channel:@"test"];
+        XCTAssert(c);
+        [c publish:@"message" cb:^(ARTStatus *status) {
+            XCTAssertEqual(ARTStatusOk, status.status);
+            [exp fulfill];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -69,7 +67,7 @@
 -(void)testInitWithNoKey {
     [ARTOptions getDefaultRestHost:@"sandbox-rest.ably.io" modify:true];
     NSString * key = @"";
-    XCTAssertThrows([ARTRest restWithKey:key cb:^(ARTRest * rest) {}]);
+    XCTAssertThrows([[ARTRest alloc] initWithKey:key]);
 }
 
 -(void)testInitWithKeyBad {
@@ -78,14 +76,14 @@
         NSString * keyName = @"badName";
         NSString * keySecret = options.authOptions.keySecret;
         NSString * key = [NSString stringWithFormat:@"%@:%@",keyName, keySecret];
-        [ARTRest restWithKey:key cb:^(ARTRest * rest) {
-            _rest =rest;
-            ARTRestChannel * c = [rest channel:@"test"];
-            XCTAssert(c);
-            [c publish:@"message" cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStatusError, status.status);
-                [exp fulfill];
-            }];
+        ARTRest * rest = [[ARTRest alloc] initWithKey:key];
+        _rest = rest;
+        ARTRestChannel * c = [rest channel:@"test"];
+        XCTAssert(c);
+        [c publish:@"message" cb:^(ARTStatus *status) {
+            XCTAssertEqual(ARTStatusError, status.status);
+            XCTAssertEqual(40005, status.errorInfo.code);
+            [exp fulfill];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -94,16 +92,15 @@
 -(void)testInitWithOptions {
     XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
     [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
-       [ARTRest restWithOptions:options cb:^(ARTRest *rest) {
-            _rest =rest;
-           ARTRestChannel * c = [rest channel:@"test"];
-           XCTAssert(c);
-           [c publish:@"message" cb:^(ARTStatus *status) {
-               XCTAssertEqual(ARTStatusOk, status.status);
-               [exp fulfill];
-           }];
+        ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
+        _rest = rest;
+       ARTRestChannel * c = [rest channel:@"test"];
+       XCTAssert(c);
+       [c publish:@"message" cb:^(ARTStatus *status) {
+           XCTAssertEqual(ARTStatusOk, status.status);
+           [exp fulfill];
        }];
-    }];
+   }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
@@ -114,13 +111,12 @@
         envOptions.authOptions.keyName = options.authOptions.keyName;
         envOptions.authOptions.keySecret = options.authOptions.keySecret;
         envOptions.environment = @"sandbox";
-        [ARTRest restWithOptions:envOptions cb:^(ARTRest * rest) {
-            _rest =rest;
-            ARTRestChannel * c = [rest channel:@"test"];
-            [c publish:@"message" cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStatusOk, status.status);
-                [exp fulfill];
-            }];
+        ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
+        _rest = rest;
+        ARTRestChannel * c = [rest channel:@"test"];
+        [c publish:@"message" cb:^(ARTStatus *status) {
+            XCTAssertEqual(ARTStatusOk, status.status);
+            [exp fulfill];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -129,19 +125,19 @@
 -(void)testGetAuth {
     XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
     [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
-        [ARTRest restWithOptions:options cb:^(ARTRest *rest) {
-            _rest =rest;
-            ARTRestChannel * c = [rest channel:@"test"];
-            XCTAssert(c);
-            [c publish:@"message" cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStatusOk, status.status);
-                ARTAuth * auth = rest.auth;
-                XCTAssert(auth);
-                ARTAuthOptions * authOptions = [auth getAuthOptions];
-                XCTAssertEqual(authOptions.keyName, options.authOptions.keyName);
-                [exp fulfill];
-            }];
+        ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
+        _rest = rest;
+        ARTRestChannel * c = [rest channel:@"test"];
+        XCTAssert(c);
+        [c publish:@"message" cb:^(ARTStatus *status) {
+            XCTAssertEqual(ARTStatusOk, status.status);
+            ARTAuth * auth = rest.auth;
+            XCTAssert(auth);
+            ARTAuthOptions * authOptions = [auth getAuthOptions];
+            XCTAssertEqual(authOptions.keyName, options.authOptions.keyName);
+            [exp fulfill];
         }];
+
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
@@ -151,7 +147,7 @@
     XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
     [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
         options.authOptions.keyName = @"bad:Name";
-        XCTAssertThrows([ARTRest restWithOptions:options cb:^(ARTRest *rest) {}]);
+        XCTAssertThrows([[ARTRest alloc] initWithOptions:options]);
         [exp fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -162,15 +158,15 @@
     [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
         NSString * badHost = @"this.host.does.not.exist";
         options.restHost = badHost;
-        [ARTRest restWithOptions:options cb:^(ARTRest *rest) {
-            _rest =rest;
-            [rest time:^(ARTStatus *status, NSDate *date) {
-                XCTAssertEqual(ARTStatusError, status.status);
-                XCTAssertEqualObjects(rest.baseUrl, [badHost stringByAppendingString:@":443"]);
-
-                [exp fulfill];
-            }];
+        ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
+        _rest = rest;
+        [rest time:^(ARTStatus *status, NSDate *date) {
+            XCTAssertEqual(ARTStatusError, status.status);
+            NSString * badUrl =[@"https://" stringByAppendingString:[badHost stringByAppendingString:@":443"]];
+            XCTAssertEqualObjects([[rest getBaseURL] absoluteString], badUrl);
+            [exp fulfill];
         }];
+
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
@@ -197,21 +193,4 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
-/*
-- (void)testRestPostFallbackHost {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testRestTimeBadHost"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
-        options.restHost = @"this.host.does.not.exist";
-        [ARTRest restWithOptions:options cb:^(ARTRest *rest) {
-            _rest =rest;
-            ARTRestChannel * c = [rest channel:@"name"];
-            [c publish:@"something" cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStatusOk, status.status);
-                [exp fulfill];
-            }];
-        }];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-}
-*/ //TODO RM
 @end

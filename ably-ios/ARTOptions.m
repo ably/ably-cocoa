@@ -8,6 +8,7 @@
 
 #import "ARTOptions.h"
 #import "ARTOptions+Private.h"
+#import "ARTDefault.h"
 @interface ARTOptions ()
 @property (readwrite, strong, nonatomic) NSString *realtimeHost;
 - (instancetype)initDefaults;
@@ -32,9 +33,7 @@
     return realtimeHost;
 }
 
-+(NSArray *) fallbackHosts {
-    return @[@"A.ably-realtime.com", @"B.ably-realtime.com", @"C.ably-realtime.com", @"D.ably-realtime.com", @"E.ably-realtime.com"];
-}
+
 
 
 - (instancetype)init {
@@ -63,7 +62,7 @@
 }
 
 -(NSString *) restHost {
-    return _environment ?[NSString stringWithFormat:@"%@-%@", _environment, self.restHost] : self.restHost;
+    return _environment ?[NSString stringWithFormat:@"%@-%@", _environment, _restHost] : _restHost;
 }
 
 -(NSString * ) defaultRestHost {
@@ -74,22 +73,14 @@
     return [ARTOptions getDefaultRealtimeHost:@"" modify:false];
 }
 
--(int) defaultRestPort {
-    return 443;
-}
-
--(int) defaultRealtimePort {
-    return 443;
-}
-
 - (instancetype)initDefaults {
     _clientId = nil;
     self.restHost =  [self defaultRestHost];
     _realtimeHost = [self defaultRealtimeHost];
-    _restPort = [self defaultRestPort];
-    _realtimePort = [self defaultRealtimePort];
+    _restPort = [ARTDefault TLSPort];
+    _realtimePort = [ARTDefault TLSPort];
     _queueMessages = YES;
-    _resume = nil;
+    _resume = 0;
     _echoMessages = YES;
     _recover = nil;
     _binary = false;
@@ -139,17 +130,17 @@
     return options;
 }
 
--(void) setRealtimeHost:(NSString *)realtimeHost withRestHost:(NSString *) restHost
-{
+-(void) setRealtimeHost:(NSString *)realtimeHost withRestHost:(NSString *) restHost {
     self.realtimeHost = realtimeHost;
     self.restHost = restHost;
 }
 
--(NSString *) realtimeHost {
+- (NSString *)realtimeHost {
     return _environment ?[NSString stringWithFormat:@"%@-%@", _environment, _realtimeHost] : _realtimeHost;
 }
 
--(bool) isFallbackPermitted {
+- (bool)isFallbackPermitted {
     return [self.restHost isEqualToString:[self defaultRestHost]];
 }
+
 @end

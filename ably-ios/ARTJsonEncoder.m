@@ -187,6 +187,8 @@
             return 3;
         case ARTPresenceMessageUpdate:
             return 4;
+        case ARTPresenceMessageLast:
+            return 5;
     }
 }
 
@@ -361,7 +363,10 @@
     message.presence = [self presenceMessagesFromArray:[input objectForKey:@"presence"]];
     message.connectionKey = [input artString:@"connectionKey"];
     message.flags = [[input artNumber:@"flags"] longLongValue];
-
+    NSDictionary * error = [input valueForKey:@"error"];
+    if(error) {
+        [message.error setCode:[[error artNumber:@"code"] intValue] status:[[error artNumber:@"statusCode"] intValue] message:[error artString:@"message"]];
+    }
     return message;
  }
 
@@ -497,9 +502,9 @@
 - (ARTErrorInfo *) decodeError:(NSData *) error {
     ARTErrorInfo * e = [[ARTErrorInfo alloc] init];
     NSDictionary * d = [[self decodeDictionary:error] valueForKey:@"error"];
-    e.code= [[d artNumber:@"code"] intValue];
-    e.message = [d artString:@"message"];
-    e.statusCode = [[d artNumber:@"statusCode"] intValue];
+    [e setCode:[[d artNumber:@"code"] intValue]
+        status:[[d artNumber:@"statusCode"] intValue]
+       message:[d artString:@"message"]];
     return e;
 }
 
@@ -575,6 +580,7 @@
 }
 
 - (NSData *)encode:(id)obj {
+    [ARTLog verbose:[NSString stringWithFormat:@"ARTJsonEncoder encoding '%@'", obj]];
     return [NSJSONSerialization dataWithJSONObject:obj options:0 error:nil];
 }
 

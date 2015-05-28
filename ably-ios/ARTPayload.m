@@ -277,7 +277,9 @@
 - (ARTStatus *)encode:(ARTPayload *)payload output:(ARTPayload *__autoreleasing *)output {
     *output = payload;
     if ([payload.payload isKindOfClass:[NSDictionary class]] || [payload.payload isKindOfClass:[NSArray class]]) {
-        NSData *encoded = [NSJSONSerialization dataWithJSONObject:payload.payload options:0 error:nil];
+        NSError * err = nil;
+        NSData *encoded = [NSJSONSerialization dataWithJSONObject:payload.payload options:0 error:&err];
+
         if (encoded) {
             *output = [ARTPayload payloadWithPayload:encoded encoding:[payload.encoding artAddEncoding:[ARTJsonPayloadEncoder getName]]];
             return [ARTStatus state:ARTStatusOk];
@@ -285,7 +287,12 @@
             return [ARTStatus state:ARTStatusError];
         }
     }
+    if(!([payload.payload isKindOfClass:[NSData class]] || [payload.payload isKindOfClass:[NSString class]])) {
+        [NSException raise:@"ARTPayload must be either NSDictionary, NSArray, NSData or NSString" format:@"%@", [payload.payload class]];
+    }
     return [ARTStatus state:ARTStatusOk];
+
+
 }
 
 - (ARTStatus *)decode:(ARTPayload *)payload output:(ARTPayload *__autoreleasing *)output {
@@ -416,11 +423,10 @@
 
     int count=0;
     for (id<ARTPayloadEncoder> enc in self.encoders.reverseObjectEnumerator) {
-
         status = [enc decode:*output output:output];
         if (status.status != ARTStatusOk) {
             ARTPayload * p  = *output;
-            [ARTLog error:[NSString  stringWithFormat:@"ARTPayload: error in ARTPayloadEncoderChain decoding with encoder %d. Remaining encoding jobs are %@", count, p.encoding]];
+            [ARTLog error:[NSString  stringWithFormat:@"ARTPayload: error in ARTPayloadEncoderChain decoding with encoder %d. Remaining decoding jobs are %@", count, p.encoding]];
             break;
         }
         count++;

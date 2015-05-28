@@ -26,7 +26,7 @@
 - (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
 
 - (id<ARTCancellable>)presence:(ARTPaginatedResultCb)cb;
-- (id<ARTCancellable>)presenceWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
+- (id<ARTCancellable>)presenceGetWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
 - (id<ARTCancellable>)presenceHistory:(ARTPaginatedResultCb)cb;
 - (id<ARTCancellable>)presenceHistoryWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
 
@@ -38,6 +38,8 @@
 }
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
+-(instancetype) initWithOptions:(ARTOptions *) options;
+-(instancetype) initWithKey:(NSString *) key;
 - (id<ARTCancellable>) token:(ARTAuthTokenParams *) keyName tokenCb:(void (^)(ARTStatus * status, ARTTokenDetails *)) cb;
 
 - (id<ARTCancellable>)time:(void(^)(ARTStatus * status, NSDate *time))cb;
@@ -49,7 +51,7 @@
 
 
 -(ARTAuth *) auth;
-typedef void (^ARTRestConstructorCb)(ARTRest * rest );
-+ (void) restWithKey:(NSString *) key cb:(ARTRestConstructorCb) cb;
-+ (void) restWithOptions:(ARTOptions *) options cb:(ARTRestConstructorCb) cb;
+
+
+
 @end

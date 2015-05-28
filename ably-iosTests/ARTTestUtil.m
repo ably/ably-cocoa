@@ -49,6 +49,7 @@
 
 +(void) setupApp:(ARTOptions *)options withAlteration:(TestAlteration) alt  appId:(NSString *) appId cb:(void (^)(ARTOptions *))cb
 {
+    //[ARTLog setLogLevel:ArtLogLevelVerbose];
     NSString * str = [ARTTestUtil getTestAppSetupJson];
     if(str== nil) {
         [NSException raise:@"error getting test-app-setup.json loaded. Maybe ably-common is missing" format:@""];
@@ -251,14 +252,34 @@
     [channel publish:[NSString stringWithFormat:pattern, numReceived] cb:cb];
     
 }
+
++(void) publishEnterMessages:(NSString *)clientIdPrefix count:(int) count channel:(ARTRealtimeChannel *) channel expectation:(XCTestExpectation *) expectation {
+    __block int numReceived = 0;
+    __block __weak ARTStatusCallback weakCb;
+    ARTStatusCallback cb;
+    NSString * pattern = [clientIdPrefix stringByAppendingString:@"%d"];
+    weakCb = cb =^(ARTStatus *status) {
+        ++numReceived;
+        if(numReceived != count) {
+            [channel publishEnterClient:[NSString stringWithFormat:pattern, numReceived] data:@"entered" cb:weakCb];
+        }
+        else {
+            [expectation fulfill];
+        }
+    };
+    [channel publishEnterClient:[NSString stringWithFormat:pattern, numReceived] data:nil cb:weakCb];
+}
+
 +(void) testRest:(ARTRestConstructorCb)cb {
     [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
-        [ARTRest restWithOptions:options cb:cb];
+        ARTRest * r = [[ARTRest alloc] initWithOptions:options];
+        cb(r);
     }];
 }
 +(void) testRealtime:(ARTRealtimeConstructorCb)cb {
     [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTOptions *options) {
-        [ARTRealtime realtimeWithOptions:options cb:cb];
+        ARTRealtime * realtime = [[ARTRealtime alloc] initWithOptions:options];
+        cb(realtime);
     }];
     
     

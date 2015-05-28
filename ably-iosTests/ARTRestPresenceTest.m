@@ -130,7 +130,16 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-
+-(void) testPresenceLimit {
+    XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
+    [ARTTestUtil testRest:^(ARTRest *rest) {
+        _rest = rest;
+        ARTRestChannel *channelOne = [rest channel:@"name"];
+        XCTAssertThrows([channelOne presenceHistoryWithParams:@{@"limit" : @"1001"} cb:^(ARTStatus * s, id<ARTPaginatedResult> r){}]);
+        [exp fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
 
 
 @end

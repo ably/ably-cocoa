@@ -171,6 +171,7 @@
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:artRequest.url];
     request.HTTPMethod = artRequest.method;
+    [ARTLog verbose:[NSString stringWithFormat:@"ARTHttp request URL is %@", artRequest.url]];
 
     for (NSString *headerName in artRequest.headers) {
         NSString *headerValue = [artRequest.headers objectForKey:headerName];
@@ -184,14 +185,6 @@
     CFRetain(rl);
     NSURLSessionDataTask *task = [self.urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-        
-        
-        CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
-            NSLog(@"WTF THIS WORKS");
-            CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
-                NSLog(@"WTF THIS WORKS???");
-            });
-        });
         [ARTLog verbose:
          [NSString stringWithFormat:@"ARTHttp: Got response %@, err %@",
           response,error]];
@@ -201,24 +194,16 @@
             cb([ARTHttpResponse responseWithStatus:500 headers:nil body:nil]);
         }
         else {
-            NSLog(@"no error");
             if (httpResponse) {
                 int status = (int)httpResponse.statusCode;
-                NSLog(@"we have a erpsonse %d", status);;
                 [ARTLog debug:
                 [NSString stringWithFormat:@"ARTHttp response status is %d", status]];
                 [ARTLog verbose:[NSString stringWithFormat:@"ARTHttp received response %@",[NSJSONSerialization JSONObjectWithData:data options:0 error:nil]]];
                 CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
-                    NSLog(@"WTF THIS ---------");
-                });
-
-                CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
-                    NSLog(@"WELL THEN %d", status);;
                     cb([ARTHttpResponse responseWithStatus:status headers:httpResponse.allHeaderFields body:data]);
                 });
             } else {
                 CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
-                    NSLog(@"THE OTHER THING");
                     cb([ARTHttpResponse response]);
                 });
             }

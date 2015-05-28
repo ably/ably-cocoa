@@ -370,36 +370,43 @@
     NSString * channelName = @"testHistoryTwoClients";
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
     [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTOptions *options) {
-        [ARTRest restWithOptions:options cb:^(ARTRest *rest) {
-            _rest = rest;
-            [ARTRest restWithOptions:options cb:^(ARTRest *rest2) {
-                _rest2 = rest2;
-                ARTRestChannel *channelOne = [rest channel:channelName];
-                XCTestExpectation *secondExpecation = [self expectationWithDescription:@"send_second_batch"];
-                [ARTTestUtil publishRestMessages:@"testString" count:5 channel:channelOne expectation:secondExpecation];
-                [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-                
-                ARTRestChannel *channelTwo = [rest2 channel:channelName];
-                XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryTwoClients"];
-                [channelTwo historyWithParams:@{@"limit" : @"2",}
-                                        cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                                            XCTAssertEqual(ARTStatusOk, status.status);
-                                            XCTAssertTrue([result hasFirst]);
-                                            XCTAssertTrue([result hasNext]);
-                                            NSArray * page = [result currentItems];
-                                            XCTAssertEqual([page count], 2);
-                                            ARTMessage * firstMessage = [page objectAtIndex:0];
-                                            ARTMessage * secondMessage =[page objectAtIndex:1];
-                                            XCTAssertEqualObjects(@"testString4", [firstMessage content]);
-                                            XCTAssertEqualObjects(@"testString3", [secondMessage content]);
-                                            [expectation fulfill];
-                                        }];
-                [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-            }];
-        }];
+        ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
+        _rest = rest;
+        ARTRest * rest2 = [[ARTRest alloc] initWithOptions:options];
+        _rest2 = rest2;
+        ARTRestChannel *channelOne = [rest channel:channelName];
+        XCTestExpectation *secondExpecation = [self expectationWithDescription:@"send_second_batch"];
+        [ARTTestUtil publishRestMessages:@"testString" count:5 channel:channelOne expectation:secondExpecation];
+        [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+        
+        ARTRestChannel *channelTwo = [rest2 channel:channelName];
+        XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryTwoClients"];
+        [channelTwo historyWithParams:@{@"limit" : @"2",}
+                                cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
+                                    XCTAssertEqual(ARTStatusOk, status.status);
+                                    XCTAssertTrue([result hasFirst]);
+                                    XCTAssertTrue([result hasNext]);
+                                    NSArray * page = [result currentItems];
+                                    XCTAssertEqual([page count], 2);
+                                    ARTMessage * firstMessage = [page objectAtIndex:0];
+                                    ARTMessage * secondMessage =[page objectAtIndex:1];
+                                    XCTAssertEqualObjects(@"testString4", [firstMessage content]);
+                                    XCTAssertEqualObjects(@"testString3", [secondMessage content]);
+                                    [expectation fulfill];
+                                }];
+        [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
     }];
 }
 
-
+-(void) testHistoryLimit {
+    XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
+    [ARTTestUtil testRest:^(ARTRest *rest) {
+        _rest = rest;
+        ARTRestChannel *channelOne = [rest channel:@"name"];
+        XCTAssertThrows([channelOne historyWithParams:@{@"limit" : @"1001"} cb:^(ARTStatus * s, id<ARTPaginatedResult> r){}]);
+        [exp fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
 
 @end
