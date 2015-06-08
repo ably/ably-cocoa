@@ -52,15 +52,15 @@
     return !!self.relNext;
 }
 
-- (void)getFirstPage:(ARTPaginatedResultCb)cb {
+- (void)first:(ARTPaginatedResultCb)cb {
     [ARTHttpPaginatedResult makePaginatedRequest:self.http request:self.relFirst responseProcessor:self.responseProcessor cb:cb];
 }
 
-- (void)getCurrentPage:(ARTPaginatedResultCb)cb {
+- (void)current:(ARTPaginatedResultCb)cb {
     [ARTHttpPaginatedResult makePaginatedRequest:self.http request:self.relCurrent responseProcessor:self.responseProcessor cb:cb];
 }
 
-- (void)getNextPage:(ARTPaginatedResultCb)cb {
+- (void)next:(ARTPaginatedResultCb)cb {
     [ARTHttpPaginatedResult makePaginatedRequest:self.http request:self.relNext responseProcessor:self.responseProcessor cb:cb];
 }
 
@@ -69,13 +69,13 @@
     return [http makeRequest:request cb:^(ARTHttpResponse *response) {
         if (!response) {
             [ARTLog error:@"ARTHttpPaginatedResult got no response"];
-            cb(ARTStatusError, nil);
+            cb([ARTStatus state:ARTStatusError], nil);
             return;
         }
 
         if (response.status < 200 || response.status >= 300) {
             [ARTLog error:[NSString stringWithFormat:@"ARTHttpPaginatedResult response.status invalid: %d", response.status]];
-            cb(ARTStatusError, nil);
+            cb([ARTStatus state:ARTStatusError], nil);
             
             return;
         }

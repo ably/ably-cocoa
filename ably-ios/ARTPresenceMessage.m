@@ -38,8 +38,8 @@
 
 - (ARTPresenceMessage *)decode:(id<ARTPayloadEncoder>)encoder {
     ARTPayload *payload = self.payload;
-    ARTStatus status = [encoder decode:payload output:&payload];
-    if (status != ARTStatusOk) {
+    ARTStatus *status = [encoder decode:payload output:&payload];
+    if (status.status != ARTStatusOk) {
         [ARTLog warn:[NSString stringWithFormat:@"ARTPresenceMessage could not decode payload, ARTStatus: %tu", status]];
     }
     return [self messageWithPayload:payload];
@@ -47,8 +47,8 @@
 
 - (ARTPresenceMessage *)encode:(id<ARTPayloadEncoder>)encoder {
     ARTPayload *payload = self.payload;
-    ARTStatus status = [encoder encode:payload output:&payload];
-    if (status != ARTStatusOk) {
+    ARTStatus *status = [encoder encode:payload output:&payload];
+    if (status.status != ARTStatusOk) {
         [ARTLog warn:[NSString stringWithFormat:@"ARTPresenceMessage could not encode payload, ARTStatus: %tu", status]];
     }
     return [self messageWithPayload:payload];

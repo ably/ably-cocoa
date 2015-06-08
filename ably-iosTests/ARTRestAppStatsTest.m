@@ -15,6 +15,8 @@
 #import "ARTTestUtil.h"
 #import "ARTStats.h"
 #import "ARTNSDate+ARTUtil.h"
+#import "ARTRest+Private.h"
+#import "ARTLog.h"
 @interface ARTRestAppStatsTest : XCTestCase {
     ARTRest *_rest;
 }
@@ -33,477 +35,147 @@
     _rest = nil;
     [super tearDown];
 }
-/* 
- //stats not fully tested yet.
- 
-- (void)withRest:(void (^)(ARTRest *rest))cb {
-    if (!_rest) {
-        [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
-            if (options) {
-                _rest = [[ARTRest alloc] initWithOptions:options];
-            }
-            cb(_rest);
+
+-(NSString *) interval0 {
+    return @"2015-03-13:05:22";
+}
+-(NSString *) interval1 {
+    return @"2015-03-13:05:31";
+}
+-(NSString *) interval2 {
+    return @"2015-03-13:15:20";
+}
+-(NSString *) interval3 {
+    return @"2015-03-16:03:17";
+}
+-(NSArray *) getTestStats {
+    return
+       @[@{ @"intervalId": [self interval0],
+            @"inbound": @{ @"realtime": @{@"messages":@{ @"count":[NSNumber numberWithInt:50],@"data":[NSNumber numberWithInt:5000]}}}},
+
+        @{ @"intervalId": [self interval1],
+           @"inbound": @{ @"realtime": @{@"messages":@{ @"count":[NSNumber numberWithInt:60],@"data":[NSNumber numberWithInt:6000]}}}},
+
+        @{ @"intervalId": [self interval2],
+           @"inbound": @{ @"realtime": @{@"messages":@{ @"count":[NSNumber numberWithInt:70],@"data":[NSNumber numberWithInt:7000]}}}},
+         @{ @"intervalId": [self interval3],
+            @"inbound": @{ @"realtime": @{@"messages":@{ @"count":[NSNumber numberWithInt:80],@"data":[NSNumber numberWithInt:8000]}}}},
+         
+        
+        ];
+}
+
+-(void) testStatsDefaultBackwards {
+    XCTestExpectation *exp = [self expectationWithDescription:@"init"];
+    [ARTTestUtil testRest:^(ARTRest *rest) {
+        _rest = rest;
+       [rest postTestStats:[self getTestStats] cb:^(ARTStatus *status) {
+           [rest statsWithParams:@{@"start":[self interval0], @"end": [self interval2]  } cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
+               XCTAssertEqual(ARTStatusOk, status.status);
+               NSArray * items = [result currentItems];
+
+               XCTAssertEqual(3, [items count]);
+               ARTStats * s = [items objectAtIndex:0];
+               XCTAssertEqual(s.all.messages.count, 70.0);
+               XCTAssertEqual(s.inbound.all.messages.count, 70.0);
+               [exp fulfill];
+           }];
+       }];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
+
+-(void) testStatsForwards {
+    XCTestExpectation *exp = [self expectationWithDescription:@"init"];
+    [ARTTestUtil testRest:^(ARTRest *rest) {
+        _rest = rest;
+        [rest postTestStats:[self getTestStats] cb:^(ARTStatus *status) {
+            [rest statsWithParams:@{@"start":[self interval0], @"end": [self interval2] ,@"direction" : @"forwards" } cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
+                XCTAssertEqual(ARTStatusOk, status.status);
+                NSArray * items = [result currentItems];
+                
+                XCTAssertEqual(3, [items count]);
+                ARTStats * s = [items objectAtIndex:0];
+                XCTAssertEqual(s.all.messages.count, 50.0);
+                XCTAssertEqual(s.inbound.all.messages.count, 50.0);
+                [exp fulfill];
+            }];
+            
+            
         }];
-        return;
-    }
-    cb(_rest);
-}
-
-
--(void)testMinuteForwards {
-    XCTestExpectation *e = [self expectationWithDescription:@"init"];
-    [self withRest:^(ARTRest *realtime) {
-        [e fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    
-    [self withRest:^(ARTRest *rest) {
-        XCTestExpectation *populateExpectation = [self expectationWithDescription:@"testStatsPopulate"];
-        ARTRestChannel *channel = [rest channel:@"testStats"];
-        int totalMessages =20;
-        __block int numReceived =0;
-        
-        for(int i=0; i < totalMessages; i++) {
-            NSString * pub = [NSString stringWithFormat:@"messageForStat%d", i];
-            [channel publish:pub cb:^(ARTStatus status) {
-                ++numReceived;
-                if(numReceived ==totalMessages) {
-                    [populateExpectation fulfill];
-                }
+}
+
+-(void) testStatsHour {
+    XCTestExpectation *exp = [self expectationWithDescription:@"init"];
+    [ARTTestUtil testRest:^(ARTRest *rest) {
+        _rest = rest;
+        [rest postTestStats:[self getTestStats] cb:^(ARTStatus *status) {
+            [rest statsWithParams:@{@"start":[self interval0], @"end": [self interval2] , @"unit" : @"hour" } cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
+                XCTAssertEqual(ARTStatusOk, status.status);
+                NSArray * items = [result currentItems];
+                
+                XCTAssertEqual(2, [items count]);
+                ARTStats * s = [items objectAtIndex:0];
+                XCTAssertEqual(s.all.messages.count, 70);
+                XCTAssertEqual(s.inbound.all.messages.count, 70);
+                [exp fulfill];
             }];
-        }
-        [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-
-
-        
-        
-        NSDate * date  = [NSDate date];
-        date = [date dateByAddingTimeInterval:-60];
-        NSString * oneMinAgoStr = [date toIntervalFormat:GranularityMinutes];
-        date = [date dateByAddingTimeInterval:-60];
-        NSString * twoMinAgoStr = [date toIntervalFormat:GranularityMinutes];
-        date = [date dateByAddingTimeInterval:-60];
-        NSString * threeMinAgoStr = [date toIntervalFormat:GranularityMinutes];
-
-        NSLog(@"here comes the stats bit");
-        XCTestExpectation *threeMinExpectation = [self expectationWithDescription:@"stats"];
-        [rest statsWithParams:@{
-                                @"direction" : @"forwards",
-                                @"start" : threeMinAgoStr,
-                                @"end" : threeMinAgoStr
-                                } cb:
-        ^(ARTStatus status, id<ARTPaginatedResult> result) {
-            XCTAssertEqual(status, ARTStatusOk);
-            XCTAssertNotNil([result current]);
-            NSArray * page = [result current];
-            XCTAssertEqual([page count], 1);
-            ARTStats * statObj = [page objectAtIndex:0];
-            //TODO write tests
-
-            NSLog(@"stats called back with %@, %d", result, status);
-            NSLog(@"PAGE IS %@", page);
-            [threeMinExpectation fulfill];
         }];
-        XCTestExpectation *twoMinExpectation = [self expectationWithDescription:@"stats"];
-        [rest statsWithParams:@{
-                                @"direction" : @"forwards",
-                                @"start" : twoMinAgoStr,
-                                @"end" : twoMinAgoStr
-                                } cb:
-         ^(ARTStatus status, id<ARTPaginatedResult> result) {
-             XCTAssertEqual(status, ARTStatusOk);
-             XCTAssertNotNil([result current]);
-             NSArray * page = [result current];
-             XCTAssertEqual([page count], 1);
-             ARTStats * statObj = [page objectAtIndex:0];
-             //TODO write tests
-             
-             NSLog(@"stats 2min called back with %@, %d", result, status);
-             NSLog(@"PAGE 2min IS %@", page);
-             [twoMinExpectation fulfill];
-         }];
-        XCTestExpectation *oneMinExpectation = [self expectationWithDescription:@"stats"];
-        [rest statsWithParams:@{
-                                @"direction" : @"forwards",
-                                @"start" : oneMinAgoStr,
-                                @"end" : oneMinAgoStr
-                                } cb:
-         ^(ARTStatus status, id<ARTPaginatedResult> result) {
-             XCTAssertEqual(status, ARTStatusOk);
-             XCTAssertNotNil([result current]);
-             NSArray * page = [result current];
-             XCTAssertEqual([page count], 1);
-             ARTStats * statObj = [page objectAtIndex:0];
-             //TODO write tests
-             
-             NSLog(@"stats 1min called back with %@, %d", result, status);
-             NSLog(@"PAGE 1min IS %@", page);
-             [oneMinExpectation fulfill];
-         }];
-        [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    }];
-}
-
-- (void)testMinuteBackwards {
-    XCTestExpectation *e = [self expectationWithDescription:@"init"];
-    [self withRest:^(ARTRest *realtime) {
-        [e fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    
-    [self withRest:^(ARTRest *rest) {
-        XCTestExpectation *populateExpectation = [self expectationWithDescription:@"testStatsPopulate"];
-        ARTRestChannel *channel = [rest channel:@"testStats"];
-        int totalMessages =20;
-        __block int numReceived =0;
-        
-        //TODO do i need to populate this? RM I thnk
-        for(int i=0; i < totalMessages; i++) {
-            NSString * pub = [NSString stringWithFormat:@"messageForStat%d", i];
-            [channel publish:pub cb:^(ARTStatus status) {
-                ++numReceived;
-                if(numReceived ==totalMessages) {
-                    [populateExpectation fulfill];
-                }
-            }];
-        }
-        [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-
-        NSDate * date  = [NSDate date];
-        date = [date dateByAddingTimeInterval:-60];
-        NSString * oneMinAgoStr = [date toIntervalFormat:GranularityMinutes];
-        date = [date dateByAddingTimeInterval:-60];
-        NSString * twoMinAgoStr = [date toIntervalFormat:GranularityMinutes];
-        date = [date dateByAddingTimeInterval:-60];
-        NSString * threeMinAgoStr = [date toIntervalFormat:GranularityMinutes];
-        
-        NSLog(@"here comes the stats bit");
-        XCTestExpectation *threeMinExpectation = [self expectationWithDescription:@"stats"];
-        [rest statsWithParams:@{
-                                @"direction" : @"backwards",
-                                @"start" : threeMinAgoStr,
-                                @"end" : threeMinAgoStr
-                                } cb:
-         ^(ARTStatus status, id<ARTPaginatedResult> result) {
-             XCTAssertEqual(status, ARTStatusOk);
-             XCTAssertNotNil([result current]);
-             NSArray * page = [result current];
-             XCTAssertEqual([page count], 1);
-             ARTStats * statObj = [page objectAtIndex:0];
-             //TODO write tests
-             
-             NSLog(@"stats called backwards back with %@, %d", result, status);
-             NSLog(@"PAGE IS %@", page);
-             [threeMinExpectation fulfill];
-         }];
-    }];
 }
 
--(void) testHourForwards {
-    XCTestExpectation *e = [self expectationWithDescription:@"init"];
-    [self withRest:^(ARTRest *realtime) {
-        [e fulfill];
+-(void) testStatsDay {
+    XCTestExpectation *exp = [self expectationWithDescription:@"init"];
+    [ARTTestUtil testRest:^(ARTRest *rest) {
+        _rest = rest;
+        [rest postTestStats:[self getTestStats] cb:^(ARTStatus *status) {
+            [rest statsWithParams:@{@"start":[self interval0], @"end": [self interval3] , @"unit" : @"day", @"direction": @"forwards" } cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
+                XCTAssertEqual(ARTStatusOk, status.status);
+                NSArray * items = [result currentItems];
+                
+                XCTAssertEqual(2, [items count]);
+                ARTStats * s = [items objectAtIndex:0];
+                XCTAssertEqual(s.all.messages.count, 180.0);
+                XCTAssertEqual(s.inbound.all.messages.count, 180.0);
+                [exp fulfill];
+            }];
+        }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    
-    [self withRest:^(ARTRest *rest) {
-        XCTestExpectation *populateExpectation = [self expectationWithDescription:@"testStatsPopulate"];
-        ARTRestChannel *channel = [rest channel:@"testStats"];
-        int totalMessages =20;
-        __block int numReceived =0;
-        
-        //TODO do i need to populate this? RM I thnk
-        for(int i=0; i < totalMessages; i++) {
-            NSString * pub = [NSString stringWithFormat:@"messageForStat%d", i];
-            [channel publish:pub cb:^(ARTStatus status) {
-                ++numReceived;
-                if(numReceived ==totalMessages) {
-                    [populateExpectation fulfill];
-                }
-            }];
-        }
-        [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-        
-        
-        //TODO these are wrong.
-        NSDate * date  = [NSDate date];
-        date = [date dateByAddingTimeInterval:-60];
-        NSString * oneMinAgoStr = [date toIntervalFormat:GranularityHours];
-        date = [date dateByAddingTimeInterval:-60];
-        NSString * twoMinAgoStr = [date toIntervalFormat:GranularityHours];
-        date = [date dateByAddingTimeInterval:-60];
-        NSString * threeMinAgoStr = [date toIntervalFormat:GranularityHours];
-        
-        NSLog(@"here comes the stats bit");
-        XCTestExpectation *threeMinExpectation = [self expectationWithDescription:@"stats"];
-        [rest statsWithParams:@{
-                                @"direction" : @"forwards",
-                                @"start" : threeMinAgoStr,
-                                @"end" : threeMinAgoStr,
-                                @"unit" : @"hour"
-                                } cb:
-         ^(ARTStatus status, id<ARTPaginatedResult> result) {
-             XCTAssertEqual(status, ARTStatusOk);
-             XCTAssertNotNil([result current]);
-             NSArray * page = [result current];
-             XCTAssertEqual([page count], 1);
-             ARTStats * statObj = [page objectAtIndex:0];
-             //TODO write tests
-             
-             NSLog(@"stats called backwards back with %@, %d", result, status);
-             NSLog(@"PAGE IS %@", page);
-             [threeMinExpectation fulfill];
-         }];
-    }];
-
 }
 
--(void)testDayFowards {
-    XCTestExpectation *e = [self expectationWithDescription:@"init"];
-    [self withRest:^(ARTRest *realtime) {
-        [e fulfill];
+-(void) testStatsMonth {
+    XCTestExpectation *exp = [self expectationWithDescription:@"init"];
+    [ARTTestUtil testRest:^(ARTRest *rest) {
+        _rest = rest;
+        [rest postTestStats:[self getTestStats] cb:^(ARTStatus *status) {
+            [rest statsWithParams:@{@"start":[self interval0], @"end": [self interval3] , @"unit" : @"month", @"direction": @"forwards" } cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
+                XCTAssertEqual(ARTStatusOk, status.status);
+                NSArray * items = [result currentItems];
+                
+                XCTAssertEqual(1, [items count]);
+                ARTStats * s = [items objectAtIndex:0];
+                XCTAssertEqual(s.all.messages.count, 180);
+                XCTAssertEqual(s.inbound.all.messages.count, 180);
+                [exp fulfill];
+            }];
+        }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    
-    [self withRest:^(ARTRest *rest) {
-        XCTestExpectation *populateExpectation = [self expectationWithDescription:@"testStatsPopulate"];
-        ARTRestChannel *channel = [rest channel:@"testStats"];
-        int totalMessages =20;
-        __block int numReceived =0;
-        
-        //TODO do i need to populate this? RM I thnk
-        for(int i=0; i < totalMessages; i++) {
-            NSString * pub = [NSString stringWithFormat:@"messageForStat%d", i];
-            [channel publish:pub cb:^(ARTStatus status) {
-                ++numReceived;
-                if(numReceived ==totalMessages) {
-                    [populateExpectation fulfill];
-                }
-            }];
-        }
-        [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-        
-        
-        //TODO these are wrong.
-        NSDate * date  = [NSDate date];
-        date = [date dateByAddingTimeInterval:-60];
-        NSString * oneMinAgoStr = [date toIntervalFormat:GranularityHours];
-        date = [date dateByAddingTimeInterval:-60];
-        NSString * twoMinAgoStr = [date toIntervalFormat:GranularityHours];
-        date = [date dateByAddingTimeInterval:-60];
-        NSString * threeMinAgoStr = [date toIntervalFormat:GranularityHours];
-        
-        NSLog(@"here comes the stats bit");
-        XCTestExpectation *threeMinExpectation = [self expectationWithDescription:@"stats"];
-        [rest statsWithParams:@{
-                                @"direction" : @"forwards",
-                                @"start" : threeMinAgoStr,
-                                @"end" : threeMinAgoStr,
-                                @"unit" : @"day"
-                                } cb:
-         ^(ARTStatus status, id<ARTPaginatedResult> result) {
-             XCTAssertEqual(status, ARTStatusOk);
-             XCTAssertNotNil([result current]);
-             NSArray * page = [result current];
-             XCTAssertEqual([page count], 1);
-             ARTStats * statObj = [page objectAtIndex:0];
-             //TODO write tests
-             NSLog(@"stats called backwards back with %@, %d", result, status);
-             NSLog(@"PAGE IS %@", page);
-             [threeMinExpectation fulfill];
-         }];
-    }];
 }
 
--(void)testMonthForwards {
-    XCTestExpectation *e = [self expectationWithDescription:@"init"];
-    [self withRest:^(ARTRest *realtime) {
-        [e fulfill];
+-(void) testStatsLimit {
+    XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
+    [ARTTestUtil testRest:^(ARTRest *rest) {
+        _rest = rest;
+        XCTAssertThrows([rest statsWithParams:@{@"limit" : @"1001"} cb:^(ARTStatus * s, id<ARTPaginatedResult> r){}]);
+        [exp fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    
-    [self withRest:^(ARTRest *rest) {
-        XCTestExpectation *populateExpectation = [self expectationWithDescription:@"testStatsPopulate"];
-        ARTRestChannel *channel = [rest channel:@"testStats"];
-        int totalMessages =20;
-        __block int numReceived =0;
-        
-        //TODO do i need to populate this? RM I thnk
-        for(int i=0; i < totalMessages; i++) {
-            NSString * pub = [NSString stringWithFormat:@"messageForStat%d", i];
-            [channel publish:pub cb:^(ARTStatus status) {
-                ++numReceived;
-                if(numReceived ==totalMessages) {
-                    [populateExpectation fulfill];
-                }
-            }];
-        }
-        [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-        
-        
-        //TODO these are wrong.
-        NSDate * date  = [NSDate date];
-        date = [date dateByAddingTimeInterval:-60];
-        NSString * oneMinAgoStr = [date toIntervalFormat:GranularityHours];
-        date = [date dateByAddingTimeInterval:-60];
-        NSString * twoMinAgoStr = [date toIntervalFormat:GranularityHours];
-        date = [date dateByAddingTimeInterval:-60];
-        NSString * threeMinAgoStr = [date toIntervalFormat:GranularityHours];
-        
-        NSLog(@"here comes the stats bit");
-        XCTestExpectation *threeMinExpectation = [self expectationWithDescription:@"stats"];
-        [rest statsWithParams:@{
-                                @"direction" : @"forwards",
-                                @"start" : threeMinAgoStr,
-                                @"end" : threeMinAgoStr,
-                                @"unit" : @"month"
-                                } cb:
-         ^(ARTStatus status, id<ARTPaginatedResult> result) {
-             XCTAssertEqual(status, ARTStatusOk);
-             XCTAssertNotNil([result current]);
-             NSArray * page = [result current];
-             XCTAssertEqual([page count], 1);
-             ARTStats * statObj = [page objectAtIndex:0];
-             //TODO write tests
-             
-             NSLog(@"stats called backwards back with %@, %d", result, status);
-             NSLog(@"PAGE IS %@", page);
-             [threeMinExpectation fulfill];
-         }];
-    }];
 }
 
--(void)testLimitBackwards {
-    XCTestExpectation *e = [self expectationWithDescription:@"init"];
-    [self withRest:^(ARTRest *realtime) {
-        [e fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    
-    [self withRest:^(ARTRest *rest) {
-        XCTestExpectation *populateExpectation = [self expectationWithDescription:@"testStatsPopulate"];
-        ARTRestChannel *channel = [rest channel:@"testStats"];
-        int totalMessages =20;
-        __block int numReceived =0;
-        
-        //TODO do i need to populate this? RM I thnk
-        for(int i=0; i < totalMessages; i++) {
-            NSString * pub = [NSString stringWithFormat:@"messageForStat%d", i];
-            [channel publish:pub cb:^(ARTStatus status) {
-                ++numReceived;
-                if(numReceived ==totalMessages) {
-                    [populateExpectation fulfill];
-                }
-            }];
-        }
-        [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-        
-        
-        //TODO these are wrong.
-        NSDate * date  = [NSDate date];
-        date = [date dateByAddingTimeInterval:-60];
-        NSString * oneMinAgoStr = [date toIntervalFormat:GranularityHours];
-        date = [date dateByAddingTimeInterval:-60];
-        NSString * twoMinAgoStr = [date toIntervalFormat:GranularityHours];
-        date = [date dateByAddingTimeInterval:-60];
-        NSString * threeMinAgoStr = [date toIntervalFormat:GranularityHours];
-        
-        NSLog(@"here comes the stats bit");
-        XCTestExpectation *threeMinExpectation = [self expectationWithDescription:@"stats"];
-        [rest statsWithParams:@{
-                                @"direction" : @"backwards",
-                                @"start" : threeMinAgoStr,
-                                @"end" : threeMinAgoStr,
-                                @"limit" : @"1"
 
-                                } cb:
-         ^(ARTStatus status, id<ARTPaginatedResult> result) {
-             XCTAssertEqual(status, ARTStatusOk);
-             XCTAssertNotNil([result current]);
-             NSArray * page = [result current];
-             XCTAssertEqual([page count], 1);
-             ARTStats * statObj = [page objectAtIndex:0];
-
-             //TODO write tests
-             
-             NSLog(@"stats called backwards back with %@, %d", result, status);
-             NSLog(@"PAGE IS %@", page);
-             [threeMinExpectation fulfill];
-         }];
-    }];
-}
-
--(void) testLimitForwards {
-    XCTestExpectation *e = [self expectationWithDescription:@"init"];
-    [self withRest:^(ARTRest *realtime) {
-        [e fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    
-    [self withRest:^(ARTRest *rest) {
-        XCTestExpectation *populateExpectation = [self expectationWithDescription:@"testStatsPopulate"];
-        ARTRestChannel *channel = [rest channel:@"testStats"];
-        int totalMessages =20;
-        __block int numReceived =0;
-        
-        //TODO do i need to populate this? RM I thnk
-        for(int i=0; i < totalMessages; i++) {
-            NSString * pub = [NSString stringWithFormat:@"messageForStat%d", i];
-            [channel publish:pub cb:^(ARTStatus status) {
-                ++numReceived;
-                if(numReceived ==totalMessages) {
-                    [populateExpectation fulfill];
-                }
-            }];
-        }
-        [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-        
-        //TODO these are wrong.
-        NSDate * date  = [NSDate date];
-        date = [date dateByAddingTimeInterval:-60];
-        NSString * oneMinAgoStr = [date toIntervalFormat:GranularityHours];
-        date = [date dateByAddingTimeInterval:-60];
-        NSString * twoMinAgoStr = [date toIntervalFormat:GranularityHours];
-        date = [date dateByAddingTimeInterval:-60];
-        NSString * threeMinAgoStr = [date toIntervalFormat:GranularityHours];
-        
-        NSLog(@"here comes the stats bit");
-        XCTestExpectation *threeMinExpectation = [self expectationWithDescription:@"stats"];
-        [rest statsWithParams:@{
-                                @"direction" : @"forwards",
-                                @"start" : threeMinAgoStr,
-                                @"end" : threeMinAgoStr,
-                                @"limit" : @"1"
-                                
-                                } cb:
-         ^(ARTStatus status, id<ARTPaginatedResult> result) {
-             XCTAssertEqual(status, ARTStatusOk);
-             XCTAssertNotNil([result current]);
-             NSArray * page = [result current];
-             XCTAssertEqual([page count], 1);
-             ARTStats * statObj = [page objectAtIndex:0];
-             //TODO write tests
-             NSLog(@"stats called backwards back with %@, %d", result, status);
-             NSLog(@"PAGE IS %@", page);
-             [threeMinExpectation fulfill];
-         }];
-    }];
-}
--(void) testPaginationBackwards {
-    XCTFail(@"TODO write test");
-}
-
--(void) testPaginationForwards {
-    XCTFail(@"TODO write test");
-}
-
--(void) testPaginationRelFirstBackwards {
-    XCTFail(@"TODO write test");
-}
-
--(void) testPaginationRelFirstForwards {
-    XCTFail(@"TODO write test");
-}
-
-*/
 @end

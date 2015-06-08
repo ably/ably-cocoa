@@ -15,7 +15,8 @@ typedef NS_ENUM(NSUInteger, ARTPresenceMessageAction) {
     ArtPresenceMessagePresent,
     ARTPresenceMessageEnter,
     ARTPresenceMessageLeave,
-    ARTPresenceMessageUpdate
+    ARTPresenceMessageUpdate,
+    ARTPresenceMessageLast
 };
 
 @interface ARTPresenceMessage : NSObject
