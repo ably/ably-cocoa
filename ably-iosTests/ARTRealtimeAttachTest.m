@@ -10,8 +10,9 @@
 #import <XCTest/XCTest.h>
 
 #import "ARTRealtime.h"
+#import "ARTRealtime+Private.h"
 #import "ARTTestUtil.h"
-
+#import "ARTLog.h"
 
 
 @interface ARTRealtimeAttachTest : XCTestCase {
@@ -31,28 +32,17 @@
     [super tearDown];
 }
 
-- (void)withRealtime:(void (^)(ARTRealtime *realtime))cb {
-    if (!_realtime) {
-        [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTOptions *options) {
-            if (options) {
-                _realtime = [[ARTRealtime alloc] initWithOptions:options];
-            }
-            cb(_realtime);
-        }];
-        return;
-    }
-    cb(_realtime);
-}
-
 - (void) testAttachOnce {
-      XCTestExpectation *expectation = [self expectationWithDescription:@"attachOnce"];
-    [self withRealtime:^(ARTRealtime *realtime) {
-        [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"attachOnce"];
+    [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+        _realtime = realtime;
+        [realtime subscribeToEventEmitter:^(ARTRealtimeConnectionState state) {
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime channel:@"attach"];
 
                 __block bool hasAttached = false;
-                [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus reason) {
+                [channel subscribeToEventEmitter:^(ARTRealtimeChannelState state, ARTStatus *reason) {
+                    XCTAssertEqual(ARTStatusOk, reason.status);
                     if(state == ARTRealtimeChannelAttaching) {
                         [channel attach];
                     }
@@ -71,21 +61,19 @@
             }
         }];
     }];
-    
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 
 }
 
-
-
 -(void) testSkipsFromDetachingToAttaching {
-      XCTestExpectation *  expectation = [self expectationWithDescription:@"detaching_to_attaching"];
-    [self withRealtime:^(ARTRealtime *realtime) {
+    XCTestExpectation *  expectation = [self expectationWithDescription:@"detaching_to_attaching"];
+    [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+        _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime channel:@"detaching_to_attaching"];
         [channel attach];
         __block bool detachedReached = false;
         
-        [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus status) {
+        [channel subscribeToEventEmitter:^(ARTRealtimeChannelState state, ARTStatus *reason) {
             if (state == ARTRealtimeChannelAttached) {
                 if(!detachedReached) {
                     [channel detach];
@@ -111,20 +99,21 @@
 }
 
 - (void) testAttachMultipleChannels {
-      XCTestExpectation *expectation1 = [self expectationWithDescription:@"test_attach_multiple1"];
-      XCTestExpectation *expectation2 = [self expectationWithDescription:@"test_attach_multiple2"];
-    [self withRealtime:^(ARTRealtime *realtime) {
+    XCTestExpectation *expectation1 = [self expectationWithDescription:@"test_attach_multiple1"];
+    XCTestExpectation *expectation2 = [self expectationWithDescription:@"test_attach_multiple2"];
+    [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+        _realtime = realtime;
         ARTRealtimeChannel *channel1 = [realtime channel:@"test_attach_multiple1"];
         [channel1 attach];
         ARTRealtimeChannel *channel2 = [realtime channel:@"test_attach_multiple2"];
         [channel2 attach];
 
-        [channel1 subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus status) {
+        [channel1 subscribeToEventEmitter:^(ARTRealtimeChannelState state, ARTStatus *reason) {
             if (state == ARTRealtimeChannelAttached) {
                 [expectation1 fulfill];
             }
         }];
-        [channel2 subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus status) {
+        [channel2 subscribeToEventEmitter:^(ARTRealtimeChannelState state, ARTStatus *reason) {
             if (state == ARTRealtimeChannelAttached) {
                 [expectation2 fulfill];
             }
@@ -136,13 +125,13 @@
 
 
 - (void)testDetach {
-      XCTestExpectation *expectation = [self expectationWithDescription:@"detach"];
-    [self withRealtime:^(ARTRealtime *realtime) {
-        
-        [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"detach"];
+    [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+        _realtime = realtime;
+        [realtime subscribeToEventEmitter:^(ARTRealtimeConnectionState state) {
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime channel:@"detach"];
-                [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus reason) {
+                [channel subscribeToEventEmitter:^(ARTRealtimeChannelState state, ARTStatus *reason) {
                     if (state == ARTRealtimeChannelAttached) {
                         [channel detach];
                     }
@@ -159,13 +148,14 @@
 }
 
 - (void)testDetaching {
-      XCTestExpectation *expectation = [self expectationWithDescription:@"detach"];
-    [self withRealtime:^(ARTRealtime *realtime) {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"detach"];
+    [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+        _realtime = realtime;
         __block BOOL detachingHit = NO;
-        [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
+        [realtime subscribeToEventEmitter:^(ARTRealtimeConnectionState state) {
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime channel:@"detach"];
-                [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus reason) {
+                [channel subscribeToEventEmitter:^(ARTRealtimeChannelState state, ARTStatus *reason) {
                     if (state == ARTRealtimeChannelAttached) {
                         [channel detach];
                     }
@@ -190,10 +180,11 @@
 }
 
 -(void) testSkipsFromAttachingToDetaching {
-      XCTestExpectation *  expectation = [self expectationWithDescription:@"attaching_to_detaching"];
-    [self withRealtime:^(ARTRealtime *realtime) {
+    XCTestExpectation *  expectation = [self expectationWithDescription:@"attaching_to_detaching"];
+    [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+        _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime channel:@"attaching_to_detaching"];
-        [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus status) {
+        [channel subscribeToEventEmitter:^(ARTRealtimeChannelState state, ARTStatus *reason) {
             if (state == ARTRealtimeChannelAttached) {
                 XCTFail(@"Should not have made it to attached");
             }
@@ -214,14 +205,14 @@
 }
 
 -(void)testDetachingIgnoresDetach {
-    
-      XCTestExpectation *  expectation = [self expectationWithDescription:@"testDetachingIgnoresDetach"];
-    [self withRealtime:^(ARTRealtime *realtime) {
-        [realtime subscribeToStateChanges:^(ARTRealtimeConnectionState state) {
+    XCTestExpectation *  expectation = [self expectationWithDescription:@"testDetachingIgnoresDetach"];
+    [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+        _realtime = realtime;
+        [realtime subscribeToEventEmitter:^(ARTRealtimeConnectionState state) {
             
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime channel:@"testDetachingIgnoresDetach"];
-                [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus reason) {
+                [channel subscribeToEventEmitter:^(ARTRealtimeChannelState state, ARTStatus *reason) {
 
                     if (state == ARTRealtimeChannelAttached) {
                         [channel detach];
@@ -237,8 +228,136 @@
             }
         }];
     }];
-    
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
+
+- (void) testAttachFailsOnFailedConnection {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"testAttachFailsOnFailedConnection"];
+    [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+        _realtime = realtime;
+        [realtime subscribeToEventEmitter:^(ARTRealtimeConnectionState state) {
+            if (state == ARTRealtimeConnected) {
+                ARTRealtimeChannel *channel = [realtime channel:@"attach"];
+                __block bool hasFailed = false;
+                [channel subscribeToEventEmitter:^(ARTRealtimeChannelState state, ARTStatus *reason) {
+                    if (state == ARTRealtimeChannelAttached) {
+                        if(!hasFailed) {
+                            XCTAssertEqual(ARTStatusOk, reason.status);
+                            [realtime onError:nil];
+                        }
+                    }
+                    else if(state == ARTRealtimeChannelFailed) {
+                        [channel attach];
+                        XCTAssertEqual(ARTStatusError, reason.status);
+                        [expectation fulfill];
+                    }
+                }];
+                [channel attach];
+                [realtime subscribeToEventEmitter:^(ARTRealtimeConnectionState state) {
+                    if(state == ARTRealtimeFailed) {
+                        hasFailed = true;
+                        [channel attach];
+                    }
+                }];
+            }
+        }];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
+
+- (void)testAttachRestricted {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"testSimpleDisconnected"];
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] withAlteration:TestAlterationRestrictCapability cb:^(ARTOptions * options) {
+
+            ARTRealtime * realtime =[[ARTRealtime alloc] initWithOptions:options];
+            _realtime = realtime;
+
+            ARTRealtimeChannel * channel = [realtime channel:@"some_unpermitted_channel"];
+            [channel subscribeToEventEmitter:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
+                if(cState != ARTRealtimeChannelAttaching) {
+                    XCTAssertEqual(cState, ARTRealtimeChannelFailed);
+                    [expectation fulfill];
+                }
+            }];
+            [channel attach];
+        }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
+
+
+- (void)testAttachingChannelFails {
+    XCTestExpectation *exp = [self expectationWithDescription:@"testAttachingChannelFails"];
+    [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+        _realtime = realtime;
+        ARTRealtimeChannel *channel1 = [realtime channel:@"channel"];
+        [channel1 subscribeToEventEmitter:^(ARTRealtimeChannelState state, ARTStatus *reason) {
+            if (state == ARTRealtimeChannelAttaching) {
+                [realtime onError:nil];
+            }
+            else {
+                XCTAssertEqual(ARTRealtimeChannelFailed, state);
+                [exp fulfill];
+            }
+        }];
+        [channel1 attach];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
+
+- (void)testAttachedChannelFails {
+    XCTestExpectation *exp = [self expectationWithDescription:@"testAttachedChannelFails"];
+    [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+        _realtime = realtime;
+        ARTRealtimeChannel *channel1 = [realtime channel:@"channel"];
+        [channel1 subscribeToEventEmitter:^(ARTRealtimeChannelState state, ARTStatus *reason) {
+            if (state == ARTRealtimeChannelAttached) {
+                [realtime onError:nil];
+            }
+            else if(state != ARTRealtimeChannelAttaching) {
+                XCTAssertEqual(ARTRealtimeChannelFailed, state);
+                [exp fulfill];
+            }
+        }];
+        [channel1 attach];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
+
+- (void)testChannelClosesOnClose {
+    XCTestExpectation *exp = [self expectationWithDescription:@"testChannelClosesOnClose"];
+    [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+        _realtime = realtime;
+        ARTRealtimeChannel *channel1 = [realtime channel:@"channel"];
+        [channel1 subscribeToEventEmitter:^(ARTRealtimeChannelState state, ARTStatus *reason) {
+            if (state == ARTRealtimeChannelAttached) {
+                [realtime close];
+            }
+            else if(state != ARTRealtimeChannelAttaching) {
+                XCTAssertEqual(ARTRealtimeChannelClosed, state);
+                [exp fulfill];
+            }
+        }];
+        [channel1 attach];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
+
+- (void)testPresenceEnterRestricted {
+    XCTestExpectation *exp = [self expectationWithDescription:@"testSimpleDisconnected"];
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] withAlteration:TestAlterationRestrictCapability cb:^(ARTOptions * options) {
+        options.clientId = @"some_client_id";
+        ARTRealtime * realtime =[[ARTRealtime alloc] initWithOptions:options];
+        _realtime = realtime;
+
+        ARTRealtimeChannel * channel = [realtime channel:@"some_unpermitted_channel"];
+        [channel publishPresenceEnter:@"not_allowed_here" cb:^(ARTStatus *status) {
+            XCTAssertEqual(ARTStatusError, status.status);
+            [exp fulfill];
+        }];
+        [channel attach];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
+
 
 @end

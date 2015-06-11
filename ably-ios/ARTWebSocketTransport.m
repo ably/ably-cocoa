@@ -78,27 +78,27 @@ enum {
             }
             */
 
-            if (!echoMessages) {
-                queryParams[@"echo"] = @"false";
-            }
+
+            queryParams[@"echo"] =  echoMessages ? @"true" :@"false";
+            
             
             if(options.recover) {
                 NSArray * parts = [options.recover componentsSeparatedByString:@":"];
                 if([parts count] ==2) {
                     NSString * conId = [parts objectAtIndex:0];
                     NSString * key = [parts objectAtIndex:1];
+                    [ARTLog info:[NSString stringWithFormat:@"attempting recovery of connection %@", conId]];
                     queryParams[@"recover"] = conId;
                     queryParams[@"connection_serial"] = key;
                 }
+                else {
+                    [ARTLog error:[NSString stringWithFormat:@"recovery string is malformed, ignoring: '%@'", options.recover]];
+                }
             }
-            else if(options.resume != nil) {
+            else if(options.resumeKey != nil) {
                 queryParams[@"resume"]  =  options.resumeKey;
-                queryParams[@"connection_serial"] = options.resume;
-                
+                queryParams[@"connection_serial"] = [NSString stringWithFormat:@"%lld",options.resume];
             }
-
-            // TODO configure resume param
-
             if (clientId) {
                 queryParams[@"client_id"] = clientId;
             }
@@ -130,22 +130,24 @@ enum {
     [self.websocket open];
 }
 
-- (void)close:(BOOL)sendClose {
+- (void)sendClose {
     self.closing = YES;
-    
-    if (sendClose) {
-        ARTProtocolMessage *closeMessage = [[ARTProtocolMessage alloc] init];
-        closeMessage.action = ARTProtocolMessageClose;
-        [self send:closeMessage];
-    }
-
-    [self.websocket close];
-
-    // TODO review
-    [self.delegate realtimeTransportClosed:self];
+    ARTProtocolMessage *closeMessage = [[ARTProtocolMessage alloc] init];
+    closeMessage.action = ARTProtocolMessageClose;
+    [self send:closeMessage];
 }
 
-- (void)abort:(ARTStatus)reason {
+- (void)sendPing {
+    ARTProtocolMessage *closeMessage = [[ARTProtocolMessage alloc] init];
+    closeMessage.action = ARTProtocolMessageHeartbeat;
+    [self send:closeMessage];
+}
+
+-(void) close {
+    [self.websocket close];
+}
+
+- (void)abort:(ARTStatus *)reason {
     [self.websocket close];
     // TODO review
     self.websocket.delegate = nil;
@@ -193,14 +195,10 @@ enum {
     ARTWebSocketTransport * __weak weakSelf = self;
     CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
         ARTWebSocketTransport *s = weakSelf;
-        
-        if(error)
-        {
-            //TODO maybe some errors become failed, and some become disconn
+        if(error) {
             [ARTLog error:[NSString stringWithFormat:@"ARTWebSocketTransport: websocket did fail with error %@", error]];
         }
-        if(s)
-        {
+        if(s) {
             [s.delegate realtimeTransportFailed:s];
         }
     });

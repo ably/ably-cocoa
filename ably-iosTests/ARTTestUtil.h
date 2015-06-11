@@ -9,6 +9,9 @@
 #import <Foundation/Foundation.h>
 
 #import "ARTOptions.h"
+#import "ARTRest.h"
+#import "ARTRealtime.h"
+
 @class ARTRestChannel;
 @class XCTestExpectation;
 @class ARTRealtimeChannel;
@@ -42,6 +45,11 @@ typedef NS_ENUM(NSUInteger, TestAlteration) {
 +(ARTOptions *) binaryRestOptions;
 +(ARTOptions *) binaryRealtimeOptions;
 
+typedef void (^ARTRestConstructorCb)(ARTRest * rest );
+typedef void (^ARTRealtimeConstructorCb)(ARTRealtime * realtime );
+
++(void) testRest:(ARTRestConstructorCb)cb;
++(void) testRealtime:(ARTRealtimeConstructorCb)cb;
 
 +(void)repeat:(int)count i:(int)i delay:(NSTimeInterval)delay block:(void (^)(int))block;
 +(void)repeat:(int)count delay:(NSTimeInterval)delay block:(void (^)(int))block ;
@@ -53,7 +61,7 @@ typedef NS_ENUM(NSUInteger, TestAlteration) {
 +(void) publishRestMessages:(NSString *) prefix count:(int) count channel:(ARTRestChannel *) channel expectation:(XCTestExpectation *) expectation;
 
 +(void) publishRealtimeMessages:(NSString *) prefix count:(int) count channel:(ARTRealtimeChannel *) channel expectation:(XCTestExpectation *) expectation;
-
++(void) publishEnterMessages:(NSString *)clientIdPrefix count:(int) count channel:(ARTRealtimeChannel *) channel expectation:(XCTestExpectation *) expectation;
 +(NSString *) getCrypto128Json;
 +(NSString *) getTestAppSetupJson;
 +(NSString *) getCrypto256Json;

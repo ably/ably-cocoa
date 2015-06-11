@@ -14,6 +14,6 @@
 }
 
 +(NSArray *) parseEncodingChain:(NSString *) encodingChain key:(NSData *) key iv:(NSData *) iv;
-
 +(id<ARTPayloadEncoder>) createEncoder:(NSString *) name key:(NSData *) key iv:(NSData *) iv;
++(size_t) getPayloadArraySizeLimit:(size_t) newLimit modify:(bool) modify;
 @end

@@ -62,6 +62,14 @@
 
 @implementation ARTMsgPackEncoder
 
+
+
+-(id) decodeError:(NSData *) data {
+    return nil;
+}
+
+
+
 - (NSData *)encode:(id)obj
 {
     return nil;
