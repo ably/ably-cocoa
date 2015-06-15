@@ -9,7 +9,7 @@
 #import "ARTWebSocketTransport.h"
 
 #import "SRWebSocket.h"
-#import "ARTOptions.h"
+#import "ARTClientOptions.h"
 #import "ARTRest.h"
 #import "ARTRest+Private.h"
 #import "ARTLog.h"
@@ -42,7 +42,7 @@ enum {
 
 @implementation ARTWebSocketTransport
 
-- (instancetype)initWithRest:(ARTRest *)rest options:(ARTOptions *)options {
+- (instancetype)initWithRest:(ARTRest *)rest options:(ARTClientOptions *)options {
     self = [super init];
     if (self) {
         _rl = CFRunLoopGetCurrent();
@@ -97,7 +97,7 @@ enum {
             }
             else if(options.resumeKey != nil) {
                 queryParams[@"resume"]  =  options.resumeKey;
-                queryParams[@"connection_serial"] = [NSString stringWithFormat:@"%lld",options.resume];
+                queryParams[@"connection_serial"] = [NSString stringWithFormat:@"%lld",options.connectionSerial];
             }
             if (clientId) {
                 queryParams[@"client_id"] = clientId;

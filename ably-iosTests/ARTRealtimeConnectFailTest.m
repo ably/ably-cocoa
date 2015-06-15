@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 #import "ARTMessage.h"
-#import "ARTOptions.h"
+#import "ARTClientOptions.h"
 #import "ARTPresenceMessage.h"
 
 #import "ARTRealtime.h"
@@ -43,7 +43,7 @@
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"test_connect_text"];
     [self withRealtimeAlt:TestAlterationBadKeyId cb:^(ARTRealtime *realtime) {
-        [realtime subscribeToEventEmitter:^(ARTRealtimeConnectionState state) {
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
             XCTAssertEqual(ARTRealtimeFailed, state);
             [expectation fulfill];
         }];
@@ -58,7 +58,7 @@
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"test_connect_text"];
     [self withRealtimeAlt:TestAlterationBadKeyValue cb:^(ARTRealtime *realtime) {
-        [realtime subscribeToEventEmitter:^(ARTRealtimeConnectionState state) {
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
             XCTAssertEqual(ARTRealtimeFailed, state);
             [expectation fulfill];
         }];
@@ -77,7 +77,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"test_connect_text"];
     [self withRealtimeAlt:TestAlterationNone cb:^(ARTRealtime *realtime) {
         __block int connectionCount=0;
-        [realtime subscribeToEventEmitter:^(ARTRealtimeConnectionState state) {
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
             if (state == ARTRealtimeConnected) {
                 connectionCount++;
                 if(connectionCount ==1) {

@@ -1,5 +1,5 @@
 //
-//  ARTOptions.h
+//  ARTClientOptions.h
 //  ably-ios
 //
 //  Created by Jason Choy on 18/12/2014.
@@ -10,7 +10,7 @@
 
 #import "ARTAuth.h"
 
-@interface ARTOptions : NSObject
+@interface ARTClientOptions : NSObject
 
 @property (readwrite, strong, nonatomic) ARTAuthOptions *authOptions;
 @property (readwrite, strong, nonatomic) NSString *clientId;
@@ -23,7 +23,7 @@
 @property (readwrite, assign, nonatomic) BOOL binary;
 @property (readwrite, assign, nonatomic) BOOL autoConnect;
 @property (readwrite, strong, nonatomic) NSString *environment;
-@property (readwrite, assign) int64_t resume;
+@property (readwrite, assign, nonatomic) int64_t connectionSerial;
 @property (readwrite, copy, nonatomic) NSString *resumeKey;
 @property (readwrite, copy, nonatomic) NSString *recover;
 @property (readonly, strong, nonatomic) NSURL *restUrl;

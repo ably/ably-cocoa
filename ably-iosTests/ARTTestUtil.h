@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ARTOptions.h"
+#import "ARTClientOptions.h"
 #import "ARTRest.h"
 #import "ARTRealtime.h"
 
@@ -33,17 +33,17 @@ typedef NS_ENUM(NSUInteger, TestAlteration) {
 
 +(ARTCipherPayloadEncoder *) getTestCipherEncoder;
 
-+ (void)setupApp:(ARTOptions *)options cb:(void(^)(ARTOptions *options))cb;
-+ (void) setupApp:(ARTOptions *)options withAlteration:(TestAlteration) alt cb:(void (^)(ARTOptions *))cb;
++ (void)setupApp:(ARTClientOptions *)options cb:(void(^)(ARTClientOptions *options))cb;
++ (void) setupApp:(ARTClientOptions *)options withAlteration:(TestAlteration) alt cb:(void (^)(ARTClientOptions *))cb;
 + (NSString *) restHost;
 + (NSString *) realtimeHost;
 + (float) timeout;
 
 
-+(ARTOptions *) jsonRealtimeOptions;
-+(ARTOptions *) jsonRestOptions;
-+(ARTOptions *) binaryRestOptions;
-+(ARTOptions *) binaryRealtimeOptions;
++(ARTClientOptions *) jsonRealtimeOptions;
++(ARTClientOptions *) jsonRestOptions;
++(ARTClientOptions *) binaryRestOptions;
++(ARTClientOptions *) binaryRealtimeOptions;
 
 typedef void (^ARTRestConstructorCb)(ARTRest * rest );
 typedef void (^ARTRealtimeConstructorCb)(ARTRealtime * realtime );

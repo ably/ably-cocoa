@@ -276,6 +276,8 @@
 
 - (ARTStatus *)encode:(ARTPayload *)payload output:(ARTPayload *__autoreleasing *)output {
     *output = payload;
+    
+    //handle dictionaries and arrays the same way
     if ([payload.payload isKindOfClass:[NSDictionary class]] || [payload.payload isKindOfClass:[NSArray class]]) {
         NSError * err = nil;
         NSData *encoded = [NSJSONSerialization dataWithJSONObject:payload.payload options:0 error:&err];
@@ -287,7 +289,8 @@
             return [ARTStatus state:ARTStatusError];
         }
     }
-    if(!([payload.payload isKindOfClass:[NSData class]] || [payload.payload isKindOfClass:[NSString class]])) {
+    // otherwise do nothing besides confirm payload is nsdata or nsstring
+    else if(!([payload.payload isKindOfClass:[NSData class]] || [payload.payload isKindOfClass:[NSString class]])) {
         [NSException raise:@"ARTPayload must be either NSDictionary, NSArray, NSData or NSString" format:@"%@", [payload.payload class]];
     }
     return [ARTStatus state:ARTStatusOk];

@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 #import "ARTMessage.h"
-#import "ARTOptions.h"
+#import "ARTClientOptions.h"
 #import "ARTPresenceMessage.h"
 #import "ARTRest.h"
 #import "ARTTestUtil.h"

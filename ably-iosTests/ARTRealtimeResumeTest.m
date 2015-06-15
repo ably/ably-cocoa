@@ -10,7 +10,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 #import "ARTMessage.h"
-#import "ARTOptions.h"
+#import "ARTClientOptions.h"
 #import "ARTPresenceMessage.h"
 
 #import "ARTRealtime.h"
@@ -51,14 +51,14 @@
     NSString * message2 = @"message2";
     NSString * message3 = @"message3";
     NSString * message4 = @"message4";
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTClientOptions *options) {
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
 
         __block int disconnects =0;
         ARTRealtimeChannel *channel = [_realtime channel:channelName];
         ARTRealtimeChannel *channel2 = [_realtime2 channel:channelName];
-        [channel subscribeToEventEmitter:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
+        [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
             if(cState == ARTRealtimeChannelAttached) {
                 [channel2 attach];
                 if(disconnects ==1) {
@@ -68,7 +68,7 @@
                 }
             }
         }];
-        [channel2 subscribeToEventEmitter:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
+        [channel2 subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
             //both channels are attached. lets get to work.
             if(cState == ARTRealtimeChannelAttached) {
                 [channel2 publish:message1 cb:^(ARTStatus *status) {
@@ -80,7 +80,7 @@
                 }];
             }
         }];
-        [_realtime subscribeToEventEmitter:^(ARTRealtimeConnectionState state) {
+        [_realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
             if(state == ARTRealtimeFailed) {
                 [channel2 publish:message3 cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStatusOk, status.status);
@@ -91,16 +91,20 @@
                 [channel attach];
             }
         }];
-        __block bool firstRecieved = false;
+        __block bool firstReceived = false;
+        __block bool firstReceivedMessage4 = false; //TODO work out why multple receives
         [channel subscribe:^(ARTMessage * message) {
             if([[message content] isEqualToString:message1]) {
-                firstRecieved = true;
+                firstReceived = true;
                 
             }
             else if([[message content] isEqualToString:message4]) {
-                XCTAssertTrue(firstRecieved);
+                XCTAssertTrue(firstReceived);
                 XCTAssertTrue(disconnects>0);
-                [expectation fulfill];
+                if(!firstReceivedMessage4) {
+                    [expectation fulfill];
+                    firstReceivedMessage4 = true;
+                }
             }
         }];
     }];
@@ -114,18 +118,18 @@
     NSString * message2 = @"message2";
     NSString * message3 = @"message3";
     NSString * message4 = @"message4";
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTClientOptions *options) {
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
         
         ARTRealtimeChannel *channel = [_realtime channel:channelName];
         ARTRealtimeChannel *channel2 = [_realtime2 channel:channelName];
-        [channel subscribeToEventEmitter:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
+        [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
             if(cState == ARTRealtimeChannelAttached) {
                 [channel2 attach];
             }
         }];
-        [channel2 subscribeToEventEmitter:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
+        [channel2 subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
             //both channels are attached. lets get to work.
             if(cState == ARTRealtimeChannelAttached) {
                 [channel2 publish:message1 cb:^(ARTStatus *status) {
@@ -151,7 +155,7 @@
             }
         }];
         
-        [_realtime subscribeToEventEmitter:^(ARTRealtimeConnectionState state) {
+        [_realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
             [channel attach];
         }];
     }];

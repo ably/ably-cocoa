@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 #import "ARTMessage.h"
-#import "ARTOptions.h"
+#import "ARTClientOptions.h"
 #import "ARTPresenceMessage.h"
 
 #import "ARTRealtime.h"
@@ -42,10 +42,10 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"attach"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        [realtime subscribeToEventEmitter:^(ARTRealtimeConnectionState state) {
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime channel:@"attach"];
-                [channel subscribeToEventEmitter:^(ARTRealtimeChannelState state, ARTStatus *reason) {
+                [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
                     if (state == ARTRealtimeChannelAttached) {
                         [expectation fulfill];
                     }
@@ -65,7 +65,7 @@
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime channel:@"attach_before_connect"];
         [channel attach];
-        [channel subscribeToEventEmitter:^(ARTRealtimeChannelState state, ARTStatus *reason) {
+        [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
             if (state == ARTRealtimeChannelAttached) {
                 [expectation fulfill];
             }
@@ -83,7 +83,7 @@
         [channel attach];
         
         __block BOOL attached = NO;
-        [channel subscribeToEventEmitter:^(ARTRealtimeChannelState state, ARTStatus *reason) {
+        [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
             if (state == ARTRealtimeChannelAttached) {
                 attached = YES;
                 [channel detach];
@@ -106,7 +106,7 @@
         [channel attach];
         __block BOOL attached = false;
         __block int attachCount =0;
-        [channel subscribeToEventEmitter:^(ARTRealtimeChannelState state, ARTStatus *reason) {
+        [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
             if (state == ARTRealtimeChannelAttached) {
                 attachCount++;
                 attached = true;
@@ -168,17 +168,21 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime channel:@"channel"];
-        [channel subscribeToEventEmitter:^(ARTRealtimeChannelState state, ARTStatus *reason) {
+        __block bool gotCb=false;
+        [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
             if(state == ARTRealtimeChannelAttached) {
                 [realtime onSuspended];
             }
-            else if(state != ARTRealtimeChannelAttaching) {
-                XCTAssertEqual(ARTRealtimeChannelDetached, state);
-                [channel publish:@"will_fail" cb:^(ARTStatus *status) {
-                    XCTAssertEqual(ARTStatusError, status.status);
-                    XCTAssertEqual(90001, status.errorInfo.code);
-                    [expectation fulfill];
-                }];
+            else if(state == ARTRealtimeChannelDetached) {
+                if(!gotCb) {
+                    [channel publish:@"will_fail" cb:^(ARTStatus *status) {
+                        XCTAssertEqual(ARTStatusError, status.status);
+                        XCTAssertEqual(90001, status.errorInfo.code);
+                        gotCb = true;
+                        [realtime close];
+                        [expectation fulfill];
+                    }];
+                }
             }
         }];
         [channel attach];
@@ -191,12 +195,11 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime channel:@"channel"];
-        [channel subscribeToEventEmitter:^(ARTRealtimeChannelState state, ARTStatus *reason) {
+        [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
             if(state == ARTRealtimeChannelAttached) {
                 [realtime onError:nil];
             }
-            else if(state != ARTRealtimeChannelAttaching) {
-                XCTAssertEqual(ARTRealtimeChannelFailed, state);
+            else if(state == ARTRealtimeChannelFailed) {
                 [channel publish:@"will_fail" cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStatusError, status.status);
                     [expectation fulfill];
@@ -276,9 +279,9 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime channel:@"attach"];
-        [realtime subscribeToEventEmitter:^(ARTRealtimeConnectionState state) {
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
             if (state == ARTRealtimeConnected) {
-                [channel subscribeToEventEmitter:^(ARTRealtimeChannelState state, ARTStatus *reason) {
+                [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
                     if (state == ARTRealtimeChannelAttached) {
                         [realtime onError:nil];
                     }
@@ -302,9 +305,9 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime channel:@"attach"];
-        [realtime subscribeToEventEmitter:^(ARTRealtimeConnectionState state) {
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
             if (state == ARTRealtimeConnected) {
-                [channel subscribeToEventEmitter:^(ARTRealtimeChannelState state, ARTStatus *reason) {
+                [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
                     if (state == ARTRealtimeChannelAttached) {
                         [realtime onError:nil];
                     }
@@ -323,6 +326,10 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
+/**
+ Currently the payloadArraySizeLimit is default to INT_MAX. Here we bring that number down to 2
+ To show that publishing an array over the limit throws an exception.
+ */
 -(void) testPublishTooManyInArray {
     XCTestExpectation *exp = [self expectationWithDescription:@"testPublishTooManyInArray"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
@@ -340,7 +347,7 @@
     XCTestExpectation *exp = [self expectationWithDescription:@"testClientIdPreserved"];
     NSString * firstClientId = @"first";
     NSString * channelName = @"channelName";
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTClientOptions *options) {
         options.clientId = firstClientId;
         ARTRealtime * realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;
@@ -349,11 +356,11 @@
         ARTRealtime * realtime2 = [[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = realtime2;
         ARTRealtimeChannel *channel2 = [realtime channel:channelName];
-        [channel2 subscribeToPresence:^(ARTPresenceMessage * message) {
+        [channel2.presence subscribe:^(ARTPresenceMessage * message) {
             XCTAssertEqualObjects(message.clientId, firstClientId);
             [exp fulfill];
         }];
-        [channel publishPresenceEnter:@"enter" cb:^(ARTStatus *status) {
+        [channel.presence enter:@"enter" cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStatusOk, status.status);
         }];
     }];

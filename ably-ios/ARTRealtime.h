@@ -11,7 +11,7 @@
 #import "ARTStatus.h"
 #import "ARTTypes.h"
 #import "ARTMessage.h"
-#import "ARTOptions.h"
+#import "ARTClientOptions.h"
 #import "ARTPresenceMessage.h"
 #import "ARTPaginatedResult.h"
 
@@ -20,6 +20,8 @@
 
 @class ARTPresenceMap;
 @class ARTRealtimeChannelPresenceSubscription;
+@class ARTEventEmitter;
+
 typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
     ARTRealtimeChannelInitialised,
     ARTRealtimeChannelAttaching,
@@ -47,31 +49,15 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
 
 @end
 
+@class ARTPresence;
 @interface ARTRealtimeChannel : NSObject
-
-
 
 - (void)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb;
 - (void)publish:(id)payload cb:(ARTStatusCallback)cb;
 
-- (void)publishPresenceEnter:(id)data cb:(ARTStatusCallback)cb;
-- (void)publishPresenceUpdate:(id)data cb:(ARTStatusCallback)cb;
-- (void)publishPresenceLeave:(id) data cb:(ARTStatusCallback)cb;
-
-
-- (void)publishEnterClient:(NSString *) clientId data:(id) data cb:(ARTStatusCallback) cb;
-- (void)publishUpdateClient:(NSString *) clientId data:(id) data cb:(ARTStatusCallback) cb;
-- (void)publishLeaveClient:(NSString *) clientId data:(id) data cb:(ARTStatusCallback) cb;
-- (BOOL)presenceSyncComplete;
-
-
 - (id<ARTCancellable>)history:(ARTPaginatedResultCb)cb;
 - (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
 
--(id<ARTCancellable>)presenceGet:(ARTPaginatedResultCb) cb;
--(id<ARTCancellable>)presenceGetWithParams:(NSDictionary *) queryParams cb:(ARTPaginatedResultCb) cb;
-- (id<ARTCancellable>)presenceHistory:(ARTPaginatedResultCb)cb;
-- (id<ARTCancellable>)presenceHistoryWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
 
 
 typedef void (^ARTRealtimeChannelMessageCb)(ARTMessage *);
@@ -80,14 +66,8 @@ typedef void (^ARTRealtimeChannelMessageCb)(ARTMessage *);
 - (id<ARTSubscription>)subscribeToNames:(NSArray *)names cb:(ARTRealtimeChannelMessageCb)cb;
 
 
-typedef void (^ARTRealtimeChannelPresenceCb)(ARTPresenceMessage *);
-- (id<ARTSubscription>)subscribeToPresence:(ARTRealtimeChannelPresenceCb)cb;
-- (id<ARTSubscription>)subscribeToPresenceAction:(ARTPresenceMessageAction) action cb:(ARTRealtimeChannelPresenceCb)cb;
-- (void)unsubscribePresence:(id<ARTSubscription>)subscription;
-- (void)unsubscribePresence:(id<ARTSubscription>)subscription action:(ARTPresenceMessageAction) action;
-
 typedef void (^ARTRealtimeChannelStateCb)(ARTRealtimeChannelState, ARTStatus *);
-- (id<ARTSubscription>)subscribeToEventEmitter:(ARTRealtimeChannelStateCb)cb;
+- (id<ARTSubscription>)subscribeToStateChanges:(ARTRealtimeChannelStateCb)cb;
 
 - (BOOL)attach;
 - (BOOL)detach;
@@ -95,13 +75,41 @@ typedef void (^ARTRealtimeChannelStateCb)(ARTRealtimeChannelState, ARTStatus *);
 - (ARTRealtimeChannelState)state;
 - (ARTPresenceMap *) presenceMap;
 
+@property (readonly, strong, nonatomic) ARTPresence *presence;
+
 @end
+
+@interface ARTPresence : NSObject
+- (instancetype) initWithChannel:(ARTRealtimeChannel *) channel;
+- (id<ARTCancellable>)get:(ARTPaginatedResultCb) cb;
+- (id<ARTCancellable>)getWithParams:(NSDictionary *) queryParams cb:(ARTPaginatedResultCb) cb;
+- (id<ARTCancellable>)history:(ARTPaginatedResultCb)cb;
+- (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
+
+- (void)enter:(id)data cb:(ARTStatusCallback)cb;
+- (void)update:(id)data cb:(ARTStatusCallback)cb;
+- (void)leave:(id) data cb:(ARTStatusCallback)cb;
+
+
+- (void)enterClient:(NSString *) clientId data:(id) data cb:(ARTStatusCallback) cb;
+- (void)updateClient:(NSString *) clientId data:(id) data cb:(ARTStatusCallback) cb;
+- (void)leaveClient:(NSString *) clientId data:(id) data cb:(ARTStatusCallback) cb;
+- (BOOL)isSyncComplete;
+
+typedef void (^ARTRealtimeChannelPresenceCb)(ARTPresenceMessage *);
+- (id<ARTSubscription>)subscribe:(ARTRealtimeChannelPresenceCb)cb;
+- (id<ARTSubscription>)subscribe:(ARTPresenceMessageAction) action cb:(ARTRealtimeChannelPresenceCb)cb;
+- (void)unsubscribe:(id<ARTSubscription>)subscription;
+- (void)unsubscribe:(id<ARTSubscription>)subscription action:(ARTPresenceMessageAction) action;
+
+@end
+
 
 @interface ARTRealtime : NSObject
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithKey:(NSString *) key;
-- (instancetype)initWithOptions:(ARTOptions *) options;
+- (instancetype)initWithOptions:(ARTClientOptions *) options;
 
 - (void) close;
 - (BOOL) connect;
@@ -124,8 +132,17 @@ typedef void (^ARTRealtimePingCb)(ARTStatus *);
 - (ARTRealtimeChannel *)channel:(NSString *)channelName;
 - (ARTRealtimeChannel *)channel:(NSString *)channelName cipherParams:(ARTCipherParams *)cipherParams;
 
-typedef void (^ARTRealtimeConnectionStateCb)(ARTRealtimeConnectionState);
-- (id<ARTSubscription>)subscribeToEventEmitter:(ARTRealtimeConnectionStateCb)cb;
 
+
+
+@property (readonly, strong, nonatomic) ARTEventEmitter *eventEmitter;
+
+@end
+
+@interface ARTEventEmitter : NSObject
+-(instancetype) initWithRealtime:(ARTRealtime *) realtime;
+
+typedef void (^ARTRealtimeConnectionStateCb)(ARTRealtimeConnectionState);
+- (id<ARTSubscription>)on:(ARTRealtimeConnectionStateCb)cb;
 
 @end

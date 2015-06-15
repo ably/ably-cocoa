@@ -1,21 +1,21 @@
 //
-//  ARTOptions.m
+//  ARTClientOptions.m
 //  ably-ios
 //
 //  Created by Jason Choy on 18/12/2014.
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "ARTOptions.h"
-#import "ARTOptions+Private.h"
+#import "ARTClientOptions.h"
+#import "ARTClientOptions+Private.h"
 #import "ARTDefault.h"
-@interface ARTOptions ()
+@interface ARTClientOptions ()
 @property (readwrite, strong, nonatomic) NSString *realtimeHost;
 - (instancetype)initDefaults;
 
 @end
 
-@implementation ARTOptions
+@implementation ARTClientOptions
 
 +(NSString *) getDefaultRestHost:(NSString *) replacement modify:(bool) modify {
     static NSString * restHost =@"rest.ably.io";
@@ -66,11 +66,11 @@
 }
 
 -(NSString * ) defaultRestHost {
-    return [ARTOptions getDefaultRestHost:@"" modify:false];
+    return [ARTClientOptions getDefaultRestHost:@"" modify:false];
 }
 
 -(NSString *) defaultRealtimeHost {
-    return [ARTOptions getDefaultRealtimeHost:@"" modify:false];
+    return [ARTClientOptions getDefaultRealtimeHost:@"" modify:false];
 }
 
 - (instancetype)initDefaults {
@@ -80,7 +80,7 @@
     _restPort = [ARTDefault TLSPort];
     _realtimePort = [ARTDefault TLSPort];
     _queueMessages = YES;
-    _resume = 0;
+    _connectionSerial = 0;
     _echoMessages = YES;
     _recover = nil;
     _binary = false;
@@ -91,11 +91,11 @@
 }
 
 + (instancetype)options {
-    return [[ARTOptions alloc] init];
+    return [[ARTClientOptions alloc] init];
 }
 
 + (instancetype)optionsWithKey:(NSString *)key {
-    return [[ARTOptions alloc] initWithKey:key];
+    return [[ARTClientOptions alloc] initWithKey:key];
 }
 
 +(NSURL *) restUrl:(NSString *) host port:(int) port {
@@ -103,11 +103,11 @@
     return [NSURL URLWithString:s];
 }
 - (NSURL *)restUrl {
-    return [ARTOptions restUrl:self.restHost port:self.restPort];
+    return [ARTClientOptions restUrl:self.restHost port:self.restPort];
 }
 
 - (instancetype)clone {
-    ARTOptions *options = [[ARTOptions alloc] init];
+    ARTClientOptions *options = [[ARTClientOptions alloc] init];
     options.authOptions = [self.authOptions clone];
     if (!options.authOptions) {
         return nil;
@@ -123,7 +123,7 @@
     options.recover = self.recover;
     options.binary = self.binary;
     options.autoConnect = self.autoConnect;
-    options.resume = self.resume;
+    options.connectionSerial = self.connectionSerial;
     options.resumeKey = self.resumeKey;
     options.environment = self.environment;
 

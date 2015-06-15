@@ -45,6 +45,7 @@
 
 + (ARTSignedTokenRequestCb)defaultSignedTokenRequestCallback:(ARTAuthOptions *)authOptions rest:(ARTRest *)rest;
 + (NSString *)random;
++ (NSArray *)checkValidKey:(NSString *) key;
 @end
 
 @implementation ARTTokenDetails
@@ -128,18 +129,18 @@
     return self;
 }
 
+
+
 - (instancetype)initWithKey:(NSString *)key {
     self = [self init];
     if (self) {
-        NSArray *keyBits = [key componentsSeparatedByString:@":"];
-        if(keyBits.count !=2) {
-            [NSException raise:@"Invalid key" format:@"%@ should be of the form <keyName>:<keySecret>", key];
-        }
+        NSArray * keyBits =[ARTAuth checkValidKey:key];
         _keyName = keyBits[0];
         _keySecret = keyBits[1];
     }
     return self;
 }
+
 
 + (instancetype)options {
     return [[ARTAuthOptions alloc] init];
@@ -212,13 +213,6 @@
 @implementation ARTAuth
 
 - (instancetype)initWithRest:(ARTRest *) rest options:(ARTAuthOptions *) options {
-    ARTAuth * auth = [[ARTAuth alloc] initBasicWithRest:rest options:options];
-    [auth prepConnection];
-    return auth;
-}
-
-
--(instancetype) initBasicWithRest:(ARTRest *) rest options:(ARTAuthOptions *) options {
     self = [super init];
     if(self) {
         _rest = rest;
@@ -232,13 +226,25 @@
             [ARTLog debug:@"ARTAuth: setting up auth method Basic"];
             _basicCredentials = [NSString stringWithFormat:@"Basic %@",
                                  [[[NSString stringWithFormat:@"%@:%@", options.keyName, options.keySecret] dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0]];
+            [ARTAuth checkValidKey:[NSString stringWithFormat:@"%@:%@", options.keyName, options.keySecret]];
             _keyName = options.keyName;
             _keySecret = options.keySecret;
+        } else if(options.token == nil) {
+            [NSException raise:@"Either a token or a keyName and secret are required to connect to Ably" format:nil];
         }
+        
+        [self prepConnection];
     }
     return self;
 }
 
++ (NSArray *)checkValidKey:(NSString *) key {
+    NSArray *keyBits = [key componentsSeparatedByString:@":"];
+    if(keyBits.count !=2) {
+        [NSException raise:@"Invalid key" format:@"%@ should be of the form <keyName>:<keySecret>", key];
+    }
+    return keyBits;
+}
 
 -(bool) canRequestToken {
     if(self.options.keyName && self.options.keySecret) {
@@ -354,7 +360,6 @@
 }
 
 - (id<ARTCancellable>)authHeadersUseBasic:(BOOL)useBasic cb:(id<ARTCancellable>(^)(NSDictionary *))cb {
-
     if(useBasic || self.authMethod == ARTAuthMethodBasic) {
         return cb(@{@"Authorization": self.basicCredentials});
     }

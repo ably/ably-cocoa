@@ -9,13 +9,13 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 #import "ARTMessage.h"
-#import "ARTOptions.h"
+#import "ARTClientOptions.h"
 #import "ARTPresenceMessage.h"
 #import "ARTRest.h"
 #import "ARTTestUtil.h"
 #import "ARTLog.h"
 #import "ARTRest+Private.h"
-#import "ARTOptions+Private.h"
+#import "ARTClientOptions+Private.h"
 
 @interface ARTRestInitTest : XCTestCase {
     ARTRest *_rest;
@@ -29,7 +29,7 @@
 }
 
 - (void)tearDown {
-    [ARTOptions getDefaultRestHost:@"rest.ably.io" modify:true];
+    [ARTClientOptions getDefaultRestHost:@"rest.ably.io" modify:true];
     _rest = nil;
     [super tearDown];
 }
@@ -46,9 +46,9 @@
 }
 
 -(void)testInitWithKey {
-    [ARTOptions getDefaultRestHost:@"sandbox-rest.ably.io" modify:true];
+    [ARTClientOptions getDefaultRestHost:@"sandbox-rest.ably.io" modify:true];
     XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithKey"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
         NSString * keyName = options.authOptions.keyName;
         NSString * keySecret = options.authOptions.keySecret;
         NSString * key = [NSString stringWithFormat:@"%@:%@",keyName, keySecret];
@@ -65,14 +65,14 @@
 }
 
 -(void)testInitWithNoKey {
-    [ARTOptions getDefaultRestHost:@"sandbox-rest.ably.io" modify:true];
+    [ARTClientOptions getDefaultRestHost:@"sandbox-rest.ably.io" modify:true];
     NSString * key = @"";
     XCTAssertThrows([[ARTRest alloc] initWithKey:key]);
 }
 
 -(void)testInitWithKeyBad {
     XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithKeyBad"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
         NSString * keyName = @"badName";
         NSString * keySecret = options.authOptions.keySecret;
         NSString * key = [NSString stringWithFormat:@"%@:%@",keyName, keySecret];
@@ -91,7 +91,7 @@
 
 -(void)testInitWithOptions {
     XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
         ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
        ARTRestChannel * c = [rest channel:@"test"];
@@ -106,8 +106,8 @@
 
 -(void)testInitWithOptionsEnvironment {
     XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
-        ARTOptions *envOptions =[ARTOptions options];
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
+        ARTClientOptions *envOptions =[ARTClientOptions options];
         envOptions.authOptions.keyName = options.authOptions.keyName;
         envOptions.authOptions.keySecret = options.authOptions.keySecret;
         envOptions.environment = @"sandbox";
@@ -124,7 +124,7 @@
 
 -(void)testGetAuth {
     XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
         ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
         ARTRestChannel * c = [rest channel:@"test"];
@@ -142,10 +142,9 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-
 -(void)testInitWithOptionsBad {
     XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
         options.authOptions.keyName = @"bad:Name";
         XCTAssertThrows([[ARTRest alloc] initWithOptions:options]);
         [exp fulfill];
@@ -155,7 +154,7 @@
 
 - (void)testRestTimeNoFallbackHost {
     XCTestExpectation *exp = [self expectationWithDescription:@"testRestTimeBadHost"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
         NSString * badHost = @"this.host.does.not.exist";
         options.restHost = badHost;
         ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
@@ -170,6 +169,7 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
+
 
 - (void)testRestTime {
     XCTestExpectation *exp = [self expectationWithDescription:@"testRestTime"];
@@ -193,4 +193,6 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
+
+
 @end

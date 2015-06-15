@@ -53,7 +53,7 @@ typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
 @property (readonly, assign, nonatomic) BOOL ackRequired;
 @property (readwrite, assign, nonatomic) int64_t flags;
 
--(BOOL) syncInOperation;
+-(BOOL) isSyncEnabled;
 
 - (BOOL)mergeFrom:(ARTProtocolMessage *)msg;
 

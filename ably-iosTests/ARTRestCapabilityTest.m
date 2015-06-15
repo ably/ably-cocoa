@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 #import "ARTMessage.h"
-#import "ARTOptions.h"
+#import "ARTClientOptions.h"
 #import "ARTPresenceMessage.h"
 #import "ARTRest.h"
 #import "ARTTestUtil.h"
@@ -33,8 +33,8 @@
 
 - (void)withRestRestrictCap:(void (^)(ARTRest *rest))cb {
     if (!_rest) {
-        ARTOptions * theOptions = [ARTTestUtil jsonRestOptions];
-        [ARTTestUtil setupApp:theOptions withAlteration:TestAlterationRestrictCapability cb:^(ARTOptions *options) {
+        ARTClientOptions * theOptions = [ARTTestUtil jsonRestOptions];
+        [ARTTestUtil setupApp:theOptions withAlteration:TestAlterationRestrictCapability cb:^(ARTClientOptions *options) {
             if (options) {
                 options.authOptions.useTokenAuth = true;
                 options.authOptions.clientId = @"clientId";

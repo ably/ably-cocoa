@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 #import "ARTMessage.h"
-#import "ARTOptions.h"
+#import "ARTClientOptions.h"
 #import "ARTPresenceMessage.h"
 #import "ARTRest.h"
 #import "ARTTestUtil.h"
@@ -40,7 +40,7 @@
 
 - (void)testTokenSimple {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testRestTimeBadHost"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
         options.authOptions.useTokenAuth = true;
         options.authOptions.clientId = @"testToken";
         ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
@@ -62,7 +62,7 @@
 
 - (void)testInitWithBadToken {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithToken"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
         options.authOptions.useTokenAuth = true;
         options.authOptions.clientId = @"testToken";
         options.authOptions.token = @"this_is_a_bad_token";
@@ -82,7 +82,7 @@
 
 - (void)testInitWithBorrowedToken {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithToken"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
         options.authOptions.useTokenAuth = true;
         options.authOptions.clientId = @"testToken";
         ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
@@ -109,7 +109,7 @@
 
 - (void)testUseTokenAuthForcesToken {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testUseTokenAuthForcesToken"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
         options.authOptions.useTokenAuth = true;
         ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
@@ -127,7 +127,7 @@
 
 -(void)testClientIdForcesToken {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testClientIdForcesToken"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
         options.authOptions.clientId = @"clientIdThatForcesToken";
         ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
@@ -145,7 +145,7 @@
 
 -(void)testAuthURLForcesToken {
     XCTestExpectation *exp = [self expectationWithDescription:@"testClientIdForcesToken"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
         options.authOptions.authUrl =[NSURL URLWithString:@"some_url"];
         ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
@@ -159,35 +159,43 @@
 
 -(void)testTTLDefaultOneHour {
     XCTestExpectation *exp= [self expectationWithDescription:@"testTTLDefaultOneHour"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
         options.authOptions.clientId = @"clientIdThatForcesToken";
         ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
         ARTAuth * auth = rest.auth;
-        ARTAuthOptions * authOptions = [auth getAuthOptions];
-        XCTAssertEqual(authOptions.tokenDetails.expires - authOptions.tokenDetails.issued,  3600000);
-        [exp fulfill];
+        ARTRestChannel * c= [rest channel:@"getChannel"];
+        [c publish:@"invokeTokenRequest" cb:^(ARTStatus *status) {
+            XCTAssertEqual(ARTStatusOk, status.status);
+            ARTAuthOptions * authOptions = [auth getAuthOptions];
+            XCTAssertEqual(authOptions.tokenDetails.expires - authOptions.tokenDetails.issued,  3600000);
+            [exp fulfill];
+        }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 -(void)testTTL {
     XCTestExpectation *exp= [self expectationWithDescription:@"testTTLDefaultOneHour"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
         options.authOptions.clientId = @"clientIdThatForcesToken";
         ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
         ARTAuth * auth = rest.auth;
-        ARTAuthOptions * authOptions = [auth getAuthOptions];
-        XCTAssertEqual(authOptions.tokenDetails.expires - authOptions.tokenDetails.issued,  3600000);
-        [exp fulfill];
+        ARTRestChannel * c= [rest channel:@"getChannel"];
+        [c publish:@"invokeTokenRequest" cb:^(ARTStatus *status) {
+            XCTAssertEqual(ARTStatusOk, status.status);
+            ARTAuthOptions * authOptions = [auth getAuthOptions];
+            XCTAssertEqual(authOptions.tokenDetails.expires - authOptions.tokenDetails.issued,  3600000);
+            [exp fulfill];
+        }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 -(void)testTokenExpiresGetsReissued {
     XCTestExpectation *exp= [self expectationWithDescription:@"testTokenExpires"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
         options.authOptions.clientId = @"clientIdThatForcesToken";
         const int fiveSecondsMilli = 5000;
         options.authOptions.ttl = fiveSecondsMilli;
@@ -195,7 +203,6 @@
         _rest = rest;
         ARTAuth * auth = rest.auth;
         ARTAuthOptions * authOptions = [auth getAuthOptions];
-        XCTAssertEqual(authOptions.tokenDetails.expires - authOptions.tokenDetails.issued,  fiveSecondsMilli);
         ARTRestChannel * c= [rest channel:@"getChannel"];
         NSString * oldToken = authOptions.tokenDetails.token;
         [c publish:@"something" cb:^(ARTStatus *status) {
@@ -215,15 +222,15 @@
 
 - (void)testSameTokenIsUsed {
     XCTestExpectation *exp= [self expectationWithDescription:@"testSameTokenIsUsed"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
         options.authOptions.clientId = @"clientIdThatForcesToken";
         ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
         ARTAuth * auth = rest.auth;
         ARTAuthOptions * authOptions = [auth getAuthOptions];
         ARTRestChannel * c= [rest channel:@"getChannel"];
-        NSString * initialToken = authOptions.tokenDetails.token;
         [c publish:@"first" cb:^(ARTStatus *status) {
+            NSString * initialToken = authOptions.tokenDetails.token;
             XCTAssertEqual(ARTStatusOk, status.status);
             [c publish:@"second" cb:^(ARTStatus *status) {
                 [c publish:@"third" cb:^(ARTStatus *status) {
@@ -239,7 +246,7 @@
 
 - (void)testToken401GetsReissued {
     XCTestExpectation *exp= [self expectationWithDescription:@"testTokenExpires"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
         options.authOptions.clientId = @"clientIdThatForcesToken";
         const int fiveSecondsMilli = 5000;
         options.authOptions.ttl = fiveSecondsMilli;
@@ -247,7 +254,6 @@
         _rest = rest;
         ARTAuth * auth = rest.auth;
         ARTAuthOptions * authOptions = [auth getAuthOptions];
-        XCTAssertEqual(authOptions.tokenDetails.expires - authOptions.tokenDetails.issued,  fiveSecondsMilli);
         // change the expires time to far in the future so the client
         //uses the expired token and receieves 401
         [authOptions.tokenDetails setExpiresTime:INT64_MAX];
@@ -269,7 +275,7 @@
 
 - (void)testReissuedTokenFailReturnsError {
     XCTestExpectation *exp= [self expectationWithDescription:@"testTokenExpires"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
         options.authOptions.clientId = @"clientIdThatForcesToken";
         const int fiveSecondsMilli = 5000;
         options.authOptions.ttl = fiveSecondsMilli;
@@ -277,8 +283,6 @@
         _rest = rest;
         ARTAuth * auth = rest.auth;
         ARTAuthOptions * authOptions = [auth getAuthOptions];
-        XCTAssertEqual(authOptions.tokenDetails.expires - authOptions.tokenDetails.issued,  fiveSecondsMilli);
-        
         // change the expires time to far in the future so the client
         //uses the expired token and receieves 401
         [authOptions.tokenDetails setExpiresTime:INT64_MAX];
@@ -304,7 +308,7 @@
 
 - (void)testUseTokenAuthThrowsWithNoMeansToCreateToken {
     XCTestExpectation *exp = [self expectationWithDescription:@"testUseTokenAuthThrowsWithNoMeansToCreateToken"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
         options.authOptions.useTokenAuth = true;
         options.authOptions.keyName = nil;
         options.authOptions.keySecret = nil;
@@ -318,7 +322,7 @@
 
 - (void)testExpiredBorrowedTokenErrors {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithToken"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
         options.authOptions.useTokenAuth = true;
         options.authOptions.clientId = @"testToken";
         options.authOptions.ttl = 5000;
@@ -352,7 +356,7 @@
 
 - (void)testInitWithBorrowedAuthCb {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithToken"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
         options.authOptions.useTokenAuth = true;
         options.authOptions.clientId = @"testToken";
         ARTRest * firstRest = [[ARTRest alloc] initWithOptions:options];

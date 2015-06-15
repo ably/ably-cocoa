@@ -56,7 +56,7 @@
 - (BOOL)ackRequired {
     return self.action == ARTProtocolMessageMessage || self.action == ARTProtocolMessagePresence || self.action == ARTProtocolMessageDetach;
 }
--(BOOL) syncInOperation {
+-(BOOL) isSyncEnabled {
     return self.flags & 0x1;
 }
 

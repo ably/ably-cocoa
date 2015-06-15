@@ -27,11 +27,14 @@
 		1C2B0FFD1B136A6D00E3633C /* ARTPresenceMap.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C2B0FFB1B136A6D00E3633C /* ARTPresenceMap.h */; };
 		1C2B0FFE1B136A6D00E3633C /* ARTPresenceMap.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C2B0FFC1B136A6D00E3633C /* ARTPresenceMap.m */; };
 		1C55427D1B148306003068DB /* ARTStatus.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C55427C1B148306003068DB /* ARTStatus.m */; };
+		1C578E1F1B3435CA00EF46EC /* ARTFallback.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C578E1D1B3435CA00EF46EC /* ARTFallback.h */; };
+		1C578E201B3435CA00EF46EC /* ARTFallback.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C578E1E1B3435CA00EF46EC /* ARTFallback.m */; };
+		1C578E221B3438F300EF46EC /* ARTFallbackTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C578E211B3438F300EF46EC /* ARTFallbackTest.m */; };
 		1C5DA0151A6E5FA400A2B7EF /* ably.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* ably.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1C6C18A31ADFDAB100AB79E4 /* ARTLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C6C18A11ADFDAB100AB79E4 /* ARTLog.h */; };
 		1C6C18A41ADFDAB100AB79E4 /* ARTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */; };
 		1C6C18A71ADFDDBA00AB79E4 /* ARTLogTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C6C18A61ADFDDBA00AB79E4 /* ARTLogTest.m */; };
-		1C70CB881B020D7F003D295A /* ARTOptions+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C70CB871B020D7F003D295A /* ARTOptions+Private.h */; };
+		1C70CB881B020D7F003D295A /* ARTClientOptions+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C70CB871B020D7F003D295A /* ARTClientOptions+Private.h */; };
 		1C8065051AE7C8FA00D49357 /* ARTPayload+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C8065041AE7C8FA00D49357 /* ARTPayload+Private.h */; };
 		1CA5E1C21AB72369006ADD70 /* ARTMsgPackEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CA5E1C01AB72369006ADD70 /* ARTMsgPackEncoder.h */; };
 		1CA5E1C31AB72369006ADD70 /* ARTMsgPackEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CA5E1C11AB72369006ADD70 /* ARTMsgPackEncoder.m */; };
@@ -52,8 +55,8 @@
 		960D07931A45F1D800ED8C8C /* ARTCrypto.h in Headers */ = {isa = PBXBuildFile; fileRef = 960D07911A45F1D800ED8C8C /* ARTCrypto.h */; };
 		960D07941A45F1D800ED8C8C /* ARTCrypto.m in Sources */ = {isa = PBXBuildFile; fileRef = 960D07921A45F1D800ED8C8C /* ARTCrypto.m */; };
 		960D07971A46FFC300ED8C8C /* ARTRest+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 960D07951A46FFC300ED8C8C /* ARTRest+Private.h */; };
-		961343D81A42E0B7006DC822 /* ARTOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = 961343D61A42E0B7006DC822 /* ARTOptions.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		961343D91A42E0B7006DC822 /* ARTOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 961343D71A42E0B7006DC822 /* ARTOptions.m */; };
+		961343D81A42E0B7006DC822 /* ARTClientOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = 961343D61A42E0B7006DC822 /* ARTClientOptions.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		961343D91A42E0B7006DC822 /* ARTClientOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 961343D71A42E0B7006DC822 /* ARTClientOptions.m */; };
 		961343E81A432E7C006DC822 /* ARTPayload.h in Headers */ = {isa = PBXBuildFile; fileRef = 961343E61A432E7C006DC822 /* ARTPayload.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		961343E91A432E7C006DC822 /* ARTPayload.m in Sources */ = {isa = PBXBuildFile; fileRef = 961343E71A432E7C006DC822 /* ARTPayload.m */; };
 		967A43211A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.h in Headers */ = {isa = PBXBuildFile; fileRef = 967A431F1A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.h */; };
@@ -162,10 +165,13 @@
 		1C2B0FFB1B136A6D00E3633C /* ARTPresenceMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPresenceMap.h; sourceTree = "<group>"; };
 		1C2B0FFC1B136A6D00E3633C /* ARTPresenceMap.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPresenceMap.m; sourceTree = "<group>"; };
 		1C55427C1B148306003068DB /* ARTStatus.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTStatus.m; sourceTree = "<group>"; };
+		1C578E1D1B3435CA00EF46EC /* ARTFallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTFallback.h; sourceTree = "<group>"; };
+		1C578E1E1B3435CA00EF46EC /* ARTFallback.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTFallback.m; sourceTree = "<group>"; };
+		1C578E211B3438F300EF46EC /* ARTFallbackTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTFallbackTest.m; sourceTree = "<group>"; };
 		1C6C18A11ADFDAB100AB79E4 /* ARTLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTLog.h; sourceTree = "<group>"; };
 		1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTLog.m; sourceTree = "<group>"; };
 		1C6C18A61ADFDDBA00AB79E4 /* ARTLogTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTLogTest.m; sourceTree = "<group>"; };
-		1C70CB871B020D7F003D295A /* ARTOptions+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTOptions+Private.h"; sourceTree = "<group>"; };
+		1C70CB871B020D7F003D295A /* ARTClientOptions+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTClientOptions+Private.h"; sourceTree = "<group>"; };
 		1C8065041AE7C8FA00D49357 /* ARTPayload+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTPayload+Private.h"; sourceTree = "<group>"; };
 		1CA5E1C01AB72369006ADD70 /* ARTMsgPackEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTMsgPackEncoder.h; sourceTree = "<group>"; };
 		1CA5E1C11AB72369006ADD70 /* ARTMsgPackEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTMsgPackEncoder.m; sourceTree = "<group>"; };
@@ -186,8 +192,8 @@
 		960D07911A45F1D800ED8C8C /* ARTCrypto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTCrypto.h; sourceTree = "<group>"; };
 		960D07921A45F1D800ED8C8C /* ARTCrypto.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTCrypto.m; sourceTree = "<group>"; };
 		960D07951A46FFC300ED8C8C /* ARTRest+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTRest+Private.h"; sourceTree = "<group>"; };
-		961343D61A42E0B7006DC822 /* ARTOptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTOptions.h; sourceTree = "<group>"; };
-		961343D71A42E0B7006DC822 /* ARTOptions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTOptions.m; sourceTree = "<group>"; };
+		961343D61A42E0B7006DC822 /* ARTClientOptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTClientOptions.h; sourceTree = "<group>"; };
+		961343D71A42E0B7006DC822 /* ARTClientOptions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTClientOptions.m; sourceTree = "<group>"; };
 		961343E61A432E7C006DC822 /* ARTPayload.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPayload.h; sourceTree = "<group>"; };
 		961343E71A432E7C006DC822 /* ARTPayload.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPayload.m; sourceTree = "<group>"; };
 		967A431F1A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTNSArray+ARTFunctional.h"; sourceTree = "<group>"; };
@@ -349,8 +355,8 @@
 				96E408461A3895E800087F77 /* ARTWebSocketTransport.m */,
 				967A431F1A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.h */,
 				967A43201A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.m */,
-				961343D61A42E0B7006DC822 /* ARTOptions.h */,
-				961343D71A42E0B7006DC822 /* ARTOptions.m */,
+				961343D61A42E0B7006DC822 /* ARTClientOptions.h */,
+				961343D71A42E0B7006DC822 /* ARTClientOptions.m */,
 				961343E61A432E7C006DC822 /* ARTPayload.h */,
 				961343E71A432E7C006DC822 /* ARTPayload.m */,
 				960D07911A45F1D800ED8C8C /* ARTCrypto.h */,
@@ -363,12 +369,14 @@
 				1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */,
 				1C118A591AE63D58006AD19E /* ably-ios.h */,
 				1C8065041AE7C8FA00D49357 /* ARTPayload+Private.h */,
-				1C70CB871B020D7F003D295A /* ARTOptions+Private.h */,
+				1C70CB871B020D7F003D295A /* ARTClientOptions+Private.h */,
 				1CEFC60D1B0F9EF500D84463 /* ARTTokenDetails+Private.h */,
 				1C2B0FFB1B136A6D00E3633C /* ARTPresenceMap.h */,
 				1C2B0FFC1B136A6D00E3633C /* ARTPresenceMap.m */,
 				1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */,
 				1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */,
+				1C578E1D1B3435CA00EF46EC /* ARTFallback.h */,
+				1C578E1E1B3435CA00EF46EC /* ARTFallback.m */,
 			);
 			path = "ably-ios";
 			sourceTree = "<group>";
@@ -392,6 +400,7 @@
 				96E4083A1A38622D00087F77 /* ARTTestUtil.h */,
 				96E4083B1A38622D00087F77 /* ARTTestUtil.m */,
 				1C6C18A61ADFDDBA00AB79E4 /* ARTLogTest.m */,
+				1C578E211B3438F300EF46EC /* ARTFallbackTest.m */,
 			);
 			path = "ably-iosTests";
 			sourceTree = "<group>";
@@ -431,7 +440,7 @@
 				96BF61531A35B39C004CF2B3 /* ARTRest.h in Headers */,
 				96A507BD1A3791490077CDF8 /* ARTRealtime.h in Headers */,
 				1C118A5A1AE63D58006AD19E /* ably-ios.h in Headers */,
-				961343D81A42E0B7006DC822 /* ARTOptions.h in Headers */,
+				961343D81A42E0B7006DC822 /* ARTClientOptions.h in Headers */,
 				96BF615E1A35C1C8004CF2B3 /* ARTTypes.h in Headers */,
 				1C1EC3FA1AE26A8B00AAADD7 /* ARTStatus.h in Headers */,
 				96E408431A38939E00087F77 /* ARTProtocolMessage.h in Headers */,
@@ -439,7 +448,7 @@
 				96BF61581A35B52C004CF2B3 /* ARTHttp.h in Headers */,
 				96BF61641A35CDE1004CF2B3 /* ARTMessage.h in Headers */,
 				96BF61701A35FB7C004CF2B3 /* ARTAuth.h in Headers */,
-				1C70CB881B020D7F003D295A /* ARTOptions+Private.h in Headers */,
+				1C70CB881B020D7F003D295A /* ARTClientOptions+Private.h in Headers */,
 				96A507A11A377AA50077CDF8 /* ARTPresenceMessage.h in Headers */,
 				1C2B0FFD1B136A6D00E3633C /* ARTPresenceMap.h in Headers */,
 				1CD8DC9F1B1C7315007EAF36 /* ARTDefault.h in Headers */,
@@ -447,6 +456,7 @@
 				1C8065051AE7C8FA00D49357 /* ARTPayload+Private.h in Headers */,
 				961343E81A432E7C006DC822 /* ARTPayload.h in Headers */,
 				967A43211A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.h in Headers */,
+				1C578E1F1B3435CA00EF46EC /* ARTFallback.h in Headers */,
 				96E408471A3895E800087F77 /* ARTWebSocketTransport.h in Headers */,
 				96E4083F1A3892C700087F77 /* ARTRealtimeTransport.h in Headers */,
 				960D07971A46FFC300ED8C8C /* ARTRest+Private.h in Headers */,
@@ -608,8 +618,9 @@
 				960D07941A45F1D800ED8C8C /* ARTCrypto.m in Sources */,
 				1C55427D1B148306003068DB /* ARTStatus.m in Sources */,
 				96BF61591A35B52C004CF2B3 /* ARTHttp.m in Sources */,
+				1C578E201B3435CA00EF46EC /* ARTFallback.m in Sources */,
 				96A507B61A37881C0077CDF8 /* ARTNSDate+ARTUtil.m in Sources */,
-				961343D91A42E0B7006DC822 /* ARTOptions.m in Sources */,
+				961343D91A42E0B7006DC822 /* ARTClientOptions.m in Sources */,
 				96BF615F1A35C1C8004CF2B3 /* ARTTypes.m in Sources */,
 				96A507AE1A3780F60077CDF8 /* ARTJsonEncoder.m in Sources */,
 				96A507961A370F860077CDF8 /* ARTStats.m in Sources */,
@@ -638,6 +649,7 @@
 				1CC3D9591AB701E50005BEB0 /* ARTRealtimePresenceTest.m in Sources */,
 				1CC3D9511AB6FF480005BEB0 /* ARTRealtimeCryptoTest.m in Sources */,
 				96E408361A38595F00087F77 /* ARTRealtimeAttachTest.m in Sources */,
+				1C578E221B3438F300EF46EC /* ARTFallbackTest.m in Sources */,
 				1C6C18A71ADFDDBA00AB79E4 /* ARTLogTest.m in Sources */,
 				96BF615B1A35B9ED004CF2B3 /* ARTHttpTest.m in Sources */,
 				1C2B0FFA1B13388500E3633C /* ARTRealtimeTokenTest.m in Sources */,
@@ -811,7 +823,9 @@
 				);
 				INFOPLIST_FILE = "ably-iosTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALID_ARCHS = "arm64 armv7 armv7s i386 x86_64";
 			};
 			name = Debug;
 		};
@@ -825,6 +839,7 @@
 				INFOPLIST_FILE = "ably-iosTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALID_ARCHS = "arm64 armv7 armv7s i386 x86_64";
 			};
 			name = Release;
 		};
