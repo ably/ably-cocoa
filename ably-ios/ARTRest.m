@@ -35,7 +35,7 @@
 // TODO base accept headers on encoders
 
 @interface ARTRestChannel ()
-
+@property (nonatomic, weak) ARTLog * logger;
 @property (readonly, weak, nonatomic) ARTRest *rest;
 @property (readonly, strong, nonatomic) NSString *name;
 @property (readonly, strong, nonatomic) NSString *basePath;
@@ -70,9 +70,10 @@
 - (instancetype)initWithRest:(ARTRest *)rest name:(NSString *)name cipherParams:(ARTCipherParams *)cipherParams {
     self = [super init];
     if (self) {
+    
+        self.logger = rest.logger;
         _presence = [[ARTRestPresence alloc] initWithChannel:self];
-
-        [ARTLog debug:[NSString stringWithFormat:@"ARTRestChannel: instantiating under %@", name]];
+        [self.logger debug:[NSString stringWithFormat:@"ARTRestChannel: instantiating under %@", name]];
         _rest = rest;
         _name = name;
         _basePath = [NSString stringWithFormat:@"/channels/%@", [name stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]]];
@@ -96,7 +97,7 @@
         ARTPayload * p = [ARTPayload payloadWithPayload:[messages objectAtIndex:i] encoding:self.rest.defaultEncoding];
         ARTStatus * status = [self.payloadEncoder encode:p output:&encodedPayload];
         if (status.status != ARTStatusOk) {
-            [ARTLog warn:[NSString stringWithFormat:@"ARTRest publishMessages could not encode message %d", i]];
+            [self.logger warn:[NSString stringWithFormat:@"ARTRest publishMessages could not encode message %d", i]];
         }
         [encodedMessages addObject:encodedPayload.payload];
     }
@@ -118,7 +119,7 @@
 }
 
 - (id<ARTCancellable>)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb {
-    [ARTLog debug:[NSString stringWithFormat:@"ARTRestChannel: publishing '%@' to channel with name '%@'", payload, name]];
+    [self.logger debug:[NSString stringWithFormat:@"ARTRestChannel: publishing '%@' to channel with name '%@'", payload, name]];
     ARTMessage *message = [ARTMessage messageWithPayload:payload name:name];//[[ARTMessage alloc] init];
     message = [message encode:self.payloadEncoder];
     return [self publishMessage:message cb:cb];
@@ -158,7 +159,6 @@
 
 @implementation ARTRest
 
-
 -(instancetype) initWithOptions:(ARTClientOptions *) options {
     self = [super init];
     if(self) {
@@ -176,6 +176,7 @@
 
 - (void) setup {
     _http = [[ARTHttp alloc] init];
+    self.logger = [[ARTLog alloc] init];
     _channels = [NSMutableDictionary dictionary];
     id<ARTEncoder> defaultEncoder = [[ARTJsonEncoder alloc] init];
     _encoders = @{
@@ -189,7 +190,7 @@
 
 - (id<ARTCancellable>) token:(ARTAuthTokenParams *) params tokenCb:(void (^)(ARTStatus *status, ARTTokenDetails *)) cb {
 
-    [ARTLog debug:@"ARTRest is requesting a fresh token"];
+    [self.logger debug:@"ARTRest is requesting a fresh token"];
     if(![self.auth canRequestToken]) {
         cb([ARTStatus state:ARTStatusError], nil);
         id<ARTCancellable> c = nil;
@@ -199,7 +200,7 @@
     NSString * keyPath = [NSString stringWithFormat:@"/keys/%@/requestToken",params.keyName];
     if([self.auth getAuthOptions].authUrl) {
         keyPath = [[self.auth getAuthOptions].authUrl absoluteString];
-        [ARTLog info:[NSString stringWithFormat:@"ARTRest is bypassing the default token request URL for this authURL:%@",keyPath]];
+        [self.logger info:[NSString stringWithFormat:@"ARTRest is bypassing the default token request URL for this authURL:%@",keyPath]];
     }
     NSDictionary * paramsDict = [params asDictionary];
     
@@ -212,7 +213,7 @@
             return;
         }
         NSString * str = [[NSString alloc] initWithData:response.body encoding:NSUTF8StringEncoding];
-        [ARTLog verbose:[NSString stringWithFormat:@"ARTRest token is %@", str]];
+        [self.logger verbose:[NSString stringWithFormat:@"ARTRest token is %@", str]];
         if(response.status == 201) {
             ARTTokenDetails * token =[self.defaultEncoder decodeAccessToken:response.body];
             cb(ARTStatusOk, token);
@@ -220,7 +221,7 @@
         else {
 
             ARTErrorInfo * e = [self.defaultEncoder decodeError:response.body];
-            [ARTLog error:[NSString stringWithFormat:@"ARTRest: requestToken Error code: %d, Status %d, Message %@", e.code, e.statusCode, e.message]];
+            [self.logger error:[NSString stringWithFormat:@"ARTRest: requestToken Error code: %d, Status %d, Message %@", e.code, e.statusCode, e.message]];
             cb([ARTStatus state:ARTStatusError info:e], nil);
         }
     }];
@@ -304,12 +305,12 @@
     __weak ARTRest * weakSelf = self;
     ARTHttpCb errorCheckingCb = ^(ARTHttpResponse * response) {
         ARTRest * s = weakSelf;
-        [ARTLog verbose:[NSString stringWithFormat:@"ARTRest Http response is %d", response.status]];
+        [self.logger verbose:[NSString stringWithFormat:@"ARTRest Http response is %d", response.status]];
         if([s isAnErrorStatus:response.status]) {
             if(response.body) {
                 ARTErrorInfo * error = [s.defaultEncoder decodeError:response.body];
                 response.error = error;
-                [ARTLog info:[NSString stringWithFormat:@"ARTRest received an error: \n status %d  \n code %d \n message: %@", error.statusCode, error.code, error.message]];
+                [self.logger info:[NSString stringWithFormat:@"ARTRest received an error: \n status %d  \n code %d \n message: %@", error.statusCode, error.code, error.message]];
             }
         }
         if([ARTFallback shouldTryFallback:response options:self.options]) {
@@ -325,14 +326,14 @@
                 });
             }
             else {
-                [ARTLog warn:@"ARTRest has no more fallback hosts to attempt. Giving up."];
+                [self.logger warn:@"ARTRest has no more fallback hosts to attempt. Giving up."];
                 self.baseUrl = [self.options restUrl];
                 cb(response);
                 return;
             }
         }
         else if(response && response.error && response.error.code == 40140) {
-            [ARTLog info:@"requesting new token"];
+            [self.logger info:@"requesting new token"];
             if(![_auth canRequestToken]) {
                 cb(response);
                 return;
@@ -341,11 +342,11 @@
                 ARTRest * s = weakSelf;
                 if(s) {
                     //TODO consider counting this. enough times we give up?
-                    [ARTLog debug:@"ARTRest Token fetch complete. Now trying the same server call again with the new token"];
+                    [self.logger debug:@"ARTRest Token fetch complete. Now trying the same server call again with the new token"];
                     [s makeRequestWithMethod:method relUrl:relUrl headers:headers body:body authenticated:authenticated cb:cb];
                 }
                 else {
-                    [ARTLog error:@"ARTRest is nil. Can't renew token"];
+                    [self.logger error:@"ARTRest is nil. Can't renew token"];
                     cb(response);
                 }
             }];
@@ -438,7 +439,7 @@
     if([[relUrl substringWithRange:NSMakeRange(0, 1)] isEqualToString:@"/"]) {
         return [NSURL URLWithString:relUrl relativeToURL:self.baseUrl];
     }
-    [ARTLog verbose:@"ARTRest is treating the relative url as the base"];
+    [self.logger verbose:@"ARTRest is treating the relative url as the base"];
     return [NSURL URLWithString:relUrl];
 
 }

@@ -11,8 +11,7 @@
 #import "ARTTypes.h"
 #import "ARTStatus.h"
 
-
-
+@class ARTLog;
 
 @interface ARTHttpRequest : NSObject
 
@@ -46,7 +45,11 @@
 @end
 
 @interface ARTHttp : NSObject
+{
+    
+}
 
+@property (nonatomic, weak) ARTLog * logger;
 - (instancetype)init;
 
 typedef void (^ARTHttpCb)(ARTHttpResponse *response);

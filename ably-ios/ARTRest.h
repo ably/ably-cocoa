@@ -13,6 +13,8 @@
 #import "ARTClientOptions.h"
 #import "ARTPaginatedResult.h"
 
+
+@class ARTLog;
 @class ARTCipherParams;
 @class ARTTokenDetails;
 @class ARTAuthTokenParams;
@@ -42,6 +44,7 @@
 
 }
 
+@property (nonatomic, strong) ARTLog * logger;
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 -(instancetype) initWithOptions:(ARTClientOptions *) options;
 -(instancetype) initWithKey:(NSString *) key;

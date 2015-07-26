@@ -32,6 +32,7 @@
 
 @interface ARTAuth ()
 
+@property (nonatomic, weak) ARTLog * logger;
 @property (readonly, weak, nonatomic) ARTRest *rest;
 @property (readwrite, strong, nonatomic) ARTTokenDetails *token;
 @property (assign, nonatomic) ARTAuthMethod authMethod;
@@ -225,8 +226,9 @@
         _tokenCbs = nil;
         _tokenRequest = nil;
         _options = options;
+        self.logger = rest.logger;
         if (options.keyName != nil) {
-            [ARTLog debug:@"ARTAuth: setting up auth method Basic"];
+            [self.logger debug:@"ARTAuth: setting up auth method Basic"];
             _basicCredentials = [NSString stringWithFormat:@"Basic %@",
                                  [[[NSString stringWithFormat:@"%@:%@", options.keyName, options.keySecret] dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0]];
             [ARTAuth checkValidKey:[NSString stringWithFormat:@"%@:%@", options.keyName, options.keySecret]];
@@ -252,22 +254,22 @@
 
 -(bool) canRequestToken {
     if(self.options.keyName && self.options.keySecret) {
-        [ARTLog verbose:@"ARTAuth can request token via key"];
+        [self.logger verbose:@"ARTAuth can request token via key"];
         return true;
     }
     if(self.options.authCallback) {
-        [ARTLog verbose:@"ARTAuth can request token via authCb"];
+        [self.logger verbose:@"ARTAuth can request token via authCb"];
         return true;
     }
     if(self.options.authUrl) {
-        [ARTLog verbose:@"ARTAuth can request token via authURL"];
+        [self.logger verbose:@"ARTAuth can request token via authURL"];
         return true;
     }
     if(self.options.tokenParams) {
-        [ARTLog verbose:@"ARTAuth can request token via tokenParams"];
+        [self.logger verbose:@"ARTAuth can request token via tokenParams"];
         return true;
     }
-    [ARTLog verbose:@"ARTAuth cannot request token"];
+    [self.logger verbose:@"ARTAuth cannot request token"];
     return false;
 }
 
@@ -290,11 +292,11 @@
         return;
     }
     _authMethod = ARTAuthMethodToken;
-    [ARTLog debug:@"ARTAuth: setting up auth method Token"];
+    [self.logger debug:@"ARTAuth: setting up auth method Token"];
     _tokenCbs = [NSMutableArray array];
     
     if (self.options.token) {
-        [ARTLog debug:[NSString stringWithFormat:@"ARTAuth:using provided authToken %@", self.options.token]];
+        [self.logger debug:[NSString stringWithFormat:@"ARTAuth:using provided authToken %@", self.options.token]];
         _token = [[ARTTokenDetails alloc] initWithId:self.options.token
                                              expires:self.options.tokenDetails.expires
                                               issued:self.options.tokenDetails.issued
@@ -302,12 +304,12 @@
                                             clientId:self.options.clientId];
     }
     if (self.options.authCallback) {
-        [ARTLog debug:@"ARTAuth: using provided authCallback"];
+        [self.logger debug:@"ARTAuth: using provided authCallback"];
         _authTokenCb = self.options.authCallback;
         return;
     }
     
-    [ARTLog debug:@"ARTAuth: signed token request."];
+    [self.logger debug:@"ARTAuth: signed token request."];
     
     ARTSignedTokenRequestCb strCb = (self.options.signedTokenRequestCallback ? self.options.signedTokenRequestCallback : [ARTAuth defaultSignedTokenRequestCallback:self.options rest:self.rest]);
     __weak ARTAuth * weakSelf = self;
@@ -320,7 +322,7 @@
             s.options.tokenParams = params;
         }
         id<ARTCancellable> c = strCb(params,^( ARTAuthTokenParams *params) {
-            [ARTLog debug:[NSString stringWithFormat:@"ARTAuth tokenRequest strCb got %@", [params asDictionary]]];
+            [self.logger debug:[NSString stringWithFormat:@"ARTAuth tokenRequest strCb got %@", [params asDictionary]]];
             ARTAuth * s = weakSelf;
             if(s) {
                 [s.rest token:params tokenCb:^(ARTStatus * status, ARTTokenDetails * tokenDetails) {
@@ -332,13 +334,13 @@
                         s.options.tokenDetails = tokenDetails;
                     }
                     else {
-                        [ARTLog error:@"ARTAuth became nil during token request. Can't assign token"];
+                        [self.logger error:@"ARTAuth became nil during token request. Can't assign token"];
                     }
                     authCb(status, tokenDetails);
                 }];
             }
             else {
-                [ARTLog error:@"ARTAuth has no ARTRest to use to request a token"];
+                [self.logger error:@"ARTAuth has no ARTRest to use to request a token"];
             }
         });
         ic.cancellable = c;
@@ -379,13 +381,13 @@
 
 - (id<ARTCancellable>)authHeadersUseBasic:(BOOL)useBasic cb:(id<ARTCancellable>(^)(NSDictionary *))cb {
     if(useBasic || self.authMethod == ARTAuthMethodBasic) {
-        [ARTLog verbose:@"using auth basic"];
+        [self.logger verbose:@"using auth basic"];
         return cb(@{@"Authorization": self.basicCredentials});
     }
     else if(self.authMethod == ARTAuthMethodToken) {
-        [ARTLog verbose:@"using auth token"];
+        [self.logger verbose:@"using auth token"];
         return [self requestToken:^(ARTTokenDetails *token) {
-            [ARTLog verbose:@"retrieved token via request token"];
+            [self.logger verbose:@"retrieved token via request token"];
             return cb(@{@"Authorization": [NSString stringWithFormat:@"Bearer %@", token.token]});
         }];
     }
@@ -414,24 +416,24 @@
 }
 
 - (id<ARTCancellable>)authTokenForceReauth:(BOOL)force cb:(id<ARTCancellable>(^)(ARTTokenDetails *))cb {
-    [ARTLog verbose:@"ARTAuth authTokenForceReauth"];
+    [self.logger verbose:@"ARTAuth authTokenForceReauth"];
     if (self.token) {
         if (0 == self.token.expires || self.token.expires > [[NSDate date] timeIntervalSince1970] * 1000) {
             if (!force) {
-                [ARTLog verbose:@"ARTAuth has a valid token to use"];
+                [self.logger verbose:@"ARTAuth has a valid token to use"];
                 return cb(self.token);
             }
             else {
-                [ARTLog debug:@"ARTAuth forcing new token request"];
+                [self.logger debug:@"ARTAuth forcing new token request"];
             }
         }
         else {
-            [ARTLog debug:[NSString stringWithFormat:@"ARTAuth token expired %f milliseconds ago. Expiry: %lld",  ([[NSDate date] timeIntervalSince1970]*1000)- self.token.expires, self.token.expires]];
+            [self.logger debug:[NSString stringWithFormat:@"ARTAuth token expired %f milliseconds ago. Expiry: %lld",  ([[NSDate date] timeIntervalSince1970]*1000)- self.token.expires, self.token.expires]];
         }
         self.token = nil;
     }
     else {
-        [ARTLog debug:@"ARTAuth has no token. Requesting one now"];
+        [self.logger debug:@"ARTAuth has no token. Requesting one now"];
     }
     
     ARTAuthTokenCancellable *c = [[ARTAuthTokenCancellable alloc] initWithCb:cb];
@@ -439,7 +441,7 @@
     if (!self.tokenRequest) {
         self.tokenRequest = self.authTokenCb(^(ARTStatus * status, ARTTokenDetails *token) {
             if(status.status != ARTStatusOk) {
-                [ARTLog error:@"ARTAuth: error fetching token"];
+                [self.logger error:@"ARTAuth: error fetching token"];
                 cb(nil);
                 return;
             }
@@ -463,9 +465,9 @@
 
 + (ARTSignedTokenRequestCb)defaultSignedTokenRequestCallback:(ARTAuthOptions *)authOptions rest:(ARTRest *)rest {
     __weak ARTRest *weakRest = rest;
-    [ARTLog verbose:@"ARTAUTH creating signed token request callback"];
+    [authOptions.logger verbose:@"ARTAUTH creating signed token request callback"];
     return ^id<ARTCancellable>(ARTAuthTokenParams *params, void(^cb)(ARTAuthTokenParams *)) {
-        [ARTLog verbose:@"ARTAUTH signed token request callback called"];
+        [authOptions.logger verbose:@"ARTAUTH signed token request callback called"];
         NSString *keySecret = authOptions.keySecret;
         BOOL queryTime = authOptions.queryTime;
 
@@ -483,7 +485,7 @@
         void (^timeCb)(void(^)(int64_t)) = nil;
         if (!params.timestamp) {
             if (queryTime) {
-                [ARTLog debug:@"ARTAuth: query time is being used"];
+                [authOptions.logger debug:@"ARTAuth: query time is being used"];
                 timeCb = ^(void(^cb)(int64_t)) {
                     ARTRest *strongRest = weakRest;
                     if (strongRest) {
@@ -500,7 +502,7 @@
                 };
             } else {
                 timeCb = ^(void(^cb)(int64_t)) {
-                    [ARTLog debug:@"ARTAuth: client time is being used"];
+                    [authOptions.logger debug:@"ARTAuth: client time is being used"];
                     cb((int64_t)([[NSDate date] timeIntervalSince1970] *1000.0 ));
                 };
             }

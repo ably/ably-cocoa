@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #import "ARTPayload.h"
-
+@class ARTStatus;
 typedef NS_ENUM(NSUInteger, ARTPresenceMessageAction) {
     ArtPresenceMessageAbsent,
     ArtPresenceMessagePresent,
@@ -24,6 +24,7 @@ typedef NS_ENUM(NSUInteger, ARTPresenceMessageAction) {
 @property (readwrite, strong, nonatomic) NSString *id;
 @property (readwrite, strong, nonatomic) NSString *clientId;
 @property (readwrite, strong, nonatomic) NSString *encoding;
+@property (readwrite, strong, nonatomic) ARTStatus * status;
 @property (readwrite, strong, nonatomic) ARTPayload *payload;
 @property (readwrite, strong, nonatomic) NSDate *timestamp;
 

@@ -171,7 +171,7 @@
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:artRequest.url];
     request.HTTPMethod = artRequest.method;
-    [ARTLog verbose:[NSString stringWithFormat:@"ARTHttp request URL is %@", artRequest.url]];
+    [self.logger verbose:[NSString stringWithFormat:@"ARTHttp request URL is %@", artRequest.url]];
 
     for (NSString *headerName in artRequest.headers) {
         NSString *headerValue = [artRequest.headers objectForKey:headerName];
@@ -179,26 +179,26 @@
     }
 
     request.HTTPBody = artRequest.body;
-    [ARTLog debug:[NSString stringWithFormat:@"ARTHttp: makeRequest %@", [request allHTTPHeaderFields]]];
+    [self.logger debug:[NSString stringWithFormat:@"ARTHttp: makeRequest %@", [request allHTTPHeaderFields]]];
 
     CFRunLoopRef rl = CFRunLoopGetCurrent();
     CFRetain(rl);
     NSURLSessionDataTask *task = [self.urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-        [ARTLog verbose:
+        [self.logger verbose:
          [NSString stringWithFormat:@"ARTHttp: Got response %@, err %@",
           response,error]];
         
         if(error) {
-            [ARTLog error:[NSString stringWithFormat:@"ARTHttp receieved error: %@", error]];
+            [self.logger error:[NSString stringWithFormat:@"ARTHttp receieved error: %@", error]];
             cb([ARTHttpResponse responseWithStatus:500 headers:nil body:nil]);
         }
         else {
             if (httpResponse) {
                 int status = (int)httpResponse.statusCode;
-                [ARTLog debug:
+                [self.logger debug:
                 [NSString stringWithFormat:@"ARTHttp response status is %d", status]];
-                [ARTLog verbose:[NSString stringWithFormat:@"ARTHttp received response %@",[NSJSONSerialization JSONObjectWithData:data options:0 error:nil]]];
+                [self.logger verbose:[NSString stringWithFormat:@"ARTHttp received response %@",[NSJSONSerialization JSONObjectWithData:data options:0 error:nil]]];
                 CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
                     cb([ARTHttpResponse responseWithStatus:status headers:httpResponse.allHeaderFields body:data]);
                 });

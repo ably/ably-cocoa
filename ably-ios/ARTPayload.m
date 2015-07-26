@@ -21,12 +21,13 @@
 
 @interface ARTCipherPayloadEncoder ()
 
+@property (nonatomic, weak) ARTLog * logger;
 @property (readonly, strong, nonatomic) id<ARTChannelCipher> cipher;
 
 @end
 
 @interface ARTPayloadEncoderChain ()
-
+@property (nonatomic, weak) ARTLog * logger;
 @property (readonly, nonatomic, strong) NSArray *encoders;
 
 @end
@@ -81,7 +82,6 @@
         ARTCipherParams * params =[[ARTCipherParams alloc] initWithAlgorithm:@"aes" keySpec:keySpec ivSpec:ivSpec];
         return [[ARTCipherPayloadEncoder alloc] initWithCipherParams:params];
     }
-    [ARTLog error:[NSString stringWithFormat:@"ARTPayload: unknown encoder name %@", name]];
     return nil;
 }
 
@@ -92,10 +92,7 @@
     for(int i=0;i < l; i++) {
         NSString * encoderName = [strArray objectAtIndex:i];
         id<ARTPayloadEncoder> encoder = [ARTPayload createEncoder:encoderName key:key iv:iv];
-        if(encoder == nil) {
-            [ARTLog warn:[NSString stringWithFormat:@"ARTPayload: error creating encoder %d in chain %@", i, encodingChain]];
-        }
-        else {
+        if(encoder != nil) {
             [encoders addObject:encoder];
         }
     }
@@ -195,7 +192,6 @@
         NSData *decoded = [[NSData alloc] initWithBase64EncodedString:payload.payload options:0];
         if (decoded) {
             *output = [ARTPayload payloadWithPayload:decoded encoding:[payload.encoding artRemoveLastEncoding]];
-            [ARTLog debug:[NSString stringWithFormat:@"ARTBase64PayloadEncoder payload decoded successfully: %@", payload.encoding]];
             return [ARTStatus state:ARTStatusOk];
         }
         // Set the output to be the original payload
@@ -232,7 +228,6 @@
             NSString *decoded = [[NSString alloc] initWithData:payload.payload encoding:NSUTF8StringEncoding];
             if (decoded) {
                 *output = [ARTPayload payloadWithPayload:decoded encoding:[payload.encoding artRemoveLastEncoding]];
-                [ARTLog debug:@"utf8 payload decoded successfully"];
                 return [ARTStatus state:ARTStatusOk];
             }
         }
@@ -325,7 +320,7 @@
     if (self) {
         _cipher = [ARTCrypto cipherWithParams:cipherParams];
         if (!_cipher) {
-            [ARTLog error:[NSString stringWithFormat:@"ARTCipherPayloadEncoder failed to create cipher with name %@", cipherParams.algorithm]];
+            [self.logger error:[NSString stringWithFormat:@"ARTCipherPayloadEncoder failed to create cipher with name %@", cipherParams.algorithm]];
             self = nil;
             return nil;
         }
@@ -350,7 +345,7 @@
         return [ARTCipherPayloadEncoder getName256];
     }
     else {
-        [ARTLog error:[NSString stringWithFormat:@"ARTPayload: keyLength is invalid %zu", keyLen]];
+        [self.logger error:[NSString stringWithFormat:@"ARTPayload: keyLength is invalid %zu", keyLen]];
     }
     return @"";
 }
@@ -364,7 +359,7 @@
         ARTStatus * status = [self.cipher decrypt:payload.payload output:&decrypted];
         if (status.status == ARTStatusOk) {
             *output = [ARTPayload payloadWithPayload:decrypted encoding:[payload.encoding artRemoveLastEncoding]];
-            [ARTLog debug:@"cipher payload decoded successfully"];
+            [self.logger debug:@"cipher payload decoded successfully"];
         }
         return status;
     }
@@ -429,7 +424,7 @@
         status = [enc decode:*output output:output];
         if (status.status != ARTStatusOk) {
             ARTPayload * p  = *output;
-            [ARTLog error:[NSString  stringWithFormat:@"ARTPayload: error in ARTPayloadEncoderChain decoding with encoder %d. Remaining decoding jobs are %@", count, p.encoding]];
+            [self.logger error:[NSString  stringWithFormat:@"ARTPayload: error in ARTPayloadEncoderChain decoding with encoder %d. Remaining decoding jobs are %@", count, p.encoding]];
             break;
         }
         count++;

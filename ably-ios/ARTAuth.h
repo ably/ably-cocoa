@@ -13,7 +13,7 @@
 
 @class ARTRest;
 
-
+@class ARTLog;
 @interface ARTTokenDetails : NSObject
 
 @property (readonly, strong, nonatomic) NSString *token;
@@ -55,6 +55,7 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 
 @interface ARTAuthOptions : NSObject
 
+@property (nonatomic, weak) ARTLog * logger;
 @property (readwrite, strong, nonatomic) ARTAuthCb authCallback;
 @property (readwrite, strong, nonatomic) ARTSignedTokenRequestCb signedTokenRequestCallback;
 @property (readwrite, strong, nonatomic) ARTAuthTokenParams *tokenParams;

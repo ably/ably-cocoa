@@ -28,12 +28,12 @@ typedef void(^ARTLogCallback)(id);
     
 }
 
-+(void) setLogLevel:(ARTLogLevel) level;
-+(void) setLogCallback:(ARTLogCallback) cb;
-+(void) verbose:(id) str;
-+(void) debug:(id) str;
-+(void) info:(id) str;
-+(void) warn:(id) str;
-+(void) error:(id) str;
+-(void) setLogLevel:(ARTLogLevel) level;
+-(void) setLogCallback:(ARTLogCallback) cb;
+-(void) verbose:(id) str;
+-(void) debug:(id) str;
+-(void) info:(id) str;
+-(void) warn:(id) str;
+-(void) error:(id) str;
 
 @end

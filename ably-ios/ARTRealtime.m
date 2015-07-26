@@ -79,6 +79,7 @@
 @end
 
 @interface ARTPresence ()
+@property (nonatomic, weak) ARTLog * logger;
 @property (readonly, weak, nonatomic) ARTRealtimeChannel *channel;
 @end
 
@@ -89,6 +90,7 @@
 
 @interface ARTRealtimeChannel ()
 
+@property (nonatomic, weak) ARTLog * logger;
 @property (readonly, strong, nonatomic) ARTRealtime *realtime;
 @property (readonly, strong, nonatomic) NSString *name;
 @property (readonly, strong, nonatomic) ARTRestChannel *restChannel;
@@ -335,6 +337,7 @@
 - (instancetype)initWithRealtime:(ARTRealtime *)realtime name:(NSString *)name cipherParams:(ARTCipherParams *)cipherParams {
     self = [super init];
     if (self) {
+        self.logger = realtime.logger;
         _presence = [[ARTPresence alloc] initWithChannel:self];
         _realtime = realtime;
         _name = name;
@@ -378,7 +381,7 @@
             ARTPayload *encodedPayload = nil;
             ARTStatus * status = [self.payloadEncoder encode:message.payload output:&encodedPayload];
             if (status.status != ARTStatusOk) {
-                [ARTLog error:[NSString stringWithFormat:@"ARTRealtime: error decoding payload, status: %tu", status]];
+                [self.logger error:[NSString stringWithFormat:@"ARTRealtime: error decoding payload, status: %tu", status]];
             }
             return [message messageWithPayload:encodedPayload];
         }];
@@ -392,7 +395,7 @@
 
 
 - (void) requestContinueSync {
-    [ARTLog info:@"ARTRealtime requesting to continue sync operation after reconnect"];
+    [self.logger info:@"ARTRealtime requesting to continue sync operation after reconnect"];
 
     ARTProtocolMessage * msg = [[ARTProtocolMessage alloc] init];
     msg.action = ARTProtocolMessageSync;
@@ -415,7 +418,7 @@
         ARTPayload *encodedPayload = nil;
         ARTStatus * status = [self.payloadEncoder encode:msg.payload output:&encodedPayload];
         if (status.status != ARTStatusOk) {
-            [ARTLog warn:[NSString stringWithFormat:@"bad status encoding presence message %d",(int) status]];
+            [self.logger warn:[NSString stringWithFormat:@"bad status encoding presence message %d",(int) status]];
         }
         msg.payload = encodedPayload;
     }
@@ -562,7 +565,7 @@
         [self.presenceMap startSync];
     }
     else if(message.action == ARTProtocolMessageSync || message.action == ARTProtocolMessagePresence) {
-        [ARTLog info:@"ARTRealtime sync message received"];
+        [self.logger info:@"ARTRealtime sync message received"];
         self.presenceMap.syncSerial = message.connectionSerial;
         for(int i=0; i< [message.presence count]; i++) {
             [self.presenceMap put:[message.presence objectAtIndex:i]];
@@ -592,7 +595,7 @@
         case ARTProtocolMessageSync:
             break;
         default:
-            [ARTLog warn:[NSString stringWithFormat:@"ARTRealtime, unknown ARTProtocolMessage action: %tu", message.action]];
+            [self.logger warn:[NSString stringWithFormat:@"ARTRealtime, unknown ARTProtocolMessage action: %tu", message.action]];
             break;
     }
     
@@ -831,6 +834,7 @@
 - (instancetype)initWithOptions:(ARTClientOptions *) options {
     ARTRealtime * r = [[ARTRealtime alloc] initWithoutRest:options];
     r.rest = [[ARTRest alloc] initWithOptions:options];
+    r.logger = r.logger;
     if(options.autoConnect) {
         [r connect];
     }
@@ -933,7 +937,7 @@
 
 
 - (void)transition:(ARTRealtimeConnectionState)state {
-    [ARTLog verbose:[NSString stringWithFormat:@"Transition to %@ requested", [ARTRealtime ARTRealtimeStateToStr:state]]];
+    [self.logger verbose:[NSString stringWithFormat:@"Transition to %@ requested", [ARTRealtime ARTRealtimeStateToStr:state]]];
 
     // On exit logic
     switch (self.state) {
@@ -977,7 +981,7 @@
         case ARTRealtimeConnected:
             if([self isFromResume]) {
                 if(![self.options.resumeKey isEqualToString:self.connectionKey] || self.options.connectionSerial != self.connectionSerial) {
-                    [ARTLog warn:[NSString stringWithFormat:@"ARTRealtime connection has reconnected, but resume failed. Detaching all channels"]];
+                    [self.logger warn:[NSString stringWithFormat:@"ARTRealtime connection has reconnected, but resume failed. Detaching all channels"]];
                     for (NSString *channelName in self.allChannels) {
                         ARTRealtimeChannel *channel = [self.allChannels objectForKey:channelName];
                         ARTErrorInfo * info = [[ARTErrorInfo alloc] init];
@@ -1127,11 +1131,11 @@
 }
 
 - (void)onHeartbeat:(ARTProtocolMessage *)message {
-    [ARTLog verbose:@"ARTRealtime heartbeat received"];
+    [self.logger verbose:@"ARTRealtime heartbeat received"];
     if(self.pingCb) {
         [self cancelPingTimer];
         if(self.state != ARTRealtimeConnected) {
-            [ARTLog warn:[NSString stringWithFormat:@"ARTRealtime received a ping when in state %@", [ARTRealtime ARTRealtimeStateToStr:self.state]]];
+            [self.logger warn:[NSString stringWithFormat:@"ARTRealtime received a ping when in state %@", [ARTRealtime ARTRealtimeStateToStr:self.state]]];
             self.pingCb([ARTStatus state:ARTStatusError]);
         }
         else {
@@ -1167,7 +1171,7 @@
     return _connectionId;
 }
 - (void)onDisconnected:(ARTProtocolMessage *)message {
-    [ARTLog info:@"ARTRealtime disconnected"];
+    [self.logger info:@"ARTRealtime disconnected"];
     switch (self.state) {
         case ARTRealtimeConnected:
             self.connectionId = nil;
@@ -1217,7 +1221,7 @@
 - (void)onConnectTimerFired {
     switch (self.state) {
         case ARTRealtimeConnecting:
-            [ARTLog warn:@"ARTRealtime connecting timer fired."];
+            [self.logger warn:@"ARTRealtime connecting timer fired."];
             [self transition:ARTRealtimeFailed];
             break;
         default:
@@ -1249,7 +1253,6 @@
             // TODO invalid connection state
             break;
     }
-    
 }
 
 - (void)onRetryTimerFired {
@@ -1350,7 +1353,7 @@
 }
 
 - (void)ack:(int64_t)serial count:(int64_t)count {
-    [ARTLog verbose:[NSString stringWithFormat:@"ARTRealtime ack: %lld , count %lld",  serial,  count]];
+    [self.logger verbose:[NSString stringWithFormat:@"ARTRealtime ack: %lld , count %lld",  serial,  count]];
     NSArray *nackMessages = nil;
     NSArray *ackMessages = nil;
 
@@ -1390,7 +1393,7 @@
 }
 
 - (void)nack:(int64_t)serial count:(int64_t)count {
-    [ARTLog verbose:[NSString stringWithFormat:@"ARTRealtime Nack: %lld , count %lld",  serial,  count]];
+    [self.logger verbose:[NSString stringWithFormat:@"ARTRealtime Nack: %lld , count %lld",  serial,  count]];
     if (serial != self.pendingMessageStartSerial) {
         // This is an error condition and it shouldn't happen but
         // we can handle it gracefully by only processing the
@@ -1434,9 +1437,8 @@
 
 - (void)realtimeTransport:(id)transport didReceiveMessage:(ARTProtocolMessage *)message {
     // TODO add in protocolListener
-    
 
-    [ARTLog verbose:[NSString stringWithFormat:@"ARTRealtime didReceive Protocol Message %@", [ARTRealtime protocolStr:message.action]]];
+    [self.logger verbose:[NSString stringWithFormat:@"ARTRealtime didReceive Protocol Message %@", [ARTRealtime protocolStr:message.action]]];
     if(message.error) {
         self.errorReason = message.error;
     }
@@ -1585,6 +1587,7 @@
     self = [super init];
     if(self) {
         _channel = channel;
+        self.logger = channel.logger;
     }
     return self;
 }

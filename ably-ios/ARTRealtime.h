@@ -134,7 +134,7 @@ typedef void (^ARTRealtimePingCb)(ARTStatus *);
 
 
 
-
+@property (nonatomic, weak) ARTLog * logger;
 @property (readonly, strong, nonatomic) ARTEventEmitter *eventEmitter;
 
 @end

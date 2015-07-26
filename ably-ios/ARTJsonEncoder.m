@@ -107,7 +107,7 @@
 
 - (NSDate *)decodeTime:(NSData *)data {
     NSArray *resp = [self decodeArray:data];
-    [ARTLog verbose:[NSString stringWithFormat:@"ARTJsonEncoder: decodeTime %@", resp]];
+    [self.logger verbose:[NSString stringWithFormat:@"ARTJsonEncoder: decodeTime %@", resp]];
     if (resp && resp.count == 1) {
         NSNumber *num = resp[0];
         if ([num isKindOfClass:[NSNumber class]]) {
@@ -123,7 +123,7 @@
 }
 
 - (ARTMessage *)messageFromDictionary:(NSDictionary *)input {
-    [ARTLog verbose:[NSString stringWithFormat:@"ARTJsonEncoder: messageFromDictionary %@", input]];
+    [self.logger verbose:[NSString stringWithFormat:@"ARTJsonEncoder: messageFromDictionary %@", input]];
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
@@ -169,7 +169,7 @@
         case 4:
             return ARTPresenceMessageUpdate;
     }
-    [ARTLog error:[NSString stringWithFormat:@"ARTJsonEncoder invalid ARTPresenceMessage action %d", action]];
+    [self.logger error:[NSString stringWithFormat:@"ARTJsonEncoder invalid ARTPresenceMessage action %d", action]];
     return ArtPresenceMessageAbsent;
     
 }
@@ -193,7 +193,7 @@
 }
 
 - (ARTPresenceMessage *)presenceMessageFromDictionary:(NSDictionary *)input {
-    [ARTLog verbose:[NSString stringWithFormat:@"ARTJsonEncoder: presenceMessageFromDictionary %@", input]];
+    [self.logger verbose:[NSString stringWithFormat:@"ARTJsonEncoder: presenceMessageFromDictionary %@", input]];
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
@@ -247,7 +247,7 @@
     if (message.name) {
         [output setObject:message.name forKey:@"name"];
     }
-    [ARTLog verbose:[NSString stringWithFormat:@"ARTJsonEncoder: messageToDictionary %@", output]];
+    [self.logger verbose:[NSString stringWithFormat:@"ARTJsonEncoder: messageToDictionary %@", output]];
     return output;
 }
 
@@ -286,7 +286,7 @@
     int action = [self intFromPresenceMessageAction:message.action];
 
     [output setObject:[NSNumber numberWithInt:action] forKey:@"action"];
-    [ARTLog verbose:[NSString stringWithFormat:@"ARTJsonEncoder: presenceMessageToDictionary %@", output]];
+    [self.logger verbose:[NSString stringWithFormat:@"ARTJsonEncoder: presenceMessageToDictionary %@", output]];
     return output;
 }
 
@@ -318,12 +318,12 @@
     if (message.presence) {
         output[@"presence"] = [self presenceMessagesToArray:message.presence];
     }
-    [ARTLog verbose:[NSString stringWithFormat:@"ARTJsonEncoder: protocolMessageToDictionary %@", output]];
+    [self.logger verbose:[NSString stringWithFormat:@"ARTJsonEncoder: protocolMessageToDictionary %@", output]];
     return output;
 }
 
 -(ARTTokenDetails *) tokenFromDictionary:(NSDictionary *) input {
-    [ARTLog verbose:[NSString stringWithFormat:@"ARTJsonEncoder: tokenFromDictionary %@", input]];
+    [self.logger verbose:[NSString stringWithFormat:@"ARTJsonEncoder: tokenFromDictionary %@", input]];
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
@@ -341,7 +341,7 @@
 }
 
 - (ARTProtocolMessage *)protocolMessageFromDictionary:(NSDictionary *)input {
-    [ARTLog verbose:[NSString stringWithFormat:@"ARTJsonEncoder: protocolMessageFromDictionary %@", input]];
+    [self.logger verbose:[NSString stringWithFormat:@"ARTJsonEncoder: protocolMessageFromDictionary %@", input]];
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
@@ -392,7 +392,7 @@
 }
 
 - (ARTStats *)statsFromDictionary:(NSDictionary *)input {
-    [ARTLog verbose:[NSString stringWithFormat:@"ARTJsonEncoder: statsFromDictionary %@", input]];
+    [self.logger verbose:[NSString stringWithFormat:@"ARTJsonEncoder: statsFromDictionary %@", input]];
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
@@ -509,7 +509,7 @@
 }
 
 - (ARTStatsRequestCount *)statsRequestCountFromDictionary:(NSDictionary *)input {
-    [ARTLog verbose:[NSString stringWithFormat:@"ARTJsonEncoder: statsRequestCountFromDictionary %@", input]];
+    [self.logger verbose:[NSString stringWithFormat:@"ARTJsonEncoder: statsRequestCountFromDictionary %@", input]];
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
@@ -539,7 +539,7 @@
     ARTPayload *decoded = nil;
     ARTStatus *status = [[ARTBase64PayloadEncoder instance] decode:payload output:&decoded];
     if (status.status != ARTStatusOk) {
-        [ARTLog error:[NSString stringWithFormat:@"ARTJsonEncoder failed to decode payload %@", payload]];
+        [self.logger error:[NSString stringWithFormat:@"ARTJsonEncoder failed to decode payload %@", payload]];
     }
     return decoded;
 }
@@ -548,7 +548,7 @@
     ARTPayload *encoded = nil;
     ARTStatus *status = [[ARTBase64PayloadEncoder instance] encode:payload output:&encoded];
     if(status.status != ARTStatusOk) {
-        [ARTLog error:@"ARTJsonEncoder failed to encode payload"];
+        [self.logger error:@"ARTJsonEncoder failed to encode payload"];
     }
     NSAssert(status.status == ARTStatusOk, @"Error encoding payload");
     NSAssert([payload.payload isKindOfClass:[NSString class]], @"Only string payloads are accepted");
@@ -580,7 +580,7 @@
 }
 
 - (NSData *)encode:(id)obj {
-    [ARTLog verbose:[NSString stringWithFormat:@"ARTJsonEncoder encoding '%@'", obj]];
+    [self.logger verbose:[NSString stringWithFormat:@"ARTJsonEncoder encoding '%@'", obj]];
     return [NSJSONSerialization dataWithJSONObject:obj options:0 error:nil];
 }
 

@@ -15,6 +15,7 @@
 
 @interface ARTPayload : NSObject
 
+
 @property (readwrite, strong, nonatomic) id payload;
 @property (readwrite, strong, nonatomic) NSString *encoding;
 

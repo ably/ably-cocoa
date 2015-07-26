@@ -10,19 +10,10 @@
 
 #import "ARTStatus.h"
 
-/*
-@interface ARTSecretKeySpec : NSObject
+@class ARTLog;
 
-@property (readonly, strong, nonatomic) NSData *key;
-
-- (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithKey:(NSData *)key algorithm:(NSString *)algorithm;
-+ (instancetype)secretKeySpecWithKey:(NSData *)key algorithm:(NSString *)algorithm;
-
-@end
-*/
 @interface ARTIvParameterSpec : NSObject
-
+@property (nonatomic, weak) ARTLog * logger;
 @property (readonly, nonatomic) NSData *iv;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
@@ -32,7 +23,7 @@
 @end
 
 @interface ARTCipherParams : NSObject
-
+@property (nonatomic, weak) ARTLog * logger;
 @property (readonly, strong, nonatomic) NSString *algorithm;
 @property (readonly, strong, nonatomic) NSData *keySpec;
 @property (readonly, strong, nonatomic) ARTIvParameterSpec *ivSpec;

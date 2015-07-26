@@ -87,12 +87,12 @@ enum {
                 if([parts count] ==2) {
                     NSString * conId = [parts objectAtIndex:0];
                     NSString * key = [parts objectAtIndex:1];
-                    [ARTLog info:[NSString stringWithFormat:@"attempting recovery of connection %@", conId]];
+                    [self.logger info:[NSString stringWithFormat:@"attempting recovery of connection %@", conId]];
                     queryParams[@"recover"] = conId;
                     queryParams[@"connection_serial"] = key;
                 }
                 else {
-                    [ARTLog error:[NSString stringWithFormat:@"recovery string is malformed, ignoring: '%@'", options.recover]];
+                    [self.logger error:[NSString stringWithFormat:@"recovery string is malformed, ignoring: '%@'", options.recover]];
                 }
             }
             else if(options.resumeKey != nil) {
@@ -106,7 +106,7 @@ enum {
             NSString *queryString = [sRest formatQueryParams:queryParams];
             NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"wss://%@:%d/?%@", realtimeHost, realtimePort, queryString]];
 
-            [ARTLog debug:[NSString stringWithFormat:@"Websocket url: %@", url]];
+            [self.logger debug:[NSString stringWithFormat:@"Websocket url: %@", url]];
             sSelf.websocket = [[SRWebSocket alloc] initWithURL:url];
             sSelf.websocket.delegate = sSelf;
             [sSelf.websocket setDelegateDispatchQueue:sSelf.q];
@@ -196,7 +196,7 @@ enum {
     CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
         ARTWebSocketTransport *s = weakSelf;
         if(error) {
-            [ARTLog error:[NSString stringWithFormat:@"ARTWebSocketTransport: websocket did fail with error %@", error]];
+            [self.logger error:[NSString stringWithFormat:@"ARTWebSocketTransport: websocket did fail with error %@", error]];
         }
         if(s) {
             [s.delegate realtimeTransportFailed:s];

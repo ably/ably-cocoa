@@ -49,7 +49,6 @@
 
 +(void) setupApp:(ARTClientOptions *)options withAlteration:(TestAlteration) alt  appId:(NSString *) appId cb:(void (^)(ARTClientOptions *))cb
 {
-    [ARTLog setLogLevel:ArtLogLevelVerbose];
     NSString * str = [ARTTestUtil getTestAppSetupJson];
     if(str== nil) {
         [NSException raise:@"error getting test-app-setup.json loaded. Maybe ably-common is missing" format:@""];
@@ -59,9 +58,7 @@
     
     NSDictionary * d = [topLevel objectForKey:@"post_apps"];
     NSData *appSpecData = [NSJSONSerialization dataWithJSONObject:d options:0 error:nil];
-    
-    [ARTLog debug:[NSString stringWithFormat:@"setupApp: %@", [[NSString alloc] initWithData:appSpecData encoding:NSUTF8StringEncoding]]];
-    
+     
     if(alt ==TestAlterationBadWsHost)
     {
         [options setRealtimeHost:[options.realtimeHost stringByAppendingString:@"/badRealtimeEndpoint"] withRestHost:[options.restHost stringByAppendingString:@"/badRestEndpoint"]];

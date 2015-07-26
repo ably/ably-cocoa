@@ -7,7 +7,7 @@
 //
 
 #import "ARTPresenceMessage.h"
-#import "ARTLog.h"
+#import "ARTStatus.h"
 @implementation ARTPresenceMessage
 
 - (instancetype)init {
@@ -24,8 +24,9 @@
     return self;
 }
 
-- (ARTPresenceMessage *)messageWithPayload:(ARTPayload *)payload {
+- (ARTPresenceMessage *)messageWithPayload:(ARTPayload *)payload status:(ARTStatus *) status{
     ARTPresenceMessage *m = [[ARTPresenceMessage alloc] init];
+    m.status = status;
     m.id = self.id;
     m.clientId = self.clientId;
     m.payload = payload;
@@ -35,23 +36,20 @@
     m.encoding = self.encoding;
     return m;
 }
+- (ARTPresenceMessage *)messageWithPayload:(ARTPayload *)payload {
+    return [self messageWithPayload:payload status:nil];
+}
 
 - (ARTPresenceMessage *)decode:(id<ARTPayloadEncoder>)encoder {
     ARTPayload *payload = self.payload;
     ARTStatus *status = [encoder decode:payload output:&payload];
-    if (status.status != ARTStatusOk) {
-        [ARTLog warn:[NSString stringWithFormat:@"ARTPresenceMessage could not decode payload, ARTStatus: %tu", status]];
-    }
     return [self messageWithPayload:payload];
 }
 
 - (ARTPresenceMessage *)encode:(id<ARTPayloadEncoder>)encoder {
     ARTPayload *payload = self.payload;
     ARTStatus *status = [encoder encode:payload output:&payload];
-    if (status.status != ARTStatusOk) {
-        [ARTLog warn:[NSString stringWithFormat:@"ARTPresenceMessage could not encode payload, ARTStatus: %tu", status]];
-    }
-    return [self messageWithPayload:payload];
+    return [self messageWithPayload:payload status:status];
 }
 
 - (id) content {

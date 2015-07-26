@@ -34,7 +34,7 @@
 
 }
 
-- (ARTMessage *)messageWithPayload:(ARTPayload *)payload {
+- (ARTMessage *)messageWithPayload:(ARTPayload *)payload status:(ARTStatus * ) status {
     ARTMessage *m = [[ARTMessage alloc] init];
     m.id = self.id;
     m.name = self.name;
@@ -42,25 +42,23 @@
     m.timestamp = self.timestamp;
     m.payload = payload;
     m.connectionId = self.connectionId;
+    m.status = status;
     return m;
+}
+- (ARTMessage *)messageWithPayload:(ARTPayload *)payload {
+   return [self messageWithPayload:payload status: nil];
 }
 
 - (ARTMessage *)decode:(id<ARTPayloadEncoder>)encoder {
     ARTPayload *payload = self.payload;
     ARTStatus *status = [encoder decode:payload output:&payload];
-    if (status.status != ARTStatusOk) {
-        [ARTLog warn:[NSString stringWithFormat:@"ARTMessage could not decode payload, ARTStatus: %tu", status]];
-    }
-    return [self messageWithPayload:payload];
+    return [self messageWithPayload:payload status: status];
 }
 
 - (ARTMessage *)encode:(id<ARTPayloadEncoder>)encoder {
     ARTPayload *payload = self.payload;
     ARTStatus *status = [encoder encode:payload output:&payload];
-    if (status.status != ARTStatusOk) {
-        [ARTLog warn:[NSString stringWithFormat:@"ARTMessage could not encode payload, ARTStatus: %tu", status]];
-    }
-    return [self messageWithPayload:payload];
+    return [self messageWithPayload:payload status:status];
 }
 
 - (id) content {

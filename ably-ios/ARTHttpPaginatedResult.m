@@ -8,6 +8,7 @@
 
 #import "ARTHttpPaginatedResult.h"
 #import "ARTLog.h"
+#import "ARTStatus.h"
 @interface ARTHttpPaginatedResult ()
 
 @property (readonly, strong, nonatomic) ARTHttp *http;
@@ -68,14 +69,17 @@
 + (id<ARTCancellable>)makePaginatedRequest:(ARTHttp *)http request:(ARTHttpRequest *)request responseProcessor:(ARTHttpResponseProcessor)responseProcessor cb:(ARTPaginatedResultCb)cb {
     return [http makeRequest:request cb:^(ARTHttpResponse *response) {
         if (!response) {
-            [ARTLog error:@"ARTHttpPaginatedResult got no response"];
-            cb([ARTStatus state:ARTStatusError], nil);
+            ARTErrorInfo * info = [[ARTErrorInfo alloc] init];
+            [info setCode:40000 message:@"ARTHttpPaginatedResult got no response"];
+            [ARTStatus state:ARTStatusError info:info];
+            cb([ARTStatus state:ARTStatusError info:info], nil);
             return;
         }
 
         if (response.status < 200 || response.status >= 300) {
-            [ARTLog error:[NSString stringWithFormat:@"ARTHttpPaginatedResult response.status invalid: %d", response.status]];
-            cb([ARTStatus state:ARTStatusError], nil);
+            ARTErrorInfo * info = [[ARTErrorInfo alloc] init];
+            [info setCode:40000 message:[NSString stringWithFormat:@"ARTHttpPaginatedResult response.status invalid: %d", response.status]];
+            cb([ARTStatus state:ARTStatusError info:info], nil);
             
             return;
         }
