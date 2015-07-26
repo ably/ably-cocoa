@@ -62,7 +62,7 @@
 }
 
 //TODO currently returns a single message back instead of 3
-/*
+
 -(void) testPublishArray {
     XCTestExpectation *exp = [self expectationWithDescription:@"testPublishArray"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
@@ -90,7 +90,7 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
- */
+
 
 /**
  Currently the payloadArraySizeLimit is default to INT_MAX. Here we bring that number down to 2

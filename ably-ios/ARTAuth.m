@@ -90,8 +90,6 @@
     return self;
 }
 
-
-
 -(NSDictionary *) asDictionary {
     NSMutableDictionary *reqObj = [NSMutableDictionary dictionary];
     reqObj[@"keyName"] = self.keyName ? self.keyName : @"";
@@ -129,6 +127,11 @@
     return self;
 }
 
+
+-(void) setTokenParams:(ARTAuthTokenParams *)tokenParams {
+    _tokenParams =tokenParams;
+    self.keyName = tokenParams.keyName;
+}
 
 
 - (instancetype)initWithKey:(NSString *)key {
@@ -229,8 +232,9 @@
             [ARTAuth checkValidKey:[NSString stringWithFormat:@"%@:%@", options.keyName, options.keySecret]];
             _keyName = options.keyName;
             _keySecret = options.keySecret;
-        } else if(options.token == nil) {
-            [NSException raise:@"Either a token or a keyName and secret are required to connect to Ably" format:nil];
+        }
+        else if(options.token == nil && options.tokenParams == nil) {
+            [NSException raise:@"Either a token, token param, or a keyName and secret are required to connect to Ably" format:nil];
         }
         
         [self prepConnection];
@@ -259,8 +263,26 @@
         [ARTLog verbose:@"ARTAuth can request token via authURL"];
         return true;
     }
+    if(self.options.tokenParams) {
+        [ARTLog verbose:@"ARTAuth can request token via tokenParams"];
+        return true;
+    }
     [ARTLog verbose:@"ARTAuth cannot request token"];
     return false;
+}
+
+
+- (ARTAuthTokenParams *) getTokenParams {
+    //TODO what if tokenParams is nil
+    
+    
+    return self.options.tokenParams ? self.options.tokenParams: [[ ARTAuthTokenParams alloc] initWithId:self.options.keyName
+                                               ttl:self.options.ttl
+                                        capability:self.options.capability
+                                          clientId:self.options.clientId
+                                         timestamp:0
+                                             nonce:self.options.nonce
+                                               mac:nil];
 }
 
 -(void) prepConnection {
@@ -294,13 +316,8 @@
         ARTAuth * s = weakSelf;
         ARTAuthTokenParams * params = nil;
         if(s) {
-            params =[[ ARTAuthTokenParams alloc] initWithId:s.options.keyName
-                                                        ttl:s.options.ttl
-                                                 capability:s.options.capability
-                                                   clientId:s.options.clientId
-                                                  timestamp:0
-                                                      nonce:s.options.nonce
-                                                        mac:nil];
+            params =[s getTokenParams];
+            s.options.tokenParams = params;
         }
         id<ARTCancellable> c = strCb(params,^( ARTAuthTokenParams *params) {
             [ARTLog debug:[NSString stringWithFormat:@"ARTAuth tokenRequest strCb got %@", [params asDictionary]]];
@@ -347,7 +364,8 @@
     options.clientId     ||
     options.token        ||
     options.authUrl      ||
-    options.authCallback;
+    options.authCallback ||
+    options.tokenParams;
 }
 
 
@@ -361,10 +379,13 @@
 
 - (id<ARTCancellable>)authHeadersUseBasic:(BOOL)useBasic cb:(id<ARTCancellable>(^)(NSDictionary *))cb {
     if(useBasic || self.authMethod == ARTAuthMethodBasic) {
+        [ARTLog verbose:@"using auth basic"];
         return cb(@{@"Authorization": self.basicCredentials});
     }
     else if(self.authMethod == ARTAuthMethodToken) {
+        [ARTLog verbose:@"using auth token"];
         return [self requestToken:^(ARTTokenDetails *token) {
+            [ARTLog verbose:@"retrieved token via request token"];
             return cb(@{@"Authorization": [NSString stringWithFormat:@"Bearer %@", token.token]});
         }];
     }
@@ -430,7 +451,6 @@
             }
         });
     }
-
     return c;
 }
 
@@ -449,7 +469,8 @@
         NSString *keySecret = authOptions.keySecret;
         BOOL queryTime = authOptions.queryTime;
 
-        if (params.keyName && ![params.keyName isEqualToString:authOptions.keyName]) {
+        
+        if (authOptions.keyName != nil &&  params.keyName && ![params.keyName isEqualToString:authOptions.keyName]) {
             [NSException raise:@"ARTAuthParams keyName is not equal to ARTAuthOptions keyName" format:@"'%@' != '%@'", params.keyName, authOptions.keyName];
         }
 

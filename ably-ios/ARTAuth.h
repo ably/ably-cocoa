@@ -57,6 +57,7 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 
 @property (readwrite, strong, nonatomic) ARTAuthCb authCallback;
 @property (readwrite, strong, nonatomic) ARTSignedTokenRequestCb signedTokenRequestCallback;
+@property (readwrite, strong, nonatomic) ARTAuthTokenParams *tokenParams;
 @property (readwrite, strong, nonatomic) NSURL *authUrl;
 @property (readwrite, strong, nonatomic) NSString *keyName;
 @property (readwrite, strong, nonatomic) NSString *keySecret;
@@ -86,6 +87,8 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 - (instancetype)initWithRest:(ARTRest *) rest options:(ARTAuthOptions *) options;
 - (ARTAuthOptions *)getAuthOptions;
 - (ARTAuthMethod)getAuthMethod;
+
+- (ARTAuthTokenParams *) getTokenParams;
 - (id<ARTCancellable>)authHeadersUseBasic:(BOOL)useBasic cb:(id<ARTCancellable>(^)(NSDictionary *))cb;
 - (id<ARTCancellable>)authParams:(id<ARTCancellable>(^)(NSDictionary *))cb;
 - (id<ARTCancellable>)requestToken:(id<ARTCancellable>(^)(ARTTokenDetails *))cb;

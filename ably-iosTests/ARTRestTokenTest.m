@@ -80,6 +80,8 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
+
+
 - (void)testInitWithBorrowedToken {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithToken"];
     [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
@@ -102,6 +104,28 @@
                 [expectation fulfill];
             }];
             return nil;
+        }];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
+
+- (void)testInitWithBorrowedTokenParam {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithBorrowedTokenParam"];
+    [ARTTestUtil setupApp:[ARTTestUtil jsonRestOptions] cb:^(ARTClientOptions *options) {
+        options.authOptions.clientId = @"testToken";
+        ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
+        _rest = rest;
+        
+        //pass in token params to rest2
+        options.authOptions.tokenParams = [rest.auth getTokenParams];
+        ARTRest * secondRest = [[ARTRest alloc] initWithOptions:options];
+        _rest2 = secondRest;
+        ARTAuthMethod authMethod = [rest.auth getAuthMethod];
+        XCTAssertEqual(authMethod, ARTAuthMethodToken);
+        ARTRestChannel * c= [secondRest channel:@"getChannel"];
+        [c publish:@"something" cb:^(ARTStatus *status) {
+            XCTAssertEqual(ARTStatusOk, status.status);
+            [expectation fulfill];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];

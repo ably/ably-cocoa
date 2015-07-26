@@ -49,7 +49,7 @@
 
 +(void) setupApp:(ARTClientOptions *)options withAlteration:(TestAlteration) alt  appId:(NSString *) appId cb:(void (^)(ARTClientOptions *))cb
 {
-    //[ARTLog setLogLevel:ArtLogLevelVerbose];
+    [ARTLog setLogLevel:ArtLogLevelVerbose];
     NSString * str = [ARTTestUtil getTestAppSetupJson];
     if(str== nil) {
         [NSException raise:@"error getting test-app-setup.json loaded. Maybe ably-common is missing" format:@""];
