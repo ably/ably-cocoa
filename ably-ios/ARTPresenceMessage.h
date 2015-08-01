@@ -7,8 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <ably/ARTPayload.h>
 
-#import "ARTPayload.h"
 @class ARTStatus;
 typedef NS_ENUM(NSUInteger, ARTPresenceMessageAction) {
     ArtPresenceMessageAbsent,

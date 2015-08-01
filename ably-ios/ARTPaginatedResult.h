@@ -7,8 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-
-#import "ARTStatus.h"
+#import <ably/ARTStatus.h>
 
 @protocol ARTPaginatedResult
 

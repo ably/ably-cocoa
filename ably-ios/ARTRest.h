@@ -7,11 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
-
-#import "ARTStatus.h"
-#import "ARTTypes.h"
-#import "ARTClientOptions.h"
-#import "ARTPaginatedResult.h"
+#import <ably/ARTStatus.h>
+#import <ably/ARTTypes.h>
+#import <ably/ARTClientOptions.h>
+#import <ably/ARTPaginatedResult.h>
 
 
 @class ARTLog;

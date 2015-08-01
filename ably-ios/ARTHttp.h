@@ -7,9 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-
-#import "ARTTypes.h"
-#import "ARTStatus.h"
+#import <ably/ARTTypes.h>
+#import <ably/ARTStatus.h>
 
 @class ARTLog;
 

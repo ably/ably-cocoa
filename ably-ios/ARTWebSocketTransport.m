@@ -8,7 +8,7 @@
 
 #import "ARTWebSocketTransport.h"
 
-#import "SRWebSocket.h"
+#import <SocketRocket/SRWebSocket.h>
 #import "ARTClientOptions.h"
 #import "ARTRest.h"
 #import "ARTRest+Private.h"

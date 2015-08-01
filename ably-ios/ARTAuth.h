@@ -7,9 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-
-#import "ARTHttp.h"
-#import "ARTTypes.h"
+#import <ably/ARTHttp.h>
+#import <ably/ARTTypes.h>
 
 @class ARTRest;
 
