@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ARTEncoder.h"
+@protocol ARTEncoder;
 
 /**
  ARTRest private methods that are used for whitebox testing.
