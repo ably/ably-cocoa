@@ -178,6 +178,16 @@ class RestClient: QuickSpec {
                     expect(publishTask.status?.status).toEventually(equal(ARTState.StatusOk), timeout: testTimeout)
                 }
             }
+
+            // RSC5
+            it("should provide access to the AuthOptions object passed in ClientOptions") {
+                let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                let client = ARTRest(options: options)
+
+                let authOptions = client.auth().getAuthOptions()
+
+                expect(authOptions).to(beIdenticalTo(options.authOptions))
+            }
         }
     }
 }
