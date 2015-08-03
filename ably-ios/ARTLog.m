@@ -8,79 +8,57 @@
 
 #import "ARTLog.h"
 
-@interface ARTLog()
-
-@property (nonatomic, assign) ARTLogLevel logLevel;
-@property (nonatomic, copy) ARTLogCallback cb;
-@end
+static const char *logLevelName(ARTLogLevel level) {
+    switch(level) {
+        case ARTLogLevelNone:
+            return "";
+        case ARTLogLevelVerbose:
+            return "VERBOSE";
+        case ARTLogLevelDebug:
+            return "DEBUG";
+        case ARTLogLevelInfo:
+            return "INFO";
+        case ARTLogLevelWarn:
+            return "WARN";
+        case ARTLogLevelError:
+            return "ERROR";
+        default:
+            return NULL;
+    }
+}
 
 @implementation ARTLog
 
--(id) init {
-    self = [super init];
-    if(self) {
-        self.logLevel = ArtLogLevelWarn;
+- (instancetype)init {
+    if (self = [super init]) {
+        self->_logLevel = ARTLogLevelWarn;
     }
     return self;
 }
 
--(void) setLogLevel:(ARTLogLevel) level {
-    _logLevel = level;
+- (void)verbose:(NSString *)message {
+    [self log:message withLevel:ARTLogLevelVerbose];
 }
 
--(void) setLogCallback:(ARTLogCallback) cb {
-    _cb = cb;
+- (void)debug:(NSString *)message {
+    [self log:message withLevel:ARTLogLevelDebug];
 }
 
--(void) verbose:(id) str {
-    [self log:str level:ArtLogLevelVerbose];
+- (void)info:(NSString *)message {
+    [self log:message withLevel:ARTLogLevelInfo];
 }
 
--(void) debug:(id) str {
-    [self log:str level:ArtLogLevelDebug];
+- (void)warn:(NSString *)message {
+    [self log:message withLevel:ARTLogLevelWarn];
 }
 
--(void) info:(id) str {
-    [self log:str level:ArtLogLevelInfo];
+- (void)error:(NSString *)message {
+    [self log:message withLevel:ARTLogLevelError];
 }
 
--(void) warn:(id) str {
-    [self log:str level:ArtLogLevelWarn];
-}
-
--(void) error:(id) str {
-    [self log:str level:ArtLogLevelError];
-}
-
--(NSString *) logLevelStr:(ARTLogLevel) level {
-    switch(level) {
-        case ArtLogLevelNone:
-            return @"";
-        case ArtLogLevelVerbose:
-            return @"VERBOSE";
-        case ArtLogLevelDebug:
-            return @"DEBUG";
-        case ArtLogLevelInfo:
-            return @"INFO";
-        case ArtLogLevelWarn:
-            return @"WARN";
-        case ArtLogLevelError:
-            return @"ERROR";
-    }
-    return @"";
-}
-
--(void) log:(id) str level:(ARTLogLevel) level {
-    ARTLog * logger = self;
-    
-    NSString * res = [NSString stringWithFormat:@"%@: %@",[self logLevelStr:level],str];
-    if(level >= logger.logLevel) {
-        if(logger.cb) {
-            logger.cb(res);
-        }
-        else {
-            NSLog(@"%@",res);
-        }
+- (void)log:(NSString *)message withLevel:(ARTLogLevel)level {
+    if (level >= self.logLevel) {
+        NSLog(@"%s: %@", logLevelName(level), message);
     }
 }
 

@@ -9,31 +9,24 @@
 #import <Foundation/Foundation.h>
 
 typedef NS_ENUM(NSUInteger, ARTLogLevel) {
-    ArtLogLevelVerbose,
-    ArtLogLevelDebug,
-    ArtLogLevelInfo,
-    ArtLogLevelWarn,
-    ArtLogLevelError,
-    ArtLogLevelNone
+    ARTLogLevelVerbose,
+    ARTLogLevelDebug,
+    ARTLogLevelInfo,
+    ARTLogLevelWarn,
+    ARTLogLevelError,
+    ARTLogLevelNone
 };
 
-typedef void(^ARTLogCallback)(id);
-
-@protocol ArtLogProtocol
-- (void)log:(id) message;
-@end
-
 @interface ARTLog : NSObject
-{
-    
-}
 
--(void) setLogLevel:(ARTLogLevel) level;
--(void) setLogCallback:(ARTLogCallback) cb;
--(void) verbose:(id) str;
--(void) debug:(id) str;
--(void) info:(id) str;
--(void) warn:(id) str;
--(void) error:(id) str;
+@property (nonatomic, assign) ARTLogLevel logLevel;
+
+- (void)verbose:(NSString *)message;
+- (void)debug:(NSString *)message;
+- (void)info:(NSString *)message;
+- (void)warn:(NSString *)message;
+- (void)error:(NSString *)message;
+
+- (void)log:(NSString *)message withLevel:(ARTLogLevel)level;
 
 @end

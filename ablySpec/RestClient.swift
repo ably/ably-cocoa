@@ -114,14 +114,51 @@ class RestClient: QuickSpec {
                 }
             }
 
-            // RSC5
-            it("should provide access to the AuthOptions object passed in ClientOptions") {
-                let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-                let client = ARTRest(options: options)
+            context("logging") {
+                // RSC2
+                it("should output to the system log and the log level should be Warn") {
+                    let logTime = NSDate()
+                    let client = ARTRest(options: AblyTests.setupOptions(AblyTests.jsonRestOptions))
 
-                let authOptions = client.auth().getAuthOptions()
+                    client.logger.warn("This is a warning")
+                    let logs = querySyslog(forLogsAfter: logTime)
 
-                expect(authOptions).to(beIdenticalTo(options.authOptions))
+                    expect(client.logger.logLevel).to(equal(ARTLogLevel.Warn))
+                    expect(logs).to(contain("WARN: This is a warning"))
+                }
+
+                // RSC3
+                it("should have a mutable log level") {
+                    let logTime = NSDate()
+                    let client = ARTRest(options: AblyTests.setupOptions(AblyTests.jsonRestOptions))
+                    client.logger.logLevel = .Error
+
+                    client.logger.warn("This is a warning")
+                    let logs = querySyslog(forLogsAfter: logTime)
+
+                    expect(logs).toNot(contain("WARN: This is a warning"))
+                }
+
+                // RSC4
+                it("should accept a custom logger") {
+                    struct Log {
+                        static var interceptedLog: (String, ARTLogLevel) = ("", .None)
+                    }
+                    class MyLogger : ARTLog {
+                        override func log(message: String!, withLevel level: ARTLogLevel) {
+                            Log.interceptedLog = (message, level)
+                        }
+                    }
+
+                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                    options.loggerClass = MyLogger.self
+                    let client = ARTRest(options: options)
+
+                    client.logger.warn("This is a warning")
+
+                    expect(Log.interceptedLog.0).to(equal("This is a warning"))
+                    expect(Log.interceptedLog.1).to(equal(ARTLogLevel.Warn))
+                }
             }
 
             // RSC11

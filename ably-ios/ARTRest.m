@@ -176,7 +176,10 @@
 
 - (void) setup {
     _http = [[ARTHttp alloc] init];
-    self.logger = [[ARTLog alloc] init];
+
+    Class loggerClass = self->_options.loggerClass ?: [ARTLog class];
+    self->_logger = [[loggerClass alloc] init];
+    
     _channels = [NSMutableDictionary dictionary];
     id<ARTEncoder> defaultEncoder = [[ARTJsonEncoder alloc] init];
     _encoders = @{

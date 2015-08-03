@@ -28,6 +28,8 @@
 @property (readwrite, copy, nonatomic) NSString *recover;
 @property (readonly, strong, nonatomic) NSURL *restUrl;
 
+@property (nonatomic, assign) Class loggerClass;
+
 - (instancetype)init;
 - (instancetype)initWithKey:(NSString *)key;
 
