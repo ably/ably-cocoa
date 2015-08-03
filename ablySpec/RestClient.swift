@@ -145,7 +145,7 @@ class RestClient: QuickSpec {
                         static var interceptedLog: (String, ARTLogLevel) = ("", .None)
                     }
                     class MyLogger : ARTLog {
-                        override func log(message: String!, withLevel level: ARTLogLevel) {
+                        override func log(message: String, withLevel level: ARTLogLevel) {
                             Log.interceptedLog = (message, level)
                         }
                     }

@@ -7,6 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <ably/CompatibilityMacros.h>
+
+__ART_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, ARTLogLevel) {
     ARTLogLevelVerbose,
@@ -21,12 +24,18 @@ typedef NS_ENUM(NSUInteger, ARTLogLevel) {
 
 @property (nonatomic, assign) ARTLogLevel logLevel;
 
+- (void)log:(NSString *)message withLevel:(ARTLogLevel)level;
+
+@end
+
+@interface ARTLog (Shorthand)
+
 - (void)verbose:(NSString *)message;
 - (void)debug:(NSString *)message;
 - (void)info:(NSString *)message;
 - (void)warn:(NSString *)message;
 - (void)error:(NSString *)message;
 
-- (void)log:(NSString *)message withLevel:(ARTLogLevel)level;
-
 @end
+
+__ART_ASSUME_NONNULL_END
