@@ -114,6 +114,16 @@ class RestClient: QuickSpec {
                 }
             }
 
+            // RSC5
+            it("should provide access to the AuthOptions object passed in ClientOptions") {
+                let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                let client = ARTRest(options: options)
+
+                let authOptions = client.auth().getAuthOptions()
+
+                expect(authOptions).to(beIdenticalTo(options.authOptions))
+            }
+
             // RSC11
             context("endpoint") {
                 it("should accept an options object with an environment set") {
