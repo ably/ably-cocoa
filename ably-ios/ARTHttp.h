@@ -9,14 +9,9 @@
 #import <Foundation/Foundation.h>
 
 #import "ARTTypes.h"
+#import "ARTStatus.h"
 
-
-@interface ARTHttpError : NSObject
-@property (strong, nonatomic) NSString *message;
-@property (assign, nonatomic) int statusCode;
-@property (assign, nonatomic) int code;
-@end
-
+@class ARTLog;
 
 @interface ARTHttpRequest : NSObject
 
@@ -34,6 +29,7 @@
 @interface ARTHttpResponse : NSObject
 
 @property (readonly, assign, nonatomic) int status;
+@property (readwrite, strong, nonatomic) ARTErrorInfo *error;
 @property (readonly, strong, nonatomic) NSDictionary *headers;
 @property (readonly, strong, nonatomic) NSData *body;
 
@@ -49,7 +45,11 @@
 @end
 
 @interface ARTHttp : NSObject
+{
+    
+}
 
+@property (nonatomic, weak) ARTLog * logger;
 - (instancetype)init;
 
 typedef void (^ARTHttpCb)(ARTHttpResponse *response);

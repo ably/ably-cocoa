@@ -8,12 +8,14 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ARTRealtime.h"
 @class ARTProtocolMessage;
-@interface ARTRealtime (Privates)
-{
-    
-}
 
+
+/**
+ ARTRealtime private methods that are used for whitebox testing.
+ */
+@interface ARTRealtime (Private)
 
 // Transport Events
 - (void)onHeartbeat:(ARTProtocolMessage *)message;
@@ -23,4 +25,11 @@
 - (void)onAck:(ARTProtocolMessage *)message;
 - (void)onNack:(ARTProtocolMessage *)message;
 - (void)onChannelMessage:(ARTProtocolMessage *)message;
+
+- (int64_t) connectionSerial;
+- (void)onSuspended;
+@end
+
+@interface ARTRealtimeChannel (Private)
+-(void) setFailed:(ARTStatus *) error;
 @end

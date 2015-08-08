@@ -10,6 +10,7 @@
 #import <XCTest/XCTest.h>
 
 #import "ARTHttp.h"
+#import "ARTTestUtil.h"
 
 @interface ARTHttpTest : XCTestCase
 
@@ -47,7 +48,7 @@
         [expectation fulfill];
     }];
 
-    [self waitForExpectationsWithTimeout:10.0 handler:nil];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 

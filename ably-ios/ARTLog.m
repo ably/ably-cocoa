@@ -19,50 +19,40 @@
 -(id) init {
     self = [super init];
     if(self) {
-        
+        self.logLevel = ArtLogLevelWarn;
     }
     return self;
 }
 
-+(ARTLog *) instance {
-    static ARTLog * logger = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        logger = [[ARTLog alloc] init];
-        logger.logLevel = ArtLogLevelWarn;
-    });
-    return logger;
+-(void) setLogLevel:(ARTLogLevel) level {
+    _logLevel = level;
 }
 
-+(void) setLogLevel:(ARTLogLevel) level {
-    [ARTLog instance].logLevel = level;
+-(void) setLogCallback:(ARTLogCallback) cb {
+    _cb = cb;
 }
 
-+(void) setLogCallback:(ARTLogCallback) cb {
-    [ARTLog instance].cb = cb;
+-(void) verbose:(id) str {
+    [self log:str level:ArtLogLevelVerbose];
 }
 
-+(void) verbose:(id) str {
-    [ARTLog log:str level:ArtLogLevelVerbose];
+-(void) debug:(id) str {
+    [self log:str level:ArtLogLevelDebug];
 }
 
-+(void) debug:(id) str {
-    [ARTLog log:str level:ArtLogLevelDebug];
+-(void) info:(id) str {
+    [self log:str level:ArtLogLevelInfo];
 }
 
-+(void) info:(id) str {
-    [ARTLog log:str level:ArtLogLevelInfo];
+-(void) warn:(id) str {
+    [self log:str level:ArtLogLevelWarn];
 }
 
-+(void) warn:(id) str {
-    [ARTLog log:str level:ArtLogLevelWarn];
+-(void) error:(id) str {
+    [self log:str level:ArtLogLevelError];
 }
 
-+(void) error:(id) str {
-    [ARTLog log:str level:ArtLogLevelError];
-}
-
-+(NSString *) logLevelStr:(ARTLogLevel) level {
+-(NSString *) logLevelStr:(ARTLogLevel) level {
     switch(level) {
         case ArtLogLevelNone:
             return @"";
@@ -80,10 +70,10 @@
     return @"";
 }
 
-+(void) log:(id) str level:(ARTLogLevel) level {
-    ARTLog * logger = [ARTLog instance];
+-(void) log:(id) str level:(ARTLogLevel) level {
+    ARTLog * logger = self;
     
-    NSString * res = [NSString stringWithFormat:@"%@: %@",[ARTLog logLevelStr:level],str];
+    NSString * res = [NSString stringWithFormat:@"%@: %@",[self logLevelStr:level],str];
     if(level >= logger.logLevel) {
         if(logger.cb) {
             logger.cb(res);

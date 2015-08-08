@@ -10,7 +10,11 @@
 
 #import "ARTStatus.h"
 
+
+
 typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
+    
+
     ARTProtocolMessageHeartbeat = 0,
     ARTProtocolMessageAck = 1,
     ARTProtocolMessageNack = 2,
@@ -26,25 +30,30 @@ typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
     ARTProtocolMessageDetach = 12,
     ARTProtocolMessageDetached = 13,
     ARTProtocolMessagePresence = 14,
-    ARTProtocolMessageMessage = 15
+    ARTProtocolMessageMessage = 15,
+    ARTProtocolMessageSync = 16,
 };
 
 @interface ARTProtocolMessage : NSObject
 
 @property (readwrite, assign, nonatomic) ARTProtocolMessageAction action;
 @property (readwrite, assign, nonatomic) int count;
-@property (readwrite, assign, nonatomic) ARTStatus error;
+@property (readwrite, strong, nonatomic) ARTErrorInfo * error;
 @property (readwrite, strong, nonatomic) NSString *id;
 @property (readwrite, strong, nonatomic) NSString *channel;
 @property (readwrite, strong, nonatomic) NSString *channelSerial;
 @property (readwrite, strong, nonatomic) NSString *connectionId;
 @property (readwrite, strong, nonatomic) NSString *connectionKey;
 @property (readwrite, assign, nonatomic) int64_t connectionSerial;
+@property (readwrite, assign, nonatomic) BOOL hasConnectionSerial;
 @property (readwrite, assign, nonatomic) int64_t msgSerial;
 @property (readwrite, strong, nonatomic) NSDate *timestamp;
 @property (readwrite, strong, nonatomic) NSArray *messages;
 @property (readwrite, strong, nonatomic) NSArray *presence;
 @property (readonly, assign, nonatomic) BOOL ackRequired;
+@property (readwrite, assign, nonatomic) int64_t flags;
+
+-(BOOL) isSyncEnabled;
 
 - (BOOL)mergeFrom:(ARTProtocolMessage *)msg;
 

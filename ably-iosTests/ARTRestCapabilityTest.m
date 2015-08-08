@@ -9,10 +9,11 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 #import "ARTMessage.h"
-#import "ARTOptions.h"
+#import "ARTClientOptions.h"
 #import "ARTPresenceMessage.h"
 #import "ARTRest.h"
 #import "ARTTestUtil.h"
+#import "ARTLog.h"
 @interface ARTRestCapabilityTest : XCTestCase {
     ARTRest *_rest;
 }
@@ -30,49 +31,36 @@
     [super tearDown];
 }
 
-
-- (void)withRest:(void (^)(ARTRest *rest))cb {
-    if (!_rest) {
-        ARTOptions * theOptions = [ARTTestUtil jsonRestOptions];
-        [ARTTestUtil setupApp:theOptions cb:^(ARTOptions *options) {
-            if (options) {
-                _rest = [[ARTRest alloc] initWithOptions:options];
-            }
-            cb(_rest);
-        }];
-        return;
-    }
-    cb(_rest);
-}
-
 - (void)withRestRestrictCap:(void (^)(ARTRest *rest))cb {
     if (!_rest) {
-        ARTOptions * theOptions = [ARTTestUtil jsonRestOptions];
-        [ARTTestUtil setupApp:theOptions withAlteration:TestAlterationRestrictCapability cb:^(ARTOptions *options) {
+        ARTClientOptions * theOptions = [ARTTestUtil jsonRestOptions];
+        [ARTTestUtil setupApp:theOptions withAlteration:TestAlterationRestrictCapability cb:^(ARTClientOptions *options) {
             if (options) {
                 options.authOptions.useTokenAuth = true;
                 options.authOptions.clientId = @"clientId";
-                _rest = [[ARTRest alloc] initWithOptions:options];
+                
+                ARTRest * r = [[ARTRest alloc] initWithOptions:options];
+                _rest = r;
+                cb(_rest);
             }
-            cb(_rest);
         }];
         return;
     }
-    cb(_rest);
+    else {
+        cb(_rest);
+    }
 }
 
-
-- (void)testPublishRestriced {
+- (void)testPublishRestricted {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testSimpleDisconnected"];
     [self withRestRestrictCap:^(ARTRest * rest) {
         ARTRestChannel * channel = [rest channel:@"canpublish:test"];
-        [channel publish:@"publish" cb:^(ARTStatus status) {
-            XCTAssertEqual(status, ARTStatusOk);
+        [channel publish:@"publish" cb:^(ARTStatus *status) {
+            XCTAssertEqual(ARTStatusOk, status.status);
             ARTRestChannel * channel2 = [rest channel:@"cannotPublishToThisChannelName"];
-            [channel2 publish:@"publish" cb:^(ARTStatus status) {
-                XCTAssertEqual(status, ARTStatusError);
+            [channel2 publish:@"publish" cb:^(ARTStatus *status) {
+                XCTAssertEqual(ARTStatusError, status.status);
                 [expectation fulfill];
-                
             }];
             
         }];

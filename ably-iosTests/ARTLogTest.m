@@ -21,26 +21,28 @@
 }
 
 -(void) tearDown {
-    [ARTLog setLogCallback:nil];
-    [ARTLog setLogLevel:ArtLogLevelWarn];
+    ARTLog * l = [[ARTLog alloc] init];
+    [l setLogCallback:nil];
+    [l setLogLevel:ArtLogLevelWarn];
 }
 
 - (void)testLogLevelToError {
     __block id lastLogged =nil;
     __block int logCount =0;
-    [ARTLog setLogCallback:^(id message){
+    ARTLog * l = [[ARTLog alloc] init];
+    [l setLogCallback:^(id message){
         lastLogged = message;
         logCount++;
     }];
     
-    [ARTLog setLogLevel:ArtLogLevelError];
+    [l setLogLevel:ArtLogLevelError];
     
-    [ARTLog verbose:@"v"];
-    [ARTLog debug:@"d"];
-    [ARTLog info:@"i"];
-    [ARTLog warn:@"w"];
+    [l verbose:@"v"];
+    [l debug:@"d"];
+    [l info:@"i"];
+    [l warn:@"w"];
     XCTAssertEqual(logCount, 0);
-    [ARTLog error:@"e"];
+    [l error:@"e"];
     XCTAssertEqual(logCount, 1);
     XCTAssertEqualObjects(lastLogged, @"ERROR: e");
 }
@@ -48,17 +50,18 @@
 -(void) testLogLevel {
     __block id lastLogged =nil;
     __block int logCount =0;
-    [ARTLog setLogCallback:^(id message){
+    ARTLog * l = [[ARTLog alloc] init];
+    [l setLogCallback:^(id message){
         lastLogged = message;
         logCount++;
     }];
-    [ARTLog setLogLevel:ArtLogLevelDebug];
-    [ARTLog verbose:@"v"];
-    [ARTLog debug:@"d"];
+    [l setLogLevel:ArtLogLevelDebug];
+    [l verbose:@"v"];
+    [l debug:@"d"];
     XCTAssertEqualObjects(lastLogged, @"DEBUG: d");
-    [ARTLog info:@"i"];
-    [ARTLog warn:@"w"];
-    [ARTLog error:@"e"];
+    [l info:@"i"];
+    [l warn:@"w"];
+    [l error:@"e"];
     XCTAssertEqual(logCount, 4);
     XCTAssertEqualObjects(lastLogged, @"ERROR: e");
 }
@@ -66,27 +69,29 @@
 -(void) testLogLevelNone {
     __block id lastLogged =nil;
     __block int logCount =0;
-    [ARTLog setLogCallback:^(id message){
+    ARTLog * l = [[ARTLog alloc] init];
+    [l setLogCallback:^(id message){
         lastLogged = message;
         logCount++;
     }];
-    [ARTLog setLogLevel:ArtLogLevelNone];
-    [ARTLog verbose:@"v"];
-    [ARTLog debug:@"d"];
-    [ARTLog info:@"i"];
-    [ARTLog warn:@"w"];
-    [ARTLog error:@"e"];
+    [l setLogLevel:ArtLogLevelNone];
+    [l verbose:@"v"];
+    [l debug:@"d"];
+    [l info:@"i"];
+    [l warn:@"w"];
+    [l error:@"e"];
     XCTAssertEqual(logCount, 0);
     XCTAssertEqualObjects(lastLogged, nil);
 }
 
 -(void) testNoCrashWithoutCustomLogger {
-    [ARTLog setLogLevel:ArtLogLevelVerbose];
-    [ARTLog verbose:@"v"];
-    [ARTLog debug:@"d"];
-    [ARTLog info:@"i"];
-    [ARTLog warn:@"w"];
-    [ARTLog error:@"e"];
+    ARTLog * l = [[ARTLog alloc] init];
+    [l setLogLevel:ArtLogLevelVerbose];
+    [l verbose:@"v"];
+    [l debug:@"d"];
+    [l info:@"i"];
+    [l warn:@"w"];
+    [l error:@"e"];
 }
 
 

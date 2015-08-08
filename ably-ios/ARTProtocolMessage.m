@@ -7,24 +7,26 @@
 //
 
 #import "ARTProtocolMessage.h"
-
+#import "ARTStatus.h"
 @implementation ARTProtocolMessage
 
 - (id)init {
     self = [super init];
     if (self) {
         _count = 0;
-        _error = ARTStatusOk;
+        _error = [[ARTErrorInfo alloc] init];
         _id = nil;
         _channel = nil;
         _channelSerial = nil;
         _connectionId = nil;
         _connectionKey = nil;
         _connectionSerial = 0;
+        _hasConnectionSerial = false;
         _msgSerial = 0;
         _timestamp = nil;
         _messages = nil;
         _presence = nil;
+        _flags = 0;
     }
     return self;
 }
@@ -44,10 +46,18 @@
          default:
              return NO;
      }
- }
+}
+
+- (void) setConnectionSerial:(int64_t)connectionSerial {
+    _connectionSerial =connectionSerial;
+    _hasConnectionSerial = true;
+}
 
 - (BOOL)ackRequired {
-    return self.action == ARTProtocolMessageMessage || self.action == ARTProtocolMessagePresence;
+    return self.action == ARTProtocolMessageMessage || self.action == ARTProtocolMessagePresence || self.action == ARTProtocolMessageDetach;
+}
+-(BOOL) isSyncEnabled {
+    return self.flags & 0x1;
 }
 
 @end

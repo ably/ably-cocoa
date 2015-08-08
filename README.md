@@ -5,8 +5,7 @@
 An iOS client library for [ably.io](https://www.ably.io), the realtime messaging service, written in Objective-C.
 
 ## CocoaPod Installation
-add pod ably to your Podfile. While ably-ios is in development, use this line instead:
-* pod "ably",  :git => 'https://github.com/thevixac/ably-ios.git', :commit => 'be670f5e6c3'
+add pod ably to your Podfile. 
 
 ## Manual Installation 
 
@@ -31,16 +30,16 @@ add pod ably to your Podfile. While ably-ios is in development, use this line in
 
 ```
 ARTRealtimeChannel * channel = [client channel:@"test"];
-[channel subscribe:^(ARTMessage * message) {
-     NSString * content =[message content];
-     NSLog(@" message is %@", content);
+[channel subscribe:^(ARTMessage *message) {
+     NSString *content =[message content];
+     NSLog(@"message is %@", content);
 }];
 ```
 
 ### Publishing to a channel
 ```
-    [channel publish:@"Hello, Channel!" cb:^(ARTStatus status) {
-        if(status != ARTStatusOk) {
+    [channel publish:@"Hello, Channel!" cb:^(ARTStatus *status) {
+        if(status.status != ARTStatusOk) {
             //something went wrong.
         }
     }];
@@ -48,8 +47,10 @@ ARTRealtimeChannel * channel = [client channel:@"test"];
 
 ### Querying the History
 ```
-    [channel history:^(ARTStatus status, id<ARTPaginatedResult> messagesPage) {
-        XCTAssertEqual(status, ARTStatusOk);
+    [channel history:^(ARTStatus *status, id<ARTPaginatedResult> messagesPage) {
+        if(status.status != ARTStatusOk) {
+            //something went wrong.
+        }
         NSArray *messages = [messagesPage currentItems];
         NSLog(@"this page has %d messages", [messages count]);
         ARTMessage *message = messages[0];
@@ -65,7 +66,7 @@ ARTRealtimeChannel * channel = [client channel:@"test"];
     options.clientId = @"john.doe";
     ARTRealtime * client = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel * channel = [client channel:@"test"];
-    [channel publishPresenceEnter:@"I'm here" cb:^(ARTStatus status) {
+    [channel publishPresenceEnter:@"I'm here" cb:^(ARTStatus *status) {
         if(status != ARTStatusOk) {
             //something went wrong
         }
@@ -74,7 +75,10 @@ ARTRealtimeChannel * channel = [client channel:@"test"];
 
 ### Querying the Presence History
 ```
-    [channel presenceHistory:^(ARTStatus status, id<ARTPaginatedResult> presencePage) {
+    [channel presenceHistory:^(ARTStatus *status, id<ARTPaginatedResult> presencePage) {
+        if(status.status != ARTStatusOk) {
+            //something went wrong
+        }
         NSArray *messages = [presencePage currentItems];
         if(messages) {
             ARTPresenceMessage *firstMessage = messages[0];
@@ -92,8 +96,8 @@ ARTRealtimeChannel * channel = [client channel:@"test"];
 
 ## Publishing a message to a channel
 ```
-   [channel publish:@"Hello, channel!" cb:^(ARTStatus status){
-       if(status != ARTStatusOk) {
+   [channel publish:@"Hello, channel!" cb:^(ARTStatus *status){
+       if(status.status != ARTStatusOk) {
            //something went wrong
        }
    }];
@@ -108,10 +112,6 @@ The library works on iOS8, and uses [SocketRocket](https://github.com/square/Soc
 The following features are not implemented yet:
 
 * msgpack transportation
-
-The following features are do not have sufficient test coverage:
-
-* app stats
 
 ## Support and feedback
 

@@ -11,14 +11,17 @@
 #import "ARTRealtimeTransport.h"
 #import "ARTEncoder.h"
 
-@class ARTOptions;
+@class ARTClientOptions;
 @class ARTRest;
+@class ARTLog;
 
 @interface ARTWebSocketTransport : NSObject <ARTRealtimeTransport>
 
+
+@property (nonatomic, weak) ARTLog * logger;
 @property (readwrite, weak, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithRest:(ARTRest *)rest options:(ARTOptions *)options;
+- (instancetype)initWithRest:(ARTRest *)rest options:(ARTClientOptions *)options;
 
 @end

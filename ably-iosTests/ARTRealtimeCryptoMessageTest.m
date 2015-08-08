@@ -130,8 +130,6 @@
     }
 }
 
-
-
 - (void)testEncrypt_128 {
     [self testCaseByFileContents:[ARTTestUtil getCrypto128Json]];
 }

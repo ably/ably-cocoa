@@ -9,27 +9,22 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 #import "ARTMessage.h"
-#import "ARTOptions.h"
+#import "ARTClientOptions.h"
 #import "ARTPresenceMessage.h"
 #import "ARTRest.h"
 #import "ARTTestUtil.h"
-@interface ARTRestCryptoTest : XCTestCase {
+#import "ARTCrypto.h"
+#import "ARTLog.h"
+@interface ARTRestCryptoTest : XCTestCase
+{
     ARTRest *_rest;
-    ARTOptions *_options;
-    float _timeout;
 }
-
-- (void)withRest:(void(^)(ARTRest *))cb;
-
-
 @end
 
 @implementation ARTRestCryptoTest
 
-- (void)setUp {
+- (void)setUp {    
     [super setUp];
-    _options = [[ARTOptions alloc] init];
-    _options.restHost = @"sandbox-rest.ably.io";
 }
 
 - (void)tearDown {
@@ -37,23 +32,77 @@
     [super tearDown];
 }
 
-- (void)withRest:(void (^)(ARTRest *rest))cb {
-    if (!_rest) {
-        [ARTTestUtil setupApp:_options cb:^(ARTOptions *options) {
-            if (options) {
-                _rest = [[ARTRest alloc] initWithOptions:options];
-            }
-            cb(_rest);
+-(void) testSendBinary {
+    XCTestExpectation *exp = [self expectationWithDescription:@"testSendBinary"];
+    [ARTTestUtil testRest:^(ARTRest *rest) {
+        _rest =rest;
+        ARTRestChannel * c = [rest channel:@"test"];
+        XCTAssert(c);
+        NSData * dataPayload = [@"someDataPayload"  dataUsingEncoding:NSUTF8StringEncoding];
+        NSString * stringPayload = @"someString";
+        [c publish:dataPayload cb:^(ARTStatus *status) {
+            XCTAssertEqual(ARTStatusOk, status.status);
+            [c publish:stringPayload cb:^(ARTStatus *status) {
+                XCTAssertEqual(ARTStatusOk, status.status);
+                [c history:^(ARTStatus *status, id<ARTPaginatedResult> result) {
+                    XCTAssertEqual(ARTStatusOk, status.status);
+                    XCTAssertEqual(ARTStatusOk, status.status);
+                    XCTAssertFalse([result hasNext]);
+                    NSArray * page = [result currentItems];
+                    XCTAssertTrue(page != nil);
+                    XCTAssertEqual([page count], 2);
+                    ARTMessage * stringMessage = [page objectAtIndex:0];
+                    ARTMessage * dataMessage = [page objectAtIndex:1];
+                    XCTAssertEqualObjects([dataMessage content], dataPayload);
+                    XCTAssertEqualObjects([stringMessage content], stringPayload);
+                    [exp fulfill];
+                }];
+            }];
         }];
-        return;
-    }
-    cb(_rest);
-}
-/* //TODO implement
-- (void)testPublishText {
-    XCTFail(@"TODO write test");
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
+-(void) testSendEncodedMessage {
+    XCTestExpectation *exp = [self expectationWithDescription:@"testSendBinary"];
+    [ARTTestUtil testRest:^(ARTRest *rest) {
+        _rest =rest;
+        
+        ARTIvParameterSpec * ivSpec = [[ARTIvParameterSpec alloc] initWithIv:[[NSData alloc]
+                                                                              initWithBase64EncodedString:@"HO4cYSP8LybPYBPZPHQOtg==" options:0]];
+    
+        NSData * keySpec = [[NSData alloc] initWithBase64EncodedString:@"WUP6u0K7MXI5Zeo0VppPwg==" options:0];
+        ARTCipherParams * params =[[ARTCipherParams alloc] initWithAlgorithm:@"aes" keySpec:keySpec ivSpec:ivSpec];
+        ARTRestChannel * c = [rest channel:@"test" cipherParams:params];
+        XCTAssert(c);
+        NSData * dataPayload = [@"someDataPayload"  dataUsingEncoding:NSUTF8StringEncoding];
+        NSString * stringPayload = @"someString";
+        [c publish:dataPayload cb:^(ARTStatus *status) {
+            XCTAssertEqual(ARTStatusOk, status.status);
+            [c publish:stringPayload cb:^(ARTStatus *status) {
+                XCTAssertEqual(ARTStatusOk, status.status);
+                [c history:^(ARTStatus *status, id<ARTPaginatedResult> result) {
+                    XCTAssertEqual(ARTStatusOk, status.status);
+                    XCTAssertEqual(ARTStatusOk, status.status);
+                    XCTAssertFalse([result hasNext]);
+                    NSArray * page = [result currentItems];
+                    XCTAssertTrue(page != nil);
+                    XCTAssertEqual([page count], 2);
+                    ARTMessage * stringMessage = [page objectAtIndex:0];
+                    ARTMessage * dataMessage = [page objectAtIndex:1];
+                    XCTAssertEqualObjects([dataMessage content], dataPayload);
+                    XCTAssertEqualObjects([stringMessage content], stringPayload);
+                    [exp fulfill];
+                }];
+            }];
+        }];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
+
+
+
+/*
 - (void)testPublishText256 {
     XCTFail(@"TODO write test");
 }

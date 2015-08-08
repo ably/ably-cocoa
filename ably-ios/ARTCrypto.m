@@ -20,6 +20,7 @@
 
 @interface ARTCrypto ()
 
+@property (nonatomic, weak) ARTLog * logger;
 @property (readonly, strong, nonatomic) ARTCipherParams *params;
 
 @end
@@ -29,27 +30,12 @@
 - (id)initWithCipherParams:(ARTCipherParams *)cipherParams;
 + (instancetype)cbcCipherWithParams:(ARTCipherParams *)cipherParams;
 
-@property (readonly) ARTSecretKeySpec *keySpec;
+
+@property (nonatomic, weak) ARTLog * logger;
+@property (readonly, strong, nonatomic) NSData *keySpec;
 @property NSData *iv;
 @property (readonly) NSUInteger blockLength;
 @property CCAlgorithm algorithm;
-
-@end
-
-@implementation ARTSecretKeySpec
-
-- (instancetype)initWithKey:(NSData *)key algorithm:(NSString *)algorithm {
-    self = [super init];
-    if (self) {
-        _key = key;
-        _algorithm = algorithm;
-    }
-    return self;
-}
-
-+ (instancetype)secretKeySpecWithKey:(NSData *)key algorithm:(NSString *)algorithm {
-    return [[ARTSecretKeySpec alloc] initWithKey:key algorithm:algorithm];
-}
 
 @end
 
@@ -71,7 +57,7 @@
 
 @implementation ARTCipherParams
 
-- (instancetype)initWithAlgorithm:(NSString *)algorithm keySpec:(ARTSecretKeySpec *)keySpec ivSpec:(ARTIvParameterSpec *)ivSpec {
+- (instancetype)initWithAlgorithm:(NSString *)algorithm keySpec:(NSData *)keySpec ivSpec:(ARTIvParameterSpec *)ivSpec {
     self = [super init];
     if (self) {
         _algorithm = algorithm;
@@ -81,14 +67,14 @@
     return self;
 }
 
-+ (instancetype)cipherParamsWithAlgorithm:(NSString *)algorithm keySpec:(ARTSecretKeySpec *)keySpec ivSpec:(ARTIvParameterSpec *)ivSpec {
++ (instancetype)cipherParamsWithAlgorithm:(NSString *)algorithm keySpec:(NSData *)keySpec ivSpec:(ARTIvParameterSpec *)ivSpec {
     return [[ARTCipherParams alloc] initWithAlgorithm:algorithm keySpec:keySpec ivSpec:ivSpec];
 }
 
 - (BOOL)ccAlgorithm:(CCAlgorithm *)algorithm {
     if (NSOrderedSame == [self.algorithm compare:@"AES" options:NSCaseInsensitiveSearch]) {
         if ([self.ivSpec.iv length] != 16) {
-            [ARTLog error:[NSString stringWithFormat:@"ArtCrypto Error iv length is not 16: %d", (int)[self.ivSpec.iv length]]];
+            [self.logger error:[NSString stringWithFormat:@"ArtCrypto Error iv length is not 16: %d", (int)[self.ivSpec.iv length]]];
             return NO;
         }
         *algorithm = kCCAlgorithmAES128;
@@ -127,7 +113,7 @@
 }
 
 -(size_t) keyLength {
-    return [self.keySpec.key length] *8;
+    return [self.keySpec length] *8;
 }
 
 + (instancetype)cbcCipherWithParams:(ARTCipherParams *)cipherParams {
@@ -136,7 +122,7 @@
 
 
 
-- (ARTStatus)encrypt:(NSData *)plaintext output:(NSData *__autoreleasing *)output {
+- (ARTStatus *)encrypt:(NSData *)plaintext output:(NSData *__autoreleasing *)output {
     // Encryptions must be serialized as they depend on the final block of the previous iteration
     NSData *ciphertext = nil;
 
@@ -145,8 +131,8 @@
     void *buf = malloc(outputBufLen);
 
     if (!buf) {
-        [ARTLog error:@"ARTCrypto error encrypting"];
-        return ARTStatusError;
+        [self.logger error:@"ARTCrypto error encrypting"];
+        return [ARTStatus state:ARTStatusError];
     }
 
     // Copy the iv first
@@ -155,8 +141,8 @@
     void *ciphertextBuf = ((char *)buf) + self.blockLength;
     size_t ciphertextBufLen = outputBufLen - self.blockLength;
 
-    const void *key = [self.keySpec.key bytes];
-    size_t keyLen = [self.keySpec.key length];
+    const void *key = [self.keySpec bytes];
+    size_t keyLen = [self.keySpec length];
 
     const void *iv = [self.iv bytes];
     const void *dataIn = [plaintext bytes];
@@ -166,16 +152,16 @@
     CCCryptorStatus status = CCCrypt(kCCEncrypt, self.algorithm, kCCOptionPKCS7Padding, key, keyLen, iv, dataIn, dataInLen, ciphertextBuf, ciphertextBufLen, &bytesWritten);
 
     if (status) {
-        [ARTLog error:[NSString stringWithFormat:@"ARTCrypto error encrypting. Status is %d", status]];
+        [self.logger error:[NSString stringWithFormat:@"ARTCrypto error encrypting. Status is %d", status]];
         free(ciphertextBuf);
-        return ARTStatusError;
+        return [ARTStatus state: ARTStatusError];
     }
 
     ciphertext = [NSData dataWithBytesNoCopy:buf length:(bytesWritten + self.blockLength) freeWhenDone:YES];
     if (nil == ciphertext) {
-        [ARTLog error:@"ARTCrypto error encrypting. cipher text is nil"];
+        [self.logger error:@"ARTCrypto error encrypting. cipher text is nil"];
         free(buf);
-        return ARTStatusError;
+        return [ARTStatus state:ARTStatusError];
     }
 
     // Finally update the iv. This should be the last *blockSize* bytes of the cipher text
@@ -184,26 +170,26 @@
     if (newIv) {
         self.iv = newIv;
     } else {
-        [ARTLog warn:@"ARTCrypto error encrypting. error updating iv"];
+        [self.logger warn:@"ARTCrypto error encrypting. error updating iv"];
     }
 
     *output = ciphertext;
 
-    return ARTStatusOk;
+    return [ARTStatus state:ARTStatusOk];
 }
 
-- (ARTStatus)decrypt:(NSData *)ciphertext output:(NSData *__autoreleasing *)output {
+- (ARTStatus *)decrypt:(NSData *)ciphertext output:(NSData *__autoreleasing *)output {
     // The first *blockLength* bytes are the iv
     if ([ciphertext length] < self.blockLength) {
-        return ARTStatusInvalidArgs;
+        return [ARTStatus state: ARTStatusInvalidArgs];;
     }
 
     NSData *ivData = [ciphertext subdataWithRange:NSMakeRange(0, self.blockLength)];
     NSData *actualCiphertext = [ciphertext subdataWithRange:NSMakeRange(self.blockLength, [ciphertext length] - self.blockLength)];
 
     CCOptions options = 0;
-    const void *key = [self.keySpec.key bytes];
-    size_t keyLength = [self.keySpec.key length];
+    const void *key = [self.keySpec bytes];
+    size_t keyLength = [self.keySpec length];
 
     const void *iv = [ivData bytes];
     const void *dataIn = [actualCiphertext bytes];
@@ -215,8 +201,8 @@
     size_t bytesWritten = 0;
 
     if (!buf) {
-        [ARTLog error:@"ARTCrypto error decrypting."];
-        return ARTStatusError;
+        [self.logger error:@"ARTCrypto error decrypting."];
+        return [ARTStatus state:ARTStatusError];
     }
 
     // Decrypt without padding because CCCrypt does not return an error code
@@ -224,9 +210,9 @@
     CCCryptorStatus status = CCCrypt(kCCDecrypt, self.algorithm, options, key, keyLength, iv, dataIn, dataInLength, buf, outputLength, &bytesWritten);
 
     if (status) {
-        [ARTLog error:[NSString stringWithFormat:@"ARTCrypto error decrypting. Status is %d", status]];
+        [self.logger error:[NSString stringWithFormat:@"ARTCrypto error decrypting. Status is %d", status]];
         free(buf);
-        return ARTStatusError;
+        return [ARTStatus state:ARTStatusError];
     }
 
     // Check that the decrypted value is padded correctly and determine the unpadded length
@@ -234,13 +220,13 @@
     int paddingLength = cbuf[bytesWritten - 1];
 
     if (0 == paddingLength || paddingLength > bytesWritten) {            free(buf);
-        return ARTStatusCryptoBadPadding;
+        return [ARTStatus state:ARTStatusCryptoBadPadding];
     }
 
     for (size_t i=(bytesWritten - 1); i>(bytesWritten - paddingLength); --i) {
         if (paddingLength != cbuf[i-1]) {
             free(buf);
-            return ARTStatusCryptoBadPadding;
+            return [ARTStatus state:ARTStatusCryptoBadPadding];
         }
     }
 
@@ -248,13 +234,13 @@
 
     NSData *plaintext = [NSData dataWithBytesNoCopy:buf length:unpaddedLength freeWhenDone:YES];
     if (!plaintext) {
-        [ARTLog error:@"ARTCrypto error decrypting. plain text is nil"];
+        [self.logger error:@"ARTCrypto error decrypting. plain text is nil"];
         free(buf);
     }
 
     *output = plaintext;
 
-    return ARTStatusOk;
+    return [ARTStatus state:ARTStatusOk];
 }
 
 - (NSString *)cipherName {
@@ -263,7 +249,6 @@
         case kCCAlgorithmAES128:
             algo = @"aes-128";
             break;
-
         case kCCAlgorithmDES:
             algo = @"des";
             break;
@@ -349,11 +334,8 @@
     return [self defaultParamsWithKey:key iv:ivData];
 }
 
-+ (ARTCipherParams *)defaultParamsWithKey:(NSData *)key iv:(NSData *)iv {
-    ARTSecretKeySpec *keySpec = [ARTSecretKeySpec secretKeySpecWithKey:key algorithm:[self defaultAlgorithm]];
-
++ (ARTCipherParams *)defaultParamsWithKey:(NSData *)keySpec iv:(NSData *)iv {
     ARTIvParameterSpec *ivSpec = [ARTIvParameterSpec ivSpecWithIv:iv];
-
     return [ARTCipherParams cipherParamsWithAlgorithm:[self defaultAlgorithm] keySpec:keySpec ivSpec:ivSpec];
 }
 

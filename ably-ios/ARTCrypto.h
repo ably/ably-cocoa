@@ -10,19 +10,10 @@
 
 #import "ARTStatus.h"
 
-@interface ARTSecretKeySpec : NSObject
-
-@property (readonly, strong, nonatomic) NSData *key;
-@property (readonly, strong, nonatomic) NSString *algorithm;
-
-- (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithKey:(NSData *)key algorithm:(NSString *)algorithm;
-+ (instancetype)secretKeySpecWithKey:(NSData *)key algorithm:(NSString *)algorithm;
-
-@end
+@class ARTLog;
 
 @interface ARTIvParameterSpec : NSObject
-
+@property (nonatomic, weak) ARTLog * logger;
 @property (readonly, nonatomic) NSData *iv;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
@@ -32,21 +23,21 @@
 @end
 
 @interface ARTCipherParams : NSObject
-
+@property (nonatomic, weak) ARTLog * logger;
 @property (readonly, strong, nonatomic) NSString *algorithm;
-@property (readonly, strong, nonatomic) ARTSecretKeySpec *keySpec;
+@property (readonly, strong, nonatomic) NSData *keySpec;
 @property (readonly, strong, nonatomic) ARTIvParameterSpec *ivSpec;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithAlgorithm:(NSString *)algorithm keySpec:(ARTSecretKeySpec *)keySpec ivSpec:(ARTIvParameterSpec *)ivSpec;
-+ (instancetype)cipherParamsWithAlgorithm:(NSString *)algorithm keySpec:(ARTSecretKeySpec *)keySpec ivSpec:(ARTIvParameterSpec *)ivSpec;
+- (instancetype)initWithAlgorithm:(NSString *)algorithm keySpec:(NSData *)keySpec ivSpec:(ARTIvParameterSpec *)ivSpec;
++ (instancetype)cipherParamsWithAlgorithm:(NSString *)algorithm keySpec:(NSData *)keySpec ivSpec:(ARTIvParameterSpec *)ivSpec;
 
 @end
 
 @protocol ARTChannelCipher
 
-- (ARTStatus)encrypt:(NSData *)plaintext output:(NSData **)output;
-- (ARTStatus)decrypt:(NSData *)ciphertext output:(NSData **)output;
+- (ARTStatus *)encrypt:(NSData *)plaintext output:(NSData **)output;
+- (ARTStatus *)decrypt:(NSData *)ciphertext output:(NSData **)output;
 - (NSString *)cipherName;
 - (size_t) keyLength;
 

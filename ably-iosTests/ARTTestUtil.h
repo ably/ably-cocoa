@@ -8,7 +8,10 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ARTOptions.h"
+#import "ARTClientOptions.h"
+#import "ARTRest.h"
+#import "ARTRealtime.h"
+
 @class ARTRestChannel;
 @class XCTestExpectation;
 @class ARTRealtimeChannel;
@@ -30,18 +33,23 @@ typedef NS_ENUM(NSUInteger, TestAlteration) {
 
 +(ARTCipherPayloadEncoder *) getTestCipherEncoder;
 
-+ (void)setupApp:(ARTOptions *)options cb:(void(^)(ARTOptions *options))cb;
-+ (void) setupApp:(ARTOptions *)options withAlteration:(TestAlteration) alt cb:(void (^)(ARTOptions *))cb;
++ (void)setupApp:(ARTClientOptions *)options cb:(void(^)(ARTClientOptions *options))cb;
++ (void) setupApp:(ARTClientOptions *)options withAlteration:(TestAlteration) alt cb:(void (^)(ARTClientOptions *))cb;
 + (NSString *) restHost;
 + (NSString *) realtimeHost;
 + (float) timeout;
 
 
-+(ARTOptions *) jsonRealtimeOptions;
-+(ARTOptions *) jsonRestOptions;
-+(ARTOptions *) binaryRestOptions;
-+(ARTOptions *) binaryRealtimeOptions;
++(ARTClientOptions *) jsonRealtimeOptions;
++(ARTClientOptions *) jsonRestOptions;
++(ARTClientOptions *) binaryRestOptions;
++(ARTClientOptions *) binaryRealtimeOptions;
 
+typedef void (^ARTRestConstructorCb)(ARTRest * rest );
+typedef void (^ARTRealtimeConstructorCb)(ARTRealtime * realtime );
+
++(void) testRest:(ARTRestConstructorCb)cb;
++(void) testRealtime:(ARTRealtimeConstructorCb)cb;
 
 +(void)repeat:(int)count i:(int)i delay:(NSTimeInterval)delay block:(void (^)(int))block;
 +(void)repeat:(int)count delay:(NSTimeInterval)delay block:(void (^)(int))block ;
@@ -53,7 +61,7 @@ typedef NS_ENUM(NSUInteger, TestAlteration) {
 +(void) publishRestMessages:(NSString *) prefix count:(int) count channel:(ARTRestChannel *) channel expectation:(XCTestExpectation *) expectation;
 
 +(void) publishRealtimeMessages:(NSString *) prefix count:(int) count channel:(ARTRealtimeChannel *) channel expectation:(XCTestExpectation *) expectation;
-
++(void) publishEnterMessages:(NSString *)clientIdPrefix count:(int) count channel:(ARTRealtimeChannel *) channel expectation:(XCTestExpectation *) expectation;
 +(NSString *) getCrypto128Json;
 +(NSString *) getTestAppSetupJson;
 +(NSString *) getCrypto256Json;
