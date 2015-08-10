@@ -42,11 +42,7 @@ class AblyTests {
 
         let request = NSMutableURLRequest(URL: NSURL(string: "https://\(options.restHost):\(options.restPort)/apps")!)
         request.HTTPMethod = "POST"
-        do {
-            request.HTTPBody = try appSetupJson["post_apps"].rawData()
-        } catch let error as NSError {
-            XCTFail(error.localizedDescription)
-        }
+        request.HTTPBody = appSetupJson["post_apps"].rawData()
 
         request.allHTTPHeaderFields = [
             "Accept" : "application/json",
@@ -83,7 +79,7 @@ class AblyTests {
     }
 }
 
-func querySyslog(forLogsAfter startingTime: NSDate? = nil) -> AnyGenerator<String> {
+func querySyslog(forLogsAfter startingTime: NSDate? = nil) -> GeneratorOf<String> {
     let query = asl_new(UInt32(ASL_TYPE_QUERY))
     asl_set_query(query, ASL_KEY_SENDER, NSProcessInfo.processInfo().processName, UInt32(ASL_QUERY_OP_EQUAL))
     if let date = startingTime {
@@ -91,7 +87,7 @@ func querySyslog(forLogsAfter startingTime: NSDate? = nil) -> AnyGenerator<Strin
     }
 
     let response = asl_search(nil, query)
-    return anyGenerator {
+    return GeneratorOf<String> {
         let entry = asl_next(response)
         if entry != nil {
             return String.fromCString(asl_get(entry, ASL_KEY_MSG))
