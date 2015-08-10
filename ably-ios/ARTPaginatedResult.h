@@ -9,16 +9,24 @@
 #import <Foundation/Foundation.h>
 #import <ably/ARTStatus.h>
 
-@protocol ARTPaginatedResult
+@interface ARTPaginatedResult : NSObject {
+    @protected
+    NSArray *_items;
+    BOOL _hasFirst;
+    BOOL _hasCurrent;
+    BOOL _hasNext;
+}
 
-- (id)currentItems;
-- (BOOL)hasFirst;
-- (BOOL)hasCurrent;
-- (BOOL)hasNext;
+@property (nonatomic, strong, readonly) NSArray *items;
 
-typedef void (^ARTPaginatedResultCb)(ARTStatus *status, id<ARTPaginatedResult> result);
-- (void)first:(ARTPaginatedResultCb)cb;
-- (void)current:(ARTPaginatedResultCb)cb;
-- (void)next:(ARTPaginatedResultCb)cb;
+@property (nonatomic, readonly) BOOL hasFirst;
+@property (nonatomic, readonly) BOOL hasCurrent;
+@property (nonatomic, readonly) BOOL hasNext;
+
+typedef void(^ARTPaginatedResultCallback)(ARTStatus *status, ARTPaginatedResult *result);
+
+- (void)getFirst:(ARTPaginatedResultCallback)callback;
+- (void)getCurrent:(ARTPaginatedResultCallback)callback;
+- (void)getNext:(ARTPaginatedResultCallback)callback;
 
 @end

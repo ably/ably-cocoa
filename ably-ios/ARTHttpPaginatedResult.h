@@ -10,13 +10,23 @@
 #import <ably/ARTHttp.h>
 #import <ably/ARTPaginatedResult.h>
 
-@interface ARTHttpPaginatedResult : NSObject <ARTPaginatedResult>
+@interface ARTHttpPaginatedResult : ARTPaginatedResult
 
-typedef id (^ARTHttpResponseProcessor)(ARTHttpResponse *);
+typedef NSArray *(^ARTHttpResponseProcessor)(ARTHttpResponse *);
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithHttp:(ARTHttp *)http current:(id)current contentType:(NSString *)contentType relFirst:(ARTHttpRequest *)relFirst relCurrent:(ARTHttpRequest *)relCurrent relNext:(ARTHttpRequest *)relNext responseProcessor:(ARTHttpResponseProcessor)responseProcessor;
 
-+ (id<ARTCancellable>)makePaginatedRequest:(ARTHttp *)http request:(ARTHttpRequest *)request responseProcessor:(ARTHttpResponseProcessor)responseProcessor cb:(ARTPaginatedResultCb)cb;
+- (instancetype)initWithHttp:(ARTHttp *)http
+                     items:(NSArray *)items
+                 contentType:(NSString *)contentType
+                    relFirst:(ARTHttpRequest *)relFirst
+                  relCurrent:(ARTHttpRequest *)relCurrent
+                     relNext:(ARTHttpRequest *)relNext
+           responseProcessor:(ARTHttpResponseProcessor)responseProcessor;
+
++ (id<ARTCancellable>)makePaginatedRequest:(ARTHttp *)http
+                                   request:(ARTHttpRequest *)request
+                         responseProcessor:(ARTHttpResponseProcessor)responseProcessor
+                                  callback:(ARTPaginatedResultCallback)callback;
 
 @end

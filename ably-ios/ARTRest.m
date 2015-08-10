@@ -134,11 +134,11 @@
     }
 }
 
-- (id<ARTCancellable>)history:(ARTPaginatedResultCb)cb {
-    return [self historyWithParams:nil cb:cb];
+- (id<ARTCancellable>)history:(ARTPaginatedResultCallback)callback {
+    return [self historyWithParams:nil cb:callback];
 }
 
-- (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb {
+- (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback {
     [self.rest throwOnHighLimitCheck:queryParams];
     return [self.rest withAuthHeaders:^(NSDictionary *authHeaders) {
         NSString *relUrl = [NSString stringWithFormat:@"%@/messages", self.basePath];
@@ -149,7 +149,7 @@
             return [messages artMap:^id(ARTMessage *message) {
                 return [message decode:self.payloadEncoder];
             }];
-        } cb:cb];
+        } callback:callback];
     }];
 }
 
@@ -260,8 +260,8 @@
      
 }
 
-- (id<ARTCancellable>)stats:(ARTPaginatedResultCb)cb {
-    return [self statsWithParams:nil cb:cb];
+- (id<ARTCancellable>)stats:(ARTPaginatedResultCallback)callback {
+    return [self statsWithParams:nil cb:callback];
 }
 
 -(void) throwOnHighLimitCheck:(NSDictionary *) params {
@@ -275,14 +275,14 @@
     }
 }
 
-- (id<ARTCancellable>)statsWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb {
+- (id<ARTCancellable>)statsWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback {
     [self throwOnHighLimitCheck:queryParams];
     return [self withAuthHeaders:^(NSDictionary *authHeaders) {
         ARTHttpRequest *req = [[ARTHttpRequest alloc] initWithMethod:@"GET" url:[self resolveUrl:@"/stats" queryParams:queryParams] headers:authHeaders body:nil];
         return [ARTHttpPaginatedResult makePaginatedRequest:self.http request:req responseProcessor:^(ARTHttpResponse *response) {
             id<ARTEncoder> encoder = [self.encoders objectForKey:response.contentType];
             return [encoder decodeStats:response.body];
-        } cb:cb];
+        } callback:callback];
     }];
 }
 
@@ -495,11 +495,11 @@
     return self;
 }
 
-- (id<ARTCancellable>)get:(ARTPaginatedResultCb)cb {
-    return [self getWithParams:nil cb:cb];
+- (id<ARTCancellable>)get:(ARTPaginatedResultCallback)callback {
+    return [self getWithParams:nil cb:callback];
 }
 
-- (id<ARTCancellable>)getWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb {
+- (id<ARTCancellable>)getWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback {
     [self.channel.rest throwOnHighLimitCheck:queryParams];
     return [self.channel.rest withAuthHeaders:^(NSDictionary *authHeaders) {
         NSString *relUrl = [NSString stringWithFormat:@"%@/presence", self.channel.basePath];
@@ -510,15 +510,15 @@
             return [messages artMap:^id(ARTPresenceMessage *pm) {
                 return [pm decode:self.channel.payloadEncoder];
             }];
-        } cb:cb];
+        } callback:callback];
     }];
 }
 
-- (id<ARTCancellable>)history:(ARTPaginatedResultCb)cb {
-    return [self historyWithParams:nil cb:cb];
+- (id<ARTCancellable>)history:(ARTPaginatedResultCallback)callback {
+    return [self historyWithParams:nil cb:callback];
 }
 
-- (id<ARTCancellable>) historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb {
+- (id<ARTCancellable>) historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback {
     [self.channel.rest throwOnHighLimitCheck:queryParams];
     return [self.channel.rest withAuthHeaders:^(NSDictionary *authHeaders) {
         NSString *relUrl = [NSString stringWithFormat:@"%@/presence/history", self.channel.basePath];
@@ -529,7 +529,7 @@
             return [messages artMap:^id(ARTPresenceMessage *pm) {
                 return [pm decode:self.channel.payloadEncoder];
             }];
-        } cb:cb];
+        } callback:callback];
     }];
 }
 
