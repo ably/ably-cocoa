@@ -7,13 +7,12 @@
 //
 
 #import <Foundation/Foundation.h>
-
-#import "ARTStatus.h"
-#import "ARTTypes.h"
-#import "ARTMessage.h"
-#import "ARTClientOptions.h"
-#import "ARTPresenceMessage.h"
-#import "ARTPaginatedResult.h"
+#import <ably/ARTStatus.h>
+#import <ably/ARTTypes.h>
+#import <ably/ARTMessage.h>
+#import <ably/ARTClientOptions.h>
+#import <ably/ARTPresenceMessage.h>
+#import <ably/ARTPaginatedResult.h>
 
 
 #define ART_WARN_UNUSED_RESULT __attribute__((warn_unused_result))

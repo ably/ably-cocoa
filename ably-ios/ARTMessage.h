@@ -7,8 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-
-#import "ARTPayload.h"
+#import <ably/ARTPayload.h>
 
 
 @class ARTStatus;

@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTStatus.h"
+#import <ably/ARTStatus.h>
 
 typedef void (^ARTStatusCallback)(ARTStatus * status);
 

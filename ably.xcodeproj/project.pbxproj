@@ -7,11 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1C05CF201AC1D7EB00687AC9 /* ARTRealtime+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C05CF1E1AC1D7EB00687AC9 /* ARTRealtime+Private.h */; };
-		1C118A5A1AE63D58006AD19E /* ably-ios.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C118A591AE63D58006AD19E /* ably-ios.h */; };
+		1C05CF201AC1D7EB00687AC9 /* ARTRealtime+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C05CF1E1AC1D7EB00687AC9 /* ARTRealtime+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		1C118A5D1AE63D89006AD19E /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1C118A5B1AE63D89006AD19E /* Info.plist */; };
 		1C118AB81AE6485C006AD19E /* ably-common in Resources */ = {isa = PBXBuildFile; fileRef = 1C118AB61AE6485C006AD19E /* ably-common */; };
-		1C118ABB1AE64923006AD19E /* ably-common in Copy Files */ = {isa = PBXBuildFile; fileRef = 1C118AB61AE6485C006AD19E /* ably-common */; };
 		1C118ABC1AE64D96006AD19E /* ably-common in Resources */ = {isa = PBXBuildFile; fileRef = 1C118AB61AE6485C006AD19E /* ably-common */; };
 		1C1E52EA1AB32EA0004A690F /* ARTRestAppStatsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C1E52E91AB32EA0004A690F /* ARTRestAppStatsTest.m */; };
 		1C1E52EE1AB32EB9004A690F /* ARTRestCapabilityTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C1E52ED1AB32EB9004A690F /* ARTRestCapabilityTest.m */; };
@@ -31,11 +29,11 @@
 		1C578E201B3435CA00EF46EC /* ARTFallback.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C578E1E1B3435CA00EF46EC /* ARTFallback.m */; };
 		1C578E221B3438F300EF46EC /* ARTFallbackTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C578E211B3438F300EF46EC /* ARTFallbackTest.m */; };
 		1C5DA0151A6E5FA400A2B7EF /* ably.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* ably.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		1C6C18A31ADFDAB100AB79E4 /* ARTLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C6C18A11ADFDAB100AB79E4 /* ARTLog.h */; };
+		1C6C18A31ADFDAB100AB79E4 /* ARTLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C6C18A11ADFDAB100AB79E4 /* ARTLog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1C6C18A41ADFDAB100AB79E4 /* ARTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */; };
 		1C6C18A71ADFDDBA00AB79E4 /* ARTLogTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C6C18A61ADFDDBA00AB79E4 /* ARTLogTest.m */; };
-		1C70CB881B020D7F003D295A /* ARTClientOptions+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C70CB871B020D7F003D295A /* ARTClientOptions+Private.h */; };
-		1C8065051AE7C8FA00D49357 /* ARTPayload+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C8065041AE7C8FA00D49357 /* ARTPayload+Private.h */; };
+		1C70CB881B020D7F003D295A /* ARTClientOptions+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C70CB871B020D7F003D295A /* ARTClientOptions+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		1C8065051AE7C8FA00D49357 /* ARTPayload+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C8065041AE7C8FA00D49357 /* ARTPayload+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		1CA5E1C21AB72369006ADD70 /* ARTMsgPackEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CA5E1C01AB72369006ADD70 /* ARTMsgPackEncoder.h */; };
 		1CA5E1C31AB72369006ADD70 /* ARTMsgPackEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CA5E1C11AB72369006ADD70 /* ARTMsgPackEncoder.m */; };
 		1CC3D94B1AB6FBB60005BEB0 /* ARTRealtimeChannelHistoryTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CC3D94A1AB6FBB60005BEB0 /* ARTRealtimeChannelHistoryTest.m */; };
@@ -51,10 +49,17 @@
 		1CC3D95F1AB7043F0005BEB0 /* ARTRealtimeResumeTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CC3D95E1AB7043F0005BEB0 /* ARTRealtimeResumeTest.m */; };
 		1CD8DC9F1B1C7315007EAF36 /* ARTDefault.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */; };
 		1CD8DCA01B1C7315007EAF36 /* ARTDefault.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */; };
-		1CEFC60E1B0F9EF500D84463 /* ARTTokenDetails+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CEFC60D1B0F9EF500D84463 /* ARTTokenDetails+Private.h */; };
+		1CEFC60E1B0F9EF500D84463 /* ARTTokenDetails+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CEFC60D1B0F9EF500D84463 /* ARTTokenDetails+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2EBDBEEBF881A49F795F1D2E /* Pods_ablySpec.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52CD0A2BB89BAA3D8353FBF3 /* Pods_ablySpec.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		856AAC8F1B6E304B00B07119 /* ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* ably.framework */; };
+		856AAC971B6E30C800B07119 /* TestUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC961B6E30C800B07119 /* TestUtilities.swift */; };
+		856AAC991B6E312F00B07119 /* RestClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC981B6E312F00B07119 /* RestClient.swift */; };
+		856AAC9B1B6E326E00B07119 /* ably-common in Resources */ = {isa = PBXBuildFile; fileRef = 856AAC9A1B6E326E00B07119 /* ably-common */; };
+		85B2C2191B6FE8DE00EA5254 /* CompatibilityMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = 85B2C2181B6FE8DE00EA5254 /* CompatibilityMacros.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		85F0A60B1B6D039F00EFF45A /* ably.h in Headers */ = {isa = PBXBuildFile; fileRef = 85F0A60A1B6D039F00EFF45A /* ably.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		960D07931A45F1D800ED8C8C /* ARTCrypto.h in Headers */ = {isa = PBXBuildFile; fileRef = 960D07911A45F1D800ED8C8C /* ARTCrypto.h */; };
 		960D07941A45F1D800ED8C8C /* ARTCrypto.m in Sources */ = {isa = PBXBuildFile; fileRef = 960D07921A45F1D800ED8C8C /* ARTCrypto.m */; };
-		960D07971A46FFC300ED8C8C /* ARTRest+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 960D07951A46FFC300ED8C8C /* ARTRest+Private.h */; };
+		960D07971A46FFC300ED8C8C /* ARTRest+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 960D07951A46FFC300ED8C8C /* ARTRest+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		961343D81A42E0B7006DC822 /* ARTClientOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = 961343D61A42E0B7006DC822 /* ARTClientOptions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		961343D91A42E0B7006DC822 /* ARTClientOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 961343D71A42E0B7006DC822 /* ARTClientOptions.m */; };
 		961343E81A432E7C006DC822 /* ARTPayload.h in Headers */ = {isa = PBXBuildFile; fileRef = 961343E61A432E7C006DC822 /* ARTPayload.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -111,6 +116,13 @@
 /* End PBXBuildRule section */
 
 /* Begin PBXContainerItemProxy section */
+		856AAC901B6E304B00B07119 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 96BF61281A35B2AB004CF2B3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 96BF61301A35B2AB004CF2B3;
+			remoteInfo = ably;
+		};
 		96BF613E1A35B2AB004CF2B3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 96BF61281A35B2AB004CF2B3 /* Project object */;
@@ -121,17 +133,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		1C118ABA1AE64919006AD19E /* Copy Files */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 7;
-			files = (
-				1C118ABB1AE64923006AD19E /* ably-common in Copy Files */,
-			);
-			name = "Copy Files";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		1C5DA0141A6E5F8A00A2B7EF /* Copy Files */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -149,7 +150,6 @@
 		143713CCCD056BDB4C1E070F /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
 		1BD00ABE249D4232EB2E44FA /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
 		1C05CF1E1AC1D7EB00687AC9 /* ARTRealtime+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTRealtime+Private.h"; sourceTree = "<group>"; };
-		1C118A591AE63D58006AD19E /* ably-ios.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ably-ios.h"; sourceTree = "<group>"; };
 		1C118A5B1AE63D89006AD19E /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1C118AB61AE6485C006AD19E /* ably-common */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "ably-common"; path = "../ably-common"; sourceTree = "<group>"; };
 		1C1E52E91AB32EA0004A690F /* ARTRestAppStatsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestAppStatsTest.m; sourceTree = "<group>"; };
@@ -189,6 +189,16 @@
 		1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTDefault.h; sourceTree = "<group>"; };
 		1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDefault.m; sourceTree = "<group>"; };
 		1CEFC60D1B0F9EF500D84463 /* ARTTokenDetails+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTTokenDetails+Private.h"; sourceTree = "<group>"; };
+		52CD0A2BB89BAA3D8353FBF3 /* Pods_ablySpec.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ablySpec.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		856AAC8A1B6E304B00B07119 /* ablySpec.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ablySpec.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		856AAC8E1B6E304B00B07119 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		856AAC951B6E30C800B07119 /* ablySpec-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ablySpec-Bridging-Header.h"; sourceTree = "<group>"; };
+		856AAC961B6E30C800B07119 /* TestUtilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestUtilities.swift; sourceTree = "<group>"; };
+		856AAC981B6E312F00B07119 /* RestClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClient.swift; sourceTree = "<group>"; };
+		856AAC9A1B6E326E00B07119 /* ably-common */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "ably-common"; sourceTree = SOURCE_ROOT; };
+		85B2C2181B6FE8DE00EA5254 /* CompatibilityMacros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompatibilityMacros.h; sourceTree = "<group>"; };
+		85F0A60A1B6D039F00EFF45A /* ably.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ably.h; sourceTree = "<group>"; };
+		85F0A60C1B6D03B700EFF45A /* ably.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = ably.modulemap; sourceTree = "<group>"; };
 		960D07911A45F1D800ED8C8C /* ARTCrypto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTCrypto.h; sourceTree = "<group>"; };
 		960D07921A45F1D800ED8C8C /* ARTCrypto.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTCrypto.m; sourceTree = "<group>"; };
 		960D07951A46FFC300ED8C8C /* ARTRest+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTRest+Private.h"; sourceTree = "<group>"; };
@@ -237,10 +247,21 @@
 		96E408421A38939E00087F77 /* ARTProtocolMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTProtocolMessage.m; sourceTree = "<group>"; };
 		96E408451A3895E800087F77 /* ARTWebSocketTransport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTWebSocketTransport.h; sourceTree = "<group>"; };
 		96E408461A3895E800087F77 /* ARTWebSocketTransport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTWebSocketTransport.m; sourceTree = "<group>"; };
+		CDE13941D61BC4A0690896F6 /* Pods-ablySpec.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ablySpec.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ablySpec/Pods-ablySpec.debug.xcconfig"; sourceTree = "<group>"; };
+		DF8DF755839D59574B7B795F /* Pods-ablySpec.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ablySpec.release.xcconfig"; path = "Pods/Target Support Files/Pods-ablySpec/Pods-ablySpec.release.xcconfig"; sourceTree = "<group>"; };
 		FDA6E099E4BC04FC80F845C0 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		856AAC871B6E304B00B07119 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				856AAC8F1B6E304B00B07119 /* ably.framework in Frameworks */,
+				2EBDBEEBF881A49F795F1D2E /* Pods_ablySpec.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		96BF612D1A35B2AB004CF2B3 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -296,11 +317,24 @@
 			name = realtime;
 			sourceTree = "<group>";
 		};
+		856AAC8B1B6E304B00B07119 /* ablySpec */ = {
+			isa = PBXGroup;
+			children = (
+				856AAC9A1B6E326E00B07119 /* ably-common */,
+				856AAC8E1B6E304B00B07119 /* Info.plist */,
+				856AAC961B6E30C800B07119 /* TestUtilities.swift */,
+				856AAC951B6E30C800B07119 /* ablySpec-Bridging-Header.h */,
+				856AAC981B6E312F00B07119 /* RestClient.swift */,
+			);
+			path = ablySpec;
+			sourceTree = "<group>";
+		};
 		96BF61271A35B2AB004CF2B3 = {
 			isa = PBXGroup;
 			children = (
 				96BF61331A35B2AB004CF2B3 /* ably-ios */,
 				96BF61401A35B2AB004CF2B3 /* ably-iosTests */,
+				856AAC8B1B6E304B00B07119 /* ablySpec */,
 				96BF61321A35B2AB004CF2B3 /* Products */,
 				B7FA72C0B06CA0A207042965 /* Pods */,
 				FAFEC5BB8312EB69E84C28D4 /* Frameworks */,
@@ -312,6 +346,7 @@
 			children = (
 				96BF61311A35B2AB004CF2B3 /* ably.framework */,
 				96BF613C1A35B2AB004CF2B3 /* ablyTests.xctest */,
+				856AAC8A1B6E304B00B07119 /* ablySpec.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -319,6 +354,8 @@
 		96BF61331A35B2AB004CF2B3 /* ably-ios */ = {
 			isa = PBXGroup;
 			children = (
+				85B2C2181B6FE8DE00EA5254 /* CompatibilityMacros.h */,
+				85F0A60A1B6D039F00EFF45A /* ably.h */,
 				96BF61341A35B2AB004CF2B3 /* Supporting Files */,
 				96BF61511A35B39C004CF2B3 /* ARTRest.h */,
 				96BF61521A35B39C004CF2B3 /* ARTRest.m */,
@@ -367,7 +404,6 @@
 				1C05CF1E1AC1D7EB00687AC9 /* ARTRealtime+Private.h */,
 				1C6C18A11ADFDAB100AB79E4 /* ARTLog.h */,
 				1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */,
-				1C118A591AE63D58006AD19E /* ably-ios.h */,
 				1C8065041AE7C8FA00D49357 /* ARTPayload+Private.h */,
 				1C70CB871B020D7F003D295A /* ARTClientOptions+Private.h */,
 				1CEFC60D1B0F9EF500D84463 /* ARTTokenDetails+Private.h */,
@@ -384,6 +420,7 @@
 		96BF61341A35B2AB004CF2B3 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				85F0A60C1B6D03B700EFF45A /* ably.modulemap */,
 				1C118A5B1AE63D89006AD19E /* Info.plist */,
 			);
 			name = "Supporting Files";
@@ -418,6 +455,8 @@
 			children = (
 				143713CCCD056BDB4C1E070F /* Pods.debug.xcconfig */,
 				1BD00ABE249D4232EB2E44FA /* Pods.release.xcconfig */,
+				CDE13941D61BC4A0690896F6 /* Pods-ablySpec.debug.xcconfig */,
+				DF8DF755839D59574B7B795F /* Pods-ablySpec.release.xcconfig */,
 			);
 			name = Pods;
 			sourceTree = "<group>";
@@ -426,6 +465,7 @@
 			isa = PBXGroup;
 			children = (
 				FDA6E099E4BC04FC80F845C0 /* libPods.a */,
+				52CD0A2BB89BAA3D8353FBF3 /* Pods_ablySpec.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -439,7 +479,6 @@
 			files = (
 				96BF61531A35B39C004CF2B3 /* ARTRest.h in Headers */,
 				96A507BD1A3791490077CDF8 /* ARTRealtime.h in Headers */,
-				1C118A5A1AE63D58006AD19E /* ably-ios.h in Headers */,
 				961343D81A42E0B7006DC822 /* ARTClientOptions.h in Headers */,
 				96BF615E1A35C1C8004CF2B3 /* ARTTypes.h in Headers */,
 				1C1EC3FA1AE26A8B00AAADD7 /* ARTStatus.h in Headers */,
@@ -448,27 +487,29 @@
 				96BF61581A35B52C004CF2B3 /* ARTHttp.h in Headers */,
 				96BF61641A35CDE1004CF2B3 /* ARTMessage.h in Headers */,
 				96BF61701A35FB7C004CF2B3 /* ARTAuth.h in Headers */,
-				1C70CB881B020D7F003D295A /* ARTClientOptions+Private.h in Headers */,
 				96A507A11A377AA50077CDF8 /* ARTPresenceMessage.h in Headers */,
 				1C2B0FFD1B136A6D00E3633C /* ARTPresenceMap.h in Headers */,
 				1CD8DC9F1B1C7315007EAF36 /* ARTDefault.h in Headers */,
 				96A5079D1A371F800077CDF8 /* ARTHttpPaginatedResult.h in Headers */,
 				1C8065051AE7C8FA00D49357 /* ARTPayload+Private.h in Headers */,
+				1CEFC60E1B0F9EF500D84463 /* ARTTokenDetails+Private.h in Headers */,
+				1C70CB881B020D7F003D295A /* ARTClientOptions+Private.h in Headers */,
+				85F0A60B1B6D039F00EFF45A /* ably.h in Headers */,
+				960D07971A46FFC300ED8C8C /* ARTRest+Private.h in Headers */,
+				1C05CF201AC1D7EB00687AC9 /* ARTRealtime+Private.h in Headers */,
+				85B2C2191B6FE8DE00EA5254 /* CompatibilityMacros.h in Headers */,
 				961343E81A432E7C006DC822 /* ARTPayload.h in Headers */,
 				967A43211A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.h in Headers */,
 				1C578E1F1B3435CA00EF46EC /* ARTFallback.h in Headers */,
 				96E408471A3895E800087F77 /* ARTWebSocketTransport.h in Headers */,
 				96E4083F1A3892C700087F77 /* ARTRealtimeTransport.h in Headers */,
-				960D07971A46FFC300ED8C8C /* ARTRest+Private.h in Headers */,
 				96A507B51A37881C0077CDF8 /* ARTNSDate+ARTUtil.h in Headers */,
 				96A507A91A37806A0077CDF8 /* ARTEncoder.h in Headers */,
 				1C6C18A31ADFDAB100AB79E4 /* ARTLog.h in Headers */,
 				1CA5E1C21AB72369006ADD70 /* ARTMsgPackEncoder.h in Headers */,
 				96A507A51A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.h in Headers */,
-				1CEFC60E1B0F9EF500D84463 /* ARTTokenDetails+Private.h in Headers */,
 				96A507AD1A3780F60077CDF8 /* ARTJsonEncoder.h in Headers */,
 				96A507951A370F860077CDF8 /* ARTStats.h in Headers */,
-				1C05CF201AC1D7EB00687AC9 /* ARTRealtime+Private.h in Headers */,
 				960D07931A45F1D800ED8C8C /* ARTCrypto.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -476,6 +517,27 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		856AAC891B6E304B00B07119 /* ablySpec */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 856AAC921B6E304B00B07119 /* Build configuration list for PBXNativeTarget "ablySpec" */;
+			buildPhases = (
+				27B27D0D8064045DDB5F1511 /* Check Pods Manifest.lock */,
+				856AAC861B6E304B00B07119 /* Sources */,
+				856AAC871B6E304B00B07119 /* Frameworks */,
+				856AAC881B6E304B00B07119 /* Resources */,
+				3BF9D19CC7E68223294DD7EF /* Embed Pods Frameworks */,
+				83128987D192E684C917AF07 /* Copy Pods Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				856AAC911B6E304B00B07119 /* PBXTargetDependency */,
+			);
+			name = ablySpec;
+			productName = ablySpec;
+			productReference = 856AAC8A1B6E304B00B07119 /* ablySpec.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		96BF61301A35B2AB004CF2B3 /* ably */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 96BF61471A35B2AB004CF2B3 /* Build configuration list for PBXNativeTarget "ably" */;
@@ -504,7 +566,6 @@
 				96BF61391A35B2AB004CF2B3 /* Frameworks */,
 				96BF613A1A35B2AB004CF2B3 /* Resources */,
 				1C5DA0141A6E5F8A00A2B7EF /* Copy Files */,
-				1C118ABA1AE64919006AD19E /* Copy Files */,
 			);
 			buildRules = (
 				1C5DA0131A6E5F2700A2B7EF /* PBXBuildRule */,
@@ -524,9 +585,13 @@
 			isa = PBXProject;
 			attributes = {
 				CLASSPREFIX = ART;
-				LastUpgradeCheck = 0630;
+				LastSwiftUpdateCheck = 0700;
+				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = Ably;
 				TargetAttributes = {
+					856AAC891B6E304B00B07119 = {
+						CreatedOnToolsVersion = 7.0;
+					};
 					96BF61301A35B2AB004CF2B3 = {
 						CreatedOnToolsVersion = 6.1.1;
 					};
@@ -549,11 +614,20 @@
 			targets = (
 				96BF61301A35B2AB004CF2B3 /* ably */,
 				96BF613B1A35B2AB004CF2B3 /* ablyTests */,
+				856AAC891B6E304B00B07119 /* ablySpec */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		856AAC881B6E304B00B07119 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				856AAC9B1B6E326E00B07119 /* ably-common in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		96BF612F1A35B2AB004CF2B3 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -589,6 +663,36 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods/Pods-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		27B27D0D8064045DDB5F1511 /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		3BF9D19CC7E68223294DD7EF /* Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ablySpec/Pods-ablySpec-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		79FE055B54B0AB6FDAB24FCE /* Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -604,9 +708,33 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
+		83128987D192E684C917AF07 /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ablySpec/Pods-ablySpec-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		856AAC861B6E304B00B07119 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				856AAC991B6E312F00B07119 /* RestClient.swift in Sources */,
+				856AAC971B6E30C800B07119 /* TestUtilities.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		96BF612C1A35B2AB004CF2B3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -674,6 +802,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		856AAC911B6E304B00B07119 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 96BF61301A35B2AB004CF2B3 /* ably */;
+			targetProxy = 856AAC901B6E304B00B07119 /* PBXContainerItemProxy */;
+		};
 		96BF613F1A35B2AB004CF2B3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 96BF61301A35B2AB004CF2B3 /* ably */;
@@ -682,6 +815,40 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		856AAC931B6E304B00B07119 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = CDE13941D61BC4A0690896F6 /* Pods-ablySpec.debug.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_NO_COMMON_BLOCKS = YES;
+				INFOPLIST_FILE = ablySpec/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = io.ably.ablySpec;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "ablySpec/ablySpec-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		856AAC941B6E304B00B07119 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = DF8DF755839D59574B7B795F /* Pods-ablySpec.release.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_NO_COMMON_BLOCKS = YES;
+				INFOPLIST_FILE = ablySpec/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = io.ably.ablySpec;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "ablySpec/ablySpec-Bridging-Header.h";
+			};
+			name = Release;
+		};
 		96BF61451A35B2AB004CF2B3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -703,6 +870,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -779,12 +947,12 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MACH_O_TYPE = mh_dylib;
-				ONLY_ACTIVE_ARCH = NO;
+				MODULEMAP_FILE = "ably-ios/ably.modulemap";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ably.ably-ios.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SEPARATE_STRIP = YES;
 				SKIP_INSTALL = YES;
 				STRIP_STYLE = all;
-				VALID_ARCHS = "arm64 armv7 armv7s x86_64 i386";
 			};
 			name = Debug;
 		};
@@ -801,29 +969,25 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MACH_O_TYPE = mh_dylib;
-				ONLY_ACTIVE_ARCH = NO;
+				MODULEMAP_FILE = "ably-ios/ably.modulemap";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ably.ably-ios.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SEPARATE_STRIP = YES;
 				SKIP_INSTALL = YES;
 				STRIP_STYLE = all;
-				VALID_ARCHS = "arm64 armv7 armv7s x86_64 i386";
 			};
 			name = Release;
 		};
 		96BF614B1A35B2AB004CF2B3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = "ably-iosTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ably.ably-ios.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				VALID_ARCHS = "arm64 armv7 armv7s i386 x86_64";
 			};
@@ -832,12 +996,9 @@
 		96BF614C1A35B2AB004CF2B3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-				);
 				INFOPLIST_FILE = "ably-iosTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.ably.ably-ios.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				VALID_ARCHS = "arm64 armv7 armv7s i386 x86_64";
 			};
@@ -846,6 +1007,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		856AAC921B6E304B00B07119 /* Build configuration list for PBXNativeTarget "ablySpec" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				856AAC931B6E304B00B07119 /* Debug */,
+				856AAC941B6E304B00B07119 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		96BF612B1A35B2AB004CF2B3 /* Build configuration list for PBXProject "ably" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

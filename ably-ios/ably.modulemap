@@ -1,0 +1,14 @@
+framework module ably {
+    umbrella header "ably.h"
+
+    export *
+    module * { export * }
+
+    explicit module Private {
+        header "ARTPayload+Private.h"
+        header "ARTTokenDetails+Private.h"
+        header "ARTRest+Private.h"
+        header "ARTRealtime+Private.h"
+        header "ARTClientOptions+Private.h"
+    }
+}

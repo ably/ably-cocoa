@@ -7,33 +7,35 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <ably/CompatibilityMacros.h>
+
+__ART_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, ARTLogLevel) {
-    ArtLogLevelVerbose,
-    ArtLogLevelDebug,
-    ArtLogLevelInfo,
-    ArtLogLevelWarn,
-    ArtLogLevelError,
-    ArtLogLevelNone
+    ARTLogLevelVerbose,
+    ARTLogLevelDebug,
+    ARTLogLevelInfo,
+    ARTLogLevelWarn,
+    ARTLogLevelError,
+    ARTLogLevelNone
 };
 
-typedef void(^ARTLogCallback)(id);
-
-@protocol ArtLogProtocol
-- (void)log:(id) message;
-@end
-
 @interface ARTLog : NSObject
-{
-    
-}
 
--(void) setLogLevel:(ARTLogLevel) level;
--(void) setLogCallback:(ARTLogCallback) cb;
--(void) verbose:(id) str;
--(void) debug:(id) str;
--(void) info:(id) str;
--(void) warn:(id) str;
--(void) error:(id) str;
+@property (nonatomic, assign) ARTLogLevel logLevel;
+
+- (void)log:(NSString *)message withLevel:(ARTLogLevel)level;
 
 @end
+
+@interface ARTLog (Shorthand)
+
+- (void)verbose:(NSString *)message;
+- (void)debug:(NSString *)message;
+- (void)info:(NSString *)message;
+- (void)warn:(NSString *)message;
+- (void)error:(NSString *)message;
+
+@end
+
+__ART_ASSUME_NONNULL_END

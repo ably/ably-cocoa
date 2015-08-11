@@ -7,9 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-
-#import "ARTHttp.h"
-#import "ARTPaginatedResult.h"
+#import <ably/ARTHttp.h>
+#import <ably/ARTPaginatedResult.h>
 
 @interface ARTHttpPaginatedResult : NSObject <ARTPaginatedResult>
 
