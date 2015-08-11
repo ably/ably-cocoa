@@ -25,7 +25,7 @@ typedef NS_ENUM(NSUInteger, ARTStatsUnit) {
 @property (nonatomic, strong) NSDate *start;
 @property (nonatomic, strong) NSDate *end;
 
-@property (nonatomic, assign) NSUInteger limit;
+@property (nonatomic, assign) uint64_t limit;
 
 @property (nonatomic, assign) ARTQueryDirection direction;
 
