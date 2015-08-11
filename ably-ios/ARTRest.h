@@ -11,7 +11,7 @@
 #import <ably/ARTTypes.h>
 #import <ably/ARTClientOptions.h>
 #import <ably/ARTPaginatedResult.h>
-
+#import <ably/ARTStats.h>
 
 @class ARTLog;
 @class ARTCipherParams;
@@ -50,8 +50,7 @@
 - (id<ARTCancellable>) token:(ARTAuthTokenParams *) keyName tokenCb:(void (^)(ARTStatus * status, ARTTokenDetails *)) cb;
 
 - (id<ARTCancellable>)time:(void(^)(ARTStatus * status, NSDate *time))cb;
-- (id<ARTCancellable>)stats:(ARTPaginatedResultCallback)callback;
-- (id<ARTCancellable>)statsWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback;
+- (id<ARTCancellable>)stats:(ARTStatsQuery *)query callback:(ARTPaginatedResultCallback)callback;
 - (id<ARTCancellable>)internetIsUp:(void (^)(bool isUp)) cb;
 - (ARTRestChannel *)channel:(NSString *)channelName;
 - (ARTRestChannel *)channel:(NSString *)channelName cipherParams:(ARTCipherParams *)cipherParams;

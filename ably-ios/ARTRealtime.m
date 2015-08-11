@@ -903,12 +903,8 @@
     [self.transport sendPing];
 }
 
-- (id<ARTCancellable>)stats:(ARTPaginatedResultCallback)callback {
-    return [self.rest stats:callback];
-}
-
-- (id<ARTCancellable>)statsWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback {
-    return [self.rest statsWithParams:queryParams cb:callback];
+- (id<ARTCancellable>)stats:(ARTStatsQuery *)query callback:(ARTPaginatedResultCallback)callback {
+    return [self.rest stats:query callback:callback];
 }
 
 - (ARTRealtimeChannel *)channel:(NSString *)channelName {

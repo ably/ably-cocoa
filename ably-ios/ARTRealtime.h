@@ -13,6 +13,7 @@
 #import <ably/ARTClientOptions.h>
 #import <ably/ARTPresenceMessage.h>
 #import <ably/ARTPaginatedResult.h>
+#import <ably/ARTStats.h>
 
 
 #define ART_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
@@ -125,8 +126,8 @@ typedef void (^ARTRealtimeChannelPresenceCb)(ARTPresenceMessage *);
 
 typedef void (^ARTRealtimePingCb)(ARTStatus *);
 - (void)ping:(ARTRealtimePingCb) cb;
-- (id<ARTCancellable>)stats:(ARTPaginatedResultCallback)callback;
-- (id<ARTCancellable>)statsWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback;
+
+- (id<ARTCancellable>)stats:(ARTStatsQuery *)query callback:(ARTPaginatedResultCallback)callback;
 
 - (ARTRealtimeChannel *)channel:(NSString *)channelName;
 - (ARTRealtimeChannel *)channel:(NSString *)channelName cipherParams:(ARTCipherParams *)cipherParams;

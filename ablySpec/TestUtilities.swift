@@ -11,6 +11,15 @@ import Foundation
 import XCTest
 import SwiftyJSON
 import ably
+import Quick
+
+class Configuration : QuickConfiguration {
+    override class func configure(configuration: Quick.Configuration!) {
+        configuration.beforeEach {
+            ARTClientOptions.getDefaultRestHost("sandbox-rest.ably.io", modify: true)
+        }
+    }
+}
 
 func pathForTestResource(resourcePath: String) -> String {
     let testBundle = NSBundle(forClass: AblyTests.self)

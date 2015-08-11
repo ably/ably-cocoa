@@ -260,10 +260,6 @@
      
 }
 
-- (id<ARTCancellable>)stats:(ARTPaginatedResultCallback)callback {
-    return [self statsWithParams:nil cb:callback];
-}
-
 -(void) throwOnHighLimitCheck:(NSDictionary *) params {
     NSString * limit = [params valueForKey:@"limit"];
     if(!limit) {
@@ -275,10 +271,18 @@
     }
 }
 
-- (id<ARTCancellable>)statsWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback {
-    [self throwOnHighLimitCheck:queryParams];
+- (id<ARTCancellable>)stats:(ARTStatsQuery *)query callback:(ARTPaginatedResultCallback)callback {
+    if (query.limit > 1000) {
+        [NSException raise:@"AblyException" format:@"Cannot set a query limit over 1000"];
+    }
+    if (query.start && query.end && [query.start compare:query.end] == NSOrderedDescending) {
+        [NSException raise:@"AblyException" format:@"The query start date cannot be more recent than the query end date"];
+    }
+
     return [self withAuthHeaders:^(NSDictionary *authHeaders) {
-        ARTHttpRequest *req = [[ARTHttpRequest alloc] initWithMethod:@"GET" url:[self resolveUrl:@"/stats" queryParams:queryParams] headers:authHeaders body:nil];
+        NSURLComponents *requestUrl = [NSURLComponents componentsWithURL:[self resolveUrl:@"/stats"] resolvingAgainstBaseURL:YES];
+        requestUrl.queryItems = [query asQueryItems];
+        ARTHttpRequest *req = [[ARTHttpRequest alloc] initWithMethod:@"GET" url:requestUrl.URL headers:authHeaders body:nil];
         return [ARTHttpPaginatedResult makePaginatedRequest:self.http request:req responseProcessor:^(ARTHttpResponse *response) {
             id<ARTEncoder> encoder = [self.encoders objectForKey:response.contentType];
             return [encoder decodeStats:response.body];
