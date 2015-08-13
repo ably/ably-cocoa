@@ -241,18 +241,21 @@ class RestClientStats: QuickSpec {
                         expect(firstPage.items.count).to(equal(1))
                         expect((firstPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(7000))
                         expect(firstPage.hasNext).to(beTrue())
+                        expect(firstPage.isLast).to(beFalse())
 
-                        let secondPage = getPage(firstPage.getNext)
+                        let secondPage = getPage(firstPage.next)
                         expect(secondPage.items.count).to(equal(1))
                         expect((secondPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(6000))
                         expect(secondPage.hasNext).to(beTrue())
+                        expect(secondPage.isLast).to(beFalse())
 
-                        let thirdPage = getPage(secondPage.getNext)
+                        let thirdPage = getPage(secondPage.next)
                         expect(thirdPage.items.count).to(equal(1))
                         expect((thirdPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(5000))
                         expect(thirdPage.hasFirst).to(beTrue())
+                        expect(thirdPage.isLast).to(beTrue())
 
-                        let firstPageAgain = getPage(thirdPage.getFirst)
+                        let firstPageAgain = getPage(thirdPage.first)
                         expect(firstPageAgain.items.count).to(equal(1))
                         expect((firstPageAgain.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(7000))
                     }
@@ -269,18 +272,21 @@ class RestClientStats: QuickSpec {
                         expect(firstPage.items.count).to(equal(1))
                         expect((firstPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(5000))
                         expect(firstPage.hasNext).to(beTrue())
+                        expect(firstPage.isLast).to(beFalse())
 
-                        let secondPage = getPage(firstPage.getNext)
+                        let secondPage = getPage(firstPage.next)
                         expect(secondPage.items.count).to(equal(1))
                         expect((secondPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(6000))
                         expect(secondPage.hasNext).to(beTrue())
+                        expect(secondPage.isLast).to(beFalse())
 
-                        let thirdPage = getPage(secondPage.getNext)
+                        let thirdPage = getPage(secondPage.next)
                         expect(thirdPage.items.count).to(equal(1))
                         expect((thirdPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(7000))
                         expect(thirdPage.hasFirst).to(beTrue())
+                        expect(thirdPage.isLast).to(beTrue())
 
-                        let firstPageAgain = getPage(thirdPage.getFirst)
+                        let firstPageAgain = getPage(thirdPage.first)
                         expect(firstPageAgain.items.count).to(equal(1))
                         expect((firstPageAgain.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(5000))
                     }

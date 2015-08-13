@@ -17,7 +17,7 @@ typedef NSArray *(^ARTHttpResponseProcessor)(ARTHttpResponse *);
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
 - (instancetype)initWithHttp:(ARTHttp *)http
-                     items:(NSArray *)items
+                       items:(NSArray *)items
                  contentType:(NSString *)contentType
                     relFirst:(ARTHttpRequest *)relFirst
                   relCurrent:(ARTHttpRequest *)relCurrent

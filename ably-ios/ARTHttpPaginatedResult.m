@@ -41,15 +41,15 @@
     return self;
 }
 
-- (void)getFirst:(ARTPaginatedResultCallback)callback {
+- (void)first:(ARTPaginatedResultCallback)callback {
     [ARTHttpPaginatedResult makePaginatedRequest:_http request:_relFirst responseProcessor:_responseProcessor callback:callback];
 }
 
-- (void)getCurrent:(ARTPaginatedResultCallback)callback {
+- (void)current:(ARTPaginatedResultCallback)callback {
     [ARTHttpPaginatedResult makePaginatedRequest:_http request:_relCurrent responseProcessor:_responseProcessor callback:callback];
 }
 
-- (void)getNext:(ARTPaginatedResultCallback)callback {
+- (void)next:(ARTPaginatedResultCallback)callback {
     [ARTHttpPaginatedResult makePaginatedRequest:_http request:_relNext responseProcessor:_responseProcessor callback:callback];
 }
 

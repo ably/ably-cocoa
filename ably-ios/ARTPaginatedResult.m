@@ -10,16 +10,20 @@
 
 @implementation ARTPaginatedResult
 
-- (void)getFirst:(ARTPaginatedResultCallback)callback {
-    NSAssert(false, @"-[ARTPaginatedResult getFirst] should always be overriden.");
+- (void)first:(ARTPaginatedResultCallback)callback {
+    NSAssert(false, @"-[ARTPaginatedResult first] should always be overriden.");
 }
 
-- (void)getCurrent:(ARTPaginatedResultCallback)callback {
-    NSAssert(false, @"-[ARTPaginatedResult getCurrent] should always be overriden.");
+- (void)current:(ARTPaginatedResultCallback)callback {
+    NSAssert(false, @"-[ARTPaginatedResult current] should always be overriden.");
 }
 
-- (void)getNext:(ARTPaginatedResultCallback)callback {
-    NSAssert(false, @"-[ARTPaginatedResult getNext] should always be overriden.");
+- (void)next:(ARTPaginatedResultCallback)callback {
+    NSAssert(false, @"-[ARTPaginatedResult next] should always be overriden.");
+}
+
+- (BOOL)isLast {
+    return !self.hasNext;
 }
 
 @end

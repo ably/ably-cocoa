@@ -23,10 +23,12 @@
 @property (nonatomic, readonly) BOOL hasCurrent;
 @property (nonatomic, readonly) BOOL hasNext;
 
+@property (nonatomic, readonly) BOOL isLast;
+
 typedef void(^ARTPaginatedResultCallback)(ARTStatus *status, ARTPaginatedResult *result);
 
-- (void)getFirst:(ARTPaginatedResultCallback)callback;
-- (void)getCurrent:(ARTPaginatedResultCallback)callback;
-- (void)getNext:(ARTPaginatedResultCallback)callback;
+- (void)first:(ARTPaginatedResultCallback)callback;
+- (void)current:(ARTPaginatedResultCallback)callback;
+- (void)next:(ARTPaginatedResultCallback)callback;
 
 @end
