@@ -391,6 +391,17 @@
     return output;
 }
 
+- (NSDate *)intervalFromString:(NSString *)string {
+    static NSDateFormatter *formatter;
+    if (!formatter) {
+        formatter = [[NSDateFormatter alloc] init];
+        formatter.dateFormat = @"yyyy-MM-dd:HH:mm";
+        formatter.timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
+    }
+
+    return [formatter dateFromString:string];
+}
+
 - (ARTStats *)statsFromDictionary:(NSDictionary *)input {
     [self.logger verbose:[NSString stringWithFormat:@"ARTJsonEncoder: statsFromDictionary %@", input]];
     if (![input isKindOfClass:[NSDictionary class]]) {
@@ -404,12 +415,17 @@
     ARTStatsResourceCount *channels = [self statsResourceCountFromDictionary:[input objectForKey:@"channels"]];
     ARTStatsRequestCount *apiRequests = [self statsRequestCountFromDictionary:[input objectForKey:@"apiRequests"]];
     ARTStatsRequestCount *tokenRequests = [self statsRequestCountFromDictionary:[input objectForKey:@"tokenRequests"]];
+    NSDate *interval = [self intervalFromString:input[@"intervalId"]];
 
-    if (all || inbound || outbound || persisted || connections || channels || apiRequests || tokenRequests) {
-        return [[ARTStats alloc] initWithAll:all inbound:inbound outbound:outbound persisted:persisted connections:connections channels:channels apiRequests:apiRequests tokenRequests:tokenRequests];
-    }
-
-    return nil;
+    return [[ARTStats alloc] initWithAll:all
+                                 inbound:inbound
+                                outbound:outbound
+                               persisted:persisted
+                             connections:connections
+                                channels:channels
+                             apiRequests:apiRequests
+                           tokenRequests:tokenRequests
+                                interval:interval];
 }
 
 - (ARTStatsMessageTypes *)statsMessageTypesFromDictionary:(NSDictionary *)input {
@@ -433,14 +449,10 @@
         return nil;
     }
 
-    NSNumber *count = [input objectForKey:@"count"];
-    NSNumber *data = [input objectForKey:@"data"];
+    NSNumber *count = [input artTyped:[NSNumber class] key:@"count"];
+    NSNumber *data = [input artTyped:[NSNumber class] key:@"data"];
 
-    if ([count isKindOfClass:[NSNumber class]] && [data isKindOfClass:[NSNumber class]]) {
-        return [[ARTStatsMessageCount alloc] initWithCount:[count doubleValue] data:[data doubleValue]];
-    }
-
-    return nil;
+    return [[ARTStatsMessageCount alloc] initWithCount:count.doubleValue data:data.doubleValue];
 }
 
 - (ARTStatsMessageTraffic *)statsMessageTrafficFromDictionary:(NSDictionary *)input {
@@ -482,21 +494,17 @@
         return nil;
     }
 
-    NSNumber *opened = [input objectForKey:@"opened"];
-    NSNumber *peak = [input objectForKey:@"peak"];
-    NSNumber *mean = [input objectForKey:@"mean"];
-    NSNumber *min = [input objectForKey:@"min"];
-    NSNumber *refused = [input objectForKey:@"refused"];
+    NSNumber *opened = [input artTyped:[NSNumber class] key:@"opened"];
+    NSNumber *peak = [input artTyped:[NSNumber class] key:@"peak"];
+    NSNumber *mean = [input artTyped:[NSNumber class] key:@"mean"];
+    NSNumber *min = [input artTyped:[NSNumber class] key:@"min"];
+    NSNumber *refused = [input artTyped:[NSNumber class] key:@"refused"];
 
-    if ([opened isKindOfClass:[NSNumber class]] &&
-        [peak isKindOfClass:[NSNumber class]] &&
-        [mean isKindOfClass:[NSNumber class]] &&
-        [min isKindOfClass:[NSNumber class]] &&
-        [refused isKindOfClass:[NSNumber class]]) {
-        return [[ARTStatsResourceCount alloc] initWithOpened:[opened doubleValue] peak:[peak doubleValue] mean:[mean doubleValue] min:[min doubleValue] refused:[refused doubleValue]];
-    }
-
-    return nil;
+    return [[ARTStatsResourceCount alloc] initWithOpened:opened.doubleValue
+                                                    peak:peak.doubleValue
+                                                    mean:mean.doubleValue
+                                                     min:min.doubleValue
+                                                 refused:refused.doubleValue];
 }
 
 - (ARTErrorInfo *) decodeError:(NSData *) error {
@@ -514,16 +522,13 @@
         return nil;
     }
 
-    NSNumber *succeeded = [input objectForKey:@"succeeded"];
-    NSNumber *failed = [input objectForKey:@"failed"];
-    NSNumber *refused = [input objectForKey:@"refused"];
+    NSNumber *succeeded = [input artTyped:[NSNumber class] key:@"succeeded"];
+    NSNumber *failed = [input artTyped:[NSNumber class] key:@"failed"];
+    NSNumber *refused = [input artTyped:[NSNumber class] key:@"refused"];
 
-    if ([succeeded isKindOfClass:[NSNumber class]] &&
-        [failed isKindOfClass:[NSNumber class]] &&
-        [refused isKindOfClass:[NSNumber class]]) {
-        return [[ARTStatsRequestCount alloc] initWithSucceeded:[succeeded doubleValue] failed:[failed doubleValue] refused:[refused doubleValue]];
-    }
-    return nil;
+    return [[ARTStatsRequestCount alloc] initWithSucceeded:succeeded.doubleValue
+                                                    failed:failed.doubleValue
+                                                   refused:refused.doubleValue];
 }
 
 - (ARTPayload *)payloadFromDictionary:(NSDictionary *)input {

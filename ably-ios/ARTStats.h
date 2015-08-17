@@ -114,8 +114,9 @@ typedef NS_ENUM(NSUInteger, ARTStatsUnit) {
 @property (readonly, strong, nonatomic) ARTStatsResourceCount *channels;
 @property (readonly, strong, nonatomic) ARTStatsRequestCount *apiRequests;
 @property (readonly, strong, nonatomic) ARTStatsRequestCount *tokenRequests;
+@property (readonly, strong, nonatomic) NSDate *interval;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithAll:(ARTStatsMessageTypes *)all inbound:(ARTStatsMessageTraffic *)inbound outbound:(ARTStatsMessageTraffic *)outbound persisted:(ARTStatsMessageTypes *)persisted connections:(ARTStatsConnectionTypes *)connections channels:(ARTStatsResourceCount *)channels apiRequests:(ARTStatsRequestCount *)apiRequests tokenRequests:(ARTStatsRequestCount *)tokenRequests;
+- (instancetype)initWithAll:(ARTStatsMessageTypes *)all inbound:(ARTStatsMessageTraffic *)inbound outbound:(ARTStatsMessageTraffic *)outbound persisted:(ARTStatsMessageTypes *)persisted connections:(ARTStatsConnectionTypes *)connections channels:(ARTStatsResourceCount *)channels apiRequests:(ARTStatsRequestCount *)apiRequests tokenRequests:(ARTStatsRequestCount *)tokenRequests interval:(NSDate *)interval;
 
 @end
