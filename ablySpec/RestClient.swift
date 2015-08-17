@@ -50,10 +50,6 @@ func getTestToken() -> String {
 class RestClient: QuickSpec {
     override func spec() {
         describe("RestClient") {
-            beforeEach {
-                ARTClientOptions.getDefaultRestHost("sandbox-rest.ably.io", modify: true)
-            }
-
             // RSC1
             context("initializer") {
                 it("should accept an API key") {

@@ -9,82 +9,70 @@
 #import "ARTHttpPaginatedResult.h"
 #import "ARTLog.h"
 #import "ARTStatus.h"
-@interface ARTHttpPaginatedResult ()
 
-@property (readonly, strong, nonatomic) ARTHttp *http;
-@property (readonly, strong, nonatomic) id currentValue;
-@property (readonly, strong, nonatomic) NSString *contentType;
-@property (readonly, strong, nonatomic) ARTHttpRequest *relFirst;
-@property (readonly, strong, nonatomic) ARTHttpRequest *relCurrent;
-@property (readonly, strong, nonatomic) ARTHttpRequest *relNext;
-@property (readonly, strong, nonatomic) ARTHttpResponseProcessor responseProcessor;
+@implementation ARTHttpPaginatedResult {
+    ARTHttp *_http;
+    NSString *_contentType;
+    ARTHttpRequest *_relFirst;
+    ARTHttpRequest *_relCurrent;
+    ARTHttpRequest *_relNext;
+    ARTHttpResponseProcessor _responseProcessor;
+}
 
-@end
-
-@implementation ARTHttpPaginatedResult
-
-- (instancetype)initWithHttp:(ARTHttp *)http current:(id)current contentType:(NSString *)contentType relFirst:(ARTHttpRequest *)relFirst relCurrent:(ARTHttpRequest *)relCurrent relNext:(ARTHttpRequest *)relNext responseProcessor:(ARTHttpResponseProcessor)responseProcessor {
+- (instancetype)initWithHttp:(ARTHttp *)http items:(NSArray *)items contentType:(NSString *)contentType relFirst:(ARTHttpRequest *)relFirst relCurrent:(ARTHttpRequest *)relCurrent relNext:(ARTHttpRequest *)relNext responseProcessor:(ARTHttpResponseProcessor)responseProcessor {
     self = [super init];
     if (self) {
         _http = http;
-        _currentValue = current;
-        _contentType = contentType;
+
+        _items = [items copy];
+        _contentType = [contentType copy];
+
+        _hasFirst = !!relFirst;
         _relFirst = relFirst;
+
+        _hasCurrent = !!relCurrent;
         _relCurrent = relCurrent;
+
+        _hasNext = !!relNext;
         _relNext = relNext;
+
         _responseProcessor = responseProcessor;
     }
     return self;
 }
 
-- (id)currentItems {
-    return self.currentValue;
+- (void)first:(ARTPaginatedResultCallback)callback {
+    [ARTHttpPaginatedResult makePaginatedRequest:_http request:_relFirst responseProcessor:_responseProcessor callback:callback];
 }
 
-- (BOOL)hasFirst {
-    return !!self.relFirst;
+- (void)current:(ARTPaginatedResultCallback)callback {
+    [ARTHttpPaginatedResult makePaginatedRequest:_http request:_relCurrent responseProcessor:_responseProcessor callback:callback];
 }
 
-- (BOOL)hasCurrent {
-    return !!self.relCurrent;
-}
-
-- (BOOL)hasNext {
-    return !!self.relNext;
-}
-
-- (void)first:(ARTPaginatedResultCb)cb {
-    [ARTHttpPaginatedResult makePaginatedRequest:self.http request:self.relFirst responseProcessor:self.responseProcessor cb:cb];
-}
-
-- (void)current:(ARTPaginatedResultCb)cb {
-    [ARTHttpPaginatedResult makePaginatedRequest:self.http request:self.relCurrent responseProcessor:self.responseProcessor cb:cb];
-}
-
-- (void)next:(ARTPaginatedResultCb)cb {
-    [ARTHttpPaginatedResult makePaginatedRequest:self.http request:self.relNext responseProcessor:self.responseProcessor cb:cb];
+- (void)next:(ARTPaginatedResultCallback)callback {
+    [ARTHttpPaginatedResult makePaginatedRequest:_http request:_relNext responseProcessor:_responseProcessor callback:callback];
 }
 
 
-+ (id<ARTCancellable>)makePaginatedRequest:(ARTHttp *)http request:(ARTHttpRequest *)request responseProcessor:(ARTHttpResponseProcessor)responseProcessor cb:(ARTPaginatedResultCb)cb {
++ (id<ARTCancellable>)makePaginatedRequest:(ARTHttp *)http request:(ARTHttpRequest *)request responseProcessor:(ARTHttpResponseProcessor)responseProcessor callback:(ARTPaginatedResultCallback)callback {
     return [http makeRequest:request cb:^(ARTHttpResponse *response) {
         if (!response) {
             ARTErrorInfo * info = [[ARTErrorInfo alloc] init];
             [info setCode:40000 message:@"ARTHttpPaginatedResult got no response"];
             [ARTStatus state:ARTStatusError info:info];
-            cb([ARTStatus state:ARTStatusError info:info], nil);
+            callback([ARTStatus state:ARTStatusError info:info], nil);
             return;
         }
 
         if (response.status < 200 || response.status >= 300) {
             ARTErrorInfo * info = [[ARTErrorInfo alloc] init];
             [info setCode:40000 message:[NSString stringWithFormat:@"ARTHttpPaginatedResult response.status invalid: %d", response.status]];
-            cb([ARTStatus state:ARTStatusError info:info], nil);
+            callback([ARTStatus state:ARTStatusError info:info], nil);
             
             return;
         }
 
-        id currentValue = responseProcessor(response);
+        NSArray *items = responseProcessor(response);
 
         NSString *contentType = response.contentType;
         NSDictionary *links = response.links;
@@ -93,7 +81,13 @@
         ARTHttpRequest *currentRelRequest = [request requestWithRelativeUrl:[links objectForKey:@"current"]];
         ARTHttpRequest *nextRelRequest = [request requestWithRelativeUrl:[links objectForKey:@"next"]];
 
-        cb(ARTStatusOk, [[ARTHttpPaginatedResult alloc] initWithHttp:http current:currentValue contentType:contentType relFirst:firstRelRequest relCurrent:currentRelRequest relNext:nextRelRequest responseProcessor:responseProcessor]);
+        ARTPaginatedResult *result = [[ARTHttpPaginatedResult alloc] initWithHttp:http
+                                                                            items:items
+                                                                      contentType:contentType
+                                                                         relFirst:firstRelRequest
+                                                                       relCurrent:currentRelRequest
+                                                                          relNext:nextRelRequest responseProcessor:responseProcessor];
+        callback([ARTStatus state:ARTStatusOk], result);
     }];
 }
 

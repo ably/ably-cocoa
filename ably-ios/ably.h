@@ -27,3 +27,4 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import <ably/ARTHttpPaginatedResult.h>
 #import <ably/ARTPayload.h>
 #import <Ably/ARTLog.h>
+#import <Ably/ARTStats.h>

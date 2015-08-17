@@ -13,6 +13,7 @@
 #import <ably/ARTClientOptions.h>
 #import <ably/ARTPresenceMessage.h>
 #import <ably/ARTPaginatedResult.h>
+#import <ably/ARTStats.h>
 
 
 #define ART_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
@@ -54,8 +55,8 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
 - (void)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb;
 - (void)publish:(id)payload cb:(ARTStatusCallback)cb;
 
-- (id<ARTCancellable>)history:(ARTPaginatedResultCb)cb;
-- (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
+- (id<ARTCancellable>)history:(ARTPaginatedResultCallback)callback;
+- (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback;
 
 
 
@@ -80,10 +81,10 @@ typedef void (^ARTRealtimeChannelStateCb)(ARTRealtimeChannelState, ARTStatus *);
 
 @interface ARTPresence : NSObject
 - (instancetype) initWithChannel:(ARTRealtimeChannel *) channel;
-- (id<ARTCancellable>)get:(ARTPaginatedResultCb) cb;
-- (id<ARTCancellable>)getWithParams:(NSDictionary *) queryParams cb:(ARTPaginatedResultCb) cb;
-- (id<ARTCancellable>)history:(ARTPaginatedResultCb)cb;
-- (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
+- (id<ARTCancellable>)get:(ARTPaginatedResultCallback)callback;
+- (id<ARTCancellable>)getWithParams:(NSDictionary *) queryParams cb:(ARTPaginatedResultCallback)callback;
+- (id<ARTCancellable>)history:(ARTPaginatedResultCallback)callback;
+- (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback;
 
 - (void)enter:(id)data cb:(ARTStatusCallback)cb;
 - (void)update:(id)data cb:(ARTStatusCallback)cb;
@@ -125,8 +126,8 @@ typedef void (^ARTRealtimeChannelPresenceCb)(ARTPresenceMessage *);
 
 typedef void (^ARTRealtimePingCb)(ARTStatus *);
 - (void)ping:(ARTRealtimePingCb) cb;
-- (id<ARTCancellable>)stats:(ARTPaginatedResultCb)cb;
-- (id<ARTCancellable>)statsWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
+
+- (id<ARTCancellable>)stats:(ARTStatsQuery *)query callback:(ARTPaginatedResultCallback)callback;
 
 - (ARTRealtimeChannel *)channel:(NSString *)channelName;
 - (ARTRealtimeChannel *)channel:(NSString *)channelName cipherParams:(ARTCipherParams *)cipherParams;

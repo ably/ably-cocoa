@@ -11,7 +11,7 @@
 #import <ably/ARTTypes.h>
 #import <ably/ARTClientOptions.h>
 #import <ably/ARTPaginatedResult.h>
-
+#import <ably/ARTStats.h>
 
 @class ARTLog;
 @class ARTCipherParams;
@@ -24,18 +24,18 @@
 - (id<ARTCancellable>)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb;
 - (id<ARTCancellable>)publish:(id)payload cb:(ARTStatusCallback)cb;
 
-- (id<ARTCancellable>)history:(ARTPaginatedResultCb)cb;
-- (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
+- (id<ARTCancellable>)history:(ARTPaginatedResultCallback)callback;
+- (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback;
 
 @property (readonly, strong, nonatomic) ARTRestPresence *presence;
 @end
 
 @interface ARTRestPresence : NSObject
 - (instancetype) initWithChannel:(ARTRestChannel *) channel;
-- (id<ARTCancellable>)get:(ARTPaginatedResultCb)cb;
-- (id<ARTCancellable>)getWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
-- (id<ARTCancellable>)history:(ARTPaginatedResultCb)cb;
-- (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
+- (id<ARTCancellable>)get:(ARTPaginatedResultCallback)callback;
+- (id<ARTCancellable>)getWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback;
+- (id<ARTCancellable>)history:(ARTPaginatedResultCallback)callback;
+- (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback;
 @end
 
 @interface ARTRest : NSObject
@@ -50,8 +50,7 @@
 - (id<ARTCancellable>) token:(ARTAuthTokenParams *) keyName tokenCb:(void (^)(ARTStatus * status, ARTTokenDetails *)) cb;
 
 - (id<ARTCancellable>)time:(void(^)(ARTStatus * status, NSDate *time))cb;
-- (id<ARTCancellable>)stats:(ARTPaginatedResultCb)cb;
-- (id<ARTCancellable>)statsWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb;
+- (id<ARTCancellable>)stats:(ARTStatsQuery *)query callback:(ARTPaginatedResultCallback)callback;
 - (id<ARTCancellable>)internetIsUp:(void (^)(bool isUp)) cb;
 - (ARTRestChannel *)channel:(NSString *)channelName;
 - (ARTRestChannel *)channel:(NSString *)channelName cipherParams:(ARTCipherParams *)cipherParams;

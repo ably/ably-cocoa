@@ -471,17 +471,17 @@
         [NSException raise:@"realtime cannot perform action in disconnected or failed state" format:@"state: %d", (int)self.realtime.state];
     }
 }
-- (id<ARTCancellable>)history:(ARTPaginatedResultCb)cb {
+- (id<ARTCancellable>)history:(ARTPaginatedResultCallback)callback {
     [self throwOnDisconnectedOrFailed];
-    return [self.restChannel history:cb];
+    return [self.restChannel history:callback];
 }
 
-- (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb {
+- (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback {
     [self throwOnDisconnectedOrFailed];
     if([queryParams objectForKey:@"until_attach"] != nil  && self.state != ARTRealtimeChannelAttached) {
         [NSException raise:@"Cannot ask for history with param untilAttach when not attached" format:@""];
     }
-    return [self.restChannel historyWithParams:queryParams cb:cb];
+    return [self.restChannel historyWithParams:queryParams cb:callback];
 }
 
 
@@ -903,12 +903,8 @@
     [self.transport sendPing];
 }
 
-- (id<ARTCancellable>)stats:(ARTPaginatedResultCb)cb {
-    return [self.rest stats:cb];
-}
-
-- (id<ARTCancellable>)statsWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb {
-    return [self.rest statsWithParams:queryParams cb:cb];
+- (id<ARTCancellable>)stats:(ARTStatsQuery *)query callback:(ARTPaginatedResultCallback)callback {
+    return [self.rest stats:query callback:callback];
 }
 
 - (ARTRealtimeChannel *)channel:(NSString *)channelName {
@@ -1591,23 +1587,23 @@
     }
     return self;
 }
--(id<ARTCancellable>) getWithParams:(NSDictionary *) queryParams cb:(ARTPaginatedResultCb) cb {
+-(id<ARTCancellable>) getWithParams:(NSDictionary *) queryParams cb:(ARTPaginatedResultCallback)callback {
     [self.channel throwOnDisconnectedOrFailed];
-    return [self.channel.restChannel.presence getWithParams:queryParams cb:cb];
+    return [self.channel.restChannel.presence getWithParams:queryParams cb:callback];
 }
 
--(id<ARTCancellable>) get:(ARTPaginatedResultCb) cb {
+-(id<ARTCancellable>) get:(ARTPaginatedResultCallback)callback {
     [self.channel throwOnDisconnectedOrFailed];
-    return [self.channel.restChannel.presence get:cb];
+    return [self.channel.restChannel.presence get:callback];
 }
-- (id<ARTCancellable>)history:(ARTPaginatedResultCb)cb {
+- (id<ARTCancellable>)history:(ARTPaginatedResultCallback)callback {
     [self.channel throwOnDisconnectedOrFailed];
-    return [self.channel.restChannel.presence history:cb];
+    return [self.channel.restChannel.presence history:callback];
 }
 
-- (id<ARTCancellable>) historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCb)cb {
+- (id<ARTCancellable>) historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback {
     [self.channel throwOnDisconnectedOrFailed];
-    return [self.channel.restChannel.presence historyWithParams:queryParams cb:cb];
+    return [self.channel.restChannel.presence historyWithParams:queryParams cb:callback];
 }
 
 

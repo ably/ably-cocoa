@@ -8,6 +8,61 @@
 
 #import "ARTStats.h"
 
+@implementation ARTStatsQuery
+
+- (instancetype)init {
+    if (self = [super init]) {
+        _limit = 100;
+        _direction = ARTQueryDirectionBackwards;
+        _unit = ARTStatsUnitMinute;
+    }
+
+    return self;
+}
+
+static NSString *statsUnitToString(ARTStatsUnit unit) {
+    switch (unit) {
+        case ARTStatsUnitMonth:
+            return @"month";
+        case ARTStatsUnitDay:
+            return @"day";
+        case ARTStatsUnitHour:
+            return @"hour";
+        case ARTStatsUnitMinute:
+        default:
+            return @"minute";
+    }
+}
+
+static NSString *queryDirectionToString(ARTQueryDirection direction) {
+    switch (direction) {
+        case ARTQueryDirectionForwards:
+            return @"forwards";
+        case ARTQueryDirectionBackwards:
+        default:
+            return @"backwards";
+    }
+}
+
+- (NSArray *)asQueryItems {
+    NSMutableArray *items = [NSMutableArray array];
+
+    if (self.start) {
+        [items addObject:[NSURLQueryItem queryItemWithName:@"start" value:[NSString stringWithFormat:@"%llu", (uint64_t)(self.start.timeIntervalSince1970 * 1000)]]];
+    }
+    if (self.end) {
+        [items addObject:[NSURLQueryItem queryItemWithName:@"end" value:[NSString stringWithFormat:@"%llu", (uint64_t)(self.end.timeIntervalSince1970 * 1000)]]];
+    }
+
+    [items addObject:[NSURLQueryItem queryItemWithName:@"limit" value:[NSString stringWithFormat:@"%llu", self.limit]]];
+    [items addObject:[NSURLQueryItem queryItemWithName:@"direction" value:queryDirectionToString(self.direction)]];
+    [items addObject:[NSURLQueryItem queryItemWithName:@"unit" value:statsUnitToString(self.unit)]];
+
+    return [items copy];
+}
+
+@end
+
 @implementation ARTStatsMessageCount
 
 - (instancetype)initWithCount:(double)count data:(double)data {
