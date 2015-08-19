@@ -184,6 +184,21 @@ class RestClient: QuickSpec {
 
                 expect(authOptions).to(beIdenticalTo(options.authOptions))
             }
+
+            // RSC16
+            context("time") {
+                it("should return server time") {
+                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                    let client = ARTRest(options: options)
+
+                    var time: NSDate?
+                    client.time({ (status, date) in
+                        time = date
+                    })
+
+                    expect(time?.timeIntervalSince1970).toEventually(beCloseTo(NSDate().timeIntervalSince1970, within: 60), timeout: testTimeout)
+                }
+            }
         }
     }
 }
