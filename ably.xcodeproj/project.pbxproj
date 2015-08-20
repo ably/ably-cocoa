@@ -53,6 +53,7 @@
 		2EBDBEEBF881A49F795F1D2E /* Pods_ablySpec.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52CD0A2BB89BAA3D8353FBF3 /* Pods_ablySpec.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		850BFB4C1B79323C009D0ADD /* ARTPaginatedResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		850BFB4D1B79323C009D0ADD /* ARTPaginatedResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */; };
+		851674EF1B7BA5CD00D35169 /* Stats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851674EE1B7BA5CD00D35169 /* Stats.swift */; };
 		853ED7C41B7A1A3C006F1C6F /* RestClient.stats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 853ED7C31B7A1A3C006F1C6F /* RestClient.stats.swift */; };
 		856AAC8F1B6E304B00B07119 /* ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* ably.framework */; };
 		856AAC971B6E30C800B07119 /* TestUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC961B6E30C800B07119 /* TestUtilities.swift */; };
@@ -77,8 +78,8 @@
 		96A507A21A377AA50077CDF8 /* ARTPresenceMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 96A507A01A377AA50077CDF8 /* ARTPresenceMessage.m */; };
 		96A507A51A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507A31A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.h */; };
 		96A507A61A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 96A507A41A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.m */; };
-		96A507A91A37806A0077CDF8 /* ARTEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507A71A37806A0077CDF8 /* ARTEncoder.h */; };
-		96A507AD1A3780F60077CDF8 /* ARTJsonEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507AB1A3780F60077CDF8 /* ARTJsonEncoder.h */; };
+		96A507A91A37806A0077CDF8 /* ARTEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507A71A37806A0077CDF8 /* ARTEncoder.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		96A507AD1A3780F60077CDF8 /* ARTJsonEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507AB1A3780F60077CDF8 /* ARTJsonEncoder.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		96A507AE1A3780F60077CDF8 /* ARTJsonEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 96A507AC1A3780F60077CDF8 /* ARTJsonEncoder.m */; };
 		96A507B51A37881C0077CDF8 /* ARTNSDate+ARTUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507B31A37881C0077CDF8 /* ARTNSDate+ARTUtil.h */; };
 		96A507B61A37881C0077CDF8 /* ARTNSDate+ARTUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 96A507B41A37881C0077CDF8 /* ARTNSDate+ARTUtil.m */; };
@@ -194,6 +195,7 @@
 		52CD0A2BB89BAA3D8353FBF3 /* Pods_ablySpec.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ablySpec.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPaginatedResult.h; sourceTree = "<group>"; };
 		850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPaginatedResult.m; sourceTree = "<group>"; };
+		851674EE1B7BA5CD00D35169 /* Stats.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stats.swift; sourceTree = "<group>"; };
 		853ED7C31B7A1A3C006F1C6F /* RestClient.stats.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClient.stats.swift; sourceTree = "<group>"; };
 		856AAC8A1B6E304B00B07119 /* ablySpec.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ablySpec.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		856AAC8E1B6E304B00B07119 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -330,6 +332,7 @@
 				856AAC951B6E30C800B07119 /* ablySpec-Bridging-Header.h */,
 				856AAC981B6E312F00B07119 /* RestClient.swift */,
 				853ED7C31B7A1A3C006F1C6F /* RestClient.stats.swift */,
+				851674EE1B7BA5CD00D35169 /* Stats.swift */,
 			);
 			path = ablySpec;
 			sourceTree = "<group>";
@@ -739,6 +742,7 @@
 				856AAC991B6E312F00B07119 /* RestClient.swift in Sources */,
 				856AAC971B6E30C800B07119 /* TestUtilities.swift in Sources */,
 				853ED7C41B7A1A3C006F1C6F /* RestClient.stats.swift in Sources */,
+				851674EF1B7BA5CD00D35169 /* Stats.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

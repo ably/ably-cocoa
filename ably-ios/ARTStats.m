@@ -152,7 +152,7 @@ static NSString *queryDirectionToString(ARTQueryDirection direction) {
 
 @implementation ARTStats
 
-- (instancetype)initWithAll:(ARTStatsMessageTypes *)all inbound:(ARTStatsMessageTraffic *)inbound outbound:(ARTStatsMessageTraffic *)outbound persisted:(ARTStatsMessageTypes *)persisted connections:(ARTStatsConnectionTypes *)connections channels:(ARTStatsResourceCount *)channels apiRequests:(ARTStatsRequestCount *)apiRequests tokenRequests:(ARTStatsRequestCount *)tokenRequests {
+- (instancetype)initWithAll:(ARTStatsMessageTypes *)all inbound:(ARTStatsMessageTraffic *)inbound outbound:(ARTStatsMessageTraffic *)outbound persisted:(ARTStatsMessageTypes *)persisted connections:(ARTStatsConnectionTypes *)connections channels:(ARTStatsResourceCount *)channels apiRequests:(ARTStatsRequestCount *)apiRequests tokenRequests:(ARTStatsRequestCount *)tokenRequests interval:(NSDate *)interval {
     self = [super init];
     if (self) {
         _all = all;
@@ -163,6 +163,7 @@ static NSString *queryDirectionToString(ARTQueryDirection direction) {
         _channels = channels;
         _apiRequests = apiRequests;
         _tokenRequests = tokenRequests;
+        _interval = interval;
     }
     return self;
 }
