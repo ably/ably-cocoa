@@ -86,6 +86,11 @@ class AblyTests {
         
         return options
     }
+    
+    class func commonAppSetup() -> ARTClientOptions {
+        return AblyTests.setupOptions(AblyTests.jsonRestOptions)
+    }
+    
 }
 
 func querySyslog(forLogsAfter startingTime: NSDate? = nil) -> GeneratorOf<String> {

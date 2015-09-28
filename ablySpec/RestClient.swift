@@ -29,7 +29,7 @@ func publishTestMessage(client: ARTRest, failOnError: Bool = true) -> PublishTes
 }
 
 func getTestToken() -> String {
-    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+    let options = AblyTests.commonAppSetup()
     options.authOptions.useTokenAuth = true
     options.authOptions.clientId = "testToken"
     let client = ARTRest(options: options)
@@ -53,7 +53,7 @@ class RestClient: QuickSpec {
             // RSC1
             context("initializer") {
                 it("should accept an API key") {
-                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                    let options = AblyTests.commonAppSetup()
                     let client = ARTRest(key: "\(options.authOptions.keyName):\(options.authOptions.keySecret)")
 
                     let publishTask = publishTestMessage(client)
@@ -66,7 +66,7 @@ class RestClient: QuickSpec {
                 }
 
                 it("should result in error status when provided a bad key") {
-                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                    let options = AblyTests.commonAppSetup()
                     let client = ARTRest(key: "badName:\(options.authOptions.keySecret)")
 
                     let publishTask = publishTestMessage(client, failOnError: false)
@@ -75,8 +75,8 @@ class RestClient: QuickSpec {
                     expect(publishTask.status?.errorInfo.code).toEventually(equal(40005))
                 }
 
-                it("should accept an options object") {
-                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                fit("should accept an options object") {
+                    let options = AblyTests.commonAppSetup()
                     let client = ARTRest(options: options)
 
                     let publishTask = publishTestMessage(client)
@@ -85,7 +85,7 @@ class RestClient: QuickSpec {
                 }
 
                 it("should accept an options object with token authentication") {
-                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                    let options = AblyTests.commonAppSetup()
                     options.authOptions.useTokenAuth = true
                     options.authOptions.token = getTestToken()
                     let client = ARTRest(options: options)
@@ -97,7 +97,7 @@ class RestClient: QuickSpec {
                 }
 
                 it("should result in error status when provided a bad token") {
-                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                    let options = AblyTests.commonAppSetup()
                     options.authOptions.useTokenAuth = true
                     options.authOptions.token = "invalid_token"
                     let client = ARTRest(options: options)
@@ -114,7 +114,7 @@ class RestClient: QuickSpec {
                 // RSC2
                 it("should output to the system log and the log level should be Warn") {
                     let logTime = NSDate()
-                    let client = ARTRest(options: AblyTests.setupOptions(AblyTests.jsonRestOptions))
+                    let client = ARTRest(options: AblyTests.commonAppSetup())
 
                     client.logger.warn("This is a warning")
                     let logs = querySyslog(forLogsAfter: logTime)
@@ -126,7 +126,7 @@ class RestClient: QuickSpec {
                 // RSC3
                 it("should have a mutable log level") {
                     let logTime = NSDate()
-                    let client = ARTRest(options: AblyTests.setupOptions(AblyTests.jsonRestOptions))
+                    let client = ARTRest(options: AblyTests.commonAppSetup())
                     client.logger.logLevel = .Error
 
                     client.logger.warn("This is a warning")
@@ -146,7 +146,7 @@ class RestClient: QuickSpec {
                         }
                     }
 
-                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                    let options = AblyTests.commonAppSetup()
                     options.loggerClass = MyLogger.self
                     let client = ARTRest(options: options)
 
@@ -162,7 +162,7 @@ class RestClient: QuickSpec {
                 it("should accept an options object with an environment set") {
                     // reset the default host in order to force ARTClientOptions to compute it
                     ARTClientOptions.getDefaultRestHost("rest.ably.io", modify: true)
-                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                    let options = AblyTests.commonAppSetup()
                     let newOptions = ARTClientOptions()
                     newOptions.authOptions.keyName = options.authOptions.keyName
                     newOptions.authOptions.keySecret = options.authOptions.keySecret
@@ -177,9 +177,9 @@ class RestClient: QuickSpec {
 
             // RSC5
             it("should provide access to the AuthOptions object passed in ClientOptions") {
-                let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                let options = AblyTests.commonAppSetup()
                 let client = ARTRest(options: options)
-
+                
                 let authOptions = client.auth().getAuthOptions()
 
                 expect(authOptions).to(beIdenticalTo(options.authOptions))
@@ -188,7 +188,7 @@ class RestClient: QuickSpec {
             // RSC16
             context("time") {
                 it("should return server time") {
-                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                    let options = AblyTests.commonAppSetup()
                     let client = ARTRest(options: options)
 
                     var time: NSDate?
