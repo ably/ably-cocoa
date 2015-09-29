@@ -30,11 +30,11 @@ typedef NS_ENUM(NSUInteger, ARTLogLevel) {
 
 @interface ARTLog (Shorthand)
 
-- (void)verbose:(NSString *)message;
-- (void)debug:(NSString *)message;
-- (void)info:(NSString *)message;
-- (void)warn:(NSString *)message;
-- (void)error:(NSString *)message;
+- (void)verbose:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
+- (void)debug:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
+- (void)info:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
+- (void)warn:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
+- (void)error:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
 
 @end
 

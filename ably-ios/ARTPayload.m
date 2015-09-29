@@ -424,7 +424,7 @@
         status = [enc decode:*output output:output];
         if (status.state != ARTStateOk) {
             ARTPayload * p  = *output;
-            [self.logger error:[NSString  stringWithFormat:@"ARTPayload: error in ARTPayloadEncoderChain decoding with encoder %d. Remaining decoding jobs are %@", count, p.encoding]];
+            [self.logger error:@"ARTPayload: error in ARTPayloadEncoderChain decoding with encoder %d. Remaining decoding jobs are %@", count, p.encoding];
             break;
         }
         count++;

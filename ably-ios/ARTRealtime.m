@@ -409,7 +409,7 @@
             ARTPayload *encodedPayload = nil;
             ARTStatus * status = [self.payloadEncoder encode:message.payload output:&encodedPayload];
             if (status.state != ARTStateOk) {
-                [self.logger error:[NSString stringWithFormat:@"ARTRealtime: error decoding payload, status: %tu", status]];
+                [self.logger error:@"ARTRealtime: error decoding payload, status: %tu", status];
             }
             return [message messageWithPayload:encodedPayload];
         }];
@@ -446,7 +446,7 @@
         ARTPayload *encodedPayload = nil;
         ARTStatus * status = [self.payloadEncoder encode:msg.payload output:&encodedPayload];
         if (status.state != ARTStateOk) {
-            [self.logger warn:[NSString stringWithFormat:@"bad status encoding presence message %d",(int) status]];
+            [self.logger warn:@"bad status encoding presence message %d",(int) status];
         }
         msg.payload = encodedPayload;
     }
@@ -623,7 +623,7 @@
         case ARTProtocolMessageSync:
             break;
         default:
-            [self.logger warn:[NSString stringWithFormat:@"ARTRealtime, unknown ARTProtocolMessage action: %tu", message.action]];
+            [self.logger warn:@"ARTRealtime, unknown ARTProtocolMessage action: %tu", message.action];
             break;
     }
     
@@ -967,7 +967,7 @@
 
 
 - (void)transition:(ARTRealtimeConnectionState)state {
-    [self.logger verbose:[NSString stringWithFormat:@"Transition to %@ requested", [ARTRealtime ARTRealtimeStateToStr:state]]];
+    [self.logger verbose:@"Transition to %@ requested", [ARTRealtime ARTRealtimeStateToStr:state]];
 
     // On exit logic
     switch (self.state) {
@@ -1011,7 +1011,7 @@
         case ARTRealtimeConnected:
             if([self isFromResume]) {
                 if(![self.options.resumeKey isEqualToString:self.connectionKey] || self.options.connectionSerial != self.connectionSerial) {
-                    [self.logger warn:[NSString stringWithFormat:@"ARTRealtime connection has reconnected, but resume failed. Detaching all channels"]];
+                    [self.logger warn:@"ARTRealtime connection has reconnected, but resume failed. Detaching all channels"];
                     for (NSString *channelName in self.allChannels) {
                         ARTRealtimeChannel *channel = [self.allChannels objectForKey:channelName];
                         ARTErrorInfo * info = [[ARTErrorInfo alloc] init];
@@ -1165,7 +1165,7 @@
     if(self.pingCb) {
         [self cancelPingTimer];
         if(self.state != ARTRealtimeConnected) {
-            [self.logger warn:[NSString stringWithFormat:@"ARTRealtime received a ping when in state %@", [ARTRealtime ARTRealtimeStateToStr:self.state]]];
+            [self.logger warn:@"ARTRealtime received a ping when in state %@", [ARTRealtime ARTRealtimeStateToStr:self.state]];
             self.pingCb([ARTStatus state:ARTStateError]);
         }
         else {
@@ -1380,7 +1380,7 @@
 }
 
 - (void)ack:(int64_t)serial count:(int64_t)count {
-    [self.logger verbose:[NSString stringWithFormat:@"ARTRealtime ack: %lld , count %lld",  serial,  count]];
+    [self.logger verbose:@"ARTRealtime ack: %lld , count %lld",  serial,  count];
     NSArray *nackMessages = nil;
     NSArray *ackMessages = nil;
 
@@ -1420,7 +1420,7 @@
 }
 
 - (void)nack:(int64_t)serial count:(int64_t)count {
-    [self.logger verbose:[NSString stringWithFormat:@"ARTRealtime Nack: %lld , count %lld",  serial,  count]];
+    [self.logger verbose:@"ARTRealtime Nack: %lld , count %lld",  serial,  count];
     if (serial != self.pendingMessageStartSerial) {
         // This is an error condition and it shouldn't happen but
         // we can handle it gracefully by only processing the
@@ -1465,7 +1465,7 @@
 - (void)realtimeTransport:(id)transport didReceiveMessage:(ARTProtocolMessage *)message {
     // TODO add in protocolListener
 
-    [self.logger verbose:[NSString stringWithFormat:@"ARTRealtime didReceive Protocol Message %@", [ARTRealtime protocolStr:message.action]]];
+    [self.logger verbose:@"ARTRealtime didReceive Protocol Message %@", [ARTRealtime protocolStr:message.action]];
     if(message.error) {
         self.errorReason = message.error;
     }

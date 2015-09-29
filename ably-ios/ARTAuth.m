@@ -298,7 +298,8 @@
     _tokenCbs = [NSMutableArray array];
     
     if (self.options.token) {
-        [self.logger debug:[NSString stringWithFormat:@"ARTAuth:using provided authToken %@", self.options.token]];
+        [self.logger debug:@"ARTAuth:using provided authToken %@", self.options.token];
+        
         _token = [[ARTTokenDetails alloc] initWithId:self.options.token
                                              expires:self.options.tokenDetails.expires
                                               issued:self.options.tokenDetails.issued
@@ -325,7 +326,7 @@
             s.options.tokenParams = params;
         }
         id<ARTCancellable> c = strCb(params,^( ARTAuthTokenParams *params) {
-            [weakSelf.logger debug:[NSString stringWithFormat:@"ARTAuth tokenRequest strCb got %@", [params asDictionary]]];
+            [weakSelf.logger debug:@"ARTAuth tokenRequest strCb got %@", [params asDictionary]];
             ARTAuth * s = weakSelf;
             if(s) {
                 [s.rest token:params tokenCb:^(ARTStatus * status, ARTTokenDetails * tokenDetails) {
@@ -431,7 +432,7 @@
             }
         }
         else {
-            [self.logger debug:[NSString stringWithFormat:@"ARTAuth token expired %f milliseconds ago. Expiry: %lld",  ([[NSDate date] timeIntervalSince1970]*1000)- self.token.expires, self.token.expires]];
+            [self.logger debug:@"ARTAuth token expired %f milliseconds ago. Expiry: %lld", ([[NSDate date] timeIntervalSince1970]*1000)- self.token.expires, self.token.expires];
         }
         self.token = nil;
     }

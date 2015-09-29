@@ -72,7 +72,7 @@
     if (self) {
         self.logger = rest.logger;
         _presence = [[ARTRestPresence alloc] initWithChannel:self];
-        [self.logger debug:[NSString stringWithFormat:@"ARTRestChannel: instantiating under %@", name]];
+        [self.logger debug:@"ARTRestChannel: instantiating under %@", name];
         _rest = rest;
         _name = name;
         _basePath = [NSString stringWithFormat:@"/channels/%@", [name stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]]];
@@ -96,7 +96,7 @@
         ARTPayload * p = [ARTPayload payloadWithPayload:[messages objectAtIndex:i] encoding:self.rest.defaultEncoding];
         ARTStatus * status = [self.payloadEncoder encode:p output:&encodedPayload];
         if (status.state != ARTStateOk) {
-            [self.logger warn:[NSString stringWithFormat:@"ARTRest publishMessages could not encode message %d", i]];
+            [self.logger warn:@"ARTRest publishMessages could not encode message %d", i];
         }
         [encodedMessages addObject:encodedPayload.payload];
     }
@@ -118,7 +118,7 @@
 }
 
 - (id<ARTCancellable>)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb {
-    [self.logger debug:[NSString stringWithFormat:@"ARTRestChannel: publishing '%@' to channel with name '%@'", payload, name]];
+    [self.logger debug:@"ARTRestChannel: publishing '%@' to channel with name '%@'", payload, name];
     ARTMessage *message = [ARTMessage messageWithPayload:payload name:name];//[[ARTMessage alloc] init];
     message = [message encode:self.payloadEncoder];
     return [self publishMessage:message cb:cb];
@@ -212,7 +212,7 @@
     NSString * keyPath = [NSString stringWithFormat:@"/keys/%@/requestToken",params.keyName];
     if([self.auth getAuthOptions].authUrl) {
         keyPath = [[self.auth getAuthOptions].authUrl absoluteString];
-        [self.logger info:[NSString stringWithFormat:@"ARTRest is bypassing the default token request URL for this authURL:%@",keyPath]];
+        [self.logger info:@"ARTRest is bypassing the default token request URL for this authURL:%@",keyPath];
     }
     NSDictionary * paramsDict = [params asDictionary];
     
@@ -225,7 +225,7 @@
             return;
         }
         NSString * str = [[NSString alloc] initWithData:response.body encoding:NSUTF8StringEncoding];
-        [self.logger verbose:[NSString stringWithFormat:@"ARTRest token is %@", str]];
+        [self.logger verbose:@"ARTRest token is %@", str];
         if(response.status == 201) {
             ARTTokenDetails * token =[self.defaultEncoder decodeAccessToken:response.body];
             cb(ARTStateOk, token);
@@ -233,7 +233,7 @@
         else {
 
             ARTErrorInfo * e = [self.defaultEncoder decodeError:response.body];
-            [self.logger error:[NSString stringWithFormat:@"ARTRest: requestToken Error code: %d, Status %d, Message %@", e.code, e.statusCode, e.message]];
+            [self.logger error:@"ARTRest: requestToken Error code: %d, Status %d, Message %@", e.code, e.statusCode, e.message];
             cb([ARTStatus state:ARTStateError info:e], nil);
         }
     }];
@@ -321,12 +321,12 @@
     __weak ARTRest * weakSelf = self;
     ARTHttpCb errorCheckingCb = ^(ARTHttpResponse * response) {
         ARTRest * s = weakSelf;
-        [self.logger verbose:[NSString stringWithFormat:@"ARTRest Http response is %d", response.status]];
+        [self.logger verbose:@"ARTRest Http response is %d", response.status];
         if([s isAnErrorStatus:response.status]) {
             if(response.body) {
                 ARTErrorInfo * error = [s.defaultEncoder decodeError:response.body];
                 response.error = error;
-                [self.logger info:[NSString stringWithFormat:@"ARTRest received an error: \n status %d  \n code %d \n message: %@", error.statusCode, error.code, error.message]];
+                [self.logger info:@"ARTRest received an error: \n status %d  \n code %d \n message: %@", error.statusCode, error.code, error.message];
             }
         }
         if([ARTFallback shouldTryFallback:response options:self.options]) {

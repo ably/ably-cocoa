@@ -116,7 +116,7 @@ class RestClient: QuickSpec {
                     let logTime = NSDate()
                     let client = ARTRest(options: AblyTests.commonAppSetup())
 
-                    client.logger.warn("This is a warning")
+                    client.logger.log("This is a warning", withLevel: .Warn)
                     let logs = querySyslog(forLogsAfter: logTime)
 
                     expect(client.logger.logLevel).to(equal(ARTLogLevel.Warn))
@@ -129,7 +129,7 @@ class RestClient: QuickSpec {
                     let client = ARTRest(options: AblyTests.commonAppSetup())
                     client.logger.logLevel = .Error
 
-                    client.logger.warn("This is a warning")
+                    client.logger.log("This is a warning", withLevel: .Warn)
                     let logs = querySyslog(forLogsAfter: logTime)
 
                     expect(logs).toNot(contain("WARN: This is a warning"))
@@ -151,7 +151,7 @@ class RestClient: QuickSpec {
                     customLogger.logLevel = .Verbose
                     let client = ARTRest(logger: customLogger, andOptions: options)
 
-                    client.logger.warn("This is a warning")
+                    client.logger.log("This is a warning", withLevel: .Warn)
                     
                     expect(Log.interceptedLog.0).to(equal("This is a warning"))
                     expect(Log.interceptedLog.1).to(equal(ARTLogLevel.Warn))

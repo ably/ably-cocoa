@@ -74,7 +74,7 @@
 - (BOOL)ccAlgorithm:(CCAlgorithm *)algorithm {
     if (NSOrderedSame == [self.algorithm compare:@"AES" options:NSCaseInsensitiveSearch]) {
         if ([self.ivSpec.iv length] != 16) {
-            [self.logger error:[NSString stringWithFormat:@"ArtCrypto Error iv length is not 16: %d", (int)[self.ivSpec.iv length]]];
+            [self.logger error:@"ArtCrypto Error iv length is not 16: %d", (int)[self.ivSpec.iv length]];
             return NO;
         }
         *algorithm = kCCAlgorithmAES128;
@@ -152,7 +152,7 @@
     CCCryptorStatus status = CCCrypt(kCCEncrypt, self.algorithm, kCCOptionPKCS7Padding, key, keyLen, iv, dataIn, dataInLen, ciphertextBuf, ciphertextBufLen, &bytesWritten);
 
     if (status) {
-        [self.logger error:[NSString stringWithFormat:@"ARTCrypto error encrypting. Status is %d", status]];
+        [self.logger error:@"ARTCrypto error encrypting. Status is %d", status];
         free(ciphertextBuf);
         return [ARTStatus state: ARTStateError];
     }
@@ -210,7 +210,7 @@
     CCCryptorStatus status = CCCrypt(kCCDecrypt, self.algorithm, options, key, keyLength, iv, dataIn, dataInLength, buf, outputLength, &bytesWritten);
 
     if (status) {
-        [self.logger error:[NSString stringWithFormat:@"ARTCrypto error decrypting. Status is %d", status]];
+        [self.logger error:@"ARTCrypto error decrypting. Status is %d", status];
         free(buf);
         return [ARTStatus state:ARTStateError];
     }
