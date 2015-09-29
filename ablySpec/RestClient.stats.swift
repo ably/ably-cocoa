@@ -62,7 +62,7 @@ private func queryStats(client: ARTRest, query: ARTStatsQuery) -> ARTPaginatedRe
         CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Boolean(0))
     }
 
-    if status!.status != .StatusOk {
+    if status!.state != .Ok {
         XCTFail(status!.errorInfo.message)
     }
 
@@ -81,7 +81,7 @@ private func getPage(paginator: (ARTPaginatedResultCallback!) -> Void) -> ARTPag
         CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Boolean(0))
     }
 
-    if status!.status != .StatusOk {
+    if status!.state != .Ok {
         XCTFail(status!.errorInfo.message)
     }
 

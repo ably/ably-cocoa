@@ -543,7 +543,7 @@
     ARTPayload *payload = [ARTPayload payloadWithPayload:data encoding:encoding];
     ARTPayload *decoded = nil;
     ARTStatus *status = [[ARTBase64PayloadEncoder instance] decode:payload output:&decoded];
-    if (status.status != ARTStatusOk) {
+    if (status.state != ARTStateOk) {
         [self.logger error:[NSString stringWithFormat:@"ARTJsonEncoder failed to decode payload %@", payload]];
     }
     return decoded;
@@ -552,10 +552,10 @@
 - (void)writePayload:(ARTPayload *)payload toDictionary:(NSMutableDictionary *)output {
     ARTPayload *encoded = nil;
     ARTStatus *status = [[ARTBase64PayloadEncoder instance] encode:payload output:&encoded];
-    if(status.status != ARTStatusOk) {
+    if(status.state != ARTStateOk) {
         [self.logger error:@"ARTJsonEncoder failed to encode payload"];
     }
-    NSAssert(status.status == ARTStatusOk, @"Error encoding payload");
+    NSAssert(status.state == ARTStateOk, @"Error encoding payload");
     NSAssert([payload.payload isKindOfClass:[NSString class]], @"Only string payloads are accepted");
 
     if (encoded.encoding.length) {

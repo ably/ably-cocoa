@@ -95,7 +95,7 @@
 
         ARTPayload * p = [ARTPayload payloadWithPayload:[messages objectAtIndex:i] encoding:self.rest.defaultEncoding];
         ARTStatus * status = [self.payloadEncoder encode:p output:&encodedPayload];
-        if (status.status != ARTStatusOk) {
+        if (status.state != ARTStateOk) {
             [self.logger warn:[NSString stringWithFormat:@"ARTRest publishMessages could not encode message %d", i]];
         }
         [encodedMessages addObject:encodedPayload.payload];
@@ -112,7 +112,7 @@
     NSDictionary *headers = @{@"Content-Type":defaultEncoding};
     NSString *path = [NSString stringWithFormat:@"%@/messages", self.basePath];
     return [self.rest post:path headers:headers body:encodedMessage authenticated:ARTAuthenticationOn cb:^(ARTHttpResponse *response) {
-        ARTStatus *status = [ARTStatus state:(response.status >= 200 && response.status < 300 ? ARTStatusOk : ARTStatusError) info:response.error];
+        ARTStatus *status = [ARTStatus state:(response.status >= 200 && response.status < 300 ? ARTStateOk : ARTStateError) info:response.error];
         cb(status);
     }];
 }
@@ -204,7 +204,7 @@
 
     [self.logger debug:@"ARTRest is requesting a fresh token"];
     if(![self.auth canRequestToken]) {
-        cb([ARTStatus state:ARTStatusError], nil);
+        cb([ARTStatus state:ARTStateError], nil);
         id<ARTCancellable> c = nil;
         return c;
     }
@@ -221,20 +221,20 @@
     NSDictionary *headers = @{@"Content-Type":self.defaultEncoding};
     return [self post:keyPath headers:headers body:dictData authenticated:ARTAuthenticationUseBasic cb:^(ARTHttpResponse *response) {
         if(!response.body) {
-            cb([ARTStatus state:ARTStatusError info:response.error], nil);
+            cb([ARTStatus state:ARTStateError info:response.error], nil);
             return;
         }
         NSString * str = [[NSString alloc] initWithData:response.body encoding:NSUTF8StringEncoding];
         [self.logger verbose:[NSString stringWithFormat:@"ARTRest token is %@", str]];
         if(response.status == 201) {
             ARTTokenDetails * token =[self.defaultEncoder decodeAccessToken:response.body];
-            cb(ARTStatusOk, token);
+            cb(ARTStateOk, token);
         }
         else {
 
             ARTErrorInfo * e = [self.defaultEncoder decodeError:response.body];
             [self.logger error:[NSString stringWithFormat:@"ARTRest: requestToken Error code: %d, Status %d, Message %@", e.code, e.statusCode, e.message]];
-            cb([ARTStatus state:ARTStatusError info:e], nil);
+            cb([ARTStatus state:ARTStateError info:e], nil);
         }
     }];
 }
@@ -253,9 +253,9 @@
             date = [self.defaultEncoder decodeTime:response.body];
         }
         if (date) {
-            cb([ARTStatus state:ARTStatusOk], date);
+            cb([ARTStatus state:ARTStateOk], date);
         } else {
-            cb([ARTStatus state:ARTStatusError info:response.error], nil);
+            cb([ARTStatus state:ARTStateError info:response.error], nil);
         }
     }];
 }
@@ -424,7 +424,7 @@
     NSDictionary *headers = @{@"Content-Type":self.defaultEncoding};
     NSData * statsData = [NSJSONSerialization dataWithJSONObject:stats options:0 error:nil];
     return [self post:@"/stats" headers:headers body:statsData authenticated:ARTAuthenticationOn cb:^(ARTHttpResponse *response) {
-        cb([ARTStatus state:ARTStatusOk info:response.error]);
+        cb([ARTStatus state:ARTStateOk info:response.error]);
     }];
 }
 

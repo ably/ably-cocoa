@@ -17,8 +17,8 @@ class PublishTestMessage {
     init(client: ARTRest, failOnError: Bool) {
         client.channel("test").publish("message") { status in
             self.status = status
-            if failOnError && status.status != .StatusOk {
-                XCTFail("Got status \(status.status.rawValue) with error '\(status.errorInfo?.message)'")
+            if failOnError && status.state != .Ok {
+                XCTFail("Got status \(status.state.rawValue) with error '\(status.errorInfo?.message)'")
             }
         }
     }
@@ -58,7 +58,7 @@ class RestClient: QuickSpec {
 
                     let publishTask = publishTestMessage(client)
 
-                    expect(publishTask.status?.status).toEventually(equal(ARTState.StatusOk), timeout: testTimeout)
+                    expect(publishTask.status?.state).toEventually(equal(ARTState.Ok), timeout: testTimeout)
                 }
 
                 it("should throw when provided an invalid key") {
@@ -71,7 +71,7 @@ class RestClient: QuickSpec {
 
                     let publishTask = publishTestMessage(client, failOnError: false)
 
-                    expect(publishTask.status?.status).toEventually(equal(ARTState.StatusError), timeout: testTimeout)
+                    expect(publishTask.status?.state).toEventually(equal(ARTState.Error), timeout: testTimeout)
                     expect(publishTask.status?.errorInfo.code).toEventually(equal(40005))
                 }
 
@@ -81,7 +81,7 @@ class RestClient: QuickSpec {
 
                     let publishTask = publishTestMessage(client)
 
-                    expect(publishTask.status?.status).toEventually(equal(ARTState.StatusOk), timeout: testTimeout)
+                    expect(publishTask.status?.state).toEventually(equal(ARTState.Ok), timeout: testTimeout)
                 }
 
                 it("should accept an options object with token authentication") {
@@ -93,7 +93,7 @@ class RestClient: QuickSpec {
                     let publishTask = publishTestMessage(client)
 
                     expect(client.auth().getAuthMethod()).to(equal(ARTAuthMethod.Token))
-                    expect(publishTask.status?.status).toEventually(equal(ARTState.StatusOk), timeout: testTimeout)
+                    expect(publishTask.status?.state).toEventually(equal(ARTState.Ok), timeout: testTimeout)
                 }
 
                 it("should result in error status when provided a bad token") {
@@ -105,7 +105,7 @@ class RestClient: QuickSpec {
                     let publishTask = publishTestMessage(client, failOnError: false)
 
                     expect(client.auth().getAuthMethod()).to(equal(ARTAuthMethod.Token))
-                    expect(publishTask.status?.status).toEventually(equal(ARTState.StatusError), timeout: testTimeout)
+                    expect(publishTask.status?.state).toEventually(equal(ARTState.Error), timeout: testTimeout)
                     expect(publishTask.status?.errorInfo.code).toEventually(equal(40005))
                 }
             }
@@ -172,7 +172,7 @@ class RestClient: QuickSpec {
 
                     let publishTask = publishTestMessage(client)
 
-                    expect(publishTask.status?.status).toEventually(equal(ARTState.StatusOk), timeout: testTimeout)
+                    expect(publishTask.status?.state).toEventually(equal(ARTState.Ok), timeout: testTimeout)
                 }
             }
 

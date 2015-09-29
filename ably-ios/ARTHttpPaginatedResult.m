@@ -59,15 +59,15 @@
         if (!response) {
             ARTErrorInfo * info = [[ARTErrorInfo alloc] init];
             [info setCode:40000 message:@"ARTHttpPaginatedResult got no response"];
-            [ARTStatus state:ARTStatusError info:info];
-            callback([ARTStatus state:ARTStatusError info:info], nil);
+            [ARTStatus state:ARTStateError info:info];
+            callback([ARTStatus state:ARTStateError info:info], nil);
             return;
         }
 
         if (response.status < 200 || response.status >= 300) {
             ARTErrorInfo * info = [[ARTErrorInfo alloc] init];
             [info setCode:40000 message:[NSString stringWithFormat:@"ARTHttpPaginatedResult response.status invalid: %d", response.status]];
-            callback([ARTStatus state:ARTStatusError info:info], nil);
+            callback([ARTStatus state:ARTStateError info:info], nil);
             
             return;
         }
@@ -87,7 +87,7 @@
                                                                          relFirst:firstRelRequest
                                                                        relCurrent:currentRelRequest
                                                                           relNext:nextRelRequest responseProcessor:responseProcessor];
-        callback([ARTStatus state:ARTStatusOk], result);
+        callback([ARTStatus state:ARTStateOk], result);
     }];
 }
 

@@ -443,7 +443,7 @@
     [self.tokenCbs addObject:c];
     if (!self.tokenRequest) {
         self.tokenRequest = self.authTokenCb(^(ARTStatus * status, ARTTokenDetails *token) {
-            if(status.status != ARTStatusOk) {
+            if(status.state != ARTStateOk) {
                 [self.logger error:@"ARTAuth: error fetching token"];
                 cb(nil);
                 return;
@@ -494,7 +494,7 @@
                     ARTRest *strongRest = weakRest;
                     if (strongRest) {
                         [strongRest time:^(ARTStatus * status, NSDate *time) {
-                            if (status.status == ARTStatusOk) {
+                            if (status.state == ARTStateOk) {
                                 cb((int64_t)([time timeIntervalSince1970] *1000.0));
                             } else {
                                 cb(0);

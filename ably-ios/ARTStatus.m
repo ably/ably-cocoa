@@ -30,19 +30,15 @@
 -(instancetype) init {
     self = [super init];
     if(self) {
-        _status = ARTStatusOk;
+        _state = ARTStateOk;
         _errorInfo =[[ARTErrorInfo alloc] init];
    }
     return self;
 }
 
--(void) setStatus:(ARTState)status {
-    _status = status;
-}
-
 +(ARTStatus *) state:(ARTState) state {
     ARTStatus *s = [[ARTStatus alloc] init];
-    s.status= state;
+    s.state = state;
     return s;
 }
 

@@ -408,7 +408,7 @@
         messages = [messages artMap:^id(ARTMessage *message) {
             ARTPayload *encodedPayload = nil;
             ARTStatus * status = [self.payloadEncoder encode:message.payload output:&encodedPayload];
-            if (status.status != ARTStatusOk) {
+            if (status.state != ARTStateOk) {
                 [self.logger error:[NSString stringWithFormat:@"ARTRealtime: error decoding payload, status: %tu", status]];
             }
             return [message messageWithPayload:encodedPayload];
@@ -437,7 +437,7 @@
         msg.clientId = self.clientId;
     }
     if(!msg.clientId) {
-        cb([ARTStatus state:ARTStatusNoClientId]);
+        cb([ARTStatus state:ARTStateNoClientId]);
         return;
     }
     _lastPresenceAction = msg.action;
@@ -445,7 +445,7 @@
     if (msg.payload && self.payloadEncoder) {
         ARTPayload *encodedPayload = nil;
         ARTStatus * status = [self.payloadEncoder encode:msg.payload output:&encodedPayload];
-        if (status.status != ARTStatusOk) {
+        if (status.state != ARTStateOk) {
             [self.logger warn:[NSString stringWithFormat:@"bad status encoding presence message %d",(int) status]];
         }
         msg.payload = encodedPayload;
@@ -475,7 +475,7 @@
         case ARTRealtimeChannelFailed:
         {
             if (cb) {
-                ARTStatus * status = [ARTStatus state:ARTStatusError];
+                ARTStatus *status = [ARTStatus state:ARTStateError];
                 [status.errorInfo setCode:90001 message:@"invalid channel state"];
                 cb(status);
             }
@@ -643,18 +643,18 @@
     for (ARTPresenceMessage *pm in message.presence) {
         [self.presenceDict setObject:pm forKey:pm.clientId];
     }
-    [self transition:ARTRealtimeChannelAttached status:ARTStatusOk];
+    [self transition:ARTRealtimeChannelAttached status:ARTStateOk];
 }
 
 - (void)setDetached:(ARTProtocolMessage *)message {
     self.attachSerial = nil;
 
-    ARTStatus *reason =  [ARTStatus state:ARTStatusNotAttached info:message.error];
+    ARTStatus *reason =  [ARTStatus state:ARTStateNotAttached info:message.error];
     [self detachChannel:reason];
 }
 
 - (void)releaseChannel {
-    [self detachChannel:ARTStatusOk];
+    [self detachChannel:ARTStateOk];
     [self.realtime.allChannels removeObjectForKey:self.name];
 }
 
@@ -747,8 +747,8 @@
 }
 
 - (void)onError:(ARTProtocolMessage *)msg {
-    [self failQueuedMessages:[ARTStatus state:ARTStatusError info: msg.error]];
-    [self transition:ARTRealtimeChannelFailed status:[ARTStatus state:ARTStatusError info: msg.error]];
+    [self failQueuedMessages:[ARTStatus state:ARTStateError info: msg.error]];
+    [self transition:ARTRealtimeChannelFailed status:[ARTStatus state:ARTStateError info: msg.error]];
 }
 
 
@@ -774,7 +774,7 @@
     // TODO should queueEvents be forced?
     [self.realtime send:attachMessage cb:nil];
 
-    [self transition:ARTRealtimeChannelAttaching status:ARTStatusOk];
+    [self transition:ARTRealtimeChannelAttaching status:ARTStateOk];
     return true;
 }
 
@@ -799,7 +799,7 @@
     detachMessage.channel = self.name;
     
     [self.realtime send:detachMessage cb:nil];
-    [self transition:ARTRealtimeChannelDetaching status:ARTStatusOk];
+    [self transition:ARTRealtimeChannelDetaching status:ARTStateOk];
     return true;
 }
 
@@ -814,7 +814,6 @@
 - (void)failQueuedMessages:(ARTStatus *)status {
     NSArray *qms = self.queuedMessages;
     self.queuedMessages = [NSMutableArray array];
-
     for (ARTQueuedMessage *qm in qms) {
         qm.cb(status);
     }
@@ -1017,7 +1016,7 @@
                         ARTRealtimeChannel *channel = [self.allChannels objectForKey:channelName];
                         ARTErrorInfo * info = [[ARTErrorInfo alloc] init];
                         [info setCode:80000 message:@"resume connection failed"];
-                        [channel detachChannel:[ARTStatus state:ARTStatusConnectionDisconnected info:info]];
+                        [channel detachChannel:[ARTStatus state:ARTStateConnectionDisconnected info:info]];
                     }
                 }
                 self.options.resumeKey = nil;
@@ -1041,12 +1040,12 @@
             self.transport = nil;
         case ARTRealtimeFailed:
             // reasonFailed doesn't need to be a property on self
-            [self.transport abort:[ARTStatus state:ARTStatusConnectionFailed]];
+            [self.transport abort:[ARTStatus state:ARTStateConnectionFailed]];
             self.transport.delegate = nil;
             self.transport = nil;
             break;
         case ARTRealtimeDisconnected:
-            [self.transport abort:[ARTStatus state:ARTStatusConnectionDisconnected]];
+            [self.transport abort:[ARTStatus state:ARTStateConnectionDisconnected]];
             self.transport.delegate = nil;
             self.transport = nil;
         case ARTRealtimeInitialized:
@@ -1167,10 +1166,10 @@
         [self cancelPingTimer];
         if(self.state != ARTRealtimeConnected) {
             [self.logger warn:[NSString stringWithFormat:@"ARTRealtime received a ping when in state %@", [ARTRealtime ARTRealtimeStateToStr:self.state]]];
-            self.pingCb([ARTStatus state:ARTStatusError]);
+            self.pingCb([ARTStatus state:ARTStateError]);
         }
         else {
-            self.pingCb([ARTStatus state:ARTStatusOk]);
+            self.pingCb([ARTStatus state:ARTStateOk]);
         }
         self.pingCb = nil;
     }
@@ -1263,7 +1262,7 @@
 
 - (void)onPingTimerFired {
     if(self.pingCb) {
-        self.pingCb([ARTStatus state:ARTStatusConnectionFailed]);
+        self.pingCb([ARTStatus state:ARTStateConnectionFailed]);
         self.pingCb = nil;
     }
 }
@@ -1322,7 +1321,7 @@
 }
 
 - (ARTStatus *)defaultError {
-    return [ARTStatus state:ARTStatusError];
+    return [ARTStatus state:ARTStateError];
 }
 
 - (BOOL)isActive {
@@ -1358,7 +1357,7 @@
     } else {
         // TODO review error code
         if (cb) {
-            cb([ARTStatus state:ARTStatusError]);
+            cb([ARTStatus state:ARTStateError]);
         }
     }
 }
@@ -1412,11 +1411,11 @@
     }
 
     for (ARTQueuedMessage *msg in nackMessages) {
-        msg.cb([ARTStatus state:ARTStatusError]);
+        msg.cb([ARTStatus state:ARTStateError]);
     }
 
     for (ARTQueuedMessage *msg in ackMessages) {
-        msg.cb([ARTStatus state:ARTStatusOk]);
+        msg.cb([ARTStatus state:ARTStateOk]);
     }
 }
 
@@ -1436,7 +1435,7 @@
     self.pendingMessageStartSerial = serial;
 
     for (ARTQueuedMessage *msg in nackMessages) {
-        msg.cb([ARTStatus state:ARTStatusError]);
+        msg.cb([ARTStatus state:ARTStateError]);
     }
 }
 
@@ -1668,7 +1667,7 @@
     msg.action = ARTPresenceMessageUpdate;
     msg.clientId = clientId;
     if(!msg.clientId) {
-        cb([ARTStatus state:ARTStatusNoClientId]);
+        cb([ARTStatus state:ARTStateNoClientId]);
         return;
     }
     if(data) {
@@ -1700,7 +1699,7 @@
     msg.clientId = clientId;
     msg.connectionId = self.channel.realtime.connectionId;
     if(!msg.clientId) {
-        cb([ARTStatus state:ARTStatusNoClientId]);
+        cb([ARTStatus state:ARTStateNoClientId]);
         return;
     }
     [self.channel publishPresence:msg cb:cb];
