@@ -75,7 +75,7 @@ class RestClient: QuickSpec {
                     expect(publishTask.status?.errorInfo.code).toEventually(equal(40005))
                 }
 
-                fit("should accept an options object") {
+                it("should accept an options object") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRest(options: options)
 
@@ -147,8 +147,9 @@ class RestClient: QuickSpec {
                     }
 
                     let options = AblyTests.commonAppSetup()
-                    options.loggerClass = MyLogger.self
-                    let client = ARTRest(options: options)
+                    let customLogger = MyLogger()
+                    customLogger.logLevel = .Verbose
+                    let client = ARTRest(logger: customLogger, andOptions: options)
 
                     client.logger.warn("This is a warning")
 

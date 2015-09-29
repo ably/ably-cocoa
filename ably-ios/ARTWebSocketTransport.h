@@ -17,11 +17,9 @@
 
 @interface ARTWebSocketTransport : NSObject <ARTRealtimeTransport>
 
-
-@property (nonatomic, weak) ARTLog * logger;
-@property (readwrite, weak, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
-
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithRest:(ARTRest *)rest options:(ARTClientOptions *)options;
+
+@property (readwrite, weak, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
 
 @end

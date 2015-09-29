@@ -18,9 +18,13 @@
 
 #define ART_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
 
+@class ARTPresence;
 @class ARTPresenceMap;
 @class ARTRealtimeChannelPresenceSubscription;
 @class ARTEventEmitter;
+
+
+#pragma mark - Enumerations
 
 typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
     ARTRealtimeChannelInitialised,
@@ -43,13 +47,18 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
     ARTRealtimeFailed
 };
 
+
+#pragma mark - Protocols
+
 @protocol ARTSubscription
 
 - (void)unsubscribe;
 
 @end
 
-@class ARTPresence;
+
+#pragma mark - ARTRealtimeChannel
+
 @interface ARTRealtimeChannel : NSObject
 
 - (void)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb;
@@ -58,13 +67,10 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
 - (id<ARTCancellable>)history:(ARTPaginatedResultCallback)callback;
 - (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback;
 
-
-
 typedef void (^ARTRealtimeChannelMessageCb)(ARTMessage *);
 - (id<ARTSubscription>)subscribe:(ARTRealtimeChannelMessageCb)cb;
 - (id<ARTSubscription>)subscribeToName:(NSString *)name cb:(ARTRealtimeChannelMessageCb)cb;
 - (id<ARTSubscription>)subscribeToNames:(NSArray *)names cb:(ARTRealtimeChannelMessageCb)cb;
-
 
 typedef void (^ARTRealtimeChannelStateCb)(ARTRealtimeChannelState, ARTStatus *);
 - (id<ARTSubscription>)subscribeToStateChanges:(ARTRealtimeChannelStateCb)cb;
@@ -79,7 +85,11 @@ typedef void (^ARTRealtimeChannelStateCb)(ARTRealtimeChannelState, ARTStatus *);
 
 @end
 
+
+#pragma mark - ARTPresence
+
 @interface ARTPresence : NSObject
+
 - (instancetype) initWithChannel:(ARTRealtimeChannel *) channel;
 - (id<ARTCancellable>)get:(ARTPaginatedResultCallback)callback;
 - (id<ARTCancellable>)getWithParams:(NSDictionary *) queryParams cb:(ARTPaginatedResultCallback)callback;
@@ -105,20 +115,33 @@ typedef void (^ARTRealtimeChannelPresenceCb)(ARTPresenceMessage *);
 @end
 
 
+#pragma mark - ARTRealtime
+
 @interface ARTRealtime : NSObject
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithKey:(NSString *) key;
-- (instancetype)initWithOptions:(ARTClientOptions *) options;
 
-- (void) close;
-- (BOOL) connect;
+/** 
+Instance the Ably library using a key only. This is simply a convenience constructor for the simplest case of instancing the library with a key for basic authentication and no other options.
+:param key; String key (obtained from application dashboard)
+*/
+- (instancetype)initWithKey:(NSString *)key;
+
+/**
+Instance the Ably library with the given options.
+:param options: see {@link io.ably.types.ClientOptions} for options
+*/
+- (instancetype)initWithOptions:(ARTClientOptions *)options;
+- (instancetype)initWithLogger:(ARTLog *)logger andOptions:(ARTClientOptions *)options;
+
+- (void)close;
+- (BOOL)connect;
 
 - (ARTRealtimeConnectionState)state;
 - (NSString *)connectionId;
 - (NSString *)connectionKey;
 - (NSString *)recoveryKey;
-- (ARTAuth *) auth;
+- (ARTAuth *)auth;
 - (NSDictionary *) channels;
 - (id<ARTCancellable>)time:(void(^)(ARTStatus *status, NSDate *time))cb;
 
@@ -132,14 +155,16 @@ typedef void (^ARTRealtimePingCb)(ARTStatus *);
 - (ARTRealtimeChannel *)channel:(NSString *)channelName;
 - (ARTRealtimeChannel *)channel:(NSString *)channelName cipherParams:(ARTCipherParams *)cipherParams;
 
-
-
-@property (nonatomic, weak) ARTLog * logger;
 @property (readonly, strong, nonatomic) ARTEventEmitter *eventEmitter;
+@property (readonly, getter=getLogger) ARTLog *logger;
 
 @end
 
+
+#pragma mark - ARTEventEmitter
+
 @interface ARTEventEmitter : NSObject
+
 -(instancetype) initWithRealtime:(ARTRealtime *) realtime;
 
 typedef void (^ARTRealtimeConnectionStateCb)(ARTRealtimeConnectionState);

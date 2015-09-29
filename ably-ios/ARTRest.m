@@ -70,7 +70,6 @@
 - (instancetype)initWithRest:(ARTRest *)rest name:(NSString *)name cipherParams:(ARTCipherParams *)cipherParams {
     self = [super init];
     if (self) {
-    
         self.logger = rest.logger;
         _presence = [[ARTRestPresence alloc] initWithChannel:self];
         [self.logger debug:[NSString stringWithFormat:@"ARTRestChannel: instantiating under %@", name]];
@@ -153,16 +152,19 @@
     }];
 }
 
-
-
 @end
+
+
+#pragma mark - ARTRest
 
 @implementation ARTRest
 
--(instancetype) initWithOptions:(ARTClientOptions *) options {
+- (instancetype)initWithLogger:(ARTLog *)logger andOptions:(ARTClientOptions *)options {
     self = [super init];
-    if(self) {
+    if (self) {
+        _logger = logger;
         _options = options;
+        
         self.baseUrl = [options restUrl];
         [self setup];
         _auth = [[ARTAuth alloc] initWithRest:self options:options.authOptions];
@@ -170,15 +172,16 @@
     return self;
 }
 
--(instancetype) initWithKey:(NSString *) key {
+- (instancetype)initWithOptions:(ARTClientOptions *)options {
+    return [self initWithLogger:[[ARTLog alloc] init] andOptions:options];
+}
+
+- (instancetype)initWithKey:(NSString *) key {
     return [self initWithOptions:[ARTClientOptions optionsWithKey:key]];
 }
 
-- (void) setup {
+- (void)setup {
     _http = [[ARTHttp alloc] init];
-
-    Class loggerClass = self->_options.loggerClass ?: [ARTLog class];
-    self->_logger = [[loggerClass alloc] init];
     
     _channels = [NSMutableDictionary dictionary];
     id<ARTEncoder> defaultEncoder = [[ARTJsonEncoder alloc] init];
@@ -188,7 +191,6 @@
     
     _defaultEncoding = [defaultEncoder mimeType];
     _fallbackCount = 0;
-    
 }
 
 - (id<ARTCancellable>) token:(ARTAuthTokenParams *) params tokenCb:(void (^)(ARTStatus *status, ARTTokenDetails *)) cb {

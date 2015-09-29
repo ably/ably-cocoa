@@ -19,6 +19,9 @@
 @class ARTAuthTokenParams;
 @class ARTRestPresence;
 
+
+# pragma mark - ARTRestChannel
+
 @interface ARTRestChannel : NSObject
 
 - (id<ARTCancellable>)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb;
@@ -28,36 +31,41 @@
 - (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback;
 
 @property (readonly, strong, nonatomic) ARTRestPresence *presence;
+
 @end
 
+
+# pragma mark - ARTRestPresence
+
 @interface ARTRestPresence : NSObject
+
 - (instancetype) initWithChannel:(ARTRestChannel *) channel;
 - (id<ARTCancellable>)get:(ARTPaginatedResultCallback)callback;
 - (id<ARTCancellable>)getWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback;
 - (id<ARTCancellable>)history:(ARTPaginatedResultCallback)callback;
 - (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback;
+
 @end
 
+
+# pragma mark - ARTRest
+
 @interface ARTRest : NSObject
-{
 
-}
-
-@property (nonatomic, strong) ARTLog * logger;
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
--(instancetype) initWithOptions:(ARTClientOptions *) options;
--(instancetype) initWithKey:(NSString *) key;
-- (id<ARTCancellable>) token:(ARTAuthTokenParams *) keyName tokenCb:(void (^)(ARTStatus * status, ARTTokenDetails *)) cb;
+- (instancetype)initWithOptions:(ARTClientOptions *)options;
+- (instancetype)initWithLogger:(ARTLog *)logger andOptions:(ARTClientOptions *)options;
+- (instancetype)initWithKey:(NSString *)key;
 
-- (id<ARTCancellable>)time:(void(^)(ARTStatus * status, NSDate *time))cb;
+- (id<ARTCancellable>)token:(ARTAuthTokenParams *)keyName tokenCb:(void (^)(ARTStatus * status, ARTTokenDetails *)) cb;
+- (id<ARTCancellable>)time:(void(^)(ARTStatus *status, NSDate *time))cb;
 - (id<ARTCancellable>)stats:(ARTStatsQuery *)query callback:(ARTPaginatedResultCallback)callback;
 - (id<ARTCancellable>)internetIsUp:(void (^)(bool isUp)) cb;
 - (ARTRestChannel *)channel:(NSString *)channelName;
 - (ARTRestChannel *)channel:(NSString *)channelName cipherParams:(ARTCipherParams *)cipherParams;
 
+- (ARTAuth *)auth;
 
--(ARTAuth *) auth;
-
-
+@property (nonatomic, strong, readonly) ARTLog *logger;
 
 @end

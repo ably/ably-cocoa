@@ -31,6 +31,7 @@ static const char *logLevelName(ARTLogLevel level) {
 
 - (instancetype)init {
     if (self = [super init]) {
+        // Default
         self->_logLevel = ARTLogLevelWarn;
     }
     return self;

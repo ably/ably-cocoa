@@ -9,8 +9,11 @@
 #import "ARTClientOptions.h"
 #import "ARTClientOptions+Private.h"
 #import "ARTDefault.h"
+
 @interface ARTClientOptions ()
+
 @property (readwrite, strong, nonatomic) NSString *realtimeHost;
+
 - (instancetype)initDefaults;
 
 @end
@@ -32,9 +35,6 @@
     }
     return realtimeHost;
 }
-
-
-
 
 - (instancetype)init {
     self = [super init];
@@ -126,7 +126,6 @@
     options.connectionSerial = self.connectionSerial;
     options.resumeKey = self.resumeKey;
     options.environment = self.environment;
-    options.loggerClass = self.loggerClass;
 
     return options;
 }

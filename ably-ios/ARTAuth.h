@@ -11,8 +11,11 @@
 #import <ably/ARTTypes.h>
 
 @class ARTRest;
-
 @class ARTLog;
+
+
+#pragma mark - ARTTokenDetails
+
 @interface ARTTokenDetails : NSObject
 
 @property (readonly, strong, nonatomic) NSString *token;
@@ -27,6 +30,9 @@
 
 @end
 
+
+#pragma mark - ARTAuthTokenParams
+
 @interface ARTAuthTokenParams : NSObject
 
 @property (readonly, strong, nonatomic) NSString *keyName;
@@ -37,12 +43,12 @@
 @property (readonly, strong, nonatomic) NSString *nonce;
 @property (readonly, strong, nonatomic) NSString *mac;
 
-
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
 - (instancetype)initWithId:(NSString *)id ttl:(int64_t)ttl capability:(NSString *)capability clientId:(NSString *)clientId timestamp:(int64_t)timestamp nonce:(NSString *)nonce mac:(NSString *)mac;
 
 -(NSDictionary *) asDictionary;
+
 @end
 
 typedef id<ARTCancellable>(^ARTAuthCb)(void(^continuation)(ARTStatus *,ARTTokenDetails *));
@@ -52,9 +58,11 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
     ARTAuthMethodToken
 };
 
+
+#pragma mark - ARTAuthOptions
+
 @interface ARTAuthOptions : NSObject
 
-@property (nonatomic, weak) ARTLog * logger;
 @property (readwrite, strong, nonatomic) ARTAuthCb authCallback;
 @property (readwrite, strong, nonatomic) ARTSignedTokenRequestCb signedTokenRequestCallback;
 @property (readwrite, strong, nonatomic) ARTAuthTokenParams *tokenParams;
@@ -71,7 +79,6 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 @property (readwrite, assign, nonatomic) BOOL useTokenAuth;
 @property (readwrite, assign, nonatomic) ARTTokenDetails * tokenDetails;
 
-
 - (instancetype)init;
 - (instancetype)initWithKey:(NSString *)key;
 
@@ -81,6 +88,9 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 - (instancetype)clone;
 
 @end
+
+
+#pragma mark - ARTAuth
 
 @interface ARTAuth : NSObject
 
@@ -96,5 +106,4 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 - (void)attemptTokenFetch:(void (^)()) cb;
 - (bool)canRequestToken;
 
-+ (ARTSignedTokenRequestCb)defaultSignedTokenRequestCallback:(ARTAuthOptions *)authOptions rest:(ARTRest *)rest;
 @end

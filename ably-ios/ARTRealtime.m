@@ -32,6 +32,7 @@
 
 @end
 
+
 @interface ARTRealtimeChannelSubscription : NSObject <ARTSubscription>
 
 @property (readonly, weak, nonatomic) ARTRealtimeChannel *channel;
@@ -42,6 +43,7 @@
 - (void)unsubscribe;
 
 @end
+
 
 @interface ARTRealtimeChannelPresenceSubscription : NSObject <ARTSubscription>
 
@@ -56,6 +58,7 @@
 
 @end
 
+
 @interface ARTRealtimeChannelStateSubscription : NSObject <ARTSubscription>
 
 @property (readonly, weak, nonatomic) ARTRealtimeChannel *channel;
@@ -66,6 +69,7 @@
 - (void)unsubscribe;
 
 @end
+
 
 @interface ARTRealtimeConnectionStateSubscription : NSObject <ARTSubscription>
 
@@ -78,15 +82,22 @@
 
 @end
 
+
 @interface ARTPresence ()
+
 @property (nonatomic, weak) ARTLog * logger;
 @property (readonly, weak, nonatomic) ARTRealtimeChannel *channel;
+
 @end
 
 @interface ARTEventEmitter ()
+
 @property (readonly, weak, nonatomic) ARTRealtime * realtime;
+
 @end
 
+
+#pragma mark - ARTRealtimeChannel interface
 
 @interface ARTRealtimeChannel ()
 
@@ -132,6 +143,9 @@
 - (void)broadcastPresence:(ARTPresenceMessage *)pm;
 
 @end
+
+
+#pragma mark - ARTRealtime interface
 
 @interface ARTRealtime () <ARTRealtimeTransportDelegate>
 
@@ -201,9 +215,6 @@
 - (void)ack:(int64_t)serial count:(int64_t)count;
 - (void)nack:(int64_t)serial count:(int64_t)count;
 
-
-
-
 // util
 - (id<ARTRealtimeTransport>)createTransport;
 - (CFRunLoopTimerRef)startTimer:(void(^)())onTimeout interval:(NSTimeInterval)interval;
@@ -212,6 +223,9 @@
 - (void)unsubscribeState:(ARTRealtimeConnectionStateSubscription *)subscription;
 
 @end
+
+
+#pragma mark - ARTQueuedMessage
 
 @implementation ARTQueuedMessage
 
@@ -247,6 +261,9 @@
 
 @end
 
+
+#pragma mark - ARTRealtimeChannelSubscription
+
 @implementation ARTRealtimeChannelSubscription
 
 - (instancetype)initWithChannel:(ARTRealtimeChannel *)channel cb:(ARTRealtimeChannelMessageCb)cb {
@@ -263,6 +280,9 @@
 }
 
 @end
+
+
+#pragma mark - ARTRealtimeChannelPresenceSubscription
 
 @implementation ARTRealtimeChannelPresenceSubscription
 
@@ -298,6 +318,9 @@
 
 @end
 
+
+#pragma mark - ARTRealtimeChannelStateSubscription
+
 @implementation ARTRealtimeChannelStateSubscription
 
 - (instancetype)initWithChannel:(ARTRealtimeChannel *)channel cb:(ARTRealtimeChannelStateCb)cb {
@@ -315,6 +338,9 @@
 
 @end
 
+
+#pragma mark - ARTRealtimeConnectionStateSubscription
+
 @implementation ARTRealtimeConnectionStateSubscription
 
 - (instancetype)initWithRealtime:(ARTRealtime *)realtime cb:(ARTRealtimeConnectionStateCb)cb {
@@ -331,6 +357,9 @@
 }
 
 @end
+
+
+#pragma mark - ARTRealtimeChannel
 
 @implementation ARTRealtimeChannel
 
@@ -393,7 +422,6 @@
     [self publishProtocolMessage:msg cb:cb];
 }
 
-
 - (void) requestContinueSync {
     [self.logger info:@"ARTRealtime requesting to continue sync operation after reconnect"];
 
@@ -404,6 +432,7 @@
     
     [self.realtime send:msg cb:^(ARTStatus *status) {}];
 }
+
 - (void)publishPresence:(ARTPresenceMessage *)msg cb:(ARTStatusCallback)cb {
     if (!msg.clientId) {
         msg.clientId = self.clientId;
@@ -466,11 +495,13 @@
 - (ARTPresenceMap *) presenceMap {
     return _presenceMap;
 }
+
 -(void) throwOnDisconnectedOrFailed {
     if(self.realtime.state == ARTRealtimeFailed || self.realtime.state == ARTRealtimeDisconnected) {
         [NSException raise:@"realtime cannot perform action in disconnected or failed state" format:@"state: %d", (int)self.realtime.state];
     }
 }
+
 - (id<ARTCancellable>)history:(ARTPaginatedResultCallback)callback {
     [self throwOnDisconnectedOrFailed];
     return [self.restChannel history:callback];
@@ -483,8 +514,6 @@
     }
     return [self.restChannel historyWithParams:queryParams cb:callback];
 }
-
-
 
 - (id<ARTSubscription>)subscribe:(ARTRealtimeChannelMessageCb)cb {
     // Empty string used for blanket subscriptions
@@ -775,7 +804,6 @@
     return true;
 }
 
-
 - (void)sendQueuedMessages {
     NSArray *qms = self.queuedMessages;
     self.queuedMessages = [NSMutableArray array];
@@ -795,7 +823,50 @@
 
 @end
 
+
+#pragma mark - ARTRealtime
+
 @implementation ARTRealtime
+
+- (instancetype)initWithOptions:(ARTClientOptions *)options {
+    return [self initWithLogger:[[ARTLog alloc] init] andOptions:options];
+}
+
+- (instancetype)initWithKey:(NSString *)key {
+    return [self initWithOptions:[ARTClientOptions optionsWithKey:key]];
+}
+
+- (instancetype)initWithLogger:(ARTLog *)logger andOptions:(ARTClientOptions *)options {
+    self = [super init];
+    if (self) {
+        _rest = [[ARTRest alloc] initWithLogger:logger andOptions:options];
+        _eventEmitter = [[ARTEventEmitter alloc] initWithRealtime:self];
+        _allChannels = [NSMutableDictionary dictionary];
+        _transport = nil;
+        self.state = ARTRealtimeInitialized;
+        _connectTimeout = NULL;
+        _suspendTimeout = NULL;
+        _retryTimeout = NULL;
+        _connectionId = nil;
+        _msgSerial = 0;
+        _queuedMessages = [NSMutableArray array];
+        _pendingMessages = [NSMutableArray array];
+        _pendingMessageStartSerial = 0;
+        _clientId = options.clientId;
+        _options = [options clone];
+        _stateSubscriptions = [NSMutableArray array];
+        _errorReason = [[ARTErrorInfo alloc] init];
+        
+        if (options.autoConnect) {
+            [self connect];
+        }
+    }
+    return self;
+}
+
+- (ARTLog *)getLogger {
+    return _rest.logger;
+}
 
 - (ARTErrorInfo *)connectionErrorReason {
     return self.errorReason;
@@ -825,43 +896,6 @@
 
 - (ARTAuth *) auth {
     return self.rest.auth;
-}
-
-- (instancetype)initWithKey:(NSString *) key {
-    return [self initWithOptions:[ARTClientOptions optionsWithKey:key]];
-}
-
-- (instancetype)initWithOptions:(ARTClientOptions *) options {
-    ARTRealtime * r = [[ARTRealtime alloc] initWithoutRest:options];
-    r.rest = [[ARTRest alloc] initWithOptions:options];
-    r.logger = r.logger;
-    if(options.autoConnect) {
-        [r connect];
-    }
-    return r;
-}
-
--(instancetype) initWithoutRest:(ARTClientOptions *) options {
-    self = [super init];
-    if (self) {
-        _eventEmitter = [[ARTEventEmitter alloc] initWithRealtime:self];
-        _allChannels = [NSMutableDictionary dictionary];
-        _transport = nil;
-        self.state = ARTRealtimeInitialized;
-        _connectTimeout = NULL;
-        _suspendTimeout = NULL;
-        _retryTimeout = NULL;
-        _connectionId = nil;
-        _msgSerial = 0;
-        _queuedMessages = [NSMutableArray array];
-        _pendingMessages = [NSMutableArray array];
-        _pendingMessageStartSerial = 0;
-        _clientId = options.clientId;
-        _options = [options clone];
-        _stateSubscriptions = [NSMutableArray array];
-        _errorReason = [[ARTErrorInfo alloc] init];
-    }
-    return self;
 }
 
 - (NSDictionary *) channels {
@@ -1141,7 +1175,6 @@
     }
 }
 
-
 - (void)onConnected:(ARTProtocolMessage *)message {
     self.connectionId = message.connectionId;
     switch (self.state) {
@@ -1180,8 +1213,6 @@
     }
 }
 
-
-
 - (void)onError:(ARTProtocolMessage *)message {
     // TODO work out which states this can be received in
     
@@ -1204,20 +1235,19 @@
     [self nack:message.msgSerial count:message.count];
 }
 
-
-
-
 - (void)onChannelMessage:(ARTProtocolMessage *)message {
     // TODO work out which states this can be received in
     ARTRealtimeChannel *channel = [self.allChannels objectForKey:message.channel];
     [channel onChannelMessage:message];
 }
 
-
 - (void)onConnectTimerFired {
     switch (self.state) {
         case ARTRealtimeConnecting:
             [self.logger warn:@"ARTRealtime connecting timer fired."];
+            
+            NSLog(@"ARTRealtime connecting timer fired.");
+            
             [self transition:ARTRealtimeFailed];
             break;
         default:
@@ -1226,11 +1256,11 @@
     }
 }
 
--(void) onCloseTimerFired {
+- (void)onCloseTimerFired {
     [self transition:ARTRealtimeClosed];
 }
 
--(void) onPingTimerFired {
+- (void)onPingTimerFired {
     if(self.pingCb) {
         self.pingCb([ARTStatus state:ARTStatusConnectionFailed]);
         self.pingCb = nil;
@@ -1240,6 +1270,7 @@
 - (void)onSuspended {
     [self transition:ARTRealtimeSuspended];
 }
+
 - (void)onSuspendTimerFired {
     switch (self.state) {
         case ARTRealtimeConnected:
@@ -1504,7 +1535,6 @@
     [self transition:ARTRealtimeFailed];
 }
 
-
 +(NSString *) protocolStr:(ARTProtocolMessageAction ) action {
     switch(action) {
         case ARTProtocolMessageHeartbeat:
@@ -1576,6 +1606,7 @@
 @end
 
 
+#pragma mark - ARTPresence
 
 @implementation ARTPresence
 
@@ -1701,7 +1732,11 @@
     ARTRealtimeChannelPresenceSubscription *s = (ARTRealtimeChannelPresenceSubscription *) subscription;
     [self.channel.presenceSubscriptions removeObject:s];
 }
+
 @end
+
+
+#pragma mark - ARTEventEmitter
 
 @implementation ARTEventEmitter
 
@@ -1719,6 +1754,5 @@
     cb(self.realtime.state);
     return subscription;
 }
-
 
 @end

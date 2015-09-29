@@ -17,6 +17,7 @@ class Configuration : QuickConfiguration {
     override class func configure(configuration: Quick.Configuration!) {
         configuration.beforeEach {
             ARTClientOptions.getDefaultRestHost("sandbox-rest.ably.io", modify: true)
+            ARTClientOptions.getDefaultRealtimeHost("sandbox-realtime.ably.io", modify: true)
         }
     }
 }
