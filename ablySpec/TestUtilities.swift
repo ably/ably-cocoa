@@ -16,8 +16,8 @@ import Quick
 class Configuration : QuickConfiguration {
     override class func configure(configuration: Quick.Configuration!) {
         configuration.beforeEach {
-            ARTClientOptions.getDefaultRestHost("sandbox-rest.ably.io", modify: true)
-            ARTClientOptions.getDefaultRealtimeHost("sandbox-realtime.ably.io", modify: true)
+            //ARTClientOptions.getDefaultRestHost("sandbox-rest.ably.io", modify: true)
+            //ARTClientOptions.getDefaultRealtimeHost("sandbox-realtime.ably.io", modify: true)
         }
     }
 }
@@ -29,8 +29,6 @@ func pathForTestResource(resourcePath: String) -> String {
 
 let appSetupJson = JSON(data: NSData(contentsOfFile: pathForTestResource("ably-common/test-resources/test-app-setup.json"))!, options: .MutableContainers)
 
-let restHost = "sandbox-rest.ably.io"
-
 let testTimeout: NSTimeInterval = 30
 
 class AblyTests {
@@ -38,7 +36,7 @@ class AblyTests {
     class var jsonRestOptions: ARTClientOptions {
         get {
             let options = ARTClientOptions()
-            options.restHost = restHost
+            options.environment = "sandbox"
             options.binary = false
             return options
         }
@@ -78,11 +76,10 @@ class AblyTests {
             let appId = response["appId"]
             let id = key["id"]
 
-            let appOptions = options.clone()
-            appOptions.authOptions.keyName = "\(appId).\(id)"
-            appOptions.authOptions.keySecret = key["value"].stringValue
-            appOptions.authOptions.capability = key["capability"].stringValue
-            return appOptions
+            options.authOptions.keyName = "\(appId).\(id)"
+            options.authOptions.keySecret = key["value"].stringValue
+            options.authOptions.capability = key["capability"].stringValue
+            return options
         }
         
         return options

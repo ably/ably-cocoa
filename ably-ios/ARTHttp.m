@@ -13,7 +13,7 @@
 
 @interface ARTHttp ()
 
-@property (readonly, strong, nonatomic) NSURL *baseUrl;
+@property (readonly, copy, nonatomic) NSURL *baseUrl;
 @property (readonly, strong, nonatomic) NSURLSession *urlSession;
 
 @end

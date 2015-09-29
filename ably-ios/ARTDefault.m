@@ -10,8 +10,19 @@
 
 @implementation ARTDefault
 
-+(NSArray *)fallbackHosts {
+NSString *const DefaultRestHost = @"rest.ably.io";
+NSString *const DefaultRealtimeHost = @"realtime.ably.io";
+
++ (NSArray*)fallbackHosts {
     return @[@"A.ably-realtime.com", @"B.ably-realtime.com", @"C.ably-realtime.com", @"D.ably-realtime.com", @"E.ably-realtime.com"];
+}
+
++ (NSString*)restHost {
+    return DefaultRestHost;
+}
+
++ (NSString*)realtimeHost {
+    return DefaultRealtimeHost;
 }
 
 + (int)TLSPort {

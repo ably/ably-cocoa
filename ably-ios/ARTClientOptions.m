@@ -12,29 +12,11 @@
 
 @interface ARTClientOptions ()
 
-@property (readwrite, strong, nonatomic) NSString *realtimeHost;
-
 - (instancetype)initDefaults;
 
 @end
 
 @implementation ARTClientOptions
-
-+(NSString *) getDefaultRestHost:(NSString *) replacement modify:(bool) modify {
-    static NSString * restHost =@"rest.ably.io";
-    if (modify) {
-        restHost = replacement;
-    }
-    return restHost;
-}
-
-+(NSString *) getDefaultRealtimeHost:(NSString *) replacement modify:(bool) modify {
-    static NSString * realtimeHost =@"realtime.ably.io";
-    if (modify) {
-        realtimeHost = replacement;
-    }
-    return realtimeHost;
-}
 
 - (instancetype)init {
     self = [super init];
@@ -61,22 +43,16 @@
     return self;
 }
 
--(NSString *) restHost {
-    return _environment ?[NSString stringWithFormat:@"%@-%@", _environment, _restHost] : _restHost;
+- (NSString*)getRestHost {
+    return _environment ? [NSString stringWithFormat:@"%@-%@", _environment, [ARTDefault restHost]] : [ARTDefault restHost];
 }
 
--(NSString * ) defaultRestHost {
-    return [ARTClientOptions getDefaultRestHost:@"" modify:false];
-}
-
--(NSString *) defaultRealtimeHost {
-    return [ARTClientOptions getDefaultRealtimeHost:@"" modify:false];
+- (NSString*)getRealtimeHost {
+    return _environment ? [NSString stringWithFormat:@"%@-%@", _environment, [ARTDefault realtimeHost]] : [ARTDefault realtimeHost];
 }
 
 - (instancetype)initDefaults {
     _clientId = nil;
-    self.restHost =  [self defaultRestHost];
-    _realtimeHost = [self defaultRealtimeHost];
     _restPort = [ARTDefault TLSPort];
     _realtimePort = [ARTDefault TLSPort];
     _queueMessages = YES;
@@ -98,49 +74,14 @@
     return [[ARTClientOptions alloc] initWithKey:key];
 }
 
-+(NSURL *) restUrl:(NSString *) host port:(int) port {
-    NSString *s = [NSString stringWithFormat:@"https://%@:%d", host, port];
-    return [NSURL URLWithString:s];
-}
-- (NSURL *)restUrl {
-    return [ARTClientOptions restUrl:self.restHost port:self.restPort];
-}
-
-- (instancetype)clone {
-    ARTClientOptions *options = [[ARTClientOptions alloc] init];
-    options.authOptions = [self.authOptions clone];
-    if (!options.authOptions) {
-        return nil;
-    }
-    
-    options.clientId = self.clientId;
-    options.restHost = self.restHost;
-    options.realtimeHost = self.realtimeHost;
-    options.restPort = self.restPort;
-    options.realtimePort = self.realtimePort;
-    options.queueMessages = self.queueMessages;
-    options.echoMessages = self.echoMessages;
-    options.recover = self.recover;
-    options.binary = self.binary;
-    options.autoConnect = self.autoConnect;
-    options.connectionSerial = self.connectionSerial;
-    options.resumeKey = self.resumeKey;
-    options.environment = self.environment;
-
-    return options;
-}
-
--(void) setRealtimeHost:(NSString *)realtimeHost withRestHost:(NSString *) restHost {
-    self.realtimeHost = realtimeHost;
-    self.restHost = restHost;
-}
-
-- (NSString *)realtimeHost {
-    return _environment ?[NSString stringWithFormat:@"%@-%@", _environment, _realtimeHost] : _realtimeHost;
++ (NSURL*)restUrl:(NSString *)host port:(int)port {
+    NSString *urlStr = [NSString stringWithFormat:@"https://%@:%d", host, port];
+    return [NSURL URLWithString:urlStr];
 }
 
 - (bool)isFallbackPermitted {
-    return [self.restHost isEqualToString:[self defaultRestHost]];
+    // FIXME: self.restHost is immutable!
+    return [self.restHost isEqualToString:[ARTDefault restHost]];
 }
 
 @end

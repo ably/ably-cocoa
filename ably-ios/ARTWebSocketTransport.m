@@ -37,7 +37,7 @@ enum {
 @property (readwrite, strong, nonatomic) SRWebSocket *websocket;
 @property (readwrite, assign, nonatomic) BOOL closing;
 @property (readwrite, strong, nonatomic) id<ARTEncoder> encoder;
-@property (readwrite, strong, nonatomic) ARTLog *logger;
+@property (readonly, strong, nonatomic) ARTLog *logger;
 
 @end
 

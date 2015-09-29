@@ -20,11 +20,16 @@ class RealtimeClient: QuickSpec {
                     let options = AblyTests.commonAppSetup() //Same as Rest
                     let client = ARTRealtime(options: options)
                     
+                    let expectation = self.expectationWithDescription("async")
+                    
                     client.eventEmitter.on { state in
                         if state != .Connecting {
                             expect(state).to(equal(ARTRealtimeConnectionState.Connected))
+                            expectation.fulfill()
                         }
                     }
+                    
+                    self.waitForExpectationsWithTimeout(10.0, handler: nil)
                 }
                 
                 //RTC1a
@@ -53,7 +58,7 @@ class RealtimeClient: QuickSpec {
                     // realtimeHost string, when set, will modify the realtime endpoint host used by this client library
 
                     //Default: realtime.ably.io
-                    let realtimeHost = options.realtimeHost()
+                    let realtimeHost = options.realtimeHost
                     
                     // TODO: try to swizzle
                 }
@@ -62,33 +67,17 @@ class RealtimeClient: QuickSpec {
                 fit("should modify both the REST and realtime endpoint if environment string is assigned") {
                     let options = AblyTests.commonAppSetup()
                     
-                    let logger = ARTLog()
-                    logger.logLevel = .Verbose
-                    
-                    let expectation = self.expectationWithDescription("async")
+                    let oldRestHost = options.restHost
+                    let oldRealtimeHost = options.realtimeHost
                     
                     // Change REST and realtime endpoint hosts
                     options.environment = "test"
-                    //options.realtimePort = 1111
                     
-                    //sandbox-rest.ably.io
-                    //sandbox-realtime.ably.io
-                    
-                    let client = ARTRealtime(logger: logger, andOptions: options)
-                    
-                    // FIXME: environment is not working
-                    // Result: test-test-sandbox-realtime
-                    
-                    var testState: ARTRealtimeConnectionState = .Connecting
-                    
-                    client.eventEmitter.on { state in
-                        if state != .Connecting {
-                            expect(state).to(equal(ARTRealtimeConnectionState.Connected))
-                            expectation.fulfill()
-                        }
-                    }
-                    
-                    self.waitForExpectationsWithTimeout(10.0, handler: nil)
+                    expect(options.restHost).to(equal("test-rest.ably.io"))
+                    expect(options.realtimeHost).to(equal("test-realtime.ably.io"))
+                    // Extra care
+                    expect(oldRestHost).to(equal("sandbox-rest.ably.io"))
+                    expect(oldRealtimeHost).to(equal("sandbox-realtime.ably.io"))
                 }
             }
         }

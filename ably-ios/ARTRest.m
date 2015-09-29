@@ -50,13 +50,13 @@
 @interface ARTRest ()
 
 @property (readonly, strong, nonatomic) ARTHttp *http;
-@property (readonly, strong, nonatomic) ARTClientOptions * options;
+@property (readonly, weak, nonatomic) ARTClientOptions *options;
 @property (readonly, strong, nonatomic) NSMutableDictionary *channels;
 @property ( strong, nonatomic) ARTAuth *auth;
 @property (readonly, strong, nonatomic) NSDictionary *encoders;
 @property (readonly, strong, nonatomic) NSString *defaultEncoding;
 @property (readwrite, assign, nonatomic) int fallbackCount;
-@property (readwrite, strong, nonatomic) NSURL *baseUrl;
+@property (readwrite, copy, nonatomic) NSURL *baseUrl;
 
 
 - (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method relUrl:(NSString *)relUrl headers:(NSDictionary *)headers body:(NSData *)body authenticated:(ARTAuthentication)authenticated cb:(ARTHttpCb)cb;
@@ -162,10 +162,17 @@
 - (instancetype)initWithLogger:(ARTLog *)logger andOptions:(ARTClientOptions *)options {
     self = [super init];
     if (self) {
-        _logger = logger;
+        NSAssert(options, @"ARTRest: No options provided");
         _options = options;
         
-        self.baseUrl = [options restUrl];
+        if (logger) {
+            _logger = logger;
+        }
+        else {
+            _logger = [[ARTLog alloc] init];
+        }
+        
+        self.baseUrl = [ARTClientOptions restUrl:self.options.restHost port:self.options.restPort];
         [self setup];
         _auth = [[ARTAuth alloc] initWithRest:self options:options.authOptions];
     }
@@ -329,14 +336,14 @@
             }
             NSString * nextFallbackHost = [theFb popFallbackHost];
             if(nextFallbackHost != nil) {
-                self.baseUrl =[ARTClientOptions restUrl:nextFallbackHost port:self.options.restPort];
+                self.baseUrl = [ARTClientOptions restUrl:nextFallbackHost port:self.options.restPort];
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
                     [s makeRequestWithMethod:method relUrl:relUrl headers:headers body:body authenticated:authenticated fb:theFb cb:cb];
                 });
             }
             else {
                 [self.logger warn:@"ARTRest has no more fallback hosts to attempt. Giving up."];
-                self.baseUrl = [self.options restUrl];
+                self.baseUrl = [ARTClientOptions restUrl:self.options.restHost port:self.options.restPort];
                 cb(response);
                 return;
             }

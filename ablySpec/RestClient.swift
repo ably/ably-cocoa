@@ -161,8 +161,6 @@ class RestClient: QuickSpec {
             // RSC11
             context("endpoint") {
                 it("should accept an options object with an environment set") {
-                    // reset the default host in order to force ARTClientOptions to compute it
-                    ARTClientOptions.getDefaultRestHost("rest.ably.io", modify: true)
                     let options = AblyTests.commonAppSetup()
                     let newOptions = ARTClientOptions()
                     newOptions.authOptions.keyName = options.authOptions.keyName

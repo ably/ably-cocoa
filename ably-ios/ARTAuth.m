@@ -343,7 +343,7 @@
                 }];
             }
             else {
-                [self.logger error:@"ARTAuth has no ARTRest to use to request a token"];
+                [weakSelf.logger error:@"ARTAuth has no ARTRest to use to request a token"];
             }
         });
         ic.cancellable = c;

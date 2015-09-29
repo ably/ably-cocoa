@@ -172,8 +172,8 @@
 
 @property (readonly, strong, nonatomic) NSMutableArray *stateSubscriptions;
 @property (nonatomic, copy) ARTRealtimePingCb pingCb;
-@property (readonly, strong, nonatomic) ARTClientOptions *options;
-@property (readwrite, strong, nonatomic) ARTErrorInfo * errorReason;
+@property (readonly, weak, nonatomic) ARTClientOptions *options;
+@property (readwrite, strong, nonatomic) ARTErrorInfo *errorReason;
 
 
 - (void)transition:(ARTRealtimeConnectionState)state;
@@ -193,7 +193,6 @@
 - (void)cancelRetryTimer;
 - (void)cancelPingTimer;
 - (void)cancelCloseTimer;
-
 
 // Timer events
 - (void)onConnectTimerFired;
@@ -839,6 +838,8 @@
 - (instancetype)initWithLogger:(ARTLog *)logger andOptions:(ARTClientOptions *)options {
     self = [super init];
     if (self) {
+        NSAssert(options, @"ARTRealtime: No options provided");
+        
         _rest = [[ARTRest alloc] initWithLogger:logger andOptions:options];
         _eventEmitter = [[ARTEventEmitter alloc] initWithRealtime:self];
         _allChannels = [NSMutableDictionary dictionary];
@@ -853,7 +854,7 @@
         _pendingMessages = [NSMutableArray array];
         _pendingMessageStartSerial = 0;
         _clientId = options.clientId;
-        _options = [options clone];
+        _options = options;
         _stateSubscriptions = [NSMutableArray array];
         _errorReason = [[ARTErrorInfo alloc] init];
         
@@ -894,11 +895,11 @@
     }
 }
 
-- (ARTAuth *) auth {
+- (ARTAuth *)auth {
     return self.rest.auth;
 }
 
-- (NSDictionary *) channels {
+- (NSDictionary *)channels {
     return _allChannels;
 }
 
