@@ -152,9 +152,11 @@ class RestClient: QuickSpec {
                     let client = ARTRest(logger: customLogger, andOptions: options)
 
                     client.logger.warn("This is a warning")
-
+                    
                     expect(Log.interceptedLog.0).to(equal("This is a warning"))
                     expect(Log.interceptedLog.1).to(equal(ARTLogLevel.Warn))
+                    
+                    expect(client.logger.logLevel).to(equal(customLogger.logLevel))
                 }
             }
 

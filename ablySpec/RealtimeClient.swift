@@ -64,7 +64,7 @@ class RealtimeClient: QuickSpec {
                 }
                 
                 //RTC1e
-                fit("should modify both the REST and realtime endpoint if environment string is assigned") {
+                it("should modify both the REST and realtime endpoint if environment string is assigned") {
                     let options = AblyTests.commonAppSetup()
                     
                     let oldRestHost = options.restHost
