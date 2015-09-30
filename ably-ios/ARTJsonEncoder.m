@@ -9,6 +9,7 @@
 #import "ARTJsonEncoder.h"
 #import "ARTMessage.h"
 #import "ARTPresence.h"
+#import "ARTPresenceMessage.h"
 #import "ARTProtocolMessage.h"
 #import "ARTStats.h"
 #import "ARTNSDictionary+ARTDictionaryUtil.h"

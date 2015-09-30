@@ -31,8 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRestChannelCollection : ARTChannelCollection
 
-- (ARTRestChannel *)get:(NSString *)channelName;
-- (ARTRestChannel *)get:(NSString *)channelName options:(ARTChannelOptions *)options;
+//- (ARTRestChannel *)get:(NSString *)channelName;
+//- (ARTRestChannel *)get:(NSString *)channelName options:(ARTChannelOptions *)options;
 
 @end
 
@@ -50,11 +50,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (id<ARTCancellable>)time:(void(^)(ARTStatus * status, NSDate *time))cb;
 
-- (void)stats:(nullable ARTStatsQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult /* <ARTStats *> */ *__nullable result))callback;
+- (void)stats:(nullable ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult /* <ARTStats *> */ *__nullable result, NSError *__nullable error))callback;
 
 - (id<ARTCancellable>)internetIsUp:(void (^)(bool isUp)) cb;
 
 @property (nonatomic, strong, readonly) ARTLog *logger;
+@property (nonatomic, strong, null_resettable) id<ARTHTTPExecutor> httpExecutor;
 @property (nonatomic, strong, readonly) ARTRestChannelCollection *channels;
 @property (nonatomic, strong, readonly) ARTAuth *auth;
 @property (nonatomic, strong, readonly) ARTClientOptions *options;

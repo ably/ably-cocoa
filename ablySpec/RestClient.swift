@@ -12,13 +12,15 @@ import ably
 import ably.Private
 
 class PublishTestMessage {
-    var status: ARTStatus?
-
+    var error: NSError?
+    
     init(client: ARTRest, failOnError: Bool) {
-        client.channel("test").publish("message") { status in
-            self.status = status
-            if failOnError && status.state != .Ok {
-                XCTFail("Got status \(status.state.rawValue) with error '\(status.errorInfo?.message)'")
+        self.error = NSError(domain: "", code: -1, userInfo: nil)
+        
+        client.channels.get("test").publish("message") { error in
+            self.error = error
+            if failOnError && error != nil {
+                XCTFail("Got error '\(error!.localizedDescription)'")
             }
         }
     }
@@ -58,7 +60,7 @@ class RestClient: QuickSpec {
 
                     let publishTask = publishTestMessage(client)
 
-                    expect(publishTask.status?.state).toEventually(equal(ARTState.Ok), timeout: testTimeout)
+                    expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
                 }
 
                 it("should throw when provided an invalid key") {
@@ -71,8 +73,8 @@ class RestClient: QuickSpec {
 
                     let publishTask = publishTestMessage(client, failOnError: false)
 
-                    expect(publishTask.status?.state).toEventually(equal(ARTState.Error), timeout: testTimeout)
-                    expect(publishTask.status?.errorInfo.code).toEventually(equal(40005))
+                    expect(publishTask.error?.domain).toEventually(equal(ARTAblyErrorDomain), timeout: testTimeout)
+                    expect(publishTask.error?.code).toEventually(equal(40005))
                 }
 
                 it("should accept an options object") {
@@ -81,7 +83,7 @@ class RestClient: QuickSpec {
 
                     let publishTask = publishTestMessage(client)
 
-                    expect(publishTask.status?.state).toEventually(equal(ARTState.Ok), timeout: testTimeout)
+                    expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
                 }
 
                 it("should accept an options object with token authentication") {
@@ -93,7 +95,7 @@ class RestClient: QuickSpec {
                     let publishTask = publishTestMessage(client)
 
                     expect(client.auth.getAuthMethod()).to(equal(ARTAuthMethod.Token))
-                    expect(publishTask.status?.state).toEventually(equal(ARTState.Ok), timeout: testTimeout)
+                    expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
                 }
 
                 it("should result in error status when provided a bad token") {
@@ -105,8 +107,8 @@ class RestClient: QuickSpec {
                     let publishTask = publishTestMessage(client, failOnError: false)
 
                     expect(client.auth.getAuthMethod()).to(equal(ARTAuthMethod.Token))
-                    expect(publishTask.status?.state).toEventually(equal(ARTState.Error), timeout: testTimeout)
-                    expect(publishTask.status?.errorInfo.code).toEventually(equal(40005))
+                    expect(publishTask.error?.domain).toEventually(equal(ARTAblyErrorDomain), timeout: testTimeout)
+                    expect(publishTask.error?.code).toEventually(equal(40005), timeout: testTimeout)
                 }
             }
 
@@ -172,7 +174,7 @@ class RestClient: QuickSpec {
 
                     let publishTask = publishTestMessage(client)
 
-                    expect(publishTask.status?.state).toEventually(equal(ARTState.Ok), timeout: testTimeout)
+                    expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
                 }
             }
 

@@ -10,6 +10,7 @@
 #import <ably/ARTPayload.h>
 
 @class ARTStatus;
+
 typedef NS_ENUM(NSUInteger, ARTPresenceMessageAction) {
     ARTPresenceMessageAbsent,
     ARTPresenceMessagePresent,
@@ -35,6 +36,6 @@ typedef NS_ENUM(NSUInteger, ARTPresenceMessageAction) {
 
 - (ARTPresenceMessage *)decode:(id<ARTPayloadEncoder>)encoder;
 - (ARTPresenceMessage *)encode:(id<ARTPayloadEncoder>)encoder;
-- (id) content;
+- (id)content;
 
 @end

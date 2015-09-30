@@ -57,15 +57,15 @@
     _payloadEncoder = [ARTJsonPayloadEncoder instance];
 }
 
-- (void)publish:(nullable id)payload callback:(ARTStatusCallback)callback {
+- (void)publish:(nullable id)payload callback:(ARTErrorCallback)callback {
     [self publish:payload name:nil callback:callback];
 }
 
-- (void)publish:(nullable id)payload name:(NSString *)name callback:(ARTStatusCallback)callback {
+- (void)publish:(nullable id)payload name:(NSString *)name callback:(ARTErrorCallback)callback {
     [self publishMessage:[[ARTMessage alloc] initWithData:payload name:name] callback:callback];
 }
 
-- (void)publishMessages:(NSArray *)messages callback:(ARTStatusCallback)callback {
+- (void)publishMessages:(NSArray *)messages callback:(ARTErrorCallback)callback {
     messages = [messages artMap:^(ARTMessage *message) {
         return [message encode:_payloadEncoder];
     }];
@@ -73,15 +73,15 @@
     [self _postMessages:messages callback:callback];
 }
 
-- (void)publishMessage:(ARTMessage *)message callback:(ARTStatusCallback)callback {
+- (void)publishMessage:(ARTMessage *)message callback:(ARTErrorCallback)callback {
     [self _postMessages:[message encode:_payloadEncoder] callback:callback];
 }
 
-- (void)history:(ARTDataQuery *)query callback:(void (^)(ARTStatus *, ARTPaginatedResult * __nullable))callback {
+- (void)history:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult * __nullable, NSError *__nullable))callback {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 
-- (void)_postMessages:(id)payload callback:(ARTStatusCallback)callback {
+- (void)_postMessages:(id)payload callback:(ARTErrorCallback)callback {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 

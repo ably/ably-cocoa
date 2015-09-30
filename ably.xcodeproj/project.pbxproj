@@ -72,8 +72,6 @@
 		967A43221A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.m in Sources */ = {isa = PBXBuildFile; fileRef = 967A43201A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.m */; };
 		96A507951A370F860077CDF8 /* ARTStats.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507931A370F860077CDF8 /* ARTStats.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		96A507961A370F860077CDF8 /* ARTStats.m in Sources */ = {isa = PBXBuildFile; fileRef = 96A507941A370F860077CDF8 /* ARTStats.m */; };
-		96A5079D1A371F800077CDF8 /* ARTHttpPaginatedResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A5079B1A371F800077CDF8 /* ARTHttpPaginatedResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		96A5079E1A371F800077CDF8 /* ARTHttpPaginatedResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 96A5079C1A371F800077CDF8 /* ARTHttpPaginatedResult.m */; };
 		96A507A11A377AA50077CDF8 /* ARTPresenceMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A5079F1A377AA50077CDF8 /* ARTPresenceMessage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		96A507A21A377AA50077CDF8 /* ARTPresenceMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 96A507A01A377AA50077CDF8 /* ARTPresenceMessage.m */; };
 		96A507A51A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507A31A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.h */; };
@@ -115,6 +113,7 @@
 		D746AE291BBB61C9003ECEF8 /* ARTPresence.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE271BBB61C9003ECEF8 /* ARTPresence.m */; };
 		D746AE2C1BBB625E003ECEF8 /* RestChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D746AE2A1BBB625E003ECEF8 /* RestChannel.swift */; };
 		D746AE2D1BBB625E003ECEF8 /* RestClient.channels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D746AE2B1BBB625E003ECEF8 /* RestClient.channels.swift */; };
+		D746AE2F1BBBE7D7003ECEF8 /* ARTPaginatedResult+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE2E1BBBE7D7003ECEF8 /* ARTPaginatedResult+Private.h */; };
 		FC78549C1BCD5688539CCBE4 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA6E099E4BC04FC80F845C0 /* libPods.a */; };
 /* End PBXBuildFile section */
 
@@ -229,8 +228,6 @@
 		967A43201A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ARTNSArray+ARTFunctional.m"; sourceTree = "<group>"; };
 		96A507931A370F860077CDF8 /* ARTStats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTStats.h; sourceTree = "<group>"; };
 		96A507941A370F860077CDF8 /* ARTStats.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTStats.m; sourceTree = "<group>"; };
-		96A5079B1A371F800077CDF8 /* ARTHttpPaginatedResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTHttpPaginatedResult.h; sourceTree = "<group>"; };
-		96A5079C1A371F800077CDF8 /* ARTHttpPaginatedResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTHttpPaginatedResult.m; sourceTree = "<group>"; };
 		96A5079F1A377AA50077CDF8 /* ARTPresenceMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPresenceMessage.h; sourceTree = "<group>"; };
 		96A507A01A377AA50077CDF8 /* ARTPresenceMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPresenceMessage.m; sourceTree = "<group>"; };
 		96A507A31A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTNSDictionary+ARTDictionaryUtil.h"; sourceTree = "<group>"; };
@@ -277,6 +274,7 @@
 		D746AE271BBB61C9003ECEF8 /* ARTPresence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPresence.m; sourceTree = "<group>"; };
 		D746AE2A1BBB625E003ECEF8 /* RestChannel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestChannel.swift; sourceTree = "<group>"; };
 		D746AE2B1BBB625E003ECEF8 /* RestClient.channels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClient.channels.swift; sourceTree = "<group>"; };
+		D746AE2E1BBBE7D7003ECEF8 /* ARTPaginatedResult+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTPaginatedResult+Private.h"; sourceTree = "<group>"; };
 		DF8DF755839D59574B7B795F /* Pods-ablySpec.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ablySpec.release.xcconfig"; path = "Pods/Target Support Files/Pods-ablySpec/Pods-ablySpec.release.xcconfig"; sourceTree = "<group>"; };
 		FDA6E099E4BC04FC80F845C0 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -421,9 +419,8 @@
 				96A507931A370F860077CDF8 /* ARTStats.h */,
 				96A507941A370F860077CDF8 /* ARTStats.m */,
 				850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */,
+				D746AE2E1BBBE7D7003ECEF8 /* ARTPaginatedResult+Private.h */,
 				850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */,
-				96A5079B1A371F800077CDF8 /* ARTHttpPaginatedResult.h */,
-				96A5079C1A371F800077CDF8 /* ARTHttpPaginatedResult.m */,
 				96A5079F1A377AA50077CDF8 /* ARTPresenceMessage.h */,
 				96A507A01A377AA50077CDF8 /* ARTPresenceMessage.m */,
 				96A507A31A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.h */,
@@ -525,6 +522,7 @@
 				96A507BD1A3791490077CDF8 /* ARTRealtime.h in Headers */,
 				961343D81A42E0B7006DC822 /* ARTClientOptions.h in Headers */,
 				96BF615E1A35C1C8004CF2B3 /* ARTTypes.h in Headers */,
+				D746AE2F1BBBE7D7003ECEF8 /* ARTPaginatedResult+Private.h in Headers */,
 				D746AE221BBB60EE003ECEF8 /* ARTChannels.h in Headers */,
 				D746AE1D1BBB5207003ECEF8 /* ARTDataQuery.h in Headers */,
 				1C1EC3FA1AE26A8B00AAADD7 /* ARTStatus.h in Headers */,
@@ -536,7 +534,6 @@
 				1C2B0FFD1B136A6D00E3633C /* ARTPresenceMap.h in Headers */,
 				850BFB4C1B79323C009D0ADD /* ARTPaginatedResult.h in Headers */,
 				1CD8DC9F1B1C7315007EAF36 /* ARTDefault.h in Headers */,
-				96A5079D1A371F800077CDF8 /* ARTHttpPaginatedResult.h in Headers */,
 				1C8065051AE7C8FA00D49357 /* ARTPayload+Private.h in Headers */,
 				1CEFC60E1B0F9EF500D84463 /* ARTTokenDetails+Private.h in Headers */,
 				1C70CB881B020D7F003D295A /* ARTClientOptions+Private.h in Headers */,
@@ -814,7 +811,6 @@
 				96BF61651A35CDE1004CF2B3 /* ARTMessage.m in Sources */,
 				1CA5E1C31AB72369006ADD70 /* ARTMsgPackEncoder.m in Sources */,
 				1CD8DCA01B1C7315007EAF36 /* ARTDefault.m in Sources */,
-				96A5079E1A371F800077CDF8 /* ARTHttpPaginatedResult.m in Sources */,
 				1C6C18A41ADFDAB100AB79E4 /* ARTLog.m in Sources */,
 				D746AE291BBB61C9003ECEF8 /* ARTPresence.m in Sources */,
 				96A507BE1A3791490077CDF8 /* ARTRealtime.m in Sources */,

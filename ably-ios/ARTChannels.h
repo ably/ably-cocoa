@@ -19,7 +19,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTChannelOptions : NSObject
 
 @property (nonatomic, assign) BOOL isEncrypted;
-
 @property (nonatomic, strong, nullable) ARTCipherParams *cipherParams;
 
 + (instancetype)unencrypted;
@@ -33,18 +32,17 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTChannel : NSObject
 
 @property (nonatomic, strong, readonly) NSString *name;
-
 @property (nonatomic, strong, readonly) ARTPresence *presence;
 
-- (void)publish:(nullable id)payload callback:(nullable ARTStatusCallback)callback;
+- (void)publish:(nullable id)payload callback:(nullable ARTErrorCallback)callback;
 
-- (void)publish:(nullable id)payload name:(nullable NSString *)name callback:(nullable ARTStatusCallback)callback;
+- (void)publish:(nullable id)payload name:(nullable NSString *)name callback:(nullable ARTErrorCallback)callback;
 
-- (void)publishMessage:(ARTMessage *)message callback:(nullable ARTStatusCallback)callback;
+- (void)publishMessage:(ARTMessage *)message callback:(nullable ARTErrorCallback)callback;
 
-- (void)publishMessages:(NSArray /* <ARTMessage *> */ *)messages callback:(nullable ARTStatusCallback)callback;
+- (void)publishMessages:(NSArray /* <ARTMessage *> */ *)messages callback:(nullable ARTErrorCallback)callback;
 
-- (void)history:(nullable ARTDataQuery *)query callback:(void(^)(ARTStatus *status, ARTPaginatedResult /* <ARTMessage *> */ *__nullable result))callback;
+- (void)history:(nullable ARTDataQuery *)query callback:(void(^)(ARTPaginatedResult /* <ARTMessage *> */ *__nullable result, NSError *__nullable error))callback;
 
 @end
 

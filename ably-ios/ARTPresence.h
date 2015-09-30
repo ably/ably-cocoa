@@ -30,9 +30,9 @@ typedef NS_ENUM(NSUInteger, ARTPresenceAction) {
 
 @interface ARTPresence : NSObject
 
-- (void)get:(void (^)(ARTStatus *status, ARTPaginatedResult /* <ARTPresenceMessage *> */ *__nullable result))callback;
+- (void)get:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *__nullable result, NSError *__nullable error))callback;
 
-- (void)history:(nullable ARTDataQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult /* <ARTPresenceMessage *> */ *__nullable result))callback;
+- (void)history:(nullable ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *__nullable result, NSError *__nullable error))callback;
 
 @end
 

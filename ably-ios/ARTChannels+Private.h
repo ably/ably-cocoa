@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithName:(NSString *)name presence:(ARTPresence *)presence options:(nullable ARTChannelOptions *)options;
 
-- (void)_postMessages:(id)payload callback:(nullable ARTStatusCallback)callback;
+- (void)_postMessages:(id)payload callback:(nullable ARTErrorCallback)callback;
 
 @end
 

@@ -9,8 +9,15 @@
 #import <Foundation/Foundation.h>
 #import <ably/ARTTypes.h>
 #import <ably/ARTStatus.h>
+#import <ably/ARTLog.h>
 
-@class ARTLog;
+@protocol ARTHTTPExecutor <NSObject>
+
+@property (nonatomic, weak) ARTLog *logger;
+
+- (void)executeRequest:(NSMutableURLRequest *)request callback:(void (^)(NSHTTPURLResponse *response, NSData *data, NSError *error))callback;
+
+@end
 
 @interface ARTHttpRequest : NSObject
 
@@ -43,7 +50,7 @@
 
 @end
 
-@interface ARTHttp : NSObject
+@interface ARTHttp : NSObject<ARTHTTPExecutor>
 {
     
 }

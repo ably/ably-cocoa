@@ -24,12 +24,19 @@ typedef NS_ENUM(NSUInteger, ARTState) {
     ARTStateError = 99999
 };
 
+FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
+
+typedef void(^ARTErrorCallback)(NSError *error);
+
 @interface ARTErrorInfo : NSObject
+
 @property (readonly, copy, nonatomic) NSString *message;
 @property (readonly, assign, nonatomic) int statusCode;
 @property (readonly, assign, nonatomic) int code;
+
 -(void) setCode:(int) code message:(NSString *) message;
 -(void) setCode:(int) code status:(int) status message:(NSString *) message;
+
 @end
 
 
@@ -41,6 +48,5 @@ typedef NS_ENUM(NSUInteger, ARTState) {
 
 +(ARTStatus *) state:(ARTState) state;
 +(ARTStatus *) state:(ARTState) state info:(ARTErrorInfo *) info;
-
 
 @end

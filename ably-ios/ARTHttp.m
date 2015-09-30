@@ -159,6 +159,17 @@
     return self;
 }
 
+- (void)executeRequest:(NSMutableURLRequest *)request callback:(void (^)(NSHTTPURLResponse *, NSData *, NSError *))callback {
+    CFRunLoopRef currentRunloop = CFRunLoopGetCurrent();
+    NSURLSessionDataTask *task = [_urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        CFRunLoopPerformBlock(currentRunloop, kCFRunLoopCommonModes, ^{
+            callback((NSHTTPURLResponse *)response, data, error);
+        });
+        CFRunLoopWakeUp(currentRunloop);
+    }];
+    [task resume];
+}
+
 - (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method url:(NSURL *)url headers:(NSDictionary *)headers body:(NSData *)body cb:(ARTHttpCb)cb {
     return [self makeRequest:[[ARTHttpRequest alloc] initWithMethod:method url:url headers:headers body:body] cb:cb];
 }
