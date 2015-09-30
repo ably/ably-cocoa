@@ -105,6 +105,9 @@
 		96E408471A3895E800087F77 /* ARTWebSocketTransport.h in Headers */ = {isa = PBXBuildFile; fileRef = 96E408451A3895E800087F77 /* ARTWebSocketTransport.h */; };
 		96E408481A3895E800087F77 /* ARTWebSocketTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = 96E408461A3895E800087F77 /* ARTWebSocketTransport.m */; };
 		D72304701BB72CED00F1ABDA /* RealtimeClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D723046F1BB72CED00F1ABDA /* RealtimeClient.swift */; };
+		D746AE1D1BBB5207003ECEF8 /* ARTDataQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE1A1BBB5207003ECEF8 /* ARTDataQuery.h */; };
+		D746AE1E1BBB5207003ECEF8 /* ARTDataQuery+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE1B1BBB5207003ECEF8 /* ARTDataQuery+Private.h */; };
+		D746AE1F1BBB5207003ECEF8 /* ARTDataQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE1C1BBB5207003ECEF8 /* ARTDataQuery.m */; };
 		FC78549C1BCD5688539CCBE4 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA6E099E4BC04FC80F845C0 /* libPods.a */; };
 /* End PBXBuildFile section */
 
@@ -257,6 +260,9 @@
 		96E408461A3895E800087F77 /* ARTWebSocketTransport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTWebSocketTransport.m; sourceTree = "<group>"; };
 		CDE13941D61BC4A0690896F6 /* Pods-ablySpec.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ablySpec.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ablySpec/Pods-ablySpec.debug.xcconfig"; sourceTree = "<group>"; };
 		D723046F1BB72CED00F1ABDA /* RealtimeClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClient.swift; sourceTree = "<group>"; };
+		D746AE1A1BBB5207003ECEF8 /* ARTDataQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTDataQuery.h; sourceTree = "<group>"; };
+		D746AE1B1BBB5207003ECEF8 /* ARTDataQuery+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTDataQuery+Private.h"; sourceTree = "<group>"; };
+		D746AE1C1BBB5207003ECEF8 /* ARTDataQuery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDataQuery.m; sourceTree = "<group>"; };
 		DF8DF755839D59574B7B795F /* Pods-ablySpec.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ablySpec.release.xcconfig"; path = "Pods/Target Support Files/Pods-ablySpec/Pods-ablySpec.release.xcconfig"; sourceTree = "<group>"; };
 		FDA6E099E4BC04FC80F845C0 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -380,6 +386,9 @@
 				961343D71A42E0B7006DC822 /* ARTClientOptions.m */,
 				96BF61551A35B40E004CF2B3 /* ARTStatus.h */,
 				1C55427C1B148306003068DB /* ARTStatus.m */,
+				D746AE1A1BBB5207003ECEF8 /* ARTDataQuery.h */,
+				D746AE1B1BBB5207003ECEF8 /* ARTDataQuery+Private.h */,
+				D746AE1C1BBB5207003ECEF8 /* ARTDataQuery.m */,
 				96BF61561A35B52C004CF2B3 /* ARTHttp.h */,
 				96BF61571A35B52C004CF2B3 /* ARTHttp.m */,
 				96BF615C1A35C1C8004CF2B3 /* ARTTypes.h */,
@@ -494,6 +503,7 @@
 				96A507BD1A3791490077CDF8 /* ARTRealtime.h in Headers */,
 				961343D81A42E0B7006DC822 /* ARTClientOptions.h in Headers */,
 				96BF615E1A35C1C8004CF2B3 /* ARTTypes.h in Headers */,
+				D746AE1D1BBB5207003ECEF8 /* ARTDataQuery.h in Headers */,
 				1C1EC3FA1AE26A8B00AAADD7 /* ARTStatus.h in Headers */,
 				96E408431A38939E00087F77 /* ARTProtocolMessage.h in Headers */,
 				96BF61581A35B52C004CF2B3 /* ARTHttp.h in Headers */,
@@ -518,6 +528,7 @@
 				96E4083F1A3892C700087F77 /* ARTRealtimeTransport.h in Headers */,
 				96A507B51A37881C0077CDF8 /* ARTNSDate+ARTUtil.h in Headers */,
 				96A507A91A37806A0077CDF8 /* ARTEncoder.h in Headers */,
+				D746AE1E1BBB5207003ECEF8 /* ARTDataQuery+Private.h in Headers */,
 				1C6C18A31ADFDAB100AB79E4 /* ARTLog.h in Headers */,
 				1CA5E1C21AB72369006ADD70 /* ARTMsgPackEncoder.h in Headers */,
 				96A507A51A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.h in Headers */,
@@ -765,6 +776,7 @@
 				1C578E201B3435CA00EF46EC /* ARTFallback.m in Sources */,
 				96A507B61A37881C0077CDF8 /* ARTNSDate+ARTUtil.m in Sources */,
 				850BFB4D1B79323C009D0ADD /* ARTPaginatedResult.m in Sources */,
+				D746AE1F1BBB5207003ECEF8 /* ARTDataQuery.m in Sources */,
 				961343D91A42E0B7006DC822 /* ARTClientOptions.m in Sources */,
 				96BF615F1A35C1C8004CF2B3 /* ARTTypes.m in Sources */,
 				96A507AE1A3780F60077CDF8 /* ARTJsonEncoder.m in Sources */,

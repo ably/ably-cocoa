@@ -64,8 +64,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
 - (void)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb;
 - (void)publish:(id)payload cb:(ARTStatusCallback)cb;
 
-- (id<ARTCancellable>)history:(ARTPaginatedResultCallback)callback;
-- (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback;
+- (void)history:(ARTDataQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult /* <ARTMessage *> */ *result))callback;
 
 typedef void (^ARTRealtimeChannelMessageCb)(ARTMessage *);
 - (id<ARTSubscription>)subscribe:(ARTRealtimeChannelMessageCb)cb;
@@ -90,16 +89,13 @@ typedef void (^ARTRealtimeChannelStateCb)(ARTRealtimeChannelState, ARTStatus *);
 
 @interface ARTPresence : NSObject
 
-- (instancetype) initWithChannel:(ARTRealtimeChannel *) channel;
-- (id<ARTCancellable>)get:(ARTPaginatedResultCallback)callback;
-- (id<ARTCancellable>)getWithParams:(NSDictionary *) queryParams cb:(ARTPaginatedResultCallback)callback;
-- (id<ARTCancellable>)history:(ARTPaginatedResultCallback)callback;
-- (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback;
+- (instancetype)initWithChannel:(ARTRealtimeChannel *)channel;
+- (void)get:(ARTDataQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult /* <ARTPresenceMessage *> */ *result))callback;
+- (void)history:(ARTDataQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult /* <ARTPresenceMessage *> */ *result))callback;
 
 - (void)enter:(id)data cb:(ARTStatusCallback)cb;
 - (void)update:(id)data cb:(ARTStatusCallback)cb;
 - (void)leave:(id) data cb:(ARTStatusCallback)cb;
-
 
 - (void)enterClient:(NSString *) clientId data:(id) data cb:(ARTStatusCallback) cb;
 - (void)updateClient:(NSString *) clientId data:(id) data cb:(ARTStatusCallback) cb;
@@ -108,7 +104,7 @@ typedef void (^ARTRealtimeChannelStateCb)(ARTRealtimeChannelState, ARTStatus *);
 
 typedef void (^ARTRealtimeChannelPresenceCb)(ARTPresenceMessage *);
 - (id<ARTSubscription>)subscribe:(ARTRealtimeChannelPresenceCb)cb;
-- (id<ARTSubscription>)subscribe:(ARTPresenceMessageAction) action cb:(ARTRealtimeChannelPresenceCb)cb;
+- (id<ARTSubscription>)subscribe:(ARTPresenceMessageAction)action cb:(ARTRealtimeChannelPresenceCb)cb;
 - (void)unsubscribe:(id<ARTSubscription>)subscription;
 - (void)unsubscribe:(id<ARTSubscription>)subscription action:(ARTPresenceMessageAction) action;
 
@@ -150,7 +146,7 @@ Instance the Ably library with the given options.
 typedef void (^ARTRealtimePingCb)(ARTStatus *);
 - (void)ping:(ARTRealtimePingCb) cb;
 
-- (id<ARTCancellable>)stats:(ARTStatsQuery *)query callback:(ARTPaginatedResultCallback)callback;
+- (void)stats:(ARTStatsQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult /* <ARTStats *> */ *result))callback;
 
 - (ARTRealtimeChannel *)channel:(NSString *)channelName;
 - (ARTRealtimeChannel *)channel:(NSString *)channelName cipherParams:(ARTCipherParams *)cipherParams;

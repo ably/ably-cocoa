@@ -7,13 +7,12 @@
 //
 
 #import "ARTStats.h"
+#import "ARTDataQuery+Private.h"
 
 @implementation ARTStatsQuery
 
 - (instancetype)init {
     if (self = [super init]) {
-        _limit = 100;
-        _direction = ARTQueryDirectionBackwards;
         _unit = ARTStatsUnitMinute;
     }
 
@@ -34,31 +33,10 @@ static NSString *statsUnitToString(ARTStatsUnit unit) {
     }
 }
 
-static NSString *queryDirectionToString(ARTQueryDirection direction) {
-    switch (direction) {
-        case ARTQueryDirectionForwards:
-            return @"forwards";
-        case ARTQueryDirectionBackwards:
-        default:
-            return @"backwards";
-    }
-}
-
-- (NSArray *)asQueryItems {
-    NSMutableArray *items = [NSMutableArray array];
-
-    if (self.start) {
-        [items addObject:[NSURLQueryItem queryItemWithName:@"start" value:[NSString stringWithFormat:@"%llu", (uint64_t)(self.start.timeIntervalSince1970 * 1000)]]];
-    }
-    if (self.end) {
-        [items addObject:[NSURLQueryItem queryItemWithName:@"end" value:[NSString stringWithFormat:@"%llu", (uint64_t)(self.end.timeIntervalSince1970 * 1000)]]];
-    }
-
-    [items addObject:[NSURLQueryItem queryItemWithName:@"limit" value:[NSString stringWithFormat:@"%llu", self.limit]]];
-    [items addObject:[NSURLQueryItem queryItemWithName:@"direction" value:queryDirectionToString(self.direction)]];
+- (NSMutableArray *)asQueryItems {
+    NSMutableArray *items = [super asQueryItems];
     [items addObject:[NSURLQueryItem queryItemWithName:@"unit" value:statsUnitToString(self.unit)]];
-
-    return [items copy];
+    return items;
 }
 
 @end

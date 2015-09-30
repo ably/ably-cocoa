@@ -501,17 +501,8 @@
     }
 }
 
-- (id<ARTCancellable>)history:(ARTPaginatedResultCallback)callback {
-    [self throwOnDisconnectedOrFailed];
-    return [self.restChannel history:callback];
-}
-
-- (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback {
-    [self throwOnDisconnectedOrFailed];
-    if([queryParams objectForKey:@"until_attach"] != nil  && self.state != ARTRealtimeChannelAttached) {
-        [NSException raise:@"Cannot ask for history with param untilAttach when not attached" format:@""];
-    }
-    return [self.restChannel historyWithParams:queryParams cb:callback];
+- (void)history:(ARTDataQuery *)query callback:(void (^)(ARTStatus *, ARTPaginatedResult *))callback {
+    [self.restChannel history:query callback:callback];
 }
 
 - (id<ARTSubscription>)subscribe:(ARTRealtimeChannelMessageCb)cb {
@@ -937,8 +928,8 @@
     [self.transport sendPing];
 }
 
-- (id<ARTCancellable>)stats:(ARTStatsQuery *)query callback:(ARTPaginatedResultCallback)callback {
-    return [self.rest stats:query callback:callback];
+- (void)stats:(ARTStatsQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult *result))callback {
+    [self.rest stats:query callback:callback];
 }
 
 - (ARTRealtimeChannel *)channel:(NSString *)channelName {
@@ -1618,25 +1609,16 @@
     }
     return self;
 }
--(id<ARTCancellable>) getWithParams:(NSDictionary *) queryParams cb:(ARTPaginatedResultCallback)callback {
+
+- (void)get:(ARTDataQuery *)query callback:(void (^)(ARTStatus *, ARTPaginatedResult *))callback {
     [self.channel throwOnDisconnectedOrFailed];
-    return [self.channel.restChannel.presence getWithParams:queryParams cb:callback];
+    [self.channel.restChannel.presence get:query callback:callback];
 }
 
--(id<ARTCancellable>) get:(ARTPaginatedResultCallback)callback {
+- (void)history:(ARTDataQuery *)query callback:(void (^)(ARTStatus *, ARTPaginatedResult *))callback {
     [self.channel throwOnDisconnectedOrFailed];
-    return [self.channel.restChannel.presence get:callback];
+    [self.channel.restChannel.presence history:query callback:callback];
 }
-- (id<ARTCancellable>)history:(ARTPaginatedResultCallback)callback {
-    [self.channel throwOnDisconnectedOrFailed];
-    return [self.channel.restChannel.presence history:callback];
-}
-
-- (id<ARTCancellable>) historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback {
-    [self.channel throwOnDisconnectedOrFailed];
-    return [self.channel.restChannel.presence historyWithParams:queryParams cb:callback];
-}
-
 
 - (void)enter:(id)data cb:(ARTStatusCallback)cb {
     [self  enterClient:self.channel.clientId data:data cb:cb];

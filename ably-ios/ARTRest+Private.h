@@ -25,8 +25,6 @@ typedef NS_ENUM(NSUInteger, ARTAuthentication) {
 @property (readonly, strong, nonatomic) id<ARTEncoder> defaultEncoder;
 @property (readonly, strong, nonatomic) ARTAuth *auth;
 
-
-
 - (NSURL *)getBaseURL;
 - (NSString *)formatQueryParams:(NSDictionary *)queryParams;
 
@@ -42,6 +40,5 @@ typedef NS_ENUM(NSUInteger, ARTAuthentication) {
 - (id<ARTCancellable>)withAuthParams:(id<ARTCancellable>(^)(NSDictionary *authParams))cb;
 
 -(id<ARTCancellable>) postTestStats:(NSArray *) stats cb:(void(^)(ARTStatus * status)) cb;
-
 
 @end

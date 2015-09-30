@@ -27,8 +27,7 @@
 - (id<ARTCancellable>)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb;
 - (id<ARTCancellable>)publish:(id)payload cb:(ARTStatusCallback)cb;
 
-- (id<ARTCancellable>)history:(ARTPaginatedResultCallback)callback;
-- (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback;
+- (void)history:(ARTDataQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult /* <ARTMessage *> */ *result))callback;
 
 @property (readonly, strong, nonatomic) ARTRestPresence *presence;
 
@@ -40,10 +39,8 @@
 @interface ARTRestPresence : NSObject
 
 - (instancetype) initWithChannel:(ARTRestChannel *) channel;
-- (id<ARTCancellable>)get:(ARTPaginatedResultCallback)callback;
-- (id<ARTCancellable>)getWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback;
-- (id<ARTCancellable>)history:(ARTPaginatedResultCallback)callback;
-- (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback;
+- (void)get:(ARTDataQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult /* <ARTPresenceMessage *> */ *result))callback;
+- (void)history:(ARTDataQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult /* <ARTPresenceMessage *> */ *result))callback;
 
 @end
 
@@ -59,7 +56,7 @@
 
 - (id<ARTCancellable>)token:(ARTAuthTokenParams *)keyName tokenCb:(void (^)(ARTStatus * status, ARTTokenDetails *)) cb;
 - (id<ARTCancellable>)time:(void(^)(ARTStatus *status, NSDate *time))cb;
-- (id<ARTCancellable>)stats:(ARTStatsQuery *)query callback:(ARTPaginatedResultCallback)callback;
+- (void)stats:(ARTStatsQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult /* <ARTStats *> */ *result))callback;
 - (id<ARTCancellable>)internetIsUp:(void (^)(bool isUp)) cb;
 - (ARTRestChannel *)channel:(NSString *)channelName;
 - (ARTRestChannel *)channel:(NSString *)channelName cipherParams:(ARTCipherParams *)cipherParams;

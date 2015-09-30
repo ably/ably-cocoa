@@ -8,7 +8,7 @@
 
 #import "ARTRest.h"
 #import "ARTRest+Private.h"
-
+#import "ARTDataQuery+Private.h"
 #import "ARTAuth.h"
 #import "ARTHttp.h"
 #import "ARTEncoder.h"
@@ -62,7 +62,7 @@
 - (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method relUrl:(NSString *)relUrl headers:(NSDictionary *)headers body:(NSData *)body authenticated:(ARTAuthentication)authenticated cb:(ARTHttpCb)cb;
 
 - (NSDictionary *)withAcceptHeader:(NSDictionary *)headers;
-- (void)throwOnHighLimitCheck:(NSDictionary *) params;
+
 @end
 
 @implementation ARTRestChannel
@@ -133,17 +133,16 @@
     }
 }
 
-- (id<ARTCancellable>)history:(ARTPaginatedResultCallback)callback {
-    return [self historyWithParams:nil cb:callback];
-}
-
-- (id<ARTCancellable>)historyWithParams:(NSDictionary *)queryParams cb:(ARTPaginatedResultCallback)callback {
-    [self.rest throwOnHighLimitCheck:queryParams];
-    return [self.rest withAuthHeaders:^(NSDictionary *authHeaders) {
-        NSString *relUrl = [NSString stringWithFormat:@"%@/messages", self.basePath];
-        ARTHttpRequest *req = [[ARTHttpRequest alloc] initWithMethod:@"GET" url:[self.rest resolveUrl:relUrl queryParams:queryParams] headers:authHeaders body:nil];
-        return [ARTHttpPaginatedResult makePaginatedRequest:self.rest.http request:req responseProcessor:^(ARTHttpResponse *response) {
-            id<ARTEncoder> encoder = [self.rest.encoders objectForKey:response.contentType];
+- (void)history:(ARTDataQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult *__nullable result))callback {
+    NSParameterAssert(query.limit < 1000);
+    NSParameterAssert([query.start compare:query.end] != NSOrderedDescending);
+    
+    [_rest withAuthHeaders:^(NSDictionary *authHeaders) {
+        NSURLComponents *requestUrl = [NSURLComponents componentsWithString:[self.basePath stringByAppendingPathComponent:@"messages"]];
+        requestUrl.queryItems = [query asQueryItems];
+        ARTHttpRequest *req = [[ARTHttpRequest alloc] initWithMethod:@"GET" url:[requestUrl URLRelativeToURL:_rest.baseUrl] headers:authHeaders body:nil];
+        return [ARTHttpPaginatedResult makePaginatedRequest:_rest.http request:req responseProcessor:^(ARTHttpResponse *response) {
+            id<ARTEncoder> encoder = [_rest.encoders objectForKey:response.contentType];
             NSArray *messages = [encoder decodeMessages:response.body];
             return [messages artMap:^id(ARTMessage *message) {
                 return [message decode:self.payloadEncoder];
@@ -239,8 +238,6 @@
     }];
 }
 
-
-
 -(ARTAuth *) auth {
     return _auth;
 }
@@ -266,32 +263,16 @@
         cb(response.status == 200 && [str isEqualToString:@"yes\n"]);
     }];
     return nil;
-     
 }
 
--(void) throwOnHighLimitCheck:(NSDictionary *) params {
-    NSString * limit = [params valueForKey:@"limit"];
-    if(!limit) {
-        return;
-    }
-    int value = [limit intValue];
-    if(value > 1000) {
-        [NSException raise:@"cannot set a limit over 1000" format:@"%d", value];
-    }
-}
-
-- (id<ARTCancellable>)stats:(ARTStatsQuery *)query callback:(ARTPaginatedResultCallback)callback {
-    if (query.limit > 1000) {
-        [NSException raise:@"AblyException" format:@"Cannot set a query limit over 1000"];
-    }
-    if (query.start && query.end && [query.start compare:query.end] == NSOrderedDescending) {
-        [NSException raise:@"AblyException" format:@"The query start date cannot be more recent than the query end date"];
-    }
-
-    return [self withAuthHeaders:^(NSDictionary *authHeaders) {
-        NSURLComponents *requestUrl = [NSURLComponents componentsWithURL:[self resolveUrl:@"/stats"] resolvingAgainstBaseURL:YES];
+- (void)stats:(ARTStatsQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult *result))callback {
+    NSParameterAssert(query.limit < 1000);
+    NSParameterAssert([query.start compare:query.end] != NSOrderedDescending);
+    
+    [self withAuthHeaders:^(NSDictionary *authHeaders) {
+        NSURLComponents *requestUrl = [NSURLComponents componentsWithString:@"/stats"];
         requestUrl.queryItems = [query asQueryItems];
-        ARTHttpRequest *req = [[ARTHttpRequest alloc] initWithMethod:@"GET" url:requestUrl.URL headers:authHeaders body:nil];
+        ARTHttpRequest *req = [[ARTHttpRequest alloc] initWithMethod:@"GET" url:[requestUrl URLRelativeToURL:self.baseUrl] headers:authHeaders body:nil];
         return [ARTHttpPaginatedResult makePaginatedRequest:self.http request:req responseProcessor:^(ARTHttpResponse *response) {
             id<ARTEncoder> encoder = [self.encoders objectForKey:response.contentType];
             return [encoder decodeStats:response.body];
@@ -315,7 +296,6 @@
 -(bool) isAnErrorStatus:(int) status {
     return status >=400;
 }
-
 
 - (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method relUrl:(NSString *)relUrl headers:(NSDictionary *)headers body:(NSData *)body authenticated:(ARTAuthentication)authenticated fb:(ARTFallback *) fb cb:(ARTHttpCb)cb {
     __weak ARTRest * weakSelf = self;
@@ -414,8 +394,6 @@
     return md;
 }
 
-
-
 @end
 
 @implementation ARTRest (Private)
@@ -428,7 +406,7 @@
     }];
 }
 
-- (NSURL *) getBaseURL {
+- (NSURL *)getBaseURL {
     return self.baseUrl;
 }
 
@@ -495,11 +473,11 @@
     return [self.auth authParams:cb];
 }
 
-
 @end
 
 
 @implementation ARTRestPresence
+
 -(instancetype) initWithChannel:(ARTRestChannel *)channel {
     self = [super init];
     if(self) {

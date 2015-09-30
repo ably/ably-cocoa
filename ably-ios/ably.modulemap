@@ -5,6 +5,7 @@ framework module ably {
     module * { export * }
 
     explicit module Private {
+        header "ARTDataQuery+Private.h"
         header "ARTPayload+Private.h"
         header "ARTTokenDetails+Private.h"
         header "ARTRest+Private.h"
