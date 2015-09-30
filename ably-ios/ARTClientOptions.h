@@ -18,9 +18,10 @@
 @property (readonly, getter=getRestHost) NSString *restHost;
 @property (readonly, getter=getRealtimeHost) NSString *realtimeHost;
 
-@property (readwrite, assign, nonatomic) int restPort;
-@property (readwrite, assign, nonatomic) int realtimePort;
+@property (nonatomic, assign, nonatomic) int restPort;
+@property (nonatomic, assign, nonatomic) int realtimePort;
 @property (readwrite, strong, nonatomic) NSString *environment;
+@property (nonatomic, assign) BOOL tls;
 
 @property (readwrite, assign, nonatomic) BOOL queueMessages;
 @property (readwrite, assign, nonatomic) BOOL echoMessages;

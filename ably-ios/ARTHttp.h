@@ -11,7 +11,7 @@
 #import <ably/ARTStatus.h>
 #import <ably/ARTLog.h>
 
-@protocol ARTHTTPExecutor <NSObject>
+@protocol ARTHTTPExecutor
 
 @property (nonatomic, weak) ARTLog *logger;
 

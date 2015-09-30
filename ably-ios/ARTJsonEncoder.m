@@ -508,13 +508,14 @@
                                                  refused:refused.doubleValue];
 }
 
-- (ARTErrorInfo *) decodeError:(NSData *) error {
-    ARTErrorInfo * e = [[ARTErrorInfo alloc] init];
-    NSDictionary * d = [[self decodeDictionary:error] valueForKey:@"error"];
-    [e setCode:[[d artNumber:@"code"] intValue]
-        status:[[d artNumber:@"statusCode"] intValue]
-       message:[d artString:@"message"]];
-    return e;
+- (NSError *)decodeError:(NSData *)error {
+    NSDictionary *decodedError = [[self decodeDictionary:error] valueForKey:@"error"];
+    NSDictionary *userInfo = @{
+                               NSLocalizedDescriptionKey: @"",
+                               NSLocalizedFailureReasonErrorKey: decodedError[@"message"],
+                               @"ARTErrorStatusCode": decodedError[@"statusCode"]
+                               };
+    return [NSError errorWithDomain:ARTAblyErrorDomain code:[decodedError[@"code"] intValue] userInfo:userInfo];
 }
 
 - (ARTStatsRequestCount *)statsRequestCountFromDictionary:(NSDictionary *)input {

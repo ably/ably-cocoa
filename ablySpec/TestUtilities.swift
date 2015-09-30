@@ -9,15 +9,15 @@
 
 import Foundation
 import XCTest
+import Quick
 import SwiftyJSON
 import ably
-import Quick
+import ably.Private
 
 class Configuration : QuickConfiguration {
     override class func configure(configuration: Quick.Configuration!) {
         configuration.beforeEach {
-            //ARTClientOptions.getDefaultRestHost("sandbox-rest.ably.io", modify: true)
-            //ARTClientOptions.getDefaultRealtimeHost("sandbox-realtime.ably.io", modify: true)
+
         }
     }
 }
@@ -108,5 +108,19 @@ func querySyslog(forLogsAfter startingTime: NSDate? = nil) -> GeneratorOf<String
             asl_free(query)
             return nil
         }
+    }
+}
+
+@objc
+class MockHTTPExecutor : ARTHTTPExecutor {
+    private let _executor = ARTHttp()
+    
+    var logger: ARTLog?
+    
+    var requests: [NSMutableURLRequest] = []
+    
+    func executeRequest(request: NSMutableURLRequest!, callback: ((NSHTTPURLResponse!, NSData!, NSError!) -> Void)!) {
+        self.requests.append(request)
+        self._executor.executeRequest(request, callback: callback)
     }
 }

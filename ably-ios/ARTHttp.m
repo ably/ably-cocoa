@@ -160,12 +160,24 @@
 }
 
 - (void)executeRequest:(NSMutableURLRequest *)request callback:(void (^)(NSHTTPURLResponse *, NSData *, NSError *))callback {
+    [self.logger debug:@"%@ %@", request.HTTPMethod, request.URL.absoluteString];
+    [self.logger verbose:@"Headers %@", request.allHTTPHeaderFields];
+    
     CFRunLoopRef currentRunloop = CFRunLoopGetCurrent();
     NSURLSessionDataTask *task = [_urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+        
         CFRunLoopPerformBlock(currentRunloop, kCFRunLoopCommonModes, ^{
-            callback((NSHTTPURLResponse *)response, data, error);
+            if (error) {
+                [self.logger error:@"%@ %@: error %@", request.HTTPMethod, request.URL.absoluteString, error];
+            } else {
+                [self.logger debug:@"%@ %@: statusCode %ld", request.HTTPMethod, request.URL.absoluteString, httpResponse.statusCode];
+                [self.logger verbose:@"Headers %@", httpResponse.allHeaderFields];
+            }
+            callback(httpResponse, data, error);
         });
         CFRunLoopWakeUp(currentRunloop);
+        
     }];
     [task resume];
 }

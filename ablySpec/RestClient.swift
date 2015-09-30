@@ -20,7 +20,7 @@ class PublishTestMessage {
         client.channels.get("test").publish("message") { error in
             self.error = error
             if failOnError && error != nil {
-                XCTFail("Got error '\(error!.localizedDescription)'")
+                XCTFail("Got error '\(error!)'")
             }
         }
     }
@@ -57,6 +57,7 @@ class RestClient: QuickSpec {
                 it("should accept an API key") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRest(key: "\(options.authOptions.keyName):\(options.authOptions.keySecret)")
+                    client.baseUrl = options.restUrl
 
                     let publishTask = publishTestMessage(client)
 
@@ -88,7 +89,6 @@ class RestClient: QuickSpec {
 
                 it("should accept an options object with token authentication") {
                     let options = AblyTests.commonAppSetup()
-                    options.authOptions.useTokenAuth = true
                     options.authOptions.token = getTestToken()
                     let client = ARTRest(options: options)
 
@@ -164,41 +164,76 @@ class RestClient: QuickSpec {
 
             // RSC11
             context("endpoint") {
+                var mockExecutor: MockHTTPExecutor!
+                beforeEach {
+                    mockExecutor = MockHTTPExecutor()
+                }
+                
+                it("should accept an options object with a host set") {
+                    let options = ARTClientOptions(key: "fake:key")
+                    options.restHost = "fake.ably.host"
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = mockExecutor
+                    
+                    publishTestMessage(client, failOnError: false)
+                    
+                    expect(mockExecutor.requests.first?.URL?.host).toEventually(equal("fake.ably.host"), timeout: testTimeout)
+                }
+                
                 it("should accept an options object with an environment set") {
-                    let options = AblyTests.commonAppSetup()
-                    let newOptions = ARTClientOptions()
-                    newOptions.authOptions.keyName = options.authOptions.keyName
-                    newOptions.authOptions.keySecret = options.authOptions.keySecret
-                    newOptions.environment = "sandbox"
-                    let client = ARTRest(options: newOptions)
-
-                    let publishTask = publishTestMessage(client)
-
-                    expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
+                    let options = ARTClientOptions(key: "fake:key")
+                    options.environment = "myEnvironment"
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = mockExecutor
+                    
+                    publishTestMessage(client, failOnError: false)
+                    
+                    expect(mockExecutor.requests.first?.URL?.host).toEventually(equal("myEnvironment-rest.ably.io"), timeout: testTimeout)
+                }
+                
+                it("should default to https://rest.ably.io") {
+                    let options = ARTClientOptions(key: "fake:key")
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = mockExecutor
+                    
+                    publishTestMessage(client, failOnError: false)
+                    
+                    expect(mockExecutor.requests.first?.URL?.absoluteString).toEventually(beginWith("https://rest.ably.io"), timeout: testTimeout)
+                }
+                
+                it("should connect over plain http:// when tls is off") {
+                    let options = ARTClientOptions(key: "fake:key")
+                    options.tls = false;
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = mockExecutor
+                    
+                    publishTestMessage(client, failOnError: false)
+                    
+                    expect(mockExecutor.requests.first?.URL?.scheme).toEventually(equal("http"), timeout: testTimeout)
                 }
             }
 
             // RSC5
             it("should provide access to the AuthOptions object passed in ClientOptions") {
-                let options = AblyTests.commonAppSetup()
+                let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                 let client = ARTRest(options: options)
                 
                 let authOptions = client.auth.getAuthOptions()
-
+                
                 expect(authOptions).to(beIdenticalTo(options.authOptions))
             }
-
+            
             // RSC16
             context("time") {
                 it("should return server time") {
-                    let options = AblyTests.commonAppSetup()
+                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                     let client = ARTRest(options: options)
-
+                    
                     var time: NSDate?
                     client.time({ (status, date) in
                         time = date
                     })
-
+                    
                     expect(time?.timeIntervalSince1970).toEventually(beCloseTo(NSDate().timeIntervalSince1970, within: 60), timeout: testTimeout)
                 }
             }

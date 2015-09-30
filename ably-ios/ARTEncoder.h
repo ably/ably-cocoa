@@ -18,8 +18,6 @@
 
 - (NSString *)mimeType;
 
-
-
 - (ARTTokenDetails *) decodeAccessToken:(NSData *) data;
 - (ARTMessage *)decodeMessage:(NSData *)data;
 - (NSArray *)decodeMessages:(NSData *)data;
@@ -35,7 +33,7 @@
 - (ARTProtocolMessage *)decodeProtocolMessage:(NSData *)data;
 
 - (NSDate *)decodeTime:(NSData *)data;
-- (ARTErrorInfo *) decodeError:(NSData *) error;
+- (NSError *)decodeError:(NSData *)error;
 - (NSArray *)decodeStats:(NSData *)data;
 
 @end

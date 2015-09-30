@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <ably/ARTRest.h>
 
 @protocol ARTEncoder;
 
@@ -20,10 +21,11 @@ typedef NS_ENUM(NSUInteger, ARTAuthentication) {
     ARTAuthenticationUseBasic
 };
 
-@interface ARTRest (Private)
+@interface ARTRest ()
 
 @property (readonly, strong, nonatomic) id<ARTEncoder> defaultEncoder;
-@property (readonly, strong, nonatomic) ARTAuth *auth;
+@property (nonatomic, strong) id<ARTHTTPExecutor> httpExecutor;
+@property (nonatomic, strong) NSURL *baseUrl;
 
 - (NSURL *)getBaseURL;
 - (NSString *)formatQueryParams:(NSDictionary *)queryParams;

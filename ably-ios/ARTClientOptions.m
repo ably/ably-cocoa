@@ -63,6 +63,7 @@
     _autoConnect = true;
     _resumeKey = nil;
     _environment = nil;
+    _tls = YES;
     return self;
 }
 
@@ -75,8 +76,15 @@
 }
 
 + (NSURL*)restUrl:(NSString *)host port:(int)port {
-    NSString *urlStr = [NSString stringWithFormat:@"https://%@:%d", host, port];
-    return [NSURL URLWithString:urlStr];
+    NSURLComponents *components = [[NSURLComponents alloc] init];
+    components.scheme = self.tls ? @"https" : @"http";
+    components.host = host;
+    components.port = port;
+    return components.URL;
+}
+
+- (NSURL *)restUrl {
+    return [ARTClientOptions restUrl:self.restHost port:self.restPort];
 }
 
 - (bool)isFallbackPermitted {
