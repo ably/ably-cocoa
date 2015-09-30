@@ -42,7 +42,6 @@
 
 - (ARTPresenceMessage *)decode:(id<ARTPayloadEncoder>)encoder {
     ARTPayload *payload = self.payload;
-    ARTStatus *status = [encoder decode:payload output:&payload];
     return [self messageWithPayload:payload];
 }
 

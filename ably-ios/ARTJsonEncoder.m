@@ -8,7 +8,7 @@
 
 #import "ARTJsonEncoder.h"
 #import "ARTMessage.h"
-#import "ARTPresenceMessage.h"
+#import "ARTPresence.h"
 #import "ARTProtocolMessage.h"
 #import "ARTStats.h"
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
@@ -155,39 +155,39 @@
     return output;
 }
 
--(ARTPresenceMessageAction) presenceMessageActionFromInt:(int) action
+-(ARTPresenceAction) presenceActionFromInt:(int) action
 {
     switch (action) {
         case 0:
-            return ArtPresenceMessageAbsent;
+            return ARTPresenceAbsent;
         case 1:
-            return ArtPresenceMessagePresent;
+            return ARTPresencePresent;
         case 2:
-            return ARTPresenceMessageEnter;
+            return ARTPresenceEnter;
         case 3:
-            return ARTPresenceMessageLeave;
+            return ARTPresenceLeave;
         case 4:
-            return ARTPresenceMessageUpdate;
+            return ARTPresenceUpdate;
     }
-    [self.logger error:@"ARTJsonEncoder invalid ARTPresenceMessage action %d", action];
-    return ArtPresenceMessageAbsent;
+    [self.logger error:@"ARTJsonEncoder invalid ARTPresenceAction %d", action];
+    return ARTPresenceAbsent;
     
 }
 
--(int) intFromPresenceMessageAction:(ARTPresenceMessageAction) action
+-(int) intFromPresenceMessageAction:(ARTPresenceAction) action
 {
     switch (action) {
-        case ArtPresenceMessageAbsent:
+        case ARTPresenceAbsent:
             return 0;
-        case ArtPresenceMessagePresent:
+        case ARTPresencePresent:
             return 1;
-        case ARTPresenceMessageEnter:
+        case ARTPresenceEnter:
             return 2;
-        case ARTPresenceMessageLeave:
+        case ARTPresenceLeave:
             return 3;
-        case ARTPresenceMessageUpdate:
+        case ARTPresenceUpdate:
             return 4;
-        case ARTPresenceMessageLast:
+        case ARTPresenceLast:
             return 5;
     }
 }
@@ -199,14 +199,14 @@
     }
     ARTPresenceMessage *message = [[ARTPresenceMessage alloc] init];
     message.id = [input artString:@"id"];
-    message.encoding = [input artString:@"encoding"];
-    message.clientId = [input artString:@"clientId"];
     message.payload = [self payloadFromDictionary:input];
+    message.payload.encoding = [input artString:@"encoding"];
+    message.clientId = [input artString:@"clientId"];
     message.timestamp = [input artDate:@"timestamp"];
 
     int action = [[input artNumber:@"action"] intValue];
 
-    message.action = [self presenceMessageActionFromInt:action];
+    message.action = [self presenceActionFromInt:action];
 
     message.connectionId = [input artString:@"connectionId"];
 

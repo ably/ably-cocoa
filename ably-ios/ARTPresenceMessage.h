@@ -11,8 +11,8 @@
 
 @class ARTStatus;
 typedef NS_ENUM(NSUInteger, ARTPresenceMessageAction) {
-    ArtPresenceMessageAbsent,
-    ArtPresenceMessagePresent,
+    ARTPresenceMessageAbsent,
+    ARTPresenceMessagePresent,
     ARTPresenceMessageEnter,
     ARTPresenceMessageLeave,
     ARTPresenceMessageUpdate,

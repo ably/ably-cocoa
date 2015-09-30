@@ -379,7 +379,7 @@
         _clientId = realtime.clientId;
         _payloadEncoder = [ARTPayload defaultPayloadEncoder:cipherParams];
         _presenceMap =[[ARTPresenceMap alloc] init];
-        _lastPresenceAction = ArtPresenceMessageAbsent;
+        _lastPresenceAction = ARTPresenceMessageAbsent;
     }
     return self;
 }

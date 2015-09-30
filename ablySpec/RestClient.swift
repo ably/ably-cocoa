@@ -35,7 +35,7 @@ func getTestToken() -> String {
     let client = ARTRest(options: options)
 
     var token: String?
-    client.auth().requestToken() { tokenDetails in
+    client.auth.requestToken() { tokenDetails in
         token = tokenDetails.token
         return nil
     }
@@ -92,7 +92,7 @@ class RestClient: QuickSpec {
 
                     let publishTask = publishTestMessage(client)
 
-                    expect(client.auth().getAuthMethod()).to(equal(ARTAuthMethod.Token))
+                    expect(client.auth.getAuthMethod()).to(equal(ARTAuthMethod.Token))
                     expect(publishTask.status?.state).toEventually(equal(ARTState.Ok), timeout: testTimeout)
                 }
 
@@ -104,7 +104,7 @@ class RestClient: QuickSpec {
 
                     let publishTask = publishTestMessage(client, failOnError: false)
 
-                    expect(client.auth().getAuthMethod()).to(equal(ARTAuthMethod.Token))
+                    expect(client.auth.getAuthMethod()).to(equal(ARTAuthMethod.Token))
                     expect(publishTask.status?.state).toEventually(equal(ARTState.Error), timeout: testTimeout)
                     expect(publishTask.status?.errorInfo.code).toEventually(equal(40005))
                 }
@@ -181,7 +181,7 @@ class RestClient: QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 let client = ARTRest(options: options)
                 
-                let authOptions = client.auth().getAuthOptions()
+                let authOptions = client.auth.getAuthOptions()
 
                 expect(authOptions).to(beIdenticalTo(options.authOptions))
             }

@@ -9,9 +9,9 @@
 #import <Foundation/Foundation.h>
 #import <ably/ARTPayload.h>
 
-
 @class ARTStatus;
-@interface ARTMessage : NSObject
+
+@interface ARTMessage : NSObject<NSCopying>
 
 @property (readwrite, strong, nonatomic) NSString *id;
 @property (readwrite, strong, nonatomic) NSString *name;
@@ -22,12 +22,14 @@
 @property (readwrite, strong, nonatomic) ARTStatus * status;
 
 - (instancetype)init;
-- (ARTMessage *)messageWithPayload:(ARTPayload *)payload;
+- (instancetype)initWithData:(id)data name:(NSString *)name;
 
-- (ARTMessage *)decode:(id<ARTPayloadEncoder>)encoder;
-- (ARTMessage *)encode:(id<ARTPayloadEncoder>)encoder;
+- (instancetype)decode:(id<ARTPayloadEncoder>)encoder;
+- (instancetype)encode:(id<ARTPayloadEncoder>)encoder;
+
 - (id) content;
 
-+ (ARTMessage *) messageWithPayload:(id) payload name:(NSString *) name;
-+ (NSArray *) messagesWithPayloads:(NSArray *) payloads;
++ (instancetype)messageWithPayload:(id) payload name:(NSString *)name;
++ (NSArray *)messagesWithPayloads:(NSArray *)payloads;
+
 @end

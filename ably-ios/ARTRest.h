@@ -7,40 +7,32 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <ably/ARTChannels.h>
 #import <ably/ARTStatus.h>
 #import <ably/ARTTypes.h>
 #import <ably/ARTClientOptions.h>
 #import <ably/ARTPaginatedResult.h>
 #import <ably/ARTStats.h>
+#import <ably/ARTPresence.h>
 
 @class ARTLog;
-@class ARTCipherParams;
-@class ARTTokenDetails;
-@class ARTAuthTokenParams;
-@class ARTRestPresence;
 
+NS_ASSUME_NONNULL_BEGIN
 
-# pragma mark - ARTRestChannel
-
-@interface ARTRestChannel : NSObject
-
-- (id<ARTCancellable>)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb;
-- (id<ARTCancellable>)publish:(id)payload cb:(ARTStatusCallback)cb;
-
-- (void)history:(ARTDataQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult /* <ARTMessage *> */ *result))callback;
-
-@property (readonly, strong, nonatomic) ARTRestPresence *presence;
+@interface ARTRestPresence : ARTPresence
 
 @end
 
+@interface ARTRestChannel : ARTChannel
 
-# pragma mark - ARTRestPresence
+@property (nonatomic, strong, readonly) ARTRestPresence *presence;
 
-@interface ARTRestPresence : NSObject
+@end
 
-- (instancetype) initWithChannel:(ARTRestChannel *) channel;
-- (void)get:(ARTDataQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult /* <ARTPresenceMessage *> */ *result))callback;
-- (void)history:(ARTDataQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult /* <ARTPresenceMessage *> */ *result))callback;
+@interface ARTRestChannelCollection : ARTChannelCollection
+
+- (ARTRestChannel *)get:(NSString *)channelName;
+- (ARTRestChannel *)get:(NSString *)channelName options:(ARTChannelOptions *)options;
 
 @end
 
@@ -54,15 +46,19 @@
 - (instancetype)initWithLogger:(ARTLog *)logger andOptions:(ARTClientOptions *)options;
 - (instancetype)initWithKey:(NSString *)key;
 
-- (id<ARTCancellable>)token:(ARTAuthTokenParams *)keyName tokenCb:(void (^)(ARTStatus * status, ARTTokenDetails *)) cb;
-- (id<ARTCancellable>)time:(void(^)(ARTStatus *status, NSDate *time))cb;
-- (void)stats:(ARTStatsQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult /* <ARTStats *> */ *result))callback;
-- (id<ARTCancellable>)internetIsUp:(void (^)(bool isUp)) cb;
-- (ARTRestChannel *)channel:(NSString *)channelName;
-- (ARTRestChannel *)channel:(NSString *)channelName cipherParams:(ARTCipherParams *)cipherParams;
+- (id<ARTCancellable>)token:(ARTAuthTokenParams *)keyName tokenCb:(void (^)(ARTStatus * status, ARTTokenDetails *))cb;
 
-- (ARTAuth *)auth;
+- (id<ARTCancellable>)time:(void(^)(ARTStatus * status, NSDate *time))cb;
+
+- (void)stats:(nullable ARTStatsQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult /* <ARTStats *> */ *__nullable result))callback;
+
+- (id<ARTCancellable>)internetIsUp:(void (^)(bool isUp)) cb;
 
 @property (nonatomic, strong, readonly) ARTLog *logger;
+@property (nonatomic, strong, readonly) ARTRestChannelCollection *channels;
+@property (nonatomic, strong, readonly) ARTAuth *auth;
+@property (nonatomic, strong, readonly) ARTClientOptions *options;
 
 @end
+
+NS_ASSUME_NONNULL_END

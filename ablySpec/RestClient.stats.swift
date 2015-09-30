@@ -300,10 +300,10 @@ class RestClientStats: QuickSpec {
                             let client = ARTRest(key: "fake:key")
                             let query = ARTStatsQuery()
 
-                            query.start = NSDate.distantFuture() as! NSDate
-                            query.end = NSDate.distantPast() as! NSDate
+                            query.start = NSDate.distantFuture() as? NSDate
+                            query.end = NSDate.distantPast() as? NSDate
 
-                            expect{ client.stats(query, callback: nil) }.to(raiseException())
+                            expect{ client.stats(query, callback:{ status, result in }) }.to(raiseException())
                         }
                     }
 
@@ -330,7 +330,7 @@ class RestClientStats: QuickSpec {
 
                             query.limit = 1001;
 
-                            expect{ client.stats(query, callback: nil) }.to(raiseException())
+                            expect{ client.stats(query, callback: { status, result in }) }.to(raiseException())
                         }
                     }
 

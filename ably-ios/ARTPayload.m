@@ -285,7 +285,7 @@
         }
     }
     // otherwise do nothing besides confirm payload is nsdata or nsstring
-    else if(!([payload.payload isKindOfClass:[NSData class]] || [payload.payload isKindOfClass:[NSString class]])) {
+    else if(payload && !([payload.payload isKindOfClass:[NSData class]] || [payload.payload isKindOfClass:[NSString class]])) {
         [NSException raise:@"ARTPayload must be either NSDictionary, NSArray, NSData or NSString" format:@"%@", [payload.payload class]];
     }
     return [ARTStatus state:ARTStateOk];
@@ -320,7 +320,7 @@
     if (self) {
         _cipher = [ARTCrypto cipherWithParams:cipherParams];
         if (!_cipher) {
-            [self.logger error:[NSString stringWithFormat:@"ARTCipherPayloadEncoder failed to create cipher with name %@", cipherParams.algorithm]];
+            [self.logger error:@"ARTCipherPayloadEncoder failed to create cipher with name %@", cipherParams.algorithm];
             self = nil;
             return nil;
         }
@@ -338,14 +338,14 @@
 
 - (NSString *)name {
     size_t keyLen =[self.cipher keyLength];
-    if(keyLen== 128) {
+    if (keyLen == 128) {
         return [ARTCipherPayloadEncoder getName128];
     }
     else if(keyLen == 256) {
         return [ARTCipherPayloadEncoder getName256];
     }
     else {
-        [self.logger error:[NSString stringWithFormat:@"ARTPayload: keyLength is invalid %zu", keyLen]];
+        [self.logger error:@"ARTPayload: keyLength is invalid %zu", keyLen];
     }
     return @"";
 }

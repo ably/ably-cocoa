@@ -8,18 +8,21 @@
 
 #import "ARTMessage.h"
 #import "ARTLog.h"
+
 @implementation ARTMessage
 
 - (instancetype)init {
-    self = [super init];
-    if (self) {
-        _id = nil;
-        _name = nil;
-        _clientId = nil;
-        _payload = nil;
-        _timestamp = nil;
-        _connectionId = nil;
+    return self = [self init];
+}
+
+- (instancetype)initWithData:(id)data name:(NSString *)name {
+    if (self = [self init]) {
+        _name = [name copy];
+        if (data) {
+            _payload = [ARTPayload payloadWithPayload:data encoding:@""];
+        }
     }
+    
     return self;
 }
 
@@ -31,31 +34,38 @@
     else {
         _clientId = nil;
     }
-
+    
 }
 
-- (ARTMessage *)messageWithPayload:(ARTPayload *)payload status:(ARTStatus * ) status {
-    ARTMessage *m = [[ARTMessage alloc] init];
-    m.id = self.id;
-    m.name = self.name;
-    m.clientId = self.clientId;
-    m.timestamp = self.timestamp;
-    m.payload = payload;
-    m.connectionId = self.connectionId;
-    m.status = status;
-    return m;
-}
-- (ARTMessage *)messageWithPayload:(ARTPayload *)payload {
-   return [self messageWithPayload:payload status: nil];
+- (id)copyWithZone:(NSZone *)zone {
+    ARTMessage *message = [[self.class allocWithZone:zone] init];
+    message->_id = self.id;
+    message->_name = self.name;
+    message->_clientId = self.clientId;
+    message->_timestamp = self.timestamp;
+    message->_payload = self.payload;
+    message->_connectionId = self.connectionId;
+    message->_status = self.status;
+    return message;
 }
 
-- (ARTMessage *)decode:(id<ARTPayloadEncoder>)encoder {
+- (instancetype)messageWithPayload:(ARTPayload *)payload status:(ARTStatus * ) status {
+    ARTMessage *message = [self copy];
+    message.payload = payload;
+    message.status = status;
+    return message;
+}
+- (instancetype)messageWithPayload:(ARTPayload *)payload {
+    return [self messageWithPayload:payload status: nil];
+}
+
+- (instancetype)decode:(id<ARTPayloadEncoder>)encoder {
     ARTPayload *payload = self.payload;
     ARTStatus *status = [encoder decode:payload output:&payload];
     return [self messageWithPayload:payload status: status];
 }
 
-- (ARTMessage *)encode:(id<ARTPayloadEncoder>)encoder {
+- (instancetype)encode:(id<ARTPayloadEncoder>)encoder {
     ARTPayload *payload = self.payload;
     ARTStatus *status = [encoder encode:payload output:&payload];
     return [self messageWithPayload:payload status:status];
@@ -83,9 +93,5 @@
     }
     return messages;
 }
-
-
-
-
 
 @end

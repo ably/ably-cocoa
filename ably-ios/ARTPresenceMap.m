@@ -63,7 +63,7 @@
     NSArray * keys = [self.mostRecentMessageForMember allKeys];
     for(NSString * key in keys) {
         ARTPresenceMessage * message = [self.mostRecentMessageForMember objectForKey:key];
-        if(message.action == ArtPresenceMessageAbsent || message.action == ARTPresenceMessageLeave) {
+        if(message.action == ARTPresenceMessageAbsent || message.action == ARTPresenceMessageLeave) {
             [self.mostRecentMessageForMember removeObjectForKey:key];
         }
     }
