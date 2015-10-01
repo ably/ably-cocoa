@@ -7,9 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <ably/ARTTypes.h>
-#import <ably/ARTStatus.h>
-#import <ably/ARTLog.h>
+#import "ably.h"
+
+@class ARTErrorInfo;
 
 @protocol ARTHTTPExecutor
 
@@ -55,10 +55,10 @@
     
 }
 
-@property (nonatomic, weak) ARTLog * logger;
+@property (nonatomic, weak) ARTLog *logger;
+
 - (instancetype)init;
 
-typedef void (^ARTHttpCb)(ARTHttpResponse *response);
 - (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method url:(NSURL *)url headers:(NSDictionary *)headers body:(NSData *)body cb:(ARTHttpCb)cb;
 - (id<ARTCancellable>)makeRequest:(ARTHttpRequest *)req cb:(ARTHttpCb)cb;
 

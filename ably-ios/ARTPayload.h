@@ -9,11 +9,11 @@
 #import <Foundation/Foundation.h>
 #import <ably/ARTStatus.h>
 
-@class ARTCipherParams;
 @protocol ARTPayloadEncoder;
 
-@interface ARTPayload : NSObject
+@class ARTCipherParams;
 
+@interface ARTPayload : NSObject
 
 @property (readwrite, strong, nonatomic) id payload;
 @property (readwrite, strong, nonatomic) NSString *encoding;
@@ -42,6 +42,7 @@
 - (ARTStatus *)encode:(ARTPayload *)payload output:(ARTPayload *__autoreleasing *)output;
 - (ARTStatus *)decode:(ARTPayload *)payload output:(ARTPayload *__autoreleasing *)output;
 - (NSString *)name;
+
 @end
 
 @interface ARTBase64PayloadEncoder : NSObject <ARTPayloadEncoder>
@@ -49,6 +50,7 @@
 + (instancetype)instance;
 +(NSString *) toBase64:(NSData *) input;
 +(NSString *) fromBase64:(NSString *) base64;
+
 @end
 
 @interface ARTUtf8PayloadEncoder : NSObject <ARTPayloadEncoder>

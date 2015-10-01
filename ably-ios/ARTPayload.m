@@ -8,9 +8,9 @@
 
 #import "ARTPayload.h"
 #import "ARTPayload+Private.h"
+
 #import "ARTCrypto.h"
 #import "ARTLog.h"
-
 
 @interface ARTBase64PayloadEncoder ()
 
@@ -27,6 +27,7 @@
 @end
 
 @interface ARTPayloadEncoderChain ()
+
 @property (nonatomic, weak) ARTLog * logger;
 @property (readonly, nonatomic, strong) NSArray *encoders;
 
@@ -66,7 +67,7 @@
         [[ARTCipherPayloadEncoder alloc] initWithCipherParams:cipherParams]]];
 }
 
-+(id<ARTPayloadEncoder>) createEncoder:(NSString *) name key:(NSData *) keySpec iv:(NSData *) iv {
++ (id<ARTPayloadEncoder>)createEncoder:(NSString *) name key:(NSData *) keySpec iv:(NSData *) iv {
     if([name isEqualToString:@"json"]) {
         return [ARTJsonPayloadEncoder instance];
     }
@@ -85,7 +86,7 @@
     return nil;
 }
 
-+(NSArray *) parseEncodingChain:(NSString *) encodingChain key:(NSData *) key iv:(NSData *) iv {
++ (NSArray *)parseEncodingChain:(NSString *) encodingChain key:(NSData *) key iv:(NSData *) iv {
     NSArray * strArray = [encodingChain componentsSeparatedByString:@"/"];
     NSMutableArray * encoders= [[NSMutableArray alloc] init];
     size_t l = [strArray count];
@@ -103,7 +104,7 @@
     return [ARTPayload getPayloadArraySizeLimit:0 modify:false];
 }
 
-+(size_t) getPayloadArraySizeLimit:(size_t) newLimit modify:(bool) modify  {
++ (size_t)getPayloadArraySizeLimit:(size_t) newLimit modify:(bool) modify  {
     static size_t limit = SIZE_T_MAX;
     if(modify) {
         limit = newLimit;
@@ -140,7 +141,7 @@
     return instance;
 }
 
-+(NSString *) toBase64:(NSData *) input {
++ (NSString *)toBase64:(NSData *) input {
     ARTPayload * p = [[ARTPayload alloc] initWithPayload:input encoding:@"base64"];
     ARTPayload * output = nil;
     ARTBase64PayloadEncoder * e = [ARTBase64PayloadEncoder instance];
@@ -148,7 +149,7 @@
     return output.payload;
 }
 
-+(NSString *) fromBase64:(NSString *) base64 {
++ (NSString *)fromBase64:(NSString *) base64 {
     ARTPayload * p = [[ARTPayload alloc] initWithPayload:base64 encoding:@"base64"];
     ARTPayload * output = nil;
     ARTBase64PayloadEncoder * e = [ARTBase64PayloadEncoder instance];
@@ -156,7 +157,7 @@
     return [[NSString alloc] initWithData:output.payload encoding:NSUTF8StringEncoding];
 }
 
-+(NSString *) getName {
++ (NSString *)getName {
     return @"base64";
 }
 - (NSString *)name {
@@ -215,12 +216,14 @@
     return instance;
 }
 
-+(NSString *) getName {
++ (NSString *)getName {
     return @"utf-8";
 }
+
 - (NSString *)name {
     return [ARTUtf8PayloadEncoder getName];
 }
+
 - (ARTStatus *)decode:(ARTPayload *)payload output:(ARTPayload *__autoreleasing *)output {
     *output = payload;
     if ([[payload.encoding artLastEncoding] isEqualToString:[ARTUtf8PayloadEncoder getName]]) {
@@ -262,7 +265,7 @@
     return instance;
 }
 
-+ (NSString *) getName {
++ (NSString *)getName {
     return @"json";
 }
 - (NSString *)name {
@@ -289,8 +292,6 @@
         [NSException raise:@"ARTPayload must be either NSDictionary, NSArray, NSData or NSString" format:@"%@", [payload.payload class]];
     }
     return [ARTStatus state:ARTStateOk];
-
-
 }
 
 - (ARTStatus *)decode:(ARTPayload *)payload output:(ARTPayload *__autoreleasing *)output {
@@ -328,11 +329,11 @@
     return self;
 }
 
-+(NSString *) getName128 {
++ (NSString *)getName128 {
     return @"cipher+aes-128-cbc";
 }
 
-+(NSString *) getName256 {
++ (NSString *)getName256 {
     return @"cipher+aes-256-cbc";
 }
 
@@ -397,7 +398,7 @@
     return self;
 }
 
--(NSString *) name {
+- (NSString *)name {
     return @"chain"; //not used.
 }
 

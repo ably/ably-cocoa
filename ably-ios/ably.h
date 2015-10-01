@@ -14,16 +14,9 @@ FOUNDATION_EXPORT double ablyVersionNumber;
 //! Project version string for ably-ios.
 FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 
-#import <ably/ARTDataQuery.h>
-#import <ably/ARTRest.h>
-#import <ably/ARTClientOptions.h>
-#import <ably/ARTTypes.h>
-#import <ably/ARTStatus.h>
-#import <ably/ARTPaginatedResult.h>
-#import <ably/ARTMessage.h>
-#import <ably/ARTAuth.h>
-#import <ably/ARTPresence.h>
-#import <ably/ARTPayload.h>
 #import <Ably/ARTLog.h>
-#import <Ably/ARTStats.h>
-#import <Ably/ARTCrypto.h>
+#import <Ably/ARTTypes.h>
+
+#import <Ably/ARTNSDictionary+ARTDictionaryUtil.h>
+#import <Ably/ARTNSDate+ARTUtil.h>
+#import <Ably/ARTNSArray+ARTFunctional.h>

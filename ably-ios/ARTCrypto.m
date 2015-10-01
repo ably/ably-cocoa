@@ -10,8 +10,6 @@
 
 #import <CommonCrypto/CommonCrypto.h>
 
-#import "ARTLog.h"
-
 @interface ARTCipherParams ()
 
 - (BOOL)ccAlgorithm:(CCAlgorithm *)algorithm;

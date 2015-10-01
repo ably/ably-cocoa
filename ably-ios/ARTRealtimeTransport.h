@@ -8,9 +8,10 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ARTProtocolMessage.h"
-
 @protocol ARTRealtimeTransport;
+
+@class ARTProtocolMessage;
+@class ARTStatus;
 
 @protocol ARTRealtimeTransportDelegate
 

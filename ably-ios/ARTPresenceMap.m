@@ -10,10 +10,12 @@
 #import "ARTPresenceMessage.h"
 
 @interface ARTPresenceMap ()
-@property (readwrite, strong, atomic) NSMutableDictionary * mostRecentMessageForMember; //<clientId, artPresenceMessage *> message
+
+@property (readwrite, strong, atomic) NSMutableDictionary *mostRecentMessageForMember; //<clientId, artPresenceMessage *> message
 @property (readonly, nonatomic, assign) bool syncStarted;
 @property (readonly, nonatomic, assign) bool syncComplete;
 @property (nonatomic, copy) VoidCb cb;
+
 @end
 
 @implementation ARTPresenceMap
@@ -59,11 +61,12 @@
 - (NSDictionary *) members {
     return self.mostRecentMessageForMember;
 }
+
 - (void)endSync {
     NSArray * keys = [self.mostRecentMessageForMember allKeys];
     for(NSString * key in keys) {
         ARTPresenceMessage * message = [self.mostRecentMessageForMember objectForKey:key];
-        if(message.action == ARTPresenceMessageAbsent || message.action == ARTPresenceMessageLeave) {
+        if(message.action == ARTPresenceAbsent || message.action == ARTPresenceLeave) {
             [self.mostRecentMessageForMember removeObjectForKey:key];
         }
     }

@@ -9,10 +9,11 @@
 #import "ARTWebSocketTransport.h"
 
 #import <SocketRocket/SRWebSocket.h>
-#import "ARTClientOptions.h"
+
 #import "ARTRest.h"
 #import "ARTRest+Private.h"
-#import "ARTLog.h"
+#import "ARTProtocolMessage.h"
+#import "ARTClientOptions.h"
 
 enum {
     ARTWsNeverConnected = -1,
@@ -72,17 +73,8 @@ enum {
 
             NSMutableDictionary *queryParams = [NSMutableDictionary dictionaryWithDictionary:authParams];
             
-            /*
-             //msgpack not supported yet.
-            if(false || options.binary) {
-                queryParams[@"format"] = @"msgpack";
-            }
-            */
-
-
             queryParams[@"echo"] =  echoMessages ? @"true" :@"false";
-            
-            
+                        
             if(options.recover) {
                 NSArray * parts = [options.recover componentsSeparatedByString:@":"];
                 if([parts count] == 2) {

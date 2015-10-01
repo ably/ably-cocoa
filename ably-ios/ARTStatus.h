@@ -26,8 +26,7 @@ typedef NS_ENUM(NSUInteger, ARTState) {
 
 FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
 
-typedef void(^ARTErrorCallback)(NSError *error);
-
+// FIXME: base NSError
 @interface ARTErrorInfo : NSObject
 
 @property (readonly, copy, nonatomic) NSString *message;
@@ -43,7 +42,7 @@ typedef void(^ARTErrorCallback)(NSError *error);
 @interface ARTStatus : NSObject {
     
 }
-@property (readonly, strong, nonatomic) ARTErrorInfo * errorInfo;
+@property (readonly, strong, nonatomic) ARTErrorInfo *errorInfo;
 @property (nonatomic, assign) ARTState state;
 
 +(ARTStatus *) state:(ARTState) state;

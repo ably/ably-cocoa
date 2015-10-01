@@ -10,7 +10,7 @@
 
 #import "ARTAuth.h"
 
-@interface ARTClientOptions : NSObject
+@interface ARTClientOptions : NSObject<NSCopying>
 
 @property (readwrite, strong, nonatomic) ARTAuthOptions *authOptions;
 @property (readwrite, strong, nonatomic) NSString *clientId;
@@ -36,8 +36,6 @@
 
 - (bool)isFallbackPermitted;
 
-+ (instancetype)options;
-+ (instancetype)optionsWithKey:(NSString *)key;
-+ (NSURL*)restUrl:(NSString *)host port:(int)port;
++ (NSURL*)restUrl:(NSString *)host port:(int)port tls:(BOOL)tls;
 
 @end

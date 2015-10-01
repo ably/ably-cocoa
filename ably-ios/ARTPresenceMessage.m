@@ -7,52 +7,22 @@
 //
 
 #import "ARTPresenceMessage.h"
-#import "ARTStatus.h"
+
 @implementation ARTPresenceMessage
 
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _id = nil;
-        _clientId = nil;
-        _payload = nil;
-        _timestamp = nil;
-        _action = ARTPresenceMessageEnter;
-        _connectionId = nil;
-        _encoding = nil;
+        // Default
+        _action = ARTPresenceEnter;
     }
     return self;
 }
 
-- (ARTPresenceMessage *)messageWithPayload:(ARTPayload *)payload status:(ARTStatus *) status{
-    ARTPresenceMessage *m = [[ARTPresenceMessage alloc] init];
-    m.status = status;
-    m.id = self.id;
-    m.clientId = self.clientId;
-    m.payload = payload;
-    m.timestamp = self.timestamp;
-    m.action = self.action;
-    m.connectionId = self.connectionId;
-    m.encoding = self.encoding;
-    return m;
-}
-- (ARTPresenceMessage *)messageWithPayload:(ARTPayload *)payload {
-    return [self messageWithPayload:payload status:nil];
-}
-
-- (ARTPresenceMessage *)decode:(id<ARTPayloadEncoder>)encoder {
-    ARTPayload *payload = self.payload;
-    return [self messageWithPayload:payload];
-}
-
-- (ARTPresenceMessage *)encode:(id<ARTPayloadEncoder>)encoder {
-    ARTPayload *payload = self.payload;
-    ARTStatus *status = [encoder encode:payload output:&payload];
-    return [self messageWithPayload:payload status:status];
-}
-
-- (id) content {
-    return self.payload.payload;
+- (id)copyWithZone:(NSZone *)zone {
+    ARTPresenceMessage *message = [super init];
+    message->_action = self.action;
+    return message;
 }
 
 @end

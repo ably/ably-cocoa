@@ -8,6 +8,7 @@
 
 #import "ARTProtocolMessage.h"
 #import "ARTStatus.h"
+
 @implementation ARTProtocolMessage
 
 - (id)init {
@@ -48,7 +49,7 @@
      }
 }
 
-- (void) setConnectionSerial:(int64_t)connectionSerial {
+- (void)setConnectionSerial:(int64_t)connectionSerial {
     _connectionSerial =connectionSerial;
     _hasConnectionSerial = true;
 }
@@ -56,7 +57,8 @@
 - (BOOL)ackRequired {
     return self.action == ARTProtocolMessageMessage || self.action == ARTProtocolMessagePresence || self.action == ARTProtocolMessageDetach;
 }
--(BOOL) isSyncEnabled {
+
+- (BOOL)isSyncEnabled {
     return self.flags & 0x1;
 }
 

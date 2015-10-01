@@ -7,7 +7,6 @@
 //
 
 #import "ARTClientOptions.h"
-#import "ARTClientOptions+Private.h"
 #import "ARTDefault.h"
 
 @interface ARTClientOptions ()
@@ -21,7 +20,7 @@
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _authOptions = [ARTAuthOptions options];
+        _authOptions = [[ARTAuthOptions alloc] init];
         if (!_authOptions) {
             self = nil;
         }
@@ -33,7 +32,7 @@
 - (instancetype)initWithKey:(NSString *)key {
     self = [super init];
     if (self) {
-        _authOptions = [ARTAuthOptions optionsWithKey:key];
+        _authOptions = [[ARTAuthOptions alloc] initWithKey:key];
 
         if (!_authOptions) {
             self = nil;
@@ -75,21 +74,45 @@
     return [[ARTClientOptions alloc] initWithKey:key];
 }
 
-+ (NSURL*)restUrl:(NSString *)host port:(int)port {
++ (NSURL*)restUrl:(NSString *)host port:(int)port tls:(BOOL)tls {
     NSURLComponents *components = [[NSURLComponents alloc] init];
-    components.scheme = self.tls ? @"https" : @"http";
+    components.scheme = tls ? @"https" : @"http";
     components.host = host;
-    components.port = port;
+    components.port = [NSNumber numberWithInt:port];
     return components.URL;
 }
 
 - (NSURL *)restUrl {
-    return [ARTClientOptions restUrl:self.restHost port:self.restPort];
+    return [ARTClientOptions restUrl:self.restHost port:self.restPort tls:self.tls];
 }
 
 - (bool)isFallbackPermitted {
     // FIXME: self.restHost is immutable!
     return [self.restHost isEqualToString:[ARTDefault restHost]];
+}
+
+- (id)copyWithZone:(NSZone *)zone {
+    ARTClientOptions *options = [[ARTClientOptions allocWithZone:zone] init];
+    
+    options.authOptions = [self.authOptions copy];
+    if (!options.authOptions) {
+        return nil;
+    }
+    
+    options.clientId = self.clientId;
+    options.restPort = self.restPort;
+    options.realtimePort = self.realtimePort;
+    options.queueMessages = self.queueMessages;
+    options.echoMessages = self.echoMessages;
+    options.recover = self.recover;
+    options.binary = self.binary;
+    options.autoConnect = self.autoConnect;
+    options.connectionSerial = self.connectionSerial;
+    options.resumeKey = self.resumeKey;
+    options.environment = self.environment;
+    options.tls = self.tls;
+    
+    return options;
 }
 
 @end

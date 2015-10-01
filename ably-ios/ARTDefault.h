@@ -8,9 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface ARTDefault : NSObject {
-
-}
+@interface ARTDefault : NSObject
 
 + (NSArray*)fallbackHosts;
 + (NSString*)restHost;

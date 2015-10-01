@@ -7,10 +7,48 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <ably/ARTStatus.h>
 
-typedef void (^ARTStatusCallback)(ARTStatus * status);
+@class ARTStatus;
+@class ARTHttpResponse;
+@class ARTMessage;
+@class ARTPresenceMessage;
 
+typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
+    ARTRealtimeInitialized,
+    ARTRealtimeConnecting,
+    ARTRealtimeConnected,
+    ARTRealtimeDisconnected,
+    ARTRealtimeSuspended,
+    ARTRealtimeClosing,
+    ARTRealtimeClosed,
+    ARTRealtimeFailed
+};
+
+typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
+    ARTRealtimeChannelInitialised,
+    ARTRealtimeChannelAttaching,
+    ARTRealtimeChannelAttached,
+    ARTRealtimeChannelDetaching,
+    ARTRealtimeChannelDetached,
+    ARTRealtimeChannelClosed,
+    ARTRealtimeChannelFailed
+};
+
+typedef void (^ARTRealtimeChannelMessageCb)(ARTMessage *);
+
+typedef void (^ARTRealtimeChannelStateCb)(ARTRealtimeChannelState, ARTStatus *);
+
+typedef void (^ARTStatusCallback)(ARTStatus *status);
+
+typedef void (^ARTHttpCb)(ARTHttpResponse *response);
+
+typedef void (^ARTErrorCallback)(NSError *error);
+
+typedef void (^ARTRealtimeConnectionStateCb)(ARTRealtimeConnectionState state);
+
+typedef void (^ARTRealtimeChannelPresenceCb)(ARTPresenceMessage *);
+
+// FIXME:
 @protocol ARTCancellable
 
 - (void)cancel;

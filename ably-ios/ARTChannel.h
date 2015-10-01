@@ -1,5 +1,5 @@
 //
-//  ARTChannels.h
+//  ARTChannel.h
 //  ably
 //
 //  Created by Yavor Georgiev on 20.08.15.
@@ -7,27 +7,15 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <ably/ARTMessage.h>
-#import <ably/ARTCrypto.h>
-#import <ably/ARTDataQuery.h>
-#import <ably/ARTPaginatedResult.h>
-#import <ably/ARTStatus.h>
-#import <ably/ARTTypes.h>
+#import "ably.h"
+
+@class ARTChannelOptions;
+@class ARTPresence;
+@class ARTMessage;
+@class ARTPaginatedResult;
+@class ARTDataQuery;
 
 NS_ASSUME_NONNULL_BEGIN
-
-@interface ARTChannelOptions : NSObject
-
-@property (nonatomic, assign) BOOL isEncrypted;
-@property (nonatomic, strong, nullable) ARTCipherParams *cipherParams;
-
-+ (instancetype)unencrypted;
-
-- (instancetype)initEncrypted:(ARTCipherParams *)cipherParams;
-
-@end
-
-@class ARTPresence;
 
 @interface ARTChannel : NSObject
 
@@ -43,18 +31,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)publishMessages:(NSArray /* <ARTMessage *> */ *)messages callback:(nullable ARTErrorCallback)callback;
 
 - (void)history:(nullable ARTDataQuery *)query callback:(void(^)(ARTPaginatedResult /* <ARTMessage *> */ *__nullable result, NSError *__nullable error))callback;
-
-@end
-
-@interface ARTChannelCollection : NSObject<NSFastEnumeration>
-
-- (BOOL)exists:(NSString *)channelName;
-
-- (ARTChannel *)get:(NSString *)channelName;
-
-- (ARTChannel *)get:(NSString *)channelName options:(ARTChannelOptions *)options;
-
-- (void)releaseChannel:(ARTChannel *)channel;
 
 @end
 

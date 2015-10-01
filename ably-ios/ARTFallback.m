@@ -7,18 +7,21 @@
 //
 
 #import "ARTFallback.h"
+
+#import "ARTDefault.h"
+#import "ARTStatus.h"
 #import "ARTHttp.h"
 #import "ARTClientOptions.h"
-#import "ARTDefault.h"
 
 @interface ARTFallback ()
 
 @property (readwrite, strong, nonatomic) NSMutableArray * hosts;
+
 @end
+
 @implementation ARTFallback
 
-
--(id) init {
+- (id)init {
     self = [super init];
     if(self) {
         self.hosts = [NSMutableArray array];
@@ -33,16 +36,16 @@
     return self;
 }
 
--(NSString *) popFallbackHost {
+- (NSString *)popFallbackHost {
     if([self.hosts count] ==0) {
         return nil;
     }
-    NSString * host= [self.hosts lastObject];
+    NSString *host= [self.hosts lastObject];
     [self.hosts removeLastObject];
     return host;
 }
 
-+(bool) shouldTryFallback:(ARTHttpResponse *) response  options:(ARTClientOptions *) options {
++ (bool)shouldTryFallback:(ARTHttpResponse *) response  options:(ARTClientOptions *) options {
     if(![options isFallbackPermitted]) {
         return false;
     }

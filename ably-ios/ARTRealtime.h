@@ -7,14 +7,14 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "ably.h"
+
 #import <ably/ARTStatus.h>
-#import <ably/ARTTypes.h>
+#import <ably/ARTStats.h>
 #import <ably/ARTMessage.h>
 #import <ably/ARTClientOptions.h>
 #import <ably/ARTPresenceMessage.h>
 #import <ably/ARTPaginatedResult.h>
-#import <ably/ARTStats.h>
-
 
 #define ART_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
 
@@ -22,93 +22,7 @@
 @class ARTPresenceMap;
 @class ARTRealtimeChannelPresenceSubscription;
 @class ARTEventEmitter;
-
-
-#pragma mark - Enumerations
-
-typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
-    ARTRealtimeChannelInitialised,
-    ARTRealtimeChannelAttaching,
-    ARTRealtimeChannelAttached,
-    ARTRealtimeChannelDetaching,
-    ARTRealtimeChannelDetached,
-    ARTRealtimeChannelClosed,
-    ARTRealtimeChannelFailed
-};
-
-typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
-    ARTRealtimeInitialized,
-    ARTRealtimeConnecting,
-    ARTRealtimeConnected,
-    ARTRealtimeDisconnected,
-    ARTRealtimeSuspended,
-    ARTRealtimeClosing,
-    ARTRealtimeClosed,
-    ARTRealtimeFailed
-};
-
-
-#pragma mark - Protocols
-
-@protocol ARTSubscription
-
-- (void)unsubscribe;
-
-@end
-
-
-#pragma mark - ARTRealtimeChannel
-
-@interface ARTRealtimeChannel : NSObject
-
-- (void)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb;
-- (void)publish:(id)payload cb:(ARTStatusCallback)cb;
-
-- (void)history:(ARTDataQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult /* <ARTMessage *> */ *result))callback;
-
-typedef void (^ARTRealtimeChannelMessageCb)(ARTMessage *);
-- (id<ARTSubscription>)subscribe:(ARTRealtimeChannelMessageCb)cb;
-- (id<ARTSubscription>)subscribeToName:(NSString *)name cb:(ARTRealtimeChannelMessageCb)cb;
-- (id<ARTSubscription>)subscribeToNames:(NSArray *)names cb:(ARTRealtimeChannelMessageCb)cb;
-
-typedef void (^ARTRealtimeChannelStateCb)(ARTRealtimeChannelState, ARTStatus *);
-- (id<ARTSubscription>)subscribeToStateChanges:(ARTRealtimeChannelStateCb)cb;
-
-- (BOOL)attach;
-- (BOOL)detach;
-- (void)releaseChannel; //ARC forbids implementation of release
-- (ARTRealtimeChannelState)state;
-- (ARTPresenceMap *) presenceMap;
-
-@property (readonly, strong, nonatomic) ARTPresence *presence;
-
-@end
-
-
-#pragma mark - ARTPresence
-
-@interface ARTPresence : NSObject
-
-- (instancetype)initWithChannel:(ARTRealtimeChannel *)channel;
-- (void)get:(ARTDataQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult /* <ARTPresenceMessage *> */ *result))callback;
-- (void)history:(ARTDataQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult /* <ARTPresenceMessage *> */ *result))callback;
-
-- (void)enter:(id)data cb:(ARTStatusCallback)cb;
-- (void)update:(id)data cb:(ARTStatusCallback)cb;
-- (void)leave:(id) data cb:(ARTStatusCallback)cb;
-
-- (void)enterClient:(NSString *) clientId data:(id) data cb:(ARTStatusCallback) cb;
-- (void)updateClient:(NSString *) clientId data:(id) data cb:(ARTStatusCallback) cb;
-- (void)leaveClient:(NSString *) clientId data:(id) data cb:(ARTStatusCallback) cb;
-- (BOOL)isSyncComplete;
-
-typedef void (^ARTRealtimeChannelPresenceCb)(ARTPresenceMessage *);
-- (id<ARTSubscription>)subscribe:(ARTRealtimeChannelPresenceCb)cb;
-- (id<ARTSubscription>)subscribe:(ARTPresenceMessageAction)action cb:(ARTRealtimeChannelPresenceCb)cb;
-- (void)unsubscribe:(id<ARTSubscription>)subscription;
-- (void)unsubscribe:(id<ARTSubscription>)subscription action:(ARTPresenceMessageAction) action;
-
-@end
+@class ARTRealtimeChannel;
 
 
 #pragma mark - ARTRealtime
@@ -153,17 +67,5 @@ typedef void (^ARTRealtimePingCb)(ARTStatus *);
 
 @property (readonly, strong, nonatomic) ARTEventEmitter *eventEmitter;
 @property (readonly, getter=getLogger) ARTLog *logger;
-
-@end
-
-
-#pragma mark - ARTEventEmitter
-
-@interface ARTEventEmitter : NSObject
-
--(instancetype) initWithRealtime:(ARTRealtime *) realtime;
-
-typedef void (^ARTRealtimeConnectionStateCb)(ARTRealtimeConnectionState);
-- (id<ARTSubscription>)on:(ARTRealtimeConnectionStateCb)cb;
 
 @end

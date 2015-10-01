@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+
 #import "ARTStatus.h"
 
 NSString *const ARTAblyErrorDomain = @"ARTAblyErrorDomain";

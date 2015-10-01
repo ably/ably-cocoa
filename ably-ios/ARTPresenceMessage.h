@@ -6,36 +6,21 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-#import <ably/ARTPayload.h>
+#import "ARTBaseMessage.h"
 
-@class ARTStatus;
-
-typedef NS_ENUM(NSUInteger, ARTPresenceMessageAction) {
-    ARTPresenceMessageAbsent,
-    ARTPresenceMessagePresent,
-    ARTPresenceMessageEnter,
-    ARTPresenceMessageLeave,
-    ARTPresenceMessageUpdate,
-    ARTPresenceMessageLast
+/// Presence action type
+typedef NS_ENUM(NSUInteger, ARTPresenceAction) {
+    ARTPresenceAbsent,
+    ARTPresencePresent,
+    ARTPresenceEnter,
+    ARTPresenceLeave,
+    ARTPresenceUpdate,
+    ARTPresenceLast
 };
 
-@interface ARTPresenceMessage : NSObject
+/// List of members present on a channel
+@interface ARTPresenceMessage : ARTBaseMessage
 
-@property (readwrite, strong, nonatomic) NSString *id;
-@property (readwrite, strong, nonatomic) NSString *clientId;
-@property (readwrite, strong, nonatomic) NSString *encoding;
-@property (readwrite, strong, nonatomic) ARTStatus * status;
-@property (readwrite, strong, nonatomic) ARTPayload *payload;
-@property (readwrite, strong, nonatomic) NSDate *timestamp;
-
-@property (readwrite, assign, nonatomic) ARTPresenceMessageAction action;
-@property (readwrite, strong, nonatomic) NSString *connectionId;
-
-- (ARTPresenceMessage *)messageWithPayload:(ARTPayload *)payload;
-
-- (ARTPresenceMessage *)decode:(id<ARTPayloadEncoder>)encoder;
-- (ARTPresenceMessage *)encode:(id<ARTPayloadEncoder>)encoder;
-- (id)content;
+@property (readwrite, assign, nonatomic) ARTPresenceAction action;
 
 @end
