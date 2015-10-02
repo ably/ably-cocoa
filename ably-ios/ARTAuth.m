@@ -69,19 +69,40 @@ static NSArray *decomposeKey(NSString *key) {
     _timestamp = timestamp;
 }
 
-- (NSArray *)toArray {
+- (NSMutableArray *)toArray {
     NSMutableArray *params = [[NSMutableArray alloc] init];
-    
+
     if (self.clientId)
-        [params addObject:[NSString stringWithFormat:@"clientId=%@", self.clientId]];
+        [params addObject:[NSURLQueryItem queryItemWithName:@"clientId" value:self.clientId]];
     if (self.ttl > 0)
-        [params addObject:[NSString stringWithFormat:@"ttl=%f", self.ttl]];
+        [params addObject:[NSURLQueryItem queryItemWithName:@"ttl" value:[NSString stringWithFormat:@"%f", self.ttl]]];
     if (self.capability)
-        [params addObject:[NSString stringWithFormat:@"capability=%@", self.capability]];
+        [params addObject:[NSURLQueryItem queryItemWithName:@"capability" value:self.capability]];
     if (self.timestamp > 0)
-        [params addObject:[NSString stringWithFormat:@"timestamp=%f", [self.timestamp timeIntervalSince1970]]];
+        [params addObject:[NSURLQueryItem queryItemWithName:@"timestamp" value:[NSString stringWithFormat:@"%f", self.timestamp.timeIntervalSince1970]]];
     
     return params;
+}
+
+- (NSArray *)toArrayWithUnion:(NSArray *)items {
+    NSMutableArray *tokenParams = [self toArray];
+    BOOL add = YES;
+
+    for (NSURLQueryItem *item in items) {
+        for (NSURLQueryItem *param in tokenParams) {
+            // Check if exist
+            if ([param.name isEqualToString:item.name]) {
+                add = NO;
+                break;
+            }
+        }
+        if (add) {
+            [tokenParams addObject:item];
+        }
+        add = YES;
+    }
+    
+    return tokenParams;
 }
 
 static NSString *generateNonce() {
@@ -152,6 +173,8 @@ static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
 
 @implementation ARTAuthOptions
 
+NSString *const ARTAuthOptionsMethodDefault = @"GET";
+
 - (instancetype)initWithKey:(NSString *)key {
     self = [self init];
     if (self) {
@@ -159,12 +182,14 @@ static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
             [NSException raise:@"Invalid key" format:@"%@ should be of the form <keyName>:<keySecret>", key];
         }
         _key = [key copy];
+        _authMethod = ARTAuthOptionsMethodDefault;
     }
     return self;
 }
 
 - (id)copyWithZone:(NSZone *)zone {
     ARTAuthOptions *options = [[ARTAuthOptions allocWithZone:zone] init];
+    
     options.key = self.key;
     options.token = self.token;
     options.useTokenAuth = self.useTokenAuth;
@@ -178,6 +203,11 @@ static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
     return options;
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat: @"ARTAuthOptions: key=%@ token=%@ authUrl=%@ authMethod=%@ hasAuthCallback=%d",
+            self.key, self.token, self.authUrl, self.authMethod, self.authCallback != nil];
+}
+
 - (NSString *)token {
     return self.tokenDetails.token;
 }
@@ -187,11 +217,40 @@ static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
 }
 
 - (void)setAuthMethod:(NSString *)authMethod {
-    if (authMethod == nil) {
-        authMethod = @"GET";
+    if (authMethod == nil || authMethod.length == 0) {
+        authMethod = ARTAuthOptionsMethodDefault;
     }
     
     _authMethod = [authMethod copy];
+}
+
+- (ARTAuthOptions *)mergeWith:(ARTAuthOptions *)precedenceOptions {
+    ARTAuthOptions *merged = [self copy];
+    
+    if (precedenceOptions.key)
+        merged.key = precedenceOptions.key;
+    if (precedenceOptions.authCallback)
+        merged.authCallback = precedenceOptions.authCallback;
+    if (precedenceOptions.authUrl)
+        merged.authUrl = precedenceOptions.authUrl;
+    if (precedenceOptions.authMethod)
+        merged.authMethod = precedenceOptions.authMethod;
+    if (precedenceOptions.authHeaders)
+        merged.authHeaders = precedenceOptions.authHeaders;
+    if (precedenceOptions.authParams)
+        merged.authParams = precedenceOptions.authParams;
+    if (precedenceOptions.queryTime)
+        merged.queryTime = precedenceOptions.queryTime;
+    
+    return merged;
+}
+
+- (BOOL)isMethodPOST {
+    return [_authMethod isEqualToString:@"POST"];
+}
+
+- (BOOL)isMethodGET {
+    return [_authMethod isEqualToString:@"GET"];
 }
 
 @end
@@ -203,18 +262,26 @@ static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
     __weak ARTRest *_rest;
 }
 
-- (instancetype)initWithRest:(ARTRest *)rest options:(ARTAuthOptions *)options {
+- (instancetype)init:(ARTRest *)rest withOptions:(ARTAuthOptions *)options {
     if (self = [super init]) {
         _rest = rest;
         _currentToken = options.tokenDetails;
         _options = options;
         _logger = rest.logger;
         
+        // REV: options.useTokenAuth
+        
         if (options.key != nil && !options.useTokenAuth) {
             [self.logger debug:@"ARTAuth: setting up auth method Basic"];
             _authMethod = ARTAuthMethodBasic;
-        } else if ([self shouldUseTokenAuth]) {
-            [self.logger debug:@"ARTAuth: setting up auth method Token"];
+        } else if (options.tokenDetails) {
+            [self.logger debug:@"ARTAuth: setting up auth method Token with supplied token only"];
+            _authMethod = ARTAuthMethodToken;
+        } else if (options.authUrl) {
+            [self.logger debug:@"ARTAuth: setting up auth method Token with authUrl"];
+            _authMethod = ARTAuthMethodToken;
+        } else if (options.authCallback) {
+            [self.logger debug:@"ARTAuth: setting up auth method Token with authCallback"];
             _authMethod = ARTAuthMethodToken;
         } else {
             [NSException raise:@"ARTAuthException" format:@"Could not setup authentication method with given options."];
@@ -224,78 +291,46 @@ static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
     return self;
 }
 
-- (BOOL)shouldUseTokenAuth {
-    return NO;
-}
-
-/**
- # (RSA8) Auth#requestToken
- 
- Implicitly creates a `TokenRequest` if required, and requests a token from Ably if required.
- 
- `TokenParams` and `AuthOptions` are optional.
- When provided, the values supersede matching client library configured params and options.
- 
- - Parameter tokenParams: Token params (optional).
- - Parameter authOptions: Authentication options (optional).
- - Parameter callback: Completion callback (ARTAuthTokenDetails, NSError).
- */
 - (void)requestToken:(ARTAuthTokenParams *)tokenParams withOptions:(ARTAuthOptions *)authOptions
             callback:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
-
-    ARTAuthOptions *mergedOptions = authOptions;
-    ARTAuthTokenParams *currentTokenParams = tokenParams;
     
-    if (!mergedOptions) {
-        // TODO: Merge
-        mergedOptions = self.options;
-    }
+    // The values supersede matching client library configured params and options.
+    ARTAuthOptions *mergedOptions = authOptions ? [self.options mergeWith:authOptions] : self.options;
+    ARTAuthTokenParams *currentTokenParams = tokenParams;
     
     if (!currentTokenParams) {
         currentTokenParams = [[ARTAuthTokenParams alloc] init];
-        // TODO: Client library configured params
-        NSAssert(false, @"Client library configured params not implemented");
-        
-        /*
-        currentTokenParams.clientId
-        currentTokenParams.capability
-        currentTokenParams.ttl
-        currentTokenParams.timestamp
-        */
     }
-    
+        
     if (mergedOptions.authUrl) {
         NSURLComponents *urlComponents = [NSURLComponents componentsWithURL:mergedOptions.authUrl resolvingAgainstBaseURL:YES];
         
-        if (!mergedOptions.authMethod || !mergedOptions.authMethod.length) {
-            mergedOptions.authMethod = @"GET"; //Default
-        }
+        // TokenParams take precedence over any configured authParams when a name conflict occurs
+        NSArray *params = [currentTokenParams toArrayWithUnion:mergedOptions.authParams];
+        NSData *bodyData = nil;
         
-        if ([mergedOptions.authMethod isEqualToString:@"POST"]) {
+        if ([mergedOptions isMethodPOST]) {
             // When POST, use body of the POST request
-            
-            // TODO
-            
-            //[request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-            
-            //NSData.length
-            //[request setValue:@"" forHTTPHeaderField:@"Content-Length"];
+            bodyData = [NSJSONSerialization dataWithJSONObject:params options:0 error:nil];
         }
         else {
             // When GET, use query string params
-            if (mergedOptions.authParams) {
-                urlComponents.queryItems = [urlComponents.queryItems arrayByAddingObjectsFromArray:mergedOptions.authParams];
-            }
-            urlComponents.queryItems = [urlComponents.queryItems arrayByAddingObjectsFromArray:[currentTokenParams toArray]];
-            
-            //(RSA8c2) TokenParams take precedence over any configured authParams when a name conflict occurs
-            // TODO
-            
-            //[request setValue:@"application/json" forHTTPHeaderField:@"Accept"];
+            urlComponents.queryItems = @[];
+            urlComponents.queryItems = [urlComponents.queryItems arrayByAddingObjectsFromArray:params];
         }
         
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:urlComponents.URL];
         request.HTTPMethod = mergedOptions.authMethod;
+        
+        // HTTP Header Fields
+        if ([mergedOptions isMethodPOST] && bodyData) {
+            request.HTTPBody = bodyData;
+            [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+            [request setValue:[NSString stringWithFormat:@"%d", (unsigned int)bodyData.length] forHTTPHeaderField:@"Content-Length"];
+        }
+        else {
+            [request setValue:@"application/json" forHTTPHeaderField:@"Accept"];
+        }
         
         for (NSString *key in mergedOptions.authHeaders) {
             [request setValue:mergedOptions.authHeaders[key] forHTTPHeaderField:key];
@@ -328,9 +363,11 @@ static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
     }
 }
 
+// FIXME: need revision
 - (void)requestToken:(ARTAuthTokenRequest *)tokenRequest callback:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
     NSURL *requestUrl = [NSURL URLWithString:[NSString stringWithFormat:@"/keys/%@/requestToken", tokenRequest.keyName]
                                relativeToURL:_rest.baseUrl];
+    
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
     request.HTTPMethod = @"POST";
     

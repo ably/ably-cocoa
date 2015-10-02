@@ -56,21 +56,20 @@
         
         // FIXME:
         _http = [[ARTHttp alloc] init];
-        // Private
-        self.httpExecutor = _http;
-        self.httpExecutor.logger = _logger;
+        // Private ?!
+        //self.httpExecutor = _http;
+        //self.httpExecutor.logger = _logger;
         
         // FIXME:
         //_channels = [[ARTChannelCollection alloc] initWithRest:self];
         
         id<ARTEncoder> defaultEncoder = [[ARTJsonEncoder alloc] init];
-        _encoders = @{
-                      [defaultEncoder mimeType]: defaultEncoder,
-                      };
-        
+        _encoders = @{ [defaultEncoder mimeType]: defaultEncoder };
         _defaultEncoding = [defaultEncoder mimeType];
+        
         _fallbackCount = 0;
-        _auth = [[ARTAuth alloc] initWithRest:self options:options.authOptions];
+        
+        _auth = [[ARTAuth alloc] init:self withOptions:options.authOptions];
     }
     return self;
 }

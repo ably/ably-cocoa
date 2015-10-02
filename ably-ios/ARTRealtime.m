@@ -304,13 +304,13 @@
                     }
                 }
                 self.options.resumeKey = nil;
-                 for (NSString *channelName in self.allChannels) {
-                     ARTRealtimeChannel *channel = [self.allChannels objectForKey:channelName];
-                     if([channel.presenceMap stillSyncing]) {
-                         // FIXME:
-                         //[channel requestContinueSync];
-                     }
-                 }
+                for (NSString *channelName in self.allChannels) {
+                    ARTRealtimeChannel *channel = [self.allChannels objectForKey:channelName];
+                    if([channel.presenceMap stillSyncing]) {
+                        // FIXME:
+                        //[channel requestContinueSync];
+                    }
+                }
             }
             self.msgSerial = 0;
             [self cancelSuspendTimer];

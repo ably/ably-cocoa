@@ -8,7 +8,6 @@
 
 #import "ARTEventEmitter.h"
 
-#import "ARTSubscription.h"
 #import "ARTRealtimeChannelSubscription.h"
 
 @interface ARTEventEmitter ()

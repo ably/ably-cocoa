@@ -9,7 +9,6 @@
 #import <Foundation/Foundation.h>
 #import "ably.h"
 
-#import "ARTSubscription.h"
 #import "ARTPresenceMessage.h"
 
 @class ARTRealtime;

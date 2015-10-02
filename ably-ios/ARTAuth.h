@@ -15,6 +15,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#pragma mark - ARTAuthTokenParams
+
 @interface ARTAuthTokenDetails : NSObject
 
 @property (nonatomic, readonly, copy) NSString *token;
@@ -31,6 +33,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+
+#pragma mark - ARTAuthTokenParams
+
 @interface ARTAuthTokenParams : NSObject
 
 @property (nonatomic, assign) NSTimeInterval ttl;
@@ -40,9 +45,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init;
 
-- (NSArray *)toArray;
+- (NSMutableArray *)toArray; //X7: NSArray<NSURLQueryItem *>
+- (NSArray *)toArrayWithUnion:(NSArray *)items; //X7: NSArray<NSURLQueryItem *>
 
 @end
+
+
+#pragma mark - ARTAuthTokenRequest
 
 @interface ARTAuthTokenRequest : ARTAuthTokenParams
 
@@ -56,11 +65,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+
+#pragma mark - ARTAuthTokenParams
+
 @interface ARTAuthTokenParams(SignedRequest)
 
 - (ARTAuthTokenRequest *)sign:(NSString *)key;
 
 @end
+
+
+#pragma mark - ARTAuthOptions
 
 typedef void (^ARTAuthCallback)(ARTAuthTokenParams *tokenParams, void(^callback)(ARTAuthTokenRequest *__nullable tokenRequest, NSError *__nullable error));
 
@@ -71,24 +86,71 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 
 @interface ARTAuthOptions : NSObject<NSCopying>
 
+/**
+ Full Ably key string as obtained from dashboard.
+ */
 @property (nonatomic, copy, nullable) NSString *key;
 
+/**
+ An authentication token issued for this application against a specific key and `TokenParams`.
+ */
 @property (nonatomic, copy, nullable) NSString *token;
-@property (nonatomic, strong, nullable) ARTAuthTokenDetails *tokenDetails;
-@property (nonatomic, assign) BOOL useTokenAuth;
 
+/**
+ An authentication token issued for this application against a specific key and `TokenParams`.
+ */
+@property (nonatomic, strong, nullable) ARTAuthTokenDetails *tokenDetails;
+
+/**
+ A callback to call to obtain a signed token request.
+ 
+ This enables a client to obtain token requests from another entity, so tokens can be renewed without the client requiring access to keys.
+ */
 @property (nonatomic, copy, nullable) ARTAuthCallback authCallback;
 
+/**
+ A URL to queryto obtain a signed token request.
+ 
+ This enables a client to obtain token requests from another entity, so tokens can be renewed without the client requiring access to keys.
+ */
 @property (nonatomic, strong, nullable) NSURL *authUrl;
+
+/**
+ The HTTP verb to be used when a request is made by the library to the authUrl. Defaults to GET, supports GET and POST.
+ */
 @property (nonatomic, copy, null_resettable) NSString *authMethod;
+
+/**
+ Headers to be included in any request made by the library to the authURL.
+ */
 @property (nonatomic, copy, nullable) NSDictionary *authHeaders; //X7: NSDictionary<NSString *, NSString *> *authHeaders;
+
+/**
+  Additional params to be included in any request made by the library to the authUrl, either as query params in the case of GET or in the body in the case of POST.
+ */
 @property (nonatomic, copy, nullable) NSArray *authParams; //X7: NSArray<NSURLQueryItem *> *authParams;
 
+/**
+ This may be set in instances that the library is to sign token requests based on a given key.
+ If true, the library will query the Ably system for the current time instead of relying on a locally-available time of day.
+ */
 @property (nonatomic, assign, nonatomic) BOOL queryTime;
+
+@property (nonatomic, assign) BOOL useTokenAuth;
 
 - (instancetype)initWithKey:(NSString *)key;
 
+- (NSString *)description;
+
+- (ARTAuthOptions *)mergeWith:(ARTAuthOptions *)precedenceOptions;
+
+- (BOOL)isMethodGET;
+- (BOOL)isMethodPOST;
+
 @end
+
+
+#pragma mark - ARTAuth
 
 @interface ARTAuth : NSObject
 
@@ -97,8 +159,20 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 @property (nonatomic, readonly, assign) ARTAuthMethod authMethod;
 @property (nonatomic, readonly, strong) ARTAuthTokenDetails *currentToken;
 
-- (instancetype)initWithRest:(ARTRest *)rest options:(ARTAuthOptions *)options;
+- (instancetype)init:(ARTRest *)rest withOptions:(ARTAuthOptions *)options;
 
+/**
+ # (RSA8) Auth#requestToken
+ 
+ Implicitly creates a `TokenRequest` if required, and requests a token from Ably if required.
+ 
+ `TokenParams` and `AuthOptions` are optional.
+ When provided, the values supersede matching client library configured params and options.
+ 
+ - Parameter tokenParams: Token params (optional).
+ - Parameter authOptions: Authentication options (optional).
+ - Parameter callback: Completion callback (ARTAuthTokenDetails, NSError).
+ */
 - (void)requestToken:(nullable ARTAuthTokenParams *)tokenParams withOptions:(nullable ARTAuthOptions *)authOptions
             callback:(void (^)(ARTAuthTokenDetails *__nullable tokenDetails, NSError *__nullable error))callback;
 

@@ -10,9 +10,11 @@
 
 @class ARTAuthOptions;
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ARTClientOptions : NSObject<NSCopying>
 
-@property (readwrite, strong, nonatomic) ARTAuthOptions *authOptions;
+@property (nonnull, strong, nonatomic) ARTAuthOptions *authOptions;
 @property (readwrite, strong, nonatomic) NSString *clientId;
 
 @property (readonly, getter=getRestHost) NSString *restHost;
@@ -28,8 +30,8 @@
 @property (readwrite, assign, nonatomic) BOOL binary;
 @property (readwrite, assign, nonatomic) BOOL autoConnect;
 @property (readwrite, assign, nonatomic) int64_t connectionSerial;
-@property (readwrite, copy, nonatomic) NSString *resumeKey;
-@property (readwrite, copy, nonatomic) NSString *recover;
+@property (nullable, readwrite, copy, nonatomic) NSString *resumeKey;
+@property (nullable, readwrite, copy, nonatomic) NSString *recover;
 
 - (instancetype)init;
 - (instancetype)initWithKey:(NSString *)key;
@@ -40,3 +42,5 @@
 - (NSURL *)restUrl;
 
 @end
+
+NS_ASSUME_NONNULL_END

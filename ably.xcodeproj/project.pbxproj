@@ -125,6 +125,7 @@
 		D746AE501BBD84E7003ECEF8 /* ARTChannelOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE4E1BBD84E7003ECEF8 /* ARTChannelOptions.m */; };
 		D746AE531BBD85C5003ECEF8 /* ARTChannelCollection.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE511BBD85C5003ECEF8 /* ARTChannelCollection.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D746AE541BBD85C5003ECEF8 /* ARTChannelCollection.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE521BBD85C5003ECEF8 /* ARTChannelCollection.m */; };
+		D7C1B8771BBEA81A0087B55F /* Auth.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C1B8761BBEA81A0087B55F /* Auth.swift */; };
 		FC78549C1BCD5688539CCBE4 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA6E099E4BC04FC80F845C0 /* libPods.a */; };
 /* End PBXBuildFile section */
 
@@ -298,6 +299,7 @@
 		D746AE511BBD85C5003ECEF8 /* ARTChannelCollection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTChannelCollection.h; sourceTree = "<group>"; };
 		D746AE521BBD85C5003ECEF8 /* ARTChannelCollection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTChannelCollection.m; sourceTree = "<group>"; };
 		D746AE551BBD8622003ECEF8 /* ARTChannelCollection+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ARTChannelCollection+Private.h"; sourceTree = "<group>"; };
+		D7C1B8761BBEA81A0087B55F /* Auth.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Auth.swift; sourceTree = "<group>"; };
 		DF8DF755839D59574B7B795F /* Pods-ablySpec.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ablySpec.release.xcconfig"; path = "Pods/Target Support Files/Pods-ablySpec/Pods-ablySpec.release.xcconfig"; sourceTree = "<group>"; };
 		FDA6E099E4BC04FC80F845C0 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -374,6 +376,7 @@
 				856AAC8E1B6E304B00B07119 /* Info.plist */,
 				856AAC961B6E30C800B07119 /* TestUtilities.swift */,
 				856AAC951B6E30C800B07119 /* ablySpec-Bridging-Header.h */,
+				D7C1B8761BBEA81A0087B55F /* Auth.swift */,
 				856AAC981B6E312F00B07119 /* RestClient.swift */,
 				853ED7C31B7A1A3C006F1C6F /* RestClient.stats.swift */,
 				D746AE2A1BBB625E003ECEF8 /* RestChannel.swift */,
@@ -870,6 +873,7 @@
 				851674EF1B7BA5CD00D35169 /* Stats.swift in Sources */,
 				D72304701BB72CED00F1ABDA /* RealtimeClient.swift in Sources */,
 				D746AE2D1BBB625E003ECEF8 /* RestClient.channels.swift in Sources */,
+				D7C1B8771BBEA81A0087B55F /* Auth.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
