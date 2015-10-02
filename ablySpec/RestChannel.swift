@@ -40,7 +40,7 @@ extension ARTPayload {
 class RestChannel: QuickSpec {
     override func spec() {
         var client: ARTRest!
-        var channel: ARTRestChannel!
+        var channel: ARTChannel! //ARTRestChannel
         
         beforeEach {
             client = ARTRest(options: AblyTests.setupOptions(AblyTests.jsonRestOptions))

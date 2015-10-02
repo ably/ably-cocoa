@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ARTAuth.h"
+@class ARTAuthOptions;
 
 @interface ARTClientOptions : NSObject<NSCopying>
 
@@ -37,5 +37,6 @@
 - (bool)isFallbackPermitted;
 
 + (NSURL*)restUrl:(NSString *)host port:(int)port tls:(BOOL)tls;
+- (NSURL *)restUrl;
 
 @end

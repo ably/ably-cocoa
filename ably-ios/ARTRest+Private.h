@@ -7,7 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <ably/ARTRest.h>
+
+#import "ARTRest.h"
 
 @protocol ARTEncoder;
 @protocol ARTHTTPExecutor;

@@ -45,7 +45,7 @@
     if (self) {
         NSAssert(options, @"ARTRest: No options provided");
         _options = options;
-        //_baseUrl = [options restUrl];
+        _baseUrl = [options restUrl];
         
         if (logger) {
             _logger = logger;
@@ -54,10 +54,11 @@
             _logger = [[ARTLog alloc] init];
         }
         
+        // FIXME:
         _http = [[ARTHttp alloc] init];
-        // ?!
-        //_httpExecutor = _http;
-        //_httpExecutor.logger = _logger;
+        // Private
+        self.httpExecutor = _http;
+        self.httpExecutor.logger = _logger;
         
         // FIXME:
         //_channels = [[ARTChannelCollection alloc] initWithRest:self];
@@ -99,6 +100,7 @@
                     NSError *error = [self->_encoders[response.MIMEType] decodeError:data];
                     if (error.code == 40140) {
                         // TODO: request token or error if no token information
+                        NSAssert(false, @"Request token or error if no token information");
                     } else {
                         callback(nil, nil, error);
                     }

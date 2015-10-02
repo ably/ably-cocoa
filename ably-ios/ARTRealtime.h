@@ -23,7 +23,7 @@
 @class ARTRealtimeChannelPresenceSubscription;
 @class ARTEventEmitter;
 @class ARTRealtimeChannel;
-
+@class ARTAuth;
 
 #pragma mark - ARTRealtime
 

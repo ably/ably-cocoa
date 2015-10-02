@@ -7,7 +7,9 @@
 //
 
 #import "ARTClientOptions.h"
+
 #import "ARTDefault.h"
+#import "ARTAuth.h"
 
 @interface ARTClientOptions ()
 

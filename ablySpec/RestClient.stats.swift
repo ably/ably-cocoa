@@ -14,11 +14,13 @@ import Foundation
 
 private func postTestStats(stats: JSON) -> ARTClientOptions {
     let options = AblyTests.setupOptions(AblyTests.jsonRestOptions);
-    let key = ("\(options.authOptions.keyName):\(options.authOptions.keySecret)" as NSString)
+    
+    let key = ("\(options.authOptions.key)" as NSString)
         .dataUsingEncoding(NSUTF8StringEncoding)!
         .base64EncodedStringWithOptions(NSDataBase64EncodingOptions(0))
     
-    let request = NSMutableURLRequest(URL: NSURL(string: "https://\(restHost)/stats")!)
+    let request = NSMutableURLRequest(URL: NSURL(string: "https://rest.ably.io/stats")!)
+    
     request.HTTPMethod = "POST"
     request.HTTPBody = stats.rawData()
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")

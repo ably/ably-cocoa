@@ -22,12 +22,15 @@ class RealtimeClient: QuickSpec {
                     
                     let expectation = self.expectationWithDescription("async")
                     
+                    // FIXME: ?!
+                    /*
                     client.eventEmitter.on { state in
                         if state != .Connecting {
                             expect(state).to(equal(ARTRealtimeConnectionState.Connected))
                             expectation.fulfill()
                         }
                     }
+                    */
                     
                     self.waitForExpectationsWithTimeout(10.0, handler: nil)
                 }

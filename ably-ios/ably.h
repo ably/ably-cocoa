@@ -17,6 +17,28 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import <Ably/ARTLog.h>
 #import <Ably/ARTTypes.h>
 
+#import <Ably/ARTAuth.h>
+#import <Ably/ARTBaseMessage.h>
+#import <Ably/ARTChannelCollection.h>
+#import <Ably/ARTChannelOptions.h>
+#import <Ably/ARTClientOptions.h>
+#import <Ably/ARTCrypto.h>
+#import <Ably/ARTDefault.h>
+#import <Ably/ARTEventEmitter.h>
+#import <Ably/ARTFallback.h>
+#import <Ably/ARTMessage.h>
+#import <Ably/ARTPayload.h>
+#import <Ably/ARTPresence.h>
+#import <Ably/ARTPresenceMap.h>
+#import <Ably/ARTPresenceMessage.h>
+#import <Ably/ARTProtocolMessage.h>
+#import <Ably/ARTQueuedMessage.h>
+#import <Ably/ARTRealtime.h>
+#import <Ably/ARTRealtimeChannel.h>
+#import <Ably/ARTRealtimeTransport.h>
+#import <Ably/ARTStats.h>
+#import <Ably/ARTWebSocketTransport.h>
+
 #import <Ably/ARTNSDictionary+ARTDictionaryUtil.h>
 #import <Ably/ARTNSDate+ARTUtil.h>
 #import <Ably/ARTNSArray+ARTFunctional.h>

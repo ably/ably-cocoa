@@ -33,13 +33,12 @@ func publishTestMessage(client: ARTRest, failOnError: Bool = true) -> PublishTes
 func getTestToken() -> String {
     let options = AblyTests.commonAppSetup()
     options.authOptions.useTokenAuth = true
-    options.authOptions.clientId = "testToken"
     let client = ARTRest(options: options)
 
     var token: String?
-    client.auth.requestToken() { tokenDetails in
-        token = tokenDetails.token
-        return nil
+    client.auth.requestToken(nil, withOptions: nil) { tokenDetails, error in
+        token = tokenDetails?.token
+        return
     }
 
     while token == nil {
@@ -56,8 +55,9 @@ class RestClient: QuickSpec {
             context("initializer") {
                 it("should accept an API key") {
                     let options = AblyTests.commonAppSetup()
-                    let client = ARTRest(key: "\(options.authOptions.keyName):\(options.authOptions.keySecret)")
-                    client.baseUrl = options.restUrl
+                    
+                    let client = ARTRest(key: options.authOptions.key!)
+                    client.baseUrl = options.restUrl()
 
                     let publishTask = publishTestMessage(client)
 
@@ -70,7 +70,7 @@ class RestClient: QuickSpec {
 
                 it("should result in error status when provided a bad key") {
                     let options = AblyTests.commonAppSetup()
-                    let client = ARTRest(key: "badName:\(options.authOptions.keySecret)")
+                    let client = ARTRest(key: "bad")
 
                     let publishTask = publishTestMessage(client, failOnError: false)
 
@@ -94,7 +94,6 @@ class RestClient: QuickSpec {
 
                     let publishTask = publishTestMessage(client)
 
-                    expect(client.auth.getAuthMethod()).to(equal(ARTAuthMethod.Token))
                     expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
                 }
 
@@ -106,7 +105,6 @@ class RestClient: QuickSpec {
 
                     let publishTask = publishTestMessage(client, failOnError: false)
 
-                    expect(client.auth.getAuthMethod()).to(equal(ARTAuthMethod.Token))
                     expect(publishTask.error?.domain).toEventually(equal(ARTAblyErrorDomain), timeout: testTimeout)
                     expect(publishTask.error?.code).toEventually(equal(40005), timeout: testTimeout)
                 }
@@ -171,7 +169,7 @@ class RestClient: QuickSpec {
                 
                 it("should accept an options object with a host set") {
                     let options = ARTClientOptions(key: "fake:key")
-                    options.restHost = "fake.ably.host"
+                    options.environment = "fake"
                     let client = ARTRest(options: options)
                     client.httpExecutor = mockExecutor
                     
@@ -218,7 +216,7 @@ class RestClient: QuickSpec {
                 let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                 let client = ARTRest(options: options)
                 
-                let authOptions = client.auth.getAuthOptions()
+                let authOptions = client.auth.options
                 
                 expect(authOptions).to(beIdenticalTo(options.authOptions))
             }
@@ -230,7 +228,8 @@ class RestClient: QuickSpec {
                     let client = ARTRest(options: options)
                     
                     var time: NSDate?
-                    client.time({ (status, date) in
+                    
+                    client.time({ date, error in
                         time = date
                     })
                     

@@ -40,6 +40,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init;
 
+- (NSArray *)toArray;
+
 @end
 
 @interface ARTAuthTokenRequest : ARTAuthTokenParams
@@ -97,7 +99,7 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 
 - (instancetype)initWithRest:(ARTRest *)rest options:(ARTAuthOptions *)options;
 
-- (void)requestToken:(nullable ARTAuthTokenParams *)tokenParams options:(nullable ARTAuthOptions *)options
+- (void)requestToken:(nullable ARTAuthTokenParams *)tokenParams withOptions:(nullable ARTAuthOptions *)authOptions
             callback:(void (^)(ARTAuthTokenDetails *__nullable tokenDetails, NSError *__nullable error))callback;
 
 - (void)authorise:(nullable ARTAuthTokenParams *)tokenParams options:(nullable ARTAuthOptions *)options force:(BOOL)force

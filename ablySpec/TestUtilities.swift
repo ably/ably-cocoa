@@ -11,6 +11,7 @@ import Foundation
 import XCTest
 import Quick
 import SwiftyJSON
+
 import ably
 import ably.Private
 
@@ -76,9 +77,11 @@ class AblyTests {
             let appId = response["appId"]
             let id = key["id"]
 
-            options.authOptions.keyName = "\(appId).\(id)"
-            options.authOptions.keySecret = key["value"].stringValue
-            options.authOptions.capability = key["capability"].stringValue
+            // FIXME:
+            //options.authOptions.keyName = "\(appId).\(id)"
+            //options.authOptions.keySecret = key["value"].stringValue
+            //options.authOptions.capability = key["capability"].stringValue
+            
             return options
         }
         

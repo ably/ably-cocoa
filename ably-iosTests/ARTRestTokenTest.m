@@ -16,7 +16,7 @@
 #import "ARTRest+Private.h"
 #import "ARTLog.h"
 #import "ARTPayload.h"
-#import "ARTTokenDetails+Private.h"
+
 @interface ARTRestTokenTest : XCTestCase
 {
     ARTRest *_rest;
