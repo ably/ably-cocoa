@@ -289,7 +289,6 @@
 		D746AE3E1BBC5B14003ECEF8 /* ARTEventEmitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTEventEmitter.h; sourceTree = "<group>"; };
 		D746AE3F1BBC5B14003ECEF8 /* ARTEventEmitter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTEventEmitter.m; sourceTree = "<group>"; };
 		D746AE421BBC5CD0003ECEF8 /* ARTRealtimeChannel+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTRealtimeChannel+Private.h"; sourceTree = "<group>"; };
-		D746AE441BBC5CF9003ECEF8 /* ARTSubscription.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSubscription.h; sourceTree = "<group>"; };
 		D746AE451BBD6FE9003ECEF8 /* ARTQueuedMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTQueuedMessage.h; sourceTree = "<group>"; };
 		D746AE461BBD6FE9003ECEF8 /* ARTQueuedMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTQueuedMessage.m; sourceTree = "<group>"; };
 		D746AE491BBD70F0003ECEF8 /* ARTRealtimeChannelSubscription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTRealtimeChannelSubscription.h; sourceTree = "<group>"; };
@@ -496,7 +495,6 @@
 				D746AE3B1BBC5AE1003ECEF8 /* ARTRealtimeChannel.m */,
 				D746AE491BBD70F0003ECEF8 /* ARTRealtimeChannelSubscription.h */,
 				D746AE4A1BBD70F0003ECEF8 /* ARTRealtimeChannelSubscription.m */,
-				D746AE441BBC5CF9003ECEF8 /* ARTSubscription.h */,
 				D746AE261BBB61C9003ECEF8 /* ARTPresence.h */,
 				D746AE271BBB61C9003ECEF8 /* ARTPresence.m */,
 				1C2B0FFB1B136A6D00E3633C /* ARTPresenceMap.h */,

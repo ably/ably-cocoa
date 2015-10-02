@@ -50,9 +50,11 @@ typedef void (^ARTRealtimeChannelPresenceCb)(ARTPresenceMessage *);
 
 // FIXME:
 @protocol ARTCancellable
-
 - (void)cancel;
+@end
 
+@protocol ARTSubscription
+- (void)unsubscribe;
 @end
 
 @interface ARTIndirectCancellable : NSObject <ARTCancellable>

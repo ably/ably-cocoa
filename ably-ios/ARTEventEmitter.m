@@ -8,6 +8,7 @@
 
 #import "ARTEventEmitter.h"
 
+#import "ARTSubscription.h"
 #import "ARTRealtimeChannelSubscription.h"
 
 @interface ARTEventEmitter ()
@@ -32,6 +33,14 @@
     //[self.realtime.stateSubscriptions addObject:subscription];
     //cb(self.realtime.state);
     return subscription;
+}
+
+- (id<ARTSubscription>)on {
+    return nil;
+}
+
+- (void)test {
+    
 }
 
 @end
