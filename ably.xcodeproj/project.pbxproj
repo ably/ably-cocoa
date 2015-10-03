@@ -126,6 +126,7 @@
 		D746AE531BBD85C5003ECEF8 /* ARTChannelCollection.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE511BBD85C5003ECEF8 /* ARTChannelCollection.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D746AE541BBD85C5003ECEF8 /* ARTChannelCollection.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE521BBD85C5003ECEF8 /* ARTChannelCollection.m */; };
 		D7C1B8771BBEA81A0087B55F /* Auth.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C1B8761BBEA81A0087B55F /* Auth.swift */; };
+		D7C1B8791BBF5F810087B55F /* ARTAuth+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1B8781BBF5F460087B55F /* ARTAuth+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		FC78549C1BCD5688539CCBE4 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA6E099E4BC04FC80F845C0 /* libPods.a */; };
 /* End PBXBuildFile section */
 
@@ -300,6 +301,7 @@
 		D746AE521BBD85C5003ECEF8 /* ARTChannelCollection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTChannelCollection.m; sourceTree = "<group>"; };
 		D746AE551BBD8622003ECEF8 /* ARTChannelCollection+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ARTChannelCollection+Private.h"; sourceTree = "<group>"; };
 		D7C1B8761BBEA81A0087B55F /* Auth.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Auth.swift; sourceTree = "<group>"; };
+		D7C1B8781BBF5F460087B55F /* ARTAuth+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ARTAuth+Private.h"; sourceTree = "<group>"; };
 		DF8DF755839D59574B7B795F /* Pods-ablySpec.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ablySpec.release.xcconfig"; path = "Pods/Target Support Files/Pods-ablySpec/Pods-ablySpec.release.xcconfig"; sourceTree = "<group>"; };
 		FDA6E099E4BC04FC80F845C0 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -477,6 +479,7 @@
 				960D07951A46FFC300ED8C8C /* ARTRest+Private.h */,
 				96BF61521A35B39C004CF2B3 /* ARTRest.m */,
 				96BF616E1A35FB7C004CF2B3 /* ARTAuth.h */,
+				D7C1B8781BBF5F460087B55F /* ARTAuth+Private.h */,
 				96BF616F1A35FB7C004CF2B3 /* ARTAuth.m */,
 				D746AE321BBC29EB003ECEF8 /* Transport */,
 			);
@@ -614,6 +617,7 @@
 				D746AE221BBB60EE003ECEF8 /* ARTChannel.h in Headers */,
 				96A507B51A37881C0077CDF8 /* ARTNSDate+ARTUtil.h in Headers */,
 				967A43211A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.h in Headers */,
+				D7C1B8791BBF5F810087B55F /* ARTAuth+Private.h in Headers */,
 				96A507A51A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.h in Headers */,
 				D746AE1D1BBB5207003ECEF8 /* ARTDataQuery.h in Headers */,
 				D746AE4B1BBD70F0003ECEF8 /* ARTRealtimeChannelSubscription.h in Headers */,

@@ -84,6 +84,21 @@ static NSArray *decomposeKey(NSString *key) {
     return params;
 }
 
+- (NSMutableDictionary *)toDictionary {
+    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
+    
+    if (self.clientId)
+        params[@"clientId"] = self.clientId;
+    if (self.ttl > 0)
+        params[@"ttl"] = [NSString stringWithFormat:@"%f", self.ttl];
+    if (self.capability)
+        params[@"capability"] = self.capability;
+    if (self.timestamp > 0)
+        params[@"timestamp"] = [NSString stringWithFormat:@"%f", self.timestamp.timeIntervalSince1970];
+    
+    return params;
+}
+
 - (NSArray *)toArrayWithUnion:(NSArray *)items {
     NSMutableArray *tokenParams = [self toArray];
     BOOL add = YES;
@@ -102,6 +117,27 @@ static NSArray *decomposeKey(NSString *key) {
         add = YES;
     }
     
+    return tokenParams;
+}
+
+- (NSDictionary *)toDictionaryWithUnion:(NSArray *)items {
+    NSMutableDictionary *tokenParams = [self toDictionary];
+    BOOL add = YES;
+    
+    for (NSURLQueryItem *item in items) {
+        for (NSString *key in tokenParams.allKeys) {
+            // Check if exist
+            if ([key isEqualToString:item.name]) {
+                add = NO;
+                break;
+            }
+        }
+        if (add) {
+            tokenParams[item.name] = item.value;
+        }
+        add = YES;
+    }
+
     return tokenParams;
 }
 
@@ -175,6 +211,14 @@ static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
 
 NSString *const ARTAuthOptionsMethodDefault = @"GET";
 
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _authMethod = ARTAuthOptionsMethodDefault;
+    }
+    return self;
+}
+
 - (instancetype)initWithKey:(NSString *)key {
     self = [self init];
     if (self) {
@@ -182,7 +226,6 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
             [NSException raise:@"Invalid key" format:@"%@ should be of the form <keyName>:<keySecret>", key];
         }
         _key = [key copy];
-        _authMethod = ARTAuthOptionsMethodDefault;
     }
     return self;
 }
@@ -291,52 +334,65 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
     return self;
 }
 
+- (ARTAuthOptions *)mergeOptions:(ARTAuthOptions *)customOptions {
+    return customOptions ? [self.options mergeWith:customOptions] : self.options;
+}
+
+- (ARTAuthTokenParams *)mergeParams:(ARTAuthTokenParams *)customParams {
+    return customParams ? customParams : [[ARTAuthTokenParams alloc] init];
+}
+
+- (NSURL *)buildURL:(ARTAuthOptions *)options withParams:(ARTAuthTokenParams *)params {
+    NSURLComponents *urlComponents = [NSURLComponents componentsWithURL:options.authUrl resolvingAgainstBaseURL:YES];
+    
+    if ([options isMethodGET]) {
+        // TokenParams take precedence over any configured authParams when a name conflict occurs
+        NSArray *unitedParams = [params toArrayWithUnion:options.authParams];
+        // When GET, use query string params
+        urlComponents.queryItems = @[];
+        urlComponents.queryItems = [urlComponents.queryItems arrayByAddingObjectsFromArray:unitedParams];
+    }
+    
+    return urlComponents.URL;
+}
+
+- (NSMutableURLRequest *)buildRequest:(ARTAuthOptions *)options withParams:(ARTAuthTokenParams *)params {
+    NSURL *url = [self buildURL:options withParams:params];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    request.HTTPMethod = options.authMethod;
+    
+    // HTTP Header Fields
+    if ([options isMethodPOST]) {
+        // TokenParams take precedence over any configured authParams when a name conflict occurs
+        NSDictionary *unitedParams = [params toDictionaryWithUnion:options.authParams];
+        // When POST, use body of the POST request
+        NSData *bodyData = [NSJSONSerialization dataWithJSONObject:unitedParams options:0 error:nil];
+        request.HTTPBody = bodyData;
+        [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+        [request setValue:[NSString stringWithFormat:@"%d", (unsigned int)bodyData.length] forHTTPHeaderField:@"Content-Length"];
+    }
+    else {
+        [request setValue:@"application/json" forHTTPHeaderField:@"Accept"];
+    }
+    
+    for (NSString *key in options.authHeaders) {
+        [request setValue:options.authHeaders[key] forHTTPHeaderField:key];
+    }
+    
+    return request;
+}
+
 - (void)requestToken:(ARTAuthTokenParams *)tokenParams withOptions:(ARTAuthOptions *)authOptions
             callback:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
     
     // The values supersede matching client library configured params and options.
-    ARTAuthOptions *mergedOptions = authOptions ? [self.options mergeWith:authOptions] : self.options;
-    ARTAuthTokenParams *currentTokenParams = tokenParams;
+    ARTAuthOptions *mergedOptions = [self mergeOptions:authOptions];
+    ARTAuthTokenParams *currentTokenParams = [self mergeParams:tokenParams];
     
-    if (!currentTokenParams) {
-        currentTokenParams = [[ARTAuthTokenParams alloc] init];
-    }
-        
     if (mergedOptions.authUrl) {
-        NSURLComponents *urlComponents = [NSURLComponents componentsWithURL:mergedOptions.authUrl resolvingAgainstBaseURL:YES];
+        NSMutableURLRequest *request = [self buildRequest:mergedOptions withParams:currentTokenParams];
         
-        // TokenParams take precedence over any configured authParams when a name conflict occurs
-        NSArray *params = [currentTokenParams toArrayWithUnion:mergedOptions.authParams];
-        NSData *bodyData = nil;
-        
-        if ([mergedOptions isMethodPOST]) {
-            // When POST, use body of the POST request
-            bodyData = [NSJSONSerialization dataWithJSONObject:params options:0 error:nil];
-        }
-        else {
-            // When GET, use query string params
-            urlComponents.queryItems = @[];
-            urlComponents.queryItems = [urlComponents.queryItems arrayByAddingObjectsFromArray:params];
-        }
-        
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:urlComponents.URL];
-        request.HTTPMethod = mergedOptions.authMethod;
-        
-        // HTTP Header Fields
-        if ([mergedOptions isMethodPOST] && bodyData) {
-            request.HTTPBody = bodyData;
-            [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-            [request setValue:[NSString stringWithFormat:@"%d", (unsigned int)bodyData.length] forHTTPHeaderField:@"Content-Length"];
-        }
-        else {
-            [request setValue:@"application/json" forHTTPHeaderField:@"Accept"];
-        }
-        
-        for (NSString *key in mergedOptions.authHeaders) {
-            [request setValue:mergedOptions.authHeaders[key] forHTTPHeaderField:key];
-        }
-        
-        [_rest.logger debug:@"%@ %@", request.HTTPMethod, urlComponents.URL];
+        [_rest.logger debug:@"%@ %@", request.HTTPMethod, request.URL];
         
         [_rest.httpExecutor executeRequest:request callback:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (error) {
