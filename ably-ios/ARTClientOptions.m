@@ -9,7 +9,6 @@
 #import "ARTClientOptions.h"
 
 #import "ARTDefault.h"
-#import "ARTAuth.h"
 
 @interface ARTClientOptions ()
 
@@ -19,40 +18,16 @@
 
 @implementation ARTClientOptions
 
-- (instancetype)init {
-    self = [super init];
-    if (self) {
-        _authOptions = [[ARTAuthOptions alloc] init];
-        if (!_authOptions) {
-            self = nil;
-        }
-        self = [self initDefaults];
-    }
-    return self;
-}
-
 - (instancetype)initWithKey:(NSString *)key {
-    self = [super init];
+    self = [super initWithKey:key];
     if (self) {
-        _authOptions = [[ARTAuthOptions alloc] initWithKey:key];
-
-        if (!_authOptions) {
-            self = nil;
-        }
         self = [self initDefaults];
     }
     return self;
-}
-
-- (NSString*)getRestHost {
-    return _environment ? [NSString stringWithFormat:@"%@-%@", _environment, [ARTDefault restHost]] : [ARTDefault restHost];
-}
-
-- (NSString*)getRealtimeHost {
-    return _environment ? [NSString stringWithFormat:@"%@-%@", _environment, [ARTDefault realtimeHost]] : [ARTDefault realtimeHost];
 }
 
 - (instancetype)initDefaults {
+    self = [super initDefaults];
     _clientId = nil;
     _restPort = [ARTDefault TLSPort];
     _realtimePort = [ARTDefault TLSPort];
@@ -68,12 +43,12 @@
     return self;
 }
 
-+ (instancetype)options {
-    return [[ARTClientOptions alloc] init];
+- (NSString*)getRestHost {
+    return _environment ? [NSString stringWithFormat:@"%@-%@", _environment, [ARTDefault restHost]] : [ARTDefault restHost];
 }
 
-+ (instancetype)optionsWithKey:(NSString *)key {
-    return [[ARTClientOptions alloc] initWithKey:key];
+- (NSString*)getRealtimeHost {
+    return _environment ? [NSString stringWithFormat:@"%@-%@", _environment, [ARTDefault realtimeHost]] : [ARTDefault realtimeHost];
 }
 
 + (NSURL*)restUrl:(NSString *)host port:(int)port tls:(BOOL)tls {
@@ -94,12 +69,7 @@
 }
 
 - (id)copyWithZone:(NSZone *)zone {
-    ARTClientOptions *options = [[ARTClientOptions allocWithZone:zone] init];
-    
-    options.authOptions = [self.authOptions copy];
-    if (!options.authOptions) {
-        return nil;
-    }
+    ARTClientOptions *options = [super copyWithZone:zone];
     
     options.clientId = self.clientId;
     options.restPort = self.restPort;

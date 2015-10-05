@@ -16,9 +16,9 @@
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
 #import "ARTNSDate+ARTUtil.h"
 #import "ARTLog.h"
-#import "ARTAuth.h"
 #import "ARTHttp.h"
 #import "ARTStatus.h"
+#import "ARTAuthTokenDetails.h"
 
 @interface ARTJsonEncoder ()
 

@@ -24,6 +24,9 @@
 
 @end
 
+
+#pragma mark - ARTHttpRequest
+
 @implementation ARTHttpRequest
 
 - (instancetype)initWithMethod:(NSString *)method url:(NSURL *)url headers:(NSDictionary *)headers body:(NSData *)body {
@@ -47,12 +50,14 @@
 
 @end
 
+
+#pragma mark - ARTHttpResponse
+
 @implementation ARTHttpResponse
 
 - (instancetype)init {
     self = [super init];
     if (self) {
-        
         _status = 0;
         _error = nil;
         _headers = nil;
@@ -117,6 +122,9 @@
 
 @end
 
+
+#pragma mark - ARTHttpRequestHandle
+
 @implementation ARTHttpRequestHandle
 
 - (instancetype)initWithDataTask:(NSURLSessionDataTask *)dataTask {
@@ -136,6 +144,9 @@
 }
 
 @end
+
+
+#pragma mark - ARTHttp
 
 @implementation ARTHttp
 
@@ -232,7 +243,6 @@
     [task resume];
     
     return [ARTHttpRequestHandle requestHandleWithDataTask:task];
-    
 }
 
 + (NSDictionary *)getErrorDictionary {

@@ -8,13 +8,12 @@
 
 #import <Foundation/Foundation.h>
 
-@class ARTAuthOptions;
+#import "ARTAuthOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTClientOptions : NSObject<NSCopying>
+@interface ARTClientOptions : ARTAuthOptions
 
-@property (nonnull, strong, nonatomic) ARTAuthOptions *authOptions;
 @property (readwrite, strong, nonatomic) NSString *clientId;
 
 @property (readonly, getter=getRestHost) NSString *restHost;
@@ -32,9 +31,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) int64_t connectionSerial;
 @property (nullable, readwrite, copy, nonatomic) NSString *resumeKey;
 @property (nullable, readwrite, copy, nonatomic) NSString *recover;
-
-- (instancetype)init;
-- (instancetype)initWithKey:(NSString *)key;
 
 - (bool)isFallbackPermitted;
 

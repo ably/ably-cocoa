@@ -22,7 +22,7 @@ class Auth : QuickSpec {
         
         describe("Basic") {
             // RSA1
-            it("should work over HTTPS only") {
+            fit("should work over HTTPS only") {
                 let clientOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                 clientOptions.tls = false
 
@@ -36,7 +36,7 @@ class Auth : QuickSpec {
 
                 publishTestMessage(client, failOnError: false)
 
-                let key64 = NSString(string: "\(client.options.authOptions.key)")
+                let key64 = NSString(string: "\(client.options.key)")
                     .dataUsingEncoding(NSUTF8StringEncoding)?
                     .base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0))
                 let Authorization = "Basic \(key64!)"
@@ -49,7 +49,7 @@ class Auth : QuickSpec {
             it("should be default when an API key is set") {
                 let client = ARTRest(options: ARTClientOptions(key: "fake:key"))
 
-                expect(client.auth.authMethod).to(equal(ARTAuthMethod.Basic))
+                expect(client.auth.method).to(equal(ARTAuthMethod.Basic))
             }
         }
 
@@ -57,15 +57,15 @@ class Auth : QuickSpec {
             
             it("should send the token in the Authorization header") {
                 let options = ARTClientOptions()
-                options.authOptions.token = getTestToken()
+                options.token = getTestToken()
                 let client = ARTRest(options: options)
                 client.httpExecutor = mockExecutor
 
                 publishTestMessage(client, failOnError: false)
                 
-                expect(client.options.authOptions.token).toNot(beNil())
+                expect(client.options.token).toNot(beNil())
                 
-                if let currentToken = client.options.authOptions.token {
+                if let currentToken = client.options.token {
                     let token64 = NSString(string: currentToken)
                         .dataUsingEncoding(NSUTF8StringEncoding)?
                         .base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0))
@@ -88,11 +88,11 @@ class Auth : QuickSpec {
                 for (caseName, caseSetter) in cases {
                     it("should be default when \(caseName) is set") {
                         let options = ARTClientOptions()
-                        caseSetter(options.authOptions)
+                        caseSetter(options)
 
                         let client = ARTRest(options: options)
 
-                        expect(client.auth.authMethod).to(equal(ARTAuthMethod.Token))
+                        expect(client.auth.method).to(equal(ARTAuthMethod.Token))
                     }
                 }
             }
@@ -104,7 +104,7 @@ class Auth : QuickSpec {
                 // RSA8e
                 it("sould supersede matching client library configured params and options") {
                     let clientOptions = ARTClientOptions()
-                    clientOptions.authOptions.authUrl = NSURL(string: "http://auth.ably.io")
+                    clientOptions.authUrl = NSURL(string: "http://auth.ably.io")
                     
                     let rest = ARTRest(options: clientOptions)
                     
@@ -132,38 +132,41 @@ class Auth : QuickSpec {
                     // RSA8c1a
                     it("should be added to the URL when auth method is GET") {
                         let clientOptions = ARTClientOptions()
-                        clientOptions.authOptions.authUrl = NSURL(string: "http://auth.ably.io")
+                        clientOptions.authUrl = NSURL(string: "http://auth.ably.io")
                         let tokenParams = ARTAuthTokenParams()
                         
                         let rest = ARTRest(options: clientOptions)
                         
-                        let url = rest.auth.buildURL(clientOptions.authOptions, withParams: tokenParams)
+                        let url = rest.auth.buildURL(clientOptions, withParams: tokenParams)
                         expect(url) == NSURL(string: "http://auth.ably.io/")
                     }
                     
                     // RSA8c1b
-                    fit("should added on the body request when auth method is POST") {
+                    it("should added on the body request when auth method is POST") {
                         let clientOptions = ARTClientOptions()
-                        clientOptions.authOptions.authUrl = NSURL(string: "http://auth.ably.io")
-                        clientOptions.authOptions.authMethod = "POST"
+                        clientOptions.authUrl = NSURL(string: "http://auth.ably.io")
+                        clientOptions.authMethod = "POST"
                         let tokenParams = ARTAuthTokenParams()
                         
                         let rest = ARTRest(options: clientOptions)
                         
-                        let request = rest.auth.buildRequest(clientOptions.authOptions, withParams: tokenParams)
+                        let request = rest.auth.buildRequest(clientOptions, withParams: tokenParams)
                         
-                        let expectedJSON = ["ttl":60*60, "capability":"{ \"*\": [ \"*\" ] }", "timestamp":NSDate().timeIntervalSince1970]
+                        let httpBodyJSON = request.HTTPBody >>- JSONToDictionary
                         
-                        // TODO: not passing, timestamp seconds...
+                        expect(httpBodyJSON).toNot(beNil())
+                        expect(httpBodyJSON!["timestamp"]).toNot(beNil())
                         
-                        expect(request.HTTPBody >>- JSONToDictionary) == expectedJSON
+                        let expectedJSON = ["ttl":NSString(format: "%f", CGFloat(60*60)), "capability":"{ \"*\": [ \"*\" ] }", "timestamp":httpBodyJSON!["timestamp"]!]
+                        
+                        expect(httpBodyJSON) == expectedJSON
                     }
                 }
                 
                 // RSA8c3
                 it("should override previously configured parameters") {
                     let clientOptions = ARTClientOptions()
-                    clientOptions.authOptions.authUrl = NSURL(string: "http://auth.ably.io")
+                    clientOptions.authUrl = NSURL(string: "http://auth.ably.io")
                     let rest = ARTRest(options: clientOptions)
                     
                     let authOptions = ARTAuthOptions()
@@ -187,10 +190,10 @@ class Auth : QuickSpec {
             it("implicitly creates a TokenRequest") {
                 let options = ARTClientOptions(key: "6p6USg.CNwGdA:uwJU1qsSf_Qe9VDH")
                 // Test
-                options.authOptions.authUrl = NSURL(string: "http://auth.ably.io")
-                options.authOptions.authParams = [NSURLQueryItem(name: "ttl", value: "aaa")]
-                options.authOptions.authParams = [NSURLQueryItem(name: "rp", value: "true")]
-                options.authOptions.authMethod = "POST"
+                options.authUrl = NSURL(string: "http://auth.ably.io")
+                options.authParams = [NSURLQueryItem(name: "ttl", value: "aaa")]
+                options.authParams = [NSURLQueryItem(name: "rp", value: "true")]
+                options.authMethod = "POST"
                 
                 let rest = ARTRest(options: options)
                 

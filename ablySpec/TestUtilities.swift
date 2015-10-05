@@ -73,14 +73,10 @@ class AblyTests {
             XCTFail(error.localizedDescription)
         } else if let data = responseData {
             let response = JSON(data: data)
+            
             let key = response["keys"][0]
-            let appId = response["appId"]
-            let id = key["id"]
 
-            // FIXME:
-            //options.authOptions.keyName = "\(appId).\(id)"
-            //options.authOptions.keySecret = key["value"].stringValue
-            //options.authOptions.capability = key["capability"].stringValue
+            options.key = key["keyStr"].stringValue
             
             return options
         }

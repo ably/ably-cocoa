@@ -66,10 +66,9 @@
         id<ARTEncoder> defaultEncoder = [[ARTJsonEncoder alloc] init];
         _encoders = @{ [defaultEncoder mimeType]: defaultEncoder };
         _defaultEncoding = [defaultEncoder mimeType];
-        
         _fallbackCount = 0;
         
-        _auth = [[ARTAuth alloc] init:self withOptions:options.authOptions];
+        _auth = [[ARTAuth alloc] init:self withOptions:options];
     }
     return self;
 }

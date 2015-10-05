@@ -10,8 +10,6 @@
 
 #import "ARTAuth.h"
 
-@class ARTAuthOptions;
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTAuth (Private)

@@ -15,7 +15,7 @@ import Foundation
 private func postTestStats(stats: JSON) -> ARTClientOptions {
     let options = AblyTests.setupOptions(AblyTests.jsonRestOptions);
     
-    let key = ("\(options.authOptions.key)" as NSString)
+    let key = ("\(options.key)" as NSString)
         .dataUsingEncoding(NSUTF8StringEncoding)!
         .base64EncodedStringWithOptions(NSDataBase64EncodingOptions(0))
     

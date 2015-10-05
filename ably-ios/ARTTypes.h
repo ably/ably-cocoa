@@ -12,6 +12,8 @@
 @class ARTHttpResponse;
 @class ARTMessage;
 @class ARTPresenceMessage;
+@class ARTAuthTokenParams;
+@class ARTAuthTokenRequest;
 
 typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
     ARTRealtimeInitialized,
@@ -34,9 +36,15 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
     ARTRealtimeChannelFailed
 };
 
+NS_ASSUME_NONNULL_BEGIN
+
 typedef void (^ARTRealtimeChannelMessageCb)(ARTMessage *);
 
 typedef void (^ARTRealtimeChannelStateCb)(ARTRealtimeChannelState, ARTStatus *);
+
+typedef void (^ARTRealtimeConnectionStateCb)(ARTRealtimeConnectionState state);
+
+typedef void (^ARTRealtimeChannelPresenceCb)(ARTPresenceMessage *);
 
 typedef void (^ARTStatusCallback)(ARTStatus *status);
 
@@ -44,9 +52,7 @@ typedef void (^ARTHttpCb)(ARTHttpResponse *response);
 
 typedef void (^ARTErrorCallback)(NSError *error);
 
-typedef void (^ARTRealtimeConnectionStateCb)(ARTRealtimeConnectionState state);
-
-typedef void (^ARTRealtimeChannelPresenceCb)(ARTPresenceMessage *);
+typedef void (^ARTAuthCallback)(ARTAuthTokenParams *tokenParams, void(^callback)(ARTAuthTokenRequest *__nullable tokenRequest, NSError *__nullable error));
 
 // FIXME:
 @protocol ARTCancellable
@@ -67,3 +73,5 @@ typedef void (^ARTRealtimeChannelPresenceCb)(ARTPresenceMessage *);
 - (void)cancel;
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -19,8 +19,8 @@ class PublishTestMessage {
         
         client.channels.get("test").publish("message") { error in
             self.error = error
-            if failOnError && error != nil {
-                XCTFail("Got error '\(error!)'")
+            if failOnError {
+                XCTFail("Got error '\(error)'")
             }
         }
     }
@@ -32,7 +32,7 @@ func publishTestMessage(client: ARTRest, failOnError: Bool = true) -> PublishTes
 
 func getTestToken() -> String {
     let options = AblyTests.commonAppSetup()
-    options.authOptions.useTokenAuth = true
+    options.useTokenAuth = true
     let client = ARTRest(options: options)
 
     var token: String?
@@ -56,7 +56,7 @@ class RestClient: QuickSpec {
                 it("should accept an API key") {
                     let options = AblyTests.commonAppSetup()
                     
-                    let client = ARTRest(key: options.authOptions.key!)
+                    let client = ARTRest(key: options.key!)
                     client.baseUrl = options.restUrl()
 
                     let publishTask = publishTestMessage(client)
@@ -89,7 +89,7 @@ class RestClient: QuickSpec {
 
                 it("should accept an options object with token authentication") {
                     let options = AblyTests.commonAppSetup()
-                    options.authOptions.token = getTestToken()
+                    options.token = getTestToken()
                     let client = ARTRest(options: options)
 
                     let publishTask = publishTestMessage(client)
@@ -99,8 +99,8 @@ class RestClient: QuickSpec {
 
                 it("should result in error status when provided a bad token") {
                     let options = AblyTests.commonAppSetup()
-                    options.authOptions.useTokenAuth = true
-                    options.authOptions.token = "invalid_token"
+                    options.useTokenAuth = true
+                    options.token = "invalid_token"
                     let client = ARTRest(options: options)
 
                     let publishTask = publishTestMessage(client, failOnError: false)
@@ -218,7 +218,7 @@ class RestClient: QuickSpec {
                 
                 let authOptions = client.auth.options
                 
-                expect(authOptions).to(beIdenticalTo(options.authOptions))
+                expect(authOptions).to(beIdenticalTo(options))
             }
             
             // RSC16
