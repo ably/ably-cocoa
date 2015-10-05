@@ -8,6 +8,8 @@
 
 import Nimble
 import Quick
+import Runes
+
 import ably
 import ably.Private
 
@@ -140,26 +142,26 @@ class Auth : QuickSpec {
                     }
                     
                     // RSA8c1b
-                    it("should added on the body request when auth method is POST") {
+                    fit("should added on the body request when auth method is POST") {
                         let clientOptions = ARTClientOptions()
                         clientOptions.authOptions.authUrl = NSURL(string: "http://auth.ably.io")
+                        clientOptions.authOptions.authMethod = "POST"
                         let tokenParams = ARTAuthTokenParams()
                         
                         let rest = ARTRest(options: clientOptions)
                         
                         let request = rest.auth.buildRequest(clientOptions.authOptions, withParams: tokenParams)
                         
-                        let expectedJSON = "{\"ttl\":\"3600.000000\",\"capability\":\"{ \"*\": [ \"*\" ] }\",\"timestamp\":\"1443810028.362290\"}"
-                        let expectedData = NSString(string: expectedJSON).dataUsingEncoding(NSUTF8StringEncoding)
+                        let expectedJSON = ["ttl":60*60, "capability":"{ \"*\": [ \"*\" ] }", "timestamp":NSDate().timeIntervalSince1970]
                         
-                        // TODO: not passing
+                        // TODO: not passing, timestamp seconds...
                         
-                        expect(request.HTTPBody) == expectedData
+                        expect(request.HTTPBody >>- JSONToDictionary) == expectedJSON
                     }
                 }
                 
                 // RSA8c3
-                fit("should override previously configured parameters") {
+                it("should override previously configured parameters") {
                     let clientOptions = ARTClientOptions()
                     clientOptions.authOptions.authUrl = NSURL(string: "http://auth.ably.io")
                     let rest = ARTRest(options: clientOptions)

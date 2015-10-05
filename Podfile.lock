@@ -1,18 +1,21 @@
 PODS:
   - Nimble (1.0.0)
   - Quick (0.3.1)
+  - Runes (2.0.0)
   - SocketRocket (0.3.1-beta2)
   - SwiftyJSON (2.2.1)
 
 DEPENDENCIES:
   - Nimble (~> 1.0.0)
   - Quick (~> 0.3.0)
+  - Runes (~> 2.0.0)
   - SocketRocket (~> 0.3.1-beta2)
   - SwiftyJSON (~> 2.2.1)
 
 SPEC CHECKSUMS:
   Nimble: 8bee528e5fcc403653076545db562d2b5db7bb87
   Quick: 824572d3d198d51e52cf4aa722cebf7e59952a35
+  Runes: 4fe81355f4620b76b02176222d264b33e60dba51
   SocketRocket: 7284ab9370a06c99aba92b2fe3a32aedd0f9a6fa
   SwiftyJSON: ae2d0a3d68025d136602a33c4ee215091ced3e33
 

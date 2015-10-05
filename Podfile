@@ -7,5 +7,7 @@ target 'ablySpec' do
 
     pod 'Quick', '~> 0.3.0'
     pod 'Nimble', '~> 1.0.0'
+    # Helpers
+    pod 'Runes', '~> 2.0.0'
     pod 'SwiftyJSON', '~> 2.2.1'
 end
