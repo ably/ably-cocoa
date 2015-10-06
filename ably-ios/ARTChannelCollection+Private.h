@@ -20,8 +20,7 @@ ART_ASSUME_NONNULL_BEGIN
 }
 
 @property (nonatomic, readonly) NSMutableDictionary *channels;
-
-- (ARTChannel *)_createChannelWithName:(NSString *)name options:(art_nullable ARTChannelOptions *)options;
+@property (readonly, nonatomic, weak) ARTRest *rest;
 
 @end
 

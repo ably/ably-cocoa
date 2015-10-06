@@ -9,15 +9,17 @@
 #import "ARTChannelCollection.h"
 #import "ARTChannelCollection+Private.h"
 
+#import "ARTRest+Private.h"
 #import "ARTChannel.h"
 #import "ARTChannel+Private.h"
 #import "ARTChannelOptions.h"
+#import "ARTPresence.h"
 
 @implementation ARTChannelCollection
 
-- (instancetype)initWithChannel:(Class)channelClass {
+- (instancetype)initWithRest:(ARTRest *)rest {
     if (self = [super init]) {
-        _channelClass = channelClass;
+        _rest = rest;
         _channels = [[NSMutableDictionary alloc] init];
     }
     return self;
@@ -50,21 +52,12 @@
 - (ARTChannel *)_getChannel:(NSString *)channelName options:(ARTChannelOptions *)options {
     ARTChannel *channel = self->_channels[channelName];
     if (!channel) {
-        channel = [self _createChannelWithName:channelName options:options];
+        channel = [[self.rest.channelClass alloc] initWithName:channelName rest:self.rest options:options];
         [self->_channels setObject:channel forKey:channelName];
     } else if (options) {
         channel.options = options;
     }
     return channel;
-}
-
-- (ARTChannel *)_createChannelWithName:(NSString *)name options:(ARTChannelOptions *)options {
-    return [[self.channelClass alloc] init];
-    
-    // FIXME:
-    //WithRest:_rest name:name options:options
-    
-    //- (instancetype)initWithName:(NSString *)name presence:(ARTPresence *)presence options:(ARTChannelOptions *)options
 }
 
 @end

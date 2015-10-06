@@ -6,7 +6,6 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "ARTRest.h"
 #import "ARTRest+Private.h"
 
 #import "ARTChannel+Private.h"
@@ -33,11 +32,12 @@
 
 @property (nonatomic, strong) NSURL *baseUrl;
 @property (nonatomic, strong) id<ARTHTTPExecutor> httpExecutor;
+@property (readonly, nonatomic, assign) Class channelClass;
 
 @property (readonly, strong, nonatomic) ARTHttp *http;
 @property (strong, nonatomic) ARTAuth *auth;
 @property (readonly, strong, nonatomic) NSDictionary *encoders;
-@property (readonly, strong, nonatomic) NSString *defaultEncoding;
+@property (readonly, strong, nonatomic) NSString *defaultEncoding; //Content-Type
 @property (readwrite, assign, nonatomic) int fallbackCount;
 
 @end
@@ -61,7 +61,7 @@
         _http = [[ARTHttp alloc] init];
         _httpExecutor = _http;
         _httpExecutor.logger = _logger;
-        _channels = [[ARTChannelCollection alloc] initWithChannel:[ARTRestChannel class]];
+        _channelClass = [ARTRestChannel class];
         
         id<ARTEncoder> defaultEncoder = [[ARTJsonEncoder alloc] init];
         _encoders = @{ [defaultEncoder mimeType]: defaultEncoder };
@@ -69,6 +69,7 @@
         _fallbackCount = 0;
         
         _auth = [[ARTAuth alloc] init:self withOptions:options];
+        _channels = [[ARTChannelCollection alloc] initWithRest:self];
     }
     return self;
 }
@@ -91,6 +92,7 @@
         if (error) {
             callback(nil, nil, error);
         } else {
+            // RFC7235
             [request setValue:authorization forHTTPHeaderField:@"Authorization"];
             
             [self.httpExecutor executeRequest:request callback:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -111,7 +113,15 @@
 }
 
 - (void)calculateAuthorization:(void (^)(NSString *authorization, NSError *error))callback {
-    
+    if (self.auth.method == ARTAuthMethodBasic) {
+        // Include key Base64 encoded in an Authorization header (RFC7235)
+        NSData *keyData = [self.options.key dataUsingEncoding:NSUTF8StringEncoding];
+        NSString *keyBase64 = [keyData base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithCarriageReturn]; //
+        callback([NSString stringWithFormat:@"Basic %@", keyBase64], nil);
+    }
+    else {
+        // TODO: ?!
+    }
 }
 
 - (void)time:(void(^)(NSDate *time, NSError *error))callback {

@@ -25,7 +25,6 @@
 @class ARTRealtimeChannelSubscription;
 @class ARTRealtimeChannelStateSubscription;
 
-
 @interface ARTRealtimeChannel : NSObject
 
 @property (nonatomic, weak) ARTLog *logger;

@@ -8,27 +8,24 @@
 
 #import "ARTRestChannel.h"
 
-#import "ARTRest.h"
+#import "ARTRest+Private.h"
 #import "ARTChannelOptions.h"
 #import "ARTChannel+Private.h"
+#import "ARTMessage.h"
 #import "ARTPaginatedResult+Private.h"
 #import "ARTDataQuery+Private.h"
+#import "ARTEncoder.h"
 
-@implementation ARTRestChannel
+@implementation ARTRestChannel {
+@public
+    NSString *_basePath;
+}
 
-@dynamic presence;
-
-- (instancetype)initWithRest:(ARTRest *)rest name:(NSString *)name options:(ARTChannelOptions *)options {
-    self = [super init];
-    /*
-    if (self = [super initWithName:name presence:[[ARTRestPresence alloc] initWithChannel:self] options:options]) {
-        _logger = rest.logger;
+- (instancetype)initWithName:(NSString *)name rest:(ARTRest *)rest options:(ARTChannelOptions *)options {
+    if (self = [super initWithName:name rest:rest options:options]) {
         [_logger debug:@"ARTRestChannel: instantiating under %@", name];
-        _rest = rest;
         _basePath = [NSString stringWithFormat:@"/channels/%@", [name stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]]];
     }
-     */
-    
     return self;
 }
 
@@ -55,28 +52,27 @@
 }
 
 - (void)_postMessages:(id)payload callback:(ARTErrorCallback)callback {
-    //FIXME:
-    /*
     NSData *encodedMessage = nil;
+    
     if ([payload isKindOfClass:[ARTMessage class]]) {
-        encodedMessage = [_rest.defaultEncoder encodeMessage:payload];
+        encodedMessage = [self.rest.defaultEncoder encodeMessage:payload];
     } else if ([payload isKindOfClass:[NSArray class]]) {
-        encodedMessage = [_rest.defaultEncoder encodeMessages:payload];
+        encodedMessage = [self.rest.defaultEncoder encodeMessages:payload];
     }
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:[_basePath stringByAppendingPathComponent:@"messages"]]];
     request.HTTPMethod = @"POST";
     request.HTTPBody = encodedMessage;
-    if (_rest.defaultEncoding) {
-        [request setValue:_rest.defaultEncoding forHTTPHeaderField:@"Content-Type"];
+    
+    if (self.rest.defaultEncoding) {
+        [request setValue:self.rest.defaultEncoding forHTTPHeaderField:@"Content-Type"];
     }
     
-    [_rest executeRequest:request callback:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [self.rest executeRequest:request callback:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (callback) {
             callback(error);
         }
     }];
-     */
 }
 
 @end

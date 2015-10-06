@@ -35,18 +35,22 @@ class Auth : QuickSpec {
             fit("should send the API key in the Authorization header") {
                 let client = ARTRest(options: AblyTests.setupOptions(AblyTests.jsonRestOptions))
                 client.httpExecutor = mockExecutor
-
+                
                 publishTestMessage(client, failOnError: false)
-
-                let key64 = NSString(string: "\(client.options.key)")
+                
+                expect(client.options.key).toNot(beNil())
+                
+                let key64 = NSString(string: "\(client.options.key!)")
                     .dataUsingEncoding(NSUTF8StringEncoding)?
                     .base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0))
+                                
                 let expectedAuthorization = "Basic \(key64!)"
                 
-                // X7
-                let Authorization = mockExecutor.requests.first?.allHTTPHeaderFields?["Authorization"] as? String ?? ""
+                expect(mockExecutor.requests.first).toNot(beNil())
                 
-                expect(Authorization).to(equal(expectedAuthorization))
+                let authorization = mockExecutor.requests.first?.allHTTPHeaderFields?["Authorization"] as? String ?? ""
+                
+                expect(authorization).to(equal(expectedAuthorization))
             }
 
             // RSA2
@@ -73,17 +77,21 @@ class Auth : QuickSpec {
                     let token64 = NSString(string: currentToken)
                         .dataUsingEncoding(NSUTF8StringEncoding)?
                         .base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0))
-                    let Authorization = "Bearer \(token64!)"
                     
-                    // X7
-                    //expect(mockExecutor.requests.first?.allHTTPHeaderFields?["Authorization"]).to(equal(Authorization))
+                    let expectedAuthorization = "Bearer \(token64!)"
+                    
+                    expect(mockExecutor.requests.first).toNot(beNil())
+                    
+                    let authorization = mockExecutor.requests.first?.allHTTPHeaderFields?["Authorization"] as? String ?? ""
+                    
+                    expect(authorization).to(equal(expectedAuthorization))
                 }
             }
 
             // RSA4
             context("authentication method") {
                 let cases: [String: (ARTAuthOptions) -> ()] = [
-                    "useTokenAuth": { $0.useTokenAuth = true; $0.key = "fake:key" },
+                    "useBasicAuth": { $0.key = "fake:key" },
                     "authUrl": { $0.authUrl = NSURL(string: "http://test.com") },
                     "authCallback": { $0.authCallback = { _, _ in return } },
                     "token": { $0.token = "" }

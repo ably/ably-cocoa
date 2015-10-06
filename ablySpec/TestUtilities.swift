@@ -111,8 +111,12 @@ func querySyslog(forLogsAfter startingTime: NSDate? = nil) -> GeneratorOf<String
 }
 
 @objc
+/*
+ Records each request for test purpose.
+ */
 class MockHTTPExecutor: ARTHTTPExecutor {
-    private let _executor = ARTHttp()
+    // Who executes the request
+    private let executor = ARTHttp()
     
     var logger: ARTLog?
     
@@ -120,6 +124,6 @@ class MockHTTPExecutor: ARTHTTPExecutor {
     
     func executeRequest(request: NSMutableURLRequest!, callback: ((NSHTTPURLResponse!, NSData!, NSError!) -> Void)!) {
         self.requests.append(request)
-        self._executor.executeRequest(request, callback: callback)
+        self.executor.executeRequest(request, callback: callback)
     }
 }

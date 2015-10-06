@@ -12,6 +12,7 @@
 
 @class ARTErrorInfo;
 
+// FIXME:
 @protocol ARTHTTPExecutor
 
 @property (nonatomic, weak) ARTLog *logger;

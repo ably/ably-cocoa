@@ -6,23 +6,25 @@
 //  Copyright (c) 2015 г. Ably. All rights reserved.
 //
 
-#import "ARTChannel.h"
 #import "ARTChannel+Private.h"
 
-#import "ARTNSArray+ARTFunctional.h"
 #import "ARTPayload.h"
+#import "ARTPresence.h"
 #import "ARTMessage.h"
 #import "ARTChannelOptions.h"
+#import "ARTRest.h"
+#import "ARTNSArray+ARTFunctional.h"
 
 @implementation ARTChannel
 
-- (instancetype)initWithName:(NSString *)name presence:(ARTPresence *)presence options:(ARTChannelOptions *)options {
+- (instancetype)initWithName:(NSString *)name rest:(ARTRest *)rest options:(ARTChannelOptions *)options {
     if (self = [super init]) {
         _name = [name copy];
-        _presence = presence;
+        _rest = rest;
+        _logger = rest.logger;
         self.options = options;
+        _presence = [[ARTPresence alloc] initWithChannel:self];
     }
-
     return self;
 }
 
@@ -32,7 +34,6 @@
     } else {
         _options = options;
     }
-
     _payloadEncoder = [ARTJsonPayloadEncoder instance];
 }
 

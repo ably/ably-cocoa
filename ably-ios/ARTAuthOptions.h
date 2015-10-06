@@ -65,8 +65,6 @@ ART_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, assign, nonatomic) BOOL queryTime;
 
-@property (nonatomic, assign) BOOL useTokenAuth;
-
 - (instancetype)init;
 - (instancetype)initWithKey:(NSString *)key;
 - (instancetype)initDefaults;
@@ -75,6 +73,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (ARTAuthOptions *)mergeWith:(ARTAuthOptions *)precedenceOptions;
 
+- (BOOL)isBasicAuth;
 - (BOOL)isMethodGET;
 - (BOOL)isMethodPOST;
 

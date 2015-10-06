@@ -42,7 +42,7 @@ Instance the Ably library using a key only. This is simply a convenience constru
 
 /**
 Instance the Ably library with the given options.
-:param options: see {@link io.ably.types.ClientOptions} for options
+:param options: see ARTClientOptions for options
 */
 - (instancetype)initWithOptions:(ARTClientOptions *)options;
 - (instancetype)initWithLogger:(ARTLog *)logger andOptions:(ARTClientOptions *)options;

@@ -32,7 +32,6 @@ func publishTestMessage(client: ARTRest, failOnError: Bool = true) -> PublishTes
 
 func getTestToken() -> String {
     let options = AblyTests.commonAppSetup()
-    options.useTokenAuth = true
     let client = ARTRest(options: options)
 
     var token: String?
@@ -99,7 +98,6 @@ class RestClient: QuickSpec {
 
                 it("should result in error status when provided a bad token") {
                     let options = AblyTests.commonAppSetup()
-                    options.useTokenAuth = true
                     options.token = "invalid_token"
                     let client = ARTRest(options: options)
 

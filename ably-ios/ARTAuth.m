@@ -29,9 +29,7 @@
         _options = options;
         _logger = rest.logger;
         
-        // REV: options.useTokenAuth
-        
-        if (options.key != nil && !options.useTokenAuth) {
+        if ([options isBasicAuth]) {
             if (!options.tls) {
                 [NSException raise:@"ARTAuthException" format:@"Basic authentication only connects over HTTPS (tls)."];
             }

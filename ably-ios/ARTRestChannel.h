@@ -16,11 +16,6 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTRestChannel : ARTChannel
 
-@property (nonatomic, strong, readonly) ARTPresence *presence;
-@property (nonatomic, strong) NSString *basePath;
-
-//- (instancetype)initWithRest:(ARTRest *)rest name:(NSString *)name options:(art_nullable ARTChannelOptions *)options;
-
 @end
 
 ART_ASSUME_NONNULL_END

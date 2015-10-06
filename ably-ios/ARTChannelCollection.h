@@ -8,14 +8,13 @@
 
 #import <Foundation/Foundation.h>
 
+@class ARTRest;
 @class ARTChannel;
 @class ARTChannelOptions;
 
 @interface ARTChannelCollection : NSObject<NSFastEnumeration>
 
-@property (readonly, nonatomic, assign) Class channelClass;
-
-- (instancetype)initWithChannel:(Class)channelClass;
+- (instancetype)initWithRest:(ARTRest *)rest;
 
 - (BOOL)exists:(NSString *)channelName;
 - (ARTChannel *)get:(NSString *)channelName;

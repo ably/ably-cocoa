@@ -51,7 +51,6 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
     
     options.key = self.key;
     options.token = self.token;
-    options.useTokenAuth = self.useTokenAuth;
     options.authCallback = self.authCallback;
     options.authUrl = self.authUrl;
     options.authMethod = self.authMethod;
@@ -76,10 +75,10 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
 }
 
 - (void)setAuthMethod:(NSString *)authMethod {
+    // HTTP Method
     if (authMethod == nil || authMethod.length == 0) {
         authMethod = ARTAuthOptionsMethodDefault;
     }
-    
     _authMethod = [authMethod copy];
 }
 
@@ -102,6 +101,10 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
         merged.queryTime = precedenceOptions.queryTime;
     
     return merged;
+}
+
+- (BOOL)isBasicAuth {
+    return self.key != nil;
 }
 
 - (BOOL)isMethodPOST {

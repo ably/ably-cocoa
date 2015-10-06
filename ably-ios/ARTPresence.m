@@ -16,20 +16,21 @@
 
 #import "ARTDataQuery+Private.h"
 
-@interface ARTPresence ()
+@interface ARTPresence () {
+    __weak ARTLog *_logger;
+}
 
-@property (nonatomic, weak) ARTLog *logger;
 @property (readonly, weak, nonatomic) ARTRealtimeChannel *channel;
 
 @end
 
 @implementation ARTPresence
 
--(instancetype) initWithChannel:(ARTRealtimeChannel *) channel {
-    self = [super init];
-    if(self) {
+// FIXME:
+- (instancetype) initWithChannel:(ARTRealtimeChannel *) channel {
+    if (self = [super init]) {
         _channel = channel;
-        self.logger = channel.logger;
+        //_logger = channel.logger;
     }
     return self;
 }
@@ -50,7 +51,7 @@
     [self enterClient:self.channel.clientId data:data cb:cb];
 }
 
-- (void) enterClient:(NSString *) clientId data:(id) data cb:(ARTStatusCallback) cb {
+- (void)enterClient:(NSString *) clientId data:(id) data cb:(ARTStatusCallback) cb {
     if(!clientId) {
         [NSException raise:@"Cannot publish presence without a clientId" format:@""];
     }
@@ -63,7 +64,6 @@
     
     msg.connectionId = self.channel.realtime.connectionId;
     [self.channel publishPresence:msg cb:cb];
-    
 }
 
 - (void)update:(id)data cb:(ARTStatusCallback)cb {
