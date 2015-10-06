@@ -7,8 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ably.h"
-
+#import "ARTTypes.h"
+#import "ARTLog.h"
 #import "ARTPresenceMessage.h"
 
 @protocol ARTSubscription;
@@ -28,7 +28,7 @@
 
 @interface ARTRealtimeChannel : NSObject
 
-@property (nonatomic, weak) ARTLog * logger;
+@property (nonatomic, weak) ARTLog *logger;
 @property (readonly, strong, nonatomic) ARTRealtime *realtime;
 @property (readonly, strong, nonatomic) NSString *name;
 @property (readonly, strong, nonatomic) ARTChannel *restChannel; //?!

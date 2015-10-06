@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-
 #import "ARTEncoder.h"
 
 @class ARTLog;

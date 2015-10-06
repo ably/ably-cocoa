@@ -15,8 +15,9 @@
 
 @implementation ARTChannelCollection
 
-- (instancetype)init {
+- (instancetype)initWithChannel:(Class)channelClass {
     if (self = [super init]) {
+        _channelClass = channelClass;
         _channels = [[NSMutableDictionary alloc] init];
     }
     return self;
@@ -46,7 +47,7 @@
     [self->_channels removeObjectForKey:channel.name];
 }
 
-- (ARTChannel *)_getChannel:(NSString *)channelName options:(nullable ARTChannelOptions *)options {
+- (ARTChannel *)_getChannel:(NSString *)channelName options:(ARTChannelOptions *)options {
     ARTChannel *channel = self->_channels[channelName];
     if (!channel) {
         channel = [self _createChannelWithName:channelName options:options];
@@ -57,9 +58,13 @@
     return channel;
 }
 
-- (ARTChannel *)_createChannelWithName:(NSString *)name options:(nullable ARTChannelOptions *)options {
-    NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
-    return 0;
+- (ARTChannel *)_createChannelWithName:(NSString *)name options:(ARTChannelOptions *)options {
+    return [[self.channelClass alloc] init];
+    
+    // FIXME:
+    //WithRest:_rest name:name options:options
+    
+    //- (instancetype)initWithName:(NSString *)name presence:(ARTPresence *)presence options:(ARTChannelOptions *)options
 }
 
 @end

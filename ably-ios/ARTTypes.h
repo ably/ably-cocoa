@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "CompatibilityMacros.h"
 
 @class ARTStatus;
 @class ARTHttpResponse;
@@ -36,7 +37,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
     ARTRealtimeChannelFailed
 };
 
-NS_ASSUME_NONNULL_BEGIN
+ART_ASSUME_NONNULL_BEGIN
 
 typedef void (^ARTRealtimeChannelMessageCb)(ARTMessage *);
 
@@ -52,7 +53,7 @@ typedef void (^ARTHttpCb)(ARTHttpResponse *response);
 
 typedef void (^ARTErrorCallback)(NSError *error);
 
-typedef void (^ARTAuthCallback)(ARTAuthTokenParams *tokenParams, void(^callback)(ARTAuthTokenRequest *__nullable tokenRequest, NSError *__nullable error));
+typedef void (^ARTAuthCallback)(ARTAuthTokenParams *tokenParams, void(^callback)(ARTAuthTokenRequest *__art_nullable tokenRequest, NSError *__art_nullable error));
 
 // FIXME:
 @protocol ARTCancellable
@@ -74,4 +75,4 @@ typedef void (^ARTAuthCallback)(ARTAuthTokenParams *tokenParams, void(^callback)
 
 @end
 
-NS_ASSUME_NONNULL_END
+ART_ASSUME_NONNULL_END

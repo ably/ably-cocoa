@@ -8,6 +8,8 @@
 
 #import "ARTPaginatedResult+Private.h"
 
+#import "ARTHttp.h"
+
 @implementation ARTPaginatedResult {
     id<ARTHTTPExecutor> _executor;
     NSMutableURLRequest *_relFirst;

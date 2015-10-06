@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <ably/ARTDataQuery.h>
+#import "ARTDataQuery.h"
 
 typedef NS_ENUM(NSUInteger, ARTStatsUnit) {
     ARTStatsUnitMinute,

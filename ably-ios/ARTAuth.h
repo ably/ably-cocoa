@@ -7,7 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ably.h"
+#import "ARTTypes.h"
+#import "ARTLog.h"
 
 @class ARTRest;
 @class ARTLog;
@@ -17,7 +18,7 @@
 @class ARTAuthTokenDetails;
 @class ARTAuthTokenRequest;
 
-NS_ASSUME_NONNULL_BEGIN
+ART_ASSUME_NONNULL_BEGIN
 
 #pragma mark - ARTAuth
 
@@ -47,15 +48,15 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
  - Parameter authOptions: Authentication options (optional).
  - Parameter callback: Completion callback (ARTAuthTokenDetails, NSError).
  */
-- (void)requestToken:(nullable ARTAuthTokenParams *)tokenParams withOptions:(nullable ARTAuthOptions *)authOptions
-            callback:(void (^)(ARTAuthTokenDetails *__nullable tokenDetails, NSError *__nullable error))callback;
+- (void)requestToken:(art_nullable ARTAuthTokenParams *)tokenParams withOptions:(art_nullable ARTAuthOptions *)authOptions
+            callback:(void (^)(ARTAuthTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error))callback;
 
-- (void)authorise:(nullable ARTAuthTokenParams *)tokenParams options:(nullable ARTAuthOptions *)options force:(BOOL)force
-         callback:(void (^)(ARTAuthTokenDetails *__nullable tokenDetails, NSError *__nullable error))callback;
+- (void)authorise:(art_nullable ARTAuthTokenParams *)tokenParams options:(art_nullable ARTAuthOptions *)options force:(BOOL)force
+         callback:(void (^)(ARTAuthTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error))callback;
 
-- (void)createTokenRequest:(nullable ARTAuthTokenParams *)tokenParams options:(nullable ARTAuthOptions *)options
-                  callback:(void (^)(ARTAuthTokenRequest *__nullable tokenRequest, NSError *__nullable error))callback;
+- (void)createTokenRequest:(art_nullable ARTAuthTokenParams *)tokenParams options:(art_nullable ARTAuthOptions *)options
+                  callback:(void (^)(ARTAuthTokenRequest *__art_nullable tokenRequest, NSError *__art_nullable error))callback;
 
 @end
 
-NS_ASSUME_NONNULL_END
+ART_ASSUME_NONNULL_END

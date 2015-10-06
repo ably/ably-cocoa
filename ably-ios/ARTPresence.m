@@ -34,13 +34,13 @@
     return self;
 }
 
-- (void)get:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *__nullable result, NSError *__nullable error))callback {
+- (void)get:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *result, NSError *error))callback {
     // FIXME:
     //[self.channel throwOnDisconnectedOrFailed];
     //[self.channel.restChannel.presence get:query callback:callback];
 }
 
-- (void)history:(nullable ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *__nullable result, NSError *__nullable error))callback {
+- (void)history:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *result, NSError *error))callback {
     // FIXME:
     //[self.channel throwOnDisconnectedOrFailed];
     //[self.channel.restChannel.presence history:query callback:callback];

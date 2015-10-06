@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <ably/ARTPayload.h>
+#import "ARTPayload.h"
 
 @interface ARTBaseMessage : NSObject<NSCopying>
 

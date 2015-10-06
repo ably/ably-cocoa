@@ -7,8 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "ARTTypes.h"
 
-NS_ASSUME_NONNULL_BEGIN
+ART_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, ARTQueryDirection) {
     ARTQueryDirectionForwards,
@@ -17,8 +18,8 @@ typedef NS_ENUM(NSUInteger, ARTQueryDirection) {
 
 @interface ARTDataQuery : NSObject
 
-@property (nonatomic, strong, nullable) NSDate *start;
-@property (nonatomic, strong, nullable) NSDate *end;
+@property (nonatomic, strong, art_nullable) NSDate *start;
+@property (nonatomic, strong, art_nullable) NSDate *end;
 
 @property (nonatomic, assign) uint16_t limit;
 
@@ -26,4 +27,4 @@ typedef NS_ENUM(NSUInteger, ARTQueryDirection) {
 
 @end
 
-NS_ASSUME_NONNULL_END
+ART_ASSUME_NONNULL_END

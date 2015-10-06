@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#import "ARTPayload.h"
 
 @interface ARTPayload (Private)
 

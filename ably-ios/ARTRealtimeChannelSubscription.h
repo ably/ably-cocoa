@@ -7,8 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ably.h"
-
+#import "ARTTypes.h"
 #import "ARTPresenceMessage.h"
 
 @class ARTRealtime;

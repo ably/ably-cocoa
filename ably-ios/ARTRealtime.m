@@ -7,7 +7,6 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "ARTRealtime.h"
 #import "ARTRealtime+Private.h"
 
 #import "ARTRealtimeTransport.h"
@@ -16,6 +15,7 @@
 #import "ARTDefault.h"
 #import "ARTRest.h"
 #import "ARTMessage.h"
+#import "ARTClientOptions.h"
 #import "ARTPresenceMessage.h"
 #import "ARTWebSocketTransport.h"
 #import "ARTNSArray+ARTFunctional.h"

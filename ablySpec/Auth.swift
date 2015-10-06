@@ -15,14 +15,16 @@ import ably.Private
 
 class Auth : QuickSpec {
     override func spec() {
+        
         var mockExecutor: MockHTTPExecutor!
+        
         beforeEach {
             mockExecutor = MockHTTPExecutor()
         }
         
         describe("Basic") {
             // RSA1
-            fit("should work over HTTPS only") {
+            it("should work over HTTPS only") {
                 let clientOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                 clientOptions.tls = false
 
@@ -30,7 +32,7 @@ class Auth : QuickSpec {
             }
 
             // RSA11
-            it("should send the API key in the Authorization header") {
+            fit("should send the API key in the Authorization header") {
                 let client = ARTRest(options: AblyTests.setupOptions(AblyTests.jsonRestOptions))
                 client.httpExecutor = mockExecutor
 
@@ -39,10 +41,12 @@ class Auth : QuickSpec {
                 let key64 = NSString(string: "\(client.options.key)")
                     .dataUsingEncoding(NSUTF8StringEncoding)?
                     .base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0))
-                let Authorization = "Basic \(key64!)"
+                let expectedAuthorization = "Basic \(key64!)"
                 
                 // X7
-                //expect(mockExecutor.requests.first?.allHTTPHeaderFields?["Authorization"]).to(equal(Authorization))
+                let Authorization = mockExecutor.requests.first?.allHTTPHeaderFields?["Authorization"] as? String ?? ""
+                
+                expect(Authorization).to(equal(expectedAuthorization))
             }
 
             // RSA2

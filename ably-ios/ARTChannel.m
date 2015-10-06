@@ -16,7 +16,7 @@
 
 @implementation ARTChannel
 
-- (instancetype)initWithName:(NSString *)name presence:(ARTPresence *)presence options:(nullable ARTChannelOptions *)options {
+- (instancetype)initWithName:(NSString *)name presence:(ARTPresence *)presence options:(ARTChannelOptions *)options {
     if (self = [super init]) {
         _name = [name copy];
         _presence = presence;
@@ -36,11 +36,11 @@
     _payloadEncoder = [ARTJsonPayloadEncoder instance];
 }
 
-- (void)publish:(nullable id)payload callback:(ARTErrorCallback)callback {
+- (void)publish:(id)payload callback:(ARTErrorCallback)callback {
     [self publish:payload name:nil callback:callback];
 }
 
-- (void)publish:(nullable id)payload name:(NSString *)name callback:(ARTErrorCallback)callback {
+- (void)publish:(id)payload name:(NSString *)name callback:(ARTErrorCallback)callback {
     [self publishMessage:[[ARTMessage alloc] initWithData:payload name:name] callback:callback];
 }
 
@@ -56,7 +56,7 @@
     [self _postMessages:[message encode:_payloadEncoder] callback:callback];
 }
 
-- (void)history:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult * __nullable, NSError *__nullable))callback {
+- (void)history:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult *, NSError *))callback {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 

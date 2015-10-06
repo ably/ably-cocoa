@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ably.h"
+#import "ARTTypes.h"
 
 @protocol ARTSubscription;
 

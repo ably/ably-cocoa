@@ -7,15 +7,16 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "ARTTypes.h"
 
 @class ARTCipherParams;
 
-NS_ASSUME_NONNULL_BEGIN
+ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTChannelOptions : NSObject
 
 @property (nonatomic, assign) BOOL isEncrypted;
-@property (nonatomic, strong, nullable) ARTCipherParams *cipherParams;
+@property (nonatomic, strong, art_nullable) ARTCipherParams *cipherParams;
 
 + (instancetype)unencrypted;
 
@@ -23,4 +24,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-NS_ASSUME_NONNULL_END
+ART_ASSUME_NONNULL_END

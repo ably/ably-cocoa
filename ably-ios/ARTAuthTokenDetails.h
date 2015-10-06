@@ -7,16 +7,17 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "ARTTypes.h"
 
-NS_ASSUME_NONNULL_BEGIN
+ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTAuthTokenDetails : NSObject
 
 @property (nonatomic, readonly, copy) NSString *token;
-@property (nonatomic, readonly, strong, nullable) NSDate *expires;
-@property (nonatomic, readonly, strong, nullable) NSDate *issued;
-@property (nonatomic, readonly, copy, nullable) NSString *capability;
-@property (nonatomic, readonly, copy, nullable) NSString *clientId;
+@property (nonatomic, readonly, strong, art_nullable) NSDate *expires;
+@property (nonatomic, readonly, strong, art_nullable) NSDate *issued;
+@property (nonatomic, readonly, copy, art_nullable) NSString *capability;
+@property (nonatomic, readonly, copy, art_nullable) NSString *clientId;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
@@ -26,4 +27,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-NS_ASSUME_NONNULL_END
+ART_ASSUME_NONNULL_END

@@ -10,6 +10,7 @@
 #import "ARTRest+Private.h"
 
 #import "ARTChannel+Private.h"
+#import "ARTChannelCollection.h"
 #import "ARTDataQuery+Private.h"
 #import "ARTPaginatedResult+Private.h"
 #import "ARTAuth.h"
@@ -26,12 +27,15 @@
 #import "ARTFallback.h"
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
 #import "ARTNSArray+ARTFunctional.h"
+#import "ARTRestChannel.h"
 
-@interface ARTRest () <ARTHTTPExecutor>
+@interface ARTRest ()
+
+@property (nonatomic, strong) NSURL *baseUrl;
+@property (nonatomic, strong) id<ARTHTTPExecutor> httpExecutor;
 
 @property (readonly, strong, nonatomic) ARTHttp *http;
 @property (strong, nonatomic) ARTAuth *auth;
-@property (nonatomic, strong) NSURL *baseUrl;
 @property (readonly, strong, nonatomic) NSDictionary *encoders;
 @property (readonly, strong, nonatomic) NSString *defaultEncoding;
 @property (readwrite, assign, nonatomic) int fallbackCount;
@@ -54,14 +58,10 @@
             _logger = [[ARTLog alloc] init];
         }
         
-        // FIXME:
         _http = [[ARTHttp alloc] init];
-        // Private ?!
-        //self.httpExecutor = _http;
-        //self.httpExecutor.logger = _logger;
-        
-        // FIXME:
-        //_channels = [[ARTChannelCollection alloc] initWithRest:self];
+        _httpExecutor = _http;
+        _httpExecutor.logger = _logger;
+        _channels = [[ARTChannelCollection alloc] initWithChannel:[ARTRestChannel class]];
         
         id<ARTEncoder> defaultEncoder = [[ARTJsonEncoder alloc] init];
         _encoders = @{ [defaultEncoder mimeType]: defaultEncoder };
@@ -114,7 +114,7 @@
     
 }
 
-- (void)time:(void(^)(NSDate *__nullable time, NSError *__nullable error))callback {
+- (void)time:(void(^)(NSDate *time, NSError *error))callback {
     NSURL *requestUrl = [NSURL URLWithString:@"/time" relativeToURL:self.baseUrl];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
     request.HTTPMethod = @"GET";
@@ -138,10 +138,12 @@
     return nil;
 }
 
-- (void)stats:(ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult *__nullable, NSError *__nullable))callback {
+- (void)stats:(ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult *, NSError *))callback {
     NSParameterAssert(query.limit < 1000);
     NSParameterAssert([query.start compare:query.end] != NSOrderedDescending);
     
+    // FIXME:
+    /*
     NSURLComponents *requestUrl = [NSURLComponents componentsWithString:@"/stats"];
     requestUrl.queryItems = [query asQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[requestUrl URLRelativeToURL:self.baseUrl]];
@@ -152,6 +154,7 @@
     };
     
     [ARTPaginatedResult executePaginatedRequest:request executor:self responseProcessor:responseProcessor callback:callback];
+     */
 }
 
 - (id<ARTEncoder>)defaultEncoder {

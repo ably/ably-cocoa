@@ -7,11 +7,12 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "ARTTypes.h"
 
 @class ARTChannel;
 @class ARTChannelOptions;
 
-NS_ASSUME_NONNULL_BEGIN
+ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTChannelCollection() {
 @protected
@@ -20,8 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) NSMutableDictionary *channels;
 
-- (ARTChannel *)_createChannelWithName:(NSString *)name options:(nullable ARTChannelOptions *)options;
+- (ARTChannel *)_createChannelWithName:(NSString *)name options:(art_nullable ARTChannelOptions *)options;
 
 @end
 
-NS_ASSUME_NONNULL_END
+ART_ASSUME_NONNULL_END

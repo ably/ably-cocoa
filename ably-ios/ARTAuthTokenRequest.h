@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-
 #import "ARTAuthTokenParams.h"
 
 @interface ARTAuthTokenRequest : ARTAuthTokenParams

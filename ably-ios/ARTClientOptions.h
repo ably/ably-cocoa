@@ -7,10 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
-
 #import "ARTAuthOptions.h"
 
-NS_ASSUME_NONNULL_BEGIN
+ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTClientOptions : ARTAuthOptions
 
@@ -29,8 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) BOOL binary;
 @property (readwrite, assign, nonatomic) BOOL autoConnect;
 @property (readwrite, assign, nonatomic) int64_t connectionSerial;
-@property (nullable, readwrite, copy, nonatomic) NSString *resumeKey;
-@property (nullable, readwrite, copy, nonatomic) NSString *recover;
+@property (art_nullable, readwrite, copy, nonatomic) NSString *resumeKey;
+@property (art_nullable, readwrite, copy, nonatomic) NSString *recover;
 
 - (bool)isFallbackPermitted;
 
@@ -39,4 +38,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-NS_ASSUME_NONNULL_END
+ART_ASSUME_NONNULL_END

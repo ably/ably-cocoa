@@ -7,13 +7,14 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <ably/ARTStatus.h>
+#import "ARTTypes.h"
+#import "ARTStatus.h"
 
-NS_ASSUME_NONNULL_BEGIN
+ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTPaginatedResult : NSObject
 
-typedef void(^ARTPaginatedResultCallback)(ARTPaginatedResult *__nullable result, NSError *__nullable error);
+typedef void(^ARTPaginatedResultCallback)(ARTPaginatedResult *__art_nullable result, NSError *__art_nullable error);
 
 @property (nonatomic, strong, readonly) NSArray *items;
 
@@ -31,4 +32,4 @@ typedef void(^ARTPaginatedResultCallback)(ARTPaginatedResult *__nullable result,
 
 @end
 
-NS_ASSUME_NONNULL_END
+ART_ASSUME_NONNULL_END

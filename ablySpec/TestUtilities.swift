@@ -111,7 +111,7 @@ func querySyslog(forLogsAfter startingTime: NSDate? = nil) -> GeneratorOf<String
 }
 
 @objc
-class MockHTTPExecutor : ARTHTTPExecutor {
+class MockHTTPExecutor: ARTHTTPExecutor {
     private let _executor = ARTHttp()
     
     var logger: ARTLog?

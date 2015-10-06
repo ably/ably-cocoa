@@ -16,7 +16,7 @@ class PublishTestMessage {
     
     init(client: ARTRest, failOnError: Bool) {
         self.error = NSError(domain: "", code: -1, userInfo: nil)
-        
+                
         client.channels.get("test").publish("message") { error in
             self.error = error
             if failOnError {

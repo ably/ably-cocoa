@@ -7,8 +7,6 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-
 #import "ARTRealtimeChannel.h"
 
 @interface ARTRealtimeChannel (Private)

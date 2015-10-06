@@ -7,23 +7,26 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ably.h"
+#import "ARTTypes.h"
+#import "ARTLog.h"
 
-#import <ably/ARTStatus.h>
-#import <ably/ARTStats.h>
-#import <ably/ARTMessage.h>
-#import <ably/ARTClientOptions.h>
-#import <ably/ARTPresenceMessage.h>
-#import <ably/ARTPaginatedResult.h>
-
-#define ART_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
-
+@class ARTStatus;
+@class ARTMessage;
+@class ARTClientOptions;
+@class ARTStatsQuery;
+@class ARTRealtimeChannel;
+@class ARTPresenceMessage;
+@class ARTPaginatedResult;
+@class ARTErrorInfo;
+@class ARTCipherParams;
 @class ARTPresence;
 @class ARTPresenceMap;
 @class ARTRealtimeChannelPresenceSubscription;
 @class ARTEventEmitter;
 @class ARTRealtimeChannel;
 @class ARTAuth;
+
+#define ART_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
 
 #pragma mark - ARTRealtime
 

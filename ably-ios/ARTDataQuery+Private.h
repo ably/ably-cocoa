@@ -6,9 +6,9 @@
 //  Copyright (c) 2015 г. Ably. All rights reserved.
 //
 
-#import <ably/ARTDataQuery.h>
+#import "ARTDataQuery.h"
 
-NS_ASSUME_NONNULL_BEGIN
+ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTDataQuery(Private)
 
@@ -16,4 +16,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-NS_ASSUME_NONNULL_END
+ART_ASSUME_NONNULL_END

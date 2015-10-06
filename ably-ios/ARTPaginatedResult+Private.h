@@ -6,8 +6,9 @@
 //  Copyright (c) 2015 г. Ably. All rights reserved.
 //
 
-#import <ably/ARTPaginatedResult.h>
-#import <ably/ARTHttp.h>
+#import "ARTPaginatedResult.h"
+
+@protocol ARTHTTPExecutor;
 
 @interface ARTPaginatedResult ()
 

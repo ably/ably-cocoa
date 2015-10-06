@@ -16,6 +16,7 @@
 #import "ARTAuthTokenDetails.h"
 #import "ARTAuthTokenParams.h"
 #import "ARTAuthTokenRequest.h"
+#import "ARTEncoder.h"
 
 @implementation ARTAuth {
     __weak ARTRest *_rest;

@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <ably/ARTStatus.h>
+#import "ARTStatus.h"
 
 @protocol ARTPayloadEncoder;
 

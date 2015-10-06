@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ably.h"
+#import "ARTTypes.h"
 
 @class ARTChannelOptions;
 @class ARTPresence;
@@ -15,23 +15,21 @@
 @class ARTPaginatedResult;
 @class ARTDataQuery;
 
-NS_ASSUME_NONNULL_BEGIN
+ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTChannel : NSObject
 
 @property (nonatomic, strong, readonly) NSString *name;
 @property (nonatomic, strong, readonly) ARTPresence *presence;
 
-- (void)publish:(nullable id)payload callback:(nullable ARTErrorCallback)callback;
+- (void)publish:(art_nullable id)payload callback:(art_nullable ARTErrorCallback)callback;
+- (void)publish:(art_nullable id)payload name:(art_nullable NSString *)name callback:(art_nullable ARTErrorCallback)callback;
 
-- (void)publish:(nullable id)payload name:(nullable NSString *)name callback:(nullable ARTErrorCallback)callback;
+- (void)publishMessage:(ARTMessage *)message callback:(art_nullable ARTErrorCallback)callback;
+- (void)publishMessages:(NSArray /* <ARTMessage *> */ *)messages callback:(art_nullable ARTErrorCallback)callback;
 
-- (void)publishMessage:(ARTMessage *)message callback:(nullable ARTErrorCallback)callback;
-
-- (void)publishMessages:(NSArray /* <ARTMessage *> */ *)messages callback:(nullable ARTErrorCallback)callback;
-
-- (void)history:(nullable ARTDataQuery *)query callback:(void(^)(ARTPaginatedResult /* <ARTMessage *> */ *__nullable result, NSError *__nullable error))callback;
+- (void)history:(art_nullable ARTDataQuery *)query callback:(void(^)(ARTPaginatedResult /* <ARTMessage *> */ *__art_nullable result, NSError *__art_nullable error))callback;
 
 @end
 
-NS_ASSUME_NONNULL_END
+ART_ASSUME_NONNULL_END

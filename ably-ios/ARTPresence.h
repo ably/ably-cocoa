@@ -7,8 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ably.h"
-
+#import "ARTTypes.h"
 #import "ARTPresenceMessage.h"
 
 @protocol ARTSubscription;
@@ -17,7 +16,7 @@
 @class ARTDataQuery;
 @class ARTRealtimeChannel;
 
-NS_ASSUME_NONNULL_BEGIN
+ART_ASSUME_NONNULL_BEGIN
 
 /// Provides access to presence operations and state for the associated Channel
 @interface ARTPresence : NSObject
@@ -25,10 +24,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithChannel:(ARTRealtimeChannel *)channel;
 
 /// Get the presence state for one channel
-- (void)get:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *__nullable result, NSError *__nullable error))callback;
+- (void)get:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *__art_nullable result, NSError *__art_nullable error))callback;
 
 /// Obtain recent presence history for one channel
-- (void)history:(nullable ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *__nullable result, NSError *__nullable error))callback;
+- (void)history:(art_nullable ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *__art_nullable result, NSError *__art_nullable error))callback;
 
 - (void)enter:(id)data cb:(ARTStatusCallback)cb;
 - (void)update:(id)data cb:(ARTStatusCallback)cb;
@@ -46,4 +45,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-NS_ASSUME_NONNULL_END
+ART_ASSUME_NONNULL_END

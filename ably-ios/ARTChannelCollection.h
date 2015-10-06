@@ -13,6 +13,10 @@
 
 @interface ARTChannelCollection : NSObject<NSFastEnumeration>
 
+@property (readonly, nonatomic, assign) Class channelClass;
+
+- (instancetype)initWithChannel:(Class)channelClass;
+
 - (BOOL)exists:(NSString *)channelName;
 - (ARTChannel *)get:(NSString *)channelName;
 - (ARTChannel *)get:(NSString *)channelName options:(ARTChannelOptions *)options;

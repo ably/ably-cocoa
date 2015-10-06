@@ -7,17 +7,19 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ably.h"
+#import "ARTTypes.h"
+#import "ARTLog.h"
 
+@protocol ARTHTTPExecutor;
+
+@class ARTChannelCollection;
+@class ARTClientOptions;
+@class ARTAuth;
 @class ARTCancellable;
 @class ARTPaginatedResult;
 @class ARTStatsQuery;
-@class ARTClientOptions;
-@class ARTAuth;
-@class ARTChannel;
-@class ARTChannelCollection;
 
-NS_ASSUME_NONNULL_BEGIN
+ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTRest : NSObject
 
@@ -26,8 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithLogger:(ARTLog *)logger andOptions:(ARTClientOptions *)options;
 - (instancetype)initWithKey:(NSString *)key;
 
-- (void)time:(void(^)(NSDate *__nullable time, NSError *__nullable error))callback;
-- (void)stats:(nullable ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult /* <ARTStats *> */ *__nullable result, NSError *__nullable error))callback;
+- (void)time:(void(^)(NSDate *__art_nullable time, NSError *__art_nullable error))callback;
+- (void)stats:(art_nullable ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult /* <ARTStats *> */ *__art_nullable result, NSError *__art_nullable error))callback;
 
 - (id<ARTCancellable>)internetIsUp:(void (^)(bool isUp))cb;
 
@@ -38,4 +40,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-NS_ASSUME_NONNULL_END
+ART_ASSUME_NONNULL_END

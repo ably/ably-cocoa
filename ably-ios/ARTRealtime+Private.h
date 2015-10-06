@@ -6,8 +6,6 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-
 #import "ARTRealtime.h"
 
 @class ARTProtocolMessage;

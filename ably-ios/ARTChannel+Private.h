@@ -6,11 +6,12 @@
 //  Copyright (c) 2015 г. Ably. All rights reserved.
 //
 
-#import <ably/ARTChannel.h>
+#import "ARTChannel.h"
+#import "ARTLog.h"
 
 @protocol ARTPayloadEncoder;
 
-NS_ASSUME_NONNULL_BEGIN
+ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTChannel() {
 @public
@@ -20,10 +21,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, null_resettable) ARTChannelOptions *options;
 
-- (instancetype)initWithName:(NSString *)name presence:(ARTPresence *)presence options:(nullable ARTChannelOptions *)options;
+- (instancetype)initWithName:(NSString *)name presence:(ARTPresence *)presence options:(art_nullable ARTChannelOptions *)options;
 
-- (void)_postMessages:(id)payload callback:(nullable ARTErrorCallback)callback;
+- (void)_postMessages:(id)payload callback:(art_nullable ARTErrorCallback)callback;
 
 @end
 
-NS_ASSUME_NONNULL_END
+ART_ASSUME_NONNULL_END

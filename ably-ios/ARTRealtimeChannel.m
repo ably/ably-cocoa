@@ -9,12 +9,14 @@
 #import "ARTRealtimeChannel.h"
 
 #import "ARTRealtime.h"
+#import "ARTMessage.h"
 #import "ARTPresence.h"
 #import "ARTChannel.h"
 #import "ARTProtocolMessage.h"
 #import "ARTRealtimeChannelSubscription.h"
 #import "ARTPresenceMap.h"
 #import "ARTQueuedMessage.h"
+#import "ARTNSArray+ARTFunctional.h"
 
 @interface ARTRealtimeChannel ()
 

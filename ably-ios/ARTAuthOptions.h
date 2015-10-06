@@ -11,53 +11,53 @@
 
 @class ARTAuthTokenDetails;
 
-NS_ASSUME_NONNULL_BEGIN
+ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTAuthOptions : NSObject<NSCopying>
 
 /**
  Full Ably key string as obtained from dashboard.
  */
-@property (nonatomic, copy, nullable) NSString *key;
+@property (nonatomic, copy, art_nullable) NSString *key;
 
 /**
  An authentication token issued for this application against a specific key and `TokenParams`.
  */
-@property (nonatomic, copy, nullable) NSString *token;
+@property (nonatomic, copy, art_nullable) NSString *token;
 
 /**
  An authentication token issued for this application against a specific key and `TokenParams`.
  */
-@property (nonatomic, strong, nullable) ARTAuthTokenDetails *tokenDetails;
+@property (nonatomic, strong, art_nullable) ARTAuthTokenDetails *tokenDetails;
 
 /**
  A callback to call to obtain a signed token request.
  
  This enables a client to obtain token requests from another entity, so tokens can be renewed without the client requiring access to keys.
  */
-@property (nonatomic, copy, nullable) ARTAuthCallback authCallback;
+@property (nonatomic, copy, art_nullable) ARTAuthCallback authCallback;
 
 /**
  A URL to queryto obtain a signed token request.
  
  This enables a client to obtain token requests from another entity, so tokens can be renewed without the client requiring access to keys.
  */
-@property (nonatomic, strong, nullable) NSURL *authUrl;
+@property (nonatomic, strong, art_nullable) NSURL *authUrl;
 
 /**
  The HTTP verb to be used when a request is made by the library to the authUrl. Defaults to GET, supports GET and POST.
  */
-@property (nonatomic, copy, null_resettable) NSString *authMethod;
+@property (nonatomic, copy, art_null_resettable) NSString *authMethod;
 
 /**
  Headers to be included in any request made by the library to the authURL.
  */
-@property (nonatomic, copy, nullable) NSDictionary *authHeaders; //X7: NSDictionary<NSString *, NSString *> *authHeaders;
+@property (nonatomic, copy, art_nullable) NSDictionary *authHeaders; //X7: NSDictionary<NSString *, NSString *> *authHeaders;
 
 /**
  Additional params to be included in any request made by the library to the authUrl, either as query params in the case of GET or in the body in the case of POST.
  */
-@property (nonatomic, copy, nullable) NSArray *authParams; //X7: NSArray<NSURLQueryItem *> *authParams;
+@property (nonatomic, copy, art_nullable) NSArray *authParams; //X7: NSArray<NSURLQueryItem *> *authParams;
 
 /**
  This may be set in instances that the library is to sign token requests based on a given key.
@@ -80,4 +80,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-NS_ASSUME_NONNULL_END
+ART_ASSUME_NONNULL_END

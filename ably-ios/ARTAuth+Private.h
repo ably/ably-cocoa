@@ -6,20 +6,18 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-
 #import "ARTAuth.h"
 
-NS_ASSUME_NONNULL_BEGIN
+ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTAuth (Private)
 
-- (ARTAuthOptions *)mergeOptions:(nonnull ARTAuthOptions *)customOptions;
-- (ARTAuthTokenParams *)mergeParams:(nonnull ARTAuthTokenParams *)customParams;
+- (ARTAuthOptions *)mergeOptions:(ARTAuthOptions *)customOptions;
+- (ARTAuthTokenParams *)mergeParams:(ARTAuthTokenParams *)customParams;
 
-- (NSURL *)buildURL:(nonnull ARTAuthOptions *)options withParams:(nonnull ARTAuthTokenParams *)params;
-- (NSMutableURLRequest *)buildRequest:(nonnull ARTAuthOptions *)options withParams:(nonnull ARTAuthTokenParams *)params;
+- (NSURL *)buildURL:(ARTAuthOptions *)options withParams:(ARTAuthTokenParams *)params;
+- (NSMutableURLRequest *)buildRequest:(ARTAuthOptions *)options withParams:(ARTAuthTokenParams *)params;
 
 @end
 
-NS_ASSUME_NONNULL_END
+ART_ASSUME_NONNULL_END

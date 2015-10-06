@@ -6,7 +6,6 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "ARTPayload.h"
 #import "ARTPayload+Private.h"
 
 #import "ARTCrypto.h"
@@ -21,14 +20,14 @@
 
 @interface ARTCipherPayloadEncoder ()
 
-@property (nonatomic, weak) ARTLog * logger;
+@property (nonatomic, weak) ARTLog *logger;
 @property (readonly, strong, nonatomic) id<ARTChannelCipher> cipher;
 
 @end
 
 @interface ARTPayloadEncoderChain ()
 
-@property (nonatomic, weak) ARTLog * logger;
+@property (nonatomic, weak) ARTLog *logger;
 @property (readonly, nonatomic, strong) NSArray *encoders;
 
 @end

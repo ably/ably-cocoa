@@ -6,7 +6,6 @@
 //  Copyright (c) 2015 г. Ably. All rights reserved.
 //
 
-#import "ARTDataQuery.h"
 #import "ARTDataQuery+Private.h"
 
 @implementation ARTDataQuery
