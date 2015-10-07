@@ -23,6 +23,7 @@ class Auth : QuickSpec {
         }
         
         describe("Basic") {
+            
             // RSA1
             it("should work over HTTPS only") {
                 let clientOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
@@ -32,7 +33,7 @@ class Auth : QuickSpec {
             }
 
             // RSA11
-            fit("should send the API key in the Authorization header") {
+            it("should send the API key in the Authorization header") {
                 let client = ARTRest(options: AblyTests.setupOptions(AblyTests.jsonRestOptions))
                 client.httpExecutor = mockExecutor
                 
@@ -63,7 +64,28 @@ class Auth : QuickSpec {
 
         describe("Token") {
             
-            it("should send the token in the Authorization header") {
+            // RSA3a
+            fit("should work over HTTPS or HTTP") {
+                let options = ARTClientOptions()
+                options.token = getTestToken()
+                let client = ARTRest(options: options)
+                options.tls = false
+                
+                client.httpExecutor = mockExecutor
+                
+                publishTestMessage(client, failOnError: false)
+                
+                expect(mockExecutor.requests.first).toNot(beNil())
+                expect(mockExecutor.requests.first?.URL).toNot(beNil())
+                
+                // TODO: not passing
+                
+                if let request = mockExecutor.requests.first, let url = request.URL {
+                    expect(url.scheme).to(equal("http"))
+                }
+            }
+            
+            fit("should send the token in the Authorization header") {
                 let options = ARTClientOptions()
                 options.token = getTestToken()
                 let client = ARTRest(options: options)
