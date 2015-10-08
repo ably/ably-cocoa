@@ -68,6 +68,9 @@ class Auth : QuickSpec {
             fit("should work over HTTPS or HTTP") {
                 let options = ARTClientOptions()
                 options.token = getTestToken()
+                
+                expect(options.token!.isEmpty) == false
+                
                 let client = ARTRest(options: options)
                 options.tls = false
                 
@@ -78,14 +81,12 @@ class Auth : QuickSpec {
                 expect(mockExecutor.requests.first).toNot(beNil())
                 expect(mockExecutor.requests.first?.URL).toNot(beNil())
                 
-                // TODO: not passing
-                
                 if let request = mockExecutor.requests.first, let url = request.URL {
                     expect(url.scheme).to(equal("http"))
                 }
             }
             
-            fit("should send the token in the Authorization header") {
+            it("should send the token in the Authorization header") {
                 let options = ARTClientOptions()
                 options.token = getTestToken()
                 let client = ARTRest(options: options)

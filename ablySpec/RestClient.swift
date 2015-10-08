@@ -8,44 +8,9 @@
 
 import Nimble
 import Quick
+
 import ably
 import ably.Private
-
-class PublishTestMessage {
-    var error: NSError?
-    
-    init(client: ARTRest, failOnError: Bool) {
-        self.error = NSError(domain: "", code: -1, userInfo: nil)
-                
-        client.channels.get("test").publish("message") { error in
-            self.error = error
-            if failOnError {
-                XCTFail("Got error '\(error)'")
-            }
-        }
-    }
-}
-
-func publishTestMessage(client: ARTRest, failOnError: Bool = true) -> PublishTestMessage {
-    return PublishTestMessage(client: client, failOnError: failOnError)
-}
-
-func getTestToken() -> String {
-    let options = AblyTests.commonAppSetup()
-    let client = ARTRest(options: options)
-
-    var token: String?
-    client.auth.requestToken(nil, withOptions: nil) { tokenDetails, error in
-        token = tokenDetails?.token
-        return
-    }
-
-    while token == nil {
-        CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Boolean(0))
-    }
-
-    return token!
-}
 
 class RestClient: QuickSpec {
     override func spec() {

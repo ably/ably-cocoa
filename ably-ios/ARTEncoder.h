@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "CompatibilityMacros.h"
 
 @class ARTMessage;
 @class ARTPresenceMessage;
@@ -14,13 +15,15 @@
 @class ARTAuthTokenDetails;
 @class ARTAuthTokenRequest;
 
+ART_ASSUME_NONNULL_BEGIN
+
 @protocol ARTEncoder
 
 - (NSString *)mimeType;
 
 - (NSData *)encodeTokenRequest:(ARTAuthTokenRequest *)request;
 
-- (ARTAuthTokenDetails *)decodeAccessToken:(NSData *)data;
+- (art_nullable ARTAuthTokenDetails *)decodeAccessToken:(NSData *)data error:(NSError * __autoreleasing *)error;
 - (ARTMessage *)decodeMessage:(NSData *)data;
 - (NSArray *)decodeMessages:(NSData *)data;
 - (NSData *)encodeMessage:(ARTMessage *)message;
@@ -39,3 +42,5 @@
 - (NSArray *)decodeStats:(NSData *)data;
 
 @end
+
+ART_ASSUME_NONNULL_END

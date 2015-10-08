@@ -30,4 +30,9 @@
     return self;
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat: @"ARTAuthTokenDetails: token=%@ clientId=%@ issued=%@ expires=%@",
+            self.token, self.clientId, self.issued, self.expires];
+}
+
 @end

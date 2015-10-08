@@ -116,11 +116,14 @@
     if (self.auth.method == ARTAuthMethodBasic) {
         // Include key Base64 encoded in an Authorization header (RFC7235)
         NSData *keyData = [self.options.key dataUsingEncoding:NSUTF8StringEncoding];
-        NSString *keyBase64 = [keyData base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithCarriageReturn]; //
+        NSString *keyBase64 = [keyData base64EncodedStringWithOptions:0]; //NSDataBase64EncodingEndLineWithCarriageReturn
         callback([NSString stringWithFormat:@"Basic %@", keyBase64], nil);
     }
     else {
-        // TODO: ?!
+        // TODO: Reuse
+        NSData *keyData = [self.options.token dataUsingEncoding:NSUTF8StringEncoding];
+        NSString *keyBase64 = [keyData base64EncodedStringWithOptions:0];
+        callback([NSString stringWithFormat:@"Bearer %@", keyBase64], nil);
     }
 }
 

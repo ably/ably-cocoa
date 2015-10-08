@@ -172,6 +172,7 @@
     [self.logger verbose:@"Headers %@", request.allHTTPHeaderFields];
     
     CFRunLoopRef currentRunloop = CFRunLoopGetCurrent();
+
     NSURLSessionDataTask *task = [_urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
         

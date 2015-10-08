@@ -106,7 +106,7 @@
     // The values supersede matching client library configured params and options.
     ARTAuthOptions *mergedOptions = [self mergeOptions:authOptions];
     ARTAuthTokenParams *currentTokenParams = [self mergeParams:tokenParams];
-    
+        
     if (mergedOptions.authUrl) {
         NSMutableURLRequest *request = [self buildRequest:mergedOptions withParams:currentTokenParams];
         
@@ -137,7 +137,6 @@
     }
 }
 
-// FIXME: need revision
 - (void)requestToken:(ARTAuthTokenRequest *)tokenRequest callback:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
     NSURL *requestUrl = [NSURL URLWithString:[NSString stringWithFormat:@"/keys/%@/requestToken", tokenRequest.keyName]
                                relativeToURL:_rest.baseUrl];
@@ -155,7 +154,13 @@
         if (error) {
             callback(nil, error);
         } else {
-            callback([defaultEncoder decodeAccessToken:data], nil);
+            NSError *decodeError = nil;
+            ARTAuthTokenDetails *tokenDetails = [defaultEncoder decodeAccessToken:data error:&decodeError];
+            if (decodeError) {
+                callback(nil, decodeError);
+            } else {
+                callback(tokenDetails, nil);
+            }
         }
     }];
 }
@@ -181,6 +186,7 @@
 
 - (void)createTokenRequest:(ARTAuthTokenParams *)tokenParams options:(ARTAuthOptions *)options callback:(void (^)(ARTAuthTokenRequest *, NSError *))callback {
     ARTAuthOptions *mergedOptions = options;
+    // FIXME: review
     if (mergedOptions.queryTime) {
         ARTAuthTokenParams *newParams = [[ARTAuthTokenParams alloc] init];
         newParams.ttl = tokenParams.ttl;

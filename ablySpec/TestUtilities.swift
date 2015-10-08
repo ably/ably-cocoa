@@ -110,6 +110,48 @@ func querySyslog(forLogsAfter startingTime: NSDate? = nil) -> GeneratorOf<String
     }
 }
 
+/*
+ 
+ */
+class PublishTestMessage {
+    var error: NSError?
+    
+    init(client: ARTRest, failOnError: Bool) {
+        self.error = NSError(domain: "", code: -1, userInfo: nil)
+        
+        client.channels.get("test").publish("message") { error in
+            self.error = error
+            if failOnError {
+                XCTFail("Got error '\(error)'")
+            }
+        }
+    }
+}
+
+func publishTestMessage(client: ARTRest, failOnError: Bool = true) -> PublishTestMessage {
+    return PublishTestMessage(client: client, failOnError: failOnError)
+}
+
+func getTestToken() -> String {
+    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+    let client = ARTRest(options: options)
+    
+    var token: String?
+    var error: NSError?
+    
+    client.auth.requestToken(nil, withOptions: nil) { tokenDetails, _error in
+        token = tokenDetails?.token
+        error = _error
+        return
+    }
+    
+    while token == nil && error == nil {
+        CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Boolean(0))
+    }
+    
+    return token ?? ""
+}
+
 @objc
 /*
  Records each request for test purpose.

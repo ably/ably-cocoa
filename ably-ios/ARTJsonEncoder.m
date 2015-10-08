@@ -19,6 +19,7 @@
 #import "ARTHttp.h"
 #import "ARTStatus.h"
 #import "ARTAuthTokenDetails.h"
+#import "ARTAuthTokenRequest.h"
 
 @interface ARTJsonEncoder ()
 
@@ -105,8 +106,8 @@
     return [self protocolMessageFromDictionary:[self decodeDictionary:data]];
 }
 
-- (ARTAuthTokenDetails *)decodeAccessToken:(NSData *) data {
-    return [self tokenFromDictionary:[self decodeDictionary:data]];
+- (ARTAuthTokenDetails *)decodeAccessToken:(NSData *)data error:(NSError * __autoreleasing *)error {
+    return [self tokenFromDictionary:[self decodeDictionary:data] error:error];
 }
 
 - (NSData *)encodeTokenRequest:(ARTAuthTokenRequest *)request {
@@ -330,11 +331,27 @@
     return output;
 }
 
-- (ARTAuthTokenDetails *)tokenFromDictionary:(NSDictionary *)input {
+- (ARTAuthTokenDetails *)tokenFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
     [self.logger verbose:@"ARTJsonEncoder: tokenFromDictionary %@", input];
+    
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
+    
+    NSDictionary *jsonError = [input artDictionary:@"error"];
+    if (jsonError) {
+        [self.logger error:@"ARTJsonEncoder: tokenFromDictionary error %@", jsonError];
+        if (error) {
+            NSMutableDictionary* details = [NSMutableDictionary dictionary];
+            [details setValue:[jsonError artString:@"message"] forKey:NSLocalizedDescriptionKey];
+            // FIXME: domain
+            *error = [NSError errorWithDomain:@"Ably"
+                                         code:[jsonError artNumber:@"code"].integerValue
+                                     userInfo:details];
+        }
+        return nil;
+    }
+    error = nil;
     
     NSData *tokenData = [[input artString:@"token"] dataUsingEncoding:NSUTF8StringEncoding];
     NSString *token = [ARTBase64PayloadEncoder toBase64:tokenData];
@@ -353,8 +370,17 @@
 
 - (NSDictionary *)tokenRequestToDictionary:(ARTAuthTokenRequest *)tokenRequest {
     [self.logger verbose:@"ARTJsonEncoder: tokenRequestToDictionary %@", tokenRequest];
+    
+    NSNumber *timestamp = [NSNumber numberWithInteger:[NSNumber numberWithDouble:tokenRequest.timestamp.timeIntervalSince1970 * 1000].integerValue];
+
     return @{
-             
+             @"keyName":tokenRequest.keyName,
+             @"ttl":[NSString stringWithFormat:@"%lld", (int64_t)(tokenRequest.ttl * 1000)],
+             @"capability":tokenRequest.capability,
+             @"clientId":tokenRequest.clientId ? tokenRequest.clientId : @"",
+             @"timestamp":timestamp ? timestamp : [NSNumber numberWithInteger:[NSNumber numberWithDouble:[NSDate date].timeIntervalSince1970 * 1000].integerValue],
+             @"nonce":tokenRequest.nonce,
+             @"mac":tokenRequest.mac,
              };
 }
 

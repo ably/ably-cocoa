@@ -32,4 +32,9 @@
     return nil;
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat: @"ARTAuthTokenRequest: keyName=%@ clientId=%@ nonce=%@ mac=%@ ttl=%f capability=%@ timestamp=%@",
+            self.keyName, self.clientId, self.nonce, self.mac, self.ttl, self.capability, self.timestamp];
+}
+
 @end
