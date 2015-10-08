@@ -7,94 +7,56 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <ably/ARTHttp.h>
-#import <ably/ARTTypes.h>
+#import "ARTTypes.h"
+#import "ARTLog.h"
 
 @class ARTRest;
-
 @class ARTLog;
-@interface ARTTokenDetails : NSObject
+@class ARTClientOptions;
+@class ARTAuthOptions;
+@class ARTAuthTokenParams;
+@class ARTAuthTokenDetails;
+@class ARTAuthTokenRequest;
 
-@property (readonly, strong, nonatomic) NSString *token;
-@property (readonly, assign, nonatomic) int64_t expires;
-@property (readonly, assign, nonatomic) int64_t issued;
-@property (readonly, strong, nonatomic) NSString *capability;
-@property (readonly, strong, nonatomic) NSString *clientId;
+ART_ASSUME_NONNULL_BEGIN
 
-- (instancetype)init UNAVAILABLE_ATTRIBUTE;
+#pragma mark - ARTAuth
 
-- (instancetype)initWithId:(NSString *)id expires:(int64_t)expires issued:(int64_t)issued capability:(NSString *)capability clientId:(NSString *)clientId;
-
-@end
-
-@interface ARTAuthTokenParams : NSObject
-
-@property (readonly, strong, nonatomic) NSString *keyName;
-@property (readonly, assign, nonatomic) int64_t ttl;
-@property (readonly, strong, nonatomic) NSString *capability;
-@property (readonly, strong, nonatomic) NSString *clientId;
-@property (readonly, assign, nonatomic) int64_t timestamp;
-@property (readonly, strong, nonatomic) NSString *nonce;
-@property (readonly, strong, nonatomic) NSString *mac;
-
-
-- (instancetype)init UNAVAILABLE_ATTRIBUTE;
-
-- (instancetype)initWithId:(NSString *)id ttl:(int64_t)ttl capability:(NSString *)capability clientId:(NSString *)clientId timestamp:(int64_t)timestamp nonce:(NSString *)nonce mac:(NSString *)mac;
-
--(NSDictionary *) asDictionary;
-@end
-
-typedef id<ARTCancellable>(^ARTAuthCb)(void(^continuation)(ARTStatus *,ARTTokenDetails *));
-typedef id<ARTCancellable>(^ARTSignedTokenRequestCb)(ARTAuthTokenParams *, void(^continuation)(ARTAuthTokenParams *));
 typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
     ARTAuthMethodBasic,
     ARTAuthMethodToken
 };
 
-@interface ARTAuthOptions : NSObject
-
-@property (nonatomic, weak) ARTLog * logger;
-@property (readwrite, strong, nonatomic) ARTAuthCb authCallback;
-@property (readwrite, strong, nonatomic) ARTSignedTokenRequestCb signedTokenRequestCallback;
-@property (readwrite, strong, nonatomic) ARTAuthTokenParams *tokenParams;
-@property (readwrite, strong, nonatomic) NSURL *authUrl;
-@property (readwrite, strong, nonatomic) NSString *keyName;
-@property (readwrite, strong, nonatomic) NSString *keySecret;
-@property (readwrite, strong, nonatomic) NSString *token;
-@property (readwrite, strong, nonatomic) NSString *capability;
-@property (readwrite, strong, nonatomic) NSString *nonce;
-@property (readwrite, assign, nonatomic) int64_t ttl;
-@property (readwrite, strong, nonatomic) NSDictionary *authHeaders;
-@property (readwrite, strong, nonatomic) NSString *clientId;
-@property (readwrite, assign, nonatomic) BOOL queryTime;
-@property (readwrite, assign, nonatomic) BOOL useTokenAuth;
-@property (readwrite, assign, nonatomic) ARTTokenDetails * tokenDetails;
-
-
-- (instancetype)init;
-- (instancetype)initWithKey:(NSString *)key;
-
-+ (instancetype)options;
-+ (instancetype)optionsWithKey:(NSString *)key;
-
-- (instancetype)clone;
-
-@end
-
 @interface ARTAuth : NSObject
 
-- (instancetype)initWithRest:(ARTRest *) rest options:(ARTAuthOptions *) options;
-- (ARTAuthOptions *)getAuthOptions;
-- (ARTAuthMethod)getAuthMethod;
+@property (nonatomic, weak) ARTLog *logger;
+@property (nonatomic, readonly, strong) ARTAuthOptions *options;
+@property (nonatomic, readonly, strong) ARTAuthTokenDetails *tokenDetails;
+@property (nonatomic, readonly, assign) ARTAuthMethod method;
 
-- (ARTAuthTokenParams *) getTokenParams;
-- (id<ARTCancellable>)authHeadersUseBasic:(BOOL)useBasic cb:(id<ARTCancellable>(^)(NSDictionary *))cb;
-- (id<ARTCancellable>)authParams:(id<ARTCancellable>(^)(NSDictionary *))cb;
-- (id<ARTCancellable>)requestToken:(id<ARTCancellable>(^)(ARTTokenDetails *))cb;
-- (id<ARTCancellable>)authTokenForceReauth:(BOOL)force cb:(id<ARTCancellable>(^)(ARTTokenDetails *))cb;
-- (void)attemptTokenFetch:(void (^)()) cb;
-- (bool)canRequestToken;
+- (instancetype)init:(ARTRest *)rest withOptions:(ARTClientOptions *)options;
 
-+ (ARTSignedTokenRequestCb)defaultSignedTokenRequestCallback:(ARTAuthOptions *)authOptions rest:(ARTRest *)rest;
+/**
+ # (RSA8) Auth#requestToken
+ 
+ Implicitly creates a `TokenRequest` if required, and requests a token from Ably if required.
+ 
+ `TokenParams` and `AuthOptions` are optional.
+ When provided, the values supersede matching client library configured params and options.
+ 
+ - Parameter tokenParams: Token params (optional).
+ - Parameter authOptions: Authentication options (optional).
+ - Parameter callback: Completion callback (ARTAuthTokenDetails, NSError).
+ */
+- (void)requestToken:(art_nullable ARTAuthTokenParams *)tokenParams withOptions:(art_nullable ARTAuthOptions *)authOptions
+            callback:(void (^)(ARTAuthTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error))callback;
+
+- (void)authorise:(art_nullable ARTAuthTokenParams *)tokenParams options:(art_nullable ARTAuthOptions *)options force:(BOOL)force
+         callback:(void (^)(ARTAuthTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error))callback;
+
+- (void)createTokenRequest:(art_nullable ARTAuthTokenParams *)tokenParams options:(art_nullable ARTAuthOptions *)options
+                  callback:(void (^)(ARTAuthTokenRequest *__art_nullable tokenRequest, NSError *__art_nullable error))callback;
+
 @end
+
+ART_ASSUME_NONNULL_END

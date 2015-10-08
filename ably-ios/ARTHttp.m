@@ -8,12 +8,9 @@
 
 #import "ARTHttp.h"
 
-#import "ARTLog.h"
-
-
 @interface ARTHttp ()
 
-@property (readonly, strong, nonatomic) NSURL *baseUrl;
+@property (readonly, copy, nonatomic) NSURL *baseUrl;
 @property (readonly, strong, nonatomic) NSURLSession *urlSession;
 
 @end
@@ -26,6 +23,9 @@
 + (instancetype)requestHandleWithDataTask:(NSURLSessionDataTask *)dataTask;
 
 @end
+
+
+#pragma mark - ARTHttpRequest
 
 @implementation ARTHttpRequest
 
@@ -50,12 +50,14 @@
 
 @end
 
+
+#pragma mark - ARTHttpResponse
+
 @implementation ARTHttpResponse
 
 - (instancetype)init {
     self = [super init];
     if (self) {
-        
         _status = 0;
         _error = nil;
         _headers = nil;
@@ -120,6 +122,9 @@
 
 @end
 
+
+#pragma mark - ARTHttpRequestHandle
+
 @implementation ARTHttpRequestHandle
 
 - (instancetype)initWithDataTask:(NSURLSessionDataTask *)dataTask {
@@ -140,6 +145,9 @@
 
 @end
 
+
+#pragma mark - ARTHttp
+
 @implementation ARTHttp
 
 - (instancetype)init {
@@ -159,6 +167,30 @@
     return self;
 }
 
+- (void)executeRequest:(NSMutableURLRequest *)request callback:(void (^)(NSHTTPURLResponse *, NSData *, NSError *))callback {
+    [self.logger debug:@"%@ %@", request.HTTPMethod, request.URL.absoluteString];
+    [self.logger verbose:@"Headers %@", request.allHTTPHeaderFields];
+    
+    CFRunLoopRef currentRunloop = CFRunLoopGetCurrent();
+
+    NSURLSessionDataTask *task = [_urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+        
+        CFRunLoopPerformBlock(currentRunloop, kCFRunLoopCommonModes, ^{
+            if (error) {
+                [self.logger error:@"%@ %@: error %@", request.HTTPMethod, request.URL.absoluteString, error];
+            } else {
+                [self.logger debug:@"%@ %@: statusCode %ld", request.HTTPMethod, request.URL.absoluteString, httpResponse.statusCode];
+                [self.logger verbose:@"Headers %@", httpResponse.allHeaderFields];
+            }
+            callback(httpResponse, data, error);
+        });
+        CFRunLoopWakeUp(currentRunloop);
+        
+    }];
+    [task resume];
+}
+
 - (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method url:(NSURL *)url headers:(NSDictionary *)headers body:(NSData *)body cb:(ARTHttpCb)cb {
     return [self makeRequest:[[ARTHttpRequest alloc] initWithMethod:method url:url headers:headers body:body] cb:cb];
 }
@@ -171,7 +203,7 @@
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:artRequest.url];
     request.HTTPMethod = artRequest.method;
-    [self.logger verbose:[NSString stringWithFormat:@"ARTHttp request URL is %@", artRequest.url]];
+    [self.logger verbose:@"ARTHttp request URL is %@", artRequest.url];
 
     for (NSString *headerName in artRequest.headers) {
         NSString *headerValue = [artRequest.headers objectForKey:headerName];
@@ -179,26 +211,24 @@
     }
 
     request.HTTPBody = artRequest.body;
-    [self.logger debug:[NSString stringWithFormat:@"ARTHttp: makeRequest %@", [request allHTTPHeaderFields]]];
+    [self.logger debug:@"ARTHttp: makeRequest %@", [request allHTTPHeaderFields]];
 
     CFRunLoopRef rl = CFRunLoopGetCurrent();
     CFRetain(rl);
     NSURLSessionDataTask *task = [self.urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-        [self.logger verbose:
-         [NSString stringWithFormat:@"ARTHttp: Got response %@, err %@",
-          response,error]];
+        [self.logger verbose:@"ARTHttp: Got response %@, err %@", response, error];
         
         if(error) {
-            [self.logger error:[NSString stringWithFormat:@"ARTHttp receieved error: %@", error]];
+            [self.logger error:@"ARTHttp receieved error: %@", error];
             cb([ARTHttpResponse responseWithStatus:500 headers:nil body:nil]);
         }
         else {
             if (httpResponse) {
                 int status = (int)httpResponse.statusCode;
-                [self.logger debug:
-                [NSString stringWithFormat:@"ARTHttp response status is %d", status]];
-                [self.logger verbose:[NSString stringWithFormat:@"ARTHttp received response %@",[NSJSONSerialization JSONObjectWithData:data options:0 error:nil]]];
+                [self.logger debug:@"ARTHttp response status is %d", status];
+                [self.logger verbose:@"ARTHttp received response %@",[NSJSONSerialization JSONObjectWithData:data options:0 error:nil]];
+                
                 CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
                     cb([ARTHttpResponse responseWithStatus:status headers:httpResponse.allHeaderFields body:data]);
                 });
@@ -214,7 +244,6 @@
     [task resume];
     
     return [ARTHttpRequestHandle requestHandleWithDataTask:task];
-    
 }
 
 + (NSDictionary *)getErrorDictionary {

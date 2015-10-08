@@ -7,14 +7,61 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <ably/ARTStatus.h>
+#import "CompatibilityMacros.h"
 
-typedef void (^ARTStatusCallback)(ARTStatus * status);
+@class ARTStatus;
+@class ARTHttpResponse;
+@class ARTMessage;
+@class ARTPresenceMessage;
+@class ARTAuthTokenParams;
+@class ARTAuthTokenRequest;
 
+typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
+    ARTRealtimeInitialized,
+    ARTRealtimeConnecting,
+    ARTRealtimeConnected,
+    ARTRealtimeDisconnected,
+    ARTRealtimeSuspended,
+    ARTRealtimeClosing,
+    ARTRealtimeClosed,
+    ARTRealtimeFailed
+};
+
+typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
+    ARTRealtimeChannelInitialised,
+    ARTRealtimeChannelAttaching,
+    ARTRealtimeChannelAttached,
+    ARTRealtimeChannelDetaching,
+    ARTRealtimeChannelDetached,
+    ARTRealtimeChannelClosed,
+    ARTRealtimeChannelFailed
+};
+
+ART_ASSUME_NONNULL_BEGIN
+
+typedef void (^ARTRealtimeChannelMessageCb)(ARTMessage *);
+
+typedef void (^ARTRealtimeChannelStateCb)(ARTRealtimeChannelState, ARTStatus *);
+
+typedef void (^ARTRealtimeConnectionStateCb)(ARTRealtimeConnectionState state);
+
+typedef void (^ARTRealtimeChannelPresenceCb)(ARTPresenceMessage *);
+
+typedef void (^ARTStatusCallback)(ARTStatus *status);
+
+typedef void (^ARTHttpCb)(ARTHttpResponse *response);
+
+typedef void (^ARTErrorCallback)(NSError *error);
+
+typedef void (^ARTAuthCallback)(ARTAuthTokenParams *tokenParams, void(^callback)(ARTAuthTokenRequest *__art_nullable tokenRequest, NSError *__art_nullable error));
+
+// FIXME:
 @protocol ARTCancellable
-
 - (void)cancel;
+@end
 
+@protocol ARTSubscription
+- (void)unsubscribe;
 @end
 
 @interface ARTIndirectCancellable : NSObject <ARTCancellable>
@@ -27,3 +74,5 @@ typedef void (^ARTStatusCallback)(ARTStatus * status);
 - (void)cancel;
 
 @end
+
+ART_ASSUME_NONNULL_END

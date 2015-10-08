@@ -7,76 +7,28 @@
 //
 
 #import "ARTClientOptions.h"
-#import "ARTClientOptions+Private.h"
+
 #import "ARTDefault.h"
+
 @interface ARTClientOptions ()
-@property (readwrite, strong, nonatomic) NSString *realtimeHost;
+
 - (instancetype)initDefaults;
 
 @end
 
 @implementation ARTClientOptions
 
-+(NSString *) getDefaultRestHost:(NSString *) replacement modify:(bool) modify {
-    static NSString * restHost =@"rest.ably.io";
-    if (modify) {
-        restHost = replacement;
-    }
-    return restHost;
-}
-
-+(NSString *) getDefaultRealtimeHost:(NSString *) replacement modify:(bool) modify {
-    static NSString * realtimeHost =@"realtime.ably.io";
-    if (modify) {
-        realtimeHost = replacement;
-    }
-    return realtimeHost;
-}
-
-
-
-
-- (instancetype)init {
-    self = [super init];
-    if (self) {
-        _authOptions = [ARTAuthOptions options];
-        if (!_authOptions) {
-            self = nil;
-        }
-        self = [self initDefaults];
-    }
-    return self;
-}
-
 - (instancetype)initWithKey:(NSString *)key {
-    self = [super init];
+    self = [super initWithKey:key];
     if (self) {
-        _authOptions = [ARTAuthOptions optionsWithKey:key];
-
-        if (!_authOptions) {
-            self = nil;
-        }
         self = [self initDefaults];
     }
     return self;
-}
-
--(NSString *) restHost {
-    return _environment ?[NSString stringWithFormat:@"%@-%@", _environment, _restHost] : _restHost;
-}
-
--(NSString * ) defaultRestHost {
-    return [ARTClientOptions getDefaultRestHost:@"" modify:false];
-}
-
--(NSString *) defaultRealtimeHost {
-    return [ARTClientOptions getDefaultRealtimeHost:@"" modify:false];
 }
 
 - (instancetype)initDefaults {
+    self = [super initDefaults];
     _clientId = nil;
-    self.restHost =  [self defaultRestHost];
-    _realtimeHost = [self defaultRealtimeHost];
     _restPort = [ARTDefault TLSPort];
     _realtimePort = [ARTDefault TLSPort];
     _queueMessages = YES;
@@ -87,35 +39,39 @@
     _autoConnect = true;
     _resumeKey = nil;
     _environment = nil;
+    _tls = YES;
     return self;
 }
 
-+ (instancetype)options {
-    return [[ARTClientOptions alloc] init];
+- (NSString*)getRestHost {
+    return _environment ? [NSString stringWithFormat:@"%@-%@", _environment, [ARTDefault restHost]] : [ARTDefault restHost];
 }
 
-+ (instancetype)optionsWithKey:(NSString *)key {
-    return [[ARTClientOptions alloc] initWithKey:key];
+- (NSString*)getRealtimeHost {
+    return _environment ? [NSString stringWithFormat:@"%@-%@", _environment, [ARTDefault realtimeHost]] : [ARTDefault realtimeHost];
 }
 
-+(NSURL *) restUrl:(NSString *) host port:(int) port {
-    NSString *s = [NSString stringWithFormat:@"https://%@:%d", host, port];
-    return [NSURL URLWithString:s];
++ (NSURL*)restUrl:(NSString *)host port:(int)port tls:(BOOL)tls {
+    NSURLComponents *components = [[NSURLComponents alloc] init];
+    components.scheme = tls ? @"https" : @"http";
+    components.host = host;
+    components.port = [NSNumber numberWithInt:port];
+    return components.URL;
 }
+
 - (NSURL *)restUrl {
-    return [ARTClientOptions restUrl:self.restHost port:self.restPort];
+    return [ARTClientOptions restUrl:self.restHost port:self.restPort tls:self.tls];
 }
 
-- (instancetype)clone {
-    ARTClientOptions *options = [[ARTClientOptions alloc] init];
-    options.authOptions = [self.authOptions clone];
-    if (!options.authOptions) {
-        return nil;
-    }
+- (bool)isFallbackPermitted {
+    // FIXME: self.restHost is immutable!
+    return [self.restHost isEqualToString:[ARTDefault restHost]];
+}
+
+- (id)copyWithZone:(NSZone *)zone {
+    ARTClientOptions *options = [super copyWithZone:zone];
     
     options.clientId = self.clientId;
-    options.restHost = self.restHost;
-    options.realtimeHost = self.realtimeHost;
     options.restPort = self.restPort;
     options.realtimePort = self.realtimePort;
     options.queueMessages = self.queueMessages;
@@ -126,22 +82,9 @@
     options.connectionSerial = self.connectionSerial;
     options.resumeKey = self.resumeKey;
     options.environment = self.environment;
-    options.loggerClass = self.loggerClass;
-
+    options.tls = self.tls;
+    
     return options;
-}
-
--(void) setRealtimeHost:(NSString *)realtimeHost withRestHost:(NSString *) restHost {
-    self.realtimeHost = realtimeHost;
-    self.restHost = restHost;
-}
-
-- (NSString *)realtimeHost {
-    return _environment ?[NSString stringWithFormat:@"%@-%@", _environment, _realtimeHost] : _realtimeHost;
-}
-
-- (bool)isFallbackPermitted {
-    return [self.restHost isEqualToString:[self defaultRestHost]];
 }
 
 @end

@@ -7,15 +7,14 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <ably/ARTStatus.h>
+#import "ARTTypes.h"
+#import "ARTStatus.h"
 
-@interface ARTPaginatedResult : NSObject {
-    @protected
-    NSArray *_items;
-    BOOL _hasFirst;
-    BOOL _hasCurrent;
-    BOOL _hasNext;
-}
+ART_ASSUME_NONNULL_BEGIN
+
+@interface ARTPaginatedResult : NSObject
+
+typedef void(^ARTPaginatedResultCallback)(ARTPaginatedResult *__art_nullable result, NSError *__art_nullable error);
 
 @property (nonatomic, strong, readonly) NSArray *items;
 
@@ -25,10 +24,12 @@
 
 @property (nonatomic, readonly) BOOL isLast;
 
-typedef void(^ARTPaginatedResultCallback)(ARTStatus *status, ARTPaginatedResult *result);
+- (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
 - (void)first:(ARTPaginatedResultCallback)callback;
 - (void)current:(ARTPaginatedResultCallback)callback;
 - (void)next:(ARTPaginatedResultCallback)callback;
 
 @end
+
+ART_ASSUME_NONNULL_END

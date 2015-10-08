@@ -31,29 +31,51 @@ static const char *logLevelName(ARTLogLevel level) {
 
 - (instancetype)init {
     if (self = [super init]) {
+        // Default
         self->_logLevel = ARTLogLevelWarn;
     }
     return self;
 }
 
-- (void)verbose:(NSString *)message {
-    [self log:message withLevel:ARTLogLevelVerbose];
+- (void)log:(NSString *)message level:(ARTLogLevel)level {
+    if (level >= self.logLevel) {
+        NSLog(@"%s: %@", logLevelName(level), message);
+    }
 }
 
-- (void)debug:(NSString *)message {
-    [self log:message withLevel:ARTLogLevelDebug];
+- (void)verbose:(NSString *)format, ... {
+    va_list args;
+    va_start(args, format);
+    [self log:[[NSString alloc] initWithFormat:format arguments:args] level:ARTLogLevelVerbose];
+    va_end(args);
 }
 
-- (void)info:(NSString *)message {
-    [self log:message withLevel:ARTLogLevelInfo];
+- (void)debug:(NSString *)format, ... {
+    va_list args;
+    va_start(args, format);
+    [self log:[[NSString alloc] initWithFormat:format arguments:args] level:ARTLogLevelDebug];
+    va_end(args);
 }
 
-- (void)warn:(NSString *)message {
-    [self log:message withLevel:ARTLogLevelWarn];
+- (void)info:(NSString *)format, ... {
+    va_list args;
+    va_start(args, format);
+    [self log:[[NSString alloc] initWithFormat:format arguments:args] level:ARTLogLevelInfo];
+    va_end(args);
 }
 
-- (void)error:(NSString *)message {
-    [self log:message withLevel:ARTLogLevelError];
+- (void)warn:(NSString *)format, ... {
+    va_list args;
+    va_start(args, format);
+    [self log:[[NSString alloc] initWithFormat:format arguments:args] level:ARTLogLevelWarn];
+    va_end(args);
+}
+
+- (void)error:(NSString *)format, ... {
+    va_list args;
+    va_start(args, format);
+    [self log:[[NSString alloc] initWithFormat:format arguments:args] level:ARTLogLevelError];
+    va_end(args);
 }
 
 - (void)log:(NSString *)message withLevel:(ARTLogLevel)level {

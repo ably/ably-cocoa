@@ -7,13 +7,12 @@
 //
 
 #import <Foundation/Foundation.h>
-
 #import "ARTEncoder.h"
 
 @class ARTLog;
+
 @interface ARTJsonEncoder : NSObject <ARTEncoder>
-{
-    
-}
-@property (nonatomic, weak) ARTLog * logger;
+
+@property (nonatomic, weak) ARTLog *logger;
+
 @end

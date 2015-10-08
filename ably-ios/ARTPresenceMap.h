@@ -8,13 +8,15 @@
 
 #import <Foundation/Foundation.h>
 
-
 @class ARTPresenceMessage;
+
+/// Used to maintain a list of members present on a channel
 @interface ARTPresenceMap : NSObject {
     
 }
 
 @property (readwrite, nonatomic, assign) int64_t syncSerial;
+
 - (ARTPresenceMessage *)getClient:(NSString *) clientId;
 - (void)put:(ARTPresenceMessage *) message;
 
@@ -29,4 +31,5 @@
 typedef void(^VoidCb)();
 - (void) syncMessageProcessed;
 - (void)onSync:(VoidCb) cb;
+
 @end

@@ -8,13 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ARTStatus.h"
-
-
+@class ARTErrorInfo;
 
 typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
-    
-
     ARTProtocolMessageHeartbeat = 0,
     ARTProtocolMessageAck = 1,
     ARTProtocolMessageNack = 2,
@@ -38,7 +34,7 @@ typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
 
 @property (readwrite, assign, nonatomic) ARTProtocolMessageAction action;
 @property (readwrite, assign, nonatomic) int count;
-@property (readwrite, strong, nonatomic) ARTErrorInfo * error;
+@property (readwrite, strong, nonatomic) ARTErrorInfo *error;
 @property (readwrite, strong, nonatomic) NSString *id;
 @property (readwrite, strong, nonatomic) NSString *channel;
 @property (readwrite, strong, nonatomic) NSString *channelSerial;
@@ -53,7 +49,7 @@ typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
 @property (readonly, assign, nonatomic) BOOL ackRequired;
 @property (readwrite, assign, nonatomic) int64_t flags;
 
--(BOOL) isSyncEnabled;
+- (BOOL)isSyncEnabled;
 
 - (BOOL)mergeFrom:(ARTProtocolMessage *)msg;
 

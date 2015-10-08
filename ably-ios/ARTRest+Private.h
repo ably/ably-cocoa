@@ -6,13 +6,10 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#import "ARTRest.h"
 
 @protocol ARTEncoder;
-
-/**
- ARTRest private methods that are used for whitebox testing.
- */
+@protocol ARTHTTPExecutor;
 
 typedef NS_ENUM(NSUInteger, ARTAuthentication) {
     ARTAuthenticationOff,
@@ -20,12 +17,16 @@ typedef NS_ENUM(NSUInteger, ARTAuthentication) {
     ARTAuthenticationUseBasic
 };
 
+/// ARTRest private methods that are used for whitebox testing
 @interface ARTRest (Private)
 
 @property (readonly, strong, nonatomic) id<ARTEncoder> defaultEncoder;
-@property (readonly, strong, nonatomic) ARTAuth *auth;
+@property (readonly, strong, nonatomic) NSString *defaultEncoding; //Content-Type
 
+@property (nonatomic, strong) id<ARTHTTPExecutor> httpExecutor;
+@property (readonly, nonatomic, assign) Class channelClass;
 
+@property (nonatomic, strong) NSURL *baseUrl;
 
 - (NSURL *)getBaseURL;
 - (NSString *)formatQueryParams:(NSDictionary *)queryParams;
@@ -35,13 +36,15 @@ typedef NS_ENUM(NSUInteger, ARTAuthentication) {
 
 - (id<ARTCancellable>)get:(NSString *)relUrl authenticated:(BOOL)authenticated cb:(ARTHttpCb)cb;
 - (id<ARTCancellable>)get:(NSString *)relUrl headers:(NSDictionary *)headers authenticated:(BOOL)authenticated cb:(ARTHttpCb)cb;
+
 - (id<ARTCancellable>)post:(NSString *)relUrl headers:(NSDictionary *)headers body:(NSData *)body authenticated:(ARTAuthentication)authenticated cb:(ARTHttpCb)cb;
 
-- (id<ARTCancellable>)withAuthHeadersUseBasic:(BOOL) useBasic cb:(id<ARTCancellable>(^)(NSDictionary *))cb;
+- (id<ARTCancellable>)withAuthHeadersUseBasic:(BOOL)useBasic cb:(id<ARTCancellable>(^)(NSDictionary *))cb;
 - (id<ARTCancellable>)withAuthHeaders:(id<ARTCancellable>(^)(NSDictionary *authHeaders))cb;
 - (id<ARTCancellable>)withAuthParams:(id<ARTCancellable>(^)(NSDictionary *authParams))cb;
 
--(id<ARTCancellable>) postTestStats:(NSArray *) stats cb:(void(^)(ARTStatus * status)) cb;
+- (void)executeRequest:(NSMutableURLRequest *)request callback:(void (^)(NSHTTPURLResponse *, NSData *, NSError *))callback;
 
+- (id<ARTCancellable>)postTestStats:(NSArray *)stats cb:(void(^)(ARTStatus * status)) cb;
 
 @end

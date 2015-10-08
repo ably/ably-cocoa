@@ -1,33 +1,19 @@
 //
 //  ARTMessage.h
-//  ably-ios
+//  ably
 //
-//  Created by Jason Choy on 08/12/2014.
-//  Copyright (c) 2014 Ably. All rights reserved.
+//  Created by Ricardo Pereira on 30/09/2015.
+//  Copyright (c) 2015 Ably. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
-#import <ably/ARTPayload.h>
+#import "ARTBaseMessage.h"
 
+@interface ARTMessage : ARTBaseMessage
 
-@class ARTStatus;
-@interface ARTMessage : NSObject
-
-@property (readwrite, strong, nonatomic) NSString *id;
+/// The event name, if available
 @property (readwrite, strong, nonatomic) NSString *name;
-@property (readwrite, strong, nonatomic) NSString *clientId;
-@property (readwrite, strong, nonatomic) NSString *connectionId;
-@property (readwrite, strong, nonatomic) ARTPayload *payload;
-@property (readwrite, strong, nonatomic) NSDate *timestamp;
-@property (readwrite, strong, nonatomic) ARTStatus * status;
 
-- (instancetype)init;
-- (ARTMessage *)messageWithPayload:(ARTPayload *)payload;
+- (instancetype)initWithData:(id)data name:(NSString *)name;
 
-- (ARTMessage *)decode:(id<ARTPayloadEncoder>)encoder;
-- (ARTMessage *)encode:(id<ARTPayloadEncoder>)encoder;
-- (id) content;
-
-+ (ARTMessage *) messageWithPayload:(id) payload name:(NSString *) name;
-+ (NSArray *) messagesWithPayloads:(NSArray *) payloads;
 @end

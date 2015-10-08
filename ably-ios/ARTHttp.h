@@ -7,10 +7,19 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <ably/ARTTypes.h>
-#import <ably/ARTStatus.h>
+#import "ARTTypes.h"
+#import "ARTLog.h"
 
-@class ARTLog;
+@class ARTErrorInfo;
+
+// FIXME:
+@protocol ARTHTTPExecutor
+
+@property (nonatomic, weak) ARTLog *logger;
+
+- (void)executeRequest:(NSMutableURLRequest *)request callback:(void (^)(NSHTTPURLResponse *response, NSData *data, NSError *error))callback;
+
+@end
 
 @interface ARTHttpRequest : NSObject
 
@@ -43,15 +52,15 @@
 
 @end
 
-@interface ARTHttp : NSObject
+@interface ARTHttp : NSObject<ARTHTTPExecutor>
 {
     
 }
 
-@property (nonatomic, weak) ARTLog * logger;
+@property (nonatomic, weak) ARTLog *logger;
+
 - (instancetype)init;
 
-typedef void (^ARTHttpCb)(ARTHttpResponse *response);
 - (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method url:(NSURL *)url headers:(NSDictionary *)headers body:(NSData *)body cb:(ARTHttpCb)cb;
 - (id<ARTCancellable>)makeRequest:(ARTHttpRequest *)req cb:(ARTHttpCb)cb;
 

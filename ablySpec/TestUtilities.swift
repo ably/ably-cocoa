@@ -9,14 +9,16 @@
 
 import Foundation
 import XCTest
-import SwiftyJSON
-import ably
 import Quick
+import SwiftyJSON
+
+import ably
+import ably.Private
 
 class Configuration : QuickConfiguration {
     override class func configure(configuration: Quick.Configuration!) {
         configuration.beforeEach {
-            ARTClientOptions.getDefaultRestHost("sandbox-rest.ably.io", modify: true)
+
         }
     }
 }
@@ -28,8 +30,6 @@ func pathForTestResource(resourcePath: String) -> String {
 
 let appSetupJson = JSON(data: NSData(contentsOfFile: pathForTestResource("ably-common/test-resources/test-app-setup.json"))!, options: .MutableContainers)
 
-let restHost = "sandbox-rest.ably.io"
-
 let testTimeout: NSTimeInterval = 30
 
 class AblyTests {
@@ -37,7 +37,7 @@ class AblyTests {
     class var jsonRestOptions: ARTClientOptions {
         get {
             let options = ARTClientOptions()
-            options.restHost = restHost
+            options.environment = "sandbox"
             options.binary = false
             return options
         }
@@ -73,19 +73,21 @@ class AblyTests {
             XCTFail(error.localizedDescription)
         } else if let data = responseData {
             let response = JSON(data: data)
+            
             let key = response["keys"][0]
-            let appId = response["appId"]
-            let id = key["id"]
 
-            let appOptions = options.clone()
-            appOptions.authOptions.keyName = "\(appId).\(id)"
-            appOptions.authOptions.keySecret = key["value"].stringValue
-            appOptions.authOptions.capability = key["capability"].stringValue
-            return appOptions
+            options.key = key["keyStr"].stringValue
+            
+            return options
         }
         
         return options
     }
+    
+    class func commonAppSetup() -> ARTClientOptions {
+        return AblyTests.setupOptions(AblyTests.jsonRestOptions)
+    }
+    
 }
 
 func querySyslog(forLogsAfter startingTime: NSDate? = nil) -> GeneratorOf<String> {
@@ -105,5 +107,65 @@ func querySyslog(forLogsAfter startingTime: NSDate? = nil) -> GeneratorOf<String
             asl_free(query)
             return nil
         }
+    }
+}
+
+/*
+ 
+ */
+class PublishTestMessage {
+    var error: NSError?
+    
+    init(client: ARTRest, failOnError: Bool) {
+        self.error = NSError(domain: "", code: -1, userInfo: nil)
+        
+        client.channels.get("test").publish("message") { error in
+            self.error = error
+            if failOnError {
+                XCTFail("Got error '\(error)'")
+            }
+        }
+    }
+}
+
+func publishTestMessage(client: ARTRest, failOnError: Bool = true) -> PublishTestMessage {
+    return PublishTestMessage(client: client, failOnError: failOnError)
+}
+
+func getTestToken() -> String {
+    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+    let client = ARTRest(options: options)
+    
+    var token: String?
+    var error: NSError?
+    
+    client.auth.requestToken(nil, withOptions: nil) { tokenDetails, _error in
+        token = tokenDetails?.token
+        error = _error
+        return
+    }
+    
+    while token == nil && error == nil {
+        CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Boolean(0))
+    }
+    
+    return token ?? ""
+}
+
+@objc
+/*
+ Records each request for test purpose.
+ */
+class MockHTTPExecutor: ARTHTTPExecutor {
+    // Who executes the request
+    private let executor = ARTHttp()
+    
+    var logger: ARTLog?
+    
+    var requests: [NSMutableURLRequest] = []
+    
+    func executeRequest(request: NSMutableURLRequest!, callback: ((NSHTTPURLResponse!, NSData!, NSError!) -> Void)!) {
+        self.requests.append(request)
+        self.executor.executeRequest(request, callback: callback)
     }
 }

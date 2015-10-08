@@ -8,44 +8,9 @@
 
 import Nimble
 import Quick
+
 import ably
 import ably.Private
-
-class PublishTestMessage {
-    var status: ARTStatus?
-
-    init(client: ARTRest, failOnError: Bool) {
-        client.channel("test").publish("message") { status in
-            self.status = status
-            if failOnError && status.status != .StatusOk {
-                XCTFail("Got status \(status.status.rawValue) with error '\(status.errorInfo?.message)'")
-            }
-        }
-    }
-}
-
-func publishTestMessage(client: ARTRest, failOnError: Bool = true) -> PublishTestMessage {
-    return PublishTestMessage(client: client, failOnError: failOnError)
-}
-
-func getTestToken() -> String {
-    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-    options.authOptions.useTokenAuth = true
-    options.authOptions.clientId = "testToken"
-    let client = ARTRest(options: options)
-
-    var token: String?
-    client.auth().requestToken() { tokenDetails in
-        token = tokenDetails.token
-        return nil
-    }
-
-    while token == nil {
-        CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Boolean(0))
-    }
-
-    return token!
-}
 
 class RestClient: QuickSpec {
     override func spec() {
@@ -53,12 +18,14 @@ class RestClient: QuickSpec {
             // RSC1
             context("initializer") {
                 it("should accept an API key") {
-                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-                    let client = ARTRest(key: "\(options.authOptions.keyName):\(options.authOptions.keySecret)")
+                    let options = AblyTests.commonAppSetup()
+                    
+                    let client = ARTRest(key: options.key!)
+                    client.baseUrl = options.restUrl()
 
                     let publishTask = publishTestMessage(client)
 
-                    expect(publishTask.status?.status).toEventually(equal(ARTState.StatusOk), timeout: testTimeout)
+                    expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
                 }
 
                 it("should throw when provided an invalid key") {
@@ -66,47 +33,43 @@ class RestClient: QuickSpec {
                 }
 
                 it("should result in error status when provided a bad key") {
-                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-                    let client = ARTRest(key: "badName:\(options.authOptions.keySecret)")
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRest(key: "bad")
 
                     let publishTask = publishTestMessage(client, failOnError: false)
 
-                    expect(publishTask.status?.status).toEventually(equal(ARTState.StatusError), timeout: testTimeout)
-                    expect(publishTask.status?.errorInfo.code).toEventually(equal(40005))
+                    expect(publishTask.error?.domain).toEventually(equal(ARTAblyErrorDomain), timeout: testTimeout)
+                    expect(publishTask.error?.code).toEventually(equal(40005))
                 }
 
                 it("should accept an options object") {
-                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                    let options = AblyTests.commonAppSetup()
                     let client = ARTRest(options: options)
 
                     let publishTask = publishTestMessage(client)
 
-                    expect(publishTask.status?.status).toEventually(equal(ARTState.StatusOk), timeout: testTimeout)
+                    expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
                 }
 
                 it("should accept an options object with token authentication") {
-                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-                    options.authOptions.useTokenAuth = true
-                    options.authOptions.token = getTestToken()
+                    let options = AblyTests.commonAppSetup()
+                    options.token = getTestToken()
                     let client = ARTRest(options: options)
 
                     let publishTask = publishTestMessage(client)
 
-                    expect(client.auth().getAuthMethod()).to(equal(ARTAuthMethod.Token))
-                    expect(publishTask.status?.status).toEventually(equal(ARTState.StatusOk), timeout: testTimeout)
+                    expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
                 }
 
                 it("should result in error status when provided a bad token") {
-                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-                    options.authOptions.useTokenAuth = true
-                    options.authOptions.token = "invalid_token"
+                    let options = AblyTests.commonAppSetup()
+                    options.token = "invalid_token"
                     let client = ARTRest(options: options)
 
                     let publishTask = publishTestMessage(client, failOnError: false)
 
-                    expect(client.auth().getAuthMethod()).to(equal(ARTAuthMethod.Token))
-                    expect(publishTask.status?.status).toEventually(equal(ARTState.StatusError), timeout: testTimeout)
-                    expect(publishTask.status?.errorInfo.code).toEventually(equal(40005))
+                    expect(publishTask.error?.domain).toEventually(equal(ARTAblyErrorDomain), timeout: testTimeout)
+                    expect(publishTask.error?.code).toEventually(equal(40005), timeout: testTimeout)
                 }
             }
 
@@ -114,9 +77,9 @@ class RestClient: QuickSpec {
                 // RSC2
                 it("should output to the system log and the log level should be Warn") {
                     let logTime = NSDate()
-                    let client = ARTRest(options: AblyTests.setupOptions(AblyTests.jsonRestOptions))
+                    let client = ARTRest(options: AblyTests.commonAppSetup())
 
-                    client.logger.warn("This is a warning")
+                    client.logger.log("This is a warning", withLevel: .Warn)
                     let logs = querySyslog(forLogsAfter: logTime)
 
                     expect(client.logger.logLevel).to(equal(ARTLogLevel.Warn))
@@ -126,10 +89,10 @@ class RestClient: QuickSpec {
                 // RSC3
                 it("should have a mutable log level") {
                     let logTime = NSDate()
-                    let client = ARTRest(options: AblyTests.setupOptions(AblyTests.jsonRestOptions))
+                    let client = ARTRest(options: AblyTests.commonAppSetup())
                     client.logger.logLevel = .Error
 
-                    client.logger.warn("This is a warning")
+                    client.logger.log("This is a warning", withLevel: .Warn)
                     let logs = querySyslog(forLogsAfter: logTime)
 
                     expect(logs).toNot(contain("WARN: This is a warning"))
@@ -146,32 +109,68 @@ class RestClient: QuickSpec {
                         }
                     }
 
-                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-                    options.loggerClass = MyLogger.self
-                    let client = ARTRest(options: options)
+                    let options = AblyTests.commonAppSetup()
+                    let customLogger = MyLogger()
+                    customLogger.logLevel = .Verbose
+                    let client = ARTRest(logger: customLogger, andOptions: options)
 
-                    client.logger.warn("This is a warning")
-
+                    client.logger.log("This is a warning", withLevel: .Warn)
+                    
                     expect(Log.interceptedLog.0).to(equal("This is a warning"))
                     expect(Log.interceptedLog.1).to(equal(ARTLogLevel.Warn))
+                    
+                    expect(client.logger.logLevel).to(equal(customLogger.logLevel))
                 }
             }
 
             // RSC11
             context("endpoint") {
+                var mockExecutor: MockHTTPExecutor!
+                beforeEach {
+                    mockExecutor = MockHTTPExecutor()
+                }
+                
+                it("should accept an options object with a host set") {
+                    let options = ARTClientOptions(key: "fake:key")
+                    options.environment = "fake"
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = mockExecutor
+                    
+                    publishTestMessage(client, failOnError: false)
+                    
+                    expect(mockExecutor.requests.first?.URL?.host).toEventually(equal("fake.ably.host"), timeout: testTimeout)
+                }
+                
                 it("should accept an options object with an environment set") {
-                    // reset the default host in order to force ARTClientOptions to compute it
-                    ARTClientOptions.getDefaultRestHost("rest.ably.io", modify: true)
-                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-                    let newOptions = ARTClientOptions()
-                    newOptions.authOptions.keyName = options.authOptions.keyName
-                    newOptions.authOptions.keySecret = options.authOptions.keySecret
-                    newOptions.environment = "sandbox"
-                    let client = ARTRest(options: newOptions)
-
-                    let publishTask = publishTestMessage(client)
-
-                    expect(publishTask.status?.status).toEventually(equal(ARTState.StatusOk), timeout: testTimeout)
+                    let options = ARTClientOptions(key: "fake:key")
+                    options.environment = "myEnvironment"
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = mockExecutor
+                    
+                    publishTestMessage(client, failOnError: false)
+                    
+                    expect(mockExecutor.requests.first?.URL?.host).toEventually(equal("myEnvironment-rest.ably.io"), timeout: testTimeout)
+                }
+                
+                it("should default to https://rest.ably.io") {
+                    let options = ARTClientOptions(key: "fake:key")
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = mockExecutor
+                    
+                    publishTestMessage(client, failOnError: false)
+                    
+                    expect(mockExecutor.requests.first?.URL?.absoluteString).toEventually(beginWith("https://rest.ably.io"), timeout: testTimeout)
+                }
+                
+                it("should connect over plain http:// when tls is off") {
+                    let options = ARTClientOptions(key: "fake:key")
+                    options.tls = false;
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = mockExecutor
+                    
+                    publishTestMessage(client, failOnError: false)
+                    
+                    expect(mockExecutor.requests.first?.URL?.scheme).toEventually(equal("http"), timeout: testTimeout)
                 }
             }
 
@@ -179,23 +178,24 @@ class RestClient: QuickSpec {
             it("should provide access to the AuthOptions object passed in ClientOptions") {
                 let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                 let client = ARTRest(options: options)
-
-                let authOptions = client.auth().getAuthOptions()
-
-                expect(authOptions).to(beIdenticalTo(options.authOptions))
+                
+                let authOptions = client.auth.options
+                
+                expect(authOptions).to(beIdenticalTo(options))
             }
-
+            
             // RSC16
             context("time") {
                 it("should return server time") {
                     let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                     let client = ARTRest(options: options)
-
+                    
                     var time: NSDate?
-                    client.time({ (status, date) in
+                    
+                    client.time({ date, error in
                         time = date
                     })
-
+                    
                     expect(time?.timeIntervalSince1970).toEventually(beCloseTo(NSDate().timeIntervalSince1970, within: 60), timeout: testTimeout)
                 }
             }

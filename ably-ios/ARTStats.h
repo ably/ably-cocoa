@@ -7,11 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-
-typedef NS_ENUM(NSUInteger, ARTQueryDirection) {
-    ARTQueryDirectionForwards,
-    ARTQueryDirectionBackwards
-};
+#import "ARTDataQuery.h"
 
 typedef NS_ENUM(NSUInteger, ARTStatsUnit) {
     ARTStatsUnitMinute,
@@ -20,18 +16,9 @@ typedef NS_ENUM(NSUInteger, ARTStatsUnit) {
     ARTStatsUnitMonth
 };
 
-@interface ARTStatsQuery : NSObject
-
-@property (nonatomic, strong) NSDate *start;
-@property (nonatomic, strong) NSDate *end;
-
-@property (nonatomic, assign) uint64_t limit;
-
-@property (nonatomic, assign) ARTQueryDirection direction;
+@interface ARTStatsQuery : ARTDataQuery
 
 @property (nonatomic, assign) ARTStatsUnit unit;
-
-- (NSArray *)asQueryItems;
 
 @end
 

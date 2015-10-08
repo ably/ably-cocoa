@@ -8,9 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
-
 @class ARTHttpResponse;
 @class ARTClientOptions;
+
 @interface ARTFallback : NSObject
 {
     

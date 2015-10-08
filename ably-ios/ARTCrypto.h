@@ -7,7 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-
+#import "ARTTypes.h"
+#import "ARTLog.h"
 #import "ARTStatus.h"
 
 @class ARTLog;
@@ -23,7 +24,7 @@
 @end
 
 @interface ARTCipherParams : NSObject
-@property (nonatomic, weak) ARTLog * logger;
+@property (nonatomic, weak) ARTLog *logger;
 @property (readonly, strong, nonatomic) NSString *algorithm;
 @property (readonly, strong, nonatomic) NSData *keySpec;
 @property (readonly, strong, nonatomic) ARTIvParameterSpec *ivSpec;

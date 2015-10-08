@@ -6,15 +6,11 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-
 #import "ARTRealtime.h"
+
 @class ARTProtocolMessage;
 
-
-/**
- ARTRealtime private methods that are used for whitebox testing.
- */
+/// ARTRealtime private methods that are used for whitebox testing.
 @interface ARTRealtime (Private)
 
 // Transport Events
@@ -28,8 +24,6 @@
 
 - (int64_t) connectionSerial;
 - (void)onSuspended;
+
 @end
 
-@interface ARTRealtimeChannel (Private)
--(void) setFailed:(ARTStatus *) error;
-@end

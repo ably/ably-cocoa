@@ -10,8 +10,6 @@
 
 #import <CommonCrypto/CommonCrypto.h>
 
-#import "ARTLog.h"
-
 @interface ARTCipherParams ()
 
 - (BOOL)ccAlgorithm:(CCAlgorithm *)algorithm;
@@ -74,7 +72,7 @@
 - (BOOL)ccAlgorithm:(CCAlgorithm *)algorithm {
     if (NSOrderedSame == [self.algorithm compare:@"AES" options:NSCaseInsensitiveSearch]) {
         if ([self.ivSpec.iv length] != 16) {
-            [self.logger error:[NSString stringWithFormat:@"ArtCrypto Error iv length is not 16: %d", (int)[self.ivSpec.iv length]]];
+            [self.logger error:@"ArtCrypto Error iv length is not 16: %d", (int)[self.ivSpec.iv length]];
             return NO;
         }
         *algorithm = kCCAlgorithmAES128;
@@ -132,7 +130,7 @@
 
     if (!buf) {
         [self.logger error:@"ARTCrypto error encrypting"];
-        return [ARTStatus state:ARTStatusError];
+        return [ARTStatus state:ARTStateError];
     }
 
     // Copy the iv first
@@ -152,16 +150,16 @@
     CCCryptorStatus status = CCCrypt(kCCEncrypt, self.algorithm, kCCOptionPKCS7Padding, key, keyLen, iv, dataIn, dataInLen, ciphertextBuf, ciphertextBufLen, &bytesWritten);
 
     if (status) {
-        [self.logger error:[NSString stringWithFormat:@"ARTCrypto error encrypting. Status is %d", status]];
+        [self.logger error:@"ARTCrypto error encrypting. Status is %d", status];
         free(ciphertextBuf);
-        return [ARTStatus state: ARTStatusError];
+        return [ARTStatus state: ARTStateError];
     }
 
     ciphertext = [NSData dataWithBytesNoCopy:buf length:(bytesWritten + self.blockLength) freeWhenDone:YES];
     if (nil == ciphertext) {
         [self.logger error:@"ARTCrypto error encrypting. cipher text is nil"];
         free(buf);
-        return [ARTStatus state:ARTStatusError];
+        return [ARTStatus state:ARTStateError];
     }
 
     // Finally update the iv. This should be the last *blockSize* bytes of the cipher text
@@ -175,13 +173,13 @@
 
     *output = ciphertext;
 
-    return [ARTStatus state:ARTStatusOk];
+    return [ARTStatus state:ARTStateOk];
 }
 
 - (ARTStatus *)decrypt:(NSData *)ciphertext output:(NSData *__autoreleasing *)output {
     // The first *blockLength* bytes are the iv
     if ([ciphertext length] < self.blockLength) {
-        return [ARTStatus state: ARTStatusInvalidArgs];;
+        return [ARTStatus state: ARTStateInvalidArgs];;
     }
 
     NSData *ivData = [ciphertext subdataWithRange:NSMakeRange(0, self.blockLength)];
@@ -202,7 +200,7 @@
 
     if (!buf) {
         [self.logger error:@"ARTCrypto error decrypting."];
-        return [ARTStatus state:ARTStatusError];
+        return [ARTStatus state:ARTStateError];
     }
 
     // Decrypt without padding because CCCrypt does not return an error code
@@ -210,9 +208,9 @@
     CCCryptorStatus status = CCCrypt(kCCDecrypt, self.algorithm, options, key, keyLength, iv, dataIn, dataInLength, buf, outputLength, &bytesWritten);
 
     if (status) {
-        [self.logger error:[NSString stringWithFormat:@"ARTCrypto error decrypting. Status is %d", status]];
+        [self.logger error:@"ARTCrypto error decrypting. Status is %d", status];
         free(buf);
-        return [ARTStatus state:ARTStatusError];
+        return [ARTStatus state:ARTStateError];
     }
 
     // Check that the decrypted value is padded correctly and determine the unpadded length
@@ -220,13 +218,13 @@
     int paddingLength = cbuf[bytesWritten - 1];
 
     if (0 == paddingLength || paddingLength > bytesWritten) {            free(buf);
-        return [ARTStatus state:ARTStatusCryptoBadPadding];
+        return [ARTStatus state:ARTStateCryptoBadPadding];
     }
 
     for (size_t i=(bytesWritten - 1); i>(bytesWritten - paddingLength); --i) {
         if (paddingLength != cbuf[i-1]) {
             free(buf);
-            return [ARTStatus state:ARTStatusCryptoBadPadding];
+            return [ARTStatus state:ARTStateCryptoBadPadding];
         }
     }
 
@@ -240,7 +238,7 @@
 
     *output = plaintext;
 
-    return [ARTStatus state:ARTStatusOk];
+    return [ARTStatus state:ARTStateOk];
 }
 
 - (NSString *)cipherName {
