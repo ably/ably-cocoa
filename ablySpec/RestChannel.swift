@@ -160,7 +160,7 @@ class RestChannel: QuickSpec {
                         publishError = error
                         channel.history(nil) { result, _ in
                             if let items = result?.items as? [ARTMessage] {
-                                publishedMessages.extend(items)
+                                publishedMessages.appendContentsOf(items)
                             }
                         }
                     }
@@ -185,15 +185,16 @@ class RestChannel: QuickSpec {
                     
                     channel.presence.get() { result, _ in
                         if let items = result?.items as? [ARTPresenceMessage] {
-                            presenceMessages.extend(items)
+                            presenceMessages.appendContentsOf(items)
                         }
                     }
                     
                     expect(presenceMessages.count).toEventually(equal(presenceFixtures.count), timeout: testTimeout)
                     for message in presenceMessages {
-                        let fixtureMessage = filter(presenceFixtures) { (key, value) in
+                        
+                        let fixtureMessage = presenceFixtures.filter({ (key, value) -> Bool in
                             return message.clientId == value["clientId"].stringValue
-                            }.first!.1
+                        }).first!.1
                         
                         expect(message.content()).toNot(beNil())
                         expect(message.action).to(equal(ARTPresenceAction.Present))

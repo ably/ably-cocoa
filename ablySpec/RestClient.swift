@@ -33,7 +33,6 @@ class RestClient: QuickSpec {
                 }
 
                 it("should result in error status when provided a bad key") {
-                    let options = AblyTests.commonAppSetup()
                     let client = ARTRest(key: "bad")
 
                     let publishTask = publishTestMessage(client, failOnError: false)

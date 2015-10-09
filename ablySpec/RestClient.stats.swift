@@ -17,12 +17,12 @@ private func postTestStats(stats: JSON) -> ARTClientOptions {
     
     let key = ("\(options.key)" as NSString)
         .dataUsingEncoding(NSUTF8StringEncoding)!
-        .base64EncodedStringWithOptions(NSDataBase64EncodingOptions(0))
+        .base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0))
     
     let request = NSMutableURLRequest(URL: NSURL(string: "https://rest.ably.io/stats")!)
     
     request.HTTPMethod = "POST"
-    request.HTTPBody = stats.rawData()
+    request.HTTPBody = try? stats.rawData()
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Basic \(key)", forHTTPHeaderField: "Authorization")
     
@@ -38,7 +38,7 @@ private func postTestStats(stats: JSON) -> ARTClientOptions {
         }.resume()
     
     while !requestCompleted {
-        CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Boolean(0))
+        CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Bool(0))
     }
     
     if let error = responseError {
@@ -52,7 +52,7 @@ private func postTestStats(stats: JSON) -> ARTClientOptions {
     return options
 }
 
-private func queryStats(client: ARTRest, query: ARTStatsQuery) -> ARTPaginatedResult {
+private func queryStats(client: ARTRest, _ query: ARTStatsQuery) -> ARTPaginatedResult {
     var stats: ARTPaginatedResult?
     let dummyError = NSError(domain: "", code: -1, userInfo: nil);
     var error: NSError? = dummyError
@@ -62,7 +62,7 @@ private func queryStats(client: ARTRest, query: ARTStatsQuery) -> ARTPaginatedRe
     })
     
     while error === dummyError {
-        CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Boolean(0))
+        CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Bool(0))
     }
     
     if let error = error {
@@ -82,7 +82,7 @@ private func getPage(paginator: (ARTPaginatedResultCallback) -> Void) -> ARTPagi
     })
     
     while error === dummyError {
-        CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Boolean(0))
+        CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Bool(0))
     }
     
     if let error = error {
@@ -101,7 +101,7 @@ class RestClientStats: QuickSpec {
                 context("result") {
                     let calendar = NSCalendar(identifier: NSCalendarIdentifierGregorian)!
                     let dateComponents = NSDateComponents()
-                    dateComponents.year = calendar.component(.CalendarUnitYear, fromDate: NSDate()) - 1
+                    dateComponents.year = calendar.component(NSCalendarUnit.Year, fromDate: NSDate()) - 1
                     dateComponents.month = 2
                     dateComponents.day = 3
                     dateComponents.hour = 16
@@ -174,7 +174,7 @@ class RestClientStats: QuickSpec {
                     it("should match day-level inbound and outbound fixture data (forwards)") {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
-                        query.end = calendar.dateByAddingUnit(.CalendarUnitDay, value: 1, toDate: date, options: NSCalendarOptions(0))
+                        query.end = calendar.dateByAddingUnit(.Day, value: 1, toDate: date, options: NSCalendarOptions(rawValue: 0))
                         query.direction = .Forwards
                         query.unit = .Month
                         
@@ -190,7 +190,7 @@ class RestClientStats: QuickSpec {
                     it("should match month-level inbound and outbound fixture data (forwards)") {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
-                        query.end = calendar.dateByAddingUnit(.CalendarUnitMonth, value: 1, toDate: date, options: NSCalendarOptions(0))
+                        query.end = calendar.dateByAddingUnit(.Month, value: 1, toDate: date, options: NSCalendarOptions(rawValue: 0))
                         query.direction = .Forwards
                         query.unit = .Month
                         
@@ -304,8 +304,8 @@ class RestClientStats: QuickSpec {
                             let client = ARTRest(key: "fake:key")
                             let query = ARTStatsQuery()
                             
-                            query.start = NSDate.distantFuture() as? NSDate
-                            query.end = NSDate.distantPast() as? NSDate
+                            query.start = NSDate.distantFuture()
+                            query.end = NSDate.distantPast()
                             
                             expect{ client.stats(query, callback:{ status, result in }) }.to(raiseException())
                         }

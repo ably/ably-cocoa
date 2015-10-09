@@ -21,7 +21,7 @@ extension ARTChannelCollection: SequenceType {
 
 private func beAChannel(named channelName: String) -> MatcherFunc<ARTChannel> {
     return MatcherFunc { actualExpression, failureMessage in
-        let channel = actualExpression.evaluate()
+        let channel = try! actualExpression.evaluate()
         failureMessage.expected = "expected \(channel)"
         failureMessage.postfixMessage = "be a channel"
 
@@ -66,10 +66,10 @@ class RestClientChannels: QuickSpec {
                         let channel = client.channels.get(channelName)
                         let options = channel.options
 
-                        let newButSameChannel = client!.channels.get(channelName)
+                        let newButSameChannel = client.channels.get(channelName)
 
                         expect(newButSameChannel).to(beIdenticalTo(channel))
-                        expect(newButSameChannel.options).to(beIdenticalTo(channel.options))
+                        expect(newButSameChannel.options).to(beIdenticalTo(options))
                     }
 
                     // RSN3c
@@ -78,7 +78,7 @@ class RestClientChannels: QuickSpec {
                         let oldOptions = channel.options
 
                         let newOptions = ARTChannelOptions(encrypted: cipherParams)
-                        let newButSameChannel = client!.channels.get(channelName, options: newOptions)
+                        let newButSameChannel = client.channels.get(channelName, options: newOptions)
 
                         expect(newButSameChannel).to(beIdenticalTo(channel))
                         expect(newButSameChannel.options).to(beIdenticalTo(newOptions))
@@ -91,7 +91,7 @@ class RestClientChannels: QuickSpec {
                     it("should check if a channel exists") {
                         expect(client.channels.exists(channelName)).to(beFalse())
 
-                        let channel = client.channels.get(channelName)
+                        client.channels.get(channelName)
 
                         expect(client.channels.exists(channelName)).to(beTrue())
                     }
@@ -113,7 +113,7 @@ class RestClientChannels: QuickSpec {
                 it("should be enumerable") {
                     let channels = [
                         client.channels.get(channelName),
-                        client.channels.get(String(reverse(channelName)))
+                        client.channels.get(String(channelName.characters.reverse()))
                     ]
 
                     for channel in client.channels {

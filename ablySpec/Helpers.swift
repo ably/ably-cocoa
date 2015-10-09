@@ -10,34 +10,22 @@ import Foundation
 import Runes
 
 
-// MARK: - Global Functions
-
-/**
-**Public function** – Load JSON from a file
-*/
-func JSONFromFile(fileName: String) -> AnyObject? {
-    return NSBundle.mainBundle().pathForResource(fileName, ofType: "json")
-        >>- { NSData(contentsOfFile: $0) }
-        >>- { NSJSONSerialization.JSONObjectWithData($0, options: NSJSONReadingOptions(0), error: nil) }
-}
-
-
 // MARK: - Monads
 
 let arrayToJSONData: NSArray -> NSData? = {
-    NSJSONSerialization.dataWithJSONObject($0, options: NSJSONWritingOptions.allZeros, error: nil)
+    try? NSJSONSerialization.dataWithJSONObject($0, options: NSJSONWritingOptions.allZeros)
 }
 
 let dictionaryToJSONData: NSDictionary -> NSData? = {
-    NSJSONSerialization.dataWithJSONObject($0, options: NSJSONWritingOptions.allZeros, error: nil)
+    try? NSJSONSerialization.dataWithJSONObject($0, options: NSJSONWritingOptions.allZeros)
 }
 
 let arrayToPrettyJSONData: NSArray -> NSData? = {
-    NSJSONSerialization.dataWithJSONObject($0, options: NSJSONWritingOptions.PrettyPrinted, error: nil)
+    try? NSJSONSerialization.dataWithJSONObject($0, options: NSJSONWritingOptions.PrettyPrinted)
 }
 
 let dictionaryToPrettyJSONData: NSDictionary -> NSData? = {
-    NSJSONSerialization.dataWithJSONObject($0, options: NSJSONWritingOptions.PrettyPrinted, error: nil)
+    try? NSJSONSerialization.dataWithJSONObject($0, options: NSJSONWritingOptions.PrettyPrinted)
 }
 
 let dataToJSONString: NSData -> NSString? = {
@@ -49,7 +37,7 @@ let JSONStringToData: String -> NSData? = {
 }
 
 let JSONDataToAny: NSData -> AnyObject? = {
-    NSJSONSerialization.JSONObjectWithData($0, options: .MutableLeaves, error: nil)
+    try? NSJSONSerialization.JSONObjectWithData($0, options: .MutableLeaves)
 }
 
 /**
