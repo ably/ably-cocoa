@@ -156,13 +156,19 @@ class Auth : QuickSpec {
                 ]
                 
                 for (caseName, caseSetter) in cases {
-                    fit("should stop client when \(caseName) occurs") {
+                    it("should stop client when \(caseName) occurs") {
                         let options = ARTClientOptions()
                         caseSetter(options)
                         
                         expect{ ARTRest(options: options) }.to(raiseException())
                     }
                 }
+            }
+            
+            // RSA5
+            fit("should use one hour default time to live") {
+                let tokenParams = ARTAuthTokenParams()
+                expect(tokenParams.ttl) == 60 * 60
             }
 
         }
