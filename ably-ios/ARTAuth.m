@@ -211,6 +211,7 @@
 }
 
 - (BOOL)canRequestToken {
+    // FIXME: not used?!
     if (self.options.authCallback) {
         [self.logger verbose:@"ARTAuth can request token via authCallback"];
         return YES;

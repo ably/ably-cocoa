@@ -26,7 +26,7 @@ static NSArray *decomposeKey(NSString *key) {
     if (self = [super init]) {
         _ttl = 60 * 60;
         _timestamp = [NSDate date];
-        _capability = @"{ \"*\": [ \"*\" ] }"; // allow all
+        _capability = @"{\"*\":[\"*\"]}"; // allow all
     }
     
     return self;

@@ -166,9 +166,15 @@ class Auth : QuickSpec {
             }
             
             // RSA5
-            fit("should use one hour default time to live") {
+            it("should use one hour default time to live") {
                 let tokenParams = ARTAuthTokenParams()
                 expect(tokenParams.ttl) == 60 * 60
+            }
+            
+            // RSA6
+            it("should allow all operations when capability is not specified") {
+                let tokenParams = ARTAuthTokenParams()
+                expect(tokenParams.capability) == "{\"*\":[\"*\"]}"
             }
 
         }
