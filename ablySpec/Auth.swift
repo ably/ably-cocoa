@@ -144,6 +144,26 @@ class Auth : QuickSpec {
                     }
                 }
             }
+            
+            // RSA14
+            context("options") {
+                // Cases:
+                //  - useTokenAuth is specified and thus a key is not provided
+                //  - authCallback and authUrl are both specified
+                let cases: [String: (ARTAuthOptions) -> ()] = [
+                    "useTokenAuth and no key":{ $0.useTokenAuth = true },
+                    "authCallback and authUrl":{ $0.authCallback = { params, callback in /*nothing*/ }; $0.authUrl = NSURL(string: "http://auth.ably.io") }
+                ]
+                
+                for (caseName, caseSetter) in cases {
+                    fit("should stop client when \(caseName) occurs") {
+                        let options = ARTClientOptions()
+                        caseSetter(options)
+                        
+                        expect{ ARTRest(options: options) }.to(raiseException())
+                    }
+                }
+            }
 
         }
         

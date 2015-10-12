@@ -113,6 +113,7 @@
 }
 
 - (void)calculateAuthorization:(void (^)(NSString *authorization, NSError *error))callback {
+    // FIXME: use encoder
     if (self.auth.method == ARTAuthMethodBasic) {
         // Include key Base64 encoded in an Authorization header (RFC7235)
         NSData *keyData = [self.options.key dataUsingEncoding:NSUTF8StringEncoding];
