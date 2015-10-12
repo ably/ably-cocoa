@@ -13,11 +13,29 @@
 
 ART_ASSUME_NONNULL_BEGIN
 
+/**
+ Type that provided parameters of a token request.
+ */
 @interface ARTAuthTokenParams : NSObject
 
+/**
+ Represents time to live (expiry) of this token in milliseconds.
+ */
 @property (nonatomic, assign) NSTimeInterval ttl;
+
+/**
+ Contains the capability JSON stringified.
+ */
 @property (nonatomic, copy) NSString *capability;
+
+/**
+ A clientId to associate with this token.
+ */
 @property (nonatomic, copy) NSString *clientId;
+
+/**
+ Timestamp (in millis since the epoch) of this request. Timestamps, in conjunction with the nonce, are used to prevent n requests from being replayed.
+ */
 @property (nonatomic, strong, null_resettable) NSDate *timestamp;
 
 - (instancetype)init;

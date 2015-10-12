@@ -176,6 +176,37 @@ class Auth : QuickSpec {
                 let tokenParams = ARTAuthTokenParams()
                 expect(tokenParams.capability) == "{\"*\":[\"*\"]}"
             }
+            
+            // RSA7
+            fit("should encode the clientId with utf8") {
+                let clientId = "🚀"
+                
+                //clientId.utf8
+                //clientId.utf16
+                
+                let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                let params = ARTAuthTokenParams()
+                params.clientId = clientId
+                
+                // ?!
+                //options.clientId = clientId
+                
+                let client = ARTRest(options: options)
+                client.httpExecutor = mockExecutor
+                
+                client.auth.requestToken(params, withOptions: nil) { tokenDetails, error in }
+                
+                expect(mockExecutor.requests.first).toEventuallyNot(beNil(), timeout: 5, description: "No request found")
+                expect(mockExecutor.requests.first!.HTTPBody).toNot(beNil(), description: "No body")
+                
+                if let request = mockExecutor.requests.first,
+                    body = request.HTTPBody,
+                    json = try? NSJSONSerialization.JSONObjectWithData(body, options: .MutableLeaves),
+                    httpBody = json as? NSDictionary {
+
+                    print(httpBody["clientId"])
+                }
+            }
 
         }
         

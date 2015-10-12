@@ -29,10 +29,12 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 
 @interface ARTAuth : NSObject
 
-@property (nonatomic, weak) ARTLog *logger;
 @property (nonatomic, readonly, strong) ARTAuthOptions *options;
-@property (nonatomic, readonly, strong) ARTAuthTokenDetails *tokenDetails;
 @property (nonatomic, readonly, assign) ARTAuthMethod method;
+
+@property (nonatomic, weak) ARTLog *logger;
+
+@property (nonatomic, readonly, strong) ARTAuthTokenDetails *tokenDetails;
 
 - (instancetype)init:(ARTRest *)rest withOptions:(ARTClientOptions *)options;
 

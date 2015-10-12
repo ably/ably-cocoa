@@ -29,6 +29,8 @@
         _options = options;
         _logger = rest.logger;
         
+        //options.clientId
+        
         if ([options isBasicAuth]) {
             if (!options.tls) {
                 [NSException raise:@"ARTAuthException" format:@"Basic authentication only connects over HTTPS (tls)."];
@@ -131,7 +133,7 @@
         ARTAuthCallback tokenRequestFactory = mergedOptions.authCallback? : ^(ARTAuthTokenParams *tokenParams, void(^callback)(ARTAuthTokenRequest *tokenRequest, NSError *error)) {
             [self createTokenRequest:currentTokenParams options:mergedOptions callback:callback];
         };
-        
+
         tokenRequestFactory(currentTokenParams, ^(ARTAuthTokenRequest *tokenRequest, NSError *error) {
             if (error) {
                 callback(nil, error);

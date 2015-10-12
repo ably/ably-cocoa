@@ -142,7 +142,6 @@ func getTestToken() -> String {
     client.auth.requestToken(nil, withOptions: nil) { tokenDetails, _error in
         token = tokenDetails?.token
         error = _error
-        return
     }
     
     while token == nil && error == nil {

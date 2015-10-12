@@ -65,7 +65,15 @@ ART_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, assign, nonatomic) BOOL queryTime;
 
+/**
+ Forces authentication with token.
+ */
 @property (readwrite, assign, nonatomic) BOOL useTokenAuth;
+
+/**
+ Indicates that a new token should be requested.
+ */
+@property (readwrite, assign, nonatomic) BOOL force;
 
 - (instancetype)init;
 - (instancetype)initWithKey:(NSString *)key;
