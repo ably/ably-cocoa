@@ -44,7 +44,7 @@ class Auth : QuickSpec {
                                 
                 let expectedAuthorization = "Basic \(key64!)"
                 
-                expect(mockExecutor.requests.first).toNot(beNil())
+                expect(mockExecutor.requests.first).toNot(beNil(), description: "No request found")
                 
                 let authorization = mockExecutor.requests.first?.allHTTPHeaderFields?["Authorization"] ?? ""
                 
@@ -62,7 +62,7 @@ class Auth : QuickSpec {
         describe("Token") {
             
             // RSA3a
-            fit("should work over HTTPS or HTTP") {
+            it("should work over HTTPS or HTTP") {
                 let options = ARTClientOptions()
                 options.token = getTestToken()
                 
@@ -95,6 +95,7 @@ class Auth : QuickSpec {
                 }
             }
             
+            // RSA3b
             it("should send the token in the Authorization header") {
                 let options = ARTClientOptions()
                 options.token = getTestToken()
@@ -103,7 +104,7 @@ class Auth : QuickSpec {
 
                 publishTestMessage(client, failOnError: false)
                 
-                expect(client.options.token).toNot(beNil())
+                expect(client.options.token).toNot(beNil(), description: "No access token")
                 
                 if let currentToken = client.options.token {
                     let token64 = NSString(string: currentToken)
@@ -112,18 +113,21 @@ class Auth : QuickSpec {
                     
                     let expectedAuthorization = "Bearer \(token64!)"
                     
-                    expect(mockExecutor.requests.first).toNot(beNil())
+                    expect(mockExecutor.requests.first).toNot(beNil(), description: "No request found")
                     
                     let authorization = mockExecutor.requests.first?.allHTTPHeaderFields?["Authorization"] ?? ""
                     
                     expect(authorization).to(equal(expectedAuthorization))
                 }
             }
+            
+            // RSA3c
+            //TODO: not implemented
 
             // RSA4
             context("authentication method") {
                 let cases: [String: (ARTAuthOptions) -> ()] = [
-                    "useBasicAuth": { $0.key = "fake:key" },
+                    "useTokenAuth": { $0.useTokenAuth = true; $0.key = "fake:key" },
                     "authUrl": { $0.authUrl = NSURL(string: "http://test.com") },
                     "authCallback": { $0.authCallback = { _, _ in return } },
                     "token": { $0.token = "" }
@@ -140,6 +144,7 @@ class Auth : QuickSpec {
                     }
                 }
             }
+
         }
         
         // RSA8

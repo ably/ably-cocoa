@@ -65,6 +65,8 @@ ART_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, assign, nonatomic) BOOL queryTime;
 
+@property (readwrite, assign, nonatomic) BOOL useTokenAuth;
+
 - (instancetype)init;
 - (instancetype)initWithKey:(NSString *)key;
 - (instancetype)initDefaults;

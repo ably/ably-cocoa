@@ -44,6 +44,9 @@
         } else if (options.authCallback) {
             [self.logger debug:@"ARTAuth: setting up auth method Token with authCallback"];
             _method = ARTAuthMethodToken;
+        } else if (options.key && options.useTokenAuth) {
+            [self.logger debug:@"ARTAuth: setting up auth method Token with key"];
+            _method = ARTAuthMethodToken;
         } else {
             [NSException raise:@"ARTAuthException" format:@"Could not setup authentication method with given options."];
         }
