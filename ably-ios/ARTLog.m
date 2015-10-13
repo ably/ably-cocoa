@@ -43,6 +43,31 @@ static const char *logLevelName(ARTLogLevel level) {
     }
 }
 
+- (ARTLog *)verbose {
+    self.logLevel = ARTLogLevelVerbose;
+    return self;
+}
+
+- (ARTLog *)debug {
+    self.logLevel = ARTLogLevelDebug;
+    return self;
+}
+
+- (ARTLog *)warn {
+    self.logLevel = ARTLogLevelWarn;
+    return self;
+}
+
+- (ARTLog *)info {
+    self.logLevel = ARTLogLevelInfo;
+    return self;
+}
+
+- (ARTLog *)error {
+    self.logLevel = ARTLogLevelError;
+    return self;
+}
+
 - (void)verbose:(NSString *)format, ... {
     va_list args;
     va_start(args, format);

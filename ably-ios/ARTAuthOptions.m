@@ -57,6 +57,8 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
     options.authHeaders = self.authHeaders;
     options.authParams = self.authParams;
     options.queryTime = self.queryTime;
+    options.useTokenAuth = self.useTokenAuth;
+    options.force = self.force;
     
     return options;
 }
@@ -99,6 +101,10 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
         merged.authParams = precedenceOptions.authParams;
     if (precedenceOptions.queryTime)
         merged.queryTime = precedenceOptions.queryTime;
+    if (precedenceOptions.useTokenAuth)
+        merged.useTokenAuth = precedenceOptions.useTokenAuth;
+    if (precedenceOptions.force)
+        merged.force = precedenceOptions.force;
     
     return merged;
 }

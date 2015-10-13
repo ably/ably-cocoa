@@ -28,17 +28,12 @@
 
 - (instancetype)initDefaults {
     self = [super initDefaults];
-    _clientId = nil;
     _restPort = [ARTDefault TLSPort];
     _realtimePort = [ARTDefault TLSPort];
     _queueMessages = YES;
-    _connectionSerial = 0;
     _echoMessages = YES;
-    _recover = nil;
     _binary = false;
     _autoConnect = true;
-    _resumeKey = nil;
-    _environment = nil;
     _tls = YES;
     return self;
 }

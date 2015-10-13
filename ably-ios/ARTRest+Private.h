@@ -43,4 +43,6 @@ typedef NS_ENUM(NSUInteger, ARTAuthentication) {
 
 - (id<ARTCancellable>)postTestStats:(NSArray *)stats cb:(void(^)(ARTStatus * status)) cb;
 
+- (void)authorise:(ARTTokenCallback)completion;
+
 @end

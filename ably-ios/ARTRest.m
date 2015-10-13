@@ -27,6 +27,7 @@
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTRestChannel.h"
+#import "ARTAuthTokenParams.h"
 
 @interface ARTRest ()
 
@@ -80,6 +81,12 @@
 
 - (instancetype)initWithKey:(NSString *) key {
     return [self initWithOptions:[[ARTClientOptions alloc] initWithKey:key]];
+}
+
+- (void)authorise:(ARTTokenCallback)completion {
+    ARTAuthTokenParams *tokenParams = [[ARTAuthTokenParams alloc] init];
+    tokenParams.clientId = self.options.clientId;
+    [self.auth authorise:tokenParams options:self.options force:NO callback:completion];
 }
 
 - (void)executeRequest:(NSMutableURLRequest *)request callback:(void (^)(NSHTTPURLResponse *, NSData *, NSError *))callback {

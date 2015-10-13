@@ -36,6 +36,7 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 
 @property (nonatomic, readonly, strong) ARTAuthTokenDetails *tokenDetails;
 
+// FIXME: review (Why rest?)
 - (instancetype)init:(ARTRest *)rest withOptions:(ARTClientOptions *)options;
 
 /**
@@ -51,10 +52,10 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
  - Parameter callback: Completion callback (ARTAuthTokenDetails, NSError).
  */
 - (void)requestToken:(art_nullable ARTAuthTokenParams *)tokenParams withOptions:(art_nullable ARTAuthOptions *)authOptions
-            callback:(void (^)(ARTAuthTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error))callback;
+            callback:(ARTTokenCallback)callback;
 
 - (void)authorise:(art_nullable ARTAuthTokenParams *)tokenParams options:(art_nullable ARTAuthOptions *)options force:(BOOL)force
-         callback:(void (^)(ARTAuthTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error))callback;
+         callback:(ARTTokenCallback)callback;
 
 - (void)createTokenRequest:(art_nullable ARTAuthTokenParams *)tokenParams options:(art_nullable ARTAuthOptions *)options
                   callback:(void (^)(ARTAuthTokenRequest *__art_nullable tokenRequest, NSError *__art_nullable error))callback;

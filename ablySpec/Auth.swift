@@ -165,6 +165,33 @@ class Auth : QuickSpec {
                 }
             }
             
+            // RSA15
+            fit("should check clientId consistency") {
+                let expectedClientId = "client_string"
+                let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                options.clientId = expectedClientId
+                
+                let client = ARTRest(options: options)
+                client.httpExecutor = mockExecutor
+                
+                waitUntil(timeout: 10) { done in
+                    client.authorise { tokenDetails, error in
+                        expect(tokenDetails).toNot(beNil(), description: "TokenDetails is nil")
+                        expect(tokenDetails?.clientId).to(equal(expectedClientId))
+                        done()
+                    }
+                }
+                
+                // TODO: reuse
+                guard let request = mockExecutor.requests.first else { XCTFail("No request found"); return }
+                guard let bodyData = request.HTTPBody else { XCTFail("No HTTPBody"); return }
+                guard let json = try? NSJSONSerialization.JSONObjectWithData(bodyData, options: .MutableLeaves) else { XCTFail("Invalid json"); return }
+                guard let httpBody = json as? NSDictionary else { XCTFail("HTTPBody has invalid format"); return }
+                guard let requestedClientId = httpBody["clientId"] as? String else { XCTFail("No clientId field in HTTPBody"); return }
+
+                expect(requestedClientId).to(equal(expectedClientId))
+            }
+            
             // RSA5
             it("should use one hour default time to live") {
                 let tokenParams = ARTAuthTokenParams()
@@ -178,35 +205,7 @@ class Auth : QuickSpec {
             }
             
             // RSA7
-            fit("should encode the clientId with utf8") {
-                let clientId = "🚀"
-                
-                //clientId.utf8
-                //clientId.utf16
-                
-                let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-                let params = ARTAuthTokenParams()
-                params.clientId = clientId
-                
-                // ?!
-                //options.clientId = clientId
-                
-                let client = ARTRest(options: options)
-                client.httpExecutor = mockExecutor
-                
-                client.auth.requestToken(params, withOptions: nil) { tokenDetails, error in }
-                
-                expect(mockExecutor.requests.first).toEventuallyNot(beNil(), timeout: 5, description: "No request found")
-                expect(mockExecutor.requests.first!.HTTPBody).toNot(beNil(), description: "No body")
-                
-                if let request = mockExecutor.requests.first,
-                    body = request.HTTPBody,
-                    json = try? NSJSONSerialization.JSONObjectWithData(body, options: .MutableLeaves),
-                    httpBody = json as? NSDictionary {
-
-                    print(httpBody["clientId"])
-                }
-            }
+            //TODO
 
         }
         
