@@ -41,7 +41,7 @@
             [self.logger debug:@"ARTAuth: setting up auth method Token with supplied token only"];
             _method = ARTAuthMethodToken;
         } else if (options.authUrl && options.authCallback) {
-            [NSException raise:@"ARTAuthException" format:@"Could not setup authentication method with given options."];
+            [NSException raise:@"ARTAuthException" format:@"Incompatible authentication configuration: please specify either authCallback and authUrl."];
         } else if (options.authUrl) {
             [self.logger debug:@"ARTAuth: setting up auth method Token with authUrl"];
             _method = ARTAuthMethodToken;
