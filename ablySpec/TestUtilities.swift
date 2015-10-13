@@ -51,7 +51,7 @@ class AblyTests {
 
         let request = NSMutableURLRequest(URL: NSURL(string: "https://\(options.restHost):\(options.restPort)/apps")!)
         request.HTTPMethod = "POST"
-        request.HTTPBody = appSetupJson["post_apps"].rawData()
+        request.HTTPBody = try? appSetupJson["post_apps"].rawData()
 
         request.allHTTPHeaderFields = [
             "Accept" : "application/json",
@@ -66,7 +66,7 @@ class AblyTests {
             }.resume()
 
         while !requestCompleted {
-            CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Boolean(0))
+            CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Bool(0))
         }
 
         if let error = responseError {
@@ -90,7 +90,7 @@ class AblyTests {
     
 }
 
-func querySyslog(forLogsAfter startingTime: NSDate? = nil) -> GeneratorOf<String> {
+func querySyslog(forLogsAfter startingTime: NSDate? = nil) -> AnyGenerator<String> {
     let query = asl_new(UInt32(ASL_TYPE_QUERY))
     asl_set_query(query, ASL_KEY_SENDER, NSProcessInfo.processInfo().processName, UInt32(ASL_QUERY_OP_EQUAL))
     if let date = startingTime {
@@ -98,7 +98,7 @@ func querySyslog(forLogsAfter startingTime: NSDate? = nil) -> GeneratorOf<String
     }
 
     let response = asl_search(nil, query)
-    return GeneratorOf<String> {
+    return anyGenerator {
         let entry = asl_next(response)
         if entry != nil {
             return String.fromCString(asl_get(entry, ASL_KEY_MSG))
@@ -146,17 +146,20 @@ func getTestToken() -> String {
     }
     
     while token == nil && error == nil {
-        CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Boolean(0))
+        CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Bool(0))
     }
     
+    if let e = error {
+        XCTFail(e.description)
+    }
     return token ?? ""
 }
 
-@objc
 /*
  Records each request for test purpose.
  */
-class MockHTTPExecutor: ARTHTTPExecutor {
+@objc
+class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
     // Who executes the request
     private let executor = ARTHttp()
     

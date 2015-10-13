@@ -8,7 +8,6 @@
 
 import Nimble
 import Quick
-import Runes
 
 import ably
 import ably.Private
@@ -39,8 +38,6 @@ class Auth : QuickSpec {
                 
                 publishTestMessage(client, failOnError: false)
                 
-                expect(client.options.key).toNot(beNil())
-                
                 let key64 = NSString(string: "\(client.options.key!)")
                     .dataUsingEncoding(NSUTF8StringEncoding)?
                     .base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0))
@@ -49,7 +46,7 @@ class Auth : QuickSpec {
                 
                 expect(mockExecutor.requests.first).toNot(beNil())
                 
-                let authorization = mockExecutor.requests.first?.allHTTPHeaderFields?["Authorization"] as? String ?? ""
+                let authorization = mockExecutor.requests.first?.allHTTPHeaderFields?["Authorization"] ?? ""
                 
                 expect(authorization).to(equal(expectedAuthorization))
             }
@@ -69,20 +66,32 @@ class Auth : QuickSpec {
                 let options = ARTClientOptions()
                 options.token = getTestToken()
                 
-                expect(options.token!.isEmpty) == false
-                
-                let client = ARTRest(options: options)
+                // Check HTTP
                 options.tls = false
+                let clientHTTP = ARTRest(options: options)
+                clientHTTP.httpExecutor = mockExecutor
                 
-                client.httpExecutor = mockExecutor
+                publishTestMessage(clientHTTP, failOnError: false)
                 
-                publishTestMessage(client, failOnError: false)
-                
-                expect(mockExecutor.requests.first).toNot(beNil())
-                expect(mockExecutor.requests.first?.URL).toNot(beNil())
+                expect(mockExecutor.requests.first).toNot(beNil(), description: "No request found")
+                expect(mockExecutor.requests.first?.URL).toNot(beNil(), description: "Request is invalid")
                 
                 if let request = mockExecutor.requests.first, let url = request.URL {
-                    expect(url.scheme).to(equal("http"))
+                    expect(url.scheme).to(equal("http"), description: "No HTTP support")
+                }
+                
+                // Check HTTPS
+                options.tls = true
+                let clientHTTPS = ARTRest(options: options)
+                clientHTTPS.httpExecutor = mockExecutor
+                
+                publishTestMessage(clientHTTPS, failOnError: false)
+                
+                expect(mockExecutor.requests.last).toNot(beNil(), description: "No request found")
+                expect(mockExecutor.requests.last?.URL).toNot(beNil(), description: "Request is invalid")
+                
+                if let request = mockExecutor.requests.last, let url = request.URL {
+                    expect(url.scheme).to(equal("https"), description: "No HTTPS support")
                 }
             }
             
@@ -105,7 +114,7 @@ class Auth : QuickSpec {
                     
                     expect(mockExecutor.requests.first).toNot(beNil())
                     
-                    let authorization = mockExecutor.requests.first?.allHTTPHeaderFields?["Authorization"] as? String ?? ""
+                    let authorization = mockExecutor.requests.first?.allHTTPHeaderFields?["Authorization"] ?? ""
                     
                     expect(authorization).to(equal(expectedAuthorization))
                 }
@@ -187,10 +196,10 @@ class Auth : QuickSpec {
                         
                         let request = rest.auth.buildRequest(clientOptions, withParams: tokenParams)
                         
-                        let httpBodyJSON = request.HTTPBody >>- JSONToDictionary
+                        let httpBodyJSON = try! NSJSONSerialization.JSONObjectWithData(request.HTTPBody ?? NSData(), options: .MutableLeaves) as? NSDictionary
                         
-                        expect(httpBodyJSON).toNot(beNil())
-                        expect(httpBodyJSON!["timestamp"]).toNot(beNil())
+                        expect(httpBodyJSON).toNot(beNil(), description: "HTTPBody is empty")
+                        expect(httpBodyJSON!["timestamp"]).toNot(beNil(), description: "HTTPBody has no timestamp")
                         
                         let expectedJSON = ["ttl":NSString(format: "%f", CGFloat(60*60)), "capability":"{ \"*\": [ \"*\" ] }", "timestamp":httpBodyJSON!["timestamp"]!]
                         

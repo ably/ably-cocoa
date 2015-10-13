@@ -53,6 +53,7 @@ enum {
         _closing = NO;
         _encoder = rest.defaultEncoder;
 
+        /*
         __weak ARTWebSocketTransport *wSelf = self;
         __weak ARTRest *wRest = rest;
         _logger = rest.logger;
@@ -62,7 +63,11 @@ enum {
 
         NSString *realtimeHost = options.realtimeHost;
         int realtimePort = options.realtimePort;
+         */
 
+        NSAssert(false, @"WIP: Realtime sould be extending from RestClient");
+        
+        /*
         [rest withAuthParams:^id<ARTCancellable>(NSDictionary *authParams) {
             ARTWebSocketTransport *sSelf = wSelf;
             ARTRest *sRest = wRest;
@@ -105,6 +110,7 @@ enum {
             [sSelf.websocket setDelegateDispatchQueue:sSelf.q];
             return nil;
         }];
+        */
     }
     return self;
 }
