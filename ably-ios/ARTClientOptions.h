@@ -8,16 +8,11 @@
 
 #import <Foundation/Foundation.h>
 #import "ARTAuthOptions.h"
+#import "ARTLog.h"
 
 ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTClientOptions : ARTAuthOptions
-
-/**
- The id of the client represented by this instance.
- The clientId is relevant to presence operations, where the clientId is the principal identifier of the client in presence update messages. The clientId is also relevant to authentication; a token issued for a specific client may be used to authenticate the bearer of that token to the service.
- */
-@property (readwrite, strong, nonatomic) NSString *clientId;
 
 @property (readonly, getter=getRestHost) NSString *restHost;
 @property (readonly, getter=getRealtimeHost) NSString *realtimeHost;
@@ -26,6 +21,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, nonatomic) int realtimePort;
 @property (readwrite, strong, nonatomic) NSString *environment;
 @property (nonatomic, assign) BOOL tls;
+@property (nonatomic, assign) ARTLogLevel logLevel;
 
 @property (readwrite, assign, nonatomic) BOOL queueMessages;
 @property (readwrite, assign, nonatomic) BOOL echoMessages;

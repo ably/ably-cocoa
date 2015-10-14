@@ -59,6 +59,10 @@
             _logger = [[ARTLog alloc] init];
         }
         
+        if (options.logLevel != ARTLogLevelNone) {            
+            _logger.logLevel = options.logLevel;
+        }
+        
         _http = [[ARTHttp alloc] init];
         _httpExecutor = _http;
         _httpExecutor.logger = _logger;

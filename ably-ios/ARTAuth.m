@@ -227,4 +227,21 @@
     }
 }
 
+- (NSString *)getClientId {
+    if (self.tokenDetails) {
+        // Check wildcard
+        if ([self.tokenDetails.clientId isEqual:@"*"])
+            // Any client
+            return nil;
+        else
+            return self.tokenDetails.clientId;
+    }
+    else if (self.options) {
+        return self.options.clientId;
+    }
+    else {
+        return nil;
+    }
+}
+
 @end

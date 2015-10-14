@@ -43,7 +43,7 @@ class AblyTests {
         }
     }
 
-    class func setupOptions(options: ARTClientOptions) -> ARTClientOptions {
+    class func setupOptions(options: ARTClientOptions, debug: Bool = false) -> ARTClientOptions {
         var responseError: NSError?
         var responseData: NSData?
 
@@ -73,6 +73,11 @@ class AblyTests {
             XCTFail(error.localizedDescription)
         } else if let data = responseData {
             let response = JSON(data: data)
+            
+            if debug {
+                print(response)
+                options.logLevel = .Verbose
+            }
             
             let key = response["keys"][0]
 
@@ -111,7 +116,7 @@ func querySyslog(forLogsAfter startingTime: NSDate? = nil) -> AnyGenerator<Strin
 }
 
 /*
- 
+ Publish message
  */
 class PublishTestMessage {
     var error: NSError?
@@ -154,6 +159,44 @@ func getTestToken() -> String {
     return token ?? ""
 }
 
+// TODO: after merge use robrix/Box
+class Box<T> {
+    let unbox: T
+    init(_ value: T) {
+        self.unbox = value
+    }
+}
+
+// TODO: after merge use antitypical/Result
+enum Result<T> {
+    case Success(Box<T>)
+    case Failure(String)
+    /// Constructs a success wrapping a `value`.
+    init(value: Box<T>) {
+        self = .Success(value)
+    }
+    /// Constructs a failure wrapping an `error`.
+    init(error: String) {
+        self = .Failure(error)
+    }
+}
+
+func extractBodyAsJSON(request: NSMutableURLRequest?) -> Result<NSDictionary> {
+    guard let request = request
+        else { return Result(error: "No request found") }
+    
+    guard let bodyData = request.HTTPBody
+        else { return Result(error: "No HTTPBody") }
+    
+    guard let json = try? NSJSONSerialization.JSONObjectWithData(bodyData, options: .MutableLeaves)
+        else { return Result(error: "Invalid json") }
+    
+    guard let httpBody = json as? NSDictionary
+        else { return Result(error: "HTTPBody has invalid format") }
+
+    return Result.Success(Box(httpBody))
+}
+
 /*
  Records each request for test purpose.
  */
@@ -169,5 +212,5 @@ class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
     func executeRequest(request: NSMutableURLRequest!, callback: ((NSHTTPURLResponse!, NSData!, NSError!) -> Void)!) {
         self.requests.append(request)
         self.executor.executeRequest(request, callback: callback)
-    }
+    }    
 }

@@ -34,7 +34,8 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 
 @property (nonatomic, weak) ARTLog *logger;
 
-@property (nonatomic, readonly, strong) ARTAuthTokenDetails *tokenDetails;
+@property (art_nullable, readonly, getter=getClientId) NSString *clientId;
+@property (art_nullable, nonatomic, readonly, strong) ARTAuthTokenDetails *tokenDetails;
 
 // FIXME: review (Why rest?)
 - (instancetype)init:(ARTRest *)rest withOptions:(ARTClientOptions *)options;
