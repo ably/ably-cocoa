@@ -29,32 +29,40 @@
         _options = options;
         _logger = rest.logger;
         
-        if ([options isBasicAuth]) {
-            if (!options.tls) {
-                [NSException raise:@"ARTAuthException" format:@"Basic authentication only connects over HTTPS (tls)."];
-            }
-            [self.logger debug:@"ARTAuth: setting up auth method Basic"];
-            _method = ARTAuthMethodBasic;
-        } else if (options.tokenDetails) {
-            [self.logger debug:@"ARTAuth: setting up auth method Token with supplied token only"];
-            _method = ARTAuthMethodToken;
-        } else if (options.authUrl && options.authCallback) {
-            [NSException raise:@"ARTAuthException" format:@"Incompatible authentication configuration: please specify either authCallback and authUrl."];
-        } else if (options.authUrl) {
-            [self.logger debug:@"ARTAuth: setting up auth method Token with authUrl"];
-            _method = ARTAuthMethodToken;
-        } else if (options.authCallback) {
-            [self.logger debug:@"ARTAuth: setting up auth method Token with authCallback"];
-            _method = ARTAuthMethodToken;
-        } else if (options.key && options.useTokenAuth) {
-            [self.logger debug:@"ARTAuth: setting up auth method Token with key"];
-            _method = ARTAuthMethodToken;
-        } else {
-            [NSException raise:@"ARTAuthException" format:@"Could not setup authentication method with given options."];
-        }
+        [self validate:options];
     }
     
     return self;
+}
+
+- (void)validate:(ARTClientOptions *)options {
+    if ([options isBasicAuth]) {
+        if (!options.tls) {
+            [NSException raise:@"ARTAuthException" format:@"Basic authentication only connects over HTTPS (tls)."];
+        }
+        [self.logger debug:@"ARTAuth: setting up auth method Basic"];
+        _method = ARTAuthMethodBasic;
+    } else if (options.tokenDetails) {
+        [self.logger debug:@"ARTAuth: setting up auth method Token with supplied token only"];
+        _method = ARTAuthMethodToken;
+    } else if (options.authUrl && options.authCallback) {
+        [NSException raise:@"ARTAuthException" format:@"Incompatible authentication configuration: please specify either authCallback and authUrl."];
+    } else if (options.authUrl) {
+        [self.logger debug:@"ARTAuth: setting up auth method Token with authUrl"];
+        _method = ARTAuthMethodToken;
+    } else if (options.authCallback) {
+        [self.logger debug:@"ARTAuth: setting up auth method Token with authCallback"];
+        _method = ARTAuthMethodToken;
+    } else if (options.key && options.useTokenAuth) {
+        [self.logger debug:@"ARTAuth: setting up auth method Token with key"];
+        _method = ARTAuthMethodToken;
+    } else {
+        [NSException raise:@"ARTAuthException" format:@"Could not setup authentication method with given options."];
+    }
+    
+    if ([options.clientId isEqual:@"*"]) {
+        [NSException raise:@"ARTAuthException" format:@"Invalid clientId: cannot contain only a wilcard \"*\"."];
+    }
 }
 
 - (ARTAuthOptions *)mergeOptions:(ARTAuthOptions *)customOptions {
