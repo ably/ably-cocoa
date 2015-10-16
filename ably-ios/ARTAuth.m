@@ -40,20 +40,30 @@
         if (!options.tls) {
             [NSException raise:@"ARTAuthException" format:@"Basic authentication only connects over HTTPS (tls)."];
         }
-        [self.logger debug:@"ARTAuth: setting up auth method Basic"];
+        // Basic
+        [self.logger debug:@"ARTAuth: setting up auth method Basic (anonymous)"];
         _method = ARTAuthMethodBasic;
     } else if (options.tokenDetails) {
+        // TokenDetails
+        [self.logger debug:@"ARTAuth: setting up auth method Token with token details"];
+        _method = ARTAuthMethodToken;
+    } else if (options.token) {
+        // Token
         [self.logger debug:@"ARTAuth: setting up auth method Token with supplied token only"];
         _method = ARTAuthMethodToken;
+        options.tokenDetails = [[ARTAuthTokenDetails alloc] initWithToken:options.token];
     } else if (options.authUrl && options.authCallback) {
         [NSException raise:@"ARTAuthException" format:@"Incompatible authentication configuration: please specify either authCallback and authUrl."];
     } else if (options.authUrl) {
+        // Authentication url
         [self.logger debug:@"ARTAuth: setting up auth method Token with authUrl"];
         _method = ARTAuthMethodToken;
     } else if (options.authCallback) {
+        // Authentication callback
         [self.logger debug:@"ARTAuth: setting up auth method Token with authCallback"];
         _method = ARTAuthMethodToken;
-    } else if (options.key && options.useTokenAuth) {
+    } else if (options.key) {
+        // Token
         [self.logger debug:@"ARTAuth: setting up auth method Token with key"];
         _method = ARTAuthMethodToken;
     } else {
@@ -221,23 +231,6 @@
         }];
     } else {
         callback([tokenParams sign:mergedOptions.key], nil);
-    }
-}
-
-- (BOOL)canRequestToken {
-    // FIXME: not used?!
-    if (self.options.authCallback) {
-        [self.logger verbose:@"ARTAuth can request token via authCallback"];
-        return YES;
-    } else if (self.options.authUrl) {
-        [self.logger verbose:@"ARTAuth can request token via authURL"];
-        return YES;
-    } else if (self.options.key) {
-        [self.logger verbose:@"ARTAuth can request token via key"];
-        return YES;
-    } else {
-        [self.logger error:@"ARTAuth cannot request token"];
-        return NO;
     }
 }
 

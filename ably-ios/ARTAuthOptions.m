@@ -108,7 +108,7 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
 }
 
 - (BOOL)isBasicAuth {
-    return self.key != nil && !self.useTokenAuth;
+    return self.useTokenAuth == false && self.key != nil && self.clientId == nil;
 }
 
 - (BOOL)isMethodPOST {
