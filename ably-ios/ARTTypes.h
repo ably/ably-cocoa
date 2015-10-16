@@ -40,6 +40,11 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
 
 ART_ASSUME_NONNULL_BEGIN
 
+/// Decompose API key
+__GENERIC(NSArray, NSString *) *decomposeKey(NSString *key);
+
+// MARK: Callbacks definitions
+
 typedef void (^ARTRealtimeChannelMessageCb)(ARTMessage *);
 
 typedef void (^ARTRealtimeChannelStateCb)(ARTRealtimeChannelState, ARTStatus *);

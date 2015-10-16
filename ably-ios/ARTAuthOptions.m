@@ -10,10 +10,6 @@
 
 #import "ARTAuthTokenDetails.h"
 
-static __GENERIC(NSArray, NSString *) *decomposeKey(NSString *key) {
-    return [key componentsSeparatedByString:@":"];
-}
-
 @implementation ARTAuthOptions
 
 NSString *const ARTAuthOptionsMethodDefault = @"GET";

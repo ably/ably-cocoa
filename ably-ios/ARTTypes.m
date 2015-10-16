@@ -8,6 +8,14 @@
 
 #import "ARTTypes.h"
 
+// MARK: Global helper functions
+
+__GENERIC(NSArray, NSString *) *decomposeKey(NSString *key) {
+    return [key componentsSeparatedByString:@":"];
+}
+
+// MARK: ARTIndirectCancellable
+
 @interface ARTIndirectCancellable ()
 
 @property (readwrite, assign, nonatomic) BOOL isCancelled;
