@@ -52,18 +52,34 @@ ART_ASSUME_NONNULL_BEGIN
 /**
  Headers to be included in any request made by the library to the authURL.
  */
-@property (nonatomic, copy, art_nullable) NSDictionary *authHeaders; //X7: NSDictionary<NSString *, NSString *> *authHeaders;
+@property (nonatomic, copy, art_nullable) __GENERIC(NSDictionary, NSString *, NSString *) *authHeaders;
 
 /**
  Additional params to be included in any request made by the library to the authUrl, either as query params in the case of GET or in the body in the case of POST.
  */
-@property (nonatomic, copy, art_nullable) NSArray *authParams; //X7: NSArray<NSURLQueryItem *> *authParams;
+@property (nonatomic, copy, art_nullable) __GENERIC(NSArray, NSURLQueryItem *) *authParams;
 
 /**
  This may be set in instances that the library is to sign token requests based on a given key.
  If true, the library will query the Ably system for the current time instead of relying on a locally-available time of day.
  */
 @property (nonatomic, assign, nonatomic) BOOL queryTime;
+
+/**
+ Forces authentication with token.
+ */
+@property (readwrite, assign, nonatomic) BOOL useTokenAuth;
+
+/**
+ Indicates that a new token should be requested.
+ */
+@property (readwrite, assign, nonatomic) BOOL force;
+
+/**
+ The id of the client represented by this instance.
+ The clientId is relevant to presence operations, where the clientId is the principal identifier of the client in presence update messages. The clientId is also relevant to authentication; a token issued for a specific client may be used to authenticate the bearer of that token to the service.
+ */
+@property (readwrite, strong, nonatomic) NSString *clientId;
 
 - (instancetype)init;
 - (instancetype)initWithKey:(NSString *)key;

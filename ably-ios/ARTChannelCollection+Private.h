@@ -16,7 +16,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTChannelCollection() {
 @protected
-    NSMutableDictionary /* <NSString *, ARTChannel *> */ *_channels;
+    __GENERIC(NSMutableDictionary, NSString *, ARTChannel *) *_channels; //FIXME: remove underscore
 }
 
 @property (nonatomic, readonly) NSMutableDictionary *channels;

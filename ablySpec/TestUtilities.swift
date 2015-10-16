@@ -43,7 +43,7 @@ class AblyTests {
         }
     }
 
-    class func setupOptions(options: ARTClientOptions) -> ARTClientOptions {
+    class func setupOptions(options: ARTClientOptions, debug: Bool = false) -> ARTClientOptions {
         var responseError: NSError?
         var responseData: NSData?
 
@@ -73,6 +73,11 @@ class AblyTests {
             XCTFail(error.localizedDescription)
         } else if let data = responseData {
             let response = JSON(data: data)
+            
+            if debug {
+                print(response)
+                options.logLevel = .Verbose
+            }
             
             let key = response["keys"][0]
 
@@ -110,9 +115,7 @@ func querySyslog(forLogsAfter startingTime: NSDate? = nil) -> AnyGenerator<Strin
     }
 }
 
-/*
- 
- */
+/// Publish message class
 class PublishTestMessage {
     var error: NSError?
     
@@ -128,10 +131,12 @@ class PublishTestMessage {
     }
 }
 
+/// Publish message
 func publishTestMessage(client: ARTRest, failOnError: Bool = true) -> PublishTestMessage {
     return PublishTestMessage(client: client, failOnError: failOnError)
 }
 
+/// Access Token
 func getTestToken() -> String {
     let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
     let client = ARTRest(options: options)
@@ -142,7 +147,6 @@ func getTestToken() -> String {
     client.auth.requestToken(nil, withOptions: nil) { tokenDetails, _error in
         token = tokenDetails?.token
         error = _error
-        return
     }
     
     while token == nil && error == nil {
@@ -153,6 +157,54 @@ func getTestToken() -> String {
         XCTFail(e.description)
     }
     return token ?? ""
+}
+
+// TODO: after merge use robrix/Box
+class Box<T> {
+    let unbox: T
+    init(_ value: T) {
+        self.unbox = value
+    }
+}
+
+// TODO: after merge use antitypical/Result
+enum Result<T> {
+    case Success(Box<T>)
+    case Failure(String)
+    /// Constructs a success wrapping a `value`.
+    init(value: Box<T>) {
+        self = .Success(value)
+    }
+    /// Constructs a failure wrapping an `error`.
+    init(error: String) {
+        self = .Failure(error)
+    }
+}
+
+func extractURL(request: NSMutableURLRequest?) -> Result<NSURL> {
+    guard let request = request
+        else { return Result(error: "No request found") }
+    
+    guard let url = request.URL
+        else { return Result(error: "Request has no URL defined") }
+    
+    return Result.Success(Box(url))
+}
+
+func extractBodyAsJSON(request: NSMutableURLRequest?) -> Result<NSDictionary> {
+    guard let request = request
+        else { return Result(error: "No request found") }
+    
+    guard let bodyData = request.HTTPBody
+        else { return Result(error: "No HTTPBody") }
+    
+    guard let json = try? NSJSONSerialization.JSONObjectWithData(bodyData, options: .MutableLeaves)
+        else { return Result(error: "Invalid json") }
+    
+    guard let httpBody = json as? NSDictionary
+        else { return Result(error: "HTTPBody has invalid format") }
+
+    return Result.Success(Box(httpBody))
 }
 
 /*

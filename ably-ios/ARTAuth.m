@@ -29,27 +29,40 @@
         _options = options;
         _logger = rest.logger;
         
-        if ([options isBasicAuth]) {
-            if (!options.tls) {
-                [NSException raise:@"ARTAuthException" format:@"Basic authentication only connects over HTTPS (tls)."];
-            }
-            [self.logger debug:@"ARTAuth: setting up auth method Basic"];
-            _method = ARTAuthMethodBasic;
-        } else if (options.tokenDetails) {
-            [self.logger debug:@"ARTAuth: setting up auth method Token with supplied token only"];
-            _method = ARTAuthMethodToken;
-        } else if (options.authUrl) {
-            [self.logger debug:@"ARTAuth: setting up auth method Token with authUrl"];
-            _method = ARTAuthMethodToken;
-        } else if (options.authCallback) {
-            [self.logger debug:@"ARTAuth: setting up auth method Token with authCallback"];
-            _method = ARTAuthMethodToken;
-        } else {
-            [NSException raise:@"ARTAuthException" format:@"Could not setup authentication method with given options."];
-        }
+        [self validate:options];
     }
     
     return self;
+}
+
+- (void)validate:(ARTClientOptions *)options {
+    if ([options isBasicAuth]) {
+        if (!options.tls) {
+            [NSException raise:@"ARTAuthException" format:@"Basic authentication only connects over HTTPS (tls)."];
+        }
+        [self.logger debug:@"ARTAuth: setting up auth method Basic"];
+        _method = ARTAuthMethodBasic;
+    } else if (options.tokenDetails) {
+        [self.logger debug:@"ARTAuth: setting up auth method Token with supplied token only"];
+        _method = ARTAuthMethodToken;
+    } else if (options.authUrl && options.authCallback) {
+        [NSException raise:@"ARTAuthException" format:@"Incompatible authentication configuration: please specify either authCallback and authUrl."];
+    } else if (options.authUrl) {
+        [self.logger debug:@"ARTAuth: setting up auth method Token with authUrl"];
+        _method = ARTAuthMethodToken;
+    } else if (options.authCallback) {
+        [self.logger debug:@"ARTAuth: setting up auth method Token with authCallback"];
+        _method = ARTAuthMethodToken;
+    } else if (options.key && options.useTokenAuth) {
+        [self.logger debug:@"ARTAuth: setting up auth method Token with key"];
+        _method = ARTAuthMethodToken;
+    } else {
+        [NSException raise:@"ARTAuthException" format:@"Could not setup authentication method with given options."];
+    }
+    
+    if ([options.clientId isEqual:@"*"]) {
+        [NSException raise:@"ARTAuthException" format:@"Invalid clientId: cannot contain only a wilcard \"*\"."];
+    }
 }
 
 - (ARTAuthOptions *)mergeOptions:(ARTAuthOptions *)customOptions {
@@ -126,7 +139,7 @@
         ARTAuthCallback tokenRequestFactory = mergedOptions.authCallback? : ^(ARTAuthTokenParams *tokenParams, void(^callback)(ARTAuthTokenRequest *tokenRequest, NSError *error)) {
             [self createTokenRequest:currentTokenParams options:mergedOptions callback:callback];
         };
-        
+
         tokenRequestFactory(currentTokenParams, ^(ARTAuthTokenRequest *tokenRequest, NSError *error) {
             if (error) {
                 callback(nil, error);
@@ -169,16 +182,22 @@
          callback:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
     if (!force && self.tokenDetails && [self.tokenDetails.expires timeIntervalSinceNow] > 0) {
         [self.logger verbose:@"ARTAuth authorise not forced and current token is not expired yet, reuse current token."];
-        callback(self.tokenDetails, nil);
+        if (callback) {
+            callback(self.tokenDetails, nil);
+        }
     } else {
         [self.logger verbose:@"ARTAuth authorise requesting new token."];
         [self requestToken:tokenParams withOptions:options callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
             if (error) {
-                callback(nil, error);
+                if (callback) {
+                    callback(nil, error);
+                }
             } else {
                 _tokenDetails = tokenDetails;
                 _method = ARTAuthMethodToken;
-                callback(tokenDetails, nil);
+                if (callback) {
+                    callback(tokenDetails, nil);
+                }
             }
         }];
     }
@@ -206,6 +225,7 @@
 }
 
 - (BOOL)canRequestToken {
+    // FIXME: not used?!
     if (self.options.authCallback) {
         [self.logger verbose:@"ARTAuth can request token via authCallback"];
         return YES;
@@ -218,6 +238,23 @@
     } else {
         [self.logger error:@"ARTAuth cannot request token"];
         return NO;
+    }
+}
+
+- (NSString *)getClientId {
+    if (self.tokenDetails) {
+        // Check wildcard
+        if ([self.tokenDetails.clientId isEqual:@"*"])
+            // Any client
+            return nil;
+        else
+            return self.tokenDetails.clientId;
+    }
+    else if (self.options) {
+        return self.options.clientId;
+    }
+    else {
+        return nil;
     }
 }
 

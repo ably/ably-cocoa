@@ -15,6 +15,7 @@
 @class ARTPresenceMessage;
 @class ARTAuthTokenParams;
 @class ARTAuthTokenRequest;
+@class ARTAuthTokenDetails;
 
 typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
     ARTRealtimeInitialized,
@@ -51,11 +52,14 @@ typedef void (^ARTStatusCallback)(ARTStatus *status);
 
 typedef void (^ARTHttpCb)(ARTHttpResponse *response);
 
-typedef void (^ARTErrorCallback)(NSError *error);
+typedef void (^ARTErrorCallback)(NSError *__art_nullable error);
 
+// FIXME: review
 typedef void (^ARTAuthCallback)(ARTAuthTokenParams *tokenParams, void(^callback)(ARTAuthTokenRequest *__art_nullable tokenRequest, NSError *__art_nullable error));
 
-// FIXME:
+typedef void (^ARTTokenCallback)(ARTAuthTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error);
+
+// FIXME: review
 @protocol ARTCancellable
 - (void)cancel;
 @end
@@ -64,6 +68,7 @@ typedef void (^ARTAuthCallback)(ARTAuthTokenParams *tokenParams, void(^callback)
 - (void)unsubscribe;
 @end
 
+// FIXME: review
 @interface ARTIndirectCancellable : NSObject <ARTCancellable>
 
 @property (readwrite, strong, nonatomic) id<ARTCancellable> cancellable;

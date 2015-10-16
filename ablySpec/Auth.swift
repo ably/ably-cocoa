@@ -44,7 +44,7 @@ class Auth : QuickSpec {
                                 
                 let expectedAuthorization = "Basic \(key64!)"
                 
-                expect(mockExecutor.requests.first).toNot(beNil())
+                expect(mockExecutor.requests.first).toNot(beNil(), description: "No request found")
                 
                 let authorization = mockExecutor.requests.first?.allHTTPHeaderFields?["Authorization"] ?? ""
                 
@@ -61,69 +61,76 @@ class Auth : QuickSpec {
 
         describe("Token") {
             
-            // RSA3a
-            fit("should work over HTTPS or HTTP") {
-                let options = ARTClientOptions()
-                options.token = getTestToken()
-                
-                // Check HTTP
-                options.tls = false
-                let clientHTTP = ARTRest(options: options)
-                clientHTTP.httpExecutor = mockExecutor
-                
-                publishTestMessage(clientHTTP, failOnError: false)
-                
-                expect(mockExecutor.requests.first).toNot(beNil(), description: "No request found")
-                expect(mockExecutor.requests.first?.URL).toNot(beNil(), description: "Request is invalid")
-                
-                if let request = mockExecutor.requests.first, let url = request.URL {
-                    expect(url.scheme).to(equal("http"), description: "No HTTP support")
+            // RSA3
+            context("token auth") {
+                // RSA3a
+                it("should work over HTTPS or HTTP") {
+                    let options = ARTClientOptions()
+                    options.token = getTestToken()
+                    
+                    // Check HTTP
+                    options.tls = false
+                    let clientHTTP = ARTRest(options: options)
+                    clientHTTP.httpExecutor = mockExecutor
+                    
+                    publishTestMessage(clientHTTP, failOnError: false)
+                    
+                    expect(mockExecutor.requests.first).toNot(beNil(), description: "No request found")
+                    expect(mockExecutor.requests.first?.URL).toNot(beNil(), description: "Request is invalid")
+                    
+                    if let request = mockExecutor.requests.first, let url = request.URL {
+                        expect(url.scheme).to(equal("http"), description: "No HTTP support")
+                    }
+                    
+                    // Check HTTPS
+                    options.tls = true
+                    let clientHTTPS = ARTRest(options: options)
+                    clientHTTPS.httpExecutor = mockExecutor
+                    
+                    publishTestMessage(clientHTTPS, failOnError: false)
+                    
+                    expect(mockExecutor.requests.last).toNot(beNil(), description: "No request found")
+                    expect(mockExecutor.requests.last?.URL).toNot(beNil(), description: "Request is invalid")
+                    
+                    if let request = mockExecutor.requests.last, let url = request.URL {
+                        expect(url.scheme).to(equal("https"), description: "No HTTPS support")
+                    }
                 }
                 
-                // Check HTTPS
-                options.tls = true
-                let clientHTTPS = ARTRest(options: options)
-                clientHTTPS.httpExecutor = mockExecutor
-                
-                publishTestMessage(clientHTTPS, failOnError: false)
-                
-                expect(mockExecutor.requests.last).toNot(beNil(), description: "No request found")
-                expect(mockExecutor.requests.last?.URL).toNot(beNil(), description: "Request is invalid")
-                
-                if let request = mockExecutor.requests.last, let url = request.URL {
-                    expect(url.scheme).to(equal("https"), description: "No HTTPS support")
+                // RSA3b
+                it("should send the token in the Authorization header") {
+                    let options = ARTClientOptions()
+                    options.token = getTestToken()
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = mockExecutor
+                    
+                    publishTestMessage(client, failOnError: false)
+                    
+                    expect(client.options.token).toNot(beNil(), description: "No access token")
+                    
+                    if let currentToken = client.options.token {
+                        let token64 = NSString(string: currentToken)
+                            .dataUsingEncoding(NSUTF8StringEncoding)?
+                            .base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0))
+                        
+                        let expectedAuthorization = "Bearer \(token64!)"
+                        
+                        expect(mockExecutor.requests.first).toNot(beNil(), description: "No request found")
+                        
+                        let authorization = mockExecutor.requests.first?.allHTTPHeaderFields?["Authorization"] ?? ""
+                        
+                        expect(authorization).to(equal(expectedAuthorization))
+                    }
                 }
-            }
-            
-            it("should send the token in the Authorization header") {
-                let options = ARTClientOptions()
-                options.token = getTestToken()
-                let client = ARTRest(options: options)
-                client.httpExecutor = mockExecutor
-
-                publishTestMessage(client, failOnError: false)
                 
-                expect(client.options.token).toNot(beNil())
-                
-                if let currentToken = client.options.token {
-                    let token64 = NSString(string: currentToken)
-                        .dataUsingEncoding(NSUTF8StringEncoding)?
-                        .base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0))
-                    
-                    let expectedAuthorization = "Bearer \(token64!)"
-                    
-                    expect(mockExecutor.requests.first).toNot(beNil())
-                    
-                    let authorization = mockExecutor.requests.first?.allHTTPHeaderFields?["Authorization"] ?? ""
-                    
-                    expect(authorization).to(equal(expectedAuthorization))
-                }
+                // RSA3c
+                // TODO: not implemented
             }
 
             // RSA4
             context("authentication method") {
                 let cases: [String: (ARTAuthOptions) -> ()] = [
-                    "useBasicAuth": { $0.key = "fake:key" },
+                    "useTokenAuth": { $0.useTokenAuth = true; $0.key = "fake:key" },
                     "authUrl": { $0.authUrl = NSURL(string: "http://test.com") },
                     "authCallback": { $0.authCallback = { _, _ in return } },
                     "token": { $0.token = "" }
@@ -138,6 +145,258 @@ class Auth : QuickSpec {
 
                         expect(client.auth.method).to(equal(ARTAuthMethod.Token))
                     }
+                }
+            }
+            
+            // RSA14
+            context("options") {
+                // Cases:
+                //  - useTokenAuth is specified and thus a key is not provided
+                //  - authCallback and authUrl are both specified
+                let cases: [String: (ARTAuthOptions) -> ()] = [
+                    "useTokenAuth and no key":{ $0.useTokenAuth = true },
+                    "authCallback and authUrl":{ $0.authCallback = { params, callback in /*nothing*/ }; $0.authUrl = NSURL(string: "http://auth.ably.io") }
+                ]
+                
+                for (caseName, caseSetter) in cases {
+                    it("should stop client when \(caseName) occurs") {
+                        let options = ARTClientOptions()
+                        caseSetter(options)
+                        
+                        expect{ ARTRest(options: options) }.to(raiseException())
+                    }
+                }
+            }
+
+            // RSA15
+            context("token auth and clientId") {
+                // RSA15a
+                it("should check clientId consistency") {
+                    let expectedClientId = "client_string"
+                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                    options.clientId = expectedClientId
+                    
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = mockExecutor
+                    
+                    waitUntil(timeout: 10) { done in
+                        // Token
+                        client.authorise { tokenDetails, error in
+                            expect(tokenDetails).toNot(beNil(), description: "TokenDetails is nil")
+                            expect(tokenDetails?.clientId).to(equal(expectedClientId))
+                            done()
+                        }
+                    }
+                    
+                    switch extractBodyAsJSON(mockExecutor.requests.first) {
+                    case .Failure(let error):
+                        XCTFail(error)
+                    case .Success(let httpBody):
+                        guard let requestedClientId = httpBody.unbox["clientId"] as? String else { XCTFail("No clientId field in HTTPBody"); return }
+                        expect(requestedClientId).to(equal(expectedClientId))
+                    }
+                    
+                    // TODO: Realtime.connectionDetails of the CONNECTED ProtocolMessage
+                }
+                
+                // RSA15b
+                it("should permit to be unauthenticated") {
+                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                    options.clientId = "*"
+                    
+                    waitUntil(timeout: 10) { done in
+                        // Token
+                        ARTRest(options: options).authorise { tokenDetails, error in
+                            expect(tokenDetails).toNot(beNil(), description: "TokenDetails is nil")
+                            expect(tokenDetails?.clientId).to(equal(options.clientId))
+                            options.tokenDetails = tokenDetails
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: 10) { done in
+                        // Token
+                        ARTRest(options: options).authorise { tokenDetails, error in
+                            expect(tokenDetails).toNot(beNil(), description: "TokenDetails is nil")
+                            expect(tokenDetails?.clientId).to(equal("*"))
+                            done()
+                        }
+                    }
+
+                    // TODO: Realtime.connectionDetails
+                }
+                
+                // RSA15c
+                it("should cancel request when clientId is invalid") {
+                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                    
+                    // Check unquoted
+                    options.clientId = "\"client_string\""
+                    waitUntil(timeout: 10) { done in
+                        // Token
+                        ARTRest(options: options).authorise { tokenDetails, error in
+                            expect(tokenDetails).toNot(beNil(), description: "TokenDetails is nil")
+                            expect(tokenDetails?.clientId).to(equal(options.clientId))
+                            done()
+                        }
+                    }
+                    
+                    // Check unescaped
+                    options.clientId = "client_string\n"
+                    waitUntil(timeout: 10) { done in
+                        // Token
+                        ARTRest(options: options).authorise { tokenDetails, error in
+                            expect(tokenDetails).toNot(beNil(), description: "TokenDetails is nil")
+                            expect(tokenDetails?.clientId).to(equal(options.clientId))
+                            done()
+                        }
+                    }
+                }
+            }
+            
+            // RSA5
+            it("should use one hour default time to live") {
+                let tokenParams = ARTAuthTokenParams()
+                expect(tokenParams.ttl) == 60 * 60
+            }
+            
+            // RSA6
+            it("should allow all operations when capability is not specified") {
+                let tokenParams = ARTAuthTokenParams()
+                expect(tokenParams.capability) == "{\"*\":[\"*\"]}"
+                
+                let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                
+                waitUntil(timeout: 10) { done in
+                    // Token
+                    ARTRest(options: options).auth.requestToken(tokenParams, withOptions: options) { tokenDetails, error in
+                        expect(tokenDetails).toNot(beNil(), description: "TokenDetails is nil")
+                        expect(tokenDetails?.capability).to(equal(tokenParams.capability))
+                        done()
+                    }
+                }
+            }
+            
+            // RSA7
+            context("clientId and authenticated clients") {
+                // RAS7a1
+                it("should use assigned clientId on all operations") {
+                    let expectedClientId = "client_string"
+                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                    options.clientId = expectedClientId
+
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = mockExecutor
+                    
+                    waitUntil(timeout: 10) { done in
+                        // Publish message
+                        client.channels.get("test").publish("message") { error in
+                            if let e = error {
+                                XCTFail(e.description)
+                            }
+                            done()
+                        }
+                    }
+                    
+                    switch extractBodyAsJSON(mockExecutor.requests.last) {
+                    case .Failure(let error):
+                        XCTFail(error)
+                    case .Success(let httpBody):
+                        guard let requestedClientId = httpBody.unbox["clientId"] as? String else { XCTFail("No clientId field in HTTPBody"); return }
+                        expect(requestedClientId).to(equal(expectedClientId))
+                    }
+                    
+                    // TODO: add more operations
+                }
+                
+                // RSA7a2
+                fit("should obtain a token if clientId is assigned") {
+                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                    options.clientId = "client_string"
+                    
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = mockExecutor
+                    
+                    waitUntil(timeout: 10) { done in
+                        client.channels.get("test").publish("message") { error in
+                            if let e = error {
+                                XCTFail(e.description)
+                            }
+                            done()
+                        }
+                    }
+                    
+                    let authorization = mockExecutor.requests.last?.allHTTPHeaderFields?["Authorization"] ?? ""
+                    
+                    expect(authorization).toNot(equal(""))
+                }
+                
+                // RSA7a3
+                it("should convenience clientId return a string") {
+                    let clientOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                    clientOptions.clientId = "String"
+                    
+                    expect(ARTRest(options: clientOptions).options.clientId).to(equal("String"))
+                }
+                
+                // RSA12
+                it("should accept any clientId") {
+                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions, debug: true)
+                    //options.tokenDetails = ARTAuthTokenDetails(clientId: "*")
+                    let client = ARTRest(options: options)
+                    print(client.auth.tokenDetails?.clientId)
+                    
+                    // TODO: no way to test '*' from Ably staging server
+                }
+                
+                // RSA7b
+                context("auth.clientId not null") {
+                    // RSA7b1
+                    it("when clientId attribute is assigned on client options") {
+                        let clientOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                        clientOptions.clientId = "Exist"
+                        
+                        expect(ARTRest(options: clientOptions).auth.clientId).to(equal("Exist"))
+                    }
+                    
+                    // RSA7b2
+                    it("when tokenRequest or tokenDetails has clientId not null or wildcard string") {
+                        let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                        options.clientId = "client_string"
+                        
+                        let client = ARTRest(options: options)
+                        client.httpExecutor = mockExecutor
+                        
+                        // TokenDetails
+                        waitUntil(timeout: 10) { done in
+                            // Token
+                            client.authorise { tokenDetails, error in
+                                expect(tokenDetails).toNot(beNil(), description: "TokenDetails is nil")
+                                expect(client.auth.clientId).to(equal(tokenDetails?.clientId))
+                                done()
+                            }
+                        }
+                        
+                        // TokenRequest
+                        switch extractBodyAsJSON(mockExecutor.requests.last) {
+                        case .Failure(let error):
+                            XCTFail(error)
+                        case .Success(let httpBody):
+                            guard let requestedClientId = httpBody.unbox["clientId"] as? String else { XCTFail("No clientId field in HTTPBody"); return }
+                            expect(client.auth.clientId).to(equal(requestedClientId))
+                        }
+                    }
+                    
+                    // RSA7b3
+                    // TODO: Realtime.connection
+                }
+                
+                // RSA7c
+                it("should clientId be null or string") {
+                    let clientOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                    clientOptions.clientId = "*"
+                    
+                    expect{ ARTRest(options: clientOptions) }.to(raiseException())
                 }
             }
         }
@@ -222,14 +481,7 @@ class Auth : QuickSpec {
                     expect(url) == NSURL(string: "http://auth.ably.io/")
                 }
             }
-            
-            // RSA8d
-            context("authCallback") {
-                it("") {
-                    // TODO
-                }
-            }
-            
+
             // RSA8a
             it("implicitly creates a TokenRequest") {
                 let options = ARTClientOptions(key: "6p6USg.CNwGdA:uwJU1qsSf_Qe9VDH")

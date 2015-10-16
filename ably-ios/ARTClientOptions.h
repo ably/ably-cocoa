@@ -8,12 +8,11 @@
 
 #import <Foundation/Foundation.h>
 #import "ARTAuthOptions.h"
+#import "ARTLog.h"
 
 ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTClientOptions : ARTAuthOptions
-
-@property (readwrite, strong, nonatomic) NSString *clientId;
 
 @property (readonly, getter=getRestHost) NSString *restHost;
 @property (readonly, getter=getRealtimeHost) NSString *realtimeHost;
@@ -22,6 +21,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, nonatomic) int realtimePort;
 @property (readwrite, strong, nonatomic) NSString *environment;
 @property (nonatomic, assign) BOOL tls;
+@property (nonatomic, assign) ARTLogLevel logLevel;
 
 @property (readwrite, assign, nonatomic) BOOL queueMessages;
 @property (readwrite, assign, nonatomic) BOOL echoMessages;

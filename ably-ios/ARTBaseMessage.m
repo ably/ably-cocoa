@@ -53,7 +53,13 @@
 }
 
 - (id)content {
+    // FIXME: payload.payload
     return self.payload.payload;
+}
+
+- (NSString *)description {
+    return [NSString stringWithFormat: @"%@: id=%@ clientId=%@ connectionId=%@ payload=%@",
+            NSStringFromClass([self class]), self.id, self.clientId, self.connectionId, self.payload];
 }
 
 + (NSArray *)messagesWithPayloads:(NSArray *)payloads {
@@ -61,7 +67,7 @@
         [NSException raise:@"Too many items in payload array" format:@"%lu > %lu", (unsigned long)[payloads count], [ARTPayload payloadArraySizeLimit]];
     }
     NSMutableArray * messages =[[NSMutableArray alloc] init];
-    for(int i=0; i < [payloads count]; i++) {
+    for (int i=0; i < [payloads count]; i++) {
         // FIXME
         //[messages addObject:[ARTMessage messageWithPayload:[payloads objectAtIndex:i] name:nil]];
     }

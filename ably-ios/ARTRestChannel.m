@@ -15,6 +15,7 @@
 #import "ARTPaginatedResult+Private.h"
 #import "ARTDataQuery+Private.h"
 #import "ARTEncoder.h"
+#import "ARTAuth.h"
 
 @implementation ARTRestChannel {
 @public
@@ -51,13 +52,15 @@
      */
 }
 
-- (void)_postMessages:(id)payload callback:(ARTErrorCallback)callback {
+- (void)_postMessages:(id)data callback:(ARTErrorCallback)callback {
     NSData *encodedMessage = nil;
     
-    if ([payload isKindOfClass:[ARTMessage class]]) {
-        encodedMessage = [self.rest.defaultEncoder encodeMessage:payload];
-    } else if ([payload isKindOfClass:[NSArray class]]) {
-        encodedMessage = [self.rest.defaultEncoder encodeMessages:payload];
+    if ([data isKindOfClass:[ARTMessage class]]) {
+        ARTMessage *message = (ARTMessage *)data;
+        message.clientId = self.rest.auth.clientId;
+        encodedMessage = [self.rest.defaultEncoder encodeMessage:message];
+    } else if ([data isKindOfClass:[NSArray class]]) {
+        encodedMessage = [self.rest.defaultEncoder encodeMessages:data];
     }
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:[_basePath stringByAppendingPathComponent:@"messages"]]];

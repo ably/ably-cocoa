@@ -33,6 +33,7 @@
 - (instancetype)encode:(id<ARTPayloadEncoder>)encoder;
 
 - (id)content;
+- (NSString *)description;
 
 + (NSArray *)messagesWithPayloads:(NSArray *)payloads;
 

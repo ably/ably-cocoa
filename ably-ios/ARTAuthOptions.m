@@ -10,8 +10,7 @@
 
 #import "ARTAuthTokenDetails.h"
 
-//X7: NSArray<NSString *>
-static NSArray *decomposeKey(NSString *key) {
+static __GENERIC(NSArray, NSString *) *decomposeKey(NSString *key) {
     return [key componentsSeparatedByString:@":"];
 }
 
@@ -57,13 +56,16 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
     options.authHeaders = self.authHeaders;
     options.authParams = self.authParams;
     options.queryTime = self.queryTime;
+    options.useTokenAuth = self.useTokenAuth;
+    options.force = self.force;
+    options.clientId = self.clientId;
     
     return options;
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat: @"ARTAuthOptions: key=%@ token=%@ authUrl=%@ authMethod=%@ hasAuthCallback=%d",
-            self.key, self.token, self.authUrl, self.authMethod, self.authCallback != nil];
+    return [NSString stringWithFormat: @"%@: key=%@ token=%@ authUrl=%@ authMethod=%@ hasAuthCallback=%d",
+            NSStringFromClass([self class]), self.key, self.token, self.authUrl, self.authMethod, self.authCallback != nil];
 }
 
 - (NSString *)token {
@@ -99,12 +101,18 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
         merged.authParams = precedenceOptions.authParams;
     if (precedenceOptions.queryTime)
         merged.queryTime = precedenceOptions.queryTime;
+    if (precedenceOptions.useTokenAuth)
+        merged.useTokenAuth = precedenceOptions.useTokenAuth;
+    if (precedenceOptions.force)
+        merged.force = precedenceOptions.force;
+    if (precedenceOptions.clientId)
+        merged.clientId = precedenceOptions.clientId;
     
     return merged;
 }
 
 - (BOOL)isBasicAuth {
-    return self.key != nil;
+    return self.key != nil && !self.useTokenAuth;
 }
 
 - (BOOL)isMethodPOST {

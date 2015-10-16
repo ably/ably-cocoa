@@ -28,18 +28,14 @@
 
 - (instancetype)initDefaults {
     self = [super initDefaults];
-    _clientId = nil;
     _restPort = [ARTDefault TLSPort];
     _realtimePort = [ARTDefault TLSPort];
     _queueMessages = YES;
-    _connectionSerial = 0;
     _echoMessages = YES;
-    _recover = nil;
     _binary = false;
     _autoConnect = true;
-    _resumeKey = nil;
-    _environment = nil;
     _tls = YES;
+    _logLevel = ARTLogLevelNone;
     return self;
 }
 
@@ -70,8 +66,7 @@
 
 - (id)copyWithZone:(NSZone *)zone {
     ARTClientOptions *options = [super copyWithZone:zone];
-    
-    options.clientId = self.clientId;
+
     options.restPort = self.restPort;
     options.realtimePort = self.realtimePort;
     options.queueMessages = self.queueMessages;
@@ -83,6 +78,7 @@
     options.resumeKey = self.resumeKey;
     options.environment = self.environment;
     options.tls = self.tls;
+    options.logLevel = self.logLevel;
     
     return options;
 }

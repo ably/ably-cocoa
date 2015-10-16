@@ -11,18 +11,38 @@
 
 ART_ASSUME_NONNULL_BEGIN
 
+/**
+ Type containing the token request response.
+ */
 @interface ARTAuthTokenDetails : NSObject
 
+/**
+ Token string.
+ */
 @property (nonatomic, readonly, copy) NSString *token;
+
+/**
+ Contains the expiry time in milliseconds.
+ */
 @property (nonatomic, readonly, strong, art_nullable) NSDate *expires;
+
+/**
+ Contains the time the token was issued in milliseconds.
+ */
 @property (nonatomic, readonly, strong, art_nullable) NSDate *issued;
+
+/**
+ Contains the capability JSON stringified.
+ */
 @property (nonatomic, readonly, copy, art_nullable) NSString *capability;
+
+/**
+ Contains the clientId assigned to the token if provided.
+ */
 @property (nonatomic, readonly, copy, art_nullable) NSString *clientId;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-
 - (instancetype)initWithToken:(NSString *)token;
-
 - (instancetype)initWithToken:(NSString *)token expires:(NSDate *)expires issued:(NSDate *)issued capability:(NSString *)capability clientId:(NSString *)clientId;
 
 @end
