@@ -88,29 +88,13 @@
     return [self initWithOptions:[[ARTClientOptions alloc] initWithKey:key]];
 }
 
-- (void)authorise:(ARTTokenCallback)completion {
-    ARTAuthTokenParams *tokenParams = [[ARTAuthTokenParams alloc] init];
-    tokenParams.clientId = self.options.clientId;
-    [self.auth authorise:tokenParams options:self.options force:NO callback:completion];
-}
-
 - (void)executeRequest:(NSMutableURLRequest *)request callback:(void (^)(NSHTTPURLResponse *, NSData *, NSError *))callback {
     request.URL = [NSURL URLWithString:request.URL.relativeString relativeToURL:self.baseUrl];
     
     NSString *accept = [[_encoders.allValues valueForKeyPath:@"mimeType"] componentsJoinedByString:@","];
     [request setValue:accept forHTTPHeaderField:@"Accept"];
-    
-    if (self.options.clientId) {
-        [self authorise:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
-            if (!error) {
-                // FIXME: error
-                [self executeRequestWithAuthentication:request completion:callback];
-            }
-        }];
-    }
-    else {
-        [self executeRequestWithAuthentication:request completion:callback];
-    }
+
+    [self executeRequestWithAuthentication:request completion:callback];
 }
 
 - (void)executeRequestWithAuthentication:(NSMutableURLRequest *)request completion:(void (^)(NSHTTPURLResponse *, NSData *, NSError *))completion {
@@ -141,26 +125,23 @@
     }];
 }
 
-
 - (void)calculateAuthorization:(void (^)(NSString *authorization, NSError *error))callback {
-    // FIXME: use encoder
+    // FIXME: use encoder and should be managed on ARTAuth
     if (self.auth.method == ARTAuthMethodBasic) {
         // Include key Base64 encoded in an Authorization header (RFC7235)
         NSData *keyData = [self.options.key dataUsingEncoding:NSUTF8StringEncoding];
-        NSString *keyBase64 = [keyData base64EncodedStringWithOptions:0]; //NSDataBase64EncodingEndLineWithCarriageReturn
+        NSString *keyBase64 = [keyData base64EncodedStringWithOptions:0];
         callback([NSString stringWithFormat:@"Basic %@", keyBase64], nil);
     }
     else {
-        // TODO: check token expiration
-        NSData *keyData;
-        if (self.auth.tokenDetails) {
-            keyData = [self.auth.tokenDetails.token dataUsingEncoding:NSUTF8StringEncoding];
-        }
-        else {
-            keyData = [self.options.token dataUsingEncoding:NSUTF8StringEncoding];
-        }
-        NSString *keyBase64 = [keyData base64EncodedStringWithOptions:0];
-        callback([NSString stringWithFormat:@"Bearer %@", keyBase64], nil);
+        [self.auth authorise:nil options:self.options force:NO callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
+            NSData *keyData;
+            if (tokenDetails) {
+                keyData = [tokenDetails.token dataUsingEncoding:NSUTF8StringEncoding];
+            }
+            NSString *keyBase64 = [keyData base64EncodedStringWithOptions:0];
+            callback([NSString stringWithFormat:@"Bearer %@", keyBase64], nil);
+        }];
     }
 }
 

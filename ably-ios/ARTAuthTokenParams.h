@@ -39,6 +39,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, null_resettable) NSDate *timestamp;
 
 - (instancetype)init;
+- (instancetype)initWithClientId:(NSString *)clientId;
 
 - (__GENERIC(NSMutableArray, NSURLQueryItem *) *)toArray;
 - (__GENERIC(NSArray, NSURLQueryItem *) *)toArrayWithUnion:(NSArray *)items;

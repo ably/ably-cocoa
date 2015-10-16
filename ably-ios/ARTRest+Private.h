@@ -17,6 +17,8 @@ typedef NS_ENUM(NSUInteger, ARTAuthentication) {
     ARTAuthenticationUseBasic
 };
 
+ART_ASSUME_NONNULL_BEGIN
+
 /// ARTRest private methods that are used for whitebox testing
 @interface ARTRest (Private)
 
@@ -41,8 +43,10 @@ typedef NS_ENUM(NSUInteger, ARTAuthentication) {
 
 - (void)executeRequest:(NSMutableURLRequest *)request callback:(void (^)(NSHTTPURLResponse *, NSData *, NSError *))callback;
 
+- (void)calculateAuthorization:(void (^)(NSString *__art_nonnull authorization, NSError *__art_nullable error))callback;
+
 - (id<ARTCancellable>)postTestStats:(NSArray *)stats cb:(void(^)(ARTStatus * status)) cb;
 
-- (void)authorise:(ARTTokenCallback)completion;
-
 @end
+
+ART_ASSUME_NONNULL_END

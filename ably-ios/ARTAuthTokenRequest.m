@@ -24,7 +24,6 @@
         _nonce = [nonce copy];
         _mac = [mac copy];
     }
-    
     return self;
 }
 

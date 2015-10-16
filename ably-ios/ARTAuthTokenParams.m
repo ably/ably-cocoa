@@ -22,8 +22,15 @@
         _ttl = 60 * 60;
         _timestamp = [NSDate date];
         _capability = @"{\"*\":[\"*\"]}"; // allow all
+        _clientId = @"";
     }
-    
+    return self;
+}
+
+- (instancetype)initWithClientId:(NSString *)clientId {
+    if (self = [self init]) {
+        _clientId = clientId;
+    }
     return self;
 }
 
@@ -138,7 +145,7 @@ static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
     NSString *keyName = keyComponents[0];
     NSString *keySecret = keyComponents[1];
     NSString *nonce = generateNonce();
-    NSString *clientId = self.clientId ? self.clientId : @"";
+    NSString *clientId = self.clientId ? self.clientId : @"*";
     
     NSString *signText = [NSString stringWithFormat:@"%@\n%lld\n%@\n%@\n%lld\n%@\n", keyName, (int64_t)(self.ttl * 1000), self.capability, clientId, (int64_t)(self.timestamp.timeIntervalSince1970 * 1000), nonce];
     NSString *mac = hmacForDataAndKey([signText dataUsingEncoding:NSUTF8StringEncoding], [keySecret dataUsingEncoding:NSUTF8StringEncoding]);

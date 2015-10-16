@@ -80,7 +80,7 @@
 }
 
 - (ARTAuthTokenParams *)mergeParams:(ARTAuthTokenParams *)customParams {
-    return customParams ? customParams : [[ARTAuthTokenParams alloc] init];
+    return customParams ? customParams : [[ARTAuthTokenParams alloc] initWithClientId:self.options.clientId];
 }
 
 - (NSURL *)buildURL:(ARTAuthOptions *)options withParams:(ARTAuthTokenParams *)params {
@@ -154,13 +154,13 @@
             if (error) {
                 callback(nil, error);
             } else {
-                [self requestToken:tokenRequest callback:callback];
+                [self executeTokenRequest:tokenRequest callback:callback];
             }
         });
     }
 }
 
-- (void)requestToken:(ARTAuthTokenRequest *)tokenRequest callback:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
+- (void)executeTokenRequest:(ARTAuthTokenRequest *)tokenRequest callback:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
     NSURL *requestUrl = [NSURL URLWithString:[NSString stringWithFormat:@"/keys/%@/requestToken", tokenRequest.keyName]
                                relativeToURL:_rest.baseUrl];
     
@@ -188,15 +188,33 @@
     }];
 }
 
-- (void)authorise:(ARTAuthTokenParams *)tokenParams options:(ARTAuthOptions *)options force:(BOOL)force
-         callback:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
-    if (!force && self.tokenDetails && [self.tokenDetails.expires timeIntervalSinceNow] > 0) {
-        [self.logger verbose:@"ARTAuth authorise not forced and current token is not expired yet, reuse current token."];
-        if (callback) {
-            callback(self.tokenDetails, nil);
+- (void)authorise:(ARTAuthTokenParams *)tokenParams options:(ARTAuthOptions *)options force:(BOOL)force callback:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
+    BOOL requestNewToken = NO;
+
+    // Reuse or not reuse
+    if (!force && self.tokenDetails) {
+        if (self.tokenDetails.expires == nil) {
+            [self.logger verbose:@"ARTAuth: reuse current token."];
+            requestNewToken = NO;
         }
-    } else {
-        [self.logger verbose:@"ARTAuth authorise requesting new token."];
+        else if ([self.tokenDetails.expires timeIntervalSinceNow] > 0) {
+            [self.logger verbose:@"ARTAuth: current token has not expired yet. Reusing token details."];
+            requestNewToken = NO;
+        }
+        else {
+            [self.logger verbose:@"ARTAuth: current token has expired. Requesting new token."];
+            requestNewToken = YES;
+        }
+    }
+    else {
+        if (force)
+            [self.logger verbose:@"ARTAuth: forced requesting new token."];
+        else
+            [self.logger verbose:@"ARTAuth: requesting new token."];
+        requestNewToken = YES;
+    }
+
+    if (requestNewToken) {
         [self requestToken:tokenParams withOptions:options callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
             if (error) {
                 if (callback) {
@@ -204,12 +222,15 @@
                 }
             } else {
                 _tokenDetails = tokenDetails;
-                _method = ARTAuthMethodToken;
                 if (callback) {
                     callback(tokenDetails, nil);
                 }
             }
         }];
+    } else {
+        if (callback) {
+            callback(self.tokenDetails, nil);
+        }
     }
 }
 
