@@ -15,8 +15,8 @@
 #import "ARTPayload.h"
 #import "ARTAuthTokenRequest.h"
 
-//X7: NSArray<NSString *>
-static NSArray *decomposeKey(NSString *key) {
+// FIXME: reuse
+static __GENERIC(NSArray, NSString *) *decomposeKey(NSString *key) {
     return [key componentsSeparatedByString:@":"];
 }
 
@@ -139,7 +139,6 @@ static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
 }
 
 - (ARTAuthTokenRequest *)sign:(NSString *)key {
-    //X7: NSArray<NSString *>
     NSArray *keyComponents = decomposeKey(key);
     NSString *keyName = keyComponents[0];
     NSString *keySecret = keyComponents[1];

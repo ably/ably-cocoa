@@ -182,16 +182,22 @@
          callback:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
     if (!force && self.tokenDetails && [self.tokenDetails.expires timeIntervalSinceNow] > 0) {
         [self.logger verbose:@"ARTAuth authorise not forced and current token is not expired yet, reuse current token."];
-        callback(self.tokenDetails, nil);
+        if (callback) {
+            callback(self.tokenDetails, nil);
+        }
     } else {
         [self.logger verbose:@"ARTAuth authorise requesting new token."];
         [self requestToken:tokenParams withOptions:options callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
             if (error) {
-                callback(nil, error);
+                if (callback) {
+                    callback(nil, error);
+                }
             } else {
                 _tokenDetails = tokenDetails;
                 _method = ARTAuthMethodToken;
-                callback(tokenDetails, nil);
+                if (callback) {
+                    callback(tokenDetails, nil);
+                }
             }
         }];
     }

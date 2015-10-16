@@ -26,7 +26,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithName:(NSString *)name rest:(ARTRest *)rest options:(art_nullable ARTChannelOptions *)options;
 
-- (void)_postMessages:(id)payload callback:(art_nullable ARTErrorCallback)callback;
+- (void)_postMessages:(id)data callback:(art_nullable ARTErrorCallback)callback;
 
 @end
 

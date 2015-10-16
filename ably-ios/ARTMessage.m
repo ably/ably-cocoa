@@ -14,8 +14,7 @@
     if (self = [self init]) {
         _name = [name copy];
         if (data) {
-            // FIXME:
-            //_payload = nil; //[ARTPayload payloadWithPayload:data encoding:@""];
+            self.payload = [ARTPayload payloadWithPayload:data encoding:@""];
         }
     }
     return self;

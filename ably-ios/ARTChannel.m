@@ -37,10 +37,12 @@
     _payloadEncoder = [ARTJsonPayloadEncoder instance];
 }
 
+// FIXME: payload to message
 - (void)publish:(id)payload callback:(ARTErrorCallback)callback {
     [self publish:payload name:nil callback:callback];
 }
 
+// FIXME: payload to message
 - (void)publish:(id)payload name:(NSString *)name callback:(ARTErrorCallback)callback {
     [self publishMessage:[[ARTMessage alloc] initWithData:payload name:name] callback:callback];
 }
@@ -61,7 +63,7 @@
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 
-- (void)_postMessages:(id)payload callback:(ARTErrorCallback)callback {
+- (void)_postMessages:(id)data callback:(ARTErrorCallback)callback {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 

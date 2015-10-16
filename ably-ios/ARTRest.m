@@ -28,6 +28,7 @@
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTRestChannel.h"
 #import "ARTAuthTokenParams.h"
+#import "ARTAuthTokenDetails.h"
 
 @interface ARTRest ()
 
@@ -99,9 +100,26 @@
     NSString *accept = [[_encoders.allValues valueForKeyPath:@"mimeType"] componentsJoinedByString:@","];
     [request setValue:accept forHTTPHeaderField:@"Accept"];
     
+    if (self.options.clientId) {
+        [self authorise:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
+            if (!error) {
+                // FIXME: error
+                [self executeRequestWithAuthentication:request completion:callback];
+            }
+        }];
+    }
+    else {
+        [self executeRequestWithAuthentication:request completion:callback];
+    }
+}
+
+- (void)executeRequestWithAuthentication:(NSMutableURLRequest *)request completion:(void (^)(NSHTTPURLResponse *, NSData *, NSError *))completion {
+    if (!completion)
+        return;
+    
     [self calculateAuthorization:^(NSString *authorization, NSError *error) {
         if (error) {
-            callback(nil, nil, error);
+            completion(nil, nil, error);
         } else {
             // RFC7235
             [request setValue:authorization forHTTPHeaderField:@"Authorization"];
@@ -113,15 +131,16 @@
                         // TODO: request token or error if no token information
                         NSAssert(false, @"Request token or error if no token information");
                     } else {
-                        callback(nil, nil, error);
+                        completion(nil, nil, error);
                     }
                 } else {
-                    callback(response, data, error);
+                    completion(response, data, error);
                 }
             }];
         }
     }];
 }
+
 
 - (void)calculateAuthorization:(void (^)(NSString *authorization, NSError *error))callback {
     // FIXME: use encoder
@@ -132,8 +151,14 @@
         callback([NSString stringWithFormat:@"Basic %@", keyBase64], nil);
     }
     else {
-        // TODO: Reuse
-        NSData *keyData = [self.options.token dataUsingEncoding:NSUTF8StringEncoding];
+        // TODO: check token expiration
+        NSData *keyData;
+        if (self.auth.tokenDetails) {
+            keyData = [self.auth.tokenDetails.token dataUsingEncoding:NSUTF8StringEncoding];
+        }
+        else {
+            keyData = [self.options.token dataUsingEncoding:NSUTF8StringEncoding];
+        }
         NSString *keyBase64 = [keyData base64EncodedStringWithOptions:0];
         callback([NSString stringWithFormat:@"Bearer %@", keyBase64], nil);
     }

@@ -10,8 +10,7 @@
 
 #import "ARTAuthTokenDetails.h"
 
-//X7: NSArray<NSString *>
-static NSArray *decomposeKey(NSString *key) {
+static __GENERIC(NSArray, NSString *) *decomposeKey(NSString *key) {
     return [key componentsSeparatedByString:@":"];
 }
 
@@ -65,8 +64,8 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat: @"ARTAuthOptions: key=%@ token=%@ authUrl=%@ authMethod=%@ hasAuthCallback=%d",
-            self.key, self.token, self.authUrl, self.authMethod, self.authCallback != nil];
+    return [NSString stringWithFormat: @"%@: key=%@ token=%@ authUrl=%@ authMethod=%@ hasAuthCallback=%d",
+            NSStringFromClass([self class]), self.key, self.token, self.authUrl, self.authMethod, self.authCallback != nil];
 }
 
 - (NSString *)token {

@@ -115,9 +115,7 @@ func querySyslog(forLogsAfter startingTime: NSDate? = nil) -> AnyGenerator<Strin
     }
 }
 
-/*
- Publish message
- */
+/// Publish message class
 class PublishTestMessage {
     var error: NSError?
     
@@ -133,10 +131,12 @@ class PublishTestMessage {
     }
 }
 
+/// Publish message
 func publishTestMessage(client: ARTRest, failOnError: Bool = true) -> PublishTestMessage {
     return PublishTestMessage(client: client, failOnError: failOnError)
 }
 
+/// Access Token
 func getTestToken() -> String {
     let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
     let client = ARTRest(options: options)
@@ -179,6 +179,16 @@ enum Result<T> {
     init(error: String) {
         self = .Failure(error)
     }
+}
+
+func extractURL(request: NSMutableURLRequest?) -> Result<NSURL> {
+    guard let request = request
+        else { return Result(error: "No request found") }
+    
+    guard let url = request.URL
+        else { return Result(error: "Request has no URL defined") }
+    
+    return Result.Success(Box(url))
 }
 
 func extractBodyAsJSON(request: NSMutableURLRequest?) -> Result<NSDictionary> {

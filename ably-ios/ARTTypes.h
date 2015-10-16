@@ -52,7 +52,7 @@ typedef void (^ARTStatusCallback)(ARTStatus *status);
 
 typedef void (^ARTHttpCb)(ARTHttpResponse *response);
 
-typedef void (^ARTErrorCallback)(NSError *error);
+typedef void (^ARTErrorCallback)(NSError *__art_nullable error);
 
 // FIXME: review
 typedef void (^ARTAuthCallback)(ARTAuthTokenParams *tokenParams, void(^callback)(ARTAuthTokenRequest *__art_nullable tokenRequest, NSError *__art_nullable error));

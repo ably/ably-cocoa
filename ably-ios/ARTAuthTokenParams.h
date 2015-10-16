@@ -40,9 +40,9 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init;
 
-- (NSMutableArray *)toArray; //X7: NSArray<NSURLQueryItem *>
-- (NSArray *)toArrayWithUnion:(NSArray *)items; //X7: NSArray<NSURLQueryItem *>
-- (NSDictionary *)toDictionaryWithUnion:(NSArray *)items;
+- (__GENERIC(NSMutableArray, NSURLQueryItem *) *)toArray;
+- (__GENERIC(NSArray, NSURLQueryItem *) *)toArrayWithUnion:(NSArray *)items;
+- (__GENERIC(NSDictionary, NSString *, NSString *) *)toDictionaryWithUnion:(__GENERIC(NSArray, NSURLQueryItem *) *)items;
 
 @end
 
