@@ -222,5 +222,5 @@ class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
     func executeRequest(request: NSMutableURLRequest!, callback: ((NSHTTPURLResponse!, NSData!, NSError!) -> Void)!) {
         self.requests.append(request)
         self.executor.executeRequest(request, callback: callback)
-    }    
+    }
 }

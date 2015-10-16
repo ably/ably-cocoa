@@ -399,49 +399,6 @@ class Auth : QuickSpec {
                     expect{ ARTRest(options: clientOptions) }.to(raiseException())
                 }
             }
-            
-            // RSA7
-            context("clientId and authenticated clients") {
-                // RAS7a1
-                
-                // RSA7a2
-                
-                // RSA7a3
-                
-                // RSA12 ?!
-                it("should any clientId be used") {
-                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions, debug: true)
-                    //options.tokenDetails = ARTAuthTokenDetails(clientId: "*")
-                    let client = ARTRest(options: options)
-                    print(client.auth.tokenDetails?.clientId)
-                    
-                    // TODO: no way to test '*' from Ably staging server
-                }
-                
-                // RSA7b1
-                fit("should clientId attribute exist into client options") {
-                    let clientOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-                    clientOptions.clientId = "String"
-                    
-                    expect(ARTRest(options: clientOptions).auth.clientId).to(equal("String"))
-                }
-                
-                // RSA7b2
-                it("should clientId be assigned with token auth") {
-                    // TODO
-                }
-                
-                // RSA7b3
-                // TODO: Realtime.connection
-                
-                // RSA7c
-                it("should clientId be null or string") {
-                    let clientOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-                    clientOptions.clientId = "*"
-                    
-                    expect{ ARTRest(options: clientOptions) }.to(raiseException())
-                }
-            }
         }
         
         // RSA8
@@ -524,14 +481,7 @@ class Auth : QuickSpec {
                     expect(url) == NSURL(string: "http://auth.ably.io/")
                 }
             }
-            
-            // RSA8d
-            context("authCallback") {
-                it("") {
-                    // TODO
-                }
-            }
-            
+
             // RSA8a
             it("implicitly creates a TokenRequest") {
                 let options = ARTClientOptions(key: "6p6USg.CNwGdA:uwJU1qsSf_Qe9VDH")
