@@ -101,6 +101,7 @@ class Auth : QuickSpec {
                 it("should send the token in the Authorization header") {
                     let options = ARTClientOptions()
                     options.token = getTestToken()
+
                     let client = ARTRest(options: options)
                     client.httpExecutor = mockExecutor
                     
@@ -109,11 +110,7 @@ class Auth : QuickSpec {
                     expect(client.options.token).toNot(beNil(), description: "No access token")
                     
                     if let currentToken = client.options.token {
-                        let token64 = NSString(string: currentToken)
-                            .dataUsingEncoding(NSUTF8StringEncoding)?
-                            .base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0))
-                        
-                        let expectedAuthorization = "Bearer \(token64!)"
+                        let expectedAuthorization = "Bearer \(currentToken)"
                         
                         expect(mockExecutor.requests.first).toNot(beNil(), description: "No request found")
                         
@@ -181,7 +178,7 @@ class Auth : QuickSpec {
                     
                     waitUntil(timeout: 10) { done in
                         // Token
-                        client.calculateAuthorization { token, error in
+                        client.calculateAuthorization(ARTAuthMethod.Token) { token, error in
                             if let e = error {
                                 XCTFail(e.description)
                             }
@@ -210,7 +207,7 @@ class Auth : QuickSpec {
 
                     waitUntil(timeout: 10) { done in
                         // Basic
-                        clientBasic.calculateAuthorization { token, error in
+                        clientBasic.calculateAuthorization(ARTAuthMethod.Basic) { token, error in
                             if let e = error {
                                 XCTFail(e.description)
                             }
@@ -224,7 +221,7 @@ class Auth : QuickSpec {
 
                     waitUntil(timeout: 10) { done in
                         // Last TokenDetails
-                        clientToken.calculateAuthorization { token, error in
+                        clientToken.calculateAuthorization(ARTAuthMethod.Token) { token, error in
                             if let e = error {
                                 XCTFail(e.description)
                             }
@@ -247,7 +244,7 @@ class Auth : QuickSpec {
                     options.clientId = clientIdQuoted
                     waitUntil(timeout: 10) { done in
                         // Token
-                        client.calculateAuthorization { token, error in
+                        client.calculateAuthorization(ARTAuthMethod.Token) { token, error in
                             if let e = error {
                                 XCTFail(e.description)
                             }
@@ -261,7 +258,7 @@ class Auth : QuickSpec {
                     options.clientId = clientIdBreaklined
                     waitUntil(timeout: 10) { done in
                         // Token
-                        client.calculateAuthorization { token, error in
+                        client.calculateAuthorization(ARTAuthMethod.Token) { token, error in
                             if let e = error {
                                 XCTFail(e.description)
                             }
@@ -288,7 +285,9 @@ class Auth : QuickSpec {
                 waitUntil(timeout: 10) { done in
                     // Token
                     ARTRest(options: options).auth.requestToken(tokenParams, withOptions: options) { tokenDetails, error in
-                        expect(tokenDetails).toNot(beNil(), description: "TokenDetails is nil")
+                        if let e = error {
+                            XCTFail(e.description)
+                        }
                         expect(tokenDetails?.capability).to(equal(tokenParams.capability))
                         done()
                     }
@@ -359,7 +358,7 @@ class Auth : QuickSpec {
                 
                 // RSA12
                 it("should accept any clientId") {
-                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions, debug: true)
+                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                     //options.tokenDetails = ARTAuthTokenDetails(clientId: "*")
                     let client = ARTRest(options: options)
                     print(client.auth.tokenDetails?.clientId)
@@ -388,7 +387,7 @@ class Auth : QuickSpec {
                         // TokenDetails
                         waitUntil(timeout: 10) { done in
                             // Token
-                            client.calculateAuthorization { token, error in
+                            client.calculateAuthorization(ARTAuthMethod.Token) { token, error in
                                 if let e = error {
                                     XCTFail(e.description)
                                 }
@@ -461,7 +460,7 @@ class Auth : QuickSpec {
                         let rest = ARTRest(options: clientOptions)
                         
                         let url = rest.auth.buildURL(clientOptions, withParams: tokenParams)
-                        expect(url) == NSURL(string: "http://auth.ably.io/")
+                        expect(url.absoluteString).to(contain(NSURL(string: "http://auth.ably.io")?.absoluteString ?? ""))
                     }
                     
                     // RSA8c1b
@@ -480,7 +479,7 @@ class Auth : QuickSpec {
                         expect(httpBodyJSON).toNot(beNil(), description: "HTTPBody is empty")
                         expect(httpBodyJSON!["timestamp"]).toNot(beNil(), description: "HTTPBody has no timestamp")
                         
-                        let expectedJSON = ["ttl":NSString(format: "%f", CGFloat(60*60)), "capability":"{ \"*\": [ \"*\" ] }", "timestamp":httpBodyJSON!["timestamp"]!]
+                        let expectedJSON = ["ttl":NSString(format: "%f", CGFloat(60*60)), "capability":"{\"*\":[\"*\"]}", "timestamp":httpBodyJSON!["timestamp"]!]
                         
                         expect(httpBodyJSON) == expectedJSON
                     }
@@ -498,7 +497,7 @@ class Auth : QuickSpec {
                     authOptions.authParams = [NSURLQueryItem(name: "test", value: "1")]
                     
                     let url = rest.auth.buildURL(authOptions, withParams: ARTAuthTokenParams())
-                    expect(url) == NSURL(string: "http://auth.ably.io/")
+                    expect(url.absoluteString).to(contain(NSURL(string: "http://auth.ably.io")?.absoluteString ?? ""))
                 }
             }
 

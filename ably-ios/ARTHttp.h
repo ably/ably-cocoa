@@ -12,12 +12,13 @@
 
 @class ARTErrorInfo;
 
-// FIXME:
+ART_ASSUME_NONNULL_BEGIN
+
 @protocol ARTHTTPExecutor
 
 @property (nonatomic, weak) ARTLog *logger;
 
-- (void)executeRequest:(NSMutableURLRequest *)request callback:(void (^)(NSHTTPURLResponse *response, NSData *data, NSError *error))callback;
+- (void)executeRequest:(NSMutableURLRequest *)request completion:(art_nullable ARTHttpRequestCallback)callback;
 
 @end
 
@@ -25,11 +26,11 @@
 
 @property (readonly, strong, nonatomic) NSString *method;
 @property (readonly, strong, nonatomic) NSURL *url;
-@property (readonly, strong, nonatomic) NSDictionary *headers;
-@property (readonly, strong, nonatomic) NSData *body;
+@property (art_nullable, readonly, strong, nonatomic) NSDictionary *headers;
+@property (art_nullable, readonly, strong, nonatomic) NSData *body;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithMethod:(NSString *)method url:(NSURL *)url headers:(NSDictionary *)headers body:(NSData *)body;
+- (instancetype)initWithMethod:(NSString *)method url:(NSURL *)url headers:(art_nullable NSDictionary *)headers body:(art_nullable NSData *)body;
 - (ARTHttpRequest *)requestWithRelativeUrl:(NSString *)relUrl;
 
 @end
@@ -38,14 +39,14 @@
 
 @property (readonly, assign, nonatomic) int status;
 @property (readwrite, strong, nonatomic) ARTErrorInfo *error;
-@property (readonly, strong, nonatomic) NSDictionary *headers;
-@property (readonly, strong, nonatomic) NSData *body;
+@property (art_nullable, readonly, strong, nonatomic) NSDictionary *headers;
+@property (art_nullable, readonly, strong, nonatomic) NSData *body;
 
 - (instancetype)init;
-- (instancetype)initWithStatus:(int)status headers:(NSDictionary *)headers body:(NSData *)body;
+- (instancetype)initWithStatus:(int)status headers:(art_nullable NSDictionary *)headers body:(art_nullable NSData *)body;
 
 + (instancetype)response;
-+ (instancetype)responseWithStatus:(int)status headers:(NSDictionary *)headers body:(NSData *)body;
++ (instancetype)responseWithStatus:(int)status headers:(art_nullable NSDictionary *)headers body:(art_nullable NSData *)body;
 
 - (NSString *)contentType;
 - (NSDictionary *)links;
@@ -61,7 +62,9 @@
 
 - (instancetype)init;
 
-- (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method url:(NSURL *)url headers:(NSDictionary *)headers body:(NSData *)body cb:(ARTHttpCb)cb;
+- (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method url:(NSURL *)url headers:(art_nullable NSDictionary *)headers body:(art_nullable NSData *)body cb:(ARTHttpCb)cb;
 - (id<ARTCancellable>)makeRequest:(ARTHttpRequest *)req cb:(ARTHttpCb)cb;
 
 @end
+
+ART_ASSUME_NONNULL_END

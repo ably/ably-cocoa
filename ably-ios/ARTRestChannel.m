@@ -71,7 +71,7 @@
         [request setValue:self.rest.defaultEncoding forHTTPHeaderField:@"Content-Type"];
     }
     
-    [self.rest executeRequest:request callback:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [self.rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (callback) {
             callback(error);
         }

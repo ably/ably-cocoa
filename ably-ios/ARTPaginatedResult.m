@@ -99,8 +99,9 @@ static NSMutableURLRequest *requestRelativeTo(NSMutableURLRequest *request, NSSt
 + (void)executePaginatedRequest:(NSMutableURLRequest *)request executor:(id<ARTHTTPExecutor>)executor
               responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
                        callback:(ARTPaginatedResultCallback)callback {
-    
-    [executor executeRequest:request callback:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+
+    // FIXME: review (no auth?!)
+    [executor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             callback(nil, error);
         } else {

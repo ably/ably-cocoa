@@ -32,14 +32,18 @@
 
 @interface ARTRest ()
 
-@property (nonatomic, strong) NSURL *baseUrl;
+@property (readonly, strong, nonatomic) id<ARTEncoder> defaultEncoder;
+@property (readonly, strong, nonatomic) NSString *defaultEncoding; //Content-Type
+
 @property (nonatomic, strong) id<ARTHTTPExecutor> httpExecutor;
 @property (readonly, nonatomic, assign) Class channelClass;
 
+@property (nonatomic, strong) NSURL *baseUrl;
+
+// MARK: Not accessible by tests
 @property (readonly, strong, nonatomic) ARTHttp *http;
 @property (strong, nonatomic) ARTAuth *auth;
 @property (readonly, strong, nonatomic) NSDictionary *encoders;
-@property (readonly, strong, nonatomic) NSString *defaultEncoding; //Content-Type
 @property (readwrite, assign, nonatomic) int fallbackCount;
 
 @end
@@ -88,46 +92,58 @@
     return [self initWithOptions:[[ARTClientOptions alloc] initWithKey:key]];
 }
 
-- (void)executeRequest:(NSMutableURLRequest *)request callback:(void (^)(NSHTTPURLResponse *, NSData *, NSError *))callback {
+- (void)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(ARTHttpRequestCallback)callback {
     request.URL = [NSURL URLWithString:request.URL.relativeString relativeToURL:self.baseUrl];
     
     NSString *accept = [[_encoders.allValues valueForKeyPath:@"mimeType"] componentsJoinedByString:@","];
     [request setValue:accept forHTTPHeaderField:@"Accept"];
 
-    [self executeRequestWithAuthentication:request completion:callback];
+    switch (authOption) {
+        case ARTAuthenticationOff:
+            [self executeRequest:request completion:callback];
+            break;
+        case ARTAuthenticationOn:
+            [self executeRequestWithAuthentication:request withMethod:self.auth.method completion:callback];
+            break;
+        case ARTAuthenticationUseBasic:
+            [self executeRequestWithAuthentication:request withMethod:ARTAuthMethodBasic completion:callback];
+            break;
+    }
 }
 
-- (void)executeRequestWithAuthentication:(NSMutableURLRequest *)request completion:(void (^)(NSHTTPURLResponse *, NSData *, NSError *))completion {
-    if (!completion)
-        return;
-    
-    [self calculateAuthorization:^(NSString *authorization, NSError *error) {
-        if (error) {
-            completion(nil, nil, error);
+- (void)executeRequestWithAuthentication:(NSMutableURLRequest *)request withMethod:(ARTAuthMethod)method completion:(ARTHttpRequestCallback)callback {
+    [self calculateAuthorization:method completion:^(NSString *authorization, NSError *error) {
+        if (error && callback) {
+            callback(nil, nil, error);
         } else {
             // RFC7235
             [request setValue:authorization forHTTPHeaderField:@"Authorization"];
-            
-            [self.httpExecutor executeRequest:request callback:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
-                if (response.statusCode >= 400) {
-                    NSError *error = [self->_encoders[response.MIMEType] decodeError:data];
-                    if (error.code == 40140) {
-                        // TODO: request token or error if no token information
-                        NSAssert(false, @"Request token or error if no token information");
-                    } else {
-                        completion(nil, nil, error);
-                    }
-                } else {
-                    completion(response, data, error);
-                }
-            }];
+            [self executeRequest:request completion:callback];
         }
     }];
 }
 
-- (void)calculateAuthorization:(void (^)(NSString *authorization, NSError *error))callback {
+- (void)executeRequest:(NSMutableURLRequest *)request completion:(ARTHttpRequestCallback)callback {
+    [self.logger debug:@"ARTRest: executing request %@", request];
+    [self.httpExecutor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        if (response.statusCode >= 400) {
+            NSError *error = [self->_encoders[response.MIMEType] decodeError:data];
+            if (error.code == 40140) {
+                // TODO: request token or error if no token information
+                NSAssert(false, @"Request token or error if no token information");
+            } else if (callback) {
+                callback(nil, nil, error);
+            }
+        } else if (callback) {
+            callback(response, data, error);
+        }
+    }];
+}
+
+- (void)calculateAuthorization:(ARTAuthMethod)method completion:(void (^)(NSString *authorization, NSError *error))callback {
+    [self.logger debug:@"ARTRest: calculating authorization %lu", (unsigned long)method];
     // FIXME: use encoder and should be managed on ARTAuth
-    if (self.auth.method == ARTAuthMethodBasic) {
+    if (method == ARTAuthMethodBasic) {
         // Include key Base64 encoded in an Authorization header (RFC7235)
         NSData *keyData = [self.options.key dataUsingEncoding:NSUTF8StringEncoding];
         NSString *keyBase64 = [keyData base64EncodedStringWithOptions:0];
@@ -135,12 +151,8 @@
     }
     else {
         [self.auth authorise:nil options:self.options force:NO callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
-            NSData *keyData;
-            if (tokenDetails) {
-                keyData = [tokenDetails.token dataUsingEncoding:NSUTF8StringEncoding];
-            }
-            NSString *keyBase64 = [keyData base64EncodedStringWithOptions:0];
-            callback([NSString stringWithFormat:@"Bearer %@", keyBase64], nil);
+            [self.logger verbose:@"ARTRest: authorization bearer in Base64 %@", tokenDetails.token];
+            callback([NSString stringWithFormat:@"Bearer %@", tokenDetails.token], nil);
         }];
     }
 }
@@ -152,7 +164,7 @@
     NSString *accept = [[_encoders.allValues valueForKeyPath:@"mimeType"] componentsJoinedByString:@","];
     [request setValue:accept forHTTPHeaderField:@"Accept"];
     
-    [self.httpExecutor executeRequest:request callback:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [self executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode >= 400) {
             callback(nil, [self->_encoders[response.MIMEType] decodeError:data]);
         } else {

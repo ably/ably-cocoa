@@ -135,7 +135,7 @@
         
         [_rest.logger debug:@"%@ %@", request.HTTPMethod, request.URL];
         
-        [_rest.httpExecutor executeRequest:request callback:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        [_rest executeRequest:request withAuthOption:ARTAuthenticationUseBasic completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (error) {
                 callback(nil, error);
             } else {
@@ -173,7 +173,7 @@
     [request setValue:[defaultEncoder mimeType] forHTTPHeaderField:@"Accept"];
     [request setValue:[defaultEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
     
-    [_rest.httpExecutor executeRequest:request callback:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [_rest executeRequest:request withAuthOption:ARTAuthenticationUseBasic completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             callback(nil, error);
         } else {
@@ -191,7 +191,7 @@
 - (void)authorise:(ARTAuthTokenParams *)tokenParams options:(ARTAuthOptions *)options force:(BOOL)force callback:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
     BOOL requestNewToken = NO;
 
-    // Reuse or not reuse
+    // Reuse or not reuse the current token
     if (!force && self.tokenDetails) {
         if (self.tokenDetails.expires == nil) {
             [self.logger verbose:@"ARTAuth: reuse current token."];
