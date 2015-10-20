@@ -79,7 +79,7 @@ ART_ASSUME_NONNULL_BEGIN
  The id of the client represented by this instance.
  The clientId is relevant to presence operations, where the clientId is the principal identifier of the client in presence update messages. The clientId is also relevant to authentication; a token issued for a specific client may be used to authenticate the bearer of that token to the service.
  */
-@property (readwrite, strong, nonatomic) NSString *clientId;
+@property (readwrite, strong, nonatomic, art_nullable) NSString *clientId;
 
 - (instancetype)init;
 - (instancetype)initWithKey:(NSString *)key;

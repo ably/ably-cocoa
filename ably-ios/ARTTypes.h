@@ -17,6 +17,17 @@
 @class ARTAuthTokenRequest;
 @class ARTAuthTokenDetails;
 
+typedef NS_ENUM(NSUInteger, ARTAuthentication) {
+    ARTAuthenticationOff,
+    ARTAuthenticationOn,
+    ARTAuthenticationUseBasic
+};
+
+typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
+    ARTAuthMethodBasic,
+    ARTAuthMethodToken
+};
+
 typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
     ARTRealtimeInitialized,
     ARTRealtimeConnecting,
@@ -40,6 +51,11 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
 
 ART_ASSUME_NONNULL_BEGIN
 
+/// Decompose API key
+__GENERIC(NSArray, NSString *) *decomposeKey(NSString *key);
+
+// MARK: Callbacks definitions
+
 typedef void (^ARTRealtimeChannelMessageCb)(ARTMessage *);
 
 typedef void (^ARTRealtimeChannelStateCb)(ARTRealtimeChannelState, ARTStatus *);
@@ -53,6 +69,8 @@ typedef void (^ARTStatusCallback)(ARTStatus *status);
 typedef void (^ARTHttpCb)(ARTHttpResponse *response);
 
 typedef void (^ARTErrorCallback)(NSError *__art_nullable error);
+
+typedef void (^ARTHttpRequestCallback)(NSHTTPURLResponse *__art_nullable response, NSData *__art_nullable data, NSError *__art_nullable error);
 
 // FIXME: review
 typedef void (^ARTAuthCallback)(ARTAuthTokenParams *tokenParams, void(^callback)(ARTAuthTokenRequest *__art_nullable tokenRequest, NSError *__art_nullable error));

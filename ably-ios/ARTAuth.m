@@ -40,20 +40,30 @@
         if (!options.tls) {
             [NSException raise:@"ARTAuthException" format:@"Basic authentication only connects over HTTPS (tls)."];
         }
-        [self.logger debug:@"ARTAuth: setting up auth method Basic"];
+        // Basic
+        [self.logger debug:@"ARTAuth: setting up auth method Basic (anonymous)"];
         _method = ARTAuthMethodBasic;
     } else if (options.tokenDetails) {
+        // TokenDetails
+        [self.logger debug:@"ARTAuth: setting up auth method Token with token details"];
+        _method = ARTAuthMethodToken;
+    } else if (options.token) {
+        // Token
         [self.logger debug:@"ARTAuth: setting up auth method Token with supplied token only"];
         _method = ARTAuthMethodToken;
+        options.tokenDetails = [[ARTAuthTokenDetails alloc] initWithToken:options.token];
     } else if (options.authUrl && options.authCallback) {
         [NSException raise:@"ARTAuthException" format:@"Incompatible authentication configuration: please specify either authCallback and authUrl."];
     } else if (options.authUrl) {
+        // Authentication url
         [self.logger debug:@"ARTAuth: setting up auth method Token with authUrl"];
         _method = ARTAuthMethodToken;
     } else if (options.authCallback) {
+        // Authentication callback
         [self.logger debug:@"ARTAuth: setting up auth method Token with authCallback"];
         _method = ARTAuthMethodToken;
-    } else if (options.key && options.useTokenAuth) {
+    } else if (options.key) {
+        // Token
         [self.logger debug:@"ARTAuth: setting up auth method Token with key"];
         _method = ARTAuthMethodToken;
     } else {
@@ -70,7 +80,7 @@
 }
 
 - (ARTAuthTokenParams *)mergeParams:(ARTAuthTokenParams *)customParams {
-    return customParams ? customParams : [[ARTAuthTokenParams alloc] init];
+    return customParams ? customParams : [[ARTAuthTokenParams alloc] initWithClientId:self.options.clientId];
 }
 
 - (NSURL *)buildURL:(ARTAuthOptions *)options withParams:(ARTAuthTokenParams *)params {
@@ -125,7 +135,7 @@
         
         [_rest.logger debug:@"%@ %@", request.HTTPMethod, request.URL];
         
-        [_rest.httpExecutor executeRequest:request callback:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        [_rest executeRequest:request withAuthOption:ARTAuthenticationUseBasic completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (error) {
                 callback(nil, error);
             } else {
@@ -144,13 +154,13 @@
             if (error) {
                 callback(nil, error);
             } else {
-                [self requestToken:tokenRequest callback:callback];
+                [self executeTokenRequest:tokenRequest callback:callback];
             }
         });
     }
 }
 
-- (void)requestToken:(ARTAuthTokenRequest *)tokenRequest callback:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
+- (void)executeTokenRequest:(ARTAuthTokenRequest *)tokenRequest callback:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
     NSURL *requestUrl = [NSURL URLWithString:[NSString stringWithFormat:@"/keys/%@/requestToken", tokenRequest.keyName]
                                relativeToURL:_rest.baseUrl];
     
@@ -163,7 +173,7 @@
     [request setValue:[defaultEncoder mimeType] forHTTPHeaderField:@"Accept"];
     [request setValue:[defaultEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
     
-    [_rest.httpExecutor executeRequest:request callback:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [_rest executeRequest:request withAuthOption:ARTAuthenticationUseBasic completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             callback(nil, error);
         } else {
@@ -178,15 +188,33 @@
     }];
 }
 
-- (void)authorise:(ARTAuthTokenParams *)tokenParams options:(ARTAuthOptions *)options force:(BOOL)force
-         callback:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
-    if (!force && self.tokenDetails && [self.tokenDetails.expires timeIntervalSinceNow] > 0) {
-        [self.logger verbose:@"ARTAuth authorise not forced and current token is not expired yet, reuse current token."];
-        if (callback) {
-            callback(self.tokenDetails, nil);
+- (void)authorise:(ARTAuthTokenParams *)tokenParams options:(ARTAuthOptions *)options force:(BOOL)force callback:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
+    BOOL requestNewToken = NO;
+
+    // Reuse or not reuse the current token
+    if (!force && self.tokenDetails) {
+        if (self.tokenDetails.expires == nil) {
+            [self.logger verbose:@"ARTAuth: reuse current token."];
+            requestNewToken = NO;
         }
-    } else {
-        [self.logger verbose:@"ARTAuth authorise requesting new token."];
+        else if ([self.tokenDetails.expires timeIntervalSinceNow] > 0) {
+            [self.logger verbose:@"ARTAuth: current token has not expired yet. Reusing token details."];
+            requestNewToken = NO;
+        }
+        else {
+            [self.logger verbose:@"ARTAuth: current token has expired. Requesting new token."];
+            requestNewToken = YES;
+        }
+    }
+    else {
+        if (force)
+            [self.logger verbose:@"ARTAuth: forced requesting new token."];
+        else
+            [self.logger verbose:@"ARTAuth: requesting new token."];
+        requestNewToken = YES;
+    }
+
+    if (requestNewToken) {
         [self requestToken:tokenParams withOptions:options callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
             if (error) {
                 if (callback) {
@@ -194,12 +222,15 @@
                 }
             } else {
                 _tokenDetails = tokenDetails;
-                _method = ARTAuthMethodToken;
                 if (callback) {
                     callback(tokenDetails, nil);
                 }
             }
         }];
+    } else {
+        if (callback) {
+            callback(self.tokenDetails, nil);
+        }
     }
 }
 
@@ -221,23 +252,6 @@
         }];
     } else {
         callback([tokenParams sign:mergedOptions.key], nil);
-    }
-}
-
-- (BOOL)canRequestToken {
-    // FIXME: not used?!
-    if (self.options.authCallback) {
-        [self.logger verbose:@"ARTAuth can request token via authCallback"];
-        return YES;
-    } else if (self.options.authUrl) {
-        [self.logger verbose:@"ARTAuth can request token via authURL"];
-        return YES;
-    } else if (self.options.key) {
-        [self.logger verbose:@"ARTAuth can request token via key"];
-        return YES;
-    } else {
-        [self.logger error:@"ARTAuth cannot request token"];
-        return NO;
     }
 }
 

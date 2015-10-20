@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import "ARTAuthTokenParams.h"
 
+ART_ASSUME_NONNULL_BEGIN
+
 /**
  Type containing the token request details.
  */
@@ -33,3 +35,5 @@
 - (instancetype)initWithTokenParams:(ARTAuthTokenParams *)tokenParams keyName:(NSString *)keyName nonce:(NSString *)nonce mac:(NSString *)mac;
 
 @end
+
+ART_ASSUME_NONNULL_END

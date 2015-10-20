@@ -164,7 +164,7 @@
     return output;
 }
 
--(ARTPresenceAction) presenceActionFromInt:(int) action
+- (ARTPresenceAction)presenceActionFromInt:(int) action
 {
     switch (action) {
         case 0:
@@ -183,7 +183,7 @@
     
 }
 
--(int) intFromPresenceMessageAction:(ARTPresenceAction) action
+- (int)intFromPresenceMessageAction:(ARTPresenceAction) action
 {
     switch (action) {
         case ARTPresenceAbsent:
@@ -373,15 +373,20 @@
     
     NSNumber *timestamp = [NSNumber numberWithInteger:[NSNumber numberWithDouble:tokenRequest.timestamp.timeIntervalSince1970 * 1000].integerValue];
 
-    return @{
-             @"keyName":tokenRequest.keyName,
+    NSMutableDictionary *dictionary = [@{
+             @"keyName":tokenRequest.keyName ? tokenRequest.keyName : @"",
              @"ttl":[NSString stringWithFormat:@"%lld", (int64_t)(tokenRequest.ttl * 1000)],
-             @"capability":tokenRequest.capability,
-             @"clientId":tokenRequest.clientId ? tokenRequest.clientId : @"",
+             @"capability":tokenRequest.capability ? tokenRequest.capability : @"",
              @"timestamp":timestamp ? timestamp : [NSNumber numberWithInteger:[NSNumber numberWithDouble:[NSDate date].timeIntervalSince1970 * 1000].integerValue],
-             @"nonce":tokenRequest.nonce,
-             @"mac":tokenRequest.mac,
-             };
+             @"nonce":tokenRequest.nonce ? tokenRequest.nonce : @"",
+             @"mac":tokenRequest.mac ? tokenRequest.mac : @""
+        } mutableCopy];
+
+    if (tokenRequest.clientId) {
+        dictionary[@"clientId"] = tokenRequest.clientId;
+    }
+
+    return dictionary;
 }
 
 - (ARTProtocolMessage *)protocolMessageFromDictionary:(NSDictionary *)input {

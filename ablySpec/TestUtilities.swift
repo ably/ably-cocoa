@@ -218,9 +218,9 @@ class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
     var logger: ARTLog?
     
     var requests: [NSMutableURLRequest] = []
-    
-    func executeRequest(request: NSMutableURLRequest!, callback: ((NSHTTPURLResponse!, NSData!, NSError!) -> Void)!) {
+
+    func executeRequest(request: NSMutableURLRequest, completion callback: ARTHttpRequestCallback?) {
         self.requests.append(request)
-        self.executor.executeRequest(request, callback: callback)
+        self.executor.executeRequest(request, completion: callback)
     }
 }

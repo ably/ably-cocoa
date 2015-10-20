@@ -18,7 +18,6 @@
         _capability = [capability copy];
         _clientId = [clientId copy];
     }
-    
     return self;
 }
 
@@ -26,7 +25,6 @@
     if (self = [super init]) {
         _token = [token copy];
     }
-    
     return self;
 }
 

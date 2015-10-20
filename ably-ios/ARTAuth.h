@@ -22,11 +22,6 @@ ART_ASSUME_NONNULL_BEGIN
 
 #pragma mark - ARTAuth
 
-typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
-    ARTAuthMethodBasic,
-    ARTAuthMethodToken
-};
-
 @interface ARTAuth : NSObject
 
 @property (nonatomic, readonly, strong) ARTAuthOptions *options;

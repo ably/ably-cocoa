@@ -31,7 +31,7 @@ ART_ASSUME_NONNULL_BEGIN
 /**
  A clientId to associate with this token.
  */
-@property (nonatomic, copy) NSString *clientId;
+@property (art_nullable, nonatomic, copy) NSString *clientId;
 
 /**
  Timestamp (in millis since the epoch) of this request. Timestamps, in conjunction with the nonce, are used to prevent n requests from being replayed.
@@ -39,6 +39,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, null_resettable) NSDate *timestamp;
 
 - (instancetype)init;
+- (instancetype)initWithClientId:(NSString *)clientId;
 
 - (__GENERIC(NSMutableArray, NSURLQueryItem *) *)toArray;
 - (__GENERIC(NSArray, NSURLQueryItem *) *)toArrayWithUnion:(NSArray *)items;

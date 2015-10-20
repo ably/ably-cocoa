@@ -11,11 +11,7 @@
 @protocol ARTEncoder;
 @protocol ARTHTTPExecutor;
 
-typedef NS_ENUM(NSUInteger, ARTAuthentication) {
-    ARTAuthenticationOff,
-    ARTAuthenticationOn,
-    ARTAuthenticationUseBasic
-};
+ART_ASSUME_NONNULL_BEGIN
 
 /// ARTRest private methods that are used for whitebox testing
 @interface ARTRest (Private)
@@ -28,21 +24,21 @@ typedef NS_ENUM(NSUInteger, ARTAuthentication) {
 
 @property (nonatomic, strong) NSURL *baseUrl;
 
-- (NSURL *)getBaseURL;
+// FIXME: used for Realtime. Review because ARTRealtime does not use ARTRest as base class
 - (NSString *)formatQueryParams:(NSDictionary *)queryParams;
 
-- (NSURL *)resolveUrl:(NSString *)relUrl;
-- (NSURL *)resolveUrl:(NSString *)relUrl queryParams:(NSDictionary *)queryParams;
+// MARK: ARTHTTPExecutor
 
-- (id<ARTCancellable>)get:(NSString *)relUrl authenticated:(BOOL)authenticated cb:(ARTHttpCb)cb;
-- (id<ARTCancellable>)get:(NSString *)relUrl headers:(NSDictionary *)headers authenticated:(BOOL)authenticated cb:(ARTHttpCb)cb;
+- (void)executeRequest:(NSMutableURLRequest *)request completion:(ARTHttpRequestCallback)callback;
 
-- (id<ARTCancellable>)post:(NSString *)relUrl headers:(NSDictionary *)headers body:(NSData *)body authenticated:(ARTAuthentication)authenticated cb:(ARTHttpCb)cb;
+// MARK: Internal
 
-- (void)executeRequest:(NSMutableURLRequest *)request callback:(void (^)(NSHTTPURLResponse *, NSData *, NSError *))callback;
+- (void)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(ARTHttpRequestCallback)callback;
+
+- (void)calculateAuthorization:(ARTAuthMethod)method completion:(void (^)(NSString *__art_nonnull authorization, NSError *__art_nullable error))callback;
 
 - (id<ARTCancellable>)postTestStats:(NSArray *)stats cb:(void(^)(ARTStatus * status)) cb;
 
-- (void)authorise:(ARTTokenCallback)completion;
-
 @end
+
+ART_ASSUME_NONNULL_END

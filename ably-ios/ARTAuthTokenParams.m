@@ -15,11 +15,6 @@
 #import "ARTPayload.h"
 #import "ARTAuthTokenRequest.h"
 
-// FIXME: reuse
-static __GENERIC(NSArray, NSString *) *decomposeKey(NSString *key) {
-    return [key componentsSeparatedByString:@":"];
-}
-
 @implementation ARTAuthTokenParams
 
 - (instancetype)init {
@@ -27,8 +22,15 @@ static __GENERIC(NSArray, NSString *) *decomposeKey(NSString *key) {
         _ttl = 60 * 60;
         _timestamp = [NSDate date];
         _capability = @"{\"*\":[\"*\"]}"; // allow all
+        _clientId = nil;
     }
-    
+    return self;
+}
+
+- (instancetype)initWithClientId:(NSString *)clientId {
+    if (self = [self init]) {
+        _clientId = clientId;
+    }
     return self;
 }
 
