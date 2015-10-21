@@ -16,16 +16,17 @@ class RealtimeClient: QuickSpec {
         describe("RealtimeClient") {
             // RTC1
             context("options") {
-                it("should support the same options as the Rest client") {
-                    let options = AblyTests.commonAppSetup(debug: true) //Same as Rest
-
-                    options.clientId = "Bob"
+                fit("should support the same options as the Rest client") {
+                    let options = AblyTests.commonAppSetup() //Same as Rest
+                    options.clientId = "client_string"
 
                     let client = ARTRealtime(options: options)
 
-                    waitUntil(timeout: 60.0) { done in
+                    waitUntil(timeout: 20.0) { done in
                         client.eventEmitter.on { state in
                             switch state {
+                            case .Connecting:
+                                break
                             case .Failed:
                                 let reason = client.connectionErrorReason()
                                 XCTFail("\(reason.message): \(reason.description)")
@@ -40,7 +41,7 @@ class RealtimeClient: QuickSpec {
                 }
                 
                 //RTC1a
-                fit("should echoMessages option be true by default") {
+                it("should echoMessages option be true by default") {
                     let options = ARTClientOptions()
                     expect(options.echoMessages) == true
                 }

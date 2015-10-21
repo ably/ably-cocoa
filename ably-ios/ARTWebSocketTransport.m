@@ -40,8 +40,12 @@ enum {
 @property (readonly, strong, nonatomic) dispatch_queue_t queue;
 @property (readwrite, strong, nonatomic) SRWebSocket *websocket;
 @property (readwrite, assign, nonatomic) BOOL closing;
+
+// From RestClient
 @property (readwrite, strong, nonatomic) id<ARTEncoder> encoder;
 @property (readonly, strong, nonatomic) ARTLog *logger;
+@property (readonly, strong, nonatomic) ARTAuth *auth;
+@property (readonly, strong, nonatomic) ARTClientOptions *options;
 
 @end
 
@@ -55,88 +59,11 @@ enum {
         _queue = dispatch_queue_create("ARTWebSocketTransport", NULL);
         _websocket = nil;
         _closing = NO;
+
         _encoder = rest.defaultEncoder;
         _logger = rest.logger;
-
-        __weak ARTWebSocketTransport *selfWeak = self;
-        __weak ARTRest *restWeak = rest;
-
-        // Basic
-        //NSURLQueryItem *key = [NSURLQueryItem queryItemWithName:@"key" value:options.key];
-
-        // Token
-        [rest.auth authorise:nil options:options force:false callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
-            ARTRest *restStrong = restWeak;
-            ARTWebSocketTransport *selfStrong = selfWeak;
-
-            if (!restStrong) return;
-            if (!selfStrong) return;
-
-            if (error) {
-                [restStrong.logger error:@"ARTWebSocketTransport: token auth failed with %@", error.description];
-                [selfStrong.delegate realtimeTransportFailed:selfStrong];
-                return;
-            }
-
-            NSURLComponents *urlComponents = [NSURLComponents componentsWithString:@"/"];
-            NSURLQueryItem *tokenParam = [NSURLQueryItem queryItemWithName:@"access_token" value:tokenDetails.token];
-            NSURLQueryItem *clientIdParam = [NSURLQueryItem queryItemWithName:@"client_id" value:options.clientId];
-            urlComponents.queryItems = @[tokenParam, clientIdParam];
-            NSURL *url = [urlComponents URLRelativeToURL:[options realtimeUrl]];
-
-            [restStrong.logger debug:@"ARTWebSocketTransport: url: %@", url];
-            selfStrong.websocket = [[SRWebSocket alloc] initWithURL:url];
-            selfStrong.websocket.delegate = selfWeak;
-            [selfStrong.websocket setDelegateDispatchQueue:selfWeak.queue];
-        }];
-
-
-
-        // FIXME: old code
-        /*
-        [rest.auth authParams:^id<ARTCancellable>(NSDictionary *authParams) {
-            ARTWebSocketTransport *sSelf = wSelf;
-            ARTRest *sRest = wRest;
-
-            if (!sSelf || !wRest) {
-                return nil;
-            }
-
-            NSMutableDictionary *queryParams = [NSMutableDictionary dictionaryWithDictionary:authParams];
-            
-            queryParams[@"echo"] =  echoMessages ? @"true" :@"false";
-                        
-            if(options.recover) {
-                NSArray * parts = [options.recover componentsSeparatedByString:@":"];
-                if([parts count] == 2) {
-                    NSString * conId = [parts objectAtIndex:0];
-                    NSString * key = [parts objectAtIndex:1];
-                    [wRest.logger info:@"attempting recovery of connection %@", conId];
-                    queryParams[@"recover"] = conId;
-                    queryParams[@"connection_serial"] = key;
-                }
-                else {
-                    [wRest.logger error:@"recovery string is malformed, ignoring: '%@'", options.recover];
-                }
-            }
-            else if(options.resumeKey != nil) {
-                queryParams[@"resume"]  =  options.resumeKey;
-                queryParams[@"connection_serial"] = [NSString stringWithFormat:@"%lld",options.connectionSerial];
-            }
-            if (clientId) {
-                queryParams[@"client_id"] = clientId;
-            }
-
-            NSString *queryString = [sRest formatQueryParams:queryParams];
-            NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"wss://%@:%d/?%@", realtimeHost, realtimePort, queryString]];
-            
-            [wRest.logger debug:@"ARTWebSocketTransport: url: %@", url];
-            sSelf.websocket = [[SRWebSocket alloc] initWithURL:url];
-            sSelf.websocket.delegate = sSelf;
-            [sSelf.websocket setDelegateDispatchQueue:sSelf.q];
-            return nil;
-        }];
-         */
+        _auth = rest.auth;
+        _options = options;
     }
     return self;
 }
@@ -153,7 +80,81 @@ enum {
 
 - (void)connect {
     [self.logger debug:@"ARTWebSocketTransport: websocket connect"];
-    [self.websocket open];
+    if ([self.options isBasicAuth]) {
+        // Basic
+        NSURLQueryItem *keyParam = [NSURLQueryItem queryItemWithName:@"key" value:self.options.key];
+        [self setupWebSocket:@[keyParam] withOptions:self.options];
+        // Connect
+        [self.websocket open];
+    }
+    else {
+        __weak ARTWebSocketTransport *selfWeak = self;
+        // Token
+        [self.auth authorise:nil options:self.options force:false callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
+            ARTWebSocketTransport *selfStrong = selfWeak;
+            if (!selfStrong) return;
+
+            if (error) {
+                [selfStrong.logger error:@"ARTWebSocketTransport: token auth failed with %@", error.description];
+                [selfStrong.delegate realtimeTransportFailed:selfStrong];
+                return;
+            }
+
+            NSURLQueryItem *accessTokenParam = [NSURLQueryItem queryItemWithName:@"access_token" value:decodeBase64(tokenDetails.token)];
+            [selfStrong setupWebSocket:@[accessTokenParam] withOptions:selfStrong.options];
+            // Connect
+            [selfStrong.websocket open];
+        }];
+    }
+}
+
+- (void)setupWebSocket:(__GENERIC(NSArray, NSURLQueryItem *) *)params withOptions:(ARTClientOptions *)options {
+    NSArray *queryItems = params;
+
+    // ClientID
+    if (options.clientId) {
+        NSURLQueryItem *clientIdParam = [NSURLQueryItem queryItemWithName:@"client_id" value:options.clientId];
+        queryItems = [queryItems arrayByAddingObject:clientIdParam];
+    }
+
+    // Echo
+    NSURLQueryItem *echoParam = [NSURLQueryItem queryItemWithName:@"echo" value:options.echoMessages ? @"true" : @"false"];
+    queryItems = [queryItems arrayByAddingObject:echoParam];
+
+    if (options.recover) {
+        NSArray *recoverParts = [options.recover componentsSeparatedByString:@":"];
+        if ([recoverParts count] == 2) {
+            NSString *connectionId = [recoverParts objectAtIndex:0];
+            NSString *key = [recoverParts objectAtIndex:1];
+            [self.logger info:@"ARTWebSocketTransport: attempting recovery of connection %@", connectionId];
+
+            NSURLQueryItem *recoverParam = [NSURLQueryItem queryItemWithName:@"recover" value:connectionId];
+            queryItems = [queryItems arrayByAddingObject:recoverParam];
+
+            NSURLQueryItem *connectionSerialParam = [NSURLQueryItem queryItemWithName:@"connection_serial" value:key];
+            queryItems = [queryItems arrayByAddingObject:connectionSerialParam];
+        }
+        else {
+            [self.logger error:@"ARTWebSocketTransport: recovery string is malformed, ignoring: '%@'", options.recover];
+        }
+    }
+    else if (options.resumeKey != nil) {
+        NSURLQueryItem *resumeKeyParam = [NSURLQueryItem queryItemWithName:@"resume" value:options.resumeKey];
+        queryItems = [queryItems arrayByAddingObject:resumeKeyParam];
+
+        NSURLQueryItem *connectionSerialParam = [NSURLQueryItem queryItemWithName:@"connection_serial" value:[NSString stringWithFormat:@"%lld",options.connectionSerial]];
+        queryItems = [queryItems arrayByAddingObject:connectionSerialParam];
+    }
+
+    // URL
+    NSURLComponents *urlComponents = [NSURLComponents componentsWithString:@"/"];
+    urlComponents.queryItems = queryItems;
+    NSURL *url = [urlComponents URLRelativeToURL:[options realtimeUrl]];
+
+    [_logger debug:@"ARTWebSocketTransport: url: %@", url];
+    self.websocket = [[SRWebSocket alloc] initWithURL:url];
+    self.websocket.delegate = self;
+    [self.websocket setDelegateDispatchQueue:self.queue];
 }
 
 - (void)sendClose {
@@ -193,8 +194,7 @@ enum {
             data = [((NSString *)message) dataUsingEncoding:NSUTF8StringEncoding];
 
         } else if (![message isKindOfClass:[NSData class]]) {
-            // Error
-            // TODO log?
+            [_logger error:@"ARTWebSocketTransport: binary data not supported at the moment"];
             return;
         } else {
             data = message;
