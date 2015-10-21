@@ -8,6 +8,9 @@
 
 #import "ARTEventEmitter.h"
 
+#import "ARTRealtime.h"
+#import "ARTRealtime+Private.h"
+#import "ARTRealtimeChannel.h"
 #import "ARTRealtimeChannelSubscription.h"
 
 @interface ARTEventEmitter ()
@@ -28,9 +31,8 @@
 
 - (id<ARTSubscription>)on:(ARTRealtimeConnectionStateCb)cb {
     ARTRealtimeConnectionStateSubscription *subscription = [[ARTRealtimeConnectionStateSubscription alloc] initWithRealtime:self.realtime cb:cb];
-    // FIXME:
-    //[self.realtime.stateSubscriptions addObject:subscription];
-    //cb(self.realtime.state);
+    [self.realtime.stateSubscriptions addObject:subscription];
+    cb(self.realtime.state);
     return subscription;
 }
 

@@ -36,6 +36,9 @@ ART_ASSUME_NONNULL_BEGIN
 + (NSURL*)restUrl:(NSString *)host port:(int)port tls:(BOOL)tls;
 - (NSURL *)restUrl;
 
++ (NSURL*)realtimeUrl:(NSString *)host port:(int)port tls:(BOOL)tls;
+- (NSURL *)realtimeUrl;
+
 @end
 
 ART_ASSUME_NONNULL_END

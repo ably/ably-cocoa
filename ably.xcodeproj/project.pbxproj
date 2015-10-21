@@ -503,7 +503,6 @@
 				96BF616E1A35FB7C004CF2B3 /* ARTAuth.h */,
 				D7C1B8781BBF5F460087B55F /* ARTAuth+Private.h */,
 				96BF616F1A35FB7C004CF2B3 /* ARTAuth.m */,
-				D746AE321BBC29EB003ECEF8 /* Transport */,
 			);
 			name = REST;
 			sourceTree = "<group>";
@@ -514,6 +513,7 @@
 				96A507BB1A3791490077CDF8 /* ARTRealtime.h */,
 				1C05CF1E1AC1D7EB00687AC9 /* ARTRealtime+Private.h */,
 				96A507BC1A3791490077CDF8 /* ARTRealtime.m */,
+				D746AE321BBC29EB003ECEF8 /* Transport */,
 				D746AE3E1BBC5B14003ECEF8 /* ARTEventEmitter.h */,
 				D746AE3F1BBC5B14003ECEF8 /* ARTEventEmitter.m */,
 				D746AE451BBD6FE9003ECEF8 /* ARTQueuedMessage.h */,

@@ -292,7 +292,7 @@
         case ARTRealtimeConnected:
             if([self isFromResume]) {
                 if(![self.options.resumeKey isEqualToString:self.connectionKey] || self.options.connectionSerial != self.connectionSerial) {
-                    [self.logger warn:@"ARTRealtime connection has reconnected, but resume failed. Detaching all channels"];
+                    [self.logger warn:@"ARTRealtime: connection has reconnected, but resume failed. Detaching all channels"];
                     for (NSString *channelName in self.allChannels) {
                         ARTErrorInfo * info = [[ARTErrorInfo alloc] init];
                         [info setCode:80000 message:@"resume connection failed"];
@@ -532,14 +532,11 @@
 - (void)onConnectTimerFired {
     switch (self.state) {
         case ARTRealtimeConnecting:
-            [self.logger warn:@"ARTRealtime connecting timer fired."];
-            
-            NSLog(@"ARTRealtime connecting timer fired.");
-            
+            [self.logger warn:@"ARTRealtime: connecting timer fired."];
             [self transition:ARTRealtimeFailed];
             break;
         default:
-            // TODO invalid connection state
+            NSAssert(false, @"Invalid connection state");
             break;
     }
 }
@@ -761,6 +758,7 @@
     if(message.hasConnectionSerial) {
         self.connectionSerial = message.connectionSerial;
     }
+
     switch (message.action) {
         case ARTProtocolMessageHeartbeat:
             [self onHeartbeat:message];

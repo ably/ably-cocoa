@@ -13,6 +13,8 @@
 /// ARTRealtime private methods that are used for whitebox testing.
 @interface ARTRealtime (Private)
 
+@property (readonly, strong, nonatomic) NSMutableArray *stateSubscriptions;
+
 // Transport Events
 - (void)onHeartbeat:(ARTProtocolMessage *)message;
 - (void)onConnected:(ARTProtocolMessage *)message;
@@ -22,7 +24,7 @@
 - (void)onNack:(ARTProtocolMessage *)message;
 - (void)onChannelMessage:(ARTProtocolMessage *)message;
 
-- (int64_t) connectionSerial;
+- (int64_t)connectionSerial;
 - (void)onSuspended;
 
 @end

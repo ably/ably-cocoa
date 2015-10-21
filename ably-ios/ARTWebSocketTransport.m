@@ -34,7 +34,7 @@ enum {
 @interface ARTWebSocketTransport () <SRWebSocketDelegate>
 
 @property (readonly, assign, nonatomic) CFRunLoopRef rl;
-@property (readonly, strong, nonatomic) dispatch_queue_t q;
+@property (readonly, strong, nonatomic) dispatch_queue_t queue;
 @property (readwrite, strong, nonatomic) SRWebSocket *websocket;
 @property (readwrite, assign, nonatomic) BOOL closing;
 @property (readwrite, strong, nonatomic) id<ARTEncoder> encoder;
@@ -44,31 +44,37 @@ enum {
 
 @implementation ARTWebSocketTransport
 
+// FIXME: Realtime sould be extending from RestClient
 - (instancetype)initWithRest:(ARTRest *)rest options:(ARTClientOptions *)options {
     self = [super init];
     if (self) {
         _rl = CFRunLoopGetCurrent();
-        _q = dispatch_queue_create("ARTWebSocketTransport", NULL);
+        _queue = dispatch_queue_create("ARTWebSocketTransport", NULL);
         _websocket = nil;
         _closing = NO;
         _encoder = rest.defaultEncoder;
-
-        /*
-        __weak ARTWebSocketTransport *wSelf = self;
-        __weak ARTRest *wRest = rest;
         _logger = rest.logger;
-        
-        BOOL echoMessages = options.echoMessages;
-        NSString *clientId = options.clientId;
 
-        NSString *realtimeHost = options.realtimeHost;
-        int realtimePort = options.realtimePort;
-         */
+        //Authorisation params
+        // access_token=""
+        // client_id=""
 
-        NSAssert(false, @"WIP: Realtime sould be extending from RestClient");
-        
+        //Connection params
+        // protocol="json"
+
+        NSURLComponents *urlComponents = [NSURLComponents componentsWithString:@"/"];
+        NSURLQueryItem *key = [NSURLQueryItem queryItemWithName:@"key" value:options.key];
+        urlComponents.queryItems = @[key];
+        NSURL *url = [urlComponents URLRelativeToURL:[options realtimeUrl]];
+
+        [rest.logger debug:@"ARTWebSocketTransport: url: %@", url];
+        self.websocket = [[SRWebSocket alloc] initWithURL:url];
+        self.websocket.delegate = self;
+        [self.websocket setDelegateDispatchQueue:self.queue];
+
+        // FIXME: old code
         /*
-        [rest withAuthParams:^id<ARTCancellable>(NSDictionary *authParams) {
+        [rest.auth authParams:^id<ARTCancellable>(NSDictionary *authParams) {
             ARTWebSocketTransport *sSelf = wSelf;
             ARTRest *sRest = wRest;
 
@@ -110,7 +116,7 @@ enum {
             [sSelf.websocket setDelegateDispatchQueue:sSelf.q];
             return nil;
         }];
-        */
+         */
     }
     return self;
 }
@@ -162,6 +168,7 @@ enum {
     
     CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
         NSData *data = nil;
+
         if ([message isKindOfClass:[NSString class]]) {
             data = [((NSString *)message) dataUsingEncoding:NSUTF8StringEncoding];
 

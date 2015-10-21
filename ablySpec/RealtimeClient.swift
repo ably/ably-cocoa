@@ -17,23 +17,30 @@ class RealtimeClient: QuickSpec {
             // RTC1
             context("options") {
                 it("should support the same options as the Rest client") {
-                    let options = AblyTests.commonAppSetup() //Same as Rest
+                    let options = AblyTests.commonAppSetup(debug: true) //Same as Rest
+
+                    options.clientId = "Bob"
+
                     let client = ARTRealtime(options: options)
-                    
-                    let expectation = self.expectationWithDescription("async")
-                    
-                    client.eventEmitter.on { state in
-                        if state != .Connecting {
-                            expect(state).to(equal(ARTRealtimeConnectionState.Connected))
-                            expectation.fulfill()
+
+                    waitUntil(timeout: 60.0) { done in
+                        client.eventEmitter.on { state in
+                            switch state {
+                            case .Failed:
+                                let reason = client.connectionErrorReason()
+                                XCTFail("\(reason.message): \(reason.description)")
+                                done()
+                            default:
+                                expect(state).to(equal(ARTRealtimeConnectionState.Connected))
+                                done()
+                                break
+                            }
                         }
                     }
-                    
-                    self.waitForExpectationsWithTimeout(10.0, handler: nil)
                 }
                 
                 //RTC1a
-                it("should echoMessages option be true by default") {
+                fit("should echoMessages option be true by default") {
                     let options = ARTClientOptions()
                     expect(options.echoMessages) == true
                 }
@@ -46,7 +53,7 @@ class RealtimeClient: QuickSpec {
                 
                 //RTC1c
                 it("should attempt to recover the connection state if recover string is assigned") {
-                    let options = ARTClientOptions()
+                    //let options = ARTClientOptions()
                     // recover string, when set, will attempt to recover the connection state of a previous connection
                     
                     // TODO: need more background
@@ -54,11 +61,11 @@ class RealtimeClient: QuickSpec {
                 
                 //RTC1d
                 it("should modify the realtime endpoint host if realtimeHost is assigned") {
-                    let options = ARTClientOptions()
+                    //let options = ARTClientOptions()
                     // realtimeHost string, when set, will modify the realtime endpoint host used by this client library
 
                     //Default: realtime.ably.io
-                    let realtimeHost = options.realtimeHost
+                    //let realtimeHost = options.realtimeHost
                     
                     // TODO: try to swizzle
                 }
