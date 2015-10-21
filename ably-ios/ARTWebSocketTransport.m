@@ -12,8 +12,11 @@
 
 #import "ARTRest.h"
 #import "ARTRest+Private.h"
+#import "ARTAuth.h"
 #import "ARTProtocolMessage.h"
 #import "ARTClientOptions.h"
+#import "ARTAuthTokenParams.h"
+#import "ARTAuthTokenDetails.h"
 
 enum {
     ARTWsNeverConnected = -1,
@@ -55,22 +58,39 @@ enum {
         _encoder = rest.defaultEncoder;
         _logger = rest.logger;
 
-        //Authorisation params
-        // access_token=""
-        // client_id=""
+        __weak ARTWebSocketTransport *selfWeak = self;
+        __weak ARTRest *restWeak = rest;
 
-        //Connection params
-        // protocol="json"
+        // Basic
+        //NSURLQueryItem *key = [NSURLQueryItem queryItemWithName:@"key" value:options.key];
 
-        NSURLComponents *urlComponents = [NSURLComponents componentsWithString:@"/"];
-        NSURLQueryItem *key = [NSURLQueryItem queryItemWithName:@"key" value:options.key];
-        urlComponents.queryItems = @[key];
-        NSURL *url = [urlComponents URLRelativeToURL:[options realtimeUrl]];
+        // Token
+        [rest.auth authorise:nil options:options force:false callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
+            ARTRest *restStrong = restWeak;
+            ARTWebSocketTransport *selfStrong = selfWeak;
 
-        [rest.logger debug:@"ARTWebSocketTransport: url: %@", url];
-        self.websocket = [[SRWebSocket alloc] initWithURL:url];
-        self.websocket.delegate = self;
-        [self.websocket setDelegateDispatchQueue:self.queue];
+            if (!restStrong) return;
+            if (!selfStrong) return;
+
+            if (error) {
+                [restStrong.logger error:@"ARTWebSocketTransport: token auth failed with %@", error.description];
+                [selfStrong.delegate realtimeTransportFailed:selfStrong];
+                return;
+            }
+
+            NSURLComponents *urlComponents = [NSURLComponents componentsWithString:@"/"];
+            NSURLQueryItem *tokenParam = [NSURLQueryItem queryItemWithName:@"access_token" value:tokenDetails.token];
+            NSURLQueryItem *clientIdParam = [NSURLQueryItem queryItemWithName:@"client_id" value:options.clientId];
+            urlComponents.queryItems = @[tokenParam, clientIdParam];
+            NSURL *url = [urlComponents URLRelativeToURL:[options realtimeUrl]];
+
+            [restStrong.logger debug:@"ARTWebSocketTransport: url: %@", url];
+            selfStrong.websocket = [[SRWebSocket alloc] initWithURL:url];
+            selfStrong.websocket.delegate = selfWeak;
+            [selfStrong.websocket setDelegateDispatchQueue:selfWeak.queue];
+        }];
+
+
 
         // FIXME: old code
         /*
