@@ -30,7 +30,7 @@
 @property (nonatomic, weak) ARTLog *logger;
 @property (readonly, strong, nonatomic) ARTRealtime *realtime;
 @property (readonly, strong, nonatomic) NSString *name;
-@property (readonly, strong, nonatomic) ARTChannel *restChannel; //?!
+@property (readonly, strong, nonatomic) ARTChannel *restChannel; //FIXME: ?!
 @property (readwrite, assign, nonatomic) ARTRealtimeChannelState state;
 @property (readwrite, strong, nonatomic) NSMutableArray *queuedMessages;
 @property (readwrite, strong, nonatomic) NSString *attachSerial;
