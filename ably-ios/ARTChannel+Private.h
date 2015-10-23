@@ -11,22 +11,16 @@
 
 @protocol ARTPayloadEncoder;
 
-@class ARTRest;
-
 ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTChannel() {
 @public
     id<ARTPayloadEncoder> _payloadEncoder;
-    __weak ARTLog *_logger;
 }
 
-@property (nonatomic, weak) ARTRest *rest;
 @property (nonatomic, strong, art_null_resettable) ARTChannelOptions *options;
 
-- (instancetype)initWithName:(NSString *)name rest:(ARTRest *)rest options:(art_nullable ARTChannelOptions *)options;
-
-- (void)_postMessages:(id)data callback:(art_nullable ARTErrorCallback)callback;
+- (void)internalPostMessages:(id)data callback:(art_nullable ARTErrorCallback)callback;
 
 @end
 

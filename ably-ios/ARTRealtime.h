@@ -22,9 +22,11 @@
 @class ARTPresence;
 @class ARTPresenceMap;
 @class ARTRealtimeChannelPresenceSubscription;
+@class ARTRealtimeConnectionStateSubscription;
 @class ARTEventEmitter;
 @class ARTRealtimeChannel;
 @class ARTAuth;
+@class ARTProtocolMessage;
 
 ART_ASSUME_NONNULL_BEGIN
 
@@ -52,6 +54,7 @@ Instance the Ably library with the given options.
 // FIXME: consistent names like Connect/Disconnect, Open/Close
 - (void)close;
 - (BOOL)connect;
+- (BOOL)isActive;
 
 - (ARTRealtimeConnectionState)state;
 - (NSString *)connectionId;
@@ -59,20 +62,27 @@ Instance the Ably library with the given options.
 - (NSString *)recoveryKey;
 - (ARTAuth *)auth;
 - (__GENERIC(NSDictionary, NSString *, ARTRealtimeChannel *) *)channels;
-- (id<ARTCancellable>)time:(void(^)(ARTStatus *status, NSDate *time))cb;
+- (void)time:(void(^)(NSDate *time, NSError *error))cb;
 
 - (ARTErrorInfo *)connectionErrorReason;
 
 typedef void (^ARTRealtimePingCb)(ARTStatus *);
 - (void)ping:(ARTRealtimePingCb) cb;
 
-- (void)stats:(ARTStatsQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult /* <ARTStats *> */ *result))callback;
+- (void)stats:(ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult *result, NSError *error))completion;
 
 - (ARTRealtimeChannel *)channel:(NSString *)channelName;
 - (ARTRealtimeChannel *)channel:(NSString *)channelName cipherParams:(art_nullable ARTCipherParams *)cipherParams;
+- (void)removeChannel:(NSString *)name;
+
+// Message sending
+- (void)send:(ARTProtocolMessage *)msg cb:(art_nullable ARTStatusCallback)cb;
+
+- (void)unsubscribeState:(ARTRealtimeConnectionStateSubscription *)subscription;
 
 @property (readonly, strong, nonatomic) ARTEventEmitter *eventEmitter;
 @property (readonly, getter=getLogger) ARTLog *logger;
+@property (readwrite, strong, nonatomic) ARTErrorInfo *errorReason;
 
 @end
 

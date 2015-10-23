@@ -34,6 +34,7 @@
 
 @property (readonly, strong, nonatomic) id<ARTEncoder> defaultEncoder;
 @property (readonly, strong, nonatomic) NSString *defaultEncoding; //Content-Type
+@property (readonly, strong, nonatomic) NSDictionary *encoders;
 
 @property (nonatomic, strong) id<ARTHTTPExecutor> httpExecutor;
 @property (readonly, nonatomic, assign) Class channelClass;
@@ -43,7 +44,6 @@
 // MARK: Not accessible by tests
 @property (readonly, strong, nonatomic) ARTHttp *http;
 @property (strong, nonatomic) ARTAuth *auth;
-@property (readonly, strong, nonatomic) NSDictionary *encoders;
 @property (readwrite, assign, nonatomic) int fallbackCount;
 
 @end
@@ -185,8 +185,6 @@
     NSParameterAssert(query.limit < 1000);
     NSParameterAssert([query.start compare:query.end] != NSOrderedDescending);
     
-    // FIXME:
-    /*
     NSURLComponents *requestUrl = [NSURLComponents componentsWithString:@"/stats"];
     requestUrl.queryItems = [query asQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[requestUrl URLRelativeToURL:self.baseUrl]];
@@ -196,8 +194,7 @@
         return [encoder decodeStats:data];
     };
     
-    [ARTPaginatedResult executePaginatedRequest:request executor:self responseProcessor:responseProcessor callback:callback];
-     */
+    [ARTPaginatedResult executePaginatedRequest:request executor:self.httpExecutor responseProcessor:responseProcessor callback:callback];
 }
 
 - (id<ARTEncoder>)defaultEncoder {

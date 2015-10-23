@@ -9,12 +9,12 @@
 #import <Foundation/Foundation.h>
 #import "ARTTypes.h"
 #import "ARTLog.h"
+#import "ARTRestChannel.h"
 #import "ARTPresenceMessage.h"
 
 @protocol ARTSubscription;
 @protocol ARTPayloadEncoder;
 
-@class ARTChannel;
 @class ARTRealtime;
 @class ARTDataQuery;
 @class ARTPresence;
@@ -25,12 +25,10 @@
 @class ARTRealtimeChannelSubscription;
 @class ARTRealtimeChannelStateSubscription;
 
-@interface ARTRealtimeChannel : NSObject
+@interface ARTRealtimeChannel : ARTRestChannel
 
-@property (nonatomic, weak) ARTLog *logger;
 @property (readonly, strong, nonatomic) ARTRealtime *realtime;
-@property (readonly, strong, nonatomic) NSString *name;
-@property (readonly, strong, nonatomic) ARTChannel *restChannel; //FIXME: ?!
+@property (readonly, strong, nonatomic) ARTPresence *presence;
 @property (readwrite, assign, nonatomic) ARTRealtimeChannelState state;
 @property (readwrite, strong, nonatomic) NSMutableArray *queuedMessages;
 @property (readwrite, strong, nonatomic) NSString *attachSerial;
@@ -43,8 +41,8 @@
 @property (readwrite, strong, nonatomic) ARTPresenceMap * presenceMap;
 @property (readwrite, assign, nonatomic) ARTPresenceAction lastPresenceAction;
 
-- (instancetype)initWithRealtime:(ARTRealtime *)realtime name:(NSString *)name cipherParams:(ARTCipherParams *)cipherParams;
-+ (instancetype)channelWithRealtime:(ARTRealtime *)realtime name:(NSString *)name cipherParams:(ARTCipherParams *)cipherParams;
+- (instancetype)initWithRealtime:(ARTRealtime *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options;
++ (instancetype)channelWithRealtime:(ARTRealtime *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options;
 
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status;
 
@@ -68,7 +66,6 @@
 
 - (void)broadcastPresence:(ARTPresenceMessage *)pm;
 
-
 - (void)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb;
 - (void)publish:(id)payload cb:(ARTStatusCallback)cb;
 
@@ -81,11 +78,12 @@
 
 - (BOOL)attach;
 - (BOOL)detach;
+- (void)detachChannel:(ARTStatus *) error;
 
-- (void)releaseChannel; //ARC forbids implementation of release
+- (void)requestContinueSync;
+
+- (void)releaseChannel;
 - (ARTRealtimeChannelState)state;
 - (ARTPresenceMap *)presenceMap;
-
-@property (readonly, strong, nonatomic) ARTPresence *presence;
 
 @end

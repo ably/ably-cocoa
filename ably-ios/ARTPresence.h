@@ -13,20 +13,27 @@
 @protocol ARTSubscription;
 
 @class ARTChannel;
+@class ARTRealtimeChannel;
 @class ARTPaginatedResult;
 @class ARTDataQuery;
 
 ART_ASSUME_NONNULL_BEGIN
 
-/// Provides access to presence operations and state for the associated Channel
+/**
+ A class that provides access to presence operations and state for the associated Channel.
+ */
 @interface ARTPresence : NSObject
 
-- (instancetype)initWithChannel:(ARTChannel *)channel;
+- (instancetype)initWithChannel:(ARTRealtimeChannel *)channel;
 
-/// Get the presence state for one channel
+/**
+ Get the presence state for one channel
+ */
 - (void)get:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *__art_nullable result, NSError *__art_nullable error))callback;
 
-/// Obtain recent presence history for one channel
+/**
+ Obtain recent presence history for one channel
+ */
 - (void)history:(art_nullable ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *__art_nullable result, NSError *__art_nullable error))callback;
 
 - (void)enter:(id)data cb:(ARTStatusCallback)cb;

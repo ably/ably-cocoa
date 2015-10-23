@@ -8,13 +8,19 @@
 
 #import <Foundation/Foundation.h>
 #import "ARTChannel.h"
+#import "ARTLog.h"
 
 @class ARTRest;
-@class ARTChannelOptions;
+@class ARTPresence;
 
 ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTRestChannel : ARTChannel
+
+@property (nonatomic, weak) ARTRest *rest;
+@property (readonly, getter=getLogger) ARTLog *logger;
+
+- (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRest *)rest;
 
 @end
 

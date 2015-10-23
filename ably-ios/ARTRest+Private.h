@@ -18,6 +18,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (readonly, strong, nonatomic) id<ARTEncoder> defaultEncoder;
 @property (readonly, strong, nonatomic) NSString *defaultEncoding; //Content-Type
+@property (readonly, strong, nonatomic) NSDictionary *encoders;
 
 @property (nonatomic, strong) id<ARTHTTPExecutor> httpExecutor;
 @property (readonly, nonatomic, assign) Class channelClass;

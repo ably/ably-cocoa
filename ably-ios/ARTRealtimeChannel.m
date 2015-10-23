@@ -8,10 +8,12 @@
 
 #import "ARTRealtimeChannel.h"
 
-#import "ARTRealtime.h"
+#import "ARTRealtime+Private.h"
 #import "ARTMessage.h"
+#import "ARTAuth.h"
 #import "ARTPresence.h"
 #import "ARTChannel.h"
+#import "ARTChannelOptions.h"
 #import "ARTProtocolMessage.h"
 #import "ARTRealtimeChannelSubscription.h"
 #import "ARTPresenceMap.h"
@@ -24,32 +26,27 @@
 
 @implementation ARTRealtimeChannel
 
-- (instancetype)initWithRealtime:(ARTRealtime *)realtime name:(NSString *)name cipherParams:(ARTCipherParams *)cipherParams {
-    self = [super init];
+- (instancetype)initWithRealtime:(ARTRealtime *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options {
+    self = [super initWithName:name withOptions:options andRest:realtime.rest];
     if (self) {
-        _logger = realtime.logger;
-        _presence = [[ARTPresence alloc] initWithChannel:self];
         _realtime = realtime;
-        _name = name;
-        // FIXME:
-        //_restChannel = [realtime.rest channel:name];
+        _presence = [[ARTPresence alloc] initWithChannel:self];
         _state = ARTRealtimeChannelInitialised;
         _queuedMessages = [NSMutableArray array];
         _attachSerial = nil;
         _subscriptions = [NSMutableDictionary dictionary];
         _presenceSubscriptions = [NSMutableArray array];
         _stateSubscriptions = [NSMutableArray array];
-        // FIXME:
-        //_clientId = realtime.clientId;
-        _payloadEncoder = [ARTPayload defaultPayloadEncoder:cipherParams];
+        _clientId = realtime.auth.clientId;
+        _payloadEncoder = [ARTPayload defaultPayloadEncoder:options.cipherParams];
         _presenceMap =[[ARTPresenceMap alloc] init];
         _lastPresenceAction = ARTPresenceAbsent;
     }
     return self;
 }
 
-+ (instancetype)channelWithRealtime:(ARTRealtime *)realtime name:(NSString *)name cipherParams:(ARTCipherParams *)cipherParams {
-    return [[ARTRealtimeChannel alloc] initWithRealtime:realtime name:name cipherParams:cipherParams];
++ (instancetype)channelWithRealtime:(ARTRealtime *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options {
+    return [[ARTRealtimeChannel alloc] initWithRealtime:realtime andName:name withOptions:options];
 }
 
 - (void)publish:(id)payload cb:(ARTStatusCallback)cb {
@@ -63,9 +60,7 @@
 }
 
 - (void)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb {
-    // FIXME:
-    //NSArray *messages = [NSArray arrayWithObject:[ARTMessage messageWithPayload:payload name:name]];
-    NSArray *messages = nil;
+    NSArray *messages = [NSArray arrayWithObject:[ARTMessage messageWithPayload:payload name:name]];
     [self publishMessages:messages cb:cb];
 }
 
@@ -77,8 +72,7 @@
             if (status.state != ARTStateOk) {
                 [self.logger error:@"ARTRealtime: error decoding payload, status: %tu", status];
             }
-            // FIXME:
-            return nil; //[message messageWithPayload:encodedPayload];
+            return [message messageWithPayload:encodedPayload];
         }];
     }
     ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
@@ -88,16 +82,16 @@
     [self publishProtocolMessage:msg cb:cb];
 }
 
-- (void) requestContinueSync {
+- (void)requestContinueSync {
     [self.logger info:@"ARTRealtime requesting to continue sync operation after reconnect"];
     
     ARTProtocolMessage * msg = [[ARTProtocolMessage alloc] init];
     msg.action = ARTProtocolMessageSync;
     msg.msgSerial = self.presenceMap.syncSerial;
     msg.channel = self.name;
-    
-    // FIXME:
-    //[self.realtime send:msg cb:^(ARTStatus *status) {}];
+
+
+    [self.realtime send:msg cb:^(ARTStatus *status) {}];
 }
 
 - (void)publishPresence:(ARTPresenceMessage *)msg cb:(ARTStatusCallback)cb {
@@ -151,8 +145,7 @@
         }
         case ARTRealtimeChannelAttached:
         {
-            // FIXME:
-            //[self.realtime send:pm cb:cb];
+            [self.realtime send:pm cb:cb];
             break;
         }
         default:
@@ -171,8 +164,7 @@
 }
 
 - (void)history:(ARTDataQuery *)query callback:(void (^)(ARTStatus *, ARTPaginatedResult *))callback {
-    // FIXME:
-    //[self.restChannel history:query callback:callback];
+    [self history:query callback:callback];
 }
 
 - (id<ARTSubscription>)subscribe:(ARTRealtimeChannelMessageCb)cb {
@@ -316,21 +308,20 @@
 
 - (void)releaseChannel {
     [self detachChannel:ARTStateOk];
-    // FIXME:
-    //[self.realtime.allChannels removeObjectForKey:self.name];
+    [self.realtime removeChannel:self.name];
 }
 
-- (void) detachChannel:(ARTStatus *) error {
+- (void)detachChannel:(ARTStatus *)error {
     [self failQueuedMessages:error];
     [self transition:ARTRealtimeChannelDetached status:error];
 }
 
--(void) setFailed:(ARTStatus *) error {
+- (void)setFailed:(ARTStatus *)error {
     [self failQueuedMessages:error];
     [self transition:ARTRealtimeChannelFailed status:error];
 }
 
--(void) setClosed:(ARTStatus *) error  {
+- (void)setClosed:(ARTStatus *)error  {
     [self failQueuedMessages:error];
     [self transition:ARTRealtimeChannelClosed status:error];
 }
@@ -416,28 +407,23 @@
     switch (self.state) {
         case ARTRealtimeChannelAttaching:
         case ARTRealtimeChannelAttached:
-            // FIXME:
-            //[self.realtime.errorReason setCode:90000 message:@"Already attached"];
+            [self.realtime.errorReason setCode:90000 message:@"Already attached"];
             return false;
         default:
             break;
     }
     
-    // FIXME:
-    /*
     if (![self.realtime isActive]) {
         [self.realtime.errorReason setCode:90000 message:@"Can't attach when not in an active state"];
         return false;
     }
-     */
-    
+
     ARTProtocolMessage *attachMessage = [[ARTProtocolMessage alloc] init];
     attachMessage.action = ARTProtocolMessageAttach;
     attachMessage.channel = self.name;
     
     // TODO should queueEvents be forced?
-    // FIXME:
-    //[self.realtime send:attachMessage cb:nil];
+    [self.realtime send:attachMessage cb:nil];
     
     [self transition:ARTRealtimeChannelAttaching status:ARTStateOk];
     return true;
@@ -448,38 +434,32 @@
         case ARTRealtimeChannelInitialised:
         case ARTRealtimeChannelDetaching:
         case ARTRealtimeChannelDetached:
-            // FIXME:
-            //[self.realtime.errorReason setCode:90000 message:@"Can't detach when not attahed"];
+            [self.realtime.errorReason setCode:90000 message:@"Can't detach when not attahed"];
             return false;
         default:
             break;
     }
     
-    // FIXME:
-    /*
     if (![self.realtime isActive]) {
         [self.realtime.errorReason setCode:90000 message:@"Can't detach when not in an active state"];
         return false;
     }
-     */
-    
+
     ARTProtocolMessage *detachMessage = [[ARTProtocolMessage alloc] init];
     detachMessage.action = ARTProtocolMessageDetach;
     detachMessage.channel = self.name;
     
-    // FIXME:
-    //[self.realtime send:detachMessage cb:nil];
+    [self.realtime send:detachMessage cb:nil];
     [self transition:ARTRealtimeChannelDetaching status:ARTStateOk];
     return true;
 }
 
 - (void)sendQueuedMessages {
-    //NSArray *qms = self.queuedMessages;
+    NSArray *qms = self.queuedMessages;
     self.queuedMessages = [NSMutableArray array];
-    // FIXME:
-    //for (ARTQueuedMessage *qm in qms) {
-        //[self.realtime send:qm.msg cb:qm.cb];
-    //}
+    for (ARTQueuedMessage *qm in qms) {
+        [self.realtime send:qm.msg cb:qm.cb];
+    }
 }
 
 - (void)failQueuedMessages:(ARTStatus *)status {

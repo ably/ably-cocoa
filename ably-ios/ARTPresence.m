@@ -8,17 +8,16 @@
 
 #import "ARTPresence.h"
 
+#import "ARTLog.h"
 #import "ARTRealtime.h"
-#import "ARTRealtimeChannel.h"
+#import "ARTRealtimeChannel+Private.h"
 #import "ARTPresenceMap.h"
 #import "ARTStatus.h"
 #import "ARTRealtimeChannelSubscription.h"
 
 #import "ARTDataQuery+Private.h"
 
-@interface ARTPresence () {
-    __weak ARTLog *_logger;
-}
+@interface ARTPresence ()
 
 @property (readonly, weak, nonatomic) ARTRealtimeChannel *channel;
 
@@ -26,25 +25,21 @@
 
 @implementation ARTPresence
 
-// FIXME:
 - (instancetype) initWithChannel:(ARTRealtimeChannel *) channel {
     if (self = [super init]) {
         _channel = channel;
-        //_logger = channel.logger;
     }
     return self;
 }
 
 - (void)get:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *result, NSError *error))callback {
-    // FIXME:
-    //[self.channel throwOnDisconnectedOrFailed];
-    //[self.channel.restChannel.presence get:query callback:callback];
+    [self.channel throwOnDisconnectedOrFailed];
+    [self.channel.presence get:callback];
 }
 
 - (void)history:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *result, NSError *error))callback {
-    // FIXME:
-    //[self.channel throwOnDisconnectedOrFailed];
-    //[self.channel.restChannel.presence history:query callback:callback];
+    [self.channel throwOnDisconnectedOrFailed];
+    [self.channel.presence history:query callback:callback];
 }
 
 - (void)enter:(id)data cb:(ARTStatusCallback)cb {
@@ -127,14 +122,14 @@
 
 - (id<ARTSubscription>)subscribe:(ARTPresenceAction) action cb:(ARTRealtimeChannelPresenceCb)cb {
     ARTRealtimeChannelPresenceSubscription *subscription = (ARTRealtimeChannelPresenceSubscription *) [self subscribe:cb];
-    // FIXME:
+    [subscription excludedActions];
     //[subscription excludeAllActionsExcept:action];
     return subscription;
 }
 
 - (void)unsubscribe:(id<ARTSubscription>)subscription action:(ARTPresenceAction) action {
-    // FIXME:
-    //ARTRealtimeChannelPresenceSubscription * s = (ARTRealtimeChannelPresenceSubscription *) subscription;
+    ARTRealtimeChannelPresenceSubscription * s = (ARTRealtimeChannelPresenceSubscription *) subscription;
+    [s excludedActions];
     //[s excludeAction:action];
 }
 

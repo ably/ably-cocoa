@@ -10,6 +10,7 @@
 
 #import "ARTRealtime.h"
 #import "ARTRealtimeChannel.h"
+#import "ARTPresence.h"
 
 #pragma mark - ARTRealtimeChannelSubscription
 
@@ -25,8 +26,7 @@
 }
 
 - (void)unsubscribe {
-    // FIXME:
-    //[self.channel unsubscribe:self];
+    [self.channel unsubscribe:self];
 }
 
 @end
@@ -63,8 +63,7 @@
 }
 
 - (void)unsubscribe {
-    // FIXME:
-    //[self.channel.presence unsubscribe:self];
+    [self.channel.presence unsubscribe:self];
 }
 
 @end
@@ -84,8 +83,7 @@
 }
 
 - (void)unsubscribe {
-    // FIXME:
-    //[self.channel unsubscribeState:self];
+    [self.channel unsubscribeState:self];
 }
 
 @end
@@ -105,8 +103,7 @@
 }
 
 - (void)unsubscribe {
-    // FIXME:
-    //[self.realtime unsubscribeState:self];
+    [self.realtime unsubscribeState:self];
 }
 
 @end

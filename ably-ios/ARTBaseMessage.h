@@ -7,7 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "CompatibilityMacros.h"
 #import "ARTPayload.h"
+
+ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTBaseMessage : NSObject<NSCopying>
 
@@ -35,6 +38,8 @@
 - (id)content;
 - (NSString *)description;
 
-+ (NSArray *)messagesWithPayloads:(NSArray *)payloads;
+- (instancetype)messageWithPayload:(ARTPayload *)payload;
 
 @end
+
+ART_ASSUME_NONNULL_END

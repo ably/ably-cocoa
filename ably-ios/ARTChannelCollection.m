@@ -10,11 +10,18 @@
 #import "ARTChannelCollection+Private.h"
 
 #import "ARTRest+Private.h"
-#import "ARTChannel.h"
+#import "ARTRestChannel.h"
 #import "ARTChannel+Private.h"
 #import "ARTChannelOptions.h"
 #import "ARTPresence.h"
 
+@interface ARTChannelCollection() {
+    __weak ARTRest *_rest;
+}
+
+@end
+
+// FIXME: RestChannelCollection
 @implementation ARTChannelCollection
 
 - (instancetype)initWithRest:(ARTRest *)rest {
@@ -52,7 +59,7 @@
 - (ARTChannel *)_getChannel:(NSString *)channelName options:(ARTChannelOptions *)options {
     ARTChannel *channel = self->_channels[channelName];
     if (!channel) {
-        channel = [[self.rest.channelClass alloc] initWithName:channelName rest:self.rest options:options];
+        channel = [[_rest.channelClass alloc] initWithName:channelName withOptions:options andRest:_rest];
         [self->_channels setObject:channel forKey:channelName];
     } else if (options) {
         channel.options = options;

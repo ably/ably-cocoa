@@ -40,14 +40,12 @@
 
 - (instancetype)decode:(id<ARTPayloadEncoder>)encoder {
     ARTPayload *payload = self.payload;
-    // FIXME:
     [encoder decode:payload output:&payload];
     return [self messageWithPayload:payload];
 }
 
 - (instancetype)encode:(id<ARTPayloadEncoder>)encoder {
     ARTPayload *payload = self.payload;
-    // FIXME:
     [encoder encode:payload output:&payload];
     return [self messageWithPayload:payload];
 }
@@ -60,18 +58,6 @@
 - (NSString *)description {
     return [NSString stringWithFormat: @"%@: id=%@ clientId=%@ connectionId=%@ payload=%@",
             NSStringFromClass([self class]), self.id, self.clientId, self.connectionId, self.payload];
-}
-
-+ (NSArray *)messagesWithPayloads:(NSArray *)payloads {
-    if([payloads count] > [ARTPayload payloadArraySizeLimit]) {
-        [NSException raise:@"Too many items in payload array" format:@"%lu > %lu", (unsigned long)[payloads count], [ARTPayload payloadArraySizeLimit]];
-    }
-    NSMutableArray * messages =[[NSMutableArray alloc] init];
-    for (int i=0; i < [payloads count]; i++) {
-        // FIXME
-        //[messages addObject:[ARTMessage messageWithPayload:[payloads objectAtIndex:i] name:nil]];
-    }
-    return messages;
 }
 
 @end

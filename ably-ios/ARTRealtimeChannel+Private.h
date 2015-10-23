@@ -11,6 +11,9 @@
 
 @interface ARTRealtimeChannel (Private)
 
+- (void)setClosed:(ARTStatus *)error;
+- (void)setSuspended:(ARTStatus *)error;
 - (void)setFailed:(ARTStatus *)error;
+- (void)throwOnDisconnectedOrFailed;
 
 @end

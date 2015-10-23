@@ -151,7 +151,7 @@ class RestChannel: QuickSpec {
                 it("publishes the messages and invokes callback with success") {
                     var publishError: NSError? = NSError(domain: "", code: -1, userInfo: nil)
                     var publishedMessages: [ARTMessage] = []
-                    
+
                     let messages = [
                         ARTMessage(data: "foo", name: "bar"),
                         ARTMessage(data: "baz", name: "bat")
@@ -182,12 +182,15 @@ class RestChannel: QuickSpec {
                 it("should return presence fixture data") {
                     let channel = client.channels.get("persisted:presence_fixtures")
                     var presenceMessages: [ARTPresenceMessage] = []
-                    
+
+                    // Test
+                    /*
                     channel.presence.get() { result, _ in
                         if let items = result?.items as? [ARTPresenceMessage] {
                             presenceMessages.appendContentsOf(items)
                         }
                     }
+                    */
                     
                     expect(presenceMessages.count).toEventually(equal(presenceFixtures.count), timeout: testTimeout)
                     for message in presenceMessages {
@@ -200,7 +203,7 @@ class RestChannel: QuickSpec {
                         expect(message.action).to(equal(ARTPresenceAction.Present))
                         
                         // skip the encrypted message for now
-                        if message.payload?.encoding?.rangeOfString("cipher") == nil {
+                        if message.payload.encoding?.rangeOfString("cipher") == nil {
                             expect(message.content() as? NSObject).to(equal(fixtureMessage["data"].object as? NSObject))
                         }
                     }

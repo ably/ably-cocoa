@@ -9,12 +9,13 @@
 
 #import "ARTRealtime+Private.h"
 
-#import "ARTRealtimeChannel.h"
+#import "ARTRealtimeChannel+Private.h"
 #import "ARTStatus.h"
 #import "ARTDefault.h"
 #import "ARTRest.h"
 #import "ARTMessage.h"
 #import "ARTClientOptions.h"
+#import "ARTChannelOptions.h"
 #import "ARTPresenceMessage.h"
 #import "ARTWebSocketTransport.h"
 #import "ARTNSArray+ARTFunctional.h"
@@ -27,10 +28,10 @@
 @interface ARTRealtime () <ARTRealtimeTransportDelegate>
 
 // Shared with private header
+@property (readwrite, strong, nonatomic) ARTRest *rest;
 @property (readwrite, strong, nonatomic) id<ARTRealtimeTransport> transport;
 @property (readonly, strong, nonatomic) NSMutableArray *stateSubscriptions;
 
-@property (readwrite, strong, nonatomic) ARTRest *rest;
 @property (readonly, strong, nonatomic) __GENERIC(NSMutableDictionary, NSString *, ARTRealtimeChannel *) *allChannels;
 @property (readwrite, assign, nonatomic) ARTRealtimeConnectionState state;
 
@@ -52,7 +53,6 @@
 
 @property (nonatomic, copy) ARTRealtimePingCb pingCb;
 @property (readonly, weak, nonatomic) ARTClientOptions *options;
-@property (readwrite, strong, nonatomic) ARTErrorInfo *errorReason;
 
 - (BOOL)connect;
 
@@ -81,10 +81,8 @@
 - (BOOL)shouldQueueEvents;
 - (NSTimeInterval)retryInterval;
 - (ARTStatus *)defaultError;
-- (BOOL)isActive;
 
 // Message sending
-- (void)send:(ARTProtocolMessage *)msg cb:(ARTStatusCallback)cb;
 - (void)sendQueuedMessages;
 - (void)failQueuedMessages:(ARTStatus *)error;
 - (void)ack:(int64_t)serial count:(int64_t)count;
@@ -94,8 +92,6 @@
 - (id<ARTRealtimeTransport>)createTransport;
 - (CFRunLoopTimerRef)startTimer:(void(^)())onTimeout interval:(NSTimeInterval)interval;
 - (void)cancelTimer:(CFRunLoopTimerRef)timer;
-
-- (void)unsubscribeState:(ARTRealtimeConnectionStateSubscription *)subscription;
 
 @end
 
@@ -202,9 +198,8 @@
     [self transition:ARTRealtimeClosing];
 }
 
-- (id<ARTCancellable>)time:(void(^)(ARTStatus * status, NSDate *time))cb {
-    // FIXME:
-    return nil; //[self.rest time:cb];
+- (void)time:(void(^)(NSDate *time, NSError *error))cb {
+    [self.rest time:cb];
 }
 
 - (void)ping:(ARTRealtimePingCb) cb {
@@ -216,9 +211,8 @@
     [self.transport sendPing];
 }
 
-- (void)stats:(ARTStatsQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult *result))callback {
-    // FIXME:
-    //[self.rest stats:query callback:callback];
+- (void)stats:(ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult *result, NSError *error))completion {
+    [self.rest stats:query callback:completion];
 }
 
 - (ARTRealtimeChannel *)channel:(NSString *)channelName {
@@ -228,13 +222,16 @@
 - (ARTRealtimeChannel *)channel:(NSString *)channelName cipherParams:(ARTCipherParams *)cipherParams {
     ARTRealtimeChannel *channel = [self.allChannels objectForKey:channelName];
     if (!channel) {
-        channel = [ARTRealtimeChannel channelWithRealtime:self name:channelName cipherParams:cipherParams];
+        channel = [ARTRealtimeChannel channelWithRealtime:self andName:channelName withOptions:[[ARTChannelOptions alloc] initEncrypted:cipherParams]];
         [self.allChannels setObject:channel forKey:channelName];
     }
 
     return channel;
 }
 
+- (void)removeChannel:(NSString *)name {
+    [_allChannels removeObjectForKey:name];
+}
 
 - (void)unsubscribeState:(ARTRealtimeChannelStateSubscription *)subscription {
     [self.stateSubscriptions removeObject:subscription];
@@ -296,17 +293,16 @@
                         [info setCode:80000 message:@"resume connection failed"];
                         
                         [self.logger warn:@"%@: resume connection failed", channelName];
-                        // FIXME:
-                        //ARTRealtimeChannel *channel = [self.allChannels objectForKey:channelName];
-                        //[channel detachChannel:[ARTStatus state:ARTStateConnectionDisconnected info:info]];
+
+                        ARTRealtimeChannel *channel = [self.allChannels objectForKey:channelName];
+                        [channel detachChannel:[ARTStatus state:ARTStateConnectionDisconnected info:info]];
                     }
                 }
                 self.options.resumeKey = nil;
                 for (NSString *channelName in self.allChannels) {
                     ARTRealtimeChannel *channel = [self.allChannels objectForKey:channelName];
                     if([channel.presenceMap stillSyncing]) {
-                        // FIXME:
-                        //[channel requestContinueSync];
+                        [channel requestContinueSync];
                     }
                 }
             }
@@ -352,16 +348,13 @@
                     //do nothing. Closed state is coming.
                 }
                 else if(state == ARTRealtimeClosed) {
-                    // FIXME:
-                    //[channel setClosed:[self defaultError]];
+                    [channel setClosed:[self defaultError]];
                 }
                 else if(state == ARTRealtimeSuspended) {
-                    // FIXME:
-                    //[channel detachChannel:[self defaultError]];
+                    [channel detachChannel:[self defaultError]];
                 }
                 else {
-                    // FIXME:
-                    //[channel setFailed:[self defaultError]];
+                    [channel setFailed:[self defaultError]];
                 }
             }
             else {
@@ -478,11 +471,11 @@
     }
 }
 
--(NSString *) connectionKey {
+- (NSString *)connectionKey {
     return _connectionKey;
 }
 
-- (NSString *) connectionId {
+- (NSString *)connectionId {
     return _connectionId;
 }
 - (void)onDisconnected:(ARTProtocolMessage *)message {
@@ -501,7 +494,6 @@
 
 - (void)onError:(ARTProtocolMessage *)message {
     // TODO work out which states this can be received in
-    
     if (message.channel) {
         [self onChannelMessage:message];
     } else {
@@ -512,7 +504,6 @@
 
 - (void)onAck:(ARTProtocolMessage *)message {
     // TODO work out which states this can be received in
-    // TODO
     [self ack:message.msgSerial count:message.count];
 }
 
@@ -820,7 +811,7 @@
     [self transition:ARTRealtimeFailed];
 }
 
-+(NSString *) protocolStr:(ARTProtocolMessageAction ) action {
++ (NSString *)protocolStr:(ARTProtocolMessageAction ) action {
     switch(action) {
         case ARTProtocolMessageHeartbeat:
             return @"ARTProtocolMessageHeartbeat";
@@ -858,11 +849,10 @@
             return @"ARTProtocolMessageSync";
         default:
             return [NSString stringWithFormat: @"unknown protocol state %d", (int) action];
-       
     }
 }
 
-+ (NSString *) ARTRealtimeStateToStr:(ARTRealtimeConnectionState) state {
++ (NSString *)ARTRealtimeStateToStr:(ARTRealtimeConnectionState) state {
     switch(state)
     {
         case ARTRealtimeInitialized:
