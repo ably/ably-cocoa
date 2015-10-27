@@ -11,6 +11,7 @@
 
 @class ARTStatus;
 @class ARTHttpResponse;
+@class ARTErrorInfo;
 @class ARTMessage;
 @class ARTPresenceMessage;
 @class ARTAuthTokenParams;
@@ -58,11 +59,11 @@ NSString *decodeBase64(NSString *base64);
 
 // MARK: Callbacks definitions
 
-typedef void (^ARTRealtimeChannelMessageCb)(ARTMessage *);
+typedef void (^ARTRealtimeChannelMessageCb)(ARTMessage * message, ARTErrorInfo *__art_nullable erroInfo);
 
 typedef void (^ARTRealtimeChannelStateCb)(ARTRealtimeChannelState, ARTStatus *);
 
-typedef void (^ARTRealtimeConnectionStateCb)(ARTRealtimeConnectionState state);
+typedef void (^ARTRealtimeConnectionStateCb)(ARTRealtimeConnectionState state, ARTErrorInfo *__art_nullable erroInfo);
 
 typedef void (^ARTRealtimeChannelPresenceCb)(ARTPresenceMessage *);
 

@@ -14,16 +14,26 @@ NSString *const ARTAblyErrorDomain = @"ARTAblyErrorDomain";
 
 @implementation ARTErrorInfo
 
-- (void)setCode:(int)code message:(NSString *)message {
+- (ARTErrorInfo *)setCode:(int)code message:(NSString *)message {
     _code = code;
     _statusCode = code / 100;
     _message = message;
+    return self;
 }
 
-- (void)setCode:(int)code status:(int)status message:(NSString *)message {
+- (ARTErrorInfo *)setCode:(int)code status:(int)status message:(NSString *)message {
     _code = code;
     _statusCode = status;
     _message = message;
+    return self;
+}
+
++ (ARTErrorInfo *)createWithCode:(int)code message:(NSString *)message {
+    return [[[ARTErrorInfo alloc] init] setCode:code message:message];
+}
+
++ (ARTErrorInfo *)createWithCode:(int)code status:(int)status message:(NSString *)message {
+    return [[[ARTErrorInfo alloc] init] setCode:code status:status message:message];
 }
 
 - (NSString *)description {

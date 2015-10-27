@@ -15,7 +15,6 @@
     self = [super init];
     if (self) {
         _count = 0;
-        _error = [[ARTErrorInfo alloc] init];
         _id = nil;
         _channel = nil;
         _channelSerial = nil;
@@ -28,6 +27,7 @@
         _messages = nil;
         _presence = nil;
         _flags = 0;
+        _error = nil;
     }
     return self;
 }

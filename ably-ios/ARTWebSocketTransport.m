@@ -125,11 +125,11 @@ enum {
     if (options.recover) {
         NSArray *recoverParts = [options.recover componentsSeparatedByString:@":"];
         if ([recoverParts count] == 2) {
-            NSString *connectionKey = [recoverParts objectAtIndex:0];
+            NSString *key = [recoverParts objectAtIndex:0];
             NSString *serial = [recoverParts objectAtIndex:1];
-            [self.logger info:@"ARTWebSocketTransport: attempting recovery of connection %@", connectionKey];
+            [self.logger info:@"ARTWebSocketTransport: attempting recovery of connection %@", key];
 
-            NSURLQueryItem *recoverParam = [NSURLQueryItem queryItemWithName:@"recover" value:connectionKey];
+            NSURLQueryItem *recoverParam = [NSURLQueryItem queryItemWithName:@"recover" value:key];
             queryItems = [queryItems arrayByAddingObject:recoverParam];
 
             NSURLQueryItem *connectionSerialParam = [NSURLQueryItem queryItemWithName:@"connectionSerial" value:serial];
@@ -143,7 +143,7 @@ enum {
         NSURLQueryItem *resumeKeyParam = [NSURLQueryItem queryItemWithName:@"resume" value:options.resumeKey];
         queryItems = [queryItems arrayByAddingObject:resumeKeyParam];
 
-        NSURLQueryItem *connectionSerialParam = [NSURLQueryItem queryItemWithName:@"connectionSerial" value:[NSString stringWithFormat:@"%lld",options.connectionSerial]];
+        NSURLQueryItem *connectionSerialParam = [NSURLQueryItem queryItemWithName:@"connectionSerial" value:[NSString stringWithFormat:@"%lld", options.connectionSerial]];
         queryItems = [queryItems arrayByAddingObject:connectionSerialParam];
     }
 

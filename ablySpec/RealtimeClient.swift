@@ -13,6 +13,20 @@ import Nimble
 @testable import ably.Private
 
 class RealtimeClient: QuickSpec {
+
+    func checkError(errorInfo: ARTErrorInfo?, withAlternative message: String) {
+        if let error = errorInfo {
+            XCTFail("\(error.code): \(error.message)")
+        }
+        else if !message.isEmpty {
+            XCTFail(message)
+        }
+    }
+
+    func checkError(errorInfo: ARTErrorInfo?) {
+        checkError(errorInfo, withAlternative: "")
+    }
+
     override func spec() {
         describe("RealtimeClient") {
             // RTC1
@@ -24,13 +38,12 @@ class RealtimeClient: QuickSpec {
                     let client = ARTRealtime(options: options)
 
                     waitUntil(timeout: 20.0) { done in
-                        client.eventEmitter.on { state in
+                        client.eventEmitter.on { state, errorInfo in
                             switch state {
                             case .Connecting:
                                 break
                             case .Failed:
-                                let reason = client.connectionErrorReason()
-                                XCTFail("\(reason.message): \(reason.description)")
+                                self.checkError(errorInfo, withAlternative: "Failed state")
                                 done()
                             default:
                                 expect(state).to(equal(ARTRealtimeConnectionState.Connected))
@@ -54,27 +67,23 @@ class RealtimeClient: QuickSpec {
                 }
 
                 //RTC1c
-                fit("should attempt to recover the connection state if recover string is assigned") {
+                it("should attempt to recover the connection state if recover string is assigned") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "client_string"
-                    options.autoConnect = false
                     options.environment = "eu-central-1-a-sandbox"
 
                     let client = ARTRealtime(options: options)
-                    client.connect()
 
                     waitUntil(timeout: 60) { done in
-                        client.eventEmitter.on { state in
+                        client.eventEmitter.on { state, errorInfo in
                             switch state {
                             case .Failed:
-                                let reason = client.connectionErrorReason()
-                                XCTFail("\(reason.message): \(reason.description)")
+                                self.checkError(errorInfo, withAlternative: "Failed state")
                                 done()
                             case .Connected:
+                                self.checkError(errorInfo)
                                 expect(client.recoveryKey()).to(equal("\(client.connectionKey()):\(client.connectionSerial())"), description: "recoveryKey wrong formed")
                                 options.recover = client.recoveryKey()
-                                client.close()
-                            case .Closed:
                                 done()
                             default:
                                 break
@@ -82,11 +91,23 @@ class RealtimeClient: QuickSpec {
                         }
                     }
 
-                    options.autoConnect = true
                     // New connection
                     let newClient = ARTRealtime(options: options)
 
-                    expect(options.recover).toEventually(equal(newClient.recoveryKey()), timeout: 30.0)
+                    waitUntil(timeout: 60) { done in
+                        newClient.eventEmitter.on { state, errorInfo in
+                            switch state {
+                            case .Failed:
+                                self.checkError(errorInfo, withAlternative: "Failed state")
+                                done()
+                            case .Connected:
+                                self.checkError(errorInfo)
+                                done()
+                            default:
+                                break
+                            }
+                        }
+                    }
                 }
 
                 //RTC1d

@@ -64,8 +64,6 @@ Instance the Ably library with the given options.
 - (__GENERIC(NSDictionary, NSString *, ARTRealtimeChannel *) *)channels;
 - (void)time:(void(^)(NSDate *time, NSError *error))cb;
 
-- (ARTErrorInfo *)connectionErrorReason;
-
 typedef void (^ARTRealtimePingCb)(ARTStatus *);
 - (void)ping:(ARTRealtimePingCb) cb;
 
@@ -82,7 +80,6 @@ typedef void (^ARTRealtimePingCb)(ARTStatus *);
 
 @property (readonly, strong, nonatomic) ARTEventEmitter *eventEmitter;
 @property (readonly, getter=getLogger) ARTLog *logger;
-@property (art_nullable, readwrite, strong, nonatomic) ARTErrorInfo *errorReason;
 
 @end
 

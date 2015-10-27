@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "CompatibilityMacros.h"
 
 typedef NS_ENUM(NSUInteger, ARTState) {
     ARTStateOk = 0,
@@ -24,6 +25,8 @@ typedef NS_ENUM(NSUInteger, ARTState) {
     ARTStateError = 99999
 };
 
+ART_ASSUME_NONNULL_BEGIN
+
 FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
 
 // FIXME: base NSError
@@ -33,8 +36,11 @@ FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
 @property (readonly, assign, nonatomic) int statusCode;
 @property (readonly, assign, nonatomic) int code;
 
-- (void)setCode:(int) code message:(NSString *) message;
-- (void)setCode:(int) code status:(int) status message:(NSString *) message;
+- (ARTErrorInfo *)setCode:(int) code message:(NSString *) message;
+- (ARTErrorInfo *)setCode:(int) code status:(int) status message:(NSString *) message;
+
++ (ARTErrorInfo *)createWithCode:(int)code message:(NSString *)message;
++ (ARTErrorInfo *)createWithCode:(int)code status:(int)status message:(NSString *)message;
 
 - (NSString *)description;
 
@@ -48,8 +54,10 @@ FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
 @property (nonatomic, assign) ARTState state;
 
 +(ARTStatus *) state:(ARTState) state;
-+(ARTStatus *) state:(ARTState) state info:(ARTErrorInfo *) info;
++(ARTStatus *) state:(ARTState) state info:(art_nullable ARTErrorInfo *) info;
 
 - (NSString *)description;
 
 @end
+
+ART_ASSUME_NONNULL_END

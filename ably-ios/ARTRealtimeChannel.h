@@ -76,8 +76,8 @@
 - (id<ARTSubscription>)subscribeToNames:(NSArray *)names cb:(ARTRealtimeChannelMessageCb)cb;
 - (id<ARTSubscription>)subscribeToStateChanges:(ARTRealtimeChannelStateCb)cb;
 
-- (BOOL)attach;
-- (BOOL)detach;
+- (ARTErrorInfo *)attach;
+- (ARTErrorInfo *)detach;
 - (void)detachChannel:(ARTStatus *) error;
 
 - (void)requestContinueSync;
