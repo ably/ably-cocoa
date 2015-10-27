@@ -353,8 +353,7 @@
     }
     error = nil;
     
-    NSData *tokenData = [[input artString:@"token"] dataUsingEncoding:NSUTF8StringEncoding];
-    NSString *token = [ARTBase64PayloadEncoder toBase64:tokenData];
+    NSString *token = [input artString:@"token"];
     NSNumber *expiresTimeInterval = [input artNumber:@"expires"];
     NSDate *expires = expiresTimeInterval ? [NSDate dateWithTimeIntervalSince1970:expiresTimeInterval.longLongValue / 1000] : nil;
     NSNumber *issuedInterval = [input artNumber:@"issued"];
