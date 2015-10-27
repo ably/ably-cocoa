@@ -74,6 +74,7 @@ enum {
 }
 
 - (void)send:(ARTProtocolMessage *)msg {
+    [self.logger debug:@"ARTWebSocketTransport: sending %@", msg];
     NSData *data = [self.encoder encodeProtocolMessage:msg];
     [self.websocket send:data];
 }
@@ -124,14 +125,14 @@ enum {
     if (options.recover) {
         NSArray *recoverParts = [options.recover componentsSeparatedByString:@":"];
         if ([recoverParts count] == 2) {
-            NSString *connectionId = [recoverParts objectAtIndex:0];
-            NSString *key = [recoverParts objectAtIndex:1];
-            [self.logger info:@"ARTWebSocketTransport: attempting recovery of connection %@", connectionId];
+            NSString *connectionKey = [recoverParts objectAtIndex:0];
+            NSString *serial = [recoverParts objectAtIndex:1];
+            [self.logger info:@"ARTWebSocketTransport: attempting recovery of connection %@", connectionKey];
 
-            NSURLQueryItem *recoverParam = [NSURLQueryItem queryItemWithName:@"recover" value:connectionId];
+            NSURLQueryItem *recoverParam = [NSURLQueryItem queryItemWithName:@"recover" value:connectionKey];
             queryItems = [queryItems arrayByAddingObject:recoverParam];
 
-            NSURLQueryItem *connectionSerialParam = [NSURLQueryItem queryItemWithName:@"connection_serial" value:key];
+            NSURLQueryItem *connectionSerialParam = [NSURLQueryItem queryItemWithName:@"connectionSerial" value:serial];
             queryItems = [queryItems arrayByAddingObject:connectionSerialParam];
         }
         else {
@@ -142,7 +143,7 @@ enum {
         NSURLQueryItem *resumeKeyParam = [NSURLQueryItem queryItemWithName:@"resume" value:options.resumeKey];
         queryItems = [queryItems arrayByAddingObject:resumeKeyParam];
 
-        NSURLQueryItem *connectionSerialParam = [NSURLQueryItem queryItemWithName:@"connection_serial" value:[NSString stringWithFormat:@"%lld",options.connectionSerial]];
+        NSURLQueryItem *connectionSerialParam = [NSURLQueryItem queryItemWithName:@"connectionSerial" value:[NSString stringWithFormat:@"%lld",options.connectionSerial]];
         queryItems = [queryItems arrayByAddingObject:connectionSerialParam];
     }
 
@@ -192,7 +193,6 @@ enum {
 
         if ([message isKindOfClass:[NSString class]]) {
             data = [((NSString *)message) dataUsingEncoding:NSUTF8StringEncoding];
-
         } else if (![message isKindOfClass:[NSData class]]) {
             [_logger error:@"ARTWebSocketTransport: binary data not supported at the moment"];
             return;

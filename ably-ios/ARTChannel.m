@@ -9,21 +9,16 @@
 #import "ARTChannel+Private.h"
 
 #import "ARTPayload.h"
-#import "ARTPresence.h"
 #import "ARTMessage.h"
 #import "ARTChannelOptions.h"
-#import "ARTRest.h"
 #import "ARTNSArray+ARTFunctional.h"
 
 @implementation ARTChannel
 
-- (instancetype)initWithName:(NSString *)name rest:(ARTRest *)rest options:(ARTChannelOptions *)options {
+- (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options {
     if (self = [super init]) {
-        _name = [name copy];
-        _rest = rest;
-        _logger = rest.logger;
-        self.options = options;
-        _presence = [[ARTPresence alloc] initWithChannel:self];
+        _name = name;
+        _options = options;
     }
     return self;
 }
@@ -37,14 +32,12 @@
     _payloadEncoder = [ARTJsonPayloadEncoder instance];
 }
 
-// FIXME: payload to message
-- (void)publish:(id)payload callback:(ARTErrorCallback)callback {
-    [self publish:payload name:nil callback:callback];
+- (void)publish:(id)data callback:(ARTErrorCallback)callback {
+    [self publish:data name:nil callback:callback];
 }
 
-// FIXME: payload to message
-- (void)publish:(id)payload name:(NSString *)name callback:(ARTErrorCallback)callback {
-    [self publishMessage:[[ARTMessage alloc] initWithData:payload name:name] callback:callback];
+- (void)publish:(id)data name:(NSString *)name callback:(ARTErrorCallback)callback {
+    [self publishMessage:[[ARTMessage alloc] initWithData:data name:name] callback:callback];
 }
 
 - (void)publishMessages:(NSArray *)messages callback:(ARTErrorCallback)callback {
@@ -52,18 +45,18 @@
         return [message encode:_payloadEncoder];
     }];
 
-    [self _postMessages:messages callback:callback];
+    [self internalPostMessages:messages callback:callback];
 }
 
 - (void)publishMessage:(ARTMessage *)message callback:(ARTErrorCallback)callback {
-    [self _postMessages:[message encode:_payloadEncoder] callback:callback];
+    [self internalPostMessages:[message encode:_payloadEncoder] callback:callback];
 }
 
 - (void)history:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult *, NSError *))callback {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 
-- (void)_postMessages:(id)data callback:(ARTErrorCallback)callback {
+- (void)internalPostMessages:(id)data callback:(ARTErrorCallback)callback {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 

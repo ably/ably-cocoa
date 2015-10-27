@@ -9,50 +9,53 @@
 #import "ARTRestChannel.h"
 
 #import "ARTRest+Private.h"
-#import "ARTChannelOptions.h"
 #import "ARTChannel+Private.h"
+#import "ARTChannelOptions.h"
+#import "ARTPresence.h"
 #import "ARTMessage.h"
 #import "ARTPaginatedResult+Private.h"
 #import "ARTDataQuery+Private.h"
 #import "ARTEncoder.h"
 #import "ARTAuth.h"
+#import "ARTNSArray+ARTFunctional.h"
 
 @implementation ARTRestChannel {
 @public
     NSString *_basePath;
 }
 
-- (instancetype)initWithName:(NSString *)name rest:(ARTRest *)rest options:(ARTChannelOptions *)options {
-    if (self = [super initWithName:name rest:rest options:options]) {
-        [_logger debug:@"ARTRestChannel: instantiating under %@", name];
+- (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRest *)rest {
+    if (self = [super initWithName:name andOptions:options]) {
+        _rest = rest;
         _basePath = [NSString stringWithFormat:@"/channels/%@", [name stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]]];
+        [self.logger debug:@"ARTRestChannel: instantiating under %@", name];
     }
     return self;
 }
 
+- (ARTLog *)getLogger {
+    return _rest.logger;
+}
 
 - (void)history:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult *, NSError *))callback {
     NSParameterAssert(query.limit < 1000);
     NSParameterAssert([query.start compare:query.end] != NSOrderedDescending);
-    
-    // FIXME:
-    /*
+
     NSURLComponents *requestUrl = [NSURLComponents componentsWithString:[_basePath stringByAppendingPathComponent:@"messages"]];
     requestUrl.queryItems = [query asQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl.URL];
-    
-    ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data) {
+
+    ARTPaginatedResultResponseProcessor responseProcessor = ^NSArray *(NSHTTPURLResponse *response, NSData *data) {
         id<ARTEncoder> encoder = [_rest.encoders objectForKey:response.MIMEType];
         return [[encoder decodeMessages:data] artMap:^(ARTMessage *message) {
             return [message decode:_payloadEncoder];
         }];
     };
     
-    [ARTPaginatedResult executePaginatedRequest:request executor:_rest responseProcessor:responseProcessor callback:callback];
-     */
+    [ARTPaginatedResult executePaginatedRequest:request executor:_rest.httpExecutor responseProcessor:responseProcessor callback:callback];
 }
 
-- (void)_postMessages:(id)data callback:(ARTErrorCallback)callback {
+- (void)internalPostMessages:(id)data callback:(ARTErrorCallback)callback {
     NSData *encodedMessage = nil;
     
     if ([data isKindOfClass:[ARTMessage class]]) {

@@ -23,7 +23,11 @@ NSString *const ARTAblyErrorDomain = @"ARTAblyErrorDomain";
 - (void)setCode:(int)code status:(int)status message:(NSString *)message {
     _code = code;
     _statusCode = status;
-    _message =message;
+    _message = message;
+}
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"ARTErrorInfo with code %d, message: %@", self.statusCode, self.message];
 }
 
 @end
@@ -49,6 +53,10 @@ NSString *const ARTAblyErrorDomain = @"ARTAblyErrorDomain";
     ARTStatus * s = [ARTStatus state:state];
     s.errorInfo = info;
     return s;
+}
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"ARTStatus: %lu, Error info: %@", (unsigned long)self.state, [self.errorInfo description]];
 }
 
 

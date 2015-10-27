@@ -7,12 +7,15 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "CompatibilityMacros.h"
 
 @class ARTRest;
 @class ARTChannel;
 @class ARTChannelOptions;
 
 @interface ARTChannelCollection : NSObject<NSFastEnumeration>
+
+@property (nonatomic, readonly) __GENERIC(NSMutableDictionary, NSString *, ARTChannel *) *channels;
 
 - (instancetype)initWithRest:(ARTRest *)rest;
 

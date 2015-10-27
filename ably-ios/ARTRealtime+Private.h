@@ -10,11 +10,13 @@
 
 #import "ARTRealtimeTransport.h"
 
+@class ARTRest;
 @class ARTProtocolMessage;
 
 /// ARTRealtime private methods that are used for whitebox testing.
 @interface ARTRealtime (Private)
 
+@property (readwrite, strong, nonatomic) ARTRest *rest;
 @property (readwrite, strong, nonatomic) id<ARTRealtimeTransport> transport;
 @property (readonly, strong, nonatomic) NSMutableArray *stateSubscriptions;
 
@@ -34,4 +36,3 @@
 - (void)transition:(ARTRealtimeConnectionState)state;
 
 @end
-

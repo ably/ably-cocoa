@@ -55,14 +55,15 @@ class RealtimeClient: QuickSpec {
 
                 //RTC1c
                 fit("should attempt to recover the connection state if recover string is assigned") {
-                    let options = AblyTests.commonAppSetup(debug: true) //Same as Rest
+                    let options = AblyTests.commonAppSetup()
                     options.clientId = "client_string"
                     options.autoConnect = false
+                    options.environment = "eu-central-1-a-sandbox"
 
                     let client = ARTRealtime(options: options)
                     client.connect()
 
-                    waitUntil(timeout: 200) { done in
+                    waitUntil(timeout: 60) { done in
                         client.eventEmitter.on { state in
                             switch state {
                             case .Failed:
@@ -70,26 +71,9 @@ class RealtimeClient: QuickSpec {
                                 XCTFail("\(reason.message): \(reason.description)")
                                 done()
                             case .Connected:
-                                expect(client.recoveryKey()).toNot(beNil())
-
-                                let channel = client.channel("demo", cipherParams: nil)
-
-                                channel.subscribe { message in
-                                    print(message)
-                                }
-
-                                channel.publish("something", withName: "Bob") { status in
-                                    print(status)
-                                }
-
-                                // Force suspension
-                                client.transition(.Suspended)
-                            case .Suspended:
-                                client.channel("demo").publish("something", withName: "Bob") { status in
-                                    print(status)
-                                    client.close()
-                                }
-                                break
+                                expect(client.recoveryKey()).to(equal("\(client.connectionKey()):\(client.connectionSerial())"), description: "recoveryKey wrong formed")
+                                options.recover = client.recoveryKey()
+                                client.close()
                             case .Closed:
                                 done()
                             default:
@@ -97,8 +81,14 @@ class RealtimeClient: QuickSpec {
                             }
                         }
                     }
+
+                    options.autoConnect = true
+                    // New connection
+                    let newClient = ARTRealtime(options: options)
+
+                    expect(options.recover).toEventually(equal(newClient.recoveryKey()), timeout: 30.0)
                 }
-                
+
                 //RTC1d
                 it("should modify the realtime endpoint host if realtimeHost is assigned") {
                     //let options = ARTClientOptions()

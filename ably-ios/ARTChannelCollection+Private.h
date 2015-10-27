@@ -6,21 +6,14 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-#import "ARTTypes.h"
+#import "ARTChannelCollection.h"
 
-@class ARTChannel;
+@class ARTRestChannel;
 @class ARTChannelOptions;
 
 ART_ASSUME_NONNULL_BEGIN
 
-@interface ARTChannelCollection() {
-@protected
-    __GENERIC(NSMutableDictionary, NSString *, ARTChannel *) *_channels; //FIXME: remove underscore
-}
-
-@property (nonatomic, readonly) NSMutableDictionary *channels;
-@property (readonly, nonatomic, weak) ARTRest *rest;
+@interface ARTChannelCollection (Private)
 
 @end
 

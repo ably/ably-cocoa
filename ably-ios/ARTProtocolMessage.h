@@ -30,6 +30,11 @@ typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
     ARTProtocolMessageSync = 16,
 };
 
+/**
+ A message sent and received over the Realtime protocol.
+ A ProtocolMessage always relates to a single channel only, but can contain multiple individual Messages or PresenceMessages.
+ ProtocolMessages are serially numbered on a connection.
+ */
 @interface ARTProtocolMessage : NSObject
 
 @property (readwrite, assign, nonatomic) ARTProtocolMessageAction action;

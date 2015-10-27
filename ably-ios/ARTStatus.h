@@ -33,8 +33,10 @@ FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
 @property (readonly, assign, nonatomic) int statusCode;
 @property (readonly, assign, nonatomic) int code;
 
--(void) setCode:(int) code message:(NSString *) message;
--(void) setCode:(int) code status:(int) status message:(NSString *) message;
+- (void)setCode:(int) code message:(NSString *) message;
+- (void)setCode:(int) code status:(int) status message:(NSString *) message;
+
+- (NSString *)description;
 
 @end
 
@@ -47,5 +49,7 @@ FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
 
 +(ARTStatus *) state:(ARTState) state;
 +(ARTStatus *) state:(ARTState) state info:(ARTErrorInfo *) info;
+
+- (NSString *)description;
 
 @end

@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import "ARTBaseMessage.h"
 
+ART_ASSUME_NONNULL_BEGIN
+
 @interface ARTMessage : ARTBaseMessage
 
 /// The event name, if available
@@ -16,4 +18,9 @@
 
 - (instancetype)initWithData:(id)data name:(NSString *)name;
 
++ (ARTMessage *)messageWithPayload:(id)payload name:(art_nullable NSString *)name;
++ (NSArray *)messagesWithPayloads:(NSArray *)payloads;
+
 @end
+
+ART_ASSUME_NONNULL_END
