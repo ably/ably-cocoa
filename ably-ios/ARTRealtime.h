@@ -82,7 +82,7 @@ typedef void (^ARTRealtimePingCb)(ARTStatus *);
 
 @property (readonly, strong, nonatomic) ARTEventEmitter *eventEmitter;
 @property (readonly, getter=getLogger) ARTLog *logger;
-@property (readwrite, strong, nonatomic) ARTErrorInfo *errorReason;
+@property (art_nullable, readwrite, strong, nonatomic) ARTErrorInfo *errorReason;
 
 @end
 

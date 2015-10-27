@@ -421,10 +421,9 @@
     ARTProtocolMessage *attachMessage = [[ARTProtocolMessage alloc] init];
     attachMessage.action = ARTProtocolMessageAttach;
     attachMessage.channel = self.name;
-    
-    // TODO should queueEvents be forced?
+
     [self.realtime send:attachMessage cb:nil];
-    
+    // Set state Attaching
     [self transition:ARTRealtimeChannelAttaching status:ARTStateOk];
     return true;
 }

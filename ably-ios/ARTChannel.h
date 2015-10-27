@@ -30,6 +30,9 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (void)history:(art_nullable ARTDataQuery *)query callback:(void(^)(ARTPaginatedResult /* <ARTMessage *> */ *__art_nullable result, NSError *__art_nullable error))callback;
 
+// TODO:
+//- (void)presence
+
 @end
 
 ART_ASSUME_NONNULL_END

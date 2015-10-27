@@ -739,13 +739,15 @@
 - (void)realtimeTransport:(id)transport didReceiveMessage:(ARTProtocolMessage *)message {
     // TODO add in protocolListener
 
-    [self.logger verbose:@"ARTRealtime didReceive Protocol Message %@", [ARTRealtime protocolStr:message.action]];
+    [self.logger verbose:@"ARTRealtime didReceive Protocol Message %@ ", [ARTRealtime protocolStr:message.action]];
 
-    if(message.error) {
+    if (message.error) {
+        [self.logger verbose:@"ARTRealtime Protocol Message with error %@ ", message.error];
         self.errorReason = message.error;
     }
+
     NSAssert(transport == self.transport, @"Unexpected transport");
-    if(message.hasConnectionSerial) {
+    if (message.hasConnectionSerial) {
         self.connectionSerial = message.connectionSerial;
     }
 
@@ -811,44 +813,44 @@
     [self transition:ARTRealtimeFailed];
 }
 
-+ (NSString *)protocolStr:(ARTProtocolMessageAction ) action {
++ (NSString *)protocolStr:(ARTProtocolMessageAction) action {
     switch(action) {
         case ARTProtocolMessageHeartbeat:
-            return @"ARTProtocolMessageHeartbeat";
+            return @"ARTProtocolMessageHeartbeat"; //0
         case ARTProtocolMessageAck:
-            return @"ARTProtocolMessageAck";
+            return @"ARTProtocolMessageAck"; //1
         case ARTProtocolMessageNack:
-            return @"ARTProtocolMessageNack";
+            return @"ARTProtocolMessageNack"; //2
         case ARTProtocolMessageConnect:
-            return @"ARTProtocolMessageConnect";
+            return @"ARTProtocolMessageConnect"; //3
         case ARTProtocolMessageConnected:
-            return @"ARTProtocolMessageConnected";
+            return @"ARTProtocolMessageConnected"; //4
         case ARTProtocolMessageDisconnect:
-            return @"ARTProtocolMessageDisconnect";
+            return @"ARTProtocolMessageDisconnect"; //5
         case ARTProtocolMessageDisconnected:
-            return @"ARTProtocolMessageDisconnected";
+            return @"ARTProtocolMessageDisconnected"; //6
         case ARTProtocolMessageClose:
-            return @"ARTProtocolMessageClose";
+            return @"ARTProtocolMessageClose"; //7
         case ARTProtocolMessageClosed:
-            return @"ARTProtocolMessageClosed";
+            return @"ARTProtocolMessageClosed"; //8
         case ARTProtocolMessageError:
-            return @"ARTProtocolMessageError";
+            return @"ARTProtocolMessageError"; //9
         case ARTProtocolMessageAttach:
-            return @"ARTProtocolMessageAttach";
+            return @"ARTProtocolMessageAttach"; //10
         case ARTProtocolMessageAttached:
-            return @"ARTProtocolMessageAttached";
+            return @"ARTProtocolMessageAttached"; //11
         case ARTProtocolMessageDetach:
-            return @"ARTProtocolMessageDetach";
+            return @"ARTProtocolMessageDetach"; //12
         case ARTProtocolMessageDetached:
-            return @"ARTProtocolMessageDetached";
+            return @"ARTProtocolMessageDetached"; //13
         case ARTProtocolMessagePresence:
-            return @"ARTProtocolMessagePresence";
+            return @"ARTProtocolMessagePresence"; //14
         case ARTProtocolMessageMessage:
-            return @"ARTProtocolMessageMessage";
+            return @"ARTProtocolMessageMessage"; //15
         case ARTProtocolMessageSync:
-            return @"ARTProtocolMessageSync";
+            return @"ARTProtocolMessageSync"; //16
         default:
-            return [NSString stringWithFormat: @"unknown protocol state %d", (int) action];
+            return [NSString stringWithFormat: @"unknown protocol state %d", (int)action];
     }
 }
 
@@ -856,21 +858,21 @@
     switch(state)
     {
         case ARTRealtimeInitialized:
-            return @"ARTRealtimeInitialized";
+            return @"ARTRealtimeInitialized"; //0
         case ARTRealtimeConnecting:
-            return @"ARTRealtimeConnecting";
+            return @"ARTRealtimeConnecting"; //1
         case ARTRealtimeConnected:
-            return @"ARTRealtimeConnected";
+            return @"ARTRealtimeConnected"; //2
         case ARTRealtimeDisconnected:
-            return @"ARTRealtimeDisconnected";
+            return @"ARTRealtimeDisconnected"; //3
         case ARTRealtimeSuspended:
-            return @"ARTRealtimeSuspended";
+            return @"ARTRealtimeSuspended"; //4
         case ARTRealtimeClosing:
-            return @"ARTRealtimeClosing";
+            return @"ARTRealtimeClosing"; //5
         case ARTRealtimeClosed:
-            return @"ARTRealtimeClosed";
+            return @"ARTRealtimeClosed"; //6
         case ARTRealtimeFailed:
-            return @"ARTRealtimeFailed";
+            return @"ARTRealtimeFailed"; //7
         default:
             return @"unknown connectionstate";
     }
