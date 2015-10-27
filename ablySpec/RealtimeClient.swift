@@ -67,8 +67,8 @@ class RealtimeClient: QuickSpec {
                 }
 
                 //RTC1c
-                fit("should attempt to recover the connection state if recover string is assigned") {
-                    let options = AblyTests.commonAppSetup(debug: true)
+                it("should attempt to recover the connection state if recover string is assigned") {
+                    let options = AblyTests.commonAppSetup()
                     options.clientId = "client_string"
                     options.environment = "eu-central-1-a-sandbox"
 
