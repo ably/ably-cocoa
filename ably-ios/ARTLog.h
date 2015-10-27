@@ -26,11 +26,11 @@ typedef NS_ENUM(NSUInteger, ARTLogLevel) {
 
 - (void)log:(NSString *)message withLevel:(ARTLogLevel)level;
 
-- (ARTLog *)verbose;
-- (ARTLog *)debug;
-- (ARTLog *)info;
-- (ARTLog *)warn;
-- (ARTLog *)error;
+- (ARTLog *)verboseMode;
+- (ARTLog *)debugMode;
+- (ARTLog *)infoMode;
+- (ARTLog *)warnMode;
+- (ARTLog *)errorMode;
 
 @end
 

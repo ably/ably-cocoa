@@ -151,8 +151,10 @@
     }
     else {
         [self.auth authorise:nil options:self.options force:NO callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
-            [self.logger verbose:@"ARTRest: authorization bearer in Base64 %@", tokenDetails.token];
-            callback([NSString stringWithFormat:@"Bearer %@", tokenDetails.token], nil);
+            NSData *tokenData = [tokenDetails.token dataUsingEncoding:NSUTF8StringEncoding];
+            NSString *tokenBase64 = [tokenData base64EncodedStringWithOptions:0];
+            [self.logger verbose:@"ARTRest: authorization bearer in Base64 %@", tokenBase64];
+            callback([NSString stringWithFormat:@"Bearer %@", tokenBase64], nil);
         }];
     }
 }

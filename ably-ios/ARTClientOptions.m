@@ -59,6 +59,18 @@
     return [ARTClientOptions restUrl:self.restHost port:self.restPort tls:self.tls];
 }
 
++ (NSURL*)realtimeUrl:(NSString *)host port:(int)port tls:(BOOL)tls {
+    NSURLComponents *components = [[NSURLComponents alloc] init];
+    components.scheme = tls ? @"wss" : @"ws";
+    components.host = host;
+    components.port = [NSNumber numberWithInt:port];
+    return components.URL;
+}
+
+- (NSURL *)realtimeUrl {
+    return [ARTClientOptions realtimeUrl:self.realtimeHost port:self.realtimePort tls:self.tls];
+}
+
 - (bool)isFallbackPermitted {
     // FIXME: self.restHost is immutable!
     return [self.restHost isEqualToString:[ARTDefault restHost]];

@@ -7,6 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "CompatibilityMacros.h"
+
 #import "ARTRealtimeTransport.h"
 #import "ARTEncoder.h"
 

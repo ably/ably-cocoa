@@ -54,6 +54,8 @@ ART_ASSUME_NONNULL_BEGIN
 /// Decompose API key
 __GENERIC(NSArray, NSString *) *decomposeKey(NSString *key);
 
+NSString *decodeBase64(NSString *base64);
+
 // MARK: Callbacks definitions
 
 typedef void (^ARTRealtimeChannelMessageCb)(ARTMessage *);

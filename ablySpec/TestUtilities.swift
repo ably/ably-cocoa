@@ -89,8 +89,8 @@ class AblyTests {
         return options
     }
     
-    class func commonAppSetup() -> ARTClientOptions {
-        return AblyTests.setupOptions(AblyTests.jsonRestOptions)
+    class func commonAppSetup(debug debug: Bool = false) -> ARTClientOptions {
+        return AblyTests.setupOptions(AblyTests.jsonRestOptions, debug: debug)
     }
     
 }

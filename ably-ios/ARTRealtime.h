@@ -55,7 +55,7 @@ Instance the Ably library with the given options.
 - (NSString *)connectionKey;
 - (NSString *)recoveryKey;
 - (ARTAuth *)auth;
-- (NSDictionary *) channels;
+- (NSDictionary *)channels;
 - (id<ARTCancellable>)time:(void(^)(ARTStatus *status, NSDate *time))cb;
 
 - (ARTErrorInfo *)connectionErrorReason;

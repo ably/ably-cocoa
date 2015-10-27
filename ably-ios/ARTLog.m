@@ -43,27 +43,27 @@ static const char *logLevelName(ARTLogLevel level) {
     }
 }
 
-- (ARTLog *)verbose {
+- (ARTLog *)verboseMode {
     self.logLevel = ARTLogLevelVerbose;
     return self;
 }
 
-- (ARTLog *)debug {
+- (ARTLog *)debugMode {
     self.logLevel = ARTLogLevelDebug;
     return self;
 }
 
-- (ARTLog *)warn {
+- (ARTLog *)warnMode {
     self.logLevel = ARTLogLevelWarn;
     return self;
 }
 
-- (ARTLog *)info {
+- (ARTLog *)infoMode {
     self.logLevel = ARTLogLevelInfo;
     return self;
 }
 
-- (ARTLog *)error {
+- (ARTLog *)errorMode {
     self.logLevel = ARTLogLevelError;
     return self;
 }
