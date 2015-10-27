@@ -9,7 +9,6 @@
 
 #import "ARTRealtime+Private.h"
 
-#import "ARTRealtimeTransport.h"
 #import "ARTRealtimeChannel.h"
 #import "ARTStatus.h"
 #import "ARTDefault.h"
@@ -27,9 +26,12 @@
 
 @interface ARTRealtime () <ARTRealtimeTransportDelegate>
 
-@property (readwrite, strong, nonatomic) ARTRest *rest;
-@property (readonly, strong, nonatomic) NSMutableDictionary *allChannels;
+// Shared with private header
 @property (readwrite, strong, nonatomic) id<ARTRealtimeTransport> transport;
+@property (readonly, strong, nonatomic) NSMutableArray *stateSubscriptions;
+
+@property (readwrite, strong, nonatomic) ARTRest *rest;
+@property (readonly, strong, nonatomic) __GENERIC(NSMutableDictionary, NSString *, ARTRealtimeChannel *) *allChannels;
 @property (readwrite, assign, nonatomic) ARTRealtimeConnectionState state;
 
 @property (readwrite, assign, nonatomic) CFRunLoopTimerRef connectTimeout;
@@ -48,12 +50,9 @@
 @property (readwrite, assign, nonatomic) int64_t pendingMessageStartSerial;
 @property (readonly, strong, nonatomic) NSString *clientId;
 
-@property (readonly, strong, nonatomic) NSMutableArray *stateSubscriptions;
 @property (nonatomic, copy) ARTRealtimePingCb pingCb;
 @property (readonly, weak, nonatomic) ARTClientOptions *options;
 @property (readwrite, strong, nonatomic) ARTErrorInfo *errorReason;
-
-- (void)transition:(ARTRealtimeConnectionState)state;
 
 - (BOOL)connect;
 
@@ -156,8 +155,8 @@
 }
 
 - (NSString *)getRecoveryString {
-    NSString * recStr = self.connectionKey;
-    NSString * str = [recStr stringByAppendingString:[NSString stringWithFormat:@":%lld", self.connectionSerial]];
+    NSString *recStr = self.connectionKey;
+    NSString *str = [recStr stringByAppendingString:[NSString stringWithFormat:@":%lld", self.connectionSerial]];
     return str;
 }
 
@@ -245,7 +244,6 @@
 - (BOOL)isFromResume {
     return self.options.resumeKey != nil;
 }
-
 
 - (void)transition:(ARTRealtimeConnectionState)state {
     [self.logger verbose:@"Transition to %@ requested", [ARTRealtime ARTRealtimeStateToStr:state]];
@@ -751,6 +749,7 @@
     // TODO add in protocolListener
 
     [self.logger verbose:@"ARTRealtime didReceive Protocol Message %@", [ARTRealtime protocolStr:message.action]];
+
     if(message.error) {
         self.errorReason = message.error;
     }

@@ -6,17 +6,18 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-import Nimble
 import Quick
-import ably
-import ably.Private
+import Nimble
+
+@testable import ably
+@testable import ably.Private
 
 class RealtimeClient: QuickSpec {
     override func spec() {
         describe("RealtimeClient") {
             // RTC1
             context("options") {
-                fit("should support the same options as the Rest client") {
+                it("should support the same options as the Rest client") {
                     let options = AblyTests.commonAppSetup() //Same as Rest
                     options.clientId = "client_string"
 
@@ -51,13 +52,51 @@ class RealtimeClient: QuickSpec {
                     let options = ARTClientOptions()
                     expect(options.autoConnect) == true
                 }
-                
+
                 //RTC1c
-                it("should attempt to recover the connection state if recover string is assigned") {
-                    //let options = ARTClientOptions()
-                    // recover string, when set, will attempt to recover the connection state of a previous connection
-                    
-                    // TODO: need more background
+                fit("should attempt to recover the connection state if recover string is assigned") {
+                    let options = AblyTests.commonAppSetup(debug: true) //Same as Rest
+                    options.clientId = "client_string"
+                    options.autoConnect = false
+
+                    let client = ARTRealtime(options: options)
+                    client.connect()
+
+                    waitUntil(timeout: 200) { done in
+                        client.eventEmitter.on { state in
+                            switch state {
+                            case .Failed:
+                                let reason = client.connectionErrorReason()
+                                XCTFail("\(reason.message): \(reason.description)")
+                                done()
+                            case .Connected:
+                                expect(client.recoveryKey()).toNot(beNil())
+
+                                let channel = client.channel("demo", cipherParams: nil)
+
+                                channel.subscribe { message in
+                                    print(message)
+                                }
+
+                                channel.publish("something", withName: "Bob") { status in
+                                    print(status)
+                                }
+
+                                // Force suspension
+                                client.transition(.Suspended)
+                            case .Suspended:
+                                client.channel("demo").publish("something", withName: "Bob") { status in
+                                    print(status)
+                                    client.close()
+                                }
+                                break
+                            case .Closed:
+                                done()
+                            default:
+                                break
+                            }
+                        }
+                    }
                 }
                 
                 //RTC1d

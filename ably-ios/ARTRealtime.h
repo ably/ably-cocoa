@@ -26,6 +26,8 @@
 @class ARTRealtimeChannel;
 @class ARTAuth;
 
+ART_ASSUME_NONNULL_BEGIN
+
 #define ART_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
 
 #pragma mark - ARTRealtime
@@ -47,6 +49,7 @@ Instance the Ably library with the given options.
 - (instancetype)initWithOptions:(ARTClientOptions *)options;
 - (instancetype)initWithLogger:(ARTLog *)logger andOptions:(ARTClientOptions *)options;
 
+// FIXME: consistent names like Connect/Disconnect, Open/Close
 - (void)close;
 - (BOOL)connect;
 
@@ -55,7 +58,7 @@ Instance the Ably library with the given options.
 - (NSString *)connectionKey;
 - (NSString *)recoveryKey;
 - (ARTAuth *)auth;
-- (NSDictionary *)channels;
+- (__GENERIC(NSDictionary, NSString *, ARTRealtimeChannel *) *)channels;
 - (id<ARTCancellable>)time:(void(^)(ARTStatus *status, NSDate *time))cb;
 
 - (ARTErrorInfo *)connectionErrorReason;
@@ -66,9 +69,11 @@ typedef void (^ARTRealtimePingCb)(ARTStatus *);
 - (void)stats:(ARTStatsQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult /* <ARTStats *> */ *result))callback;
 
 - (ARTRealtimeChannel *)channel:(NSString *)channelName;
-- (ARTRealtimeChannel *)channel:(NSString *)channelName cipherParams:(ARTCipherParams *)cipherParams;
+- (ARTRealtimeChannel *)channel:(NSString *)channelName cipherParams:(art_nullable ARTCipherParams *)cipherParams;
 
 @property (readonly, strong, nonatomic) ARTEventEmitter *eventEmitter;
 @property (readonly, getter=getLogger) ARTLog *logger;
 
 @end
+
+ART_ASSUME_NONNULL_END
