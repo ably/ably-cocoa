@@ -129,7 +129,6 @@
         _clientId = options.clientId;
         _options = options;
         _stateSubscriptions = [NSMutableArray array];
-        _errorReason = [[ARTErrorInfo alloc] init];
         
         if (options.autoConnect) {
             [self connect];
@@ -140,10 +139,6 @@
 
 - (ARTLog *)getLogger {
     return _rest.logger;
-}
-
-- (ARTErrorInfo *)connectionErrorReason {
-    return self.errorReason;
 }
 
 - (int64_t)connectionSerial {
@@ -243,6 +238,10 @@
 }
 
 - (void)transition:(ARTRealtimeConnectionState)state {
+    [self transition:state withErrorInfo:nil];
+}
+
+- (void)transition:(ARTRealtimeConnectionState)state withErrorInfo:(ARTErrorInfo *)errorInfo {
     [self.logger verbose:@"Transition to %@ requested", [ARTRealtime ARTRealtimeStateToStr:state]];
 
     // On exit logic
@@ -285,7 +284,7 @@
             }
             break;
         case ARTRealtimeConnected:
-            if([self isFromResume]) {
+            if ([self isFromResume]) {
                 if(![self.options.resumeKey isEqualToString:self.connectionKey] || self.options.connectionSerial != self.connectionSerial) {
                     [self.logger warn:@"ARTRealtime: connection has reconnected, but resume failed. Detaching all channels"];
                     for (NSString *channelName in self.allChannels) {
@@ -318,7 +317,6 @@
             self.transport.delegate = nil;
             self.transport = nil;
         case ARTRealtimeFailed:
-            // reasonFailed doesn't need to be a property on self
             [self.transport abort:[ARTStatus state:ARTStateConnectionFailed]];
             self.transport.delegate = nil;
             self.transport = nil;
@@ -343,7 +341,7 @@
         [self failQueuedMessages:[self defaultError]];
         for (NSString *channelName in self.allChannels) {
             ARTRealtimeChannel *channel = [self.allChannels objectForKey:channelName];
-            if(channel.state == ARTRealtimeChannelInitialised || channel.state == ARTRealtimeChannelAttaching || channel.state == ARTRealtimeChannelAttached) {
+            if (channel.state == ARTRealtimeChannelInitialised || channel.state == ARTRealtimeChannelAttaching || channel.state == ARTRealtimeChannelAttached) {
                 if(state == ARTRealtimeClosing) {
                     //do nothing. Closed state is coming.
                 }
@@ -364,10 +362,10 @@
     }
 
     for (ARTRealtimeConnectionStateSubscription *subscription in self.stateSubscriptions) {
-        subscription.cb(state);
+        subscription.cb(state, errorInfo);
     }
 
-    if(state == ARTRealtimeClosing) {
+    if (state == ARTRealtimeClosing) {
         [self transition:ARTRealtimeClosed];
     }
 }
@@ -454,19 +452,18 @@
     }
 }
 
-- (void)onConnected:(ARTProtocolMessage *)message {
+- (void)onConnected:(ARTProtocolMessage *)message withErrorInfo:(ARTErrorInfo *)errorInfo {
     self.connectionId = message.connectionId;
     switch (self.state) {
         case ARTRealtimeConnecting:
- 
             self.connectionKey = message.connectionKey;
-            if(![self isFromResume]) {
+            if (![self isFromResume]) {
                 self.connectionSerial = -1;
             }
-            [self transition:ARTRealtimeConnected];
+            [self transition:ARTRealtimeConnected withErrorInfo:errorInfo];
             break;
         default:
-            // TODO - Invalid transition
+            NSAssert(false, @"Invalid Realtime state: expected Connecting has current state");
             break;
     }
 }
@@ -478,6 +475,7 @@
 - (NSString *)connectionId {
     return _connectionId;
 }
+
 - (void)onDisconnected:(ARTProtocolMessage *)message {
     [self.logger info:@"ARTRealtime disconnected"];
     switch (self.state) {
@@ -487,18 +485,18 @@
             [self transition:ARTRealtimeDisconnected];
             break;
         default:
-            // TODO - Invalid transition
+            NSAssert(false, @"Invalid Realtime state: expected Connected has current state");
             break;
     }
 }
 
-- (void)onError:(ARTProtocolMessage *)message {
+- (void)onError:(ARTProtocolMessage *)message withErrorInfo:(ARTErrorInfo *)errorInfo {
     // TODO work out which states this can be received in
     if (message.channel) {
-        [self onChannelMessage:message];
+        [self onChannelMessage:message withErrorInfo:errorInfo];
     } else {
         self.connectionId = nil;
-        [self transition:ARTRealtimeFailed];
+        [self transition:ARTRealtimeFailed withErrorInfo:errorInfo];
     }
 }
 
@@ -512,8 +510,8 @@
     [self nack:message.msgSerial count:message.count];
 }
 
-- (void)onChannelMessage:(ARTProtocolMessage *)message {
-    // TODO work out which states this can be received in
+- (void)onChannelMessage:(ARTProtocolMessage *)message withErrorInfo:(ARTErrorInfo *)errorInfo {
+    // TODO work out which states this can be received in / error info?
     ARTRealtimeChannel *channel = [self.allChannels objectForKey:message.channel];
     [channel onChannelMessage:message];
 }
@@ -743,7 +741,6 @@
 
     if (message.error) {
         [self.logger verbose:@"ARTRealtime Protocol Message with error %@ ", message.error];
-        self.errorReason = message.error;
     }
 
     NSAssert(transport == self.transport, @"Unexpected transport");
@@ -756,10 +753,10 @@
             [self onHeartbeat:message];
             break;
         case ARTProtocolMessageError:
-            [self onError:message];
+            [self onError:message withErrorInfo:message.error];
             break;
         case ARTProtocolMessageConnected:
-            [self onConnected:message];
+            [self onConnected:message withErrorInfo:message.error];
             break;
         case ARTProtocolMessageDisconnected:
             [self onDisconnected:message];
@@ -774,7 +771,7 @@
             [self transition:ARTRealtimeClosed];
             break;
         default:
-            [self onChannelMessage:message];
+            [self onChannelMessage:message withErrorInfo:message.error];
             break;
     }
 }

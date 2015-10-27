@@ -32,7 +32,7 @@
 - (id<ARTSubscription>)on:(ARTRealtimeConnectionStateCb)cb {
     ARTRealtimeConnectionStateSubscription *subscription = [[ARTRealtimeConnectionStateSubscription alloc] initWithRealtime:self.realtime cb:cb];
     [self.realtime.stateSubscriptions addObject:subscription];
-    cb(self.realtime.state);
+    cb(self.realtime.state, nil);
     return subscription;
 }
 

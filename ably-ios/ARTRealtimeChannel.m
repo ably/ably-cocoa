@@ -351,14 +351,14 @@
         
         // Notify subscribers that are interested in everything
         for (ARTRealtimeChannelSubscription *subscription in blanketSubscriptions) {
-            subscription.cb(msg);
+            subscription.cb(msg, nil);
         }
         
         if (msg.name && msg.name.length) {
             // Notify subscribers that are interested in this message
             NSArray *nameSubscriptions = [self.subscriptions objectForKey:msg.name];
             for (ARTRealtimeChannelSubscription *subscription in nameSubscriptions) {
-                subscription.cb(msg);
+                subscription.cb(msg, nil);
             }
         }
         
@@ -403,19 +403,17 @@
     [self transition:ARTRealtimeChannelFailed status:[ARTStatus state:ARTStateError info: msg.error]];
 }
 
-- (BOOL)attach {
+- (ARTErrorInfo *)attach {
     switch (self.state) {
         case ARTRealtimeChannelAttaching:
         case ARTRealtimeChannelAttached:
-            [self.realtime.errorReason setCode:90000 message:@"Already attached"];
-            return false;
+            return [ARTErrorInfo createWithCode:90000 message:@"Already attached"];
         default:
             break;
     }
     
     if (![self.realtime isActive]) {
-        [self.realtime.errorReason setCode:90000 message:@"Can't attach when not in an active state"];
-        return false;
+        return [ARTErrorInfo createWithCode:90000 message:@"Can't attach when not in an active state"];
     }
 
     ARTProtocolMessage *attachMessage = [[ARTProtocolMessage alloc] init];
@@ -423,25 +421,23 @@
     attachMessage.channel = self.name;
 
     [self.realtime send:attachMessage cb:nil];
-    // Set state Attaching
+    // Set state: Attaching
     [self transition:ARTRealtimeChannelAttaching status:ARTStateOk];
-    return true;
+    return nil;
 }
 
-- (BOOL)detach {
+- (ARTErrorInfo *)detach {
     switch (self.state) {
         case ARTRealtimeChannelInitialised:
         case ARTRealtimeChannelDetaching:
         case ARTRealtimeChannelDetached:
-            [self.realtime.errorReason setCode:90000 message:@"Can't detach when not attahed"];
-            return false;
+            return [ARTErrorInfo createWithCode:90000 message:@"Can't detach when not attahed"];
         default:
             break;
     }
     
     if (![self.realtime isActive]) {
-        [self.realtime.errorReason setCode:90000 message:@"Can't detach when not in an active state"];
-        return false;
+        return [ARTErrorInfo createWithCode:90000 message:@"Can't detach when not in an active state"];
     }
 
     ARTProtocolMessage *detachMessage = [[ARTProtocolMessage alloc] init];
@@ -449,8 +445,9 @@
     detachMessage.channel = self.name;
     
     [self.realtime send:detachMessage cb:nil];
+    // Set state: Detaching
     [self transition:ARTRealtimeChannelDetaching status:ARTStateOk];
-    return true;
+    return nil;
 }
 
 - (void)sendQueuedMessages {

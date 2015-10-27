@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "CompatibilityMacros.h"
 
 @class ARTErrorInfo;
 
@@ -30,6 +31,8 @@ typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
     ARTProtocolMessageSync = 16,
 };
 
+ART_ASSUME_NONNULL_BEGIN
+
 /**
  A message sent and received over the Realtime protocol.
  A ProtocolMessage always relates to a single channel only, but can contain multiple individual Messages or PresenceMessages.
@@ -39,7 +42,7 @@ typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
 
 @property (readwrite, assign, nonatomic) ARTProtocolMessageAction action;
 @property (readwrite, assign, nonatomic) int count;
-@property (readwrite, strong, nonatomic) ARTErrorInfo *error;
+@property (art_nullable, readwrite, strong, nonatomic) ARTErrorInfo *error;
 @property (readwrite, strong, nonatomic) NSString *id;
 @property (readwrite, strong, nonatomic) NSString *channel;
 @property (readwrite, strong, nonatomic) NSString *channelSerial;
@@ -59,3 +62,5 @@ typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
 - (BOOL)mergeFrom:(ARTProtocolMessage *)msg;
 
 @end
+
+ART_ASSUME_NONNULL_END
