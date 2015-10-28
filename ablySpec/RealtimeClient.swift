@@ -123,14 +123,32 @@ class RealtimeClient: QuickSpec {
                     let oldRealtimeHost = options.realtimeHost
 
                     // Change REST and realtime endpoint hosts
-                    options.environment = "eu-central-1-a-sandbox"
+                    options.environment = "test"
                     
-                    expect(options.restHost).to(equal("eu-central-1-a-sandbox-rest.ably.io"))
-                    expect(options.realtimeHost).to(equal("eu-central-1-a-sandbox-realtime.ably.io"))
+                    expect(options.restHost).to(equal("test-rest.ably.io"))
+                    expect(options.realtimeHost).to(equal("test-realtime.ably.io"))
                     // Extra care
                     expect(oldRestHost).to(equal("sandbox-rest.ably.io"))
                     expect(oldRealtimeHost).to(equal("sandbox-realtime.ably.io"))
                 }
+            }
+
+            // RTC2
+            it("should have access to the underlying Connection object") {
+                //ARTRealtime(options: AblyTests.commonAppSetup()).connection
+
+                // TODO: There is no connection manager.
+            }
+
+            // RTC3
+            it("should provide access to the underlying Channels object") {
+                let client = ARTRealtime(options: AblyTests.commonAppSetup())
+
+                client.channel("test").subscribe({ message, errorInfo in
+                    // Attached
+                })
+
+                expect(client.channels()["test"]).toNot(beNil())
             }
         }
     }
