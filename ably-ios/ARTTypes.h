@@ -55,7 +55,11 @@ ART_ASSUME_NONNULL_BEGIN
 /// Decompose API key
 __GENERIC(NSArray, NSString *) *decomposeKey(NSString *key);
 
+NSString *encodeBase64(NSString *value);
 NSString *decodeBase64(NSString *base64);
+
+uint64_t dateToMiliseconds(NSDate *date);
+uint64_t timeIntervalToMiliseconds(NSTimeInterval seconds);
 
 // MARK: Callbacks definitions
 

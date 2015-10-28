@@ -14,9 +14,21 @@ __GENERIC(NSArray, NSString *) *decomposeKey(NSString *key) {
     return [key componentsSeparatedByString:@":"];
 }
 
+NSString *encodeBase64(NSString *value) {
+    return [[value dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0];
+}
+
 NSString *decodeBase64(NSString *base64) {
-    NSData *dataB64 = [[NSData alloc] initWithBase64EncodedString:base64 options:0];
-    return [[NSString alloc] initWithData:dataB64 encoding:NSUTF8StringEncoding];
+    NSData *data = [[NSData alloc] initWithBase64EncodedString:base64 options:0];
+    return [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+}
+
+uint64_t dateToMiliseconds(NSDate *date) {
+    return (uint64_t)(date.timeIntervalSince1970 * 1000);
+}
+
+uint64_t timeIntervalToMiliseconds(NSTimeInterval seconds) {
+    return (uint64_t)(seconds * 1000);
 }
 
 // MARK: ARTIndirectCancellable

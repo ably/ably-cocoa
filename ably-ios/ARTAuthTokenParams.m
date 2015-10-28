@@ -146,8 +146,8 @@ static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
     NSString *keySecret = keyComponents[1];
     NSString *nonce = generateNonce();
     NSString *clientId = self.clientId ? self.clientId : @"";
-    
-    NSString *signText = [NSString stringWithFormat:@"%@\n%lld\n%@\n%@\n%lld\n%@\n", keyName, (int64_t)(self.ttl * 1000), self.capability, clientId, (int64_t)(self.timestamp.timeIntervalSince1970 * 1000), nonce];
+
+    NSString *signText = [NSString stringWithFormat:@"%@\n%lld\n%@\n%@\n%lld\n%@\n", keyName, timeIntervalToMiliseconds(self.ttl), self.capability, clientId, dateToMiliseconds(self.timestamp), nonce];
     NSString *mac = hmacForDataAndKey([signText dataUsingEncoding:NSUTF8StringEncoding], [keySecret dataUsingEncoding:NSUTF8StringEncoding]);
     
     return [[ARTAuthTokenRequest alloc] initWithTokenParams:self keyName:keyName nonce:nonce mac:mac];
