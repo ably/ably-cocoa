@@ -112,13 +112,7 @@ class RealtimeClient: QuickSpec {
 
                 //RTC1d
                 it("should modify the realtime endpoint host if realtimeHost is assigned") {
-                    //let options = ARTClientOptions()
-                    // realtimeHost string, when set, will modify the realtime endpoint host used by this client library
-
-                    //Default: realtime.ably.io
-                    //let realtimeHost = options.realtimeHost
-                    
-                    // TODO: try to swizzle
+                    // realtimeHost property is read-only
                 }
                 
                 //RTC1e
@@ -127,12 +121,12 @@ class RealtimeClient: QuickSpec {
                     
                     let oldRestHost = options.restHost
                     let oldRealtimeHost = options.realtimeHost
-                    
+
                     // Change REST and realtime endpoint hosts
-                    options.environment = "test"
+                    options.environment = "eu-central-1-a-sandbox"
                     
-                    expect(options.restHost).to(equal("test-rest.ably.io"))
-                    expect(options.realtimeHost).to(equal("test-realtime.ably.io"))
+                    expect(options.restHost).to(equal("eu-central-1-a-sandbox-rest.ably.io"))
+                    expect(options.realtimeHost).to(equal("eu-central-1-a-sandbox-realtime.ably.io"))
                     // Extra care
                     expect(oldRestHost).to(equal("sandbox-rest.ably.io"))
                     expect(oldRealtimeHost).to(equal("sandbox-realtime.ably.io"))
