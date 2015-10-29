@@ -67,7 +67,7 @@ Instance the Ably library with the given options.
 typedef void (^ARTRealtimePingCb)(ARTStatus *);
 - (void)ping:(ARTRealtimePingCb) cb;
 
-- (void)stats:(ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult *result, NSError *error))completion;
+- (void)stats:(ARTStatsQuery *)query callback:(ARTStatsCallback)completion;
 
 - (ARTRealtimeChannel *)channel:(NSString *)channelName;
 - (ARTRealtimeChannel *)channel:(NSString *)channelName cipherParams:(art_nullable ARTCipherParams *)cipherParams;

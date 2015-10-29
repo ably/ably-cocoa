@@ -185,6 +185,47 @@ class RealtimeClient: QuickSpec {
                 }
             }
 
+            context("stats") {
+                let query = ARTStatsQuery()
+                query.unit = .Minute
+
+                // RTC5a
+                it("should present an async interface") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    // Async
+                    waitUntil(timeout: 20.0) { done in
+                        // Proxy from `client.rest.stats`
+                        client.stats(query, callback: { paginated, error in
+                            expect(paginated).toNot(beNil())
+                            done()
+                        })
+                    }
+                }
+
+                // RTC5b
+                it("should accept all the same params as RestClient") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    var paginatedResult: ARTPaginatedResult?
+
+                    // Realtime
+                    client.stats(query, callback: { paginated, error in
+                        if let e = error {
+                            XCTFail(e.description)
+                        }
+                        paginatedResult = paginated
+                    })
+                    expect(paginatedResult).toEventuallyNot(beNil(), timeout: 20.0)
+
+                    // Rest
+                    waitUntil(timeout: 20.0) { done in
+                        client.rest.stats(query, callback: { paginated, error in
+                            expect(paginated).to(beIdenticalTo(paginatedResult))
+                            done()
+                        })
+                    }
+                }
+            }
+
             context("time") {
                 // RTC6a
                 it("should present an async interface") {

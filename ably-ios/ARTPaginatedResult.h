@@ -14,6 +14,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTPaginatedResult : NSObject
 
+// FIXME: review with Stats callback
 typedef void(^ARTPaginatedResultCallback)(ARTPaginatedResult *__art_nullable result, NSError *__art_nullable error);
 
 @property (nonatomic, strong, readonly) NSArray *items;

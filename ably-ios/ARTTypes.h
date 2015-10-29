@@ -17,6 +17,7 @@
 @class ARTAuthTokenParams;
 @class ARTAuthTokenRequest;
 @class ARTAuthTokenDetails;
+@class ARTPaginatedResult;
 
 typedef NS_ENUM(NSUInteger, ARTAuthentication) {
     ARTAuthenticationOff,
@@ -78,6 +79,8 @@ typedef void (^ARTHttpCb)(ARTHttpResponse *response);
 typedef void (^ARTErrorCallback)(NSError *__art_nullable error);
 
 typedef void (^ARTHttpRequestCallback)(NSHTTPURLResponse *__art_nullable response, NSData *__art_nullable data, NSError *__art_nullable error);
+
+typedef void (^ARTStatsCallback)(ARTPaginatedResult *__art_nullable result, NSError *__art_nullable error);
 
 typedef void (^ARTTimeCallback)(NSDate *__art_nullable time, NSError *__art_nullable error);
 

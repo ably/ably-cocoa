@@ -29,7 +29,8 @@ ART_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithKey:(NSString *)key;
 
 - (void)time:(ARTTimeCallback)callback;
-- (void)stats:(art_nullable ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult /* <ARTStats *> */ *__art_nullable result, NSError *__art_nullable error))callback;
+
+- (void)stats:(art_nullable ARTStatsQuery *)query callback:(ARTStatsCallback)callback;
 
 - (id<ARTCancellable>)internetIsUp:(void (^)(bool isUp))cb;
 
