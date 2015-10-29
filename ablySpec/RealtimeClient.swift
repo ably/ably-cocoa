@@ -184,6 +184,21 @@ class RealtimeClient: QuickSpec {
                     }
                 }
             }
+
+            context("time") {
+                // RTC6a
+                it("should present an async interface") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    // Async
+                    waitUntil(timeout: 20.0) { done in
+                        // Proxy from `client.rest.time`
+                        client.time({ date, error in
+                            expect(date).toNot(beNil())
+                            done()
+                        })
+                    }
+                }
+            }
         }
     }
 }

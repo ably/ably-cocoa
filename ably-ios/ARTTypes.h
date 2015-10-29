@@ -79,6 +79,8 @@ typedef void (^ARTErrorCallback)(NSError *__art_nullable error);
 
 typedef void (^ARTHttpRequestCallback)(NSHTTPURLResponse *__art_nullable response, NSData *__art_nullable data, NSError *__art_nullable error);
 
+typedef void (^ARTTimeCallback)(NSDate *__art_nullable time, NSError *__art_nullable error);
+
 // FIXME: review
 typedef void (^ARTAuthCallback)(ARTAuthTokenParams *tokenParams, void(^callback)(ARTAuthTokenRequest *__art_nullable tokenRequest, NSError *__art_nullable error));
 
