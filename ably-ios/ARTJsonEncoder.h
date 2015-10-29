@@ -15,4 +15,6 @@
 
 @property (nonatomic, weak) ARTLog *logger;
 
+- (instancetype)initWithLogger:(ARTLog *)logger;
+
 @end

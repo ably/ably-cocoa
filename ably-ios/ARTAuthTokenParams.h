@@ -19,7 +19,7 @@ ART_ASSUME_NONNULL_BEGIN
 @interface ARTAuthTokenParams : NSObject
 
 /**
- Represents time to live (expiry) of this token in milliseconds.
+ Represents time to live (expiry) of this token in seconds.
  */
 @property (nonatomic, assign) NSTimeInterval ttl;
 

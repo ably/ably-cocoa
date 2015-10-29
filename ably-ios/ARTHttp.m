@@ -180,7 +180,7 @@
             if (error) {
                 [self.logger error:@"%@ %@: error %@", request.HTTPMethod, request.URL.absoluteString, error];
             } else {
-                [self.logger debug:@"%@ %@: statusCode %ld", request.HTTPMethod, request.URL.absoluteString, httpResponse.statusCode];
+                [self.logger debug:@"%@ %@: statusCode %ld", request.HTTPMethod, request.URL.absoluteString, (long)httpResponse.statusCode];
                 [self.logger verbose:@"Headers %@", httpResponse.allHeaderFields];
             }
             callback(httpResponse, data, error);

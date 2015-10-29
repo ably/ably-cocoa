@@ -73,7 +73,7 @@
         _httpExecutor.logger = _logger;
         _channelClass = [ARTRestChannel class];
         
-        id<ARTEncoder> defaultEncoder = [[ARTJsonEncoder alloc] init];
+        id<ARTEncoder> defaultEncoder = [[ARTJsonEncoder alloc] initWithLogger:self.logger];
         _encoders = @{ [defaultEncoder mimeType]: defaultEncoder };
         _defaultEncoding = [defaultEncoder mimeType];
         _fallbackCount = 0;

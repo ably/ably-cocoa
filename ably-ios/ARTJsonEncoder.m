@@ -62,6 +62,13 @@
 
 @implementation ARTJsonEncoder
 
+- (instancetype)initWithLogger:(ARTLog *)logger {
+    if (self = [super init]) {
+        _logger = logger;
+    }
+    return self;
+}
+
 - (NSString *)mimeType {
     return @"application/json";
 }
@@ -369,14 +376,18 @@
 
 - (NSDictionary *)tokenRequestToDictionary:(ARTAuthTokenRequest *)tokenRequest {
     [self.logger verbose:@"ARTJsonEncoder: tokenRequestToDictionary %@", tokenRequest];
-    
-    NSNumber *timestamp = [NSNumber numberWithInteger:[NSNumber numberWithDouble:tokenRequest.timestamp.timeIntervalSince1970 * 1000].integerValue];
+
+    NSNumber *timestamp;
+    if (tokenRequest.timestamp)
+        timestamp = [NSNumber numberWithUnsignedLongLong:dateToMiliseconds(tokenRequest.timestamp)];
+    else
+        timestamp = [NSNumber numberWithUnsignedLongLong:dateToMiliseconds([NSDate date])];
 
     NSMutableDictionary *dictionary = [@{
              @"keyName":tokenRequest.keyName ? tokenRequest.keyName : @"",
-             @"ttl":[NSString stringWithFormat:@"%lld", (int64_t)(tokenRequest.ttl * 1000)],
+             @"ttl":[NSNumber numberWithUnsignedLongLong: timeIntervalToMiliseconds(tokenRequest.ttl)],
              @"capability":tokenRequest.capability ? tokenRequest.capability : @"",
-             @"timestamp":timestamp ? timestamp : [NSNumber numberWithInteger:[NSNumber numberWithDouble:[NSDate date].timeIntervalSince1970 * 1000].integerValue],
+             @"timestamp":timestamp,
              @"nonce":tokenRequest.nonce ? tokenRequest.nonce : @"",
              @"mac":tokenRequest.mac ? tokenRequest.mac : @""
         } mutableCopy];
