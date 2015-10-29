@@ -16,6 +16,7 @@
     if (self) {
         _count = 0;
         _id = nil;
+        _clientId = nil;
         _channel = nil;
         _channelSerial = nil;
         _connectionId = nil;

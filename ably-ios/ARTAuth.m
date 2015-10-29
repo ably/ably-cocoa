@@ -20,6 +20,8 @@
 
 @implementation ARTAuth {
     __weak ARTRest *_rest;
+    // Dedicated to Protocol Message
+    NSString *_protocolClientId;
 }
 
 - (instancetype)init:(ARTRest *)rest withOptions:(ARTClientOptions *)options {
@@ -28,6 +30,7 @@
         _tokenDetails = options.tokenDetails;
         _options = options;
         _logger = rest.logger;
+        _protocolClientId = nil;
         
         [self validate:options];
     }
@@ -255,8 +258,20 @@
     }
 }
 
+- (void)setProtocolClientId:(NSString *)clientId {
+    _protocolClientId = clientId;
+}
+
 - (NSString *)getClientId {
-    if (self.tokenDetails) {
+    if (_protocolClientId) {
+        // Check wildcard
+        if ([_protocolClientId isEqual:@"*"])
+            // Any client
+            return nil;
+        else
+            return _protocolClientId;
+    }
+    else if (self.tokenDetails) {
         // Check wildcard
         if ([self.tokenDetails.clientId isEqual:@"*"])
             // Any client

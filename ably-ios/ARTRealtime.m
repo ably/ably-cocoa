@@ -13,6 +13,7 @@
 #import "ARTStatus.h"
 #import "ARTDefault.h"
 #import "ARTRest.h"
+#import "ARTAuth+Private.h"
 #import "ARTMessage.h"
 #import "ARTClientOptions.h"
 #import "ARTChannelOptions.h"
@@ -272,8 +273,8 @@
             [self startConnectTimer];
 
             // Create transport and initiate connection
-            if(!self.transport) {
-                if(previousState == ARTRealtimeFailed || previousState == ARTRealtimeDisconnected) {
+            if (!self.transport) {
+                if (previousState == ARTRealtimeFailed || previousState == ARTRealtimeDisconnected) {
                     self.options.connectionSerial = self.connectionSerial;
                     self.options.resumeKey = self.connectionKey;
                 }
@@ -756,6 +757,9 @@
             [self onError:message withErrorInfo:message.error];
             break;
         case ARTProtocolMessageConnected:
+            // Set Auth#clientId
+            [[self auth] setProtocolClientId:message.clientId];
+            // Event
             [self onConnected:message withErrorInfo:message.error];
             break;
         case ARTProtocolMessageDisconnected:
