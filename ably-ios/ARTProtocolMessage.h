@@ -43,17 +43,18 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) ARTProtocolMessageAction action;
 @property (readwrite, assign, nonatomic) int count;
 @property (art_nullable, readwrite, strong, nonatomic) ARTErrorInfo *error;
-@property (readwrite, strong, nonatomic) NSString *id;
-@property (readwrite, strong, nonatomic) NSString *channel;
-@property (readwrite, strong, nonatomic) NSString *channelSerial;
-@property (readwrite, strong, nonatomic) NSString *connectionId;
-@property (readwrite, strong, nonatomic) NSString *connectionKey;
+@property (art_nullable, readwrite, strong, nonatomic) NSString *id;
+@property (art_nullable, readwrite, strong, nonatomic) NSString *channel;
+@property (art_nullable, readwrite, strong, nonatomic) NSString *channelSerial;
+@property (art_nullable, readwrite, strong, nonatomic) NSString *connectionId;
+@property (art_nullable, readwrite, strong, nonatomic) NSString *connectionKey;
+@property (art_nullable, readwrite, strong, nonatomic) NSString *clientId;
 @property (readwrite, assign, nonatomic) int64_t connectionSerial;
 @property (readwrite, assign, nonatomic) BOOL hasConnectionSerial;
 @property (readwrite, assign, nonatomic) int64_t msgSerial;
-@property (readwrite, strong, nonatomic) NSDate *timestamp;
-@property (readwrite, strong, nonatomic) NSArray *messages;
-@property (readwrite, strong, nonatomic) NSArray *presence;
+@property (art_nullable, readwrite, strong, nonatomic) NSDate *timestamp;
+@property (art_nullable, readwrite, strong, nonatomic) NSArray *messages;
+@property (art_nullable, readwrite, strong, nonatomic) NSArray *presence;
 @property (readonly, assign, nonatomic) BOOL ackRequired;
 @property (readwrite, assign, nonatomic) int64_t flags;
 

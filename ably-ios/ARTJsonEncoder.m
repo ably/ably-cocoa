@@ -412,7 +412,7 @@
     message.channelSerial = [input artString:@"channelSerial"];
     message.connectionId = [input artString:@"connectionId"];
     NSNumber * serial =  [input artNumber:@"connectionSerial"];
-    if(serial) {
+    if (serial) {
         message.connectionSerial = [serial longLongValue];
     }
     message.id = [input artString:@"id"];
@@ -422,11 +422,18 @@
     message.presence = [self presenceMessagesFromArray:[input objectForKey:@"presence"]];
     message.connectionKey = [input artString:@"connectionKey"];
     message.flags = [[input artNumber:@"flags"] longLongValue];
-    NSDictionary * error = [input valueForKey:@"error"];
-    if(error) {
+
+    NSDictionary *connectionDetails = [input valueForKey:@"connectionDetails"];
+    if (connectionDetails) {
+        message.clientId = [connectionDetails artString:@"clientId"];
+    }
+
+    NSDictionary *error = [input valueForKey:@"error"];
+    if (error) {
         message.error = [[ARTErrorInfo alloc] init];
         [message.error setCode:[[error artNumber:@"code"] intValue] status:[[error artNumber:@"statusCode"] intValue] message:[error artString:@"message"]];
     }
+
     return message;
 }
 

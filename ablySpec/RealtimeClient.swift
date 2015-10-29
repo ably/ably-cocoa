@@ -150,6 +150,40 @@ class RealtimeClient: QuickSpec {
 
                 expect(client.channels()["test"]).toNot(beNil())
             }
+
+            context("Auth object") {
+
+                // RTC4
+                it("should provide access to the Auth object") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRealtime(options: options)
+
+                    expect(client.auth().options.key).to(equal(options.key))
+                }
+
+                // RTC4a
+                it("clientId may be populated when the connection is established") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "client_string"
+                    let client = ARTRealtime(options: options)
+
+                    waitUntil(timeout: 60) { done in
+                        client.eventEmitter.on { state, errorInfo in
+                            switch state {
+                            case .Failed:
+                                self.checkError(errorInfo, withAlternative: "Failed state")
+                                done()
+                            case .Connected:
+                                self.checkError(errorInfo)
+                                expect(client.auth().clientId).to(equal(options.clientId))
+                                done()
+                            default:
+                                break
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
