@@ -62,7 +62,7 @@ Instance the Ably library with the given options.
 - (NSString *)recoveryKey;
 - (ARTAuth *)auth;
 - (__GENERIC(NSDictionary, NSString *, ARTRealtimeChannel *) *)channels;
-- (void)time:(void(^)(NSDate *time, NSError *error))cb;
+- (void)time:(ARTTimeCallback)cb;
 
 typedef void (^ARTRealtimePingCb)(ARTStatus *);
 - (void)ping:(ARTRealtimePingCb) cb;
