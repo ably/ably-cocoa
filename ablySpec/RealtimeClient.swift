@@ -240,6 +240,48 @@ class RealtimeClient: QuickSpec {
                     }
                 }
             }
+
+            // RTC7
+            it("should use the configured timeouts specified") {
+                let options = AblyTests.commonAppSetup()
+                options.suspendedRetryTimeout = 6.0
+
+                let client = ARTRealtime(options: options)
+
+                var start: NSDate?
+                var endInterval: UInt?
+
+                waitUntil(timeout: 120.0) { done in
+                    client.eventEmitter.on { state, errorInfo in
+                        switch state {
+                        case .Failed:
+                            self.checkError(errorInfo, withAlternative: "Failed state")
+                            done()
+                        case .Connecting:
+                            if let start = start {
+                                endInterval = UInt(start.timeIntervalSinceNow * -1)
+                                done()
+                            }
+                        case .Connected:
+                            self.checkError(errorInfo)
+
+                            if start == nil {
+                                // Force
+                                client.transition(.Suspended)
+                            }
+                        case .Suspended:
+                            start = NSDate()
+                        default:
+                            break
+                        }
+                    }
+                }
+                client.close()
+
+                if let secs = endInterval {
+                    expect(secs).to(beLessThanOrEqualTo(UInt(options.suspendedRetryTimeout)))
+                }
+            }
         }
     }
 }

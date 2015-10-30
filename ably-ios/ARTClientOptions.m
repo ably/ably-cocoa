@@ -36,6 +36,12 @@
     _autoConnect = true;
     _tls = YES;
     _logLevel = ARTLogLevelNone;
+    _disconnectedRetryTimeout = 15.0; //Seconds
+    _suspendedRetryTimeout = 30.0; //Seconds
+    _httpOpenTimeout = 4.0; //Seconds
+    _httpRequestTimeout = 15.0; //Seconds
+    _httpMaxRetryDuration = 10.0; //Seconds
+    _httpMaxRetryCount = 3;
     return self;
 }
 

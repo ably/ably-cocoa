@@ -33,11 +33,12 @@ NSString *const DefaultRealtimeHost = @"realtime.ably.io";
     return 15;
 }
 
-+ (NSTimeInterval)disconnectTimeout {
-    return 30;
++ (NSTimeInterval)connectionStateTtl {
+    return 60.0;
 }
 
-+ (NSTimeInterval)suspendTimeout {
-    return 120;
++ (NSTimeInterval)realtimeRequestTimeout {
+    return 10.0;
 }
+
 @end
