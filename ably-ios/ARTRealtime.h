@@ -65,7 +65,7 @@ Instance the Ably library with the given options.
 - (void)time:(ARTTimeCallback)cb;
 
 typedef void (^ARTRealtimePingCb)(ARTStatus *);
-- (void)ping:(ARTRealtimePingCb) cb;
+- (void)ping:(ARTRealtimePingCb)cb;
 
 - (void)stats:(ARTStatsQuery *)query callback:(ARTStatsCallback)completion;
 
