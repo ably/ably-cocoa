@@ -109,7 +109,7 @@ enum {
     }
 }
 
-- (void)setupWebSocket:(__GENERIC(NSArray, NSURLQueryItem *) *)params withOptions:(ARTClientOptions *)options {
+- (NSURL *)setupWebSocket:(__GENERIC(NSArray, NSURLQueryItem *) *)params withOptions:(ARTClientOptions *)options {
     NSArray *queryItems = params;
 
     // ClientID
@@ -156,6 +156,7 @@ enum {
     self.websocket = [[SRWebSocket alloc] initWithURL:url];
     self.websocket.delegate = self;
     [self.websocket setDelegateDispatchQueue:self.queue];
+    return url;
 }
 
 - (void)sendClose {

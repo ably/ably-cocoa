@@ -34,6 +34,19 @@ let testTimeout: NSTimeInterval = 30
 
 class AblyTests {
 
+    class func checkError(errorInfo: ARTErrorInfo?, withAlternative message: String) {
+        if let error = errorInfo {
+            XCTFail("\(error.code): \(error.message)")
+        }
+        else if !message.isEmpty {
+            XCTFail(message)
+        }
+    }
+
+    class func checkError(errorInfo: ARTErrorInfo?) {
+        checkError(errorInfo, withAlternative: "")
+    }
+
     class var jsonRestOptions: ARTClientOptions {
         get {
             let options = ARTClientOptions()
@@ -223,4 +236,19 @@ class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
         self.requests.append(request)
         self.executor.executeRequest(request, completion: callback)
     }
+}
+
+/*
+ Records each message for test purpose.
+*/
+class MockTransport: ARTWebSocketTransport {
+
+    var lastUrl: NSURL?
+
+    override func setupWebSocket(params: [NSURLQueryItem], withOptions options: ARTClientOptions) -> NSURL {
+        let url = super.setupWebSocket(params, withOptions: options)
+        lastUrl = url
+        return url
+    }
+
 }

@@ -12,15 +12,33 @@ import Nimble
 @testable import ably
 @testable import ably.Private
 
-class RestClientConnection: QuickSpec {
+class RealtimeClientConnection: QuickSpec {
 
     override func spec() {
         describe("Connection") {
             // RTN1
-            fit("should support additional transports") {
+            it("should support additional transports") {
                 // Only uses websocket transport.
+            }
+
+            context("query params") {
+                // RTN2
+                fit("should connect to the default host") {
+                    let options = AblyTests.commonAppSetup() //Same as Rest
+                    options.autoConnect = false
+
+                    let client = ARTRealtime(options: options)
+                    client.setTransportClass(MockTransport.self)
+                    client.connect()
+
+                    if let transport = client.transport as? MockTransport, let url = transport.lastUrl {
+                        expect(url.host).to(equal("sandbox-realtime.ably.io"))
+                    }
+                    else {
+                        XCTFail("MockTransport isn't working")
+                    }
+                }
             }
         }
     }
-
 }

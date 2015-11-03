@@ -26,7 +26,9 @@
 #import "ARTEventEmitter.h"
 #import "ARTQueuedMessage.h"
 
-@interface ARTRealtime () <ARTRealtimeTransportDelegate>
+@interface ARTRealtime () <ARTRealtimeTransportDelegate> {
+    Class _transportClass;
+}
 
 // Shared with private header
 @property (readwrite, strong, nonatomic) ARTRest *rest;
@@ -118,6 +120,7 @@
         _eventEmitter = [[ARTEventEmitter alloc] initWithRealtime:self];
         _allChannels = [NSMutableDictionary dictionary];
         _transport = nil;
+        _transportClass = [ARTWebSocketTransport class];
         self.state = ARTRealtimeInitialized;
         _connectTimeout = NULL;
         _suspendTimeout = NULL;
@@ -273,6 +276,7 @@
             [self startConnectTimer];
 
             // Create transport and initiate connection
+            // TODO: ConnectionManager
             if (!self.transport) {
                 if (previousState == ARTRealtimeFailed || previousState == ARTRealtimeDisconnected) {
                     self.options.connectionSerial = self.connectionSerial;
@@ -713,7 +717,7 @@
 }
 
 - (id<ARTRealtimeTransport>)createTransport {
-    ARTWebSocketTransport *websocketTransport = [[ARTWebSocketTransport alloc] initWithRest:self.rest options:self.options];
+    ARTWebSocketTransport *websocketTransport = [[_transportClass alloc] initWithRest:self.rest options:self.options];
     return websocketTransport;
 }
 
@@ -812,6 +816,10 @@
 
 - (void)realtimeTransportTooBig:(id<ARTRealtimeTransport>)transport {
     [self transition:ARTRealtimeFailed];
+}
+
+- (void)setTransportClass:(Class)transportClass {
+    _transportClass = transportClass;
 }
 
 + (NSString *)protocolStr:(ARTProtocolMessageAction) action {
