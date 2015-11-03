@@ -126,10 +126,6 @@ enum {
     NSURLQueryItem *formatParam = [NSURLQueryItem queryItemWithName:@"format" value:[_encoder formatAsString]];
     queryItems = [queryItems arrayByAddingObject:formatParam];
 
-    // Timestamp
-    NSURLQueryItem *timestampParam = [NSURLQueryItem queryItemWithName:@"timestamp" value:[NSString stringWithFormat:@"%llu", dateToMiliseconds([NSDate date])]];
-    queryItems = [queryItems arrayByAddingObject:timestampParam];
-
     if (options.recover) {
         NSArray *recoverParts = [options.recover componentsSeparatedByString:@":"];
         if ([recoverParts count] == 2) {
