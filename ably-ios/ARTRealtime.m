@@ -25,9 +25,12 @@
 #import "ARTRealtimeChannelSubscription.h"
 #import "ARTEventEmitter.h"
 #import "ARTQueuedMessage.h"
+#import "ARTConnection.h"
 
 @interface ARTRealtime () <ARTRealtimeTransportDelegate> {
     Class _transportClass;
+    // FIXME: temporary
+    ARTConnection *_connection;
 }
 
 // Shared with private header
@@ -133,6 +136,7 @@
         _clientId = options.clientId;
         _options = options;
         _stateSubscriptions = [NSMutableArray array];
+        _connection = [[ARTConnection alloc] initWithRealtime:self];
         
         if (options.autoConnect) {
             [self connect];
@@ -173,6 +177,10 @@
 
 - (NSDictionary *)channels {
     return _allChannels;
+}
+
+- (ARTConnection *)connection {
+    return _connection;
 }
 
 - (void)dealloc {

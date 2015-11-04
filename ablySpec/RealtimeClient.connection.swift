@@ -128,6 +128,7 @@ class RealtimeClientConnection: QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 var connected = false
 
+                // The only way to control this functionality is with the options flag
                 options.autoConnect = true
                 ARTRealtime(options: options).eventEmitter.on { state, errorInfo in
                     switch state {
@@ -138,6 +139,54 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
                 expect(connected).toEventually(beTrue(), timeout: 10.0, description: "Can't connect automatically")
+            }
+
+            // RTN4
+            context("event emitter") {
+                // RTN4a
+                it("should emit events for state changes") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+
+                    let client = ARTRealtime(options: options)
+                    let connection = client.connection()
+                    var events: [ARTRealtimeConnectionState] = []
+
+                    waitUntil(timeout: 25.0) { done in
+                        connection.eventEmitter.on { state, errorInfo in
+                            switch state {
+                            case .Initialized:
+                                events += [state]
+                                connection.connect()
+                            case .Connecting:
+                                events += [state]
+                            case .Connected:
+                                events += [state]
+                                client.close()
+                            case .Disconnected:
+                                events += [state]
+                                // Forced
+                                client.transition(.Failed, withErrorInfo: ARTErrorInfo())
+                            case .Suspended:
+                                events += [state]
+                                // Forced
+                                client.transition(.Disconnected)
+                            case .Closing:
+                                events += [state]
+                            case .Closed:
+                                events += [state]
+                                // Forced
+                                client.transition(.Suspended)
+                            case .Failed:
+                                events += [state]
+                                expect(errorInfo).toNot(beNil(), description: "Error is nil")
+                                done()
+                            }
+                        }
+                    }
+
+                    expect(events).to(haveCount(8), description: "Missing some states")
+                }
             }
         }
     }

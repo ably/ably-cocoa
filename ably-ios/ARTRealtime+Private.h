@@ -13,6 +13,7 @@
 @class ARTRest;
 @class ARTErrorInfo;
 @class ARTProtocolMessage;
+@class ARTConnection;
 
 ART_ASSUME_NONNULL_BEGIN
 
@@ -41,6 +42,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 // FIXME: Connection should manage the transport
 - (void)setTransportClass:(Class)transportClass;
+- (ARTConnection *)connection;
 
 @end
 
