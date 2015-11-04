@@ -233,6 +233,14 @@ class RealtimeClientConnection: QuickSpec {
 
                     expect(events).to(haveCount(2), description: "Missing CLOSING or CLOSED state")
                 }
+
+                // RTN4d
+                it("should have the current state") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    let connection = ARTRealtime(options: options).connection()
+                    expect(connection.state.rawValue).to(equal(0), description: "Missing INITIALIZED state")
+                }
             }
         }
     }
