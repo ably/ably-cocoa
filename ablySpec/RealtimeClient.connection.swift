@@ -241,6 +241,26 @@ class RealtimeClientConnection: QuickSpec {
                     let connection = ARTRealtime(options: options).connection()
                     expect(connection.state.rawValue).to(equal(0), description: "Missing INITIALIZED state")
                 }
+
+                // RTN4e
+                it("should have the current state on the event change") {
+                    let connection = ARTRealtime(options: AblyTests.commonAppSetup()).connection()
+                    var lastState = ARTRealtimeConnectionState.Initialized
+
+                    waitUntil(timeout: 25.0) { done in
+                        connection.eventEmitter.on { state, errorInfo in
+                            switch state {
+                            case .Connected:
+                                lastState = state
+                                done()
+                            default:
+                                break
+                            }
+                        }
+                    }
+
+                    expect(lastState.rawValue).to(equal(2), description: "Missing state argument")
+                }
             }
         }
     }
