@@ -122,6 +122,23 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
             }
+
+            // RTN3
+            it("should connect automatically") {
+                let options = AblyTests.commonAppSetup()
+                var connected = false
+
+                options.autoConnect = true
+                ARTRealtime(options: options).eventEmitter.on { state, errorInfo in
+                    switch state {
+                    case .Connected:
+                        connected = true
+                    default:
+                        break
+                    }
+                }
+                expect(connected).toEventually(beTrue(), timeout: 10.0, description: "Can't connect automatically")
+            }
         }
     }
 }
