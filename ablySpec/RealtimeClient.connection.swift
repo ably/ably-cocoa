@@ -259,6 +259,8 @@ class RealtimeClientConnection: QuickSpec {
                     let connection = ARTRealtime(options: AblyTests.commonAppSetup()).connection()
                     var lastState = ARTRealtimeConnectionState.Initialized
 
+                    // TODO: ConnectionStateChange object
+
                     waitUntil(timeout: 25.0) { done in
                         connection.eventEmitter.on { state, errorInfo in
                             switch state {
@@ -279,6 +281,8 @@ class RealtimeClientConnection: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
                     let connection = client.connection()
+
+                    // TODO: ConnectionStateChange object
 
                     var errorInfo: ARTErrorInfo?
                     waitUntil(timeout: 30.0) { done in
