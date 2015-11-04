@@ -261,6 +261,31 @@ class RealtimeClientConnection: QuickSpec {
 
                     expect(lastState.rawValue).to(equal(2), description: "Missing state argument")
                 }
+
+                // RTN4f
+                it("should have the reason which contains an ErrorInfo") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRealtime(options: options)
+                    let connection = client.connection()
+
+                    var errorInfo: ARTErrorInfo?
+                    waitUntil(timeout: 30.0) { done in
+                        connection.eventEmitter.on { state, reason in
+                            switch state {
+                            case .Connected:
+                                // Forced
+                                client.transition(.Failed, withErrorInfo: ARTErrorInfo())
+                            case .Failed:
+                                errorInfo = reason
+                                done()
+                            default:
+                                break
+                            }
+                        }
+                    }
+
+                    expect(errorInfo).toNot(beNil())
+                }
             }
         }
     }
