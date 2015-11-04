@@ -208,6 +208,8 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     expect(events).to(haveCount(2), description: "Missing CONNECTING or CONNECTED state")
+                    expect(events[0].rawValue).to(equal(ARTRealtimeConnectionState.Connecting.rawValue), description: "Should be CONNECTING state")
+                    expect(events[1].rawValue).to(equal(ARTRealtimeConnectionState.Connected.rawValue), description: "Should be CONNECTED state")
                 }
 
                 // RTN4c
