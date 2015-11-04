@@ -187,6 +187,28 @@ class RealtimeClientConnection: QuickSpec {
 
                     expect(events).to(haveCount(8), description: "Missing some states")
                 }
+
+                //RTN4b
+                it("should emit states on a new connection") {
+                    let connection = ARTRealtime(options: AblyTests.commonAppSetup()).connection()
+                    var events: [ARTRealtimeConnectionState] = []
+
+                    waitUntil(timeout: 25.0) { done in
+                        connection.eventEmitter.on { state, errorInfo in
+                            switch state {
+                            case .Connecting:
+                                events += [state]
+                            case .Connected:
+                                events += [state]
+                                done()
+                            default:
+                                break
+                            }
+                        }
+                    }
+
+                    expect(events).to(haveCount(2), description: "Missing some states")
+                }
             }
         }
     }
