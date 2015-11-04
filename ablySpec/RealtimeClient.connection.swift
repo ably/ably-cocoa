@@ -232,6 +232,8 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     expect(events).to(haveCount(2), description: "Missing CLOSING or CLOSED state")
+                    expect(events[0].rawValue).to(equal(ARTRealtimeConnectionState.Closing.rawValue), description: "Should be CLOSING state")
+                    expect(events[1].rawValue).to(equal(ARTRealtimeConnectionState.Closed.rawValue), description: "Should be CLOSED state")
                 }
 
                 // RTN4d
