@@ -128,8 +128,10 @@ class RealtimeClientConnection: QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 var connected = false
 
+                // Default
+                expect(options.autoConnect).to(beTrue(), description: "autoConnect should be true by default")
+
                 // The only way to control this functionality is with the options flag
-                options.autoConnect = true
                 ARTRealtime(options: options).eventEmitter.on { state, errorInfo in
                     switch state {
                     case .Connected:
@@ -139,6 +141,34 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
                 expect(connected).toEventually(beTrue(), timeout: 10.0, description: "Can't connect automatically")
+            }
+
+            it("should connect manually") {
+                let options = AblyTests.commonAppSetup()
+                options.autoConnect = false
+
+                let client = ARTRealtime(options: options)
+                var waiting = true
+
+                waitUntil(timeout: 20.0) { done in
+                    client.eventEmitter.on { state, errorInfo in
+                        switch state {
+                        case .Initialized:
+                            // Delay 5 seconds to check if it is connecting by itself
+                            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(2.0 * Double(NSEC_PER_SEC))), dispatch_get_main_queue()) {
+                                waiting = false
+                                client.connect()
+                            }
+                        case .Connected:
+                            if waiting {
+                                XCTFail("Expected to be disconnected")
+                            }
+                            done()
+                        default:
+                            break
+                        }
+                    }
+                }
             }
 
             // RTN4
