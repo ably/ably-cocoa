@@ -211,7 +211,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN4c
-                it("should emit states on a new connection") {
+                it("should emit states when connection is closed") {
                     let connection = ARTRealtime(options: AblyTests.commonAppSetup()).connection()
                     var events: [ARTRealtimeConnectionState] = []
 
