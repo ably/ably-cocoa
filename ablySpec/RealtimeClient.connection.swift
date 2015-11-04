@@ -12,6 +12,23 @@ import Nimble
 @testable import ably
 @testable import ably.Private
 
+/// A Nimble matcher that succeeds when a param exists.
+public func haveParam(expectedValue: String) -> NonNilMatcherFunc<String> {
+    return NonNilMatcherFunc { actualExpression, failureMessage in
+        failureMessage.postfixMessage = "param <\(expectedValue)> exists"
+        if let actualValue = try actualExpression.evaluate() {
+            let queryItems = actualValue.componentsSeparatedByString("&")
+            for item in queryItems {
+                let param = item.componentsSeparatedByString("=")
+                if param[0] == expectedValue {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+}
+
 class RealtimeClientConnection: QuickSpec {
 
     override func spec() {
@@ -24,7 +41,7 @@ class RealtimeClientConnection: QuickSpec {
             // RTN2
             context("url") {
                 it("should connect to the default host") {
-                    let options = AblyTests.commonAppSetup() //Same as Rest
+                    let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
 
                     let client = ARTRealtime(options: options)
@@ -39,8 +56,8 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
-                fit("should connect with query string params") {
-                    let options = AblyTests.commonAppSetup() //Same as Rest
+                it("should connect with query string params") {
+                    let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
 
                     let client = ARTRealtime(options: options)
@@ -55,9 +72,9 @@ class RealtimeClientConnection: QuickSpec {
                                 done()
                             case .Connected:
                                 if let transport = client.transport as? MockTransport, let query = transport.lastUrl?.query {
-                                    // TODO: Check if it is possible to create a custom matcher with Nimble and check each field
-                                    let queryParams = query.componentsSeparatedByString("&")
-                                    expect(queryParams).to(haveCount(4))
+                                    expect(query).to(haveParam("key"))
+                                    expect(query).to(haveParam("echo"))
+                                    expect(query).to(haveParam("format"))
                                 }
                                 else {
                                     XCTFail("MockTransport isn't working")
@@ -71,8 +88,8 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
-                fit("should connect with query string params including clientId") {
-                    let options = AblyTests.commonAppSetup() //Same as Rest
+                it("should connect with query string params including clientId") {
+                    let options = AblyTests.commonAppSetup()
                     options.clientId = "client_string"
                     options.autoConnect = false
 
@@ -88,9 +105,10 @@ class RealtimeClientConnection: QuickSpec {
                                 done()
                             case .Connected:
                                 if let transport = client.transport as? MockTransport, let query = transport.lastUrl?.query {
-                                    // TODO: Check if it is possible to create a custom matcher with Nimble and check each field
-                                    let queryParams = query.componentsSeparatedByString("&")
-                                    expect(queryParams).to(haveCount(5))
+                                    expect(query).to(haveParam("access_token"))
+                                    expect(query).to(haveParam("echo"))
+                                    expect(query).to(haveParam("format"))
+                                    expect(query).to(haveParam("client_id"))
                                 }
                                 else {
                                     XCTFail("MockTransport isn't working")
@@ -104,7 +122,6 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
             }
-
         }
     }
 }
