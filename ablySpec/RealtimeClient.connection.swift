@@ -32,15 +32,10 @@ class RealtimeClientConnection: QuickSpec {
 
     override func spec() {
         describe("Connection") {
-            // RTN1
-            it("should support additional transports") {
-                // Only uses websocket transport.
-            }
-
             // RTN2
             context("url") {
                 it("should connect to the default host") {
-                    let options = AblyTests.commonAppSetup()
+                    let options = ARTClientOptions(key: "keytest:secret")
                     options.autoConnect = false
 
                     let client = ARTRealtime(options: options)
@@ -48,7 +43,7 @@ class RealtimeClientConnection: QuickSpec {
                     client.connect()
 
                     if let transport = client.transport as? MockTransport, let url = transport.lastUrl {
-                        expect(url.host).to(equal("sandbox-realtime.ably.io"))
+                        expect(url.host).to(equal("realtime.ably.io"))
                     }
                     else {
                         XCTFail("MockTransport isn't working")
