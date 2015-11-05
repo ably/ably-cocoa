@@ -13,16 +13,15 @@ import Nimble
 @testable import ably.Private
 
 /// A Nimble matcher that succeeds when a param exists.
-public func haveParam(expectedValue: String) -> NonNilMatcherFunc<String> {
+public func haveParam(key: String, withValue expectedValue: String) -> NonNilMatcherFunc<String> {
     return NonNilMatcherFunc { actualExpression, failureMessage in
-        failureMessage.postfixMessage = "param <\(expectedValue)> exists"
-        if let actualValue = try actualExpression.evaluate() {
-            let queryItems = actualValue.componentsSeparatedByString("&")
-            for item in queryItems {
-                let param = item.componentsSeparatedByString("=")
-                if param[0] == expectedValue {
-                    return true
-                }
+        failureMessage.postfixMessage = "param <\(key)=\(expectedValue)> exists"
+        guard let actualValue = try actualExpression.evaluate() else { return false }
+        let queryItems = actualValue.componentsSeparatedByString("&")
+        for item in queryItems {
+            let param = item.componentsSeparatedByString("=")
+            if let currentKey = param.first, let currentValue = param.last where currentKey == key && currentValue == expectedValue {
+                return true
             }
         }
         return false
@@ -72,9 +71,9 @@ class RealtimeClientConnection: QuickSpec {
                                 done()
                             case .Connected:
                                 if let transport = client.transport as? MockTransport, let query = transport.lastUrl?.query {
-                                    expect(query).to(haveParam("key"))
-                                    expect(query).to(haveParam("echo"))
-                                    expect(query).to(haveParam("format"))
+                                    expect(query).to(haveParam("key", withValue: options.key ?? ""))
+                                    expect(query).to(haveParam("echo", withValue: "true"))
+                                    expect(query).to(haveParam("format", withValue: "json"))
                                 }
                                 else {
                                     XCTFail("MockTransport isn't working")
@@ -92,6 +91,7 @@ class RealtimeClientConnection: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "client_string"
                     options.autoConnect = false
+                    options.echoMessages = false
 
                     let client = ARTRealtime(options: options)
                     client.setTransportClass(MockTransport.self)
@@ -105,10 +105,10 @@ class RealtimeClientConnection: QuickSpec {
                                 done()
                             case .Connected:
                                 if let transport = client.transport as? MockTransport, let query = transport.lastUrl?.query {
-                                    expect(query).to(haveParam("access_token"))
-                                    expect(query).to(haveParam("echo"))
-                                    expect(query).to(haveParam("format"))
-                                    expect(query).to(haveParam("client_id"))
+                                    expect(query).to(haveParam("access_token", withValue: options.tokenDetails?.token ?? ""))
+                                    expect(query).to(haveParam("echo", withValue: "false"))
+                                    expect(query).to(haveParam("format", withValue: "json"))
+                                    expect(query).to(haveParam("client_id", withValue: "client_string"))
                                 }
                                 else {
                                     XCTFail("MockTransport isn't working")
