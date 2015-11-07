@@ -17,6 +17,8 @@
 #import "ARTNSDate+ARTUtil.h"
 #import "ARTRest+Private.h"
 #import "ARTLog.h"
+#import "ARTPaginatedResult.h"
+
 @interface ARTRestAppStatsTest : XCTestCase {
     ARTRest *_rest;
 }
@@ -37,6 +39,7 @@
 }
 
 -(NSString *) interval0 {
+    // FIXME: Strange format?!!
     return @"2015-03-13:05:22";
 }
 -(NSString *) interval1 {
@@ -61,7 +64,7 @@
          @{ @"intervalId": [self interval3],
             @"inbound": @{ @"realtime": @{@"messages":@{ @"count":[NSNumber numberWithInt:80],@"data":[NSNumber numberWithInt:8000]}}}},
          
-        
+
         ];
 }
 
@@ -70,12 +73,17 @@
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
        [rest postTestStats:[self getTestStats] cb:^(ARTStatus *status) {
-           [rest statsWithParams:@{@"start":[self interval0], @"end": [self interval2]  } cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-               XCTAssertEqual(ARTStatusOk, status.status);
-               NSArray * items = [result currentItems];
+           NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+           dateFormatter.dateFormat = @"yyyy-mm-dd";
+           ARTStatsQuery *query = [[ARTStatsQuery alloc] init];
+           query.start = [dateFormatter dateFromString:[self interval0]];
+           query.end = [dateFormatter dateFromString:[self interval2]];
 
+           [rest stats:query callback:^(ARTPaginatedResult *result, NSError *error) {
+               XCTAssert(!error);
+               NSArray *items = [result items];
                XCTAssertEqual(3, [items count]);
-               ARTStats * s = [items objectAtIndex:0];
+               ARTStats *s = [items objectAtIndex:0];
                XCTAssertEqual(s.all.messages.count, 70.0);
                XCTAssertEqual(s.inbound.all.messages.count, 70.0);
                [exp fulfill];
@@ -90,18 +98,22 @@
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         [rest postTestStats:[self getTestStats] cb:^(ARTStatus *status) {
-            [rest statsWithParams:@{@"start":[self interval0], @"end": [self interval2] ,@"direction" : @"forwards" } cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                XCTAssertEqual(ARTStatusOk, status.status);
-                NSArray * items = [result currentItems];
-                
+            NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+            dateFormatter.dateFormat = @"yyyy-mm-dd";
+            ARTStatsQuery *query = [[ARTStatsQuery alloc] init];
+            query.start = [dateFormatter dateFromString:[self interval0]];
+            query.end = [dateFormatter dateFromString:[self interval2]];
+            query.direction = ARTQueryDirectionForwards;
+
+            [rest stats:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                XCTAssert(!error);
+                NSArray *items = [result items];
                 XCTAssertEqual(3, [items count]);
                 ARTStats * s = [items objectAtIndex:0];
                 XCTAssertEqual(s.all.messages.count, 50.0);
                 XCTAssertEqual(s.inbound.all.messages.count, 50.0);
                 [exp fulfill];
             }];
-            
-            
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -112,12 +124,18 @@
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         [rest postTestStats:[self getTestStats] cb:^(ARTStatus *status) {
-            [rest statsWithParams:@{@"start":[self interval0], @"end": [self interval2] , @"unit" : @"hour" } cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                XCTAssertEqual(ARTStatusOk, status.status);
-                NSArray * items = [result currentItems];
-                
+            NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+            dateFormatter.dateFormat = @"yyyy-mm-dd";
+            ARTStatsQuery *query = [[ARTStatsQuery alloc] init];
+            query.start = [dateFormatter dateFromString:[self interval0]];
+            query.end = [dateFormatter dateFromString:[self interval2]];
+            query.unit = ARTStatsUnitHour;
+
+            [rest stats:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                XCTAssert(!error);
+                NSArray *items = [result items];
                 XCTAssertEqual(2, [items count]);
-                ARTStats * s = [items objectAtIndex:0];
+                ARTStats *s = [items objectAtIndex:0];
                 XCTAssertEqual(s.all.messages.count, 70);
                 XCTAssertEqual(s.inbound.all.messages.count, 70);
                 [exp fulfill];
@@ -132,10 +150,17 @@
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         [rest postTestStats:[self getTestStats] cb:^(ARTStatus *status) {
-            [rest statsWithParams:@{@"start":[self interval0], @"end": [self interval3] , @"unit" : @"day", @"direction": @"forwards" } cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                XCTAssertEqual(ARTStatusOk, status.status);
-                NSArray * items = [result currentItems];
-                
+            NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+            dateFormatter.dateFormat = @"yyyy-mm-dd";
+            ARTStatsQuery *query = [[ARTStatsQuery alloc] init];
+            query.start = [dateFormatter dateFromString:[self interval0]];
+            query.end = [dateFormatter dateFromString:[self interval3]];
+            query.unit = ARTStatsUnitDay;
+            query.direction = ARTQueryDirectionForwards;
+
+            [rest stats:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                XCTAssert(!error);
+                NSArray * items = [result items];
                 XCTAssertEqual(2, [items count]);
                 //TODO sometimes 180, sometimes 70
                 //ARTStats * s = [items objectAtIndex:0];
@@ -153,9 +178,17 @@
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         [rest postTestStats:[self getTestStats] cb:^(ARTStatus *status) {
-            [rest statsWithParams:@{@"start":[self interval0], @"end": [self interval3] , @"unit" : @"month", @"direction": @"forwards" } cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                XCTAssertEqual(ARTStatusOk, status.status);
-                NSArray * items = [result currentItems];
+            NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+            dateFormatter.dateFormat = @"yyyy-mm-dd";
+            ARTStatsQuery *query = [[ARTStatsQuery alloc] init];
+            query.start = [dateFormatter dateFromString:[self interval0]];
+            query.end = [dateFormatter dateFromString:[self interval3]];
+            query.unit = ARTStatsUnitMonth;
+            query.direction = ARTQueryDirectionForwards;
+
+            [rest stats:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                XCTAssert(!error);
+                NSArray *items = [result items];
                 XCTAssertEqual(1, [items count]);
                 //TODO server issue:
                 //sometimes 150, sometimes 180, sometimes 190, sometimes 260.
@@ -173,7 +206,13 @@
     XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
-        XCTAssertThrows([rest statsWithParams:@{@"limit" : @"1001"} cb:^(ARTStatus * s, id<ARTPaginatedResult> r){}]);
+        
+        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+        dateFormatter.dateFormat = @"yyyy-mm-dd";
+        ARTStatsQuery *query = [[ARTStatsQuery alloc] init];
+        query.limit = 1001;
+
+        XCTAssertThrows([rest stats:query callback:^(ARTPaginatedResult *r, NSError *e){}]);
         [exp fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];

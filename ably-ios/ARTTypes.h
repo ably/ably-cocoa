@@ -64,11 +64,11 @@ uint64_t timeIntervalToMiliseconds(NSTimeInterval seconds);
 
 // MARK: Callbacks definitions
 
-typedef void (^ARTRealtimeChannelMessageCb)(ARTMessage * message, ARTErrorInfo *__art_nullable erroInfo);
+typedef void (^ARTRealtimeChannelMessageCb)(ARTMessage * message, ARTErrorInfo *__art_nullable errorInfo);
 
 typedef void (^ARTRealtimeChannelStateCb)(ARTRealtimeChannelState, ARTStatus *);
 
-typedef void (^ARTRealtimeConnectionStateCb)(ARTRealtimeConnectionState state, ARTErrorInfo *__art_nullable erroInfo);
+typedef void (^ARTRealtimeConnectionStateCb)(ARTRealtimeConnectionState state, ARTErrorInfo *__art_nullable errorInfo);
 
 typedef void (^ARTRealtimeChannelPresenceCb)(ARTPresenceMessage *);
 

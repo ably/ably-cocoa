@@ -43,7 +43,7 @@
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"test_connect_text"];
     [self withRealtimeAlt:TestAlterationBadKeyId cb:^(ARTRealtime *realtime) {
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             XCTAssertEqual(ARTRealtimeFailed, state);
             [expectation fulfill];
         }];
@@ -58,7 +58,7 @@
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"test_connect_text"];
     [self withRealtimeAlt:TestAlterationBadKeyValue cb:^(ARTRealtime *realtime) {
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             XCTAssertEqual(ARTRealtimeFailed, state);
             [expectation fulfill];
         }];
@@ -77,7 +77,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"test_connect_text"];
     [self withRealtimeAlt:TestAlterationNone cb:^(ARTRealtime *realtime) {
         __block int connectionCount=0;
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if (state == ARTRealtimeConnected) {
                 connectionCount++;
                 if(connectionCount ==1) {

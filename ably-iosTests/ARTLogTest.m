@@ -22,20 +22,15 @@
 
 -(void) tearDown {
     ARTLog * l = [[ARTLog alloc] init];
-    [l setLogCallback:nil];
-    [l setLogLevel:ArtLogLevelWarn];
+    [l setLogLevel:ARTLogLevelWarn];
 }
 
 - (void)testLogLevelToError {
     __block id lastLogged =nil;
     __block int logCount =0;
     ARTLog * l = [[ARTLog alloc] init];
-    [l setLogCallback:^(id message){
-        lastLogged = message;
-        logCount++;
-    }];
-    
-    [l setLogLevel:ArtLogLevelError];
+
+    [l setLogLevel:ARTLogLevelError];
     
     [l verbose:@"v"];
     [l debug:@"d"];
@@ -51,11 +46,7 @@
     __block id lastLogged =nil;
     __block int logCount =0;
     ARTLog * l = [[ARTLog alloc] init];
-    [l setLogCallback:^(id message){
-        lastLogged = message;
-        logCount++;
-    }];
-    [l setLogLevel:ArtLogLevelDebug];
+    [l setLogLevel:ARTLogLevelDebug];
     [l verbose:@"v"];
     [l debug:@"d"];
     XCTAssertEqualObjects(lastLogged, @"DEBUG: d");
@@ -70,11 +61,7 @@
     __block id lastLogged =nil;
     __block int logCount =0;
     ARTLog * l = [[ARTLog alloc] init];
-    [l setLogCallback:^(id message){
-        lastLogged = message;
-        logCount++;
-    }];
-    [l setLogLevel:ArtLogLevelNone];
+    [l setLogLevel:ARTLogLevelNone];
     [l verbose:@"v"];
     [l debug:@"d"];
     [l info:@"i"];
@@ -86,7 +73,7 @@
 
 -(void) testNoCrashWithoutCustomLogger {
     ARTLog * l = [[ARTLog alloc] init];
-    [l setLogLevel:ArtLogLevelVerbose];
+    [l setLogLevel:ARTLogLevelVerbose];
     [l verbose:@"v"];
     [l debug:@"d"];
     [l info:@"i"];

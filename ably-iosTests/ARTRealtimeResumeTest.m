@@ -14,6 +14,8 @@
 #import "ARTPresenceMessage.h"
 
 #import "ARTRealtime.h"
+#import "ARTRealtimeChannel.h"
+#import "ARTEventEmitter.h"
 #import "ARTTestUtil.h"
 #import "ARTRealtime+Private.h"
 
@@ -51,7 +53,7 @@
     NSString * message2 = @"message2";
     NSString * message3 = @"message3";
     NSString * message4 = @"message4";
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
 
@@ -63,7 +65,7 @@
                 [channel2 attach];
                 if(disconnects ==1) {
                     [channel2 publish:message4 cb:^(ARTStatus *status) {
-                        XCTAssertEqual(ARTStatusOk, status.status);
+                        XCTAssertEqual(ARTStateOk, status.state);
                     }];
                 }
             }
@@ -73,38 +75,22 @@
             if(cState == ARTRealtimeChannelAttached) {
                 [channel2 publish:message1 cb:^(ARTStatus *status) {
                     [channel2 publish:message2 cb:^(ARTStatus *status) {
-                        XCTAssertEqual(ARTStatusOk, status.status);
+                        XCTAssertEqual(ARTStateOk, status.state);
                         disconnects++;
-                        [_realtime onError:nil];
+                        [_realtime onError:nil withErrorInfo:nil];
                     }];
                 }];
             }
         }];
-        [_realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
+        [_realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if(state == ARTRealtimeFailed) {
                 [channel2 publish:message3 cb:^(ARTStatus *status) {
-                    XCTAssertEqual(ARTStatusOk, status.status);
+                    XCTAssertEqual(ARTStateOk, status.state);
                     [_realtime connect];
                 }];
             }
             if(state == ARTRealtimeConnected) {
                 [channel attach];
-            }
-        }];
-        __block bool firstReceived = false;
-        __block bool firstReceivedMessage4 = false; //TODO work out why multple receives
-        [channel subscribe:^(ARTMessage * message) {
-            if([[message content] isEqualToString:message1]) {
-                firstReceived = true;
-                
-            }
-            else if([[message content] isEqualToString:message4]) {
-                XCTAssertTrue(firstReceived);
-                XCTAssertTrue(disconnects>0);
-                if(!firstReceivedMessage4) {
-                    [expectation fulfill];
-                    firstReceivedMessage4 = true;
-                }
             }
         }];
     }];
@@ -118,7 +104,7 @@
     NSString * message2 = @"message2";
     NSString * message3 = @"message3";
     NSString * message4 = @"message4";
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
         
@@ -134,16 +120,16 @@
             if(cState == ARTRealtimeChannelAttached) {
                 [channel2 publish:message1 cb:^(ARTStatus *status) {
                     [channel2 publish:message2 cb:^(ARTStatus *status) {
-                        XCTAssertEqual(ARTStatusOk, status.status);
+                        XCTAssertEqual(ARTStateOk, status.state);
                     }];
                 }];
             }
         }];
-        [channel subscribe:^(ARTMessage * message) {
+        [channel subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
             NSString * msg = [message content];
             if([msg isEqualToString:message2]) {
                 //disconnect connection1
-                [_realtime onError:nil];
+                [_realtime onError:nil withErrorInfo:nil];
                 [channel2 publish:message3 cb:^(ARTStatus *status) {
                     [channel2 publish:message4 cb:^(ARTStatus *status) {
                         [_realtime connect];
@@ -155,7 +141,7 @@
             }
         }];
         
-        [_realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
+        [_realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             [channel attach];
         }];
     }];

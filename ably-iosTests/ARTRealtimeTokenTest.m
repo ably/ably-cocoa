@@ -41,7 +41,7 @@
     
     XCTFail(@"This won't work until SocketRocket returns ably error codes");
     XCTestExpectation *exp= [self expectationWithDescription:@"testTokenExpires"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         options.authOptions.clientId = @"clientIdThatForcesToken";
         const int fiveSecondsMilli = 5000;
         options.authOptions.ttl = fiveSecondsMilli;
@@ -53,12 +53,12 @@
         ARTRealtimeChannel * c= [realtime channel:@"getChannel"];
         NSString * oldToken = authOptions.tokenDetails.token;
         [c publish:@"something" cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStatusOk, status.status);
+            XCTAssertEqual(ARTStateOk, status.state);
             sleep(6); // wait for token to expire
             [c publish:@"somethingElse" cb:^(ARTStatus *status) {
                 NSString * newToken = authOptions.tokenDetails.token;
                 XCTAssertFalse([newToken isEqualToString:oldToken]);
-                XCTAssertEqual(ARTStatusOk, status.status);
+                XCTAssertEqual(ARTStateOk, status.state);
                 [exp fulfill];
             }];
         }];

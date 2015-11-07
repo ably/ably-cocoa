@@ -12,8 +12,11 @@
 #import "ARTPresenceMessage.h"
 
 #import "ARTRealtime.h"
+#import "ARTRealtimeChannel.h"
 #import "ARTTestUtil.h"
 #import "ARTCrypto.h"
+#import "ARTDataQuery.h"
+#import "ARTPaginatedResult.h"
 
 @interface ARTRealtimeCryptoTest : XCTestCase {
     ARTRealtime * _realtime;
@@ -40,25 +43,26 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         ARTIvParameterSpec * ivSpec = [[ARTIvParameterSpec alloc] initWithIv:[[NSData alloc]
                                                                               initWithBase64EncodedString:@"HO4cYSP8LybPYBPZPHQOtg==" options:0]];
-        NSData * keySpec = [[NSData alloc] initWithBase64EncodedString:@"WUP6u0K7MXI5Zeo0VppPwg==" options:0];
-        ARTCipherParams * params =[[ARTCipherParams alloc] initWithAlgorithm:@"aes" keySpec:keySpec ivSpec:ivSpec];
-        ARTRealtimeChannel * c = [realtime channel:@"test" cipherParams:params];
-        XCTAssert(c);
-        NSString * dataStr = @"someDataPayload";
-        NSData * dataPayload = [dataStr  dataUsingEncoding:NSUTF8StringEncoding];
-        NSString * stringPayload = @"someString";
-        [c publish:dataPayload cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStatusOk, status.status);
-            [c publish:stringPayload cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStatusOk, status.status);
-                [c history:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                    XCTAssertEqual(ARTStatusOk, status.status);
-                    XCTAssertEqual(ARTStatusOk, status.status);
+        NSData *keySpec = [[NSData alloc] initWithBase64EncodedString:@"WUP6u0K7MXI5Zeo0VppPwg==" options:0];
+        ARTCipherParams *params =[[ARTCipherParams alloc] initWithAlgorithm:@"aes" keySpec:keySpec ivSpec:ivSpec];
+        ARTRealtimeChannel *channel = [realtime channel:@"test" cipherParams:params];
+        XCTAssert(channel);
+        NSString *dataStr = @"someDataPayload";
+        NSData *dataPayload = [dataStr  dataUsingEncoding:NSUTF8StringEncoding];
+        NSString *stringPayload = @"someString";
+
+        [channel publish:dataPayload cb:^(ARTStatus *status) {
+            XCTAssertEqual(ARTStateOk, status.state);
+            [channel publish:stringPayload cb:^(ARTStatus *status) {
+                XCTAssertEqual(ARTStateOk, status.state);
+                ARTDataQuery *query = [[ARTDataQuery alloc] init];
+                [channel history:query callback:^(ARTStatus *status, ARTPaginatedResult *result) {
+                    XCTAssertEqual(ARTStateOk, status.state);
                     XCTAssertFalse([result hasNext]);
-                    NSArray * page = [result currentItems];
+                    NSArray *page = [result items];
                     XCTAssertTrue(page != nil);
                     XCTAssertEqual([page count], 2);
-                    ARTMessage * stringMessage = [page objectAtIndex:0];
+                    ARTMessage *stringMessage = [page objectAtIndex:0];
                     //ARTMessage * dataMessage = [page objectAtIndex:1];
                     //TODO work out why these arent equivalent
                     //XCTAssertEqualObjects([dataMessage content], dataPayload);
@@ -79,7 +83,7 @@
         
         ARTRealtimeChannel * channel = [realtime channel:channelName];
         [channel publish:firstMessageText cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStatusOk, status.status);
+            XCTAssertEqual(ARTStateOk, status.state);
             ARTIvParameterSpec * ivSpec = [[ARTIvParameterSpec alloc] initWithIv:[[NSData alloc]
                                                                                   initWithBase64EncodedString:@"HO4cYSP8LybPYBPZPHQOtg==" options:0]];
             NSData * keySpec = [[NSData alloc] initWithBase64EncodedString:@"WUP6u0K7MXI5Zeo0VppPwg==" options:0];
@@ -89,14 +93,13 @@
             NSData * dataPayload = [@"someDataPayload"  dataUsingEncoding:NSUTF8StringEncoding];
             NSString * stringPayload = @"someString";
             [c publish:dataPayload cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStatusOk, status.status);
+                XCTAssertEqual(ARTStateOk, status.state);
                 [c publish:stringPayload cb:^(ARTStatus *status) {
-                    XCTAssertEqual(ARTStatusOk, status.status);
-                    [c history:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                        XCTAssertEqual(ARTStatusOk, status.status);
-                        XCTAssertEqual(ARTStatusOk, status.status);
+                    XCTAssertEqual(ARTStateOk, status.state);
+                    [c history:[[ARTDataQuery alloc] init] callback:^(ARTStatus *status, ARTPaginatedResult *result) {
+                        XCTAssertEqual(ARTStateOk, status.state);
                         XCTAssertFalse([result hasNext]);
-                        NSArray * page = [result currentItems];
+                        NSArray * page = [result items];
                         XCTAssertTrue(page != nil);
                         XCTAssertEqual([page count], 3);
                         ARTMessage * stringMessage = [page objectAtIndex:0];
