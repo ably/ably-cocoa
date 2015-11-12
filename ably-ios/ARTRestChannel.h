@@ -11,7 +11,6 @@
 #import "ARTLog.h"
 
 @class ARTRest;
-@class ARTPresence;
 
 ART_ASSUME_NONNULL_BEGIN
 

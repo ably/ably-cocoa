@@ -19,7 +19,7 @@
 #import "ARTRest.h"
 #import "ARTRealtime+Private.h"
 #import "ARTRealtimeChannel.h"
-#import "ARTPresence.h"
+#import "ARTRealtimePresence.h"
 #import "ARTPresenceMap.h"
 #import "ARTLog.h"
 #import "ARTCrypto.h"

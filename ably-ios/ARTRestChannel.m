@@ -6,16 +6,15 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTRestChannel.h"
+#import "ARTRestChannel+Private.h"
 
 #import "ARTRest+Private.h"
 #import "ARTChannel+Private.h"
 #import "ARTChannelOptions.h"
-#import "ARTPresence.h"
 #import "ARTMessage.h"
 #import "ARTPaginatedResult+Private.h"
 #import "ARTDataQuery+Private.h"
-#import "ARTEncoder.h"
+#import "ARTJsonEncoder.h"
 #import "ARTAuth.h"
 #import "ARTNSArray+ARTFunctional.h"
 
@@ -37,6 +36,10 @@
     return _rest.logger;
 }
 
+- (NSString *)getBasePath {
+    return _basePath;
+}
+
 - (void)history:(ARTDataQuery *)query callback:(void(^)(ARTPaginatedResult *result, NSError *error))callback {
     NSParameterAssert(query.limit < 1000);
     NSParameterAssert([query.start compare:query.end] != NSOrderedDescending);
@@ -48,7 +51,7 @@
     ARTPaginatedResultResponseProcessor responseProcessor = ^NSArray *(NSHTTPURLResponse *response, NSData *data) {
         id<ARTEncoder> encoder = [_rest.encoders objectForKey:response.MIMEType];
         return [[encoder decodeMessages:data] artMap:^(ARTMessage *message) {
-            return [message decode:_payloadEncoder];
+            return [message decode:self.payloadEncoder];
         }];
     };
     

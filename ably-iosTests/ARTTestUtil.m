@@ -12,7 +12,7 @@
 #import "ARTRest.h"
 #import "ARTRealtime.h"
 #import "ARTRealtimeChannel.h"
-#import "ARTPresence.h"
+#import "ARTRealtimePresence.h"
 #import "ARTPayload.h"
 
 @implementation ARTTestUtil

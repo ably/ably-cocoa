@@ -11,7 +11,7 @@
 #import "ARTRealtime+Private.h"
 #import "ARTMessage.h"
 #import "ARTAuth.h"
-#import "ARTPresence.h"
+#import "ARTRealtimePresence.h"
 #import "ARTChannel.h"
 #import "ARTChannelOptions.h"
 #import "ARTProtocolMessage.h"
@@ -30,14 +30,13 @@
     self = [super initWithName:name withOptions:options andRest:realtime.rest];
     if (self) {
         _realtime = realtime;
-        _presence = [[ARTPresence alloc] initWithChannel:self];
+        _presence = [[ARTRealtimePresence alloc] initWithChannel:self];
         _state = ARTRealtimeChannelInitialised;
         _queuedMessages = [NSMutableArray array];
         _attachSerial = nil;
         _subscriptions = [NSMutableDictionary dictionary];
         _presenceSubscriptions = [NSMutableArray array];
         _stateSubscriptions = [NSMutableArray array];
-        _payloadEncoder = [ARTPayload defaultPayloadEncoder:options.cipherParams];
         _presenceMap =[[ARTPresenceMap alloc] init];
         _lastPresenceAction = ARTPresenceAbsent;
     }

@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import "ARTTypes.h"
 
+@protocol ARTPayloadEncoder;
+
 @class ARTChannelOptions;
 @class ARTMessage;
 @class ARTPaginatedResult;
@@ -20,6 +22,8 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, readonly) NSString *name;
 
+@property (readonly, strong, nonatomic) id<ARTPayloadEncoder> payloadEncoder;
+
 - (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options;
 
 - (void)publish:(art_nullable id)payload callback:(art_nullable ARTErrorCallback)callback;
@@ -29,9 +33,6 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)publishMessages:(__GENERIC(NSArray, ARTMessage *) *)messages callback:(art_nullable ARTErrorCallback)callback;
 
 - (void)history:(art_nullable ARTDataQuery *)query callback:(void(^)(ARTPaginatedResult /* <ARTMessage *> */ *__art_nullable result, NSError *__art_nullable error))callback;
-
-// TODO:
-//- (void)presence
 
 @end
 

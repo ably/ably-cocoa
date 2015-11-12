@@ -40,8 +40,10 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import <Ably/ARTQueuedMessage.h>
 #import <Ably/ARTRest.h>
 #import <Ably/ARTRestChannel.h>
+#import <Ably/ARTRestPresence.h>
 #import <Ably/ARTRealtime.h>
 #import <Ably/ARTRealtimeChannel.h>
+#import <Ably/ARTRealtimePresence.h>
 #import <Ably/ARTRealtimeTransport.h>
 #import <Ably/ARTStats.h>
 #import <Ably/ARTWebSocketTransport.h>

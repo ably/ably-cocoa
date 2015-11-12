@@ -10,7 +10,7 @@
 
 #import "ARTRealtime.h"
 #import "ARTRealtimeChannel.h"
-#import "ARTPresence.h"
+#import "ARTRealtimePresence.h"
 
 #pragma mark - ARTRealtimeChannelSubscription
 
@@ -47,10 +47,11 @@
     return self;
 }
 
-- (void)excludeAction:(ARTPresenceAction) action {
+- (void)excludeAction:(ARTPresenceAction)action {
     [_excludedActions addObject:[NSNumber numberWithInt:(int) action]];
 }
-- (void)excludeAllActionsExcept:(ARTPresenceAction) action {
+
+- (void)excludeAllActionsExcept:(ARTPresenceAction)action {
     for(int i=0; i<(int) ARTPresenceLast; i++) {
         if(i != (int) action) {
             [_excludedActions addObject:[NSNumber numberWithInt:(int) i]];

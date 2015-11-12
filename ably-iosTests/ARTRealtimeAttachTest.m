@@ -9,14 +9,13 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
-#import "ARTRealtime.h"
 #import "ARTRealtime+Private.h"
-#import "ARTRealtimeChannel+Private.h"
+#import "ARTRealtimePresence.h"
+#import "ARTRealtimeChannel.h"
 #import "ARTTestUtil.h"
 #import "ARTLog.h"
 #import "ARTEventEmitter.h"
 #import "ARTStatus.h"
-#import "ARTPresence.h"
 
 @interface ARTRealtimeAttachTest : XCTestCase {
     ARTRealtime *_realtime;

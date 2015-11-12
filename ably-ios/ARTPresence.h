@@ -13,7 +13,6 @@
 @protocol ARTSubscription;
 
 @class ARTChannel;
-@class ARTRealtimeChannel;
 @class ARTPaginatedResult;
 @class ARTDataQuery;
 
@@ -24,7 +23,9 @@ ART_ASSUME_NONNULL_BEGIN
  */
 @interface ARTPresence : NSObject
 
-- (instancetype)initWithChannel:(ARTRealtimeChannel *)channel;
+@property (readonly, getter=getChannel) ARTChannel *channel;
+
+- (instancetype)initWithChannel:(ARTChannel *)channel;
 
 /**
  Get the presence state for one channel
@@ -35,20 +36,6 @@ ART_ASSUME_NONNULL_BEGIN
  Obtain recent presence history for one channel
  */
 - (void)history:(art_nullable ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *__art_nullable result, NSError *__art_nullable error))callback;
-
-- (void)enter:(id)data cb:(ARTStatusCallback)cb;
-- (void)update:(id)data cb:(ARTStatusCallback)cb;
-- (void)leave:(id) data cb:(ARTStatusCallback)cb;
-
-- (void)enterClient:(NSString *) clientId data:(id) data cb:(ARTStatusCallback) cb;
-- (void)updateClient:(NSString *) clientId data:(id) data cb:(ARTStatusCallback) cb;
-- (void)leaveClient:(NSString *) clientId data:(id) data cb:(ARTStatusCallback) cb;
-- (BOOL)isSyncComplete;
-
-- (id<ARTSubscription>)subscribe:(ARTRealtimeChannelPresenceCb)cb;
-- (id<ARTSubscription>)subscribe:(ARTPresenceAction)action cb:(ARTRealtimeChannelPresenceCb)cb;
-- (void)unsubscribe:(id<ARTSubscription>)subscription;
-- (void)unsubscribe:(id<ARTSubscription>)subscription action:(ARTPresenceAction)action;
 
 @end
 
