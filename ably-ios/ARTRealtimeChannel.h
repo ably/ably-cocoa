@@ -35,7 +35,7 @@
 @property (readonly, strong, nonatomic) NSMutableDictionary *subscriptions;
 @property (readonly, strong, nonatomic) NSMutableArray *presenceSubscriptions;
 @property (readonly, strong, nonatomic) NSMutableDictionary *presenceDict;
-@property (readonly, strong, nonatomic) NSString *clientId;
+@property (readonly, getter=getClientId) NSString *clientId;
 @property (readonly, strong, nonatomic) NSMutableArray *stateSubscriptions;
 @property (readonly, strong, nonatomic) id<ARTPayloadEncoder> payloadEncoder;
 @property (readwrite, strong, nonatomic) ARTPresenceMap * presenceMap;
@@ -68,8 +68,6 @@
 
 - (void)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb;
 - (void)publish:(id)payload cb:(ARTStatusCallback)cb;
-
-- (void)history:(ARTDataQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult /* <ARTMessage *> */ *result))callback;
 
 - (id<ARTSubscription>)subscribe:(ARTRealtimeChannelMessageCb)cb;
 - (id<ARTSubscription>)subscribeToName:(NSString *)name cb:(ARTRealtimeChannelMessageCb)cb;

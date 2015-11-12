@@ -65,11 +65,16 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
 }
 
 - (NSString *)token {
-    return self.tokenDetails.token;
+    if (self.tokenDetails) {
+        return self.tokenDetails.token;
+    }
+    return nil;
 }
 
 - (void)setToken:(NSString *)token {
-    self.tokenDetails = [[ARTAuthTokenDetails alloc] initWithToken:token];
+    if (token && ![token isEqualToString:@""]) {
+        self.tokenDetails = [[ARTAuthTokenDetails alloc] initWithToken:token];
+    }
 }
 
 - (void)setAuthMethod:(NSString *)authMethod {

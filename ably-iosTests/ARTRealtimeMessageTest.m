@@ -265,8 +265,8 @@
             ARTRealtimeChannel *c2 = [_realtime2 channel:channelName];
             [c2 publish:@"message2" cb:^(ARTStatus *status) {
                 XCTAssertEqual(ARTStateOk, status.state);
-                [c1 history:[[ARTDataQuery alloc] init] callback:^(ARTStatus *status, ARTPaginatedResult *result) {
-                    XCTAssertEqual(ARTStateOk, status.state);
+                [c1 history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+                    XCTAssert(!error);
                     NSArray *messages = [result items];
                     XCTAssertEqual(2, messages.count);
                     ARTMessage *m0 = messages[0];

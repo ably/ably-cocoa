@@ -346,21 +346,28 @@
 }
 
 - (void)testPresenceEnterRestricted {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testSimpleDisconnected"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withAlteration:TestAlterationRestrictCapability cb:^(ARTClientOptions * options) {
-        options.clientId = @"some_client_id";
-        ARTRealtime * realtime =[[ARTRealtime alloc] initWithOptions:options];
-        _realtime = realtime;
+    XCTestExpectation *expect = [self expectationWithDescription:@"testSimpleDisconnected"];
+    // Debug
+    ARTClientOptions *clientOptions = [ARTTestUtil clientOptions];
+    clientOptions.logLevel = ARTLogLevelVerbose;
 
-        ARTRealtimeChannel * channel = [realtime channel:@"some_unpermitted_channel"];
-        [channel.presence enter:@"not_allowed_here" cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStateError, status.state);
-            [exp fulfill];
+    // FIXME: why is `setupApp` using a callback? hard reading... could be a blocking method (only once per test)
+    [ARTTestUtil setupApp:clientOptions withAlteration:TestAlterationRestrictCapability cb:^(ARTClientOptions *options) {
+        // Connection
+        options.clientId = @"some_client_id";
+        ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
+
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+            if (state == ARTRealtimeConnected) {
+                ARTRealtimeChannel *channel = [realtime channel:@"some_unpermitted_channel"];
+                [channel.presence enter:@"not_allowed_here" cb:^(ARTStatus *status) {
+                    XCTAssertEqual(ARTStateError, status.state);
+                    [expect fulfill];
+                }];
+            }
         }];
-        [channel attach];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
-
 
 @end
