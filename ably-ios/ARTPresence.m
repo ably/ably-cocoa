@@ -14,8 +14,9 @@
 #import "ARTPresenceMap.h"
 #import "ARTStatus.h"
 #import "ARTRealtimeChannelSubscription.h"
-
 #import "ARTDataQuery+Private.h"
+#import "ARTRest.h"
+#import "ARTAuth.h"
 
 @interface ARTPresence ()
 
@@ -46,8 +47,8 @@
     [self enterClient:self.channel.clientId data:data cb:cb];
 }
 
-- (void)enterClient:(NSString *) clientId data:(id) data cb:(ARTStatusCallback) cb {
-    if(!clientId) {
+- (void)enterClient:(NSString *)clientId data:(id)data cb:(ARTStatusCallback)cb {
+    if (!clientId) {
         [NSException raise:@"Cannot publish presence without a clientId" format:@""];
     }
     ARTPresenceMessage *msg = [[ARTPresenceMessage alloc] init];

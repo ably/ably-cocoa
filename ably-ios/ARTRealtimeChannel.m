@@ -37,7 +37,6 @@
         _subscriptions = [NSMutableDictionary dictionary];
         _presenceSubscriptions = [NSMutableArray array];
         _stateSubscriptions = [NSMutableArray array];
-        _clientId = realtime.auth.clientId;
         _payloadEncoder = [ARTPayload defaultPayloadEncoder:options.cipherParams];
         _presenceMap =[[ARTPresenceMap alloc] init];
         _lastPresenceAction = ARTPresenceAbsent;
@@ -460,6 +459,10 @@
     for (ARTQueuedMessage *qm in qms) {
         qm.cb(status);
     }
+}
+
+- (NSString *)getClientId {
+    return self.realtime.auth.clientId;
 }
 
 @end
