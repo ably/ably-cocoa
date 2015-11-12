@@ -88,13 +88,10 @@
         }
 
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-        if (json) {
+        if (!json) {
             NSLog(@"No response");
             return;
         }
-
-        // Test
-        NSLog(@"%@", json);
 
         NSDictionary *key = json[@"keys"][(alt == TestAlterationRestrictCapability ? 1 :0)];
 
