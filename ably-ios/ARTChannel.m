@@ -19,6 +19,7 @@
     if (self = [super init]) {
         _name = name;
         _options = options;
+        _payloadEncoder = [ARTPayload defaultPayloadEncoder:options.cipherParams];
     }
     return self;
 }
@@ -42,14 +43,14 @@
 
 - (void)publishMessages:(NSArray *)messages callback:(ARTErrorCallback)callback {
     messages = [messages artMap:^(ARTMessage *message) {
-        return [message encode:_payloadEncoder];
+        return [message encode:self.payloadEncoder];
     }];
 
     [self internalPostMessages:messages callback:callback];
 }
 
 - (void)publishMessage:(ARTMessage *)message callback:(ARTErrorCallback)callback {
-    [self internalPostMessages:[message encode:_payloadEncoder] callback:callback];
+    [self internalPostMessages:[message encode:self.payloadEncoder] callback:callback];
 }
 
 - (void)history:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult *, NSError *))callback {

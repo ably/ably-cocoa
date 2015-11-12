@@ -5,11 +5,13 @@ framework module ably {
     module * { export * }
 
     explicit module Private {
+        header "ARTRest+Private.h"
+        header "ARTRestChannel+Private.h"
+        header "ARTRealtime+Private.h"
+        header "ARTRealtimeChannel+Private.h"
         header "ARTChannel+Private.h"
         header "ARTDataQuery+Private.h"
         header "ARTPayload+Private.h"
-        header "ARTRest+Private.h"
-        header "ARTRealtime+Private.h"
         header "ARTAuth+Private.h"
         header "ARTPaginatedResult+Private.h"
         header "ARTEncoder.h"

@@ -15,7 +15,7 @@
 #import "ARTTestUtil.h"
 #import "ARTRest.h"
 #import "ARTLog.h"
-#import "ARTPresence.h"
+#import "ARTRealtimePresence.h"
 #import "ARTRealtimeChannel.h"
 #import "ARTEventEmitter.h"
 #import "ARTPaginatedResult.h"
