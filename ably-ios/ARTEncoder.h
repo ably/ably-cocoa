@@ -15,11 +15,18 @@
 @class ARTAuthTokenDetails;
 @class ARTAuthTokenRequest;
 
+typedef NS_ENUM(NSUInteger, ARTEncoderFormat) {
+    ARTEncoderFormatJson,
+    ARTEncoderFormatMsgPack
+};
+
 ART_ASSUME_NONNULL_BEGIN
 
 @protocol ARTEncoder
 
 - (NSString *)mimeType;
+- (ARTEncoderFormat)format;
+- (NSString *)formatAsString;
 
 - (NSData *)encodeTokenRequest:(ARTAuthTokenRequest *)request;
 
