@@ -390,11 +390,10 @@
     }
 }
 - (void)startSuspendTimer {
-    
     if (!self.suspendTimeout) {
         self.suspendTimeout = [self startTimer:^{
             [self onSuspendTimerFired];
-        }interval:[ARTDefault suspendTimeout]];
+        }interval:self.options.suspendedRetryTimeout];
     }
 }
 
@@ -410,7 +409,7 @@
     if (!self.pingTimeout) {
         self.pingTimeout = [self startTimer:^{
             [self onPingTimerFired];
-        } interval:10.0];
+        }interval:10.0];
     }
 }
 - (void)cancelConnectTimer {
@@ -585,9 +584,9 @@
 - (NSTimeInterval)retryInterval {
     switch (self.state) {
         case ARTRealtimeDisconnected:
-            return [ARTDefault disconnectTimeout];
+            return self.options.disconnectedRetryTimeout;
         case ARTRealtimeSuspended:
-            return [ARTDefault suspendTimeout];
+            return self.options.suspendedRetryTimeout;
         default:
             return 0.0;
     }
