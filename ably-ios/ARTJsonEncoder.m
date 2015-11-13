@@ -73,6 +73,14 @@
     return @"application/json";
 }
 
+- (ARTEncoderFormat)format {
+    return ARTEncoderFormatJson;
+}
+
+- (NSString *)formatAsString {
+    return @"json";
+}
+
 - (ARTMessage *)decodeMessage:(NSData *)data {
     return [self messageFromDictionary:[self decodeDictionary:data]];
 }

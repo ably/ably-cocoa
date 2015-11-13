@@ -138,6 +138,7 @@
 		D7D8F82C1BC2C706009718F2 /* ARTAuthTokenRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = D7D8F8281BC2C706009718F2 /* ARTAuthTokenRequest.m */; };
 		D7D8F82D1BC2C706009718F2 /* ARTAuthTokenParams.h in Headers */ = {isa = PBXBuildFile; fileRef = D7D8F8291BC2C706009718F2 /* ARTAuthTokenParams.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7D8F82E1BC2C706009718F2 /* ARTAuthTokenParams.m in Sources */ = {isa = PBXBuildFile; fileRef = D7D8F82A1BC2C706009718F2 /* ARTAuthTokenParams.m */; };
+		D7EBE5A31BE8391E0086E675 /* RealtimeClient.connection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7EBE5A21BE8391E0086E675 /* RealtimeClient.connection.swift */; settings = {ASSET_TAGS = (); }; };
 		FC78549C1BCD5688539CCBE4 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA6E099E4BC04FC80F845C0 /* libPods.a */; };
 /* End PBXBuildFile section */
 
@@ -325,6 +326,7 @@
 		D7D8F8281BC2C706009718F2 /* ARTAuthTokenRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTAuthTokenRequest.m; sourceTree = "<group>"; };
 		D7D8F8291BC2C706009718F2 /* ARTAuthTokenParams.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTAuthTokenParams.h; sourceTree = "<group>"; };
 		D7D8F82A1BC2C706009718F2 /* ARTAuthTokenParams.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTAuthTokenParams.m; sourceTree = "<group>"; };
+		D7EBE5A21BE8391E0086E675 /* RealtimeClient.connection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClient.connection.swift; sourceTree = "<group>"; };
 		DF8DF755839D59574B7B795F /* Pods-ablySpec.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ablySpec.release.xcconfig"; path = "Pods/Target Support Files/Pods-ablySpec/Pods-ablySpec.release.xcconfig"; sourceTree = "<group>"; };
 		FDA6E099E4BC04FC80F845C0 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -407,6 +409,7 @@
 				D746AE2A1BBB625E003ECEF8 /* RestChannel.swift */,
 				D746AE2B1BBB625E003ECEF8 /* RestClient.channels.swift */,
 				D723046F1BB72CED00F1ABDA /* RealtimeClient.swift */,
+				D7EBE5A21BE8391E0086E675 /* RealtimeClient.connection.swift */,
 				851674EE1B7BA5CD00D35169 /* Stats.swift */,
 			);
 			path = ablySpec;
@@ -918,6 +921,7 @@
 				D72304701BB72CED00F1ABDA /* RealtimeClient.swift in Sources */,
 				D746AE2D1BBB625E003ECEF8 /* RestClient.channels.swift in Sources */,
 				D7C1B8771BBEA81A0087B55F /* Auth.swift in Sources */,
+				D7EBE5A31BE8391E0086E675 /* RealtimeClient.connection.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

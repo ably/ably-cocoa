@@ -109,7 +109,7 @@ enum {
     }
 }
 
-- (void)setupWebSocket:(__GENERIC(NSArray, NSURLQueryItem *) *)params withOptions:(ARTClientOptions *)options {
+- (NSURL *)setupWebSocket:(__GENERIC(NSArray, NSURLQueryItem *) *)params withOptions:(ARTClientOptions *)options {
     NSArray *queryItems = params;
 
     // ClientID
@@ -121,6 +121,10 @@ enum {
     // Echo
     NSURLQueryItem *echoParam = [NSURLQueryItem queryItemWithName:@"echo" value:options.echoMessages ? @"true" : @"false"];
     queryItems = [queryItems arrayByAddingObject:echoParam];
+
+    // Format: MsgPack, JSON
+    NSURLQueryItem *formatParam = [NSURLQueryItem queryItemWithName:@"format" value:[_encoder formatAsString]];
+    queryItems = [queryItems arrayByAddingObject:formatParam];
 
     if (options.recover) {
         NSArray *recoverParts = [options.recover componentsSeparatedByString:@":"];
@@ -156,6 +160,7 @@ enum {
     self.websocket = [[SRWebSocket alloc] initWithURL:url];
     self.websocket.delegate = self;
     [self.websocket setDelegateDispatchQueue:self.queue];
+    return url;
 }
 
 - (void)sendClose {

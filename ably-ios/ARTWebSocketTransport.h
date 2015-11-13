@@ -16,6 +16,8 @@
 @class ARTRest;
 @class ARTLog;
 
+ART_ASSUME_NONNULL_BEGIN
+
 @interface ARTWebSocketTransport : NSObject <ARTRealtimeTransport>
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
@@ -23,4 +25,8 @@
 
 @property (readwrite, weak, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
 
+- (NSURL *)setupWebSocket:(__GENERIC(NSArray, NSURLQueryItem *) *)params withOptions:(ARTClientOptions *)options;
+
 @end
+
+ART_ASSUME_NONNULL_END

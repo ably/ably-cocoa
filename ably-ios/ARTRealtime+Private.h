@@ -39,6 +39,9 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)transition:(ARTRealtimeConnectionState)state;
 - (void)transition:(ARTRealtimeConnectionState)state withErrorInfo:(art_nullable ARTErrorInfo *)errorInfo;
 
+// FIXME: Connection should manage the transport
+- (void)setTransportClass:(Class)transportClass;
+
 @end
 
 ART_ASSUME_NONNULL_END
