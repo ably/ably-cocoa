@@ -359,6 +359,10 @@
                     [expect fulfill];
                 }];
             }
+            else if (state == ARTRealtimeFailed && errorInfo) {
+                XCTFail(@"%@", errorInfo);
+                [expect fulfill];
+            }
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];

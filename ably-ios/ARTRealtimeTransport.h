@@ -12,6 +12,9 @@
 
 @class ARTProtocolMessage;
 @class ARTStatus;
+@class ARTErrorInfo;
+
+ART_ASSUME_NONNULL_BEGIN
 
 @protocol ARTRealtimeTransportDelegate
 
@@ -25,7 +28,7 @@
 - (void)realtimeTransportNeverConnected:(id<ARTRealtimeTransport>)transport;
 - (void)realtimeTransportRefused:(id<ARTRealtimeTransport>)transport;
 - (void)realtimeTransportTooBig:(id<ARTRealtimeTransport>)transport;
-- (void)realtimeTransportFailed:(id<ARTRealtimeTransport>)transport;
+- (void)realtimeTransportFailed:(id<ARTRealtimeTransport>)transport withErrorInfo:(ARTErrorInfo *)errorInfo;
 
 @end
 
@@ -40,3 +43,5 @@
 - (void)abort:(ARTStatus *)reason;
 
 @end
+
+ART_ASSUME_NONNULL_END
