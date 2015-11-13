@@ -72,6 +72,8 @@ typedef void (^ARTRealtimeConnectionStateCb)(ARTRealtimeConnectionState state, A
 
 typedef void (^ARTRealtimeChannelPresenceCb)(ARTPresenceMessage *);
 
+typedef void (^ARTRealtimePingCb)(ARTStatus *);
+
 typedef void (^ARTStatusCallback)(ARTStatus *status);
 
 typedef void (^ARTHttpCb)(ARTHttpResponse *response);

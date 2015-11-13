@@ -129,6 +129,7 @@
 		D746AE541BBD85C5003ECEF8 /* ARTChannelCollection.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE521BBD85C5003ECEF8 /* ARTChannelCollection.m */; };
 		D7C1B8771BBEA81A0087B55F /* Auth.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C1B8761BBEA81A0087B55F /* Auth.swift */; };
 		D7C1B8791BBF5F810087B55F /* ARTAuth+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1B8781BBF5F460087B55F /* ARTAuth+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		D7D29B421BE3DEB300374295 /* ARTConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = D7D29B411BE3DEB300374295 /* ARTConnection.m */; settings = {ASSET_TAGS = (); }; };
 		D7D8F8211BC2BE16009718F2 /* ARTAuthOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = D7D8F81F1BC2BE15009718F2 /* ARTAuthOptions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7D8F8221BC2BE16009718F2 /* ARTAuthOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = D7D8F8201BC2BE15009718F2 /* ARTAuthOptions.m */; };
 		D7D8F8251BC2C691009718F2 /* ARTAuthTokenDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = D7D8F8231BC2C691009718F2 /* ARTAuthTokenDetails.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -314,6 +315,8 @@
 		D746AE551BBD8622003ECEF8 /* ARTChannelCollection+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ARTChannelCollection+Private.h"; sourceTree = "<group>"; };
 		D7C1B8761BBEA81A0087B55F /* Auth.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Auth.swift; sourceTree = "<group>"; };
 		D7C1B8781BBF5F460087B55F /* ARTAuth+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ARTAuth+Private.h"; sourceTree = "<group>"; };
+		D7D29B401BE3DD0600374295 /* ARTConnection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTConnection.h; sourceTree = "<group>"; };
+		D7D29B411BE3DEB300374295 /* ARTConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTConnection.m; sourceTree = "<group>"; };
 		D7D8F81F1BC2BE15009718F2 /* ARTAuthOptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTAuthOptions.h; sourceTree = "<group>"; };
 		D7D8F8201BC2BE15009718F2 /* ARTAuthOptions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTAuthOptions.m; sourceTree = "<group>"; };
 		D7D8F8231BC2C691009718F2 /* ARTAuthTokenDetails.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTAuthTokenDetails.h; sourceTree = "<group>"; };
@@ -516,6 +519,8 @@
 				D746AE3A1BBC5AE1003ECEF8 /* ARTRealtimeChannel.h */,
 				D746AE421BBC5CD0003ECEF8 /* ARTRealtimeChannel+Private.h */,
 				D746AE3B1BBC5AE1003ECEF8 /* ARTRealtimeChannel.m */,
+				D7D29B401BE3DD0600374295 /* ARTConnection.h */,
+				D7D29B411BE3DEB300374295 /* ARTConnection.m */,
 				D746AE321BBC29EB003ECEF8 /* Transport */,
 				D746AE3E1BBC5B14003ECEF8 /* ARTEventEmitter.h */,
 				D746AE3F1BBC5B14003ECEF8 /* ARTEventEmitter.m */,
@@ -947,6 +952,7 @@
 				96A507961A370F860077CDF8 /* ARTStats.m in Sources */,
 				D746AE4C1BBD70F0003ECEF8 /* ARTRealtimeChannelSubscription.m in Sources */,
 				96E408481A3895E800087F77 /* ARTWebSocketTransport.m in Sources */,
+				D7D29B421BE3DEB300374295 /* ARTConnection.m in Sources */,
 				96BF61711A35FB7C004CF2B3 /* ARTAuth.m in Sources */,
 				96E408441A38939E00087F77 /* ARTProtocolMessage.m in Sources */,
 				96BF61651A35CDE1004CF2B3 /* ARTBaseMessage.m in Sources */,
