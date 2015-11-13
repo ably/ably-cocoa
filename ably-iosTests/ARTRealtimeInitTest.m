@@ -13,8 +13,9 @@
 
 #import "ARTRealtime.h"
 #import "ARTTestUtil.h"
-#import "ARTClientOptions+Private.h"
+#import "ARTClientOptions.h"
 #import "ARTLog.h"
+#import "ARTEventEmitter.h"
 
 @interface ARTRealtimeInitTest : XCTestCase {
     ARTRealtime * _realtime;
@@ -23,22 +24,17 @@
 
 @implementation ARTRealtimeInitTest
 
-
 - (void)setUp {
     [super setUp];
 }
 
 - (void)tearDown {
-    [ARTClientOptions getDefaultRestHost:@"rest.ably.io" modify:true];
-    [ARTClientOptions getDefaultRealtimeHost:@"realtime.ably.io" modify:true];
     _realtime = nil;
     [super tearDown];
 }
 
-
-
 -(void) getBaseOptions:(void (^)(ARTClientOptions * options)) cb {
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:cb];
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:cb];
 }
 
 
@@ -46,7 +42,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"initWithOptions"];
     [ARTTestUtil testRealtime:^(ARTRealtime * realtime) {
         _realtime = realtime;
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if(state == ARTRealtimeConnected) {
                 [expectation fulfill];
             }
@@ -61,10 +57,10 @@
 -(void)testInitWithHost {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithHost"];
     [self getBaseOptions:^(ARTClientOptions * options) {
-        [options setRealtimeHost:@"some.bad.realtime.host" withRestHost:@"some.bad.rest.host"];
+        options.environment = @"test";
         ARTRealtime * realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if(state == ARTRealtimeFailed) {
                 [expectation fulfill];
             }
@@ -83,7 +79,7 @@
         options.restPort = 9998;
         ARTRealtime * realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if(state == ARTRealtimeFailed) {
                 [expectation fulfill];
             }
@@ -97,13 +93,9 @@
 
 -(void) testInitWithKey {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithKey"];
-    [ARTClientOptions getDefaultRestHost:@"sandbox-rest.ably.io" modify:true];
-    [ARTClientOptions getDefaultRealtimeHost:@"sandbox-realtime.ably.io" modify:true];
     [self getBaseOptions:^(ARTClientOptions * options) {
-        NSString * key  = [[options.authOptions.keyName
-                            stringByAppendingString:@":"] stringByAppendingString:options.authOptions.keySecret];
-        _realtime = [[ARTRealtime alloc] initWithKey:key];
-        [_realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
+        _realtime = [[ARTRealtime alloc] initWithKey:options.key];
+        [_realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if(state == ARTRealtimeConnected) {
                 [expectation fulfill];
             }
@@ -116,7 +108,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"testInitAutoConnectDefault"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if(state == ARTRealtimeConnected) {
                 [expectation fulfill];
             }
@@ -127,11 +119,11 @@
 
 -(void) testInitAutoConnectFalse {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testInitAutoConnectDefault"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         options.autoConnect = false;
         ARTRealtime * realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if(state == ARTRealtimeConnected) {
                 [expectation fulfill];
             }

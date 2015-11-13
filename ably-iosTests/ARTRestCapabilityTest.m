@@ -8,12 +8,16 @@
 
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
+
 #import "ARTMessage.h"
 #import "ARTClientOptions.h"
 #import "ARTPresenceMessage.h"
 #import "ARTRest.h"
+#import "ARTChannel.h"
+#import "ARTChannelCollection.h"
 #import "ARTTestUtil.h"
 #import "ARTLog.h"
+
 @interface ARTRestCapabilityTest : XCTestCase {
     ARTRest *_rest;
 }
@@ -33,13 +37,13 @@
 
 - (void)withRestRestrictCap:(void (^)(ARTRest *rest))cb {
     if (!_rest) {
-        ARTClientOptions * theOptions = [ARTTestUtil jsonRestOptions];
+        ARTClientOptions * theOptions = [ARTTestUtil clientOptions];
         [ARTTestUtil setupApp:theOptions withAlteration:TestAlterationRestrictCapability cb:^(ARTClientOptions *options) {
             if (options) {
-                options.authOptions.useTokenAuth = true;
-                options.authOptions.clientId = @"clientId";
+                options.useTokenAuth = true;
+                options.clientId = @"client_string";
                 
-                ARTRest * r = [[ARTRest alloc] initWithOptions:options];
+                ARTRest *r = [[ARTRest alloc] initWithOptions:options];
                 _rest = r;
                 cb(_rest);
             }
@@ -54,12 +58,12 @@
 - (void)testPublishRestricted {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testSimpleDisconnected"];
     [self withRestRestrictCap:^(ARTRest * rest) {
-        ARTRestChannel * channel = [rest channel:@"canpublish:test"];
-        [channel publish:@"publish" cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStatusOk, status.status);
-            ARTRestChannel * channel2 = [rest channel:@"cannotPublishToThisChannelName"];
-            [channel2 publish:@"publish" cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStatusError, status.status);
+        ARTChannel *channel = [rest.channels get:@"canpublish:test"];
+        [channel publish:@"publish" callback:^(NSError *error) {
+            XCTAssert(!error);
+            ARTChannel *channel2 = [rest.channels get:@"cannotPublishToThisChannelName"];
+            [channel2 publish:@"publish" callback:^(NSError *error) {
+                XCTAssert(error);
                 [expectation fulfill];
             }];
             
@@ -67,50 +71,5 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
-
-/*
-- (void)testAuthEqual {
-    XCTFail(@"TODO write test");
-}
-- (void)testAuthEmptyOps {
-    XCTFail(@"TODO write test");
-}
-- (void)testAuthEmptyPaths {
-    XCTFail(@"TODO write test");
-}
-- (void)testAuthNonEmptyOps {
-    XCTFail(@"TODO write test");
-}
-- (void)testAuthNonEmptyPaths {
-    XCTFail(@"TODO write test");
-}
-- (void)testAuthWildcardOps {
-    XCTFail(@"TODO write test");
-}
-- (void)testAuthCapability7 {
-    XCTFail(@"TODO write test");
-}
-- (void)testAuthWildcardResources {
-    XCTFail(@"TODO write test");
-}
-- (void)testAuthCapability9 {
-
-    XCTFail(@"TODO write test");
-}
-- (void)testAuthCapability10 {
-
-    XCTFail(@"TODO write test");
-}
-- (void)testInvalidCapabilities1 { //java: authinvalid0
-    XCTFail(@"TODO write test");
-}
-- (void)testInvalidCapabilities2 {
-    XCTFail(@"TODO write test");
-}
-- (void)testInvalidCapabilities3 {
-    XCTFail(@"TODO write test");
-}
-
-*/
 
 @end
