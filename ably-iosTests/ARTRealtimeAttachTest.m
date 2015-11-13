@@ -346,12 +346,7 @@
 
 - (void)testPresenceEnterRestricted {
     XCTestExpectation *expect = [self expectationWithDescription:@"testSimpleDisconnected"];
-    // Debug
-    ARTClientOptions *clientOptions = [ARTTestUtil clientOptions];
-    clientOptions.logLevel = ARTLogLevelVerbose;
-
-    // FIXME: why is `setupApp` using a callback? hard reading... could be a blocking method (only once per test)
-    [ARTTestUtil setupApp:clientOptions withAlteration:TestAlterationRestrictCapability cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withDebug:YES withAlteration:TestAlterationRestrictCapability cb:^(ARTClientOptions *options) {
         // Connection
         options.clientId = @"some_client_id";
         ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
