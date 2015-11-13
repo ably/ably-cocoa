@@ -17,6 +17,7 @@
 #import "ARTClientOptions.h"
 #import "ARTAuthTokenParams.h"
 #import "ARTAuthTokenDetails.h"
+#import "ARTStatus.h"
 
 enum {
     ARTWsNeverConnected = -1,
@@ -97,7 +98,7 @@ enum {
 
             if (error) {
                 [selfStrong.logger error:@"ARTWebSocketTransport: token auth failed with %@", error.description];
-                [selfStrong.delegate realtimeTransportFailed:selfStrong];
+                [selfStrong.delegate realtimeTransportFailed:selfStrong withErrorInfo:[ARTErrorInfo createWithNSError:error]];
                 return;
             }
 
@@ -234,7 +235,7 @@ enum {
     CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
         ARTWebSocketTransport *s = weakSelf;
         if (s) {
-            [s.delegate realtimeTransportFailed:s];
+            [s.delegate realtimeTransportFailed:s withErrorInfo:[ARTErrorInfo createWithNSError:error]];
         }
     });
     CFRunLoopWakeUp(self.rl);
@@ -289,8 +290,7 @@ enum {
             default:
             {
                 // Failed
-                // no idea why
-                [s.delegate realtimeTransportFailed:s];
+                [s.delegate realtimeTransportFailed:s withErrorInfo:[ARTErrorInfo createWithCode:code message:reason]];
                 break;
             }
         }

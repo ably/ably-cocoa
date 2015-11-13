@@ -800,7 +800,7 @@
 }
 
 - (void)realtimeTransportClosed:(id<ARTRealtimeTransport>)transport {
-    //Close succeeded. Nothing more to do.
+    // Close succeeded. Nothing more to do.
     [self transition:ARTRealtimeClosed];
 }
 
@@ -808,9 +808,8 @@
     [self transition:ARTRealtimeDisconnected];
 }
 
-- (void)realtimeTransportFailed:(id<ARTRealtimeTransport>)transport {
-    // TODO add error codes to these failed transitions
-    [self transition:ARTRealtimeFailed];
+- (void)realtimeTransportFailed:(id<ARTRealtimeTransport>)transport withErrorInfo:(ARTErrorInfo *)errorInfo {
+    [self transition:ARTRealtimeFailed withErrorInfo:errorInfo];
 }
 
 - (void)realtimeTransportNeverConnected:(id<ARTRealtimeTransport>)transport {

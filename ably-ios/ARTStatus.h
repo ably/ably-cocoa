@@ -29,18 +29,20 @@ ART_ASSUME_NONNULL_BEGIN
 
 FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
 
-// FIXME: base NSError
 @interface ARTErrorInfo : NSObject
 
 @property (readonly, copy, nonatomic) NSString *message;
 @property (readonly, assign, nonatomic) int statusCode;
 @property (readonly, assign, nonatomic) int code;
 
+// FIXME: use NSInteger instead int (don't know what kind of processor architecture your code might run)
 - (ARTErrorInfo *)setCode:(int) code message:(NSString *) message;
 - (ARTErrorInfo *)setCode:(int) code status:(int) status message:(NSString *) message;
 
 + (ARTErrorInfo *)createWithCode:(int)code message:(NSString *)message;
 + (ARTErrorInfo *)createWithCode:(int)code status:(int)status message:(NSString *)message;
+// FIXME: base NSError
++ (ARTErrorInfo *)createWithNSError:(NSError *)error;
 
 - (NSString *)description;
 
