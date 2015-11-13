@@ -29,8 +29,10 @@ typedef NS_ENUM(NSUInteger, TestAlteration) {
 
 + (ARTCipherPayloadEncoder *)getTestCipherEncoder;
 
+// FIXME: why is `setupApp` using a callback? hard reading... could be a blocking method (only once per test)
 + (void)setupApp:(ARTClientOptions *)options cb:(void(^)(ARTClientOptions *options))cb;
 + (void)setupApp:(ARTClientOptions *)options withAlteration:(TestAlteration) alt cb:(void (^)(ARTClientOptions *))cb;
++ (void)setupApp:(ARTClientOptions *)options withDebug:(BOOL)debug withAlteration:(TestAlteration) alt cb:(void (^)(ARTClientOptions *))cb;
 + (float)timeout;
 
 + (ARTClientOptions *)clientOptions;

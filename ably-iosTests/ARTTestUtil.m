@@ -44,7 +44,7 @@
     return [ARTTestUtil getFileByName:@"ably-common/test-resources/crypto-data-128.json"];
 }
 
-+ (void)setupApp:(ARTClientOptions *)options withAlteration:(TestAlteration)alt  appId:(NSString *)appId cb:(void (^)(ARTClientOptions *))cb {
++ (void)setupApp:(ARTClientOptions *)options withDebug:(BOOL)debug withAlteration:(TestAlteration)alt  appId:(NSString *)appId cb:(void (^)(ARTClientOptions *))cb {
     NSString *str = [ARTTestUtil getTestAppSetupJson];
     if (str == nil) {
         [NSException raise:@"error getting test-app-setup.json loaded. Maybe ably-common is missing" format:@""];
@@ -62,6 +62,9 @@
         options.environment = @"sandbox";
     }
     options.binary = NO;
+    if (debug) {
+        options.logLevel = ARTLogLevelVerbose;
+    }
 
     NSString *urlStr = [NSString stringWithFormat:@"https://%@:%d/apps", options.restHost, options.restPort];
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
@@ -71,8 +74,10 @@
     [req setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     [req setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
 
-   // NSLog(@"Creating test app. URL: %@, Method: %@, Body: %@, Headers: %@", req.URL, req.HTTPMethod, [[NSString alloc] initWithData:req.HTTPBody encoding:NSUTF8StringEncoding], req.allHTTPHeaderFields);
-    
+    if (debug) {
+        NSLog(@"Creating test app. URL: %@, Method: %@, Body: %@, Headers: %@", req.URL, req.HTTPMethod, [[NSString alloc] initWithData:req.HTTPBody encoding:NSUTF8StringEncoding], req.allHTTPHeaderFields);
+    }
+
     CFRunLoopRef rl = CFRunLoopGetCurrent();
     
     NSURLSession *urlSession = [NSURLSession sharedSession];
@@ -91,6 +96,9 @@
         if (!json) {
             NSLog(@"No response");
             return;
+        }
+        else if (debug) {
+            NSLog(@"Response: %@", json);
         }
 
         NSDictionary *key = json[@"keys"][(alt == TestAlterationRestrictCapability ? 1 :0)];
@@ -112,8 +120,12 @@
     [task resume];
 }
 
-+ (void)setupApp:(ARTClientOptions *)options withAlteration:(TestAlteration) alt cb:(void (^)(ARTClientOptions *))cb {
-    [ARTTestUtil setupApp:options withAlteration:alt appId:nil cb:cb];
++ (void)setupApp:(ARTClientOptions *)options withDebug:(BOOL)debug withAlteration:(TestAlteration)alt cb:(void (^)(ARTClientOptions *))cb {
+    [ARTTestUtil setupApp:options withDebug:debug withAlteration:alt appId:nil cb:cb];
+}
+
++ (void)setupApp:(ARTClientOptions *)options withAlteration:(TestAlteration)alt cb:(void (^)(ARTClientOptions *))cb {
+    [ARTTestUtil setupApp:options withDebug:NO withAlteration:alt cb:cb];
 }
 
 + (void)setupApp:(ARTClientOptions *)options cb:(void (^)(ARTClientOptions *))cb {
