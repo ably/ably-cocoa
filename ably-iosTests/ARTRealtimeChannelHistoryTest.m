@@ -37,7 +37,7 @@
 }
 
 - (void)testHistory {
-    [ARTTestUtil testRealtimeV2:self callback:^(ARTRealtime *realtime, ARTRealtimeConnectionState state, XCTestExpectation *expectation) {
+    [ARTTestUtil testRealtimeV2:self withDebug:NO callback:^(ARTRealtime *realtime, ARTRealtimeConnectionState state, XCTestExpectation *expectation) {
         _realtime = realtime;
 
         if (state == ARTRealtimeConnected) {

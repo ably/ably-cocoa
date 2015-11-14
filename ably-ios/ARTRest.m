@@ -196,7 +196,7 @@
         return [encoder decodeStats:data];
     };
     
-    [ARTPaginatedResult executePaginatedRequest:request executor:self.httpExecutor responseProcessor:responseProcessor callback:callback];
+    [ARTPaginatedResult executePaginated:self withRequest:request andResponseProcessor:responseProcessor callback:callback];
 }
 
 - (id<ARTEncoder>)defaultEncoder {
