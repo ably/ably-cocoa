@@ -44,7 +44,7 @@ typedef void (^ARTRealtimeTestCallback)(ARTRealtime *realtime, ARTRealtimeConnec
 
 + (void)testRest:(ARTRestConstructorCb)cb;
 + (void)testRealtime:(ARTRealtimeConstructorCb)cb;
-+ (void)testRealtimeV2:(XCTestCase *)testCase callback:(ARTRealtimeTestCallback)callback;
++ (void)testRealtimeV2:(XCTestCase *)testCase withDebug:(BOOL)debug callback:(ARTRealtimeTestCallback)callback;
 
 + (void)repeat:(int)count i:(int)i delay:(NSTimeInterval)delay block:(void (^)(int))block;
 + (void)repeat:(int)count delay:(NSTimeInterval)delay block:(void (^)(int))block ;

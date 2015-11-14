@@ -46,15 +46,7 @@
     NSParameterAssert([query.start compare:query.end] != NSOrderedDescending);
 
     NSURLComponents *componentsUrl = [NSURLComponents componentsWithString:[_basePath stringByAppendingPathComponent:@"messages"]];
-    componentsUrl.host = _rest.baseUrl.host;
-    componentsUrl.scheme = _rest.baseUrl.scheme;
-    componentsUrl.port = _rest.baseUrl.port;
-
-    NSMutableArray *queryItems = [query asQueryItems];
-    // FIXME: Authentication?!
-    [queryItems addObject:[NSURLQueryItem queryItemWithName:@"access_token" value:_rest.auth.tokenDetails.token]];
-
-    componentsUrl.queryItems = queryItems;
+    componentsUrl.queryItems = [query asQueryItems];
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:componentsUrl.URL];
 
@@ -65,7 +57,7 @@
         }];
     };
     
-    [ARTPaginatedResult executePaginatedRequest:request executor:_rest.httpExecutor responseProcessor:responseProcessor callback:callback];
+    [ARTPaginatedResult executePaginated:self.rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
 }
 
 - (void)internalPostMessages:(id)data callback:(ARTErrorCallback)callback {
