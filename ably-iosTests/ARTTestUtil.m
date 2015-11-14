@@ -14,6 +14,7 @@
 #import "ARTRealtimeChannel.h"
 #import "ARTRealtimePresence.h"
 #import "ARTPayload.h"
+#import "ARTEventEmitter.h"
 
 @implementation ARTTestUtil
 
@@ -229,16 +230,37 @@
 
 + (void)testRest:(ARTRestConstructorCb)cb {
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
-        ARTRest * r = [[ARTRest alloc] initWithOptions:options];
-        cb(r);
+        ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
+        cb(rest);
     }];
 }
 
-+(void) testRealtime:(ARTRealtimeConstructorCb)cb {
++ (void)testRealtime:(ARTRealtimeConstructorCb)cb {
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
-        ARTRealtime * realtime = [[ARTRealtime alloc] initWithOptions:options];
+        ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
         cb(realtime);
     }];
+}
+
++ (void)testRealtimeV2:(XCTestCase *)testCase callback:(ARTRealtimeTestCallback)callback {
+    XCTestExpectation *expectation = [testCase expectationWithDescription:@"testRealtime"];
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+        ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+            if (state == ARTRealtimeFailed) {
+                if (errorInfo) {
+                    XCTFail(@"%@", errorInfo);
+                }
+                else {
+                    XCTFail();
+                }
+                [expectation fulfill];
+            }
+            else
+                callback(realtime, state, expectation);
+        }];
+    }];
+    [testCase waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 @end

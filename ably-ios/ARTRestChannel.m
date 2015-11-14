@@ -16,6 +16,7 @@
 #import "ARTDataQuery+Private.h"
 #import "ARTJsonEncoder.h"
 #import "ARTAuth.h"
+#import "ARTAuthTokenDetails.h"
 #import "ARTNSArray+ARTFunctional.h"
 
 @implementation ARTRestChannel {
@@ -44,9 +45,18 @@
     NSParameterAssert(query.limit < 1000);
     NSParameterAssert([query.start compare:query.end] != NSOrderedDescending);
 
-    NSURLComponents *requestUrl = [NSURLComponents componentsWithString:[_basePath stringByAppendingPathComponent:@"messages"]];
-    requestUrl.queryItems = [query asQueryItems];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl.URL];
+    NSURLComponents *componentsUrl = [NSURLComponents componentsWithString:[_basePath stringByAppendingPathComponent:@"messages"]];
+    componentsUrl.host = _rest.baseUrl.host;
+    componentsUrl.scheme = _rest.baseUrl.scheme;
+    componentsUrl.port = _rest.baseUrl.port;
+
+    NSMutableArray *queryItems = [query asQueryItems];
+    // FIXME: Authentication?!
+    [queryItems addObject:[NSURLQueryItem queryItemWithName:@"access_token" value:_rest.auth.tokenDetails.token]];
+
+    componentsUrl.queryItems = queryItems;
+
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:componentsUrl.URL];
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^NSArray *(NSHTTPURLResponse *response, NSData *data) {
         id<ARTEncoder> encoder = [_rest.encoders objectForKey:response.MIMEType];
