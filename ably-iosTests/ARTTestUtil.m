@@ -131,8 +131,12 @@
     [ARTTestUtil setupApp:options withDebug:NO withAlteration:alt cb:cb];
 }
 
++ (void)setupApp:(ARTClientOptions *)options withDebug:(BOOL)debug cb:(void (^)(ARTClientOptions *))cb {
+    [ARTTestUtil setupApp:options withDebug:debug withAlteration:TestAlterationNone cb:cb];
+}
+
 + (void)setupApp:(ARTClientOptions *)options cb:(void (^)(ARTClientOptions *))cb {
-    [ARTTestUtil setupApp:options withAlteration:TestAlterationNone cb:cb];
+    [ARTTestUtil setupApp:options withDebug:NO withAlteration:TestAlterationNone cb:cb];
 }
 
 + (ARTClientOptions *)clientOptions {
@@ -244,7 +248,7 @@
 
 + (void)testRealtimeV2:(XCTestCase *)testCase withDebug:(BOOL)debug callback:(ARTRealtimeTestCallback)callback {
     XCTestExpectation *expectation = [testCase expectationWithDescription:@"testRealtime"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withDebug:debug withAlteration:TestAlterationNone cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withDebug:debug cb:^(ARTClientOptions *options) {
         ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
         [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if (state == ARTRealtimeFailed) {

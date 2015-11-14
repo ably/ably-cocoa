@@ -16,6 +16,7 @@
 #import "ARTRealtime+Private.h"
 #import "ARTRealtimeChannel.h"
 #import "ARTRealtimeChannel+Private.h"
+#import "ARTRealtimePresence.h"
 #import "ARTEventEmitter.h"
 #import "ARTTestUtil.h"
 #import "ARTCrypto.h"
@@ -286,13 +287,15 @@
             if (state == ARTRealtimeConnected) {
                 [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
                     if (state == ARTRealtimeChannelAttached) {
+                        // FIXME: create proper methods to transition each state.
                         [realtime onError:nil withErrorInfo:nil];
                     }
                 }];
                 [channel attach];
             }
             else if(state == ARTRealtimeFailed) {
-                XCTAssertFalse([channel attach]);
+                ARTErrorInfo *errorInfo = [channel attach];
+                XCTAssert(errorInfo);
                 XCTAssertEqual(errorInfo.code, 90000);
                 [exp fulfill];
                 
@@ -317,7 +320,8 @@
                 [channel attach];
             }
             else if(state == ARTRealtimeFailed) {
-                XCTAssertFalse([channel detach]);
+                ARTErrorInfo *errorInfo = [channel detach];
+                XCTAssert(errorInfo);
                 XCTAssertEqual(errorInfo.code, 90000);
                 [exp fulfill];
                 
@@ -345,27 +349,31 @@
 }
 
 - (void) testClientIdPreserved {
+    NSString *firstClientId = @"firstClientId";
+    NSString *channelName = @"channelName";
+
     XCTestExpectation *exp = [self expectationWithDescription:@"testClientIdPreserved"];
-    NSString * firstClientId = @"first";
-    NSString * channelName = @"channelName";
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withDebug:YES cb:^(ARTClientOptions *options) {
+        // First instance
         options.clientId = firstClientId;
-        ARTRealtime * realtime = [[ARTRealtime alloc] initWithOptions:options];
+        ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime channel:channelName];
+
+        // Second instance
         options.clientId = @"secondClientId";
-        ARTRealtime * realtime2 = [[ARTRealtime alloc] initWithOptions:options];
+        ARTRealtime *realtime2 = [[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = realtime2;
         ARTRealtimeChannel *channel2 = [realtime channel:channelName];
-        /*
-        [channel2.presence subscribe:^(ARTPresenceMessage * message, ARTErrorInfo *errorInfo) {
+
+        [channel2.presence subscribe:^(ARTPresenceMessage * message) {
             XCTAssertEqualObjects(message.clientId, firstClientId);
             [exp fulfill];
         }];
+
         [channel.presence enter:@"enter" cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
         }];
-         */
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
