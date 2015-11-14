@@ -16,6 +16,7 @@
 #import "ARTClientOptions.h"
 #import "ARTLog.h"
 #import "ARTEventEmitter.h"
+#import "ARTAuth.h"
 
 @interface ARTRealtimeInitTest : XCTestCase {
     ARTRealtime * _realtime;
@@ -34,7 +35,7 @@
 }
 
 -(void) getBaseOptions:(void (^)(ARTClientOptions * options)) cb {
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:cb];
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withDebug:NO cb:cb];
 }
 
 
@@ -93,10 +94,14 @@
 
 -(void) testInitWithKey {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithKey"];
-    [self getBaseOptions:^(ARTClientOptions * options) {
+    [self getBaseOptions:^(ARTClientOptions *options) {
         _realtime = [[ARTRealtime alloc] initWithKey:options.key];
         [_realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
-            if(state == ARTRealtimeConnected) {
+            if (state == ARTRealtimeConnecting) {
+                XCTAssertEqual(_realtime.auth.options.key, options.key);
+                // FIXME: Temporary, because the environment is nil instead of `staging` because
+                //instanciating a new RealtimeClient with Key will create a "standard" ClientOptions
+                XCTAssertEqual(((ARTClientOptions *)_realtime.auth.options).environment, nil);
                 [expectation fulfill];
             }
         }];
