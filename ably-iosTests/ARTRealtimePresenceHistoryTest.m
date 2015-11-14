@@ -383,12 +383,11 @@
 }
 
 
-//TOOD consider using a pattern similar to ARTTestUtil testPublish.
--(void) runTestTimeForwards:(bool) forwards limit:(int) limit cb:(ARTPaginatedResultCallback) cb
-{
-    XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
+// TODO: consider using a pattern similar to ARTTestUtil testPublish.
+-(void) runTestTimeForwards:(bool) forwards limit:(int) limit cb:(ARTPaginatedResultCallback) cb {
     __block long long timeOffset= 0;
     
+    XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
     [self withRealtimeClientId:^(ARTRealtime  *realtime) {
         [realtime time:^(NSDate *time, NSError *error) {
             XCTAssert(!error);
@@ -399,8 +398,8 @@
         }];
         [e fulfill];
     }];
-
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime channel:@"testWaitText"];
         [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
@@ -408,7 +407,7 @@
                 [channel attach];
             }
         }];
-        XCTestExpectation * firstBatchExpectation= [self expectationWithDescription:@"firstBatchExpectation"];
+        XCTestExpectation *firstBatchExpectation= [self expectationWithDescription:@"firstBatchExpectation"];
         
         int firstBatchTotal = [self firstBatchSize];
         int secondBatchTotal = [self secondBatchSize];
@@ -436,14 +435,12 @@
             }
         }];
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-        
-        XCTestExpectation * secondBatchExpectation= [self expectationWithDescription:@"secondBatchExpectation"];
-        
-        
-        
-        long long start = [ARTTestUtil nowMilli]+ timeOffset;
+
+
         sleep([ARTTestUtil bigSleep]);
-        
+        long long start = [ARTTestUtil nowMilli] + timeOffset;
+
+        XCTestExpectation * secondBatchExpectation= [self expectationWithDescription:@"secondBatchExpectation"];
         __block int numReceived=0;
         for(int i=0;i < secondBatchTotal; i++) {
             NSString * str = [NSString stringWithFormat:@"second_updates%d", i];
@@ -457,11 +454,13 @@
             }];
         }
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-        XCTestExpectation * thirdBatchExpectation= [self expectationWithDescription:@"thirdBatchExpectation"];
-        
+
         sleep([ARTTestUtil bigSleep]);
-        long long end = [ARTTestUtil nowMilli] +timeOffset;
-        numReceived=0;
+        long long end = [ARTTestUtil nowMilli] + timeOffset;
+
+
+        numReceived = 0;
+        XCTestExpectation *thirdBatchExpectation = [self expectationWithDescription:@"thirdBatchExpectation"];
         for(int i=0;i < thirdBatchTotal; i++) {
             NSString * str = [NSString stringWithFormat:@"third_updates%d", i];
             [channel.presence update:str cb:^(ARTStatus *status) {
@@ -474,19 +473,18 @@
             }];
         }
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-        XCTestExpectation * historyExpecation= [self expectationWithDescription:@"historyExpecation"];
 
         ARTDataQuery *query = [[ARTDataQuery alloc] init];
-        query.start = [NSDate dateWithTimeIntervalSinceReferenceDate:start];
-        query.end = [NSDate dateWithTimeIntervalSinceReferenceDate:end];
+        query.start = [NSDate dateWithTimeIntervalSince1970:start/1000];
+        query.end = [NSDate dateWithTimeIntervalSince1970:end/1000];
         query.limit = limit;
         query.direction = forwards ? ARTQueryDirectionForwards : ARTQueryDirectionBackwards;
 
+        XCTestExpectation *historyExpecation = [self expectationWithDescription:@"historyExpecation"];
         [channel.presence history:query callback:^(ARTPaginatedResult *result, NSError *error) {
             cb(result, error);
             [historyExpecation fulfill];
         }];
-
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
     }];
 }
@@ -506,6 +504,7 @@
         }
     }];
 }
+
 - (void)testTimeBackward {
     [self runTestTimeForwards:false limit:100 cb:^(ARTPaginatedResult *result, NSError *error) {
         XCTAssert(!error);
@@ -601,7 +600,7 @@
                 [c3.presence enter:presenceEnter3 cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
                     [c1.presence history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
-                        XCTAssert(error);
+                        XCTAssert(!error);
                         NSArray *messages = [result items];
                         XCTAssertEqual(3, messages.count);
                         {
