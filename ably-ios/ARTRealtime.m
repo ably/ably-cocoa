@@ -55,10 +55,10 @@
 @property (readwrite, strong, nonatomic) NSMutableArray *queuedMessages;
 @property (readonly, strong, nonatomic) NSMutableArray *pendingMessages;
 @property (readwrite, assign, nonatomic) int64_t pendingMessageStartSerial;
-@property (readonly, strong, nonatomic) NSString *clientId;
 
 @property (nonatomic, copy) ARTRealtimePingCb pingCb;
-@property (readonly, weak, nonatomic) ARTClientOptions *options;
+@property (readonly, getter=getClientOptions) ARTClientOptions *options;
+@property (readonly, getter=getClientId) NSString *clientId;
 
 - (BOOL)connect;
 
@@ -133,8 +133,6 @@
         _queuedMessages = [NSMutableArray array];
         _pendingMessages = [NSMutableArray array];
         _pendingMessageStartSerial = 0;
-        _clientId = options.clientId;
-        _options = options;
         _stateSubscriptions = [NSMutableArray array];
         _connection = [[ARTConnection alloc] initWithRealtime:self];
         
@@ -147,6 +145,18 @@
 
 - (ARTLog *)getLogger {
     return _rest.logger;
+}
+
+- (ARTClientOptions *)getClientOptions {
+    return _rest.options;
+}
+
+- (NSString *)getClientId {
+    return _rest.options.clientId;
+}
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"Realtime: %@", self.clientId];
 }
 
 - (int64_t)connectionSerial {

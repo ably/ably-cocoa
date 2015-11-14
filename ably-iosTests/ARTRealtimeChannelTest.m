@@ -353,7 +353,7 @@
     NSString *channelName = @"channelName";
 
     XCTestExpectation *exp = [self expectationWithDescription:@"testClientIdPreserved"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withDebug:YES cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withDebug:NO cb:^(ARTClientOptions *options) {
         // First instance
         options.clientId = firstClientId;
         ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
@@ -364,17 +364,19 @@
         options.clientId = @"secondClientId";
         ARTRealtime *realtime2 = [[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = realtime2;
-        ARTRealtimeChannel *channel2 = [realtime channel:channelName];
+        ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
 
         [channel2.presence subscribe:^(ARTPresenceMessage * message) {
             XCTAssertEqualObjects(message.clientId, firstClientId);
             [exp fulfill];
         }];
 
-        [channel.presence enter:@"enter" cb:^(ARTStatus *status) {
+        // Enters "firstClientId"
+        [channel.presence enter:@"First Client" cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
+
 @end

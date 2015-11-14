@@ -54,7 +54,7 @@
     self = [super init];
     if (self) {
         NSAssert(options, @"ARTRest: No options provided");
-        _options = options;
+        _options = [options copy];
         _baseUrl = [options restUrl];
         
         if (logger) {
@@ -78,7 +78,7 @@
         _defaultEncoding = [defaultEncoder mimeType];
         _fallbackCount = 0;
         
-        _auth = [[ARTAuth alloc] init:self withOptions:options];
+        _auth = [[ARTAuth alloc] init:self withOptions:_options];
         _channels = [[ARTChannelCollection alloc] initWithRest:self];
     }
     return self;
