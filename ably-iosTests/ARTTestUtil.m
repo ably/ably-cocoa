@@ -105,6 +105,8 @@
 
         ARTClientOptions *testOptions = [options copy];
 
+        // TODO: assign key[@"capability"]
+
         testOptions.key = key[@"keyStr"];
 
         if (alt == TestAlterationBadKeyId || alt == TestAlterationBadKeyValue)

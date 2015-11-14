@@ -359,8 +359,13 @@
                     [expect fulfill];
                 }];
             }
-            else if (state == ARTRealtimeFailed && errorInfo) {
-                XCTFail(@"%@", errorInfo);
+            else if (state == ARTRealtimeFailed) {
+                if (errorInfo) {
+                    XCTFail(@"%@", errorInfo);
+                }
+                else {
+                    XCTFail();
+                }
                 [expect fulfill];
             }
         }];
