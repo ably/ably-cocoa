@@ -8,14 +8,18 @@
 
 #import "ARTPaginatedResult.h"
 
-@protocol ARTHTTPExecutor;
+@class ARTRest;
+
+ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTPaginatedResult ()
 
-typedef NSArray *(^ARTPaginatedResultResponseProcessor)(NSHTTPURLResponse *, NSData *);
+typedef NSArray *__art_nullable(^ARTPaginatedResultResponseProcessor)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable);
 
-+ (void)executePaginatedRequest:(NSMutableURLRequest *)request executor:(id<ARTHTTPExecutor>)executor
-              responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
++ (void)executePaginated:(ARTRest *)rest withRequest:(NSMutableURLRequest *)request
+              andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
                        callback:(ARTPaginatedResultCallback)callback;
 
 @end
+
+ART_ASSUME_NONNULL_END

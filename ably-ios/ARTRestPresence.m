@@ -38,7 +38,7 @@
         }];
     };
 
-    [ARTPaginatedResult executePaginatedRequest:request executor:[self channel].rest.httpExecutor responseProcessor:responseProcessor callback:callback];
+    [ARTPaginatedResult executePaginated:[self channel].rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
 }
 
 - (void)history:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *result, NSError *error))callback {
@@ -57,7 +57,7 @@
         }];
     };
 
-    [ARTPaginatedResult executePaginatedRequest:request executor:[self channel].rest.httpExecutor responseProcessor:responseProcessor callback:callback];
+    [ARTPaginatedResult executePaginated:[self channel].rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
 }
 
 @end
