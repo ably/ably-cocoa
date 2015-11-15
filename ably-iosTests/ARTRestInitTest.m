@@ -51,12 +51,14 @@
 -(void)testInitWithKey {
     XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithKey"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
-        ARTRest * rest = [[ARTRest alloc] initWithKey:options.key];
+        ARTRest *rest = [[ARTRest alloc] initWithKey:options.key];
         _rest = rest;
-        ARTChannel * c = [rest.channels get:@"test"];
+        ARTChannel *c = [rest.channels get:@"test"];
         XCTAssert(c);
         [c publish:@"message" callback:^(NSError *error) {
-            XCTAssert(!error);
+            // "Invalid credentials" because it is sending the request to the production server
+            XCTAssert(error);
+            XCTAssertEqual(error.code, 40100);
             [exp fulfill];
         }];
     }];
