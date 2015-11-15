@@ -118,8 +118,9 @@
         options.recover = @"bad_recovery_key:1234";
         _realtimeRecover = [[ARTRealtime alloc] initWithOptions:options];
         [_realtimeRecover.eventEmitter on:^(ARTRealtimeConnectionState cState, ARTErrorInfo *errorInfo) {
-            if(cState == ARTRealtimeConnected) {
-                //XCTAssertEqual([_realtimeRecover connectionErrorReason].code, 80008);
+            if (cState == ARTRealtimeFailed) {
+                // 80018 - Invalid connectionKey: bad_recovery_key
+                XCTAssertEqual(errorInfo.code, 80018);
                 [expectation fulfill];
             }
         }];
