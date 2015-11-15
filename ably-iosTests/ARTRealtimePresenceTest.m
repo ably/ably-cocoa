@@ -58,7 +58,7 @@
     if (!_realtime) {
         ARTClientOptions * options = [ARTTestUtil clientOptions];
         options.clientId = [self getClientId];
-        [ARTTestUtil setupApp:options cb:^(ARTClientOptions *options) {
+        [ARTTestUtil setupApp:options withDebug:YES cb:^(ARTClientOptions *options) {
             if (options) {
                 _realtime = [[ARTRealtime alloc] initWithOptions:options];
                 _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
@@ -338,7 +338,7 @@
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
             if(message.action == ARTPresenceEnter) {
                 XCTAssertEqualObjects([message content], presenceEnter);
-                [channel.presence update:@"" cb:^(ARTStatus *status) {
+                [channel.presence update:nil cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
                 }];
             }
@@ -743,12 +743,12 @@
             if(state == ARTRealtimeConnected) {
                 [realtime onDisconnected:nil];
             }
-            if(state == ARTRealtimeDisconnected) {
+            else if(state == ARTRealtimeDisconnected) {
                 hasDisconnected = true;
                 XCTAssertThrows([channel.presence get:^(ARTPaginatedResult *result, NSError *error) {}]);
                 [realtime onError:nil withErrorInfo:nil];
             }
-            if(state == ARTRealtimeFailed) {
+            else if(state == ARTRealtimeFailed) {
                 XCTAssertTrue(hasDisconnected);
                 XCTAssertThrows([channel.presence get:^(ARTPaginatedResult *result, NSError *error) {}]);
                 [exp fulfill];

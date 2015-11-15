@@ -24,7 +24,7 @@
     return (ARTRealtimeChannel *)super.channel;
 }
 
-- (void)get:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult *result, NSError *error))callback {
+- (void)get:(void (^)(ARTPaginatedResult *result, NSError *error))callback {
     [[self channel] throwOnDisconnectedOrFailed];
     [super get:callback];
 }
