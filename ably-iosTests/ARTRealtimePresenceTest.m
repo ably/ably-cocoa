@@ -845,27 +845,23 @@
 
 
 - (void)test250ClientsEnter {
-    
-    XCTestExpectation *e = [self expectationWithDescription:@"waitExp"];
-    [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        [e fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    
     NSString * channelName = @"channelName";
-    [self withRealtimeClientId:^(ARTRealtime *realtime) {
+
+    [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+        _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime channel:channelName];
-        const int count =250;
-        __block bool channel2SawAllPresences =false;
+        const int count = 250;
+        __block bool channel2SawAllPresences = false;
+
         XCTestExpectation *setupChannel2 = [self expectationWithDescription:@"setupChannel2"];
-        [self withRealtimeClientId2:^(ARTRealtime *realtime2) {
+        [ARTTestUtil testRealtime:^(ARTRealtime *realtime2) {
             _realtime2 = realtime2;
             ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
             __block int numReceived = 0;
             [channel2 subscribeToStateChanges:^(ARTRealtimeChannelState c, ARTStatus * s) {
-                if(c == ARTRealtimeChannelAttached) {
+                if (c == ARTRealtimeChannelAttached) {
                     //channel2 enters itself
-                    [channel2.presence  enterClient:@"channel2Enter" data:@"joins" cb:^(ARTStatus *status) {
+                    [channel2.presence enterClient:@"channel2Enter" data:@"joins" cb:^(ARTStatus *status) {
                         XCTAssertEqual(ARTStateOk, status.state);
                         [setupChannel2 fulfill];
                     }];
@@ -873,7 +869,7 @@
             }];
             [channel2.presence subscribe:^(ARTPresenceMessage * message) {
                 numReceived++;
-                if(numReceived ==count +1) {//count + channel1
+                if (numReceived == count +1) {//count + channel1
                     channel2SawAllPresences = true;
                 }
             }];
@@ -882,16 +878,17 @@
         
         [ARTTestUtil bigSleep];
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+
         XCTestExpectation *enterAll = [self expectationWithDescription:@"enterAll"];
         //channel enters itself
         [channel.presence enter:@"hi" cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
             //channel enters 250 others
             [ARTTestUtil publishEnterMessages:@"aClientId" count:count channel:channel expectation:enterAll];
-                    }];
+        }];
         [self waitForExpectationsWithTimeout:120 handler:nil];
-        XCTestExpectation *getPresence = [self expectationWithDescription:@"getPresence"];
 
+        XCTestExpectation *getPresence = [self expectationWithDescription:@"getPresence"];
         [channel.presence get:^(ARTPaginatedResult *result, NSError *error) {
             XCTAssert(!error);
             NSArray *messages = [result items];
@@ -899,7 +896,6 @@
             XCTAssertTrue(channel2SawAllPresences);
             [getPresence fulfill];
         }];
-
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
     }];
 }
