@@ -1101,7 +1101,7 @@
 }
 
 
--(void) testPresenceNoSideEffects {
+- (void)testPresenceNoSideEffects {
     XCTestExpectation *exp = [self expectationWithDescription:@"testPresenceNoSideEffects"];
     NSString * channelName = @"channelName";
     NSString * client1 = @"client1";
@@ -1112,28 +1112,31 @@
         [channel.presence subscribe:^(ARTPresenceMessage * message) {}];
         [channel.presence enter:@"hi" cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
-            
-            [channel.presence  enterClient:client1 data:@"data" cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStateError, status.state);
-                [channel.presence updateClient:client1 data:@"data2" cb:^(ARTStatus *status) {
+
+            [ARTTestUtil testRealtime:^(ARTRealtime *realtime2) {
+                _realtime2 = realtime2;
+                ARTRealtimeChannel *channel2 = [_realtime2 channel:channelName];
+                [channel2.presence enterClient:client1 data:@"data" cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
-                    [channel.presence leaveClient:client1 data:@"data3" cb:^(ARTStatus *status) {
+                    [channel2.presence updateClient:client1 data:@"data2" cb:^(ARTStatus *status) {
                         XCTAssertEqual(ARTStateOk, status.state);
-                        [channel.presence get:^(ARTPaginatedResult *result, NSError *error) {
-                            XCTAssert(!error);
-                            NSArray *messages = [result items];
-                            XCTAssertEqual(1, messages.count);
-                            //check channel hasnt changed its own state by changing presence of another clientId
-                            ARTPresenceMessage *m0 = messages[0];
-                            XCTAssertEqual(m0.action, ARTPresencePresent);
-                            XCTAssertEqualObjects(m0.clientId, [self getClientId]);
-                            XCTAssertEqualObjects([m0 content], @"hi");
-                            [exp fulfill];
+                        [channel2.presence leaveClient:client1 data:@"data3" cb:^(ARTStatus *status) {
+                            XCTAssertEqual(ARTStateOk, status.state);
+                            [channel.presence get:^(ARTPaginatedResult *result, NSError *error) {
+                                XCTAssert(!error);
+                                NSArray *messages = [result items];
+                                XCTAssertEqual(1, messages.count);
+                                //check channel hasnt changed its own state by changing presence of another clientId
+                                ARTPresenceMessage *m0 = messages[0];
+                                XCTAssertEqual(m0.action, ARTPresencePresent);
+                                XCTAssertEqualObjects(m0.clientId, [self getClientId]);
+                                XCTAssertEqualObjects([m0 content], @"hi");
+                                [exp fulfill];
+                            }];
                         }];
                     }];
                 }];
             }];
-
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
