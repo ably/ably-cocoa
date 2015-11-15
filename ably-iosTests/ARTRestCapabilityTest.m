@@ -60,10 +60,12 @@
     [self withRestRestrictCap:^(ARTRest * rest) {
         ARTChannel *channel = [rest.channels get:@"canpublish:test"];
         [channel publish:@"publish" callback:^(NSError *error) {
-            XCTAssert(!error);
+            XCTAssert(error);
+            NSLog(@"%@", error);
             ARTChannel *channel2 = [rest.channels get:@"cannotPublishToThisChannelName"];
             [channel2 publish:@"publish" callback:^(NSError *error) {
                 XCTAssert(error);
+                NSLog(@"%@", error);
                 [expectation fulfill];
             }];
             
