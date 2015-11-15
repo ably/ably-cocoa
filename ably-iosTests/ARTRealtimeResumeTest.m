@@ -40,39 +40,41 @@
 
 
 /**
-  create 2 connections, each connected to the same channel.
- disonnect and reconnect one of the connections, then use that channel
- to send and recieve message. verify all messages sent and recieved ok.
+ Create 2 connections, each connected to the same channel.
+ Disconnect and reconnect one of the connections, then use that channel to send and recieve message.
+ Verify all messages sent and recieved ok.
  */
+- (void)testSimple {
+    NSString *channelName = @"resumeChannel";
+    NSString *message1 = @"message1";
+    NSString *message2 = @"message2";
+    NSString *message3 = @"message3";
+    NSString *message4 = @"message4";
 
--(void) testSimple
-{
     XCTestExpectation *expectation = [self expectationWithDescription:@"testSimple"];
-    NSString * channelName = @"resumeChannel";
-    NSString * message1 = @"message1";
-    NSString * message2 = @"message2";
-    NSString * message3 = @"message3";
-    NSString * message4 = @"message4";
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
 
-        __block int disconnects =0;
+        __block int disconnects = 0;
         ARTRealtimeChannel *channel = [_realtime channel:channelName];
         ARTRealtimeChannel *channel2 = [_realtime2 channel:channelName];
+
         [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
             if(cState == ARTRealtimeChannelAttached) {
                 [channel2 attach];
-                if(disconnects ==1) {
+                if (disconnects == 1) {
                     [channel2 publish:message4 cb:^(ARTStatus *status) {
                         XCTAssertEqual(ARTStateOk, status.state);
+                        [expectation fulfill];
                     }];
                 }
             }
         }];
+
         [channel2 subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
-            //both channels are attached. lets get to work.
             if(cState == ARTRealtimeChannelAttached) {
+                // Both channels are attached
                 [channel2 publish:message1 cb:^(ARTStatus *status) {
                     [channel2 publish:message2 cb:^(ARTStatus *status) {
                         XCTAssertEqual(ARTStateOk, status.state);
@@ -82,14 +84,15 @@
                 }];
             }
         }];
+
         [_realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
-            if(state == ARTRealtimeFailed) {
+            if (state == ARTRealtimeFailed) {
                 [channel2 publish:message3 cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
                     [_realtime connect];
                 }];
             }
-            if(state == ARTRealtimeConnected) {
+            else if (state == ARTRealtimeConnected) {
                 [channel attach];
             }
         }];
