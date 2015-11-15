@@ -60,47 +60,51 @@
     NSString * channelName = @"chanName";
     NSString * c1Message = @"c1 says hi";
     NSString * c2Message= @"c2 says hi";
+
     XCTestExpectation *expectation = [self expectationWithDescription:@"testRecoverDisconnected"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
-        __block NSString * firstConnectionId = nil;
-        __block bool gotFirstMessage= false;
+
+        __block NSString *firstConnectionId = nil;
+        __block bool gotFirstMessage = false;
         [_realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if (state == ARTRealtimeConnected) {
                 firstConnectionId = [_realtime connectionId];
+
                 ARTRealtimeChannel *channel = [_realtime channel:channelName];
+                // Sending a message
                 [channel publish:c1Message cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
                     [_realtime onDisconnected:nil];
                 }];
             }
-            else if(state == ARTRealtimeDisconnected) {
+            else if (state == ARTRealtimeDisconnected) {
                 options.recover = nil;
                 _realtimeNonRecovered = [[ARTRealtime alloc] initWithOptions:options];
-                ARTRealtimeChannel * c2 = [_realtimeNonRecovered channel:channelName];
-                [_realtimeNonRecovered.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
-                    [c2 publish:c2Message cb:^(ARTStatus *status) {
-                        XCTAssertEqual(ARTStateOk, status.state);
-                        options.recover = [_realtime recoveryKey];
-                        XCTAssertFalse(options.recover == nil);
-                        ARTRealtime * realtimeRecovered = [[ARTRealtime alloc] initWithOptions:options];
-                        ARTRealtimeChannel * c3 = [realtimeRecovered channel:channelName];
-                        [realtimeRecovered.eventEmitter on:^(ARTRealtimeConnectionState cState, ARTErrorInfo* errorInfo) {
-                            if(cState == ARTRealtimeConnected) {
-                                XCTAssertEqualObjects([realtimeRecovered connectionKey], [_realtime connectionKey]);
-                                XCTAssertEqualObjects([realtimeRecovered connectionId], firstConnectionId);
-                                
-                                //TODO work out why c2Message arrives 4 times in an ARTProtocolMessageMessage, then rm gotFirstMessage 
-                                [c3 subscribe:^(ARTMessage * message ,ARTErrorInfo *errorInfo) {
-                                    XCTAssertEqualObjects(c2Message, [message content]);
-                                    if(!gotFirstMessage) {
+
+                ARTRealtimeChannel *c2 = [_realtimeNonRecovered channel:channelName];
+                [_realtimeNonRecovered.eventEmitter on:^(ARTRealtimeConnectionState state2, ARTErrorInfo *errorInfo) {
+                    if (state2 == ARTRealtimeConnected) {
+                        // Sending other message to the same channel to check if the recovered connection receives it
+                        [c2 publish:c2Message cb:^(ARTStatus *status) {
+                            XCTAssertEqual(ARTStateOk, status.state);
+
+                            options.recover = [_realtime recoveryKey];
+                            XCTAssertFalse(options.recover == nil);
+                            ARTRealtime *realtimeRecovered = [[ARTRealtime alloc] initWithOptions:options];
+                            ARTRealtimeChannel *c3 = [realtimeRecovered channel:channelName];
+
+                            [realtimeRecovered.eventEmitter on:^(ARTRealtimeConnectionState cState, ARTErrorInfo* errorInfo) {
+                                if (cState == ARTRealtimeConnected) {
+                                    XCTAssertEqualObjects([realtimeRecovered connectionId], firstConnectionId);
+                                    [c3 subscribe:^(ARTMessage *message, ARTErrorInfo *errorInfo) {
+                                        XCTAssertEqualObjects(c2Message, [message content]);
                                         [expectation fulfill];
-                                        gotFirstMessage =true;
-                                    }
-                                }];
-                            }
+                                    }];
+                                }
+                            }];
                         }];
-                    }];
+                    }
                 }];
             }
         }];
