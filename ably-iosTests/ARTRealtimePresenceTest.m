@@ -826,7 +826,7 @@
             XCTAssertEqualObjects(otherClientId, message.clientId);
             if(messageCount ==0) {
                 XCTAssertEqual(message.action, ARTPresenceEnter);
-                XCTAssertEqualObjects( message.content, nil);
+                XCTAssertEqualObjects(message.content, @"");
             }
             else if(messageCount ==1) {
                 XCTAssertEqual(message.action, ARTPresenceUpdate);
