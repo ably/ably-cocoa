@@ -139,13 +139,8 @@
 }
 
 -(void)testInitWithOptionsBad {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
-        options.key = @"bad:Name";
-        XCTAssertThrows([[ARTRest alloc] initWithOptions:options]);
-        [exp fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    XCTAssertThrows([[ARTClientOptions alloc] initWithKey:@"bad"]);
+    XCTAssertThrows([[ARTRest alloc] initWithOptions:[[ARTClientOptions alloc] init]]);
 }
 
 - (void)testRestTime {
@@ -153,9 +148,9 @@
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         [rest time:^(NSDate *date, NSError *error) {
-            XCTAssert(error);
-            // Expect local clock and server clock to be synced within 10 seconds
-            XCTAssertEqualWithAccuracy([date timeIntervalSinceNow], 0.0, 10.0);
+            XCTAssert(!error);
+            // Expect local clock and server clock to be synced within 30 seconds
+            XCTAssertEqualWithAccuracy([date timeIntervalSinceNow], 0.0, 30.0);
             [exp fulfill];
         }];
     }];
