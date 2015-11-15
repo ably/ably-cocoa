@@ -58,7 +58,7 @@
     if (!_realtime) {
         ARTClientOptions * options = [ARTTestUtil clientOptions];
         options.clientId = [self getClientId];
-        [ARTTestUtil setupApp:options withDebug:YES cb:^(ARTClientOptions *options) {
+        [ARTTestUtil setupApp:options cb:^(ARTClientOptions *options) {
             if (options) {
                 _realtime = [[ARTRealtime alloc] initWithOptions:options];
                 _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
@@ -759,10 +759,11 @@
 }
 
 - (void)testEnterClient {
+    NSString *clientId = @"otherClientId";
+    NSString *clientId2 = @"yetAnotherClientId";
+
     XCTestExpectation *exp = [self expectationWithDescription:@"testEnterClient"];
-    NSString * clientId = @"otherClientId";
-    NSString * clientId2 = @"yetAnotherClientId";
-    [self withRealtimeClientId:^(ARTRealtime *realtime) {
+    [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime channel:@"channelName"];
         [channel.presence  enterClient:clientId data:@"" cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
