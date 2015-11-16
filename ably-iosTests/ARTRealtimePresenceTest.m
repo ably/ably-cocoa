@@ -77,7 +77,6 @@
     cb(_realtime2);
 }
 
-
 -(void) testTwoConnections {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testSingleSendEchoText"];
     NSString * channelName = @"testSingleEcho";
