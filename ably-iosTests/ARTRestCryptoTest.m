@@ -15,8 +15,12 @@
 #import "ARTTestUtil.h"
 #import "ARTCrypto.h"
 #import "ARTLog.h"
-@interface ARTRestCryptoTest : XCTestCase
-{
+#import "ARTChannel.h"
+#import "ARTChannelCollection.h"
+#import "ARTDataQuery.h"
+#import "ARTPaginatedResult.h"
+
+@interface ARTRestCryptoTest : XCTestCase {
     ARTRest *_rest;
 }
 @end
@@ -36,19 +40,17 @@
     XCTestExpectation *exp = [self expectationWithDescription:@"testSendBinary"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest =rest;
-        ARTRestChannel * c = [rest channel:@"test"];
+        ARTChannel * c = [rest.channels get:@"test"];
         XCTAssert(c);
         NSData * dataPayload = [@"someDataPayload"  dataUsingEncoding:NSUTF8StringEncoding];
         NSString * stringPayload = @"someString";
-        [c publish:dataPayload cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStatusOk, status.status);
-            [c publish:stringPayload cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStatusOk, status.status);
-                [c history:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                    XCTAssertEqual(ARTStatusOk, status.status);
-                    XCTAssertEqual(ARTStatusOk, status.status);
-                    XCTAssertFalse([result hasNext]);
-                    NSArray * page = [result currentItems];
+        [c publish:dataPayload callback:^(NSError *error) {
+            XCTAssert(!error);
+            [c publish:stringPayload callback:^(NSError *error) {
+                XCTAssert(!error);
+                [c history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+                    XCTAssert(!error);
+                    NSArray * page = [result items];
                     XCTAssertTrue(page != nil);
                     XCTAssertEqual([page count], 2);
                     ARTMessage * stringMessage = [page objectAtIndex:0];
@@ -73,19 +75,17 @@
     
         NSData * keySpec = [[NSData alloc] initWithBase64EncodedString:@"WUP6u0K7MXI5Zeo0VppPwg==" options:0];
         ARTCipherParams * params =[[ARTCipherParams alloc] initWithAlgorithm:@"aes" keySpec:keySpec ivSpec:ivSpec];
-        ARTRestChannel * c = [rest channel:@"test" cipherParams:params];
+        ARTChannel * c = [rest.channels get:@"test"];
         XCTAssert(c);
         NSData * dataPayload = [@"someDataPayload"  dataUsingEncoding:NSUTF8StringEncoding];
         NSString * stringPayload = @"someString";
-        [c publish:dataPayload cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStatusOk, status.status);
-            [c publish:stringPayload cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStatusOk, status.status);
-                [c history:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                    XCTAssertEqual(ARTStatusOk, status.status);
-                    XCTAssertEqual(ARTStatusOk, status.status);
-                    XCTAssertFalse([result hasNext]);
-                    NSArray * page = [result currentItems];
+        [c publish:dataPayload callback:^(NSError *error) {
+            XCTAssert(!error);
+            [c publish:stringPayload callback:^(NSError *error) {
+                XCTAssert(error);
+                [c history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+                    XCTAssert(!error);
+                    NSArray * page = [result items];
                     XCTAssertTrue(page != nil);
                     XCTAssertEqual([page count], 2);
                     ARTMessage * stringMessage = [page objectAtIndex:0];

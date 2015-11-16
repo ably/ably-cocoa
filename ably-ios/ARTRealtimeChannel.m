@@ -163,10 +163,6 @@
     }
 }
 
-- (void)history:(ARTDataQuery *)query callback:(void (^)(ARTStatus *, ARTPaginatedResult *))callback {
-    [self history:query callback:callback];
-}
-
 - (id<ARTSubscription>)subscribe:(ARTRealtimeChannelMessageCb)cb {
     // Empty string used for blanket subscriptions
     return [self subscribeToName:@"" cb:cb];

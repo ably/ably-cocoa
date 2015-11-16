@@ -11,6 +11,10 @@
 #import "ARTClientOptions.h"
 #import "ARTPresenceMessage.h"
 #import "ARTRealtime.h"
+#import "ARTChannel.h"
+#import "ARTRealtimeChannel.h"
+#import "ARTPaginatedResult.h"
+#import "ARTDataQuery.h"
 #import "ARTTestUtil.h"
 
 @interface ARTRealtimeChannelHistoryTest : XCTestCase {
@@ -38,12 +42,12 @@
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime channel:@"persisted:testHistory"];
         [channel publish:@"testString" cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStatusOk, status.status);
+            XCTAssertEqual(ARTStateOk, status.state);
             [channel publish:@"testString2" cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStatusOk, status.status);
-                [channel history:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                    XCTAssertEqual(ARTStatusOk, status.status);
-                    NSArray *messages = [result currentItems];
+                XCTAssertEqual(ARTStateOk, status.state);
+                [channel history:[[ARTDataQuery alloc] init] callback:^(ARTStatus *status, ARTPaginatedResult *result) {
+                    XCTAssertEqual(ARTStateOk, status.state);
+                    NSArray *messages = [result items];
                     XCTAssertEqual(2, messages.count);
                     ARTMessage *m0 = messages[0];
                     ARTMessage *m1 = messages[1];
@@ -69,7 +73,7 @@
         for(int i=0; i < count; i++) {
             NSString * pub = [prefix stringByAppendingString:[NSString stringWithFormat:@"%d", i]];
             [channel publish:pub cb:^(ARTStatus *status) {
-                if(status.status != ARTStatusOk) {
+                if(status.state != ARTStateOk) {
                     if(!done) {
                         done = true;
                         cb(status);
@@ -99,12 +103,12 @@
         ARTRealtimeChannel *channel1 = [realtime channel:both];
         ARTRealtimeChannel *channel2 = [realtime channel:both];
         [channel1 publish:@"testString" cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStatusOk, status.status);
+            XCTAssertEqual(ARTStateOk, status.state);
             [channel2 publish:@"testString2" cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStatusOk, status.status);
-                [channel1 history:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                    XCTAssertEqual(ARTStatusOk, status.status);
-                    NSArray *messages = [result currentItems];
+                XCTAssertEqual(ARTStateOk, status.state);
+                [channel1 history:[[ARTDataQuery alloc] init] callback:^(ARTStatus *status, ARTPaginatedResult *result) {
+                    XCTAssertEqual(ARTStateOk, status.state);
+                    NSArray *messages = [result items];
                     XCTAssertEqual(2, messages.count);
                     ARTMessage *m0 = messages[0];
                     ARTMessage *m1 = messages[1];
@@ -113,9 +117,9 @@
                     [expectation1 fulfill];
                     
                 }];
-                [channel2 history:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                    XCTAssertEqual(ARTStatusOk, status.status);
-                    NSArray *messages = [result currentItems];
+                [channel2 history:[[ARTDataQuery alloc] init] callback:^(ARTStatus *status, ARTPaginatedResult *result) {
+                    XCTAssertEqual(ARTStateOk, status.state);
+                    NSArray *messages = [result items];
                     XCTAssertEqual(2, messages.count);
                     ARTMessage *m0 = messages[0];
                     ARTMessage *m1 = messages[1];
@@ -138,12 +142,14 @@
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime channel:@"persisted:testHistory"];
         [channel publish:@"testString" cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStatusOk, status.status);
+            XCTAssertEqual(ARTStateOk, status.state);
             [channel publish:@"testString2" cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStatusOk, status.status);
-                [channel historyWithParams:@{@"direction" : @"forwards"} cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                    XCTAssertEqual(ARTStatusOk, status.status);
-                    NSArray *messages = [result currentItems];
+                XCTAssertEqual(ARTStateOk, status.state);
+                ARTDataQuery* query = [[ARTDataQuery alloc] init];
+                query.direction = ARTQueryDirectionForwards;
+                [channel history:query callback:^(ARTStatus *status, ARTPaginatedResult *result) {
+                    XCTAssertEqual(ARTStateOk, status.state);
+                    NSArray *messages = [result items];
                     XCTAssertEqual(2, messages.count);
                     ARTMessage *m0 = messages[0];
                     ARTMessage *m1 = messages[1];
@@ -165,44 +171,45 @@
         ARTRealtimeChannel *channel = [realtime channel:@"realHistChan"];
         
         [self publishTestStrings:channel count:5 prefix:@"testString" cb:^(ARTStatus *status){
-            XCTAssertEqual(ARTStatusOk, status.status);
+            XCTAssertEqual(ARTStateOk, status.state);
+
+            ARTDataQuery *query = [[ARTDataQuery alloc] init];
+            query.limit = 2;
+            query.direction = ARTQueryDirectionForwards;
             
-            [channel
-             historyWithParams:@{@"limit" : @"2",
-                                         @"direction" : @"forwards"}
-                            cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                 XCTAssertEqual(ARTStatusOk, status.status);
+            [channel history:query callback:^(ARTStatus *status, ARTPaginatedResult *result) {
+                 XCTAssertEqual(ARTStateOk, status.state);
                  XCTAssertTrue([result hasFirst]);
                  XCTAssertTrue([result hasNext]);
-                 NSArray * items = [result currentItems];
+                 NSArray * items = [result items];
                  XCTAssertEqual([items count], 2);
                  ARTMessage * firstMessage = [items objectAtIndex:0];
                  ARTMessage * secondMessage =[items objectAtIndex:1];
                  XCTAssertEqualObjects(@"testString0", [firstMessage content]);
                  XCTAssertEqualObjects(@"testString1", [secondMessage content]);
-                 [result next:^(ARTStatus *status, id<ARTPaginatedResult> result2) {
-                     XCTAssertEqual(ARTStatusOk, status.status);
+                 [result next:^(ARTPaginatedResult *result2, NSError *error) {
+                     XCTAssert(!error);
                      XCTAssertTrue([result2 hasFirst]);
-                     NSArray * items = [result2 currentItems];
+                     NSArray * items = [result2 items];
                      XCTAssertEqual([items count], 2);
                      ARTMessage * firstMessage = [items objectAtIndex:0];
                      ARTMessage * secondMessage =[items objectAtIndex:1];
                      XCTAssertEqualObjects(@"testString2", [firstMessage content]);
                      XCTAssertEqualObjects(@"testString3", [secondMessage content]);
                      
-                     [result2 next:^(ARTStatus *status, id<ARTPaginatedResult> result3) {
-                         XCTAssertEqual(ARTStatusOk, status.status);
+                     [result2 next:^(ARTPaginatedResult *result3, NSError *error) {
+                         XCTAssert(!error);
                          XCTAssertTrue([result3 hasFirst]);
                          XCTAssertFalse([result3 hasNext]);
-                         NSArray * items = [result3 currentItems];
+                         NSArray * items = [result3 items];
                          XCTAssertEqual([items count], 1);
                          ARTMessage * firstMessage = [items objectAtIndex:0];
                          XCTAssertEqualObjects(@"testString4", [firstMessage content]);
-                         [result3 first:^(ARTStatus *status, id<ARTPaginatedResult> result4) {
-                             XCTAssertEqual(ARTStatusOk, status.status);
+                         [result3 first:^(ARTPaginatedResult *result4, NSError *error) {
+                             XCTAssertEqual(ARTStateOk, status.state);
                              XCTAssertTrue([result4 hasFirst]);
                              XCTAssertTrue([result4 hasNext]);
-                             NSArray * items = [result4 currentItems];
+                             NSArray * items = [result4 items];
                              XCTAssertEqual([items count], 2);
                              ARTMessage * firstMessage = [items objectAtIndex:0];
                              ARTMessage * secondMessage =[items objectAtIndex:1];
@@ -225,22 +232,26 @@
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime channel:@"histRealBackChan"];
         [self publishTestStrings:channel count:5 prefix:@"testString" cb:^(ARTStatus *status){
-            XCTAssertEqual(ARTStatusOk, status.status);
-                            [channel historyWithParams:@{@"limit" : @"2",
-             @"direction" : @"backwards"} cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                 XCTAssertEqual(ARTStatusOk, status.status);
+            XCTAssertEqual(ARTStateOk, status.state);
+
+            ARTDataQuery *query = [[ARTDataQuery alloc] init];
+            query.limit = 2;
+            query.direction = ARTQueryDirectionBackwards;
+
+            [channel history:query callback:^(ARTStatus *status, ARTPaginatedResult *result) {
+                 XCTAssertEqual(ARTStateOk, status.state);
                  XCTAssertTrue([result hasFirst]);
                  XCTAssertTrue([result hasNext]);
-                 NSArray * items = [result currentItems];
+                 NSArray * items = [result items];
                  XCTAssertEqual([items count], 2);
                  ARTMessage * firstMessage = [items objectAtIndex:0];
                  ARTMessage * secondMessage =[items objectAtIndex:1];
                  XCTAssertEqualObjects(@"testString4", [firstMessage content]);
                  XCTAssertEqualObjects(@"testString3", [secondMessage content]);
-                 [result next:^(ARTStatus *status, id<ARTPaginatedResult> result2) {
-                     XCTAssertEqual(ARTStatusOk, status.status);
+                 [result next:^(ARTPaginatedResult *result2, NSError *error) {
+                     XCTAssert(!error);
                      XCTAssertTrue([result2 hasFirst]);
-                     NSArray * items = [result2 currentItems];
+                     NSArray * items = [result2 items];
                      XCTAssertEqual([items count], 2);
                      ARTMessage * firstMessage = [items objectAtIndex:0];
                      ARTMessage * secondMessage =[items objectAtIndex:1];
@@ -248,29 +259,29 @@
                      XCTAssertEqualObjects(@"testString2", [firstMessage content]);
                      XCTAssertEqualObjects(@"testString1", [secondMessage content]);
                      
-                     [result2 next:^(ARTStatus *status, id<ARTPaginatedResult> result3) {
-                         XCTAssertEqual(ARTStatusOk, status.status);
+                     [result2 next:^(ARTPaginatedResult *result3, NSError *error) {
+                         XCTAssert(!error);
                          XCTAssertTrue([result3 hasFirst]);
                          XCTAssertFalse([result3 hasNext]);
-                         NSArray * items = [result3 currentItems];
+                         NSArray * items = [result3 items];
                          XCTAssertEqual([items count], 1);
                          ARTMessage * firstMessage = [items objectAtIndex:0];
                          XCTAssertEqualObjects(@"testString0", [firstMessage content]);
-                         [result3 first:^(ARTStatus *status, id<ARTPaginatedResult> result4) {
-                             XCTAssertEqual(ARTStatusOk, status.status);
+                         [result3 first:^(ARTPaginatedResult *result4, NSError *error) {
+                             XCTAssertEqual(ARTStateOk, status.state);
                              XCTAssertTrue([result4 hasFirst]);
                              XCTAssertTrue([result4 hasNext]);
-                             NSArray * items = [result4 currentItems];
+                             NSArray * items = [result4 items];
                              XCTAssertEqual([items count], 2);
                              ARTMessage * firstMessage = [items objectAtIndex:0];
                              ARTMessage * secondMessage =[items objectAtIndex:1];
                              XCTAssertEqualObjects(@"testString4", [firstMessage content]);
                              XCTAssertEqualObjects(@"testString3", [secondMessage content]);
-                             [result2 first:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                                 XCTAssertEqual(ARTStatusOk, status.status);
+                             [result2 first:^(ARTPaginatedResult *result, NSError *error) {
+                                 XCTAssertEqual(ARTStateOk, status.state);
                                  XCTAssertTrue([result hasFirst]);
                                  XCTAssertTrue([result hasNext]);
-                                 NSArray * items = [result currentItems];
+                                 NSArray * items = [result items];
                                  XCTAssertEqual([items count], 2);
                                  ARTMessage * firstMessage = [items objectAtIndex:0];
                                  ARTMessage * secondMessage =[items objectAtIndex:1];
@@ -293,12 +304,11 @@
     __block long long timeOffset= 0;
 
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
-        [realtime time:^(ARTStatus *status, NSDate *time) {
-            XCTAssertEqual(ARTStatusOk, status.status);
+        [realtime time:^(NSDate *time, NSError *error) {
+            XCTAssert(!error);
             long long serverNow= [time timeIntervalSince1970]*1000;
             long long appNow =[ARTTestUtil nowMilli];
             timeOffset = serverNow - appNow;
-   
         }];
         [e fulfill];
     }];
@@ -344,19 +354,18 @@
         
         XCTestExpectation *fourthExpectation = [self expectationWithDescription:@"send_fourth_batch"];
 
-        [channel historyWithParams:@{
-                                     @"start" : [NSString stringWithFormat:@"%lld", intervalStart],
-                                     @"end"   : [NSString stringWithFormat:@"%lld", intervalEnd],
-                                     @"direction" : @"backwards"}
-                                cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                                    XCTAssertEqual(ARTStatusOk, status.status);
+        ARTDataQuery *query = [[ARTDataQuery alloc] init];
+        query.start = [NSDate dateWithTimeIntervalSinceReferenceDate:intervalStart];
+        query.end = [NSDate dateWithTimeIntervalSinceReferenceDate:intervalEnd];
+        query.direction = ARTQueryDirectionBackwards;
+
+        [channel history:query callback:^(ARTStatus *status, ARTPaginatedResult *result) {
+                                    XCTAssertEqual(ARTStateOk, status.state);
                                     XCTAssertFalse([result hasNext]);
-                                    NSArray * items = [result currentItems];
+                                    NSArray * items = [result items];
                                     XCTAssertTrue(items != nil);
                                     XCTAssertEqual([items count], secondBatchTotal);
-                                    for(int i=0;i < [items count]; i++)
-                                    {
-                                        
+                                    for(int i=0; i < [items count]; i++) {
                                         NSString * pattern = [secondBatch stringByAppendingString:@"%d"];
                                         NSString * goalStr = [NSString stringWithFormat:pattern,secondBatchTotal -1 - i];
                                         ARTMessage * m = [items objectAtIndex:i];
@@ -375,8 +384,8 @@
     
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        [realtime time:^(ARTStatus *status, NSDate *time) {
-            XCTAssertEqual(ARTStatusOk, status.status);
+        [realtime time:^(NSDate *time, NSError *error) {
+            XCTAssert(!error);
             long long serverNow= [time timeIntervalSince1970]*1000;
             long long appNow =[ARTTestUtil nowMilli];
             timeOffset = serverNow - appNow;
@@ -423,18 +432,19 @@
         [ARTTestUtil publishRealtimeMessages:thirdBatch count:thirdBatchTotal channel:channel expectation:thirdExpectation];
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
         XCTestExpectation *fourthExpectation = [self expectationWithDescription:@"send_fourth_batch"];
- 
-        [channel historyWithParams:@{
-                                     @"start" : [NSString stringWithFormat:@"%lld", intervalStart],
-                                     @"end"   : [NSString stringWithFormat:@"%lld", intervalEnd],
-                                     @"direction" : @"forwards"}
-                                cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                                    XCTAssertEqual(ARTStatusOk, status.status);
+
+        ARTDataQuery *query = [[ARTDataQuery alloc] init];
+        query.start = [NSDate dateWithTimeIntervalSinceReferenceDate:intervalStart];
+        query.end = [NSDate dateWithTimeIntervalSinceReferenceDate:intervalEnd];
+        query.direction = ARTQueryDirectionForwards;
+
+        [channel history:query callback:^(ARTStatus *status, ARTPaginatedResult *result) {
+                                    XCTAssertEqual(ARTStateOk, status.state);
                                     XCTAssertFalse([result hasNext]);
-                                    NSArray * items = [result currentItems];
+                                    NSArray * items = [result items];
                                     XCTAssertTrue(items != nil);
                                     XCTAssertEqual([items count], secondBatchTotal);
-                                    for(int i=0;i < [items count]; i++)
+                                    for (int i=0; i < [items count]; i++)
                                     {
                                         NSString * pattern = [secondBatch stringByAppendingString:@"%d"];
                                         NSString * goalStr = [NSString stringWithFormat:pattern, i];
@@ -460,7 +470,7 @@
     
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
     NSString * channelName = @"test_history_time_forwards";
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_first_batch"];
         ARTRealtime * realtime =[[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;
@@ -478,7 +488,7 @@
                 NSString * pub = [NSString stringWithFormat:@"test%d", i];
                 sleep([ARTTestUtil smallSleep]);
                 [channel publish:pub cb:^(ARTStatus *status) {
-                    XCTAssertEqual(ARTStatusOk, status.status);
+                    XCTAssertEqual(ARTStateOk, status.state);
                     ++numReceived;
                     if(numReceived ==firstBatchTotal) {
                         [firstExpectation fulfill];
@@ -491,12 +501,14 @@
         ARTRealtime * realtime2 =[[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = realtime2;
         ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
-        [channel2 historyWithParams:@{
-                                 @"direction" : @"backwards"}
-                            cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                XCTAssertEqual(ARTStatusOk, status.status);
+
+        ARTDataQuery *query = [[ARTDataQuery alloc] init];
+        query.direction = ARTQueryDirectionBackwards;
+
+        [channel2 history:query callback:^(ARTStatus *status, ARTPaginatedResult *result) {
+                XCTAssertEqual(ARTStateOk, status.state);
                 XCTAssertFalse([result hasNext]);
-                NSArray * items = [result currentItems];
+                NSArray * items = [result items];
                 XCTAssertTrue(items != nil);
                 XCTAssertEqual([items count], firstBatchTotal);
                 for(int i=0;i < [items count]; i++) {
@@ -518,23 +530,23 @@
     XCTestExpectation *exp = [self expectationWithDescription:@"testHistoryUntilAttach"];
     NSString * firstString = @"firstString";
     NSString * channelName  = @"name";
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         ARTRealtime * realtime =[[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;
         ARTRealtime * realtime2 =[[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = realtime2;
         ARTRealtimeChannel *channel = [realtime channel:channelName];
         [channel publish:firstString cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStatusOk, status.status);
+            XCTAssertEqual(ARTStateOk, status.state);
         }];
       //  ARTRealtimeChannel *channel = [realtime channel:@"untilAttach"];
         XCTAssertThrows([channel historyWithParams:@{@"until_attach" : @"true"} cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {}]);
         [channel publish:@"testString" cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStatusOk, status.status);
+            XCTAssertEqual(ARTStateOk, status.state);
             [channel publish:@"testString2" cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStatusOk, status.status);
+                XCTAssertEqual(ARTStateOk, status.state);
                 [channel historyWithParams:@{@"direction" : @"forwards", @"until_attach" : @"true"} cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                    XCTAssertEqual(ARTStatusOk, status.status);
+                    XCTAssertEqual(ARTStateOk, status.state);
                     NSArray *messages = [result currentItems];
                     XCTAssertEqual(2, messages.count);
                     ARTMessage *m0 = messages[0];

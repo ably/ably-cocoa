@@ -15,6 +15,12 @@
 #import "ARTTestUtil.h"
 #import "ARTRest.h"
 #import "ARTLog.h"
+#import "ARTPresence.h"
+#import "ARTRealtimeChannel.h"
+#import "ARTEventEmitter.h"
+#import "ARTPaginatedResult.h"
+#import "ARTDataQuery.h"
+
 @interface ARTRealtimePresenceHistoryTest : XCTestCase
 {
     ARTRealtime * _realtime;
@@ -41,7 +47,7 @@
 
 - (void)withRealtimeClientId:(void (^)(ARTRealtime *realtime))cb {
     if (!_realtime) {
-        ARTClientOptions * options = [ARTTestUtil jsonRealtimeOptions];
+        ARTClientOptions * options = [ARTTestUtil clientOptions];
         options.clientId = [self getClientId];
         [ARTTestUtil setupApp:options cb:^(ARTClientOptions *options) {
             if (options) {
@@ -76,13 +82,11 @@
     return @"persisted:runTestChannelName";
 }
 
--(void) runTestLimit:(int) limit forwards:(bool) forwards cb:(ARTPaginatedResultCb) cb
-{
-    
+-(void) runTestLimit:(int)limit forwards:(bool)forwards cb:(ARTPaginatedResultCallback)cb {
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime channel:[self channelName]];
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if (state == ARTRealtimeConnected) {
                 [channel attach];
             }
@@ -90,21 +94,22 @@
         [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
             if(cState == ARTRealtimeChannelAttached) {
                 [channel.presence enter:[self enter1Str] cb:^(ARTStatus *status) {
-                    XCTAssertEqual(ARTStatusOk, status.status);
+                    XCTAssertEqual(ARTStateOk, status.state);
                     //second enter gets treated as an update.
                     [channel.presence enter:[self enter2Str] cb:^(ARTStatus *status) {
-                        XCTAssertEqual(ARTStatusOk, status.status);
+                        XCTAssertEqual(ARTStateOk, status.state);
                         [channel.presence update:[self updateStr] cb:^(ARTStatus *status2) {
-                            XCTAssertEqual(ARTStatusOk, status2.status);
-                            NSString * dirStr = forwards ? @"forwards" : @"backwards";
-                            NSString * limitStr = [NSString stringWithFormat:@"%d", limit];
-                            [channel.presence historyWithParams:@{
-                                                                 @"direction" : dirStr,
-                                                                 @"limit" : limitStr}
-                                                            cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                                                                cb(status, result);
-                                                                [expectation fulfill];
-                                                            }];
+                            XCTAssertEqual(ARTStateOk, status2.state);
+
+                            ARTDataQuery *query = [[ARTDataQuery alloc] init];
+                            query.direction = forwards ? ARTQueryDirectionForwards : ARTQueryDirectionBackwards;
+                            query.limit = limit;
+
+                            [channel.presence history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                                cb(result, error);
+                                [expectation fulfill];
+                            }];
+
                         }];
                     }];
                 }];
@@ -120,7 +125,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime channel:@"testSimpleText"];
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if (state == ARTRealtimeConnected) {
                 [channel attach];
             }
@@ -128,14 +133,15 @@
         [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
             if(cState == ARTRealtimeChannelAttached) {
                 [channel.presence enter:presenceEnter cb:^(ARTStatus *status) {
-                    XCTAssertEqual(ARTStatusOk, status.status);
-                    [channel.presence history:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                        XCTAssertEqual(ARTStatusOk, status.status);
-                        NSArray *messages = [result currentItems];
+                    XCTAssertEqual(ARTStateOk, status.state);
+
+                    [channel.presence history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+                        XCTAssert(!error);
+                        NSArray *messages = [result items];
                         XCTAssertEqual(1, messages.count);
                         ARTPresenceMessage *m0 = messages[0];
                         XCTAssertEqualObjects(presenceEnter, [m0 content]);
-                           [expectation fulfill];
+                        [expectation fulfill];
                     }];
                 }];
             }
@@ -151,7 +157,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime channel:@"persisted:testSimpleText"];
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if (state == ARTRealtimeConnected) {
                 [channel attach];
             }
@@ -159,27 +165,31 @@
         [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
             if(cState == ARTRealtimeChannelAttached) {
                 [channel.presence enter:presenceEnter1 cb:^(ARTStatus *status) {
-                    XCTAssertEqual(ARTStatusOk, status.status);
+                    XCTAssertEqual(ARTStateOk, status.state);
                     [channel.presence enter:presenceEnter2 cb:^(ARTStatus *status) {
-                        XCTAssertEqual(ARTStatusOk, status.status);
+                        XCTAssertEqual(ARTStateOk, status.state);
                         [channel.presence update:presenceUpdate cb:^(ARTStatus *status2) {
-                            XCTAssertEqual(ARTStatusOk, status2.status);
-                            [channel.presence historyWithParams:@{@"direction" :@"forwards"} cb:^
-                             (ARTStatus *status, id<ARTPaginatedResult> result) {
-                                 XCTAssertEqual(ARTStatusOk, status.status);
-                                 NSArray *messages = [result currentItems];
+                            XCTAssertEqual(ARTStateOk, status2.state);
+
+                            ARTDataQuery *query = [[ARTDataQuery alloc] init];
+                            query.direction = ARTQueryDirectionForwards;
+
+                            [channel.presence history:query callback:^
+                             (ARTPaginatedResult *result, NSError *error) {
+                                 XCTAssert(!error);
+                                 NSArray *messages = [result items];
                                  XCTAssertEqual(3, messages.count);
                                  ARTPresenceMessage *m0 = messages[0];
                                  ARTPresenceMessage *m1 = messages[1];
                                  ARTPresenceMessage *m2 = messages[2];
                                  
-                                 XCTAssertEqual(m0.action, ARTPresenceMessageEnter);
+                                 XCTAssertEqual(m0.action, ARTPresenceEnter);
                                  XCTAssertEqualObjects(presenceEnter1, [m0 content]);
     
                                  XCTAssertEqualObjects(presenceEnter2, [m1 content]);
-                                 XCTAssertEqual(m1.action, ARTPresenceMessageUpdate);
+                                 XCTAssertEqual(m1.action, ARTPresenceUpdate);
                                  XCTAssertEqualObjects(presenceUpdate, [m2 content]);
-                                 XCTAssertEqual(m2.action, ARTPresenceMessageUpdate);
+                                 XCTAssertEqual(m2.action, ARTPresenceUpdate);
                                  [expectation fulfill];
                             }];
                         }];
@@ -209,27 +219,30 @@
                 [self withRealtimeClientId2:^(ARTRealtime *realtime2) {
                     ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
                     [channel2.presence enter:presenceEnter1 cb:^(ARTStatus *status) {
-                        XCTAssertEqual(ARTStatusOk, status.status);
+                        XCTAssertEqual(ARTStateOk, status.state);
                         [channel.presence enter:presenceEnter2 cb:^(ARTStatus *status) {
-                            XCTAssertEqual(ARTStatusOk, status.status);
+                            XCTAssertEqual(ARTStateOk, status.state);
                             [channel2.presence update:presenceUpdate cb:^(ARTStatus *status) {
-                                XCTAssertEqual(ARTStatusOk, status.status);
-                                [channel.presence historyWithParams:@{@"direction" :@"forwards"} cb:^
-                                 (ARTStatus *status, id<ARTPaginatedResult> result) {
-                                     XCTAssertEqual(ARTStatusOk, status.status);
-                                     NSArray *messages = [result currentItems];
+                                XCTAssertEqual(ARTStateOk, status.state);
+
+                                ARTDataQuery *query = [[ARTDataQuery alloc] init];
+                                query.direction = ARTQueryDirectionForwards;
+
+                                [channel.presence history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                                     XCTAssert(!error);
+                                     NSArray *messages = [result items];
                                      XCTAssertEqual(3, messages.count);
                                      ARTPresenceMessage *m0 = messages[0];
                                      ARTPresenceMessage *m1 = messages[1];
                                      ARTPresenceMessage *m2 = messages[2];
                                      
-                                     XCTAssertEqual(m0.action, ARTPresenceMessageEnter);
+                                     XCTAssertEqual(m0.action, ARTPresenceEnter);
                                      XCTAssertEqualObjects(presenceEnter1, [m0 content]);
                                      
                                      XCTAssertEqualObjects(presenceEnter2, [m1 content]);
-                                     XCTAssertEqual(m1.action, ARTPresenceMessageEnter);
+                                     XCTAssertEqual(m1.action, ARTPresenceEnter);
                                      XCTAssertEqualObjects(presenceUpdate, [m2 content]);
-                                     XCTAssertEqual(m2.action, ARTPresenceMessageUpdate);
+                                     XCTAssertEqual(m2.action, ARTPresenceUpdate);
                                      [expectation fulfill];
                                  }];
                             }];
@@ -253,7 +266,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime channel:@"testWaitTextBackward"];
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if (state == ARTRealtimeConnected) {
                 [channel attach];
             }
@@ -261,28 +274,31 @@
         [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
             if(cState == ARTRealtimeChannelAttached) {
                 [channel.presence enter:presenceEnter1 cb:^(ARTStatus *status) {
-                    XCTAssertEqual(ARTStatusOk, status.status);
+                    XCTAssertEqual(ARTStateOk, status.state);
 
                     [channel.presence enter:presenceEnter2 cb:^(ARTStatus *status) {
-                        XCTAssertEqual(ARTStatusOk, status.status);
+                        XCTAssertEqual(ARTStateOk, status.state);
                         [channel.presence update:presenceUpdate cb:^(ARTStatus *status2) {
-                            XCTAssertEqual(ARTStatusOk, status2.status);
-                            [channel.presence historyWithParams:@{@"direction" :@"backwards"} cb:^
-                             (ARTStatus *status, id<ARTPaginatedResult> result) {
-                                 XCTAssertEqual(ARTStatusOk, status.status);
-                                 NSArray *messages = [result currentItems];
+                            XCTAssertEqual(ARTStateOk, status2.state);
+
+                            ARTDataQuery *query = [[ARTDataQuery alloc] init];
+                            query.direction = ARTQueryDirectionBackwards;
+
+                            [channel.presence history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                                 XCTAssert(!error);
+                                 NSArray *messages = [result items];
                                  XCTAssertEqual(3, messages.count);
                                  ARTPresenceMessage *m0 = messages[0];
                                  ARTPresenceMessage *m1 = messages[1];
                                  ARTPresenceMessage *m2 = messages[2];
                                  
-                                 XCTAssertEqual(m0.action, ARTPresenceMessageUpdate);
+                                 XCTAssertEqual(m0.action, ARTPresenceUpdate);
                                  XCTAssertEqualObjects(presenceUpdate, [m0 content]);
                                  
                                  XCTAssertEqualObjects(presenceEnter2, [m1 content]);
-                                 XCTAssertEqual(m1.action, ARTPresenceMessageUpdate);
+                                 XCTAssertEqual(m1.action, ARTPresenceUpdate);
                                  XCTAssertEqualObjects(presenceEnter1, [m2 content]);
-                                 XCTAssertEqual(m2.action, ARTPresenceMessageEnter);
+                                 XCTAssertEqual(m2.action, ARTPresenceEnter);
                                  [expectation fulfill];
                              }];
                         }];
@@ -294,35 +310,30 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-
-
-
-
-
 -(void) testLimitForward
 {
-    [self runTestLimit:2 forwards:true cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-        XCTAssertEqual(ARTStatusOk, status.status);
-        NSArray *messages = [result currentItems];
+    [self runTestLimit:2 forwards:true cb:^(ARTPaginatedResult *result, NSError *error) {
+        XCTAssert(!error);
+        NSArray *messages = [result items];
         XCTAssertEqual(2, messages.count);
         XCTAssert([result hasNext]);
         ARTPresenceMessage *m0 = messages[0];
         ARTPresenceMessage *m1 = messages[1];
         
-        XCTAssertEqual(m0.action, ARTPresenceMessageEnter);
+        XCTAssertEqual(m0.action, ARTPresenceEnter);
         XCTAssertEqualObjects([self enter1Str], [m0 content]);
         
         XCTAssertEqualObjects([self enter2Str], [m1 content]);
-        XCTAssertEqual(m1.action, ARTPresenceMessageUpdate);
+        XCTAssertEqual(m1.action, ARTPresenceUpdate);
         
-        [result next:^(ARTStatus *status, id<ARTPaginatedResult> result2) {
+        [result next:^(ARTPaginatedResult *result2, NSError *error2) {
             
-            NSArray *messages = [result2 currentItems];
+            NSArray *messages = [result2 items];
             XCTAssertEqual(1, messages.count);
             XCTAssertFalse([result2 hasNext]);
             ARTPresenceMessage *m0 = messages[0];
             XCTAssertEqualObjects([self updateStr], [m0 content]);
-            XCTAssertEqual(m0.action, ARTPresenceMessageUpdate);
+            XCTAssertEqual(m0.action, ARTPresenceUpdate);
         }];
     }];
 }
@@ -330,28 +341,28 @@
 
 
 - (void)testLimitBackward {
-    [self runTestLimit:2 forwards:false cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-        XCTAssertEqual(ARTStatusOk, status.status);
-        NSArray *messages = [result currentItems];
+    [self runTestLimit:2 forwards:false cb:^(ARTPaginatedResult *result, NSError *error) {
+        XCTAssert(!error);
+        NSArray *messages = [result items];
         XCTAssertEqual(2, messages.count);
         XCTAssert([result hasNext]);
         ARTPresenceMessage *m0 = messages[0];
         ARTPresenceMessage *m1 = messages[1];
         
-        XCTAssertEqual(m0.action, ARTPresenceMessageUpdate);
+        XCTAssertEqual(m0.action, ARTPresenceUpdate);
         XCTAssertEqualObjects([self updateStr], [m0 content]);
         
         XCTAssertEqualObjects([self enter2Str], [m1 content]);
-        XCTAssertEqual(m1.action, ARTPresenceMessageUpdate);
+        XCTAssertEqual(m1.action, ARTPresenceUpdate);
         
-        [result next:^(ARTStatus *status, id<ARTPaginatedResult> result2) {
+        [result next:^(ARTPaginatedResult *result2, NSError *error2) {
             
-            NSArray *messages = [result2 currentItems];
+            NSArray *messages = [result2 items];
             XCTAssertEqual(1, messages.count);
             XCTAssertFalse([result2 hasNext]);
             ARTPresenceMessage *m0 = messages[0];
             XCTAssertEqualObjects([self enter1Str], [m0 content]);
-            XCTAssertEqual(m0.action, ARTPresenceMessageEnter);
+            XCTAssertEqual(m0.action, ARTPresenceEnter);
         }];
     }];
 }
@@ -373,15 +384,15 @@
 
 
 //TOOD consider using a pattern similar to ARTTestUtil testPublish.
--(void) runTestTimeForwards:(bool) forwards limit:(int) limit cb:(ARTPaginatedResultCb) cb
+-(void) runTestTimeForwards:(bool) forwards limit:(int) limit cb:(ARTPaginatedResultCallback) cb
 {
     XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
     __block long long timeOffset= 0;
     
     [self withRealtimeClientId:^(ARTRealtime  *realtime) {
-        [realtime time:^(ARTStatus *status, NSDate *time) {
-            XCTAssertEqual(ARTStatusOk, status.status);
-            long long serverNow= [time timeIntervalSince1970]*1000;
+        [realtime time:^(NSDate *time, NSError *error) {
+            XCTAssert(!error);
+            long long serverNow = [time timeIntervalSince1970]*1000;
             long long appNow =[ARTTestUtil nowMilli];
             timeOffset = serverNow - appNow;
             
@@ -392,7 +403,7 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime channel:@"testWaitText"];
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if (state == ARTRealtimeConnected) {
                 [channel attach];
             }
@@ -406,14 +417,14 @@
         [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
             if(cState == ARTRealtimeChannelAttached) {
                 [channel.presence enter:[self enter1Str] cb:^(ARTStatus *status) {
-                    XCTAssertEqual(ARTStatusOk, status.status);
+                    XCTAssertEqual(ARTStateOk, status.state);
 
                     __block int numReceived=0;
                     for(int i=0;i < firstBatchTotal; i++)
                     {
                         NSString * str = [NSString stringWithFormat:@"update%d", i];
                         [channel.presence update:str cb:^(ARTStatus *status) {
-                            XCTAssertEqual(ARTStatusOk, status.status);
+                            XCTAssertEqual(ARTStateOk, status.state);
                             sleep([ARTTestUtil smallSleep]);
                             numReceived++;
                             if(numReceived == firstBatchTotal) {
@@ -437,7 +448,7 @@
         for(int i=0;i < secondBatchTotal; i++) {
             NSString * str = [NSString stringWithFormat:@"second_updates%d", i];
             [channel.presence update:str cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStatusOk, status.status);
+                XCTAssertEqual(ARTStateOk, status.state);
                 sleep([ARTTestUtil smallSleep]);
                 numReceived++;
                 if(numReceived == secondBatchTotal) {
@@ -455,7 +466,7 @@
             NSString * str = [NSString stringWithFormat:@"third_updates%d", i];
             [channel.presence update:str cb:^(ARTStatus *status) {
                 sleep([ARTTestUtil smallSleep]);
-                XCTAssertEqual(ARTStatusOk, status.status);
+                XCTAssertEqual(ARTStateOk, status.state);
                 numReceived++;
                 if(numReceived == thirdBatchTotal) {
                     [thirdBatchExpectation fulfill];
@@ -464,60 +475,59 @@
         }
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
         XCTestExpectation * historyExpecation= [self expectationWithDescription:@"historyExpecation"];
-        [channel.presence historyWithParams:@{
-                                      @"start" : [NSString stringWithFormat:@"%lld", start],
-                                      @"end"   : [NSString stringWithFormat:@"%lld", end],
-                                      @"limit" : [NSString stringWithFormat:@"%d", limit],
-                                      @"direction" : (forwards ? @"forwards" : @"backwards")}
-                                 cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                                     cb(status, result);
-                                     [historyExpecation fulfill];
-                                 }];
-         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-        
+
+        ARTDataQuery *query = [[ARTDataQuery alloc] init];
+        query.start = [NSDate dateWithTimeIntervalSinceReferenceDate:start];
+        query.end = [NSDate dateWithTimeIntervalSinceReferenceDate:end];
+        query.limit = limit;
+        query.direction = forwards ? ARTQueryDirectionForwards : ARTQueryDirectionBackwards;
+
+        [channel.presence history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+            cb(result, error);
+            [historyExpecation fulfill];
+        }];
+
+        [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
     }];
 }
 
 - (void)testTimeForward {
-    
-    [self runTestTimeForwards:true limit:100 cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-        XCTAssertEqual(ARTStatusOk, status.status);
+    [self runTestTimeForwards:true limit:100 cb:^(ARTPaginatedResult *result, NSError *error) {
+        XCTAssert(!error);
         XCTAssertFalse([result hasNext]);
-        NSArray * page = [result currentItems];
+        NSArray *page = [result items];
         XCTAssertTrue(page != nil);
         XCTAssertEqual([page count], [self secondBatchSize]);
         for(int i=0;i < [page count]; i++) {
             NSString * goalStr = [NSString stringWithFormat:@"second_updates%d",i];
             ARTPresenceMessage * m = [page objectAtIndex:i];
-            XCTAssertEqual(ARTPresenceMessageUpdate, m.action);
+            XCTAssertEqual(ARTPresenceUpdate, m.action);
             XCTAssertEqualObjects(goalStr, [m content]);
         }
     }];
 }
 - (void)testTimeBackward {
-    [self runTestTimeForwards:false limit:100 cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-        XCTAssertEqual(ARTStatusOk, status.status);
+    [self runTestTimeForwards:false limit:100 cb:^(ARTPaginatedResult *result, NSError *error) {
+        XCTAssert(!error);
         XCTAssertFalse([result hasNext]);
-        NSArray * page = [result currentItems];
+        NSArray * page = [result items];
         XCTAssertTrue(page != nil);
         XCTAssertEqual([page count], [self secondBatchSize]);
         int topSize = [self secondBatchSize];
         for(int i=0;i < [page count]; i++) {
             NSString * goalStr = [NSString stringWithFormat:@"second_updates%d",topSize - i -1];
             ARTPresenceMessage * m = [page objectAtIndex:i];
-            XCTAssertEqual(ARTPresenceMessageUpdate, m.action);
+            XCTAssertEqual(ARTPresenceUpdate, m.action);
             XCTAssertEqualObjects(goalStr, [m content]);
         }
     }];
 }
 
-
-
 - (void)testFromAttach {
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime channel:[self channelName]];
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state) {
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if (state == ARTRealtimeConnected) {
                 [channel attach];
             }
@@ -525,32 +535,33 @@
         [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
             if(cState == ARTRealtimeChannelAttached) {
                 [channel.presence enter:[self enter1Str] cb:^(ARTStatus *status) {
-                    XCTAssertEqual(ARTStatusOk, status.status);
+                    XCTAssertEqual(ARTStateOk, status.state);
                     [channel.presence enter:[self enter2Str] cb:^(ARTStatus *status) {
-                        XCTAssertEqual(ARTStatusOk, status.status);
+                        XCTAssertEqual(ARTStateOk, status.state);
                         [channel.presence update:[self updateStr] cb:^(ARTStatus *status2) {
-                            XCTAssertEqual(ARTStatusOk, status2.status);
+                            XCTAssertEqual(ARTStateOk, status2.state);
                             [self withRealtimeClientId2:^(ARTRealtime *realtime2) {
                                 ARTRealtimeChannel * channel2 = [realtime2 channel:[self channelName]];
                                 [channel2 subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
                                     if(cState == ARTRealtimeChannelAttached) {
-                                        [channel2.presence historyWithParams:@{@"direction" : @"forwards"}
-                                                                   cb:^(ARTStatus *status2, id<ARTPaginatedResult> c2Result) {
-                                            XCTAssertEqual(ARTStatusOk,status2.status);
-                                            NSArray *messages = [c2Result currentItems];
+                                        ARTDataQuery *query = [[ARTDataQuery alloc] init];
+                                        query.direction = ARTQueryDirectionForwards;
+                                        [channel2.presence history:query callback:^(ARTPaginatedResult *c2Result, NSError *error2) {
+                                            XCTAssert(!error2);
+                                            NSArray *messages = [c2Result items];
                                             XCTAssertEqual(3, messages.count);
                                             XCTAssertFalse([c2Result hasNext]);
                                             ARTPresenceMessage *m0 = messages[0];
                                             ARTPresenceMessage *m1 = messages[1];
                                             ARTPresenceMessage *m2 = messages[2];
                                             
-                                            XCTAssertEqual(m0.action, ARTPresenceMessageEnter);
+                                            XCTAssertEqual(m0.action, ARTPresenceEnter);
                                             XCTAssertEqualObjects([self enter1Str], [m0 content]);
                                             
                                             XCTAssertEqualObjects([self enter2Str], [m1 content]);
-                                            XCTAssertEqual(m1.action, ARTPresenceMessageUpdate);
+                                            XCTAssertEqual(m1.action, ARTPresenceUpdate);
                                             XCTAssertEqualObjects([self updateStr], [m2 content]);
-                                            XCTAssertEqual(m2.action, ARTPresenceMessageUpdate);
+                                            XCTAssertEqual(m2.action, ARTPresenceUpdate);
                                             [expectation fulfill];
                                         }];
                                     }
@@ -575,23 +586,23 @@
     
     NSString * channelName = @"chanName";
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
-    [ARTTestUtil setupApp:[ARTTestUtil jsonRealtimeOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         options.clientId = [self getClientId];
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
         _realtime3 = [[ARTRealtime alloc] initWithOptions:options];
         ARTRealtimeChannel * c1 =[_realtime channel:channelName];
         [c1.presence enter:presenceEnter1 cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStatusOk, status.status);
+            XCTAssertEqual(ARTStateOk, status.state);
             ARTRealtimeChannel * c2 =[_realtime2 channel:channelName];
             [c2.presence enter:presenceEnter2 cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStatusOk, status.status);
+                XCTAssertEqual(ARTStateOk, status.state);
                 ARTRealtimeChannel * c3 =[_realtime3 channel:channelName];
                 [c3.presence enter:presenceEnter3 cb:^(ARTStatus *status) {
-                    XCTAssertEqual(ARTStatusOk, status.status);
-                    [c1.presence history:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                        XCTAssertEqual(ARTStatusOk, status.status);
-                        NSArray *messages = [result currentItems];
+                    XCTAssertEqual(ARTStateOk, status.state);
+                    [c1.presence history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+                        XCTAssert(error);
+                        NSArray *messages = [result items];
                         XCTAssertEqual(3, messages.count);
                         {
                             ARTPresenceMessage *m = messages[0];
