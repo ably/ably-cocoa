@@ -16,7 +16,7 @@
 #import "ARTRest+Private.h"
 #import "ARTLog.h"
 #import "ARTPayload.h"
-#import "ARTChannel.h"
+#import "ARTRestChannel.h"
 #import "ARTChannelCollection.h"
 #import "ARTAuthTokenDetails.h"
 #import "ARTAuth.h"
@@ -27,7 +27,6 @@
 }
 
 @end
-
 
 @implementation ARTRestTokenTest
 
@@ -50,7 +49,7 @@
         _rest = rest;
         ARTAuth * auth = rest.auth;
         XCTAssertEqual(auth.method, ARTAuthMethodToken);
-        ARTChannel * c= [rest.channels get:@"getChannel"];
+        ARTRestChannel *c = [rest.channels get:@"getChannel"];
         [c publish:@"something" callback:^(NSError *error) {
             XCTAssert(!error);
             [expectation fulfill];
@@ -71,7 +70,7 @@
         XCTAssertEqual(auth.method, ARTAuthMethodToken);
         ARTChannel * c= [rest.channels get:@"getChannel"];
         [c publish:@"something" callback:^(NSError *error) {
-            XCTAssert(!error);
+            XCTAssert(error);
             [expectation fulfill];
         }];
     }];
@@ -81,10 +80,10 @@
 -(void)testAuthURLForcesToken {
     XCTestExpectation *exp = [self expectationWithDescription:@"testClientIdForcesToken"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
-        options.authUrl =[NSURL URLWithString:@"some_url"];
-        ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
+        options.authUrl = [NSURL URLWithString:@"some_url"];
+        ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
-        ARTAuth * auth = rest.auth;
+        ARTAuth *auth = rest.auth;
         XCTAssertEqual(auth.method, ARTAuthMethodToken);
         [exp fulfill];
     }];
@@ -92,18 +91,18 @@
 }
 
 -(void)testTTLDefaultOneHour {
-    XCTestExpectation *exp= [self expectationWithDescription:@"testTTLDefaultOneHour"];
+    XCTestExpectation *exp = [self expectationWithDescription:@"testTTLDefaultOneHour"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         options.clientId = @"clientIdThatForcesToken";
-        ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
+        options.logLevel = ARTLogLevelVerbose;
+        ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
-        ARTAuth * auth = rest.auth;
-        ARTChannel * c= [rest.channels get:@"getChannel"];
+        ARTAuth *auth = rest.auth;
+        ARTChannel *c = [rest.channels get:@"getChannel"];
         [c publish:@"invokeTokenRequest" callback:^(NSError *error) {
             XCTAssert(!error);
-            ARTAuthOptions *authOptions = auth.options;
-            NSTimeInterval secs = [authOptions.tokenDetails.expires timeIntervalSinceDate:authOptions.tokenDetails.issued];
-            XCTAssertEqual(secs, 3600000);
+            NSTimeInterval secs = [auth.tokenDetails.expires timeIntervalSinceDate:auth.tokenDetails.issued];
+            XCTAssertEqual(secs, 3600);
             [exp fulfill];
         }];
     }];
