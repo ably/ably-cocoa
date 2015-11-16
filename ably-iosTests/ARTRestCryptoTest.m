@@ -82,7 +82,7 @@
         [c publish:dataPayload callback:^(NSError *error) {
             XCTAssert(!error);
             [c publish:stringPayload callback:^(NSError *error) {
-                XCTAssert(error);
+                XCTAssert(!error);
                 [c history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
                     XCTAssert(!error);
                     NSArray * page = [result items];
