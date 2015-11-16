@@ -16,6 +16,9 @@
 #import "ARTLog.h"
 #import "ARTEventEmitter.h"
 #import "ARTStatus.h"
+#import "ARTAuth.h"
+#import "ARTAuthTokenParams.h"
+#import "ARTAuthTokenDetails.h"
 
 @interface ARTRealtimeAttachTest : XCTestCase {
     ARTRealtime *_realtime;
@@ -346,10 +349,21 @@
 
 - (void)testPresenceEnterRestricted {
     XCTestExpectation *expect = [self expectationWithDescription:@"testSimpleDisconnected"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withDebug:YES withAlteration:TestAlterationRestrictCapability cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withAlteration:TestAlterationRestrictCapability cb:^(ARTClientOptions *options) {
         // Connection
         options.clientId = @"some_client_id";
+        options.autoConnect = false;
+
         ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
+
+        // FIXME: there is setupApp, testRealtime, testRest, ... try to unify them and then use this code
+        ARTAuthTokenParams *tokenParams = [[ARTAuthTokenParams alloc] initWithClientId:options.clientId];
+        tokenParams.capability = @"{\"canpublish:*\":[\"publish\"],\"canpublish:andpresence\":[\"presence\",\"publish\"],\"cansubscribe:*\":[\"subscribe\"]}";
+
+        [realtime.auth authorise:tokenParams options:options force:false callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
+            options.token = tokenDetails.token;
+            [realtime connect];
+        }];
 
         [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if (state == ARTRealtimeConnected) {
