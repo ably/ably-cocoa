@@ -119,7 +119,7 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
         self.token == nil &&
         self.tokenDetails == nil &&
         self.authUrl == nil &&
-        self.authMethod == nil;
+        self.authCallback == nil;
 }
 
 - (BOOL)isMethodPOST {
