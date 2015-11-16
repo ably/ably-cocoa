@@ -58,7 +58,7 @@
         [c publish:@"message" callback:^(NSError *error) {
             // "Invalid credentials" because it is sending the request to the production server
             XCTAssert(error);
-            XCTAssertEqual(error.code, 40100);
+            XCTAssertEqual(error.code, 40005);
             [exp fulfill];
         }];
     }];
@@ -158,12 +158,8 @@
 }
 
 - (void)testDefaultAuthType {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testRestTime"];
-    [ARTTestUtil testRest:^(ARTRest *rest) {
-        XCTAssertEqual([rest.auth method], ARTAuthMethodBasic);
-        [exp fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    ARTRest* rest = [[ARTRest alloc] initWithKey:@"key:secret"];
+    XCTAssertEqual([rest.auth method], ARTAuthMethodBasic);
 }
 
 @end
