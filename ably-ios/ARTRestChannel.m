@@ -9,6 +9,7 @@
 #import "ARTRestChannel+Private.h"
 
 #import "ARTRest+Private.h"
+#import "ARTRestPresence.h"
 #import "ARTChannel+Private.h"
 #import "ARTChannelOptions.h"
 #import "ARTMessage.h"
@@ -20,6 +21,8 @@
 #import "ARTNSArray+ARTFunctional.h"
 
 @implementation ARTRestChannel {
+@private
+    ARTRestPresence *_restPresence;
 @public
     NSString *_basePath;
 }
@@ -39,6 +42,13 @@
 
 - (NSString *)getBasePath {
     return _basePath;
+}
+
+- (ARTRestPresence *)presence {
+    if (!_restPresence) {
+        _restPresence = [[ARTRestPresence alloc] initWithChannel:self];
+    }
+    return _restPresence;
 }
 
 - (void)history:(ARTDataQuery *)query callback:(void(^)(ARTPaginatedResult *result, NSError *error))callback {
