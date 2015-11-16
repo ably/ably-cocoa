@@ -624,7 +624,6 @@
         [self.logger error:@"ARTJsonEncoder failed to encode payload"];
     }
     NSAssert(status.state == ARTStateOk, @"Error encoding payload");
-    NSAssert([payload.payload isKindOfClass:[NSString class]], @"Only string payloads are accepted");
     
     if (encoded.encoding.length) {
         output[@"encoding"] = encoded.encoding;
