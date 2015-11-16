@@ -182,6 +182,10 @@
             } else {
                 [self.logger debug:@"%@ %@: statusCode %ld", request.HTTPMethod, request.URL.absoluteString, (long)httpResponse.statusCode];
                 [self.logger verbose:@"Headers %@", httpResponse.allHeaderFields];
+                NSString *headerErrorMessage = httpResponse.allHeaderFields[@"X-Ably-ErrorMessage"];
+                if (headerErrorMessage && ![headerErrorMessage isEqualToString:@""]) {
+                    [self.logger warn:@"%@", headerErrorMessage];
+                }
             }
             callback(httpResponse, data, error);
         });

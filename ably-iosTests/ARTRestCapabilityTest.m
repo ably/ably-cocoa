@@ -13,10 +13,13 @@
 #import "ARTClientOptions.h"
 #import "ARTPresenceMessage.h"
 #import "ARTRest.h"
-#import "ARTChannel.h"
+#import "ARTRestChannel.h"
 #import "ARTChannelCollection.h"
 #import "ARTTestUtil.h"
 #import "ARTLog.h"
+#import "ARTAuth.h"
+#import "ARTAuthTokenParams.h"
+#import "ARTAuthTokenDetails.h"
 
 @interface ARTRestCapabilityTest : XCTestCase {
     ARTRest *_rest;
@@ -40,12 +43,19 @@
         ARTClientOptions * theOptions = [ARTTestUtil clientOptions];
         [ARTTestUtil setupApp:theOptions withAlteration:TestAlterationRestrictCapability cb:^(ARTClientOptions *options) {
             if (options) {
-                options.useTokenAuth = true;
                 options.clientId = @"client_string";
                 
-                ARTRest *r = [[ARTRest alloc] initWithOptions:options];
-                _rest = r;
-                cb(_rest);
+                ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
+                _rest = rest;
+
+                // FIXME: there is withRestRestrictCap, setupApp, testRealtime, testRest, ... try to unify
+                ARTAuthTokenParams *tokenParams = [[ARTAuthTokenParams alloc] initWithClientId:options.clientId];
+                tokenParams.capability = @"{\"canpublish:*\":[\"publish\"],\"canpublish:andpresence\":[\"presence\",\"publish\"],\"cansubscribe:*\":[\"subscribe\"]}";
+
+                [rest.auth authorise:tokenParams options:options force:false callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
+                    options.token = tokenDetails.token;
+                    cb(_rest);
+                }];
             }
         }];
         return;
@@ -58,12 +68,14 @@
 - (void)testPublishRestricted {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testSimpleDisconnected"];
     [self withRestRestrictCap:^(ARTRest * rest) {
-        ARTChannel *channel = [rest.channels get:@"canpublish:test"];
+        ARTRestChannel *channel = [rest.channels get:@"canpublish:test"];
         [channel publish:@"publish" callback:^(NSError *error) {
             XCTAssert(!error);
-            ARTChannel *channel2 = [rest.channels get:@"cannotPublishToThisChannelName"];
+            NSLog(@"%@", error);
+            ARTRestChannel *channel2 = [rest.channels get:@"cannotPublishToThisChannelName"];
             [channel2 publish:@"publish" callback:^(NSError *error) {
                 XCTAssert(error);
+                NSLog(@"%@", error);
                 [expectation fulfill];
             }];
             
