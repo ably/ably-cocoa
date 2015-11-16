@@ -10,18 +10,18 @@
 #import "CompatibilityMacros.h"
 
 @class ARTRest;
-@class ARTChannel;
+@class ARTRestChannel;
 @class ARTChannelOptions;
 
 @interface ARTChannelCollection : NSObject<NSFastEnumeration>
 
-@property (nonatomic, readonly) __GENERIC(NSMutableDictionary, NSString *, ARTChannel *) *channels;
+@property (nonatomic, readonly) __GENERIC(NSMutableDictionary, NSString *, ARTRestChannel *) *channels;
 
 - (instancetype)initWithRest:(ARTRest *)rest;
 
 - (BOOL)exists:(NSString *)channelName;
-- (ARTChannel *)get:(NSString *)channelName;
-- (ARTChannel *)get:(NSString *)channelName options:(ARTChannelOptions *)options;
-- (void)releaseChannel:(ARTChannel *)channel;
+- (ARTRestChannel *)get:(NSString *)channelName;
+- (ARTRestChannel *)get:(NSString *)channelName options:(ARTChannelOptions *)options;
+- (void)releaseChannel:(ARTRestChannel *)channel;
 
 @end

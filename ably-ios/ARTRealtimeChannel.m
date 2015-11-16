@@ -20,7 +20,9 @@
 #import "ARTQueuedMessage.h"
 #import "ARTNSArray+ARTFunctional.h"
 
-@interface ARTRealtimeChannel ()
+@interface ARTRealtimeChannel () {
+    ARTRealtimePresence *_realtimePresence;
+}
 
 @end
 
@@ -30,7 +32,6 @@
     self = [super initWithName:name withOptions:options andRest:realtime.rest];
     if (self) {
         _realtime = realtime;
-        _presence = [[ARTRealtimePresence alloc] initWithChannel:self];
         _state = ARTRealtimeChannelInitialised;
         _queuedMessages = [NSMutableArray array];
         _attachSerial = nil;
@@ -45,6 +46,13 @@
 
 + (instancetype)channelWithRealtime:(ARTRealtime *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options {
     return [[ARTRealtimeChannel alloc] initWithRealtime:realtime andName:name withOptions:options];
+}
+
+- (ARTRealtimePresence *)presence {
+    if (!_realtimePresence) {
+        _realtimePresence = [[ARTRealtimePresence alloc] initWithChannel:self];
+    }
+    return _realtimePresence;
 }
 
 - (void)publish:(id)payload cb:(ARTStatusCallback)cb {
