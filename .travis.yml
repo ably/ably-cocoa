@@ -3,7 +3,6 @@ language: objective-c
 osx_image: xcode6.4
 
 before_install:
-  - gem install cocoapods -v '0.38.2'
+  - gem install cocoapods -v '0.39.0'
 script: 
- - xcodebuild test -workspace ably-ios.xcworkspace -scheme ablySpec -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO 
-
+ - xcodebuild test -workspace ably.xcworkspace -scheme ablySpec -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO
