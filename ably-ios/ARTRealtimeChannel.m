@@ -96,7 +96,7 @@
     if (!msg.clientId) {
         msg.clientId = self.clientId;
     }
-    if(!msg.clientId) {
+    if (!msg.clientId) {
         cb([ARTStatus state:ARTStateNoClientId]);
         return;
     }
