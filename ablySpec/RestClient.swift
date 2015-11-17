@@ -222,6 +222,29 @@ class RestClient: QuickSpec {
                 }
             }
 
+            // RSC9
+            it("should use Auth to manage authentication") {
+                let options = AblyTests.commonAppSetup()
+                let auth = ARTAuth(ARTRest(options: options), withOptions: options)
+
+                expect(auth.method.rawValue).to(equal(ARTAuthMethod.Basic.rawValue))
+
+                auth.requestToken(nil, withOptions: options, callback: { tokenDetailsA, errorA in
+                    if let e = errorA {
+                        XCTFail(e.description)
+                    }
+                    options.token = tokenDetailsA?.token ?? ""
+
+                    auth.authorise(nil, options: options, force: false, callback: { tokenDetailsB, errorB in
+                        if let e = errorB {
+                            XCTFail(e.description)
+                        }
+                        // Use the same token because it is valid
+                        expect(options.token).to(equal(tokenDetailsB?.token ?? ""))
+                    })
+                })
+            }
+
         } //RestClient
     }
 }
