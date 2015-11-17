@@ -225,24 +225,67 @@ class RestClient: QuickSpec {
             // RSC9
             it("should use Auth to manage authentication") {
                 let options = AblyTests.commonAppSetup()
-                let auth = ARTAuth(ARTRest(options: options), withOptions: options)
+                let client = ARTRest(options: options)
+                let auth = client.auth
 
                 expect(auth.method.rawValue).to(equal(ARTAuthMethod.Basic.rawValue))
 
-                auth.requestToken(nil, withOptions: options, callback: { tokenDetailsA, errorA in
-                    if let e = errorA {
-                        XCTFail(e.description)
-                    }
-                    options.token = tokenDetailsA?.token ?? ""
-
-                    auth.authorise(nil, options: options, force: false, callback: { tokenDetailsB, errorB in
-                        if let e = errorB {
+                waitUntil(timeout: 25.0) { done in
+                    auth.requestToken(nil, withOptions: options, callback: { tokenDetailsA, errorA in
+                        if let e = errorA {
                             XCTFail(e.description)
+                            done()
                         }
-                        // Use the same token because it is valid
-                        expect(options.token).to(equal(tokenDetailsB?.token ?? ""))
+                        else if let currentTokenDetails = tokenDetailsA {
+                            auth.setTokenDetails(currentTokenDetails)
+                        }
+
+                        auth.authorise(nil, options: options, force: false, callback: { tokenDetailsB, errorB in
+                            if let e = errorB {
+                                XCTFail(e.description)
+                                done()
+                            }
+                            // Use the same token because it is valid
+                            expect(auth.tokenDetails?.token).to(equal(tokenDetailsB?.token))
+                            done()
+                        })
                     })
-                })
+                }
+            }
+
+            // RSC10
+            it("should request another token after current one is no longer valid") {
+                let options = AblyTests.commonAppSetup()
+                let client = ARTRest(options: options)
+                let auth = client.auth
+
+                let tokenParams = ARTAuthTokenParams()
+                tokenParams.ttl = 3.0 //Seconds
+
+                waitUntil(timeout: 25.0) { done in
+                    auth.requestToken(tokenParams, withOptions: options) { tokenDetailsA, errorA in
+                        if let e = errorA {
+                            XCTFail(e.description)
+                            done()
+                        }
+                        else if let currentTokenDetails = tokenDetailsA {
+                            auth.setTokenDetails(currentTokenDetails)
+                        }
+
+                        // Delay for token expiration
+                        delay(tokenParams.ttl) {
+                            auth.authorise(tokenParams, options: options, force: false) { tokenDetailsB, errorB in
+                                if let e = errorB {
+                                    XCTFail(e.description)
+                                    done()
+                                }
+                                // Different token
+                                expect(tokenDetailsA?.token).toNot(equal(tokenDetailsB?.token))
+                                done()
+                            }
+                        }
+                    }
+                }
             }
 
         } //RestClient

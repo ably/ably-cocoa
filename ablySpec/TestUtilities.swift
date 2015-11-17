@@ -172,6 +172,15 @@ func getTestToken() -> String {
     return token ?? ""
 }
 
+public func delay(seconds: NSTimeInterval, closure: ()->()) {
+    dispatch_after(
+        dispatch_time(
+            DISPATCH_TIME_NOW,
+            Int64(seconds * Double(NSEC_PER_SEC))
+        ),
+        dispatch_get_main_queue(), closure)
+}
+
 // TODO: after merge use robrix/Box
 class Box<T> {
     let unbox: T

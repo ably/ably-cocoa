@@ -224,9 +224,9 @@
                     callback(nil, error);
                 }
             } else {
-                _tokenDetails = tokenDetails;
+                [self setTokenDetails:tokenDetails];
                 if (callback) {
-                    callback(tokenDetails, nil);
+                    callback(self.tokenDetails, nil);
                 }
             }
         }];
@@ -260,6 +260,10 @@
 
 - (void)setProtocolClientId:(NSString *)clientId {
     _protocolClientId = clientId;
+}
+
+- (void)setTokenDetails:(ARTAuthTokenDetails *)tokenDetails {
+    _tokenDetails = tokenDetails;
 }
 
 - (NSString *)getClientId {
