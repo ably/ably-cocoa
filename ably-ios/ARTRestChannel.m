@@ -16,6 +16,7 @@
 #import "ARTDataQuery+Private.h"
 #import "ARTJsonEncoder.h"
 #import "ARTAuth.h"
+#import "ARTAuthTokenDetails.h"
 #import "ARTNSArray+ARTFunctional.h"
 
 @implementation ARTRestChannel {
@@ -44,9 +45,10 @@
     NSParameterAssert(query.limit < 1000);
     NSParameterAssert([query.start compare:query.end] != NSOrderedDescending);
 
-    NSURLComponents *requestUrl = [NSURLComponents componentsWithString:[_basePath stringByAppendingPathComponent:@"messages"]];
-    requestUrl.queryItems = [query asQueryItems];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl.URL];
+    NSURLComponents *componentsUrl = [NSURLComponents componentsWithString:[_basePath stringByAppendingPathComponent:@"messages"]];
+    componentsUrl.queryItems = [query asQueryItems];
+
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:componentsUrl.URL];
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^NSArray *(NSHTTPURLResponse *response, NSData *data) {
         id<ARTEncoder> encoder = [_rest.encoders objectForKey:response.MIMEType];
@@ -55,7 +57,7 @@
         }];
     };
     
-    [ARTPaginatedResult executePaginatedRequest:request executor:_rest.httpExecutor responseProcessor:responseProcessor callback:callback];
+    [ARTPaginatedResult executePaginated:self.rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
 }
 
 - (void)internalPostMessages:(id)data callback:(ARTErrorCallback)callback {

@@ -9,9 +9,11 @@
 #import "ARTPaginatedResult+Private.h"
 
 #import "ARTHttp.h"
+#import "ARTAuth.h"
+#import "ARTRest+Private.h"
 
 @implementation ARTPaginatedResult {
-    id<ARTHTTPExecutor> _executor;
+    __weak ARTRest *_rest;
     NSMutableURLRequest *_relFirst;
     NSMutableURLRequest *_relCurrent;
     NSMutableURLRequest *_relNext;
@@ -19,7 +21,7 @@
 }
 
 - (instancetype)initWithItems:(NSArray *)items
-                     executor:(id<ARTHTTPExecutor>)executor
+                     rest:(ARTRest *)rest
                      relFirst:(NSMutableURLRequest *)relFirst
                    relCurrent:(NSMutableURLRequest *)relCurrent
                       relNext:(NSMutableURLRequest *)relNext
@@ -37,7 +39,7 @@
         _hasNext = !!relNext;
         _isLast = !_hasNext;
         
-        _executor = executor;
+        _rest = rest;
         _responseProcessor = responseProcessor;
     }
     
@@ -45,15 +47,15 @@
 }
 
 - (void)first:(ARTPaginatedResultCallback)callback {
-    [self.class executePaginatedRequest:_relFirst executor:_executor responseProcessor:_responseProcessor callback:callback];
+    [self.class executePaginated:_rest withRequest:_relFirst andResponseProcessor:_responseProcessor callback:callback];
 }
 
 - (void)current:(ARTPaginatedResultCallback)callback {
-    [self.class executePaginatedRequest:_relCurrent executor:_executor responseProcessor:_responseProcessor callback:callback];
+    [self.class executePaginated:_rest withRequest:_relCurrent andResponseProcessor:_responseProcessor callback:callback];
 }
 
 - (void)next:(ARTPaginatedResultCallback)callback {
-    [self.class executePaginatedRequest:_relNext executor:_executor responseProcessor:_responseProcessor callback:callback];
+    [self.class executePaginated:_rest withRequest:_relNext andResponseProcessor:_responseProcessor callback:callback];
 }
 
 static NSDictionary *extractLinks(NSHTTPURLResponse *response) {
@@ -96,30 +98,27 @@ static NSMutableURLRequest *requestRelativeTo(NSMutableURLRequest *request, NSSt
     return [NSMutableURLRequest requestWithURL:url];
 }
 
-+ (void)executePaginatedRequest:(NSMutableURLRequest *)request executor:(id<ARTHTTPExecutor>)executor
-              responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
-                       callback:(ARTPaginatedResultCallback)callback {
++ (void)executePaginated:(ARTRest *)rest withRequest:(NSMutableURLRequest *)request andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor callback:(ARTPaginatedResultCallback)callback {
 
-    // FIXME: review (no auth?!)
-    [executor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             callback(nil, error);
         } else {
             NSArray *items = responseProcessor(response, data);
-            
+
             NSDictionary *links = extractLinks(response);
-            
+
             NSMutableURLRequest *firstRel = requestRelativeTo(request, links[@"first"]);
             NSMutableURLRequest *currentRel = requestRelativeTo(request, links[@"current"]);;
             NSMutableURLRequest *nextRel = requestRelativeTo(request, links[@"next"]);;
 
             ARTPaginatedResult *result = [[ARTPaginatedResult alloc] initWithItems:items
-                                                                          executor:executor
+                                                                          rest:rest
                                                                           relFirst:firstRel
                                                                         relCurrent:currentRel
                                                                            relNext:nextRel
                                                                  responseProcessor:responseProcessor];
-            
+
             callback(result, nil);
         }
     }];

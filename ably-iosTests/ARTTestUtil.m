@@ -14,6 +14,7 @@
 #import "ARTRealtimeChannel.h"
 #import "ARTRealtimePresence.h"
 #import "ARTPayload.h"
+#import "ARTEventEmitter.h"
 
 @implementation ARTTestUtil
 
@@ -229,16 +230,40 @@
 
 + (void)testRest:(ARTRestConstructorCb)cb {
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
-        ARTRest * r = [[ARTRest alloc] initWithOptions:options];
-        cb(r);
+        ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
+        cb(rest);
     }];
 }
 
-+(void) testRealtime:(ARTRealtimeConstructorCb)cb {
++ (void)testRealtime:(ARTRealtimeConstructorCb)cb {
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
-        ARTRealtime * realtime = [[ARTRealtime alloc] initWithOptions:options];
+        ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
         cb(realtime);
     }];
+}
+
++ (void)testRealtimeV2:(XCTestCase *)testCase withDebug:(BOOL)debug callback:(ARTRealtimeTestCallback)callback {
+    XCTestExpectation *expectation = [testCase expectationWithDescription:@"testRealtime"];
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withDebug:debug withAlteration:TestAlterationNone cb:^(ARTClientOptions *options) {
+        ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+            if (state == ARTRealtimeFailed) {
+                // FIXME: XCTFail not working outside a XCTestCase method!
+                if (errorInfo) {
+                    //XCTFail(@"%@", errorInfo);
+                    NSLog(@"Realtime connection failed: %@", errorInfo);
+                }
+                else {
+                    //XCTFail();
+                    NSLog(@"Realtime connection failed");
+                }
+                [expectation fulfill];
+            }
+            else
+                callback(realtime, state, expectation);
+        }];
+    }];
+    [testCase waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 @end

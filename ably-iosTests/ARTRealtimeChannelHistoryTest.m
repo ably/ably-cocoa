@@ -37,29 +37,30 @@
 }
 
 - (void)testHistory {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testHistory"];
-    [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+    [ARTTestUtil testRealtimeV2:self withDebug:NO callback:^(ARTRealtime *realtime, ARTRealtimeConnectionState state, XCTestExpectation *expectation) {
         _realtime = realtime;
-        ARTRealtimeChannel *channel = [realtime channel:@"persisted:testHistory"];
-        [channel publish:@"testString" cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStateOk, status.state);
-            [channel publish:@"testString2" cb:^(ARTStatus *status) {
+
+        if (state == ARTRealtimeConnected) {
+            ARTRealtimeChannel *channel = [realtime channel:@"persisted:testHistory"];
+            [channel publish:@"testString" cb:^(ARTStatus *status) {
                 XCTAssertEqual(ARTStateOk, status.state);
-                [channel history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
-                    XCTAssert(!error);
-                    NSArray *messages = [result items];
-                    XCTAssertEqual(2, messages.count);
-                    ARTMessage *m0 = messages[0];
-                    ARTMessage *m1 = messages[1];
-                    XCTAssertEqualObjects(@"testString2", [m0 content]);
-                    XCTAssertEqualObjects(@"testString", [m1 content]);
-                    
-                    [expectation fulfill];
+                [channel publish:@"testString2" cb:^(ARTStatus *status) {
+                    XCTAssertEqual(ARTStateOk, status.state);
+                    [channel history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+                        XCTAssert(!error);
+                        NSArray *messages = [result items];
+                        XCTAssertEqual(2, messages.count);
+                        ARTMessage *m0 = messages[0];
+                        ARTMessage *m1 = messages[1];
+                        XCTAssertEqualObjects(@"testString2", [m0 content]);
+                        XCTAssertEqualObjects(@"testString", [m1 content]);
+
+                        [expectation fulfill];
+                    }];
                 }];
             }];
-        }];
+        }        
     }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 -(void) publishTestStrings:(ARTRealtimeChannel *) channel
