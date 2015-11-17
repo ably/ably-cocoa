@@ -38,62 +38,62 @@
     [super tearDown];
 }
 
-
 /**
- Create 2 connections, each connected to the same channel.
- Disconnect and reconnect one of the connections, then use that channel to send and recieve message.
- Verify all messages sent and recieved ok.
+ testSimple:
+  - Client A & Client B connect, attach to channel Y
+  - Client A is forcibly disconnected and does not (yet) reconnect and attempt resume
+  - Client B then publishes some messages on channel Y, and waits until the messages are received on channel Y
+  - Client A reconnects and resumes the connection. As connection resume should be working, it then receives the messages on channel Y whilst the client was disconnected, and channel Y of course remains attached
  */
 - (void)testSimple {
     NSString *channelName = @"resumeChannel";
     NSString *message1 = @"message1";
     NSString *message2 = @"message2";
-    NSString *message3 = @"message3";
-    NSString *message4 = @"message4";
 
     XCTestExpectation *expectation = [self expectationWithDescription:@"testSimple"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
 
-        __block int disconnects = 0;
-        ARTRealtimeChannel *channel = [_realtime channel:channelName];
-        ARTRealtimeChannel *channel2 = [_realtime2 channel:channelName];
+        ARTRealtimeChannel *channelA = [_realtime channel:channelName];
+        ARTRealtimeChannel *channelB = [_realtime2 channel:channelName];
 
-        [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
-            if(cState == ARTRealtimeChannelAttached) {
-                [channel2 attach];
-                if (disconnects == 1) {
-                    [channel2 publish:message4 cb:^(ARTStatus *status) {
-                        XCTAssertEqual(ARTStateOk, status.state);
-                        [expectation fulfill];
-                    }];
-                }
+        [channelA subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
+            if (cState == ARTRealtimeChannelAttached) {
+                // 2. Attach channel of Client B
+                [channelB attach];
             }
         }];
 
-        [channel2 subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
-            if(cState == ARTRealtimeChannelAttached) {
-                // Both channels are attached
-                [channel2 publish:message1 cb:^(ARTStatus *status) {
-                    [channel2 publish:message2 cb:^(ARTStatus *status) {
-                        XCTAssertEqual(ARTStateOk, status.state);
-                        disconnects++;
-                        [_realtime onError:nil withErrorInfo:nil];
-                    }];
+        [channelB subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
+            if (cState == ARTRealtimeChannelAttached) {
+                // 3. Client B sends message and if OK then force A to disconnect
+                [channelB publish:message1 cb:^(ARTStatus *status) {
+                    XCTAssertEqual(ARTStateOk, status.state);
+                    // Forcibly disconnect
+                    [_realtime onError:nil withErrorInfo:nil];
                 }];
             }
         }];
 
         [_realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if (state == ARTRealtimeFailed) {
-                [channel2 publish:message3 cb:^(ARTStatus *status) {
+                // 4. Client A is disconnected and B sends message
+                [channelB publish:message2 cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
+                    [channelA subscribe:^(ARTMessage *message, ARTErrorInfo *errorInfo) {
+                        // 6. Check if Client A receives the last message
+                        if ([message.content isEqual:message2]) {
+                            [expectation fulfill];
+                        }
+                    }];
+                    // 5. Client A will reconnect
                     [_realtime connect];
                 }];
             }
             else if (state == ARTRealtimeConnected) {
-                [channel attach];
+                // 1. Attach channel of Client A
+                [channelA attach];
             }
         }];
     }];

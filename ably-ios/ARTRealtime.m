@@ -307,27 +307,6 @@
             }
             break;
         case ARTRealtimeConnected:
-            if ([self isFromResume]) {
-                if(![self.options.resumeKey isEqualToString:self.connectionKey] || self.options.connectionSerial != self.connectionSerial) {
-                    [self.logger warn:@"ARTRealtime: connection has reconnected, but resume failed. Detaching all channels"];
-                    for (NSString *channelName in self.allChannels) {
-                        ARTErrorInfo * info = [[ARTErrorInfo alloc] init];
-                        [info setCode:80000 message:@"resume connection failed"];
-                        
-                        [self.logger warn:@"%@: resume connection failed", channelName];
-
-                        ARTRealtimeChannel *channel = [self.allChannels objectForKey:channelName];
-                        [channel detachChannel:[ARTStatus state:ARTStateConnectionDisconnected info:info]];
-                    }
-                }
-                self.options.resumeKey = nil;
-                for (NSString *channelName in self.allChannels) {
-                    ARTRealtimeChannel *channel = [self.allChannels objectForKey:channelName];
-                    if([channel.presenceMap stillSyncing]) {
-                        [channel requestContinueSync];
-                    }
-                }
-            }
             self.msgSerial = 0;
             [self cancelSuspendTimer];
             break;
@@ -475,7 +454,33 @@
 }
 
 - (void)onConnected:(ARTProtocolMessage *)message withErrorInfo:(ARTErrorInfo *)errorInfo {
+    // Resuming
+    if ([self isFromResume]) {
+        if (errorInfo && ![message.connectionId isEqualToString:self.connectionId]) {
+            [self.logger warn:@"ARTRealtime: connection has reconnected, but resume failed. Detaching all channels"];
+            // Fatal error, detach all channels
+            for (NSString *channelName in self.allChannels) {
+                // Info for each channel
+                ARTErrorInfo *info = [[ARTErrorInfo alloc] init];
+                [info setCode:80000 message:@"resume connection failed"];
+
+                [self.logger warn:@"%@: resume connection failed", channelName];
+                ARTRealtimeChannel *channel = [self.allChannels objectForKey:channelName];
+                [channel detachChannel:[ARTStatus state:ARTStateConnectionDisconnected info:info]];
+            }
+
+            self.options.resumeKey = nil;
+            for (NSString *channelName in self.allChannels) {
+                ARTRealtimeChannel *channel = [self.allChannels objectForKey:channelName];
+                if([channel.presenceMap stillSyncing]) {
+                    [channel requestContinueSync];
+                }
+            }
+        }
+    }
+
     self.connectionId = message.connectionId;
+
     switch (self.state) {
         case ARTRealtimeConnecting:
             self.connectionKey = message.connectionKey;
