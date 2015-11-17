@@ -99,9 +99,6 @@
         [_realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if (state == ARTRealtimeConnecting) {
                 XCTAssertEqual(_realtime.auth.options.key, options.key);
-                // FIXME: Temporary, because the environment is nil instead of `staging` because
-                //instanciating a new RealtimeClient with Key will create a "standard" ClientOptions
-                XCTAssertEqual(((ARTClientOptions *)_realtime.auth.options).environment, nil);
                 [expectation fulfill];
             }
         }];
