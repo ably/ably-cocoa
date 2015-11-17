@@ -198,6 +198,30 @@ class RestClient: QuickSpec {
                     expect(time?.timeIntervalSince1970).toEventually(beCloseTo(NSDate().timeIntervalSince1970, within: 60), timeout: testTimeout)
                 }
             }
-        }
+
+            // RSC7, RSC18
+            it("should send requests over http and https") {
+                let mockExecutor = MockHTTPExecutor()
+                let options = AblyTests.commonAppSetup()
+
+                let clientHttps = ARTRest(options: options)
+                clientHttps.httpExecutor = mockExecutor
+
+                options.clientId = "client_http"
+                options.tls = false
+                let clientHttp = ARTRest(options: options)
+                clientHttp.httpExecutor = mockExecutor
+
+                publishTestMessage(clientHttps)
+                publishTestMessage(clientHttp)
+
+                if let requestUrlA = mockExecutor.requests.first?.URL,
+                   let requestUrlB = mockExecutor.requests.last?.URL {
+                    expect(requestUrlA.scheme).to(equal("https"))
+                    expect(requestUrlB.scheme).to(equal("http"))
+                }
+            }
+
+        } //RestClient
     }
 }
