@@ -18,14 +18,6 @@
 
 @implementation ARTClientOptions
 
-- (instancetype)initWithKey:(NSString *)key {
-    self = [super initWithKey:key];
-    if (self) {
-        self = [self initDefaults];
-    }
-    return self;
-}
-
 - (instancetype)initDefaults {
     self = [super initDefaults];
     _restPort = [ARTDefault TLSPort];
