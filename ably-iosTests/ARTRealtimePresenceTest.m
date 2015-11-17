@@ -765,9 +765,9 @@
     XCTestExpectation *exp = [self expectationWithDescription:@"testEnterClient"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime channel:@"channelName"];
-        [channel.presence  enterClient:clientId data:@"" cb:^(ARTStatus *status) {
+        [channel.presence  enterClient:clientId data:nil cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
-            [channel.presence  enterClient:clientId2 data:@"" cb:^(ARTStatus *status) {
+            [channel.presence  enterClient:clientId2 data:nil cb:^(ARTStatus *status) {
                 XCTAssertEqual(ARTStateOk, status.state);
                 [channel.presence get:^(ARTPaginatedResult *result, NSError *error) {
                     XCTAssert(!error);
