@@ -20,6 +20,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 // CONNECTED ProtocolMessage may contain a clientId
 - (void)setProtocolClientId:(NSString *)clientId;
+- (void)setTokenDetails:(ARTAuthTokenDetails *)tokenDetails;
 
 @end
 
