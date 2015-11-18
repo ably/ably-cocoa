@@ -43,7 +43,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithToken:(NSString *)token;
-- (instancetype)initWithToken:(NSString *)token expires:(NSDate *)expires issued:(NSDate *)issued capability:(NSString *)capability clientId:(NSString *)clientId;
+- (instancetype)initWithToken:(NSString *)token expires:(art_nullable NSDate *)expires issued:(art_nullable  NSDate *)issued capability:(art_nullable  NSString *)capability clientId:(art_nullable NSString *)clientId;
 
 @end
 
