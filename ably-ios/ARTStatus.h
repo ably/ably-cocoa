@@ -25,6 +25,16 @@ typedef NS_ENUM(NSUInteger, ARTState) {
     ARTStateError = 99999
 };
 
+/**
+ ARTCodeErrors
+
+ The list of all public error codes returned under the error domain ARTAblyErrorDomain
+ */
+typedef CF_ENUM(NSUInteger, ARTCodeError) {
+    // FIXME: check hard coded errors
+    ARTCodeErrorAPIKeyMissing = 80001
+};
+
 ART_ASSUME_NONNULL_BEGIN
 
 FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
