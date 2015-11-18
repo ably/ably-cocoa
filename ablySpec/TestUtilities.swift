@@ -49,8 +49,7 @@ class AblyTests {
 
     class var jsonRestOptions: ARTClientOptions {
         get {
-            let options = ARTClientOptions()
-            options.environment = "sandbox"
+            let options = AblyTests.clientOptions()
             options.binary = false
             return options
         }
@@ -89,7 +88,6 @@ class AblyTests {
             
             if debug {
                 print(response)
-                options.logLevel = .Verbose
             }
             
             let key = response["keys"][0]
@@ -104,6 +102,15 @@ class AblyTests {
     
     class func commonAppSetup(debug debug: Bool = false) -> ARTClientOptions {
         return AblyTests.setupOptions(AblyTests.jsonRestOptions, debug: debug)
+    }
+
+    class func clientOptions(debug debug: Bool = false) -> ARTClientOptions {
+        let options = ARTClientOptions()
+        options.environment = "sandbox"
+        if debug {
+            options.logLevel = .Verbose
+        }
+        return options
     }
     
 }
@@ -130,21 +137,33 @@ func querySyslog(forLogsAfter startingTime: NSDate? = nil) -> AnyGenerator<Strin
 
 /// Publish message class
 class PublishTestMessage {
-    var error: NSError?
-    
-    init(client: ARTRest, failOnError: Bool) {
-        self.error = NSError(domain: "", code: -1, userInfo: nil)
-        
+
+    var completion: Optional<(NSError?)->()>
+    var error: NSError? = NSError(domain: "", code: -1, userInfo: nil)
+
+    convenience init(client: ARTRest, failOnError: Bool) {
+        self.init(client: client, completion: nil)
+    }
+
+    init(client: ARTRest, completion: Optional<(NSError?)->()>) {
         client.channels.get("test").publish("message") { error in
             self.error = error
-            if failOnError {
-                XCTFail("Got error '\(error)'")
+            if let callback = completion {
+                callback(error)
+            }
+            else if let e = error {
+                XCTFail("Got error '\(e)'")
             }
         }
     }
+
 }
 
 /// Publish message
+func publishTestMessage(client: ARTRest, completion: Optional<(NSError?)->()>) -> PublishTestMessage {
+    return PublishTestMessage(client: client, completion: completion)
+}
+
 func publishTestMessage(client: ARTRest, failOnError: Bool = true) -> PublishTestMessage {
     return PublishTestMessage(client: client, failOnError: failOnError)
 }
@@ -230,7 +249,7 @@ func extractBodyAsJSON(request: NSMutableURLRequest?) -> Result<NSDictionary> {
 }
 
 /*
- Records each request for test purpose.
+ Records each request and response for test purpose.
  */
 @objc
 class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
@@ -240,10 +259,16 @@ class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
     var logger: ARTLog?
     
     var requests: [NSMutableURLRequest] = []
+    var responses: [NSHTTPURLResponse] = []
 
     func executeRequest(request: NSMutableURLRequest, completion callback: ARTHttpRequestCallback?) {
         self.requests.append(request)
-        self.executor.executeRequest(request, completion: callback)
+        self.executor.executeRequest(request, completion: { response, data, error in
+            if let httpResponse = response {
+                self.responses.append(httpResponse)
+            }
+            callback?(response, data, error)
+        })
     }
 }
 

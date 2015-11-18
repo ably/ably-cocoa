@@ -17,6 +17,7 @@
 #import "ARTAuthTokenParams.h"
 #import "ARTAuthTokenRequest.h"
 #import "ARTEncoder.h"
+#import "ARTStatus.h"
 
 @implementation ARTAuth {
     __weak ARTRest *_rest;
@@ -132,11 +133,16 @@
     // The values supersede matching client library configured params and options.
     ARTAuthOptions *mergedOptions = [self mergeOptions:authOptions];
     ARTAuthTokenParams *currentTokenParams = [self mergeParams:tokenParams];
-        
+
+    if (!mergedOptions.key) {
+        callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:ARTCodeErrorAPIKeyMissing
+                                      userInfo:@{ NSLocalizedDescriptionKey: NSLocalizedString(@"API Key is missing", nil) }]);
+    }
+
     if (mergedOptions.authUrl) {
         NSMutableURLRequest *request = [self buildRequest:mergedOptions withParams:currentTokenParams];
         
-        [_rest.logger debug:@"%@ %@", request.HTTPMethod, request.URL];
+        [self.logger debug:@"ARTAuth: using authUrl (%@ %@)", request.HTTPMethod, request.URL];
         
         [_rest executeRequest:request withAuthOption:ARTAuthenticationUseBasic completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (error) {
@@ -152,6 +158,10 @@
         ARTAuthCallback tokenRequestFactory = mergedOptions.authCallback? : ^(ARTAuthTokenParams *tokenParams, void(^callback)(ARTAuthTokenRequest *tokenRequest, NSError *error)) {
             [self createTokenRequest:currentTokenParams options:mergedOptions callback:callback];
         };
+
+        if (tokenRequestFactory == mergedOptions.authCallback) {
+            [self.logger debug:@"ARTAuth: using authCallback"];
+        }
 
         tokenRequestFactory(currentTokenParams, ^(ARTAuthTokenRequest *tokenRequest, NSError *error) {
             if (error) {
