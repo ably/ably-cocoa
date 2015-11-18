@@ -124,16 +124,18 @@ class Auth : QuickSpec {
                 // TODO: not implemented
             }
 
+            let authTokenCases: [String: (ARTAuthOptions) -> ()] = [
+                "useTokenAuth": { $0.useTokenAuth = true; $0.key = "fake:key" },
+                "clientId": { $0.clientId = "client"; $0.key = "fake:key" },
+                "authUrl": { $0.authUrl = NSURL(string: "http://test.com") },
+                "authCallback": { $0.authCallback = { _, _ in return } },
+                "tokenDetails": { $0.tokenDetails = ARTAuthTokenDetails(token: "token") },
+                "token": { $0.token = "" }
+            ]
+
             // RSA4
             context("authentication method") {
-                let cases: [String: (ARTAuthOptions) -> ()] = [
-                    "useTokenAuth": { $0.useTokenAuth = true; $0.key = "fake:key" },
-                    "authUrl": { $0.authUrl = NSURL(string: "http://test.com") },
-                    "authCallback": { $0.authCallback = { _, _ in return } },
-                    "token": { $0.token = "" }
-                ]
-
-                for (caseName, caseSetter) in cases {
+                for (caseName, caseSetter) in authTokenCases {
                     it("should be default when \(caseName) is set") {
                         let options = ARTClientOptions()
                         caseSetter(options)
@@ -147,21 +149,12 @@ class Auth : QuickSpec {
 
             // RSC14b
             context("basic authentication flag") {
-
                 it("should be true when key is set") {
                     let client = ARTRest(key: "key:secret")
                     expect(client.auth.options.isBasicAuth()).to(beTrue())
                 }
 
-                let cases: [String: (ARTClientOptions) -> ()] = [
-                    "useTokenAuth": { $0.useTokenAuth = true; $0.key = "fake:key" },
-                    "authUrl": { $0.authUrl = NSURL(string: "http://test.com") },
-                    "authCallback": { $0.authCallback = { _, _ in return } },
-                    "tokenDetails": { $0.tokenDetails = ARTAuthTokenDetails(token: "token") },
-                    "token": { $0.token = "token" }
-                ]
-
-                for (caseName, caseSetter) in cases {
+                for (caseName, caseSetter) in authTokenCases {
                     it("should be false when \(caseName) is set") {
                         let options = ARTClientOptions()
                         caseSetter(options)

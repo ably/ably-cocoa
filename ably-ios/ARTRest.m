@@ -12,7 +12,7 @@
 #import "ARTChannelCollection.h"
 #import "ARTDataQuery+Private.h"
 #import "ARTPaginatedResult+Private.h"
-#import "ARTAuth.h"
+#import "ARTAuth+Private.h"
 #import "ARTHttp.h"
 #import "ARTEncoder.h"
 #import "ARTJsonEncoder.h"
@@ -103,7 +103,10 @@
             [self executeRequest:request completion:callback];
             break;
         case ARTAuthenticationOn:
-            [self executeRequestWithAuthentication:request withMethod:self.auth.method completion:callback];
+            [self executeRequestWithAuthentication:request withMethod:self.auth.method force:NO completion:callback];
+            break;
+        case ARTAuthenticationNewToken:
+            [self executeRequestWithAuthentication:request withMethod:self.auth.method force:YES completion:callback];
             break;
         case ARTAuthenticationUseBasic:
             [self executeRequestWithAuthentication:request withMethod:ARTAuthMethodBasic completion:callback];
@@ -112,7 +115,11 @@
 }
 
 - (void)executeRequestWithAuthentication:(NSMutableURLRequest *)request withMethod:(ARTAuthMethod)method completion:(ARTHttpRequestCallback)callback {
-    [self calculateAuthorization:method completion:^(NSString *authorization, NSError *error) {
+    [self executeRequestWithAuthentication:request withMethod:method force:NO completion:callback];
+}
+
+- (void)executeRequestWithAuthentication:(NSMutableURLRequest *)request withMethod:(ARTAuthMethod)method force:(BOOL)force completion:(ARTHttpRequestCallback)callback {
+    [self calculateAuthorization:method force:force completion:^(NSString *authorization, NSError *error) {
         if (error && callback) {
             callback(nil, nil, error);
         } else {
@@ -129,8 +136,10 @@
         if (response.statusCode >= 400) {
             NSError *error = [self->_encoders[response.MIMEType] decodeError:data];
             if (error.code == 40140) {
-                // TODO: request token or error if no token information
-                NSAssert(false, @"Request token or error if no token information");
+                // Send it again, requesting a new token (forward callback)
+                [self.logger debug:@"ARTRest: requesting new token"];
+                [self executeRequest:request withAuthOption:ARTAuthenticationNewToken completion:callback];
+                return;
             } else if (callback) {
                 callback(nil, nil, error);
             }
@@ -141,20 +150,28 @@
 }
 
 - (void)calculateAuthorization:(ARTAuthMethod)method completion:(void (^)(NSString *authorization, NSError *error))callback {
+    [self calculateAuthorization:method force:NO completion:callback];
+}
+
+- (void)calculateAuthorization:(ARTAuthMethod)method force:(BOOL)force completion:(void (^)(NSString *authorization, NSError *error))callback {
     [self.logger debug:@"ARTRest: calculating authorization %lu", (unsigned long)method];
     // FIXME: use encoder and should be managed on ARTAuth
     if (method == ARTAuthMethodBasic) {
         // Include key Base64 encoded in an Authorization header (RFC7235)
         NSData *keyData = [self.options.key dataUsingEncoding:NSUTF8StringEncoding];
         NSString *keyBase64 = [keyData base64EncodedStringWithOptions:0];
-        callback([NSString stringWithFormat:@"Basic %@", keyBase64], nil);
+        if (callback) callback([NSString stringWithFormat:@"Basic %@", keyBase64], nil);
     }
     else {
-        [self.auth authorise:nil options:self.options force:NO callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
+        [self.auth authorise:nil options:self.options force:force callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
+            if (error) {
+                if (callback) callback(nil, error);
+                return;
+            }
             NSData *tokenData = [tokenDetails.token dataUsingEncoding:NSUTF8StringEncoding];
             NSString *tokenBase64 = [tokenData base64EncodedStringWithOptions:0];
             [self.logger verbose:@"ARTRest: authorization bearer in Base64 %@", tokenBase64];
-            callback([NSString stringWithFormat:@"Bearer %@", tokenBase64], nil);
+            if (callback) callback([NSString stringWithFormat:@"Bearer %@", tokenBase64], nil);
         }];
     }
 }
