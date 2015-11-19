@@ -289,40 +289,21 @@ class RestClient: QuickSpec {
                 }
             }
 
-            // RSC14c
-            it("should error when expired token and no means to renew") {
-                let client = ARTRest(options: AblyTests.commonAppSetup())
-                let auth = client.auth
+            // RSC14b
+            context("basic authentication flag") {
+                it("should be true when key is set") {
+                    let client = ARTRest(key: "key:secret")
+                    expect(client.auth.options.isBasicAuth()).to(beTrue())
+                }
 
-                let tokenParams = ARTAuthTokenParams()
-                tokenParams.ttl = 3.0 //Seconds
+                for (caseName, caseSetter) in AblyTests.authTokenCases {
+                    it("should be false when \(caseName) is set") {
+                        let options = ARTClientOptions()
+                        caseSetter(options)
 
-                waitUntil(timeout: testTimeout) { done in
-                    auth.requestToken(tokenParams, withOptions: nil) { tokenDetails, error in
-                        if let e = error {
-                            XCTFail(e.description)
-                            done()
-                        }
-                        else if let currentTokenDetails = tokenDetails {
-                            let options = AblyTests.clientOptions()
-                            options.key = client.options.key
-                            
-                            // Expired token
-                            options.tokenDetails = ARTAuthTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires?.dateByAddingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
+                        let client = ARTRest(options: options)
 
-                            options.authUrl = NSURL(string: "http://test-auth.ably.io")
-
-                            let rest = ARTRest(options: options)
-
-                            // Delay for token expiration
-                            delay(tokenParams.ttl) {
-                                // 40140 - token expired and will not recover because authUrl is invalid
-                                publishTestMessage(rest) { error in
-                                    expect(error).toNot(beNil())
-                                    done()
-                                }
-                            }
-                        }
+                        expect(client.auth.options.isBasicAuth()).to(beFalse())
                     }
                 }
             }
@@ -351,11 +332,13 @@ class RestClient: QuickSpec {
                             options.authUrl = NSURL(string: "http://test-auth.ably.io")
 
                             let rest = ARTRest(options: options)
+                            rest.httpExecutor = mockExecutor
 
                             // Delay for token expiration
                             delay(tokenParams.ttl) {
                                 // 40140 - token expired and will not recover because authUrl is invalid
                                 publishTestMessage(rest) { error in
+                                    expect(mockExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String).to(equal("40140"))
                                     expect(error).toNot(beNil())
                                     done()
                                 }
