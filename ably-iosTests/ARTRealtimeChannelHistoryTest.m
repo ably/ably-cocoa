@@ -356,8 +356,8 @@
         XCTestExpectation *fourthExpectation = [self expectationWithDescription:@"send_fourth_batch"];
 
         ARTDataQuery *query = [[ARTDataQuery alloc] init];
-        query.start = [NSDate dateWithTimeIntervalSinceReferenceDate:intervalStart];
-        query.end = [NSDate dateWithTimeIntervalSinceReferenceDate:intervalEnd];
+        query.start = [NSDate dateWithTimeIntervalSince1970:intervalStart/1000];
+        query.end = [NSDate dateWithTimeIntervalSince1970:intervalEnd/1000];
         query.direction = ARTQueryDirectionBackwards;
 
         [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
@@ -435,8 +435,8 @@
         XCTestExpectation *fourthExpectation = [self expectationWithDescription:@"send_fourth_batch"];
 
         ARTDataQuery *query = [[ARTDataQuery alloc] init];
-        query.start = [NSDate dateWithTimeIntervalSinceReferenceDate:intervalStart];
-        query.end = [NSDate dateWithTimeIntervalSinceReferenceDate:intervalEnd];
+        query.start = [NSDate dateWithTimeIntervalSince1970:intervalStart/1000];
+        query.end = [NSDate dateWithTimeIntervalSince1970:intervalEnd/1000];
         query.direction = ARTQueryDirectionForwards;
 
         [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
