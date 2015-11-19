@@ -126,15 +126,8 @@ class Auth : QuickSpec {
 
             // RSA4
             context("authentication method") {
-                let cases: [String: (ARTAuthOptions) -> ()] = [
-                    "useTokenAuth": { $0.useTokenAuth = true; $0.key = "fake:key" },
-                    "authUrl": { $0.authUrl = NSURL(string: "http://test.com") },
-                    "authCallback": { $0.authCallback = { _, _ in return } },
-                    "token": { $0.token = "" }
-                ]
-
-                for (caseName, caseSetter) in cases {
-                    it("should be default when \(caseName) is set") {
+                for (caseName, caseSetter) in AblyTests.authTokenCases {
+                    it("should be default auth method when \(caseName) is set") {
                         let options = ARTClientOptions()
                         caseSetter(options)
 

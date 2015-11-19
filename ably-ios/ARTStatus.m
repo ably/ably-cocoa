@@ -10,7 +10,8 @@
 
 #import "ARTStatus.h"
 
-NSString *const ARTAblyErrorDomain = @"ARTAblyErrorDomain";
+// Reverse-DNS style domain
+NSString *const ARTAblyErrorDomain = @"io.ably.cocoa";
 
 @implementation ARTErrorInfo
 

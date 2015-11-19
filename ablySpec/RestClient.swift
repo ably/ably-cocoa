@@ -14,6 +14,13 @@ import ably.Private
 
 class RestClient: QuickSpec {
     override func spec() {
+
+        var mockExecutor: MockHTTPExecutor!
+
+        beforeEach {
+            mockExecutor = MockHTTPExecutor()
+        }
+
         describe("RestClient") {
             // RSC1
             context("initializer") {
@@ -124,11 +131,6 @@ class RestClient: QuickSpec {
 
             // RSC11
             context("endpoint") {
-                var mockExecutor: MockHTTPExecutor!
-                beforeEach {
-                    mockExecutor = MockHTTPExecutor()
-                }
-                
                 it("should accept an options object with a host set") {
                     let options = ARTClientOptions(key: "fake:key")
                     options.environment = "fake"
@@ -198,6 +200,193 @@ class RestClient: QuickSpec {
                     expect(time?.timeIntervalSince1970).toEventually(beCloseTo(NSDate().timeIntervalSince1970, within: 60), timeout: testTimeout)
                 }
             }
-        }
+
+            // RSC7, RSC18
+            it("should send requests over http and https") {
+                let options = AblyTests.commonAppSetup()
+
+                let clientHttps = ARTRest(options: options)
+                clientHttps.httpExecutor = mockExecutor
+
+                options.clientId = "client_http"
+                options.tls = false
+                let clientHttp = ARTRest(options: options)
+                clientHttp.httpExecutor = mockExecutor
+
+                publishTestMessage(clientHttps)
+                publishTestMessage(clientHttp)
+
+                if let requestUrlA = mockExecutor.requests.first?.URL,
+                   let requestUrlB = mockExecutor.requests.last?.URL {
+                    expect(requestUrlA.scheme).to(equal("https"))
+                    expect(requestUrlB.scheme).to(equal("http"))
+                }
+            }
+
+            // RSC9
+            it("should use Auth to manage authentication") {
+                let options = AblyTests.commonAppSetup()
+                let client = ARTRest(options: options)
+                let auth = client.auth
+
+                expect(auth.method.rawValue).to(equal(ARTAuthMethod.Basic.rawValue))
+
+                waitUntil(timeout: 25.0) { done in
+                    auth.requestToken(nil, withOptions: options, callback: { tokenDetailsA, errorA in
+                        if let e = errorA {
+                            XCTFail(e.description)
+                            done()
+                        }
+                        else if let currentTokenDetails = tokenDetailsA {
+                            auth.setTokenDetails(currentTokenDetails)
+                        }
+
+                        auth.authorise(nil, options: options, force: false, callback: { tokenDetailsB, errorB in
+                            if let e = errorB {
+                                XCTFail(e.description)
+                                done()
+                            }
+                            // Use the same token because it is valid
+                            expect(auth.tokenDetails?.token).to(equal(tokenDetailsB?.token))
+                            done()
+                        })
+                    })
+                }
+            }
+
+            // RSC10
+            it("should request another token after current one is no longer valid") {
+                let options = AblyTests.commonAppSetup()
+                let client = ARTRest(options: options)
+                let auth = client.auth
+
+                let tokenParams = ARTAuthTokenParams()
+                tokenParams.ttl = 3.0 //Seconds
+
+                waitUntil(timeout: 25.0) { done in
+                    auth.requestToken(tokenParams, withOptions: options) { tokenDetailsA, errorA in
+                        if let e = errorA {
+                            XCTFail(e.description)
+                            done()
+                        }
+                        else if let currentTokenDetails = tokenDetailsA {
+                            auth.setTokenDetails(currentTokenDetails)
+                        }
+
+                        // Delay for token expiration
+                        delay(tokenParams.ttl) {
+                            auth.authorise(tokenParams, options: options, force: false) { tokenDetailsB, errorB in
+                                if let e = errorB {
+                                    XCTFail(e.description)
+                                    done()
+                                }
+                                // Different token
+                                expect(tokenDetailsA?.token).toNot(equal(tokenDetailsB?.token))
+                                done()
+                            }
+                        }
+                    }
+                }
+            }
+
+            // RSC14b
+            context("basic authentication flag") {
+                it("should be true when key is set") {
+                    let client = ARTRest(key: "key:secret")
+                    expect(client.auth.options.isBasicAuth()).to(beTrue())
+                }
+
+                for (caseName, caseSetter) in AblyTests.authTokenCases {
+                    it("should be false when \(caseName) is set") {
+                        let options = ARTClientOptions()
+                        caseSetter(options)
+
+                        let client = ARTRest(options: options)
+
+                        expect(client.auth.options.isBasicAuth()).to(beFalse())
+                    }
+                }
+            }
+
+            // RSC14c
+            it("should error when expired token and no means to renew") {
+                let client = ARTRest(options: AblyTests.commonAppSetup())
+                let auth = client.auth
+
+                let tokenParams = ARTAuthTokenParams()
+                tokenParams.ttl = 3.0 //Seconds
+
+                waitUntil(timeout: testTimeout) { done in
+                    auth.requestToken(tokenParams, withOptions: nil) { tokenDetails, error in
+                        if let e = error {
+                            XCTFail(e.description)
+                            done()
+                        }
+                        else if let currentTokenDetails = tokenDetails {
+                            let options = AblyTests.clientOptions()
+                            options.key = client.options.key
+
+                            // Expired token
+                            options.tokenDetails = ARTAuthTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires?.dateByAddingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
+
+                            options.authUrl = NSURL(string: "http://test-auth.ably.io")
+
+                            let rest = ARTRest(options: options)
+                            rest.httpExecutor = mockExecutor
+
+                            // Delay for token expiration
+                            delay(tokenParams.ttl) {
+                                // 40140 - token expired and will not recover because authUrl is invalid
+                                publishTestMessage(rest) { error in
+                                    expect(mockExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String).to(equal("40140"))
+                                    expect(error).toNot(beNil())
+                                    done()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // RSC14d
+            it("should renew the token when it has expired") {
+                let client = ARTRest(options: AblyTests.commonAppSetup())
+                let auth = client.auth
+
+                let tokenParams = ARTAuthTokenParams()
+                tokenParams.ttl = 3.0 //Seconds
+
+                waitUntil(timeout: testTimeout) { done in
+                    auth.requestToken(tokenParams, withOptions: nil) { tokenDetails, error in
+                        if let e = error {
+                            XCTFail(e.description)
+                            done()
+                        }
+                        else if let currentTokenDetails = tokenDetails {
+                            let options = AblyTests.clientOptions()
+                            options.key = client.options.key
+
+                            // Expired token
+                            options.tokenDetails = ARTAuthTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires?.dateByAddingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
+
+                            let rest = ARTRest(options: options)
+                            rest.httpExecutor = mockExecutor
+
+                            // Delay for token expiration
+                            delay(tokenParams.ttl) {
+                                // 40140 - token expired and will resend the request
+                                publishTestMessage(rest) { error in
+                                    expect(mockExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String).to(equal("40140"))
+                                    expect(error).to(beNil())
+                                    expect(rest.auth.tokenDetails?.token).toNot(equal(currentTokenDetails.token))
+                                    done()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        } //RestClient
     }
 }
