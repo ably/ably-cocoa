@@ -55,6 +55,19 @@ class AblyTests {
         }
     }
 
+    class var authTokenCases: [String: (ARTAuthOptions) -> ()] {
+        get { return [
+            "useTokenAuth": { $0.useTokenAuth = true; $0.key = "fake:key" },
+            "clientId": { $0.clientId = "client"; $0.key = "fake:key" },
+            "authUrl": { $0.authUrl = NSURL(string: "http://test.com") },
+            "authCallback": { $0.authCallback = { _, _ in return } },
+            "tokenDetails": { $0.tokenDetails = ARTAuthTokenDetails(token: "token") },
+            "token": { $0.token = "" },
+            "key": { $0.tokenDetails = ARTAuthTokenDetails(token: "token"); $0.key = "fake:key" }
+            ]
+        }
+    }
+
     class func setupOptions(options: ARTClientOptions, debug: Bool = false) -> ARTClientOptions {
         var responseError: NSError?
         var responseData: NSData?
