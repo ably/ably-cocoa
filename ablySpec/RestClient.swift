@@ -378,6 +378,7 @@ class RestClient: QuickSpec {
                                 publishTestMessage(rest) { error in
                                     expect(mockExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String).to(equal("40140"))
                                     expect(error).to(beNil())
+                                    expect(rest.auth.tokenDetails?.token).toNot(equal(currentTokenDetails.token))
                                     done()
                                 }
                             }
