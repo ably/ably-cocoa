@@ -9,14 +9,16 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
-#import "ARTRealtime.h"
 #import "ARTRealtime+Private.h"
-#import "ARTRealtimeChannel+Private.h"
+#import "ARTRealtimePresence.h"
+#import "ARTRealtimeChannel.h"
 #import "ARTTestUtil.h"
 #import "ARTLog.h"
 #import "ARTEventEmitter.h"
 #import "ARTStatus.h"
-#import "ARTPresence.h"
+#import "ARTAuth.h"
+#import "ARTAuthTokenParams.h"
+#import "ARTAuthTokenDetails.h"
 
 @interface ARTRealtimeAttachTest : XCTestCase {
     ARTRealtime *_realtime;
@@ -346,21 +348,43 @@
 }
 
 - (void)testPresenceEnterRestricted {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testSimpleDisconnected"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withAlteration:TestAlterationRestrictCapability cb:^(ARTClientOptions * options) {
+    XCTestExpectation *expect = [self expectationWithDescription:@"testSimpleDisconnected"];
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withAlteration:TestAlterationRestrictCapability cb:^(ARTClientOptions *options) {
+        // Connection
         options.clientId = @"some_client_id";
-        ARTRealtime * realtime =[[ARTRealtime alloc] initWithOptions:options];
-        _realtime = realtime;
+        options.autoConnect = false;
 
-        ARTRealtimeChannel * channel = [realtime channel:@"some_unpermitted_channel"];
-        [channel.presence enter:@"not_allowed_here" cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStateError, status.state);
-            [exp fulfill];
+        ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
+
+        // FIXME: there is setupApp, testRealtime, testRest, ... try to unify them and then use this code
+        ARTAuthTokenParams *tokenParams = [[ARTAuthTokenParams alloc] initWithClientId:options.clientId];
+        tokenParams.capability = @"{\"canpublish:*\":[\"publish\"],\"canpublish:andpresence\":[\"presence\",\"publish\"],\"cansubscribe:*\":[\"subscribe\"]}";
+
+        [realtime.auth authorise:tokenParams options:options force:false callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
+            options.token = tokenDetails.token;
+            [realtime connect];
         }];
-        [channel attach];
+
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+            if (state == ARTRealtimeConnected) {
+                ARTRealtimeChannel *channel = [realtime channel:@"some_unpermitted_channel"];
+                [channel.presence enter:@"not_allowed_here" cb:^(ARTStatus *status) {
+                    XCTAssertEqual(ARTStateError, status.state);
+                    [expect fulfill];
+                }];
+            }
+            else if (state == ARTRealtimeFailed) {
+                if (errorInfo) {
+                    XCTFail(@"%@", errorInfo);
+                }
+                else {
+                    XCTFail();
+                }
+                [expect fulfill];
+            }
+        }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
-
 
 @end

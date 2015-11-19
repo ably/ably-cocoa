@@ -13,7 +13,6 @@
 #import "ARTRestChannel.h"
 #import "ARTChannel+Private.h"
 #import "ARTChannelOptions.h"
-#import "ARTPresence.h"
 
 @interface ARTChannelCollection() {
     __weak ARTRest *_rest;
@@ -44,11 +43,11 @@
     return self->_channels[channelName] != nil;
 }
 
-- (ARTChannel *)get:(NSString *)channelName {
+- (ARTRestChannel *)get:(NSString *)channelName {
     return [self _getChannel:channelName options:nil];
 }
 
-- (ARTChannel *)get:(NSString *)channelName options:(ARTChannelOptions *)options {
+- (ARTRestChannel *)get:(NSString *)channelName options:(ARTChannelOptions *)options {
     return [self _getChannel:channelName options:options];
 }
 
@@ -56,8 +55,8 @@
     [self->_channels removeObjectForKey:channel.name];
 }
 
-- (ARTChannel *)_getChannel:(NSString *)channelName options:(ARTChannelOptions *)options {
-    ARTChannel *channel = self->_channels[channelName];
+- (ARTRestChannel *)_getChannel:(NSString *)channelName options:(ARTChannelOptions *)options {
+    ARTRestChannel *channel = self->_channels[channelName];
     if (!channel) {
         channel = [[_rest.channelClass alloc] initWithName:channelName withOptions:options andRest:_rest];
         [self->_channels setObject:channel forKey:channelName];

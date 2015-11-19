@@ -16,7 +16,7 @@ ART_ASSUME_NONNULL_BEGIN
 /// The event name, if available
 @property (readwrite, strong, nonatomic) NSString *name;
 
-- (instancetype)initWithData:(id)data name:(NSString *)name;
+- (instancetype)initWithData:(id)data name:(art_nullable NSString *)name;
 
 + (ARTMessage *)messageWithPayload:(id)payload name:(art_nullable NSString *)name;
 + (NSArray *)messagesWithPayloads:(NSArray *)payloads;

@@ -51,12 +51,14 @@
 -(void)testInitWithKey {
     XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithKey"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
-        ARTRest * rest = [[ARTRest alloc] initWithKey:options.key];
+        ARTRest *rest = [[ARTRest alloc] initWithKey:options.key];
         _rest = rest;
-        ARTChannel * c = [rest.channels get:@"test"];
+        ARTChannel *c = [rest.channels get:@"test"];
         XCTAssert(c);
         [c publish:@"message" callback:^(NSError *error) {
-            XCTAssert(!error);
+            // "Invalid credentials" because it is sending the request to the production server
+            XCTAssert(error);
+            XCTAssertEqual(error.code, 40005);
             [exp fulfill];
         }];
     }];
@@ -137,13 +139,8 @@
 }
 
 -(void)testInitWithOptionsBad {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
-        options.key = @"bad:Name";
-        XCTAssertThrows([[ARTRest alloc] initWithOptions:options]);
-        [exp fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    XCTAssertThrows([[ARTClientOptions alloc] initWithKey:@"bad"]);
+    XCTAssertThrows([[ARTRest alloc] initWithOptions:[[ARTClientOptions alloc] init]]);
 }
 
 - (void)testRestTime {
@@ -151,9 +148,9 @@
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         [rest time:^(NSDate *date, NSError *error) {
-            XCTAssert(error);
-            // Expect local clock and server clock to be synced within 10 seconds
-            XCTAssertEqualWithAccuracy([date timeIntervalSinceNow], 0.0, 10.0);
+            XCTAssert(!error);
+            // Expect local clock and server clock to be synced within 30 seconds
+            XCTAssertEqualWithAccuracy([date timeIntervalSinceNow], 0.0, 30.0);
             [exp fulfill];
         }];
     }];
@@ -161,12 +158,8 @@
 }
 
 - (void)testDefaultAuthType {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testRestTime"];
-    [ARTTestUtil testRest:^(ARTRest *rest) {
-        XCTAssertEqual([rest.auth method], ARTAuthMethodBasic);
-        [exp fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    ARTRest* rest = [[ARTRest alloc] initWithKey:@"key:secret"];
+    XCTAssertEqual([rest.auth method], ARTAuthMethodBasic);
 }
 
 @end

@@ -11,7 +11,7 @@
 #import "ARTLog.h"
 
 @class ARTRest;
-@class ARTPresence;
+@class ARTRestPresence;
 
 ART_ASSUME_NONNULL_BEGIN
 
@@ -21,6 +21,8 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, getter=getLogger) ARTLog *logger;
 
 - (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRest *)rest;
+
+- (ARTRestPresence *)presence;
 
 @end
 

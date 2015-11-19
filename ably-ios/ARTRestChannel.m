@@ -6,20 +6,23 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTRestChannel.h"
+#import "ARTRestChannel+Private.h"
 
 #import "ARTRest+Private.h"
+#import "ARTRestPresence.h"
 #import "ARTChannel+Private.h"
 #import "ARTChannelOptions.h"
-#import "ARTPresence.h"
 #import "ARTMessage.h"
 #import "ARTPaginatedResult+Private.h"
 #import "ARTDataQuery+Private.h"
-#import "ARTEncoder.h"
+#import "ARTJsonEncoder.h"
 #import "ARTAuth.h"
+#import "ARTAuthTokenDetails.h"
 #import "ARTNSArray+ARTFunctional.h"
 
 @implementation ARTRestChannel {
+@private
+    ARTRestPresence *_restPresence;
 @public
     NSString *_basePath;
 }
@@ -37,22 +40,34 @@
     return _rest.logger;
 }
 
-- (void)history:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult *, NSError *))callback {
+- (NSString *)getBasePath {
+    return _basePath;
+}
+
+- (ARTRestPresence *)presence {
+    if (!_restPresence) {
+        _restPresence = [[ARTRestPresence alloc] initWithChannel:self];
+    }
+    return _restPresence;
+}
+
+- (void)history:(ARTDataQuery *)query callback:(void(^)(ARTPaginatedResult *result, NSError *error))callback {
     NSParameterAssert(query.limit < 1000);
     NSParameterAssert([query.start compare:query.end] != NSOrderedDescending);
 
-    NSURLComponents *requestUrl = [NSURLComponents componentsWithString:[_basePath stringByAppendingPathComponent:@"messages"]];
-    requestUrl.queryItems = [query asQueryItems];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl.URL];
+    NSURLComponents *componentsUrl = [NSURLComponents componentsWithString:[_basePath stringByAppendingPathComponent:@"messages"]];
+    componentsUrl.queryItems = [query asQueryItems];
+
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:componentsUrl.URL];
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^NSArray *(NSHTTPURLResponse *response, NSData *data) {
         id<ARTEncoder> encoder = [_rest.encoders objectForKey:response.MIMEType];
         return [[encoder decodeMessages:data] artMap:^(ARTMessage *message) {
-            return [message decode:_payloadEncoder];
+            return [message decode:self.payloadEncoder];
         }];
     };
     
-    [ARTPaginatedResult executePaginatedRequest:request executor:_rest.httpExecutor responseProcessor:responseProcessor callback:callback];
+    [ARTPaginatedResult executePaginated:self.rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
 }
 
 - (void)internalPostMessages:(id)data callback:(ARTErrorCallback)callback {

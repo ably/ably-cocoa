@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <XCTest/XCTest.h>
 
 #import "ARTClientOptions.h"
 #import "ARTRest.h"
@@ -29,17 +30,31 @@ typedef NS_ENUM(NSUInteger, TestAlteration) {
 
 + (ARTCipherPayloadEncoder *)getTestCipherEncoder;
 
+// FIXME: why is `setupApp` using a callback? hard reading... could be a blocking method (only once per test)
 + (void)setupApp:(ARTClientOptions *)options cb:(void(^)(ARTClientOptions *options))cb;
 + (void)setupApp:(ARTClientOptions *)options withAlteration:(TestAlteration) alt cb:(void (^)(ARTClientOptions *))cb;
++ (void)setupApp:(ARTClientOptions *)options withDebug:(BOOL)debug cb:(void (^)(ARTClientOptions *))cb;
++ (void)setupApp:(ARTClientOptions *)options withDebug:(BOOL)debug withAlteration:(TestAlteration) alt cb:(void (^)(ARTClientOptions *))cb;
 + (float)timeout;
 
 + (ARTClientOptions *)clientOptions;
 
 typedef void (^ARTRestConstructorCb)(ARTRest *rest);
 typedef void (^ARTRealtimeConstructorCb)(ARTRealtime *realtime);
+typedef void (^ARTRealtimeTestCallback)(ARTRealtime *realtime, ARTRealtimeConnectionState state, XCTestExpectation *expectation);
 
 + (void)testRest:(ARTRestConstructorCb)cb;
+
+// FIXME: try to unify testRealtime, testRealtimeV2 and others that are private
 + (void)testRealtime:(ARTRealtimeConstructorCb)cb;
+
+/**
+ New RealtimeClient instance
+
+ Creates implicitly a XCTestExpectation.
+ The callback is called only if the RealtimeClient gets connected.
+ */
++ (void)testRealtimeV2:(XCTestCase *)testCase withDebug:(BOOL)debug callback:(ARTRealtimeTestCallback)callback;
 
 + (void)repeat:(int)count i:(int)i delay:(NSTimeInterval)delay block:(void (^)(int))block;
 + (void)repeat:(int)count delay:(NSTimeInterval)delay block:(void (^)(int))block ;

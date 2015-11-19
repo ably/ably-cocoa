@@ -12,8 +12,9 @@
 #import "ARTRest.h"
 #import "ARTRealtime.h"
 #import "ARTRealtimeChannel.h"
-#import "ARTPresence.h"
+#import "ARTRealtimePresence.h"
 #import "ARTPayload.h"
+#import "ARTEventEmitter.h"
 
 @implementation ARTTestUtil
 
@@ -44,7 +45,7 @@
     return [ARTTestUtil getFileByName:@"ably-common/test-resources/crypto-data-128.json"];
 }
 
-+ (void)setupApp:(ARTClientOptions *)options withAlteration:(TestAlteration)alt  appId:(NSString *)appId cb:(void (^)(ARTClientOptions *))cb {
++ (void)setupApp:(ARTClientOptions *)options withDebug:(BOOL)debug withAlteration:(TestAlteration)alt  appId:(NSString *)appId cb:(void (^)(ARTClientOptions *))cb {
     NSString *str = [ARTTestUtil getTestAppSetupJson];
     if (str == nil) {
         [NSException raise:@"error getting test-app-setup.json loaded. Maybe ably-common is missing" format:@""];
@@ -62,6 +63,9 @@
         options.environment = @"sandbox";
     }
     options.binary = NO;
+    if (debug) {
+        options.logLevel = ARTLogLevelVerbose;
+    }
 
     NSString *urlStr = [NSString stringWithFormat:@"https://%@:%d/apps", options.restHost, options.restPort];
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
@@ -71,8 +75,10 @@
     [req setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     [req setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
 
-   // NSLog(@"Creating test app. URL: %@, Method: %@, Body: %@, Headers: %@", req.URL, req.HTTPMethod, [[NSString alloc] initWithData:req.HTTPBody encoding:NSUTF8StringEncoding], req.allHTTPHeaderFields);
-    
+    if (debug) {
+        NSLog(@"Creating test app. URL: %@, Method: %@, Body: %@, Headers: %@", req.URL, req.HTTPMethod, [[NSString alloc] initWithData:req.HTTPBody encoding:NSUTF8StringEncoding], req.allHTTPHeaderFields);
+    }
+
     CFRunLoopRef rl = CFRunLoopGetCurrent();
     
     NSURLSession *urlSession = [NSURLSession sharedSession];
@@ -92,10 +98,15 @@
             NSLog(@"No response");
             return;
         }
+        else if (debug) {
+            NSLog(@"Response: %@", json);
+        }
 
         NSDictionary *key = json[@"keys"][(alt == TestAlterationRestrictCapability ? 1 :0)];
 
         ARTClientOptions *testOptions = [options copy];
+
+        // TODO: assign key[@"capability"]
 
         testOptions.key = key[@"keyStr"];
 
@@ -112,12 +123,20 @@
     [task resume];
 }
 
-+ (void)setupApp:(ARTClientOptions *)options withAlteration:(TestAlteration) alt cb:(void (^)(ARTClientOptions *))cb {
-    [ARTTestUtil setupApp:options withAlteration:alt appId:nil cb:cb];
++ (void)setupApp:(ARTClientOptions *)options withDebug:(BOOL)debug withAlteration:(TestAlteration)alt cb:(void (^)(ARTClientOptions *))cb {
+    [ARTTestUtil setupApp:options withDebug:debug withAlteration:alt appId:nil cb:cb];
+}
+
++ (void)setupApp:(ARTClientOptions *)options withAlteration:(TestAlteration)alt cb:(void (^)(ARTClientOptions *))cb {
+    [ARTTestUtil setupApp:options withDebug:NO withAlteration:alt cb:cb];
+}
+
++ (void)setupApp:(ARTClientOptions *)options withDebug:(BOOL)debug cb:(void (^)(ARTClientOptions *))cb {
+    [ARTTestUtil setupApp:options withDebug:debug withAlteration:TestAlterationNone cb:cb];
 }
 
 + (void)setupApp:(ARTClientOptions *)options cb:(void (^)(ARTClientOptions *))cb {
-    [ARTTestUtil setupApp:options withAlteration:TestAlterationNone cb:cb];
+    [ARTTestUtil setupApp:options withDebug:NO withAlteration:TestAlterationNone cb:cb];
 }
 
 + (ARTClientOptions *)clientOptions {
@@ -215,16 +234,40 @@
 
 + (void)testRest:(ARTRestConstructorCb)cb {
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
-        ARTRest * r = [[ARTRest alloc] initWithOptions:options];
-        cb(r);
+        ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
+        cb(rest);
     }];
 }
 
-+(void) testRealtime:(ARTRealtimeConstructorCb)cb {
++ (void)testRealtime:(ARTRealtimeConstructorCb)cb {
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
-        ARTRealtime * realtime = [[ARTRealtime alloc] initWithOptions:options];
+        ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
         cb(realtime);
     }];
+}
+
++ (void)testRealtimeV2:(XCTestCase *)testCase withDebug:(BOOL)debug callback:(ARTRealtimeTestCallback)callback {
+    XCTestExpectation *expectation = [testCase expectationWithDescription:@"testRealtime"];
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withDebug:debug cb:^(ARTClientOptions *options) {
+        ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
+        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+            if (state == ARTRealtimeFailed) {
+                // FIXME: XCTFail not working outside a XCTestCase method!
+                if (errorInfo) {
+                    //XCTFail(@"%@", errorInfo);
+                    NSLog(@"Realtime connection failed: %@", errorInfo);
+                }
+                else {
+                    //XCTFail();
+                    NSLog(@"Realtime connection failed");
+                }
+                [expectation fulfill];
+            }
+            else
+                callback(realtime, state, expectation);
+        }];
+    }];
+    [testCase waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 @end

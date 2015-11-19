@@ -13,11 +13,10 @@
 #import "ARTPresenceMessage.h"
 
 @protocol ARTSubscription;
-@protocol ARTPayloadEncoder;
 
 @class ARTRealtime;
 @class ARTDataQuery;
-@class ARTPresence;
+@class ARTRealtimePresence;
 @class ARTPresenceMap;
 @class ARTMessage;
 @class ARTPaginatedResult;
@@ -28,17 +27,15 @@
 @interface ARTRealtimeChannel : ARTRestChannel
 
 @property (readonly, strong, nonatomic) ARTRealtime *realtime;
-@property (readonly, strong, nonatomic) ARTPresence *presence;
 @property (readwrite, assign, nonatomic) ARTRealtimeChannelState state;
 @property (readwrite, strong, nonatomic) NSMutableArray *queuedMessages;
 @property (readwrite, strong, nonatomic) NSString *attachSerial;
 @property (readonly, strong, nonatomic) NSMutableDictionary *subscriptions;
 @property (readonly, strong, nonatomic) NSMutableArray *presenceSubscriptions;
 @property (readonly, strong, nonatomic) NSMutableDictionary *presenceDict;
-@property (readonly, strong, nonatomic) NSString *clientId;
+@property (readonly, getter=getClientId) NSString *clientId;
 @property (readonly, strong, nonatomic) NSMutableArray *stateSubscriptions;
-@property (readonly, strong, nonatomic) id<ARTPayloadEncoder> payloadEncoder;
-@property (readwrite, strong, nonatomic) ARTPresenceMap * presenceMap;
+@property (readwrite, strong, nonatomic) ARTPresenceMap *presenceMap;
 @property (readwrite, assign, nonatomic) ARTPresenceAction lastPresenceAction;
 
 - (instancetype)initWithRealtime:(ARTRealtime *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options;
@@ -69,8 +66,6 @@
 - (void)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb;
 - (void)publish:(id)payload cb:(ARTStatusCallback)cb;
 
-- (void)history:(ARTDataQuery *)query callback:(void (^)(ARTStatus *status, ARTPaginatedResult /* <ARTMessage *> */ *result))callback;
-
 - (id<ARTSubscription>)subscribe:(ARTRealtimeChannelMessageCb)cb;
 - (id<ARTSubscription>)subscribeToName:(NSString *)name cb:(ARTRealtimeChannelMessageCb)cb;
 - (id<ARTSubscription>)subscribeToNames:(NSArray *)names cb:(ARTRealtimeChannelMessageCb)cb;
@@ -84,6 +79,8 @@
 
 - (void)releaseChannel;
 - (ARTRealtimeChannelState)state;
+
+- (ARTRealtimePresence *)presence;
 - (ARTPresenceMap *)presenceMap;
 
 @end

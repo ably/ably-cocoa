@@ -13,10 +13,7 @@
 
 ART_ASSUME_NONNULL_BEGIN
 
-@interface ARTChannel() {
-@public
-    id<ARTPayloadEncoder> _payloadEncoder;
-}
+@interface ARTChannel()
 
 @property (nonatomic, strong, art_null_resettable) ARTChannelOptions *options;
 

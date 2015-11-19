@@ -56,8 +56,8 @@
             [channel publish:stringPayload cb:^(ARTStatus *status) {
                 XCTAssertEqual(ARTStateOk, status.state);
                 ARTDataQuery *query = [[ARTDataQuery alloc] init];
-                [channel history:query callback:^(ARTStatus *status, ARTPaginatedResult *result) {
-                    XCTAssertEqual(ARTStateOk, status.state);
+                [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                    XCTAssert(!error);
                     XCTAssertFalse([result hasNext]);
                     NSArray *page = [result items];
                     XCTAssertTrue(page != nil);
@@ -96,8 +96,8 @@
                 XCTAssertEqual(ARTStateOk, status.state);
                 [c publish:stringPayload cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
-                    [c history:[[ARTDataQuery alloc] init] callback:^(ARTStatus *status, ARTPaginatedResult *result) {
-                        XCTAssertEqual(ARTStateOk, status.state);
+                    [c history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+                        XCTAssert(!error);
                         XCTAssertFalse([result hasNext]);
                         NSArray * page = [result items];
                         XCTAssertTrue(page != nil);

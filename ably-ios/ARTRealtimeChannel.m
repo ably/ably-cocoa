@@ -11,7 +11,7 @@
 #import "ARTRealtime+Private.h"
 #import "ARTMessage.h"
 #import "ARTAuth.h"
-#import "ARTPresence.h"
+#import "ARTRealtimePresence.h"
 #import "ARTChannel.h"
 #import "ARTChannelOptions.h"
 #import "ARTProtocolMessage.h"
@@ -20,7 +20,9 @@
 #import "ARTQueuedMessage.h"
 #import "ARTNSArray+ARTFunctional.h"
 
-@interface ARTRealtimeChannel ()
+@interface ARTRealtimeChannel () {
+    ARTRealtimePresence *_realtimePresence;
+}
 
 @end
 
@@ -30,15 +32,12 @@
     self = [super initWithName:name withOptions:options andRest:realtime.rest];
     if (self) {
         _realtime = realtime;
-        _presence = [[ARTPresence alloc] initWithChannel:self];
         _state = ARTRealtimeChannelInitialised;
         _queuedMessages = [NSMutableArray array];
         _attachSerial = nil;
         _subscriptions = [NSMutableDictionary dictionary];
         _presenceSubscriptions = [NSMutableArray array];
         _stateSubscriptions = [NSMutableArray array];
-        _clientId = realtime.auth.clientId;
-        _payloadEncoder = [ARTPayload defaultPayloadEncoder:options.cipherParams];
         _presenceMap =[[ARTPresenceMap alloc] init];
         _lastPresenceAction = ARTPresenceAbsent;
     }
@@ -47,6 +46,13 @@
 
 + (instancetype)channelWithRealtime:(ARTRealtime *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options {
     return [[ARTRealtimeChannel alloc] initWithRealtime:realtime andName:name withOptions:options];
+}
+
+- (ARTRealtimePresence *)presence {
+    if (!_realtimePresence) {
+        _realtimePresence = [[ARTRealtimePresence alloc] initWithChannel:self];
+    }
+    return _realtimePresence;
 }
 
 - (void)publish:(id)payload cb:(ARTStatusCallback)cb {
@@ -98,7 +104,7 @@
     if (!msg.clientId) {
         msg.clientId = self.clientId;
     }
-    if(!msg.clientId) {
+    if (!msg.clientId) {
         cb([ARTStatus state:ARTStateNoClientId]);
         return;
     }
@@ -460,6 +466,10 @@
     for (ARTQueuedMessage *qm in qms) {
         qm.cb(status);
     }
+}
+
+- (NSString *)getClientId {
+    return self.realtime.auth.clientId;
 }
 
 @end

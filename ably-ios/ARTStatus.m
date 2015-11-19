@@ -13,11 +13,15 @@
 // Reverse-DNS style domain
 NSString *const ARTAblyErrorDomain = @"io.ably.cocoa";
 
+NSInteger getStatusFromCode(NSInteger code) {
+    return code / 100;
+}
+
 @implementation ARTErrorInfo
 
 - (ARTErrorInfo *)setCode:(int)code message:(NSString *)message {
     _code = code;
-    _statusCode = code / 100;
+    _statusCode = getStatusFromCode(code);
     _message = message;
     return self;
 }
@@ -35,6 +39,10 @@ NSString *const ARTAblyErrorDomain = @"io.ably.cocoa";
 
 + (ARTErrorInfo *)createWithCode:(int)code status:(int)status message:(NSString *)message {
     return [[[ARTErrorInfo alloc] init] setCode:code status:status message:message];
+}
+
++ (ARTErrorInfo *)createWithNSError:(NSError *)error {
+    return [[[ARTErrorInfo alloc] init] setCode:error.code status:getStatusFromCode(error.code) message:error.description];
 }
 
 - (NSString *)description {

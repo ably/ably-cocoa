@@ -34,6 +34,9 @@
 
 - (instancetype)initWithChannel:(ARTRealtimeChannel *)channel cb:(ARTRealtimeChannelPresenceCb)cb;
 
+- (void)excludeAction:(ARTPresenceAction)action;
+- (void)excludeAllActionsExcept:(ARTPresenceAction)action;
+
 - (void)unsubscribe;
 
 @end

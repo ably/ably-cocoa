@@ -26,10 +26,10 @@
 - (void)startSync;
 - (void)endSync;
 - (BOOL)isSyncComplete;
-- (BOOL) stillSyncing;
+- (BOOL)stillSyncing;
 
 typedef void(^VoidCb)();
-- (void) syncMessageProcessed;
+- (void)syncMessageProcessed;
 - (void)onSync:(VoidCb) cb;
 
 @end

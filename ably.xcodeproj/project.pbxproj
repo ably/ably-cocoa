@@ -136,6 +136,11 @@
 		D7D8F82E1BC2C706009718F2 /* ARTAuthTokenParams.m in Sources */ = {isa = PBXBuildFile; fileRef = D7D8F82A1BC2C706009718F2 /* ARTAuthTokenParams.m */; };
 		D7EBE5A31BE8391E0086E675 /* RealtimeClient.connection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7EBE5A21BE8391E0086E675 /* RealtimeClient.connection.swift */; settings = {ASSET_TAGS = (); }; };
 		D7EBE5A41BE9F6900086E675 /* ARTConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = D7D29B401BE3DD0600374295 /* ARTConnection.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D7F1D3731BF4DE07001A4B5E /* ARTRestPresence.h in Headers */ = {isa = PBXBuildFile; fileRef = D7F1D3711BF4DE07001A4B5E /* ARTRestPresence.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D7F1D3741BF4DE07001A4B5E /* ARTRestPresence.m in Sources */ = {isa = PBXBuildFile; fileRef = D7F1D3721BF4DE07001A4B5E /* ARTRestPresence.m */; settings = {ASSET_TAGS = (); }; };
+		D7F1D3771BF4DE72001A4B5E /* ARTRealtimePresence.h in Headers */ = {isa = PBXBuildFile; fileRef = D7F1D3751BF4DE72001A4B5E /* ARTRealtimePresence.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D7F1D3781BF4DE72001A4B5E /* ARTRealtimePresence.m in Sources */ = {isa = PBXBuildFile; fileRef = D7F1D3761BF4DE72001A4B5E /* ARTRealtimePresence.m */; settings = {ASSET_TAGS = (); }; };
+		D7F1D37A1BF4E33A001A4B5E /* ARTRestChannel+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7F1D3791BF4E33A001A4B5E /* ARTRestChannel+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		FC78549C1BCD5688539CCBE4 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA6E099E4BC04FC80F845C0 /* libPods.a */; };
 /* End PBXBuildFile section */
 
@@ -320,6 +325,11 @@
 		D7D8F8291BC2C706009718F2 /* ARTAuthTokenParams.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTAuthTokenParams.h; sourceTree = "<group>"; };
 		D7D8F82A1BC2C706009718F2 /* ARTAuthTokenParams.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTAuthTokenParams.m; sourceTree = "<group>"; };
 		D7EBE5A21BE8391E0086E675 /* RealtimeClient.connection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClient.connection.swift; sourceTree = "<group>"; };
+		D7F1D3711BF4DE07001A4B5E /* ARTRestPresence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTRestPresence.h; sourceTree = "<group>"; };
+		D7F1D3721BF4DE07001A4B5E /* ARTRestPresence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestPresence.m; sourceTree = "<group>"; };
+		D7F1D3751BF4DE72001A4B5E /* ARTRealtimePresence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTRealtimePresence.h; sourceTree = "<group>"; };
+		D7F1D3761BF4DE72001A4B5E /* ARTRealtimePresence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimePresence.m; sourceTree = "<group>"; };
+		D7F1D3791BF4E33A001A4B5E /* ARTRestChannel+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTRestChannel+Private.h"; sourceTree = "<group>"; };
 		DF8DF755839D59574B7B795F /* Pods-ablySpec.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ablySpec.release.xcconfig"; path = "Pods/Target Support Files/Pods-ablySpec/Pods-ablySpec.release.xcconfig"; sourceTree = "<group>"; };
 		FDA6E099E4BC04FC80F845C0 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -494,10 +504,13 @@
 				960D07951A46FFC300ED8C8C /* ARTRest+Private.h */,
 				96BF61521A35B39C004CF2B3 /* ARTRest.m */,
 				D70EAAEB1BC3376200CD8B9E /* ARTRestChannel.h */,
+				D7F1D3791BF4E33A001A4B5E /* ARTRestChannel+Private.h */,
 				D70EAAEC1BC3376200CD8B9E /* ARTRestChannel.m */,
 				96BF616E1A35FB7C004CF2B3 /* ARTAuth.h */,
 				D7C1B8781BBF5F460087B55F /* ARTAuth+Private.h */,
 				96BF616F1A35FB7C004CF2B3 /* ARTAuth.m */,
+				D7F1D3711BF4DE07001A4B5E /* ARTRestPresence.h */,
+				D7F1D3721BF4DE07001A4B5E /* ARTRestPresence.m */,
 			);
 			name = REST;
 			sourceTree = "<group>";
@@ -513,6 +526,8 @@
 				D746AE3B1BBC5AE1003ECEF8 /* ARTRealtimeChannel.m */,
 				D7D29B401BE3DD0600374295 /* ARTConnection.h */,
 				D7D29B411BE3DEB300374295 /* ARTConnection.m */,
+				D7F1D3751BF4DE72001A4B5E /* ARTRealtimePresence.h */,
+				D7F1D3761BF4DE72001A4B5E /* ARTRealtimePresence.m */,
 				D746AE321BBC29EB003ECEF8 /* Transport */,
 				D746AE3E1BBC5B14003ECEF8 /* ARTEventEmitter.h */,
 				D746AE3F1BBC5B14003ECEF8 /* ARTEventEmitter.m */,
@@ -520,10 +535,6 @@
 				D746AE461BBD6FE9003ECEF8 /* ARTQueuedMessage.m */,
 				D746AE491BBD70F0003ECEF8 /* ARTRealtimeChannelSubscription.h */,
 				D746AE4A1BBD70F0003ECEF8 /* ARTRealtimeChannelSubscription.m */,
-				D746AE261BBB61C9003ECEF8 /* ARTPresence.h */,
-				D746AE271BBB61C9003ECEF8 /* ARTPresence.m */,
-				1C2B0FFB1B136A6D00E3633C /* ARTPresenceMap.h */,
-				1C2B0FFC1B136A6D00E3633C /* ARTPresenceMap.m */,
 			);
 			name = Realtime;
 			sourceTree = "<group>";
@@ -565,8 +576,12 @@
 				96BF61631A35CDE1004CF2B3 /* ARTBaseMessage.m */,
 				D746AE361BBC3201003ECEF8 /* ARTMessage.h */,
 				D746AE371BBC3201003ECEF8 /* ARTMessage.m */,
+				D746AE261BBB61C9003ECEF8 /* ARTPresence.h */,
+				D746AE271BBB61C9003ECEF8 /* ARTPresence.m */,
 				96A5079F1A377AA50077CDF8 /* ARTPresenceMessage.h */,
 				96A507A01A377AA50077CDF8 /* ARTPresenceMessage.m */,
+				1C2B0FFB1B136A6D00E3633C /* ARTPresenceMap.h */,
+				1C2B0FFC1B136A6D00E3633C /* ARTPresenceMap.m */,
 				961343E61A432E7C006DC822 /* ARTPayload.h */,
 				1C8065041AE7C8FA00D49357 /* ARTPayload+Private.h */,
 				961343E71A432E7C006DC822 /* ARTPayload.m */,
@@ -659,6 +674,7 @@
 				D746AE401BBC5B14003ECEF8 /* ARTEventEmitter.h in Headers */,
 				D746AE531BBD85C5003ECEF8 /* ARTChannelCollection.h in Headers */,
 				D7D8F82D1BC2C706009718F2 /* ARTAuthTokenParams.h in Headers */,
+				D7F1D3771BF4DE72001A4B5E /* ARTRealtimePresence.h in Headers */,
 				1C578E1F1B3435CA00EF46EC /* ARTFallback.h in Headers */,
 				96E408471A3895E800087F77 /* ARTWebSocketTransport.h in Headers */,
 				96E4083F1A3892C700087F77 /* ARTRealtimeTransport.h in Headers */,
@@ -671,9 +687,11 @@
 				D746AE2F1BBBE7D7003ECEF8 /* ARTPaginatedResult+Private.h in Headers */,
 				D746AE431BBC5CD0003ECEF8 /* ARTRealtimeChannel+Private.h in Headers */,
 				D746AE251BBB611C003ECEF8 /* ARTChannel+Private.h in Headers */,
+				D7F1D3731BF4DE07001A4B5E /* ARTRestPresence.h in Headers */,
 				1C8065051AE7C8FA00D49357 /* ARTPayload+Private.h in Headers */,
 				960D07971A46FFC300ED8C8C /* ARTRest+Private.h in Headers */,
 				1C05CF201AC1D7EB00687AC9 /* ARTRealtime+Private.h in Headers */,
+				D7F1D37A1BF4E33A001A4B5E /* ARTRestChannel+Private.h in Headers */,
 				85B2C2191B6FE8DE00EA5254 /* CompatibilityMacros.h in Headers */,
 				961343E81A432E7C006DC822 /* ARTPayload.h in Headers */,
 				96A507A91A37806A0077CDF8 /* ARTEncoder.h in Headers */,
@@ -924,6 +942,7 @@
 				D746AE481BBD6FE9003ECEF8 /* ARTQueuedMessage.m in Sources */,
 				D746AE3D1BBC5AE1003ECEF8 /* ARTRealtimeChannel.m in Sources */,
 				96A507A21A377AA50077CDF8 /* ARTPresenceMessage.m in Sources */,
+				D7F1D3741BF4DE07001A4B5E /* ARTRestPresence.m in Sources */,
 				D746AE541BBD85C5003ECEF8 /* ARTChannelCollection.m in Sources */,
 				96BF61541A35B39C004CF2B3 /* ARTRest.m in Sources */,
 				D7D8F82C1BC2C706009718F2 /* ARTAuthTokenRequest.m in Sources */,
@@ -950,6 +969,7 @@
 				96BF61711A35FB7C004CF2B3 /* ARTAuth.m in Sources */,
 				96E408441A38939E00087F77 /* ARTProtocolMessage.m in Sources */,
 				96BF61651A35CDE1004CF2B3 /* ARTBaseMessage.m in Sources */,
+				D7F1D3781BF4DE72001A4B5E /* ARTRealtimePresence.m in Sources */,
 				1CD8DCA01B1C7315007EAF36 /* ARTDefault.m in Sources */,
 				D746AE501BBD84E7003ECEF8 /* ARTChannelOptions.m in Sources */,
 				1C6C18A41ADFDAB100AB79E4 /* ARTLog.m in Sources */,
