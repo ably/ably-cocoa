@@ -24,7 +24,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTAuth : NSObject
 
-@property (nonatomic, readonly, weak) ARTAuthOptions *options;
+@property (nonatomic, readonly, strong) ARTAuthOptions *options;
 @property (nonatomic, readonly, assign) ARTAuthMethod method;
 
 @property (nonatomic, weak) ARTLog *logger;
