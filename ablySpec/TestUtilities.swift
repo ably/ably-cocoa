@@ -69,11 +69,6 @@ class AblyTests {
     }
 
     class func setupOptions(options: ARTClientOptions, debug: Bool = false) -> ARTClientOptions {
-        var responseError: NSError?
-        var responseData: NSData?
-
-        var requestCompleted = false
-
         let request = NSMutableURLRequest(URL: NSURL(string: "https://\(options.restHost):\(options.restPort)/apps")!)
         request.HTTPMethod = "POST"
         request.HTTPBody = try? appSetupJson["post_apps"].rawData()
@@ -83,16 +78,7 @@ class AblyTests {
             "Content-Type" : "application/json"
         ]
 
-        NSURLSession.sharedSession()
-            .dataTaskWithRequest(request) { data, response, error in
-                responseError = error
-                responseData = data
-                requestCompleted = true
-            }.resume()
-
-        while !requestCompleted {
-            CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Bool(0))
-        }
+        let (responseData, responseError) = NSURLSessionSelfSignedCertificateSync().get(request)
 
         if let error = responseError {
             XCTFail(error.localizedDescription)
@@ -126,6 +112,40 @@ class AblyTests {
         return options
     }
     
+}
+
+class NSURLSessionSelfSignedCertificateSync: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate {
+
+    func get(request: NSMutableURLRequest) -> (NSData?, NSError?) {
+        var responseError: NSError?
+        var responseData: NSData?
+        var requestCompleted = false
+
+        let configuration = NSURLSessionConfiguration.defaultSessionConfiguration()
+        let session = NSURLSession(configuration:configuration, delegate:self, delegateQueue:NSOperationQueue.mainQueue())
+        let task = session.dataTaskWithRequest(request) { data, response, error in
+            responseData = data
+            responseError = error
+            requestCompleted = true
+        }
+        task.resume()
+
+        while !requestCompleted {
+            CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Bool(0))
+        }
+
+        return (responseData, responseError)
+    }
+
+    func URLSession(session: NSURLSession, task: NSURLSessionTask, didReceiveChallenge challenge: NSURLAuthenticationChallenge, completionHandler: (NSURLSessionAuthChallengeDisposition, NSURLCredential?) -> Void) {
+        if let serverTrust = challenge.protectionSpace.serverTrust {
+            completionHandler(NSURLSessionAuthChallengeDisposition.UseCredential, NSURLCredential(forTrust: serverTrust))
+        }
+        else {
+            XCTFail("No self-signed certificate")
+        }
+    }
+
 }
 
 func querySyslog(forLogsAfter startingTime: NSDate? = nil) -> AnyGenerator<String> {
