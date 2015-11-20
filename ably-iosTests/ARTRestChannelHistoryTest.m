@@ -48,8 +48,8 @@
             long long serverNow = [time timeIntervalSince1970]*1000;
             long long appNow =[ARTTestUtil nowMilli];
             timeOffset = serverNow - appNow;
+            [e fulfill];
         }];
-        [e fulfill];
     }];
     
     
@@ -127,12 +127,12 @@
    [ARTTestUtil testRest:^(ARTRest *rest) {
        _rest = rest;
        [rest time:^(NSDate *time, NSError *error) {
-            XCTAssert(!error);
-            long long serverNow = [time timeIntervalSince1970]*1000;
-            long long appNow =[ARTTestUtil nowMilli];
-            timeOffset = serverNow - appNow;
+           XCTAssert(!error);
+           long long serverNow = [time timeIntervalSince1970]*1000;
+           long long appNow =[ARTTestUtil nowMilli];
+           timeOffset = serverNow - appNow;
+           [e fulfill];
        }];
-       [e fulfill];
     }];
 
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
