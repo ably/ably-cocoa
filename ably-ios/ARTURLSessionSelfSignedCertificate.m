@@ -8,11 +8,23 @@
 
 #import "ARTURLSessionSelfSignedCertificate.h"
 
+@interface ARTURLSessionSelfSignedCertificate() {
+    NSURLSession *_session;
+}
+
+@end
+
 @implementation ARTURLSessionSelfSignedCertificate
 
+- (instancetype)init {
+    if (self = [super init]) {
+        _session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:nil];
+    }
+    return self;
+}
+
 - (void)get:(NSURLRequest *)request completion:(ARTHttpRequestCallback)callback {
-    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:nil];
-    NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+    NSURLSessionDataTask *task = [_session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         callback((NSHTTPURLResponse *)response, data, error);
     }];
     [task resume];

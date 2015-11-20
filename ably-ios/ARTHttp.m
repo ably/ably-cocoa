@@ -7,11 +7,12 @@
 //
 
 #import "ARTHttp.h"
+#import "ARTURLSessionSelfSignedCertificate.h"
 
 @interface ARTHttp ()
 
 @property (readonly, copy, nonatomic) NSURL *baseUrl;
-@property (readonly, strong, nonatomic) NSURLSession *urlSession;
+@property (readonly, strong, nonatomic) ARTURLSessionSelfSignedCertificate *urlSession;
 
 @end
 
@@ -153,7 +154,7 @@
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _urlSession = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
+        _urlSession = [[ARTURLSessionSelfSignedCertificate alloc] init];
         _baseUrl = nil;
     }
     return self;
@@ -173,7 +174,7 @@
 
     CFRunLoopRef currentRunloop = CFRunLoopGetCurrent();
 
-    NSURLSessionDataTask *task = [_urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+    [_urlSession get:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
         
         CFRunLoopPerformBlock(currentRunloop, kCFRunLoopCommonModes, ^{
@@ -191,14 +192,13 @@
         });
         CFRunLoopWakeUp(currentRunloop);
     }];
-    [task resume];
 }
 
 - (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method url:(NSURL *)url headers:(NSDictionary *)headers body:(NSData *)body cb:(ARTHttpCb)cb {
     return [self makeRequest:[[ARTHttpRequest alloc] initWithMethod:method url:url headers:headers body:body] cb:cb];
 }
 
-- (id<ARTCancellable>)makeRequest:(ARTHttpRequest *)artRequest cb:(void (^)(ARTHttpResponse *))cb {
+- (id<ARTCancellable>)makeRequest:(ARTHttpRequest *)artRequest cb:(void (^)(ARTHttpResponse *))cb __deprecated {
 
     if(![artRequest.method isEqualToString:@"GET"] && ![artRequest.method isEqualToString:@"POST"]){
         [NSException raise:@"Http method must be GET or POST" format:@""];
@@ -218,7 +218,8 @@
 
     CFRunLoopRef rl = CFRunLoopGetCurrent();
     CFRetain(rl);
-    NSURLSessionDataTask *task = [self.urlSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+
+    [self.urlSession get:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
         [self.logger verbose:@"ARTHttp: Got response %@, err %@", response, error];
         
@@ -244,9 +245,7 @@
         CFRunLoopWakeUp(rl);
         CFRelease(rl);
     }];
-    [task resume];
-    
-    return [ARTHttpRequestHandle requestHandleWithDataTask:task];
+    return nil;
 }
 
 + (NSDictionary *)getErrorDictionary {
