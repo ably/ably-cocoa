@@ -183,15 +183,12 @@ class RestChannel: QuickSpec {
                     let channel = client.channels.get("persisted:presence_fixtures")
                     var presenceMessages: [ARTPresenceMessage] = []
 
-                    // Test
-                    /*
-                    channel.presence.get() { result, _ in
+                    channel.presence().get() { result, _ in
                         if let items = result?.items as? [ARTPresenceMessage] {
                             presenceMessages.appendContentsOf(items)
                         }
                     }
-                    */
-                    
+
                     expect(presenceMessages.count).toEventually(equal(presenceFixtures.count), timeout: testTimeout)
                     for message in presenceMessages {
                         

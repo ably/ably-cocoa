@@ -62,7 +62,7 @@ class AblyTests {
             "authUrl": { $0.authUrl = NSURL(string: "http://test.com") },
             "authCallback": { $0.authCallback = { _, _ in return } },
             "tokenDetails": { $0.tokenDetails = ARTAuthTokenDetails(token: "token") },
-            "token": { $0.token = "" },
+            "token": { $0.token = "token" },
             "key": { $0.tokenDetails = ARTAuthTokenDetails(token: "token"); $0.key = "fake:key" }
             ]
         }
@@ -78,7 +78,7 @@ class AblyTests {
             "Content-Type" : "application/json"
         ]
 
-        let (responseData, responseError) = NSURLSessionSelfSignedCertificateSync().get(request)
+        let (responseData, responseError, _) = NSURLSessionSelfSignedCertificateSync().get(request)
 
         if let error = responseError {
             XCTFail(error.localizedDescription)
@@ -116,16 +116,21 @@ class AblyTests {
 
 class NSURLSessionSelfSignedCertificateSync: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate {
 
-    func get(request: NSMutableURLRequest) -> (NSData?, NSError?) {
+    func get(request: NSMutableURLRequest) -> (NSData?, NSError?, NSHTTPURLResponse?) {
         var responseError: NSError?
         var responseData: NSData?
+        var httpResponse: NSHTTPURLResponse?;
         var requestCompleted = false
 
         let configuration = NSURLSessionConfiguration.defaultSessionConfiguration()
         let session = NSURLSession(configuration:configuration, delegate:self, delegateQueue:NSOperationQueue.mainQueue())
+
         let task = session.dataTaskWithRequest(request) { data, response, error in
-            responseData = data
-            responseError = error
+            if let response = response as? NSHTTPURLResponse {
+                responseData = data
+                responseError = error
+                httpResponse = response
+            }
             requestCompleted = true
         }
         task.resume()
@@ -134,7 +139,7 @@ class NSURLSessionSelfSignedCertificateSync: NSObject, NSURLSessionDelegate, NSU
             CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Bool(0))
         }
 
-        return (responseData, responseError)
+        return (responseData, responseError, httpResponse)
     }
 
     func URLSession(session: NSURLSession, task: NSURLSessionTask, didReceiveChallenge challenge: NSURLAuthenticationChallenge, completionHandler: (NSURLSessionAuthChallengeDisposition, NSURLCredential?) -> Void) {
