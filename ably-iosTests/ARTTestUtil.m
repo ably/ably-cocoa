@@ -15,6 +15,7 @@
 #import "ARTRealtimePresence.h"
 #import "ARTPayload.h"
 #import "ARTEventEmitter.h"
+#import "ARTURLSessionSelfSignedCertificate.h"
 
 @implementation ARTTestUtil
 
@@ -79,15 +80,11 @@
         NSLog(@"Creating test app. URL: %@, Method: %@, Body: %@, Headers: %@", req.URL, req.HTTPMethod, [[NSString alloc] initWithData:req.HTTPBody encoding:NSUTF8StringEncoding], req.allHTTPHeaderFields);
     }
 
-    CFRunLoopRef rl = CFRunLoopGetCurrent();
+    __block CFRunLoopRef rl = CFRunLoopGetCurrent();
     
-    NSURLSession *urlSession = [NSURLSession sharedSession];
-
-    NSURLSessionDataTask *task = [urlSession dataTaskWithRequest:req completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-
-        if (httpResponse.statusCode < 200 || httpResponse.statusCode >= 300) {
-            NSLog(@"Status Code: %ld", (long)httpResponse.statusCode);
+    [[[ARTURLSessionSelfSignedCertificate alloc] init] get:req completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+            NSLog(@"Status Code: %ld", (long)response.statusCode);
             NSLog(@"Body: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
             cb(nil);
             return;
@@ -120,7 +117,6 @@
         });
         CFRunLoopWakeUp(rl);
     }];
-    [task resume];
 }
 
 + (void)setupApp:(ARTClientOptions *)options withDebug:(BOOL)debug withAlteration:(TestAlteration)alt cb:(void (^)(ARTClientOptions *))cb {
