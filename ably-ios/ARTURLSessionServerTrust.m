@@ -1,20 +1,20 @@
 //
-//  ARTURLSessionSelfSignedCertificate.m
+//  ARTURLSessionServerTrust.m
 //  ably
 //
 //  Created by Ricardo Pereira on 20/11/15.
 //  Copyright © 2015 Ably. All rights reserved.
 //
 
-#import "ARTURLSessionSelfSignedCertificate.h"
+#import "ARTURLSessionServerTrust.h"
 
-@interface ARTURLSessionSelfSignedCertificate() {
+@interface ARTURLSessionServerTrust() {
     NSURLSession *_session;
 }
 
 @end
 
-@implementation ARTURLSessionSelfSignedCertificate
+@implementation ARTURLSessionServerTrust
 
 - (instancetype)init {
     if (self = [super init]) {
@@ -31,7 +31,12 @@
 }
 
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential * _Nullable))completionHandler {
-    completionHandler(NSURLSessionAuthChallengeUseCredential, [[NSURLCredential alloc] initWithTrust:challenge.protectionSpace.serverTrust]);
+    if (challenge.protectionSpace.serverTrust) {
+        completionHandler(NSURLSessionAuthChallengeUseCredential, [[NSURLCredential alloc] initWithTrust:challenge.protectionSpace.serverTrust]);
+    }
+    else {
+        [challenge.sender performDefaultHandlingForAuthenticationChallenge:challenge];
+    }
 }
 
 @end

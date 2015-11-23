@@ -20,9 +20,9 @@ class Auth : QuickSpec {
         beforeEach {
             mockExecutor = MockHTTPExecutor()
         }
-        
+
         describe("Basic") {
-            
+
             // RSA1
             it("should work over HTTPS only") {
                 let clientOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)

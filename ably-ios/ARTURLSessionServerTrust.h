@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "ARTTypes.h"
 
-@interface ARTURLSessionSelfSignedCertificate : NSObject<NSURLSessionDelegate, NSURLSessionTaskDelegate>
+@interface ARTURLSessionServerTrust : NSObject<NSURLSessionDelegate, NSURLSessionTaskDelegate>
 
 - (void)get:(NSURLRequest *)request completion:(ARTHttpRequestCallback)callback;
 

@@ -78,7 +78,7 @@ class AblyTests {
             "Content-Type" : "application/json"
         ]
 
-        let (responseData, responseError, _) = NSURLSessionSelfSignedCertificateSync().get(request)
+        let (responseData, responseError, _) = NSURLSessionServerTrustSync().get(request)
 
         if let error = responseError {
             XCTFail(error.localizedDescription)
@@ -114,7 +114,7 @@ class AblyTests {
     
 }
 
-class NSURLSessionSelfSignedCertificateSync: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate {
+class NSURLSessionServerTrustSync: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate {
 
     func get(request: NSMutableURLRequest) -> (NSData?, NSError?, NSHTTPURLResponse?) {
         var responseError: NSError?
@@ -143,11 +143,15 @@ class NSURLSessionSelfSignedCertificateSync: NSObject, NSURLSessionDelegate, NSU
     }
 
     func URLSession(session: NSURLSession, task: NSURLSessionTask, didReceiveChallenge challenge: NSURLAuthenticationChallenge, completionHandler: (NSURLSessionAuthChallengeDisposition, NSURLCredential?) -> Void) {
+        // Try to extract the server certificate for trust validation
         if let serverTrust = challenge.protectionSpace.serverTrust {
+            // Server trust authentication
+            // Reference: https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/URLLoadingSystem/Articles/AuthenticationChallenges.html
             completionHandler(NSURLSessionAuthChallengeDisposition.UseCredential, NSURLCredential(forTrust: serverTrust))
         }
         else {
-            XCTFail("No self-signed certificate")
+            challenge.sender?.performDefaultHandlingForAuthenticationChallenge?(challenge)
+            XCTFail("Current authentication: \(challenge.protectionSpace.authenticationMethod)")
         }
     }
 

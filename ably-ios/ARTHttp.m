@@ -7,12 +7,12 @@
 //
 
 #import "ARTHttp.h"
-#import "ARTURLSessionSelfSignedCertificate.h"
+#import "ARTURLSessionServerTrust.h"
 
 @interface ARTHttp ()
 
 @property (readonly, copy, nonatomic) NSURL *baseUrl;
-@property (readonly, strong, nonatomic) ARTURLSessionSelfSignedCertificate *urlSession;
+@property (readonly, strong, nonatomic) ARTURLSessionServerTrust *urlSession;
 
 @end
 
@@ -154,7 +154,7 @@
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _urlSession = [[ARTURLSessionSelfSignedCertificate alloc] init];
+        _urlSession = [[ARTURLSessionServerTrust alloc] init];
         _baseUrl = nil;
     }
     return self;
