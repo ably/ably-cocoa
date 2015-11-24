@@ -36,8 +36,12 @@ class Auth : QuickSpec {
                 let client = ARTRest(options: AblyTests.setupOptions(AblyTests.jsonRestOptions))
                 client.httpExecutor = mockExecutor
                 
-                publishTestMessage(client, failOnError: false)
-                
+                waitUntil(timeout: testTimeout) { done in
+                    client.channels.get("test").publish("message") { error in
+                        done()
+                    }
+                }
+
                 let key64 = NSString(string: "\(client.options.key!)")
                     .dataUsingEncoding(NSUTF8StringEncoding)?
                     .base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0))
@@ -73,7 +77,11 @@ class Auth : QuickSpec {
                     let clientHTTP = ARTRest(options: options)
                     clientHTTP.httpExecutor = mockExecutor
                     
-                    publishTestMessage(clientHTTP, failOnError: false)
+                    waitUntil(timeout: testTimeout) { done in
+                        clientHTTP.channels.get("test").publish("message") { error in
+                            done()
+                        }
+                    }
                     
                     expect(mockExecutor.requests.first).toNot(beNil(), description: "No request found")
                     expect(mockExecutor.requests.first?.URL).toNot(beNil(), description: "Request is invalid")
@@ -87,7 +95,11 @@ class Auth : QuickSpec {
                     let clientHTTPS = ARTRest(options: options)
                     clientHTTPS.httpExecutor = mockExecutor
                     
-                    publishTestMessage(clientHTTPS, failOnError: false)
+                    waitUntil(timeout: testTimeout) { done in
+                        clientHTTPS.channels.get("test").publish("message") { error in
+                            done()
+                        }
+                    }
                     
                     expect(mockExecutor.requests.last).toNot(beNil(), description: "No request found")
                     expect(mockExecutor.requests.last?.URL).toNot(beNil(), description: "Request is invalid")
@@ -99,18 +111,22 @@ class Auth : QuickSpec {
                 
                 // RSA3b
                 it("should send the token in the Authorization header") {
-                    let options = ARTClientOptions()
+                    let options = AblyTests.clientOptions()
                     options.token = getTestToken()
 
                     let client = ARTRest(options: options)
                     client.httpExecutor = mockExecutor
                     
-                    publishTestMessage(client, failOnError: false)
-                    
+                    waitUntil(timeout: testTimeout) { done in
+                        client.channels.get("test").publish("message") { error in
+                            done()
+                        }
+                    }
+
                     expect(client.options.token).toNot(beNil(), description: "No access token")
-                    
+
                     if let currentToken = client.options.token {
-                        let expectedAuthorization = "Bearer \(currentToken)"
+                        let expectedAuthorization = "Bearer \(encodeBase64(currentToken))"
                         
                         expect(mockExecutor.requests.first).toNot(beNil(), description: "No request found")
                         
@@ -231,17 +247,20 @@ class Auth : QuickSpec {
                     let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
 
                     let client = ARTRest(options: options)
+
+                    // FIXME: Implemented validation of invalid chars
                     
                     // Check unquoted
                     let clientIdQuoted = "\"client_string\""
                     options.clientId = clientIdQuoted
+
                     waitUntil(timeout: 10) { done in
                         // Token
                         client.calculateAuthorization(ARTAuthMethod.Token) { token, error in
                             if let e = error {
                                 XCTFail(e.description)
                             }
-                            expect(client.auth.clientId).to(equal(clientIdQuoted))
+                            expect(client.auth.clientId).to(beNil())
                             done()
                         }
                     }
@@ -249,13 +268,14 @@ class Auth : QuickSpec {
                     // Check unescaped
                     let clientIdBreaklined = "client_string\n"
                     options.clientId = clientIdBreaklined
+
                     waitUntil(timeout: 10) { done in
                         // Token
                         client.calculateAuthorization(ARTAuthMethod.Token) { token, error in
                             if let e = error {
                                 XCTFail(e.description)
                             }
-                            expect(client.auth.clientId).to(equal(clientIdBreaklined))
+                            expect(client.auth.clientId).to(beNil())
                             done()
                         }
                     }
@@ -298,8 +318,7 @@ class Auth : QuickSpec {
                     let client = ARTRest(options: options)
                     client.httpExecutor = mockExecutor
                     
-                    waitUntil(timeout: 10) { done in
-                        // Publish message
+                    waitUntil(timeout: testTimeout) { done in
                         client.channels.get("test").publish("message") { error in
                             if let e = error {
                                 XCTFail(e.description)
@@ -327,7 +346,7 @@ class Auth : QuickSpec {
                     let client = ARTRest(options: options)
                     client.httpExecutor = mockExecutor
                     
-                    waitUntil(timeout: 10) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         client.channels.get("test").publish("message") { error in
                             if let e = error {
                                 XCTFail(e.description)
