@@ -16,8 +16,8 @@ private func postTestStats(stats: JSON) -> ARTClientOptions {
     let options = AblyTests.setupOptions(AblyTests.jsonRestOptions);
     
     let keyBase64 = encodeBase64(options.key ?? "")
-    
-    let request = NSMutableURLRequest(URL: NSURL(string: "https://sandbox-rest.ably.io/stats")!)
+
+    let request = NSMutableURLRequest(URL: NSURL(string: "\(AblyTests.clientOptions().restUrl().absoluteString)/stats")!)
     
     request.HTTPMethod = "POST"
     request.HTTPBody = try? stats.rawData()
