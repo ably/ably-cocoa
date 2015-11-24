@@ -100,7 +100,7 @@ class RealtimeClientConnection: QuickSpec {
                                 done()
                             case .Connected:
                                 if let transport = client.transport as? MockTransport, let query = transport.lastUrl?.query {
-                                    expect(query).to(haveParam("access_token", withValue: options.tokenDetails?.token ?? ""))
+                                    expect(query).to(haveParam("access_token", withValue: client.auth().tokenDetails?.token ?? ""))
                                     expect(query).to(haveParam("echo", withValue: "false"))
                                     expect(query).to(haveParam("format", withValue: "json"))
                                     expect(query).to(haveParam("client_id", withValue: "client_string"))
