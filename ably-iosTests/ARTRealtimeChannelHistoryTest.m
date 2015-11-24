@@ -310,8 +310,8 @@
             long long serverNow= [time timeIntervalSince1970]*1000;
             long long appNow =[ARTTestUtil nowMilli];
             timeOffset = serverNow - appNow;
+            [e fulfill];
         }];
-        [e fulfill];
     }];
     
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -389,10 +389,9 @@
             XCTAssert(!error);
             long long serverNow= [time timeIntervalSince1970]*1000;
             long long appNow =[ARTTestUtil nowMilli];
-            timeOffset = serverNow - appNow;
-            
+            timeOffset = serverNow - appNow;            
+            [e fulfill];
         }];
-        [e fulfill];
     }];
 
     
