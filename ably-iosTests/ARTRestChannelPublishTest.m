@@ -66,8 +66,6 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-//TODO currently returns a single message back instead of 3
-
 -(void) testPublishArray {
     XCTestExpectation *exp = [self expectationWithDescription:@"testPublishArray"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
@@ -110,7 +108,9 @@
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTChannel *channel = [rest.channels get:@"channel"];
-        NSArray * messages = @[@"test1", @"test2", @"test3"];
+        NSArray *messages = @[[[ARTMessage alloc] initWithData:@"test1" name:nil],
+                              [[ARTMessage alloc] initWithData:@"test2" name:nil],
+                              [[ARTMessage alloc] initWithData:@"test3" name:nil]];
         [ARTPayload getPayloadArraySizeLimit:2 modify:true];
         XCTAssertThrows([channel publish:messages callback:^(NSError *error) {}]);
         [exp fulfill];
