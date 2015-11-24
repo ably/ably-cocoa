@@ -63,7 +63,6 @@ ART_ASSUME_NONNULL_BEGIN
 - (instancetype)init;
 
 - (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method url:(NSURL *)url headers:(art_nullable NSDictionary *)headers body:(art_nullable NSData *)body cb:(ARTHttpCb)cb;
-- (id<ARTCancellable>)makeRequest:(ARTHttpRequest *)req cb:(ARTHttpCb)cb;
 
 @end
 

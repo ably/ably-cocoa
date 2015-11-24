@@ -26,21 +26,8 @@ private func postTestStats(stats: JSON) -> ARTClientOptions {
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Basic \(key)", forHTTPHeaderField: "Authorization")
     
-    var responseError: NSError?
-    var httpResponse: NSHTTPURLResponse?
-    var requestCompleted = false
-    
-    NSURLSession.sharedSession()
-        .dataTaskWithRequest(request) { _, response, error in
-            responseError = error
-            httpResponse = response as? NSHTTPURLResponse
-            requestCompleted = true
-        }.resume()
-    
-    while !requestCompleted {
-        CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Bool(0))
-    }
-    
+    let (_, responseError, httpResponse) = NSURLSessionServerTrustSync().get(request)
+
     if let error = responseError {
         XCTFail(error.localizedDescription)
     } else if let response = httpResponse {

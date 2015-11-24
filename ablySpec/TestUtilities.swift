@@ -69,11 +69,6 @@ class AblyTests {
     }
 
     class func setupOptions(options: ARTClientOptions, debug: Bool = false) -> ARTClientOptions {
-        var responseError: NSError?
-        var responseData: NSData?
-
-        var requestCompleted = false
-
         let request = NSMutableURLRequest(URL: NSURL(string: "https://\(options.restHost):\(options.restPort)/apps")!)
         request.HTTPMethod = "POST"
         request.HTTPBody = try? appSetupJson["post_apps"].rawData()
@@ -83,16 +78,7 @@ class AblyTests {
             "Content-Type" : "application/json"
         ]
 
-        NSURLSession.sharedSession()
-            .dataTaskWithRequest(request) { data, response, error in
-                responseError = error
-                responseData = data
-                requestCompleted = true
-            }.resume()
-
-        while !requestCompleted {
-            CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Bool(0))
-        }
+        let (responseData, responseError, _) = NSURLSessionServerTrustSync().get(request)
 
         if let error = responseError {
             XCTFail(error.localizedDescription)
@@ -126,6 +112,49 @@ class AblyTests {
         return options
     }
     
+}
+
+class NSURLSessionServerTrustSync: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate {
+
+    func get(request: NSMutableURLRequest) -> (NSData?, NSError?, NSHTTPURLResponse?) {
+        var responseError: NSError?
+        var responseData: NSData?
+        var httpResponse: NSHTTPURLResponse?;
+        var requestCompleted = false
+
+        let configuration = NSURLSessionConfiguration.defaultSessionConfiguration()
+        let session = NSURLSession(configuration:configuration, delegate:self, delegateQueue:NSOperationQueue.mainQueue())
+
+        let task = session.dataTaskWithRequest(request) { data, response, error in
+            if let response = response as? NSHTTPURLResponse {
+                responseData = data
+                responseError = error
+                httpResponse = response
+            }
+            requestCompleted = true
+        }
+        task.resume()
+
+        while !requestCompleted {
+            CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Bool(0))
+        }
+
+        return (responseData, responseError, httpResponse)
+    }
+
+    func URLSession(session: NSURLSession, task: NSURLSessionTask, didReceiveChallenge challenge: NSURLAuthenticationChallenge, completionHandler: (NSURLSessionAuthChallengeDisposition, NSURLCredential?) -> Void) {
+        // Try to extract the server certificate for trust validation
+        if let serverTrust = challenge.protectionSpace.serverTrust {
+            // Server trust authentication
+            // Reference: https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/URLLoadingSystem/Articles/AuthenticationChallenges.html
+            completionHandler(NSURLSessionAuthChallengeDisposition.UseCredential, NSURLCredential(forTrust: serverTrust))
+        }
+        else {
+            challenge.sender?.performDefaultHandlingForAuthenticationChallenge?(challenge)
+            XCTFail("Current authentication: \(challenge.protectionSpace.authenticationMethod)")
+        }
+    }
+
 }
 
 func querySyslog(forLogsAfter startingTime: NSDate? = nil) -> AnyGenerator<String> {
