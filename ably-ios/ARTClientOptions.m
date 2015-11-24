@@ -89,6 +89,7 @@
     options.environment = self.environment;
     options.tls = self.tls;
     options.logLevel = self.logLevel;
+    options.suspendedRetryTimeout = self.suspendedRetryTimeout;
     
     return options;
 }

@@ -193,7 +193,7 @@ class RealtimeClient: QuickSpec {
                 it("should present an async interface") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     // Async
-                    waitUntil(timeout: 20.0) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         // Proxy from `client.rest.stats`
                         client.stats(query, callback: { paginated, error in
                             expect(paginated).toNot(beNil())
@@ -214,10 +214,10 @@ class RealtimeClient: QuickSpec {
                         }
                         paginatedResult = paginated
                     })
-                    expect(paginatedResult).toEventuallyNot(beNil(), timeout: 20.0)
+                    expect(paginatedResult).toEventuallyNot(beNil(), timeout: testTimeout)
 
                     // Rest
-                    waitUntil(timeout: 20.0) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         client.rest.stats(query, callback: { paginated, error in
                             expect(paginated).to(beIdenticalTo(paginatedResult))
                             done()
@@ -231,7 +231,7 @@ class RealtimeClient: QuickSpec {
                 it("should present an async interface") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     // Async
-                    waitUntil(timeout: 20.0) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         // Proxy from `client.rest.time`
                         client.time({ date, error in
                             expect(date).toNot(beNil())
