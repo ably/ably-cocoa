@@ -40,7 +40,7 @@ class RestClient: QuickSpec {
                 }
 
                 it("should result in error status when provided a bad key") {
-                    let client = ARTRest(key: "bad")
+                    let client = ARTRest(key: "fake:key")
 
                     let publishTask = publishTestMessage(client, failOnError: false)
 
@@ -139,7 +139,7 @@ class RestClient: QuickSpec {
                     
                     publishTestMessage(client, failOnError: false)
                     
-                    expect(mockExecutor.requests.first?.URL?.host).toEventually(equal("fake.ably.host"), timeout: testTimeout)
+                    expect(mockExecutor.requests.first?.URL?.host).toEventually(equal("fake-rest.ably.io"), timeout: testTimeout)
                 }
                 
                 it("should accept an options object with an environment set") {
@@ -165,7 +165,8 @@ class RestClient: QuickSpec {
                 
                 it("should connect over plain http:// when tls is off") {
                     let options = ARTClientOptions(key: "fake:key")
-                    options.tls = false;
+                    options.token = getTestToken()
+                    options.tls = false
                     let client = ARTRest(options: options)
                     client.httpExecutor = mockExecutor
                     
@@ -181,8 +182,8 @@ class RestClient: QuickSpec {
                 let client = ARTRest(options: options)
                 
                 let authOptions = client.auth.options
-                
-                expect(authOptions).to(beIdenticalTo(options))
+
+                expect(authOptions == options).to(beTrue())
             }
             
             // RSC16
@@ -192,7 +193,7 @@ class RestClient: QuickSpec {
                     let client = ARTRest(options: options)
                     
                     var time: NSDate?
-                    
+
                     client.time({ date, error in
                         time = date
                     })
@@ -213,13 +214,21 @@ class RestClient: QuickSpec {
                 let clientHttp = ARTRest(options: options)
                 clientHttp.httpExecutor = mockExecutor
 
-                publishTestMessage(clientHttps)
-                publishTestMessage(clientHttp)
+                waitUntil(timeout: testTimeout) { done in
+                    publishTestMessage(clientHttps) { error in
+                        done()
+                    }
+                }
+                waitUntil(timeout: testTimeout) { done in
+                    publishTestMessage(clientHttp) { error in
+                        done()
+                    }
+                }
 
                 if let requestUrlA = mockExecutor.requests.first?.URL,
-                   let requestUrlB = mockExecutor.requests.last?.URL {
-                    expect(requestUrlA.scheme).to(equal("https"))
-                    expect(requestUrlB.scheme).to(equal("http"))
+                    let requestUrlB = mockExecutor.requests.last?.URL {
+                        expect(requestUrlA.scheme).to(equal("https"))
+                        expect(requestUrlB.scheme).to(equal("http"))
                 }
             }
 

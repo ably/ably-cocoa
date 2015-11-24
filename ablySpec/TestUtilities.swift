@@ -62,7 +62,7 @@ class AblyTests {
             "authUrl": { $0.authUrl = NSURL(string: "http://test.com") },
             "authCallback": { $0.authCallback = { _, _ in return } },
             "tokenDetails": { $0.tokenDetails = ARTAuthTokenDetails(token: "token") },
-            "token": { $0.token = "" },
+            "token": { $0.token = "token" },
             "key": { $0.tokenDetails = ARTAuthTokenDetails(token: "token"); $0.key = "fake:key" }
             ]
         }
@@ -148,23 +148,30 @@ func querySyslog(forLogsAfter startingTime: NSDate? = nil) -> AnyGenerator<Strin
     }
 }
 
-/// Publish message class
+// MARK: ARTAuthOptions Equatable
+
+func ==(lhs: ARTAuthOptions, rhs: ARTAuthOptions) -> Bool {
+    return lhs.token == rhs.token &&
+        lhs.clientId == rhs.clientId &&
+        lhs.authMethod == rhs.authMethod &&
+        lhs.authUrl == rhs.authUrl &&
+        lhs.key == rhs.key
+}
+
+// MARK: Publish message class
+
 class PublishTestMessage {
 
     var completion: Optional<(NSError?)->()>
     var error: NSError? = NSError(domain: "", code: -1, userInfo: nil)
 
-    convenience init(client: ARTRest, failOnError: Bool) {
-        self.init(client: client, completion: nil)
-    }
-
-    init(client: ARTRest, completion: Optional<(NSError?)->()>) {
+    init(client: ARTRest, failOnError: Bool = true, completion: Optional<(NSError?)->()> = nil) {
         client.channels.get("test").publish("message") { error in
             self.error = error
             if let callback = completion {
                 callback(error)
             }
-            else if let e = error {
+            else if failOnError, let e = error {
                 XCTFail("Got error '\(e)'")
             }
         }
@@ -174,7 +181,7 @@ class PublishTestMessage {
 
 /// Publish message
 func publishTestMessage(client: ARTRest, completion: Optional<(NSError?)->()>) -> PublishTestMessage {
-    return PublishTestMessage(client: client, completion: completion)
+    return PublishTestMessage(client: client, failOnError: false, completion: completion)
 }
 
 func publishTestMessage(client: ARTRest, failOnError: Bool = true) -> PublishTestMessage {
