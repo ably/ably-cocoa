@@ -173,44 +173,44 @@
     return 30.0;
 }
 
-+ (void)publishRestMessages:(NSString *)prefix count:(int)count channel:(ARTChannel *)channel expectation:(XCTestExpectation *)expectation {
++ (void)publishRestMessages:(NSString *)prefix count:(int)count channel:(ARTChannel *)channel completion:(void (^)())completion {
     NSString *pattern = [prefix stringByAppendingString:@"%d"];
     __block int numReceived = 0;
-    __block __weak ARTErrorCallback weakCompletion;
-    ARTErrorCallback completion;
+    __block __weak ARTErrorCallback weakCallback;
+    ARTErrorCallback callback;
 
-    weakCompletion = completion = ^(NSError *error) {
+    weakCallback = callback = ^(NSError *error) {
         if (++numReceived != count) {
-            [channel publish:[NSString stringWithFormat:pattern, numReceived] callback:weakCompletion];
+            [channel publish:[NSString stringWithFormat:pattern, numReceived] callback:weakCallback];
         }
         else {
-            [expectation fulfill];
+            completion();
         }
     };
 
-    [channel publish:[NSString stringWithFormat:pattern, numReceived] callback:completion];
+    [channel publish:[NSString stringWithFormat:pattern, numReceived] callback:callback];
 }
 
-+(void) publishRealtimeMessages:(NSString *) prefix count:(int) count channel:(ARTRealtimeChannel *) channel expectation:(XCTestExpectation *) expectation {
-    
++ (void)publishRealtimeMessages:(NSString *)prefix count:(int)count channel:(ARTRealtimeChannel *)channel completion:(void (^)())completion {
     __block int numReceived = 0;
     __block __weak ARTStatusCallback weakCb;
     NSString * pattern = [prefix stringByAppendingString:@"%d"];
     ARTStatusCallback cb;
+    
     weakCb = cb = ^(ARTStatus *status) {
         ++numReceived;
         if(numReceived !=count) {
             [channel publish:[NSString stringWithFormat:pattern, numReceived] cb:weakCb];
         }
         else {
-            [expectation fulfill];
+            completion();
         }
     };
     [channel publish:[NSString stringWithFormat:pattern, numReceived] cb:cb];
     
 }
 
-+ (void)publishEnterMessages:(NSString *)clientIdPrefix count:(int) count channel:(ARTRealtimeChannel *) channel expectation:(XCTestExpectation *) expectation {
++ (void)publishEnterMessages:(NSString *)clientIdPrefix count:(int)count channel:(ARTRealtimeChannel *)channel completion:(void (^)())completion {
     __block int numReceived = 0;
     __block __weak ARTStatusCallback weakCb;
     ARTStatusCallback cb;
@@ -222,7 +222,7 @@
             [channel.presence enterClient:[NSString stringWithFormat:pattern, numReceived] data:@"entered" cb:weakCb];
         }
         else {
-            [expectation fulfill];
+            completion();
         }
     };
     [channel.presence enterClient:[NSString stringWithFormat:pattern, numReceived] data:@"" cb:weakCb];
@@ -232,6 +232,13 @@
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
         cb(rest);
+    }];
+}
+
++ (void)testRealtime:(ARTClientOptions *)options callback:(ARTRealtimeConstructorCb)cb {
+    [ARTTestUtil setupApp:options cb:^(ARTClientOptions *options) {
+        ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
+        cb(realtime);
     }];
 }
 

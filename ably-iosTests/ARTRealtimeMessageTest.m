@@ -49,11 +49,14 @@
         [e fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+
     XCTestExpectation *expectation = [self expectationWithDescription:@"multiple_send"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime channel:name];
+
         [channel attach];
+
         [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
             if (state == ARTRealtimeChannelAttached) {
                 [channel subscribe:^(ARTMessage *message, ARTErrorInfo *errorInfo) {
@@ -114,20 +117,13 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-
-
 - (void)testPublish_10_1000 {
     [self multipleSendName:@"multiple_send_10_1000" count:10 delay:1000];
-}
-
-- (void)testPublish_20_200 {
-    [self multipleSendName:@"multiple_send_20_200" count:20 delay:200];
 }
 
 - (void)testMultipleText_1000_10 {
     [self multipleSendName:@"multiple_send_1000_10" count:1000 delay:10];
 }
-
 
 - (void)testEchoMessagesDefault {
     XCTestExpectation *exp = [self expectationWithDescription:@"testEchoMessagesDefault"];

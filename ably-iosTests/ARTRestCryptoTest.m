@@ -15,7 +15,8 @@
 #import "ARTTestUtil.h"
 #import "ARTCrypto.h"
 #import "ARTLog.h"
-#import "ARTChannel.h"
+#import "ARTRestChannel.h"
+#import "ARTChannelOptions.h"
 #import "ARTChannelCollection.h"
 #import "ARTDataQuery.h"
 #import "ARTPaginatedResult.h"
@@ -74,8 +75,10 @@
                                                                               initWithBase64EncodedString:@"HO4cYSP8LybPYBPZPHQOtg==" options:0]];
     
         NSData * keySpec = [[NSData alloc] initWithBase64EncodedString:@"WUP6u0K7MXI5Zeo0VppPwg==" options:0];
-        ARTCipherParams * params =[[ARTCipherParams alloc] initWithAlgorithm:@"aes" keySpec:keySpec ivSpec:ivSpec];
-        ARTChannel * c = [rest.channels get:@"test"];
+        ARTCipherParams *params =[[ARTCipherParams alloc] initWithAlgorithm:@"aes" keySpec:keySpec ivSpec:ivSpec];
+        ARTChannelOptions *channelOptions = [[ARTChannelOptions alloc] initEncrypted:params];
+
+        ARTRestChannel *c = [rest.channels get:@"test" options:channelOptions];
         XCTAssert(c);
         NSData * dataPayload = [@"someDataPayload"  dataUsingEncoding:NSUTF8StringEncoding];
         NSString * stringPayload = @"someString";
