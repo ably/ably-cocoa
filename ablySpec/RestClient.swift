@@ -88,8 +88,11 @@ class RestClient: QuickSpec {
                     client.logger.log("This is a warning", withLevel: .Warn)
                     let logs = querySyslog(forLogsAfter: logTime)
 
+                    // Logs is AnyGenerator, reduced in one line
+                    let line = logs.reduce("") { $1 + $0 }
+
                     expect(client.logger.logLevel).to(equal(ARTLogLevel.Warn))
-                    expect(logs).to(contain("WARN: This is a warning"))
+                    expect(line).to(contain("WARN: This is a warning"))
                 }
 
                 // RSC3
