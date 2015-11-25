@@ -15,7 +15,7 @@
 #import "ARTRealtimePresence.h"
 #import "ARTPayload.h"
 #import "ARTEventEmitter.h"
-#import "ARTURLSessionSelfSignedCertificate.h"
+#import "ARTURLSessionServerTrust.h"
 
 @implementation ARTTestUtil
 
@@ -82,7 +82,7 @@
 
     __block CFRunLoopRef rl = CFRunLoopGetCurrent();
     
-    [[[ARTURLSessionSelfSignedCertificate alloc] init] get:req completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [[[ARTURLSessionServerTrust alloc] init] get:req completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode < 200 || response.statusCode >= 300) {
             NSLog(@"Status Code: %ld", (long)response.statusCode);
             NSLog(@"Body: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);

@@ -30,6 +30,7 @@
     } else {
         _options = options;
     }
+    // FIXME: odd, always JSON?!
     _payloadEncoder = [ARTJsonPayloadEncoder instance];
 }
 
