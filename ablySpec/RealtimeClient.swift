@@ -219,7 +219,7 @@ class RealtimeClient: QuickSpec {
                     // Rest
                     waitUntil(timeout: testTimeout) { done in
                         client.rest.stats(query, callback: { paginated, error in
-                            expect(paginated).to(beIdenticalTo(paginatedResult))
+                            expect(paginated?.items.count ?? 0).to(equal(paginatedResult?.items.count ?? 0))
                             done()
                         })
                     }
