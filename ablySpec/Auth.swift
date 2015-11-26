@@ -137,7 +137,22 @@ class Auth : QuickSpec {
                 }
                 
                 // RSA3c
-                // TODO: not implemented
+                it("should send the token in the Authorization header") {
+                    let options = AblyTests.clientOptions()
+                    options.token = getTestToken()
+                    options.autoConnect = false
+
+                    let client = ARTRealtime(options: options)
+                    client.setTransportClass(MockTransport.self)
+                    client.connect()
+
+                    if let transport = client.transport as? MockTransport, let query = transport.lastUrl?.query {
+                        expect(query).to(haveParam("access_token", withValue: client.auth().tokenDetails?.token ?? ""))
+                    }
+                    else {
+                        XCTFail("MockTransport is not working")
+                    }
+                }
             }
 
             // RSA4
