@@ -177,34 +177,66 @@ class Auth : QuickSpec {
             // RSA15
             context("token auth and clientId") {
                 // RSA15a
-                it("should check clientId consistency") {
-                    let expectedClientId = "client_string"
-                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-                    options.clientId = expectedClientId
-                    
-                    let client = ARTRest(options: options)
-                    client.httpExecutor = mockExecutor
-                    
-                    waitUntil(timeout: 10) { done in
-                        // Token
-                        client.calculateAuthorization(ARTAuthMethod.Token) { token, error in
-                            if let e = error {
-                                XCTFail(e.description)
+                context("should check clientId consistency") {
+
+                    it("on rest") {
+                        let expectedClientId = "client_string"
+                        let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                        options.clientId = expectedClientId
+
+                        let client = ARTRest(options: options)
+                        client.httpExecutor = mockExecutor
+
+                        waitUntil(timeout: 10) { done in
+                            // Token
+                            client.calculateAuthorization(ARTAuthMethod.Token) { token, error in
+                                if let e = error {
+                                    XCTFail(e.description)
+                                }
+                                expect(client.auth.clientId).to(equal(expectedClientId))
+                                done()
                             }
-                            expect(client.auth.clientId).to(equal(expectedClientId))
-                            done()
+                        }
+
+                        switch extractBodyAsJSON(mockExecutor.requests.first) {
+                        case .Failure(let error):
+                            XCTFail(error)
+                        case .Success(let httpBody):
+                            guard let requestedClientId = httpBody.unbox["clientId"] as? String else { XCTFail("No clientId field in HTTPBody"); return }
+                            expect(requestedClientId).to(equal(expectedClientId))
                         }
                     }
-                    
-                    switch extractBodyAsJSON(mockExecutor.requests.first) {
-                    case .Failure(let error):
-                        XCTFail(error)
-                    case .Success(let httpBody):
-                        guard let requestedClientId = httpBody.unbox["clientId"] as? String else { XCTFail("No clientId field in HTTPBody"); return }
-                        expect(requestedClientId).to(equal(expectedClientId))
+
+                    it("on realtime") {
+                        let expectedClientId = "client_string"
+                        let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                        options.clientId = expectedClientId
+                        options.autoConnect = false
+
+                        let client = ARTRealtime(options: options)
+                        client.setTransportClass(MockTransport.self)
+                        client.connect()
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.eventEmitter.on({ state, error in
+                                if state == .Connected && error == nil {
+                                    let currentChannel = client.channel("test")
+                                    currentChannel.subscribe({ message, errorInfo in
+                                        done()
+                                    })
+                                    currentChannel.publish("ping", cb:nil)
+                                }
+                            })
+                        }
+
+                        if let transport = client.transport as? MockTransport, let connectionDetails = transport.connectedMessage?.connectionDetails {
+                            // CONNECTED ProtocolMessage
+                            expect(connectionDetails.clientId).to(equal(expectedClientId))
+                        }
+                        else {
+                            XCTFail("MockTransport is not working")
+                        }
                     }
-                    
-                    // TODO: Realtime.connectionDetails of the CONNECTED ProtocolMessage
                 }
                 
                 // RSA15b
