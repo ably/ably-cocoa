@@ -678,6 +678,18 @@ class Auth : QuickSpec {
                 })
             }
 
+            // RSA9b
+            it("should support AuthOptions") {
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
+                let auth: ARTAuth = rest.auth
+
+                let authOptions = ARTAuthOptions(key: "key:secret")
+
+                auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
+                    expect(tokenRequest?.keyName).to(equal("key"))
+                })
+            }
+
         }
 
         // RSA10
