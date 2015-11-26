@@ -771,6 +771,38 @@ class Auth : QuickSpec {
                 })
             }
 
+            // RSA9i
+            it("should respect all requirements") {
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
+                let expectedClientId = "client_string"
+                let tokenParams = ARTAuthTokenParams(clientId: expectedClientId)
+                let expectedTtl = 6.0
+                tokenParams.ttl = expectedTtl
+                let expectedCapability = "{}"
+                tokenParams.capability = expectedCapability
+
+                let authOptions = ARTAuthOptions()
+                authOptions.queryTime = true
+
+                var serverTime: NSDate?
+                waitUntil(timeout: testTimeout) { done in
+                    rest.time({ date, error in
+                        serverTime = date
+                        done()
+                    })
+                }
+                expect(serverTime).toNot(beNil(), description: "Server time is nil")
+
+                rest.auth.createTokenRequest(tokenParams, options: authOptions, callback: { tokenRequest, error in
+                    expect(tokenRequest?.clientId).to(equal(expectedClientId))
+                    expect(tokenRequest?.mac).toNot(beNil())
+                    expect(tokenRequest?.nonce.characters).to(haveCount(16))
+                    expect(tokenRequest?.ttl).to(equal(expectedTtl))
+                    expect(tokenRequest?.capability).to(equal(expectedCapability))
+                    expect(tokenRequest?.timestamp).to(beCloseTo(serverTime!, within: 6.0))
+                })
+            }
+
         }
 
         // RSA10
