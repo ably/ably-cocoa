@@ -127,6 +127,10 @@
 		D746AE541BBD85C5003ECEF8 /* ARTChannelCollection.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE521BBD85C5003ECEF8 /* ARTChannelCollection.m */; };
 		D7588AF31BFF91B800BB8279 /* ARTURLSessionServerTrust.h in Headers */ = {isa = PBXBuildFile; fileRef = D7588AF11BFF91B800BB8279 /* ARTURLSessionServerTrust.h */; };
 		D7588AF41BFF91B800BB8279 /* ARTURLSessionServerTrust.m in Sources */ = {isa = PBXBuildFile; fileRef = D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */; };
+		D7588AF31BFF91B800BB8279 /* ARTURLSessionServerTrust.h in Headers */ = {isa = PBXBuildFile; fileRef = D7588AF11BFF91B800BB8279 /* ARTURLSessionServerTrust.h */; settings = {ASSET_TAGS = (); }; };
+		D7588AF41BFF91B800BB8279 /* ARTURLSessionServerTrust.m in Sources */ = {isa = PBXBuildFile; fileRef = D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */; settings = {ASSET_TAGS = (); }; };
+		D7B17EE31C07208B00A6958E /* ARTConnectionDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B17EE11C07208B00A6958E /* ARTConnectionDetails.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D7B17EE41C07208B00A6958E /* ARTConnectionDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = D7B17EE21C07208B00A6958E /* ARTConnectionDetails.m */; settings = {ASSET_TAGS = (); }; };
 		D7C1B8771BBEA81A0087B55F /* Auth.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C1B8761BBEA81A0087B55F /* Auth.swift */; };
 		D7C1B8791BBF5F810087B55F /* ARTAuth+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1B8781BBF5F460087B55F /* ARTAuth+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D7D29B421BE3DEB300374295 /* ARTConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = D7D29B411BE3DEB300374295 /* ARTConnection.m */; };
