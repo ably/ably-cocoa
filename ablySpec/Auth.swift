@@ -652,6 +652,25 @@ class Auth : QuickSpec {
             }
         }
 
+        // RSA9
+        describe("createRequestToken") {
+
+            // RSA9a
+            it("should create and sign a TokenRequest") {
+                let options = AblyTests.commonAppSetup()
+                let rest = ARTRest(options: options)
+                let expectedClientId = "client_string"
+                let tokenParams = ARTAuthTokenParams(clientId: expectedClientId)
+
+                rest.auth.createTokenRequest(tokenParams, options: options, callback: { tokenRequest, error in
+                    expect(tokenRequest?.clientId).to(equal(expectedClientId))
+                    expect(tokenRequest?.mac).toNot(beNil())
+                    expect(tokenRequest?.nonce).toNot(beNil())
+                })
+            }
+
+        }
+
         // RSA10
         describe("authorise") {
 
@@ -903,6 +922,7 @@ class Auth : QuickSpec {
                         }
                     }
                 }
+                
             }
         }
     }

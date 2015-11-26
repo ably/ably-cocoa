@@ -274,23 +274,20 @@
 }
 
 - (void)createTokenRequest:(ARTAuthTokenParams *)tokenParams options:(ARTAuthOptions *)options callback:(void (^)(ARTAuthTokenRequest *, NSError *))callback {
-    ARTAuthOptions *mergedOptions = options;
-    // FIXME: review
+    ARTAuthOptions *mergedOptions = [self mergeOptions:options];
+    ARTAuthTokenParams *mergedTokenParams = [self mergeParams:tokenParams];
+
     if (mergedOptions.queryTime) {
-        ARTAuthTokenParams *newParams = [[ARTAuthTokenParams alloc] init];
-        newParams.ttl = tokenParams.ttl;
-        newParams.capability = tokenParams.capability;
-        newParams.clientId = tokenParams.clientId;
         [_rest time:^(NSDate *time, NSError *error) {
             if (error) {
                 callback(nil, error);
             } else {
-                newParams.timestamp = time;
-                callback([newParams sign:mergedOptions.key], nil);
+                mergedTokenParams.timestamp = time;
+                callback([mergedTokenParams sign:mergedOptions.key], nil);
             }
         }];
     } else {
-        callback([tokenParams sign:mergedOptions.key], nil);
+        callback([mergedTokenParams sign:mergedOptions.key], nil);
     }
 }
 
