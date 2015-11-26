@@ -299,11 +299,10 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
--(void) testTimeBackwards {
-    XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
-    
+- (void)testTimeBackwards {
     __block long long timeOffset= 0;
 
+    XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         [realtime time:^(NSDate *time, NSError *error) {
             XCTAssert(!error);
@@ -313,76 +312,63 @@
             [e fulfill];
         }];
     }];
-    
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
     
+    XCTestExpectation *expectation = [self expectationWithDescription:@"firstExpectation"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime channel:@"testTimeBackwards"];
 
-        int firstBatchTotal =3;
-        int secondBatchTotal =2;
-        int thirdBatchTotal =1;
-        long long intervalStart=0, intervalEnd=0;
-        NSString * firstBatch = @"first_batch";
-        NSString * secondBatch = @"second_batch";
-        NSString * thirdBatch =@"third_batch";
-        XCTestExpectation *firstExpectation = [self expectationWithDescription:@"firstExpectation"];
-          
+        int firstBatchTotal = 3;
+        int secondBatchTotal = 2;
+        int thirdBatchTotal = 1;
+        __block long long intervalStart = 0, intervalEnd = 0;
 
-        [ARTTestUtil publishRealtimeMessages:firstBatch count:firstBatchTotal channel:channel expectation:firstExpectation];
+        NSString *firstBatch = @"first_batch";
+        NSString *secondBatch = @"second_batch";
+        NSString *thirdBatch =@"third_batch";
 
-        [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+        [ARTTestUtil publishRealtimeMessages:firstBatch count:firstBatchTotal channel:channel completion:^{
+            sleep([ARTTestUtil bigSleep]);
+            intervalStart  = [ARTTestUtil nowMilli] + timeOffset;
+            sleep([ARTTestUtil bigSleep]);
 
-        XCTestExpectation *secondExpecation = [self expectationWithDescription:@"send_second_batch"];
+            [ARTTestUtil publishRealtimeMessages:secondBatch count:secondBatchTotal channel:channel completion:^{
+                sleep([ARTTestUtil bigSleep]);
+                intervalEnd = [ARTTestUtil nowMilli] +timeOffset;
+                sleep([ARTTestUtil bigSleep]);
 
-        sleep([ARTTestUtil bigSleep]);
-        intervalStart  = [ARTTestUtil nowMilli] + timeOffset;
-        sleep([ARTTestUtil bigSleep]);
+                [ARTTestUtil publishRealtimeMessages:thirdBatch count:thirdBatchTotal channel:channel completion:^{
+                    ARTDataQuery *query = [[ARTDataQuery alloc] init];
+                    query.start = [NSDate dateWithTimeIntervalSince1970:intervalStart/1000];
+                    query.end = [NSDate dateWithTimeIntervalSince1970:intervalEnd/1000];
+                    query.direction = ARTQueryDirectionBackwards;
 
-        [ARTTestUtil publishRealtimeMessages:secondBatch count:secondBatchTotal channel:channel expectation:secondExpecation];
-
-        [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-        sleep([ARTTestUtil bigSleep]);
-        intervalEnd = [ARTTestUtil nowMilli] +timeOffset;
-        sleep([ARTTestUtil bigSleep]);
-
-
-        XCTestExpectation *thirdExpectation = [self expectationWithDescription:@"send_third_batch"];
-
-        [ARTTestUtil publishRealtimeMessages:thirdBatch count:thirdBatchTotal channel:channel expectation:thirdExpectation];
-        [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-        
-        XCTestExpectation *fourthExpectation = [self expectationWithDescription:@"send_fourth_batch"];
-
-        ARTDataQuery *query = [[ARTDataQuery alloc] init];
-        query.start = [NSDate dateWithTimeIntervalSince1970:intervalStart/1000];
-        query.end = [NSDate dateWithTimeIntervalSince1970:intervalEnd/1000];
-        query.direction = ARTQueryDirectionBackwards;
-
-        [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
-                                    XCTAssert(!error);
-                                    XCTAssertFalse([result hasNext]);
-                                    NSArray * items = [result items];
-                                    XCTAssertTrue(items != nil);
-                                    XCTAssertEqual([items count], secondBatchTotal);
-                                    for(int i=0; i < [items count]; i++) {
-                                        NSString * pattern = [secondBatch stringByAppendingString:@"%d"];
-                                        NSString * goalStr = [NSString stringWithFormat:pattern,secondBatchTotal -1 - i];
-                                        ARTMessage * m = [items objectAtIndex:i];
-                                        XCTAssertEqualObjects(goalStr, [m content]);
-                                    }
-                                    [fourthExpectation fulfill];
-                                }];
-        
-        [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+                    [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                        XCTAssert(!error);
+                        XCTAssertFalse([result hasNext]);
+                        NSArray *items = [result items];
+                        XCTAssertTrue(items != nil);
+                        XCTAssertEqual([items count], secondBatchTotal);
+                        for(int i=0; i < [items count]; i++) {
+                            NSString *pattern = [secondBatch stringByAppendingString:@"%d"];
+                            NSString *goalStr = [NSString stringWithFormat:pattern,secondBatchTotal -1 - i];
+                            ARTMessage *m = [items objectAtIndex:i];
+                            XCTAssertEqualObjects(goalStr, [m content]);
+                        }
+                        [expectation fulfill];
+                    }];
+                }];
+            }];
+        }];
     }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
--(void) testTimeForwards {
-      XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
+- (void)testTimeForwards {
     __block long long timeOffset= 0;
-    
+
+    XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         [realtime time:^(NSDate *time, NSError *error) {
@@ -393,174 +379,111 @@
             [e fulfill];
         }];
     }];
-
-    
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"firstExpectation"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime channel:@"test_history_time_forwards"];
-        int firstBatchTotal =3;
-        int secondBatchTotal =2;
-        int thirdBatchTotal =1;
-        long long intervalStart=0, intervalEnd=0;
+
+        int firstBatchTotal = 3;
+        int secondBatchTotal = 2;
+        int thirdBatchTotal = 1;
+        __block long long intervalStart = 0, intervalEnd = 0;
+
         NSString * firstBatch = @"first_batch";
         NSString * secondBatch = @"second_batch";
         NSString * thirdBatch =@"third_batch";
-        XCTestExpectation *firstExpectation = [self expectationWithDescription:@"firstExpectation"];
-        
-        
-        [ARTTestUtil publishRealtimeMessages:firstBatch count:firstBatchTotal channel:channel expectation:firstExpectation];
-        
-        [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-        
-        XCTestExpectation *secondExpecation = [self expectationWithDescription:@"send_second_batch"];
-        
-        sleep([ARTTestUtil bigSleep]);
-        intervalStart  = [ARTTestUtil nowMilli] + timeOffset;
-        sleep([ARTTestUtil bigSleep]);
-        
-        [ARTTestUtil publishRealtimeMessages:secondBatch count:secondBatchTotal channel:channel expectation:secondExpecation];
-        
-        [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-        sleep([ARTTestUtil bigSleep]);
-        intervalEnd = [ARTTestUtil nowMilli] +timeOffset;
-        sleep([ARTTestUtil bigSleep]);
-        
-        
-        XCTestExpectation *thirdExpectation = [self expectationWithDescription:@"send_third_batch"];
-        
-        [ARTTestUtil publishRealtimeMessages:thirdBatch count:thirdBatchTotal channel:channel expectation:thirdExpectation];
-        [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-        XCTestExpectation *fourthExpectation = [self expectationWithDescription:@"send_fourth_batch"];
 
-        ARTDataQuery *query = [[ARTDataQuery alloc] init];
-        query.start = [NSDate dateWithTimeIntervalSince1970:intervalStart/1000];
-        query.end = [NSDate dateWithTimeIntervalSince1970:intervalEnd/1000];
-        query.direction = ARTQueryDirectionForwards;
+        [ARTTestUtil publishRealtimeMessages:firstBatch count:firstBatchTotal channel:channel completion:^{
+            sleep([ARTTestUtil bigSleep]);
+            intervalStart = [ARTTestUtil nowMilli] + timeOffset;
+            sleep([ARTTestUtil bigSleep]);
 
-        [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
-                                    XCTAssert(!error);
-                                    XCTAssertFalse([result hasNext]);
-                                    NSArray * items = [result items];
-                                    XCTAssertTrue(items != nil);
-                                    XCTAssertEqual([items count], secondBatchTotal);
-                                    for (int i=0; i < [items count]; i++)
-                                    {
-                                        NSString * pattern = [secondBatch stringByAppendingString:@"%d"];
-                                        NSString * goalStr = [NSString stringWithFormat:pattern, i];
-                                        
-                                        ARTMessage * m = [items objectAtIndex:i];
-                                        XCTAssertEqualObjects(goalStr, [m content]);
-                                    }
-                                    [fourthExpectation fulfill];
-                                }];
-        
-        [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-        
-    }];
-}
+            [ARTTestUtil publishRealtimeMessages:secondBatch count:secondBatchTotal channel:channel completion:^{
+                sleep([ARTTestUtil bigSleep]);
+                intervalEnd = [ARTTestUtil nowMilli] +timeOffset;
+                sleep([ARTTestUtil bigSleep]);
 
+                [ARTTestUtil publishRealtimeMessages:thirdBatch count:thirdBatchTotal channel:channel completion:^{
+                    ARTDataQuery *query = [[ARTDataQuery alloc] init];
+                    query.start = [NSDate dateWithTimeIntervalSince1970:intervalStart/1000];
+                    query.end = [NSDate dateWithTimeIntervalSince1970:intervalEnd/1000];
+                    query.direction = ARTQueryDirectionForwards;
 
-- (void)testHistoryFromAttach {
-    
-    XCTestExpectation *e = [self expectationWithDescription:@"waitExp"];
-    [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
-        [e fulfill];
-    }];
-    
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    NSString * channelName = @"test_history_time_forwards";
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
-        XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_first_batch"];
-        ARTRealtime * realtime =[[ARTRealtime alloc] initWithOptions:options];
-        _realtime = realtime;
+                    [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                        XCTAssert(!error);
+                        XCTAssertFalse([result hasNext]);
+                        NSArray * items = [result items];
+                        XCTAssertTrue(items != nil);
+                        XCTAssertEqual([items count], secondBatchTotal);
+                        for (int i=0; i < [items count]; i++) {
+                            NSString * pattern = [secondBatch stringByAppendingString:@"%d"];
+                            NSString * goalStr = [NSString stringWithFormat:pattern, i];
 
-    
-        ARTRealtimeChannel *channel = [realtime channel:channelName];
-        
-        int firstBatchTotal =3;
-        //send first batch, which we won't recieve in the history request
-        {
-            __block int numReceived =0;
-            
-            for(int i=0; i < firstBatchTotal; i++) {
-                
-                NSString * pub = [NSString stringWithFormat:@"test%d", i];
-                sleep([ARTTestUtil smallSleep]);
-                [channel publish:pub cb:^(ARTStatus *status) {
-                    XCTAssertEqual(ARTStateOk, status.state);
-                    ++numReceived;
-                    if(numReceived ==firstBatchTotal) {
-                        [firstExpectation fulfill];
-                    }
-                }];
-            }
-        }
-        [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-        XCTestExpectation *secondExpecation = [self expectationWithDescription:@"get_history_channel2"];
-        ARTRealtime * realtime2 =[[ARTRealtime alloc] initWithOptions:options];
-        _realtime2 = realtime2;
-        ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
-
-        ARTDataQuery *query = [[ARTDataQuery alloc] init];
-        query.direction = ARTQueryDirectionBackwards;
-
-        [channel2 history:query callback:^(ARTPaginatedResult *result, NSError *error) {
-                XCTAssert(!error);
-                XCTAssertFalse([result hasNext]);
-                NSArray * items = [result items];
-                XCTAssertTrue(items != nil);
-                XCTAssertEqual([items count], firstBatchTotal);
-                for(int i=0;i < [items count]; i++) {
-                    NSString * goalStr = [NSString stringWithFormat:@"test%d",firstBatchTotal -1 - i];
-                    ARTMessage * m = [items objectAtIndex:i];
-                    XCTAssertEqualObjects(goalStr, [m content]);
-                }
-                [secondExpecation fulfill];
-        }];
-    
-        [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    }];
-}
-
-
-//TODO find out why untilAttach doesn't work
-/*
-- (void)testHistoryUntilAttach {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testHistoryUntilAttach"];
-    NSString * firstString = @"firstString";
-    NSString * channelName  = @"name";
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
-        ARTRealtime * realtime =[[ARTRealtime alloc] initWithOptions:options];
-        _realtime = realtime;
-        ARTRealtime * realtime2 =[[ARTRealtime alloc] initWithOptions:options];
-        _realtime2 = realtime2;
-        ARTRealtimeChannel *channel = [realtime channel:channelName];
-        [channel publish:firstString cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStateOk, status.state);
-        }];
-      //  ARTRealtimeChannel *channel = [realtime channel:@"untilAttach"];
-        XCTAssertThrows([channel historyWithParams:@{@"until_attach" : @"true"} cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {}]);
-        [channel publish:@"testString" cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStateOk, status.state);
-            [channel publish:@"testString2" cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStateOk, status.state);
-                [channel historyWithParams:@{@"direction" : @"forwards", @"until_attach" : @"true"} cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                    XCTAssertEqual(ARTStateOk, status.state);
-                    NSArray *messages = [result currentItems];
-                    XCTAssertEqual(2, messages.count);
-                    ARTMessage *m0 = messages[0];
-                    ARTMessage *m1 = messages[1];
-                    XCTAssertEqualObjects(@"testString", [m0 content]);
-                    XCTAssertEqualObjects(@"testString2", [m1 content]);
-                    
-                    [exp fulfill];
+                            ARTMessage * m = [items objectAtIndex:i];
+                            XCTAssertEqualObjects(goalStr, [m content]);
+                        }
+                        [expectation fulfill];
+                    }];
                 }];
             }];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
- */
+
+
+- (void)testHistoryFromAttach {
+    XCTestExpectation *e = [self expectationWithDescription:@"waitExp"];
+    [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+        [e fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+
+    NSString *channelName = @"test_history_time_forwards";
+    XCTestExpectation *expecation = [self expectationWithDescription:@"send_first_batch"];
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+        ARTRealtime * realtime =[[ARTRealtime alloc] initWithOptions:options];
+        _realtime = realtime;
+
+        ARTRealtimeChannel *channel = [realtime channel:channelName];
+        
+        int firstBatchTotal =3;
+        //send first batch, which we won't recieve in the history request
+        __block int numReceived =0;
+
+        for(int i=0; i < firstBatchTotal; i++) {
+            NSString *pub = [NSString stringWithFormat:@"test%d", i];
+            sleep([ARTTestUtil smallSleep]);
+            [channel publish:pub cb:^(ARTStatus *status) {
+                XCTAssertEqual(ARTStateOk, status.state);
+                ++numReceived;
+                if (numReceived == firstBatchTotal) {
+                    ARTRealtime *realtime2 =[[ARTRealtime alloc] initWithOptions:options];
+                    _realtime2 = realtime2;
+                    ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
+
+                    ARTDataQuery *query = [[ARTDataQuery alloc] init];
+                    query.direction = ARTQueryDirectionBackwards;
+
+                    [channel2 history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                        XCTAssert(!error);
+                        XCTAssertFalse([result hasNext]);
+                        NSArray * items = [result items];
+                        XCTAssertTrue(items != nil);
+                        XCTAssertEqual([items count], firstBatchTotal);
+                        for(int i=0;i < [items count]; i++) {
+                            NSString * goalStr = [NSString stringWithFormat:@"test%d",firstBatchTotal -1 - i];
+                            ARTMessage * m = [items objectAtIndex:i];
+                            XCTAssertEqualObjects(goalStr, [m content]);
+                        }
+                        [expecation fulfill];
+                    }];
+                }
+            }];
+        }
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
 
 @end

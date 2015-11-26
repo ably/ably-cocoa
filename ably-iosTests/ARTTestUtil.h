@@ -45,6 +45,8 @@ typedef void (^ARTRealtimeTestCallback)(ARTRealtime *realtime, ARTRealtimeConnec
 
 + (void)testRest:(ARTRestConstructorCb)cb;
 
++ (void)testRealtime:(ARTClientOptions *)options callback:(ARTRealtimeConstructorCb)cb;
+
 // FIXME: try to unify testRealtime, testRealtimeV2 and others that are private
 + (void)testRealtime:(ARTRealtimeConstructorCb)cb;
 
@@ -63,10 +65,9 @@ typedef void (^ARTRealtimeTestCallback)(ARTRealtime *realtime, ARTRealtimeConnec
 + (float)smallSleep;
 + (float)bigSleep;
 
-+ (void)publishRestMessages:(NSString *) prefix count:(int) count channel:(ARTChannel *)channel expectation:(XCTestExpectation *)expectation;
-
-+ (void)publishRealtimeMessages:(NSString *)prefix count:(int)count channel:(ARTRealtimeChannel *)channel expectation:(XCTestExpectation *)expectation;
-+ (void)publishEnterMessages:(NSString *)clientIdPrefix count:(int)count channel:(ARTRealtimeChannel *)channel expectation:(XCTestExpectation *)expectation;
++ (void)publishRestMessages:(NSString *) prefix count:(int) count channel:(ARTChannel *)channel completion:(void (^)())completion;
++ (void)publishRealtimeMessages:(NSString *)prefix count:(int)count channel:(ARTRealtimeChannel *)channel completion:(void (^)())completion;
++ (void)publishEnterMessages:(NSString *)clientIdPrefix count:(int)count channel:(ARTRealtimeChannel *)channel completion:(void (^)())completion;
 
 + (NSString *)getCrypto128Json;
 + (NSString *)getTestAppSetupJson;

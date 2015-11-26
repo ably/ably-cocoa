@@ -58,7 +58,7 @@
         [c publish:@"message" callback:^(NSError *error) {
             // "Invalid credentials" because it is sending the request to the production server
             XCTAssert(error);
-            XCTAssertEqual(error.code, 40005);
+            XCTAssertEqual(error.code, 40100);
             [exp fulfill];
         }];
     }];
