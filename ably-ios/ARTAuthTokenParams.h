@@ -50,6 +50,7 @@ ART_ASSUME_NONNULL_BEGIN
 @interface ARTAuthTokenParams(SignedRequest)
 
 - (ARTAuthTokenRequest *)sign:(NSString *)key;
+- (ARTAuthTokenRequest *)sign:(NSString *)key withNonce:(NSString *)randomNonce;
 
 @end
 

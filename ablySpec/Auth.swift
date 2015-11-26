@@ -759,6 +759,18 @@ class Auth : QuickSpec {
                 })
             }
 
+            // RSA9g
+            it("should generate a valid HMAC") {
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
+
+                let tokenParams = ARTAuthTokenParams(clientId: "client_string")
+
+                rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
+                    let signed = tokenParams.sign(rest.options.key!, withNonce: tokenRequest?.nonce ?? "")
+                    expect(tokenRequest?.mac).to(equal(signed.mac))
+                })
+            }
+
         }
 
         // RSA10
