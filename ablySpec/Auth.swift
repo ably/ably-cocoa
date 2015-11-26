@@ -690,6 +690,15 @@ class Auth : QuickSpec {
                 })
             }
 
+            // RSA9c
+            it("should generate a unique 16+ character nonce if none is provided") {
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
+
+                rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
+                    expect(tokenRequest?.nonce.characters).to(haveCount(16))
+                })
+            }
+
         }
 
         // RSA10
