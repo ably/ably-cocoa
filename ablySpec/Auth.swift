@@ -699,6 +699,40 @@ class Auth : QuickSpec {
                 })
             }
 
+            // RSA9d
+            context("should generate a timestamp") {
+
+                it("from current time if not provided") {
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
+
+                    rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
+                        expect(tokenRequest?.timestamp).to(beCloseTo(NSDate(), within: 1.0))
+                    })
+                }
+
+                it("will retrieve the server time if queryTime is true") {
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
+
+                    var serverTime: NSDate?
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.time({ date, error in
+                            serverTime = date
+                            done()
+                        })
+                    }
+
+                    expect(serverTime).toNot(beNil(), description: "Server time is nil")
+
+                    let authOptions = ARTAuthOptions()
+                    authOptions.queryTime = true
+
+                    rest.auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
+                        expect(tokenRequest?.timestamp).to(beCloseTo(serverTime!, within: 6.0))
+                    })
+                }
+                
+            }
+
         }
 
         // RSA10
