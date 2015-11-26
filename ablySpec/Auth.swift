@@ -598,6 +598,33 @@ class Auth : QuickSpec {
 
                 expect(createTokenRequestMethodWasCalled).to(beTrue())
             }
+
+            // RSA8b
+            it("should support all TokenParams") {
+                let options = AblyTests.commonAppSetup()
+                let rest = ARTRest(options: options)
+
+                let expectedClientId = "client_string"
+                let expectedTtl = 6.0
+                let expectedCapability = "{}"
+
+                let tokenParams = ARTAuthTokenParams(clientId: expectedClientId)
+                tokenParams.ttl = expectedTtl
+                tokenParams.capability = expectedCapability
+
+                rest.auth.requestToken(tokenParams, withOptions: nil, callback: { tokenDetails, error in
+                    expect(tokenDetails?.clientId).to(equal(expectedClientId))
+
+                    expect(tokenDetails?.issued).toNot(beNil())
+                    expect(tokenDetails?.expires).toNot(beNil())
+
+                    if let issued = tokenDetails?.issued, let expires = tokenDetails!.expires {
+                        expect(issued.timeIntervalSinceDate(expires)).to(equal(expectedTtl))
+                    }
+
+                    expect(tokenDetails?.capability).to(equal(expectedCapability))
+                })
+            }
         }
     }
 }
