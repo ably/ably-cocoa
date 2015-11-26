@@ -746,6 +746,19 @@ class Auth : QuickSpec {
                 })
             }
 
+            // RSA9f
+            it("should provide capability has json text") {
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
+
+                let tokenParams = ARTAuthTokenParams()
+                let expectedCapability = "{ - }" //Invalid
+                tokenParams.capability = expectedCapability
+
+                rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
+                    expect(tokenRequest?.capability).to(equal(expectedCapability))
+                })
+            }
+
         }
 
         // RSA10
