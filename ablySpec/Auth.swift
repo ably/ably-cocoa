@@ -515,17 +515,11 @@ class Auth : QuickSpec {
 
             // RSA8a
             it("implicitly creates a TokenRequest") {
-                let options = ARTClientOptions(key: "6p6USg.CNwGdA:uwJU1qsSf_Qe9VDH")
-                // Test
-                options.authUrl = NSURL(string: "http://auth.ably.io")
-                options.authParams = [NSURLQueryItem(name: "ttl", value: "aaa")]
-                options.authParams = [NSURLQueryItem(name: "rp", value: "true")]
-                options.authMethod = "POST"
-                
+                let options = AblyTests.commonAppSetup()
                 let rest = ARTRest(options: options)
-                
+
                 rest.auth.requestToken(nil, withOptions: nil, callback: { tokenDetails, error in
-                    
+                    expect(tokenDetails?.token).toNot(beEmpty())
                 })
             }
         }
