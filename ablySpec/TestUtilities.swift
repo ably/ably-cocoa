@@ -332,7 +332,7 @@ class MockTransport: ARTWebSocketTransport {
 
     var lastUrl: NSURL?
     var lastSentMessage: ARTProtocolMessage?
-    var connectedMessage: ARTProtocolMessage?
+    var lastReceivedMessage: ARTProtocolMessage?
 
     override func setupWebSocket(params: [NSURLQueryItem], withOptions options: ARTClientOptions) -> NSURL {
         let url = super.setupWebSocket(params, withOptions: options)
@@ -346,9 +346,7 @@ class MockTransport: ARTWebSocketTransport {
     }
 
     override func receive(msg: ARTProtocolMessage) {
-        if msg.action == .Connected {
-            connectedMessage = msg
-        }
+        lastReceivedMessage = msg
         super.receive(msg)
     }
 

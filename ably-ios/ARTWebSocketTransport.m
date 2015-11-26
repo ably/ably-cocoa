@@ -208,7 +208,7 @@ enum {
 
 - (void)webSocketOpen {
     ARTWebSocketTransport * __weak weakSelf = self;
-    [self.logger debug:__FILE__ line:__LINE__ message:@"%p websocket did open", self];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"%p websocket did open", self]; 
 
     CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
         ARTWebSocketTransport *s = weakSelf;
