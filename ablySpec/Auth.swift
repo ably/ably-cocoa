@@ -730,7 +730,20 @@ class Auth : QuickSpec {
                         expect(tokenRequest?.timestamp).to(beCloseTo(serverTime!, within: 6.0))
                     })
                 }
-                
+            }
+
+            // RSA9e
+            it("should TTL be optional and specified in milliseconds") {
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
+
+                let tokenParams = ARTAuthTokenParams()
+                let expectedTtl = 6.0
+                tokenParams.ttl = expectedTtl
+
+                rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
+                    //In Seconds because TTL property is a NSTimeInterval but further it does the conversion to miliseconds
+                    expect(tokenRequest?.ttl).to(equal(expectedTtl))
+                })
             }
 
         }
