@@ -602,6 +602,8 @@ class Auth : QuickSpec {
             // RSA8b
             it("should support all TokenParams") {
                 let options = AblyTests.commonAppSetup()
+                options.clientId = "old_client"
+
                 let rest = ARTRest(options: options)
 
                 let expectedClientId = "client_string"
