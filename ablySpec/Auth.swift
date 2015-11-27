@@ -825,6 +825,33 @@ class Auth : QuickSpec {
                 }
             }
 
+            // RSA10h
+            it("should use the configured Auth#clientId, if not null, by default") {
+                let options = AblyTests.commonAppSetup()
+
+                // ClientId null
+                waitUntil(timeout: testTimeout) { done in
+                    ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
+                        expect(error).to(beNil())
+                        expect(tokenDetails).toNot(beNil())
+                        expect(tokenDetails?.clientId).to(beNil())
+                        done()
+                    }
+                }
+
+                options.clientId = "client_string"
+
+                // ClientId not null
+                waitUntil(timeout: testTimeout) { done in
+                    ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
+                        expect(error).to(beNil())
+                        expect(tokenDetails).toNot(beNil())
+                        expect(tokenDetails?.clientId).to(equal(options.clientId))
+                        done()
+                    }
+                }
+            }
+
 
         }
     }
