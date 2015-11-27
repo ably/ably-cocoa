@@ -704,6 +704,18 @@ class Auth : QuickSpec {
                 }
             }
 
+            // RSA10b
+            it("should supports all TokenParams and AuthOptions") {
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
+
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.authorise(ARTAuthTokenParams(), options: ARTAuthOptions(), force: false, callback: { tokenDetails, error in
+                        expect(error).to(beNil())
+                        done()
+                    })
+                }
+            }
+
 
         }
     }
