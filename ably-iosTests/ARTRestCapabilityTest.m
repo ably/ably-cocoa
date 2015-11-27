@@ -52,7 +52,7 @@
                 ARTAuthTokenParams *tokenParams = [[ARTAuthTokenParams alloc] initWithClientId:options.clientId];
                 tokenParams.capability = @"{\"canpublish:*\":[\"publish\"],\"canpublish:andpresence\":[\"presence\",\"publish\"],\"cansubscribe:*\":[\"subscribe\"]}";
 
-                [rest.auth authorise:tokenParams options:options force:false callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
+                [rest.auth authorise:tokenParams options:options callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
                     options.token = tokenDetails.token;
                     cb(_rest);
                 }];
