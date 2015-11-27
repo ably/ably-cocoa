@@ -804,6 +804,15 @@ class Auth : QuickSpec {
                 }
             }
 
+            func expectTokenDetails(tokenDetails: ARTAuthTokenDetails?) {
+                expect(tokenDetails).toNot(beNil())
+                expect(tokenDetails).to(beAnInstanceOf(ARTAuthTokenDetails))
+                expect(tokenDetails?.token).toNot(beEmpty())
+                expect(tokenDetails?.issued).toNot(beNil())
+                expect(tokenDetails?.expires).toNot(beNil())
+                expect(tokenDetails?.expires?.timeIntervalSince1970).to(beGreaterThan(tokenDetails?.issued?.timeIntervalSince1970))
+            }
+
             // RSA10f
             it("should return TokenDetails with valid token metadata") {
                 let options = AblyTests.commonAppSetup()
@@ -813,12 +822,7 @@ class Auth : QuickSpec {
                 waitUntil(timeout: testTimeout) { done in
                     rest.auth.authorise(nil, options: nil) { tokenDetails, error in
                         expect(error).to(beNil())
-                        expect(tokenDetails).toNot(beNil())
-                        expect(tokenDetails).to(beAnInstanceOf(ARTAuthTokenDetails))
-                        expect(tokenDetails?.token).toNot(beEmpty())
-                        expect(tokenDetails?.issued).toNot(beNil())
-                        expect(tokenDetails?.expires).toNot(beNil())
-                        expect(tokenDetails?.expires?.timeIntervalSince1970).to(beGreaterThan(tokenDetails?.issued?.timeIntervalSince1970))
+                        expectTokenDetails(tokenDetails)
                         expect(tokenDetails?.clientId).to(equal(options.clientId))
                         done()
                     }
@@ -852,7 +856,51 @@ class Auth : QuickSpec {
                 }
             }
 
+            // RSA10i
+            context("should adhere to all requirements relating to") {
 
+                it("TokenParams and authCallback") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "client_string"
+                    let rest = ARTRest(options: options)
+
+                    let expectedClientId = "client_from_callback"
+
+                    let tokenParams = ARTAuthTokenParams()
+                    tokenParams.clientId = "client_from_params"
+
+                    let authOptions = ARTAuthOptions()
+                    authOptions.authCallback = { tokenParams, callback in
+                        rest.auth.createTokenRequest(ARTAuthTokenParams(clientId: expectedClientId), options: options, callback: callback)
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.authorise(tokenParams, options: authOptions) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            expectTokenDetails(tokenDetails)
+                            expect(tokenDetails?.clientId).to(equal(expectedClientId))
+                            done()
+                        }
+                    }
+                }
+
+                it("authUrl") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "client_string"
+                    let rest = ARTRest(options: options)
+
+                    let authOptions = ARTAuthOptions()
+                    authOptions.authUrl = NSURL(string: "http://auth.ably.io")!
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.authorise(nil, options: authOptions) { tokenDetails, error in
+                            expect(error).toNot(beNil())
+                            expect(tokenDetails).to(beNil())
+                            done()
+                        }
+                    }
+                }
+            }
         }
     }
 }
