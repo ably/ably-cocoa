@@ -716,6 +716,54 @@ class Auth : QuickSpec {
                 }
             }
 
+            // RSA10c
+            it("should create a new token when no token exists or current token has expired") {
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
+
+                let tokenParams = ARTAuthTokenParams()
+                tokenParams.ttl = 3.0 //Seconds
+
+                // FIXME: buffer of 15s for token expiry
+
+                var expiredToken: String?
+
+                // No token exists
+                expect(rest.auth.tokenDetails?.token).to(beNil())
+
+                // Created token
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.authorise(tokenParams, options: nil, force: false) { tokenDetails, error in
+                        expect(error).to(beNil())
+                        expect(tokenDetails).toNot(beNil())
+                        expect(tokenDetails?.token).toNot(beEmpty())
+
+                        if let token = tokenDetails?.token {
+                            // Delay for token expiration
+                            delay(tokenParams.ttl) {
+                                expiredToken = token
+                                done()
+                            }
+                        }
+                        else {
+                            done()
+                        }
+                    }
+                }
+
+                // Token exists
+                expect(rest.auth.tokenDetails?.token).toNot(beNil())
+
+                // New token
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.authorise(nil, options: nil, force: false) { tokenDetails, error in
+                        expect(error).to(beNil())
+                        expect(tokenDetails).toNot(beNil())
+                        expect(tokenDetails?.token).toNot(equal(expiredToken))
+                        done()
+                    }
+                }
+            }
+
 
         }
     }
