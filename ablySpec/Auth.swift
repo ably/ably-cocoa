@@ -804,6 +804,27 @@ class Auth : QuickSpec {
                 }
             }
 
+            // RSA10f
+            it("should return TokenDetails with valid token metadata") {
+                let options = AblyTests.commonAppSetup()
+                options.clientId = "client_string"
+                let rest = ARTRest(options: options)
+
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                        expect(error).to(beNil())
+                        expect(tokenDetails).toNot(beNil())
+                        expect(tokenDetails).to(beAnInstanceOf(ARTAuthTokenDetails))
+                        expect(tokenDetails?.token).toNot(beEmpty())
+                        expect(tokenDetails?.issued).toNot(beNil())
+                        expect(tokenDetails?.expires).toNot(beNil())
+                        expect(tokenDetails?.expires?.timeIntervalSince1970).to(beGreaterThan(tokenDetails?.issued?.timeIntervalSince1970))
+                        expect(tokenDetails?.clientId).to(equal(options.clientId))
+                        done()
+                    }
+                }
+            }
+
 
         }
     }
