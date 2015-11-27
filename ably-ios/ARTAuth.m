@@ -300,6 +300,11 @@
 
 - (void)setTokenDetails:(ARTAuthTokenDetails *)tokenDetails {
     _tokenDetails = tokenDetails;
+    // If a token has been setted and the current Auth method is Basic then for now on use Token Authentication
+    if (_tokenDetails && _method == ARTAuthMethodBasic && _tokenDetails.token && ![_tokenDetails.token isEqualToString:@""]) {
+        _method = ARTAuthMethodToken;
+        [self.logger debug:@"ARTAuth: changed auth method from Basic to Token"];
+    }
 }
 
 - (NSString *)getClientId {

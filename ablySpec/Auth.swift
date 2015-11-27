@@ -651,5 +651,60 @@ class Auth : QuickSpec {
 
             }
         }
+
+        // RSA10
+        describe("authorise") {
+
+            // RSA10a
+            it("should create a token if needed and use it") {
+                let options = AblyTests.commonAppSetup()
+                var validToken: String?
+
+                // Create a new token
+                waitUntil(timeout: testTimeout) { done in
+                    let rest = ARTRest(options: options)
+
+                    rest.auth.authorise(nil, options: nil, force: false, callback: { tokenDetails, error in
+                        expect(rest.auth.method).to(equal(ARTAuthMethod.Token))
+                        expect(tokenDetails).toNot(beNil())
+                        expect(tokenDetails?.token).toNot(beEmpty())
+
+                        if let token = tokenDetails?.token {
+                            validToken = token
+                        }
+
+                        publishTestMessage(rest, completion: { error in
+                            expect(error).to(beNil())
+                            done()
+                        })
+                    })
+                }
+
+                guard let currentToken = validToken else { return }
+
+                waitUntil(timeout: testTimeout) { done in
+                    // New client with Basic auth
+                    let rest = ARTRest(options: options)
+                    publishTestMessage(rest, completion: { error in
+                        expect(error).to(beNil())
+                        expect(rest.auth.method).to(equal(ARTAuthMethod.Basic))
+
+                        // Reuse the valid token
+                        rest.auth.setTokenDetails(ARTAuthTokenDetails(token: currentToken))
+                        rest.auth.authorise(nil, options: nil, force: false, callback: { tokenDetails, error in
+                            expect(rest.auth.method).to(equal(ARTAuthMethod.Token))
+                            expect(tokenDetails?.token).to(equal(currentToken))
+
+                            publishTestMessage(rest, completion: { error in
+                                expect(error).to(beNil())
+                                done()
+                            })
+                        })
+                    })
+                }
+            }
+
+
+        }
     }
 }
