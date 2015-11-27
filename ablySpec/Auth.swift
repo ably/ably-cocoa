@@ -664,7 +664,7 @@ class Auth : QuickSpec {
                 waitUntil(timeout: testTimeout) { done in
                     let rest = ARTRest(options: options)
 
-                    rest.auth.authorise(nil, options: nil, force: false, callback: { tokenDetails, error in
+                    rest.auth.authorise(nil, options: nil, callback: { tokenDetails, error in
                         expect(rest.auth.method).to(equal(ARTAuthMethod.Token))
                         expect(tokenDetails).toNot(beNil())
                         expect(tokenDetails?.token).toNot(beEmpty())
@@ -691,7 +691,7 @@ class Auth : QuickSpec {
 
                         // Reuse the valid token
                         rest.auth.setTokenDetails(ARTAuthTokenDetails(token: currentToken))
-                        rest.auth.authorise(nil, options: nil, force: false, callback: { tokenDetails, error in
+                        rest.auth.authorise(nil, options: nil, callback: { tokenDetails, error in
                             expect(rest.auth.method).to(equal(ARTAuthMethod.Token))
                             expect(tokenDetails?.token).to(equal(currentToken))
 
@@ -709,7 +709,7 @@ class Auth : QuickSpec {
                 let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                 waitUntil(timeout: testTimeout) { done in
-                    rest.auth.authorise(ARTAuthTokenParams(), options: ARTAuthOptions(), force: false, callback: { tokenDetails, error in
+                    rest.auth.authorise(ARTAuthTokenParams(), options: ARTAuthOptions(), callback: { tokenDetails, error in
                         expect(error).to(beNil())
                         done()
                     })
@@ -732,7 +732,7 @@ class Auth : QuickSpec {
 
                 // Created token
                 waitUntil(timeout: testTimeout) { done in
-                    rest.auth.authorise(tokenParams, options: nil, force: false) { tokenDetails, error in
+                    rest.auth.authorise(tokenParams, options: nil) { tokenDetails, error in
                         expect(error).to(beNil())
                         expect(tokenDetails).toNot(beNil())
                         expect(tokenDetails?.token).toNot(beEmpty())
@@ -755,10 +755,50 @@ class Auth : QuickSpec {
 
                 // New token
                 waitUntil(timeout: testTimeout) { done in
-                    rest.auth.authorise(nil, options: nil, force: false) { tokenDetails, error in
+                    rest.auth.authorise(nil, options: nil) { tokenDetails, error in
                         expect(error).to(beNil())
                         expect(tokenDetails).toNot(beNil())
                         expect(tokenDetails?.token).toNot(equal(expiredToken))
+                        done()
+                    }
+                }
+            }
+
+            // RSA10d
+            it("should issue a new token even if an existing token exists when AuthOption.force is true") {
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
+                var validToken: String?
+
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                        expect(error).to(beNil())
+                        expect(tokenDetails?.token).toNot(beEmpty())
+                        if let token = tokenDetails?.token {
+                            validToken = token
+                        }
+                        done()
+                    }
+                }
+
+                guard let currentToken = validToken else { return }
+
+                // Current token
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                        expect(error).to(beNil())
+                        expect(tokenDetails?.token).to(equal(currentToken))
+                        done()
+                    }
+                }
+
+                let authOptions = ARTAuthOptions()
+                authOptions.force = true
+
+                // Force new token
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.authorise(nil, options: authOptions) { tokenDetails, error in
+                        expect(error).to(beNil())
+                        expect(tokenDetails?.token).toNot(equal(currentToken))
                         done()
                     }
                 }
