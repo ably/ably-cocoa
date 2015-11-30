@@ -133,6 +133,9 @@
 
 @end
 
+
+// MARK: Base64
+
 @implementation ARTBase64PayloadEncoder
 
 + (instancetype)instance {
@@ -208,6 +211,9 @@
 
 @end
 
+
+// MARK: UTF-8
+
 @implementation ARTUtf8PayloadEncoder
 
 + (instancetype)instance {
@@ -256,6 +262,9 @@
 }
 
 @end
+
+
+// MARK: JSON
 
 @implementation ARTJsonPayloadEncoder
 
@@ -316,6 +325,9 @@
 }
 
 @end
+
+
+// MARK: Cipher
 
 @implementation ARTCipherPayloadEncoder
 
@@ -386,6 +398,9 @@
 }
 
 @end
+
+
+// MARK: Chain encoder
 
 @implementation ARTPayloadEncoderChain
 

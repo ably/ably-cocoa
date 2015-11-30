@@ -198,12 +198,38 @@ class RestChannel: QuickSpec {
                         
                         expect(message.content()).toNot(beNil())
                         expect(message.action).to(equal(ARTPresenceAction.Present))
-                        
+
                         // skip the encrypted message for now
-                        if message.payload.encoding?.rangeOfString("cipher") == nil {
+                        if message.payload.encoding.rangeOfString("cipher") == nil {
                             expect(message.content() as? NSObject).to(equal(fixtureMessage["data"].object as? NSObject))
                         }
                     }
+                }
+            }
+        }
+
+        // RSL4a
+        it("RSL4a") {
+            let dictionary = ["number":3, "name":"John"]
+            let array = ["John", "Mary"]
+            let data = NSString(string: "123456").dataUsingEncoding(NSUTF8StringEncoding)!
+
+            let validCases: [AnyObject?] = ["text", "5", "56.33", nil, dictionary, array, data]
+            let invalidCases = [5, 56.33, NSDate()]
+
+            validCases.forEach { caseItem in
+                waitUntil(timeout: testTimeout) { done in
+                    channel.publish(caseItem, callback: { error in
+                        expect(error).to(beNil())
+                        done()
+                    })
+                }
+            }
+
+            invalidCases.forEach { caseItem in
+                waitUntil(timeout: testTimeout) { done in
+                    expect { channel.publish(caseItem, callback: nil) }.to(raiseException())
+                    done()
                 }
             }
         }
