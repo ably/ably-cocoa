@@ -300,6 +300,50 @@ class RestChannel: QuickSpec {
                 }
             }
 
+            // RSL4d4
+            it("messages received will be decoded based on the encoding field") {
+                let cases = [text, integer, decimal, dictionary, array, data]
+
+                cases.forEach { caseTest in
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(caseTest, callback: { error in
+                            expect(error).to(beNil())
+                            done()
+                        })
+                    }
+                }
+
+                var totalReceived = 0
+                channel.history(nil) { result, error in
+                    expect(error).to(beNil())
+                    expect(result).toNot(beNil())
+                    expect(result?.hasNext).to(beFalse())
+
+                    for (index, item) in (result?.items.reverse().enumerate())! {
+                        totalReceived++
+
+                        switch (item as? ARTMessage)?.payload.payload {
+                        case let value as NSDictionary:
+                            expect(value).to(equal(cases[index]))
+                            break
+                        case let value as NSArray:
+                            expect(value).to(equal(cases[index]))
+                            break
+                        case let value as NSData:
+                            expect(value).to(equal(cases[index]))
+                            break
+                        case let value as NSString:
+                            expect(value).to(equal(cases[index]))
+                            break
+                        default:
+                            XCTFail("Payload with unknown format")
+                            break
+                        }
+                    }
+                }
+                expect(totalReceived).toEventually(equal(cases.count), timeout: testTimeout)
+            }
+
 
         }
     }
