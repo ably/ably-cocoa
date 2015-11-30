@@ -53,10 +53,12 @@ class RestChannel: QuickSpec {
     override func spec() {
         var client: ARTRest!
         var channel: ARTChannel! //ARTRestChannel
-        
+        var mockExecutor: MockHTTPExecutor!
+
         beforeEach {
             client = ARTRest(options: AblyTests.setupOptions(AblyTests.jsonRestOptions))
             channel = client.channels.get(NSProcessInfo.processInfo().globallyUniqueString)
+            mockExecutor = MockHTTPExecutor()
         }
         
         // RSL1
@@ -221,20 +223,21 @@ class RestChannel: QuickSpec {
         }
 
         describe("message encoding") {
+
+            struct TestCase {
+                let value: AnyObject?
+                let expected: JSON
+            }
+
+            let text = "John"
+            let integer = "5"
+            let decimal = "65.33"
+            let dictionary = ["number":3, "name":"John"]
+            let array = ["John", "Mary"]
+            let data = NSString(string: "123456").dataUsingEncoding(NSUTF8StringEncoding)!
+
             // RSL4a
             it("payloads must be binary, strings, or objects capable of JSON representation") {
-                struct TestCase {
-                    let value: AnyObject?
-                    let expected: JSON
-                }
-
-                let text = "John"
-                let integer = "5"
-                let decimal = "65.33"
-                let dictionary = ["number":3, "name":"John"]
-                let array = ["John", "Mary"]
-                let data = NSString(string: "123456").dataUsingEncoding(NSUTF8StringEncoding)!
-
                 let validCases = [
                     TestCase(value: nil, expected: JSON([:])),
                     TestCase(value: text, expected: JSON(["data": text])),
@@ -245,7 +248,6 @@ class RestChannel: QuickSpec {
                     TestCase(value: data, expected: JSON(["data": data.toBase64, "encoding": "base64"])),
                 ]
 
-                let mockExecutor = MockHTTPExecutor()
                 client.httpExecutor = mockExecutor
 
                 validCases.forEach { caseTest in
@@ -271,6 +273,34 @@ class RestChannel: QuickSpec {
                     }
                 }
             }
+
+            // RSL4b
+            it("encoding attribute represents the encoding(s) applied in right to left") {
+                let encodingCases = [
+                    TestCase(value: text, expected: nil),
+                    TestCase(value: dictionary, expected: "json/base64"),
+                    TestCase(value: array, expected: "json/base64"),
+                    TestCase(value: data, expected: "base64"),
+                ]
+
+                client.httpExecutor = mockExecutor
+
+                encodingCases.forEach { caseItem in
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(caseItem.value, callback: { error in
+                            expect(error).to(beNil())
+
+                            if let request = mockExecutor.requests.last,
+                               let http = request.HTTPBody {
+                                expect(JSON(data: http)["encoding"]).to(equal(caseItem.expected))
+                            }
+                            done()
+                        })
+                    }
+                }
+            }
+
+
         }
     }
 }
