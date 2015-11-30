@@ -220,53 +220,55 @@ class RestChannel: QuickSpec {
             }
         }
 
-        // RSL4a
-        it("RSL4a") {
-            struct TestCase {
-                let value: AnyObject?
-                let expected: JSON
-            }
-
-            let text = "John"
-            let integer = "5"
-            let decimal = "65.33"
-            let dictionary = ["number":3, "name":"John"]
-            let array = ["John", "Mary"]
-            let data = NSString(string: "123456").dataUsingEncoding(NSUTF8StringEncoding)!
-
-            let validCases = [
-                TestCase(value: nil, expected: JSON([:])),
-                TestCase(value: text, expected: JSON(["data": text])),
-                TestCase(value: integer, expected: JSON(["data": integer])),
-                TestCase(value: decimal, expected: JSON(["data": decimal])),
-                TestCase(value: dictionary, expected: JSON(["data": (dictionary as NSDictionary).toBase64, "encoding": "json/base64"])),
-                TestCase(value: array, expected: JSON(["data": (array as NSArray).toBase64, "encoding": "json/base64"])),
-                TestCase(value: data, expected: JSON(["data": data.toBase64, "encoding": "base64"])),
-            ]
-
-            let mockExecutor = MockHTTPExecutor()
-            client.httpExecutor = mockExecutor
-
-            validCases.forEach { caseTest in
-                waitUntil(timeout: testTimeout) { done in
-                    channel.publish(caseTest.value, callback: { error in
-                        expect(error).to(beNil())
-
-                        if let request = mockExecutor.requests.last,
-                           let http = request.HTTPBody {
-                            expect(caseTest.expected.rawValue as? NSDictionary).to(equal(JSON(data: http).rawValue as? NSDictionary))
-                        }
-                        done()
-                    })
+        describe("message encoding") {
+            // RSL4a
+            it("payloads must be binary, strings, or objects capable of JSON representation") {
+                struct TestCase {
+                    let value: AnyObject?
+                    let expected: JSON
                 }
-            }
 
-            let invalidCases = [5, 56.33, NSDate()]
+                let text = "John"
+                let integer = "5"
+                let decimal = "65.33"
+                let dictionary = ["number":3, "name":"John"]
+                let array = ["John", "Mary"]
+                let data = NSString(string: "123456").dataUsingEncoding(NSUTF8StringEncoding)!
 
-            invalidCases.forEach { caseItem in
-                waitUntil(timeout: testTimeout) { done in
-                    expect { channel.publish(caseItem, callback: nil) }.to(raiseException())
-                    done()
+                let validCases = [
+                    TestCase(value: nil, expected: JSON([:])),
+                    TestCase(value: text, expected: JSON(["data": text])),
+                    TestCase(value: integer, expected: JSON(["data": integer])),
+                    TestCase(value: decimal, expected: JSON(["data": decimal])),
+                    TestCase(value: dictionary, expected: JSON(["data": (dictionary as NSDictionary).toBase64, "encoding": "json/base64"])),
+                    TestCase(value: array, expected: JSON(["data": (array as NSArray).toBase64, "encoding": "json/base64"])),
+                    TestCase(value: data, expected: JSON(["data": data.toBase64, "encoding": "base64"])),
+                ]
+
+                let mockExecutor = MockHTTPExecutor()
+                client.httpExecutor = mockExecutor
+
+                validCases.forEach { caseTest in
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(caseTest.value, callback: { error in
+                            expect(error).to(beNil())
+
+                            if let request = mockExecutor.requests.last,
+                                let http = request.HTTPBody {
+                                    expect(caseTest.expected.rawValue as? NSDictionary).to(equal(JSON(data: http).rawValue as? NSDictionary))
+                            }
+                            done()
+                        })
+                    }
+                }
+
+                let invalidCases = [5, 56.33, NSDate()]
+
+                invalidCases.forEach { caseItem in
+                    waitUntil(timeout: testTimeout) { done in
+                        expect { channel.publish(caseItem, callback: nil) }.to(raiseException())
+                        done()
+                    }
                 }
             }
         }
