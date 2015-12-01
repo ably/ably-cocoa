@@ -301,9 +301,18 @@
     *output = payload;
     if ([[payload.encoding artLastEncoding] isEqualToString:[ARTJsonPayloadEncoder getName]]) {
         id decoded = nil;
+
         if ([payload.payload isKindOfClass:[NSString class]]) {
-            NSData * d = [payload.payload dataUsingEncoding:NSUTF8StringEncoding];
+            NSData *d = [payload.payload dataUsingEncoding:NSUTF8StringEncoding];
             decoded = [NSJSONSerialization JSONObjectWithData:d options:0 error:nil];
+
+            if (decoded) {
+                *output = [ARTPayload payloadWithPayload:decoded encoding:[payload.encoding artRemoveLastEncoding]];
+                return [ARTStatus state:ARTStateOk];
+            }
+        }
+        else if ([payload.payload isKindOfClass:[NSData class]]) {
+            decoded = [NSJSONSerialization JSONObjectWithData:(NSData *)payload.payload options:0 error:nil];
 
             if (decoded) {
                 *output = [ARTPayload payloadWithPayload:decoded encoding:[payload.encoding artRemoveLastEncoding]];
