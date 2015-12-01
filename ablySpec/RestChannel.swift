@@ -277,7 +277,7 @@ class RestChannel: QuickSpec {
             // RSL4b
             it("encoding attribute represents the encoding(s) applied in right to left") {
                 let encodingCases = [
-                    TestCase(value: text, expected: nil),
+                    TestCase(value: text, expected: nil), //FIXME: Should be UTF-8 ?!
                     TestCase(value: dictionary, expected: "json/base64"),
                     TestCase(value: array, expected: "json/base64"),
                     TestCase(value: data, expected: "base64"),
@@ -300,51 +300,115 @@ class RestChannel: QuickSpec {
                 }
             }
 
-            // RSL4d4
-            it("messages received will be decoded based on the encoding field") {
-                let cases = [text, integer, decimal, dictionary, array, data]
-
-                cases.forEach { caseTest in
+            context("json") {
+                // RSL4d1
+                it("binary payload should be encoded as Base64 and represented as a JSON string") {
+                    client.httpExecutor = mockExecutor
                     waitUntil(timeout: testTimeout) { done in
-                        channel.publish(caseTest, callback: { error in
+                        channel.publish(data, callback: { error in
                             expect(error).to(beNil())
+
+                            if let request = mockExecutor.requests.last, let http = request.HTTPBody {
+                                // Binary
+                                let json = JSON(data: http)
+                                expect(json["data"].string).to(equal(data.toBase64))
+                                expect(json["encoding"]).to(equal("base64"))
+                            }
+                            else {
+                                XCTFail("No request or HTTP body found")
+                            }
                             done()
                         })
                     }
                 }
 
-                var totalReceived = 0
-                channel.history(nil) { result, error in
-                    expect(error).to(beNil())
-                    expect(result).toNot(beNil())
-                    expect(result?.hasNext).to(beFalse())
+                // RSL4d
+                it("string payload should be represented as a JSON string") {
+                    client.httpExecutor = mockExecutor
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(text, callback: { error in
+                            expect(error).to(beNil())
 
-                    for (index, item) in (result?.items.reverse().enumerate())! {
-                        totalReceived++
-
-                        switch (item as? ARTMessage)?.payload.payload {
-                        case let value as NSDictionary:
-                            expect(value).to(equal(cases[index]))
-                            break
-                        case let value as NSArray:
-                            expect(value).to(equal(cases[index]))
-                            break
-                        case let value as NSData:
-                            expect(value).to(equal(cases[index]))
-                            break
-                        case let value as NSString:
-                            expect(value).to(equal(cases[index]))
-                            break
-                        default:
-                            XCTFail("Payload with unknown format")
-                            break
-                        }
+                            if let request = mockExecutor.requests.last, let http = request.HTTPBody {
+                                // String (UTF-8)
+                                let json = JSON(data: http)
+                                expect(json["data"].string).to(equal(text))
+                                expect(json["encoding"].string).to(beNil())
+                            }
+                            else {
+                                XCTFail("No request or HTTP body found")
+                            }
+                            done()
+                        })
                     }
                 }
-                expect(totalReceived).toEventually(equal(cases.count), timeout: testTimeout)
+
+                // RSL4d3
+                it("json payload should be stringified either as a JSON Object or Array") {
+                    client.httpExecutor = mockExecutor
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(array, callback: { error in
+                            expect(error).to(beNil())
+
+                            if let request = mockExecutor.requests.last, let http = request.HTTPBody {
+                                // Array
+                                let json = JSON(data: http)
+                                // FIXME: "data" : "WyJKb2huIiwiTWFyeSJd"
+                                //expect(json["data"].object as? NSArray).to(equal(array))
+                                expect(json["encoding"].string).to(equal("json/base64")) //FIXME: only "json" ?!
+                            }
+                            else {
+                                XCTFail("No request or HTTP body found")
+                            }
+                            done()
+                        })
+                    }
+                }
+
+                // RSL4d4
+                it("messages received should be decoded based on the encoding field") {
+                    let cases = [text, integer, decimal, dictionary, array, data]
+
+                    cases.forEach { caseTest in
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(caseTest, callback: { error in
+                                expect(error).to(beNil())
+                                done()
+                            })
+                        }
+                    }
+
+                    var totalReceived = 0
+                    channel.history(nil) { result, error in
+                        expect(error).to(beNil())
+                        expect(result).toNot(beNil())
+                        expect(result?.hasNext).to(beFalse())
+
+                        for (index, item) in (result?.items.reverse().enumerate())! {
+                            totalReceived++
+
+                            switch (item as? ARTMessage)?.payload.payload {
+                            case let value as NSDictionary:
+                                expect(value).to(equal(cases[index]))
+                                break
+                            case let value as NSArray:
+                                expect(value).to(equal(cases[index]))
+                                break
+                            case let value as NSData:
+                                expect(value).to(equal(cases[index]))
+                                break
+                            case let value as NSString:
+                                expect(value).to(equal(cases[index]))
+                                break
+                            default:
+                                XCTFail("Payload with unknown format")
+                                break
+                            }
+                        }
+                    }
+                    expect(totalReceived).toEventually(equal(cases.count), timeout: testTimeout)
+                }
             }
-
-
         }
     }
 }
