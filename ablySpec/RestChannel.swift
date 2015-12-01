@@ -237,7 +237,7 @@ class RestChannel: QuickSpec {
             let data = NSString(string: "123456").dataUsingEncoding(NSUTF8StringEncoding)!
 
             // RSL4a
-            it("payloads must be binary, strings, or objects capable of JSON representation") {
+            it("payloads should be binary, strings, or objects capable of JSON representation") {
                 let validCases = [
                     TestCase(value: nil, expected: JSON([:])),
                     TestCase(value: text, expected: JSON(["data": text])),
@@ -275,7 +275,7 @@ class RestChannel: QuickSpec {
             }
 
             // RSL4b
-            it("encoding attribute represents the encoding(s) applied in right to left") {
+            it("encoding attribute should represent the encoding(s) applied in right to left") {
                 let encodingCases = [
                     TestCase(value: text, expected: nil), //FIXME: Should be UTF-8 ?!
                     TestCase(value: dictionary, expected: "json/base64"),
