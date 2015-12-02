@@ -102,7 +102,7 @@ enum {
                 return;
             }
 
-            NSURLQueryItem *accessTokenParam = [NSURLQueryItem queryItemWithName:@"access_token" value:(tokenDetails.token)];
+            NSURLQueryItem *accessTokenParam = [NSURLQueryItem queryItemWithName:@"accessToken" value:(tokenDetails.token)];
             [selfStrong setupWebSocket:@[accessTokenParam] withOptions:selfStrong.options];
             // Connect
             [selfStrong.websocket open];
