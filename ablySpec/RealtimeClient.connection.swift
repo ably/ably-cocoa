@@ -328,6 +328,31 @@ class RealtimeClientConnection: QuickSpec {
                     expect(errorInfo).toNot(beNil())
                 }
             }
+
+            // RTN9
+            context("connection#key") {
+
+                // RTN9a
+                it("should be null until connected") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRealtime(options: options)
+
+                    expect(client.connectionKey()).to(beEmpty())
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.eventEmitter.on { state, errorInfo in
+                            if state == .Connected && errorInfo == nil {
+                                expect(client.connectionKey()).toNot(beEmpty())
+                                done()
+                            }
+                            else if state == .Connecting {
+                                expect(client.connectionKey()).to(beEmpty())
+                            }
+                        }
+                    }
+                }
+
+            }
         }
     }
 }
