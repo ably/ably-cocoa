@@ -351,7 +351,27 @@ class RealtimeClientConnection: QuickSpec {
                         }
                     }
                 }
+                
+                // RTN9b
+                it("should have unique connection keys") {
+                    let options = AblyTests.commonAppSetup()
+                    var disposable = [ARTRealtime]()
+                    var keys = [String]()
+                    let max = 25
 
+                    for _ in 1...max {
+                        disposable.append(ARTRealtime(options: options))
+                        let currentClient = disposable.last
+                        currentClient!.eventEmitter.on { state, errorInfo in
+                            if state == .Connected {
+                                expect(keys).toNot(contain(currentClient?.connectionKey()))
+                                keys.append(currentClient?.connectionKey() ?? "")
+                            }
+                        }
+                    }
+
+                    expect(keys).toEventually(haveCount(max))
+                }
             }
         }
     }
