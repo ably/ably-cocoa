@@ -351,7 +351,27 @@ class RealtimeClientConnection: QuickSpec {
                         }
                     }
                 }
-                
+
+                // RTN8b
+                it("should have unique IDs") {
+                    let options = AblyTests.commonAppSetup()
+                    var disposable = [ARTRealtime]()
+                    var ids = [String]()
+                    let max = 25
+
+                    for _ in 1...max {
+                        disposable.append(ARTRealtime(options: options))
+                        let currentClient = disposable.last
+                        currentClient!.eventEmitter.on { state, errorInfo in
+                            if state == .Connected {
+                                expect(ids).toNot(contain(currentClient?.connectionId()))
+                                ids.append(currentClient?.connectionId() ?? "")
+                            }
+                        }
+                    }
+
+                    expect(ids).toEventually(haveCount(max))
+                }
             }
         }
     }
