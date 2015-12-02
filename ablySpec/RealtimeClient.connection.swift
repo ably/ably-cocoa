@@ -423,18 +423,17 @@ class RealtimeClientConnection: QuickSpec {
                 it("should be null until connected") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
-                    let connection = client.connection()
 
-                    expect(connection.key).to(beEmpty())
+                    expect(client.connectionKey()).to(beEmpty())
 
                     waitUntil(timeout: testTimeout) { done in
-                        connection.eventEmitter.on { state, errorInfo in
+                        client.eventEmitter.on { state, errorInfo in
                             if state == .Connected && errorInfo == nil {
-                                expect(connection.key).toNot(beEmpty())
+                                expect(client.connectionKey()).toNot(beEmpty())
                                 done()
                             }
                             else if state == .Connecting {
-                                expect(connection.key).to(beEmpty())
+                                expect(client.connectionKey()).to(beEmpty())
                             }
                         }
                     }
