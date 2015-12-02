@@ -328,6 +328,52 @@ class RealtimeClientConnection: QuickSpec {
                     expect(errorInfo).toNot(beNil())
                 }
             }
+
+            // RTN8
+            context("connection#id") {
+
+                // RTN8a
+                it("should be null until connected") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRealtime(options: options)
+                    let connection = client.connection()
+
+                    expect(connection.id).to(beEmpty())
+
+                    waitUntil(timeout: testTimeout) { done in
+                        connection.eventEmitter.on { state, errorInfo in
+                            if state == .Connected && errorInfo == nil {
+                                expect(connection.id).toNot(beEmpty())
+                                done()
+                            }
+                            else if state == .Connecting {
+                                expect(connection.id).to(beEmpty())
+                            }
+                        }
+                    }
+                }
+
+                // RTN8b
+                it("should have unique IDs") {
+                    let options = AblyTests.commonAppSetup()
+                    var disposable = [ARTRealtime]()
+                    var ids = [String]()
+                    let max = 25
+
+                    for _ in 1...max {
+                        disposable.append(ARTRealtime(options: options))
+                        let currentConnection = disposable.last?.connection()
+                        currentConnection?.eventEmitter.on { state, errorInfo in
+                            if state == .Connected {
+                                expect(ids).toNot(contain(currentConnection?.id))
+                                ids.append(currentConnection?.id ?? "")
+                            }
+                        }
+                    }
+
+                    expect(ids).toEventually(haveCount(max))
+                }
+            }
         }
     }
 }
