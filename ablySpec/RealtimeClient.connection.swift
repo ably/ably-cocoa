@@ -336,17 +336,18 @@ class RealtimeClientConnection: QuickSpec {
                 it("should be null until connected") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
+                    let connection = client.connection()
 
-                    expect(client.connectionId()).to(beEmpty())
+                    expect(connection.id).to(beEmpty())
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.eventEmitter.on { state, errorInfo in
+                        connection.eventEmitter.on { state, errorInfo in
                             if state == .Connected && errorInfo == nil {
-                                expect(client.connectionId()).toNot(beEmpty())
+                                expect(connection.id).toNot(beEmpty())
                                 done()
                             }
                             else if state == .Connecting {
-                                expect(client.connectionId()).to(beEmpty())
+                                expect(connection.id).to(beEmpty())
                             }
                         }
                     }
@@ -361,11 +362,11 @@ class RealtimeClientConnection: QuickSpec {
 
                     for _ in 1...max {
                         disposable.append(ARTRealtime(options: options))
-                        let currentClient = disposable.last
-                        currentClient!.eventEmitter.on { state, errorInfo in
+                        let currentConnection = disposable.last?.connection()
+                        currentConnection?.eventEmitter.on { state, errorInfo in
                             if state == .Connected {
-                                expect(ids).toNot(contain(currentClient?.connectionId()))
-                                ids.append(currentClient?.connectionId() ?? "")
+                                expect(ids).toNot(contain(currentConnection?.id))
+                                ids.append(currentConnection?.id ?? "")
                             }
                         }
                     }
