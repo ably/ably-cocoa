@@ -336,17 +336,18 @@ class RealtimeClientConnection: QuickSpec {
                 it("should be null until connected") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
+                    let connection = client.connection()
 
-                    expect(client.connectionKey()).to(beEmpty())
+                    expect(connection.key).to(beEmpty())
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.eventEmitter.on { state, errorInfo in
+                        connection.eventEmitter.on { state, errorInfo in
                             if state == .Connected && errorInfo == nil {
-                                expect(client.connectionKey()).toNot(beEmpty())
+                                expect(connection.key).toNot(beEmpty())
                                 done()
                             }
                             else if state == .Connecting {
-                                expect(client.connectionKey()).to(beEmpty())
+                                expect(connection.key).to(beEmpty())
                             }
                         }
                     }
@@ -361,11 +362,11 @@ class RealtimeClientConnection: QuickSpec {
 
                     for _ in 1...max {
                         disposable.append(ARTRealtime(options: options))
-                        let currentClient = disposable.last
-                        currentClient!.eventEmitter.on { state, errorInfo in
+                        let currentConnection = disposable.last?.connection()
+                        currentConnection?.eventEmitter.on { state, errorInfo in
                             if state == .Connected {
-                                expect(keys).toNot(contain(currentClient?.connectionKey()))
-                                keys.append(currentClient?.connectionKey() ?? "")
+                                expect(keys).toNot(contain(currentConnection?.key))
+                                keys.append(currentConnection?.key ?? "")
                             }
                         }
                     }

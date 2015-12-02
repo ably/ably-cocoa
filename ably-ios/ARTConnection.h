@@ -13,6 +13,8 @@
 @class ARTRealtime;
 @class ARTEventEmitter;
 
+ART_ASSUME_NONNULL_BEGIN
+
 @interface ARTConnection: NSObject
 
 @property (readonly, getter=getId) NSString *id;
@@ -28,3 +30,5 @@
 - (void)ping:(ARTRealtimePingCb)cb;
 
 @end
+
+ART_ASSUME_NONNULL_END
