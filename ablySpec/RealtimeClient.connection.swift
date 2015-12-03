@@ -100,7 +100,7 @@ class RealtimeClientConnection: QuickSpec {
                                 done()
                             case .Connected:
                                 if let transport = client.transport as? MockTransport, let query = transport.lastUrl?.query {
-                                    expect(query).to(haveParam("access_token", withValue: client.auth().tokenDetails?.token ?? ""))
+                                    expect(query).to(haveParam("accessToken", withValue: client.auth().tokenDetails?.token ?? ""))
                                     expect(query).to(haveParam("echo", withValue: "false"))
                                     expect(query).to(haveParam("format", withValue: "json"))
                                     expect(query).to(haveParam("client_id", withValue: "client_string"))
@@ -329,6 +329,52 @@ class RealtimeClientConnection: QuickSpec {
                 }
             }
 
+            // RTN8
+            context("connection#id") {
+
+                // RTN8a
+                it("should be null until connected") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRealtime(options: options)
+                    let connection = client.connection()
+
+                    expect(connection.id).to(beEmpty())
+
+                    waitUntil(timeout: testTimeout) { done in
+                        connection.eventEmitter.on { state, errorInfo in
+                            if state == .Connected && errorInfo == nil {
+                                expect(connection.id).toNot(beEmpty())
+                                done()
+                            }
+                            else if state == .Connecting {
+                                expect(connection.id).to(beEmpty())
+                            }
+                        }
+                    }
+                }
+
+                // RTN8b
+                it("should have unique IDs") {
+                    let options = AblyTests.commonAppSetup()
+                    var disposable = [ARTRealtime]()
+                    var ids = [String]()
+                    let max = 25
+
+                    for _ in 1...max {
+                        disposable.append(ARTRealtime(options: options))
+                        let currentConnection = disposable.last?.connection()
+                        currentConnection?.eventEmitter.on { state, errorInfo in
+                            if state == .Connected {
+                                expect(ids).toNot(contain(currentConnection?.id))
+                                ids.append(currentConnection?.id ?? "")
+                            }
+                        }
+                    }
+
+                    expect(ids).toEventually(haveCount(max))
+                }
+            }
+
             // RTN9
             context("connection#key") {
 
@@ -352,7 +398,7 @@ class RealtimeClientConnection: QuickSpec {
                         }
                     }
                 }
-                
+
                 // RTN9b
                 it("should have unique connection keys") {
                     let options = AblyTests.commonAppSetup()
