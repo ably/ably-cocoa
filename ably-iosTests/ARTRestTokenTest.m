@@ -94,7 +94,6 @@
     XCTestExpectation *exp = [self expectationWithDescription:@"testTTLDefaultOneHour"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         options.clientId = @"clientIdThatForcesToken";
-        options.logLevel = ARTLogLevelVerbose;
         ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
         ARTAuth *auth = rest.auth;
