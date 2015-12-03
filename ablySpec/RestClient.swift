@@ -81,7 +81,7 @@ class RestClient: QuickSpec {
 
             context("logging") {
                 // RSC2
-                it("should output to the system log and the log level should be Warn") {
+                pending("should output to the system log and the log level should be Warn") {
                     let logTime = NSDate()
                     let client = ARTRest(options: AblyTests.commonAppSetup())
 
@@ -222,6 +222,7 @@ class RestClient: QuickSpec {
                         done()
                     }
                 }
+
                 waitUntil(timeout: testTimeout) { done in
                     publishTestMessage(clientHttp) { error in
                         done()
