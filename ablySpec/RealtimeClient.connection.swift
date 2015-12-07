@@ -374,6 +374,52 @@ class RealtimeClientConnection: QuickSpec {
                     expect(ids).toEventually(haveCount(max))
                 }
             }
+
+            // RTN9
+            context("connection#key") {
+
+                // RTN9a
+                it("should be null until connected") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRealtime(options: options)
+                    let connection = client.connection()
+
+                    expect(connection.key).to(beEmpty())
+
+                    waitUntil(timeout: testTimeout) { done in
+                        connection.eventEmitter.on { state, errorInfo in
+                            if state == .Connected && errorInfo == nil {
+                                expect(connection.key).toNot(beEmpty())
+                                done()
+                            }
+                            else if state == .Connecting {
+                                expect(connection.key).to(beEmpty())
+                            }
+                        }
+                    }
+                }
+
+                // RTN9b
+                it("should have unique connection keys") {
+                    let options = AblyTests.commonAppSetup()
+                    var disposable = [ARTRealtime]()
+                    var keys = [String]()
+                    let max = 25
+
+                    for _ in 1...max {
+                        disposable.append(ARTRealtime(options: options))
+                        let currentConnection = disposable.last?.connection()
+                        currentConnection?.eventEmitter.on { state, errorInfo in
+                            if state == .Connected {
+                                expect(keys).toNot(contain(currentConnection?.key))
+                                keys.append(currentConnection?.key ?? "")
+                            }
+                        }
+                    }
+
+                    expect(keys).toEventually(haveCount(max))
+                }
+            }
         }
     }
 }

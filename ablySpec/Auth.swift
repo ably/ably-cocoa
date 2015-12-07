@@ -147,7 +147,7 @@ class Auth : QuickSpec {
                     client.connect()
 
                     if let transport = client.transport as? MockTransport, let query = transport.lastUrl?.query {
-                        expect(query).to(haveParam("accessToken", withValue: client.auth().tokenDetails?.token ?? ""))
+                        expect(query).to(haveParam("access_token", withValue: client.auth().tokenDetails?.token ?? ""))
                     }
                     else {
                         XCTFail("MockTransport is not working")
@@ -530,11 +530,17 @@ class Auth : QuickSpec {
 
             // RSA8a
             it("implicitly creates a TokenRequest") {
-                let options = AblyTests.commonAppSetup()
+                let options = ARTClientOptions(key: "6p6USg.CNwGdA:uwJU1qsSf_Qe9VDH")
+                // Test
+                options.authUrl = NSURL(string: "http://auth.ably.io")
+                options.authParams = [NSURLQueryItem(name: "ttl", value: "aaa")]
+                options.authParams = [NSURLQueryItem(name: "rp", value: "true")]
+                options.authMethod = "POST"
+                
                 let rest = ARTRest(options: options)
-
+                
                 rest.auth.requestToken(nil, withOptions: nil, callback: { tokenDetails, error in
-                    expect(tokenDetails?.token).toNot(beEmpty())
+                    
                 })
             }
         }
