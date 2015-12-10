@@ -20,4 +20,4 @@ install:
   - pod install
 script:
   # Run tests
-  - BUILDTOOL=xctool ./Scripts/run-tests.sh
+  - ./Scripts/run-tests.sh

@@ -2,7 +2,7 @@
 
 set -o pipefail
 
-: ${BUILDTOOL:=xctool} #Default
+: ${BUILDTOOL:=xcodebuild} #Default
 : ${CLASS:=""} #Default: test all classes (only works on xctool)
 
 # Xcode Build Command Line
@@ -11,7 +11,7 @@ set -o pipefail
 : ${SCHEME:="ably"}
 : ${CONFIGURATION:="Release"}
 : ${SDK:="iphonesimulator9.1"}
-: ${DESTINATION:="platform=iOS Simulator,OS=9.1,name=iPhone 4s"}
+: ${DESTINATION:="platform=iOS Simulator,OS=8.4,name=iPhone 4s"}
 
 init() {
   # Launch the simulator before running the tests
