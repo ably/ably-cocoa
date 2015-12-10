@@ -86,6 +86,7 @@ class AblyTests {
             let response = JSON(data: data)
             
             if debug {
+                options.logLevel = .Verbose
                 print(response)
             }
             
