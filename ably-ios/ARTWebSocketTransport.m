@@ -8,7 +8,7 @@
 
 #import "ARTWebSocketTransport.h"
 
-#import <SocketRocket/SRWebSocket.h>
+#import "Starscream-Swift.h"
 
 #import "ARTRest.h"
 #import "ARTRest+Private.h"
@@ -35,11 +35,11 @@ enum {
     ARTWsTlsError = 1015
 };
 
-@interface ARTWebSocketTransport () <SRWebSocketDelegate>
+@interface ARTWebSocketTransport () <WebSocketDelegate>
 
 @property (readonly, assign, nonatomic) CFRunLoopRef rl;
 @property (readonly, strong, nonatomic) dispatch_queue_t queue;
-@property (readwrite, strong, nonatomic) SRWebSocket *websocket;
+@property (readwrite, strong, nonatomic) WebSocket *websocket;
 @property (readwrite, assign, nonatomic) BOOL closing;
 
 // From RestClient
@@ -77,7 +77,7 @@ enum {
 - (void)send:(ARTProtocolMessage *)msg {
     [self.logger debug:@"ARTWebSocketTransport: sending %@", msg];
     NSData *data = [self.encoder encodeProtocolMessage:msg];
-    [self.websocket send:data];
+    [self.websocket writeData:data];
 }
 
 - (void)receive:(ARTProtocolMessage *)msg {
@@ -91,7 +91,7 @@ enum {
         NSURLQueryItem *keyParam = [NSURLQueryItem queryItemWithName:@"key" value:self.options.key];
         [self setupWebSocket:@[keyParam] withOptions:self.options];
         // Connect
-        [self.websocket open];
+        [self.websocket connect];
     }
     else {
         __weak ARTWebSocketTransport *selfWeak = self;
@@ -109,9 +109,9 @@ enum {
             NSURLQueryItem *accessTokenParam = [NSURLQueryItem queryItemWithName:@"access_token" value:(tokenDetails.token)];
             [selfStrong setupWebSocket:@[accessTokenParam] withOptions:selfStrong.options];
             // Connect
-            [selfStrong.websocket open];
+            [selfStrong.websocket connect];
         }];
-    }
+    } 
 }
 
 - (NSURL *)setupWebSocket:(__GENERIC(NSArray, NSURLQueryItem *) *)params withOptions:(ARTClientOptions *)options {
@@ -162,9 +162,9 @@ enum {
     NSURL *url = [urlComponents URLRelativeToURL:[options realtimeUrl]];
 
     [_logger debug:@"ARTWebSocketTransport: url: %@", url];
-    self.websocket = [[SRWebSocket alloc] initWithURL:url];
+    self.websocket = [[WebSocket alloc] initWithUrl:url protocols:nil];
     self.websocket.delegate = self;
-    [self.websocket setDelegateDispatchQueue:self.queue];
+    self.websocket.queue = self.queue;
     return url;
 }
 
@@ -181,48 +181,24 @@ enum {
     [self send:closeMessage];
 }
 
--(void) close {
-    [self.websocket close];
+- (void)close {
+    if (!_websocket) return;
+    [self.websocket disconnect:@(ARTWsCloseNormal)];
 }
 
 - (void)abort:(ARTStatus *)reason {
-    [self.websocket close];
-    // TODO review
+    if (!_websocket) return;
     self.websocket.delegate = nil;
+    [self.websocket disconnect:@(ARTWsAbnormalClose)];
 }
 
 
 #pragma mark - SRWebSocketDelegate
 
-- (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
-    ARTWebSocketTransport * __weak weakSelf = self;
-    [self.logger debug:@"ARTWebSocketTransport: websocket did receive message %@", message];
-    
-    CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
-        NSData *data = nil;
-
-        if ([message isKindOfClass:[NSString class]]) {
-            data = [((NSString *)message) dataUsingEncoding:NSUTF8StringEncoding];
-        } else if (![message isKindOfClass:[NSData class]]) {
-            [_logger error:@"ARTWebSocketTransport: binary data not supported at the moment"];
-            return;
-        } else {
-            data = message;
-        }
-
-        ARTWebSocketTransport *s = weakSelf;
-        if (s) {
-            ARTProtocolMessage *pm = [s.encoder decodeProtocolMessage:data];
-            [s receive:pm];
-        }
-    });
-    CFRunLoopWakeUp(self.rl);
-}
-
-- (void)webSocketDidOpen:(SRWebSocket *)webSocket {
+- (void)websocketDidConnect:(WebSocket *)socket {
     ARTWebSocketTransport * __weak weakSelf = self;
     [self.logger debug:@"ARTWebSocketTransport: websocket did open"];
-    
+
     CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
         ARTWebSocketTransport *s = weakSelf;
         if (s) {
@@ -232,30 +208,17 @@ enum {
     CFRunLoopWakeUp(self.rl);
 }
 
-- (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
+- (void)websocketDidDisconnect:(WebSocket *)socket error:(NSError *)error {
     ARTWebSocketTransport * __weak weakSelf = self;
-    [self.logger error:@"ARTWebSocketTransport: websocket did fail with error %@", error];
-    
-    CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
-        ARTWebSocketTransport *s = weakSelf;
-        if (s) {
-            [s.delegate realtimeTransportFailed:s withErrorInfo:[ARTErrorInfo createWithNSError:error]];
-        }
-    });
-    CFRunLoopWakeUp(self.rl);
-}
+    [self.logger debug:@"ARTWebSocketTransport: websocket did disconnect with reason %@", error.description];
 
-- (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
-    ARTWebSocketTransport * __weak weakSelf = self;
-    [self.logger debug:@"ARTWebSocketTransport: websocket did close with reason %@", reason];
-    
     CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
         ARTWebSocketTransport *s = weakSelf;
         if(!s)
         {
             return;
         }
-        switch (code) {
+        switch (error.code) {
             case ARTWsCloseNormal:
                 if (s.closing) {
                     // OK
@@ -294,9 +257,40 @@ enum {
             default:
             {
                 // Failed
-                [s.delegate realtimeTransportFailed:s withErrorInfo:[ARTErrorInfo createWithCode:code message:reason]];
+                [s.delegate realtimeTransportFailed:s withErrorInfo:[ARTErrorInfo createWithNSError:error]];
                 break;
             }
+        }
+    });
+    CFRunLoopWakeUp(self.rl);
+}
+
+- (void)websocketDidReceiveMessage:(WebSocket *)socket text:(NSString *)text {
+    ARTWebSocketTransport * __weak weakSelf = self;
+    [self.logger debug:@"ARTWebSocketTransport: websocket did receive message %@", text];
+
+    CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
+        NSData *data = nil;
+        data = [((NSString *)text) dataUsingEncoding:NSUTF8StringEncoding];
+
+        ARTWebSocketTransport *s = weakSelf;
+        if (s) {
+            ARTProtocolMessage *pm = [s.encoder decodeProtocolMessage:data];
+            [s.delegate realtimeTransport:s didReceiveMessage:pm];
+        }
+    });
+    CFRunLoopWakeUp(self.rl);
+}
+
+- (void)websocketDidReceiveData:(WebSocket *)socket data:(NSData *)data {
+    ARTWebSocketTransport * __weak weakSelf = self;
+    [self.logger debug:@"ARTWebSocketTransport: websocket did receive data %@", data];
+
+    CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
+        ARTWebSocketTransport *s = weakSelf;
+        if (s) {
+            ARTProtocolMessage *pm = [s.encoder decodeProtocolMessage:data];
+            [s.delegate realtimeTransport:s didReceiveMessage:pm];
         }
     });
     CFRunLoopWakeUp(self.rl);

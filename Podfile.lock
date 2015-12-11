@@ -1,19 +1,29 @@
 PODS:
   - Nimble (3.0.0)
   - Quick (0.8.0)
-  - SocketRocket (0.4.2)
+  - Starscream (1.0.2)
   - SwiftyJSON (2.3.1)
 
 DEPENDENCIES:
   - Nimble (= 3.0.0)
   - Quick (= 0.8.0)
-  - SocketRocket (= 0.4.2)
+  - Starscream (from `https://github.com/ricardopereira/Starscream.git`, branch `ably`)
   - SwiftyJSON (= 2.3.1)
+
+EXTERNAL SOURCES:
+  Starscream:
+    :branch: ably
+    :git: https://github.com/ricardopereira/Starscream.git
+
+CHECKOUT OPTIONS:
+  Starscream:
+    :commit: 759c5e8f9a1be4a0004ec17456371bbfa9405629
+    :git: https://github.com/ricardopereira/Starscream.git
 
 SPEC CHECKSUMS:
   Nimble: 4c353d43735b38b545cbb4cb91504588eb5de926
   Quick: 563d0f6ec5f72e394645adb377708639b7dd38ab
-  SocketRocket: ffe08119b00ef982f6c37052a4705a057c8494ad
+  Starscream: 40e2c4c1c770d811f24116b8b7dbeb4542c56767
   SwiftyJSON: 592b53bee5ef3dd9b3bebc6b9cb7ee35426ae8c3
 
 COCOAPODS: 0.39.0
