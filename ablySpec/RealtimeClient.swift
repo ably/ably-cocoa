@@ -37,7 +37,7 @@ class RealtimeClient: QuickSpec {
 
                     let client = ARTRealtime(options: options)
 
-                    waitUntil(timeout: 20.0) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         client.eventEmitter.on { state, errorInfo in
                             switch state {
                             case .Connecting:
@@ -70,7 +70,6 @@ class RealtimeClient: QuickSpec {
                 it("should attempt to recover the connection state if recover string is assigned") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "client_string"
-                    options.environment = "eu-central-1-a-sandbox"
 
                     let client = ARTRealtime(options: options)
 

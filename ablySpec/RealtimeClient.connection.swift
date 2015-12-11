@@ -58,7 +58,7 @@ class RealtimeClientConnection: QuickSpec {
                     client.setTransportClass(MockTransport.self)
                     client.connect()
 
-                    waitUntil(timeout: 25.0) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         client.eventEmitter.on { state, errorInfo in
                             switch state {
                             case .Failed:
@@ -92,7 +92,7 @@ class RealtimeClientConnection: QuickSpec {
                     client.setTransportClass(MockTransport.self)
                     client.connect()
 
-                    waitUntil(timeout: 25.0) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         client.eventEmitter.on { state, errorInfo in
                             switch state {
                             case .Failed:
@@ -145,7 +145,7 @@ class RealtimeClientConnection: QuickSpec {
                 let client = ARTRealtime(options: options)
                 var waiting = true
 
-                waitUntil(timeout: 20.0) { done in
+                waitUntil(timeout: testTimeout) { done in
                     client.eventEmitter.on { state, errorInfo in
                         switch state {
                         case .Initialized:
@@ -177,7 +177,7 @@ class RealtimeClientConnection: QuickSpec {
                     let connection = client.connection()
                     var events: [ARTRealtimeConnectionState] = []
 
-                    waitUntil(timeout: 25.0) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         connection.eventEmitter.on { state, errorInfo in
                             switch state {
                             case .Initialized:
@@ -211,6 +211,11 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     expect(events).to(haveCount(8), description: "Missing some states")
+
+                    if events.count != 8 {
+                        return
+                    }
+
                     expect(events[0].rawValue).to(equal(ARTRealtimeConnectionState.Initialized.rawValue), description: "Should be INITIALIZED state")
                     expect(events[1].rawValue).to(equal(ARTRealtimeConnectionState.Connecting.rawValue), description: "Should be CONNECTING state")
                     expect(events[2].rawValue).to(equal(ARTRealtimeConnectionState.Connected.rawValue), description: "Should be CONNECTED state")
@@ -226,7 +231,7 @@ class RealtimeClientConnection: QuickSpec {
                     let connection = ARTRealtime(options: AblyTests.commonAppSetup()).connection()
                     var events: [ARTRealtimeConnectionState] = []
 
-                    waitUntil(timeout: 25.0) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         connection.eventEmitter.on { state, errorInfo in
                             switch state {
                             case .Connecting:
@@ -241,6 +246,11 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     expect(events).to(haveCount(2), description: "Missing CONNECTING or CONNECTED state")
+
+                    if events.count != 2 {
+                        return
+                    }
+
                     expect(events[0].rawValue).to(equal(ARTRealtimeConnectionState.Connecting.rawValue), description: "Should be CONNECTING state")
                     expect(events[1].rawValue).to(equal(ARTRealtimeConnectionState.Connected.rawValue), description: "Should be CONNECTED state")
                 }
@@ -250,7 +260,7 @@ class RealtimeClientConnection: QuickSpec {
                     let connection = ARTRealtime(options: AblyTests.commonAppSetup()).connection()
                     var events: [ARTRealtimeConnectionState] = []
 
-                    waitUntil(timeout: 25.0) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         connection.eventEmitter.on { state, errorInfo in
                             switch state {
                             case .Connected:
@@ -267,6 +277,11 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     expect(events).to(haveCount(2), description: "Missing CLOSING or CLOSED state")
+
+                    if events.count != 2 {
+                        return
+                    }
+
                     expect(events[0].rawValue).to(equal(ARTRealtimeConnectionState.Closing.rawValue), description: "Should be CLOSING state")
                     expect(events[1].rawValue).to(equal(ARTRealtimeConnectionState.Closed.rawValue), description: "Should be CLOSED state")
                 }
@@ -286,7 +301,7 @@ class RealtimeClientConnection: QuickSpec {
 
                     // TODO: ConnectionStateChange object
 
-                    waitUntil(timeout: 25.0) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         connection.eventEmitter.on { state, errorInfo in
                             switch state {
                             case .Connected:
@@ -310,7 +325,7 @@ class RealtimeClientConnection: QuickSpec {
                     // TODO: ConnectionStateChange object
 
                     var errorInfo: ARTErrorInfo?
-                    waitUntil(timeout: 30.0) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         connection.eventEmitter.on { state, reason in
                             switch state {
                             case .Connected:
