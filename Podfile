@@ -1,10 +1,9 @@
+platform :ios, '8.0'
 use_frameworks!
-pod 'Starscream', :git => 'https://github.com/ricardopereira/Starscream.git', :branch => 'ably'
+
+pod 'SwiftWebSocket', :git => 'https://github.com/ricardopereira/SwiftWebSocket.git', :branch => 'dev-objc'
 
 target 'ablySpec' do
-    platform :ios, '8.0'
-    use_frameworks!
-
     pod 'Quick', '0.8.0'
     pod 'Nimble', '3.0.0'
     # Helpers
@@ -12,9 +11,6 @@ target 'ablySpec' do
 end
 
 target 'ablyTests' do
-    platform :ios, '8.0'
-    use_frameworks!
-
     pod 'Quick', '0.8.0'
     pod 'Nimble', '3.0.0'
 end
