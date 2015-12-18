@@ -21,7 +21,7 @@ ART_ASSUME_NONNULL_BEGIN
 @interface ARTRealtime (Private)
 
 @property (readwrite, strong, nonatomic) ARTRest *rest;
-@property (readwrite, strong, nonatomic) id<ARTRealtimeTransport> transport;
+@property (readonly, getter=getTransport) id<ARTRealtimeTransport> transport;
 @property (readonly, strong, nonatomic) NSMutableArray *stateSubscriptions;
 
 // Transport Events
