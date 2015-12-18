@@ -13,6 +13,8 @@ set -o pipefail
 : ${SDK:="iphonesimulator9.1"}
 : ${DESTINATION:="platform=iOS Simulator,OS=8.4,name=iPhone 4s"}
 
+echo "Started: $(date)"
+
 init() {
   # Launch the simulator before running the tests
   # Avoid "iPhoneSimulator: Timed out waiting"
@@ -37,15 +39,15 @@ case "${BUILDTOOL}" in
   xcodebuild-travis) echo "Selected tool: xcodebuild + xcpretty (format: travisci)"
   init
     # Use xcpretty together with tee to store the raw log in a file, and get the pretty output in the terminal
-    xcodebuild clean test -workspace "${WORKSPACE}" -scheme "${SCHEME}" -configuration "${CONFIGURATION}" -sdk "${SDK}" -destination "${DESTINATION}" ONLY_ACTIVE_ARCH=NO | tee xcodebuild.log | xcpretty -f `xcpretty-travis-formatter`
+    COMMAND="xcodebuild clean test "${COMMAND}" | tee xcodebuild.log | xcpretty -f `xcpretty-travis-formatter`"
   ;;
   xcodebuild-pretty) echo "Selected tool: xcodebuild + xcpretty"
   init
-    xcodebuild clean test -workspace "${WORKSPACE}" -scheme "${SCHEME}" -configuration "${CONFIGURATION}" -sdk "${SDK}" -destination "${DESTINATION}" ONLY_ACTIVE_ARCH=NO | tee xcodebuild.log | xcpretty --test
+    COMMAND="xcodebuild clean test "${COMMAND}" | xcpretty --test"
   ;;
   xcodebuild) echo "Selected tool: xcodebuild"
   init
-    xcodebuild clean test -workspace "${WORKSPACE}" -scheme "${SCHEME}" -configuration "${CONFIGURATION}" -sdk "${SDK}" -destination "${DESTINATION}" ONLY_ACTIVE_ARCH=NO
+    COMMAND="xcodebuild clean test "${COMMAND}
   ;;
   *) echo "No build tool especified" && exit 2
 esac
