@@ -69,8 +69,7 @@ class Auth : QuickSpec {
             context("token auth") {
                 // RSA3a
                 it("should work over HTTPS or HTTP") {
-                    let options = ARTClientOptions()
-                    options.token = getTestToken()
+                    let options = AblyTests.clientOptions(requestToken: true)
                     
                     // Check HTTP
                     options.tls = false

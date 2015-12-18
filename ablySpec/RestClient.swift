@@ -58,8 +58,7 @@ class RestClient: QuickSpec {
                 }
 
                 it("should accept an options object with token authentication") {
-                    let options = AblyTests.commonAppSetup()
-                    options.token = getTestToken()
+                    let options = AblyTests.clientOptions(requestToken: true)
                     let client = ARTRest(options: options)
 
                     let publishTask = publishTestMessage(client)
@@ -68,7 +67,7 @@ class RestClient: QuickSpec {
                 }
 
                 it("should result in error status when provided a bad token") {
-                    let options = AblyTests.commonAppSetup()
+                    let options = AblyTests.clientOptions()
                     options.token = "invalid_token"
                     let client = ARTRest(options: options)
 
@@ -167,8 +166,7 @@ class RestClient: QuickSpec {
                 }
                 
                 it("should connect over plain http:// when tls is off") {
-                    let options = ARTClientOptions(key: "fake:key")
-                    options.token = getTestToken()
+                    let options = AblyTests.clientOptions(requestToken: true)
                     options.tls = false
                     let client = ARTRest(options: options)
                     client.httpExecutor = mockExecutor

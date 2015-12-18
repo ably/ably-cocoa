@@ -6,7 +6,6 @@
 //  Copyright © 2015 г. Ably. All rights reserved.
 //
 
-
 import Foundation
 import XCTest
 import Quick
@@ -46,6 +45,7 @@ class AblyTests {
     class func checkError(errorInfo: ARTErrorInfo?) {
         checkError(errorInfo, withAlternative: "")
     }
+    static let allDebug = true
 
     class var jsonRestOptions: ARTClientOptions {
         get {
@@ -104,11 +104,14 @@ class AblyTests {
         return AblyTests.setupOptions(AblyTests.jsonRestOptions, debug: debug)
     }
 
-    class func clientOptions(debug debug: Bool = false) -> ARTClientOptions {
+    class func clientOptions(debug debug: Bool = false, requestToken: Bool = false) -> ARTClientOptions {
         let options = ARTClientOptions()
         options.environment = "sandbox"
-        if debug {
-            options.logLevel = .Verbose
+        if debug || AblyTests.allDebug {
+            options.logLevel = .Debug
+        }
+        if requestToken {
+            options.token = getTestToken()
         }
         return options
     }
