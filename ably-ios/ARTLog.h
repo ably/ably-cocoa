@@ -38,6 +38,7 @@ typedef NS_ENUM(NSUInteger, ARTLogLevel) {
 
 - (void)verbose:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
 - (void)debug:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
+- (void)debug:(const char *)fileName line:(NSUInteger)line message:(NSString *)message, ... NS_FORMAT_FUNCTION(3,4);
 - (void)info:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
 - (void)warn:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
 - (void)error:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);

@@ -82,6 +82,13 @@ static const char *logLevelName(ARTLogLevel level) {
     va_end(args);
 }
 
+- (void)debug:(const char *)fileName line:(NSUInteger)line message:(NSString *)message, ... {
+    va_list args;
+    va_start(args, message);
+    [self log:[[NSString alloc] initWithFormat:[NSString stringWithFormat:@"(%@:%d) %@", [[NSString stringWithUTF8String:fileName] lastPathComponent], line, message] arguments:args] level:ARTLogLevelDebug];
+    va_end(args);
+}
+
 - (void)info:(NSString *)format, ... {
     va_list args;
     va_start(args, format);

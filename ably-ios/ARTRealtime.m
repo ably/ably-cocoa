@@ -135,6 +135,8 @@
         _pendingMessageStartSerial = 0;
         _stateSubscriptions = [NSMutableArray array];
         _connection = [[ARTConnection alloc] initWithRealtime:self];
+
+        [self.logger debug:__FILE__ line:__LINE__ message:@"initialised %p", self];
         
         if (options.autoConnect) {
             [self connect];
@@ -194,7 +196,8 @@
 }
 
 - (void)dealloc {
-    // Custom dealloc required to release CoreFoundation objects
+    [self.logger debug:__FILE__ line:__LINE__ message:@"%p dealloc", self];
+
     [self cancelConnectTimer];
     [self cancelSuspendTimer];
     [self cancelRetryTimer];

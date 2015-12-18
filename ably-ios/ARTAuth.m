@@ -45,30 +45,30 @@
             [NSException raise:@"ARTAuthException" format:@"Basic authentication only connects over HTTPS (tls)."];
         }
         // Basic
-        [self.logger debug:@"ARTAuth: setting up auth method Basic (anonymous)"];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"setting up auth method Basic (anonymous)"];
         _method = ARTAuthMethodBasic;
     } else if (options.tokenDetails) {
         // TokenDetails
-        [self.logger debug:@"ARTAuth: setting up auth method Token with token details"];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"setting up auth method Token with token details"];
         _method = ARTAuthMethodToken;
     } else if (options.token) {
         // Token
-        [self.logger debug:@"ARTAuth: setting up auth method Token with supplied token only"];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"setting up auth method Token with supplied token only"];
         _method = ARTAuthMethodToken;
         options.tokenDetails = [[ARTAuthTokenDetails alloc] initWithToken:options.token];
     } else if (options.authUrl && options.authCallback) {
         [NSException raise:@"ARTAuthException" format:@"Incompatible authentication configuration: please specify either authCallback and authUrl."];
     } else if (options.authUrl) {
         // Authentication url
-        [self.logger debug:@"ARTAuth: setting up auth method Token with authUrl"];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"setting up auth method Token with authUrl"];
         _method = ARTAuthMethodToken;
     } else if (options.authCallback) {
         // Authentication callback
-        [self.logger debug:@"ARTAuth: setting up auth method Token with authCallback"];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"setting up auth method Token with authCallback"];
         _method = ARTAuthMethodToken;
     } else if (options.key) {
         // Token
-        [self.logger debug:@"ARTAuth: setting up auth method Token with key"];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"setting up auth method Token with key"];
         _method = ARTAuthMethodToken;
     } else {
         [NSException raise:@"ARTAuthException" format:@"Could not setup authentication method with given options."];
