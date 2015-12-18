@@ -13,8 +13,6 @@
 #import "ARTRest.h"
 #import "ARTRealtime.h"
 
-#import "Starscream-Swift.h"
-
 @class ARTChannel;
 @class XCTestExpectation;
 @class ARTRealtimeChannel;
