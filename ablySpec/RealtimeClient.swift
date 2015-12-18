@@ -71,7 +71,8 @@ class RealtimeClient: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "client_string"
 
-                    let client = ARTRealtime(options: options)
+                    // First connection
+                    var client: ARTRealtime! = ARTRealtime(options: options)
 
                     waitUntil(timeout: 60) { done in
                         client.eventEmitter.on { state, errorInfo in
@@ -91,10 +92,10 @@ class RealtimeClient: QuickSpec {
                     }
 
                     // New connection
-                    let newClient = ARTRealtime(options: options)
+                    client = ARTRealtime(options: options)
 
                     waitUntil(timeout: 60) { done in
-                        newClient.eventEmitter.on { state, errorInfo in
+                        client.eventEmitter.on { state, errorInfo in
                             switch state {
                             case .Failed:
                                 self.checkError(errorInfo, withAlternative: "Failed state")
