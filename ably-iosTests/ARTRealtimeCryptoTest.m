@@ -68,7 +68,7 @@
                     //XCTAssertEqualObjects([dataMessage content], dataPayload);
                     XCTAssertEqualObjects([stringMessage content], stringPayload);
                     [exp fulfill];
-                }];
+                } error:nil];
             }];
         }];
     }];
@@ -109,7 +109,7 @@
                         XCTAssertEqualObjects([stringMessage content], stringPayload);
                         XCTAssertEqualObjects([firstMessage content], firstMessageText);
                         [exp fulfill];
-                    }];
+                    } error:nil];
                 }];
             }];
         }];

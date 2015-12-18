@@ -108,8 +108,7 @@
                             [channel.presence history:query callback:^(ARTPaginatedResult *result, NSError *error) {
                                 cb(result, error);
                                 [expectation fulfill];
-                            }];
-
+                            } error:nil];
                         }];
                     }];
                 }];
@@ -142,7 +141,7 @@
                         ARTPresenceMessage *m0 = messages[0];
                         XCTAssertEqualObjects(presenceEnter, [m0 content]);
                         [expectation fulfill];
-                    }];
+                    } error:nil];
                 }];
             }
         }];
@@ -174,8 +173,7 @@
                             ARTDataQuery *query = [[ARTDataQuery alloc] init];
                             query.direction = ARTQueryDirectionForwards;
 
-                            [channel.presence history:query callback:^
-                             (ARTPaginatedResult *result, NSError *error) {
+                            [channel.presence history:query callback:^(ARTPaginatedResult *result, NSError *error) {
                                  XCTAssert(!error);
                                  NSArray *messages = [result items];
                                  XCTAssertEqual(3, messages.count);
@@ -191,7 +189,7 @@
                                  XCTAssertEqualObjects(presenceUpdate, [m2 content]);
                                  XCTAssertEqual(m2.action, ARTPresenceUpdate);
                                  [expectation fulfill];
-                            }];
+                            } error:nil];
                         }];
                     }];
                 }];
@@ -244,7 +242,7 @@
                                      XCTAssertEqualObjects(presenceUpdate, [m2 content]);
                                      XCTAssertEqual(m2.action, ARTPresenceUpdate);
                                      [expectation fulfill];
-                                 }];
+                                 } error:nil];
                             }];
                             
                         }];
@@ -300,7 +298,7 @@
                                  XCTAssertEqualObjects(presenceEnter1, [m2 content]);
                                  XCTAssertEqual(m2.action, ARTPresenceEnter);
                                  [expectation fulfill];
-                             }];
+                             } error:nil];
                         }];
                     }];
                 }];
@@ -484,7 +482,7 @@
         [channel.presence history:query callback:^(ARTPaginatedResult *result, NSError *error) {
             cb(result, error);
             [historyExpecation fulfill];
-        }];
+        } error:nil];
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
     }];
 }
@@ -562,7 +560,7 @@
                                             XCTAssertEqualObjects([self updateStr], [m2 content]);
                                             XCTAssertEqual(m2.action, ARTPresenceUpdate);
                                             [expectation fulfill];
-                                        }];
+                                        } error:nil];
                                     }
                                 }];
                                 [channel2 attach];
@@ -616,7 +614,7 @@
                             XCTAssertEqualObjects(presenceEnter1, [m content]);
                         }
                         [expectation fulfill];
-                    }];
+                    } error:nil];
                 }];
             }];
         }];

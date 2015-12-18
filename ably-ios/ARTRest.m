@@ -206,10 +206,20 @@
     return nil;
 }
 
-- (void)stats:(ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult *, NSError *))callback {
-    NSParameterAssert(query.limit < 1000);
-    NSParameterAssert([query.start compare:query.end] != NSOrderedDescending);
-    
+- (BOOL)stats:(ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult *, NSError *))callback error:(NSError **)errorPtr {
+    if (query.limit > 1000 && errorPtr) {
+        *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                        code:ARTDataQueryErrorLimit
+                                    userInfo:@{NSLocalizedDescriptionKey:@"Limit supports up to 1000 results only"}];
+        return NO;
+    }
+    if ([query.start compare:query.end] == NSOrderedDescending && errorPtr) {
+        *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                        code:ARTDataQueryErrorTimestampRange
+                                    userInfo:@{NSLocalizedDescriptionKey:@"Start must be equal to or less than end"}];
+        return NO;
+    }
+
     NSURLComponents *requestUrl = [NSURLComponents componentsWithString:@"/stats"];
     requestUrl.queryItems = [query asQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[requestUrl URLRelativeToURL:self.baseUrl]];
@@ -220,6 +230,7 @@
     };
     
     [ARTPaginatedResult executePaginated:self withRequest:request andResponseProcessor:responseProcessor callback:callback];
+    return YES;
 }
 
 - (id<ARTEncoder>)defaultEncoder {

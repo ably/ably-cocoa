@@ -56,7 +56,7 @@
                         XCTAssertEqualObjects(@"testString", [m1 content]);
 
                         [expectation fulfill];
-                    }];
+                    } error:nil];
                 }];
             }];
         }        
@@ -117,7 +117,7 @@
                     XCTAssertEqualObjects(@"testString", [m1 content]);
                     [expectation1 fulfill];
                     
-                }];
+                } error:nil];
                 [channel2 history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
                     XCTAssert(!error);
                     NSArray *messages = [result items];
@@ -127,9 +127,7 @@
                     XCTAssertEqualObjects(@"testString2", [m0 content]);
                     XCTAssertEqualObjects(@"testString", [m1 content]);
                     [expectation2 fulfill];
-                    
-                    
-                }];
+                } error:nil];
             }];
         }];
     }];
@@ -158,7 +156,7 @@
                     XCTAssertEqualObjects(@"testString2", [m1 content]);
                     
                     [expectation fulfill];
-                }];
+                } error:nil];
             }];
         }];
     }];
@@ -220,7 +218,7 @@
                          }];
                      }];
                  }];
-             }];
+             } error:nil];
         }];
     }];
 
@@ -293,7 +291,7 @@
                          }];
                      }];
                  }];
-             }];
+             } error:nil];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -357,7 +355,7 @@
                             XCTAssertEqualObjects(goalStr, [m content]);
                         }
                         [expectation fulfill];
-                    }];
+                    } error:nil];
                 }];
             }];
         }];
@@ -424,7 +422,7 @@
                             XCTAssertEqualObjects(goalStr, [m content]);
                         }
                         [expectation fulfill];
-                    }];
+                    } error:nil];
                 }];
             }];
         }];
@@ -478,7 +476,7 @@
                             XCTAssertEqualObjects(goalStr, [m content]);
                         }
                         [expecation fulfill];
-                    }];
+                    } error:nil];
                 }
             }];
         }

@@ -60,7 +60,7 @@ class RestChannel: QuickSpec {
                     
                     channel.publish(data, name: name) { error in
                         publishError = error
-                        channel.history(nil) { result, _ in
+                        try! channel.history(nil) { result, _ in
                             publishedMessage = result?.items.first as? ARTMessage
                         }
                     }
@@ -79,7 +79,7 @@ class RestChannel: QuickSpec {
                     
                     channel.publish(nil, name: name) { error in
                         publishError = error
-                        channel.history(nil) { result, _ in
+                        try! channel.history(nil) { result, _ in
                             publishedMessage = result?.items.first as? ARTMessage
                         }
                     }
@@ -98,7 +98,7 @@ class RestChannel: QuickSpec {
                     
                     channel.publish(data) { error in
                         publishError = error
-                        channel.history(nil) { result, _ in
+                        try! channel.history(nil) { result, _ in
                             publishedMessage = result?.items.first as? ARTMessage
                         }
                     }
@@ -117,7 +117,7 @@ class RestChannel: QuickSpec {
                     
                     channel.publish(nil) { error in
                         publishError = error
-                        channel.history(nil) { result, _ in
+                        try! channel.history(nil) { result, _ in
                             publishedMessage = result?.items.first as? ARTMessage
                         }
                     }
@@ -135,7 +135,7 @@ class RestChannel: QuickSpec {
                     
                     channel.publishMessage(ARTMessage(data:data, name: name)) { error in
                         publishError = error
-                        channel.history(nil) { result, _ in
+                        try! channel.history(nil) { result, _ in
                             publishedMessage = result?.items.first as? ARTMessage
                         }
                     }
@@ -158,7 +158,7 @@ class RestChannel: QuickSpec {
                     ]
                     channel.publishMessages(messages) { error in
                         publishError = error
-                        channel.history(nil) { result, _ in
+                        try! channel.history(nil) { result, _ in
                             if let items = result?.items as? [ARTMessage] {
                                 publishedMessages.appendContentsOf(items)
                             }

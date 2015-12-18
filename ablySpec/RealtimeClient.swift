@@ -194,7 +194,7 @@ class RealtimeClient: QuickSpec {
                     // Async
                     waitUntil(timeout: testTimeout) { done in
                         // Proxy from `client.rest.stats`
-                        client.stats(query, callback: { paginated, error in
+                        try! client.stats(query, callback: { paginated, error in
                             expect(paginated).toNot(beNil())
                             done()
                         })
@@ -207,7 +207,7 @@ class RealtimeClient: QuickSpec {
                     var paginatedResult: ARTPaginatedResult?
 
                     // Realtime
-                    client.stats(query, callback: { paginated, error in
+                    try! client.stats(query, callback: { paginated, error in
                         if let e = error {
                             XCTFail(e.description)
                         }
@@ -217,7 +217,7 @@ class RealtimeClient: QuickSpec {
 
                     // Rest
                     waitUntil(timeout: testTimeout) { done in
-                        client.rest.stats(query, callback: { paginated, error in
+                        try! client.rest.stats(query, callback: { paginated, error in
                             expect(paginated?.items.count ?? 0).to(equal(paginatedResult?.items.count ?? 0))
                             done()
                         })

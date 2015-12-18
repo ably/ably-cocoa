@@ -42,11 +42,16 @@ private func queryStats(client: ARTRest, _ query: ARTStatsQuery) -> ARTPaginated
     let dummyError = NSError(domain: "", code: -1, userInfo: nil);
     var error: NSError? = dummyError
 
-    client.stats(query, callback: { result, err in
-        stats = result
-        error = err
-    })
-    
+    do {
+        try client.stats(query, callback: { result, err in
+            stats = result
+            error = err
+        })
+    }
+    catch let error as NSError {
+        XCTFail(error.localizedDescription)
+    }
+
     while error === dummyError {
         CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Bool(0))
     }
@@ -311,8 +316,8 @@ class RestClientStats: QuickSpec {
                             
                             query.start = NSDate.distantFuture()
                             query.end = NSDate.distantPast()
-                            
-                            expect{ client.stats(query, callback:{ status, result in }) }.to(raiseException())
+
+                            expect{ try client.stats(query, callback:{ status, result in }) }.to(throwError())
                         }
                     }
                     
@@ -339,7 +344,7 @@ class RestClientStats: QuickSpec {
                             
                             query.limit = 1001;
                             
-                            expect{ client.stats(query, callback: { status, result in }) }.to(raiseException())
+                            expect{ try client.stats(query, callback: { status, result in }) }.to(throwError())
                         }
                     }
                     

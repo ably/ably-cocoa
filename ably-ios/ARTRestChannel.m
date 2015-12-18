@@ -51,9 +51,19 @@
     return _restPresence;
 }
 
-- (void)history:(ARTDataQuery *)query callback:(void(^)(ARTPaginatedResult *result, NSError *error))callback {
-    NSParameterAssert(query.limit < 1000);
-    NSParameterAssert([query.start compare:query.end] != NSOrderedDescending);
+- (BOOL)history:(ARTDataQuery *)query callback:(void(^)(ARTPaginatedResult *result, NSError *error))callback error:(NSError **)errorPtr {
+    if (query.limit > 1000 && errorPtr) {
+        *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                        code:ARTDataQueryErrorLimit
+                                    userInfo:@{NSLocalizedDescriptionKey:@"Limit supports up to 1000 results only"}];
+        return NO;
+    }
+    if ([query.start compare:query.end] == NSOrderedDescending && errorPtr) {
+        *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                        code:ARTDataQueryErrorTimestampRange
+                                    userInfo:@{NSLocalizedDescriptionKey:@"Start must be equal to or less than end"}];
+        return NO;
+    }
 
     NSURLComponents *componentsUrl = [NSURLComponents componentsWithString:[_basePath stringByAppendingPathComponent:@"messages"]];
     componentsUrl.queryItems = [query asQueryItems];
@@ -68,6 +78,7 @@
     };
     
     [ARTPaginatedResult executePaginated:self.rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
+    return YES;
 }
 
 - (void)internalPostMessages:(id)data callback:(ARTErrorCallback)callback {

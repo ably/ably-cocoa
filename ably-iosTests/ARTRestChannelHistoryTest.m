@@ -95,7 +95,7 @@
                             XCTAssertEqualObjects(goalStr, [m content]);
                         }
                         [firstExpectation fulfill];
-                    }];
+                    } error:nil];
                 }];
             }];
         }];
@@ -163,7 +163,7 @@
                             XCTAssertEqualObjects(goalStr, [m content]);
                         }
                         [firstExpectation fulfill];
-                    }];
+                    } error:nil];
                 }];
             }];
         }];
@@ -233,7 +233,7 @@
                         }];
                     }];
                 }];
-            }];
+            } error:nil];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -301,7 +301,7 @@
                         }];
                     }];
                 }];
-            }];
+            } error:nil];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -334,7 +334,7 @@
                 XCTAssertEqualObjects(@"testString4", [firstMessage content]);
                 XCTAssertEqualObjects(@"testString3", [secondMessage content]);
                 [firstExpectation fulfill];
-            }];
+            } error:nil];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -374,7 +374,7 @@
                 XCTAssertEqualObjects(@"testString4", [firstMessage content]);
                 XCTAssertEqualObjects(@"testString3", [secondMessage content]);
                 [firstExpectation fulfill];
-            }];
+            } error:nil];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -389,7 +389,11 @@
         ARTDataQuery *query = [[ARTDataQuery alloc] init];
         query.limit = 1001;
 
-        XCTAssertThrows([channelOne history:query callback:^(ARTPaginatedResult *result, NSError *error) {}]);
+        NSError *error = nil;
+        BOOL valid = [channelOne history:query callback:^(ARTPaginatedResult *result, NSError *error) {} error:&error];
+        XCTAssertFalse(valid);
+        XCTAssertNotNil(error);
+        XCTAssert(error.code == ARTDataQueryErrorLimit);
         [exp fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];

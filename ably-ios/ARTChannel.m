@@ -54,8 +54,9 @@
     [self internalPostMessages:[message encode:self.payloadEncoder] callback:callback];
 }
 
-- (void)history:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult *, NSError *))callback {
+- (BOOL)history:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult *, NSError *))callback error:(NSError **)errorPtr {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
+    return NO;
 }
 
 - (void)internalPostMessages:(id)data callback:(ARTErrorCallback)callback {

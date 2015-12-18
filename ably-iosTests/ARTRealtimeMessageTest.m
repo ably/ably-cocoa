@@ -273,7 +273,7 @@
                     XCTAssertEqualObjects(m1.connectionId, _realtime.connectionId);
                     XCTAssertFalse([m0.connectionId isEqualToString:m1.connectionId]);
                     [exp fulfill];
-                }];
+                } error:nil];
             }];
         }];
     }];

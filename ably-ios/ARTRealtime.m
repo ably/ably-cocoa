@@ -238,8 +238,8 @@
     [self.transport sendPing];
 }
 
-- (void)stats:(ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult *result, NSError *error))completion {
-    [self.rest stats:query callback:completion];
+- (BOOL)stats:(ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult *result, NSError *error))completion error:(NSError **)errorPtr {
+    return [self.rest stats:query callback:completion error:errorPtr];
 }
 
 - (ARTRealtimeChannel *)channel:(NSString *)channelName {
