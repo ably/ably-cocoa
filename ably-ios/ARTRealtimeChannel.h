@@ -26,7 +26,7 @@
 
 @interface ARTRealtimeChannel : ARTRestChannel
 
-@property (readonly, strong, nonatomic) ARTRealtime *realtime;
+@property (readonly, weak, nonatomic) ARTRealtime *realtime;
 @property (readwrite, assign, nonatomic) ARTRealtimeChannelState state;
 @property (readwrite, strong, nonatomic) NSMutableArray *queuedMessages;
 @property (readwrite, strong, nonatomic) NSString *attachSerial;
