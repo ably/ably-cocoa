@@ -203,7 +203,7 @@ class Auth : QuickSpec {
                         let client = ARTRest(options: options)
                         client.httpExecutor = mockExecutor
 
-                        waitUntil(timeout: 10) { done in
+                        waitUntil(timeout: testTimeout) { done in
                             // Token
                             client.calculateAuthorization(ARTAuthMethod.Token) { token, error in
                                 if let e = error {
@@ -272,7 +272,7 @@ class Auth : QuickSpec {
                     
                     let clientBasic = ARTRest(options: options)
 
-                    waitUntil(timeout: 10) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         // Basic
                         clientBasic.calculateAuthorization(ARTAuthMethod.Basic) { token, error in
                             if let e = error {
@@ -286,7 +286,7 @@ class Auth : QuickSpec {
 
                     let clientToken = ARTRest(options: options)
 
-                    waitUntil(timeout: 10) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         // Last TokenDetails
                         clientToken.calculateAuthorization(ARTAuthMethod.Token) { token, error in
                             if let e = error {
@@ -312,7 +312,7 @@ class Auth : QuickSpec {
                     let clientIdQuoted = "\"client_string\""
                     options.clientId = clientIdQuoted
 
-                    waitUntil(timeout: 10) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         // Token
                         client.calculateAuthorization(ARTAuthMethod.Token) { token, error in
                             if let e = error {
@@ -327,7 +327,7 @@ class Auth : QuickSpec {
                     let clientIdBreaklined = "client_string\n"
                     options.clientId = clientIdBreaklined
 
-                    waitUntil(timeout: 10) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         // Token
                         client.calculateAuthorization(ARTAuthMethod.Token) { token, error in
                             if let e = error {
@@ -353,7 +353,7 @@ class Auth : QuickSpec {
                 
                 let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                 
-                waitUntil(timeout: 10) { done in
+                waitUntil(timeout: testTimeout) { done in
                     // Token
                     ARTRest(options: options).auth.requestToken(tokenParams, withOptions: options) { tokenDetails, error in
                         if let e = error {
