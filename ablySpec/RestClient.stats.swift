@@ -142,7 +142,7 @@ class RestClientStats: QuickSpec {
                         
                         let totalInbound = result.items.reduce(0.0, combine: {
                             if let stats = $1 as? ARTStats {
-                                return $0 + stats.inbound.all.messages.count
+                                return $0 + (stats.inbound?.all?.messages?.count ?? 0)
                             }
                             return $0
                         })
@@ -150,7 +150,7 @@ class RestClientStats: QuickSpec {
                         
                         let totalOutbound = result.items.reduce(0.0, combine: {
                             if let stats = $1 as? ARTStats {
-                                return $0 + stats.outbound.all.messages.count
+                                return $0 + (stats.outbound?.all?.messages?.count ?? 0)
                             }
                             return $0
                         })
@@ -167,13 +167,13 @@ class RestClientStats: QuickSpec {
                         let result = queryStats(client, query)
                         let totalInbound = result.items.reduce(0.0, combine: {
                             if let stats = $1 as? ARTStats {
-                                return $0 + stats.inbound.all.messages.count
+                                return $0 + (stats.inbound?.all?.messages?.count ?? 0)
                             }
                             return $0
                         })
                         let totalOutbound = result.items.reduce(0.0, combine: {
                             if let stats = $1 as? ARTStats {
-                                return $0 + stats.outbound.all.messages.count
+                                return $0 + (stats.outbound?.all?.messages?.count ?? 0)
                             }
                             return $0
                         })
@@ -191,8 +191,8 @@ class RestClientStats: QuickSpec {
                         query.unit = .Month
                         
                         let result = queryStats(client, query)
-                        let totalInbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + $1.inbound.all.messages.count })
-                        let totalOutbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + $1.outbound.all.messages.count })
+                        let totalInbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + ($1.inbound?.all?.messages?.count ?? 0) })
+                        let totalOutbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + ($1.outbound?.all?.messages?.count ?? 0) })
                         
                         expect(result.items.count).to(equal(1))
                         expect(totalInbound).to(equal(50 + 60 + 70))
@@ -207,8 +207,8 @@ class RestClientStats: QuickSpec {
                         query.unit = .Month
                         
                         let result = queryStats(client, query)
-                        let totalInbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + $1.inbound.all.messages.count })
-                        let totalOutbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + $1.outbound.all.messages.count })
+                        let totalInbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + ($1.inbound?.all?.messages?.count ?? 0) })
+                        let totalOutbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + ($1.outbound?.all?.messages?.count ?? 0) })
                         
                         expect(result.items.count).to(equal(1))
                         expect(totalInbound).to(equal(50 + 60 + 70))
@@ -222,8 +222,8 @@ class RestClientStats: QuickSpec {
                         query.limit = 1
                         
                         let result = queryStats(client, query)
-                        let totalInbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + $1.inbound.all.messages.count })
-                        let totalOutbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + $1.outbound.all.messages.count })
+                        let totalInbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + ($1.inbound?.all?.messages?.count ?? 0) })
+                        let totalOutbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + ($1.outbound?.all?.messages?.count ?? 0) })
                         
                         expect(result.items.count).to(equal(1))
                         expect(totalInbound).to(equal(60))
@@ -238,8 +238,8 @@ class RestClientStats: QuickSpec {
                         query.direction = .Forwards
                         
                         let result = queryStats(client, query)
-                        let totalInbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + $1.inbound.all.messages.count })
-                        let totalOutbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + $1.outbound.all.messages.count })
+                        let totalInbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + ($1.inbound?.all?.messages?.count ?? 0) })
+                        let totalOutbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + ($1.outbound?.all?.messages?.count ?? 0) })
                         
                         expect(result.items.count).to(equal(1))
                         expect(totalInbound).to(equal(50))
@@ -254,25 +254,25 @@ class RestClientStats: QuickSpec {
 
                         let firstPage = queryStats(client, query)
                         expect(firstPage.items.count).to(equal(1))
-                        expect((firstPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(7000))
+                        expect((firstPage.items as! [ARTStats])[0].inbound?.all?.messages?.data).to(equal(7000))
                         expect(firstPage.hasNext).to(beTrue())
                         expect(firstPage.isLast).to(beFalse())
                         
                         let secondPage = getPage(firstPage.next)
                         expect(secondPage.items.count).to(equal(1))
-                        expect((secondPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(6000))
+                        expect((secondPage.items as! [ARTStats])[0].inbound?.all?.messages?.data).to(equal(6000))
                         expect(secondPage.hasNext).to(beTrue())
                         expect(secondPage.isLast).to(beFalse())
                         
                         let thirdPage = getPage(secondPage.next)
                         expect(thirdPage.items.count).to(equal(1))
-                        expect((thirdPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(5000))
+                        expect((thirdPage.items as! [ARTStats])[0].inbound?.all?.messages?.data).to(equal(5000))
                         expect(thirdPage.hasFirst).to(beTrue())
                         expect(thirdPage.isLast).to(beTrue())
                         
                         let firstPageAgain = getPage(thirdPage.first)
                         expect(firstPageAgain.items.count).to(equal(1))
-                        expect((firstPageAgain.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(7000))
+                        expect((firstPageAgain.items as! [ARTStats])[0].inbound?.all?.messages?.data).to(equal(7000))
                     }
                     
                     it("should be paginated according to the limit (fowards)") {
@@ -284,25 +284,25 @@ class RestClientStats: QuickSpec {
                         
                         let firstPage = queryStats(client, query)
                         expect(firstPage.items.count).to(equal(1))
-                        expect((firstPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(5000))
+                        expect((firstPage.items as! [ARTStats])[0].inbound?.all?.messages?.data).to(equal(5000))
                         expect(firstPage.hasNext).to(beTrue())
                         expect(firstPage.isLast).to(beFalse())
                         
                         let secondPage = getPage(firstPage.next)
                         expect(secondPage.items.count).to(equal(1))
-                        expect((secondPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(6000))
+                        expect((secondPage.items as! [ARTStats])[0].inbound?.all?.messages?.data).to(equal(6000))
                         expect(secondPage.hasNext).to(beTrue())
                         expect(secondPage.isLast).to(beFalse())
                         
                         let thirdPage = getPage(secondPage.next)
                         expect(thirdPage.items.count).to(equal(1))
-                        expect((thirdPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(7000))
+                        expect((thirdPage.items as! [ARTStats])[0].inbound?.all?.messages?.data).to(equal(7000))
                         expect(thirdPage.hasFirst).to(beTrue())
                         expect(thirdPage.isLast).to(beTrue())
                         
                         let firstPageAgain = getPage(thirdPage.first)
                         expect(firstPageAgain.items.count).to(equal(1))
-                        expect((firstPageAgain.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(5000))
+                        expect((firstPageAgain.items as! [ARTStats])[0].inbound?.all?.messages?.data).to(equal(5000))
                     }
                 }
                 
