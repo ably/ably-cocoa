@@ -1,7 +1,7 @@
 platform :ios, '8.0'
 use_frameworks!
 
-pod 'SwiftWebSocket', :git => 'https://github.com/ricardopereira/SwiftWebSocket.git', :branch => 'dev-objc'
+pod 'SwiftWebSocket', '2.4.0'
 
 target 'ablySpec' do
     pod 'Quick', '0.8.0'
