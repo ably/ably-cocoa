@@ -393,18 +393,26 @@ class RealtimeClientConnection: QuickSpec {
                     var ids = [String]()
                     let max = 25
 
-                    for _ in 1...max {
-                        disposable.append(ARTRealtime(options: options))
-                        let currentConnection = disposable.last?.connection()
-                        currentConnection?.eventEmitter.on { state, errorInfo in
-                            if state == .Connected {
-                                expect(ids).toNot(contain(currentConnection?.id))
-                                ids.append(currentConnection?.id ?? "")
+                    waitUntil(timeout: testTimeout) { done in
+                        for _ in 1...max {
+                            disposable.append(ARTRealtime(options: options))
+                            let currentConnection = disposable.last?.connection()
+                            currentConnection?.eventEmitter.on { state, errorInfo in
+                                if state == .Connected {
+                                    expect(ids).toNot(contain(currentConnection?.id))
+                                    ids.append(currentConnection?.id ?? "")
+
+                                    currentConnection?.close()
+                                    
+                                    if ids.count == max {
+                                        done()
+                                    }
+                                }
                             }
                         }
                     }
 
-                    expect(ids).toEventually(haveCount(max))
+                    expect(ids).to(haveCount(max))
                 }
             }
 
