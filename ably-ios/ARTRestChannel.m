@@ -31,7 +31,7 @@
     if (self = [super initWithName:name andOptions:options]) {
         _rest = rest;
         _basePath = [NSString stringWithFormat:@"/channels/%@", [name stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]]];
-        [self.logger debug:@"ARTRestChannel: instantiating under %@", name];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"%p instantiating under '%@'", self, name];
     }
     return self;
 }
@@ -76,8 +76,9 @@
             return [message decode:self.payloadEncoder];
         }];
     };
-    
-    [ARTPaginatedResult executePaginated:self.rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
+
+    [self.logger debug:__FILE__ line:__LINE__ message:@"stats request %@", request];
+    [ARTPaginatedResult executePaginated:_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
     return YES;
 }
 
@@ -99,8 +100,9 @@
     if (self.rest.defaultEncoding) {
         [request setValue:self.rest.defaultEncoding forHTTPHeaderField:@"Content-Type"];
     }
-    
-    [self.rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+
+    [self.logger debug:__FILE__ line:__LINE__ message:@"post message %@", request];
+    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (callback) {
             callback(error);
         }

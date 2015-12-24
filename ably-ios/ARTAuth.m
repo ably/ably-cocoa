@@ -40,6 +40,7 @@
 }
 
 - (void)validate:(ARTClientOptions *)options {
+    [self.logger debug:__FILE__ line:__LINE__ message:@"validating %@", options];
     if ([options isBasicAuth]) {
         if (!options.tls) {
             [NSException raise:@"ARTAuthException" format:@"Basic authentication only connects over HTTPS (tls)."];
@@ -142,7 +143,7 @@
     if (mergedOptions.authUrl) {
         NSMutableURLRequest *request = [self buildRequest:mergedOptions withParams:currentTokenParams];
         
-        [self.logger debug:@"ARTAuth: using authUrl (%@ %@)", request.HTTPMethod, request.URL];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"using authUrl (%@ %@)", request.HTTPMethod, request.URL];
         
         [_rest executeRequest:request withAuthOption:ARTAuthenticationUseBasic completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (error) {

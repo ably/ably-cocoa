@@ -78,7 +78,7 @@ enum {
 }
 
 - (void)send:(ARTProtocolMessage *)msg {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"%p sending %@", self, msg];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"%p sending action %d with %@", self, msg.action, msg.messages];
     NSData *data = [self.encoder encodeProtocolMessage:msg];
     [self.websocket sendWithData:data];
 }

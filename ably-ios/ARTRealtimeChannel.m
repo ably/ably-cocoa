@@ -409,12 +409,14 @@
     switch (self.state) {
         case ARTRealtimeChannelAttaching:
         case ARTRealtimeChannelAttached:
+            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"already attached"];
             return [ARTErrorInfo createWithCode:90000 message:@"Already attached"];
         default:
             break;
     }
     
     if (![self.realtime isActive]) {
+        [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"can't attach when not in an active state"];
         return [ARTErrorInfo createWithCode:90000 message:@"Can't attach when not in an active state"];
     }
 
@@ -433,12 +435,14 @@
         case ARTRealtimeChannelInitialised:
         case ARTRealtimeChannelDetaching:
         case ARTRealtimeChannelDetached:
+            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"can't detach when not attahed"];
             return [ARTErrorInfo createWithCode:90000 message:@"Can't detach when not attahed"];
         default:
             break;
     }
     
     if (![self.realtime isActive]) {
+        [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"can't detach when not in an active state"];
         return [ARTErrorInfo createWithCode:90000 message:@"Can't detach when not in an active state"];
     }
 

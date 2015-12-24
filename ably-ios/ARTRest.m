@@ -69,6 +69,7 @@
         }
         
         _http = [[ARTHttp alloc] init];
+        [_logger debug:__FILE__ line:__LINE__ message:@"%p alloc HTTP", _http];
         _httpExecutor = _http;
         _httpExecutor.logger = _logger;
         _channelClass = [ARTRestChannel class];
