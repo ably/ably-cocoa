@@ -17,6 +17,13 @@
 #import "ARTEventEmitter.h"
 #import "ARTURLSessionServerTrust.h"
 
+void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeout) {
+    NSTimeInterval limitInterval = [[[NSDate date] dateByAddingTimeInterval:timeout] timeIntervalSince1970];
+    while (*counter != list.count && [[NSDate date] timeIntervalSince1970] < limitInterval) {
+        CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.1, false);
+    }
+}
+
 @implementation ARTTestUtil
 
 + (ARTCipherPayloadEncoder *)getTestCipherEncoder {
