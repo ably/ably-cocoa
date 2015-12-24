@@ -58,22 +58,26 @@
         _rest = rest;
         ARTRestChannel *channel = [rest.channels get:@"testTimeBackwards"];
 
-        int firstBatchTotal =3;
-        int secondBatchTotal =2;
-        int thirdBatchTotal =1;
-        __block long long intervalStart=0, intervalEnd=0;
+        int firstBatchTotal = 3;
+        int secondBatchTotal = 2;
+        int thirdBatchTotal = 1;
+        __block long long intervalStart = 0, intervalEnd = 0;
 
         NSString *firstBatch = @"first_batch";
         NSString *secondBatch = @"second_batch";
         NSString *thirdBatch = @"third_batch";
         [ARTTestUtil publishRestMessages:firstBatch count:firstBatchTotal channel:(ARTChannel *)channel completion:^{
             sleep([ARTTestUtil bigSleep]);
-            intervalStart = [ARTTestUtil nowMilli] + timeOffset;
+            sleep([ARTTestUtil bigSleep]);
+            intervalStart += [ARTTestUtil nowMilli] + timeOffset;
+            sleep([ARTTestUtil bigSleep]);
             sleep([ARTTestUtil bigSleep]);
 
             [ARTTestUtil publishRestMessages:secondBatch count:secondBatchTotal channel:(ARTChannel *)channel completion:^{
                 sleep([ARTTestUtil bigSleep]);
-                intervalEnd = [ARTTestUtil nowMilli] + timeOffset;
+                sleep([ARTTestUtil bigSleep]);
+                intervalEnd += [ARTTestUtil nowMilli] + timeOffset;
+                sleep([ARTTestUtil bigSleep]);
                 sleep([ARTTestUtil bigSleep]);
 
                 [ARTTestUtil publishRestMessages:thirdBatch count:thirdBatchTotal channel:(ARTChannel *)channel completion:^{
@@ -104,7 +108,7 @@
 }
 
 - (void)testTimeForwards {
-    __block long long timeOffset= 0;
+    __block long long timeOffset = 0;
     
     XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
@@ -135,12 +139,16 @@
 
         [ARTTestUtil publishRestMessages:firstBatch count:firstBatchTotal channel:channel completion:^{
             sleep([ARTTestUtil bigSleep]);
-            intervalStart  = [ARTTestUtil nowMilli] + timeOffset;
+            sleep([ARTTestUtil bigSleep]);
+            intervalStart += [ARTTestUtil nowMilli] + timeOffset;
+            sleep([ARTTestUtil bigSleep]);
             sleep([ARTTestUtil bigSleep]);
 
             [ARTTestUtil publishRestMessages:secondBatch count:secondBatchTotal channel:channel completion:^{
                 sleep([ARTTestUtil bigSleep]);
-                intervalEnd = [ARTTestUtil nowMilli] +timeOffset;
+                sleep([ARTTestUtil bigSleep]);
+                intervalEnd += [ARTTestUtil nowMilli] + timeOffset;
+                sleep([ARTTestUtil bigSleep]);
                 sleep([ARTTestUtil bigSleep]);
 
                 [ARTTestUtil publishRestMessages:thirdBatch count:thirdBatchTotal channel:channel completion:^{

@@ -42,9 +42,10 @@
     _realtime = nil;
 }
 
--(void) testSendEncodedMessage {
+- (void)testSendEncodedMessage {
     XCTestExpectation *exp = [self expectationWithDescription:@"testSendEncodedMessage"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+        _realtime = realtime;
         ARTIvParameterSpec * ivSpec = [[ARTIvParameterSpec alloc] initWithIv:[[NSData alloc]
                                                                               initWithBase64EncodedString:@"HO4cYSP8LybPYBPZPHQOtg==" options:0]];
         NSData *keySpec = [[NSData alloc] initWithBase64EncodedString:@"WUP6u0K7MXI5Zeo0VppPwg==" options:0];
@@ -79,12 +80,13 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
--(void) testSendEncodedMessageOnExistingChannel {
+- (void)testSendEncodedMessageOnExistingChannel {
     XCTestExpectation *exp = [self expectationWithDescription:@"testSendEncodedMessageOnExistingChannel"];
-    NSString * channelName = @"channelName";
-    NSString * firstMessageText = @"firstMessage";
+    NSString *channelName = @"channelName";
+    NSString *firstMessageText = @"firstMessage";
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
-        
+        _realtime = realtime;
+
         ARTRealtimeChannel * channel = [realtime channel:channelName];
         [channel publish:firstMessageText cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
@@ -120,70 +122,5 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
-
-
-//TODO implement
-/*
-- (void)testSingleSendText {
-    XCTFail(@"TODO write test");
-}
-
-- (void)testSingleSendText256 {
-    XCTFail(@"TODO write test");
-}
-
-- (void)testMultipleSendText_2_200 {
-    XCTFail(@"TODO write test");
-}
-
-- (void)testMultipleSendText_20_100 {
-    XCTFail(@"TODO write test");
-}
-
-
-- (void)testSingleKeyMismatch {
-    XCTFail(@"TODO write test");
-}
-
-
-
-- (void)testEncryptedUnhandled {
-    XCTFail(@"TODO write test");
-}
-
-- (void)testSetCipherParams {
-    XCTFail(@"TODO write test");
-}
-
-- (void)testSingleUnencrypted {
-    XCTFail(@"TODO write test");
-}
- */
-
-/*
- //msgpack not implemented yet.
-- (void)testMultipleSendBinary_2_200 {
-    XCTFail(@"TODO write test");
-}
-- (void)testMultipleSendBinary_20_100 {
-    XCTFail(@"TODO write test");
-}
-
-- (void)testSingleBinaryText {
-    XCTFail(@"TODO write test");
-}
-
-- (void)testSingleTextBinary {
-    XCTFail(@"TODO write test");
-}
-
-- (void)testSingleSendBinary256 {
-    XCTFail(@"TODO write test");
-}
-- (void)testSingleSendBinary{
-    XCTFail(@"TODO write test");
-}
-*/
-
 
 @end

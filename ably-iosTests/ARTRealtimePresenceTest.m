@@ -775,6 +775,7 @@
 
     XCTestExpectation *exp = [self expectationWithDescription:@"testEnterClient"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+        _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime channel:@"channelName"];
         [channel.presence  enterClient:clientId data:nil cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
@@ -926,9 +927,9 @@
             XCTAssertEqual(options.clientId, [self getSecondClientId]);
             _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
             ARTRealtimeChannel *channel2 = [_realtime2 channel:channelName];
+            XCTAssertFalse([channel2.presence isSyncComplete]);
             [channel2.presence get:^(ARTPaginatedResult *result, NSError *error) {
                 XCTAssert(!error);
-                XCTAssertFalse([channel2.presence isSyncComplete]);
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                     XCTAssertTrue([channel2.presence isSyncComplete]);
                     ARTPresenceMap * map = channel2.presenceMap;

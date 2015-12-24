@@ -56,9 +56,12 @@
     
     XCTestExpectation *e = [self expectationWithDescription:@"waitExp"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+        _realtime = realtime;
         [e fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+
+    [_realtime close];
 
     XCTestExpectation *expectation = [self expectationWithDescription:@"multiple_send"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
@@ -83,7 +86,7 @@
             }
         }];
     }];
-    [self waitForExpectationsWithTimeout:((delay / 1000.0) * count * 2) handler:nil];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 - (void)testSingleSendText {
