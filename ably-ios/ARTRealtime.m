@@ -315,6 +315,7 @@
             break;
         case ARTRealtimeClosed:
             [self cancelCloseTimer];
+            [self.transport close];
             self.transport.delegate = nil;
             _transport = nil;
             break;
@@ -342,14 +343,16 @@
         [self sendQueuedMessages];
     } else if (![self shouldQueueEvents]) {
         [self failQueuedMessages:[self defaultError]];
+        // For every Channel
         for (NSString *channelName in self.allChannels) {
+            // Channel
             ARTRealtimeChannel *channel = [self.allChannels objectForKey:channelName];
             if (channel.state == ARTRealtimeChannelInitialised || channel.state == ARTRealtimeChannelAttaching || channel.state == ARTRealtimeChannelAttached) {
                 if(state == ARTRealtimeClosing) {
                     //do nothing. Closed state is coming.
                 }
                 else if(state == ARTRealtimeClosed) {
-                    [channel setClosed:[self defaultError]];
+                    [channel setClosed:[ARTStatus state:ARTStateOk]];
                 }
                 else if(state == ARTRealtimeSuspended) {
                     [channel detachChannel:[self defaultError]];

@@ -223,6 +223,10 @@
 }
 
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status {
+    if (self.state == state) {
+        return;
+    }
+
     self.state = state;
     
     for (ARTRealtimeChannelStateSubscription *subscription in self.stateSubscriptions) {
