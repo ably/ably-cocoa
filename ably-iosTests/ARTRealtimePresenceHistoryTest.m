@@ -36,8 +36,23 @@
 }
 
 - (void)tearDown {
+    if (_realtime) {
+        [_realtime removeAllChannels];
+        [_realtime.eventEmitter removeEvents];
+        [_realtime close];
+    }
     _realtime = nil;
+    if (_realtime2) {
+        [_realtime2 removeAllChannels];
+        [_realtime2.eventEmitter removeEvents];
+        [_realtime2 close];
+    }
     _realtime2 = nil;
+    if (_realtime3) {
+        [_realtime3 removeAllChannels];
+        [_realtime3.eventEmitter removeEvents];
+        [_realtime3 close];
+    }
     _realtime3 = nil;
     [super tearDown];
 }

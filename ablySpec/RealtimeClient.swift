@@ -40,7 +40,7 @@ class RealtimeClient: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         client.eventEmitter.on { state, errorInfo in
                             switch state {
-                            case .Connecting:
+                            case .Connecting, .Closing, .Closed:
                                 break
                             case .Failed:
                                 self.checkError(errorInfo, withAlternative: "Failed state")
@@ -52,6 +52,7 @@ class RealtimeClient: QuickSpec {
                             }
                         }
                     }
+                    client.close()
                 }
                 
                 //RTC1a
@@ -72,9 +73,9 @@ class RealtimeClient: QuickSpec {
                     options.clientId = "client_string"
 
                     // First connection
-                    var client: ARTRealtime! = ARTRealtime(options: options)
+                    let client = ARTRealtime(options: options)
 
-                    waitUntil(timeout: 60) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         client.eventEmitter.on { state, errorInfo in
                             switch state {
                             case .Failed:
@@ -92,10 +93,10 @@ class RealtimeClient: QuickSpec {
                     }
 
                     // New connection
-                    client = ARTRealtime(options: options)
+                    let newClient = ARTRealtime(options: options)
 
-                    waitUntil(timeout: 60) { done in
-                        client.eventEmitter.on { state, errorInfo in
+                    waitUntil(timeout: testTimeout) { done in
+                        newClient.eventEmitter.on { state, errorInfo in
                             switch state {
                             case .Failed:
                                 self.checkError(errorInfo, withAlternative: "Failed state")
@@ -108,6 +109,8 @@ class RealtimeClient: QuickSpec {
                             }
                         }
                     }
+                    newClient.close()
+                    client.close()
                 }
 
                 //RTC1d
@@ -142,13 +145,17 @@ class RealtimeClient: QuickSpec {
 
             // RTC3
             it("should provide access to the underlying Channels object") {
-                let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                let options = AblyTests.commonAppSetup()
+                options.autoConnect = false
+
+                let client = ARTRealtime(options: options)
 
                 client.channel("test").subscribe({ message, errorInfo in
                     // Attached
                 })
 
                 expect(client.channels()["test"]).toNot(beNil())
+                client.close()
             }
 
             context("Auth object") {
@@ -159,6 +166,7 @@ class RealtimeClient: QuickSpec {
                     let client = ARTRealtime(options: options)
 
                     expect(client.auth().options.key).to(equal(options.key))
+                    client.close()
                 }
 
                 // RTC4a
@@ -167,7 +175,7 @@ class RealtimeClient: QuickSpec {
                     options.clientId = "client_string"
                     let client = ARTRealtime(options: options)
 
-                    waitUntil(timeout: 60) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         client.eventEmitter.on { state, errorInfo in
                             switch state {
                             case .Failed:
@@ -182,6 +190,7 @@ class RealtimeClient: QuickSpec {
                             }
                         }
                     }
+                    client.close()
                 }
             }
 
@@ -200,6 +209,7 @@ class RealtimeClient: QuickSpec {
                             done()
                         })
                     }
+                    client.close()
                 }
 
                 // RTC5b
@@ -223,6 +233,7 @@ class RealtimeClient: QuickSpec {
                             done()
                         })
                     }
+                    client.close()
                 }
             }
 
@@ -238,6 +249,7 @@ class RealtimeClient: QuickSpec {
                             done()
                         })
                     }
+                    client.close()
                 }
             }
 

@@ -37,7 +37,17 @@
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
+    if (_realtime) {
+        [_realtime removeAllChannels];
+        [_realtime.eventEmitter removeEvents];
+        [_realtime close];
+    }
     _realtime = nil;
+    if (_realtime2) {
+        [_realtime2 removeAllChannels];
+        [_realtime2.eventEmitter removeEvents];
+        [_realtime2 close];
+    }
     _realtime2 = nil;
     [super tearDown];
 }

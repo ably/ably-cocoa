@@ -37,7 +37,17 @@
 - (void)tearDown {
     [super tearDown];
     [ARTPayload getPayloadArraySizeLimit:SIZE_T_MAX modify:true];
+    if (_realtime) {
+        [_realtime removeAllChannels];
+        [_realtime.eventEmitter removeEvents];
+        [_realtime close];
+    }
     _realtime = nil;
+    if (_realtime2) {
+        [_realtime2 removeAllChannels];
+        [_realtime2.eventEmitter removeEvents];
+        [_realtime2 close];
+    }
     _realtime2 = nil;
 }
 

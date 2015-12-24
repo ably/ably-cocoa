@@ -72,6 +72,7 @@ typedef void (^ARTRealtimePingCb)(ARTStatus *);
 - (ARTRealtimeChannel *)channel:(NSString *)channelName;
 - (ARTRealtimeChannel *)channel:(NSString *)channelName cipherParams:(art_nullable ARTCipherParams *)cipherParams;
 - (void)removeChannel:(NSString *)name;
+- (void)removeAllChannels;
 
 // Message sending
 - (void)send:(ARTProtocolMessage *)msg cb:(art_nullable ARTStatusCallback)cb;

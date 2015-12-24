@@ -242,7 +242,7 @@ class RestClient: QuickSpec {
 
                 expect(auth.method.rawValue).to(equal(ARTAuthMethod.Basic.rawValue))
 
-                waitUntil(timeout: 25.0) { done in
+                waitUntil(timeout: testTimeout) { done in
                     auth.requestToken(nil, withOptions: options, callback: { tokenDetailsA, errorA in
                         if let e = errorA {
                             XCTFail(e.description)
@@ -274,7 +274,7 @@ class RestClient: QuickSpec {
                 let tokenParams = ARTAuthTokenParams()
                 tokenParams.ttl = 3.0 //Seconds
 
-                waitUntil(timeout: 25.0) { done in
+                waitUntil(timeout: testTimeout) { done in
                     auth.requestToken(tokenParams, withOptions: options) { tokenDetailsA, errorA in
                         if let e = errorA {
                             XCTFail(e.description)
@@ -285,7 +285,7 @@ class RestClient: QuickSpec {
                         }
 
                         // Delay for token expiration
-                        delay(tokenParams.ttl) {
+                        delay(tokenParams.ttl + 1.0) {
                             auth.authorise(tokenParams, options: options, force: false) { tokenDetailsB, errorB in
                                 if let e = errorB {
                                     XCTFail(e.description)

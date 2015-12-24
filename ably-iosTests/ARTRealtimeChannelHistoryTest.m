@@ -32,7 +32,15 @@
 
 - (void)tearDown {
     [super tearDown];
+    if (_realtime) {
+        [_realtime removeAllChannels];
+        [_realtime close];
+    }
     _realtime = nil;
+    if (_realtime2) {
+        [_realtime2 removeAllChannels];
+        [_realtime2 close];
+    }
     _realtime2 = nil;
 }
 

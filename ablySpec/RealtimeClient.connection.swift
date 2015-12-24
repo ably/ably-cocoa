@@ -48,6 +48,7 @@ class RealtimeClientConnection: QuickSpec {
                     else {
                         XCTFail("MockTransport isn't working")
                     }
+                    client.close()
                 }
 
                 it("should connect with query string params") {
@@ -80,6 +81,7 @@ class RealtimeClientConnection: QuickSpec {
                             }
                         }
                     }
+                    client.close()
                 }
 
                 it("should connect with query string params including clientId") {
@@ -115,6 +117,7 @@ class RealtimeClientConnection: QuickSpec {
                             }
                         }
                     }
+                    client.close()
                 }
             }
 
@@ -164,6 +167,7 @@ class RealtimeClientConnection: QuickSpec {
                         }
                     }
                 }
+                client.close()
             }
 
             // RTN4
@@ -224,6 +228,8 @@ class RealtimeClientConnection: QuickSpec {
                     expect(events[5].rawValue).to(equal(ARTRealtimeConnectionState.Suspended.rawValue), description: "Should be SUSPENDED state")
                     expect(events[6].rawValue).to(equal(ARTRealtimeConnectionState.Disconnected.rawValue), description: "Should be DISCONNECTED state")
                     expect(events[7].rawValue).to(equal(ARTRealtimeConnectionState.Failed.rawValue), description: "Should be FAILED state")
+
+                    client.close()
                 }
 
                 // RTN4b
@@ -253,6 +259,8 @@ class RealtimeClientConnection: QuickSpec {
 
                     expect(events[0].rawValue).to(equal(ARTRealtimeConnectionState.Connecting.rawValue), description: "Should be CONNECTING state")
                     expect(events[1].rawValue).to(equal(ARTRealtimeConnectionState.Connected.rawValue), description: "Should be CONNECTED state")
+
+                    connection.close()
                 }
 
                 // RTN4c
@@ -284,6 +292,8 @@ class RealtimeClientConnection: QuickSpec {
 
                     expect(events[0].rawValue).to(equal(ARTRealtimeConnectionState.Closing.rawValue), description: "Should be CLOSING state")
                     expect(events[1].rawValue).to(equal(ARTRealtimeConnectionState.Closed.rawValue), description: "Should be CLOSED state")
+
+                    connection.close()
                 }
 
                 // RTN4d
@@ -292,6 +302,8 @@ class RealtimeClientConnection: QuickSpec {
                     options.autoConnect = false
                     let connection = ARTRealtime(options: options).connection()
                     expect(connection.state.rawValue).to(equal(0), description: "Missing INITIALIZED state")
+
+                    connection.close()
                 }
 
                 // RTN4e
@@ -314,6 +326,8 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     expect(lastState.rawValue).to(equal(2), description: "Missing state argument")
+
+                    connection.close()
                 }
 
                 // RTN4f
@@ -341,6 +355,8 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     expect(errorInfo).toNot(beNil())
+
+                    connection.close()
                 }
             }
 
@@ -366,6 +382,8 @@ class RealtimeClientConnection: QuickSpec {
                             }
                         }
                     }
+
+                    connection.close()
                 }
 
                 // RTN8b

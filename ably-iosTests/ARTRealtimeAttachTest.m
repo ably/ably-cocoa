@@ -27,12 +27,16 @@
 
 @implementation ARTRealtimeAttachTest
 
-
 - (void)setUp {
     [super setUp];
 }
 
 - (void)tearDown {
+    if (_realtime) {
+        [_realtime removeAllChannels];
+        [_realtime.eventEmitter removeEvents];
+        [_realtime close];
+    }
     _realtime = nil;
     [super tearDown];
 }

@@ -256,6 +256,10 @@
     return channel;
 }
 
+- (void)removeAllChannels {
+    [_allChannels removeAllObjects];
+}
+
 - (void)removeChannel:(NSString *)name {
     [_allChannels removeObjectForKey:name];
 }

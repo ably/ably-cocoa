@@ -151,6 +151,8 @@ class Auth : QuickSpec {
                     else {
                         XCTFail("MockTransport is not working")
                     }
+
+                    client.close()
                 }
             }
 
