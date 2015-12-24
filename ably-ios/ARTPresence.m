@@ -11,7 +11,7 @@
 #import "ARTChannel.h"
 
 @interface ARTPresence () {
-    ARTChannel *_channel;
+    __weak ARTChannel *_channel;
 }
 
 @end
