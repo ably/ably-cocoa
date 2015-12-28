@@ -237,6 +237,13 @@ class Auth : QuickSpec {
                             XCTFail("MockTransport is not working")
                         }
                     }
+
+                    it("with wildcard") {
+                        let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                        options.clientId = "*"
+                        expect{ ARTRest(options: options) }.to(raiseException())
+                        expect{ ARTRealtime(options: options) }.to(raiseException())
+                    }
                 }
                 
                 // RSA15b
