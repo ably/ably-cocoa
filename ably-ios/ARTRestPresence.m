@@ -42,16 +42,20 @@
 }
 
 - (BOOL)history:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *result, NSError *error))callback error:(NSError **)errorPtr {
-    if (query.limit > 1000 && errorPtr) {
-        *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
-                                        code:ARTDataQueryErrorLimit
-                                    userInfo:@{NSLocalizedDescriptionKey:@"Limit supports up to 1000 results only"}];
+    if (query.limit > 1000) {
+        if (errorPtr) {
+            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                            code:ARTDataQueryErrorLimit
+                                        userInfo:@{NSLocalizedDescriptionKey:@"Limit supports up to 1000 results only"}];
+        }
         return NO;
     }
-    if ([query.start compare:query.end] == NSOrderedDescending && errorPtr) {
-        *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
-                                        code:ARTDataQueryErrorTimestampRange
-                                    userInfo:@{NSLocalizedDescriptionKey:@"Start must be equal to or less than end"}];
+    if ([query.start compare:query.end] == NSOrderedDescending) {
+        if (errorPtr) {
+            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                            code:ARTDataQueryErrorTimestampRange
+                                        userInfo:@{NSLocalizedDescriptionKey:@"Start must be equal to or less than end"}];
+        }
         return NO;
     }
 
