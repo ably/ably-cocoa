@@ -751,10 +751,19 @@ class Auth : QuickSpec {
                 let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                 let tokenParams = ARTAuthTokenParams()
-                let expectedCapability = "{ - }" //Invalid
+                tokenParams.capability = "{ - }"
+
+                rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
+                    expect(error).toNot(beNil())
+                    expect(error?.description).to(contain("Capability"))
+                    expect(tokenRequest?.capability).to(beNil())
+                })
+
+                let expectedCapability = "{ \"cansubscribe:*\":[\"subscribe\"] }"
                 tokenParams.capability = expectedCapability
 
                 rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
+                    expect(error).to(beNil())
                     expect(tokenRequest?.capability).to(equal(expectedCapability))
                 })
             }
