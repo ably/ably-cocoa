@@ -149,4 +149,18 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
+- (void)testPresenceLimitIgnoringError {
+    XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
+    [ARTTestUtil testRest:^(ARTRest *rest) {
+        _rest = rest;
+        ARTRestChannel *channelOne = [rest.channels get:@"name"];
+        ARTDataQuery *query = [[ARTDataQuery alloc] init];
+        query.limit = 1001;
+        BOOL valid = [channelOne.presence history:query callback:^(ARTPaginatedResult *result, NSError *error){} error:nil];
+        XCTAssertFalse(valid);
+        [exp fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
+
 @end

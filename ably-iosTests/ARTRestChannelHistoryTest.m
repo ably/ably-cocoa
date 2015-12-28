@@ -388,7 +388,7 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
--(void) testHistoryLimit {
+- (void)testHistoryLimit {
     XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
@@ -402,6 +402,22 @@
         XCTAssertFalse(valid);
         XCTAssertNotNil(error);
         XCTAssert(error.code == ARTDataQueryErrorLimit);
+        [exp fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
+
+- (void)testHistoryLimitIgnoringError {
+    XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
+    [ARTTestUtil testRest:^(ARTRest *rest) {
+        _rest = rest;
+        ARTChannel *channelOne = [rest.channels get:@"name"];
+
+        ARTDataQuery *query = [[ARTDataQuery alloc] init];
+        query.limit = 1001;
+
+        BOOL valid = [channelOne history:query callback:^(ARTPaginatedResult *result, NSError *error) {} error:nil];
+        XCTAssertFalse(valid);
         [exp fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
