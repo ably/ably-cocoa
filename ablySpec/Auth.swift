@@ -214,6 +214,9 @@ class Auth : QuickSpec {
                         options.autoConnect = false
 
                         let client = ARTRealtime(options: options)
+                        defer {
+                            client.close()
+                        }
                         client.setTransportClass(MockTransport.self)
                         client.connect()
 
