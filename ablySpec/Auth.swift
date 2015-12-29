@@ -690,7 +690,6 @@ class Auth : QuickSpec {
                         expect(rest.auth.method).to(equal(ARTAuthMethod.Basic))
 
                         // Reuse the valid token
-                        rest.auth.setTokenDetails(ARTAuthTokenDetails(token: currentToken))
                         rest.auth.authorise(nil, options: nil, callback: { tokenDetails, error in
                             expect(rest.auth.method).to(equal(ARTAuthMethod.Token))
                             expect(tokenDetails?.token).to(equal(currentToken))

@@ -249,7 +249,7 @@ class RestClient: QuickSpec {
                             done()
                         }
                         else if let currentTokenDetails = tokenDetailsA {
-                            auth.setTokenDetails(currentTokenDetails)
+                            auth.tokenDetails = currentTokenDetails
                         }
 
                         auth.authorise(nil, options: options, callback: { tokenDetailsB, errorB in
@@ -281,7 +281,7 @@ class RestClient: QuickSpec {
                             done()
                         }
                         else if let currentTokenDetails = tokenDetailsA {
-                            auth.setTokenDetails(currentTokenDetails)
+                            auth.tokenDetails = currentTokenDetails
                         }
 
                         // Delay for token expiration
