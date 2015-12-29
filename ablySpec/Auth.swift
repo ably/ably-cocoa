@@ -657,7 +657,7 @@ class Auth : QuickSpec {
 
             // RSA10a
             it("should create a token if needed and use it") {
-                let options = AblyTests.commonAppSetup()
+                let options = AblyTests.clientOptions(requestToken: true)
                 var validToken: String?
 
                 // Create a new token
