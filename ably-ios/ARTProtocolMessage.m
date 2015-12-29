@@ -8,6 +8,14 @@
 
 #import "ARTProtocolMessage.h"
 #import "ARTStatus.h"
+#import "ARTConnectionDetails.h"
+
+@interface ARTProtocolMessage () {
+    // FIXME: temporary
+    ARTConnectionDetails *_connectionDetails;
+}
+
+@end
 
 @implementation ARTProtocolMessage
 
@@ -29,6 +37,7 @@
         _presence = nil;
         _flags = 0;
         _error = nil;
+        _connectionDetails = [[ARTConnectionDetails alloc] initWithProtocolMessage:self];
     }
     return self;
 }
@@ -61,6 +70,10 @@
 
 - (BOOL)isSyncEnabled {
     return self.flags & 0x1;
+}
+
+- (ARTConnectionDetails *)getConnectionDetails {
+    return _connectionDetails;
 }
 
 @end

@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "CompatibilityMacros.h"
 
+@class ARTConnectionDetails;
 @class ARTErrorInfo;
 
 typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
@@ -57,6 +58,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (art_nullable, readwrite, strong, nonatomic) NSArray *presence;
 @property (readonly, assign, nonatomic) BOOL ackRequired;
 @property (readwrite, assign, nonatomic) int64_t flags;
+@property (readonly, getter=connectionDetails) ARTConnectionDetails *connectionDetails;
 
 - (BOOL)isSyncEnabled;
 

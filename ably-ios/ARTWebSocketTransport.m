@@ -80,6 +80,10 @@ enum {
     [self.websocket send:data];
 }
 
+- (void)receive:(ARTProtocolMessage *)msg {
+    [self.delegate realtimeTransport:self didReceiveMessage:msg];
+}
+
 - (void)connect {
     [self.logger debug:@"ARTWebSocketTransport: websocket connect"];
     if ([self.options isBasicAuth]) {
@@ -209,7 +213,7 @@ enum {
         ARTWebSocketTransport *s = weakSelf;
         if (s) {
             ARTProtocolMessage *pm = [s.encoder decodeProtocolMessage:data];
-            [s.delegate realtimeTransport:s didReceiveMessage:pm];
+            [s receive:pm];
         }
     });
     CFRunLoopWakeUp(self.rl);

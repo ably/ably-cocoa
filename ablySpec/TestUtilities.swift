@@ -327,11 +327,25 @@ class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
 class MockTransport: ARTWebSocketTransport {
 
     var lastUrl: NSURL?
+    var lastSentMessage: ARTProtocolMessage?
+    var connectedMessage: ARTProtocolMessage?
 
     override func setupWebSocket(params: [NSURLQueryItem], withOptions options: ARTClientOptions) -> NSURL {
         let url = super.setupWebSocket(params, withOptions: options)
         lastUrl = url
         return url
+    }
+
+    override func send(msg: ARTProtocolMessage) {
+        lastSentMessage = msg
+        super.send(msg)
+    }
+
+    override func receive(msg: ARTProtocolMessage) {
+        if msg.action == .Connected {
+            connectedMessage = msg
+        }
+        super.receive(msg)
     }
 
 }

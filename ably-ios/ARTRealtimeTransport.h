@@ -36,6 +36,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (readwrite, weak, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
 - (void)send:(ARTProtocolMessage *)msg;
+- (void)receive:(ARTProtocolMessage *)msg;
 - (void)connect;
 - (void)sendClose;
 - (void)sendPing;
