@@ -669,9 +669,7 @@ class Auth : QuickSpec {
                         expect(tokenDetails).toNot(beNil())
                         expect(tokenDetails?.token).toNot(beEmpty())
 
-                        if let token = tokenDetails?.token {
-                            validToken = token
-                        }
+                        validToken = tokenDetails?.token
 
                         publishTestMessage(rest, completion: { error in
                             expect(error).to(beNil())
@@ -680,19 +678,25 @@ class Auth : QuickSpec {
                     })
                 }
 
-                guard let currentToken = validToken else { return }
+                if let token = validToken {
+                    // Has a valid token
+                    options.token = token
+                }
+                else {
+                    return
+                }
 
                 waitUntil(timeout: testTimeout) { done in
                     // New client with Basic auth
                     let rest = ARTRest(options: options)
                     publishTestMessage(rest, completion: { error in
                         expect(error).to(beNil())
-                        expect(rest.auth.method).to(equal(ARTAuthMethod.Basic))
+                        expect(rest.auth.method).to(equal(ARTAuthMethod.Token))
 
                         // Reuse the valid token
                         rest.auth.authorise(nil, options: nil, callback: { tokenDetails, error in
                             expect(rest.auth.method).to(equal(ARTAuthMethod.Token))
-                            expect(tokenDetails?.token).to(equal(currentToken))
+                            expect(tokenDetails?.token).to(equal(options.token))
 
                             publishTestMessage(rest, completion: { error in
                                 expect(error).to(beNil())
