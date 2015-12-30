@@ -29,7 +29,7 @@ func pathForTestResource(resourcePath: String) -> String {
 
 let appSetupJson = JSON(data: NSData(contentsOfFile: pathForTestResource("ably-common/test-resources/test-app-setup.json"))!, options: .MutableContainers)
 
-let testTimeout: NSTimeInterval = 120.0
+let testTimeout: NSTimeInterval = 10.0
 
 class AblyTests {
 
