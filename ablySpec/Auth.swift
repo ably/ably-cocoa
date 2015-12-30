@@ -881,26 +881,32 @@ class Auth : QuickSpec {
             // RSA10i
             context("should adhere to all requirements relating to") {
 
-                it("TokenParams and authCallback") {
-                    let options = AblyTests.commonAppSetup()
-                    options.clientId = "client_string"
-                    let rest = ARTRest(options: options)
+                it("TokenParams") {
+                    // TODO
+                }
 
-                    let expectedClientId = "client_from_callback"
+                it("authCallback") {
+                    var currentTokenRequest: ARTAuthTokenRequest? = nil
 
-                    let tokenParams = ARTAuthTokenParams()
-                    tokenParams.clientId = "client_from_params"
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
+                    rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
+                        currentTokenRequest = tokenRequest
+                    })
+                    expect(currentTokenRequest).toEventuallyNot(beNil(), timeout: testTimeout)
 
-                    let authOptions = ARTAuthOptions()
-                    authOptions.authCallback = { tokenParams, callback in
-                        rest.auth.createTokenRequest(ARTAuthTokenParams(clientId: expectedClientId), options: options, callback: callback)
+                    if currentTokenRequest == nil {
+                        return
+                    }
+
+                    let options = AblyTests.clientOptions()
+                    options.authCallback = { tokenParams, completion in
+                        rest.auth.executeTokenRequest(currentTokenRequest!, callback: completion);
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(tokenParams, options: authOptions) { tokenDetails, error in
+                        ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
                             expect(error).to(beNil())
                             expectTokenDetails(tokenDetails)
-                            expect(tokenDetails?.clientId).to(equal(expectedClientId))
                             done()
                         }
                     }
