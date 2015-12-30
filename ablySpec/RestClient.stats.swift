@@ -97,30 +97,24 @@ class RestClientStats: QuickSpec {
                     dateComponents.day = 3
                     dateComponents.hour = 16
                     dateComponents.minute = 3
-                    let dateStart = calendar.dateFromComponents(dateComponents)!
-                    dateComponents.year = calendar.component(NSCalendarUnit.Year, fromDate: NSDate())
-                    dateComponents.month = 12
-                    dateComponents.day = 22
-                    dateComponents.hour = 11
-                    dateComponents.minute = 30
-                    let dateEnd = calendar.dateFromComponents(dateComponents)!
+                    let date = calendar.dateFromComponents(dateComponents)!
                     let dateFormatter = NSDateFormatter()
                     dateFormatter.timeZone = NSTimeZone(name: "UTC")
                     dateFormatter.dateFormat = "YYYY-MM-dd:HH:mm"
                     
                     let statsFixtures: JSON = [
                         [
-                            "intervalId": dateFormatter.stringFromDate(dateStart), // 20XX-02-03:16:03
+                            "intervalId": dateFormatter.stringFromDate(date), // 20XX-02-03:16:03
                             "inbound": [ "realtime": [ "messages": [ "count": 50, "data": 5000 ] ] ],
                             "outbound": [ "realtime": [ "messages": [ "count": 20, "data": 2000 ] ] ]
                         ],
                         [
-                            "intervalId": dateFormatter.stringFromDate(dateStart.dateByAddingTimeInterval(60)), // 20XX-02-03:16:04
+                            "intervalId": dateFormatter.stringFromDate(date.dateByAddingTimeInterval(60)), // 20XX-02-03:16:04
                             "inbound": [ "realtime": [ "messages": [ "count": 60, "data": 6000 ] ] ],
                             "outbound": [ "realtime": [ "messages": [ "count": 10, "data": 1000 ] ] ]
                         ],
                         [
-                            "intervalId": dateFormatter.stringFromDate(dateStart.dateByAddingTimeInterval(120)), // 20XX-02-03:16:05
+                            "intervalId": dateFormatter.stringFromDate(date.dateByAddingTimeInterval(120)), // 20XX-02-03:16:05
                             "inbound": [ "realtime": [ "messages": [ "count": 70, "data": 7000 ] ] ],
                             "outbound": [ "realtime": [ "messages": [ "count": 40, "data": 4000 ] ] ],
                             "persisted": [ "presence": [ "count": 20, "data": 2000 ] ],
@@ -140,8 +134,7 @@ class RestClientStats: QuickSpec {
                     it("should match minute-level inbound and outbound fixture data (forwards)") {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
-                        query.start = dateStart
-                        query.end = dateEnd
+                        query.start = date
                         query.direction = .Forwards
                         
                         let result = queryStats(client, query)
@@ -167,8 +160,7 @@ class RestClientStats: QuickSpec {
                     it("should match hour-level inbound and outbound fixture data (forwards)") {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
-                        query.start = dateStart
-                        query.end = dateEnd
+                        query.start = date
                         query.direction = .Forwards
                         query.unit = .Hour
                         
@@ -194,7 +186,7 @@ class RestClientStats: QuickSpec {
                     it("should match day-level inbound and outbound fixture data (forwards)") {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
-                        query.end = calendar.dateByAddingUnit(.Day, value: 1, toDate: dateStart, options: NSCalendarOptions(rawValue: 0))
+                        query.end = calendar.dateByAddingUnit(.Day, value: 1, toDate: date, options: NSCalendarOptions(rawValue: 0))
                         query.direction = .Forwards
                         query.unit = .Month
                         
@@ -210,7 +202,7 @@ class RestClientStats: QuickSpec {
                     it("should match month-level inbound and outbound fixture data (forwards)") {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
-                        query.end = calendar.dateByAddingUnit(.Month, value: 1, toDate: dateStart, options: NSCalendarOptions(rawValue: 0))
+                        query.end = calendar.dateByAddingUnit(.Month, value: 1, toDate: date, options: NSCalendarOptions(rawValue: 0))
                         query.direction = .Forwards
                         query.unit = .Month
                         
@@ -226,7 +218,7 @@ class RestClientStats: QuickSpec {
                     it("should contain only one item when limit is 1 (backwards") {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
-                        query.end = dateStart.dateByAddingTimeInterval(60) // 20XX-02-03:16:04
+                        query.end = date.dateByAddingTimeInterval(60) // 20XX-02-03:16:04
                         query.limit = 1
                         
                         let result = queryStats(client, query)
@@ -241,7 +233,7 @@ class RestClientStats: QuickSpec {
                     it("should contain only one item when limit is 1 (forwards") {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
-                        query.end = dateStart.dateByAddingTimeInterval(60) // 20XX-02-03:16:04
+                        query.end = date.dateByAddingTimeInterval(60) // 20XX-02-03:16:04
                         query.limit = 1
                         query.direction = .Forwards
                         
@@ -257,7 +249,7 @@ class RestClientStats: QuickSpec {
                     it("should be paginated according to the limit (backwards") {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
-                        query.end = dateStart.dateByAddingTimeInterval(120) // 20XX-02-03:16:05
+                        query.end = date.dateByAddingTimeInterval(120) // 20XX-02-03:16:05
                         query.limit = 1
 
                         let firstPage = queryStats(client, query)
@@ -286,7 +278,7 @@ class RestClientStats: QuickSpec {
                     it("should be paginated according to the limit (fowards)") {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
-                        query.end = dateStart.dateByAddingTimeInterval(120) // 20XX-02-03:16:05
+                        query.end = date.dateByAddingTimeInterval(120) // 20XX-02-03:16:05
                         query.limit = 1
                         query.direction = .Forwards
                         
