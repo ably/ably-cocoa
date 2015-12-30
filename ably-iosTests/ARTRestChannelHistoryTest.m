@@ -415,9 +415,9 @@
 
         ARTDataQuery *query = [[ARTDataQuery alloc] init];
         query.limit = 1001;
-
-        BOOL valid = [channelOne history:query callback:^(ARTPaginatedResult *result, NSError *error) {} error:nil];
-        XCTAssertFalse(valid);
+        // Forcing an invalid query where the error is ignored and the result should be invalid (the request was canceled)
+        BOOL requested = [channelOne history:query callback:^(ARTPaginatedResult *result, NSError *error) {} error:nil];
+        XCTAssertFalse(requested);
         [exp fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
