@@ -156,11 +156,6 @@
     ARTAuthTokenParams *currentTokenParams = [self mergeParams:tokenParams];
     tokenParams.timestamp = [NSDate date];
 
-    if (!mergedOptions.key) {
-        callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:ARTCodeErrorAPIKeyMissing
-                                      userInfo:@{ NSLocalizedDescriptionKey: NSLocalizedString(@"API Key is missing", nil) }]);
-    }
-
     if (mergedOptions.authUrl) {
         NSMutableURLRequest *request = [self buildRequest:mergedOptions withParams:currentTokenParams];
         
