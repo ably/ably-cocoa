@@ -36,7 +36,7 @@
 @property (readonly, strong, nonatomic) NSString *defaultEncoding; //Content-Type
 @property (readonly, strong, nonatomic) NSDictionary *encoders;
 
-@property (nonatomic, weak) id<ARTHTTPExecutor> httpExecutor;
+@property (nonatomic, strong) id<ARTHTTPExecutor> httpExecutor;
 @property (readonly, nonatomic, assign) Class channelClass;
 
 @property (nonatomic, strong) NSURL *baseUrl;
