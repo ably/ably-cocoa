@@ -92,8 +92,7 @@ typedef void (^ARTStatsCallback)(ARTPaginatedResult *__art_nullable result, NSEr
 
 typedef void (^ARTTimeCallback)(NSDate *__art_nullable time, NSError *__art_nullable error);
 
-// FIXME: review
-typedef void (^ARTAuthCallback)(ARTAuthTokenParams *tokenParams, void(^callback)(ARTAuthTokenRequest *__art_nullable tokenRequest, NSError *__art_nullable error));
+typedef void (^ARTAuthCallback)(ARTAuthTokenParams *tokenParams, void(^callback)(ARTAuthTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error));
 
 typedef void (^ARTTokenCallback)(ARTAuthTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error);
 

@@ -18,6 +18,9 @@ ART_ASSUME_NONNULL_BEGIN
 - (NSURL *)buildURL:(ARTAuthOptions *)options withParams:(ARTAuthTokenParams *)params;
 - (NSMutableURLRequest *)buildRequest:(ARTAuthOptions *)options withParams:(ARTAuthTokenParams *)params;
 
+// Execute the received ARTAuthTokenRequest
+- (void)executeTokenRequest:(ARTAuthTokenRequest *)tokenRequest callback:(void (^)(ARTAuthTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error))callback;
+
 // CONNECTED ProtocolMessage may contain a clientId
 - (void)setProtocolClientId:(NSString *)clientId;
 

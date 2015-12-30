@@ -172,21 +172,22 @@
             }
         }];
     } else {
-        ARTAuthCallback tokenRequestFactory = mergedOptions.authCallback? : ^(ARTAuthTokenParams *tokenParams, void(^callback)(ARTAuthTokenRequest *tokenRequest, NSError *error)) {
-            [self createTokenRequest:currentTokenParams options:mergedOptions callback:callback];
+        ARTAuthCallback tokenRequestFactory = mergedOptions.authCallback? : ^(ARTAuthTokenParams *tokenParams, void(^callback)(ARTAuthTokenDetails *tokenDetails, NSError *error)) {
+            // Create a TokenRequest and execute it
+            [self createTokenRequest:currentTokenParams options:mergedOptions callback:^(ARTAuthTokenRequest *tokenRequest, NSError *error) {
+                if (error) {
+                    callback(nil, error);
+                } else {
+                    [self executeTokenRequest:tokenRequest callback:callback];
+                }
+            }];
         };
 
         if (tokenRequestFactory == mergedOptions.authCallback) {
             [self.logger debug:@"ARTAuth: using authCallback"];
         }
 
-        tokenRequestFactory(currentTokenParams, ^(ARTAuthTokenRequest *tokenRequest, NSError *error) {
-            if (error) {
-                callback(nil, error);
-            } else {
-                [self executeTokenRequest:tokenRequest callback:callback];
-            }
-        });
+        tokenRequestFactory(currentTokenParams, callback);
     }
 }
 
