@@ -482,6 +482,7 @@
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
+
     ARTStatsMessageTypes *all = [self statsMessageTypesFromDictionary:[input objectForKey:@"all"]];
     ARTStatsMessageTraffic *inbound = [self statsMessageTrafficFromDictionary:[input objectForKey:@"inbound"]];
     ARTStatsMessageTraffic *outbound = [self statsMessageTrafficFromDictionary:[input objectForKey:@"outbound"]];
@@ -505,7 +506,7 @@
 
 - (ARTStatsMessageTypes *)statsMessageTypesFromDictionary:(NSDictionary *)input {
     if (![input isKindOfClass:[NSDictionary class]]) {
-        return nil;
+        return [ARTStatsMessageTypes empty];
     }
     
     ARTStatsMessageCount *all = [self statsMessageCountFromDictionary:[input objectForKey:@"all"]];
@@ -516,12 +517,12 @@
         return [[ARTStatsMessageTypes alloc] initWithAll:all messages:messages presence:presence];
     }
     
-    return nil;
+    return [ARTStatsMessageTypes empty];
 }
 
 - (ARTStatsMessageCount *)statsMessageCountFromDictionary:(NSDictionary *)input {
     if (![input isKindOfClass:[NSDictionary class]]) {
-        return nil;
+        return [ARTStatsMessageCount empty];
     }
     
     NSNumber *count = [input artTyped:[NSNumber class] key:@"count"];
@@ -532,7 +533,7 @@
 
 - (ARTStatsMessageTraffic *)statsMessageTrafficFromDictionary:(NSDictionary *)input {
     if (![input isKindOfClass:[NSDictionary class]]) {
-        return nil;
+        return [ARTStatsMessageTraffic empty];
     }
     
     ARTStatsMessageTypes *all = [self statsMessageTypesFromDictionary:[input objectForKey:@"all"]];
@@ -545,12 +546,12 @@
         return [[ARTStatsMessageTraffic alloc] initWithAll:all realtime:realtime rest:rest push:push httpStream:httpStream];
     }
     
-    return nil;
+    return [ARTStatsMessageTraffic empty];
 }
 
 - (ARTStatsConnectionTypes *)statsConnectionTypesFromDictionary:(NSDictionary *)input {
     if (![input isKindOfClass:[NSDictionary class]]) {
-        return nil;
+        return [ARTStatsConnectionTypes empty];
     }
     
     ARTStatsResourceCount *all = [self statsResourceCountFromDictionary:[input objectForKey:@"all"]];
@@ -561,12 +562,12 @@
         return [[ARTStatsConnectionTypes alloc] initWithAll:all plain:plain tls:tls];
     }
     
-    return nil;
+    return [ARTStatsConnectionTypes empty];
 }
 
 - (ARTStatsResourceCount *)statsResourceCountFromDictionary:(NSDictionary *)input {
     if (![input isKindOfClass:[NSDictionary class]]) {
-        return nil;
+        return [ARTStatsResourceCount empty];
     }
     
     NSNumber *opened = [input artTyped:[NSNumber class] key:@"opened"];
@@ -595,7 +596,7 @@
 - (ARTStatsRequestCount *)statsRequestCountFromDictionary:(NSDictionary *)input {
     [self.logger verbose:@"ARTJsonEncoder: statsRequestCountFromDictionary %@", input];
     if (![input isKindOfClass:[NSDictionary class]]) {
-        return nil;
+        return [ARTStatsRequestCount empty];
     }
     
     NSNumber *succeeded = [input artTyped:[NSNumber class] key:@"succeeded"];

@@ -52,6 +52,10 @@ static NSString *statsUnitToString(ARTStatsUnit unit) {
     return self;
 }
 
++ (instancetype)empty {
+    return [[ARTStatsMessageCount alloc] initWithCount:0 data:0];
+}
+
 @end
 
 @implementation ARTStatsMessageTypes
@@ -64,6 +68,10 @@ static NSString *statsUnitToString(ARTStatsUnit unit) {
         _presence = presence;
     }
     return self;
+}
+
++ (instancetype)empty {
+    return [[ARTStatsMessageTypes alloc] initWithAll:[ARTStatsMessageCount empty]  messages:[ARTStatsMessageCount empty] presence:[ARTStatsMessageCount empty]];
 }
 
 @end
@@ -82,6 +90,10 @@ static NSString *statsUnitToString(ARTStatsUnit unit) {
     return self;
 }
 
++ (instancetype)empty {
+    return [[ARTStatsMessageTraffic alloc] initWithAll:[ARTStatsMessageTypes empty] realtime:[ARTStatsMessageTypes empty] rest:[ARTStatsMessageTypes empty] push:[ARTStatsMessageTypes empty] httpStream:[ARTStatsMessageTypes empty]];
+}
+
 @end
 
 @implementation ARTStatsResourceCount
@@ -98,6 +110,10 @@ static NSString *statsUnitToString(ARTStatsUnit unit) {
     return self;
 }
 
++ (instancetype)empty {
+    return [[ARTStatsResourceCount alloc] initWithOpened:0 peak:0 mean:0 min:0 refused:0];
+}
+
 @end
 
 @implementation ARTStatsConnectionTypes
@@ -112,6 +128,10 @@ static NSString *statsUnitToString(ARTStatsUnit unit) {
     return self;
 }
 
++ (instancetype)empty {
+    return [[ARTStatsConnectionTypes alloc] initWithAll:[ARTStatsResourceCount empty] plain:[ARTStatsResourceCount empty] tls:[ARTStatsResourceCount empty]];
+}
+
 @end
 
 @implementation ARTStatsRequestCount
@@ -124,6 +144,10 @@ static NSString *statsUnitToString(ARTStatsUnit unit) {
         _refused = refused;
     }
     return self;
+}
+
++ (instancetype)empty {
+    return [[ARTStatsRequestCount alloc] initWithSucceeded:0 failed:0 refused:0];
 }
 
 @end
