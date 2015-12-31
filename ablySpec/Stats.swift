@@ -43,7 +43,7 @@ class Stats: QuickSpec {
 
                     // TS2
                     it("should return zero for empty values") {
-                        expect(subject?.presence.count).to(beNil())
+                        expect(subject?.presence.count).to(equal(0))
                     }
                 }
             }
