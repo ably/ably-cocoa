@@ -677,36 +677,8 @@ class Auth : QuickSpec {
             // RSA10a
             it("should create a token if needed and use it") {
                 let options = AblyTests.clientOptions(requestToken: true)
-                var validToken: String?
-
-                // Create a new token
                 waitUntil(timeout: testTimeout) { done in
-                    let rest = ARTRest(options: options)
-
-                    rest.auth.authorise(nil, options: nil, callback: { tokenDetails, error in
-                        expect(rest.auth.method).to(equal(ARTAuthMethod.Token))
-                        expect(tokenDetails).toNot(beNil())
-                        expect(tokenDetails?.token).toNot(beEmpty())
-
-                        validToken = tokenDetails?.token
-
-                        publishTestMessage(rest, completion: { error in
-                            expect(error).to(beNil())
-                            done()
-                        })
-                    })
-                }
-
-                if let token = validToken {
-                    // Has a valid token
-                    options.token = token
-                }
-                else {
-                    return
-                }
-
-                waitUntil(timeout: testTimeout) { done in
-                    // New client with Basic auth
+                    // Client with Token
                     let rest = ARTRest(options: options)
                     publishTestMessage(rest, completion: { error in
                         expect(error).to(beNil())
