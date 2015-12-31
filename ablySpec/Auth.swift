@@ -823,6 +823,44 @@ class Auth : QuickSpec {
                 }
             }
 
+            // RSA10g
+            it("should store the AuthOptions and TokenParams arguments as defaults for subsequent authorisations") {
+                let options = AblyTests.commonAppSetup()
+                let rest = ARTRest(options: options)
+                rest.httpExecutor = mockExecutor
+
+                let authOptions = ARTAuthOptions()
+                authOptions.force = true
+                let tokenParams = ARTAuthTokenParams()
+                tokenParams.clientId = "client_string"
+
+                var lastToken: String? = nil
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.authorise(tokenParams, options: authOptions) { tokenDetails, error in
+                        expect(error).to(beNil())
+                        expectTokenDetails(tokenDetails)
+                        expect(tokenDetails?.clientId).to(equal(tokenParams.clientId))
+                        lastToken = tokenDetails?.token
+                        done()
+                    }
+                }
+
+                if lastToken?.isEmpty ?? true {
+                    XCTFail("Token is nil or empty")
+                    return
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                        expect(error).to(beNil())
+                        expectTokenDetails(tokenDetails)
+                        expect(tokenDetails?.clientId).to(equal(tokenParams.clientId))
+                        expect(tokenDetails?.token).toNot(equal(lastToken))
+                        done()
+                    }
+                }
+            }
+
             // RSA10h
             it("should use the configured Auth#clientId, if not null, by default") {
                 let options = AblyTests.commonAppSetup()
