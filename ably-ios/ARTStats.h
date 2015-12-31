@@ -16,8 +16,6 @@ typedef NS_ENUM(NSUInteger, ARTStatsUnit) {
     ARTStatsUnitMonth
 };
 
-ART_ASSUME_NONNULL_BEGIN
-
 @interface ARTStatsQuery : ARTDataQuery
 
 @property (nonatomic, assign) ARTStatsUnit unit;
@@ -36,9 +34,9 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTStatsMessageTypes : NSObject
 
-@property (art_nullable, readonly, strong, nonatomic) ARTStatsMessageCount *all;
-@property (art_nullable, readonly, strong, nonatomic) ARTStatsMessageCount *messages;
-@property (art_nullable, readonly, strong, nonatomic) ARTStatsMessageCount *presence;
+@property (readonly, strong, nonatomic) ARTStatsMessageCount *all;
+@property (readonly, strong, nonatomic) ARTStatsMessageCount *messages;
+@property (readonly, strong, nonatomic) ARTStatsMessageCount *presence;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithAll:(ARTStatsMessageCount *)all messages:(ARTStatsMessageCount *)messages presence:(ARTStatsMessageCount *)presence;
@@ -47,11 +45,11 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTStatsMessageTraffic : NSObject
 
-@property (art_nullable, readonly, strong, nonatomic) ARTStatsMessageTypes *all;
-@property (art_nullable, readonly, strong, nonatomic) ARTStatsMessageTypes *realtime;
-@property (art_nullable, readonly, strong, nonatomic) ARTStatsMessageTypes *rest;
-@property (art_nullable, readonly, strong, nonatomic) ARTStatsMessageTypes *push;
-@property (art_nullable, readonly, strong, nonatomic) ARTStatsMessageTypes *httpStream;
+@property (readonly, strong, nonatomic) ARTStatsMessageTypes *all;
+@property (readonly, strong, nonatomic) ARTStatsMessageTypes *realtime;
+@property (readonly, strong, nonatomic) ARTStatsMessageTypes *rest;
+@property (readonly, strong, nonatomic) ARTStatsMessageTypes *push;
+@property (readonly, strong, nonatomic) ARTStatsMessageTypes *httpStream;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithAll:(ARTStatsMessageTypes *)all realtime:(ARTStatsMessageTypes *)realtime rest:(ARTStatsMessageTypes *)rest push:(ARTStatsMessageTypes *)push httpStream:(ARTStatsMessageTypes *)httpStream;
@@ -73,9 +71,9 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTStatsConnectionTypes : NSObject
 
-@property (art_nullable, readonly, strong, nonatomic) ARTStatsResourceCount *all;
-@property (art_nullable, readonly, strong, nonatomic) ARTStatsResourceCount *plain;
-@property (art_nullable, readonly, strong, nonatomic) ARTStatsResourceCount *tls;
+@property (readonly, strong, nonatomic) ARTStatsResourceCount *all;
+@property (readonly, strong, nonatomic) ARTStatsResourceCount *plain;
+@property (readonly, strong, nonatomic) ARTStatsResourceCount *tls;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithAll:(ARTStatsResourceCount *)all plain:(ARTStatsResourceCount *)plain tls:(ARTStatsResourceCount *)tls;
@@ -95,19 +93,17 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTStats : NSObject
 
-@property (art_nullable, readonly, strong, nonatomic) ARTStatsMessageTypes *all;
-@property (art_nullable, readonly, strong, nonatomic) ARTStatsMessageTraffic *inbound;
-@property (art_nullable, readonly, strong, nonatomic) ARTStatsMessageTraffic *outbound;
-@property (art_nullable, readonly, strong, nonatomic) ARTStatsMessageTypes *persisted;
-@property (art_nullable, readonly, strong, nonatomic) ARTStatsConnectionTypes *connections;
-@property (art_nullable, readonly, strong, nonatomic) ARTStatsResourceCount *channels;
-@property (art_nullable, readonly, strong, nonatomic) ARTStatsRequestCount *apiRequests;
-@property (art_nullable, readonly, strong, nonatomic) ARTStatsRequestCount *tokenRequests;
-@property (art_nullable, readonly, strong, nonatomic) NSDate *interval;
+@property (readonly, strong, nonatomic) ARTStatsMessageTypes *all;
+@property (readonly, strong, nonatomic) ARTStatsMessageTraffic *inbound;
+@property (readonly, strong, nonatomic) ARTStatsMessageTraffic *outbound;
+@property (readonly, strong, nonatomic) ARTStatsMessageTypes *persisted;
+@property (readonly, strong, nonatomic) ARTStatsConnectionTypes *connections;
+@property (readonly, strong, nonatomic) ARTStatsResourceCount *channels;
+@property (readonly, strong, nonatomic) ARTStatsRequestCount *apiRequests;
+@property (readonly, strong, nonatomic) ARTStatsRequestCount *tokenRequests;
+@property (readonly, strong, nonatomic) NSDate *interval;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithAll:(ARTStatsMessageTypes *)all inbound:(ARTStatsMessageTraffic *)inbound outbound:(ARTStatsMessageTraffic *)outbound persisted:(ARTStatsMessageTypes *)persisted connections:(ARTStatsConnectionTypes *)connections channels:(ARTStatsResourceCount *)channels apiRequests:(ARTStatsRequestCount *)apiRequests tokenRequests:(ARTStatsRequestCount *)tokenRequests interval:(NSDate *)interval;
 
 @end
-
-ART_ASSUME_NONNULL_END
