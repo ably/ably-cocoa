@@ -16,6 +16,8 @@ typedef NS_ENUM(NSUInteger, ARTStatsUnit) {
     ARTStatsUnitMonth
 };
 
+ART_ASSUME_NONNULL_BEGIN
+
 @interface ARTStatsQuery : ARTDataQuery
 
 @property (nonatomic, assign) ARTStatsUnit unit;
@@ -107,3 +109,5 @@ typedef NS_ENUM(NSUInteger, ARTStatsUnit) {
 - (instancetype)initWithAll:(ARTStatsMessageTypes *)all inbound:(ARTStatsMessageTraffic *)inbound outbound:(ARTStatsMessageTraffic *)outbound persisted:(ARTStatsMessageTypes *)persisted connections:(ARTStatsConnectionTypes *)connections channels:(ARTStatsResourceCount *)channels apiRequests:(ARTStatsRequestCount *)apiRequests tokenRequests:(ARTStatsRequestCount *)tokenRequests interval:(NSDate *)interval;
 
 @end
+
+ART_ASSUME_NONNULL_END
