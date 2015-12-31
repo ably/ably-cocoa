@@ -28,25 +28,25 @@ ART_ASSUME_NONNULL_BEGIN
 - (ARTEncoderFormat)format;
 - (NSString *)formatAsString;
 
-- (NSData *)encodeTokenRequest:(ARTAuthTokenRequest *)request;
+- (art_nullable NSData *)encodeTokenRequest:(ARTAuthTokenRequest *)request;
 
 - (art_nullable ARTAuthTokenDetails *)decodeAccessToken:(NSData *)data error:(NSError * __autoreleasing *)error;
-- (ARTMessage *)decodeMessage:(NSData *)data;
-- (NSArray *)decodeMessages:(NSData *)data;
-- (NSData *)encodeMessage:(ARTMessage *)message;
-- (NSData *)encodeMessages:(NSArray *)messages;
+- (art_nullable ARTMessage *)decodeMessage:(NSData *)data;
+- (art_nullable NSArray *)decodeMessages:(NSData *)data;
+- (art_nullable NSData *)encodeMessage:(ARTMessage *)message;
+- (art_nullable NSData *)encodeMessages:(NSArray *)messages;
 
-- (ARTPresenceMessage *)decodePresenceMessage:(NSData *)data;
-- (NSArray *)decodePresenceMessages:(NSData *)data;
-- (NSData *)encodePresenceMessage:(ARTPresenceMessage *)message;
-- (NSData *)encodePresenceMessages:(NSArray *)messages;
+- (art_nullable ARTPresenceMessage *)decodePresenceMessage:(NSData *)data;
+- (art_nullable NSArray *)decodePresenceMessages:(NSData *)data;
+- (art_nullable NSData *)encodePresenceMessage:(ARTPresenceMessage *)message;
+- (art_nullable NSData *)encodePresenceMessages:(NSArray *)messages;
 
-- (NSData *)encodeProtocolMessage:(ARTProtocolMessage *)message;
-- (ARTProtocolMessage *)decodeProtocolMessage:(NSData *)data;
+- (art_nullable NSData *)encodeProtocolMessage:(ARTProtocolMessage *)message;
+- (art_nullable ARTProtocolMessage *)decodeProtocolMessage:(NSData *)data;
 
-- (NSDate *)decodeTime:(NSData *)data;
-- (NSError *)decodeError:(NSData *)error;
-- (NSArray *)decodeStats:(NSData *)data;
+- (art_nullable NSDate *)decodeTime:(NSData *)data;
+- (art_nullable NSError *)decodeError:(NSData *)error;
+- (art_nullable NSArray *)decodeStats:(NSData *)data;
 
 @end
 

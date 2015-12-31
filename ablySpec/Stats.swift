@@ -24,7 +24,7 @@ class Stats: QuickSpec {
                     let data: JSON = [
                         [ attribute: [ "messages": [ "count": 5], "all": [ "data": 10 ] ] ]
                     ]
-                    let stats = encoder.decodeStats(try! data.rawData())[0] as? ARTStats
+                    let stats = encoder.decodeStats(try! data.rawData())?[0] as? ARTStats
                     let subject = stats?.valueForKey(attribute) as? ARTStatsMessageTypes
 
                     it("should return a MessagesTypes object") {
@@ -57,7 +57,7 @@ class Stats: QuickSpec {
                             "all": [ "messages": [ "count": 25 ], "presence": [ "data": 210 ] ]
                         ] ]
                     ]
-                    let stats = encoder.decodeStats(try! data.rawData())[0] as? ARTStats
+                    let stats = encoder.decodeStats(try! data.rawData())?[0] as? ARTStats
                     let subject = stats?.valueForKey(direction) as? ARTStatsMessageTraffic
 
                     it("should return a MessageTraffic object") {
@@ -81,7 +81,7 @@ class Stats: QuickSpec {
                 let data: JSON = [
                     [ "connections": [ "tls": [ "opened": 5], "all": [ "peak": 10 ] ] ]
                 ]
-                let stats = encoder.decodeStats(try! data.rawData())[0] as? ARTStats
+                let stats = encoder.decodeStats(try! data.rawData())?[0] as? ARTStats
                 let subject = stats?.connections
 
                 it("should return a ConnectionTypes object") {
@@ -107,7 +107,7 @@ class Stats: QuickSpec {
                 let data: JSON = [
                     [ "channels": [ "opened": 5, "peak": 10 ] ]
                 ]
-                let stats = encoder.decodeStats(try! data.rawData())[0] as? ARTStats
+                let stats = encoder.decodeStats(try! data.rawData())?[0] as? ARTStats
                 let subject = stats?.channels
 
                 it("should return a ResourceCount object") {
@@ -133,7 +133,7 @@ class Stats: QuickSpec {
                 let data: JSON = [
                     [ requestType: [ "succeeded": 5, "failed": 10 ] ]
                 ]
-                let stats = encoder.decodeStats(try! data.rawData())[0] as? ARTStats
+                let stats = encoder.decodeStats(try! data.rawData())?[0] as? ARTStats
                 let subject = stats?.valueForKey(requestType) as? ARTStatsRequestCount
 
                 context(requestType) {
@@ -155,7 +155,7 @@ class Stats: QuickSpec {
                 let data: JSON = [
                     [ "intervalId": "2004-02-01:05:06" ]
                 ]
-                let stats = encoder.decodeStats(try! data.rawData())[0] as? ARTStats
+                let stats = encoder.decodeStats(try! data.rawData())?[0] as? ARTStats
 
                 it("should return a Date object representing the start of the interval") {
                     let dateComponents = NSDateComponents()
