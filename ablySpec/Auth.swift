@@ -8,6 +8,7 @@
 
 import Nimble
 import Quick
+import Aspects
 
 import ably
 import ably.Private
@@ -572,19 +573,30 @@ class Auth : QuickSpec {
             }
 
             // RSA8a
-            it("implicitly creates a TokenRequest") {
-                let options = ARTClientOptions(key: "6p6USg.CNwGdA:uwJU1qsSf_Qe9VDH")
-                // Test
-                options.authUrl = NSURL(string: "http://auth.ably.io")
-                options.authParams = [NSURLQueryItem(name: "ttl", value: "aaa")]
-                options.authParams = [NSURLQueryItem(name: "rp", value: "true")]
-                options.authMethod = "POST"
-                
-                let rest = ARTRest(options: options)
-                
-                rest.auth.requestToken(nil, withOptions: nil, callback: { tokenDetails, error in
-                    
-                })
+            it("implicitly creates a TokenRequest and requests a token") {
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
+
+                var createTokenRequestMethodWasCalled = false
+
+                let block: @convention(block) (AspectInfo, tokenParams: ARTAuthTokenParams?) -> Void = { _, _ in
+                    createTokenRequestMethodWasCalled = true
+                }
+
+                let hook = ARTAuth.aspect_hookSelector(rest.auth)
+                // Adds a block of code after `createTokenRequest` is triggered
+                let token = try? hook("createTokenRequest:options:callback:", withOptions: .PositionAfter, usingBlock:  unsafeBitCast(block, ARTAuth.self))
+
+                expect(token).toNot(beNil())
+
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.requestToken(nil, withOptions: nil, callback: { tokenDetails, error in
+                        expect(error).to(beNil())
+                        expect(tokenDetails?.token).toNot(beEmpty())
+                        done()
+                    })
+                }
+
+                expect(createTokenRequestMethodWasCalled).to(beTrue())
             }
         }
     }
