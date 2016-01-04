@@ -798,6 +798,32 @@ class Auth : QuickSpec {
                 }
             }
 
+            // RSA10e
+            it("should use the requestToken implementation") {
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
+
+                var requestMethodWasCalled = false
+                let block: @convention(block) (AspectInfo) -> Void = { _ in
+                    requestMethodWasCalled = true
+                }
+
+                let hook = ARTAuth.aspect_hookSelector(rest.auth)
+                // Adds a block of code after `requestToken` is triggered
+                let token = try? hook("requestToken:withOptions:callback:", withOptions: .PositionAfter, usingBlock:  unsafeBitCast(block, ARTAuth.self))
+
+                expect(token).toNot(beNil())
+
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.authorise(nil, options: nil, callback: { tokenDetails, error in
+                        expect(error).to(beNil())
+                        expect(tokenDetails?.token).toNot(beEmpty())
+                        done()
+                    })
+                }
+
+                expect(requestMethodWasCalled).to(beTrue())
+            }
+
             func expectTokenDetails(tokenDetails: ARTAuthTokenDetails?) {
                 expect(tokenDetails).toNot(beNil())
                 expect(tokenDetails).to(beAnInstanceOf(ARTAuthTokenDetails))
