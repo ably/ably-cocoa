@@ -918,7 +918,26 @@ class Auth : QuickSpec {
             context("should adhere to all requirements relating to") {
 
                 it("TokenParams") {
-                    // TODO
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "client_string"
+                    let rest = ARTRest(options: options)
+
+                    let expectedClientId = "client_from_params"
+                    let expectedCapability = "{\"cansubscribe:*\":[\"subscribe\"]}"
+
+                    let tokenParams = ARTAuthTokenParams()
+                    tokenParams.clientId = expectedClientId
+                    tokenParams.capability = expectedCapability
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.authorise(tokenParams, options: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            expectTokenDetails(tokenDetails)
+                            expect(tokenDetails?.clientId).to(equal(expectedClientId))
+                            expect(tokenDetails?.capability).to(equal(expectedCapability))
+                            done()
+                        }
+                    }
                 }
 
                 it("authCallback") {
