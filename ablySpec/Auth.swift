@@ -147,7 +147,7 @@ class Auth : QuickSpec {
                     client.connect()
 
                     if let transport = client.transport as? MockTransport, let query = transport.lastUrl?.query {
-                        expect(query).to(haveParam("access_token", withValue: client.auth().tokenDetails?.token ?? ""))
+                        expect(query).to(haveParam("accessToken", withValue: client.auth().tokenDetails?.token ?? ""))
                     }
                     else {
                         XCTFail("MockTransport is not working")

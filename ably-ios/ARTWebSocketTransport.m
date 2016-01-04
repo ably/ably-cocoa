@@ -109,7 +109,7 @@ enum {
                 return;
             }
 
-            NSURLQueryItem *accessTokenParam = [NSURLQueryItem queryItemWithName:@"access_token" value:(tokenDetails.token)];
+            NSURLQueryItem *accessTokenParam = [NSURLQueryItem queryItemWithName:@"accessToken" value:(tokenDetails.token)];
             [selfStrong setupWebSocket:@[accessTokenParam] withOptions:selfStrong.options];
             // Connect
             [selfStrong.websocket open];
@@ -208,7 +208,7 @@ enum {
 
 - (void)webSocketOpen {
     ARTWebSocketTransport * __weak weakSelf = self;
-    [self.logger debug:__FILE__ line:__LINE__ message:@"%p websocket did open", self]; 
+    [self.logger debug:__FILE__ line:__LINE__ message:@"%p websocket did open", self];
 
     CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
         ARTWebSocketTransport *s = weakSelf;
@@ -292,7 +292,7 @@ enum {
         ARTWebSocketTransport *s = weakSelf;
         if (s) {
             ARTProtocolMessage *pm = [s.encoder decodeProtocolMessage:data];
-            [s.delegate realtimeTransport:s didReceiveMessage:pm];
+            [s receive:pm];
         }
     });
     CFRunLoopWakeUp(self.rl);
@@ -306,7 +306,7 @@ enum {
         ARTWebSocketTransport *s = weakSelf;
         if (s) {
             ARTProtocolMessage *pm = [s.encoder decodeProtocolMessage:data];
-            [s.delegate realtimeTransport:s didReceiveMessage:pm];
+            [s receive:pm];
         }
     });
     CFRunLoopWakeUp(self.rl);
