@@ -949,17 +949,83 @@ class Auth : QuickSpec {
                 }
 
                 it("authUrl") {
-                    let options = AblyTests.commonAppSetup()
-                    options.clientId = "client_string"
-                    let rest = ARTRest(options: options)
-
-                    let authOptions = ARTAuthOptions()
-                    authOptions.authUrl = NSURL(string: "http://auth.ably.io")!
+                    let options = ARTClientOptions()
+                    options.authUrl = NSURL(string: "http://echo.ably.io")!
 
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(nil, options: authOptions) { tokenDetails, error in
+                        ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
+                            expect(error?.code).to(equal(400)) //Bad request
+                            expect(tokenDetails).to(beNil())
+                            done()
+                        }
+                    }
+                }
+
+                it("authUrl with json") {
+                    guard let tokenDetails = getTestTokenDetails() else {
+                        XCTFail("TokenDetails is empty")
+                        return
+                    }
+
+                    guard let tokenDetailsJSON = NSString(data: ARTJsonEncoder().encodeTokenDetails(tokenDetails), encoding: NSUTF8StringEncoding) else {
+                        XCTFail("JSON TokenDetails is empty")
+                        return
+                    }
+
+                    let options = ARTClientOptions()
+                    // Use authUrl for authentication with JSON TokenDetails response
+                    options.authUrl = NSURL(string: "http://echo.ably.io")!
+                    options.authParams = [NSURLQueryItem]()
+                    options.authParams?.append(NSURLQueryItem(name: "type", value: "json"))
+                    options.authParams?.append(NSURLQueryItem(name: "body", value: "[]"))
+
+                    // Invalid TokenDetails
+                    waitUntil(timeout: testTimeout) { done in
+                        ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
+                            expect(tokenDetails).to(beNil())
+                            done()
+                        }
+                    }
+
+                    options.authParams?.removeLast()
+                    options.authParams?.append(NSURLQueryItem(name: "body", value: tokenDetailsJSON as String))
+
+                    // Valid token
+                    waitUntil(timeout: testTimeout) { done in
+                        ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            expect(tokenDetails).toNot(beNil())
+                            done()
+                        }
+                    }
+                }
+
+                it("authUrl with plain text") {
+                    let token = getTestToken()
+                    let options = ARTClientOptions()
+                    // Use authUrl for authentication with plain text token response
+                    options.authUrl = NSURL(string: "http://echo.ably.io")!
+                    options.authParams = [NSURLQueryItem]()
+                    options.authParams?.append(NSURLQueryItem(name: "type", value: "text"))
+                    options.authParams?.append(NSURLQueryItem(name: "body", value: ""))
+
+                    // Invalid token
+                    waitUntil(timeout: testTimeout) { done in
+                        ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
                             expect(error).toNot(beNil())
                             expect(tokenDetails).to(beNil())
+                            done()
+                        }
+                    }
+
+                    options.authParams?.removeLast()
+                    options.authParams?.append(NSURLQueryItem(name: "body", value: token))
+
+                    // Valid token
+                    waitUntil(timeout: testTimeout) { done in
+                        ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            expect(tokenDetails).toNot(beNil())
                             done()
                         }
                     }

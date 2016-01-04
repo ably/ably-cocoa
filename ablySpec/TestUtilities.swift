@@ -223,25 +223,36 @@ func publishTestMessage(client: ARTRest, failOnError: Bool = true) -> PublishTes
 
 /// Access Token
 func getTestToken() -> String {
+    if let tokenDetails = getTestTokenDetails() {
+        return tokenDetails.token
+    }
+    else {
+        XCTFail("TokenDetails is empty")
+        return ""
+    }
+}
+
+/// Access TokenDetails
+func getTestTokenDetails() -> ARTAuthTokenDetails? {
     let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
     let client = ARTRest(options: options)
-    
-    var token: String?
+
+    var tokenDetails: ARTAuthTokenDetails?
     var error: NSError?
-    
-    client.auth.requestToken(nil, withOptions: nil) { tokenDetails, _error in
-        token = tokenDetails?.token
+
+    client.auth.requestToken(nil, withOptions: nil) { _tokenDetails, _error in
+        tokenDetails = _tokenDetails
         error = _error
     }
-    
-    while token == nil && error == nil {
+
+    while tokenDetails == nil && error == nil {
         CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Bool(0))
     }
-    
+
     if let e = error {
         XCTFail(e.description)
     }
-    return token ?? ""
+    return tokenDetails
 }
 
 public func delay(seconds: NSTimeInterval, closure: ()->()) {

@@ -129,6 +129,10 @@
     return [self encode:[self tokenRequestToDictionary:request]];
 }
 
+- (NSData *)encodeTokenDetails:(ARTAuthTokenDetails *)tokenDetails {
+    return [self encode:[self tokenDetailsToDictionary:tokenDetails]];
+}
+
 - (NSDate *)decodeTime:(NSData *)data {
     NSArray *resp = [self decodeArray:data];
     [self.logger verbose:@"ARTJsonEncoder: decodeTime %@", resp];
@@ -359,8 +363,7 @@
         if (error) {
             NSMutableDictionary* details = [NSMutableDictionary dictionary];
             [details setValue:[jsonError artString:@"message"] forKey:NSLocalizedDescriptionKey];
-            // FIXME: domain
-            *error = [NSError errorWithDomain:@"Ably"
+            *error = [NSError errorWithDomain:ARTAblyErrorDomain
                                          code:[jsonError artNumber:@"code"].integerValue
                                      userInfo:details];
         }
@@ -404,6 +407,30 @@
         dictionary[@"clientId"] = tokenRequest.clientId;
     }
 
+    return dictionary;
+}
+
+- (NSDictionary *)tokenDetailsToDictionary:(ARTAuthTokenDetails *)tokenDetails {
+    NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+
+    dictionary[@"token"] = tokenDetails.token;
+
+    if (tokenDetails.issued) {
+        dictionary[@"issued"] = [NSString stringWithFormat:@"%llu", dateToMiliseconds(tokenDetails.issued)];
+    }
+
+    if (tokenDetails.expires) {
+        dictionary[@"expires"] = [NSString stringWithFormat:@"%llu", dateToMiliseconds(tokenDetails.expires)];
+    }
+
+    if (tokenDetails.capability) {
+        dictionary[@"capability"] = tokenDetails.capability;
+    }
+
+    if (tokenDetails.clientId) {
+        dictionary[@"clientId"] = tokenDetails.clientId;
+    }
+    
     return dictionary;
 }
 
