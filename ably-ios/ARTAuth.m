@@ -161,14 +161,12 @@
         
         [self.logger debug:__FILE__ line:__LINE__ message:@"using authUrl (%@ %@)", request.HTTPMethod, request.URL];
         
-        [_rest executeRequest:request withAuthOption:ARTAuthenticationUseBasic completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        [_rest executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (error) {
                 callback(nil, error);
             } else {
-                // The token retrieved is assumed by the library to be a token string if the response has Content-Type "text/plain", or taken to be a TokenRequest or TokenDetails object if the response has Content-Type "application/json".
-
-                // TODO
-                NSAssert(false, @"Token string or TokenDetails object not implemented");
+                [self.logger debug:@"ARTAuth: authUrl response %@", response];
+                [self handleAuthUrlResponse:response withData:data completion:callback];
             }
         }];
     } else {
@@ -188,6 +186,31 @@
         }
 
         tokenRequestFactory(currentTokenParams, callback);
+    }
+}
+
+- (void)handleAuthUrlResponse:(NSHTTPURLResponse *)response withData:(NSData *)data completion:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
+    // The token retrieved is assumed by the library to be a token string if the response has Content-Type "text/plain", or taken to be a TokenRequest or TokenDetails object if the response has Content-Type "application/json"
+    if ([response.MIMEType isEqualToString:@"application/json"]) {
+        NSError *decodeError = nil;
+        ARTAuthTokenDetails *tokenDetails = [_rest.defaultEncoder decodeAccessToken:data error:&decodeError];
+        if (decodeError) {
+            callback(nil, decodeError);
+        } else {
+            callback(tokenDetails, nil);
+        }
+    }
+    else if ([response.MIMEType isEqualToString:@"text/plain"]) {
+        NSString *token = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        if ([token isEqualToString:@""]) {
+            callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:NSURLErrorCancelled userInfo:@{NSLocalizedDescriptionKey:@"authUrl: token is empty"}]);
+            return;
+        }
+        ARTAuthTokenDetails *tokenDetails = [[ARTAuthTokenDetails alloc] initWithToken:token];
+        callback(tokenDetails, nil);
+    }
+    else {
+        callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:NSURLErrorCancelled userInfo:@{NSLocalizedDescriptionKey:@"authUrl: invalid MIME type"}]);
     }
 }
 
