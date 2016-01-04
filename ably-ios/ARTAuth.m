@@ -115,7 +115,7 @@
         // TokenParams take precedence over any configured authParams when a name conflict occurs
         NSArray *unitedParams = [params toArrayWithUnion:options.authParams];
         // When GET, use query string params
-        urlComponents.queryItems = @[];
+        if (!urlComponents.queryItems) urlComponents.queryItems = @[];
         urlComponents.queryItems = [urlComponents.queryItems arrayByAddingObjectsFromArray:unitedParams];
     }
     
