@@ -118,7 +118,7 @@ enum {
 }
 
 - (BOOL)getIsConnected {
-    return self.websocket.readyState == SR_OPEN;
+    return self.websocket.readyState == WebSocketReadyStateOpen;
 }
 
 - (NSURL *)setupWebSocket:(__GENERIC(NSArray, NSURLQueryItem *) *)params withOptions:(ARTClientOptions *)options {
