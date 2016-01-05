@@ -986,7 +986,7 @@ class Auth : QuickSpec {
                         return
                     }
 
-                    guard let tokenDetailsJSON = NSString(data: ARTJsonEncoder().encodeTokenDetails(tokenDetails), encoding: NSUTF8StringEncoding) else {
+                    guard let tokenDetailsJSON = NSString(data: ARTJsonEncoder().encodeTokenDetails(tokenDetails) ?? NSData(), encoding: NSUTF8StringEncoding) else {
                         XCTFail("JSON TokenDetails is empty")
                         return
                     }
