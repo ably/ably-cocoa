@@ -41,7 +41,17 @@
 }
 
 - (void)tearDown {
+    if (_realtime) {
+        [_realtime removeAllChannels];
+        [_realtime.eventEmitter removeEvents];
+        [_realtime close];
+    }
     _realtime = nil;
+    if (_realtime2) {
+        [_realtime2 removeAllChannels];
+        [_realtime2.eventEmitter removeEvents];
+        [_realtime2 close];
+    }
     _realtime2 = nil;
     [super tearDown];
 }
@@ -56,7 +66,7 @@
 
 - (void)withRealtimeClientId:(void (^)(ARTRealtime *realtime))cb {
     if (!_realtime) {
-        ARTClientOptions * options = [ARTTestUtil clientOptions];
+        ARTClientOptions *options = [ARTTestUtil clientOptions];
         options.clientId = [self getClientId];
         [ARTTestUtil setupApp:options cb:^(ARTClientOptions *options) {
             if (options) {
@@ -78,23 +88,44 @@
 }
 
 - (void)testTwoConnections {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testSingleSendEchoText"];
+    XCTestExpectation *expectation1 = [self expectationWithDescription:@"testTwoConnections1"];
+    XCTestExpectation *expectation2 = [self expectationWithDescription:@"testTwoConnections2"];
+    XCTestExpectation *expectation3 = [self expectationWithDescription:@"testTwoConnections3"];
     NSString *channelName = @"testSingleEcho";
     [self withRealtimeClientId:^(ARTRealtime *realtime1) {
-        ARTRealtimeChannel *channel = [realtime1 channel:channelName];
         [self withRealtimeClientId2:^(ARTRealtime *realtime2) {
-            [channel subscribe:^(ARTMessage *message, ARTErrorInfo *errorInfo) {
-                XCTAssertEqualObjects([message content], @"testStringEcho");
-                [expectation fulfill];
+            ARTRealtimeChannel *channel = [_realtime channel:channelName];
+            ARTRealtimeChannel *channel2 = [_realtime2 channel:channelName];
+
+            __block NSUInteger attached = 0;
+            // Channel 1
+            [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *status) {
+                if (state == ARTRealtimeChannelAttached) {
+                    attached++;
+                }
+            }];
+            // Channel 2
+            [channel2 subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *status) {
+                if (state == ARTRealtimeChannelAttached) {
+                    attached++;
+                }
             }];
 
-            ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
+            [channel subscribe:^(ARTMessage *message, ARTErrorInfo *errorInfo) {
+                XCTAssertEqualObjects([message content], @"testStringEcho");
+                [expectation1 fulfill];
+            }];
+
             [channel2 subscribe:^(ARTMessage *message, ARTErrorInfo *errorInfo) {
                 XCTAssertEqualObjects([message content], @"testStringEcho");
+                [expectation2 fulfill];
             }];
+
+            waitForWithTimeout(&attached, @[channel, channel2], 20.0);
 
             [channel2 publish:@"testStringEcho" cb:^(ARTStatus *status) {
                 XCTAssertEqual(ARTStateOk, status.state);
+                [expectation3 fulfill];
             }];
         }];
     }];
@@ -470,6 +501,7 @@
 -(void) testEnterNoClientId {
     XCTestExpectation *exp = [self expectationWithDescription:@"testEnterNoClientId"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+        _realtime = realtime;
         ARTRealtimeChannel * channel = [realtime channel:@"testEnterNoClientId"];
         XCTAssertThrows([channel.presence enter:@"thisWillFail" cb:^(ARTStatus *status){}]);
         [exp fulfill];
@@ -765,6 +797,7 @@
 
     XCTestExpectation *exp = [self expectationWithDescription:@"testEnterClient"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+        _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime channel:@"channelName"];
         [channel.presence  enterClient:clientId data:nil cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
@@ -1171,68 +1204,57 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
--(void) testPresenceWithDataOnLeave {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testPresenceWithDataOnLeave"];
+- (void)testPresenceWithDataOnLeave {
+    XCTestExpectation *exp1 = [self expectationWithDescription:@"testPresenceWithDataOnLeave1"];
+    XCTestExpectation *exp2 = [self expectationWithDescription:@"testPresenceWithDataOnLeave2"];
     NSString * channelName = @"channelName";
     NSData * dataPayload = [@"someDataPayload"  dataUsingEncoding:NSUTF8StringEncoding];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         options.clientId = [self getClientId];
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
         ARTRealtimeChannel *channel = [_realtime channel:channelName];
+
         options.clientId = @"clientId2";
         _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
         ARTRealtimeChannel *channel2 = [_realtime2 channel:channelName];
+
         [channel2.presence subscribe:^(ARTPresenceMessage * message) {
-            if(message.action == ARTPresenceLeave) {
+            if (message.action == ARTPresenceLeave) {
                 XCTAssertEqualObjects([message content], dataPayload);
-                [exp fulfill];
+                [exp1 fulfill];
             }
         }];
+
+        __block NSUInteger attached = 0;
+        // Channel 1
+        [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *status) {
+            if (state == ARTRealtimeChannelAttached) {
+                attached++;
+            }
+        }];
+
+        // Channel 2
+        [channel2 subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *status) {
+            if (state == ARTRealtimeChannelAttached) {
+                attached++;
+            }
+        }];
+
         [channel2 attach];
         [channel attach];
+
+        waitForWithTimeout(&attached, @[channel, channel2], 20.0);
+
+        // Presence
         [channel.presence enter:dataPayload cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
             [channel.presence leave:@"" cb:^(ARTStatus *status) {
                 XCTAssertEqual(ARTStateOk, status.state);
+                [exp2 fulfill];
             }];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
-
-
-//TODO work out why connectionId doesn't work
-/*
--(void) testFilterPresenceByConnectionId {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testFilterPresenceByConnectionId"];
-    NSString * channelName = @"channelName";
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
-        options.clientId = [self getClientId];
-        _realtime = [[ARTRealtime alloc] initWithOptions:options];
-        ARTRealtimeChannel *channel = [_realtime channel:channelName];
-        [channel.presence publishPresenceEnter:@"hi" cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStateOk, status.state);
-            [options setClientId: [self getSecondClientId]];
-            XCTAssertEqual(options.clientId, [self getSecondClientId]);
-            _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
-            ARTRealtimeChannel *channel2 = [_realtime2 channel:channelName];
-            [channel2.presence publishPresenceEnter:@"hi2" cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStateOk, status.state);
-                [channel2.presence getWithParams:@{@"connectionId" : _realtime.connectionId} cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
-                    XCTAssertEqual(ARTStateOk, status.state);
-                    NSArray *messages = [result currentItems];
-                    XCTAssertEqual(1, messages.count);
-                    ARTPresenceMessage *m0 = messages[0];
-                    XCTAssertEqual(m0.action, ArtPresenceMessagePresent);
-                    XCTAssertEqualObjects(@"hi", [m0 content]);
-                    [exp fulfill];
-                }];
-            }];
-        }];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-}
-*/
-
 
 @end

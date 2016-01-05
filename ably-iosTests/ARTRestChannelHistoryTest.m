@@ -58,22 +58,26 @@
         _rest = rest;
         ARTRestChannel *channel = [rest.channels get:@"testTimeBackwards"];
 
-        int firstBatchTotal =3;
-        int secondBatchTotal =2;
-        int thirdBatchTotal =1;
-        __block long long intervalStart=0, intervalEnd=0;
+        int firstBatchTotal = 3;
+        int secondBatchTotal = 2;
+        int thirdBatchTotal = 1;
+        __block long long intervalStart = 0, intervalEnd = 0;
 
         NSString *firstBatch = @"first_batch";
         NSString *secondBatch = @"second_batch";
         NSString *thirdBatch = @"third_batch";
         [ARTTestUtil publishRestMessages:firstBatch count:firstBatchTotal channel:(ARTChannel *)channel completion:^{
             sleep([ARTTestUtil bigSleep]);
-            intervalStart = [ARTTestUtil nowMilli] + timeOffset;
+            sleep([ARTTestUtil bigSleep]);
+            intervalStart += [ARTTestUtil nowMilli] + timeOffset;
+            sleep([ARTTestUtil bigSleep]);
             sleep([ARTTestUtil bigSleep]);
 
             [ARTTestUtil publishRestMessages:secondBatch count:secondBatchTotal channel:(ARTChannel *)channel completion:^{
                 sleep([ARTTestUtil bigSleep]);
-                intervalEnd = [ARTTestUtil nowMilli] + timeOffset;
+                sleep([ARTTestUtil bigSleep]);
+                intervalEnd += [ARTTestUtil nowMilli] + timeOffset;
+                sleep([ARTTestUtil bigSleep]);
                 sleep([ARTTestUtil bigSleep]);
 
                 [ARTTestUtil publishRestMessages:thirdBatch count:thirdBatchTotal channel:(ARTChannel *)channel completion:^{
@@ -95,7 +99,7 @@
                             XCTAssertEqualObjects(goalStr, [m content]);
                         }
                         [firstExpectation fulfill];
-                    }];
+                    } error:nil];
                 }];
             }];
         }];
@@ -104,7 +108,7 @@
 }
 
 - (void)testTimeForwards {
-    __block long long timeOffset= 0;
+    __block long long timeOffset = 0;
     
     XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
@@ -135,12 +139,16 @@
 
         [ARTTestUtil publishRestMessages:firstBatch count:firstBatchTotal channel:channel completion:^{
             sleep([ARTTestUtil bigSleep]);
-            intervalStart  = [ARTTestUtil nowMilli] + timeOffset;
+            sleep([ARTTestUtil bigSleep]);
+            intervalStart += [ARTTestUtil nowMilli] + timeOffset;
+            sleep([ARTTestUtil bigSleep]);
             sleep([ARTTestUtil bigSleep]);
 
             [ARTTestUtil publishRestMessages:secondBatch count:secondBatchTotal channel:channel completion:^{
                 sleep([ARTTestUtil bigSleep]);
-                intervalEnd = [ARTTestUtil nowMilli] +timeOffset;
+                sleep([ARTTestUtil bigSleep]);
+                intervalEnd += [ARTTestUtil nowMilli] + timeOffset;
+                sleep([ARTTestUtil bigSleep]);
                 sleep([ARTTestUtil bigSleep]);
 
                 [ARTTestUtil publishRestMessages:thirdBatch count:thirdBatchTotal channel:channel completion:^{
@@ -163,7 +171,7 @@
                             XCTAssertEqualObjects(goalStr, [m content]);
                         }
                         [firstExpectation fulfill];
-                    }];
+                    } error:nil];
                 }];
             }];
         }];
@@ -233,7 +241,7 @@
                         }];
                     }];
                 }];
-            }];
+            } error:nil];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -301,7 +309,7 @@
                         }];
                     }];
                 }];
-            }];
+            } error:nil];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -334,7 +342,7 @@
                 XCTAssertEqualObjects(@"testString4", [firstMessage content]);
                 XCTAssertEqualObjects(@"testString3", [secondMessage content]);
                 [firstExpectation fulfill];
-            }];
+            } error:nil];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -374,13 +382,13 @@
                 XCTAssertEqualObjects(@"testString4", [firstMessage content]);
                 XCTAssertEqualObjects(@"testString3", [secondMessage content]);
                 [firstExpectation fulfill];
-            }];
+            } error:nil];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
--(void) testHistoryLimit {
+- (void)testHistoryLimit {
     XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
@@ -389,7 +397,27 @@
         ARTDataQuery *query = [[ARTDataQuery alloc] init];
         query.limit = 1001;
 
-        XCTAssertThrows([channelOne history:query callback:^(ARTPaginatedResult *result, NSError *error) {}]);
+        NSError *error = nil;
+        BOOL valid = [channelOne history:query callback:^(ARTPaginatedResult *result, NSError *error) {} error:&error];
+        XCTAssertFalse(valid);
+        XCTAssertNotNil(error);
+        XCTAssert(error.code == ARTDataQueryErrorLimit);
+        [exp fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
+
+- (void)testHistoryLimitIgnoringError {
+    XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
+    [ARTTestUtil testRest:^(ARTRest *rest) {
+        _rest = rest;
+        ARTChannel *channelOne = [rest.channels get:@"name"];
+
+        ARTDataQuery *query = [[ARTDataQuery alloc] init];
+        query.limit = 1001;
+        // Forcing an invalid query where the error is ignored and the result should be invalid (the request was canceled)
+        BOOL requested = [channelOne history:query callback:^(ARTPaginatedResult *result, NSError *error) {} error:nil];
+        XCTAssertFalse(requested);
         [exp fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];

@@ -52,6 +52,11 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
     ARTRealtimeChannelFailed
 };
 
+typedef NS_ENUM(NSInteger, ARTDataQueryError) {
+    ARTDataQueryErrorLimit = 1,
+    ARTDataQueryErrorTimestampRange = 2,
+};
+
 ART_ASSUME_NONNULL_BEGIN
 
 /// Decompose API key

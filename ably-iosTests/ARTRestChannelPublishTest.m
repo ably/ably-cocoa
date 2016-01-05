@@ -59,7 +59,7 @@
                     XCTAssertEqualObjects([m0 content], message1);
                     XCTAssertEqualObjects([m1 content], message2);
                     [expectation fulfill];
-                }];
+                } error:nil];
             }];
         }];
     }];
@@ -92,7 +92,7 @@
                 XCTAssertEqualObjects([m1 content], test2);
                 XCTAssertEqualObjects([m2 content], test1);
                 [exp fulfill];
-            }];
+            } error:nil];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];

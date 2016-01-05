@@ -6,7 +6,6 @@
 //  Copyright © 2015 г. Ably. All rights reserved.
 //
 
-
 import Foundation
 import XCTest
 import Quick
@@ -30,7 +29,7 @@ func pathForTestResource(resourcePath: String) -> String {
 
 let appSetupJson = JSON(data: NSData(contentsOfFile: pathForTestResource("ably-common/test-resources/test-app-setup.json"))!, options: .MutableContainers)
 
-let testTimeout: NSTimeInterval = 30
+let testTimeout: NSTimeInterval = 10.0
 
 class AblyTests {
 
@@ -46,6 +45,7 @@ class AblyTests {
     class func checkError(errorInfo: ARTErrorInfo?) {
         checkError(errorInfo, withAlternative: "")
     }
+    static let allDebug = true
 
     class var jsonRestOptions: ARTClientOptions {
         get {
@@ -86,6 +86,7 @@ class AblyTests {
             let response = JSON(data: data)
             
             if debug {
+                options.logLevel = .Verbose
                 print(response)
             }
             
@@ -103,11 +104,14 @@ class AblyTests {
         return AblyTests.setupOptions(AblyTests.jsonRestOptions, debug: debug)
     }
 
-    class func clientOptions(debug debug: Bool = false) -> ARTClientOptions {
+    class func clientOptions(debug debug: Bool = false, requestToken: Bool = false) -> ARTClientOptions {
         let options = ARTClientOptions()
         options.environment = "sandbox"
-        if debug {
-            options.logLevel = .Verbose
+        if debug || AblyTests.allDebug {
+            options.logLevel = .Debug
+        }
+        if requestToken {
+            options.token = getTestToken()
         }
         return options
     }

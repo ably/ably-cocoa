@@ -37,7 +37,17 @@
 
 - (void)tearDown {
     // Put teardown code here. This method is called after the invocation of each test method in the class.
+    if (_realtime) {
+        [_realtime removeAllChannels];
+        [_realtime.eventEmitter removeEvents];
+        [_realtime close];
+    }
     _realtime = nil;
+    if (_realtime2) {
+        [_realtime2 removeAllChannels];
+        [_realtime2.eventEmitter removeEvents];
+        [_realtime2 close];
+    }
     _realtime2 = nil;
     [super tearDown];
 }
@@ -109,15 +119,15 @@
         ARTRealtimeChannel *channel = [realtime channel:@"attach_detach_attach"];
         [channel attach];
         __block BOOL attached = false;
-        __block int attachCount =0;
+        __block int attachCount = 0;
         [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
             if (state == ARTRealtimeChannelAttached) {
                 attachCount++;
                 attached = true;
-                if(attachCount ==1) {
+                if (attachCount == 1) {
                     [channel detach];
                 }
-                else if( attachCount ==2 ) {
+                else if (attachCount == 2) {
                     [expectation fulfill];
                 }
             }
@@ -352,7 +362,8 @@
     NSString *firstClientId = @"firstClientId";
     NSString *channelName = @"channelName";
 
-    XCTestExpectation *exp = [self expectationWithDescription:@"testClientIdPreserved"];
+    XCTestExpectation *exp1 = [self expectationWithDescription:@"testClientIdPreserved1"];
+    XCTestExpectation *exp2 = [self expectationWithDescription:@"testClientIdPreserved2"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withDebug:NO cb:^(ARTClientOptions *options) {
         // First instance
         options.clientId = firstClientId;
@@ -366,14 +377,32 @@
         _realtime2 = realtime2;
         ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
 
-        [channel2.presence subscribe:^(ARTPresenceMessage * message) {
-            XCTAssertEqualObjects(message.clientId, firstClientId);
-            [exp fulfill];
+        __block NSUInteger attached = 0;
+        // Channel 1
+        [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *status) {
+            if (state == ARTRealtimeChannelAttached) {
+                attached++;
+            }
         }];
+
+        // Channel 2
+        [channel2 subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *status) {
+            if (state == ARTRealtimeChannelAttached) {
+                attached++;
+            }
+        }];
+
+        [channel2.presence subscribe:^(ARTPresenceMessage *message) {
+            XCTAssertEqualObjects(message.clientId, firstClientId);
+            [exp1 fulfill];
+        }];
+
+        waitForWithTimeout(&attached, @[channel, channel2], 20.0);
 
         // Enters "firstClientId"
         [channel.presence enter:@"First Client" cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
+            [exp2 fulfill];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];

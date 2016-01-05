@@ -91,8 +91,7 @@
             NSArray *presence = [result items];
             XCTAssertEqual(6, [presence count]);
             [expectation fulfill];
-
-        }];
+        } error:nil];
     }];
      [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
@@ -109,8 +108,7 @@
             ARTPresenceMessage * m = [presence objectAtIndex:[presence count] -1];
             XCTAssertEqualObjects(@"true", [m content]);
             [expectation fulfill];
-            
-        }];
+        } error:nil];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
@@ -129,20 +127,38 @@
             ARTPresenceMessage * m = [presence objectAtIndex:0];
             XCTAssertEqualObjects(@"true", [m content]);
             [expectation fulfill];
-            
-        }];
+        } error:nil];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
--(void) testPresenceLimit {
+- (void)testPresenceLimit {
     XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTRestChannel *channelOne = [rest.channels get:@"name"];
         ARTDataQuery *query = [[ARTDataQuery alloc] init];
         query.limit = 1001;
-        XCTAssertThrows([channelOne.presence history:query callback:^(ARTPaginatedResult *result, NSError *error){}]);
+        NSError *error;
+        BOOL valid = [channelOne.presence history:query callback:^(ARTPaginatedResult *result, NSError *error){} error:&error];
+        XCTAssertFalse(valid);
+        XCTAssertNotNil(error);
+        XCTAssert(error.code == ARTDataQueryErrorLimit);
+        [exp fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
+
+- (void)testPresenceLimitIgnoringError {
+    XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
+    [ARTTestUtil testRest:^(ARTRest *rest) {
+        _rest = rest;
+        ARTRestChannel *channelOne = [rest.channels get:@"name"];
+        ARTDataQuery *query = [[ARTDataQuery alloc] init];
+        query.limit = 1001;
+        // Forcing an invalid query where the error is ignored and the result should be invalid (the request was canceled)
+        BOOL requested = [channelOne.presence history:query callback:^(ARTPaginatedResult *result, NSError *error){} error:nil];
+        XCTAssertFalse(requested);
         [exp fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];

@@ -37,7 +37,17 @@
 - (void)tearDown {
     [super tearDown];
     [ARTPayload getPayloadArraySizeLimit:SIZE_T_MAX modify:true];
+    if (_realtime) {
+        [_realtime removeAllChannels];
+        [_realtime.eventEmitter removeEvents];
+        [_realtime close];
+    }
     _realtime = nil;
+    if (_realtime2) {
+        [_realtime2 removeAllChannels];
+        [_realtime2.eventEmitter removeEvents];
+        [_realtime2 close];
+    }
     _realtime2 = nil;
 }
 
@@ -46,9 +56,12 @@
     
     XCTestExpectation *e = [self expectationWithDescription:@"waitExp"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+        _realtime = realtime;
         [e fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+
+    [_realtime close];
 
     XCTestExpectation *expectation = [self expectationWithDescription:@"multiple_send"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
@@ -73,7 +86,7 @@
             }
         }];
     }];
-    [self waitForExpectationsWithTimeout:((delay / 1000.0) * count * 2) handler:nil];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 - (void)testSingleSendText {
@@ -92,26 +105,52 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-
 - (void)testSingleSendEchoText {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testSingleSendEchoText"];
-    NSString * channelName = @"testSingleEcho";
+    XCTestExpectation *exp1 = [self expectationWithDescription:@"testSingleSendEchoText1"];
+    XCTestExpectation *exp2 = [self expectationWithDescription:@"testSingleSendEchoText2"];
+    XCTestExpectation *exp3 = [self expectationWithDescription:@"testSingleSendEchoText3"];
+    NSString *channelName = @"testSingleEcho";
+    
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         ARTRealtime * realtime1 = [[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime1;
-        ARTRealtimeChannel *channel = [realtime1 channel:channelName];
-            [channel subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
-                XCTAssertEqualObjects([message content], @"testStringEcho");
-                [expectation fulfill];
-            }];
         ARTRealtime * realtime2 = [[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = realtime2;
+
+        ARTRealtimeChannel *channel = [realtime1 channel:channelName];
         ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
+
+        __block NSUInteger attached = 0;
+        // Channel 1
+        [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *status) {
+            if (state == ARTRealtimeChannelAttached) {
+                attached++;
+            }
+        }];
+
+        // Channel 2
+        [channel2 subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *status) {
+            if (state == ARTRealtimeChannelAttached) {
+                attached++;
+            }
+        }];
+
+        [channel subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
+            XCTAssertEqualObjects([message content], @"testStringEcho");
+            [exp1 fulfill];
+        }];
+
+
         [channel2 subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
             XCTAssertEqualObjects([message content], @"testStringEcho");
+            [exp2 fulfill];
         }];
+
+        waitForWithTimeout(&attached, @[channel, channel2], 20.0);
+
         [channel2 publish:@"testStringEcho" cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
+            [exp3 fulfill];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -273,7 +312,7 @@
                     XCTAssertEqualObjects(m1.connectionId, _realtime.connectionId);
                     XCTAssertFalse([m0.connectionId isEqualToString:m1.connectionId]);
                     [exp fulfill];
-                }];
+                } error:nil];
             }];
         }];
     }];

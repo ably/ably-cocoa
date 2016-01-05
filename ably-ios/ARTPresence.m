@@ -11,7 +11,7 @@
 #import "ARTChannel.h"
 
 @interface ARTPresence () {
-    ARTChannel *_channel;
+    __weak ARTChannel *_channel;
 }
 
 @end
@@ -33,8 +33,9 @@
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 
-- (void)history:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *result, NSError *error))callback {
+- (BOOL)history:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *result, NSError *error))callback error:(NSError **)errorPtr {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
+    return NO;
 }
 
 @end

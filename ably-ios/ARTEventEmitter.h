@@ -17,8 +17,6 @@
 
 - (instancetype)initWithRealtime:(ARTRealtime *)realtime;
 - (id<ARTSubscription>)on:(ARTRealtimeConnectionStateCb)cb;
-
-- (id<ARTSubscription>)on;
-- (void)test;
+- (void)removeEvents;
 
 @end

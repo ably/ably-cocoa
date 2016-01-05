@@ -18,6 +18,8 @@
 @class ARTRealtimeChannel;
 @class ARTCipherPayloadEncoder;
 
+void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeout);
+
 @interface ARTTestUtil : NSObject
 
 typedef NS_ENUM(NSUInteger, TestAlteration) {

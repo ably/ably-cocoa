@@ -29,13 +29,13 @@
 
 @interface ARTRealtime () <ARTRealtimeTransportDelegate> {
     Class _transportClass;
+    id<ARTRealtimeTransport> _transport;
     // FIXME: temporary
     ARTConnection *_connection;
 }
 
 // Shared with private header
 @property (readwrite, strong, nonatomic) ARTRest *rest;
-@property (readwrite, strong, nonatomic) id<ARTRealtimeTransport> transport;
 @property (readonly, strong, nonatomic) NSMutableArray *stateSubscriptions;
 
 @property (readonly, strong, nonatomic) __GENERIC(NSMutableDictionary, NSString *, ARTRealtimeChannel *) *allChannels;
@@ -95,7 +95,6 @@
 - (void)nack:(int64_t)serial count:(int64_t)count;
 
 // Util
-- (id<ARTRealtimeTransport>)createTransport;
 - (CFRunLoopTimerRef)startTimer:(void(^)())onTimeout interval:(NSTimeInterval)interval;
 - (void)cancelTimer:(CFRunLoopTimerRef)timer;
 
@@ -135,12 +134,18 @@
         _pendingMessageStartSerial = 0;
         _stateSubscriptions = [NSMutableArray array];
         _connection = [[ARTConnection alloc] initWithRealtime:self];
+
+        [self.logger debug:__FILE__ line:__LINE__ message:@"initialised %p", self];
         
         if (options.autoConnect) {
             [self connect];
         }
     }
     return self;
+}
+
+- (id<ARTRealtimeTransport>)getTransport {
+    return _transport;
 }
 
 - (ARTLog *)getLogger {
@@ -194,12 +199,17 @@
 }
 
 - (void)dealloc {
-    // Custom dealloc required to release CoreFoundation objects
+    [self.logger debug:__FILE__ line:__LINE__ message:@"%p dealloc", self];
+
     [self cancelConnectTimer];
     [self cancelSuspendTimer];
     [self cancelRetryTimer];
 
-    self.transport.delegate = nil;
+    if (_transport) {
+        _transport.delegate = nil;
+        [_transport close];
+    }
+    _transport = nil;
 }
 
 - (BOOL)connect {
@@ -228,8 +238,8 @@
     [self.transport sendPing];
 }
 
-- (void)stats:(ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult *result, NSError *error))completion {
-    [self.rest stats:query callback:completion];
+- (BOOL)stats:(ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult *result, NSError *error))completion error:(NSError **)errorPtr {
+    return [self.rest stats:query callback:completion error:errorPtr];
 }
 
 - (ARTRealtimeChannel *)channel:(NSString *)channelName {
@@ -244,6 +254,10 @@
     }
 
     return channel;
+}
+
+- (void)removeAllChannels {
+    [_allChannels removeAllObjects];
 }
 
 - (void)removeChannel:(NSString *)name {
@@ -264,21 +278,7 @@
 }
 
 - (void)transition:(ARTRealtimeConnectionState)state withErrorInfo:(ARTErrorInfo *)errorInfo {
-    [self.logger verbose:@"Transition to %@ requested", [ARTRealtime ARTRealtimeStateToStr:state]];
-
-    // On exit logic
-    switch (self.state) {
-        case ARTRealtimeInitialized:
-        case ARTRealtimeConnecting:
-        case ARTRealtimeConnected:
-        case ARTRealtimeClosed:
-        case ARTRealtimeDisconnected:
-        case ARTRealtimeSuspended:
-        case ARTRealtimeFailed:
-        case ARTRealtimeClosing:
-            // Currently no on-exit logic
-            break;
-    }
+    [self.logger debug:__FILE__ line:__LINE__ message:@"%p transition to %@ requested", self, [ARTRealtime ARTRealtimeStateToStr:state]];
 
     // Cancel timers
     [self cancelConnectTimer];
@@ -295,15 +295,14 @@
 
             // Create transport and initiate connection
             // TODO: ConnectionManager
-            if (!self.transport) {
+            if (!_transport) {
                 if (previousState == ARTRealtimeFailed || previousState == ARTRealtimeDisconnected) {
                     self.options.connectionSerial = self.connectionSerial;
                     self.options.resumeKey = self.connectionKey;
                 }
-                self.transport.delegate = nil;
-                self.transport = [self createTransport];
-                self.transport.delegate = self;
-                [self.transport connect];
+                _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options];
+                _transport.delegate = self;
+                [_transport connect];
             }
             break;
         case ARTRealtimeConnected:
@@ -316,17 +315,20 @@
             break;
         case ARTRealtimeClosed:
             [self cancelCloseTimer];
+            [self.transport close];
             self.transport.delegate = nil;
-            self.transport = nil;
+            _transport = nil;
+            break;
         case ARTRealtimeFailed:
-            [self.transport abort:[ARTStatus state:ARTStateConnectionFailed]];
+            [self.transport abort:[ARTStatus state:ARTStateConnectionFailed info:errorInfo]];
             self.transport.delegate = nil;
-            self.transport = nil;
+            _transport = nil;
             break;
         case ARTRealtimeDisconnected:
-            [self.transport abort:[ARTStatus state:ARTStateConnectionDisconnected]];
+            [self.transport close];
             self.transport.delegate = nil;
-            self.transport = nil;
+            _transport = nil;
+            break;
         case ARTRealtimeInitialized:
         case ARTRealtimeSuspended:
             break;
@@ -341,14 +343,16 @@
         [self sendQueuedMessages];
     } else if (![self shouldQueueEvents]) {
         [self failQueuedMessages:[self defaultError]];
+        // For every Channel
         for (NSString *channelName in self.allChannels) {
+            // Channel
             ARTRealtimeChannel *channel = [self.allChannels objectForKey:channelName];
             if (channel.state == ARTRealtimeChannelInitialised || channel.state == ARTRealtimeChannelAttaching || channel.state == ARTRealtimeChannelAttached) {
                 if(state == ARTRealtimeClosing) {
                     //do nothing. Closed state is coming.
                 }
                 else if(state == ARTRealtimeClosed) {
-                    [channel setClosed:[self defaultError]];
+                    [channel setClosed:[ARTStatus state:ARTStateOk]];
                 }
                 else if(state == ARTRealtimeSuspended) {
                     [channel detachChannel:[self defaultError]];
@@ -735,11 +739,6 @@
     for (ARTQueuedMessage *msg in nackMessages) {
         msg.cb([ARTStatus state:ARTStateError]);
     }
-}
-
-- (id<ARTRealtimeTransport>)createTransport {
-    ARTWebSocketTransport *websocketTransport = [[_transportClass alloc] initWithRest:self.rest options:self.options];
-    return websocketTransport;
 }
 
 - (CFRunLoopTimerRef)startTimer:(void(^)())onTimeout interval:(NSTimeInterval)interval {

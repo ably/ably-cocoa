@@ -35,7 +35,7 @@ ART_ASSUME_NONNULL_BEGIN
 /**
  Obtain recent presence history for one channel
  */
-- (void)history:(art_nullable ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *__art_nullable result, NSError *__art_nullable error))callback;
+- (BOOL)history:(art_nullable ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *__art_nullable result, NSError *__art_nullable error))callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
 
 @end
 

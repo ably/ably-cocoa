@@ -69,6 +69,7 @@
         }
         
         _http = [[ARTHttp alloc] init];
+        [_logger debug:__FILE__ line:__LINE__ message:@"%p alloc HTTP", _http];
         _httpExecutor = _http;
         _httpExecutor.logger = _logger;
         _channelClass = [ARTRestChannel class];
@@ -80,6 +81,8 @@
         
         _auth = [[ARTAuth alloc] init:self withOptions:_options];
         _channels = [[ARTChannelCollection alloc] initWithRest:self];
+
+        [self.logger debug:__FILE__ line:__LINE__ message:@"initialised %p", self];
     }
     return self;
 }
@@ -90,6 +93,10 @@
 
 - (instancetype)initWithKey:(NSString *) key {
     return [self initWithOptions:[[ARTClientOptions alloc] initWithKey:key]];
+}
+
+- (void)dealloc {
+    [self.logger debug:__FILE__ line:__LINE__ message:@"%p dealloc", self];
 }
 
 - (void)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(ARTHttpRequestCallback)callback {
@@ -131,13 +138,13 @@
 }
 
 - (void)executeRequest:(NSMutableURLRequest *)request completion:(ARTHttpRequestCallback)callback {
-    [self.logger debug:@"ARTRest: executing request %@", request];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"%p executing request %@", self, request];
     [self.httpExecutor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode >= 400) {
             NSError *error = [self->_encoders[response.MIMEType] decodeError:data];
             if (error.code == 40140) {
                 // Send it again, requesting a new token (forward callback)
-                [self.logger debug:@"ARTRest: requesting new token"];
+                [self.logger debug:__FILE__ line:__LINE__ message:@"requesting new token"];
                 [self executeRequest:request withAuthOption:ARTAuthenticationNewToken completion:callback];
                 return;
             } else if (callback) {
@@ -154,7 +161,7 @@
 }
 
 - (void)calculateAuthorization:(ARTAuthMethod)method force:(BOOL)force completion:(void (^)(NSString *authorization, NSError *error))callback {
-    [self.logger debug:@"ARTRest: calculating authorization %lu", (unsigned long)method];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"calculating authorization %lu", (unsigned long)method];
     // FIXME: use encoder and should be managed on ARTAuth
     if (method == ARTAuthMethodBasic) {
         // Include key Base64 encoded in an Authorization header (RFC7235)
@@ -200,10 +207,24 @@
     return nil;
 }
 
-- (void)stats:(ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult *, NSError *))callback {
-    NSParameterAssert(query.limit < 1000);
-    NSParameterAssert([query.start compare:query.end] != NSOrderedDescending);
-    
+- (BOOL)stats:(ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult *, NSError *))callback error:(NSError **)errorPtr {
+    if (query.limit > 1000) {
+        if (errorPtr) {
+            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                            code:ARTDataQueryErrorLimit
+                                        userInfo:@{NSLocalizedDescriptionKey:@"Limit supports up to 1000 results only"}];
+        }
+        return NO;
+    }
+    if ([query.start compare:query.end] == NSOrderedDescending) {
+        if (errorPtr) {
+            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                            code:ARTDataQueryErrorTimestampRange
+                                        userInfo:@{NSLocalizedDescriptionKey:@"Start must be equal to or less than end"}];
+        }
+        return NO;
+    }
+
     NSURLComponents *requestUrl = [NSURLComponents componentsWithString:@"/stats"];
     requestUrl.queryItems = [query asQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[requestUrl URLRelativeToURL:self.baseUrl]];
@@ -214,6 +235,7 @@
     };
     
     [ARTPaginatedResult executePaginated:self withRequest:request andResponseProcessor:responseProcessor callback:callback];
+    return YES;
 }
 
 - (id<ARTEncoder>)defaultEncoder {

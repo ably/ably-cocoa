@@ -37,10 +37,10 @@ class RealtimeClient: QuickSpec {
 
                     let client = ARTRealtime(options: options)
 
-                    waitUntil(timeout: 20.0) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         client.eventEmitter.on { state, errorInfo in
                             switch state {
-                            case .Connecting:
+                            case .Connecting, .Closing, .Closed:
                                 break
                             case .Failed:
                                 self.checkError(errorInfo, withAlternative: "Failed state")
@@ -52,6 +52,7 @@ class RealtimeClient: QuickSpec {
                             }
                         }
                     }
+                    client.close()
                 }
                 
                 //RTC1a
@@ -70,11 +71,11 @@ class RealtimeClient: QuickSpec {
                 it("should attempt to recover the connection state if recover string is assigned") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "client_string"
-                    options.environment = "eu-central-1-a-sandbox"
 
+                    // First connection
                     let client = ARTRealtime(options: options)
 
-                    waitUntil(timeout: 60) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         client.eventEmitter.on { state, errorInfo in
                             switch state {
                             case .Failed:
@@ -94,7 +95,7 @@ class RealtimeClient: QuickSpec {
                     // New connection
                     let newClient = ARTRealtime(options: options)
 
-                    waitUntil(timeout: 60) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         newClient.eventEmitter.on { state, errorInfo in
                             switch state {
                             case .Failed:
@@ -108,6 +109,8 @@ class RealtimeClient: QuickSpec {
                             }
                         }
                     }
+                    newClient.close()
+                    client.close()
                 }
 
                 //RTC1d
@@ -142,13 +145,17 @@ class RealtimeClient: QuickSpec {
 
             // RTC3
             it("should provide access to the underlying Channels object") {
-                let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                let options = AblyTests.commonAppSetup()
+                options.autoConnect = false
+
+                let client = ARTRealtime(options: options)
 
                 client.channel("test").subscribe({ message, errorInfo in
                     // Attached
                 })
 
                 expect(client.channels()["test"]).toNot(beNil())
+                client.close()
             }
 
             context("Auth object") {
@@ -159,6 +166,7 @@ class RealtimeClient: QuickSpec {
                     let client = ARTRealtime(options: options)
 
                     expect(client.auth().options.key).to(equal(options.key))
+                    client.close()
                 }
 
                 // RTC4a
@@ -167,7 +175,7 @@ class RealtimeClient: QuickSpec {
                     options.clientId = "client_string"
                     let client = ARTRealtime(options: options)
 
-                    waitUntil(timeout: 60) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         client.eventEmitter.on { state, errorInfo in
                             switch state {
                             case .Failed:
@@ -182,6 +190,7 @@ class RealtimeClient: QuickSpec {
                             }
                         }
                     }
+                    client.close()
                 }
             }
 
@@ -195,11 +204,12 @@ class RealtimeClient: QuickSpec {
                     // Async
                     waitUntil(timeout: testTimeout) { done in
                         // Proxy from `client.rest.stats`
-                        client.stats(query, callback: { paginated, error in
+                        try! client.stats(query, callback: { paginated, error in
                             expect(paginated).toNot(beNil())
                             done()
                         })
                     }
+                    client.close()
                 }
 
                 // RTC5b
@@ -208,7 +218,7 @@ class RealtimeClient: QuickSpec {
                     var paginatedResult: ARTPaginatedResult?
 
                     // Realtime
-                    client.stats(query, callback: { paginated, error in
+                    try! client.stats(query, callback: { paginated, error in
                         if let e = error {
                             XCTFail(e.description)
                         }
@@ -218,11 +228,12 @@ class RealtimeClient: QuickSpec {
 
                     // Rest
                     waitUntil(timeout: testTimeout) { done in
-                        client.rest.stats(query, callback: { paginated, error in
-                            expect(paginated).to(beIdenticalTo(paginatedResult))
+                        try! client.rest.stats(query, callback: { paginated, error in
+                            expect(paginated?.items.count ?? 0).to(equal(paginatedResult?.items.count ?? 0))
                             done()
                         })
                     }
+                    client.close()
                 }
             }
 
@@ -238,6 +249,7 @@ class RealtimeClient: QuickSpec {
                             done()
                         })
                     }
+                    client.close()
                 }
             }
 

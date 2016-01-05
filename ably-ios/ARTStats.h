@@ -16,6 +16,8 @@ typedef NS_ENUM(NSUInteger, ARTStatsUnit) {
     ARTStatsUnitMonth
 };
 
+ART_ASSUME_NONNULL_BEGIN
+
 @interface ARTStatsQuery : ARTDataQuery
 
 @property (nonatomic, assign) ARTStatsUnit unit;
@@ -30,6 +32,8 @@ typedef NS_ENUM(NSUInteger, ARTStatsUnit) {
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithCount:(double)count data:(double)data;
 
++ (instancetype)empty;
+
 @end
 
 @interface ARTStatsMessageTypes : NSObject
@@ -40,6 +44,8 @@ typedef NS_ENUM(NSUInteger, ARTStatsUnit) {
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithAll:(ARTStatsMessageCount *)all messages:(ARTStatsMessageCount *)messages presence:(ARTStatsMessageCount *)presence;
+
++ (instancetype)empty;
 
 @end
 
@@ -54,6 +60,8 @@ typedef NS_ENUM(NSUInteger, ARTStatsUnit) {
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithAll:(ARTStatsMessageTypes *)all realtime:(ARTStatsMessageTypes *)realtime rest:(ARTStatsMessageTypes *)rest push:(ARTStatsMessageTypes *)push httpStream:(ARTStatsMessageTypes *)httpStream;
 
++ (instancetype)empty;
+
 @end
 
 @interface ARTStatsResourceCount : NSObject
@@ -67,6 +75,8 @@ typedef NS_ENUM(NSUInteger, ARTStatsUnit) {
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithOpened:(double)opened peak:(double)peak mean:(double)mean min:(double)min refused:(double)refused;
 
++ (instancetype)empty;
+
 @end
 
 @interface ARTStatsConnectionTypes : NSObject
@@ -78,6 +88,8 @@ typedef NS_ENUM(NSUInteger, ARTStatsUnit) {
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithAll:(ARTStatsResourceCount *)all plain:(ARTStatsResourceCount *)plain tls:(ARTStatsResourceCount *)tls;
 
++ (instancetype)empty;
+
 @end
 
 @interface ARTStatsRequestCount : NSObject
@@ -88,6 +100,8 @@ typedef NS_ENUM(NSUInteger, ARTStatsUnit) {
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithSucceeded:(double)succeeded failed:(double)failed refused:(double)refused;
+
++ (instancetype)empty;
 
 @end
 
@@ -107,3 +121,5 @@ typedef NS_ENUM(NSUInteger, ARTStatsUnit) {
 - (instancetype)initWithAll:(ARTStatsMessageTypes *)all inbound:(ARTStatsMessageTraffic *)inbound outbound:(ARTStatsMessageTraffic *)outbound persisted:(ARTStatsMessageTypes *)persisted connections:(ARTStatsConnectionTypes *)connections channels:(ARTStatsResourceCount *)channels apiRequests:(ARTStatsRequestCount *)apiRequests tokenRequests:(ARTStatsRequestCount *)tokenRequests interval:(NSDate *)interval;
 
 @end
+
+ART_ASSUME_NONNULL_END

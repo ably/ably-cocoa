@@ -19,25 +19,25 @@ NSInteger getStatusFromCode(NSInteger code) {
 
 @implementation ARTErrorInfo
 
-- (ARTErrorInfo *)setCode:(int)code message:(NSString *)message {
+- (ARTErrorInfo *)setCode:(NSInteger)code message:(NSString *)message {
     _code = code;
     _statusCode = getStatusFromCode(code);
     _message = message;
     return self;
 }
 
-- (ARTErrorInfo *)setCode:(int)code status:(int)status message:(NSString *)message {
+- (ARTErrorInfo *)setCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message {
     _code = code;
     _statusCode = status;
     _message = message;
     return self;
 }
 
-+ (ARTErrorInfo *)createWithCode:(int)code message:(NSString *)message {
++ (ARTErrorInfo *)createWithCode:(NSInteger)code message:(NSString *)message {
     return [[[ARTErrorInfo alloc] init] setCode:code message:message];
 }
 
-+ (ARTErrorInfo *)createWithCode:(int)code status:(int)status message:(NSString *)message {
++ (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message {
     return [[[ARTErrorInfo alloc] init] setCode:code status:status message:message];
 }
 

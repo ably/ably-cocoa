@@ -31,7 +31,7 @@
     if (self = [super initWithName:name andOptions:options]) {
         _rest = rest;
         _basePath = [NSString stringWithFormat:@"/channels/%@", [name stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]]];
-        [self.logger debug:@"ARTRestChannel: instantiating under %@", name];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"%p instantiating under '%@'", self, name];
     }
     return self;
 }
@@ -51,9 +51,23 @@
     return _restPresence;
 }
 
-- (void)history:(ARTDataQuery *)query callback:(void(^)(ARTPaginatedResult *result, NSError *error))callback {
-    NSParameterAssert(query.limit < 1000);
-    NSParameterAssert([query.start compare:query.end] != NSOrderedDescending);
+- (BOOL)history:(ARTDataQuery *)query callback:(void(^)(ARTPaginatedResult *result, NSError *error))callback error:(NSError **)errorPtr {
+    if (query.limit > 1000) {
+        if (errorPtr) {
+            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                            code:ARTDataQueryErrorLimit
+                                        userInfo:@{NSLocalizedDescriptionKey:@"Limit supports up to 1000 results only"}];
+        }
+        return NO;
+    }
+    if ([query.start compare:query.end] == NSOrderedDescending) {
+        if (errorPtr) {
+            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                            code:ARTDataQueryErrorTimestampRange
+                                        userInfo:@{NSLocalizedDescriptionKey:@"Start must be equal to or less than end"}];
+        }
+        return NO;
+    }
 
     NSURLComponents *componentsUrl = [NSURLComponents componentsWithString:[_basePath stringByAppendingPathComponent:@"messages"]];
     componentsUrl.queryItems = [query asQueryItems];
@@ -66,8 +80,10 @@
             return [message decode:self.payloadEncoder];
         }];
     };
-    
-    [ARTPaginatedResult executePaginated:self.rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
+
+    [self.logger debug:__FILE__ line:__LINE__ message:@"stats request %@", request];
+    [ARTPaginatedResult executePaginated:_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
+    return YES;
 }
 
 - (void)internalPostMessages:(id)data callback:(ARTErrorCallback)callback {
@@ -88,8 +104,9 @@
     if (self.rest.defaultEncoding) {
         [request setValue:self.rest.defaultEncoding forHTTPHeaderField:@"Content-Type"];
     }
-    
-    [self.rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+
+    [self.logger debug:__FILE__ line:__LINE__ message:@"post message %@", request];
+    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (callback) {
             callback(error);
         }

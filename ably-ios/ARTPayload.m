@@ -60,10 +60,14 @@
         return [ARTJsonPayloadEncoder instance];
     }
 
-    return [[ARTPayloadEncoderChain alloc] initWithEncoders:@[
-        [ARTJsonPayloadEncoder instance],
-        [ARTUtf8PayloadEncoder instance],
-        [[ARTCipherPayloadEncoder alloc] initWithCipherParams:cipherParams]]];
+    NSMutableArray *encoders = [NSMutableArray arrayWithObjects:[ARTJsonPayloadEncoder instance], [ARTUtf8PayloadEncoder instance], nil];
+
+    ARTCipherPayloadEncoder *cipherEncoder = [[ARTCipherPayloadEncoder alloc] initWithCipherParams:cipherParams];
+    if (cipherEncoder) {
+        [encoders addObject:cipherEncoder];
+    }
+
+    return [[ARTPayloadEncoderChain alloc] initWithEncoders:encoders];
 }
 
 + (id<ARTPayloadEncoder>)createEncoder:(NSString *) name key:(NSData *) keySpec iv:(NSData *) iv {

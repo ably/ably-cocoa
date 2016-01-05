@@ -58,8 +58,7 @@ class RestClient: QuickSpec {
                 }
 
                 it("should accept an options object with token authentication") {
-                    let options = AblyTests.commonAppSetup()
-                    options.token = getTestToken()
+                    let options = AblyTests.clientOptions(requestToken: true)
                     let client = ARTRest(options: options)
 
                     let publishTask = publishTestMessage(client)
@@ -68,7 +67,7 @@ class RestClient: QuickSpec {
                 }
 
                 it("should result in error status when provided a bad token") {
-                    let options = AblyTests.commonAppSetup()
+                    let options = AblyTests.clientOptions()
                     options.token = "invalid_token"
                     let client = ARTRest(options: options)
 
@@ -81,15 +80,18 @@ class RestClient: QuickSpec {
 
             context("logging") {
                 // RSC2
-                it("should output to the system log and the log level should be Warn") {
+                pending("should output to the system log and the log level should be Warn") {
                     let logTime = NSDate()
                     let client = ARTRest(options: AblyTests.commonAppSetup())
 
                     client.logger.log("This is a warning", withLevel: .Warn)
                     let logs = querySyslog(forLogsAfter: logTime)
 
+                    // Logs is AnyGenerator, reduced in one line
+                    let line = logs.reduce("") { $1 + $0 }
+
                     expect(client.logger.logLevel).to(equal(ARTLogLevel.Warn))
-                    expect(logs).to(contain("WARN: This is a warning"))
+                    expect(line).to(contain("WARN: This is a warning"))
                 }
 
                 // RSC3
@@ -164,8 +166,7 @@ class RestClient: QuickSpec {
                 }
                 
                 it("should connect over plain http:// when tls is off") {
-                    let options = ARTClientOptions(key: "fake:key")
-                    options.token = getTestToken()
+                    let options = AblyTests.clientOptions(requestToken: true)
                     options.tls = false
                     let client = ARTRest(options: options)
                     client.httpExecutor = mockExecutor
@@ -219,6 +220,7 @@ class RestClient: QuickSpec {
                         done()
                     }
                 }
+
                 waitUntil(timeout: testTimeout) { done in
                     publishTestMessage(clientHttp) { error in
                         done()
@@ -240,7 +242,7 @@ class RestClient: QuickSpec {
 
                 expect(auth.method.rawValue).to(equal(ARTAuthMethod.Basic.rawValue))
 
-                waitUntil(timeout: 25.0) { done in
+                waitUntil(timeout: testTimeout) { done in
                     auth.requestToken(nil, withOptions: options, callback: { tokenDetailsA, errorA in
                         if let e = errorA {
                             XCTFail(e.description)
@@ -272,7 +274,7 @@ class RestClient: QuickSpec {
                 let tokenParams = ARTAuthTokenParams()
                 tokenParams.ttl = 3.0 //Seconds
 
-                waitUntil(timeout: 25.0) { done in
+                waitUntil(timeout: testTimeout) { done in
                     auth.requestToken(tokenParams, withOptions: options) { tokenDetailsA, errorA in
                         if let e = errorA {
                             XCTFail(e.description)
@@ -283,7 +285,7 @@ class RestClient: QuickSpec {
                         }
 
                         // Delay for token expiration
-                        delay(tokenParams.ttl) {
+                        delay(tokenParams.ttl + 1.0) {
                             auth.authorise(tokenParams, options: options, force: false) { tokenDetailsB, errorB in
                                 if let e = errorB {
                                     XCTFail(e.description)

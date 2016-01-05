@@ -29,9 +29,9 @@
     [super get:callback];
 }
 
-- (void)history:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult *result, NSError *error))callback {
+- (BOOL)history:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult *result, NSError *error))callback error:(NSError **)errorPtr {
     [[self channel] throwOnDisconnectedOrFailed];
-    [super history:query callback:callback];
+    return [super history:query callback:callback error:errorPtr];
 }
 
 - (void)enter:(id)data cb:(ARTStatusCallback)cb {
