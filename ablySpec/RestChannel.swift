@@ -277,7 +277,7 @@ class RestChannel: QuickSpec {
             // RSL4b
             it("encoding attribute should represent the encoding(s) applied in right to left") {
                 let encodingCases = [
-                    TestCase(value: text, expected: nil), //FIXME: Should be UTF-8 ?!
+                    TestCase(value: text, expected: nil),
                     TestCase(value: dictionary, expected: "json/base64"),
                     TestCase(value: array, expected: "json/base64"),
                     TestCase(value: data, expected: "base64"),
@@ -379,7 +379,7 @@ class RestChannel: QuickSpec {
                     }
 
                     var totalReceived = 0
-                    channel.history(nil) { result, error in
+                    try! channel.history(nil) { result, error in
                         expect(error).to(beNil())
                         expect(result).toNot(beNil())
                         expect(result?.hasNext).to(beFalse())
