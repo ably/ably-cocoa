@@ -11,6 +11,7 @@
 #include <CommonCrypto/CommonDigest.h>
 #include <CommonCrypto/CommonHMAC.h>
 
+#import "ARTDefault.h"
 #import "ARTEncoder.h"
 #import "ARTPayload.h"
 #import "ARTAuthTokenRequest.h"
@@ -19,7 +20,7 @@
 
 - (instancetype)init {
     if (self = [super init]) {
-        _ttl = 60 * 60;
+        _ttl = [ARTDefault ttl] * 60; //seconds
         _timestamp = [NSDate date];
         _capability = @"{\"*\":[\"*\"]}"; // allow all
         _clientId = nil;
