@@ -280,12 +280,16 @@
     
     //handle dictionaries and arrays the same way
     if ([payload.payload isKindOfClass:[NSDictionary class]] || [payload.payload isKindOfClass:[NSArray class]]) {
-        NSError * err = nil;
-        NSData *encoded = [NSJSONSerialization dataWithJSONObject:payload.payload options:0 error:&err];
+        NSError *err = nil;
+        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:payload.payload options:0 error:&err];
+        // Stringified either as a JSON Object or Array
+        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
 
-        if (encoded) {
-            *output = [ARTPayload payloadWithPayload:encoded encoding:[payload.encoding artAddEncoding:[ARTJsonPayloadEncoder getName]]];
+        if (jsonString) {
+            *output = [ARTPayload payloadWithPayload:jsonString encoding:[payload.encoding artAddEncoding:[ARTJsonPayloadEncoder getName]]];
             return [ARTStatus state:ARTStateOk];
+        } else if (err) {
+            return [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithNSError:err]];
         } else {
             return [ARTStatus state:ARTStateError];
         }
