@@ -49,19 +49,18 @@ extension NSData {
     }
 }
 
-extension SequenceType where Generator.Element == String {
-    var toJSONString: String {
-        guard let data = self as? Array<String> else { return "" }
-        guard let jsonData = try? NSJSONSerialization.dataWithJSONObject(data, options: NSJSONWritingOptions(rawValue: 0)) else { return "" }
-        return NSString(data: jsonData, encoding: NSUTF8StringEncoding) as? String ?? ""
+extension JSON {
+    var asAnyObject: AnyObject? {
+        guard let data = string?.dataUsingEncoding(NSUTF8StringEncoding) else { return nil }
+        return try? NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions(rawValue: 0))
     }
-}
 
-extension CollectionType where Self: DictionaryLiteralConvertible, Self.Key: StringLiteralConvertible, Self.Value: NSObject, Generator.Element == (Self.Key, Self.Value) {
-    var toJSONString: String {
-        guard let data = self as? Dictionary<String,NSObject> else { return "" }
-        guard let jsonData = try? NSJSONSerialization.dataWithJSONObject(data, options: NSJSONWritingOptions(rawValue: 0)) else { return "" }
-        return NSString(data: jsonData, encoding: NSUTF8StringEncoding) as? String ?? ""
+    var asArray: NSArray? {
+        return asAnyObject as? NSArray
+    }
+
+    var asDictionary: NSDictionary? {
+        return asAnyObject as? NSDictionary
     }
 }
 
@@ -372,7 +371,7 @@ class RestChannel: QuickSpec {
                                 if let request = mockExecutor.requests.last, let http = request.HTTPBody {
                                     // Array
                                     let json = JSON(data: http)
-                                    expect(json["data"].string).to(equal(array.toJSONString))
+                                    expect(json["data"].asArray).to(equal(array))
                                     expect(json["encoding"].string).to(equal("json"))
                                 }
                                 else {
@@ -393,7 +392,7 @@ class RestChannel: QuickSpec {
                                 if let request = mockExecutor.requests.last, let http = request.HTTPBody {
                                     // Dictionary
                                     let json = JSON(data: http)
-                                    expect(json["data"].string).to(equal(dictionary.toJSONString))
+                                    expect(json["data"].asDictionary).to(equal(dictionary))
                                     expect(json["encoding"].string).to(equal("json"))
                                 }
                                 else {
