@@ -49,6 +49,22 @@ extension NSData {
     }
 }
 
+extension SequenceType where Generator.Element == String {
+    var toJSONString: String {
+        guard let data = self as? Array<String> else { return "" }
+        guard let jsonData = try? NSJSONSerialization.dataWithJSONObject(data, options: NSJSONWritingOptions(rawValue: 0)) else { return "" }
+        return NSString(data: jsonData, encoding: NSUTF8StringEncoding) as? String ?? ""
+    }
+}
+
+extension CollectionType where Self: DictionaryLiteralConvertible, Self.Key: StringLiteralConvertible, Self.Value: NSObject, Generator.Element == (Self.Key, Self.Value) {
+    var toJSONString: String {
+        guard let data = self as? Dictionary<String,NSObject> else { return "" }
+        guard let jsonData = try? NSJSONSerialization.dataWithJSONObject(data, options: NSJSONWritingOptions(rawValue: 0)) else { return "" }
+        return NSString(data: jsonData, encoding: NSUTF8StringEncoding) as? String ?? ""
+    }
+}
+
 class RestChannel: QuickSpec {
     override func spec() {
         var client: ARTRest!
@@ -344,25 +360,50 @@ class RestChannel: QuickSpec {
                 }
 
                 // RSL4d3
-                it("json payload should be stringified either as a JSON Object or Array") {
-                    client.httpExecutor = mockExecutor
-                    waitUntil(timeout: testTimeout) { done in
-                        channel.publish(array, callback: { error in
-                            expect(error).to(beNil())
+                context("json payload should be stringified either") {
 
-                            if let request = mockExecutor.requests.last, let http = request.HTTPBody {
-                                // Array
-                                let json = JSON(data: http)
-                                // FIXME: "data" : "WyJKb2huIiwiTWFyeSJd"
-                                //expect(json["data"].object as? NSArray).to(equal(array))
-                                expect(json["encoding"].string).to(equal("json/base64")) //FIXME: only "json" ?!
-                            }
-                            else {
-                                XCTFail("No request or HTTP body found")
-                            }
-                            done()
-                        })
+                    it("as a JSON Array") {
+                        client.httpExecutor = mockExecutor
+                        // JSON Array
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(array, callback: { error in
+                                expect(error).to(beNil())
+
+                                if let request = mockExecutor.requests.last, let http = request.HTTPBody {
+                                    // Array
+                                    let json = JSON(data: http)
+                                    expect(json["data"].string).to(equal(array.toJSONString))
+                                    expect(json["encoding"].string).to(equal("json"))
+                                }
+                                else {
+                                    XCTFail("No request or HTTP body found")
+                                }
+                                done()
+                            })
+                        }
                     }
+
+                    it("as a JSON Object") {
+                        client.httpExecutor = mockExecutor
+                        // JSON Object
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(dictionary, callback: { error in
+                                expect(error).to(beNil())
+
+                                if let request = mockExecutor.requests.last, let http = request.HTTPBody {
+                                    // Dictionary
+                                    let json = JSON(data: http)
+                                    expect(json["data"].string).to(equal(dictionary.toJSONString))
+                                    expect(json["encoding"].string).to(equal("json"))
+                                }
+                                else {
+                                    XCTFail("No request or HTTP body found")
+                                }
+                                done()
+                            })
+                        }
+                    }
+
                 }
 
                 // RSL4d4
