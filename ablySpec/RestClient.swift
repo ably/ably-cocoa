@@ -236,32 +236,19 @@ class RestClient: QuickSpec {
 
             // RSC9
             it("should use Auth to manage authentication") {
-                let options = AblyTests.commonAppSetup()
-                let client = ARTRest(options: options)
-                let auth = client.auth
-
-                expect(auth.method.rawValue).to(equal(ARTAuthMethod.Basic.rawValue))
+                let options = AblyTests.clientOptions()
+                options.tokenDetails = getTestTokenDetails()
 
                 waitUntil(timeout: testTimeout) { done in
-                    auth.requestToken(nil, withOptions: options, callback: { tokenDetailsA, errorA in
-                        if let e = errorA {
+                    ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
+                        if let e = error {
                             XCTFail(e.description)
                             done()
                         }
-                        else if let currentTokenDetails = tokenDetailsA {
-                            auth.tokenDetails = currentTokenDetails
-                        }
-
-                        auth.authorise(nil, options: options, callback: { tokenDetailsB, errorB in
-                            if let e = errorB {
-                                XCTFail(e.description)
-                                done()
-                            }
-                            // Use the same token because it is valid
-                            expect(auth.tokenDetails?.token).to(equal(tokenDetailsB?.token))
-                            done()
-                        })
-                    })
+                        // Use the same token because it is valid
+                        expect(tokenDetails?.token).to(equal(options.tokenDetails?.token))
+                        done()
+                    }
                 }
             }
 
