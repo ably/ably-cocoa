@@ -115,12 +115,10 @@
                 ARTPayload * decodedEncoded = nil;
                 [e decode:jsonOut output:&decodedEncoded];
                 if([decOutput.payload isKindOfClass:[NSDictionary class]]) {
-                    NSDictionary * dictionary = [NSJSONSerialization JSONObjectWithData:decodedEncoded.payload options:0 error:nil];
-                    XCTAssertEqualObjects(dictionary, decOutput.payload);
+                    XCTAssertEqualObjects(decodedEncoded.payload, decOutput.payload);
                 }
                 else if([decOutput.payload isKindOfClass:[NSArray class]]) {
-                    NSArray * array = [NSJSONSerialization JSONObjectWithData:decodedEncoded.payload options:0 error:nil];
-                    XCTAssertEqualObjects(array, decOutput.payload);
+                    XCTAssertEqualObjects(decodedEncoded.payload, decOutput.payload);
                 }
             }
             else {
