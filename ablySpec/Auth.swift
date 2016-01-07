@@ -719,41 +719,26 @@ class Auth : QuickSpec {
 
                 // FIXME: buffer of 15s for token expiry
 
-                var expiredToken: String?
-
                 // No token exists
                 expect(rest.auth.tokenDetails?.token).to(beNil())
 
-                // Created token
                 waitUntil(timeout: testTimeout) { done in
+                    // Create token
                     rest.auth.authorise(tokenParams, options: nil) { tokenDetails, error in
                         expect(error).to(beNil())
                         expect(tokenDetails).toNot(beNil())
                         expect(tokenDetails?.token).toNot(beEmpty())
 
-                        if let token = tokenDetails?.token {
-                            // Delay for token expiration
-                            delay(tokenParams.ttl) {
-                                expiredToken = token
+                        let expiredToken = tokenDetails?.token
+                        // New token
+                        delay(tokenParams.ttl + 1.0) {
+                            rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                                expect(error).to(beNil())
+                                expect(tokenDetails).toNot(beNil())
+                                expect(tokenDetails?.token).toNot(equal(expiredToken))
                                 done()
                             }
                         }
-                        else {
-                            done()
-                        }
-                    }
-                }
-
-                // Token exists
-                expect(rest.auth.tokenDetails?.token).toNot(beNil())
-
-                // New token
-                waitUntil(timeout: testTimeout) { done in
-                    rest.auth.authorise(nil, options: nil) { tokenDetails, error in
-                        expect(error).to(beNil())
-                        expect(tokenDetails).toNot(beNil())
-                        expect(tokenDetails?.token).toNot(equal(expiredToken))
-                        done()
                     }
                 }
             }
