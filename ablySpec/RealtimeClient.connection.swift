@@ -360,6 +360,39 @@ class RealtimeClientConnection: QuickSpec {
                 }
             }
 
+            // RTN6
+            it("should have an opened websocket connection and received a CONNECTED ProtocolMessage") {
+                let options = AblyTests.commonAppSetup()
+                options.autoConnect = false
+                let client = ARTRealtime(options: options)
+                client.setTransportClass(MockTransport.self)
+                client.connect()
+
+                waitUntil(timeout: testTimeout) { done in
+                    client.eventEmitter.on({ state, error in
+                        expect(error).to(beNil())
+                        if state == .Connected && error == nil {
+                            done()
+                        }
+                    })
+                }
+
+                if let webSocketTransport = client.transport as? ARTWebSocketTransport {
+                    expect(webSocketTransport.isConnected).to(beTrue())
+                }
+                else {
+                    XCTFail("WebSocket is not the default transport")
+                }
+
+                if let transport = client.transport as? MockTransport {
+                    // CONNECTED ProtocolMessage
+                    expect(transport.connectedMessage).toNot(beNil())
+                }
+                else {
+                    XCTFail("MockTransport is not working")
+                }
+            }
+
             // RTN8
             context("connection#id") {
 

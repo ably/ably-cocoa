@@ -25,7 +25,11 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (readwrite, weak, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
 
+@property (readonly, getter=getIsConnected) BOOL isConnected;
+
 - (NSURL *)setupWebSocket:(__GENERIC(NSArray, NSURLQueryItem *) *)params withOptions:(ARTClientOptions *)options;
+
+- (BOOL)getIsConnected;
 
 @end
 

@@ -1,7 +1,7 @@
 platform :ios, '8.0'
 use_frameworks!
 
-pod 'SwiftWebSocket', '2.4.0'
+pod 'SwiftWebSocket', '2.4.1'
 
 target 'ablySpec' do
     pod 'Quick', '0.8.0'
