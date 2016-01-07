@@ -258,8 +258,8 @@ class RestChannel: QuickSpec {
                     TestCase(value: text, expected: JSON(["data": text])),
                     TestCase(value: integer, expected: JSON(["data": integer])),
                     TestCase(value: decimal, expected: JSON(["data": decimal])),
-                    TestCase(value: dictionary, expected: JSON(["data": (dictionary as NSDictionary).toBase64, "encoding": "json/base64"])),
-                    TestCase(value: array, expected: JSON(["data": (array as NSArray).toBase64, "encoding": "json/base64"])),
+                    TestCase(value: dictionary, expected: JSON(["data": dictionary, "encoding": "json"])),
+                    TestCase(value: array, expected: JSON(["data": array, "encoding": "json"])),
                     TestCase(value: data, expected: JSON(["data": data.toBase64, "encoding": "base64"])),
                 ]
 
@@ -272,7 +272,7 @@ class RestChannel: QuickSpec {
 
                             if let request = mockExecutor.requests.last,
                                 let http = request.HTTPBody {
-                                    expect(caseTest.expected.rawValue as? NSDictionary).to(equal(JSON(data: http).rawValue as? NSDictionary))
+                                    expect(caseTest.expected).to(equal(JSON(data: http)))
                             }
                             done()
                         })
