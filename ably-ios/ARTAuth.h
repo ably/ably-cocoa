@@ -30,7 +30,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) ARTLog *logger;
 
 @property (art_nullable, readonly, getter=getClientId) NSString *clientId;
-@property (art_nullable, nonatomic, readwrite, strong) ARTAuthTokenDetails *tokenDetails;
+@property (art_nullable, nonatomic, readonly, strong) ARTAuthTokenDetails *tokenDetails;
 
 // FIXME: review (Why rest?)
 - (instancetype)init:(ARTRest *)rest withOptions:(ARTClientOptions *)options;
