@@ -13,6 +13,15 @@ import Aspects
 import ably
 import ably.Private
 
+public func beCloseTo<T: NSDate>(expectedValue: NSDate?) -> MatcherFunc<T?> {
+    return MatcherFunc { actualExpression, failureMessage in
+        failureMessage.postfixMessage = "equal <\(expectedValue)>"
+        guard let actualValue = try actualExpression.evaluate() as? NSDate else { return false }
+        guard let expectedValue = expectedValue else { return false }
+        return abs(actualValue.timeIntervalSince1970 - expectedValue.timeIntervalSince1970) < 0.5
+    }
+}
+
 class Auth : QuickSpec {
     override func spec() {
         
@@ -818,40 +827,42 @@ class Auth : QuickSpec {
                 }
             }
 
+            struct ExpectedTokenParams {
+                static let clientId = "client_from_params"
+                static let ttl = 5.0
+                static let capability = "{\"cansubscribe:*\":[\"subscribe\"]}"
+            }
+
             // RSA10g
             it("should store the AuthOptions and TokenParams arguments as defaults for subsequent authorisations") {
                 let options = AblyTests.commonAppSetup()
                 let rest = ARTRest(options: options)
-                rest.httpExecutor = mockExecutor
 
                 let authOptions = ARTAuthOptions()
                 authOptions.force = true
-                let tokenParams = ARTAuthTokenParams()
-                tokenParams.clientId = "client_string"
 
-                var lastToken: String? = nil
+                let tokenParams = ARTAuthTokenParams()
+                tokenParams.clientId = ExpectedTokenParams.clientId
+                tokenParams.ttl = ExpectedTokenParams.ttl
+                tokenParams.capability = ExpectedTokenParams.capability
+
                 waitUntil(timeout: testTimeout) { done in
                     rest.auth.authorise(tokenParams, options: authOptions) { tokenDetails, error in
                         expect(error).to(beNil())
                         expectTokenDetails(tokenDetails)
                         expect(tokenDetails?.clientId).to(equal(tokenParams.clientId))
-                        lastToken = tokenDetails?.token
-                        done()
-                    }
-                }
 
-                if lastToken?.isEmpty ?? true {
-                    XCTFail("Token is nil or empty")
-                    return
-                }
+                        let lastToken = tokenDetails?.token
 
-                waitUntil(timeout: testTimeout) { done in
-                    rest.auth.authorise(nil, options: nil) { tokenDetails, error in
-                        expect(error).to(beNil())
-                        expectTokenDetails(tokenDetails)
-                        expect(tokenDetails?.clientId).to(equal(tokenParams.clientId))
-                        expect(tokenDetails?.token).toNot(equal(lastToken))
-                        done()
+                        rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            expectTokenDetails(tokenDetails)
+                            expect(tokenDetails?.clientId).to(equal(ExpectedTokenParams.clientId))
+                            expect(tokenDetails?.issued?.dateByAddingTimeInterval(ExpectedTokenParams.ttl)).to(beCloseTo(tokenDetails?.expires))
+                            expect(tokenDetails?.capability).to(equal(ExpectedTokenParams.capability))
+                            expect(tokenDetails?.token).toNot(equal(lastToken))
+                            done()
+                        }
                     }
                 }
             }
