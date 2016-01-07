@@ -50,17 +50,12 @@ extension NSData {
 }
 
 extension JSON {
-    var asAnyObject: AnyObject? {
-        guard let data = string?.dataUsingEncoding(NSUTF8StringEncoding) else { return nil }
-        return try? NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions(rawValue: 0))
-    }
-
     var asArray: NSArray? {
-        return asAnyObject as? NSArray
+        return object as? NSArray
     }
 
     var asDictionary: NSDictionary? {
-        return asAnyObject as? NSDictionary
+        return object as? NSDictionary
     }
 }
 
