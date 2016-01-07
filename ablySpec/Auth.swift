@@ -653,7 +653,7 @@ class Auth : QuickSpec {
         }
 
         // RSA9
-        describe("createRequestToken") {
+        describe("createTokenRequest") {
 
             // RSA9a
             it("should create and sign a TokenRequest") {
