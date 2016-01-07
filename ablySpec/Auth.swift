@@ -746,39 +746,23 @@ class Auth : QuickSpec {
             // RSA10d
             it("should issue a new token even if an existing token exists when AuthOption.force is true") {
                 let rest = ARTRest(options: AblyTests.commonAppSetup())
-                var validToken: String?
 
-                waitUntil(timeout: testTimeout) { done in
-                    rest.auth.authorise(nil, options: nil) { tokenDetails, error in
-                        expect(error).to(beNil())
-                        expect(tokenDetails?.token).toNot(beEmpty())
-                        if let token = tokenDetails?.token {
-                            validToken = token
-                        }
-                        done()
-                    }
-                }
-
-                guard let currentToken = validToken else { return }
+                let authOptions = ARTAuthOptions()
+                authOptions.force = true
 
                 // Current token
                 waitUntil(timeout: testTimeout) { done in
                     rest.auth.authorise(nil, options: nil) { tokenDetails, error in
                         expect(error).to(beNil())
-                        expect(tokenDetails?.token).to(equal(currentToken))
-                        done()
-                    }
-                }
+                        expect(tokenDetails?.token).toNot(beNil())
 
-                let authOptions = ARTAuthOptions()
-                authOptions.force = true
+                        let currentToken = tokenDetails?.token
 
-                // Force new token
-                waitUntil(timeout: testTimeout) { done in
-                    rest.auth.authorise(nil, options: authOptions) { tokenDetails, error in
-                        expect(error).to(beNil())
-                        expect(tokenDetails?.token).toNot(equal(currentToken))
-                        done()
+                        rest.auth.authorise(nil, options: authOptions) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            expect(currentToken).toNot(equal(tokenDetails?.token))
+                            done()
+                        }
                     }
                 }
             }
