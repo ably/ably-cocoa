@@ -293,8 +293,8 @@ class RestChannel: QuickSpec {
             it("encoding attribute should represent the encoding(s) applied in right to left") {
                 let encodingCases = [
                     TestCase(value: text, expected: nil),
-                    TestCase(value: dictionary, expected: "json/base64"),
-                    TestCase(value: array, expected: "json/base64"),
+                    TestCase(value: dictionary, expected: "json"),
+                    TestCase(value: array, expected: "json"),
                     TestCase(value: data, expected: "base64"),
                 ]
 
