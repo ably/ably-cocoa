@@ -262,19 +262,11 @@ class RestClient: QuickSpec {
                 tokenParams.ttl = 3.0 //Seconds
 
                 waitUntil(timeout: testTimeout) { done in
-                    auth.requestToken(tokenParams, withOptions: options) { tokenDetailsA, errorA in
-                        if let e = errorA {
-                            XCTFail(e.description)
-                            done()
-                        }
-                        else if let currentTokenDetails = tokenDetailsA {
-                            auth.tokenDetails = currentTokenDetails
-                        }
-
+                    auth.authorise(tokenParams, options: nil) { tokenDetailsA, _ in
                         // Delay for token expiration
                         delay(tokenParams.ttl + 1.0) {
-                            auth.authorise(tokenParams, options: options) { tokenDetailsB, errorB in
-                                if let e = errorB {
+                            auth.authorise(nil, options: nil) { tokenDetailsB, error in
+                                if let e = error {
                                     XCTFail(e.description)
                                     done()
                                 }
