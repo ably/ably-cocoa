@@ -277,24 +277,11 @@
 
 - (ARTStatus *)encode:(ARTPayload *)payload output:(ARTPayload *__autoreleasing *)output {
     *output = payload;
-    
-    //handle dictionaries and arrays the same way
+    // Handle dictionaries and arrays the same way
     if ([payload.payload isKindOfClass:[NSDictionary class]] || [payload.payload isKindOfClass:[NSArray class]]) {
-        NSError *err = nil;
-        NSData *jsonData = [NSJSONSerialization dataWithJSONObject:payload.payload options:0 error:&err];
-        // Stringified either as a JSON Object or Array
-        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-
-        if (jsonString) {
-            *output = [ARTPayload payloadWithPayload:jsonString encoding:[payload.encoding artAddEncoding:[ARTJsonPayloadEncoder getName]]];
-            return [ARTStatus state:ARTStateOk];
-        } else if (err) {
-            return [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithNSError:err]];
-        } else {
-            return [ARTStatus state:ARTStateError];
-        }
+        *output = [ARTPayload payloadWithPayload:payload.payload encoding:[payload.encoding artAddEncoding:[ARTJsonPayloadEncoder getName]]];
     }
-    // otherwise do nothing besides confirm payload is nsdata or nsstring
+    // Otherwise do nothing besides confirm payload is NSData or NSString
     else if(payload && !([payload.payload isKindOfClass:[NSData class]] || [payload.payload isKindOfClass:[NSString class]])) {
         [NSException raise:@"ARTPayload must be either NSDictionary, NSArray, NSData or NSString" format:@"%@", [payload.payload class]];
     }
