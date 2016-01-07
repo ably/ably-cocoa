@@ -902,19 +902,18 @@ class Auth : QuickSpec {
                     options.clientId = "client_string"
                     let rest = ARTRest(options: options)
 
-                    let expectedClientId = "client_from_params"
-                    let expectedCapability = "{\"cansubscribe:*\":[\"subscribe\"]}"
-
                     let tokenParams = ARTAuthTokenParams()
-                    tokenParams.clientId = expectedClientId
-                    tokenParams.capability = expectedCapability
+                    tokenParams.clientId = ExpectedTokenParams.clientId
+                    tokenParams.ttl = ExpectedTokenParams.ttl
+                    tokenParams.capability = ExpectedTokenParams.capability
 
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.authorise(tokenParams, options: nil) { tokenDetails, error in
                             expect(error).to(beNil())
                             expectTokenDetails(tokenDetails)
-                            expect(tokenDetails?.clientId).to(equal(expectedClientId))
-                            expect(tokenDetails?.capability).to(equal(expectedCapability))
+                            expect(tokenDetails?.clientId).to(equal(ExpectedTokenParams.clientId))
+                            expect(tokenDetails?.issued?.dateByAddingTimeInterval(ExpectedTokenParams.ttl)).to(beCloseTo(tokenDetails?.expires))
+                            expect(tokenDetails?.capability).to(equal(ExpectedTokenParams.capability))
                             done()
                         }
                     }
