@@ -88,12 +88,12 @@
 
 - (void)storeOptions:(ARTAuthOptions *)customOptions {
     self.options.key = customOptions.key;
-    self.options.tokenDetails = customOptions.tokenDetails;
-    self.options.authCallback = customOptions.authCallback;
-    self.options.authUrl = customOptions.authUrl;
-    self.options.authHeaders = customOptions.authHeaders;
+    self.options.tokenDetails = [customOptions.tokenDetails copy];
+    self.options.authCallback = [customOptions.authCallback copy];
+    self.options.authUrl = [customOptions.authUrl copy];
+    self.options.authHeaders = [customOptions.authHeaders copy];
     self.options.authMethod = customOptions.authMethod;
-    self.options.authParams = customOptions.authParams;
+    self.options.authParams = [customOptions.authParams copy];
     self.options.useTokenAuth = customOptions.useTokenAuth;
     self.options.queryTime = customOptions.queryTime;
 }
