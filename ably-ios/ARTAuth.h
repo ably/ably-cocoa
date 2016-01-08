@@ -50,7 +50,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)requestToken:(art_nullable ARTAuthTokenParams *)tokenParams withOptions:(art_nullable ARTAuthOptions *)authOptions
             callback:(ARTTokenCallback)callback;
 
-- (void)authorise:(art_nullable ARTAuthTokenParams *)tokenParams options:(art_nullable ARTAuthOptions *)options callback:(ARTTokenCallback)callback;
+- (void)authorise:(art_nullable ARTAuthTokenParams *)tokenParams options:(art_nullable ARTAuthOptions *)authOptions callback:(ARTTokenCallback)callback;
 
 - (void)createTokenRequest:(art_nullable ARTAuthTokenParams *)tokenParams options:(art_nullable ARTAuthOptions *)options
                   callback:(void (^)(ARTAuthTokenRequest *__art_nullable tokenRequest, NSError *__art_nullable error))callback;
