@@ -202,11 +202,12 @@
     }];
 }
 
-- (void)authorise:(ARTAuthTokenParams *)tokenParams options:(ARTAuthOptions *)options force:(BOOL)force callback:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
+- (void)authorise:(ARTAuthTokenParams *)tokenParams options:(ARTAuthOptions *)options callback:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
     BOOL requestNewToken = NO;
+    BOOL useTheForce = options ? options.force : false;
 
     // Reuse or not reuse the current token
-    if (!force && self.tokenDetails) {
+    if (useTheForce == NO && self.tokenDetails) {
         if (self.tokenDetails.expires == nil) {
             [self.logger verbose:@"ARTAuth: reuse current token."];
             requestNewToken = NO;
@@ -221,7 +222,7 @@
         }
     }
     else {
-        if (force)
+        if (useTheForce == YES)
             [self.logger verbose:@"ARTAuth: forced requesting new token."];
         else
             [self.logger verbose:@"ARTAuth: requesting new token."];

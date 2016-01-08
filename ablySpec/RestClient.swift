@@ -252,7 +252,7 @@ class RestClient: QuickSpec {
                             auth.setTokenDetails(currentTokenDetails)
                         }
 
-                        auth.authorise(nil, options: options, force: false, callback: { tokenDetailsB, errorB in
+                        auth.authorise(nil, options: options, callback: { tokenDetailsB, errorB in
                             if let e = errorB {
                                 XCTFail(e.description)
                                 done()
@@ -286,7 +286,7 @@ class RestClient: QuickSpec {
 
                         // Delay for token expiration
                         delay(tokenParams.ttl + 1.0) {
-                            auth.authorise(tokenParams, options: options, force: false) { tokenDetailsB, errorB in
+                            auth.authorise(tokenParams, options: options) { tokenDetailsB, errorB in
                                 if let e = errorB {
                                     XCTFail(e.description)
                                     done()
