@@ -254,7 +254,7 @@
     }
 
     if (requestNewToken) {
-        [self requestToken:tokenParams withOptions:mergedOptions callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
+        [self requestToken:currentTokenParams withOptions:mergedOptions callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
             if (error) {
                 if (callback) {
                     callback(nil, error);
