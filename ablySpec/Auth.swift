@@ -1106,6 +1106,64 @@ class Auth : QuickSpec {
                 }
                 
             }
+
+            // RSA10j
+            it("should supersede any configured params and options when TokenParams and AuthOptions were provided") {
+                let options = AblyTests.commonAppSetup()
+                options.clientId = "client_string"
+                let rest = ARTRest(options: options)
+
+                let tokenParams = ARTAuthTokenParams()
+                let defaultTtl = tokenParams.ttl
+                let defaultCapability = tokenParams.capability
+
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                        expect(error).to(beNil())
+                        guard let tokenDetails = tokenDetails else {
+                            XCTFail("TokenDetails is nil"); done(); return
+                        }
+                        expect(tokenDetails.clientId).to(equal(options.clientId))
+                        expect(tokenDetails.issued?.dateByAddingTimeInterval(defaultTtl)).to(beCloseTo(tokenDetails.expires))
+                        expect(tokenDetails.capability).to(equal(defaultCapability))
+                        done()
+                    }
+                }
+
+                tokenParams.ttl = ExpectedTokenParams.ttl
+                tokenParams.capability = ExpectedTokenParams.capability
+                tokenParams.clientId = nil
+
+                let authOptions = ARTAuthOptions()
+                authOptions.force = true
+                authOptions.queryTime = true
+
+                var serverDate = NSDate()
+                waitUntil(timeout: testTimeout) { done in
+                    rest.time { date, error in
+                        expect(error).to(beNil())
+                        guard let date = date else {
+                            XCTFail("No server time"); done(); return
+                        }
+                        serverDate = date
+                        done()
+                    }
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.authorise(tokenParams, options: authOptions) { tokenDetails, error in
+                        expect(error).to(beNil())
+                        guard let tokenDetails = tokenDetails else {
+                            XCTFail("TokenDetails is nil"); done(); return
+                        }
+                        expect(tokenDetails.clientId).to(beNil())
+                        expect(tokenDetails.issued).to(beCloseTo(serverDate, within: 1.0)) //1 Second
+                        expect(tokenDetails.issued?.dateByAddingTimeInterval(ExpectedTokenParams.ttl)).to(beCloseTo(tokenDetails.expires))
+                        expect(tokenDetails.capability).to(equal(ExpectedTokenParams.capability))
+                        done()
+                    }
+                }
+            }
         }
     }
 }
