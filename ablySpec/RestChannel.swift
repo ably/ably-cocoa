@@ -244,7 +244,7 @@ class RestChannel: QuickSpec {
             let decimal = "65.33"
             let dictionary = ["number":3, "name":"John"]
             let array = ["John", "Mary"]
-            let data = NSString(string: "123456").dataUsingEncoding(NSUTF8StringEncoding)!
+            let binaryData = NSString(string: "123456").dataUsingEncoding(NSUTF8StringEncoding)!
 
             // RSL4a
             it("payloads should be binary, strings, or objects capable of JSON representation") {
@@ -255,7 +255,7 @@ class RestChannel: QuickSpec {
                     TestCase(value: decimal, expected: JSON(["data": decimal])),
                     TestCase(value: dictionary, expected: JSON(["data": dictionary, "encoding": "json"])),
                     TestCase(value: array, expected: JSON(["data": array, "encoding": "json"])),
-                    TestCase(value: data, expected: JSON(["data": data.toBase64, "encoding": "base64"])),
+                    TestCase(value: binaryData, expected: JSON(["data": binaryData.toBase64, "encoding": "base64"])),
                 ]
 
                 client.httpExecutor = mockExecutor
@@ -290,7 +290,7 @@ class RestChannel: QuickSpec {
                     TestCase(value: text, expected: nil),
                     TestCase(value: dictionary, expected: "json"),
                     TestCase(value: array, expected: "json"),
-                    TestCase(value: data, expected: "base64"),
+                    TestCase(value: binaryData, expected: "base64"),
                 ]
 
                 client.httpExecutor = mockExecutor
@@ -315,13 +315,13 @@ class RestChannel: QuickSpec {
                 it("binary payload should be encoded as Base64 and represented as a JSON string") {
                     client.httpExecutor = mockExecutor
                     waitUntil(timeout: testTimeout) { done in
-                        channel.publish(data, callback: { error in
+                        channel.publish(binaryData, callback: { error in
                             expect(error).to(beNil())
 
                             if let request = mockExecutor.requests.last, let http = request.HTTPBody {
                                 // Binary
                                 let json = JSON(data: http)
-                                expect(json["data"].string).to(equal(data.toBase64))
+                                expect(json["data"].string).to(equal(binaryData.toBase64))
                                 expect(json["encoding"]).to(equal("base64"))
                             }
                             else {
@@ -402,7 +402,7 @@ class RestChannel: QuickSpec {
 
                 // RSL4d4
                 it("messages received should be decoded based on the encoding field") {
-                    let cases = [text, integer, decimal, dictionary, array, data]
+                    let cases = [text, integer, decimal, dictionary, array, binaryData]
 
                     cases.forEach { caseTest in
                         waitUntil(timeout: testTimeout) { done in
