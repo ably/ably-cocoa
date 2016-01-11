@@ -292,7 +292,7 @@
     }
     // Otherwise do nothing besides confirm payload is NSData or NSString
     else if(payload && !([payload.payload isKindOfClass:[NSData class]] || [payload.payload isKindOfClass:[NSString class]])) {
-        [NSException raise:@"ARTPayload must be either NSDictionary, NSArray, NSData or NSString" format:@"%@", [payload.payload class]];
+        @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"Must be either NSDictionary, NSArray, NSData or NSString" userInfo:nil];
     }
     return [ARTStatus state:ARTStateOk];
 }
