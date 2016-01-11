@@ -278,7 +278,7 @@ class RestChannel: QuickSpec {
 
                 invalidCases.forEach { caseItem in
                     waitUntil(timeout: testTimeout) { done in
-                        expect { channel.publish(caseItem, callback: nil) }.to(raiseException())
+                        expect { channel.publish(caseItem, callback: nil) }.to(raiseException(named: NSInvalidArgumentException))
                         done()
                     }
                 }
