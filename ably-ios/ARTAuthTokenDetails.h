@@ -14,7 +14,7 @@ ART_ASSUME_NONNULL_BEGIN
 /**
  Type containing the token request response.
  */
-@interface ARTAuthTokenDetails : NSObject
+@interface ARTAuthTokenDetails : NSObject<NSCopying>
 
 /**
  Token string.

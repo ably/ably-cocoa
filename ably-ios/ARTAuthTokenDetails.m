@@ -33,4 +33,14 @@
             self.token, self.clientId, self.issued, self.expires];
 }
 
+- (id)copyWithZone:(NSZone *)zone {
+    ARTAuthTokenDetails *tokenDetails = [[[self class] allocWithZone:zone] init];
+    tokenDetails->_token = self.token;
+    tokenDetails->_expires = self.expires;
+    tokenDetails->_issued = self.issued;
+    tokenDetails->_capability = self.capability;
+    tokenDetails->_clientId = self.clientId;
+    return tokenDetails;
+}
+
 @end
