@@ -39,10 +39,10 @@ class RealtimeClientConnection: QuickSpec {
                     options.autoConnect = false
 
                     let client = ARTRealtime(options: options)
-                    client.setTransportClass(MockTransport.self)
+                    client.setTransportClass(TestProxyTransport.self)
                     client.connect()
 
-                    if let transport = client.transport as? MockTransport, let url = transport.lastUrl {
+                    if let transport = client.transport as? TestProxyTransport, let url = transport.lastUrl {
                         expect(url.host).to(equal("realtime.ably.io"))
                     }
                     else {
@@ -56,7 +56,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.autoConnect = false
 
                     let client = ARTRealtime(options: options)
-                    client.setTransportClass(MockTransport.self)
+                    client.setTransportClass(TestProxyTransport.self)
                     client.connect()
 
                     waitUntil(timeout: testTimeout) { done in
@@ -66,7 +66,7 @@ class RealtimeClientConnection: QuickSpec {
                                 AblyTests.checkError(errorInfo, withAlternative: "Failed state")
                                 done()
                             case .Connected:
-                                if let transport = client.transport as? MockTransport, let query = transport.lastUrl?.query {
+                                if let transport = client.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
                                     expect(query).to(haveParam("key", withValue: options.key ?? ""))
                                     expect(query).to(haveParam("echo", withValue: "true"))
                                     expect(query).to(haveParam("format", withValue: "json"))
@@ -91,7 +91,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.echoMessages = false
 
                     let client = ARTRealtime(options: options)
-                    client.setTransportClass(MockTransport.self)
+                    client.setTransportClass(TestProxyTransport.self)
                     client.connect()
 
                     waitUntil(timeout: testTimeout) { done in
@@ -101,7 +101,7 @@ class RealtimeClientConnection: QuickSpec {
                                 AblyTests.checkError(errorInfo, withAlternative: "Failed state")
                                 done()
                             case .Connected:
-                                if let transport = client.transport as? MockTransport, let query = transport.lastUrl?.query {
+                                if let transport = client.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
                                     expect(query).to(haveParam("accessToken", withValue: client.auth().tokenDetails?.token ?? ""))
                                     expect(query).to(haveParam("echo", withValue: "false"))
                                     expect(query).to(haveParam("format", withValue: "json"))
@@ -365,7 +365,7 @@ class RealtimeClientConnection: QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 options.autoConnect = false
                 let client = ARTRealtime(options: options)
-                client.setTransportClass(MockTransport.self)
+                client.setTransportClass(TestProxyTransport.self)
                 client.connect()
 
                 waitUntil(timeout: testTimeout) { done in
@@ -384,9 +384,9 @@ class RealtimeClientConnection: QuickSpec {
                     XCTFail("WebSocket is not the default transport")
                 }
 
-                if let transport = client.transport as? MockTransport {
+                if let transport = client.transport as? TestProxyTransport {
                     // CONNECTED ProtocolMessage
-                    expect(transport.connectedMessage).toNot(beNil())
+                    expect(transport.protocolMessagesReceived.map{ $0.action }).to(contain(ARTProtocolMessageAction.Connected))
                 }
                 else {
                     XCTFail("MockTransport is not working")

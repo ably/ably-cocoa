@@ -143,10 +143,10 @@ class Auth : QuickSpec {
                     options.autoConnect = false
 
                     let client = ARTRealtime(options: options)
-                    client.setTransportClass(MockTransport.self)
+                    client.setTransportClass(TestProxyTransport.self)
                     client.connect()
 
-                    if let transport = client.transport as? MockTransport, let query = transport.lastUrl?.query {
+                    if let transport = client.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
                         expect(query).to(haveParam("accessToken", withValue: client.auth().tokenDetails?.token ?? ""))
                     }
                     else {
@@ -234,7 +234,7 @@ class Auth : QuickSpec {
                         defer {
                             client.close()
                         }
-                        client.setTransportClass(MockTransport.self)
+                        client.setTransportClass(TestProxyTransport.self)
                         client.connect()
 
                         waitUntil(timeout: testTimeout) { done in
@@ -249,13 +249,13 @@ class Auth : QuickSpec {
                             })
                         }
 
-                        if let transport = client.transport as? MockTransport, let connectionDetails = transport.connectedMessage?.connectionDetails {
-                            // CONNECTED ProtocolMessage
-                            expect(connectionDetails.clientId).to(equal(expectedClientId))
+                        let transport = client.transport as! TestProxyTransport
+                        guard let connectedMessage = transport.protocolMessagesReceived.filter({ $0.action == .Connected }).last else {
+                            XCTFail("No CONNECTED protocol action received"); return
                         }
-                        else {
-                            XCTFail("MockTransport is not working")
-                        }
+
+                        // CONNECTED ProtocolMessage
+                        expect(connectedMessage.connectionDetails.clientId).to(equal(expectedClientId))
                     }
 
                     it("with wildcard") {
