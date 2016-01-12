@@ -277,20 +277,11 @@
 
 - (ARTStatus *)encode:(ARTPayload *)payload output:(ARTPayload *__autoreleasing *)output {
     *output = payload;
-    
-    //handle dictionaries and arrays the same way
+    // Handle dictionaries and arrays the same way
     if ([payload.payload isKindOfClass:[NSDictionary class]] || [payload.payload isKindOfClass:[NSArray class]]) {
-        NSError * err = nil;
-        NSData *encoded = [NSJSONSerialization dataWithJSONObject:payload.payload options:0 error:&err];
-
-        if (encoded) {
-            *output = [ARTPayload payloadWithPayload:encoded encoding:[payload.encoding artAddEncoding:[ARTJsonPayloadEncoder getName]]];
-            return [ARTStatus state:ARTStateOk];
-        } else {
-            return [ARTStatus state:ARTStateError];
-        }
+        *output = [ARTPayload payloadWithPayload:payload.payload encoding:[payload.encoding artAddEncoding:[ARTJsonPayloadEncoder getName]]];
     }
-    // otherwise do nothing besides confirm payload is nsdata or nsstring
+    // Otherwise do nothing besides confirm payload is NSData or NSString
     else if(payload && !([payload.payload isKindOfClass:[NSData class]] || [payload.payload isKindOfClass:[NSString class]])) {
         [NSException raise:@"ARTPayload must be either NSDictionary, NSArray, NSData or NSString" format:@"%@", [payload.payload class]];
     }
@@ -301,9 +292,18 @@
     *output = payload;
     if ([[payload.encoding artLastEncoding] isEqualToString:[ARTJsonPayloadEncoder getName]]) {
         id decoded = nil;
+
         if ([payload.payload isKindOfClass:[NSString class]]) {
-            NSData * d = [payload.payload dataUsingEncoding:NSUTF8StringEncoding];
+            NSData *d = [payload.payload dataUsingEncoding:NSUTF8StringEncoding];
             decoded = [NSJSONSerialization JSONObjectWithData:d options:0 error:nil];
+
+            if (decoded) {
+                *output = [ARTPayload payloadWithPayload:decoded encoding:[payload.encoding artRemoveLastEncoding]];
+                return [ARTStatus state:ARTStateOk];
+            }
+        }
+        else if ([payload.payload isKindOfClass:[NSData class]]) {
+            decoded = [NSJSONSerialization JSONObjectWithData:(NSData *)payload.payload options:0 error:nil];
 
             if (decoded) {
                 *output = [ARTPayload payloadWithPayload:decoded encoding:[payload.encoding artRemoveLastEncoding]];
