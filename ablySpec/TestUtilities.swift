@@ -328,7 +328,7 @@ class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
 /*
  Records each message for test purpose.
 */
-class MockTransport: ARTWebSocketTransport {
+class TestProxyTransport: ARTWebSocketTransport {
 
     var lastUrl: NSURL?
     var lastSentMessage: ARTProtocolMessage?
