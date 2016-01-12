@@ -386,7 +386,7 @@ class RealtimeClientConnection: QuickSpec {
 
                 if let transport = client.transport as? TestProxyTransport {
                     // CONNECTED ProtocolMessage
-                    expect(transport.connectedMessage).toNot(beNil())
+                    expect(transport.protocolMessagesReceived.map{ $0.action }).to(contain(ARTProtocolMessageAction.Connected))
                 }
                 else {
                     XCTFail("MockTransport is not working")

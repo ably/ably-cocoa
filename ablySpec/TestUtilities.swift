@@ -331,8 +331,9 @@ class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
 class TestProxyTransport: ARTWebSocketTransport {
 
     var lastUrl: NSURL?
-    var lastSentMessage: ARTProtocolMessage?
-    var connectedMessage: ARTProtocolMessage?
+
+    private(set) var protocolMessagesSent = [ARTProtocolMessage]()
+    private(set) var protocolMessagesReceived = [ARTProtocolMessage]()
 
     override func setupWebSocket(params: [NSURLQueryItem], withOptions options: ARTClientOptions) -> NSURL {
         let url = super.setupWebSocket(params, withOptions: options)
@@ -341,14 +342,12 @@ class TestProxyTransport: ARTWebSocketTransport {
     }
 
     override func send(msg: ARTProtocolMessage) {
-        lastSentMessage = msg
+        protocolMessagesSent.append(msg)
         super.send(msg)
     }
 
     override func receive(msg: ARTProtocolMessage) {
-        if msg.action == .Connected {
-            connectedMessage = msg
-        }
+        protocolMessagesReceived.append(msg)
         super.receive(msg)
     }
 

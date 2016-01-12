@@ -249,13 +249,13 @@ class Auth : QuickSpec {
                             })
                         }
 
-                        if let transport = client.transport as? MockTransport, let connectionDetails = transport.connectedMessage?.connectionDetails {
-                            // CONNECTED ProtocolMessage
-                            expect(connectionDetails.clientId).to(equal(expectedClientId))
+                        let transport = client.transport as! TestProxyTransport
+                        guard let connectedMessage = transport.protocolMessagesReceived.filter({ $0.action == .Connected }).last else {
+                            XCTFail("No CONNECTED protocol action received"); return
                         }
-                        else {
-                            XCTFail("MockTransport is not working")
-                        }
+
+                        // CONNECTED ProtocolMessage
+                        expect(connectedMessage.connectionDetails.clientId).to(equal(expectedClientId))
                     }
 
                     it("with wildcard") {
