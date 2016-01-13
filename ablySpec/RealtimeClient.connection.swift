@@ -504,6 +504,39 @@ class RealtimeClientConnection: QuickSpec {
                 }
             }
 
+            // RTN7
+            context("ACK and NACK") {
+
+                // RTN7a
+                context("should expect either an ACK or NACK to confirm") {
+
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+                    client.setTransportClass(TestProxyTransport.self)
+
+                    it("successful receipt and acceptance") {
+                        client.connect()
+                        defer {
+                            client.close()
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            publishTestMessage(client, completion: { error in
+                                expect(error).to(beNil())
+                                done()
+                            })
+                        }
+
+                        let transport = client.transport as! TestProxyTransport
+                        expect(transport.protocolMessagesSent.map { $0.action }).to(contain(ARTProtocolMessageAction.Message))
+                        expect(transport.protocolMessagesReceived.map { $0.action }).to(contain(ARTProtocolMessageAction.Ack))
+                    }
+
+                }
+
+            }
+
             // RTN9
             context("connection#key") {
 
