@@ -59,14 +59,13 @@ FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
 @end
 
 
-@interface ARTStatus : NSObject {
-    
-}
-@property (readonly, strong, nonatomic) ARTErrorInfo *errorInfo;
+@interface ARTStatus : NSObject
+
+@property (art_nullable, readonly, strong, nonatomic) ARTErrorInfo *errorInfo;
 @property (nonatomic, assign) ARTState state;
 
-+(ARTStatus *) state:(ARTState) state;
-+(ARTStatus *) state:(ARTState) state info:(art_nullable ARTErrorInfo *) info;
++ (ARTStatus *)state:(ARTState) state;
++ (ARTStatus *)state:(ARTState) state info:(art_nullable ARTErrorInfo *) info;
 
 - (NSString *)description;
 
