@@ -210,15 +210,53 @@ class PublishTestMessage {
         }
     }
 
+    init(client: ARTRealtime, failOnError: Bool = true, completion: Optional<(NSError?)->()> = nil) {
+        client.eventEmitter.on { state, error in
+            if state == .Connected {
+                let channel = client.channel("test")
+                channel.subscribeToStateChanges { state, status in
+                    if state == .Attached {
+                        channel.publish("message", cb: { status in
+                            // ARTErrorInfo to NSError
+                            if let errorInfo = status.errorInfo where errorInfo.code != 0 {
+                                self.error = NSError(domain: ARTAblyErrorDomain, code: Int(errorInfo.code), userInfo: [NSLocalizedDescriptionKey:errorInfo.message])
+                            }
+                            else {
+                                self.error = nil
+                            }
+
+                            if let callback = completion {
+                                callback(self.error)
+                            }
+                            else if failOnError, let e = self.error {
+                                XCTFail("Got error '\(e)'")
+                            }
+                        })
+                    }
+                }
+                channel.attach()
+            }
+        }
+    }
+
 }
 
-/// Publish message
-func publishTestMessage(client: ARTRest, completion: Optional<(NSError?)->()>) -> PublishTestMessage {
-    return PublishTestMessage(client: client, failOnError: false, completion: completion)
+/// Rest - Publish message
+func publishTestMessage(rest: ARTRest, completion: Optional<(NSError?)->()>) -> PublishTestMessage {
+    return PublishTestMessage(client: rest, failOnError: false, completion: completion)
 }
 
-func publishTestMessage(client: ARTRest, failOnError: Bool = true) -> PublishTestMessage {
-    return PublishTestMessage(client: client, failOnError: failOnError)
+func publishTestMessage(rest: ARTRest, failOnError: Bool = true) -> PublishTestMessage {
+    return PublishTestMessage(client: rest, failOnError: failOnError)
+}
+
+/// Realtime - Publish message
+func publishTestMessage(realtime: ARTRealtime, completion: Optional<(NSError?)->()>) -> PublishTestMessage {
+    return PublishTestMessage(client: realtime, failOnError: false, completion: completion)
+}
+
+func publishTestMessage(realtime: ARTRealtime, failOnError: Bool = true) -> PublishTestMessage {
+    return PublishTestMessage(client: realtime, failOnError: failOnError)
 }
 
 /// Access Token
