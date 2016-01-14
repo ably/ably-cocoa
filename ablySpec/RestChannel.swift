@@ -264,11 +264,11 @@ class RestChannel: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(caseTest.value, callback: { error in
                             expect(error).to(beNil())
-
-                            if let request = mockExecutor.requests.last,
-                                let http = request.HTTPBody {
-                                    expect(caseTest.expected).to(equal(JSON(data: http)))
+                            guard let httpBody = mockExecutor.requests.last!.HTTPBody else {
+                                XCTFail("HTTPBody is nil");
+                                done(); return
                             }
+                            expect(caseTest.expected).to(equal(JSON(data: httpBody)))
                             done()
                         })
                     }
@@ -299,11 +299,11 @@ class RestChannel: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(caseItem.value, callback: { error in
                             expect(error).to(beNil())
-
-                            if let request = mockExecutor.requests.last,
-                               let http = request.HTTPBody {
-                                expect(JSON(data: http)["encoding"]).to(equal(caseItem.expected))
+                            guard let httpBody = mockExecutor.requests.last!.HTTPBody else {
+                                XCTFail("HTTPBody is nil");
+                                done(); return
                             }
+                            expect(JSON(data: httpBody)["encoding"]).to(equal(caseItem.expected))
                             done()
                         })
                     }
@@ -317,16 +317,14 @@ class RestChannel: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(binaryData, callback: { error in
                             expect(error).to(beNil())
-
-                            if let request = mockExecutor.requests.last, let http = request.HTTPBody {
-                                // Binary
-                                let json = JSON(data: http)
-                                expect(json["data"].string).to(equal(binaryData.toBase64))
-                                expect(json["encoding"]).to(equal("base64"))
+                            guard let httpBody = mockExecutor.requests.last!.HTTPBody else {
+                                XCTFail("HTTPBody is nil");
+                                done(); return
                             }
-                            else {
-                                XCTFail("No request or HTTP body found")
-                            }
+                            // Binary
+                            let json = JSON(data: httpBody)
+                            expect(json["data"].string).to(equal(binaryData.toBase64))
+                            expect(json["encoding"]).to(equal("base64"))
                             done()
                         })
                     }
@@ -416,10 +414,13 @@ class RestChannel: QuickSpec {
                     var totalReceived = 0
                     try! channel.history(nil) { result, error in
                         expect(error).to(beNil())
-                        expect(result).toNot(beNil())
-                        expect(result?.hasNext).to(beFalse())
+                        guard let result = result else {
+                            XCTFail("Result is nil")
+                            return
+                        }
+                        expect(result.hasNext).to(beFalse())
 
-                        for (index, item) in (result?.items.reverse().enumerate())! {
+                        for (index, item) in (result.items.reverse().enumerate()) {
                             totalReceived++
 
                             switch (item as? ARTMessage)?.payload.payload {
