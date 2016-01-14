@@ -393,6 +393,61 @@ class RealtimeClientConnection: QuickSpec {
                 }
             }
 
+            class TotalReach {
+                // Easy way to create an atomic var
+                static var shared = 0
+                // This prevents others from using the default '()' initializer
+                private init() {}
+            }
+
+            // RTN5
+            it("basic operations should work simultaneously") {
+                let options = AblyTests.commonAppSetup()
+                options.echoMessages = false
+                var disposable = [ARTRealtime]()
+                let max = 50
+                let channelName = "chat"
+
+                TotalReach.shared = 0
+                for _ in 1...max {
+                    let client = ARTRealtime(options: options)
+                    disposable.append(client)
+                    let channel = client.channel(channelName)
+
+                    channel.subscribeToStateChanges { state, status in
+                        if state == .Attached {
+                            TotalReach.shared++
+                        }
+                    }
+
+                    channel.attach()
+                }
+                // All channels attached
+                expect(TotalReach.shared).toEventually(equal(max), timeout: testTimeout, description: "Channels not attached")
+
+                TotalReach.shared = 0
+                for client in disposable {
+                    let channel = client.channel(channelName)
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+
+                    channel.subscribe { message, errorInfo in
+                        expect(message.payload.payload as? String).to(equal("message_string"))
+                        TotalReach.shared++
+                    }
+
+                    channel.publish("message_string", cb: nil)
+                }
+
+                // Sends 50 messages from different clients to the same channel
+                // 50 messages for 50 clients = 50*50 total messages
+                // echo is off, so we need to subtract one message per client
+                expect(TotalReach.shared).toEventually(equal(max*max - max), timeout: testTimeout)
+
+                expect(disposable.count).to(equal(max))
+                expect(disposable.first?.channels().count).to(equal(1))
+                expect(disposable.last?.channels().count).to(equal(1))
+            }
+
             // RTN8
             context("connection#id") {
 
@@ -493,6 +548,7 @@ class RealtimeClientConnection: QuickSpec {
 
                     expect(keys).toEventually(haveCount(max))
                 }
+
             }
         }
     }
