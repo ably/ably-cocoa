@@ -456,6 +456,7 @@ class RealtimeClientConnection: QuickSpec {
 
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
+                    options.clientId = "client_string"
                     let client = ARTRealtime(options: options)
                     client.setTransportClass(TestProxyTransport.self)
 
@@ -521,9 +522,53 @@ class RealtimeClientConnection: QuickSpec {
                         
                         expect(publishedMessage.msgSerial).to(equal(receivedAck.msgSerial))
                     }
+
+                    it("failure") {
+                        client.connect()
+                        defer {
+                            client.dispose()
+                            client.close()
+                        }
+
+                        let channelName = "test"
+                        let invalidMessage = ARTProtocolMessage()
+                        invalidMessage.action = .Message
+                        invalidMessage.channel = channelName
+                        invalidMessage.clientId = "invalid"
+                        invalidMessage.msgSerial = 1000
+
+                        let transport = client.transport as! TestProxyTransport
+                        waitUntil(timeout: testTimeout) { done in
+                            client.eventEmitter.on { state, error in
+                                if state == .Connected {
+                                    let channel = client.channel(channelName)
+                                    channel.subscribeToStateChanges { state, status in
+                                        if state == .Attached {
+                                            transport.send(invalidMessage)
+                                            delay(3.0) {
+                                                //Wait a couple of seconds for NACK response
+                                                done()
+                                            }
+                                        }
+                                    }
+                                    channel.attach()
+                                }
+                            }
+                        }
+
+                        guard let publishedMessage = transport.protocolMessagesSent.filter({ $0.action == .Message }).last else {
+                            XCTFail("No MESSAGE action was sent"); return
+                        }
+
+                        guard let receivedNack = transport.protocolMessagesReceived.filter({ $0.action == .Nack }).last else {
+                            XCTFail("No NACK action was received"); return
+                        }
+
+                        expect(publishedMessage.msgSerial).to(equal(receivedNack.msgSerial))
+                    }
                     
                 }
-                
+
             }
 
             // RTN8
