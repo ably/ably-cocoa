@@ -360,39 +360,6 @@ class RealtimeClientConnection: QuickSpec {
                 }
             }
 
-            // RTN6
-            it("should have an opened websocket connection and received a CONNECTED ProtocolMessage") {
-                let options = AblyTests.commonAppSetup()
-                options.autoConnect = false
-                let client = ARTRealtime(options: options)
-                client.setTransportClass(TestProxyTransport.self)
-                client.connect()
-
-                waitUntil(timeout: testTimeout) { done in
-                    client.eventEmitter.on({ state, error in
-                        expect(error).to(beNil())
-                        if state == .Connected && error == nil {
-                            done()
-                        }
-                    })
-                }
-
-                if let webSocketTransport = client.transport as? ARTWebSocketTransport {
-                    expect(webSocketTransport.isConnected).to(beTrue())
-                }
-                else {
-                    XCTFail("WebSocket is not the default transport")
-                }
-
-                if let transport = client.transport as? TestProxyTransport {
-                    // CONNECTED ProtocolMessage
-                    expect(transport.protocolMessagesReceived.map{ $0.action }).to(contain(ARTProtocolMessageAction.Connected))
-                }
-                else {
-                    XCTFail("MockTransport is not working")
-                }
-            }
-
             class TotalReach {
                 // Easy way to create an atomic var
                 static var shared = 0
@@ -448,59 +415,36 @@ class RealtimeClientConnection: QuickSpec {
                 expect(disposable.last?.channels().count).to(equal(1))
             }
 
-            // RTN8
-            context("connection#id") {
+            // RTN6
+            it("should have an opened websocket connection and received a CONNECTED ProtocolMessage") {
+                let options = AblyTests.commonAppSetup()
+                options.autoConnect = false
+                let client = ARTRealtime(options: options)
+                client.setTransportClass(TestProxyTransport.self)
+                client.connect()
 
-                // RTN8a
-                it("should be null until connected") {
-                    let options = AblyTests.commonAppSetup()
-                    let client = ARTRealtime(options: options)
-                    let connection = client.connection()
-
-                    expect(connection.id).to(beEmpty())
-
-                    waitUntil(timeout: testTimeout) { done in
-                        connection.eventEmitter.on { state, errorInfo in
-                            if state == .Connected && errorInfo == nil {
-                                expect(connection.id).toNot(beEmpty())
-                                done()
-                            }
-                            else if state == .Connecting {
-                                expect(connection.id).to(beEmpty())
-                            }
+                waitUntil(timeout: testTimeout) { done in
+                    client.eventEmitter.on({ state, error in
+                        expect(error).to(beNil())
+                        if state == .Connected && error == nil {
+                            done()
                         }
-                    }
-
-                    connection.close()
+                    })
                 }
 
-                // RTN8b
-                it("should have unique IDs") {
-                    let options = AblyTests.commonAppSetup()
-                    var disposable = [ARTRealtime]()
-                    var ids = [String]()
-                    let max = 25
+                if let webSocketTransport = client.transport as? ARTWebSocketTransport {
+                    expect(webSocketTransport.isConnected).to(beTrue())
+                }
+                else {
+                    XCTFail("WebSocket is not the default transport")
+                }
 
-                    waitUntil(timeout: testTimeout) { done in
-                        for _ in 1...max {
-                            disposable.append(ARTRealtime(options: options))
-                            let currentConnection = disposable.last?.connection()
-                            currentConnection?.eventEmitter.on { state, errorInfo in
-                                if state == .Connected {
-                                    expect(ids).toNot(contain(currentConnection?.id))
-                                    ids.append(currentConnection?.id ?? "")
-
-                                    currentConnection?.close()
-                                    
-                                    if ids.count == max {
-                                        done()
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    expect(ids).to(haveCount(max))
+                if let transport = client.transport as? TestProxyTransport {
+                    // CONNECTED ProtocolMessage
+                    expect(transport.protocolMessagesReceived.map{ $0.action }).to(contain(ARTProtocolMessageAction.Connected))
+                }
+                else {
+                    XCTFail("MockTransport is not working")
                 }
             }
 
@@ -574,12 +518,68 @@ class RealtimeClientConnection: QuickSpec {
                         guard let receivedAck = transport.protocolMessagesReceived.filter({ $0.action == .Ack }).last else {
                             XCTFail("No ACK action was received"); return
                         }
-
+                        
                         expect(publishedMessage.msgSerial).to(equal(receivedAck.msgSerial))
                     }
+                    
+                }
+                
+            }
 
+            // RTN8
+            context("connection#id") {
+
+                // RTN8a
+                it("should be null until connected") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRealtime(options: options)
+                    let connection = client.connection()
+
+                    expect(connection.id).to(beEmpty())
+
+                    waitUntil(timeout: testTimeout) { done in
+                        connection.eventEmitter.on { state, errorInfo in
+                            if state == .Connected && errorInfo == nil {
+                                expect(connection.id).toNot(beEmpty())
+                                done()
+                            }
+                            else if state == .Connecting {
+                                expect(connection.id).to(beEmpty())
+                            }
+                        }
+                    }
+
+                    connection.close()
                 }
 
+                // RTN8b
+                it("should have unique IDs") {
+                    let options = AblyTests.commonAppSetup()
+                    var disposable = [ARTRealtime]()
+                    var ids = [String]()
+                    let max = 25
+
+                    waitUntil(timeout: testTimeout) { done in
+                        for _ in 1...max {
+                            disposable.append(ARTRealtime(options: options))
+                            let currentConnection = disposable.last?.connection()
+                            currentConnection?.eventEmitter.on { state, errorInfo in
+                                if state == .Connected {
+                                    expect(ids).toNot(contain(currentConnection?.id))
+                                    ids.append(currentConnection?.id ?? "")
+
+                                    currentConnection?.close()
+                                    
+                                    if ids.count == max {
+                                        done()
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    expect(ids).to(haveCount(max))
+                }
             }
 
             // RTN9
