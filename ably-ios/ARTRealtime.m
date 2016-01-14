@@ -144,6 +144,11 @@
     return self;
 }
 
+- (void)dispose {
+    [self removeAllChannels];
+    [self.eventEmitter removeEvents];
+}
+
 - (id<ARTRealtimeTransport>)getTransport {
     return _transport;
 }

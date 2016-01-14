@@ -56,6 +56,9 @@ Instance the Ably library with the given options.
 - (BOOL)connect;
 - (BOOL)isActive;
 
+/// Explicitly dispose all resources
+- (void)dispose;
+
 - (ARTRealtimeConnectionState)state;
 - (NSString *)connectionId;
 - (NSString *)connectionKey;
