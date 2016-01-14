@@ -47,6 +47,14 @@
     return self;
 }
 
+- (NSString *)description {
+    NSMutableString *description = [NSMutableString stringWithFormat:@"<%@: %p> {\n", self.class, self];
+    [description appendFormat:@" payload: %@,\n", self.payload];
+    [description appendFormat:@" encoding: %@\n", self.encoding];
+    [description appendFormat:@"}"];
+    return description;
+}
+
 + (instancetype)payload {
     return [[ARTPayload alloc] init];
 }

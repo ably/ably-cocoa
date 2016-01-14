@@ -638,8 +638,7 @@
         [self.pendingMessages addObject:qm];
     }
 
-    // TODO: ?? Add cb to the send call? No probably not
-    // Wait, we have to do something with the cb!
+    // Callback is called with ACK/NACK action
     [self.transport send:msg];
 }
 
