@@ -52,8 +52,13 @@
 @property (readwrite, assign, nonatomic) int64_t connectionSerial;
 @property (readwrite, assign, nonatomic) int64_t msgSerial;
 
-@property (readwrite, strong, nonatomic) NSMutableArray *queuedMessages;
-@property (readonly, strong, nonatomic) NSMutableArray *pendingMessages;
+/// List of queued messages on a connection in the disconnected or connecting states
+@property (readwrite, strong, nonatomic) __GENERIC(NSMutableArray, ARTQueuedMessage*) *queuedMessages;
+
+/// List of pending messages waiting for ACK/NACK action to confirm the success receipt and acceptance
+@property (readonly, strong, nonatomic) __GENERIC(NSMutableArray, ARTQueuedMessage*) *pendingMessages;
+
+/// To verify skipped messages, earlier messages... comparing with `msgSerial` response from ACK/NACK action
 @property (readwrite, assign, nonatomic) int64_t pendingMessageStartSerial;
 
 @property (nonatomic, copy) ARTRealtimePingCb pingCb;
@@ -145,6 +150,8 @@
 }
 
 - (void)dispose {
+    [self.pendingMessages removeAllObjects];
+    self.pendingMessageStartSerial = 0;
     [self removeAllChannels];
     [self.eventEmitter removeEvents];
 }
