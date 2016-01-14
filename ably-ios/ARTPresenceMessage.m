@@ -25,4 +25,13 @@
     return message;
 }
 
+- (NSString *)description {
+    NSMutableString *description = [[super description] mutableCopy];
+    [description deleteCharactersInRange:NSMakeRange(description.length - (description.length>2 ? 2:0), 2)];
+    [description appendFormat:@",\n"];
+    [description appendFormat:@" action: %d\n", self.action];
+    [description appendFormat:@"}"];
+    return description;
+}
+
 @end

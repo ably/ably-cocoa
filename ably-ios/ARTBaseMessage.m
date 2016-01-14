@@ -64,6 +64,7 @@
     [description appendFormat:@" encoding: %@,\n", self.encoding];
     [description appendFormat:@" payload: %@\n", self.payload];
     [description appendFormat:@"}"];
-    return description;}
+    return description;
+}
 
 @end
