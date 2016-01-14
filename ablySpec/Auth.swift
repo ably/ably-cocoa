@@ -515,8 +515,7 @@ class Auth : QuickSpec {
                     let mergedParams = rest.auth.mergeParams(tokenParams)
                     expect(mergedParams.ttl) == 30.0
                 }
-                
-                // TODO: RSA8b
+
             }
             
             // RSA8c
@@ -597,6 +596,59 @@ class Auth : QuickSpec {
                 }
 
                 expect(createTokenRequestMethodWasCalled).to(beTrue())
+            }
+
+            // RSA8b
+            context("should support all TokenParams") {
+
+                let options = AblyTests.commonAppSetup()
+                let currentCliend = "client_string"
+                options.clientId = currentCliend
+
+                let rest = ARTRest(options: options)
+
+                it("using defaults") {
+                    // Default values
+                    let defaultTokenParams = ARTAuthTokenParams(clientId: currentCliend)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.requestToken(nil, withOptions: nil, callback: { tokenDetails, error in
+                            expect(tokenDetails?.clientId).to(equal(defaultTokenParams.clientId))
+                            expect(tokenDetails?.capability).to(equal(defaultTokenParams.capability))
+                            expect(tokenDetails?.issued).toNot(beNil())
+                            expect(tokenDetails?.expires).toNot(beNil())
+                            if let issued = tokenDetails?.issued, let expires = tokenDetails?.expires {
+                                expect(expires.timeIntervalSinceDate(issued)).to(equal(defaultTokenParams.ttl))
+                            }
+                            done()
+                        })
+                    }
+                }
+
+                it("overriding defaults") {
+                    // Custom values
+                    let expectedClientId = "token_client"
+                    let expectedTtl = 4800.0
+                    let expectedCapability = "{\"canpublish:*\":[\"publish\"]}"
+
+                    let tokenParams = ARTAuthTokenParams(clientId: expectedClientId)
+                    tokenParams.ttl = expectedTtl
+                    tokenParams.capability = expectedCapability
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.requestToken(tokenParams, withOptions: nil, callback: { tokenDetails, error in
+                            expect(tokenDetails?.clientId).to(equal(expectedClientId))
+                            expect(tokenDetails?.capability).to(equal(expectedCapability))
+                            expect(tokenDetails?.issued).toNot(beNil())
+                            expect(tokenDetails?.expires).toNot(beNil())
+                            if let issued = tokenDetails?.issued, let expires = tokenDetails?.expires {
+                                expect(expires.timeIntervalSinceDate(issued)).to(equal(expectedTtl))
+                            }
+                            done()
+                        })
+                    }
+                }
+
             }
         }
     }
