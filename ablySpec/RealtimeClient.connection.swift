@@ -515,9 +515,10 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: options)
                     client.setTransportClass(TestProxyTransport.self)
 
-                    it("successful receipt and acceptance") {
+                    it("successful receipt and acceptance of message") {
                         client.connect()
                         defer {
+                            client.dispose()
                             client.close()
                         }
 
@@ -530,6 +531,34 @@ class RealtimeClientConnection: QuickSpec {
 
                         let transport = client.transport as! TestProxyTransport
                         expect(transport.protocolMessagesSent.map { $0.action }).to(contain(ARTProtocolMessageAction.Message))
+                        expect(transport.protocolMessagesReceived.map { $0.action }).to(contain(ARTProtocolMessageAction.Ack))
+                    }
+
+                    it("successful receipt and acceptance of presence") {
+                        client.connect()
+                        defer {
+                            client.dispose()
+                            client.close()
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.eventEmitter.on { state, error in
+                                if state == .Connected {
+                                    let channel = client.channel("test")
+                                    channel.subscribeToStateChanges { state, status in
+                                        if state == .Attached {
+                                            channel.presence().enterClient("test_client", data: nil, cb: { status in
+                                                done()
+                                            })
+                                        }
+                                    }
+                                    channel.attach()
+                                }
+                            }
+                        }
+
+                        let transport = client.transport as! TestProxyTransport
+                        expect(transport.protocolMessagesSent.map { $0.action }).to(contain(ARTProtocolMessageAction.Presence))
                         expect(transport.protocolMessagesReceived.map { $0.action }).to(contain(ARTProtocolMessageAction.Ack))
                     }
 
