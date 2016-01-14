@@ -530,8 +530,16 @@ class RealtimeClientConnection: QuickSpec {
                         }
 
                         let transport = client.transport as! TestProxyTransport
-                        expect(transport.protocolMessagesSent.map { $0.action }).to(contain(ARTProtocolMessageAction.Message))
-                        expect(transport.protocolMessagesReceived.map { $0.action }).to(contain(ARTProtocolMessageAction.Ack))
+
+                        guard let publishedMessage = transport.protocolMessagesSent.filter({ $0.action == .Message }).last else {
+                            XCTFail("No MESSAGE action was sent"); return
+                        }
+
+                        guard let receivedAck = transport.protocolMessagesReceived.filter({ $0.action == .Ack }).last else {
+                            XCTFail("No ACK action was received"); return
+                        }
+
+                        expect(publishedMessage.msgSerial).to(equal(receivedAck.msgSerial))
                     }
 
                     it("successful receipt and acceptance of presence") {
@@ -558,8 +566,16 @@ class RealtimeClientConnection: QuickSpec {
                         }
 
                         let transport = client.transport as! TestProxyTransport
-                        expect(transport.protocolMessagesSent.map { $0.action }).to(contain(ARTProtocolMessageAction.Presence))
-                        expect(transport.protocolMessagesReceived.map { $0.action }).to(contain(ARTProtocolMessageAction.Ack))
+
+                        guard let publishedMessage = transport.protocolMessagesSent.filter({ $0.action == .Presence }).last else {
+                            XCTFail("No PRESENCE action was sent"); return
+                        }
+
+                        guard let receivedAck = transport.protocolMessagesReceived.filter({ $0.action == .Ack }).last else {
+                            XCTFail("No ACK action was received"); return
+                        }
+
+                        expect(publishedMessage.msgSerial).to(equal(receivedAck.msgSerial))
                     }
 
                 }
