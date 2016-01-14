@@ -99,7 +99,7 @@ enum {
     else {
         __weak ARTWebSocketTransport *selfWeak = self;
         // Token
-        [self.auth authorise:nil options:self.options force:false callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
+        [self.auth authorise:nil options:self.options callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
             ARTWebSocketTransport *selfStrong = selfWeak;
             if (!selfStrong) return;
 

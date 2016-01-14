@@ -364,7 +364,7 @@
         ARTAuthTokenParams *tokenParams = [[ARTAuthTokenParams alloc] initWithClientId:options.clientId];
         tokenParams.capability = @"{\"canpublish:*\":[\"publish\"],\"canpublish:andpresence\":[\"presence\",\"publish\"],\"cansubscribe:*\":[\"subscribe\"]}";
 
-        [realtime.auth authorise:tokenParams options:options force:false callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
+        [realtime.auth authorise:tokenParams options:options callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
             options.token = tokenDetails.token;
             [realtime connect];
         }];

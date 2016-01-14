@@ -170,7 +170,8 @@
         if (callback) callback([NSString stringWithFormat:@"Basic %@", keyBase64], nil);
     }
     else {
-        [self.auth authorise:nil options:self.options force:force callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
+        self.options.force = force;
+        [self.auth authorise:nil options:self.options callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
             if (error) {
                 if (callback) callback(nil, error);
                 return;

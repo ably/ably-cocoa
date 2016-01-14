@@ -21,6 +21,7 @@
 
 @implementation ARTAuth {
     __weak ARTRest *_rest;
+    ARTAuthTokenParams *_tokenParams;
     // Dedicated to Protocol Message
     NSString *_protocolClientId;
 }
@@ -29,6 +30,7 @@
     if (self = [super init]) {
         _rest = rest;
         _tokenDetails = options.tokenDetails;
+        _tokenParams = [[ARTAuthTokenParams alloc] initWithClientId:options.clientId];
         _options = options;
         _logger = rest.logger;
         _protocolClientId = nil;
@@ -84,8 +86,26 @@
     return customOptions ? [self.options mergeWith:customOptions] : self.options;
 }
 
+- (void)storeOptions:(ARTAuthOptions *)customOptions {
+    self.options.key = customOptions.key;
+    self.options.tokenDetails = [customOptions.tokenDetails copy];
+    self.options.authCallback = [customOptions.authCallback copy];
+    self.options.authUrl = [customOptions.authUrl copy];
+    self.options.authHeaders = [customOptions.authHeaders copy];
+    self.options.authMethod = customOptions.authMethod;
+    self.options.authParams = [customOptions.authParams copy];
+    self.options.useTokenAuth = customOptions.useTokenAuth;
+    self.options.queryTime = customOptions.queryTime;
+}
+
 - (ARTAuthTokenParams *)mergeParams:(ARTAuthTokenParams *)customParams {
-    return customParams ? customParams : [[ARTAuthTokenParams alloc] initWithClientId:self.options.clientId];
+    return customParams ? customParams : _tokenParams;
+}
+
+- (void)storeParams:(ARTAuthTokenParams *)customOptions {
+    _tokenParams.clientId = customOptions.clientId;
+    _tokenParams.ttl = customOptions.ttl;
+    _tokenParams.capability = customOptions.capability;
 }
 
 - (NSURL *)buildURL:(ARTAuthOptions *)options withParams:(ARTAuthTokenParams *)params {
@@ -134,6 +154,7 @@
     // The values supersede matching client library configured params and options.
     ARTAuthOptions *mergedOptions = [self mergeOptions:authOptions];
     ARTAuthTokenParams *currentTokenParams = [self mergeParams:tokenParams];
+    tokenParams.timestamp = [NSDate date];
 
     if (!mergedOptions.key) {
         callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:ARTCodeErrorAPIKeyMissing
@@ -202,11 +223,15 @@
     }];
 }
 
-- (void)authorise:(ARTAuthTokenParams *)tokenParams options:(ARTAuthOptions *)options force:(BOOL)force callback:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
+- (void)authorise:(ARTAuthTokenParams *)tokenParams options:(ARTAuthOptions *)authOptions callback:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
     BOOL requestNewToken = NO;
+    ARTAuthOptions *mergedOptions = [self mergeOptions:authOptions];
+    [self storeOptions:mergedOptions];
+    ARTAuthTokenParams *currentTokenParams = [self mergeParams:tokenParams];
+    [self storeParams:currentTokenParams];
 
     // Reuse or not reuse the current token
-    if (!force && self.tokenDetails) {
+    if (mergedOptions.force == NO && self.tokenDetails) {
         if (self.tokenDetails.expires == nil) {
             [self.logger verbose:@"ARTAuth: reuse current token."];
             requestNewToken = NO;
@@ -221,7 +246,7 @@
         }
     }
     else {
-        if (force)
+        if (mergedOptions.force == YES)
             [self.logger verbose:@"ARTAuth: forced requesting new token."];
         else
             [self.logger verbose:@"ARTAuth: requesting new token."];
@@ -229,7 +254,7 @@
     }
 
     if (requestNewToken) {
-        [self requestToken:tokenParams withOptions:options callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
+        [self requestToken:currentTokenParams withOptions:mergedOptions callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
             if (error) {
                 if (callback) {
                     callback(nil, error);
