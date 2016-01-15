@@ -696,7 +696,10 @@ class Auth : QuickSpec {
                         // Reuse the valid token
                         rest.auth.authorise(nil, options: nil, callback: { tokenDetails, error in
                             expect(rest.auth.method).to(equal(ARTAuthMethod.Token))
-                            expect(tokenDetails?.token).to(equal(options.token))
+                            guard let tokenDetails = tokenDetails else {
+                                XCTFail("TokenDetails is nil"); done(); return
+                            }
+                            expect(tokenDetails.token).to(equal(options.token))
 
                             publishTestMessage(rest, completion: { error in
                                 expect(error).to(beNil())
@@ -743,8 +746,10 @@ class Auth : QuickSpec {
                         delay(tokenParams.ttl + 1.0) {
                             rest.auth.authorise(nil, options: nil) { tokenDetails, error in
                                 expect(error).to(beNil())
-                                expect(tokenDetails).toNot(beNil())
-                                expect(tokenDetails?.token).toNot(equal(expiredToken))
+                                guard let tokenDetails = tokenDetails else {
+                                    XCTFail("TokenDetails is nil"); done(); return
+                                }
+                                expect(tokenDetails.token).toNot(equal(expiredToken))
                                 done()
                             }
                         }
@@ -769,7 +774,10 @@ class Auth : QuickSpec {
 
                         rest.auth.authorise(nil, options: authOptions) { tokenDetails, error in
                             expect(error).to(beNil())
-                            expect(currentToken).toNot(equal(tokenDetails?.token))
+                            guard let tokenDetails = tokenDetails else {
+                                XCTFail("TokenDetails is nil"); done(); return
+                            }
+                            expect(tokenDetails.token).toNot(equal(currentToken))
                             done()
                         }
                     }
@@ -794,21 +802,15 @@ class Auth : QuickSpec {
                 waitUntil(timeout: testTimeout) { done in
                     rest.auth.authorise(nil, options: nil, callback: { tokenDetails, error in
                         expect(error).to(beNil())
-                        expect(tokenDetails?.token).toNot(beEmpty())
+                        guard let tokenDetails = tokenDetails else {
+                            XCTFail("TokenDetails is nil"); done(); return
+                        }
+                        expect(tokenDetails.token).toNot(beEmpty())
                         done()
                     })
                 }
 
                 expect(requestMethodWasCalled).to(beTrue())
-            }
-
-            func expectTokenDetails(tokenDetails: ARTAuthTokenDetails?) {
-                expect(tokenDetails).toNot(beNil())
-                expect(tokenDetails).to(beAnInstanceOf(ARTAuthTokenDetails))
-                expect(tokenDetails?.token).toNot(beEmpty())
-                expect(tokenDetails?.issued).toNot(beNil())
-                expect(tokenDetails?.expires).toNot(beNil())
-                expect(tokenDetails?.expires?.timeIntervalSince1970).to(beGreaterThan(tokenDetails?.issued?.timeIntervalSince1970))
             }
 
             // RSA10f
@@ -820,8 +822,13 @@ class Auth : QuickSpec {
                 waitUntil(timeout: testTimeout) { done in
                     rest.auth.authorise(nil, options: nil) { tokenDetails, error in
                         expect(error).to(beNil())
-                        expectTokenDetails(tokenDetails)
-                        expect(tokenDetails?.clientId).to(equal(options.clientId))
+                        guard let tokenDetails = tokenDetails else {
+                            XCTFail("TokenDetails is nil"); done(); return
+                        }
+                        expect(tokenDetails).to(beAnInstanceOf(ARTAuthTokenDetails))
+                        expect(tokenDetails.token).toNot(beEmpty())
+                        expect(tokenDetails.expires!.timeIntervalSinceNow).to(beGreaterThan(tokenDetails.issued!.timeIntervalSinceNow))
+                        expect(tokenDetails.clientId).to(equal(options.clientId))
                         done()
                     }
                 }
@@ -868,8 +875,8 @@ class Auth : QuickSpec {
                                 }
                                 expect(mockExecutor.requests.last?.URL?.host).to(equal("echo.ably.io"))
                                 expect(auth.options.force).to(beFalse())
-                                expect(auth.options.authUrl?.host).to(equal("echo.ably.io"))
-                                expect(auth.options.authHeaders?["X-Ably"]).to(equal("Test"))
+                                expect(auth.options.authUrl!.host).to(equal("echo.ably.io"))
+                                expect(auth.options.authHeaders!["X-Ably"]).to(equal("Test"))
                                 expect(tokenDetails.token).to(equal(token))
                                 done()
                             }
@@ -926,14 +933,11 @@ class Auth : QuickSpec {
                         delay(tokenParams.ttl + 1.0) {
                             rest.auth.authorise(nil, options: nil) { tokenDetails, error in
                                 expect(error).to(beNil())
-
                                 guard let tokenDetails = tokenDetails else {
-                                    XCTFail("TokenDetails is nil")
-                                    done()
-                                    return
+                                    XCTFail("TokenDetails is nil"); done(); return
                                 }
                                 expect(tokenDetails.clientId).to(equal(ExpectedTokenParams.clientId))
-                                expect(tokenDetails.issued?.dateByAddingTimeInterval(ExpectedTokenParams.ttl)).to(beCloseTo(tokenDetails.expires))
+                                expect(tokenDetails.issued!.dateByAddingTimeInterval(ExpectedTokenParams.ttl)).to(beCloseTo(tokenDetails.expires))
                                 expect(tokenDetails.capability).to(equal(ExpectedTokenParams.capability))
                                 done()
                             }
@@ -951,8 +955,10 @@ class Auth : QuickSpec {
                 waitUntil(timeout: testTimeout) { done in
                     ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
                         expect(error).to(beNil())
-                        expect(tokenDetails).toNot(beNil())
-                        expect(tokenDetails?.clientId).to(beNil())
+                        guard let tokenDetails = tokenDetails else {
+                            XCTFail("TokenDetails is nil"); done(); return
+                        }
+                        expect(tokenDetails.clientId).to(beNil())
                         done()
                     }
                 }
@@ -963,8 +969,10 @@ class Auth : QuickSpec {
                 waitUntil(timeout: testTimeout) { done in
                     ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
                         expect(error).to(beNil())
-                        expect(tokenDetails).toNot(beNil())
-                        expect(tokenDetails?.clientId).to(equal(options.clientId))
+                        guard let tokenDetails = tokenDetails else {
+                            XCTFail("TokenDetails is nil"); done(); return
+                        }
+                        expect(tokenDetails.clientId).to(equal(options.clientId))
                         done()
                     }
                 }
@@ -986,10 +994,14 @@ class Auth : QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.authorise(tokenParams, options: nil) { tokenDetails, error in
                             expect(error).to(beNil())
-                            expectTokenDetails(tokenDetails)
-                            expect(tokenDetails?.clientId).to(equal(ExpectedTokenParams.clientId))
-                            expect(tokenDetails?.issued?.dateByAddingTimeInterval(ExpectedTokenParams.ttl)).to(beCloseTo(tokenDetails?.expires))
-                            expect(tokenDetails?.capability).to(equal(ExpectedTokenParams.capability))
+                            guard let tokenDetails = tokenDetails else {
+                                XCTFail("TokenDetails is nil"); done(); return
+                            }
+                            expect(tokenDetails).to(beAnInstanceOf(ARTAuthTokenDetails))
+                            expect(tokenDetails.token).toNot(beEmpty())
+                            expect(tokenDetails.clientId).to(equal(ExpectedTokenParams.clientId))
+                            expect(tokenDetails.issued!.dateByAddingTimeInterval(ExpectedTokenParams.ttl)).to(beCloseTo(tokenDetails.expires))
+                            expect(tokenDetails.capability).to(equal(ExpectedTokenParams.capability))
                             done()
                         }
                     }
@@ -1016,7 +1028,12 @@ class Auth : QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
                             expect(error).to(beNil())
-                            expectTokenDetails(tokenDetails)
+                            guard let tokenDetails = tokenDetails else {
+                                XCTFail("TokenDetails is nil"); done(); return
+                            }
+                            expect(tokenDetails).to(beAnInstanceOf(ARTAuthTokenDetails))
+                            expect(tokenDetails.token).toNot(beEmpty())
+                            expect(tokenDetails.expires!.timeIntervalSinceNow).to(beGreaterThan(tokenDetails.issued!.timeIntervalSinceNow))
                             done()
                         }
                     }
@@ -1124,7 +1141,7 @@ class Auth : QuickSpec {
                             XCTFail("TokenDetails is nil"); done(); return
                         }
                         expect(tokenDetails.clientId).to(equal(options.clientId))
-                        expect(tokenDetails.issued?.dateByAddingTimeInterval(defaultTtl)).to(beCloseTo(tokenDetails.expires))
+                        expect(tokenDetails.issued!.dateByAddingTimeInterval(defaultTtl)).to(beCloseTo(tokenDetails.expires))
                         expect(tokenDetails.capability).to(equal(defaultCapability))
                         done()
                     }
@@ -1158,7 +1175,7 @@ class Auth : QuickSpec {
                         }
                         expect(tokenDetails.clientId).to(beNil())
                         expect(tokenDetails.issued).to(beCloseTo(serverDate, within: 1.0)) //1 Second
-                        expect(tokenDetails.issued?.dateByAddingTimeInterval(ExpectedTokenParams.ttl)).to(beCloseTo(tokenDetails.expires))
+                        expect(tokenDetails.issued!.dateByAddingTimeInterval(ExpectedTokenParams.ttl)).to(beCloseTo(tokenDetails.expires))
                         expect(tokenDetails.capability).to(equal(ExpectedTokenParams.capability))
                         done()
                     }
