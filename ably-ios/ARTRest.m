@@ -141,16 +141,20 @@
     [self.logger debug:__FILE__ line:__LINE__ message:@"%p executing request %@", self, request];
     [self.httpExecutor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode >= 400) {
-            NSError *error = [self->_encoders[response.MIMEType] decodeError:data];
-            if (error.code == 40140) {
+            NSError *dataError = [self->_encoders[response.MIMEType] decodeError:data];
+            if (dataError.code == 40140) {
                 // Send it again, requesting a new token (forward callback)
                 [self.logger debug:__FILE__ line:__LINE__ message:@"requesting new token"];
                 [self executeRequest:request withAuthOption:ARTAuthenticationNewToken completion:callback];
-                return;
             } else if (callback) {
-                callback(nil, nil, error);
+                // Return error with HTTP StatusCode if ARTErrorStatusCode does not exist
+                if (!dataError) {
+                    dataError = [NSError errorWithDomain:ARTAblyErrorDomain code:response.statusCode userInfo:@{NSLocalizedDescriptionKey:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]}];
+                }
+                callback(nil, nil, dataError);
             }
         } else if (callback) {
+            // Error object that indicates why the request failed
             callback(response, data, error);
         }
     }];

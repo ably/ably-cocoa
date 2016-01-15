@@ -115,7 +115,7 @@
         // TokenParams take precedence over any configured authParams when a name conflict occurs
         NSArray *unitedParams = [params toArrayWithUnion:options.authParams];
         // When GET, use query string params
-        urlComponents.queryItems = @[];
+        if (!urlComponents.queryItems) urlComponents.queryItems = @[];
         urlComponents.queryItems = [urlComponents.queryItems arrayByAddingObjectsFromArray:unitedParams];
     }
     
@@ -156,42 +156,61 @@
     ARTAuthTokenParams *currentTokenParams = [self mergeParams:tokenParams];
     tokenParams.timestamp = [NSDate date];
 
-    if (!mergedOptions.key) {
-        callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:ARTCodeErrorAPIKeyMissing
-                                      userInfo:@{ NSLocalizedDescriptionKey: NSLocalizedString(@"API Key is missing", nil) }]);
-    }
-
     if (mergedOptions.authUrl) {
         NSMutableURLRequest *request = [self buildRequest:mergedOptions withParams:currentTokenParams];
         
         [self.logger debug:__FILE__ line:__LINE__ message:@"using authUrl (%@ %@)", request.HTTPMethod, request.URL];
         
-        [_rest executeRequest:request withAuthOption:ARTAuthenticationUseBasic completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        [_rest executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (error) {
                 callback(nil, error);
             } else {
-                // The token retrieved is assumed by the library to be a token string if the response has Content-Type "text/plain", or taken to be a TokenRequest or TokenDetails object if the response has Content-Type "application/json".
-
-                // TODO
-                NSAssert(false, @"Token string or TokenDetails object not implemented");
+                [self.logger debug:@"ARTAuth: authUrl response %@", response];
+                [self handleAuthUrlResponse:response withData:data completion:callback];
             }
         }];
     } else {
-        ARTAuthCallback tokenRequestFactory = mergedOptions.authCallback? : ^(ARTAuthTokenParams *tokenParams, void(^callback)(ARTAuthTokenRequest *tokenRequest, NSError *error)) {
-            [self createTokenRequest:currentTokenParams options:mergedOptions callback:callback];
+        ARTAuthCallback tokenRequestFactory = mergedOptions.authCallback? : ^(ARTAuthTokenParams *tokenParams, void(^callback)(ARTAuthTokenDetails *tokenDetails, NSError *error)) {
+            // Create a TokenRequest and execute it
+            [self createTokenRequest:currentTokenParams options:mergedOptions callback:^(ARTAuthTokenRequest *tokenRequest, NSError *error) {
+                if (error) {
+                    callback(nil, error);
+                } else {
+                    [self executeTokenRequest:tokenRequest callback:callback];
+                }
+            }];
         };
 
         if (tokenRequestFactory == mergedOptions.authCallback) {
             [self.logger debug:@"ARTAuth: using authCallback"];
         }
 
-        tokenRequestFactory(currentTokenParams, ^(ARTAuthTokenRequest *tokenRequest, NSError *error) {
-            if (error) {
-                callback(nil, error);
-            } else {
-                [self executeTokenRequest:tokenRequest callback:callback];
-            }
-        });
+        tokenRequestFactory(currentTokenParams, callback);
+    }
+}
+
+- (void)handleAuthUrlResponse:(NSHTTPURLResponse *)response withData:(NSData *)data completion:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
+    // The token retrieved is assumed by the library to be a token string if the response has Content-Type "text/plain", or taken to be a TokenRequest or TokenDetails object if the response has Content-Type "application/json"
+    if ([response.MIMEType isEqualToString:@"application/json"]) {
+        NSError *decodeError = nil;
+        ARTAuthTokenDetails *tokenDetails = [_rest.defaultEncoder decodeAccessToken:data error:&decodeError];
+        if (decodeError) {
+            callback(nil, decodeError);
+        } else {
+            callback(tokenDetails, nil);
+        }
+    }
+    else if ([response.MIMEType isEqualToString:@"text/plain"]) {
+        NSString *token = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        if ([token isEqualToString:@""]) {
+            callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:NSURLErrorCancelled userInfo:@{NSLocalizedDescriptionKey:@"authUrl: token is empty"}]);
+            return;
+        }
+        ARTAuthTokenDetails *tokenDetails = [[ARTAuthTokenDetails alloc] initWithToken:token];
+        callback(tokenDetails, nil);
+    }
+    else {
+        callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:NSURLErrorCancelled userInfo:@{NSLocalizedDescriptionKey:@"authUrl: invalid MIME type"}]);
     }
 }
 
@@ -260,7 +279,7 @@
                     callback(nil, error);
                 }
             } else {
-                [self setTokenDetails:tokenDetails];
+                _tokenDetails = tokenDetails;
                 if (callback) {
                     callback(self.tokenDetails, nil);
                 }
@@ -274,32 +293,25 @@
 }
 
 - (void)createTokenRequest:(ARTAuthTokenParams *)tokenParams options:(ARTAuthOptions *)options callback:(void (^)(ARTAuthTokenRequest *, NSError *))callback {
-    ARTAuthOptions *mergedOptions = options;
-    // FIXME: review
+    ARTAuthOptions *mergedOptions = [self mergeOptions:options];
+    ARTAuthTokenParams *mergedTokenParams = [self mergeParams:tokenParams];
+
     if (mergedOptions.queryTime) {
-        ARTAuthTokenParams *newParams = [[ARTAuthTokenParams alloc] init];
-        newParams.ttl = tokenParams.ttl;
-        newParams.capability = tokenParams.capability;
-        newParams.clientId = tokenParams.clientId;
         [_rest time:^(NSDate *time, NSError *error) {
             if (error) {
                 callback(nil, error);
             } else {
-                newParams.timestamp = time;
-                callback([newParams sign:mergedOptions.key], nil);
+                mergedTokenParams.timestamp = time;
+                callback([mergedTokenParams sign:mergedOptions.key], nil);
             }
         }];
     } else {
-        callback([tokenParams sign:mergedOptions.key], nil);
+        callback([mergedTokenParams sign:mergedOptions.key], nil);
     }
 }
 
 - (void)setProtocolClientId:(NSString *)clientId {
     _protocolClientId = clientId;
-}
-
-- (void)setTokenDetails:(ARTAuthTokenDetails *)tokenDetails {
-    _tokenDetails = tokenDetails;
 }
 
 - (NSString *)getClientId {
