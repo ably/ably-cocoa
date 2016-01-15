@@ -666,15 +666,19 @@ class Auth : QuickSpec {
 
             // RSA9a
             it("should create and sign a TokenRequest") {
-                let options = AblyTests.commonAppSetup()
-                let rest = ARTRest(options: options)
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
                 let expectedClientId = "client_string"
                 let tokenParams = ARTAuthTokenParams(clientId: expectedClientId)
 
-                rest.auth.createTokenRequest(tokenParams, options: options, callback: { tokenRequest, error in
-                    expect(tokenRequest?.clientId).to(equal(expectedClientId))
-                    expect(tokenRequest?.mac).toNot(beNil())
-                    expect(tokenRequest?.nonce).toNot(beNil())
+                rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
+                    guard let tokenRequest = tokenRequest else {
+                        XCTFail("TokenRequest is nil")
+                        return
+                    }
+                    expect(tokenRequest).to(beAnInstanceOf(ARTAuthTokenRequest))
+                    expect(tokenRequest.clientId).to(equal(expectedClientId))
+                    expect(tokenRequest.mac).toNot(beNil())
+                    expect(tokenRequest.nonce).toNot(beNil())
                 })
             }
 
