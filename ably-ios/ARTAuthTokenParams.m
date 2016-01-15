@@ -20,8 +20,8 @@
 
 - (instancetype)init {
     if (self = [super init]) {
-        _ttl = [ARTDefault ttl] * 60; //seconds
         _timestamp = [NSDate date];
+        _ttl = [ARTDefault ttl];
         _capability = @"{\"*\":[\"*\"]}"; // allow all
         _clientId = nil;
     }

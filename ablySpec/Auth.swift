@@ -742,11 +742,11 @@ class Auth : QuickSpec {
 
                 rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
                     //In Seconds because TTL property is a NSTimeInterval but further it does the conversion to milliseconds
-                    expect(tokenRequest?.ttl).to(equal(ARTDefault.ttl() * 60.0))
+                    expect(tokenRequest?.ttl).to(equal(ARTDefault.ttl()))
                 })
 
                 let tokenParams = ARTAuthTokenParams()
-                expect(tokenParams.ttl).to(equal(ARTDefault.ttl() * 60.0))
+                expect(tokenParams.ttl).to(equal(ARTDefault.ttl()))
 
                 let expectedTtl = 10.0
                 tokenParams.ttl = expectedTtl
