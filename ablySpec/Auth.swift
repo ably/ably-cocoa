@@ -753,6 +753,23 @@ class Auth : QuickSpec {
                 })
             }
 
+            it("should TTL be valid to request a token for 24 hours") {
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
+                let tokenParams = ARTAuthTokenParams()
+                tokenParams.ttl *= 24
+
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.requestToken(tokenParams, withOptions: nil) { tokenDetails, error in
+                        guard let tokenDetails = tokenDetails else {
+                            XCTFail("TokenDetails is nil"); done(); return
+                        }
+                        let dayInSeconds = 24 * 60 * 60
+                        expect(tokenDetails.expires!.timeIntervalSinceDate(tokenDetails.issued!)).to(beCloseTo(dayInSeconds))
+                        done()
+                    }
+                }
+            }
+
             // RSA9f
             it("should provide capability has json text") {
                 let rest = ARTRest(options: AblyTests.commonAppSetup())
