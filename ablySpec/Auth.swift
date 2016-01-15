@@ -53,10 +53,10 @@ class Auth : QuickSpec {
                 }
 
                 let key64 = NSString(string: "\(client.options.key!)")
-                    .dataUsingEncoding(NSUTF8StringEncoding)?
+                    .dataUsingEncoding(NSUTF8StringEncoding)!
                     .base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0))
                                 
-                let expectedAuthorization = "Basic \(key64!)"
+                let expectedAuthorization = "Basic \(key64)"
                 
                 expect(mockExecutor.requests.first).toNot(beNil(), description: "No request found")
                 
