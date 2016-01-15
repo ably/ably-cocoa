@@ -7,25 +7,28 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "CompatibilityMacros.h"
 #import "ARTStatus.h"
 
 @protocol ARTPayloadEncoder;
 
 @class ARTCipherParams;
 
+ART_ASSUME_NONNULL_BEGIN
+
 @interface ARTPayload : NSObject
 
-@property (readwrite, strong, nonatomic) id payload;
+@property (art_nullable, readwrite, strong, nonatomic) id payload;
 @property (readwrite, strong, nonatomic) NSString *encoding;
 
 - (instancetype)init;
-- (instancetype)initWithPayload:(id)payload encoding:(NSString *)encoding;
+- (instancetype)initWithPayload:(art_nullable id)payload encoding:(NSString *)encoding;
 
 + (instancetype)payload;
-+ (instancetype)payloadWithPayload:(id)payload encoding:(NSString *)encoding;
++ (instancetype)payloadWithPayload:(art_nullable id)payload encoding:(NSString *)encoding;
 
 + (id<ARTPayloadEncoder>)defaultPayloadEncoder:(ARTCipherParams *)cipherParams;
-+ (size_t) payloadArraySizeLimit;
++ (size_t)payloadArraySizeLimit;
 
 @end
 
@@ -39,8 +42,8 @@
 
 @protocol ARTPayloadEncoder
 
-- (ARTStatus *)encode:(ARTPayload *)payload output:(ARTPayload *__autoreleasing *)output;
-- (ARTStatus *)decode:(ARTPayload *)payload output:(ARTPayload *__autoreleasing *)output;
+- (ARTStatus *)encode:(ARTPayload *)payload output:(ARTPayload *__autoreleasing __art_nonnull *__art_nonnull)output;
+- (ARTStatus *)decode:(ARTPayload *)payload output:(ARTPayload *__autoreleasing __art_nonnull *__art_nonnull)output;
 - (NSString *)name;
 
 @end
@@ -48,8 +51,8 @@
 @interface ARTBase64PayloadEncoder : NSObject <ARTPayloadEncoder>
 
 + (instancetype)instance;
-+(NSString *) toBase64:(NSData *) input;
-+(NSString *) fromBase64:(NSString *) base64;
++ (NSString *)toBase64:(NSData *) input;
++ (NSString *)fromBase64:(NSString *) base64;
 
 @end
 
@@ -78,3 +81,5 @@
 - (instancetype)initWithEncoders:(NSArray *)encoders;
 
 @end
+
+ART_ASSUME_NONNULL_END
