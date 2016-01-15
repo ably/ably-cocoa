@@ -698,9 +698,29 @@ class Auth : QuickSpec {
             it("should generate a unique 16+ character nonce if none is provided") {
                 let rest = ARTRest(options: AblyTests.commonAppSetup())
 
-                rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
-                    expect(tokenRequest?.nonce.characters).to(haveCount(16))
-                })
+                waitUntil(timeout: testTimeout) { done in
+                    // First
+                    rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
+                        expect(error).to(beNil())
+                        guard let tokenRequest1 = tokenRequest else {
+                            XCTFail("TokenRequest1 is nil"); done(); return
+                        }
+                        expect(tokenRequest1.nonce.characters).to(haveCount(16))
+
+                        // Second
+                        rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
+                            expect(error).to(beNil())
+                            guard let tokenRequest2 = tokenRequest else {
+                                XCTFail("TokenRequest2 is nil"); done(); return
+                            }
+                            expect(tokenRequest2.nonce.characters).to(haveCount(16))
+
+                            // Uniqueness
+                            expect(tokenRequest1.nonce).toNot(equal(tokenRequest2.nonce))
+                            done()
+                        })
+                    })
+                }
             }
 
             // RSA9d
