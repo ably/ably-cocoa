@@ -757,41 +757,67 @@ class Auth : QuickSpec {
             }
 
             // RSA9e
-            it("should TTL be optional and specified in milliseconds") {
-                let rest = ARTRest(options: AblyTests.commonAppSetup())
+            context("TTL") {
 
-                rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
-                    //In Seconds because TTL property is a NSTimeInterval but further it does the conversion to milliseconds
-                    expect(tokenRequest?.ttl).to(equal(ARTDefault.ttl()))
-                })
+                it("should be optional") {
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
 
-                let tokenParams = ARTAuthTokenParams()
-                expect(tokenParams.ttl).to(equal(ARTDefault.ttl()))
-
-                let expectedTtl = 10.0
-                tokenParams.ttl = expectedTtl
-
-                rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
-                    //In Seconds because TTL property is a NSTimeInterval but further it does the conversion to milliseconds
-                    expect(tokenRequest?.ttl).to(equal(expectedTtl))
-                })
-            }
-
-            it("should TTL be valid to request a token for 24 hours") {
-                let rest = ARTRest(options: AblyTests.commonAppSetup())
-                let tokenParams = ARTAuthTokenParams()
-                tokenParams.ttl *= 24
-
-                waitUntil(timeout: testTimeout) { done in
-                    rest.auth.requestToken(tokenParams, withOptions: nil) { tokenDetails, error in
-                        guard let tokenDetails = tokenDetails else {
-                            XCTFail("TokenDetails is nil"); done(); return
+                    rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
+                        guard let tokenRequest = tokenRequest else {
+                            XCTFail("TokenRequest is nil"); return
                         }
-                        let dayInSeconds = 24 * 60 * 60
-                        expect(tokenDetails.expires!.timeIntervalSinceDate(tokenDetails.issued!)).to(beCloseTo(dayInSeconds))
-                        done()
+                        //In Seconds because TTL property is a NSTimeInterval but further it does the conversion to milliseconds
+                        expect(tokenRequest.ttl).to(equal(ARTDefault.ttl()))
+                    })
+
+                    let tokenParams = ARTAuthTokenParams()
+                    expect(tokenParams.ttl).to(equal(ARTDefault.ttl()))
+
+                    let expectedTtl = NSTimeInterval(10)
+                    tokenParams.ttl = expectedTtl
+
+                    rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
+                        guard let tokenRequest = tokenRequest else {
+                            XCTFail("TokenRequest is nil"); return
+                        }
+                        expect(tokenRequest.ttl).to(equal(expectedTtl))
+                    })
+                }
+
+                it("should be specified in milliseconds") {
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
+
+                    rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
+                        guard let tokenRequest = tokenRequest else {
+                            XCTFail("TokenRequest is nil"); return
+                        }
+                        expect(tokenRequest.ttl).to(equal(ARTDefault.ttl()))
+                        // Check if the encoder changes the TTL to milliseconds
+                        let jsonEncoder = rest.defaultEncoder as! ARTJsonEncoder
+                        let data = jsonEncoder.encodeTokenRequest(tokenRequest)
+                        let jsonObject = try! NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions(rawValue: 0))  as! NSDictionary
+                        let ttl = jsonObject["ttl"] as! NSNumber
+                        expect(ttl).to(equal(60 * 60 * 1000))
+                    })
+                }
+
+                it("should be valid to request a token for 24 hours") {
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
+                    let tokenParams = ARTAuthTokenParams()
+                    tokenParams.ttl *= 24
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.requestToken(tokenParams, withOptions: nil) { tokenDetails, error in
+                            guard let tokenDetails = tokenDetails else {
+                                XCTFail("TokenDetails is nil"); done(); return
+                            }
+                            let dayInSeconds = 24 * 60 * 60
+                            expect(tokenDetails.expires!.timeIntervalSinceDate(tokenDetails.issued!)).to(beCloseTo(dayInSeconds))
+                            done()
+                        }
                     }
                 }
+
             }
 
             // RSA9f
