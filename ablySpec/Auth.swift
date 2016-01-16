@@ -671,9 +671,9 @@ class Auth : QuickSpec {
                 let tokenParams = ARTAuthTokenParams(clientId: expectedClientId)
 
                 rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
+                    expect(error).to(beNil())
                     guard let tokenRequest = tokenRequest else {
-                        XCTFail("TokenRequest is nil")
-                        return
+                        XCTFail("TokenRequest is nil"); return
                     }
                     expect(tokenRequest).to(beAnInstanceOf(ARTAuthTokenRequest))
                     expect(tokenRequest.clientId).to(equal(expectedClientId))
@@ -690,7 +690,11 @@ class Auth : QuickSpec {
                 let authOptions = ARTAuthOptions(key: "key:secret")
 
                 auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
-                    expect(tokenRequest?.keyName).to(equal("key"))
+                    expect(error).to(beNil())
+                    guard let tokenRequest = tokenRequest else {
+                        XCTFail("TokenRequest is nil"); return
+                    }
+                    expect(tokenRequest.keyName).to(equal("key"))
                 })
             }
 
@@ -730,7 +734,11 @@ class Auth : QuickSpec {
                     let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                     rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
-                        expect(tokenRequest?.timestamp).to(beCloseTo(NSDate(), within: 1.0))
+                        expect(error).to(beNil())
+                        guard let tokenRequest = tokenRequest else {
+                            XCTFail("TokenRequest is nil"); return
+                        }
+                        expect(tokenRequest.timestamp).to(beCloseTo(NSDate(), within: 1.0))
                     })
                 }
 
@@ -750,9 +758,16 @@ class Auth : QuickSpec {
                     let authOptions = ARTAuthOptions()
                     authOptions.queryTime = true
 
-                    rest.auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
-                        expect(tokenRequest?.timestamp).to(beCloseTo(serverTime!, within: 6.0))
-                    })
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
+                            expect(error).to(beNil())
+                            guard let tokenRequest = tokenRequest else {
+                                XCTFail("TokenRequest is nil"); return
+                            }
+                            expect(tokenRequest.timestamp).to(beCloseTo(serverTime!, within: 6.0))
+                            done()
+                        })
+                    }
                 }
             }
 
@@ -763,6 +778,7 @@ class Auth : QuickSpec {
                     let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                     rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
+                        expect(error).to(beNil())
                         guard let tokenRequest = tokenRequest else {
                             XCTFail("TokenRequest is nil"); return
                         }
@@ -777,6 +793,7 @@ class Auth : QuickSpec {
                     tokenParams.ttl = expectedTtl
 
                     rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
+                        expect(error).to(beNil())
                         guard let tokenRequest = tokenRequest else {
                             XCTFail("TokenRequest is nil"); return
                         }
@@ -788,6 +805,7 @@ class Auth : QuickSpec {
                     let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                     rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
+                        expect(error).to(beNil())
                         guard let tokenRequest = tokenRequest else {
                             XCTFail("TokenRequest is nil"); return
                         }
@@ -808,6 +826,7 @@ class Auth : QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.requestToken(tokenParams, withOptions: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
                             guard let tokenDetails = tokenDetails else {
                                 XCTFail("TokenDetails is nil"); done(); return
                             }
@@ -828,8 +847,10 @@ class Auth : QuickSpec {
                 tokenParams.capability = "{ - }"
 
                 rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
-                    expect(error).toNot(beNil())
-                    expect(error?.description).to(contain("Capability"))
+                    guard let error = error else {
+                        XCTFail("Error is nil"); return
+                    }
+                    expect(error.description).to(contain("Capability"))
                     expect(tokenRequest?.capability).to(beNil())
                 })
 
@@ -838,7 +859,10 @@ class Auth : QuickSpec {
 
                 rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
                     expect(error).to(beNil())
-                    expect(tokenRequest?.capability).to(equal(expectedCapability))
+                    guard let tokenRequest = tokenRequest else {
+                        XCTFail("TokenRequest is nil"); return
+                    }
+                    expect(tokenRequest.capability).to(equal(expectedCapability))
                 })
             }
 
@@ -849,8 +873,12 @@ class Auth : QuickSpec {
                 let tokenParams = ARTAuthTokenParams(clientId: "client_string")
 
                 rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
-                    let signed = tokenParams.sign(rest.options.key!, withNonce: tokenRequest?.nonce ?? "")
-                    expect(tokenRequest?.mac).to(equal(signed.mac))
+                    expect(error).to(beNil())
+                    guard let tokenRequest = tokenRequest else {
+                        XCTFail("TokenRequest is nil"); return
+                    }
+                    let signed = tokenParams.sign(rest.options.key!, withNonce: tokenRequest.nonce)
+                    expect(tokenRequest.mac).to(equal(signed.mac))
                 })
             }
 
@@ -877,12 +905,16 @@ class Auth : QuickSpec {
                 expect(serverTime).toNot(beNil(), description: "Server time is nil")
 
                 rest.auth.createTokenRequest(tokenParams, options: authOptions, callback: { tokenRequest, error in
-                    expect(tokenRequest?.clientId).to(equal(expectedClientId))
-                    expect(tokenRequest?.mac).toNot(beNil())
-                    expect(tokenRequest?.nonce.characters).to(haveCount(16))
-                    expect(tokenRequest?.ttl).to(equal(expectedTtl))
-                    expect(tokenRequest?.capability).to(equal(expectedCapability))
-                    expect(tokenRequest?.timestamp).to(beCloseTo(serverTime!, within: 6.0))
+                    expect(error).to(beNil())
+                    guard let tokenRequest = tokenRequest else {
+                        XCTFail("TokenRequest is nil"); return
+                    }
+                    expect(tokenRequest.clientId).to(equal(expectedClientId))
+                    expect(tokenRequest.mac).toNot(beNil())
+                    expect(tokenRequest.nonce.characters).to(haveCount(16))
+                    expect(tokenRequest.ttl).to(equal(expectedTtl))
+                    expect(tokenRequest.capability).to(equal(expectedCapability))
+                    expect(tokenRequest.timestamp).to(beCloseTo(serverTime!, within: 6.0))
                 })
             }
 
