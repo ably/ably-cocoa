@@ -872,14 +872,26 @@ class Auth : QuickSpec {
 
                 let tokenParams = ARTAuthTokenParams(clientId: "client_string")
 
-                rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
-                    expect(error).to(beNil())
-                    guard let tokenRequest = tokenRequest else {
-                        XCTFail("TokenRequest is nil"); return
-                    }
-                    let signed = tokenParams.sign(rest.options.key!, withNonce: tokenRequest.nonce)
-                    expect(tokenRequest.mac).to(equal(signed.mac))
-                })
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
+                        expect(error).to(beNil())
+                        guard let tokenRequest1 = tokenRequest else {
+                            XCTFail("TokenRequest is nil"); done(); return
+                        }
+                        let signed = tokenParams.sign(rest.options.key!, withNonce: tokenRequest1.nonce)
+                        expect(tokenRequest1.mac).to(equal(signed.mac))
+
+                        rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
+                            expect(error).to(beNil())
+                            guard let tokenRequest2 = tokenRequest else {
+                                XCTFail("TokenRequest is nil"); done(); return
+                            }
+                            expect(tokenRequest2.nonce).toNot(equal(tokenRequest1.nonce))
+                            expect(tokenRequest2.mac).toNot(equal(tokenRequest1.mac))
+                            done()
+                        })
+                    })
+                }
             }
 
             // RSA9i
