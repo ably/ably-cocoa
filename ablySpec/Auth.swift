@@ -745,15 +745,14 @@ class Auth : QuickSpec {
                 it("will retrieve the server time if queryTime is true") {
                     let rest = ARTRest(options: AblyTests.commonAppSetup())
 
-                    var serverTime: NSDate?
-                    waitUntil(timeout: testTimeout) { done in
-                        rest.time({ date, error in
-                            serverTime = date
-                            done()
-                        })
+                    var serverTimeRequestWasMade = false
+                    let block: @convention(block) (AspectInfo) -> Void = { _ in
+                        serverTimeRequestWasMade = true
                     }
 
-                    expect(serverTime).toNot(beNil(), description: "Server time is nil")
+                    let hook = ARTRest.aspect_hookSelector(rest)
+                    // Adds a block of code after `time` is triggered
+                    let _ = try? hook(Selector("time:"), withOptions: .PositionAfter, usingBlock:  unsafeBitCast(block, ARTRest.self))
 
                     let authOptions = ARTAuthOptions()
                     authOptions.queryTime = true
@@ -764,7 +763,8 @@ class Auth : QuickSpec {
                             guard let tokenRequest = tokenRequest else {
                                 XCTFail("TokenRequest is nil"); return
                             }
-                            expect(tokenRequest.timestamp).to(beCloseTo(serverTime!, within: 6.0))
+                            expect(tokenRequest.timestamp).toNot(beNil())
+                            expect(serverTimeRequestWasMade).to(beTrue())
                             done()
                         })
                     }
