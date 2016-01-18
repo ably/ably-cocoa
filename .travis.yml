@@ -10,14 +10,12 @@ before_install:
   # Show available simulators
   - xcrun simctl list devices
 install:
-  # Xcode Build formatter
-  - gem install xcpretty --no-rdoc --no-ri --no-document --quiet
-  # Custom formatter for xcpretty with some syntactic sugar for presentation on TravisCI
-  # https://github.com/kattrali/xcpretty-travis-formatter
-  - gem install xcpretty-travis-formatter --no-rdoc --no-ri --no-document --quiet
+  # Install Scan
+  # Automatically switches to the travis formatter when running on Travis
+  - gem install scan
   # Install CocoaPods
   - gem install cocoapods -v '0.39.0' --no-rdoc --no-ri --no-document --quiet
   - pod install
 script:
   # Run tests
-  - ./Scripts/run-tests.sh
+  - scan
