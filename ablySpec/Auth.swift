@@ -544,12 +544,53 @@ class Auth : QuickSpec {
                     it("should be added to the URL when auth method is GET") {
                         let clientOptions = ARTClientOptions()
                         clientOptions.authUrl = NSURL(string: "http://auth.ably.io")
+                        var authParams = [
+                            "param1": "value",
+                            "param2": "value",
+                            "clientId": "should not be overwritten",
+                        ]
+                        clientOptions.authParams = authParams.map {
+                             NSURLQueryItem(name: $0, value: $1)
+                        }
+                        clientOptions.authHeaders = ["X-Header-1": "foo", "X-Header-2": "bar"]
                         let tokenParams = ARTAuthTokenParams()
-                        
+                        tokenParams.clientId = "test"
+
                         let rest = ARTRest(options: clientOptions)
+                        let request = rest.auth.buildRequest(clientOptions, withParams: tokenParams)
+
+                        for (header, expectedValue) in clientOptions.authHeaders! {
+                            if let value = request.allHTTPHeaderFields?[header] {
+                                expect(value).to(equal(expectedValue))
+                            } else {
+                                fail("Missing header in request: \(header), expected: \(expectedValue)")
+                            }
+                        }
                         
-                        let url = rest.auth.buildURL(clientOptions, withParams: tokenParams)
-                        expect(url.absoluteString).to(contain(NSURL(string: "http://auth.ably.io")?.absoluteString ?? ""))
+                        guard let url = request.URL else {
+                            fail("Request is invalid")
+                            return
+                        }
+                        guard let urlComponents = NSURLComponents(URL: url, resolvingAgainstBaseURL: false) else {
+                            fail("invalid URL: \(url)")
+                            return
+                        }
+                        expect(urlComponents.scheme).to(equal("http"))
+                        expect(urlComponents.host).to(equal("auth.ably.io"))
+                        guard let queryItems = urlComponents.queryItems else {
+                            fail("URL without query: \(url)")
+                            return
+                        }
+                        for queryItem in queryItems {
+                            if var expectedValue = authParams[queryItem.name] {
+                                if queryItem.name == "clientId" {
+                                    expectedValue = "test"
+                                }
+                                expect(queryItem.value!).to(equal(expectedValue))
+                                authParams.removeValueForKey(queryItem.name)
+                            }
+                        }
+                        expect(authParams).to(beEmpty())
                     }
                     
                     // RSA8c1b
@@ -557,6 +598,7 @@ class Auth : QuickSpec {
                         let clientOptions = ARTClientOptions()
                         clientOptions.authUrl = NSURL(string: "http://auth.ably.io")
                         clientOptions.authMethod = "POST"
+                        clientOptions.authHeaders = ["X-Header-1": "foo", "X-Header-2": "bar"]
                         let tokenParams = ARTAuthTokenParams()
                         
                         let rest = ARTRest(options: clientOptions)
@@ -571,6 +613,14 @@ class Auth : QuickSpec {
                         let expectedJSON = ["ttl":NSString(format: "%f", CGFloat(60*60)), "capability":"{\"*\":[\"*\"]}", "timestamp":httpBodyJSON!["timestamp"]!]
                         
                         expect(httpBodyJSON) == expectedJSON
+
+                        for (header, expectedValue) in clientOptions.authHeaders! {
+                            if let value = request.allHTTPHeaderFields?[header] {
+                                expect(value).to(equal(expectedValue))
+                            } else {
+                                fail("Missing header in request: \(header), expected: \(expectedValue)")
+                            }
+                        }
                     }
                 }
                 
