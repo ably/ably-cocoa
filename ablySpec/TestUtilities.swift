@@ -269,8 +269,8 @@ func publishTestMessage(realtime: ARTRealtime, failOnError: Bool = true) -> Publ
 }
 
 /// Access Token
-func getTestToken() -> String {
-    if let tokenDetails = getTestTokenDetails() {
+func getTestToken(capability capability: String? = nil) -> String {
+    if let tokenDetails = getTestTokenDetails(capability: capability) {
         return tokenDetails.token
     }
     else {
@@ -280,14 +280,20 @@ func getTestToken() -> String {
 }
 
 /// Access TokenDetails
-func getTestTokenDetails() -> ARTAuthTokenDetails? {
+func getTestTokenDetails(capability capability: String? = nil) -> ARTAuthTokenDetails? {
     let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
     let client = ARTRest(options: options)
 
     var tokenDetails: ARTAuthTokenDetails?
     var error: NSError?
 
-    client.auth.requestToken(nil, withOptions: nil) { _tokenDetails, _error in
+    var tokenParams: ARTAuthTokenParams? = nil
+    if let capability = capability {
+        tokenParams = ARTAuthTokenParams()
+        tokenParams!.capability = capability
+    }
+
+    client.auth.requestToken(tokenParams, withOptions: nil) { _tokenDetails, _error in
         tokenDetails = _tokenDetails
         error = _error
     }
