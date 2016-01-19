@@ -710,10 +710,17 @@
     }
 
     if (serial == self.pendingMessageStartSerial) {
-        NSRange ackRange = NSMakeRange(0, (unsigned int) count);
+        NSRange ackRange;
+        if (count > self.pendingMessages.count) {
+            [self.logger error:@"ARTRealtime ACK: count response is greater than the total of pending messages"];
+            // Process all the available pending messages
+            ackRange = NSMakeRange(0, self.pendingMessages.count);
+        }
+        else {
+            ackRange = NSMakeRange(0, count);
+        }
         ackMessages = [self.pendingMessages subarrayWithRange:ackRange];
         [self.pendingMessages removeObjectsInRange:ackRange];
-        // TODO what happens if count > pendingMessages.count
         self.pendingMessageStartSerial += count;
     }
 
@@ -742,7 +749,16 @@
         serial = self.pendingMessageStartSerial;
     }
 
-    NSRange nackRange = NSMakeRange(0, (unsigned int) count);
+    NSRange nackRange;
+    if (count > self.pendingMessages.count) {
+        [self.logger error:@"ARTRealtime NACK: count response is greater than the total of pending messages"];
+        // Process all the available pending messages
+        nackRange = NSMakeRange(0, self.pendingMessages.count);
+    }
+    else {
+        nackRange = NSMakeRange(0, count);
+    }
+
     NSArray *nackMessages = [self.pendingMessages subarrayWithRange:nackRange];
     [self.pendingMessages removeObjectsInRange:nackRange];
     self.pendingMessageStartSerial += count;
