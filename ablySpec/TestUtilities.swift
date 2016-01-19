@@ -211,27 +211,36 @@ class PublishTestMessage {
     }
 
     init(client: ARTRealtime, failOnError: Bool = true, completion: Optional<(NSError?)->()> = nil) {
+        let complete: (ARTStatus)->() = { status in
+            // ARTErrorInfo to NSError
+            if let errorInfo = status.errorInfo where errorInfo.code != 0 {
+                self.error = NSError(domain: ARTAblyErrorDomain, code: Int(errorInfo.code), userInfo: [NSLocalizedDescriptionKey:errorInfo.message])
+            }
+            else {
+                self.error = nil
+            }
+
+            if let callback = completion {
+                callback(self.error)
+            }
+            else if failOnError, let e = self.error {
+                XCTFail("Got error '\(e)'")
+            }
+        }
+
         client.eventEmitter.on { state, error in
             if state == .Connected {
                 let channel = client.channel("test")
                 channel.subscribeToStateChanges { state, status in
-                    if state == .Attached {
+                    switch state {
+                    case .Attached:
                         channel.publish("message", cb: { status in
-                            // ARTErrorInfo to NSError
-                            if let errorInfo = status.errorInfo where errorInfo.code != 0 {
-                                self.error = NSError(domain: ARTAblyErrorDomain, code: Int(errorInfo.code), userInfo: [NSLocalizedDescriptionKey:errorInfo.message])
-                            }
-                            else {
-                                self.error = nil
-                            }
-
-                            if let callback = completion {
-                                callback(self.error)
-                            }
-                            else if failOnError, let e = self.error {
-                                XCTFail("Got error '\(e)'")
-                            }
+                            complete(status)
                         })
+                    case .Failed:
+                        complete(status)
+                    default:
+                        break
                     }
                 }
                 channel.attach()
