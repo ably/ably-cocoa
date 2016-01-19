@@ -51,19 +51,24 @@
 
                 __block bool hasAttached = false;
                 [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
-                    XCTAssertEqual(ARTStateOk, reason.state);
                     if(state == ARTRealtimeChannelAttaching) {
+                        XCTAssertEqual(ARTStateOk, reason.state);
                         [channel attach];
                     }
                     if (state == ARTRealtimeChannelAttached) {
+                        XCTAssertEqual(ARTStateOk, reason.state);
                         [channel attach];
                         
                         if(!hasAttached) {
-                            [expectation fulfill];
+                            hasAttached = true;
+                            [channel detach];
                         }
                         else {
                             XCTFail(@"duplicate call to attach shouldnt happen");
                         }
+                    }
+                    if (state == ARTRealtimeChannelDetached) {
+                        [expectation fulfill];
                     }
                 }];
                 [channel attach];
