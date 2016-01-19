@@ -91,8 +91,6 @@
 // Message sending
 - (void)sendQueuedMessages;
 - (void)failQueuedMessages:(ARTStatus *)error;
-- (void)ack:(int64_t)serial count:(int64_t)count;
-- (void)nack:(int64_t)serial count:(int64_t)count;
 
 // Util
 - (CFRunLoopTimerRef)startTimer:(void(^)())onTimeout interval:(NSTimeInterval)interval;
@@ -531,13 +529,11 @@
 }
 
 - (void)onAck:(ARTProtocolMessage *)message {
-    // TODO work out which states this can be received in
-    [self ack:message.msgSerial count:message.count];
+    [self ack:message];
 }
 
 - (void)onNack:(ARTProtocolMessage *)message {
-    // TODO work out which states this can be received in
-    [self nack:message.msgSerial count:message.count];
+    [self nack:message];
 }
 
 - (void)onChannelMessage:(ARTProtocolMessage *)message withErrorInfo:(ARTErrorInfo *)errorInfo {
@@ -680,8 +676,9 @@
     }
 }
 
-- (void)ack:(int64_t)serial count:(int64_t)count {
-    [self.logger verbose:@"ARTRealtime ack: %lld , count %lld",  serial,  count];
+- (void)ack:(ARTProtocolMessage *)message {
+    int64_t serial = message.msgSerial;
+    int count = message.count;
     NSArray *nackMessages = nil;
     NSArray *ackMessages = nil;
 
@@ -712,7 +709,7 @@
     }
 
     for (ARTQueuedMessage *msg in nackMessages) {
-        msg.cb([ARTStatus state:ARTStateError]);
+        msg.cb([ARTStatus state:ARTStateError info:message.error]);
     }
 
     for (ARTQueuedMessage *msg in ackMessages) {
@@ -720,8 +717,9 @@
     }
 }
 
-- (void)nack:(int64_t)serial count:(int64_t)count {
-    [self.logger verbose:@"ARTRealtime Nack: %lld , count %lld",  serial,  count];
+- (void)nack:(ARTProtocolMessage *)message {
+    int64_t serial = message.msgSerial;
+    int count = message.count;
     if (serial != self.pendingMessageStartSerial) {
         // This is an error condition and it shouldn't happen but
         // we can handle it gracefully by only processing the
@@ -736,7 +734,7 @@
     self.pendingMessageStartSerial = serial;
 
     for (ARTQueuedMessage *msg in nackMessages) {
-        msg.cb([ARTStatus state:ARTStateError]);
+        msg.cb([ARTStatus state:ARTStateError info:message.error]);
     }
 }
 
