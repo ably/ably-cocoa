@@ -666,15 +666,267 @@ class Auth : QuickSpec {
 
             // RSA9a
             it("should create and sign a TokenRequest") {
-                let options = AblyTests.commonAppSetup()
-                let rest = ARTRest(options: options)
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
                 let expectedClientId = "client_string"
                 let tokenParams = ARTAuthTokenParams(clientId: expectedClientId)
 
-                rest.auth.createTokenRequest(tokenParams, options: options, callback: { tokenRequest, error in
-                    expect(tokenRequest?.clientId).to(equal(expectedClientId))
-                    expect(tokenRequest?.mac).toNot(beNil())
-                    expect(tokenRequest?.nonce).toNot(beNil())
+                rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
+                    expect(error).to(beNil())
+                    guard let tokenRequest = tokenRequest else {
+                        XCTFail("TokenRequest is nil"); return
+                    }
+                    expect(tokenRequest).to(beAnInstanceOf(ARTAuthTokenRequest))
+                    expect(tokenRequest.clientId).to(equal(expectedClientId))
+                    expect(tokenRequest.mac).toNot(beNil())
+                    expect(tokenRequest.nonce).toNot(beNil())
+                })
+            }
+
+            // RSA9b
+            it("should support AuthOptions") {
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
+                let auth: ARTAuth = rest.auth
+
+                let authOptions = ARTAuthOptions(key: "key:secret")
+
+                auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
+                    expect(error).to(beNil())
+                    guard let tokenRequest = tokenRequest else {
+                        XCTFail("TokenRequest is nil"); return
+                    }
+                    expect(tokenRequest.keyName).to(equal("key"))
+                })
+            }
+
+            // RSA9c
+            it("should generate a unique 16+ character nonce if none is provided") {
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
+
+                waitUntil(timeout: testTimeout) { done in
+                    // First
+                    rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
+                        expect(error).to(beNil())
+                        guard let tokenRequest1 = tokenRequest else {
+                            XCTFail("TokenRequest1 is nil"); done(); return
+                        }
+                        expect(tokenRequest1.nonce.characters).to(haveCount(16))
+
+                        // Second
+                        rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
+                            expect(error).to(beNil())
+                            guard let tokenRequest2 = tokenRequest else {
+                                XCTFail("TokenRequest2 is nil"); done(); return
+                            }
+                            expect(tokenRequest2.nonce.characters).to(haveCount(16))
+
+                            // Uniqueness
+                            expect(tokenRequest1.nonce).toNot(equal(tokenRequest2.nonce))
+                            done()
+                        })
+                    })
+                }
+            }
+
+            // RSA9d
+            context("should generate a timestamp") {
+
+                it("from current time if not provided") {
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
+
+                    rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
+                        expect(error).to(beNil())
+                        guard let tokenRequest = tokenRequest else {
+                            XCTFail("TokenRequest is nil"); return
+                        }
+                        expect(tokenRequest.timestamp).to(beCloseTo(NSDate(), within: 1.0))
+                    })
+                }
+
+                it("will retrieve the server time if queryTime is true") {
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
+
+                    var serverTimeRequestWasMade = false
+                    let block: @convention(block) (AspectInfo) -> Void = { _ in
+                        serverTimeRequestWasMade = true
+                    }
+
+                    let hook = ARTRest.aspect_hookSelector(rest)
+                    // Adds a block of code after `time` is triggered
+                    let _ = try? hook(Selector("time:"), withOptions: .PositionAfter, usingBlock:  unsafeBitCast(block, ARTRest.self))
+
+                    let authOptions = ARTAuthOptions()
+                    authOptions.queryTime = true
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
+                            expect(error).to(beNil())
+                            guard let tokenRequest = tokenRequest else {
+                                XCTFail("TokenRequest is nil"); return
+                            }
+                            expect(tokenRequest.timestamp).toNot(beNil())
+                            expect(serverTimeRequestWasMade).to(beTrue())
+                            done()
+                        })
+                    }
+                }
+            }
+
+            // RSA9e
+            context("TTL") {
+
+                it("should be optional") {
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
+
+                    rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
+                        expect(error).to(beNil())
+                        guard let tokenRequest = tokenRequest else {
+                            XCTFail("TokenRequest is nil"); return
+                        }
+                        //In Seconds because TTL property is a NSTimeInterval but further it does the conversion to milliseconds
+                        expect(tokenRequest.ttl).to(equal(ARTDefault.ttl()))
+                    })
+
+                    let tokenParams = ARTAuthTokenParams()
+                    expect(tokenParams.ttl).to(equal(ARTDefault.ttl()))
+
+                    let expectedTtl = NSTimeInterval(10)
+                    tokenParams.ttl = expectedTtl
+
+                    rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
+                        expect(error).to(beNil())
+                        guard let tokenRequest = tokenRequest else {
+                            XCTFail("TokenRequest is nil"); return
+                        }
+                        expect(tokenRequest.ttl).to(equal(expectedTtl))
+                    })
+                }
+
+                it("should be specified in milliseconds") {
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
+
+                    rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
+                        expect(error).to(beNil())
+                        guard let tokenRequest = tokenRequest else {
+                            XCTFail("TokenRequest is nil"); return
+                        }
+                        expect(tokenRequest.ttl).to(equal(ARTDefault.ttl()))
+                        // Check if the encoder changes the TTL to milliseconds
+                        let jsonEncoder = rest.defaultEncoder as! ARTJsonEncoder
+                        let data = jsonEncoder.encodeTokenRequest(tokenRequest)
+                        let jsonObject = try! NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions(rawValue: 0))  as! NSDictionary
+                        let ttl = jsonObject["ttl"] as! NSNumber
+                        expect(ttl).to(equal(60 * 60 * 1000))
+                    })
+                }
+
+                it("should be valid to request a token for 24 hours") {
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
+                    let tokenParams = ARTAuthTokenParams()
+                    tokenParams.ttl *= 24
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.requestToken(tokenParams, withOptions: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            guard let tokenDetails = tokenDetails else {
+                                XCTFail("TokenDetails is nil"); done(); return
+                            }
+                            let dayInSeconds = 24 * 60 * 60
+                            expect(tokenDetails.expires!.timeIntervalSinceDate(tokenDetails.issued!)).to(beCloseTo(dayInSeconds))
+                            done()
+                        }
+                    }
+                }
+
+            }
+
+            // RSA9f
+            it("should provide capability has json text") {
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
+
+                let tokenParams = ARTAuthTokenParams()
+                tokenParams.capability = "{ - }"
+
+                rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
+                    guard let error = error else {
+                        XCTFail("Error is nil"); return
+                    }
+                    expect(error.description).to(contain("Capability"))
+                    expect(tokenRequest?.capability).to(beNil())
+                })
+
+                let expectedCapability = "{ \"cansubscribe:*\":[\"subscribe\"] }"
+                tokenParams.capability = expectedCapability
+
+                rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
+                    expect(error).to(beNil())
+                    guard let tokenRequest = tokenRequest else {
+                        XCTFail("TokenRequest is nil"); return
+                    }
+                    expect(tokenRequest.capability).to(equal(expectedCapability))
+                })
+            }
+
+            // RSA9g
+            it("should generate a valid HMAC") {
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
+
+                let tokenParams = ARTAuthTokenParams(clientId: "client_string")
+
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
+                        expect(error).to(beNil())
+                        guard let tokenRequest1 = tokenRequest else {
+                            XCTFail("TokenRequest is nil"); done(); return
+                        }
+                        let signed = tokenParams.sign(rest.options.key!, withNonce: tokenRequest1.nonce)
+                        expect(tokenRequest1.mac).to(equal(signed.mac))
+
+                        rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
+                            expect(error).to(beNil())
+                            guard let tokenRequest2 = tokenRequest else {
+                                XCTFail("TokenRequest is nil"); done(); return
+                            }
+                            expect(tokenRequest2.nonce).toNot(equal(tokenRequest1.nonce))
+                            expect(tokenRequest2.mac).toNot(equal(tokenRequest1.mac))
+                            done()
+                        })
+                    })
+                }
+            }
+
+            // RSA9i
+            it("should respect all requirements") {
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
+                let expectedClientId = "client_string"
+                let tokenParams = ARTAuthTokenParams(clientId: expectedClientId)
+                let expectedTtl = 6.0
+                tokenParams.ttl = expectedTtl
+                let expectedCapability = "{}"
+                tokenParams.capability = expectedCapability
+
+                let authOptions = ARTAuthOptions()
+                authOptions.queryTime = true
+
+                var serverTime: NSDate?
+                waitUntil(timeout: testTimeout) { done in
+                    rest.time({ date, error in
+                        serverTime = date
+                        done()
+                    })
+                }
+                expect(serverTime).toNot(beNil(), description: "Server time is nil")
+
+                rest.auth.createTokenRequest(tokenParams, options: authOptions, callback: { tokenRequest, error in
+                    expect(error).to(beNil())
+                    guard let tokenRequest = tokenRequest else {
+                        XCTFail("TokenRequest is nil"); return
+                    }
+                    expect(tokenRequest.clientId).to(equal(expectedClientId))
+                    expect(tokenRequest.mac).toNot(beNil())
+                    expect(tokenRequest.nonce.characters).to(haveCount(16))
+                    expect(tokenRequest.ttl).to(equal(expectedTtl))
+                    expect(tokenRequest.capability).to(equal(expectedCapability))
+                    expect(tokenRequest.timestamp).to(beCloseTo(serverTime!, within: 6.0))
                 })
             }
 

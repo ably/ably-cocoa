@@ -31,6 +31,13 @@ uint64_t timeIntervalToMiliseconds(NSTimeInterval seconds) {
     return (uint64_t)(seconds * 1000);
 }
 
+NSString *generateNonce() {
+    // Generate two random numbers up to 8 digits long and concatenate them to produce a 16 digit random number
+    NSUInteger r1 = arc4random_uniform(100000000);
+    NSUInteger r2 = arc4random_uniform(100000000);
+    return [NSString stringWithFormat:@"%08lu%08lu", (long)r1, (long)r2];
+}
+
 // MARK: ARTIndirectCancellable
 
 @interface ARTIndirectCancellable ()

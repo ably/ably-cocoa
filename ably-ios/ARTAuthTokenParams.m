@@ -11,6 +11,7 @@
 #include <CommonCrypto/CommonDigest.h>
 #include <CommonCrypto/CommonHMAC.h>
 
+#import "ARTDefault.h"
 #import "ARTEncoder.h"
 #import "ARTPayload.h"
 #import "ARTAuthTokenRequest.h"
@@ -19,8 +20,8 @@
 
 - (instancetype)init {
     if (self = [super init]) {
-        _ttl = 60 * 60;
         _timestamp = [NSDate date];
+        _ttl = [ARTDefault ttl];
         _capability = @"{\"*\":[\"*\"]}"; // allow all
         _clientId = nil;
     }
@@ -119,13 +120,6 @@
     return tokenParams;
 }
 
-static NSString *generateNonce() {
-    // Generate two random numbers up to 8 digits long and concatenate them to produce a 16 digit random number
-    NSUInteger r1 = arc4random_uniform(100000000);
-    NSUInteger r2 = arc4random_uniform(100000000);
-    return [NSString stringWithFormat:@"%08lu%08lu", (long)r1, (long)r2];
-}
-
 static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
     const void *cKey = [key bytes];
     const void *cData = [data bytes];
@@ -141,15 +135,19 @@ static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
 }
 
 - (ARTAuthTokenRequest *)sign:(NSString *)key {
+    return [self sign:key withNonce:generateNonce()];
+}
+
+- (ARTAuthTokenRequest *)sign:(NSString *)key withNonce:(NSString *)randomNonce {
     NSArray *keyComponents = decomposeKey(key);
     NSString *keyName = keyComponents[0];
     NSString *keySecret = keyComponents[1];
-    NSString *nonce = generateNonce();
+    NSString *nonce = randomNonce;
     NSString *clientId = self.clientId ? self.clientId : @"";
 
     NSString *signText = [NSString stringWithFormat:@"%@\n%lld\n%@\n%@\n%lld\n%@\n", keyName, timeIntervalToMiliseconds(self.ttl), self.capability, clientId, dateToMiliseconds(self.timestamp), nonce];
     NSString *mac = hmacForDataAndKey([signText dataUsingEncoding:NSUTF8StringEncoding], [keySecret dataUsingEncoding:NSUTF8StringEncoding]);
-    
+
     return [[ARTAuthTokenRequest alloc] initWithTokenParams:self keyName:keyName nonce:nonce mac:mac];
 }
 

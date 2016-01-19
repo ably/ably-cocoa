@@ -296,6 +296,16 @@
     ARTAuthOptions *mergedOptions = [self mergeOptions:options];
     ARTAuthTokenParams *mergedTokenParams = [self mergeParams:tokenParams];
 
+    // Validate: Capability JSON text
+    NSError *errorCapability;
+    [NSJSONSerialization JSONObjectWithData:[mergedTokenParams.capability dataUsingEncoding:NSUTF8StringEncoding] options:0 error:&errorCapability];
+
+    if (errorCapability) {
+        NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Capability: %@", errorCapability.localizedDescription] };
+        callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:errorCapability.code userInfo:userInfo]);
+        return;
+    }
+
     if (mergedOptions.queryTime) {
         [_rest time:^(NSDate *time, NSError *error) {
             if (error) {

@@ -15,6 +15,11 @@
 + (NSString*)realtimeHost;
 + (int)TLSPort;
 
+/**
+ Default in seconds of requested time to live for the token.
+ */
++ (NSTimeInterval)ttl;
+
 + (NSTimeInterval)connectTimeout; //Realtime
 
 /**

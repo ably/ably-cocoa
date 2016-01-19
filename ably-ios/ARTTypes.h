@@ -68,6 +68,8 @@ NSString *decodeBase64(NSString *base64);
 uint64_t dateToMiliseconds(NSDate *date);
 uint64_t timeIntervalToMiliseconds(NSTimeInterval seconds);
 
+NSString *generateNonce();
+
 // MARK: Callbacks definitions
 
 typedef void (^ARTRealtimeChannelMessageCb)(ARTMessage * message, ARTErrorInfo *__art_nullable errorInfo);

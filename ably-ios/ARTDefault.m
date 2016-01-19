@@ -29,6 +29,10 @@ NSString *const DefaultRealtimeHost = @"realtime.ably.io";
     return 443;
 }
 
++ (NSTimeInterval)ttl {
+    return 60 * 60;
+}
+
 + (NSTimeInterval)connectTimeout {
     return 15;
 }
