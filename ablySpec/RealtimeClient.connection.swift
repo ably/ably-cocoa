@@ -500,7 +500,8 @@ class RealtimeClientConnection: QuickSpec {
                                     let channel = client.channel("test")
                                     channel.subscribeToStateChanges { state, status in
                                         if state == .Attached {
-                                            channel.presence().enterClient("test_client", data: nil, cb: { status in
+                                            channel.presence().enterClient("client_string", data: nil, cb: { status in
+                                                expect(status.state).to(equal(ARTState.Ok))
                                                 done()
                                             })
                                         }
@@ -523,32 +524,52 @@ class RealtimeClientConnection: QuickSpec {
                         expect(publishedMessage.msgSerial).to(equal(receivedAck.msgSerial))
                     }
 
-                    it("failure") {
+                    it("message failure") {
+                        let options = AblyTests.clientOptions()
+                        options.token = getTestToken(capability: "{ \"test\":[\"subscribe\"] }")
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        client.setTransportClass(TestProxyTransport.self)
+                        client.connect()
+                        defer { client.close() }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            publishTestMessage(client, completion: { error in
+                                expect(error).toNot(beNil())
+                                done()
+                            })
+                        }
+
+                        let transport = client.transport as! TestProxyTransport
+
+                        guard let publishedMessage = transport.protocolMessagesSent.filter({ $0.action == .Message }).last else {
+                            XCTFail("No MESSAGE action was sent"); return
+                        }
+
+                        guard let receivedNack = transport.protocolMessagesReceived.filter({ $0.action == .Nack }).last else {
+                            XCTFail("No NACK action was received"); return
+                        }
+
+                        expect(publishedMessage.msgSerial).to(equal(receivedNack.msgSerial))
+                    }
+
+                    it("presence failure") {
                         client.connect()
                         defer {
                             client.dispose()
                             client.close()
                         }
 
-                        let channelName = "test"
-                        let invalidMessage = ARTProtocolMessage()
-                        invalidMessage.action = .Message
-                        invalidMessage.channel = channelName
-                        invalidMessage.clientId = "invalid"
-                        invalidMessage.msgSerial = 1000
-
-                        let transport = client.transport as! TestProxyTransport
                         waitUntil(timeout: testTimeout) { done in
                             client.eventEmitter.on { state, error in
                                 if state == .Connected {
-                                    let channel = client.channel(channelName)
+                                    let channel = client.channel("test")
                                     channel.subscribeToStateChanges { state, status in
                                         if state == .Attached {
-                                            transport.send(invalidMessage)
-                                            delay(3.0) {
-                                                //Wait a couple of seconds for NACK response
+                                            channel.presence().enterClient("invalid", data: nil, cb: { status in
+                                                expect(status.state).to(equal(ARTState.Error))
                                                 done()
-                                            }
+                                            })
                                         }
                                     }
                                     channel.attach()
@@ -556,8 +577,10 @@ class RealtimeClientConnection: QuickSpec {
                             }
                         }
 
-                        guard let publishedMessage = transport.protocolMessagesSent.filter({ $0.action == .Message }).last else {
-                            XCTFail("No MESSAGE action was sent"); return
+                        let transport = client.transport as! TestProxyTransport
+
+                        guard let publishedMessage = transport.protocolMessagesSent.filter({ $0.action == .Presence }).last else {
+                            XCTFail("No PRESENCE action was sent"); return
                         }
 
                         guard let receivedNack = transport.protocolMessagesReceived.filter({ $0.action == .Nack }).last else {
