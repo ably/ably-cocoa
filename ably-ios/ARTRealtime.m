@@ -745,7 +745,7 @@
     NSRange nackRange = NSMakeRange(0, (unsigned int) count);
     NSArray *nackMessages = [self.pendingMessages subarrayWithRange:nackRange];
     [self.pendingMessages removeObjectsInRange:nackRange];
-    self.pendingMessageStartSerial = serial;
+    self.pendingMessageStartSerial += count;
 
     for (ARTQueuedMessage *msg in nackMessages) {
         msg.cb([ARTStatus state:ARTStateError info:message.error]);
