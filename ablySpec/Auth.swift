@@ -81,10 +81,8 @@ class Auth : QuickSpec {
             // RSA3
             context("token auth") {
                 // RSA3a
-                it("should work over HTTPS or HTTP") {
+                it("should work over HTTP") {
                     let options = AblyTests.clientOptions(requestToken: true)
-                    
-                    // Check HTTP
                     options.tls = false
                     let clientHTTP = ARTRest(options: options)
                     clientHTTP.httpExecutor = mockExecutor
@@ -94,15 +92,20 @@ class Auth : QuickSpec {
                             done()
                         }
                     }
-                    
-                    expect(mockExecutor.requests.first).toNot(beNil(), description: "No request found")
-                    expect(mockExecutor.requests.first?.URL).toNot(beNil(), description: "Request is invalid")
-                    
-                    if let request = mockExecutor.requests.first, let url = request.URL {
-                        expect(url.scheme).to(equal("http"), description: "No HTTP support")
-                    }
 
-                    // Check HTTPS
+                    guard let request = mockExecutor.requests.first else {
+                        fail("No request found")
+                        return
+                    }
+                    guard let url = request.URL else {
+                        fail("Request is invalid")
+                        return
+                    }
+                    expect(url.scheme).to(equal("http"), description: "No HTTP support")
+                }
+
+                it("should work over HTTPS") {
+                    let options = AblyTests.clientOptions(requestToken: true)
                     options.tls = true
                     let clientHTTPS = ARTRest(options: options)
                     clientHTTPS.httpExecutor = mockExecutor
@@ -112,15 +115,18 @@ class Auth : QuickSpec {
                             done()
                         }
                     }
-                    
-                    expect(mockExecutor.requests.last).toNot(beNil(), description: "No request found")
-                    expect(mockExecutor.requests.last?.URL).toNot(beNil(), description: "Request is invalid")
-                    
-                    if let request = mockExecutor.requests.last, let url = request.URL {
-                        expect(url.scheme).to(equal("https"), description: "No HTTPS support")
+
+                    guard let request = mockExecutor.requests.first else {
+                        fail("No request found")
+                        return
                     }
+                    guard let url = request.URL else {
+                        fail("Request is invalid")
+                        return
+                    }
+                    expect(url.scheme).to(equal("https"), description: "No HTTPS support")
                 }
-                
+
                 // RSA3b
                 it("should send the token in the Authorization header") {
                     let options = AblyTests.clientOptions()
