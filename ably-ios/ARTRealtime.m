@@ -311,7 +311,6 @@
             }
             break;
         case ARTRealtimeConnected:
-            self.msgSerial = 0;
             [self cancelSuspendTimer];
             break;
         case ARTRealtimeClosing:
@@ -494,6 +493,8 @@
             self.connectionKey = message.connectionKey;
             if (![self isFromResume]) {
                 self.connectionSerial = -1;
+                self.msgSerial = 0;
+                self.pendingMessageStartSerial = 0;
             }
             [self transition:ARTRealtimeConnected withErrorInfo:errorInfo];
             break;
