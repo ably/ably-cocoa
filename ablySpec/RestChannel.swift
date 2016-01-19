@@ -172,7 +172,11 @@ class RestChannel: QuickSpec {
             
             // RSL1c
             context("with an array of Message objects") {
-                it("publishes the messages and invokes callback with success") {
+                it("publishes the messages in a single request and invokes callback with success") {
+                    let oldExecutor = client.httpExecutor
+                    defer { client.httpExecutor = oldExecutor}
+                    client.httpExecutor = mockExecutor
+
                     var publishError: NSError? = NSError(domain: "", code: -1, userInfo: nil)
                     var publishedMessages: [ARTMessage] = []
 
@@ -182,6 +186,7 @@ class RestChannel: QuickSpec {
                     ]
                     channel.publishMessages(messages) { error in
                         publishError = error
+                        client.httpExecutor = oldExecutor
                         try! channel.history(nil) { result, _ in
                             if let items = result?.items as? [ARTMessage] {
                                 publishedMessages.appendContentsOf(items)
@@ -193,6 +198,8 @@ class RestChannel: QuickSpec {
                     expect(publishedMessages.count).toEventually(equal(messages.count), timeout: testTimeout)
                     expect(publishedMessages).toEventually(contain(messages.first), timeout: testTimeout)
                     expect(publishedMessages).toEventually(contain(messages.last), timeout: testTimeout)
+
+                    expect(mockExecutor.requests.count).to(equal(1))
                 }
             }
         }
