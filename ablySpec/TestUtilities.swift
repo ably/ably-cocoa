@@ -416,3 +416,15 @@ class TestProxyTransport: ARTWebSocketTransport {
     }
 
 }
+
+
+// MARK: - Extensions
+
+extension ARTRealtime {
+
+    func dispose() {
+        removeAllChannels()
+        eventEmitter.removeEvents()
+    }
+    
+}
