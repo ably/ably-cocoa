@@ -83,7 +83,7 @@ class RealtimeClient: QuickSpec {
                                 done()
                             case .Connected:
                                 self.checkError(errorInfo)
-                                expect(client.recoveryKey()).to(equal("\(client.connectionKey()):\(client.connectionSerial())"), description: "recoveryKey wrong formed")
+                                expect(client.recoveryKey()).to(equal("\(client.connectionKey() ?? ""):\(client.connectionSerial())"), description: "recoveryKey wrong formed")
                                 options.recover = client.recoveryKey()
                                 done()
                             default:
