@@ -105,8 +105,7 @@ class RestClientChannels: QuickSpec {
                         expect(channel).to(beAChannel(named: channelName))
                         client.channels.releaseChannel(channel!)
 
-                        // FIXME: not nil, check this later
-                        //expect(channel).to(beNil())
+                        expect(channel).to(beNil())
                     }
                 }
 
