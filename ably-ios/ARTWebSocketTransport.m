@@ -18,6 +18,7 @@
 #import "ARTAuthTokenParams.h"
 #import "ARTAuthTokenDetails.h"
 #import "ARTStatus.h"
+#import "ARTEncoder.h"
 
 enum {
     ARTWsNeverConnected = -1,

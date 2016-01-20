@@ -14,7 +14,5 @@ framework module ably {
         header "ARTPayload+Private.h"
         header "ARTAuth+Private.h"
         header "ARTPaginatedResult+Private.h"
-        header "ARTEncoder.h"
-        header "ARTJsonEncoder.h"
     }
 }

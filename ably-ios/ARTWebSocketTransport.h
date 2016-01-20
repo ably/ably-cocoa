@@ -10,7 +10,6 @@
 #import "CompatibilityMacros.h"
 
 #import "ARTRealtimeTransport.h"
-#import "ARTEncoder.h"
 
 @class ARTClientOptions;
 @class ARTRest;

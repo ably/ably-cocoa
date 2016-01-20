@@ -70,8 +70,8 @@
 		96A507A21A377AA50077CDF8 /* ARTPresenceMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 96A507A01A377AA50077CDF8 /* ARTPresenceMessage.m */; };
 		96A507A51A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507A31A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		96A507A61A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 96A507A41A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.m */; };
-		96A507A91A37806A0077CDF8 /* ARTEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507A71A37806A0077CDF8 /* ARTEncoder.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		96A507AD1A3780F60077CDF8 /* ARTJsonEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507AB1A3780F60077CDF8 /* ARTJsonEncoder.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		96A507A91A37806A0077CDF8 /* ARTEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507A71A37806A0077CDF8 /* ARTEncoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		96A507AD1A3780F60077CDF8 /* ARTJsonEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507AB1A3780F60077CDF8 /* ARTJsonEncoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		96A507AE1A3780F60077CDF8 /* ARTJsonEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 96A507AC1A3780F60077CDF8 /* ARTJsonEncoder.m */; };
 		96A507B51A37881C0077CDF8 /* ARTNSDate+ARTUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507B31A37881C0077CDF8 /* ARTNSDate+ARTUtil.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		96A507B61A37881C0077CDF8 /* ARTNSDate+ARTUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 96A507B41A37881C0077CDF8 /* ARTNSDate+ARTUtil.m */; };
