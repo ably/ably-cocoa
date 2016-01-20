@@ -87,10 +87,9 @@ class RestClientStats: QuickSpec {
     override func spec() {
         describe("RestClient") {
             // RSC6
-            context("stats") {
+            pending("stats") {
                 // Temporarily disabled until #https://github.com/ably/ably-ios/issues/142
                 // is figured out.
-                return
 
                 // RSC6a
                 context("result") {
