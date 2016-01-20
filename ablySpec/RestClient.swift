@@ -9,9 +9,6 @@
 import Nimble
 import Quick
 
-import ably
-import ably.Private
-
 class RestClient: QuickSpec {
     override func spec() {
 

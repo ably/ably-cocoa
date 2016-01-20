@@ -9,9 +9,6 @@
 import Quick
 import Nimble
 
-@testable import ably
-@testable import ably.Private
-
 class RealtimeClient: QuickSpec {
 
     func checkError(errorInfo: ARTErrorInfo?, withAlternative message: String) {

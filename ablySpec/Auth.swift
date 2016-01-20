@@ -10,9 +10,6 @@ import Nimble
 import Quick
 import Aspects
 
-import ably
-import ably.Private
-
 public func beCloseTo<T: NSDate>(expectedValue: NSDate?) -> MatcherFunc<T?> {
     return MatcherFunc { actualExpression, failureMessage in
         failureMessage.postfixMessage = "equal <\(expectedValue)>"
