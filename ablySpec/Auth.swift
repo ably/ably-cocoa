@@ -58,9 +58,12 @@ class Auth : QuickSpec {
                                 
                 let expectedAuthorization = "Basic \(key64!)"
                 
-                expect(mockExecutor.requests.first).toNot(beNil(), description: "No request found")
+                guard let request = mockExecutor.requests.first else {
+                    fail("No request found")
+                    return
+                }
                 
-                let authorization = mockExecutor.requests.first?.allHTTPHeaderFields?["Authorization"] ?? ""
+                let authorization = request.allHTTPHeaderFields?["Authorization"]
                 
                 expect(authorization).to(equal(expectedAuthorization))
             }
@@ -132,17 +135,21 @@ class Auth : QuickSpec {
                         }
                     }
 
-                    expect(client.options.token).toNot(beNil(), description: "No access token")
-
-                    if let currentToken = client.options.token {
-                        let expectedAuthorization = "Bearer \(encodeBase64(currentToken))"
-                        
-                        expect(mockExecutor.requests.first).toNot(beNil(), description: "No request found")
-                        
-                        let authorization = mockExecutor.requests.first?.allHTTPHeaderFields?["Authorization"] ?? ""
-                        
-                        expect(authorization).to(equal(expectedAuthorization))
+                    guard let currentToken = client.options.token else {
+                        fail("No access token")
+                        return
                     }
+
+                    let expectedAuthorization = "Bearer \(encodeBase64(currentToken))"
+                    
+                    guard let request = mockExecutor.requests.first else {
+                        fail("No request found")
+                        return
+                    }
+
+                    let authorization = request.allHTTPHeaderFields?["Authorization"]
+
+                    expect(authorization).to(equal(expectedAuthorization))
                 }
                 
                 // RSA3c

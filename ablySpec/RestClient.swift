@@ -244,9 +244,15 @@ class RestClient: QuickSpec {
                         if let e = error {
                             XCTFail(e.description)
                             done()
+                            return
+                        }
+                        guard let tokenDetails = tokenDetails else {
+                            XCTFail("expected tokenDetails not to be nil when error is nil")
+                            done()
+                            return
                         }
                         // Use the same token because it is valid
-                        expect(tokenDetails?.token).to(equal(options.tokenDetails?.token))
+                        expect(tokenDetails.token).to(equal(options.tokenDetails!.token))
                         done()
                     }
                 }
@@ -262,16 +268,32 @@ class RestClient: QuickSpec {
                 tokenParams.ttl = 3.0 //Seconds
 
                 waitUntil(timeout: testTimeout) { done in
-                    auth.authorise(tokenParams, options: nil) { tokenDetailsA, _ in
+                    auth.authorise(tokenParams, options: nil) { tokenDetailsA, error in
+                        if let e = error {
+                            XCTFail(e.description)
+                            done()
+                            return
+                        }
+                        guard let tokenDetailsA = tokenDetailsA else {
+                            XCTFail("expected tokenDetails not to be nil when error is nil")
+                            done()
+                            return
+                        }
                         // Delay for token expiration
                         delay(tokenParams.ttl + 1.0) {
                             auth.authorise(nil, options: nil) { tokenDetailsB, error in
                                 if let e = error {
                                     XCTFail(e.description)
                                     done()
+                                    return
+                                }
+                                guard let tokenDetailsB = tokenDetailsB else {
+                                    XCTFail("expected tokenDetails not to be nil when error is nil")
+                                    done()
+                                    return
                                 }
                                 // Different token
-                                expect(tokenDetailsA?.token).toNot(equal(tokenDetailsB?.token))
+                                expect(tokenDetailsA.token).toNot(equal(tokenDetailsB.token))
                                 done()
                             }
                         }
@@ -311,27 +333,33 @@ class RestClient: QuickSpec {
                         if let e = error {
                             XCTFail(e.description)
                             done()
+                            return
                         }
-                        else if let currentTokenDetails = tokenDetails {
-                            let options = AblyTests.clientOptions()
-                            options.key = client.options.key
 
-                            // Expired token
-                            options.tokenDetails = ARTAuthTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires?.dateByAddingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
+                        guard let currentTokenDetails = tokenDetails else {
+                            XCTFail("expected tokenDetails not to be nil when error is nil")
+                            done()
+                            return
+                        }
 
-                            options.authUrl = NSURL(string: "http://test-auth.ably.io")
+                        let options = AblyTests.clientOptions()
+                        options.key = client.options.key
 
-                            let rest = ARTRest(options: options)
-                            rest.httpExecutor = mockExecutor
+                        // Expired token
+                        options.tokenDetails = ARTAuthTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires!.dateByAddingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
 
-                            // Delay for token expiration
-                            delay(tokenParams.ttl) {
-                                // 40140 - token expired and will not recover because authUrl is invalid
-                                publishTestMessage(rest) { error in
-                                    expect(mockExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String).to(equal("40140"))
-                                    expect(error).toNot(beNil())
-                                    done()
-                                }
+                        options.authUrl = NSURL(string: "http://test-auth.ably.io")
+
+                        let rest = ARTRest(options: options)
+                        rest.httpExecutor = mockExecutor
+
+                        // Delay for token expiration
+                        delay(tokenParams.ttl) {
+                            // 40140 - token expired and will not recover because authUrl is invalid
+                            publishTestMessage(rest) { error in
+                                expect(mockExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String).to(equal("40140"))
+                                expect(error).toNot(beNil())
+                                done()
                             }
                         }
                     }
@@ -351,26 +379,32 @@ class RestClient: QuickSpec {
                         if let e = error {
                             XCTFail(e.description)
                             done()
+                            return
                         }
-                        else if let currentTokenDetails = tokenDetails {
-                            let options = AblyTests.clientOptions()
-                            options.key = client.options.key
+                        
+                        guard let currentTokenDetails = tokenDetails else {
+                            XCTFail("expected tokenDetails not to be nil when error is nil")
+                            done()
+                            return
+                        }
+                        
+                        let options = AblyTests.clientOptions()
+                        options.key = client.options.key
 
-                            // Expired token
-                            options.tokenDetails = ARTAuthTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires?.dateByAddingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
+                        // Expired token
+                        options.tokenDetails = ARTAuthTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires!.dateByAddingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
 
-                            let rest = ARTRest(options: options)
-                            rest.httpExecutor = mockExecutor
+                        let rest = ARTRest(options: options)
+                        rest.httpExecutor = mockExecutor
 
-                            // Delay for token expiration
-                            delay(tokenParams.ttl) {
-                                // 40140 - token expired and will resend the request
-                                publishTestMessage(rest) { error in
-                                    expect(mockExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String).to(equal("40140"))
-                                    expect(error).to(beNil())
-                                    expect(rest.auth.tokenDetails?.token).toNot(equal(currentTokenDetails.token))
-                                    done()
-                                }
+                        // Delay for token expiration
+                        delay(tokenParams.ttl) {
+                            // 40140 - token expired and will resend the request
+                            publishTestMessage(rest) { error in
+                                expect(mockExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String).to(equal("40140"))
+                                expect(error).to(beNil())
+                                expect(rest.auth.tokenDetails!.token).toNot(equal(currentTokenDetails.token))
+                                done()
                             }
                         }
                     }
