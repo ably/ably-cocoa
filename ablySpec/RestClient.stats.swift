@@ -88,6 +88,10 @@ class RestClientStats: QuickSpec {
         describe("RestClient") {
             // RSC6
             context("stats") {
+                // Temporarily disabled until #https://github.com/ably/ably-ios/issues/142
+                // is figured out.
+                return
+
                 // RSC6a
                 context("result") {
                     let calendar = NSCalendar(identifier: NSCalendarIdentifierGregorian)!
