@@ -47,8 +47,8 @@
 @property (readwrite, assign, nonatomic) CFRunLoopTimerRef closeTimeout;
 @property (readwrite, assign, nonatomic) CFRunLoopTimerRef pingTimeout;
 
-@property (readwrite, strong, nonatomic) NSString *connectionId;
-@property (readwrite, strong, nonatomic) NSString *connectionKey; //for recovery
+@property (readwrite, strong, nonatomic, art_nullable) NSString *connectionId;
+@property (readwrite, strong, nonatomic, art_nullable) NSString *connectionKey; //for recovery
 @property (readwrite, assign, nonatomic) int64_t connectionSerial;
 
 /// Current protocol `msgSerial`. Starts at zero.

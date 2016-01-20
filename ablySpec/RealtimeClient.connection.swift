@@ -603,16 +603,17 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: options)
                     let connection = client.connection()
 
-                    expect(connection.id).to(beEmpty())
+                    expect(connection.id).to(beNil())
 
                     waitUntil(timeout: testTimeout) { done in
                         connection.eventEmitter.on { state, errorInfo in
-                            if state == .Connected && errorInfo == nil {
-                                expect(connection.id).toNot(beEmpty())
+                            expect(errorInfo).to(beNil())
+                            if state == .Connected {
+                                expect(connection.id).toNot(beNil())
                                 done()
                             }
                             else if state == .Connecting {
-                                expect(connection.id).to(beEmpty())
+                                expect(connection.id).to(beNil())
                             }
                         }
                     }
@@ -630,13 +631,18 @@ class RealtimeClientConnection: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         for _ in 1...max {
                             disposable.append(ARTRealtime(options: options))
-                            let currentConnection = disposable.last?.connection()
-                            currentConnection?.eventEmitter.on { state, errorInfo in
+                            let currentConnection = disposable.last!.connection()
+                            currentConnection.eventEmitter.on { state, errorInfo in
                                 if state == .Connected {
-                                    expect(ids).toNot(contain(currentConnection?.id))
-                                    ids.append(currentConnection?.id ?? "")
+                                    guard let connectionId = currentConnection.id else {
+                                        fail("connectionId is nil on CONNECTED")
+                                        done()
+                                        return
+                                    }
+                                    expect(ids).toNot(contain(connectionId))
+                                    ids.append(connectionId)
 
-                                    currentConnection?.close()
+                                    currentConnection.close()
                                     
                                     if ids.count == max {
                                         done()
@@ -659,16 +665,17 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: options)
                     let connection = client.connection()
 
-                    expect(connection.key).to(beEmpty())
+                    expect(connection.key).to(beNil())
 
                     waitUntil(timeout: testTimeout) { done in
                         connection.eventEmitter.on { state, errorInfo in
-                            if state == .Connected && errorInfo == nil {
-                                expect(connection.key).toNot(beEmpty())
+                            expect(errorInfo).to(beNil())
+                            if state == .Connected {
+                                expect(connection.id).toNot(beNil())
                                 done()
                             }
                             else if state == .Connecting {
-                                expect(connection.key).to(beEmpty())
+                                expect(connection.key).to(beNil())
                             }
                         }
                     }
@@ -684,13 +691,18 @@ class RealtimeClientConnection: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         for _ in 1...max {
                             disposable.append(ARTRealtime(options: options))
-                            let currentConnection = disposable.last?.connection()
-                            currentConnection?.eventEmitter.on { state, errorInfo in
+                            let currentConnection = disposable.last!.connection()
+                            currentConnection.eventEmitter.on { state, errorInfo in
                                 if state == .Connected {
-                                    expect(keys).toNot(contain(currentConnection?.key))
-                                    keys.append(currentConnection?.key ?? "")
+                                    guard let connectionKey = currentConnection.key else {
+                                        fail("connectionKey is nil on CONNECTED")
+                                        done()
+                                        return
+                                    }
+                                    expect(keys).toNot(contain(connectionKey))
+                                    keys.append(connectionKey)
 
-                                    currentConnection?.close()
+                                    currentConnection.close()
 
                                     if keys.count == max {
                                         done()

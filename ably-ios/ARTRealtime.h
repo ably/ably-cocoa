@@ -57,8 +57,8 @@ Instance the Ably library with the given options.
 - (BOOL)isActive;
 
 - (ARTRealtimeConnectionState)state;
-- (NSString *)connectionId;
-- (NSString *)connectionKey;
+- (art_nullable NSString *)connectionId;
+- (art_nullable NSString *)connectionKey;
 - (NSString *)recoveryKey;
 - (ARTAuth *)auth;
 - (__GENERIC(NSDictionary, NSString *, ARTRealtimeChannel *) *)channels;

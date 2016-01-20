@@ -17,8 +17,8 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTConnection: NSObject
 
-@property (readonly, getter=getId) NSString *id;
-@property (readonly, getter=getKey) NSString *key;
+@property (art_nullable, readonly, getter=getId) NSString *id;
+@property (art_nullable, readonly, getter=getKey) NSString *key;
 @property (readonly, getter=getSerial) int64_t serial;
 @property (readonly, getter=getState) ARTRealtimeConnectionState state;
 @property (readonly, getter=getEventEmitter) ARTEventEmitter *eventEmitter;
