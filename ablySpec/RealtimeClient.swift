@@ -225,12 +225,23 @@ class RealtimeClient: QuickSpec {
                         paginatedResult = paginated
                     })
                     expect(paginatedResult).toEventuallyNot(beNil(), timeout: testTimeout)
+                    if paginatedResult == nil {
+                        return
+                    }
 
                     // Rest
                     waitUntil(timeout: testTimeout) { done in
                         try! client.rest.stats(query, callback: { paginated, error in
-                            expect(paginated?.items.count ?? 0).to(equal(paginatedResult?.items.count ?? 0))
-                            done()
+                            defer { done() }
+                            if let e = error {
+                                XCTFail(e.description)
+                                return
+                            }
+                            guard let paginated = paginated else {
+                                XCTFail("both paginated and error are nil")
+                                return
+                            } 
+                            expect(paginated.items.count).to(equal(paginatedResult!.items.count))
                         })
                     }
                     client.close()
