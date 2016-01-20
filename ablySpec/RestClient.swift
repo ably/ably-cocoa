@@ -227,11 +227,11 @@ class RestClient: QuickSpec {
                     }
                 }
 
-                if let requestUrlA = mockExecutor.requests.first?.URL,
-                    let requestUrlB = mockExecutor.requests.last?.URL {
-                        expect(requestUrlA.scheme).to(equal("https"))
-                        expect(requestUrlB.scheme).to(equal("http"))
-                }
+                let requestUrlA = mockExecutor.requests.first!.URL!
+                expect(requestUrlA.scheme).to(equal("https"))
+
+                let requestUrlB = mockExecutor.requests.last!.URL!
+                expect(requestUrlB.scheme).to(equal("http"))
             }
 
             // RSC9
