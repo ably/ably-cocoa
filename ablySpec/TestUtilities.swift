@@ -210,20 +210,67 @@ class PublishTestMessage {
         }
     }
 
+    init(client: ARTRealtime, failOnError: Bool = true, completion: Optional<(NSError?)->()> = nil) {
+        let complete: (ARTStatus)->() = { status in
+            // ARTErrorInfo to NSError
+            if let errorInfo = status.errorInfo where errorInfo.code != 0 {
+                self.error = NSError(domain: ARTAblyErrorDomain, code: Int(errorInfo.code), userInfo: [NSLocalizedDescriptionKey:errorInfo.message])
+            }
+            else {
+                self.error = nil
+            }
+
+            if let callback = completion {
+                callback(self.error)
+            }
+            else if failOnError, let e = self.error {
+                XCTFail("Got error '\(e)'")
+            }
+        }
+
+        client.eventEmitter.on { state, error in
+            if state == .Connected {
+                let channel = client.channel("test")
+                channel.subscribeToStateChanges { state, status in
+                    switch state {
+                    case .Attached:
+                        channel.publish("message", cb: { status in
+                            complete(status)
+                        })
+                    case .Failed:
+                        complete(status)
+                    default:
+                        break
+                    }
+                }
+                channel.attach()
+            }
+        }
+    }
+
 }
 
-/// Publish message
-func publishTestMessage(client: ARTRest, completion: Optional<(NSError?)->()>) -> PublishTestMessage {
-    return PublishTestMessage(client: client, failOnError: false, completion: completion)
+/// Rest - Publish message
+func publishTestMessage(rest: ARTRest, completion: Optional<(NSError?)->()>) -> PublishTestMessage {
+    return PublishTestMessage(client: rest, failOnError: false, completion: completion)
 }
 
-func publishTestMessage(client: ARTRest, failOnError: Bool = true) -> PublishTestMessage {
-    return PublishTestMessage(client: client, failOnError: failOnError)
+func publishTestMessage(rest: ARTRest, failOnError: Bool = true) -> PublishTestMessage {
+    return PublishTestMessage(client: rest, failOnError: failOnError)
+}
+
+/// Realtime - Publish message
+func publishTestMessage(realtime: ARTRealtime, completion: Optional<(NSError?)->()>) -> PublishTestMessage {
+    return PublishTestMessage(client: realtime, failOnError: false, completion: completion)
+}
+
+func publishTestMessage(realtime: ARTRealtime, failOnError: Bool = true) -> PublishTestMessage {
+    return PublishTestMessage(client: realtime, failOnError: failOnError)
 }
 
 /// Access Token
-func getTestToken() -> String {
-    if let tokenDetails = getTestTokenDetails() {
+func getTestToken(capability capability: String? = nil) -> String {
+    if let tokenDetails = getTestTokenDetails(capability: capability) {
         return tokenDetails.token
     }
     else {
@@ -233,14 +280,20 @@ func getTestToken() -> String {
 }
 
 /// Access TokenDetails
-func getTestTokenDetails() -> ARTAuthTokenDetails? {
+func getTestTokenDetails(capability capability: String? = nil) -> ARTAuthTokenDetails? {
     let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
     let client = ARTRest(options: options)
 
     var tokenDetails: ARTAuthTokenDetails?
     var error: NSError?
 
-    client.auth.requestToken(nil, withOptions: nil) { _tokenDetails, _error in
+    var tokenParams: ARTAuthTokenParams? = nil
+    if let capability = capability {
+        tokenParams = ARTAuthTokenParams()
+        tokenParams!.capability = capability
+    }
+
+    client.auth.requestToken(tokenParams, withOptions: nil) { _tokenDetails, _error in
         tokenDetails = _tokenDetails
         error = _error
     }
@@ -362,4 +415,16 @@ class TestProxyTransport: ARTWebSocketTransport {
         super.receive(msg)
     }
 
+}
+
+
+// MARK: - Extensions
+
+extension ARTRealtime {
+
+    func dispose() {
+        removeAllChannels()
+        eventEmitter.removeEvents()
+    }
+    
 }

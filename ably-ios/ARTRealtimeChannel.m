@@ -143,8 +143,7 @@
         case ARTRealtimeChannelFailed:
         {
             if (cb) {
-                ARTStatus *status = [ARTStatus state:ARTStateError];
-                [status.errorInfo setCode:90001 message:@"invalid channel state"];
+                ARTStatus *status = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:@"channel operation failed (invalid channel state)"]];
                 cb(status);
             }
             break;
@@ -302,7 +301,7 @@
     for (ARTPresenceMessage *pm in message.presence) {
         [self.presenceDict setObject:pm forKey:pm.clientId];
     }
-    [self transition:ARTRealtimeChannelAttached status:ARTStateOk];
+    [self transition:ARTRealtimeChannelAttached status:[ARTStatus state:ARTStateOk]];
 }
 
 - (void)setDetached:(ARTProtocolMessage *)message {
@@ -430,7 +429,7 @@
 
     [self.realtime send:attachMessage cb:nil];
     // Set state: Attaching
-    [self transition:ARTRealtimeChannelAttaching status:ARTStateOk];
+    [self transition:ARTRealtimeChannelAttaching status:[ARTStatus state:ARTStateOk]];
     return nil;
 }
 
@@ -456,7 +455,7 @@
     
     [self.realtime send:detachMessage cb:nil];
     // Set state: Detaching
-    [self transition:ARTRealtimeChannelDetaching status:ARTStateOk];
+    [self transition:ARTRealtimeChannelDetaching status:[ARTStatus state:ARTStateOk]];
     return nil;
 }
 

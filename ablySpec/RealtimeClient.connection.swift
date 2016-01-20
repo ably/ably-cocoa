@@ -360,39 +360,6 @@ class RealtimeClientConnection: QuickSpec {
                 }
             }
 
-            // RTN6
-            it("should have an opened websocket connection and received a CONNECTED ProtocolMessage") {
-                let options = AblyTests.commonAppSetup()
-                options.autoConnect = false
-                let client = ARTRealtime(options: options)
-                client.setTransportClass(TestProxyTransport.self)
-                client.connect()
-
-                waitUntil(timeout: testTimeout) { done in
-                    client.eventEmitter.on({ state, error in
-                        expect(error).to(beNil())
-                        if state == .Connected && error == nil {
-                            done()
-                        }
-                    })
-                }
-
-                if let webSocketTransport = client.transport as? ARTWebSocketTransport {
-                    expect(webSocketTransport.isConnected).to(beTrue())
-                }
-                else {
-                    XCTFail("WebSocket is not the default transport")
-                }
-
-                if let transport = client.transport as? TestProxyTransport {
-                    // CONNECTED ProtocolMessage
-                    expect(transport.protocolMessagesReceived.map{ $0.action }).to(contain(ARTProtocolMessageAction.Connected))
-                }
-                else {
-                    XCTFail("MockTransport is not working")
-                }
-            }
-
             class TotalReach {
                 // Easy way to create an atomic var
                 static var shared = 0
@@ -446,6 +413,185 @@ class RealtimeClientConnection: QuickSpec {
                 expect(disposable.count).to(equal(max))
                 expect(disposable.first?.channels().count).to(equal(1))
                 expect(disposable.last?.channels().count).to(equal(1))
+            }
+
+            // RTN6
+            it("should have an opened websocket connection and received a CONNECTED ProtocolMessage") {
+                let options = AblyTests.commonAppSetup()
+                options.autoConnect = false
+                let client = ARTRealtime(options: options)
+                client.setTransportClass(TestProxyTransport.self)
+                client.connect()
+
+                waitUntil(timeout: testTimeout) { done in
+                    client.eventEmitter.on({ state, error in
+                        expect(error).to(beNil())
+                        if state == .Connected && error == nil {
+                            done()
+                        }
+                    })
+                }
+
+                if let webSocketTransport = client.transport as? ARTWebSocketTransport {
+                    expect(webSocketTransport.isConnected).to(beTrue())
+                }
+                else {
+                    XCTFail("WebSocket is not the default transport")
+                }
+
+                if let transport = client.transport as? TestProxyTransport {
+                    // CONNECTED ProtocolMessage
+                    expect(transport.protocolMessagesReceived.map{ $0.action }).to(contain(ARTProtocolMessageAction.Connected))
+                }
+                else {
+                    XCTFail("MockTransport is not working")
+                }
+            }
+
+            // RTN7
+            context("ACK and NACK") {
+
+                // RTN7a
+                context("should expect either an ACK or NACK to confirm") {
+
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    options.clientId = "client_string"
+                    let client = ARTRealtime(options: options)
+                    client.setTransportClass(TestProxyTransport.self)
+
+                    it("successful receipt and acceptance of message") {
+                        client.connect()
+                        defer {
+                            client.dispose()
+                            client.close()
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            publishTestMessage(client, completion: { error in
+                                expect(error).to(beNil())
+                                done()
+                            })
+                        }
+
+                        let transport = client.transport as! TestProxyTransport
+
+                        guard let publishedMessage = transport.protocolMessagesSent.filter({ $0.action == .Message }).last else {
+                            XCTFail("No MESSAGE action was sent"); return
+                        }
+
+                        guard let receivedAck = transport.protocolMessagesReceived.filter({ $0.action == .Ack }).last else {
+                            XCTFail("No ACK action was received"); return
+                        }
+
+                        expect(publishedMessage.msgSerial).to(equal(receivedAck.msgSerial))
+                    }
+
+                    it("successful receipt and acceptance of presence") {
+                        client.connect()
+                        defer {
+                            client.dispose()
+                            client.close()
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.eventEmitter.on { state, error in
+                                if state == .Connected {
+                                    let channel = client.channel("test")
+                                    channel.subscribeToStateChanges { state, status in
+                                        if state == .Attached {
+                                            channel.presence().enterClient("client_string", data: nil, cb: { status in
+                                                expect(status.state).to(equal(ARTState.Ok))
+                                                done()
+                                            })
+                                        }
+                                    }
+                                    channel.attach()
+                                }
+                            }
+                        }
+
+                        let transport = client.transport as! TestProxyTransport
+
+                        guard let publishedMessage = transport.protocolMessagesSent.filter({ $0.action == .Presence }).last else {
+                            XCTFail("No PRESENCE action was sent"); return
+                        }
+
+                        guard let receivedAck = transport.protocolMessagesReceived.filter({ $0.action == .Ack }).last else {
+                            XCTFail("No ACK action was received"); return
+                        }
+                        
+                        expect(publishedMessage.msgSerial).to(equal(receivedAck.msgSerial))
+                    }
+
+                    it("message failure") {
+                        let options = AblyTests.clientOptions()
+                        options.token = getTestToken(capability: "{ \"test\":[\"subscribe\"] }")
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        client.setTransportClass(TestProxyTransport.self)
+                        client.connect()
+                        defer { client.close() }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            publishTestMessage(client, completion: { error in
+                                expect(error).toNot(beNil())
+                                done()
+                            })
+                        }
+
+                        let transport = client.transport as! TestProxyTransport
+
+                        guard let publishedMessage = transport.protocolMessagesSent.filter({ $0.action == .Message }).last else {
+                            XCTFail("No MESSAGE action was sent"); return
+                        }
+
+                        guard let receivedNack = transport.protocolMessagesReceived.filter({ $0.action == .Nack }).last else {
+                            XCTFail("No NACK action was received"); return
+                        }
+
+                        expect(publishedMessage.msgSerial).to(equal(receivedNack.msgSerial))
+                    }
+
+                    it("presence failure") {
+                        client.connect()
+                        defer {
+                            client.dispose()
+                            client.close()
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.eventEmitter.on { state, error in
+                                if state == .Connected {
+                                    let channel = client.channel("test")
+                                    channel.subscribeToStateChanges { state, status in
+                                        if state == .Attached {
+                                            channel.presence().enterClient("invalid", data: nil, cb: { status in
+                                                expect(status.state).to(equal(ARTState.Error))
+                                                done()
+                                            })
+                                        }
+                                    }
+                                    channel.attach()
+                                }
+                            }
+                        }
+
+                        let transport = client.transport as! TestProxyTransport
+
+                        guard let publishedMessage = transport.protocolMessagesSent.filter({ $0.action == .Presence }).last else {
+                            XCTFail("No PRESENCE action was sent"); return
+                        }
+
+                        guard let receivedNack = transport.protocolMessagesReceived.filter({ $0.action == .Nack }).last else {
+                            XCTFail("No NACK action was received"); return
+                        }
+
+                        expect(publishedMessage.msgSerial).to(equal(receivedNack.msgSerial))
+                    }
+                    
+                }
+
             }
 
             // RTN8

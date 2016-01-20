@@ -56,8 +56,15 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat: @"%@: id=%@ clientId=%@ connectionId=%@ payload=%@",
-            NSStringFromClass([self class]), self.id, self.clientId, self.connectionId, self.payload];
+    NSMutableString *description = [NSMutableString stringWithFormat:@"<%@: %p> {\n", self.class, self];
+    [description appendFormat:@" id: %@,\n", self.id];
+    [description appendFormat:@" clientId: %@,\n", self.clientId];
+    [description appendFormat:@" connectionId: %@,\n", self.connectionId];
+    [description appendFormat:@" timestamp: %@,\n", self.timestamp];
+    [description appendFormat:@" encoding: %@,\n", self.encoding];
+    [description appendFormat:@" payload: %@\n", self.payload];
+    [description appendFormat:@"}"];
+    return description;
 }
 
 @end

@@ -20,6 +20,15 @@
     return self;
 }
 
+- (NSString *)description {
+    NSMutableString *description = [[super description] mutableCopy];
+    [description deleteCharactersInRange:NSMakeRange(description.length - (description.length>2 ? 2:0), 2)];
+    [description appendFormat:@",\n"];
+    [description appendFormat:@" name: %@\n", self.name];
+    [description appendFormat:@"}"];
+    return description;
+}
+
 - (id)copyWithZone:(NSZone *)zone {
     ARTMessage *message = [super init];
     message->_name = self.name;

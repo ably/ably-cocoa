@@ -125,8 +125,7 @@
 		D746AE501BBD84E7003ECEF8 /* ARTChannelOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE4E1BBD84E7003ECEF8 /* ARTChannelOptions.m */; };
 		D746AE531BBD85C5003ECEF8 /* ARTChannelCollection.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE511BBD85C5003ECEF8 /* ARTChannelCollection.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D746AE541BBD85C5003ECEF8 /* ARTChannelCollection.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE521BBD85C5003ECEF8 /* ARTChannelCollection.m */; };
-		D7588AF31BFF91B800BB8279 /* ARTURLSessionServerTrust.h in Headers */ = {isa = PBXBuildFile; fileRef = D7588AF11BFF91B800BB8279 /* ARTURLSessionServerTrust.h */; };
-		D7588AF41BFF91B800BB8279 /* ARTURLSessionServerTrust.m in Sources */ = {isa = PBXBuildFile; fileRef = D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */; };
+		D74EFAEB1C4D09B500CFF98E /* RealtimeClient.channel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74EFAEA1C4D09B500CFF98E /* RealtimeClient.channel.swift */; settings = {ASSET_TAGS = (); }; };
 		D7588AF31BFF91B800BB8279 /* ARTURLSessionServerTrust.h in Headers */ = {isa = PBXBuildFile; fileRef = D7588AF11BFF91B800BB8279 /* ARTURLSessionServerTrust.h */; settings = {ASSET_TAGS = (); }; };
 		D7588AF41BFF91B800BB8279 /* ARTURLSessionServerTrust.m in Sources */ = {isa = PBXBuildFile; fileRef = D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */; settings = {ASSET_TAGS = (); }; };
 		D7B17EE31C07208B00A6958E /* ARTConnectionDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B17EE11C07208B00A6958E /* ARTConnectionDetails.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -323,6 +322,7 @@
 		D746AE511BBD85C5003ECEF8 /* ARTChannelCollection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTChannelCollection.h; sourceTree = "<group>"; };
 		D746AE521BBD85C5003ECEF8 /* ARTChannelCollection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTChannelCollection.m; sourceTree = "<group>"; };
 		D746AE551BBD8622003ECEF8 /* ARTChannelCollection+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ARTChannelCollection+Private.h"; sourceTree = "<group>"; };
+		D74EFAEA1C4D09B500CFF98E /* RealtimeClient.channel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClient.channel.swift; sourceTree = "<group>"; };
 		D7588AF11BFF91B800BB8279 /* ARTURLSessionServerTrust.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTURLSessionServerTrust.h; sourceTree = "<group>"; };
 		D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTURLSessionServerTrust.m; sourceTree = "<group>"; };
 		D7B17EE11C07208B00A6958E /* ARTConnectionDetails.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTConnectionDetails.h; sourceTree = "<group>"; };
@@ -427,6 +427,7 @@
 				D746AE2B1BBB625E003ECEF8 /* RestClient.channels.swift */,
 				D723046F1BB72CED00F1ABDA /* RealtimeClient.swift */,
 				D7EBE5A21BE8391E0086E675 /* RealtimeClient.connection.swift */,
+				D74EFAEA1C4D09B500CFF98E /* RealtimeClient.channel.swift */,
 				851674EE1B7BA5CD00D35169 /* Stats.swift */,
 			);
 			path = ablySpec;
@@ -1000,6 +1001,7 @@
 				D746AE2C1BBB625E003ECEF8 /* RestChannel.swift in Sources */,
 				856AAC971B6E30C800B07119 /* TestUtilities.swift in Sources */,
 				853ED7C41B7A1A3C006F1C6F /* RestClient.stats.swift in Sources */,
+				D74EFAEB1C4D09B500CFF98E /* RealtimeClient.channel.swift in Sources */,
 				851674EF1B7BA5CD00D35169 /* Stats.swift in Sources */,
 				D72304701BB72CED00F1ABDA /* RealtimeClient.swift in Sources */,
 				D746AE2D1BBB625E003ECEF8 /* RestClient.channels.swift in Sources */,

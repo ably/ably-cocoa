@@ -42,6 +42,25 @@
     return self;
 }
 
+- (NSString *)description {
+    NSMutableString *description = [NSMutableString stringWithFormat:@"<%@: %p> {\n", self.class, self];
+    [description appendFormat:@" count: %d,\n", self.count];
+    [description appendFormat:@" id: %@,\n", self.id];
+    [description appendFormat:@" action: %d,\n", self.action];
+    [description appendFormat:@" clientId: %@,\n", self.clientId];
+    [description appendFormat:@" channel: %@,\n", self.channel];
+    [description appendFormat:@" channelSerial: %@,\n", self.channelSerial];
+    [description appendFormat:@" connectionId: %@,\n", self.connectionId];
+    [description appendFormat:@" connectionKey: %@,\n", self.connectionKey];
+    [description appendFormat:@" connectionSerial: %lld,\n", self.connectionSerial];
+    [description appendFormat:@" msgSerial: %lld,\n", self.msgSerial];
+    [description appendFormat:@" timestamp: %@,\n", self.timestamp];
+    [description appendFormat:@" flags: %lld,\n", self.flags];
+    [description appendFormat:@" messages: %@\n", self.messages];
+    [description appendFormat:@"}"];
+    return description;
+}
+
  - (BOOL)mergeFrom:(ARTProtocolMessage *)other {
      if (![other.channel isEqualToString:self.channel] || other.action != self.action) {
          return NO;

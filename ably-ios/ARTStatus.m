@@ -55,9 +55,9 @@ NSInteger getStatusFromCode(NSInteger code) {
 
 - (instancetype)init {
     self = [super init];
-    if(self) {
+    if (self) {
         _state = ARTStateOk;
-        _errorInfo =[[ARTErrorInfo alloc] init];
+        _errorInfo = nil;
    }
     return self;
 }
@@ -75,7 +75,7 @@ NSInteger getStatusFromCode(NSInteger code) {
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"ARTStatus: %lu, Error info: %@", (unsigned long)self.state, [self.errorInfo description]];
+    return [NSString stringWithFormat:@"ARTStatus: %d, Error info: %@", self.state, [self.errorInfo description]];
 }
 
 
