@@ -83,6 +83,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init;
 - (instancetype)initWithKey:(NSString *)key;
+- (instancetype)initWithToken:(NSString *)token;
 - (instancetype)initDefaults;
 
 - (NSString *)description;
