@@ -50,6 +50,9 @@ class RestClientChannels: QuickSpec {
                     it("should return a channel") {
                         let channel = client.channels.get(channelName)
                         expect(channel).to(beAChannel(named: channelName))
+
+                        let sameChannel = client.channels.get(channelName)
+                        expect(sameChannel).to(beIdenticalTo(channel))
                     }
 
                     // RSN3b
