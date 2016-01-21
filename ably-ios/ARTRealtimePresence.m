@@ -24,12 +24,12 @@
     return (ARTRealtimeChannel *)super.channel;
 }
 
-- (void)get:(void (^)(ARTPaginatedResult *result, NSError *error))callback {
+- (void)get:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, NSError *error))callback {
     [[self channel] throwOnDisconnectedOrFailed];
     [super get:callback];
 }
 
-- (BOOL)history:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult *result, NSError *error))callback error:(NSError **)errorPtr {
+- (BOOL)history:(ARTDataQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, NSError *error))callback error:(NSError **)errorPtr {
     [[self channel] throwOnDisconnectedOrFailed];
     return [super history:query callback:callback error:errorPtr];
 }

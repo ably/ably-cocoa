@@ -16,7 +16,6 @@
 @class ARTStatsQuery;
 @class ARTRealtimeChannel;
 @class ARTPresenceMessage;
-@class ARTPaginatedResult;
 @class ARTErrorInfo;
 @class ARTCipherParams;
 @class ARTPresence;

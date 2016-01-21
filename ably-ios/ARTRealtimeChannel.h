@@ -19,7 +19,6 @@
 @class ARTRealtimePresence;
 @class ARTPresenceMap;
 @class ARTMessage;
-@class ARTPaginatedResult;
 @class ARTProtocolMessage;
 @class ARTRealtimeChannelSubscription;
 @class ARTRealtimeChannelStateSubscription;

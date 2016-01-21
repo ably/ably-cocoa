@@ -13,7 +13,7 @@
 @protocol ARTSubscription;
 
 @class ARTChannel;
-@class ARTPaginatedResult;
+@class __GENERIC(ARTPaginatedResult, ItemType);
 @class ARTDataQuery;
 
 ART_ASSUME_NONNULL_BEGIN
@@ -30,12 +30,12 @@ ART_ASSUME_NONNULL_BEGIN
 /**
  Get the presence state for one channel
  */
-- (void)get:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *__art_nullable result, NSError *__art_nullable error))callback;
+- (void)get:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *__art_nullable result, NSError *__art_nullable error))callback;
 
 /**
  Obtain recent presence history for one channel
  */
-- (BOOL)history:(art_nullable ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *__art_nullable result, NSError *__art_nullable error))callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
+- (BOOL)history:(art_nullable ARTDataQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *__art_nullable result, NSError *__art_nullable error))callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
 
 @end
 

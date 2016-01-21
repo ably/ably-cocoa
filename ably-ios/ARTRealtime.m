@@ -243,7 +243,7 @@
     [self.transport sendPing];
 }
 
-- (BOOL)stats:(ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult *result, NSError *error))completion error:(NSError **)errorPtr {
+- (BOOL)stats:(ARTStatsQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *result, NSError *error))completion error:(NSError **)errorPtr {
     return [self.rest stats:query callback:completion error:errorPtr];
 }
 

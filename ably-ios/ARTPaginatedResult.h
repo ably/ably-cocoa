@@ -12,12 +12,12 @@
 
 ART_ASSUME_NONNULL_BEGIN
 
-@interface ARTPaginatedResult : NSObject
+@interface __GENERIC(ARTPaginatedResult, ItemType) : NSObject
 
 // FIXME: review with Stats callback
-typedef void(^ARTPaginatedResultCallback)(ARTPaginatedResult *__art_nullable result, NSError *__art_nullable error);
+typedef void(^ARTPaginatedResultCallback)(__GENERIC(ARTPaginatedResult, ItemType) *__art_nullable result, NSError *__art_nullable error);
 
-@property (nonatomic, strong, readonly) NSArray *items;
+@property (nonatomic, strong, readonly) __GENERIC(NSArray, ItemType) *items;
 
 @property (nonatomic, readonly) BOOL hasFirst;
 @property (nonatomic, readonly) BOOL hasCurrent;

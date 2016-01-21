@@ -16,7 +16,6 @@
 @class ARTClientOptions;
 @class ARTAuth;
 @class ARTCancellable;
-@class ARTPaginatedResult;
 @class ARTStatsQuery;
 
 ART_ASSUME_NONNULL_BEGIN
