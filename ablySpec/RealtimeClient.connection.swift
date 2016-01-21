@@ -643,6 +643,58 @@ class RealtimeClientConnection: QuickSpec {
                         expect(nacks[0].msgSerial).to(equal(6))
                         expect(nacks[0].count).to(equal(1))
                     }
+                }
+
+                // RTN7c
+                context("should trigger the failure callback for the remaining pending messages if") {
+
+                    it("connection is closed") {
+                        client.connect()
+                        defer {
+                            client.dispose()
+                            client.close()
+                        }
+
+                        let channel = client.channel("channel")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.subscribeToStateChanges { state, status in
+                                if state == .Attached {
+                                    channel.publish("message", cb: { status in
+                                        expect(status.state).to(equal(ARTState.Error))
+                                        expect(status.errorInfo!.code).to(equal(80003))
+                                        done()
+                                    })
+                                    client.close()
+                                }
+                            }
+                            channel.attach()
+                        }
+                    }
+
+                    it("connection state enters FAILED") {
+                        client.connect()
+                        defer {
+                            client.dispose()
+                            client.close()
+                        }
+
+                        let channel = client.channel("channel")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.subscribeToStateChanges { state, status in
+                                if state == .Attached {
+                                    channel.publish("message", cb: { status in
+                                        expect(status.state).to(equal(ARTState.Error))
+                                        expect(status.errorInfo!.code).to(equal(80000))
+                                        done()
+                                    })
+                                    client.fail()
+                                }
+                            }
+                            channel.attach()
+                        }
+                    }
 
                 }
 
