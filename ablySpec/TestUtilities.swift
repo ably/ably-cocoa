@@ -11,7 +11,6 @@ import XCTest
 import Quick
 import SwiftyJSON
 
-import ably
 import ably.Private
 
 class Configuration : QuickConfiguration {

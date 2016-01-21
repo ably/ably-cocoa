@@ -8,8 +8,6 @@
 
 import Nimble
 import Quick
-import ably
-import ably.Private
 import Foundation
 
 // Swift isn't yet smart enough to do this automatically when bridging Objective-C APIs

@@ -9,9 +9,6 @@
 import Quick
 import Nimble
 
-@testable import ably
-@testable import ably.Private
-
 /// A Nimble matcher that succeeds when a param exists.
 public func haveParam(key: String, withValue expectedValue: String) -> NonNilMatcherFunc<String> {
     return NonNilMatcherFunc { actualExpression, failureMessage in

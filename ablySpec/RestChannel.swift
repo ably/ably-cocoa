@@ -8,8 +8,6 @@
 
 import Nimble
 import Quick
-import ably
-import ably.Private
 import Foundation
 import SwiftyJSON
 

@@ -9,9 +9,6 @@
 import Quick
 import Nimble
 
-@testable import ably
-@testable import ably.Private
-
 class RealtimeClientChannel: QuickSpec {
     override func spec() {
         describe("Channel") {
