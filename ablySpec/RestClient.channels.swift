@@ -40,8 +40,13 @@ class RestClientChannels: QuickSpec {
         let cipherParams = ARTCipherParams(algorithm: nil, keySpec: nil, ivSpec: nil)
 
         describe("RestClient") {
-            // RSN1
             context("channels") {
+                // RSN1
+                it("should return collection of channels") {
+                    let channels = client.channels;
+                    expect(channels).to(beAnInstanceOf(ARTChannelCollection));
+                }
+
                 // RSN3
                 context("get") {
                     // RSN3a
