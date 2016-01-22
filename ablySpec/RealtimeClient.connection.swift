@@ -297,32 +297,24 @@ class RealtimeClientConnection: QuickSpec {
                 it("should have the current state") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
-                    let connection = ARTRealtime(options: options).connection()
-                    expect(connection.state.rawValue).to(equal(0), description: "Missing INITIALIZED state")
-
-                    connection.close()
-                }
-
-                // RTN4e
-                it("should have the current state on the event change") {
-                    let connection = ARTRealtime(options: AblyTests.commonAppSetup()).connection()
-                    var lastState = ARTRealtimeConnectionState.Initialized
-
-                    // TODO: ConnectionStateChange object
+                    let client = ARTRealtime(options: options)
+                    let connection = client.connection()
+                    expect(connection.state.rawValue).to(equal(ARTRealtimeConnectionState.Initialized.rawValue), description: "Missing INITIALIZED state")
 
                     waitUntil(timeout: testTimeout) { done in
                         connection.eventEmitter.on { state, errorInfo in
                             switch state {
+                            case .Connecting:
+                                expect(connection.state.rawValue).to(equal(ARTRealtimeConnectionState.Connecting.rawValue), description: "Missing CONNECTING state")
                             case .Connected:
-                                lastState = state
+                                expect(connection.state.rawValue).to(equal(ARTRealtimeConnectionState.Connected.rawValue), description: "Missing CONNECTED state")
                                 done()
                             default:
                                 break
                             }
                         }
+                        client.connect()
                     }
-
-                    expect(lastState.rawValue).to(equal(2), description: "Missing state argument")
 
                     connection.close()
                 }
