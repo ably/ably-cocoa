@@ -696,6 +696,26 @@ class RealtimeClientConnection: QuickSpec {
                         }
                     }
 
+                    it("lost connection state") {
+                        let client = ARTRealtimeExtended(options: AblyTests.commonAppSetup())
+                        defer { client.close() }
+
+                        let channel = client.channel("channel")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.subscribeToStateChanges { state, status in
+                                if state == .Attached {
+                                    channel.publish("message", cb: { status in
+                                        expect(status.state).to(equal(ARTState.Error))
+                                        done()
+                                    })
+                                    client.lostConnection()
+                                }
+                            }
+                            channel.attach()
+                        }
+                    }
+
                 }
 
             }
