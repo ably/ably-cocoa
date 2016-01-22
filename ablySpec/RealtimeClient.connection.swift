@@ -887,6 +887,50 @@ class RealtimeClientConnection: QuickSpec {
                     expect(states[1]).to(equal(ARTRealtimeConnectionState.Closed))
                 }
 
+                // RTN12b
+                it("should transition to CLOSED action when the close process timeouts") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+                    client.setTransportClass(TestProxyTransport.self)
+                    client.connect()
+
+                    let transport = client.transport as! TestProxyTransport
+                    transport.actionsIgnored += [.Closed]
+
+                    var states: [ARTRealtimeConnectionState] = []
+                    var start: NSDate?
+                    var end: NSDate?
+
+                    client.eventEmitter.on { state, errorInfo in
+                        switch state {
+                        case .Connected:
+                            client.close()
+                        case .Closing:
+                            start = NSDate()
+                            states += [state]
+                        case .Closed:
+                            end = NSDate()
+                            states += [state]
+                        case .Disconnected:
+                            states += [state]
+                        default:
+                            break
+                        }
+                    }
+
+                    expect(start).toEventuallyNot(beNil(), timeout: testTimeout)
+                    expect(end).toEventuallyNot(beNil(), timeout: ARTDefault.realtimeRequestTimeout())
+
+                    if states.count != 2 {
+                        fail("Invalid number of connection states. Expected CLOSING and CLOSE states")
+                        return
+                    }
+
+                    expect(states[0]).to(equal(ARTRealtimeConnectionState.Closing))
+                    expect(states[1]).to(equal(ARTRealtimeConnectionState.Closed))
+                }
+
             }
 
             // RTN14a
