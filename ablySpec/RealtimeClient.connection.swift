@@ -792,6 +792,38 @@ class RealtimeClientConnection: QuickSpec {
                         }
                     }
                 }
+
+                // RTN10c
+                it("should have last known connection serial from restored connection") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    let channel = client.channel("test")
+
+                    var lastSerial: Int64 = 0
+                    for _ in 1...5 {
+                        channel.publish("message", cb: { status in
+                            expect(status.state).to(equal(ARTState.Ok))
+                            lastSerial = client.connection().serial
+                        })
+                    }
+                    expect(lastSerial).toEventually(equal(4), timeout: testTimeout)
+
+                    options.recover = client.recoveryKey()
+
+                    let recoveredClient = ARTRealtime(options: options)
+                    defer { recoveredClient.close() }
+                    let recoveredChannel = recoveredClient.channel("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        recoveredChannel.publish("message", cb: { status in
+                            expect(status.state).to(equal(ARTState.Ok))
+                            expect(recoveredClient.connection().serial).to(equal(lastSerial + 1))
+                            done()
+                        })
+                        expect(recoveredClient.connection().serial).to(equal(lastSerial))
+                    }
+                }
                 
             }
 
