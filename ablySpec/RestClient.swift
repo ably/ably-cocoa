@@ -352,9 +352,14 @@ class RestClient: QuickSpec {
 
                         // Delay for token expiration
                         delay(tokenParams.ttl) {
-                            // 40140 - token expired and will not recover because authUrl is invalid
+                            // [40140, 40150) - token expired and will not recover because authUrl is invalid
                             publishTestMessage(rest) { error in
-                                expect(mockExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String).to(equal("40140"))
+                                guard let errorCode = mockExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String else {
+                                    fail("expected X-Ably-ErrorCode header in request")
+                                    return
+                                }
+                                expect(Int(errorCode)).to(beGreaterThanOrEqualTo(40140))
+                                expect(Int(errorCode)).to(beLessThan(40150))
                                 expect(error).toNot(beNil())
                                 done()
                             }
@@ -396,9 +401,14 @@ class RestClient: QuickSpec {
 
                         // Delay for token expiration
                         delay(tokenParams.ttl) {
-                            // 40140 - token expired and will resend the request
+                            // [40140, 40150) - token expired and will not recover because authUrl is invalid
                             publishTestMessage(rest) { error in
-                                expect(mockExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String).to(equal("40140"))
+                                guard let errorCode = mockExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String else {
+                                    fail("expected X-Ably-ErrorCode header in request")
+                                    return
+                                }
+                                expect(Int(errorCode)).to(beGreaterThanOrEqualTo(40140))
+                                expect(Int(errorCode)).to(beLessThan(40150))
                                 expect(error).to(beNil())
                                 expect(rest.auth.tokenDetails!.token).toNot(equal(currentTokenDetails.token))
                                 done()
