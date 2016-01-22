@@ -926,6 +926,47 @@ class RealtimeClientConnection: QuickSpec {
                     expect(states[1]).to(equal(ARTRealtimeConnectionState.Closed))
                 }
 
+                // RTN12c
+                it("transitions to the CLOSING state and then to the CLOSED state if the transport is abruptly closed") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+                    client.setTransportClass(TestProxyTransport.self)
+                    client.connect()
+
+                    let transport = client.transport as! TestProxyTransport
+                    var states: [ARTRealtimeConnectionState] = []
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.eventEmitter.on { state, errorInfo in
+                            switch state {
+                            case .Connected:
+                                states += [state]
+                                client.close()
+                            case .Closing:
+                                states += [state]
+                                transport.simulateIncomingAbruptlyClose()
+                            case .Closed:
+                                states += [state]
+                                done()
+                            case .Disconnected, .Suspended, .Failed:
+                                states += [state]
+                            default:
+                                break
+                            }
+                        }
+                    }
+
+                    if states.count != 3 {
+                        fail("Invalid number of connection states. Expected CONNECTED, CLOSING and CLOSE states (got \(states.map{ $0.rawValue }))")
+                        return
+                    }
+
+                    expect(states[0]).to(equal(ARTRealtimeConnectionState.Connected))
+                    expect(states[1]).to(equal(ARTRealtimeConnectionState.Closing))
+                    expect(states[2]).to(equal(ARTRealtimeConnectionState.Closed))
+                }
+
             }
 
             // RTN14a
