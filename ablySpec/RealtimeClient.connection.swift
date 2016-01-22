@@ -847,6 +847,48 @@ class RealtimeClientConnection: QuickSpec {
 
             }
 
+            // RTN12
+            context("close") {
+
+                // RTN12a
+                it("should send a CLOSE action, change state to CLOSING and receive a CLOSED action") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+                    client.setTransportClass(TestProxyTransport.self)
+                    client.connect()
+
+                    let transport = client.transport as! TestProxyTransport
+                    var states: [ARTRealtimeConnectionState] = []
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.eventEmitter.on { state, errorInfo in
+                            switch state {
+                            case .Connected:
+                                client.close()
+                            case .Closing:
+                                expect(transport.protocolMessagesSent.filter({ $0.action == .Close })).to(haveCount(1))
+                                states += [state]
+                            case.Closed:
+                                expect(transport.protocolMessagesReceived.filter({ $0.action == .Closed })).to(haveCount(1))
+                                states += [state]
+                                done()
+                            default:
+                                break;
+                            }
+                        }
+                    }
+
+                    if states.count != 2 {
+                        fail("Invalid number of connection states. Expected CLOSING and CLOSE states")
+                        return
+                    }
+                    expect(states[0]).to(equal(ARTRealtimeConnectionState.Closing))
+                    expect(states[1]).to(equal(ARTRealtimeConnectionState.Closed))
+                }
+
+            }
+
             // RTN14a
             it("should enter FAILED state when API key is invalid") {
                 let options = AblyTests.commonAppSetup()
