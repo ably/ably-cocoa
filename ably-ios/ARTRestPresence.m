@@ -26,7 +26,7 @@
     return (ARTRestChannel *)super.channel;
 }
 
-- (void)get:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *result, NSError *error))callback {
+- (void)get:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, NSError *error))callback {
     NSURL *requestUrl = [NSURL URLWithString:[[self channel].basePath stringByAppendingPathComponent:@"presence"]];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
 
@@ -41,7 +41,7 @@
     [ARTPaginatedResult executePaginated:[self channel].rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
 }
 
-- (BOOL)history:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult /* <ARTPresenceMessage *> */ *result, NSError *error))callback error:(NSError **)errorPtr {
+- (BOOL)history:(ARTDataQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, NSError *error))callback error:(NSError **)errorPtr {
     if (query.limit > 1000) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
