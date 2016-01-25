@@ -142,7 +142,7 @@
     [self.httpExecutor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode >= 400) {
             NSError *dataError = [self->_encoders[response.MIMEType] decodeError:data];
-            if (dataError.code == 40140) {
+            if (dataError.code >= 40140 && dataError.code < 40150) {
                 // Send it again, requesting a new token (forward callback)
                 [self.logger debug:__FILE__ line:__LINE__ message:@"requesting new token"];
                 [self executeRequest:request withAuthOption:ARTAuthenticationNewToken completion:callback];
