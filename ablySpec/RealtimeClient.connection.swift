@@ -192,7 +192,7 @@ class RealtimeClientConnection: QuickSpec {
                             case .Disconnected:
                                 events += [state]
                                 // Forced
-                                client.transition(.Failed, withErrorInfo: ARTErrorInfo())
+                                client.fail()
                             case .Suspended:
                                 events += [state]
                                 // Forced
@@ -332,8 +332,7 @@ class RealtimeClientConnection: QuickSpec {
                         connection.eventEmitter.on { state, reason in
                             switch state {
                             case .Connected:
-                                // Forced
-                                client.transition(.Failed, withErrorInfo: ARTErrorInfo())
+                                client.fail()
                             case .Failed:
                                 errorInfo = reason
                                 done()

@@ -421,6 +421,10 @@ class TestProxyTransport: ARTWebSocketTransport {
 
 extension ARTRealtime {
 
+    func fail() {
+        transition(.Failed, withErrorInfo: ARTErrorInfo())
+    }
+
     func dispose() {
         removeAllChannels()
         eventEmitter.removeEvents()
