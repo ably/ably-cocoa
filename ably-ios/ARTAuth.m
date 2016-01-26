@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "ARTAuth.h"
+#import "ARTAuth+Private.h"
 
 #import "ARTRest.h"
 #import "ARTRest+Private.h"

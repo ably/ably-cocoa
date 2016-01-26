@@ -13,6 +13,8 @@
 
 @class ARTConnectionDetails;
 @class ARTErrorInfo;
+@class ARTMessage;
+@class ARTPresenceMessage;
 
 typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
     ARTProtocolMessageHeartbeat = 0,

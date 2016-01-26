@@ -24,13 +24,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTAuth : NSObject
 
-@property (nonatomic, readonly, strong) ARTAuthOptions *options;
-@property (nonatomic, readonly, assign) ARTAuthMethod method;
-
-@property (nonatomic, weak) ARTLog *logger;
-
 @property (art_nullable, readonly, getter=getClientId) NSString *clientId;
-@property (art_nullable, nonatomic, readonly, strong) ARTTokenDetails *tokenDetails;
 
 // FIXME: review (Why rest?)
 - (instancetype)init:(ARTRest *)rest withOptions:(ARTClientOptions *)options;
