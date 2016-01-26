@@ -1080,6 +1080,104 @@ class RealtimeClientConnection: QuickSpec {
                 }
             }
 
+            // RTN14b
+            context("connection request fails") {
+
+                it("should not emit error with a renewable token") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    let tokenTtl = 1.0
+                    options.token = getTestToken(key: options.key, ttl: tokenTtl)
+
+                    let client = ARTRealtime(options: options)
+                    client.setTransportClass(TestProxyTransport.self)
+                    defer { client.close() }
+
+                    // Let the token expire
+                    waitUntil(timeout: testTimeout) { done in
+                        delay(tokenTtl) {
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.eventEmitter.on { state, errorInfo in
+                            switch state {
+                            case .Connected:
+                                expect(errorInfo).to(beNil())
+                                // New token
+                                expect(client.auth().tokenDetails!.token).toNot(equal(options.token))
+                                done()
+                            case .Failed, .Disconnected, .Suspended:
+                                fail("Should not emit error (\(errorInfo))")
+                                done()
+                            default:
+                                break
+                            }
+                        }
+                        client.connect()
+                    }
+
+                    let transport = client.transport as! TestProxyTransport
+                    let failures = transport.protocolMessagesReceived.filter({ $0.action == .Error })
+
+                    if failures.count != 1 {
+                        fail("Should have only one connection request fail")
+                        return
+                    }
+
+                    expect(failures[0].error!.code).to(equal(40142)) //Token expired
+                }
+
+                it("should transition to Failed state because the token is invalid and not renewable") {
+                    let options = AblyTests.clientOptions()
+                    options.autoConnect = false
+                    let tokenTtl = 1.0
+                    options.token = getTestToken(ttl: tokenTtl)
+
+                    // Let the token expire
+                    waitUntil(timeout: testTimeout) { done in
+                        delay(tokenTtl) {
+                            done()
+                        }
+                    }
+
+                    let client = ARTRealtime(options: options)
+                    client.setTransportClass(TestProxyTransport.self)
+                    defer { client.close() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.eventEmitter.on { state, errorInfo in
+                            switch state {
+                            case .Connected:
+                                fail("Should not be connected")
+                                done()
+                            case .Failed, .Disconnected, .Suspended:
+                                guard let errorInfo = errorInfo else {
+                                    fail("ErrorInfo is nil"); done(); return
+                                }
+                                expect(errorInfo.code).to(equal(40142)) //Token expired
+                                done()
+                            default:
+                                break
+                            }
+                        }
+                        client.connect()
+                    }
+
+                    let transport = client.transport as! TestProxyTransport
+                    let failures = transport.protocolMessagesReceived.filter({ $0.action == .Error })
+
+                    if failures.count != 1 {
+                        fail("Should have only one connection request fail")
+                        return
+                    }
+
+                    expect(failures[0].error!.code).to(equal(40142))
+                }
+
+            }
+
             // RTN18
             context("state change side effects") {
 
