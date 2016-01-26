@@ -45,6 +45,12 @@ class RestClient: QuickSpec {
                     expect(publishTask.error?.code).toEventually(equal(40005))
                 }
 
+                it("should accept a token") {
+                    let client = ARTRest(token: getTestToken())
+                    let publishTask = publishTestMessage(client)
+                    expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
+                }
+
                 it("should accept an options object") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRest(options: options)

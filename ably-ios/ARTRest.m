@@ -91,8 +91,12 @@
     return [self initWithLogger:[[ARTLog alloc] init] andOptions:options];
 }
 
-- (instancetype)initWithKey:(NSString *) key {
+- (instancetype)initWithKey:(NSString *)key {
     return [self initWithOptions:[[ARTClientOptions alloc] initWithKey:key]];
+}
+
+- (instancetype)initWithToken:(NSString *)token {
+    return [self initWithOptions:[[ARTClientOptions alloc] initWithToken:token]];
 }
 
 - (void)dealloc {
