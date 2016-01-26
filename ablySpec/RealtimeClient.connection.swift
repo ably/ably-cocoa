@@ -794,7 +794,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN10c
-                it("should have last known connection serial from restored connection") {
+                pending("should have last known connection serial from restored connection") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
                     defer { client.close() }
