@@ -196,13 +196,13 @@ class RealtimeClientConnection: QuickSpec {
                             case .Suspended:
                                 events += [state]
                                 // Forced
-                                client.transition(.Disconnected)
+                                client.onDisconnected()
                             case .Closing:
                                 events += [state]
                             case .Closed:
                                 events += [state]
                                 // Forced
-                                client.transition(.Suspended)
+                                client.onSuspended()
                             case .Failed:
                                 events += [state]
                                 expect(errorInfo).toNot(beNil(), description: "Error is nil")
