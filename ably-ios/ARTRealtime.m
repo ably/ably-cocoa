@@ -517,7 +517,6 @@
     switch (self.state) {
         case ARTRealtimeConnected:
             self.connectionId = nil;
-            self.msgSerial = 0;
             [self transition:ARTRealtimeDisconnected];
             break;
         default:
