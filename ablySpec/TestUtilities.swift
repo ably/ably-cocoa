@@ -276,8 +276,8 @@ func publishTestMessage(realtime: ARTRealtime, failOnError: Bool = true) -> Publ
 }
 
 /// Access Token
-func getTestToken(capability capability: String? = nil) -> String {
-    if let tokenDetails = getTestTokenDetails(capability: capability) {
+func getTestToken(key key: String? = nil, capability: String? = nil, ttl: NSTimeInterval? = nil) -> String {
+    if let tokenDetails = getTestTokenDetails(key: key, capability: capability, ttl: ttl) {
         return tokenDetails.token
     }
     else {
@@ -287,8 +287,16 @@ func getTestToken(capability capability: String? = nil) -> String {
 }
 
 /// Access TokenDetails
-func getTestTokenDetails(capability capability: String? = nil) -> ARTAuthTokenDetails? {
-    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+func getTestTokenDetails(key key: String? = nil, capability: String? = nil, ttl: NSTimeInterval? = nil) -> ARTAuthTokenDetails? {
+    let options: ARTClientOptions
+    if let key = key {
+        options = AblyTests.clientOptions()
+        options.key = key
+    }
+    else {
+        options = AblyTests.commonAppSetup()
+    }
+
     let client = ARTRest(options: options)
 
     var tokenDetails: ARTAuthTokenDetails?
@@ -298,6 +306,10 @@ func getTestTokenDetails(capability capability: String? = nil) -> ARTAuthTokenDe
     if let capability = capability {
         tokenParams = ARTAuthTokenParams()
         tokenParams!.capability = capability
+    }
+    if let ttl = ttl {
+        if tokenParams == nil { tokenParams = ARTAuthTokenParams() }
+        tokenParams!.ttl = ttl
     }
 
     client.auth.requestToken(tokenParams, withOptions: nil) { _tokenDetails, _error in
