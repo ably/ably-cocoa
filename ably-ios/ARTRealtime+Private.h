@@ -25,15 +25,14 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) NSMutableArray *stateSubscriptions;
 
 // Transport Events
-- (void)onHeartbeat:(ARTProtocolMessage *)message;
+- (void)onHeartbeat;
 - (void)onConnected:(ARTProtocolMessage *)message withErrorInfo:(art_nullable ARTErrorInfo *)errorInfo;
-- (void)onDisconnected:(ARTProtocolMessage *)message;
+- (void)onDisconnected;
+- (void)onSuspended;
 - (void)onError:(ARTProtocolMessage *)message withErrorInfo:(art_nullable ARTErrorInfo *)errorInfo;
 - (void)onAck:(ARTProtocolMessage *)message;
 - (void)onNack:(ARTProtocolMessage *)message;
 - (void)onChannelMessage:(ARTProtocolMessage *)message withErrorInfo:(art_nullable ARTErrorInfo *)errorInfo;
-
-- (void)onSuspended;
 
 - (int64_t)connectionSerial;
 

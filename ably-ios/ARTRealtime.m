@@ -446,7 +446,7 @@
     self.pingTimeout = nil;
 }
 
-- (void)onHeartbeat:(ARTProtocolMessage *)message {
+- (void)onHeartbeat {
     [self.logger verbose:@"ARTRealtime heartbeat received"];
     if(self.pingCb) {
         [self cancelPingTimer];
@@ -512,7 +512,7 @@
     return _connectionId;
 }
 
-- (void)onDisconnected:(ARTProtocolMessage *)message {
+- (void)onDisconnected {
     [self.logger info:@"ARTRealtime disconnected"];
     switch (self.state) {
         case ARTRealtimeConnected:
@@ -805,7 +805,7 @@
 
     switch (message.action) {
         case ARTProtocolMessageHeartbeat:
-            [self onHeartbeat:message];
+            [self onHeartbeat];
             break;
         case ARTProtocolMessageError:
             [self onError:message withErrorInfo:message.error];
@@ -817,7 +817,7 @@
             [self onConnected:message withErrorInfo:message.error];
             break;
         case ARTProtocolMessageDisconnected:
-            [self onDisconnected:message];
+            [self onDisconnected];
             break;
         case ARTProtocolMessageAck:
             [self onAck:message];
