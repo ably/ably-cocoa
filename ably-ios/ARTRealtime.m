@@ -690,7 +690,7 @@
     NSArray *nackMessages = nil;
     NSArray *ackMessages = nil;
     [self.logger verbose:@"ARTRealtime ACK: msgSerial=%lld, count=%d", serial, count];
-    [self.logger verbose:@"ARTRealtime ACK (before processing): pendingMessageStartSerial=%lld, pendingMessages=%d", self.pendingMessageStartSerial, self.pendingMessages.count];
+    [self.logger verbose:@"ARTRealtime ACK (before processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
 
     if (serial < self.pendingMessageStartSerial) {
         // This is an error condition and shouldn't happen but
@@ -733,14 +733,14 @@
         msg.cb([ARTStatus state:ARTStateOk]);
     }
 
-    [self.logger verbose:@"ARTRealtime ACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%d", self.pendingMessageStartSerial, self.pendingMessages.count];
+    [self.logger verbose:@"ARTRealtime ACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
 }
 
 - (void)nack:(ARTProtocolMessage *)message {
     int64_t serial = message.msgSerial;
     int count = message.count;
     [self.logger verbose:@"ARTRealtime NACK: msgSerial=%lld, count=%d", serial, count];
-    [self.logger verbose:@"ARTRealtime NACK (before processing): pendingMessageStartSerial=%lld, pendingMessages=%d", self.pendingMessageStartSerial, self.pendingMessages.count];
+    [self.logger verbose:@"ARTRealtime NACK (before processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
 
     if (serial != self.pendingMessageStartSerial) {
         // This is an error condition and it shouldn't happen but
@@ -768,7 +768,7 @@
         msg.cb([ARTStatus state:ARTStateError info:message.error]);
     }
 
-    [self.logger verbose:@"ARTRealtime NACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%d", self.pendingMessageStartSerial, self.pendingMessages.count];
+    [self.logger verbose:@"ARTRealtime NACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
 }
 
 - (CFRunLoopTimerRef)startTimer:(void(^)())onTimeout interval:(NSTimeInterval)interval {

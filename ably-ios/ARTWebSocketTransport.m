@@ -79,7 +79,7 @@ enum {
 }
 
 - (void)send:(ARTProtocolMessage *)msg {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"%p sending action %d with %@", self, msg.action, msg.messages];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"%p sending action %lu with %@", self, (unsigned long)msg.action, msg.messages];
     NSData *data = [self.encoder encodeProtocolMessage:msg];
     [self.websocket sendWithData:data];
 }
@@ -226,7 +226,7 @@ enum {
 
 - (void)webSocketClose:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
     ARTWebSocketTransport * __weak weakSelf = self;
-    [self.logger debug:__FILE__ line:__LINE__ message:@"%p websocket did disconnect (code %d) %@", self, code, reason];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"%p websocket did disconnect (code %ld) %@", self, (long)code, reason];
 
     CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
         ARTWebSocketTransport *s = weakSelf;
