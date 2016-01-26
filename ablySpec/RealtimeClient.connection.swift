@@ -776,6 +776,25 @@ class RealtimeClientConnection: QuickSpec {
 
             }
 
+            // RTN10
+            context("serial") {
+
+                // RTN10a
+                it("should be -1 once connected") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    waitUntil(timeout: testTimeout) { done in
+                        client.eventEmitter.on { state, errorInfo in
+                            if state == .Connected {
+                                expect(client.connection().serial).to(equal(-1))
+                                done()
+                            }
+                        }
+                    }
+                }
+                
+            }
+
             // RTN14a
             it("should enter FAILED state when API key is invalid") {
                 let options = AblyTests.commonAppSetup()
