@@ -7,6 +7,7 @@
 //
 
 #import "ARTProtocolMessage.h"
+#import "ARTProtocolMessage+Private.h"
 #import "ARTStatus.h"
 #import "ARTConnectionDetails.h"
 

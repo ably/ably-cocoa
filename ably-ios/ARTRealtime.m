@@ -22,6 +22,7 @@
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTPresenceMap.h"
 #import "ARTProtocolMessage.h"
+#import "ARTProtocolMessage+Private.h"
 #import "ARTRealtimeChannelSubscription.h"
 #import "ARTEventEmitter.h"
 #import "ARTQueuedMessage.h"

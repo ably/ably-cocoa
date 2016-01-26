@@ -12,6 +12,7 @@
 #import "ARTPresence.h"
 #import "ARTPresenceMessage.h"
 #import "ARTProtocolMessage.h"
+#import "ARTProtocolMessage+Private.h"
 #import "ARTStats.h"
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
 #import "ARTNSDate+ARTUtil.h"

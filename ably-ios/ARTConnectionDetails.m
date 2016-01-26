@@ -9,6 +9,7 @@
 #import "ARTConnectionDetails.h"
 
 #import "ARTProtocolMessage.h"
+#import "ARTProtocolMessage+Private.h"
 
 @interface ARTConnectionDetails () {
     // FIXME: temporary

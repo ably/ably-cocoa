@@ -9,6 +9,7 @@
 #import "ARTQueuedMessage.h"
 
 #import "ARTProtocolMessage.h"
+#import "ARTProtocolMessage+Private.h"
 
 @implementation ARTQueuedMessage
 
