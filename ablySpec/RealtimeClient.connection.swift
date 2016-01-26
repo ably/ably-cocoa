@@ -440,14 +440,14 @@ class RealtimeClientConnection: QuickSpec {
             // RTN7
             context("ACK and NACK") {
 
+                let options = AblyTests.commonAppSetup()
+                options.autoConnect = false
+                options.clientId = "client_string"
+                let client = ARTRealtime(options: options)
+                client.setTransportClass(TestProxyTransport.self)
+
                 // RTN7a
                 context("should expect either an ACK or NACK to confirm") {
-
-                    let options = AblyTests.commonAppSetup()
-                    options.autoConnect = false
-                    options.clientId = "client_string"
-                    let client = ARTRealtime(options: options)
-                    client.setTransportClass(TestProxyTransport.self)
 
                     it("successful receipt and acceptance of message") {
                         client.connect()
@@ -579,6 +579,76 @@ class RealtimeClientConnection: QuickSpec {
                         expect(publishedMessage.msgSerial).to(equal(receivedNack.msgSerial))
                     }
                     
+                }
+
+                // RTN7b
+                context("ProtocolMessage") {
+
+                    class TotalMessages {
+                        static var expected: Int32 = 0
+                        static var succeeded: Int32 = 0
+                        private init() {}
+                    }
+
+                    it("should contain unique serially incrementing msgSerial along with the count") {
+                        client.connect()
+                        defer {
+                            client.dispose()
+                            client.close()
+                        }
+
+                        let channel = client.channel("channel")
+                        channel.attach()
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish("message", cb: { status in
+                                expect(status.state).to(equal(ARTState.Ok))
+                                done()
+                            })
+                        }
+
+                        TotalMessages.expected = 5
+                        for index in 1...TotalMessages.expected {
+                            channel.publish("message\(index)", cb: { status in
+                                if status.state == ARTState.Ok {
+                                    TotalMessages.succeeded++
+                                }
+                            })
+                        }
+                        expect(TotalMessages.succeeded).toEventually(equal(TotalMessages.expected), timeout: testTimeout)
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.presence().enterClient("invalid", data: nil, cb: { status in
+                                expect(status.state).to(equal(ARTState.Error))
+                                done()
+                            })
+                        }
+
+                        let transport = client.transport as! TestProxyTransport
+                        let acks = transport.protocolMessagesReceived.filter({ $0.action == .Ack })
+                        let nacks = transport.protocolMessagesReceived.filter({ $0.action == .Nack })
+
+                        if acks.count != 2 {
+                            fail("Received invalid number of ACK responses: \(acks.count)")
+                            return
+                        }
+
+                        expect(acks[0].msgSerial).to(equal(0))
+                        expect(acks[0].count).to(equal(1))
+
+                        // Messages covered in a single ACK response
+                        expect(acks[1].msgSerial).to(equal(1))
+                        expect(acks[1].count).to(equal(TotalMessages.expected))
+
+                        if nacks.count != 1 {
+                            fail("Received invalid number of NACK responses: \(nacks.count)")
+                            return
+                        }
+
+                        expect(nacks[0].msgSerial).to(equal(6))
+                        expect(nacks[0].count).to(equal(1))
+                    }
+
                 }
 
             }
