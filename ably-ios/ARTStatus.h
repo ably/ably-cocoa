@@ -42,10 +42,9 @@ FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
 @interface ARTErrorInfo : NSObject
 
 @property (readonly, copy, nonatomic) NSString *message;
-@property (readonly, assign, nonatomic) int statusCode;
-@property (readonly, assign, nonatomic) int code;
+@property (readonly, assign, nonatomic) NSInteger statusCode;
+@property (readonly, assign, nonatomic) NSInteger code;
 
-// FIXME: use NSInteger instead int (don't know what kind of processor architecture your code might run)
 - (ARTErrorInfo *)setCode:(NSInteger) code message:(NSString *) message;
 - (ARTErrorInfo *)setCode:(NSInteger) code status:(NSInteger) status message:(NSString *) message;
 

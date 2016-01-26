@@ -46,7 +46,7 @@ NSInteger getStatusFromCode(NSInteger code) {
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"ARTErrorInfo with code %d, message: %@", self.statusCode, self.message];
+    return [NSString stringWithFormat:@"ARTErrorInfo with code %ld, message: %@", (long)self.statusCode, self.message];
 }
 
 @end
@@ -75,7 +75,7 @@ NSInteger getStatusFromCode(NSInteger code) {
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"ARTStatus: %d, Error info: %@", self.state, [self.errorInfo description]];
+    return [NSString stringWithFormat:@"ARTStatus: %lu, Error info: %@", (unsigned long)self.state, [self.errorInfo description]];
 }
 
 

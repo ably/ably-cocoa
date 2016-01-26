@@ -46,7 +46,7 @@
     NSMutableString *description = [NSMutableString stringWithFormat:@"<%@: %p> {\n", self.class, self];
     [description appendFormat:@" count: %d,\n", self.count];
     [description appendFormat:@" id: %@,\n", self.id];
-    [description appendFormat:@" action: %d,\n", self.action];
+    [description appendFormat:@" action: %lu,\n", (unsigned long)self.action];
     [description appendFormat:@" clientId: %@,\n", self.clientId];
     [description appendFormat:@" channel: %@,\n", self.channel];
     [description appendFormat:@" channelSerial: %@,\n", self.channelSerial];
