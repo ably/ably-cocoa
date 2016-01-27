@@ -191,17 +191,14 @@ class RealtimeClientConnection: QuickSpec {
                                 client.close()
                             case .Disconnected:
                                 events += [state]
-                                // Forced
-                                client.fail()
+                                client.onError(AblyTests.newErrorProtocolMessage())
                             case .Suspended:
                                 events += [state]
-                                // Forced
                                 client.onDisconnected()
                             case .Closing:
                                 events += [state]
                             case .Closed:
                                 events += [state]
-                                // Forced
                                 client.onSuspended()
                             case .Failed:
                                 events += [state]
@@ -332,7 +329,7 @@ class RealtimeClientConnection: QuickSpec {
                         connection.eventEmitter.on { state, reason in
                             switch state {
                             case .Connected:
-                                client.fail()
+                                client.onError(AblyTests.newErrorProtocolMessage())
                             case .Failed:
                                 errorInfo = reason
                                 done()

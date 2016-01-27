@@ -14,6 +14,7 @@
 #import "ARTRealtimeChannel.h"
 #import "ARTRealtimePresence.h"
 #import "ARTPayload.h"
+#import "ARTProtocolMessage.h"
 #import "ARTEventEmitter.h"
 #import "ARTURLSessionServerTrust.h"
 
@@ -278,6 +279,13 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
         }];
     }];
     [testCase waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
+
++ (ARTProtocolMessage *)newErrorProtocolMessage {
+    ARTProtocolMessage* protocolMessage = [[ARTProtocolMessage alloc] init];
+    protocolMessage.action = ARTProtocolMessageError;
+    protocolMessage.error = [ARTErrorInfo createWithCode:0 message:@"Fail test"];
+    return protocolMessage;
 }
 
 @end

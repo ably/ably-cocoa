@@ -26,13 +26,13 @@ ART_ASSUME_NONNULL_BEGIN
 
 // Transport Events
 - (void)onHeartbeat;
-- (void)onConnected:(ARTProtocolMessage *)message withErrorInfo:(art_nullable ARTErrorInfo *)errorInfo;
+- (void)onConnected:(ARTProtocolMessage *)message;
 - (void)onDisconnected;
 - (void)onSuspended;
-- (void)onError:(ARTProtocolMessage *)message withErrorInfo:(art_nullable ARTErrorInfo *)errorInfo;
+- (void)onError:(ARTProtocolMessage *)message;
 - (void)onAck:(ARTProtocolMessage *)message;
 - (void)onNack:(ARTProtocolMessage *)message;
-- (void)onChannelMessage:(ARTProtocolMessage *)message withErrorInfo:(art_nullable ARTErrorInfo *)errorInfo;
+- (void)onChannelMessage:(ARTProtocolMessage *)message;
 
 - (int64_t)connectionSerial;
 

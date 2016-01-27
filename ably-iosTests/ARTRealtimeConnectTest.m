@@ -219,7 +219,7 @@
                     [realtime close];
                 }
                 else {
-                    [realtime onDisconnected:nil];
+                    [realtime onDisconnected];
                 }
             }
             else if(state == ARTRealtimeDisconnected) {
@@ -228,7 +228,7 @@
             }
             else if(state == ARTRealtimeSuspended) {
                 gotSuspended = true;
-                [realtime onError:nil withErrorInfo:nil];
+                [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
             }
             else if(state == ARTRealtimeClosing) {
                 gotClosing = true;
@@ -268,7 +268,7 @@
             if(state == ARTRealtimeClosed) {
                 hasClosed = true;
                 XCTAssertThrows([realtime ping:^(ARTStatus *s) {}]);
-                [realtime onError:nil withErrorInfo:nil];
+                [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
             }
             if(state == ARTRealtimeFailed) {
                 XCTAssertTrue(hasClosed);

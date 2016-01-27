@@ -257,7 +257,7 @@
                     if (state == ARTRealtimeChannelAttached) {
                         if(!hasFailed) {
                             XCTAssertEqual(ARTStateOk, reason.state);
-                            [realtime onError:nil withErrorInfo:nil];
+                            [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
                         }
                     }
                     else if(state == ARTRealtimeChannelFailed) {
@@ -306,7 +306,7 @@
         ARTRealtimeChannel *channel1 = [realtime channel:@"channel"];
         [channel1 subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
             if (state == ARTRealtimeChannelAttaching) {
-                [realtime onError:nil withErrorInfo:nil];
+                [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
             }
             else {
                 XCTAssertEqual(ARTRealtimeChannelFailed, state);
@@ -325,7 +325,7 @@
         ARTRealtimeChannel *channel1 = [realtime channel:@"channel"];
         [channel1 subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
             if (state == ARTRealtimeChannelAttached) {
-                [realtime onError:nil withErrorInfo:nil];
+                [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
             }
             else if(state != ARTRealtimeChannelAttaching) {
                 XCTAssertEqual(ARTRealtimeChannelFailed, state);

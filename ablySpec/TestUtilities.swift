@@ -115,6 +115,13 @@ class AblyTests {
         }
         return options
     }
+
+    class func newErrorProtocolMessage() -> ARTProtocolMessage {
+        let protocolMessage = ARTProtocolMessage()
+        protocolMessage.action = .Error
+        protocolMessage.error = ARTErrorInfo.createWithCode(0, message: "Fail test")
+        return protocolMessage
+    }
     
 }
 

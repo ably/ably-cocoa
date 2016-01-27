@@ -80,7 +80,7 @@
                 // Sending a message
                 [channel publish:c1Message cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
-                    [_realtime onDisconnected:nil];
+                    [_realtime onDisconnected];
                 }];
             }
             else if (state == ARTRealtimeDisconnected) {
