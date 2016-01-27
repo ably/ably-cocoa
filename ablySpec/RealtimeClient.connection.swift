@@ -888,7 +888,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN12b
-                it("should transition to CLOSED action when the close process timeouts") {
+                pending("should transition to CLOSED action when the close process timeouts") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
