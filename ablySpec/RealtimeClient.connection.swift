@@ -851,7 +851,7 @@ class RealtimeClientConnection: QuickSpec {
             context("close") {
 
                 // RTN12a
-                it("should send a CLOSE action, change state to CLOSING and receive a CLOSED action") {
+                pending("should send a CLOSE action, change state to CLOSING and receive a CLOSED action") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
