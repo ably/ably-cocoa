@@ -10,6 +10,7 @@ import Foundation
 import XCTest
 import Quick
 import SwiftyJSON
+import SwiftWebSocket
 
 import ably.Private
 
@@ -416,18 +417,64 @@ class TestProxyTransport: ARTWebSocketTransport {
 
 }
 
+class ARTRealtimeExtended: ARTRealtime {
+
+    private var lostStateActive: Bool = false
+
+    override func connectionId() -> String? {
+        if lostStateActive {
+            return "lost"
+        }
+        return super.connectionId()
+    }
+
+    override func connectionKey() -> String? {
+        if lostStateActive {
+            return "lost"
+        }
+        return super.connectionKey()
+    }
+
+    func simulateLostConnection() {
+        //1. Abruptly disconnect
+        //2. Change the `Connection#id` and `Connection#key` before the client 
+        //   library attempts to reconnect and resume the connection
+        onDisconnected()
+        lostStateActive = true
+    }
+    
+}
+
 
 // MARK: - Extensions
 
 extension ARTRealtime {
 
-    func fail() {
-        transition(.Failed, withErrorInfo: ARTErrorInfo())
-    }
-
     func dispose() {
         removeAllChannels()
         eventEmitter.removeEvents()
     }
-    
+
+}
+
+extension ARTWebSocketTransport {
+
+    func simulateIncomingNormalClose() {
+        let CLOSE_NORMAL = 1000
+        let webSocketDelegate = self as! WebSocketDelegate
+        webSocketDelegate.webSocketClose(CLOSE_NORMAL, reason: "", wasClean: true)
+    }
+
+    func simulateIncomingAbruptlyClose() {
+        let CLOSE_ABNORMAL = 1006
+        let webSocketDelegate = self as! WebSocketDelegate
+        webSocketDelegate.webSocketClose(CLOSE_ABNORMAL, reason: "connection was closed abnormally", wasClean: false)
+    }
+
+    func simulateIncomingError() {
+        let error = NSError(domain: ARTAblyErrorDomain, code: 0, userInfo: [NSLocalizedDescriptionKey:"Fail test"])
+        let webSocketDelegate = self as! WebSocketDelegate
+        webSocketDelegate.webSocketError(error)
+    }
+
 }
