@@ -794,7 +794,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN10b
-                it("should not update when a message is sent but increments by one when ACK is received") {
+                pending("should not update when a message is sent but increments by one when ACK is received") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.close() }
                     let channel = client.channel("test")
