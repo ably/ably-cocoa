@@ -71,7 +71,6 @@
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
 
         __block NSString *firstConnectionId = nil;
-        __block bool gotFirstMessage = false;
         [_realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if (state == ARTRealtimeConnected) {
                 firstConnectionId = [_realtime connectionId];
