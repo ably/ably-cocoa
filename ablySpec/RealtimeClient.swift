@@ -271,7 +271,7 @@ class RealtimeClient: QuickSpec {
                 var start: NSDate?
                 var endInterval: UInt?
 
-                waitUntil(timeout: 120.0) { done in
+                waitUntil(timeout: testTimeout + options.suspendedRetryTimeout) { done in
                     client.eventEmitter.on { state, errorInfo in
                         switch state {
                         case .Failed:
@@ -287,7 +287,7 @@ class RealtimeClient: QuickSpec {
 
                             if start == nil {
                                 // Force
-                                client.transition(.Suspended)
+                                client.onSuspended()
                             }
                         case .Suspended:
                             start = NSDate()

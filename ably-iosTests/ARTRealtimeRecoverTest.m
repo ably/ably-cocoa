@@ -71,7 +71,6 @@
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
 
         __block NSString *firstConnectionId = nil;
-        __block bool gotFirstMessage = false;
         [_realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if (state == ARTRealtimeConnected) {
                 firstConnectionId = [_realtime connectionId];
@@ -80,7 +79,7 @@
                 // Sending a message
                 [channel publish:c1Message cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
-                    [_realtime onDisconnected:nil];
+                    [_realtime onDisconnected];
                 }];
             }
             else if (state == ARTRealtimeDisconnected) {

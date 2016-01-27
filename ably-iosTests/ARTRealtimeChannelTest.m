@@ -211,7 +211,7 @@
         ARTRealtimeChannel *channel = [realtime channel:@"channel"];
         [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
             if(state == ARTRealtimeChannelAttached) {
-                [realtime onError:nil withErrorInfo:nil];
+                [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
             }
             else if(state == ARTRealtimeChannelFailed) {
                 [channel publish:@"will_fail" cb:^(ARTStatus *status) {
@@ -297,8 +297,7 @@
             if (state == ARTRealtimeConnected) {
                 [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
                     if (state == ARTRealtimeChannelAttached) {
-                        // FIXME: create proper methods to transition each state.
-                        [realtime onError:nil withErrorInfo:nil];
+                        [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
                     }
                 }];
                 [channel attach];
@@ -324,7 +323,7 @@
             if (state == ARTRealtimeConnected) {
                 [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
                     if (state == ARTRealtimeChannelAttached) {
-                        [realtime onError:nil withErrorInfo:nil];
+                        [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
                     }
                 }];
                 [channel attach];

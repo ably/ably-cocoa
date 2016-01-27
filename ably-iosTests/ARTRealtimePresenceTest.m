@@ -755,7 +755,7 @@
         ARTRealtimeChannel *channel = [realtime channel:channelName];
         [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if(state == ARTRealtimeConnected) {
-                [realtime onError:nil withErrorInfo:nil];
+                [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
                 [channel.presence enter:presenceEnter cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateError, status.state);
                     [exp fulfill];
@@ -774,12 +774,12 @@
         __block bool hasDisconnected = false;
         [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if(state == ARTRealtimeConnected) {
-                [realtime onDisconnected:nil];
+                [realtime onDisconnected];
             }
             else if(state == ARTRealtimeDisconnected) {
                 hasDisconnected = true;
                 XCTAssertThrows([channel.presence get:^(ARTPaginatedResult *result, NSError *error) {}]);
-                [realtime onError:nil withErrorInfo:nil];
+                [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
             }
             else if(state == ARTRealtimeFailed) {
                 XCTAssertTrue(hasDisconnected);
@@ -825,7 +825,7 @@
         ARTRealtimeChannel *channel = [realtime channel:@"channelName"];
         [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if(state == ARTRealtimeConnected) {
-                [realtime onError:nil withErrorInfo:nil];
+                [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
                 [channel.presence  enterClient:@"clientId" data:@"" cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateError, status.state);
                     [exp fulfill];
@@ -1115,7 +1115,7 @@
                         if(!firstSyncMessageReceived) {
                             XCTAssertFalse([channel2.presenceMap isSyncComplete]); //confirm we still have more syncing to do.
                             firstSyncMessageReceived = true;
-                            [realtime2 onError:nil withErrorInfo:nil];
+                            [realtime2 onError:[ARTTestUtil newErrorProtocolMessage]];
                         }
                         else if([channel2.presenceMap isSyncComplete] && !syncComplete) {
                             XCTAssertTrue(hasFailed);

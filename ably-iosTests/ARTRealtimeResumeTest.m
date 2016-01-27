@@ -81,7 +81,7 @@
                 [channelB publish:message1 cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
                     // Forcibly disconnect
-                    [_realtime onError:nil withErrorInfo:nil];
+                    [_realtime onError:[ARTTestUtil newErrorProtocolMessage]];
                 }];
             }
         }];
@@ -142,7 +142,7 @@
             NSString * msg = [message content];
             if([msg isEqualToString:message2]) {
                 //disconnect connection1
-                [_realtime onError:nil withErrorInfo:nil];
+                [_realtime onError:[ARTTestUtil newErrorProtocolMessage]];
                 [channel2 publish:message3 cb:^(ARTStatus *status) {
                     [channel2 publish:message4 cb:^(ARTStatus *status) {
                         [_realtime connect];

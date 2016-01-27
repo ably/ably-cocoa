@@ -76,4 +76,6 @@ typedef void (^ARTRealtimeTestCallback)(ARTRealtime *realtime, ARTRealtimeConnec
 + (NSString *)getCrypto256Json;
 + (NSString *)getErrorsJson;
 
++ (ARTProtocolMessage *)newErrorProtocolMessage;
+
 @end

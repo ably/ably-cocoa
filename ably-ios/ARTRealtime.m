@@ -446,7 +446,7 @@
     self.pingTimeout = nil;
 }
 
-- (void)onHeartbeat:(ARTProtocolMessage *)message {
+- (void)onHeartbeat {
     [self.logger verbose:@"ARTRealtime heartbeat received"];
     if(self.pingCb) {
         [self cancelPingTimer];
@@ -461,15 +461,15 @@
     }
 }
 
-- (void)onConnected:(ARTProtocolMessage *)message withErrorInfo:(ARTErrorInfo *)errorInfo {
+- (void)onConnected:(ARTProtocolMessage *)message {
     // Resuming
     if ([self isFromResume]) {
-        if (errorInfo && ![message.connectionId isEqualToString:self.connectionId]) {
+        if (message.error && ![message.connectionId isEqualToString:self.connectionId]) {
             [self.logger warn:@"ARTRealtime: connection has reconnected, but resume failed. Detaching all channels"];
             // Fatal error, detach all channels
             for (NSString *channelName in self.allChannels) {
                 ARTRealtimeChannel *channel = [self.allChannels objectForKey:channelName];
-                [channel detachChannel:[ARTStatus state:ARTStateConnectionDisconnected info:errorInfo]];
+                [channel detachChannel:[ARTStatus state:ARTStateConnectionDisconnected info:message.error]];
             }
 
             self.options.resumeKey = nil;
@@ -481,8 +481,8 @@
                 }
             }
         }
-        else if (errorInfo) {
-            [self.logger warn:@"ARTRealtime: connection has resumed with non-fatal error %@", errorInfo.message];
+        else if (message.error) {
+            [self.logger warn:@"ARTRealtime: connection has resumed with non-fatal error %@", message.error.message];
             // The error will be emitted on `transition`
         }
     }
@@ -496,7 +496,7 @@
                 self.msgSerial = 0;
                 self.pendingMessageStartSerial = 0;
             }
-            [self transition:ARTRealtimeConnected withErrorInfo:errorInfo];
+            [self transition:ARTRealtimeConnected withErrorInfo:message.error];
             break;
         default:
             NSAssert(false, @"Invalid Realtime state: expected Connecting has current state");
@@ -512,12 +512,11 @@
     return _connectionId;
 }
 
-- (void)onDisconnected:(ARTProtocolMessage *)message {
+- (void)onDisconnected {
     [self.logger info:@"ARTRealtime disconnected"];
     switch (self.state) {
         case ARTRealtimeConnected:
             self.connectionId = nil;
-            self.msgSerial = 0;
             [self transition:ARTRealtimeDisconnected];
             break;
         default:
@@ -526,13 +525,13 @@
     }
 }
 
-- (void)onError:(ARTProtocolMessage *)message withErrorInfo:(ARTErrorInfo *)errorInfo {
+- (void)onError:(ARTProtocolMessage *)message {
     // TODO work out which states this can be received in
     if (message.channel) {
-        [self onChannelMessage:message withErrorInfo:errorInfo];
+        [self onChannelMessage:message];
     } else {
         self.connectionId = nil;
-        [self transition:ARTRealtimeFailed withErrorInfo:errorInfo];
+        [self transition:ARTRealtimeFailed withErrorInfo:message.error];
     }
 }
 
@@ -544,7 +543,7 @@
     [self nack:message];
 }
 
-- (void)onChannelMessage:(ARTProtocolMessage *)message withErrorInfo:(ARTErrorInfo *)errorInfo {
+- (void)onChannelMessage:(ARTProtocolMessage *)message {
     // TODO work out which states this can be received in / error info?
     ARTRealtimeChannel *channel = [self.allChannels objectForKey:message.channel];
     [channel onChannelMessage:message];
@@ -805,19 +804,19 @@
 
     switch (message.action) {
         case ARTProtocolMessageHeartbeat:
-            [self onHeartbeat:message];
+            [self onHeartbeat];
             break;
         case ARTProtocolMessageError:
-            [self onError:message withErrorInfo:message.error];
+            [self onError:message];
             break;
         case ARTProtocolMessageConnected:
             // Set Auth#clientId
             [[self auth] setProtocolClientId:message.clientId];
             // Event
-            [self onConnected:message withErrorInfo:message.error];
+            [self onConnected:message];
             break;
         case ARTProtocolMessageDisconnected:
-            [self onDisconnected:message];
+            [self onDisconnected];
             break;
         case ARTProtocolMessageAck:
             [self onAck:message];
@@ -829,7 +828,7 @@
             [self transition:ARTRealtimeClosed];
             break;
         default:
-            [self onChannelMessage:message withErrorInfo:message.error];
+            [self onChannelMessage:message];
             break;
     }
 }

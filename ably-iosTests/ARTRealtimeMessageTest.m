@@ -271,7 +271,7 @@
                     connectingHappened = true;
                     [channel publish:connectingMessage cb:^(ARTStatus *status) {
                         XCTAssertEqual(ARTStateOk, status.state);
-                        [realtime onDisconnected:nil];
+                        [realtime onDisconnected];
                     }];
                 }
             }

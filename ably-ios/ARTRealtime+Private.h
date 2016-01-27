@@ -25,20 +25,16 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) NSMutableArray *stateSubscriptions;
 
 // Transport Events
-- (void)onHeartbeat:(ARTProtocolMessage *)message;
-- (void)onConnected:(ARTProtocolMessage *)message withErrorInfo:(art_nullable ARTErrorInfo *)errorInfo;
-- (void)onDisconnected:(ARTProtocolMessage *)message;
-- (void)onError:(ARTProtocolMessage *)message withErrorInfo:(art_nullable ARTErrorInfo *)errorInfo;
+- (void)onHeartbeat;
+- (void)onConnected:(ARTProtocolMessage *)message;
+- (void)onDisconnected;
+- (void)onSuspended;
+- (void)onError:(ARTProtocolMessage *)message;
 - (void)onAck:(ARTProtocolMessage *)message;
 - (void)onNack:(ARTProtocolMessage *)message;
-- (void)onChannelMessage:(ARTProtocolMessage *)message withErrorInfo:(art_nullable ARTErrorInfo *)errorInfo;
-
-- (void)onSuspended;
+- (void)onChannelMessage:(ARTProtocolMessage *)message;
 
 - (int64_t)connectionSerial;
-
-- (void)transition:(ARTRealtimeConnectionState)state;
-- (void)transition:(ARTRealtimeConnectionState)state withErrorInfo:(art_nullable ARTErrorInfo *)errorInfo;
 
 // FIXME: Connection should manage the transport
 - (void)setTransportClass:(Class)transportClass;
