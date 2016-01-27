@@ -793,6 +793,26 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
+                // RTN10b
+                pending("should not update when a message is sent but increments by one when ACK is received") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    let channel = client.channel("test")
+
+                    for index in 0...5 {
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish("message", cb: { status in
+                                expect(status.state).to(equal(ARTState.Ok))
+                                // Updated
+                                expect(client.connection().serial).to(equal(Int64(index)))
+                                done()
+                            })
+                            // Not updated
+                            expect(client.connection().serial).to(equal(Int64(index - 1)))
+                        }
+                    }
+                }
+
                 // RTN10c
                 pending("should have last known connection serial from restored connection") {
                     let options = AblyTests.commonAppSetup()
@@ -824,7 +844,7 @@ class RealtimeClientConnection: QuickSpec {
                         expect(recoveredClient.connection().serial).to(equal(lastSerial))
                     }
                 }
-                
+
             }
 
             // RTN14a
