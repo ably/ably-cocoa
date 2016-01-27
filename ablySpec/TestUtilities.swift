@@ -398,6 +398,8 @@ class TestProxyTransport: ARTWebSocketTransport {
     private(set) var protocolMessagesSent = [ARTProtocolMessage]()
     private(set) var protocolMessagesReceived = [ARTProtocolMessage]()
 
+    var actionsIgnored = [ARTProtocolMessageAction]()
+
     override func setupWebSocket(params: [NSURLQueryItem], withOptions options: ARTClientOptions) -> NSURL {
         let url = super.setupWebSocket(params, withOptions: options)
         lastUrl = url
@@ -411,6 +413,9 @@ class TestProxyTransport: ARTWebSocketTransport {
 
     override func receive(msg: ARTProtocolMessage) {
         protocolMessagesReceived.append(msg)
+        if actionsIgnored.contains(msg.action) {
+            return
+        }
         super.receive(msg)
     }
 
