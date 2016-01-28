@@ -989,6 +989,36 @@ class RealtimeClientConnection: QuickSpec {
                 }
             }
 
+            // RTN18
+            context("state change side effects") {
+
+                // RTN18a
+                it("when a connection enters the DISCONNECTED state, it will have no effect on the the channel states") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+
+                    let channel = client.channel("test")
+                    channel.attach()
+
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                    client.onDisconnected()
+
+                    expect(client.connection().state).to(equal(ARTRealtimeConnectionState.Disconnected))
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+
+                    waitUntil(timeout: testTimeout + options.disconnectedRetryTimeout) { done in
+                        channel.publish("queuedMessage", cb: { status in
+                            expect(status.state).to(equal(ARTState.Ok))
+                            done()
+                        })
+                    }
+                    expect(client.connection().state).to(equal(ARTRealtimeConnectionState.Connected))
+                }
+
+            }
+
         }
     }
 }
