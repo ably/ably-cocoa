@@ -13,6 +13,7 @@
 #import "ARTChannel+Private.h"
 #import "ARTChannelOptions.h"
 #import "ARTMessage.h"
+#import "ARTBaseMessage.h"
 #import "ARTPaginatedResult+Private.h"
 #import "ARTDataQuery+Private.h"
 #import "ARTJsonEncoder.h"
@@ -28,7 +29,7 @@
 }
 
 - (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRest *)rest {
-    if (self = [super initWithName:name andOptions:options]) {
+    if (self = [super initWithName:name andOptions:options andLogger:rest.logger]) {
         _rest = rest;
         _basePath = [NSString stringWithFormat:@"/channels/%@", [name stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]]];
         [self.logger debug:__FILE__ line:__LINE__ message:@"%p instantiating under '%@'", self, name];
@@ -77,7 +78,8 @@
     ARTPaginatedResultResponseProcessor responseProcessor = ^NSArray *(NSHTTPURLResponse *response, NSData *data) {
         id<ARTEncoder> encoder = [_rest.encoders objectForKey:response.MIMEType];
         return [[encoder decodeMessages:data] artMap:^(ARTMessage *message) {
-            return [message decode:self.payloadEncoder];
+            [message decodeWithEncoder:self.dataEncoder output:&message];
+            return message;
         }];
     };
 

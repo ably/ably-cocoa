@@ -16,7 +16,7 @@
 @class ARTChannel;
 @class XCTestExpectation;
 @class ARTRealtimeChannel;
-@class ARTCipherPayloadEncoder;
+@class ARTCipherDataEncoder;
 
 void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeout);
 
@@ -30,7 +30,7 @@ typedef NS_ENUM(NSUInteger, TestAlteration) {
     TestAlterationRestrictCapability
 };
 
-+ (ARTCipherPayloadEncoder *)getTestCipherEncoder;
++ (ARTCipherDataEncoder *)getTestCipherEncoder;
 
 // FIXME: why is `setupApp` using a callback? hard reading... could be a blocking method (only once per test)
 + (void)setupApp:(ARTClientOptions *)options cb:(void(^)(ARTClientOptions *options))cb;

@@ -7,6 +7,7 @@
 //
 
 #import "ARTRealtimeChannel.h"
+#import "ARTChannel+Private.h"
 
 #import "ARTRealtime+Private.h"
 #import "ARTMessage.h"
@@ -20,6 +21,7 @@
 #import "ARTPresenceMap.h"
 #import "ARTQueuedMessage.h"
 #import "ARTNSArray+ARTFunctional.h"
+#import "ARTStatus.h"
 
 @interface ARTRealtimeChannel () {
     ARTRealtimePresence *_realtimePresence;
@@ -56,36 +58,28 @@
     return _realtimePresence;
 }
 
-- (void)publish:(id)payload cb:(ARTStatusCallback)cb {
-    if([payload isKindOfClass:[NSArray class]]) {
-        NSArray * messages = [ARTMessage messagesWithPayloads:(NSArray *) payload];
+- (void)publish:(id)data cb:(ARTStatusCallback)cb {
+    if([data isKindOfClass:[NSArray class]]) {
+        NSArray * messages = [ARTMessage messagesWithData:(NSArray *) data];
         [self publishMessages:messages cb:cb];
     }
     else {
-        [self publish:payload withName:nil cb:cb];
+        [self publish:data withName:nil cb:cb];
     }
 }
 
-- (void)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb {
-    NSArray *messages = [NSArray arrayWithObject:[ARTMessage messageWithPayload:payload name:name]];
+- (void)publish:(id)data withName:(NSString *)name cb:(ARTStatusCallback)cb {
+    NSArray *messages = [NSArray arrayWithObject:[ARTMessage messageWithData:data name:name]];
     [self publishMessages:messages cb:cb];
 }
 
 - (void)publishMessages:(NSArray *)messages cb:(ARTStatusCallback)cb {
-    if (self.payloadEncoder) {
-        messages = [messages artMap:^id(ARTMessage *message) {
-            ARTPayload *encodedPayload = nil;
-            ARTStatus * status = [self.payloadEncoder encode:message.payload output:&encodedPayload];
-            if (status.state != ARTStateOk) {
-                [self.logger error:@"ARTRealtime: error decoding payload, status: %tu", status];
-            }
-            return [message messageWithPayload:encodedPayload];
-        }];
-    }
     ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
     msg.action = ARTProtocolMessageMessage;
     msg.channel = self.name;
-    msg.messages = messages;
+    msg.messages = [messages artMap:^id(ARTMessage *message) {
+        return [self encodeMessageIfNeeded:message];
+    }];
     [self publishProtocolMessage:msg cb:cb];
 }
 
@@ -111,13 +105,15 @@
     }
     _lastPresenceAction = msg.action;
     
-    if (msg.payload && self.payloadEncoder) {
-        ARTPayload *encodedPayload = nil;
-        ARTStatus * status = [self.payloadEncoder encode:msg.payload output:&encodedPayload];
+    if (msg.data && self.dataEncoder) {
+        id encodedData = nil;
+        NSString *encoding;
+        ARTStatus * status = [self.dataEncoder encode:msg.data outputData:&encodedData outputEncoding:&encoding];
         if (status.state != ARTStateOk) {
             [self.logger warn:@"bad status encoding presence message %d",(int) status];
         }
-        msg.payload = encodedPayload;
+        msg.data = encodedData;
+        msg.encoding = encoding;
     }
     
     ARTProtocolMessage *pm = [[ARTProtocolMessage alloc] init];
@@ -341,11 +337,14 @@
     NSArray *blanketSubscriptions = [self.subscriptions objectForKey:@""];
     
     int i = 0;
-    id<ARTPayloadEncoder> payloadEncoder = self.payloadEncoder;
+    ARTDataEncoder *dataEncoder = self.dataEncoder;
     for (ARTMessage *m in message.messages) {
         ARTMessage *msg = m;
-        if (payloadEncoder) {
-            msg = [msg decode:payloadEncoder];
+        if (dataEncoder) {
+            ARTStatus *status = [msg decodeWithEncoder:dataEncoder output:&msg];
+             if (status.state != ARTStateOk) {
+                [self.logger error:@"ARTRealtimeChannel: error decoding data, status: %tu", status];
+            }
         }
         
         if (!msg.timestamp) {
@@ -374,11 +373,14 @@
 
 - (void)onPresence:(ARTProtocolMessage *)message {
     int i = 0;
-    id<ARTPayloadEncoder> payloadEncoder = self.payloadEncoder;
+    ARTDataEncoder *dataEncoder = self.dataEncoder;
     for (ARTPresenceMessage *p in message.presence) {
         ARTPresenceMessage *pm = p;
-        if (payloadEncoder) {
-            pm = [pm decode:payloadEncoder];
+        if (dataEncoder) {
+            ARTStatus *status = [pm decodeWithEncoder:dataEncoder output:&pm];
+             if (status.state != ARTStateOk) {
+                [self.logger error:@"ARTRealtimeChannel: error decoding data, status: %tu", status];
+            }
         }
         
         if (!pm.timestamp) {

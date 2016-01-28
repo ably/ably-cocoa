@@ -18,7 +18,6 @@
 #import "ARTEventEmitter.h"
 #import "ARTDataQuery.h"
 #import "ARTPaginatedResult.h"
-#import "ARTPayload+Private.h"
 #import "ARTTestUtil.h"
 #import "ARTLog.h"
 
@@ -36,7 +35,6 @@
 
 - (void)tearDown {
     [super tearDown];
-    [ARTPayload getPayloadArraySizeLimit:SIZE_T_MAX modify:true];
     if (_realtime) {
         [_realtime removeAllChannels];
         [_realtime.eventEmitter removeEvents];

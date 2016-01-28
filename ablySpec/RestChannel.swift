@@ -14,21 +14,9 @@ import SwiftyJSON
 extension ARTMessage {
     public override func isEqual(object: AnyObject?) -> Bool {
         if let other = object as? ARTMessage {
-            return self.name == other.name && self.payload == other.payload
-        }
-        
-        return super.isEqual(object)
-    }
-}
-
-extension ARTPayload {
-    public override func isEqual(object: AnyObject?) -> Bool {
-        if let other = object as? ARTPayload {
-            if let selfPayload = self.payload as? NSObject {
-                if let otherPayload = other.payload as? NSObject {
-                    return selfPayload == otherPayload && self.encoding == other.encoding
-                }
-            }
+            return self.name == other.name &&
+                self.encoding == other.encoding &&
+                self.data as! NSObject == other.data as! NSObject
         }
         
         return super.isEqual(object)
@@ -89,7 +77,7 @@ class RestChannel: QuickSpec {
                     
                     expect(publishError).toEventually(beNil(), timeout: testTimeout)
                     expect(publishedMessage?.name).toEventually(equal(name), timeout: testTimeout)
-                    expect(publishedMessage?.payload.payload as? String).toEventually(equal(data), timeout: testTimeout)
+                    expect(publishedMessage?.data as? String).toEventually(equal(data), timeout: testTimeout)
                 }
             }
             
@@ -108,7 +96,7 @@ class RestChannel: QuickSpec {
                     
                     expect(publishError).toEventually(beNil(), timeout: testTimeout)
                     expect(publishedMessage?.name).toEventually(equal(name), timeout: testTimeout)
-                    expect(publishedMessage?.payload.payload).toEventually(beNil(), timeout: testTimeout)
+                    expect(publishedMessage?.data).toEventually(beNil(), timeout: testTimeout)
                 }
             }
             
@@ -127,7 +115,7 @@ class RestChannel: QuickSpec {
                     
                     expect(publishError).toEventually(beNil(), timeout: testTimeout)
                     expect(publishedMessage?.name).toEventually(beNil(), timeout: testTimeout)
-                    expect(publishedMessage?.payload.payload as? String).toEventually(equal(data), timeout: testTimeout)
+                    expect(publishedMessage?.data as? String).toEventually(equal(data), timeout: testTimeout)
                 }
             }
             
@@ -146,7 +134,7 @@ class RestChannel: QuickSpec {
                     
                     expect(publishError).toEventually(beNil(), timeout: testTimeout)
                     expect(publishedMessage?.name).toEventually(beNil(), timeout: testTimeout)
-                    expect(publishedMessage?.payload.payload).toEventually(beNil(), timeout: testTimeout)
+                    expect(publishedMessage?.data).toEventually(beNil(), timeout: testTimeout)
                 }
             }
             
@@ -164,7 +152,7 @@ class RestChannel: QuickSpec {
                     
                     expect(publishError).toEventually(beNil(), timeout: testTimeout)
                     expect(publishedMessage?.name).toEventually(beNil(), timeout: testTimeout)
-                    expect(publishedMessage?.payload.payload).toEventually(beNil(), timeout: testTimeout)
+                    expect(publishedMessage?.data).toEventually(beNil(), timeout: testTimeout)
                 }
             }
             
@@ -229,7 +217,7 @@ class RestChannel: QuickSpec {
                         expect(message.action).to(equal(ARTPresenceAction.Present))
 
                         // skip the encrypted message for now
-                        if message.payload.encoding.rangeOfString("cipher") == nil {
+                        if message.encoding.rangeOfString("cipher") == nil {
                             expect(message.content() as? NSObject).to(equal(fixtureMessage["data"].object as? NSObject))
                         }
                     }
@@ -428,7 +416,7 @@ class RestChannel: QuickSpec {
                         for (index, item) in (result.items.reverse().enumerate()) {
                             totalReceived++
 
-                            switch (item as? ARTMessage)?.payload.payload {
+                            switch (item as? ARTMessage)?.data {
                             case let value as NSDictionary:
                                 expect(value).to(equal(cases[index]))
                                 break

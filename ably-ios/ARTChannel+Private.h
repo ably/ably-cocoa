@@ -9,14 +9,14 @@
 #import "ARTChannel.h"
 #import "ARTLog.h"
 
-@protocol ARTPayloadEncoder;
-
 ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTChannel()
 
 @property (nonatomic, strong, art_null_resettable) ARTChannelOptions *options;
+@property (nonatomic, strong, readonly) ARTDataEncoder *dataEncoder;
 
+- (ARTMessage *__art_nonnull)encodeMessageIfNeeded:(ARTMessage *__art_nonnull)message;
 - (void)internalPostMessages:(id)data callback:(art_nullable ARTErrorCallback)callback;
 
 @end

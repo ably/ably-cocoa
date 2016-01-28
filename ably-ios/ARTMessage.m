@@ -14,7 +14,8 @@
     if (self = [self init]) {
         _name = [name copy];
         if (data) {
-            self.payload = [ARTPayload payloadWithPayload:data encoding:@""];
+            self.data = data;
+            self.encoding = @"";
         }
     }
     return self;
@@ -35,20 +36,18 @@
     return message;
 }
 
-+ (ARTMessage *)messageWithPayload:(id)payload name:(NSString *)name {
++ (ARTMessage *)messageWithData:(id)data name:(NSString *)name {
     ARTMessage *message = [[ARTMessage alloc] init];
     message.name = name;
-    message.payload = [ARTPayload payloadWithPayload:payload encoding:@""];
+    message.data = data;
+    message.encoding = @"";
     return message;
 }
 
-+ (NSArray *)messagesWithPayloads:(NSArray *)payloads {
-    if([payloads count] > [ARTPayload payloadArraySizeLimit]) {
-        [NSException raise:@"Too many items in payload array" format:@"%lu > %lu", (unsigned long)[payloads count], [ARTPayload payloadArraySizeLimit]];
-    }
-    NSMutableArray * messages =[[NSMutableArray alloc] init];
-    for (int i=0; i < [payloads count]; i++) {
-        [messages addObject:[ARTMessage messageWithPayload:[payloads objectAtIndex:i] name:nil]];
++ (NSArray *)messagesWithData:(NSArray *)data {
+    NSMutableArray * messages =[[NSMutableArray alloc] initWithCapacity:[data count]];
+    for (int i=0; i < [data count]; i++) {
+        [messages addObject:[ARTMessage messageWithData:[data objectAtIndex:i] name:nil]];
     }
     return messages;
 }

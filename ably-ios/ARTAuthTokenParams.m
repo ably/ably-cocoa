@@ -13,7 +13,6 @@
 
 #import "ARTDefault.h"
 #import "ARTEncoder.h"
-#import "ARTPayload.h"
 #import "ARTAuthTokenRequest.h"
 
 @implementation ARTAuthTokenParams
@@ -130,7 +129,7 @@ static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
     
     CCHmac(kCCHmacAlgSHA256, cKey, keyLen, cData, dataLen, hmac);
     NSData *mac = [[NSData alloc] initWithBytes:hmac length:sizeof(hmac)];
-    NSString *str = [ARTBase64PayloadEncoder toBase64:mac];
+    NSString *str = [mac base64EncodedStringWithOptions:0];
     return str;
 }
 

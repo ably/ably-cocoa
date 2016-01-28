@@ -8,8 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "ARTTypes.h"
-
-@protocol ARTPayloadEncoder;
+#import "ARTDataEncoder.h"
 
 @class ARTChannelOptions;
 @class ARTMessage;
@@ -21,13 +20,12 @@ ART_ASSUME_NONNULL_BEGIN
 @interface ARTChannel : NSObject
 
 @property (nonatomic, strong, readonly) NSString *name;
+@property (readonly, getter=getLogger) ARTLog *logger;
 
-@property (readonly, strong, nonatomic) id<ARTPayloadEncoder> payloadEncoder;
+- (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options andLogger:(ARTLog *)logger;
 
-- (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options;
-
-- (void)publish:(art_nullable id)payload callback:(art_nullable ARTErrorCallback)callback;
-- (void)publish:(art_nullable id)payload name:(art_nullable NSString *)name callback:(art_nullable ARTErrorCallback)callback;
+- (void)publish:(art_nullable id)data callback:(art_nullable ARTErrorCallback)callback;
+- (void)publish:(art_nullable id)data name:(art_nullable NSString *)name callback:(art_nullable ARTErrorCallback)callback;
 
 - (void)publishMessage:(ARTMessage *)message callback:(art_nullable ARTErrorCallback)callback;
 - (void)publishMessages:(__GENERIC(NSArray, ARTMessage *) *)messages callback:(art_nullable ARTErrorCallback)callback;

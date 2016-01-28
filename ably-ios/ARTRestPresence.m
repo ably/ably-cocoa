@@ -32,10 +32,7 @@
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data) {
         id<ARTEncoder> encoder = [[self channel].rest.encoders objectForKey:response.MIMEType];
-        NSArray *messages = [encoder decodePresenceMessages:data];
-        return [messages artMap:^id(ARTPresenceMessage *pm) {
-            return [pm decode:[self channel].payloadEncoder];
-        }];
+        return [encoder decodePresenceMessages:data];
     };
 
     [ARTPaginatedResult executePaginated:[self channel].rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
@@ -65,10 +62,7 @@
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data) {
         id<ARTEncoder> encoder = [[self channel].rest.encoders objectForKey:response.MIMEType];
-        NSArray *messages = [encoder decodePresenceMessages:data];
-        return [messages artMap:^id(ARTPresenceMessage *pm) {
-            return [pm decode:[self channel].payloadEncoder];
-        }];
+        return [encoder decodePresenceMessages:data];
     };
 
     [ARTPaginatedResult executePaginated:[self channel].rest withRequest:request andResponseProcessor:responseProcessor callback:callback];

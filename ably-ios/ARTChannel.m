@@ -8,18 +8,19 @@
 
 #import "ARTChannel+Private.h"
 
-#import "ARTPayload.h"
+#import "ARTDataEncoder.h"
 #import "ARTMessage.h"
 #import "ARTChannelOptions.h"
 #import "ARTNSArray+ARTFunctional.h"
 
 @implementation ARTChannel
 
-- (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options {
+- (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options andLogger:(ARTLog *)logger {
     if (self = [super init]) {
         _name = name;
-        _options = options;
-        _payloadEncoder = [ARTPayload defaultPayloadEncoder:options.cipherParams];
+        self.options = options;
+        _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:_options.cipherParams logger:logger];
+        _logger = logger;
     }
     return self;
 }
@@ -30,8 +31,6 @@
     } else {
         _options = options;
     }
-    // FIXME: odd, always JSON?!
-    _payloadEncoder = [ARTJsonPayloadEncoder instance];
 }
 
 - (void)publish:(id)data callback:(ARTErrorCallback)callback {
@@ -43,15 +42,25 @@
 }
 
 - (void)publishMessages:(NSArray *)messages callback:(ARTErrorCallback)callback {
-    messages = [messages artMap:^(ARTMessage *message) {
-        return [message encode:self.payloadEncoder];
-    }];
+    [self internalPostMessages:[messages artMap:^id(ARTMessage *message) {
+        return [self encodeMessageIfNeeded:message];
+    }] callback:callback];
+}
 
-    [self internalPostMessages:messages callback:callback];
+- (ARTMessage *)encodeMessageIfNeeded:(ARTMessage *)message  {
+    if (!self.dataEncoder) {
+        return message;
+    }
+    ARTStatus *status = [message encodeWithEncoder:self.dataEncoder output:&message];
+    if (status.state != ARTStateOk) {
+        [self.logger error:@"ARTChannel: error encoding data, status: %tu", status];
+        @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"message encoding failed" userInfo:nil];
+    }
+    return message;
 }
 
 - (void)publishMessage:(ARTMessage *)message callback:(ARTErrorCallback)callback {
-    [self internalPostMessages:[message encode:self.payloadEncoder] callback:callback];
+    [self internalPostMessages:[self encodeMessageIfNeeded:message] callback:callback];
 }
 
 - (BOOL)history:(ARTDataQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, NSError *))callback error:(NSError **)errorPtr {

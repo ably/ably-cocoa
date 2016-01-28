@@ -29,11 +29,9 @@
 		1C5DA0151A6E5FA400A2B7EF /* ably.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* ably.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1C6C18A31ADFDAB100AB79E4 /* ARTLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C6C18A11ADFDAB100AB79E4 /* ARTLog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1C6C18A41ADFDAB100AB79E4 /* ARTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */; };
-		1C8065051AE7C8FA00D49357 /* ARTPayload+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C8065041AE7C8FA00D49357 /* ARTPayload+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		1CC3D94B1AB6FBB60005BEB0 /* ARTRealtimeChannelHistoryTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CC3D94A1AB6FBB60005BEB0 /* ARTRealtimeChannelHistoryTest.m */; };
 		1CC3D94D1AB6FE700005BEB0 /* ARTRealtimeConnectTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CC3D94C1AB6FE700005BEB0 /* ARTRealtimeConnectTest.m */; };
 		1CC3D9511AB6FF480005BEB0 /* ARTRealtimeCryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CC3D9501AB6FF480005BEB0 /* ARTRealtimeCryptoTest.m */; };
-		1CC3D9531AB7001E0005BEB0 /* ARTRealtimeCryptoMessageTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CC3D9521AB7001E0005BEB0 /* ARTRealtimeCryptoMessageTest.m */; };
 		1CC3D9551AB700680005BEB0 /* ARTRealtimeInitTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CC3D9541AB700680005BEB0 /* ARTRealtimeInitTest.m */; };
 		1CC3D9571AB700EC0005BEB0 /* ARTRealtimeMessageTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CC3D9561AB700EC0005BEB0 /* ARTRealtimeMessageTest.m */; };
 		1CC3D9591AB701E50005BEB0 /* ARTRealtimePresenceTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CC3D9581AB701E50005BEB0 /* ARTRealtimePresenceTest.m */; };
@@ -60,8 +58,6 @@
 		960D07971A46FFC300ED8C8C /* ARTRest+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 960D07951A46FFC300ED8C8C /* ARTRest+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		961343D81A42E0B7006DC822 /* ARTClientOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = 961343D61A42E0B7006DC822 /* ARTClientOptions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		961343D91A42E0B7006DC822 /* ARTClientOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 961343D71A42E0B7006DC822 /* ARTClientOptions.m */; };
-		961343E81A432E7C006DC822 /* ARTPayload.h in Headers */ = {isa = PBXBuildFile; fileRef = 961343E61A432E7C006DC822 /* ARTPayload.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		961343E91A432E7C006DC822 /* ARTPayload.m in Sources */ = {isa = PBXBuildFile; fileRef = 961343E71A432E7C006DC822 /* ARTPayload.m */; };
 		967A43211A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.h in Headers */ = {isa = PBXBuildFile; fileRef = 967A431F1A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		967A43221A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.m in Sources */ = {isa = PBXBuildFile; fileRef = 967A43201A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.m */; };
 		96A507951A370F860077CDF8 /* ARTStats.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507931A370F860077CDF8 /* ARTStats.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -129,7 +125,7 @@
 		D7588AF41BFF91B800BB8279 /* ARTURLSessionServerTrust.m in Sources */ = {isa = PBXBuildFile; fileRef = D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */; settings = {ASSET_TAGS = (); }; };
 		D74EFAEB1C4D09B500CFF98E /* RealtimeClientChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74EFAEA1C4D09B500CFF98E /* RealtimeClientChannel.swift */; };
 		D7B17EE31C07208B00A6958E /* ARTConnectionDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B17EE11C07208B00A6958E /* ARTConnectionDetails.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D7B17EE41C07208B00A6958E /* ARTConnectionDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = D7B17EE21C07208B00A6958E /* ARTConnectionDetails.m */; settings = {ASSET_TAGS = (); }; };
+		D7B17EE41C07208B00A6958E /* ARTConnectionDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = D7B17EE21C07208B00A6958E /* ARTConnectionDetails.m */; };
 		D7C1B8771BBEA81A0087B55F /* Auth.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C1B8761BBEA81A0087B55F /* Auth.swift */; };
 		D7C1B8791BBF5F810087B55F /* ARTAuth+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1B8781BBF5F460087B55F /* ARTAuth+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D7D29B421BE3DEB300374295 /* ARTConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = D7D29B411BE3DEB300374295 /* ARTConnection.m */; };
@@ -148,6 +144,10 @@
 		D7F1D3771BF4DE72001A4B5E /* ARTRealtimePresence.h in Headers */ = {isa = PBXBuildFile; fileRef = D7F1D3751BF4DE72001A4B5E /* ARTRealtimePresence.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7F1D3781BF4DE72001A4B5E /* ARTRealtimePresence.m in Sources */ = {isa = PBXBuildFile; fileRef = D7F1D3761BF4DE72001A4B5E /* ARTRealtimePresence.m */; };
 		D7F1D37A1BF4E33A001A4B5E /* ARTRestChannel+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7F1D3791BF4E33A001A4B5E /* ARTRestChannel+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		EB3239441C59AB0400892664 /* ARTDataEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB3239421C59AB0400892664 /* ARTDataEncoder.m */; };
+		EB3239451C59AB0400892664 /* ARTDataEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB3239421C59AB0400892664 /* ARTDataEncoder.m */; };
+		EB82F8511C59D29B00661917 /* ARTDataEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = EB3239461C59AB2C00892664 /* ARTDataEncoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		EB82F8521C59D30500661917 /* ARTDataEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB3239421C59AB0400892664 /* ARTDataEncoder.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -207,7 +207,7 @@
 		1C1E52F71AB32EF0004A690F /* ARTRestTokenTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestTokenTest.m; sourceTree = "<group>"; };
 		1C1E52F91AB35665004A690F /* ARTRestInitTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestInitTest.m; sourceTree = "<group>"; };
 		1C1E53011AB373C5004A690F /* ARTRealtimeChannelTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimeChannelTest.m; sourceTree = "<group>"; };
-		1C2B0FFB1B136A6D00E3633C /* ARTPresenceMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPresenceMap.h; sourceTree = "<group>"; };
+		1C2B0FFB1B136A6D00E3633C /* ARTPresenceMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTPresenceMap.h; path = "ably-ios/ARTPresenceMap.h"; sourceTree = SOURCE_ROOT; };
 		1C2B0FFC1B136A6D00E3633C /* ARTPresenceMap.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPresenceMap.m; sourceTree = "<group>"; };
 		1C55427C1B148306003068DB /* ARTStatus.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTStatus.m; sourceTree = "<group>"; };
 		1C578E1D1B3435CA00EF46EC /* ARTFallback.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTFallback.h; sourceTree = "<group>"; };
@@ -215,11 +215,9 @@
 		1C578E211B3438F300EF46EC /* ARTFallbackTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTFallbackTest.m; sourceTree = "<group>"; };
 		1C6C18A11ADFDAB100AB79E4 /* ARTLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTLog.h; sourceTree = "<group>"; };
 		1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTLog.m; sourceTree = "<group>"; };
-		1C8065041AE7C8FA00D49357 /* ARTPayload+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTPayload+Private.h"; sourceTree = "<group>"; };
 		1CC3D94A1AB6FBB60005BEB0 /* ARTRealtimeChannelHistoryTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimeChannelHistoryTest.m; sourceTree = "<group>"; };
 		1CC3D94C1AB6FE700005BEB0 /* ARTRealtimeConnectTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimeConnectTest.m; sourceTree = "<group>"; };
 		1CC3D9501AB6FF480005BEB0 /* ARTRealtimeCryptoTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimeCryptoTest.m; sourceTree = "<group>"; };
-		1CC3D9521AB7001E0005BEB0 /* ARTRealtimeCryptoMessageTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimeCryptoMessageTest.m; sourceTree = "<group>"; };
 		1CC3D9541AB700680005BEB0 /* ARTRealtimeInitTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimeInitTest.m; sourceTree = "<group>"; };
 		1CC3D9561AB700EC0005BEB0 /* ARTRealtimeMessageTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimeMessageTest.m; sourceTree = "<group>"; };
 		1CC3D9581AB701E50005BEB0 /* ARTRealtimePresenceTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimePresenceTest.m; sourceTree = "<group>"; };
@@ -250,8 +248,6 @@
 		960D07951A46FFC300ED8C8C /* ARTRest+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTRest+Private.h"; sourceTree = "<group>"; };
 		961343D61A42E0B7006DC822 /* ARTClientOptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTClientOptions.h; sourceTree = "<group>"; };
 		961343D71A42E0B7006DC822 /* ARTClientOptions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTClientOptions.m; sourceTree = "<group>"; };
-		961343E61A432E7C006DC822 /* ARTPayload.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPayload.h; sourceTree = "<group>"; };
-		961343E71A432E7C006DC822 /* ARTPayload.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPayload.m; sourceTree = "<group>"; };
 		967A431F1A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTNSArray+ARTFunctional.h"; sourceTree = "<group>"; };
 		967A43201A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ARTNSArray+ARTFunctional.m"; sourceTree = "<group>"; };
 		96A507931A370F860077CDF8 /* ARTStats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTStats.h; sourceTree = "<group>"; };
@@ -301,7 +297,7 @@
 		D746AE201BBB60EE003ECEF8 /* ARTChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTChannel.h; sourceTree = "<group>"; };
 		D746AE211BBB60EE003ECEF8 /* ARTChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTChannel.m; sourceTree = "<group>"; };
 		D746AE241BBB611C003ECEF8 /* ARTChannel+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTChannel+Private.h"; sourceTree = "<group>"; };
-		D746AE261BBB61C9003ECEF8 /* ARTPresence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPresence.h; sourceTree = "<group>"; };
+		D746AE261BBB61C9003ECEF8 /* ARTPresence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTPresence.h; path = "ably-ios/ARTPresence.h"; sourceTree = SOURCE_ROOT; };
 		D746AE271BBB61C9003ECEF8 /* ARTPresence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPresence.m; sourceTree = "<group>"; };
 		D746AE2A1BBB625E003ECEF8 /* RestChannel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestChannel.swift; sourceTree = "<group>"; };
 		D746AE2B1BBB625E003ECEF8 /* RestClientChannels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClientChannels.swift; sourceTree = "<group>"; };
@@ -348,6 +344,8 @@
 		D7F1D3761BF4DE72001A4B5E /* ARTRealtimePresence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimePresence.m; sourceTree = "<group>"; };
 		D7F1D3791BF4E33A001A4B5E /* ARTRestChannel+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTRestChannel+Private.h"; sourceTree = "<group>"; };
 		DF8DF755839D59574B7B795F /* Pods-ablySpec.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ablySpec.release.xcconfig"; path = "Pods/Target Support Files/Pods-ablySpec/Pods-ablySpec.release.xcconfig"; sourceTree = "<group>"; };
+		EB3239421C59AB0400892664 /* ARTDataEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDataEncoder.m; sourceTree = "<group>"; };
+		EB3239461C59AB2C00892664 /* ARTDataEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTDataEncoder.h; path = "ably-ios/ARTDataEncoder.h"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -402,7 +400,6 @@
 				1C1E53011AB373C5004A690F /* ARTRealtimeChannelTest.m */,
 				1CC3D94C1AB6FE700005BEB0 /* ARTRealtimeConnectTest.m */,
 				1CC3D9501AB6FF480005BEB0 /* ARTRealtimeCryptoTest.m */,
-				1CC3D9521AB7001E0005BEB0 /* ARTRealtimeCryptoMessageTest.m */,
 				1CC3D9541AB700680005BEB0 /* ARTRealtimeInitTest.m */,
 				1CC3D9561AB700EC0005BEB0 /* ARTRealtimeMessageTest.m */,
 				1CC3D95A1AB702E30005BEB0 /* ARTRealtimePresenceHistoryTest.m */,
@@ -604,9 +601,8 @@
 				96A507A01A377AA50077CDF8 /* ARTPresenceMessage.m */,
 				1C2B0FFB1B136A6D00E3633C /* ARTPresenceMap.h */,
 				1C2B0FFC1B136A6D00E3633C /* ARTPresenceMap.m */,
-				961343E61A432E7C006DC822 /* ARTPayload.h */,
-				1C8065041AE7C8FA00D49357 /* ARTPayload+Private.h */,
-				961343E71A432E7C006DC822 /* ARTPayload.m */,
+				EB3239421C59AB0400892664 /* ARTDataEncoder.m */,
+				EB3239461C59AB2C00892664 /* ARTDataEncoder.h */,
 				96A507931A370F860077CDF8 /* ARTStats.h */,
 				96A507941A370F860077CDF8 /* ARTStats.m */,
 				96BF61551A35B40E004CF2B3 /* ARTStatus.h */,
@@ -698,6 +694,7 @@
 				1C2B0FFD1B136A6D00E3633C /* ARTPresenceMap.h in Headers */,
 				1CD8DC9F1B1C7315007EAF36 /* ARTDefault.h in Headers */,
 				D7D8F8211BC2BE16009718F2 /* ARTAuthOptions.h in Headers */,
+				EB82F8511C59D29B00661917 /* ARTDataEncoder.h in Headers */,
 				D746AE401BBC5B14003ECEF8 /* ARTEventEmitter.h in Headers */,
 				D746AE531BBD85C5003ECEF8 /* ARTChannelCollection.h in Headers */,
 				D7D8F82D1BC2C706009718F2 /* ARTAuthTokenParams.h in Headers */,
@@ -717,12 +714,10 @@
 				D746AE251BBB611C003ECEF8 /* ARTChannel+Private.h in Headers */,
 				D7F1D3731BF4DE07001A4B5E /* ARTRestPresence.h in Headers */,
 				D7B17EE31C07208B00A6958E /* ARTConnectionDetails.h in Headers */,
-				1C8065051AE7C8FA00D49357 /* ARTPayload+Private.h in Headers */,
 				960D07971A46FFC300ED8C8C /* ARTRest+Private.h in Headers */,
 				1C05CF201AC1D7EB00687AC9 /* ARTRealtime+Private.h in Headers */,
 				D7F1D37A1BF4E33A001A4B5E /* ARTRestChannel+Private.h in Headers */,
 				85B2C2191B6FE8DE00EA5254 /* CompatibilityMacros.h in Headers */,
-				961343E81A432E7C006DC822 /* ARTPayload.h in Headers */,
 				96A507A91A37806A0077CDF8 /* ARTEncoder.h in Headers */,
 				1C6C18A31ADFDAB100AB79E4 /* ARTLog.h in Headers */,
 				D7EBE5A41BE9F6900086E675 /* ARTConnection.h in Headers */,
@@ -1005,6 +1000,7 @@
 				851674EF1B7BA5CD00D35169 /* Stats.swift in Sources */,
 				D72304701BB72CED00F1ABDA /* RealtimeClient.swift in Sources */,
 				D746AE2D1BBB625E003ECEF8 /* RestClientChannels.swift in Sources */,
+				EB3239451C59AB0400892664 /* ARTDataEncoder.m in Sources */,
 				D7C1B8771BBEA81A0087B55F /* Auth.swift in Sources */,
 				D7EBE5A31BE8391E0086E675 /* RealtimeClientConnection.swift in Sources */,
 			);
@@ -1014,6 +1010,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EB82F8521C59D30500661917 /* ARTDataEncoder.m in Sources */,
 				D746AE391BBC3201003ECEF8 /* ARTMessage.m in Sources */,
 				D746AE231BBB60EE003ECEF8 /* ARTChannel.m in Sources */,
 				D746AE481BBD6FE9003ECEF8 /* ARTQueuedMessage.m in Sources */,
@@ -1024,7 +1021,6 @@
 				96BF61541A35B39C004CF2B3 /* ARTRest.m in Sources */,
 				D7D8F82C1BC2C706009718F2 /* ARTAuthTokenRequest.m in Sources */,
 				D7D8F8261BC2C691009718F2 /* ARTAuthTokenDetails.m in Sources */,
-				961343E91A432E7C006DC822 /* ARTPayload.m in Sources */,
 				1C2B0FFE1B136A6D00E3633C /* ARTPresenceMap.m in Sources */,
 				960D07941A45F1D800ED8C8C /* ARTCrypto.m in Sources */,
 				D7D8F8221BC2BE16009718F2 /* ARTAuthOptions.m in Sources */,
@@ -1075,7 +1071,6 @@
 				1CC3D95B1AB702E30005BEB0 /* ARTRealtimePresenceHistoryTest.m in Sources */,
 				1CC3D94D1AB6FE700005BEB0 /* ARTRealtimeConnectTest.m in Sources */,
 				1CC3D9551AB700680005BEB0 /* ARTRealtimeInitTest.m in Sources */,
-				1CC3D9531AB7001E0005BEB0 /* ARTRealtimeCryptoMessageTest.m in Sources */,
 				1C1E52FA1AB35665004A690F /* ARTRestInitTest.m in Sources */,
 				1C1E52F41AB32EDE004A690F /* ARTRestCryptoTest.m in Sources */,
 				1CC3D94B1AB6FBB60005BEB0 /* ARTRealtimeChannelHistoryTest.m in Sources */,
@@ -1083,6 +1078,7 @@
 				1C1E52F81AB32EF0004A690F /* ARTRestTokenTest.m in Sources */,
 				1CC3D95D1AB704080005BEB0 /* ARTRealtimeRecoverTest.m in Sources */,
 				1C1E52F61AB32EE6004A690F /* ARTRestPresenceTest.m in Sources */,
+				EB3239441C59AB0400892664 /* ARTDataEncoder.m in Sources */,
 				1C1E53021AB373C5004A690F /* ARTRealtimeChannelTest.m in Sources */,
 				1CC3D9571AB700EC0005BEB0 /* ARTRealtimeMessageTest.m in Sources */,
 				1C1E52F21AB32ED1004A690F /* ARTRestChannelPublishTest.m in Sources */,

@@ -11,7 +11,6 @@ framework module ably {
         header "ARTRealtimeChannel+Private.h"
         header "ARTChannel+Private.h"
         header "ARTDataQuery+Private.h"
-        header "ARTPayload+Private.h"
         header "ARTAuth+Private.h"
         header "ARTPaginatedResult+Private.h"
     }
