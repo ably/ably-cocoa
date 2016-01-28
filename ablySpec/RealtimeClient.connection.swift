@@ -646,7 +646,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN7c
-                context("should trigger the failure callback for the remaining pending messages if") {
+                pending("should trigger the failure callback for the remaining pending messages if") {
 
                     it("connection is closed") {
                         client.connect()
