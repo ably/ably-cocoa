@@ -27,6 +27,7 @@
 #import "ARTEventEmitter.h"
 #import "ARTQueuedMessage.h"
 #import "ARTConnection.h"
+#import "ARTConnectionDetails.h"
 
 @interface ARTRealtime () <ARTRealtimeTransportDelegate> {
     Class _transportClass;
@@ -812,7 +813,9 @@
             break;
         case ARTProtocolMessageConnected:
             // Set Auth#clientId
-            [[self auth] setProtocolClientId:message.clientId];
+            if (message.connectionDetails) {
+                [[self auth] setProtocolClientId:message.connectionDetails.clientId];
+            }
             // Event
             [self onConnected:message];
             break;

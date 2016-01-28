@@ -21,6 +21,7 @@
 #import "ARTStatus.h"
 #import "ARTAuthTokenDetails.h"
 #import "ARTAuthTokenRequest.h"
+#import "ARTConnectionDetails.h"
 
 @interface ARTJsonEncoder ()
 
@@ -458,11 +459,7 @@
     message.presence = [self presenceMessagesFromArray:[input objectForKey:@"presence"]];
     message.connectionKey = [input artString:@"connectionKey"];
     message.flags = [[input artNumber:@"flags"] longLongValue];
-
-    NSDictionary *connectionDetails = [input valueForKey:@"connectionDetails"];
-    if (connectionDetails) {
-        message.clientId = [connectionDetails artString:@"clientId"];
-    }
+    message.connectionDetails = [self connectionDetailsFromDictionary:[input valueForKey:@"connectionDetails"]];
 
     NSDictionary *error = [input valueForKey:@"error"];
     if (error) {
@@ -471,6 +468,15 @@
     }
 
     return message;
+}
+
+- (ARTConnectionDetails *)connectionDetailsFromDictionary:(NSDictionary *)input {
+    if (!input) {
+        return nil;
+    }
+
+   return [[ARTConnectionDetails alloc] initWithClientId:[input artString:@"clientId"]
+                                                            connectionKey:[input artString:@"connectionKey"]];
 }
 
 - (NSArray *)statsFromArray:(NSArray *)input {

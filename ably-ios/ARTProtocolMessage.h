@@ -50,14 +50,14 @@ ART_ASSUME_NONNULL_BEGIN
 @property (art_nullable, readwrite, strong, nonatomic) NSString *channel;
 @property (art_nullable, readwrite, strong, nonatomic) NSString *channelSerial;
 @property (art_nullable, readwrite, strong, nonatomic) NSString *connectionId;
-@property (art_nullable, readwrite, strong, nonatomic) NSString *connectionKey;
+@property (art_nullable, readwrite, strong, nonatomic, getter=getConnectionKey) NSString *connectionKey;
 @property (readwrite, assign, nonatomic) int64_t connectionSerial;
 @property (readwrite, assign, nonatomic) int64_t msgSerial;
 @property (art_nullable, readwrite, strong, nonatomic) NSDate *timestamp;
 @property (art_nullable, readwrite, strong, nonatomic) __GENERIC(NSArray, ARTMessage *) *messages;
 @property (art_nullable, readwrite, strong, nonatomic) __GENERIC(NSArray, ARTPresenceMessage *) *presence;
 @property (readwrite, assign, nonatomic) int64_t flags;
-@property (readonly, getter=connectionDetails) ARTConnectionDetails *connectionDetails;
+@property (art_nullable, readwrite, nonatomic) ARTConnectionDetails *connectionDetails;
 
 @end
 

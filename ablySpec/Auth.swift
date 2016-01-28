@@ -274,7 +274,7 @@ class Auth : QuickSpec {
                         }
 
                         // CONNECTED ProtocolMessage
-                        expect(connectedMessage.connectionDetails.clientId).to(equal(expectedClientId))
+                        expect(connectedMessage.connectionDetails!.clientId).to(equal(expectedClientId))
                     }
 
                     it("with wildcard") {

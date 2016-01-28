@@ -10,7 +10,6 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTProtocolMessage ()
 
-@property (art_nullable, readwrite, strong, nonatomic) NSString *clientId;
 @property (readwrite, assign, nonatomic) BOOL hasConnectionSerial;
 @property (readonly, assign, nonatomic) BOOL ackRequired;
 
