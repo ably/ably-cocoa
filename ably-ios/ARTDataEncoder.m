@@ -22,7 +22,6 @@ ART_ASSUME_NONNULL_END
 
 @implementation ARTDataEncoder {
     id<ARTChannelCipher> _cipher;
-    ARTLog *_logger;
 }
 
 - (instancetype)initWithCipherParams:(ARTCipherParams *)params logger:(ARTLog *)logger {
