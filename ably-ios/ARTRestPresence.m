@@ -15,6 +15,7 @@
 #import "ARTDataQuery+Private.h"
 #import "ARTJsonEncoder.h"
 #import "ARTNSArray+ARTFunctional.h"
+#import "ARTChannel+Private.h"
 
 @implementation ARTRestPresence
 
@@ -32,7 +33,14 @@
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data) {
         id<ARTEncoder> encoder = [[self channel].rest.encoders objectForKey:response.MIMEType];
-        return [encoder decodePresenceMessages:data];
+        return [[encoder decodePresenceMessages:data] artMap:^(ARTPresenceMessage *message) {
+            // FIXME: This should be refactored to be done by ART{Json,...}Encoder.
+            // The ART{Json,...}Encoder should take a ARTDataEncoder and use it every
+            // time it is enc/decoding a message. This also applies for REST and Realtime
+            // ARTMessages.
+            [message decodeWithEncoder:self.channel.dataEncoder output:&message];
+            return message;
+        }];
     };
 
     [ARTPaginatedResult executePaginated:[self channel].rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
