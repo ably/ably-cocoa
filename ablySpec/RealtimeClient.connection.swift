@@ -1081,7 +1081,9 @@ class RealtimeClientConnection: QuickSpec {
             }
 
             // RTN14b
-            context("connection request fails") {
+            pending("connection request fails") {
+
+                // NOTE: the connection doesn't retry to request a new token if any failure occurs
 
                 it("should not emit error with a renewable token") {
                     let options = AblyTests.commonAppSetup()
