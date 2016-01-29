@@ -643,6 +643,97 @@ class RealtimeClientConnection: QuickSpec {
                         expect(nacks[0].msgSerial).to(equal(6))
                         expect(nacks[0].count).to(equal(1))
                     }
+                }
+
+                // RTN7c
+                pending("should trigger the failure callback for the remaining pending messages if") {
+
+                    it("connection is closed") {
+                        client.connect()
+                        defer {
+                            client.dispose()
+                            client.close()
+                        }
+
+                        let channel = client.channel("channel")
+                        let transport = client.transport as! TestProxyTransport
+                        transport.actionsIgnored += [.Ack, .Nack]
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.subscribeToStateChanges { state, status in
+                                if state == .Attached {
+                                    channel.publish("message", cb: { status in
+                                        expect(status.state).to(equal(ARTState.Error))
+                                        done()
+                                    })
+                                    // Wait until the message is pushed to Ably first
+                                    delay(1.0) {
+                                        transport.simulateIncomingNormalClose()
+                                    }
+                                }
+                            }
+                            channel.attach()
+                        }
+                    }
+
+                    it("connection state enters FAILED") {
+                        client.connect()
+                        defer {
+                            client.dispose()
+                            client.close()
+                        }
+
+                        let channel = client.channel("channel")
+                        let transport = client.transport as! TestProxyTransport
+                        transport.actionsIgnored += [.Ack, .Nack]
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.subscribeToStateChanges { state, status in
+                                if state == .Attached {
+                                    channel.publish("message", cb: { status in
+                                        expect(status.state).to(equal(ARTState.Error))
+                                        done()
+                                    })
+                                    // Wait until the message is pushed to Ably first
+                                    delay(1.0) {
+                                        transport.simulateIncomingError()
+                                    }
+                                }
+                            }
+                            channel.attach()
+                        }
+                    }
+
+                    it("lost connection state") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = ARTRealtimeExtended(options: options)
+                        client.setTransportClass(TestProxyTransport.self)
+                        client.connect()
+                        defer { client.close() }
+
+                        let channel = client.channel("channel")
+
+                        let transport = client.transport as! TestProxyTransport
+                        transport.actionsIgnored += [.Ack, .Nack]
+
+                        waitUntil(timeout: testTimeout + options.disconnectedRetryTimeout) { done in
+                            channel.subscribeToStateChanges { state, status in
+                                if state == .Attached {
+                                    channel.publish("message", cb: { status in
+                                        expect(status.state).to(equal(ARTState.Error))
+                                        done()
+                                    })
+                                    // Wait until the message is pushed to Ably first
+                                    delay(1.0) {
+                                        client.simulateLostConnection()
+                                        expect(client.connection().state).toEventually(equal(ARTRealtimeConnectionState.Connecting), timeout: options.disconnectedRetryTimeout)
+                                    }
+                                }
+                            }
+                            channel.attach()
+                        }
+                    }
 
                 }
 
