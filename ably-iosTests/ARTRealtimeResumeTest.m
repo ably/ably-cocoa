@@ -94,7 +94,7 @@
                     XCTAssertEqual(ARTStateOk, status.state);
                     [channelA subscribe:^(ARTMessage *message, ARTErrorInfo *errorInfo) {
                         // 6. Check if Client A receives the last message
-                        if ([message.content isEqual:message2]) {
+                        if ([message.data isEqual:message2]) {
                             [expectation fulfill];
                         }
                     }];
@@ -140,7 +140,7 @@
             }
         }];
         [channel subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
-            NSString * msg = [message content];
+            NSString * msg = [message data];
             if([msg isEqualToString:message2]) {
                 //disconnect connection1
                 [_realtime onError:[ARTTestUtil newErrorProtocolMessage]];

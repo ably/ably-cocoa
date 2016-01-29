@@ -11,6 +11,7 @@
 
 #import "ARTRealtime+Private.h"
 #import "ARTMessage.h"
+#import "ARTBaseMessage+Private.h"
 #import "ARTAuth.h"
 #import "ARTRealtimePresence.h"
 #import "ARTChannel.h"

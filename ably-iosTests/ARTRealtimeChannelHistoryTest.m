@@ -60,8 +60,8 @@
                         XCTAssertEqual(2, messages.count);
                         ARTMessage *m0 = messages[0];
                         ARTMessage *m1 = messages[1];
-                        XCTAssertEqualObjects(@"testString2", [m0 content]);
-                        XCTAssertEqualObjects(@"testString", [m1 content]);
+                        XCTAssertEqualObjects(@"testString2", [m0 data]);
+                        XCTAssertEqualObjects(@"testString", [m1 data]);
 
                         [expectation fulfill];
                     } error:nil];
@@ -121,8 +121,8 @@
                     XCTAssertEqual(2, messages.count);
                     ARTMessage *m0 = messages[0];
                     ARTMessage *m1 = messages[1];
-                    XCTAssertEqualObjects(@"testString2", [m0 content]);
-                    XCTAssertEqualObjects(@"testString", [m1 content]);
+                    XCTAssertEqualObjects(@"testString2", [m0 data]);
+                    XCTAssertEqualObjects(@"testString", [m1 data]);
                     [expectation1 fulfill];
                     
                 } error:nil];
@@ -132,8 +132,8 @@
                     XCTAssertEqual(2, messages.count);
                     ARTMessage *m0 = messages[0];
                     ARTMessage *m1 = messages[1];
-                    XCTAssertEqualObjects(@"testString2", [m0 content]);
-                    XCTAssertEqualObjects(@"testString", [m1 content]);
+                    XCTAssertEqualObjects(@"testString2", [m0 data]);
+                    XCTAssertEqualObjects(@"testString", [m1 data]);
                     [expectation2 fulfill];
                 } error:nil];
             }];
@@ -160,8 +160,8 @@
                     XCTAssertEqual(2, messages.count);
                     ARTMessage *m0 = messages[0];
                     ARTMessage *m1 = messages[1];
-                    XCTAssertEqualObjects(@"testString", [m0 content]);
-                    XCTAssertEqualObjects(@"testString2", [m1 content]);
+                    XCTAssertEqualObjects(@"testString", [m0 data]);
+                    XCTAssertEqualObjects(@"testString2", [m1 data]);
                     
                     [expectation fulfill];
                 } error:nil];
@@ -192,8 +192,8 @@
                  XCTAssertEqual([items count], 2);
                  ARTMessage * firstMessage = [items objectAtIndex:0];
                  ARTMessage * secondMessage =[items objectAtIndex:1];
-                 XCTAssertEqualObjects(@"testString0", [firstMessage content]);
-                 XCTAssertEqualObjects(@"testString1", [secondMessage content]);
+                 XCTAssertEqualObjects(@"testString0", [firstMessage data]);
+                 XCTAssertEqualObjects(@"testString1", [secondMessage data]);
                  [result next:^(ARTPaginatedResult *result2, NSError *error) {
                      XCTAssert(!error);
                      XCTAssertTrue([result2 hasFirst]);
@@ -201,8 +201,8 @@
                      XCTAssertEqual([items count], 2);
                      ARTMessage * firstMessage = [items objectAtIndex:0];
                      ARTMessage * secondMessage =[items objectAtIndex:1];
-                     XCTAssertEqualObjects(@"testString2", [firstMessage content]);
-                     XCTAssertEqualObjects(@"testString3", [secondMessage content]);
+                     XCTAssertEqualObjects(@"testString2", [firstMessage data]);
+                     XCTAssertEqualObjects(@"testString3", [secondMessage data]);
                      
                      [result2 next:^(ARTPaginatedResult *result3, NSError *error) {
                          XCTAssert(!error);
@@ -211,7 +211,7 @@
                          NSArray * items = [result3 items];
                          XCTAssertEqual([items count], 1);
                          ARTMessage * firstMessage = [items objectAtIndex:0];
-                         XCTAssertEqualObjects(@"testString4", [firstMessage content]);
+                         XCTAssertEqualObjects(@"testString4", [firstMessage data]);
                          [result3 first:^(ARTPaginatedResult *result4, NSError *error) {
                              XCTAssertEqual(ARTStateOk, status.state);
                              XCTAssertTrue([result4 hasFirst]);
@@ -220,8 +220,8 @@
                              XCTAssertEqual([items count], 2);
                              ARTMessage * firstMessage = [items objectAtIndex:0];
                              ARTMessage * secondMessage =[items objectAtIndex:1];
-                             XCTAssertEqualObjects(@"testString0", [firstMessage content]);
-                             XCTAssertEqualObjects(@"testString1", [secondMessage content]);
+                             XCTAssertEqualObjects(@"testString0", [firstMessage data]);
+                             XCTAssertEqualObjects(@"testString1", [secondMessage data]);
                              [expectation fulfill];
                          }];
                      }];
@@ -253,8 +253,8 @@
                  XCTAssertEqual([items count], 2);
                  ARTMessage * firstMessage = [items objectAtIndex:0];
                  ARTMessage * secondMessage =[items objectAtIndex:1];
-                 XCTAssertEqualObjects(@"testString4", [firstMessage content]);
-                 XCTAssertEqualObjects(@"testString3", [secondMessage content]);
+                 XCTAssertEqualObjects(@"testString4", [firstMessage data]);
+                 XCTAssertEqualObjects(@"testString3", [secondMessage data]);
                  [result next:^(ARTPaginatedResult *result2, NSError *error) {
                      XCTAssert(!error);
                      XCTAssertTrue([result2 hasFirst]);
@@ -263,8 +263,8 @@
                      ARTMessage * firstMessage = [items objectAtIndex:0];
                      ARTMessage * secondMessage =[items objectAtIndex:1];
                      
-                     XCTAssertEqualObjects(@"testString2", [firstMessage content]);
-                     XCTAssertEqualObjects(@"testString1", [secondMessage content]);
+                     XCTAssertEqualObjects(@"testString2", [firstMessage data]);
+                     XCTAssertEqualObjects(@"testString1", [secondMessage data]);
                      
                      [result2 next:^(ARTPaginatedResult *result3, NSError *error) {
                          XCTAssert(!error);
@@ -273,7 +273,7 @@
                          NSArray * items = [result3 items];
                          XCTAssertEqual([items count], 1);
                          ARTMessage * firstMessage = [items objectAtIndex:0];
-                         XCTAssertEqualObjects(@"testString0", [firstMessage content]);
+                         XCTAssertEqualObjects(@"testString0", [firstMessage data]);
                          [result3 first:^(ARTPaginatedResult *result4, NSError *error) {
                              XCTAssertEqual(ARTStateOk, status.state);
                              XCTAssertTrue([result4 hasFirst]);
@@ -282,8 +282,8 @@
                              XCTAssertEqual([items count], 2);
                              ARTMessage * firstMessage = [items objectAtIndex:0];
                              ARTMessage * secondMessage =[items objectAtIndex:1];
-                             XCTAssertEqualObjects(@"testString4", [firstMessage content]);
-                             XCTAssertEqualObjects(@"testString3", [secondMessage content]);
+                             XCTAssertEqualObjects(@"testString4", [firstMessage data]);
+                             XCTAssertEqualObjects(@"testString3", [secondMessage data]);
                              [result2 first:^(ARTPaginatedResult *result, NSError *error) {
                                  XCTAssertEqual(ARTStateOk, status.state);
                                  XCTAssertTrue([result hasFirst]);
@@ -292,8 +292,8 @@
                                  XCTAssertEqual([items count], 2);
                                  ARTMessage * firstMessage = [items objectAtIndex:0];
                                  ARTMessage * secondMessage =[items objectAtIndex:1];
-                                 XCTAssertEqualObjects(@"testString4", [firstMessage content]);
-                                 XCTAssertEqualObjects(@"testString3", [secondMessage content]);
+                                 XCTAssertEqualObjects(@"testString4", [firstMessage data]);
+                                 XCTAssertEqualObjects(@"testString3", [secondMessage data]);
                                 [expectation fulfill];
                              }];
                          }];
@@ -367,7 +367,7 @@
                             NSString *pattern = [secondBatch stringByAppendingString:@"%d"];
                             NSString *goalStr = [NSString stringWithFormat:pattern, secondBatchTotal -1 - i];
                             ARTMessage *m = [items objectAtIndex:i];
-                            XCTAssertEqualObjects(goalStr, [m content]);
+                            XCTAssertEqualObjects(goalStr, [m data]);
                         }
                         [expectation fulfill];
                     } error:nil];
@@ -441,7 +441,7 @@
                             NSString * goalStr = [NSString stringWithFormat:pattern, i];
 
                             ARTMessage * m = [items objectAtIndex:i];
-                            XCTAssertEqualObjects(goalStr, [m content]);
+                            XCTAssertEqualObjects(goalStr, [m data]);
                         }
                         [expectation fulfill];
                     } error:nil];
@@ -494,7 +494,7 @@
                         for(int i=0;i < [items count]; i++) {
                             NSString * goalStr = [NSString stringWithFormat:@"test%d",firstBatchTotal -1 - i];
                             ARTMessage * m = [items objectAtIndex:i];
-                            XCTAssertEqualObjects(goalStr, [m content]);
+                            XCTAssertEqualObjects(goalStr, [m data]);
                         }
                         [expecation fulfill];
                     } error:nil];

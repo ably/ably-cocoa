@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "ARTBaseMessage.h"
+#import "ARTBaseMessage+Private.h"
 #import "ARTLog.h"
 #import "ARTStatus.h"
 
@@ -54,10 +54,6 @@
     ((ARTBaseMessage *)*output).data = encoded.data;
     ((ARTBaseMessage *)*output).encoding = [self.encoding artAddEncoding:encoded.encoding];
     return encoded.status;
-}
-
-- (id)content {
-    return self.data;
 }
 
 - (NSString *)description {

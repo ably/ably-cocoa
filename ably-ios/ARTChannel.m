@@ -12,6 +12,7 @@
 #import "ARTMessage.h"
 #import "ARTChannelOptions.h"
 #import "ARTNSArray+ARTFunctional.h"
+#import "ARTBaseMessage+Private.h"
 
 @implementation ARTChannel
 

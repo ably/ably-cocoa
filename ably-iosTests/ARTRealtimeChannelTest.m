@@ -149,13 +149,13 @@
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"test"];
         id<ARTSubscription> __block subscription = [channel subscribe:^(ARTMessage *message, ARTErrorInfo *errorInfo) {
-            if([[message content] isEqualToString:@"testString"]) {
+            if([[message data] isEqualToString:@"testString"]) {
                 [subscription unsubscribe];
                 [channel publish:lostMessage cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
                 }];
             }
-            else if([[message content] isEqualToString:lostMessage]) {
+            else if([[message data] isEqualToString:lostMessage]) {
                 XCTFail(@"unsubscribe failed");
             }
         }];
@@ -164,7 +164,7 @@
             XCTAssertEqual(ARTStateOk, status.state);
             NSString * finalMessage = @"final";
             [channel subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
-                if([[message content] isEqualToString:finalMessage]) {
+                if([[message data] isEqualToString:finalMessage]) {
                     [expectation fulfill];
                 }
             }];
@@ -282,10 +282,10 @@
         __block int messageCount =0;
         [c1 subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
             if(messageCount ==0) {
-                XCTAssertEqualObjects([message content], firstMessage);
+                XCTAssertEqualObjects([message data], firstMessage);
             }
             else if(messageCount ==1) {
-                XCTAssertEqualObjects([message content], secondMessage);
+                XCTAssertEqualObjects([message data], secondMessage);
                 [exp fulfill];
             }
             messageCount++;

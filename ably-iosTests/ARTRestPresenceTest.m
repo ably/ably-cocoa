@@ -56,24 +56,24 @@
             
             
             XCTAssertEqualObjects(@"client_bool", p0.clientId);
-            XCTAssertEqualObjects(@"true", [p0 content]);
+            XCTAssertEqualObjects(@"true", [p0 data]);
             
             
             //TODO use ARTTestUtil cipher and check they match up.
             //XCTAssertEqualObjects(@"client_decoded", p1.clientId);
-            //XCTAssertEqualObjects([p1 content], @"{\"example\":{\"json\":\"Object\"}}");
+            //XCTAssertEqualObjects([p1 data], @"{\"example\":{\"json\":\"Object\"}}");
             
             //XCTAssertEqualObjects(@"client_encoded", p2.clientId);
-            //XCTAssertEqualObjects([p2 content], @"HO4cYSP8LybPYBPZPHQOtuD53yrD3YV3NBoTEYBh4U0N1QXHbtkfsDfTspKeLQFt");
+            //XCTAssertEqualObjects([p2 data], @"HO4cYSP8LybPYBPZPHQOtuD53yrD3YV3NBoTEYBh4U0N1QXHbtkfsDfTspKeLQFt");
             
             XCTAssertEqualObjects(@"client_int", p3.clientId);
-            XCTAssertEqualObjects(@"24", [p3 content]);
+            XCTAssertEqualObjects(@"24", [p3 data]);
             
             XCTAssertEqualObjects(@"client_json", p4.clientId);
-            XCTAssertEqualObjects(@"{ \"test\": \"This is a JSONObject clientData payload\"}", [p4 content]);
+            XCTAssertEqualObjects(@"{ \"test\": \"This is a JSONObject clientData payload\"}", [p4 data]);
             
             XCTAssertEqualObjects(@"client_string", p5.clientId);
-            XCTAssertEqualObjects(@"This is a string clientData payload", [p5 content]);
+            XCTAssertEqualObjects(@"This is a string clientData payload", [p5 data]);
             
             [expectation fulfill];
         }];
@@ -106,7 +106,7 @@
             NSArray *presence = [result items];
             XCTAssertEqual(6, [presence count]);
             ARTPresenceMessage * m = [presence objectAtIndex:[presence count] -1];
-            XCTAssertEqualObjects(@"true", [m content]);
+            XCTAssertEqualObjects(@"true", [m data]);
             [expectation fulfill];
         } error:nil];
     }];
@@ -125,7 +125,7 @@
             NSArray *presence = [result items];
             XCTAssertEqual(6, [presence count]);
             ARTPresenceMessage * m = [presence objectAtIndex:0];
-            XCTAssertEqualObjects(@"true", [m content]);
+            XCTAssertEqualObjects(@"true", [m data]);
             [expectation fulfill];
         } error:nil];
     }];

@@ -93,7 +93,7 @@
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"testSingleSendText"];
         [channel subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
-            XCTAssertEqualObjects([message content], @"testString");
+            XCTAssertEqualObjects([message data], @"testString");
             [expectation fulfill];
         }];
         [channel publish:@"testString" cb:^(ARTStatus *status) {
@@ -134,13 +134,13 @@
         }];
 
         [channel subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
-            XCTAssertEqualObjects([message content], @"testStringEcho");
+            XCTAssertEqualObjects([message data], @"testStringEcho");
             [exp1 fulfill];
         }];
 
 
         [channel2 subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
-            XCTAssertEqualObjects([message content], @"testStringEcho");
+            XCTAssertEqualObjects([message data], @"testStringEcho");
             [exp2 fulfill];
         }];
 
@@ -175,12 +175,12 @@
         ARTRealtimeChannel *channel = [_realtime.channels get:channelName];
         __block bool gotMessage1 = false;
         [channel subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
-            if([[message content] isEqualToString:message1]) {
+            if([[message data] isEqualToString:message1]) {
                 gotMessage1 = true;
             }
             else {
                 XCTAssertTrue(gotMessage1);
-                XCTAssertEqualObjects([message content], message2);
+                XCTAssertEqualObjects([message data], message2);
                 [exp fulfill];
             }
         }];
@@ -208,7 +208,7 @@
         ARTRealtimeChannel *channel = [_realtime.channels get:channelName];
         [channel subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
             //message1 should never arrive
-            XCTAssertEqualObjects([message content], message2);
+            XCTAssertEqualObjects([message data], message2);
             [exp fulfill];
         }];
         [channel publish:message1 cb:^(ARTStatus *status) {
@@ -253,10 +253,10 @@
         __block int messagesReceived = 0;
         [channel subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
             if(messagesReceived ==0) {
-                XCTAssertEqualObjects([message content], connectingMessage);
+                XCTAssertEqualObjects([message data], connectingMessage);
             }
             else if(messagesReceived ==1) {
-                XCTAssertEqualObjects([message content], disconnectedMessage);
+                XCTAssertEqualObjects([message data], disconnectedMessage);
                 [exp fulfill];
             }
             messagesReceived++;
@@ -308,8 +308,8 @@
                     XCTAssertEqual(2, messages.count);
                     ARTMessage *m0 = messages[0];
                     ARTMessage *m1 = messages[1];
-                    XCTAssertEqualObjects(m0.content, @"message2");
-                    XCTAssertEqualObjects(m1.content, @"message");
+                    XCTAssertEqualObjects(m0.data, @"message2");
+                    XCTAssertEqualObjects(m1.data, @"message");
                     XCTAssertEqualObjects(m0.connectionId, _realtime2.connectionId);
                     XCTAssertEqualObjects(m1.connectionId, _realtime.connectionId);
                     XCTAssertFalse([m0.connectionId isEqualToString:m1.connectionId]);
@@ -341,7 +341,7 @@
             }
         }];
         [channel subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
-            XCTAssertEqualObjects([message content], @"testString");
+            XCTAssertEqualObjects([message data], @"testString");
             [exp fulfill];
         }];
     }];
@@ -360,13 +360,13 @@
         __block int messageCount =0;
         [channel subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
             if(messageCount ==0) {
-                XCTAssertEqualObjects([message content], @"test1");
+                XCTAssertEqualObjects([message data], @"test1");
             }
             else if(messageCount ==1) {
-                XCTAssertEqualObjects([message content], @"test2");
+                XCTAssertEqualObjects([message data], @"test2");
             }
             else if(messageCount ==2) {
-                XCTAssertEqualObjects([message content], @"test3");
+                XCTAssertEqualObjects([message data], @"test3");
                 [exp fulfill];
             }
             messageCount++;
@@ -384,7 +384,7 @@
             XCTAssertEqual(ARTStateOk, status.state);
         }];
         [channel subscribe:^(ARTMessage *message, ARTErrorInfo *errorInfo) {
-            XCTAssertEqualObjects(message.content, @"test");
+            XCTAssertEqualObjects(message.data, @"test");
             XCTAssertEqualObjects(message.name, @"messageName");
             [exp fulfill];
         }];
@@ -402,7 +402,7 @@
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:channelName];
         [channel subscribeToName:messageName cb:^(ARTMessage *message, ARTErrorInfo *errorInfo) {
-            XCTAssertEqualObjects([message content], messageContent);
+            XCTAssertEqualObjects([message data], messageContent);
             [exp fulfill];
         }];
 

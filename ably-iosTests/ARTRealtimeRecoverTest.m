@@ -105,7 +105,7 @@
                                 if (cState == ARTRealtimeConnected) {
                                     XCTAssertEqualObjects([realtimeRecovered connectionId], firstConnectionId);
                                     [c3 subscribe:^(ARTMessage *message, ARTErrorInfo *errorInfo) {
-                                        XCTAssertEqualObjects(c2Message, [message content]);
+                                        XCTAssertEqualObjects(c2Message, [message data]);
                                         [expectation fulfill];
                                     }];
                                 }

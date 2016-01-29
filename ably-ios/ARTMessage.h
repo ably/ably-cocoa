@@ -18,7 +18,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithData:(id)data name:(art_nullable NSString *)name;
 
-+ (NSArray *)messagesWithData:(NSArray *)data;
++ (__GENERIC(NSArray, ARTMessage *) *)messagesWithData:(NSArray *)data;
 + (ARTMessage *)messageWithData:(id)data name:(art_nullable NSString *)name;
 
 @end
