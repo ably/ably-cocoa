@@ -15,11 +15,21 @@
 
 ART_ASSUME_NONNULL_BEGIN
 
+@interface ARTDataEncoderOutput : NSObject
+
+@property (readonly, nonatomic, art_nullable) id data;
+@property (readonly, nonatomic, art_nullable) NSString *encoding;
+@property (readonly, nonatomic) ARTStatus *status;
+
+- initWithData:(id __art_nullable)data encoding:(NSString *__art_nullable)encoding status:(ARTStatus *)status;
+
+@end
+
 @interface ARTDataEncoder : NSObject 
 
 - (instancetype)initWithCipherParams:(ARTCipherParams *)params logger:(ARTLog *)logger;
-- (ARTStatus *__art_nullable)encode:(id)data outputData:(id __art_nullable *__art_nonnull)outputData outputEncoding:(NSString *__art_nullable *__art_nonnull)outputEncoding;
-- (ARTStatus *__art_nullable)decode:(id)data encoding:(NSString *)encoding outputData:(id __art_nullable *__art_nonnull)outputData outputEncoding:(NSString *__art_nullable *__art_nonnull)outputEncoding;
+- (ARTDataEncoderOutput *)encode:(id __art_nullable)data;
+- (ARTDataEncoderOutput *)decode:(id __art_nullable)data encoding:(NSString *__art_nullable)encoding;
 
 @end
 

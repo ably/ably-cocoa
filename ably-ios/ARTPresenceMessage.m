@@ -20,7 +20,7 @@
 }
 
 - (id)copyWithZone:(NSZone *)zone {
-    ARTPresenceMessage *message = [super init];
+    ARTPresenceMessage *message = [super copyWithZone:zone];
     message->_action = self.action;
     return message;
 }

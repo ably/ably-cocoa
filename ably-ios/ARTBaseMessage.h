@@ -28,9 +28,9 @@ ART_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) NSString *connectionId;
 
 /// Any transformation applied to the data for this message
-@property (strong, nonatomic) NSString *encoding;
+@property (strong, nonatomic, art_nullable) NSString *encoding;
 
-@property (strong, nonatomic) id data;
+@property (strong, nonatomic, art_nullable) id data;
 
 - (ARTStatus *__art_nonnull)decodeWithEncoder:(ARTDataEncoder*)encoder output:(id __art_nonnull*__art_nonnull)output;
 - (ARTStatus *__art_nonnull)encodeWithEncoder:(ARTDataEncoder*)encoder output:(id __art_nonnull*__art_nonnull)output;

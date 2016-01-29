@@ -41,23 +41,19 @@
 }
 
 - (ARTStatus *)decodeWithEncoder:(ARTDataEncoder*)encoder output:(id *)output {
-    id decoded = nil;
-    NSString *decodedEncoding = nil;
-    ARTStatus *status = [encoder decode:self.data encoding:self.encoding outputData:&decoded outputEncoding:&decodedEncoding];
+    ARTDataEncoderOutput *decoded = [encoder decode:self.data encoding:self.encoding];
     *output = [self copy];
-    ((ARTBaseMessage *)*output).data = decoded;
-    ((ARTBaseMessage *)*output).encoding = decodedEncoding;
-    return status;
+    ((ARTBaseMessage *)*output).data = decoded.data;
+    ((ARTBaseMessage *)*output).encoding = decoded.encoding;
+    return decoded.status;
 }
 
 - (ARTStatus *)encodeWithEncoder:(ARTDataEncoder*)encoder output:(id *)output {
-    id encoded = nil;
-    NSString *encoding = nil;
-    ARTStatus *status = [encoder encode:self.data outputData:&encoded outputEncoding:&encoding];
+    ARTDataEncoderOutput *encoded = [encoder encode:self.data];
     *output = [self copy];
-    ((ARTBaseMessage *)*output).data = encoded;
-    ((ARTBaseMessage *)*output).encoding = [self.encoding artAddEncoding:encoding];
-    return status;
+    ((ARTBaseMessage *)*output).data = encoded.data;
+    ((ARTBaseMessage *)*output).encoding = [self.encoding artAddEncoding:encoded.encoding];
+    return encoded.status;
 }
 
 - (id)content {

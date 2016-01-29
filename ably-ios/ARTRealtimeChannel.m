@@ -106,14 +106,12 @@
     _lastPresenceAction = msg.action;
     
     if (msg.data && self.dataEncoder) {
-        id encodedData = nil;
-        NSString *encoding;
-        ARTStatus * status = [self.dataEncoder encode:msg.data outputData:&encodedData outputEncoding:&encoding];
-        if (status.state != ARTStateOk) {
-            [self.logger warn:@"bad status encoding presence message %d",(int) status];
+        ARTDataEncoderOutput *encoded = [self.dataEncoder encode:msg.data];
+        if (encoded.status.state != ARTStateOk) {
+            [self.logger warn:@"bad status encoding presence message %d",(int) encoded.status];
         }
-        msg.data = encodedData;
-        msg.encoding = encoding;
+        msg.data = encoded.data;
+        msg.encoding = encoded.encoding;
     }
     
     ARTProtocolMessage *pm = [[ARTProtocolMessage alloc] init];

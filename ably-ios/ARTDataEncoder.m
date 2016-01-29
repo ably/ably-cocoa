@@ -20,6 +20,20 @@ ART_ASSUME_NONNULL_END
 
 @end
 
+@implementation ARTDataEncoderOutput
+
+- (id)initWithData:(id)data encoding:(NSString *)encoding status:(ARTStatus *)status {
+    self = [super init];
+    if (self) {
+        _data = data;
+        _encoding = encoding;
+        _status = status;
+    }
+    return self;
+}
+
+@end
+
 @implementation ARTDataEncoder {
     id<ARTChannelCipher> _cipher;
 }
@@ -38,15 +52,13 @@ ART_ASSUME_NONNULL_END
     return self;
 }
 
-- (ARTStatus *__art_nullable)encode:(id)data outputData:(id __art_nullable *__art_nonnull)outputData outputEncoding:(NSString **)outputEncoding {
+- (ARTDataEncoderOutput *)encode:(id)data {
     NSData *encoded = nil;
     NSString *encoding = nil;
     BOOL ok = false;
     
     if (!data) {
-        *outputData = nil;
-        *outputEncoding = nil;
-        return [ARTStatus state:ARTStateOk];
+        return [[ARTDataEncoderOutput alloc] initWithData:data encoding:nil status:[ARTStatus state:ARTStateOk]];
     } else if ([data isKindOfClass:[NSData class]]) {
         encoding = @"base64";
         encoded = [[((NSData *)data) base64EncodedStringWithOptions:0] dataUsingEncoding:NSUTF8StringEncoding];
@@ -63,39 +75,37 @@ ART_ASSUME_NONNULL_END
     }
     
     if (!ok) {
-        return [ARTStatus state:ARTStateError];
+        return [[ARTDataEncoderOutput alloc] initWithData:encoded encoding:encoding status:[ARTStatus state:ARTStateError]];
     }
     
     if (_cipher) {
         ARTStatus *status = [_cipher encrypt:encoded output:&encoded];
         if (status.state != ARTStateOk) {
-            return status;
+            return [[ARTDataEncoderOutput alloc] initWithData:encoded encoding:encoding status:status];
         }
         encoding = [encoding artAddEncoding:[self cipherEncoding]];
         
         // Re-encode the encrypted bytes in base64.
         encoded = [[encoded base64EncodedStringWithOptions:0] dataUsingEncoding:NSUTF8StringEncoding];
         if (encoded == nil) {
-            return [ARTStatus state:ARTStateError];
+            return [[ARTDataEncoderOutput alloc] initWithData:encoded encoding:encoding status:status];
         }
         encoding = [encoding artAddEncoding:@"base64"];
     }
     
-    *outputData =  [[NSString alloc] initWithData:encoded encoding:NSUTF8StringEncoding];
-    *outputEncoding = encoding;
-    return [ARTStatus state:ARTStateOk];
+    return [[ARTDataEncoderOutput alloc] initWithData:[[NSString alloc] initWithData:encoded encoding:NSUTF8StringEncoding]
+                                             encoding:encoding
+                                               status:[ARTStatus state:ARTStateOk]];
 }
 
-- (ARTStatus *__art_nullable)decode:(id)data encoding:(NSString *)encoding outputData:(id __art_nullable *__art_nonnull)outputData outputEncoding:(NSString **)outputEncoding {
+- (ARTDataEncoderOutput *)decode:(id)data encoding:(NSString *)encoding {
     if (!data || !encoding ) {
-        *outputData = data;
-        *outputEncoding = encoding;
-        return [ARTStatus state:ARTStateOk];
+        return [[ARTDataEncoderOutput alloc] initWithData:data encoding:encoding status:[ARTStatus state:ARTStateOk]];
     }
     
     BOOL ok = false;
     NSArray *encodings = [encoding componentsSeparatedByString:@"/"];
-    *outputEncoding = [NSString stringWithString:encoding];
+    NSString *outputEncoding = [NSString stringWithString:encoding];
     
     for (NSUInteger i = [encodings count]; i > 0; i--) {
         ok = false;
@@ -109,7 +119,10 @@ ART_ASSUME_NONNULL_END
                 data = [[NSData alloc] initWithBase64EncodedString:(NSString *)data options:0];
                 ok = data != nil;
             }
-        } else if ([encoding isEqualToString:@""]) {
+        } else if ([encoding isEqualToString:@""] || [encoding isEqualToString:@"utf-8"]) {
+            if ([data isKindOfClass:[NSData class]]) { // E. g. when decrypted.
+                data = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            }
             ok = [data isKindOfClass:[NSString class]];
         } else if ([encoding isEqualToString:@"json"]) {
             if ([data isKindOfClass:[NSData class]]) { // E. g. when decrypted.
@@ -131,18 +144,16 @@ ART_ASSUME_NONNULL_END
         }
         
         if (ok) {
-            *outputEncoding = [*outputEncoding artRemoveLastEncoding];
+            outputEncoding = [outputEncoding artRemoveLastEncoding];
         } else {
             [self.logger error:@"ARTDataDecoded failed to decode data as '%@': (%@)%@", encoding, [data class], data];
+            break;
         }
     }
     
-    *outputData = data;
-    if (ok) {
-        return [ARTStatus state:ARTStateOk];
-    } else {
-        return [ARTStatus state:ARTStateError];
-    }
+    return [[ARTDataEncoderOutput alloc] initWithData:data
+                                             encoding:outputEncoding
+                                               status:[ARTStatus state:(ok ? ARTStateOk : ARTStateError)]];
 }
 
 - (NSString *)cipherEncoding {
@@ -168,7 +179,11 @@ ART_ASSUME_NONNULL_END
 }
 
 - (NSString *)artRemoveLastEncoding {
-    return [self stringByDeletingLastPathComponent];
+    NSString *encoding = [self stringByDeletingLastPathComponent];
+    if ([encoding length] == 0) {
+        return nil;
+    }
+    return encoding;
 }
 
 @end
