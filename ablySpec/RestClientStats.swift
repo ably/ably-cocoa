@@ -142,7 +142,7 @@ class RestClientStats: QuickSpec {
                         let result = queryStats(client, query)
                         expect(result.items.count).to(equal(3))
                         
-                        let totalInbound = result.items.reduce(0.0, combine: {
+                        let totalInbound = result.items.reduce(0 as UInt, combine: {
                             if let stats = $1 as? ARTStats {
                                 return $0 + stats.inbound.all.messages.count
                             }
@@ -150,7 +150,7 @@ class RestClientStats: QuickSpec {
                         })
                         expect(totalInbound).to(equal(50 + 60 + 70))
                         
-                        let totalOutbound = result.items.reduce(0.0, combine: {
+                        let totalOutbound = result.items.reduce(0 as UInt, combine: {
                             if let stats = $1 as? ARTStats {
                                 return $0 + stats.outbound.all.messages.count
                             }
@@ -167,13 +167,13 @@ class RestClientStats: QuickSpec {
                         query.unit = .Hour
                         
                         let result = queryStats(client, query)
-                        let totalInbound = result.items.reduce(0.0, combine: {
+                        let totalInbound = result.items.reduce(0 as UInt, combine: {
                             if let stats = $1 as? ARTStats {
                                 return $0 + stats.inbound.all.messages.count
                             }
                             return $0
                         })
-                        let totalOutbound = result.items.reduce(0.0, combine: {
+                        let totalOutbound = result.items.reduce(0 as UInt, combine: {
                             if let stats = $1 as? ARTStats {
                                 return $0 + stats.outbound.all.messages.count
                             }
@@ -193,8 +193,8 @@ class RestClientStats: QuickSpec {
                         query.unit = .Month
                         
                         let result = queryStats(client, query)
-                        let totalInbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + $1.inbound.all.messages.count })
-                        let totalOutbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + $1.outbound.all.messages.count })
+                        let totalInbound = (result.items as! [ARTStats]).reduce(0, combine: { $0 + $1.inbound.all.messages.count })
+                        let totalOutbound = (result.items as! [ARTStats]).reduce(0, combine: { $0 + $1.outbound.all.messages.count })
                         
                         expect(result.items.count).to(equal(1))
                         expect(totalInbound).to(equal(50 + 60 + 70))
@@ -209,8 +209,8 @@ class RestClientStats: QuickSpec {
                         query.unit = .Month
                         
                         let result = queryStats(client, query)
-                        let totalInbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + $1.inbound.all.messages.count })
-                        let totalOutbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + $1.outbound.all.messages.count })
+                        let totalInbound = (result.items as! [ARTStats]).reduce(0, combine: { $0 + $1.inbound.all.messages.count })
+                        let totalOutbound = (result.items as! [ARTStats]).reduce(0, combine: { $0 + $1.outbound.all.messages.count })
                         
                         expect(result.items.count).to(equal(1))
                         expect(totalInbound).to(equal(50 + 60 + 70))
@@ -224,8 +224,8 @@ class RestClientStats: QuickSpec {
                         query.limit = 1
                         
                         let result = queryStats(client, query)
-                        let totalInbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + $1.inbound.all.messages.count })
-                        let totalOutbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + $1.outbound.all.messages.count })
+                        let totalInbound = (result.items as! [ARTStats]).reduce(0, combine: { $0 + $1.inbound.all.messages.count })
+                        let totalOutbound = (result.items as! [ARTStats]).reduce(0, combine: { $0 + $1.outbound.all.messages.count })
                         
                         expect(result.items.count).to(equal(1))
                         expect(totalInbound).to(equal(60))
@@ -240,8 +240,8 @@ class RestClientStats: QuickSpec {
                         query.direction = .Forwards
                         
                         let result = queryStats(client, query)
-                        let totalInbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + $1.inbound.all.messages.count })
-                        let totalOutbound = (result.items as! [ARTStats]).reduce(0.0, combine: { $0 + $1.outbound.all.messages.count })
+                        let totalInbound = (result.items as! [ARTStats]).reduce(0, combine: { $0 + $1.inbound.all.messages.count })
+                        let totalOutbound = (result.items as! [ARTStats]).reduce(0, combine: { $0 + $1.outbound.all.messages.count })
                         
                         expect(result.items.count).to(equal(1))
                         expect(totalInbound).to(equal(50))
@@ -355,7 +355,7 @@ class RestClientStats: QuickSpec {
                         it("should default to minute") {
                             let query = ARTStatsQuery()
                             
-                            expect(query.unit).to(equal(ARTStatsUnit.Minute))
+                            expect(query.unit).to(equal(ARTStatsGranularity.Minute))
                         }
                     }
                 }

@@ -13,21 +13,21 @@
 
 - (instancetype)init {
     if (self = [super init]) {
-        _unit = ARTStatsUnitMinute;
+        _unit = ARTStatsGranularityMinute;
     }
 
     return self;
 }
 
-static NSString *statsUnitToString(ARTStatsUnit unit) {
+static NSString *statsUnitToString(ARTStatsGranularity unit) {
     switch (unit) {
-        case ARTStatsUnitMonth:
+        case ARTStatsGranularityMonth:
             return @"month";
-        case ARTStatsUnitDay:
+        case ARTStatsGranularityDay:
             return @"day";
-        case ARTStatsUnitHour:
+        case ARTStatsGranularityHour:
             return @"hour";
-        case ARTStatsUnitMinute:
+        case ARTStatsGranularityMinute:
         default:
             return @"minute";
     }
@@ -43,7 +43,7 @@ static NSString *statsUnitToString(ARTStatsUnit unit) {
 
 @implementation ARTStatsMessageCount
 
-- (instancetype)initWithCount:(double)count data:(double)data {
+- (instancetype)initWithCount:(NSUInteger)count data:(NSUInteger)data {
     self = [super init];
     if (self) {
         _count = count;
@@ -78,27 +78,26 @@ static NSString *statsUnitToString(ARTStatsUnit unit) {
 
 @implementation ARTStatsMessageTraffic
 
-- (instancetype)initWithAll:(ARTStatsMessageTypes *)all realtime:(ARTStatsMessageTypes *)realtime rest:(ARTStatsMessageTypes *)rest push:(ARTStatsMessageTypes *)push httpStream:(ARTStatsMessageTypes *)httpStream {
+- (instancetype)initWithAll:(ARTStatsMessageTypes *)all realtime:(ARTStatsMessageTypes *)realtime rest:(ARTStatsMessageTypes *)rest webhook:(ARTStatsMessageTypes *)webhook {
     self = [super init];
     if (self) {
         _all = all;
         _realtime = realtime;
         _rest = rest;
-        _push = push;
-        _httpStream = httpStream;
+        _webhook = webhook;
     }
     return self;
 }
 
 + (instancetype)empty {
-    return [[ARTStatsMessageTraffic alloc] initWithAll:[ARTStatsMessageTypes empty] realtime:[ARTStatsMessageTypes empty] rest:[ARTStatsMessageTypes empty] push:[ARTStatsMessageTypes empty] httpStream:[ARTStatsMessageTypes empty]];
+    return [[ARTStatsMessageTraffic alloc] initWithAll:[ARTStatsMessageTypes empty] realtime:[ARTStatsMessageTypes empty] rest:[ARTStatsMessageTypes empty] webhook:[ARTStatsMessageTypes empty]];
 }
 
 @end
 
 @implementation ARTStatsResourceCount
 
-- (instancetype)initWithOpened:(double)opened peak:(double)peak mean:(double)mean min:(double)min refused:(double)refused {
+- (instancetype)initWithOpened:(NSUInteger)opened peak:(NSUInteger)peak mean:(NSUInteger)mean min:(NSUInteger)min refused:(NSUInteger)refused {
     self = [super init];
     if (self) {
         _opened = opened;
@@ -136,7 +135,7 @@ static NSString *statsUnitToString(ARTStatsUnit unit) {
 
 @implementation ARTStatsRequestCount
 
-- (instancetype)initWithSucceeded:(double)succeeded failed:(double)failed refused:(double)refused {
+- (instancetype)initWithSucceeded:(NSUInteger)succeeded failed:(NSUInteger)failed refused:(NSUInteger)refused {
     self = [super init];
     if (self) {
         _succeeded = succeeded;
@@ -154,7 +153,7 @@ static NSString *statsUnitToString(ARTStatsUnit unit) {
 
 @implementation ARTStats
 
-- (instancetype)initWithAll:(ARTStatsMessageTypes *)all inbound:(ARTStatsMessageTraffic *)inbound outbound:(ARTStatsMessageTraffic *)outbound persisted:(ARTStatsMessageTypes *)persisted connections:(ARTStatsConnectionTypes *)connections channels:(ARTStatsResourceCount *)channels apiRequests:(ARTStatsRequestCount *)apiRequests tokenRequests:(ARTStatsRequestCount *)tokenRequests interval:(NSDate *)interval {
+- (instancetype)initWithAll:(ARTStatsMessageTypes *)all inbound:(ARTStatsMessageTraffic *)inbound outbound:(ARTStatsMessageTraffic *)outbound persisted:(ARTStatsMessageTypes *)persisted connections:(ARTStatsConnectionTypes *)connections channels:(ARTStatsResourceCount *)channels apiRequests:(ARTStatsRequestCount *)apiRequests tokenRequests:(ARTStatsRequestCount *)tokenRequests intervalId:(NSString *)intervalId {
     self = [super init];
     if (self) {
         _all = all;
@@ -165,9 +164,54 @@ static NSString *statsUnitToString(ARTStatsUnit unit) {
         _channels = channels;
         _apiRequests = apiRequests;
         _tokenRequests = tokenRequests;
-        _interval = interval;
+        _intervalId = intervalId;
     }
     return self;
+}
+
++ (NSArray *)intervalFormatString {
+    static NSArray *formats;
+    if (!formats) {
+        formats = [NSArray arrayWithObjects:@"yyyy-MM-dd:HH:mm", @"yyyy-MM-dd:HH", @"yyyy-MM-dd", @"yyyy-MM", nil];
+    }
+    return formats;
+}
+
++ (NSDate *)fromIntervalId:(NSString *)intervalId {
+    for (NSString *format in [ARTStats intervalFormatString]) {
+        if ([format length] == [intervalId length]) {
+            NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+            formatter.dateFormat = format;
+            formatter.timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
+            return [formatter dateFromString:intervalId];
+        }
+    }
+    @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"invalid intervalId" userInfo:nil];
+}
+
++ (ARTStatsGranularity)granularityFromIntervalId:(NSString *)intervalId {
+    NSArray *formats = [ARTStats intervalFormatString];
+    for (int i = 0; i < [formats count]; i++) {
+        if ([[formats objectAtIndex:i] length] == [intervalId length]) {
+            return (ARTStatsGranularity)i;
+        }
+    }
+    @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"invalid intervalId" userInfo:nil];
+}
+
++ (NSString *)toIntervalId:(NSDate *)time granularity:(ARTStatsGranularity)granularity {
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    formatter.dateFormat = [[ARTStats intervalFormatString] objectAtIndex:granularity];
+    formatter.timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
+    return [formatter stringFromDate:time];
+}
+
+- (ARTStatsGranularity)intervalGranularity {
+    return [[self class] granularityFromIntervalId:self.intervalId];
+}
+
+- (NSDate *)intervalTime {
+    return [[self class] fromIntervalId:self.intervalId];
 }
 
 @end
