@@ -186,7 +186,6 @@
             
             [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
                  XCTAssert(!error);
-                 XCTAssertTrue([result hasFirst]);
                  XCTAssertTrue([result hasNext]);
                  NSArray * items = [result items];
                  XCTAssertEqual([items count], 2);
@@ -196,7 +195,6 @@
                  XCTAssertEqualObjects(@"testString1", [secondMessage content]);
                  [result next:^(ARTPaginatedResult *result2, NSError *error) {
                      XCTAssert(!error);
-                     XCTAssertTrue([result2 hasFirst]);
                      NSArray * items = [result2 items];
                      XCTAssertEqual([items count], 2);
                      ARTMessage * firstMessage = [items objectAtIndex:0];
@@ -206,7 +204,6 @@
                      
                      [result2 next:^(ARTPaginatedResult *result3, NSError *error) {
                          XCTAssert(!error);
-                         XCTAssertTrue([result3 hasFirst]);
                          XCTAssertFalse([result3 hasNext]);
                          NSArray * items = [result3 items];
                          XCTAssertEqual([items count], 1);
@@ -214,7 +211,6 @@
                          XCTAssertEqualObjects(@"testString4", [firstMessage content]);
                          [result3 first:^(ARTPaginatedResult *result4, NSError *error) {
                              XCTAssertEqual(ARTStateOk, status.state);
-                             XCTAssertTrue([result4 hasFirst]);
                              XCTAssertTrue([result4 hasNext]);
                              NSArray * items = [result4 items];
                              XCTAssertEqual([items count], 2);
@@ -247,7 +243,6 @@
 
             [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
                  XCTAssert(!error);
-                 XCTAssertTrue([result hasFirst]);
                  XCTAssertTrue([result hasNext]);
                  NSArray * items = [result items];
                  XCTAssertEqual([items count], 2);
@@ -257,7 +252,6 @@
                  XCTAssertEqualObjects(@"testString3", [secondMessage content]);
                  [result next:^(ARTPaginatedResult *result2, NSError *error) {
                      XCTAssert(!error);
-                     XCTAssertTrue([result2 hasFirst]);
                      NSArray * items = [result2 items];
                      XCTAssertEqual([items count], 2);
                      ARTMessage * firstMessage = [items objectAtIndex:0];
@@ -268,7 +262,6 @@
                      
                      [result2 next:^(ARTPaginatedResult *result3, NSError *error) {
                          XCTAssert(!error);
-                         XCTAssertTrue([result3 hasFirst]);
                          XCTAssertFalse([result3 hasNext]);
                          NSArray * items = [result3 items];
                          XCTAssertEqual([items count], 1);
@@ -276,7 +269,6 @@
                          XCTAssertEqualObjects(@"testString0", [firstMessage content]);
                          [result3 first:^(ARTPaginatedResult *result4, NSError *error) {
                              XCTAssertEqual(ARTStateOk, status.state);
-                             XCTAssertTrue([result4 hasFirst]);
                              XCTAssertTrue([result4 hasNext]);
                              NSArray * items = [result4 items];
                              XCTAssertEqual([items count], 2);
@@ -286,7 +278,6 @@
                              XCTAssertEqualObjects(@"testString3", [secondMessage content]);
                              [result2 first:^(ARTPaginatedResult *result, NSError *error) {
                                  XCTAssertEqual(ARTStateOk, status.state);
-                                 XCTAssertTrue([result hasFirst]);
                                  XCTAssertTrue([result hasNext]);
                                  NSArray * items = [result items];
                                  XCTAssertEqual([items count], 2);

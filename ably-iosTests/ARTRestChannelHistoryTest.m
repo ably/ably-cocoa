@@ -198,7 +198,6 @@
 
             [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
                 XCTAssert(!error);
-                XCTAssertTrue([result hasFirst]);
                 XCTAssertTrue([result hasNext]);
                 NSArray *page = [result items];
                 XCTAssertEqual([page count], 2);
@@ -210,7 +209,6 @@
 
                 [result next:^(ARTPaginatedResult *result2, NSError *error) {
                     XCTAssert(!error);
-                    XCTAssertTrue([result2 hasFirst]);
                     NSArray * page = [result2 items];
                     XCTAssertEqual([page count], 2);
                     ARTMessage * firstMessage = [page objectAtIndex:0];
@@ -220,7 +218,6 @@
 
                     [result2 next:^(ARTPaginatedResult *result3, NSError *error) {
                         XCTAssert(!error);
-                        XCTAssertTrue([result3 hasFirst]);
                         XCTAssertFalse([result3 hasNext]);
                         NSArray * page = [result3 items];
                         XCTAssertEqual([page count], 1);
@@ -229,7 +226,6 @@
 
                         [result3 first:^(ARTPaginatedResult *result4, NSError *error) {
                             XCTAssert(!error);
-                            XCTAssertTrue([result4 hasFirst]);
                             XCTAssertTrue([result4 hasNext]);
                             NSArray * page = [result4 items];
                             XCTAssertEqual([page count], 2);
@@ -266,7 +262,6 @@
 
             [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
                 XCTAssert(!error);
-                XCTAssertTrue([result hasFirst]);
                 XCTAssertTrue([result hasNext]);
                 NSArray * page = [result items];
                 XCTAssertEqual([page count], 2);
@@ -277,7 +272,6 @@
 
                 [result next:^(ARTPaginatedResult *result2, NSError *error) {
                     XCTAssert(!error);
-                    XCTAssertTrue([result2 hasFirst]);
                     NSArray * page = [result2 items];
                     XCTAssertEqual([page count], 2);
                     ARTMessage * firstMessage = [page objectAtIndex:0];
@@ -288,7 +282,6 @@
 
                     [result2 next:^(ARTPaginatedResult *result3, NSError *error) {
                         XCTAssert(!error);
-                        XCTAssertTrue([result3 hasFirst]);
                         XCTAssertFalse([result3 hasNext]);
                         NSArray * page = [result3 items];
                         XCTAssertEqual([page count], 1);
@@ -297,7 +290,6 @@
 
                         [result3 first:^(ARTPaginatedResult *result4, NSError *error) {
                             XCTAssert(!error);
-                            XCTAssertTrue([result4 hasFirst]);
                             XCTAssertTrue([result4 hasNext]);
                             NSArray * page = [result4 items];
                             XCTAssertEqual([page count], 2);
@@ -333,7 +325,6 @@
 
             [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
                 XCTAssert(!error);
-                XCTAssertTrue([result hasFirst]);
                 XCTAssertTrue([result hasNext]);
                 NSArray * page = [result items];
                 XCTAssertEqual([page count], 2);
@@ -373,7 +364,6 @@
 
             [channelTwo history:query callback:^(ARTPaginatedResult *result, NSError *error) {
                 XCTAssert(!error);
-                XCTAssertTrue([result hasFirst]);
                 XCTAssertTrue([result hasNext]);
                 NSArray * page = [result items];
                 XCTAssertEqual([page count], 2);
