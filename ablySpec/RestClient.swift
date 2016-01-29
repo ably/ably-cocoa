@@ -45,7 +45,7 @@ class RestClient: QuickSpec {
                     expect(publishTask.error?.code).toEventually(equal(40005))
                 }
 
-                it("should accept a token") {
+                pending("should accept a token") {
                     let client = ARTRest(token: getTestToken())
                     let publishTask = publishTestMessage(client)
                     expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
