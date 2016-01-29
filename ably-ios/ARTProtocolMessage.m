@@ -7,15 +7,9 @@
 //
 
 #import "ARTProtocolMessage.h"
+#import "ARTProtocolMessage+Private.h"
 #import "ARTStatus.h"
 #import "ARTConnectionDetails.h"
-
-@interface ARTProtocolMessage () {
-    // FIXME: temporary
-    ARTConnectionDetails *_connectionDetails;
-}
-
-@end
 
 @implementation ARTProtocolMessage
 
@@ -24,7 +18,6 @@
     if (self) {
         _count = 0;
         _id = nil;
-        _clientId = nil;
         _channel = nil;
         _channelSerial = nil;
         _connectionId = nil;
@@ -37,9 +30,16 @@
         _presence = nil;
         _flags = 0;
         _error = nil;
-        _connectionDetails = [[ARTConnectionDetails alloc] initWithProtocolMessage:self];
+        _connectionDetails = nil;
     }
     return self;
+}
+
+- (NSString *)getConnectionKey {
+    if (_connectionDetails && _connectionDetails.connectionKey) {
+        return _connectionDetails.connectionKey;
+    }
+    return _connectionKey;
 }
 
 - (NSString *)description {
@@ -47,7 +47,6 @@
     [description appendFormat:@" count: %d,\n", self.count];
     [description appendFormat:@" id: %@,\n", self.id];
     [description appendFormat:@" action: %lu,\n", (unsigned long)self.action];
-    [description appendFormat:@" clientId: %@,\n", self.clientId];
     [description appendFormat:@" channel: %@,\n", self.channel];
     [description appendFormat:@" channelSerial: %@,\n", self.channelSerial];
     [description appendFormat:@" connectionId: %@,\n", self.connectionId];

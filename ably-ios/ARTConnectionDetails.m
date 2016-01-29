@@ -8,30 +8,14 @@
 
 #import "ARTConnectionDetails.h"
 
-#import "ARTProtocolMessage.h"
-
-@interface ARTConnectionDetails () {
-    // FIXME: temporary
-    __weak ARTProtocolMessage* _protocolMessage;
-}
-
-@end
-
 @implementation ARTConnectionDetails
 
-- (instancetype)initWithProtocolMessage:(ARTProtocolMessage *)protocolMessage {
+- (instancetype)initWithClientId:(NSString *__art_nullable)clientId connectionKey:(NSString *__art_nullable)connectionKey {
     if (self == [super init]) {
-        _protocolMessage = protocolMessage;
+        _clientId = clientId;
+        _connectionKey = connectionKey;
     }
     return self;
-}
-
-- (NSString *)getClientId {
-    return _protocolMessage.clientId;
-}
-
-- (NSString *)getConnectionKey {
-    return _protocolMessage.connectionKey;
 }
 
 @end

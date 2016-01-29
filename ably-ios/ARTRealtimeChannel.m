@@ -15,6 +15,7 @@
 #import "ARTChannel.h"
 #import "ARTChannelOptions.h"
 #import "ARTProtocolMessage.h"
+#import "ARTProtocolMessage+Private.h"
 #import "ARTRealtimeChannelSubscription.h"
 #import "ARTPresenceMap.h"
 #import "ARTQueuedMessage.h"
