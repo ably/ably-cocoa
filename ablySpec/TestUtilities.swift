@@ -268,12 +268,15 @@ func publishTestMessage(rest: ARTRest, failOnError: Bool = true) -> PublishTestM
     return PublishTestMessage(client: rest, failOnError: failOnError)
 }
 
-/// Realtime - Publish message
-func publishTestMessage(realtime: ARTRealtime, completion: Optional<(NSError?)->()>) -> PublishTestMessage {
+/// Realtime - Publish message with callback
+/// (publishes if connection state changes to CONNECTED and channel state changes to ATTACHED)
+func publishFirstTestMessage(realtime: ARTRealtime, completion: Optional<(NSError?)->()>) -> PublishTestMessage {
     return PublishTestMessage(client: realtime, failOnError: false, completion: completion)
 }
 
-func publishTestMessage(realtime: ARTRealtime, failOnError: Bool = true) -> PublishTestMessage {
+/// Realtime - Publish message
+/// (publishes if connection state changes to CONNECTED and channel state changes to ATTACHED)
+func publishFirstTestMessage(realtime: ARTRealtime, failOnError: Bool = true) -> PublishTestMessage {
     return PublishTestMessage(client: realtime, failOnError: failOnError)
 }
 

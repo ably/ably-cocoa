@@ -436,7 +436,7 @@ class RealtimeClientConnection: QuickSpec {
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            publishTestMessage(client, completion: { error in
+                            publishFirstTestMessage(client, completion: { error in
                                 expect(error).to(beNil())
                                 done()
                             })
@@ -502,7 +502,7 @@ class RealtimeClientConnection: QuickSpec {
                         defer { client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
-                            publishTestMessage(client, completion: { error in
+                            publishFirstTestMessage(client, completion: { error in
                                 expect(error).toNot(beNil())
                                 done()
                             })
