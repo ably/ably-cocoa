@@ -37,13 +37,13 @@
     [super tearDown];
     if (_realtime) {
         [ARTTestUtil removeAllChannels:_realtime];
-        [_realtime.eventEmitter removeEvents];
+        [_realtime resetEventEmitter];
         [_realtime close];
     }
     _realtime = nil;
     if (_realtime2) {
         [ARTTestUtil removeAllChannels:_realtime2];
-        [_realtime2.eventEmitter removeEvents];
+        [_realtime2 resetEventEmitter];
         [_realtime2 close];
     }
     _realtime2 = nil;
@@ -245,7 +245,9 @@
     NSString * connectingMessage = @"connectingMessage";
     NSString * disconnectedMessage = @"disconnectedMessage";
 
-    [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+    ARTClientOptions *options = [ARTTestUtil clientOptions];
+    options.autoConnect = false;
+    [ARTTestUtil testRealtime:options callback:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"testMessageQueue"];
         __block int messagesReceived = 0;
@@ -260,7 +262,8 @@
             messagesReceived++;
         }];
         __block bool connectingHappened = false;
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
             if(state ==ARTRealtimeConnecting) {
                 if(connectingHappened) {
                     [channel attach];
@@ -280,6 +283,7 @@
                 [realtime connect];
             }
         }];
+        [realtime connect];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
@@ -323,7 +327,9 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [_realtime.channels get:@"testSingleSendText"];
-        [_realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [_realtime onAll:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
+            ARTErrorInfo *errorInfo = stateChange.reason;
             if(state == ARTRealtimeConnected) {
                 [channel attach];
             }

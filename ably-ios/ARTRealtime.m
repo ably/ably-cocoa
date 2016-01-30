@@ -38,7 +38,6 @@
 
 // Shared with private header
 @property (readwrite, strong, nonatomic) ARTRest *rest;
-@property (readonly, strong, nonatomic) NSMutableArray *stateSubscriptions;
 
 @property (readwrite, assign, nonatomic) ARTRealtimeConnectionState state;
 
@@ -125,7 +124,7 @@
         NSAssert(options, @"ARTRealtime: No options provided");
         
         _rest = [[ARTRest alloc] initWithLogger:logger andOptions:options];
-        _eventEmitter = [[ARTEventEmitter alloc] initWithRealtime:self];
+        _eventEmitter = [[ARTEventEmitter alloc] init];
         _channels = [[ARTRealtimeChannels alloc] initWithRealtime:self];
         _transport = nil;
         _transportClass = [ARTWebSocketTransport class];
@@ -138,7 +137,6 @@
         _queuedMessages = [NSMutableArray array];
         _pendingMessages = [NSMutableArray array];
         _pendingMessageStartSerial = 0;
-        _stateSubscriptions = [NSMutableArray array];
         _connection = [[ARTConnection alloc] initWithRealtime:self];
 
         [self.logger debug:__FILE__ line:__LINE__ message:@"initialised %p", self];
@@ -244,10 +242,9 @@
     return [self.rest stats:query callback:completion error:errorPtr];
 }
 
-- (void)unsubscribeState:(ARTRealtimeChannelStateSubscription *)subscription {
-    [self.stateSubscriptions removeObject:subscription];
+- (void)resetEventEmitter {
+    _eventEmitter = [[ARTEventEmitter alloc] init];
 }
-
 
 - (BOOL)isFromResume {
     return self.options.resumeKey != nil;
@@ -343,10 +340,8 @@
             }
         }
     }
-
-    for (ARTRealtimeConnectionStateSubscription *subscription in self.stateSubscriptions) {
-        subscription.cb(state, errorInfo);
-    }
+    
+    [self emit:[NSNumber numberWithInt:state] with:[[ARTConnectionStateChange alloc] initWithCurrent:state previous:previousState reason:errorInfo]];
 
     if (state == ARTRealtimeClosing) {
         [self transition:ARTRealtimeClosed];
@@ -907,5 +902,7 @@
             return @"unknown connectionstate";
     }
 }
+
+ART_EMBED_IMPLEMENTATION_EVENT_EMITTER(NSNumber *, ARTConnectionStateChange *)
 
 @end

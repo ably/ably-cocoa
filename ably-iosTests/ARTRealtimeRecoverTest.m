@@ -34,7 +34,7 @@
 - (void)tearDown {
     if (_realtime) {
         [ARTTestUtil removeAllChannels:_realtime];
-        [_realtime.eventEmitter removeEvents];
+        [_realtime resetEventEmitter];
         [_realtime close];
     }
     _realtime = nil;
@@ -71,7 +71,9 @@
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
 
         __block NSString *firstConnectionId = nil;
-        [_realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [_realtime onAll:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
+            ARTErrorInfo *errorInfo = stateChange.reason;
             if (state == ARTRealtimeConnected) {
                 firstConnectionId = [_realtime connectionId];
 
@@ -87,7 +89,9 @@
                 _realtimeNonRecovered = [[ARTRealtime alloc] initWithOptions:options];
 
                 ARTRealtimeChannel *c2 = [_realtimeNonRecovered.channels get:channelName];
-                [_realtimeNonRecovered.eventEmitter on:^(ARTRealtimeConnectionState state2, ARTErrorInfo *errorInfo) {
+                [_realtimeNonRecovered onAll:^(ARTConnectionStateChange *stateChange) {
+                    ARTRealtimeConnectionState state2 = stateChange.current;
+                    ARTErrorInfo *errorInfo = stateChange.reason;
                     if (state2 == ARTRealtimeConnected) {
                         // Sending other message to the same channel to check if the recovered connection receives it
                         [c2 publish:c2Message cb:^(ARTStatus *status) {
@@ -98,7 +102,9 @@
                             ARTRealtime *realtimeRecovered = [[ARTRealtime alloc] initWithOptions:options];
                             ARTRealtimeChannel *c3 = [realtimeRecovered.channels get:channelName];
 
-                            [realtimeRecovered.eventEmitter on:^(ARTRealtimeConnectionState cState, ARTErrorInfo* errorInfo) {
+                            [realtimeRecovered onAll:^(ARTConnectionStateChange *stateChange) {
+                                ARTRealtimeConnectionState cState = stateChange.current;
+                                ARTErrorInfo *errorInfo = stateChange.reason;
                                 if (cState == ARTRealtimeConnected) {
                                     XCTAssertEqualObjects([realtimeRecovered connectionId], firstConnectionId);
                                     [c3 subscribe:^(ARTMessage *message, ARTErrorInfo *errorInfo) {
@@ -121,7 +127,9 @@
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         options.recover = @"bad_recovery_key:1234";
         _realtimeRecover = [[ARTRealtime alloc] initWithOptions:options];
-        [_realtimeRecover.eventEmitter on:^(ARTRealtimeConnectionState cState, ARTErrorInfo *errorInfo) {
+        [_realtimeRecover onAll:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState cState = stateChange.current;
+            ARTErrorInfo *errorInfo = stateChange.reason;
             if (cState == ARTRealtimeFailed) {
                 // 80018 - Invalid connectionKey: bad_recovery_key
                 XCTAssertEqual(errorInfo.code, 80018);

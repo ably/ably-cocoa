@@ -72,3 +72,17 @@ NSString *generateNonce() {
 }
 
 @end
+
+@implementation ARTConnectionStateChange
+
+- (instancetype)initWithCurrent:(ARTRealtimeConnectionState)current previous:(ARTRealtimeConnectionState)previous reason:(ARTErrorInfo *)reason {
+    self = [self init];
+    if (self) {
+        _current = current;
+        _previous = previous;
+        _reason = reason;
+    }
+    return self;
+}
+
+@end

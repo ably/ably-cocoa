@@ -20,6 +20,7 @@
 #import "ARTEventEmitter.h"
 #import "ARTPaginatedResult.h"
 #import "ARTDataQuery.h"
+#import "ARTRealtime+Private.h"
 
 @interface ARTRealtimePresenceHistoryTest : XCTestCase
 {
@@ -38,19 +39,19 @@
 - (void)tearDown {
     if (_realtime) {
         [ARTTestUtil removeAllChannels:_realtime];
-        [_realtime.eventEmitter removeEvents];
+        [_realtime resetEventEmitter];
         [_realtime close];
     }
     _realtime = nil;
     if (_realtime2) {
         [ARTTestUtil removeAllChannels:_realtime2];
-        [_realtime2.eventEmitter removeEvents];
+        [_realtime2 resetEventEmitter];
         [_realtime2 close];
     }
     _realtime2 = nil;
     if (_realtime3) {
         [ARTTestUtil removeAllChannels:_realtime3];
-        [_realtime3.eventEmitter removeEvents];
+        [_realtime3 resetEventEmitter];
         [_realtime3 close];
     }
     _realtime3 = nil;
@@ -101,7 +102,8 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime.channels get:[self channelName]];
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 [channel attach];
             }
@@ -139,7 +141,8 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime.channels get:@"testSimpleText"];
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 [channel attach];
             }
@@ -171,7 +174,8 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime.channels get:@"persisted:testSimpleText"];
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 [channel attach];
             }
@@ -279,7 +283,8 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime.channels get:@"testWaitTextBackward"];
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 [channel attach];
             }
@@ -415,7 +420,8 @@
 
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime.channels get:@"testWaitText"];
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 [channel attach];
             }
@@ -539,7 +545,8 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime.channels get:[self channelName]];
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 [channel attach];
             }

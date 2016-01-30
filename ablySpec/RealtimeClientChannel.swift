@@ -327,7 +327,9 @@ class RealtimeClientChannel: QuickSpec {
                         defer { client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
-                            client.eventEmitter.on { state, error in
+                            client.onAll { stateChange in
+                                let state = stateChange.current
+                                let error = stateChange.reason
                                 if state == .Connected {
                                     let channel = client.channels.get("test")
                                     channel.subscribeToStateChanges { state, status in
@@ -351,7 +353,9 @@ class RealtimeClientChannel: QuickSpec {
                         defer { client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
-                            client.eventEmitter.on { state, error in
+                            client.onAll { stateChange in
+                                let state = stateChange.current
+                                let error = stateChange.reason
                                 if state == .Connected {
                                     let channel = client.channels.get("test")
                                     channel.subscribeToStateChanges { channelState, channelStatus in
