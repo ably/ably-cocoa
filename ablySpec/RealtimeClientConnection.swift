@@ -9,22 +9,6 @@
 import Quick
 import Nimble
 
-/// A Nimble matcher that succeeds when a param exists.
-public func haveParam(key: String, withValue expectedValue: String) -> NonNilMatcherFunc<String> {
-    return NonNilMatcherFunc { actualExpression, failureMessage in
-        failureMessage.postfixMessage = "param <\(key)=\(expectedValue)> exists"
-        guard let actualValue = try actualExpression.evaluate() else { return false }
-        let queryItems = actualValue.componentsSeparatedByString("&")
-        for item in queryItems {
-            let param = item.componentsSeparatedByString("=")
-            if let currentKey = param.first, let currentValue = param.last where currentKey == key && currentValue == expectedValue {
-                return true
-            }
-        }
-        return false
-    }
-}
-
 class RealtimeClientConnection: QuickSpec {
 
     override func spec() {

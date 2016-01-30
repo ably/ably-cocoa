@@ -10,15 +10,6 @@ import Nimble
 import Quick
 import Aspects
 
-public func beCloseTo<T: NSDate>(expectedValue: NSDate?) -> MatcherFunc<T?> {
-    return MatcherFunc { actualExpression, failureMessage in
-        failureMessage.postfixMessage = "equal <\(expectedValue)>"
-        guard let actualValue = try actualExpression.evaluate() as? NSDate else { return false }
-        guard let expectedValue = expectedValue else { return false }
-        return abs(actualValue.timeIntervalSince1970 - expectedValue.timeIntervalSince1970) < 0.5
-    }
-}
-
 class Auth : QuickSpec {
     override func spec() {
         

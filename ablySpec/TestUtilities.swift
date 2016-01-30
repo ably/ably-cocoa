@@ -502,3 +502,32 @@ extension ARTWebSocketTransport {
     }
 
 }
+
+
+// MARK: - Custom Nimble Matchers
+
+/// A Nimble matcher that succeeds when two dates are quite the same.
+public func beCloseTo<T: NSDate>(expectedValue: NSDate?) -> MatcherFunc<T?> {
+    return MatcherFunc { actualExpression, failureMessage in
+        failureMessage.postfixMessage = "equal <\(expectedValue)>"
+        guard let actualValue = try actualExpression.evaluate() as? NSDate else { return false }
+        guard let expectedValue = expectedValue else { return false }
+        return abs(actualValue.timeIntervalSince1970 - expectedValue.timeIntervalSince1970) < 0.5
+    }
+}
+
+/// A Nimble matcher that succeeds when a param exists.
+public func haveParam(key: String, withValue expectedValue: String) -> NonNilMatcherFunc<String> {
+    return NonNilMatcherFunc { actualExpression, failureMessage in
+        failureMessage.postfixMessage = "param <\(key)=\(expectedValue)> exists"
+        guard let actualValue = try actualExpression.evaluate() else { return false }
+        let queryItems = actualValue.componentsSeparatedByString("&")
+        for item in queryItems {
+            let param = item.componentsSeparatedByString("=")
+            if let currentKey = param.first, let currentValue = param.last where currentKey == key && currentValue == expectedValue {
+                return true
+            }
+        }
+        return false
+    }
+}
