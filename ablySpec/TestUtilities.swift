@@ -9,6 +9,7 @@
 import Foundation
 import XCTest
 import Quick
+import Nimble
 import SwiftyJSON
 import SwiftWebSocket
 
@@ -31,6 +32,7 @@ let appSetupJson = JSON(data: NSData(contentsOfFile: pathForTestResource("ably-c
 
 let testTimeout: NSTimeInterval = 10.0
 
+/// Common test utilities.
 class AblyTests {
 
     class func checkError(errorInfo: ARTErrorInfo?, withAlternative message: String) {
@@ -336,7 +338,6 @@ public func delay(seconds: NSTimeInterval, closure: ()->()) {
         dispatch_get_main_queue(), closure)
 }
 
-// TODO: after merge use robrix/Box
 class Box<T> {
     let unbox: T
     init(_ value: T) {
@@ -344,7 +345,6 @@ class Box<T> {
     }
 }
 
-// TODO: after merge use antitypical/Result
 enum Result<T> {
     case Success(Box<T>)
     case Failure(String)
@@ -384,9 +384,7 @@ func extractBodyAsJSON(request: NSMutableURLRequest?) -> Result<NSDictionary> {
     return Result.Success(Box(httpBody))
 }
 
-/*
- Records each request and response for test purpose.
- */
+/// Records each request and response for test purpose.
 @objc
 class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
     // Who executes the request
@@ -408,9 +406,8 @@ class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
     }
 }
 
-/*
- Records each message for test purpose.
-*/
+
+/// Records each message for test purpose.
 class TestProxyTransport: ARTWebSocketTransport {
 
     var lastUrl: NSURL?
