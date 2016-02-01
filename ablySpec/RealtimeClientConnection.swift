@@ -1193,7 +1193,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN18b
-                context("all channels will move to DETACHED state") {
+                pending("all channels will move to DETACHED state") {
 
                     it("when a connection enters SUSPENDED state") {
                         let options = AblyTests.commonAppSetup()
