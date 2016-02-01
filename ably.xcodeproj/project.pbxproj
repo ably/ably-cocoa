@@ -47,7 +47,7 @@
 		850BFB4C1B79323C009D0ADD /* ARTPaginatedResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		850BFB4D1B79323C009D0ADD /* ARTPaginatedResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */; };
 		851674EF1B7BA5CD00D35169 /* Stats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851674EE1B7BA5CD00D35169 /* Stats.swift */; };
-		853ED7C41B7A1A3C006F1C6F /* RestClient.stats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 853ED7C31B7A1A3C006F1C6F /* RestClient.stats.swift */; };
+		853ED7C41B7A1A3C006F1C6F /* RestClientStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 853ED7C31B7A1A3C006F1C6F /* RestClientStats.swift */; };
 		856AAC8F1B6E304B00B07119 /* ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* ably.framework */; };
 		856AAC971B6E30C800B07119 /* TestUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC961B6E30C800B07119 /* TestUtilities.swift */; };
 		856AAC991B6E312F00B07119 /* RestClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC981B6E312F00B07119 /* RestClient.swift */; };
@@ -108,7 +108,7 @@
 		D746AE281BBB61C9003ECEF8 /* ARTPresence.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE261BBB61C9003ECEF8 /* ARTPresence.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D746AE291BBB61C9003ECEF8 /* ARTPresence.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE271BBB61C9003ECEF8 /* ARTPresence.m */; };
 		D746AE2C1BBB625E003ECEF8 /* RestChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D746AE2A1BBB625E003ECEF8 /* RestChannel.swift */; };
-		D746AE2D1BBB625E003ECEF8 /* RestClient.channels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D746AE2B1BBB625E003ECEF8 /* RestClient.channels.swift */; };
+		D746AE2D1BBB625E003ECEF8 /* RestClientChannels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D746AE2B1BBB625E003ECEF8 /* RestClientChannels.swift */; };
 		D746AE2F1BBBE7D7003ECEF8 /* ARTPaginatedResult+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE2E1BBBE7D7003ECEF8 /* ARTPaginatedResult+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D746AE381BBC3201003ECEF8 /* ARTMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE361BBC3201003ECEF8 /* ARTMessage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D746AE391BBC3201003ECEF8 /* ARTMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE371BBC3201003ECEF8 /* ARTMessage.m */; };
@@ -125,9 +125,9 @@
 		D746AE501BBD84E7003ECEF8 /* ARTChannelOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE4E1BBD84E7003ECEF8 /* ARTChannelOptions.m */; };
 		D746AE531BBD85C5003ECEF8 /* ARTChannelCollection.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE511BBD85C5003ECEF8 /* ARTChannelCollection.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D746AE541BBD85C5003ECEF8 /* ARTChannelCollection.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE521BBD85C5003ECEF8 /* ARTChannelCollection.m */; };
-		D74EFAEB1C4D09B500CFF98E /* RealtimeClient.channel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74EFAEA1C4D09B500CFF98E /* RealtimeClient.channel.swift */; settings = {ASSET_TAGS = (); }; };
 		D7588AF31BFF91B800BB8279 /* ARTURLSessionServerTrust.h in Headers */ = {isa = PBXBuildFile; fileRef = D7588AF11BFF91B800BB8279 /* ARTURLSessionServerTrust.h */; settings = {ASSET_TAGS = (); }; };
 		D7588AF41BFF91B800BB8279 /* ARTURLSessionServerTrust.m in Sources */ = {isa = PBXBuildFile; fileRef = D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */; settings = {ASSET_TAGS = (); }; };
+		D74EFAEB1C4D09B500CFF98E /* RealtimeClientChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74EFAEA1C4D09B500CFF98E /* RealtimeClientChannel.swift */; };
 		D7B17EE31C07208B00A6958E /* ARTConnectionDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B17EE11C07208B00A6958E /* ARTConnectionDetails.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7B17EE41C07208B00A6958E /* ARTConnectionDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = D7B17EE21C07208B00A6958E /* ARTConnectionDetails.m */; settings = {ASSET_TAGS = (); }; };
 		D7C1B8771BBEA81A0087B55F /* Auth.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C1B8761BBEA81A0087B55F /* Auth.swift */; };
@@ -141,7 +141,7 @@
 		D7D8F82C1BC2C706009718F2 /* ARTAuthTokenRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = D7D8F8281BC2C706009718F2 /* ARTAuthTokenRequest.m */; };
 		D7D8F82D1BC2C706009718F2 /* ARTAuthTokenParams.h in Headers */ = {isa = PBXBuildFile; fileRef = D7D8F8291BC2C706009718F2 /* ARTAuthTokenParams.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7D8F82E1BC2C706009718F2 /* ARTAuthTokenParams.m in Sources */ = {isa = PBXBuildFile; fileRef = D7D8F82A1BC2C706009718F2 /* ARTAuthTokenParams.m */; };
-		D7EBE5A31BE8391E0086E675 /* RealtimeClient.connection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7EBE5A21BE8391E0086E675 /* RealtimeClient.connection.swift */; };
+		D7EBE5A31BE8391E0086E675 /* RealtimeClientConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7EBE5A21BE8391E0086E675 /* RealtimeClientConnection.swift */; };
 		D7EBE5A41BE9F6900086E675 /* ARTConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = D7D29B401BE3DD0600374295 /* ARTConnection.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7F1D3731BF4DE07001A4B5E /* ARTRestPresence.h in Headers */ = {isa = PBXBuildFile; fileRef = D7F1D3711BF4DE07001A4B5E /* ARTRestPresence.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7F1D3741BF4DE07001A4B5E /* ARTRestPresence.m in Sources */ = {isa = PBXBuildFile; fileRef = D7F1D3721BF4DE07001A4B5E /* ARTRestPresence.m */; };
@@ -235,7 +235,7 @@
 		850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPaginatedResult.h; sourceTree = "<group>"; };
 		850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPaginatedResult.m; sourceTree = "<group>"; };
 		851674EE1B7BA5CD00D35169 /* Stats.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stats.swift; sourceTree = "<group>"; };
-		853ED7C31B7A1A3C006F1C6F /* RestClient.stats.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClient.stats.swift; sourceTree = "<group>"; };
+		853ED7C31B7A1A3C006F1C6F /* RestClientStats.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClientStats.swift; sourceTree = "<group>"; };
 		856AAC8A1B6E304B00B07119 /* ablySpec.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ablySpec.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		856AAC8E1B6E304B00B07119 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		856AAC951B6E30C800B07119 /* ablySpec-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ablySpec-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -304,7 +304,7 @@
 		D746AE261BBB61C9003ECEF8 /* ARTPresence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPresence.h; sourceTree = "<group>"; };
 		D746AE271BBB61C9003ECEF8 /* ARTPresence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPresence.m; sourceTree = "<group>"; };
 		D746AE2A1BBB625E003ECEF8 /* RestChannel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestChannel.swift; sourceTree = "<group>"; };
-		D746AE2B1BBB625E003ECEF8 /* RestClient.channels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClient.channels.swift; sourceTree = "<group>"; };
+		D746AE2B1BBB625E003ECEF8 /* RestClientChannels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClientChannels.swift; sourceTree = "<group>"; };
 		D746AE2E1BBBE7D7003ECEF8 /* ARTPaginatedResult+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTPaginatedResult+Private.h"; sourceTree = "<group>"; };
 		D746AE361BBC3201003ECEF8 /* ARTMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTMessage.h; sourceTree = "<group>"; };
 		D746AE371BBC3201003ECEF8 /* ARTMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTMessage.m; sourceTree = "<group>"; };
@@ -322,7 +322,7 @@
 		D746AE511BBD85C5003ECEF8 /* ARTChannelCollection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTChannelCollection.h; sourceTree = "<group>"; };
 		D746AE521BBD85C5003ECEF8 /* ARTChannelCollection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTChannelCollection.m; sourceTree = "<group>"; };
 		D746AE551BBD8622003ECEF8 /* ARTChannelCollection+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ARTChannelCollection+Private.h"; sourceTree = "<group>"; };
-		D74EFAEA1C4D09B500CFF98E /* RealtimeClient.channel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClient.channel.swift; sourceTree = "<group>"; };
+		D74EFAEA1C4D09B500CFF98E /* RealtimeClientChannel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClientChannel.swift; sourceTree = "<group>"; };
 		D7588AF11BFF91B800BB8279 /* ARTURLSessionServerTrust.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTURLSessionServerTrust.h; sourceTree = "<group>"; };
 		D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTURLSessionServerTrust.m; sourceTree = "<group>"; };
 		D7B17EE11C07208B00A6958E /* ARTConnectionDetails.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTConnectionDetails.h; sourceTree = "<group>"; };
@@ -341,7 +341,7 @@
 		D7D8F82A1BC2C706009718F2 /* ARTAuthTokenParams.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTAuthTokenParams.m; sourceTree = "<group>"; };
 		D7E1FDFD1C18108A002C45D7 /* Starscream.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Starscream.framework; path = "Pods/../build/Debug-iphoneos/Starscream.framework"; sourceTree = "<group>"; };
 		D7E1FE001C18119C002C45D7 /* Pods.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Pods.framework; path = "Pods/../build/Debug-iphoneos/Pods.framework"; sourceTree = "<group>"; };
-		D7EBE5A21BE8391E0086E675 /* RealtimeClient.connection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClient.connection.swift; sourceTree = "<group>"; };
+		D7EBE5A21BE8391E0086E675 /* RealtimeClientConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClientConnection.swift; sourceTree = "<group>"; };
 		D7F1D3711BF4DE07001A4B5E /* ARTRestPresence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTRestPresence.h; sourceTree = "<group>"; };
 		D7F1D3721BF4DE07001A4B5E /* ARTRestPresence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestPresence.m; sourceTree = "<group>"; };
 		D7F1D3751BF4DE72001A4B5E /* ARTRealtimePresence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTRealtimePresence.h; sourceTree = "<group>"; };
@@ -422,12 +422,12 @@
 				856AAC951B6E30C800B07119 /* ablySpec-Bridging-Header.h */,
 				D7C1B8761BBEA81A0087B55F /* Auth.swift */,
 				856AAC981B6E312F00B07119 /* RestClient.swift */,
-				853ED7C31B7A1A3C006F1C6F /* RestClient.stats.swift */,
+				853ED7C31B7A1A3C006F1C6F /* RestClientStats.swift */,
 				D746AE2A1BBB625E003ECEF8 /* RestChannel.swift */,
-				D746AE2B1BBB625E003ECEF8 /* RestClient.channels.swift */,
+				D746AE2B1BBB625E003ECEF8 /* RestClientChannels.swift */,
 				D723046F1BB72CED00F1ABDA /* RealtimeClient.swift */,
-				D7EBE5A21BE8391E0086E675 /* RealtimeClient.connection.swift */,
-				D74EFAEA1C4D09B500CFF98E /* RealtimeClient.channel.swift */,
+				D7EBE5A21BE8391E0086E675 /* RealtimeClientConnection.swift */,
+				D74EFAEA1C4D09B500CFF98E /* RealtimeClientChannel.swift */,
 				851674EE1B7BA5CD00D35169 /* Stats.swift */,
 			);
 			path = ablySpec;
@@ -1000,13 +1000,13 @@
 				856AAC991B6E312F00B07119 /* RestClient.swift in Sources */,
 				D746AE2C1BBB625E003ECEF8 /* RestChannel.swift in Sources */,
 				856AAC971B6E30C800B07119 /* TestUtilities.swift in Sources */,
-				853ED7C41B7A1A3C006F1C6F /* RestClient.stats.swift in Sources */,
-				D74EFAEB1C4D09B500CFF98E /* RealtimeClient.channel.swift in Sources */,
+				853ED7C41B7A1A3C006F1C6F /* RestClientStats.swift in Sources */,
+				D74EFAEB1C4D09B500CFF98E /* RealtimeClientChannel.swift in Sources */,
 				851674EF1B7BA5CD00D35169 /* Stats.swift in Sources */,
 				D72304701BB72CED00F1ABDA /* RealtimeClient.swift in Sources */,
-				D746AE2D1BBB625E003ECEF8 /* RestClient.channels.swift in Sources */,
+				D746AE2D1BBB625E003ECEF8 /* RestClientChannels.swift in Sources */,
 				D7C1B8771BBEA81A0087B55F /* Auth.swift in Sources */,
-				D7EBE5A31BE8391E0086E675 /* RealtimeClient.connection.swift in Sources */,
+				D7EBE5A31BE8391E0086E675 /* RealtimeClientConnection.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
