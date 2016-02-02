@@ -88,7 +88,6 @@
 
         [_realtime onAll:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
-            ARTErrorInfo *errorInfo = stateChange.reason;
             if (state == ARTRealtimeFailed) {
                 // 4. Client A is disconnected and B sends message
                 [channelB publish:message2 cb:^(ARTStatus *status) {
@@ -157,8 +156,6 @@
         }];
         
         [_realtime onAll:^(ARTConnectionStateChange *stateChange) {
-            ARTRealtimeConnectionState state = stateChange.current;
-            ARTErrorInfo *errorInfo = stateChange.reason;
             [channel attach];
         }];
     }];

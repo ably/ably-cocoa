@@ -329,7 +329,6 @@
         ARTRealtimeChannel *channel = [_realtime.channels get:@"testSingleSendText"];
         [_realtime onAll:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
-            ARTErrorInfo *errorInfo = stateChange.reason;
             if(state == ARTRealtimeConnected) {
                 [channel attach];
             }

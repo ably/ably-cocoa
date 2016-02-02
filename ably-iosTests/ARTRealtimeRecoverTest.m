@@ -73,7 +73,6 @@
         __block NSString *firstConnectionId = nil;
         [_realtime onAll:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
-            ARTErrorInfo *errorInfo = stateChange.reason;
             if (state == ARTRealtimeConnected) {
                 firstConnectionId = [_realtime connectionId];
 
@@ -91,7 +90,6 @@
                 ARTRealtimeChannel *c2 = [_realtimeNonRecovered.channels get:channelName];
                 [_realtimeNonRecovered onAll:^(ARTConnectionStateChange *stateChange) {
                     ARTRealtimeConnectionState state2 = stateChange.current;
-                    ARTErrorInfo *errorInfo = stateChange.reason;
                     if (state2 == ARTRealtimeConnected) {
                         // Sending other message to the same channel to check if the recovered connection receives it
                         [c2 publish:c2Message cb:^(ARTStatus *status) {
@@ -104,7 +102,6 @@
 
                             [realtimeRecovered onAll:^(ARTConnectionStateChange *stateChange) {
                                 ARTRealtimeConnectionState cState = stateChange.current;
-                                ARTErrorInfo *errorInfo = stateChange.reason;
                                 if (cState == ARTRealtimeConnected) {
                                     XCTAssertEqualObjects([realtimeRecovered connectionId], firstConnectionId);
                                     [c3 subscribe:^(ARTMessage *message, ARTErrorInfo *errorInfo) {
