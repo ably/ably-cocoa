@@ -1260,6 +1260,32 @@ class RealtimeClientConnection: QuickSpec {
 
                 }
 
+                // RTN18c
+                it("when a connection enters FAILED state, all channels will move to FAILED state") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+
+                    let channel = client.channel("test")
+                    channel.attach()
+
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                    client.onError(AblyTests.newErrorProtocolMessage())
+
+                    expect(client.connection().state).to(equal(ARTRealtimeConnectionState.Failed))
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Failed), timeout: testTimeout)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        // Reject publishing of messages
+                        channel.publish("message", cb: { status in
+                            expect(status.state).to(equal(ARTState.Error))
+                            expect(status.errorInfo!.code).to(equal(90001))
+                            done()
+                        })
+                    }
+                }
+
             }
 
         }
