@@ -11,7 +11,7 @@
 
 @interface ARTPresenceMap ()
 
-@property (readwrite, strong, atomic) NSMutableDictionary *mostRecentMessageForMember; //<clientId, artPresenceMessage *> message
+@property (readwrite, strong, atomic) __GENERIC(NSMutableDictionary, NSString *, ARTPresenceMessage *) *mostRecentMessageForMember;
 @property (readonly, nonatomic, assign) bool syncStarted;
 @property (readonly, nonatomic, assign) bool syncComplete;
 @property (nonatomic, copy) VoidCb cb;
@@ -20,10 +20,10 @@
 
 @implementation ARTPresenceMap
 
--(id) init {
+- (id)init {
     self = [super init];
     if(self) {
-        self.mostRecentMessageForMember = [NSMutableDictionary dictionary];
+        _mostRecentMessageForMember = [NSMutableDictionary dictionary];
         _syncStarted = false;
         _syncComplete = false;
         _cb = nil;
@@ -31,12 +31,15 @@
     return self;
 }
 
+- (__GENERIC(NSDictionary, NSString *, ARTPresenceMessage *) *)getMembers {
+    return self.mostRecentMessageForMember;
+}
+
 - (void)onSync:(VoidCb)cb {
     _cb = cb;
 }
 
-- (void) syncMessageProcessed {
-
+- (void)syncMessageProcessed {
     if(self.cb) {
         self.cb();
     }
@@ -52,14 +55,10 @@
         [self.mostRecentMessageForMember setObject:message forKey:message.clientId];
     }
 }
+
 - (void)startSync {
     self.mostRecentMessageForMember = [NSMutableDictionary dictionary];
     _syncStarted = true;
-    
-}
-
-- (NSDictionary *) members {
-    return self.mostRecentMessageForMember;
 }
 
 - (void)endSync {
