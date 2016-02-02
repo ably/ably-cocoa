@@ -1192,6 +1192,74 @@ class RealtimeClientConnection: QuickSpec {
                     expect(client.connection().state).to(equal(ARTRealtimeConnectionState.Connected))
                 }
 
+                // RTN18b
+                pending("all channels will move to DETACHED state") {
+
+                    it("when a connection enters SUSPENDED state") {
+                        let options = AblyTests.commonAppSetup()
+                        let client = ARTRealtime(options: options)
+                        defer { client.close() }
+
+                        let channel = client.channel("test")
+                        channel.attach()
+
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                        client.onSuspended()
+
+                        expect(client.connection().state).to(equal(ARTRealtimeConnectionState.Suspended))
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
+
+                        waitUntil(timeout: testTimeout) { done in
+                            // Reject publishing of messages
+                            channel.publish("message", cb: { status in
+                                expect(status.state).to(equal(ARTState.Error))
+                                expect(status.errorInfo!.code).to(equal(90001))
+                                done()
+                            })
+                        }
+
+                        expect(client.connection().state).toEventually(equal(ARTRealtimeConnectionState.Connecting), timeout: options.suspendedRetryTimeout)
+
+                        channel.attach()
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                        waitUntil(timeout: testTimeout) { done in
+                            // Accept publishing of messages
+                            channel.publish("message", cb: { status in
+                                expect(status.state).to(equal(ARTState.Ok))
+                                done()
+                            })
+                        }
+                    }
+
+                    it("when a connection enters CLOSED state") {
+                        let options = AblyTests.commonAppSetup()
+                        let client = ARTRealtime(options: options)
+                        defer { client.close() }
+
+                        let channel = client.channel("test")
+                        channel.attach()
+
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                        client.close()
+
+                        expect(client.connection().state).to(equal(ARTRealtimeConnectionState.Closed))
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
+
+                        waitUntil(timeout: testTimeout) { done in
+                            // Reject publishing of messages
+                            channel.publish("message", cb: { status in
+                                expect(status.state).to(equal(ARTState.Error))
+                                expect(status.errorInfo!.code).to(equal(90001))
+                                done()
+                            })
+                        }
+                    }
+
+                }
+
             }
 
         }
