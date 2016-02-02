@@ -132,7 +132,7 @@
     if ([self.totalListeners member:entry.listener] != nil) {
         // Already listening to everything! No need to add. Just check if it
         // is ignoring it, and un-ignore it if so.
-        [self removeFromArray:[self.ignoring objectForKey:event] item:entry.listener];
+        [self removeObject:entry.listener fromArrayWithKey:event inDictionary:self.ignoring];
         if (!entry.once) {
             // But 'once' listeners still need to be added. emit will check
             // listeners before totalListeners. If a listener has once=true
@@ -182,17 +182,16 @@
         [self addObject:listener toArrayWithKey:event inDictionary:self.ignoring];
         return;
     }
-
-    [self removeFromArray:[self.listeners objectForKey:event] item:listener];
+    [self removeObject:listener fromArrayWithKey:event inDictionary:self.listeners];
 }
 
 - (void)offAll:(ARTEventListener *)listener {
     [self.totalListeners artRemoveObject:listener];
-    for (NSMutableArray *listeners in [self.ignoring allValues]) {
-        [listeners artRemoveObject:listener];
+    for (id event in [self.ignoring keyEnumerator]) {
+        [self removeObject:listener fromArrayWithKey:event inDictionary:self.ignoring];
     }
-    for (NSMutableArray *listenersToEvent in [self.listeners allValues]) {
-        [listenersToEvent artRemoveObject:listener];
+    for (id event in [self.listeners keyEnumerator]) {
+        [self removeObject:listener fromArrayWithKey:event inDictionary:self.listeners];
     }
 }
 
@@ -253,12 +252,6 @@
     }
 }
 
-- (void)removeFromArray:(NSMutableArray *)array item:(id)item {
-    if (array) {
-        [array artRemoveObject:item];
-    }
-}
-
 - (void)addObject:(id)obj toArrayWithKey:(id)key inDictionary:(NSMutableDictionary *)dict {
     NSMutableArray *array = [dict objectForKey:key];
     if (array == nil) {
@@ -266,6 +259,17 @@
         [dict setObject:array forKey:key];
     }
     [array addObjectReplacing:obj];
+}
+
+- (void)removeObject:(id)obj fromArrayWithKey:(id)key inDictionary:(NSMutableDictionary *)dict {
+    NSMutableArray *array = [dict objectForKey:key];
+    if (array == nil) {
+        return;
+    }
+    [array artRemoveObject:obj];
+    if ([array count] == 0) {
+        [dict removeObjectForKey:key];
+    }
 }
 
 @end
