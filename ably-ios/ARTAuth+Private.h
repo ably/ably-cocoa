@@ -13,13 +13,13 @@ ART_ASSUME_NONNULL_BEGIN
 @interface ARTAuth (Private)
 
 - (ARTAuthOptions *)mergeOptions:(ARTAuthOptions *)customOptions;
-- (ARTAuthTokenParams *)mergeParams:(ARTAuthTokenParams *)customParams;
+- (ARTTokenParams *)mergeParams:(ARTTokenParams *)customParams;
 
-- (NSURL *)buildURL:(ARTAuthOptions *)options withParams:(ARTAuthTokenParams *)params;
-- (NSMutableURLRequest *)buildRequest:(ARTAuthOptions *)options withParams:(ARTAuthTokenParams *)params;
+- (NSURL *)buildURL:(ARTAuthOptions *)options withParams:(ARTTokenParams *)params;
+- (NSMutableURLRequest *)buildRequest:(ARTAuthOptions *)options withParams:(ARTTokenParams *)params;
 
-// Execute the received ARTAuthTokenRequest
-- (void)executeTokenRequest:(ARTAuthTokenRequest *)tokenRequest callback:(void (^)(ARTAuthTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error))callback;
+// Execute the received ARTTokenRequest
+- (void)executeTokenRequest:(ARTTokenRequest *)tokenRequest callback:(void (^)(ARTTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error))callback;
 
 // CONNECTED ProtocolMessage may contain a clientId
 - (void)setProtocolClientId:(NSString *)clientId;

@@ -1,5 +1,5 @@
 //
-//  ARTAuthTokenRequest.h
+//  ARTTokenRequest.h
 //  ably-ios
 //
 //  Created by Ricardo Pereira on 05/10/2015.
@@ -7,14 +7,14 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTAuthTokenParams.h"
+#import "ARTTokenParams.h"
 
 ART_ASSUME_NONNULL_BEGIN
 
 /**
  Type containing the token request details.
  */
-@interface ARTAuthTokenRequest : ARTAuthTokenParams
+@interface ARTTokenRequest : ARTTokenParams
 
 /**
  Identifier for the key (public).
@@ -32,7 +32,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, copy) NSString *mac;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithTokenParams:(ARTAuthTokenParams *)tokenParams keyName:(NSString *)keyName nonce:(NSString *)nonce mac:(NSString *)mac;
+- (instancetype)initWithTokenParams:(ARTTokenParams *)tokenParams keyName:(NSString *)keyName nonce:(NSString *)nonce mac:(NSString *)mac;
 
 @end
 

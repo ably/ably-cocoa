@@ -19,8 +19,8 @@
 #import "ARTLog.h"
 #import "ARTHttp.h"
 #import "ARTStatus.h"
-#import "ARTAuthTokenDetails.h"
-#import "ARTAuthTokenRequest.h"
+#import "ARTTokenDetails.h"
+#import "ARTTokenRequest.h"
 #import "ARTConnectionDetails.h"
 
 @interface ARTJsonEncoder ()
@@ -40,7 +40,7 @@
 - (NSDictionary *)protocolMessageToDictionary:(ARTProtocolMessage *)message;
 - (ARTProtocolMessage *)protocolMessageFromDictionary:(NSDictionary *)input;
 
-- (NSDictionary *)tokenRequestToDictionary:(ARTAuthTokenRequest *)tokenRequest;
+- (NSDictionary *)tokenRequestToDictionary:(ARTTokenRequest *)tokenRequest;
 
 - (NSArray *)statsFromArray:(NSArray *)input;
 - (ARTStats *)statsFromDictionary:(NSDictionary *)input;
@@ -122,15 +122,15 @@
     return [self protocolMessageFromDictionary:[self decodeDictionary:data]];
 }
 
-- (ARTAuthTokenDetails *)decodeAccessToken:(NSData *)data error:(NSError * __autoreleasing *)error {
+- (ARTTokenDetails *)decodeAccessToken:(NSData *)data error:(NSError * __autoreleasing *)error {
     return [self tokenFromDictionary:[self decodeDictionary:data] error:error];
 }
 
-- (NSData *)encodeTokenRequest:(ARTAuthTokenRequest *)request {
+- (NSData *)encodeTokenRequest:(ARTTokenRequest *)request {
     return [self encode:[self tokenRequestToDictionary:request]];
 }
 
-- (NSData *)encodeTokenDetails:(ARTAuthTokenDetails *)tokenDetails {
+- (NSData *)encodeTokenDetails:(ARTTokenDetails *)tokenDetails {
     return [self encode:[self tokenDetailsToDictionary:tokenDetails]];
 }
 
@@ -352,7 +352,7 @@
     return output;
 }
 
-- (ARTAuthTokenDetails *)tokenFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
+- (ARTTokenDetails *)tokenFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
     [self.logger verbose:@"ARTJsonEncoder: tokenFromDictionary %@", input];
     
     if (![input isKindOfClass:[NSDictionary class]]) {
@@ -379,7 +379,7 @@
     NSNumber *issuedInterval = [input artNumber:@"issued"];
     NSDate *issued = issuedInterval ? [NSDate dateWithTimeIntervalSince1970:issuedInterval.longLongValue / 1000] : nil;
     
-    return [[ARTAuthTokenDetails alloc] initWithToken:token
+    return [[ARTTokenDetails alloc] initWithToken:token
                                               expires:expires
                                                issued:issued
                                            capability:[input artString:@"capability"]
@@ -387,7 +387,7 @@
     
 }
 
-- (NSDictionary *)tokenRequestToDictionary:(ARTAuthTokenRequest *)tokenRequest {
+- (NSDictionary *)tokenRequestToDictionary:(ARTTokenRequest *)tokenRequest {
     [self.logger verbose:@"ARTJsonEncoder: tokenRequestToDictionary %@", tokenRequest];
 
     NSNumber *timestamp;
@@ -412,7 +412,7 @@
     return dictionary;
 }
 
-- (NSDictionary *)tokenDetailsToDictionary:(ARTAuthTokenDetails *)tokenDetails {
+- (NSDictionary *)tokenDetailsToDictionary:(ARTTokenDetails *)tokenDetails {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
 
     dictionary[@"token"] = tokenDetails.token;

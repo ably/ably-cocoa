@@ -15,8 +15,8 @@
 #import "ARTAuth.h"
 #import "ARTProtocolMessage.h"
 #import "ARTClientOptions.h"
-#import "ARTAuthTokenParams.h"
-#import "ARTAuthTokenDetails.h"
+#import "ARTTokenParams.h"
+#import "ARTTokenDetails.h"
 #import "ARTStatus.h"
 #import "ARTEncoder.h"
 
@@ -100,7 +100,7 @@ enum {
     else {
         __weak ARTWebSocketTransport *selfWeak = self;
         // Token
-        [self.auth authorise:nil options:self.options callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
+        [self.auth authorise:nil options:self.options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
             ARTWebSocketTransport *selfStrong = selfWeak;
             if (!selfStrong) return;
 

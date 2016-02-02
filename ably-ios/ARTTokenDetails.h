@@ -1,5 +1,5 @@
 //
-//  ARTAuthTokenDetails.h
+//  ARTTokenDetails.h
 //  ably-ios
 //
 //  Created by Ricardo Pereira on 05/10/2015.
@@ -14,7 +14,7 @@ ART_ASSUME_NONNULL_BEGIN
 /**
  Type containing the token request response.
  */
-@interface ARTAuthTokenDetails : NSObject<NSCopying>
+@interface ARTTokenDetails : NSObject<NSCopying>
 
 /**
  Token string.

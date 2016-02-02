@@ -1,21 +1,21 @@
 //
-//  ARTAuthTokenParams.h
+//  ARTTokenParams.h
 //  ably-ios
 //
 //  Created by Ricardo Pereira on 05/10/2015.
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTAuthTokenParams.h"
+#import "ARTTokenParams.h"
 
 #include <CommonCrypto/CommonDigest.h>
 #include <CommonCrypto/CommonHMAC.h>
 
 #import "ARTDefault.h"
 #import "ARTEncoder.h"
-#import "ARTAuthTokenRequest.h"
+#import "ARTTokenRequest.h"
 
-@implementation ARTAuthTokenParams
+@implementation ARTTokenParams
 
 - (instancetype)init {
     if (self = [super init]) {
@@ -35,7 +35,7 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat: @"ARTAuthTokenParams: ttl=%f capability=%@ timestamp=%@",
+    return [NSString stringWithFormat: @"ARTTokenParams: ttl=%f capability=%@ timestamp=%@",
             self.ttl, self.capability, self.timestamp];
 }
 
@@ -133,11 +133,11 @@ static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
     return str;
 }
 
-- (ARTAuthTokenRequest *)sign:(NSString *)key {
+- (ARTTokenRequest *)sign:(NSString *)key {
     return [self sign:key withNonce:generateNonce()];
 }
 
-- (ARTAuthTokenRequest *)sign:(NSString *)key withNonce:(NSString *)randomNonce {
+- (ARTTokenRequest *)sign:(NSString *)key withNonce:(NSString *)randomNonce {
     NSArray *keyComponents = decomposeKey(key);
     NSString *keyName = keyComponents[0];
     NSString *keySecret = keyComponents[1];
@@ -147,7 +147,7 @@ static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
     NSString *signText = [NSString stringWithFormat:@"%@\n%lld\n%@\n%@\n%lld\n%@\n", keyName, timeIntervalToMiliseconds(self.ttl), self.capability, clientId, dateToMiliseconds(self.timestamp), nonce];
     NSString *mac = hmacForDataAndKey([signText dataUsingEncoding:NSUTF8StringEncoding], [keySecret dataUsingEncoding:NSUTF8StringEncoding]);
 
-    return [[ARTAuthTokenRequest alloc] initWithTokenParams:self keyName:keyName nonce:nonce mac:mac];
+    return [[ARTTokenRequest alloc] initWithTokenParams:self keyName:keyName nonce:nonce mac:mac];
 }
 
 @end

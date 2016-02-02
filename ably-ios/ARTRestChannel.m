@@ -18,7 +18,7 @@
 #import "ARTDataQuery+Private.h"
 #import "ARTJsonEncoder.h"
 #import "ARTAuth.h"
-#import "ARTAuthTokenDetails.h"
+#import "ARTTokenDetails.h"
 #import "ARTNSArray+ARTFunctional.h"
 
 @implementation ARTRestChannel {

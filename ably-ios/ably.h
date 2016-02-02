@@ -24,9 +24,9 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import <Ably/ARTBaseMessage.h>
 #import <Ably/ARTRestChannels.h>
 #import <Ably/ARTChannelOptions.h>
-#import <Ably/ARTAuthTokenDetails.h>
-#import <Ably/ARTAuthTokenRequest.h>
-#import <Ably/ARTAuthTokenParams.h>
+#import <Ably/ARTTokenDetails.h>
+#import <Ably/ARTTokenRequest.h>
+#import <Ably/ARTTokenParams.h>
 #import <Ably/ARTAuthOptions.h>
 #import <Ably/ARTClientOptions.h>
 #import <Ably/ARTCrypto.h>

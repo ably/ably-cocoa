@@ -1,20 +1,20 @@
 //
-//  ARTAuthTokenRequest.m
+//  ARTTokenRequest.m
 //  ably-ios
 //
 //  Created by Ricardo Pereira on 05/10/2015.
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTAuthTokenRequest.h"
+#import "ARTTokenRequest.h"
 
-#import "ARTAuthTokenParams.h"
+#import "ARTTokenParams.h"
 
-@implementation ARTAuthTokenRequest
+@implementation ARTTokenRequest
 
 @dynamic timestamp;
 
-- (instancetype)initWithTokenParams:(ARTAuthTokenParams *)tokenParams keyName:(NSString *)keyName nonce:(NSString *)nonce mac:(NSString *)mac {
+- (instancetype)initWithTokenParams:(ARTTokenParams *)tokenParams keyName:(NSString *)keyName nonce:(NSString *)nonce mac:(NSString *)mac {
     if (self = [super init]) {
         self.ttl = tokenParams.ttl;
         self.capability = tokenParams.capability;
@@ -32,7 +32,7 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat: @"ARTAuthTokenRequest: keyName=%@ clientId=%@ nonce=%@ mac=%@ ttl=%f capability=%@ timestamp=%@",
+    return [NSString stringWithFormat: @"ARTTokenRequest: keyName=%@ clientId=%@ nonce=%@ mac=%@ ttl=%f capability=%@ timestamp=%@",
             self.keyName, self.clientId, self.nonce, self.mac, self.ttl, self.capability, self.timestamp];
 }
 

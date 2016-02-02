@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <Ably/ARTTypes.h>
 
-@class ARTAuthTokenDetails;
+@class ARTTokenDetails;
 
 ART_ASSUME_NONNULL_BEGIN
 
@@ -28,7 +28,7 @@ ART_ASSUME_NONNULL_BEGIN
 /**
  An authentication token issued for this application against a specific key and `TokenParams`.
  */
-@property (nonatomic, strong, art_nullable) ARTAuthTokenDetails *tokenDetails;
+@property (nonatomic, strong, art_nullable) ARTTokenDetails *tokenDetails;
 
 /**
  A callback to call to obtain a signed token request.

@@ -63,9 +63,9 @@ class AblyTests {
             "clientId": { $0.clientId = "client"; $0.key = "fake:key" },
             "authUrl": { $0.authUrl = NSURL(string: "http://test.com") },
             "authCallback": { $0.authCallback = { _, _ in return } },
-            "tokenDetails": { $0.tokenDetails = ARTAuthTokenDetails(token: "token") },
+            "tokenDetails": { $0.tokenDetails = ARTTokenDetails(token: "token") },
             "token": { $0.token = "token" },
-            "key": { $0.tokenDetails = ARTAuthTokenDetails(token: "token"); $0.key = "fake:key" }
+            "key": { $0.tokenDetails = ARTTokenDetails(token: "token"); $0.key = "fake:key" }
             ]
         }
     }
@@ -292,7 +292,7 @@ func getTestToken(key key: String? = nil, capability: String? = nil, ttl: NSTime
 }
 
 /// Access TokenDetails
-func getTestTokenDetails(key key: String? = nil, capability: String? = nil, ttl: NSTimeInterval? = nil) -> ARTAuthTokenDetails? {
+func getTestTokenDetails(key key: String? = nil, capability: String? = nil, ttl: NSTimeInterval? = nil) -> ARTTokenDetails? {
     let options: ARTClientOptions
     if let key = key {
         options = AblyTests.clientOptions()
@@ -304,16 +304,16 @@ func getTestTokenDetails(key key: String? = nil, capability: String? = nil, ttl:
 
     let client = ARTRest(options: options)
 
-    var tokenDetails: ARTAuthTokenDetails?
+    var tokenDetails: ARTTokenDetails?
     var error: NSError?
 
-    var tokenParams: ARTAuthTokenParams? = nil
+    var tokenParams: ARTTokenParams? = nil
     if let capability = capability {
-        tokenParams = ARTAuthTokenParams()
+        tokenParams = ARTTokenParams()
         tokenParams!.capability = capability
     }
     if let ttl = ttl {
-        if tokenParams == nil { tokenParams = ARTAuthTokenParams() }
+        if tokenParams == nil { tokenParams = ARTTokenParams() }
         tokenParams!.ttl = ttl
     }
 

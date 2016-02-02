@@ -12,8 +12,8 @@
 @class ARTMessage;
 @class ARTPresenceMessage;
 @class ARTProtocolMessage;
-@class ARTAuthTokenDetails;
-@class ARTAuthTokenRequest;
+@class ARTTokenDetails;
+@class ARTTokenRequest;
 
 typedef NS_ENUM(NSUInteger, ARTEncoderFormat) {
     ARTEncoderFormatJson,
@@ -28,10 +28,10 @@ ART_ASSUME_NONNULL_BEGIN
 - (ARTEncoderFormat)format;
 - (NSString *)formatAsString;
 
-- (art_nullable NSData *)encodeTokenRequest:(ARTAuthTokenRequest *)request;
-- (art_nullable NSData *)encodeTokenDetails:(ARTAuthTokenDetails *)tokenDetails;
+- (art_nullable NSData *)encodeTokenRequest:(ARTTokenRequest *)request;
+- (art_nullable NSData *)encodeTokenDetails:(ARTTokenDetails *)tokenDetails;
 
-- (art_nullable ARTAuthTokenDetails *)decodeAccessToken:(NSData *)data error:(NSError * __autoreleasing *)error;
+- (art_nullable ARTTokenDetails *)decodeAccessToken:(NSData *)data error:(NSError * __autoreleasing *)error;
 - (art_nullable ARTMessage *)decodeMessage:(NSData *)data;
 - (art_nullable NSArray *)decodeMessages:(NSData *)data;
 - (art_nullable NSData *)encodeMessage:(ARTMessage *)message;

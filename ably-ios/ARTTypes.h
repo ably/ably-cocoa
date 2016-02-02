@@ -14,9 +14,9 @@
 @class ARTErrorInfo;
 @class ARTMessage;
 @class ARTPresenceMessage;
-@class ARTAuthTokenParams;
-@class ARTAuthTokenRequest;
-@class ARTAuthTokenDetails;
+@class ARTTokenParams;
+@class ARTTokenRequest;
+@class ARTTokenDetails;
 @class __GENERIC(ARTPaginatedResult, ItemType);
 @class ARTStats;
 
@@ -94,9 +94,9 @@ typedef void (^ARTStatsCallback)(__GENERIC(ARTPaginatedResult, ARTStats *) *__ar
 
 typedef void (^ARTTimeCallback)(NSDate *__art_nullable time, NSError *__art_nullable error);
 
-typedef void (^ARTAuthCallback)(ARTAuthTokenParams *tokenParams, void(^callback)(ARTAuthTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error));
+typedef void (^ARTAuthCallback)(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error));
 
-typedef void (^ARTTokenCallback)(ARTAuthTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error);
+typedef void (^ARTTokenCallback)(ARTTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error);
 
 // FIXME: review
 @protocol ARTCancellable

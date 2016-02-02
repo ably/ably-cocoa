@@ -18,7 +18,7 @@
 #import "ARTDataEncoder.h"
 #import "ARTRestChannel.h"
 #import "ARTChannels.h"
-#import "ARTAuthTokenDetails.h"
+#import "ARTTokenDetails.h"
 #import "ARTAuth.h"
 
 @interface ARTRestTokenTest : XCTestCase {

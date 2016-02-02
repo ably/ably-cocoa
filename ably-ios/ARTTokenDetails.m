@@ -1,14 +1,14 @@
 //
-//  ARTAuthTokenDetails.m
+//  ARTTokenDetails.m
 //  ably-ios
 //
 //  Created by Ricardo Pereira on 05/10/2015.
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTAuthTokenDetails.h"
+#import "ARTTokenDetails.h"
 
-@implementation ARTAuthTokenDetails
+@implementation ARTTokenDetails
 
 - (instancetype)initWithToken:(NSString *)token expires:(NSDate *)expires issued:(NSDate *)issued capability:(NSString *)capability clientId:(NSString *)clientId {
     if (self = [super init]) {
@@ -29,12 +29,12 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat: @"ARTAuthTokenDetails: token=%@ clientId=%@ issued=%@ expires=%@",
+    return [NSString stringWithFormat: @"ARTTokenDetails: token=%@ clientId=%@ issued=%@ expires=%@",
             self.token, self.clientId, self.issued, self.expires];
 }
 
 - (id)copyWithZone:(NSZone *)zone {
-    ARTAuthTokenDetails *tokenDetails = [[[self class] allocWithZone:zone] init];
+    ARTTokenDetails *tokenDetails = [[[self class] allocWithZone:zone] init];
     tokenDetails->_token = self.token;
     tokenDetails->_expires = self.expires;
     tokenDetails->_issued = self.issued;
