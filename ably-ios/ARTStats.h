@@ -9,28 +9,29 @@
 #import <Foundation/Foundation.h>
 #import "ARTDataQuery.h"
 
-typedef NS_ENUM(NSUInteger, ARTStatsUnit) {
-    ARTStatsUnitMinute,
-    ARTStatsUnitHour,
-    ARTStatsUnitDay,
-    ARTStatsUnitMonth
-};
-
 ART_ASSUME_NONNULL_BEGIN
+
+typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
+    ARTStatsGranularityMinute,
+    ARTStatsGranularityHour,
+    ARTStatsGranularityDay,
+    ARTStatsGranularityMonth
+};
 
 @interface ARTStatsQuery : ARTDataQuery
 
-@property (nonatomic, assign) ARTStatsUnit unit;
+@property (nonatomic, assign) ARTStatsGranularity unit;
 
 @end
 
 @interface ARTStatsMessageCount : NSObject
 
-@property (readonly, assign, nonatomic) double count;
-@property (readonly, assign, nonatomic) double data;
+@property (readonly, assign, nonatomic) NSUInteger count;
+@property (readonly, assign, nonatomic) NSUInteger data;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithCount:(double)count data:(double)data;
+- (instancetype)initWithCount:(NSUInteger)count
+                         data:(NSUInteger)data;
 
 + (instancetype)empty;
 
@@ -43,7 +44,9 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) ARTStatsMessageCount *presence;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithAll:(ARTStatsMessageCount *)all messages:(ARTStatsMessageCount *)messages presence:(ARTStatsMessageCount *)presence;
+- (instancetype)initWithAll:(ARTStatsMessageCount *)all
+                   messages:(ARTStatsMessageCount *)messages
+                   presence:(ARTStatsMessageCount *)presence;
 
 + (instancetype)empty;
 
@@ -54,11 +57,13 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *all;
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *realtime;
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *rest;
-@property (readonly, strong, nonatomic) ARTStatsMessageTypes *push;
-@property (readonly, strong, nonatomic) ARTStatsMessageTypes *httpStream;
+@property (readonly, strong, nonatomic) ARTStatsMessageTypes *webhook;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithAll:(ARTStatsMessageTypes *)all realtime:(ARTStatsMessageTypes *)realtime rest:(ARTStatsMessageTypes *)rest push:(ARTStatsMessageTypes *)push httpStream:(ARTStatsMessageTypes *)httpStream;
+- (instancetype)initWithAll:(ARTStatsMessageTypes *)all
+                   realtime:(ARTStatsMessageTypes *)realtime
+                       rest:(ARTStatsMessageTypes *)rest
+                    webhook:(ARTStatsMessageTypes *)webhook;
 
 + (instancetype)empty;
 
@@ -66,14 +71,18 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTStatsResourceCount : NSObject
 
-@property (readonly, assign, nonatomic) double opened;
-@property (readonly, assign, nonatomic) double peak;
-@property (readonly, assign, nonatomic) double mean;
-@property (readonly, assign, nonatomic) double min;
-@property (readonly, assign, nonatomic) double refused;
+@property (readonly, assign, nonatomic) NSUInteger opened;
+@property (readonly, assign, nonatomic) NSUInteger peak;
+@property (readonly, assign, nonatomic) NSUInteger mean;
+@property (readonly, assign, nonatomic) NSUInteger min;
+@property (readonly, assign, nonatomic) NSUInteger refused;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithOpened:(double)opened peak:(double)peak mean:(double)mean min:(double)min refused:(double)refused;
+- (instancetype)initWithOpened:(NSUInteger)opened
+                          peak:(NSUInteger)peak
+                          mean:(NSUInteger)mean
+                           min:(NSUInteger)min
+                       refused:(NSUInteger)refused;
 
 + (instancetype)empty;
 
@@ -86,7 +95,9 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) ARTStatsResourceCount *tls;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithAll:(ARTStatsResourceCount *)all plain:(ARTStatsResourceCount *)plain tls:(ARTStatsResourceCount *)tls;
+- (instancetype)initWithAll:(ARTStatsResourceCount *)all
+                      plain:(ARTStatsResourceCount *)plain
+                        tls:(ARTStatsResourceCount *)tls;
 
 + (instancetype)empty;
 
@@ -94,18 +105,24 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTStatsRequestCount : NSObject
 
-@property (readonly, assign, nonatomic) double succeeded;
-@property (readonly, assign, nonatomic) double failed;
-@property (readonly, assign, nonatomic) double refused;
+@property (readonly, assign, nonatomic) NSUInteger succeeded;
+@property (readonly, assign, nonatomic) NSUInteger failed;
+@property (readonly, assign, nonatomic) NSUInteger refused;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithSucceeded:(double)succeeded failed:(double)failed refused:(double)refused;
+- (instancetype)initWithSucceeded:(NSUInteger)succeeded
+                           failed:(NSUInteger)failed
+                          refused:(NSUInteger)refused;
 
 + (instancetype)empty;
 
 @end
 
 @interface ARTStats : NSObject
+
++ (NSDate *)fromIntervalId:(NSString *)intervalId;
++ (ARTStatsGranularity)granularityFromIntervalId:(NSString *)intervalId;
++ (NSString *)toIntervalId:(NSDate *)time granularity:(ARTStatsGranularity)granularity;
 
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *all;
 @property (readonly, strong, nonatomic) ARTStatsMessageTraffic *inbound;
@@ -115,10 +132,21 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) ARTStatsResourceCount *channels;
 @property (readonly, strong, nonatomic) ARTStatsRequestCount *apiRequests;
 @property (readonly, strong, nonatomic) ARTStatsRequestCount *tokenRequests;
-@property (readonly, strong, nonatomic) NSDate *interval;
+@property (readonly, strong, nonatomic) NSString *intervalId;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithAll:(ARTStatsMessageTypes *)all inbound:(ARTStatsMessageTraffic *)inbound outbound:(ARTStatsMessageTraffic *)outbound persisted:(ARTStatsMessageTypes *)persisted connections:(ARTStatsConnectionTypes *)connections channels:(ARTStatsResourceCount *)channels apiRequests:(ARTStatsRequestCount *)apiRequests tokenRequests:(ARTStatsRequestCount *)tokenRequests interval:(NSDate *)interval;
+- (instancetype)initWithAll:(ARTStatsMessageTypes *)all
+                    inbound:(ARTStatsMessageTraffic *)inbound
+                   outbound:(ARTStatsMessageTraffic *)outbound
+                  persisted:(ARTStatsMessageTypes *)persisted
+                connections:(ARTStatsConnectionTypes *)connections
+                   channels:(ARTStatsResourceCount *)channels
+                apiRequests:(ARTStatsRequestCount *)apiRequests
+              tokenRequests:(ARTStatsRequestCount *)tokenRequests
+                 intervalId:(NSString *)intervalId;
+
+- (NSDate *)intervalTime;
+- (ARTStatsGranularity)intervalGranularity;
 
 @end
 

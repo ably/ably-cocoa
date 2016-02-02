@@ -500,42 +500,21 @@
     return output;
 }
 
-- (NSDate *)intervalFromString:(NSString *)string {
-    static NSDateFormatter *formatter;
-    if (!formatter) {
-        formatter = [[NSDateFormatter alloc] init];
-        formatter.dateFormat = @"yyyy-MM-dd:HH:mm";
-        formatter.timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
-    }
-    
-    return [formatter dateFromString:string];
-}
-
 - (ARTStats *)statsFromDictionary:(NSDictionary *)input {
     [self.logger verbose:@"ARTJsonEncoder: statsFromDictionary %@", input];
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
-
-    ARTStatsMessageTypes *all = [self statsMessageTypesFromDictionary:[input objectForKey:@"all"]];
-    ARTStatsMessageTraffic *inbound = [self statsMessageTrafficFromDictionary:[input objectForKey:@"inbound"]];
-    ARTStatsMessageTraffic *outbound = [self statsMessageTrafficFromDictionary:[input objectForKey:@"outbound"]];
-    ARTStatsMessageTypes *persisted = [self statsMessageTypesFromDictionary:[input objectForKey:@"persisted"]];
-    ARTStatsConnectionTypes *connections = [self statsConnectionTypesFromDictionary:[input objectForKey:@"connections"]];
-    ARTStatsResourceCount *channels = [self statsResourceCountFromDictionary:[input objectForKey:@"channels"]];
-    ARTStatsRequestCount *apiRequests = [self statsRequestCountFromDictionary:[input objectForKey:@"apiRequests"]];
-    ARTStatsRequestCount *tokenRequests = [self statsRequestCountFromDictionary:[input objectForKey:@"tokenRequests"]];
-    NSDate *interval = [self intervalFromString:input[@"intervalId"]];
     
-    return [[ARTStats alloc] initWithAll:all
-                                 inbound:inbound
-                                outbound:outbound
-                               persisted:persisted
-                             connections:connections
-                                channels:channels
-                             apiRequests:apiRequests
-                           tokenRequests:tokenRequests
-                                interval:interval];
+    return [[ARTStats alloc] initWithAll:[self statsMessageTypesFromDictionary:[input objectForKey:@"all"]]
+                                 inbound:[self statsMessageTrafficFromDictionary:[input objectForKey:@"inbound"]]
+                                outbound:[self statsMessageTrafficFromDictionary:[input objectForKey:@"outbound"]]
+                               persisted:[self statsMessageTypesFromDictionary:[input objectForKey:@"persisted"]]
+                             connections:[self statsConnectionTypesFromDictionary:[input objectForKey:@"connections"]]
+                                channels:[self statsResourceCountFromDictionary:[input objectForKey:@"channels"]]
+                             apiRequests:[self statsRequestCountFromDictionary:[input objectForKey:@"apiRequests"]]
+                           tokenRequests:[self statsRequestCountFromDictionary:[input objectForKey:@"tokenRequests"]]
+                                intervalId:input[@"intervalId"]];
 }
 
 - (ARTStatsMessageTypes *)statsMessageTypesFromDictionary:(NSDictionary *)input {
@@ -573,11 +552,13 @@
     ARTStatsMessageTypes *all = [self statsMessageTypesFromDictionary:[input objectForKey:@"all"]];
     ARTStatsMessageTypes *realtime = [self statsMessageTypesFromDictionary:[input objectForKey:@"realtime"]];
     ARTStatsMessageTypes *rest = [self statsMessageTypesFromDictionary:[input objectForKey:@"rest"]];
-    ARTStatsMessageTypes *push = [self statsMessageTypesFromDictionary:[input objectForKey:@"push"]];
-    ARTStatsMessageTypes *httpStream = [self statsMessageTypesFromDictionary:[input objectForKey:@"httpStream"]];
+    ARTStatsMessageTypes *webhook = [self statsMessageTypesFromDictionary:[input objectForKey:@"webhook"]];
     
-    if (all || realtime || rest || push || httpStream) {
-        return [[ARTStatsMessageTraffic alloc] initWithAll:all realtime:realtime rest:rest push:push httpStream:httpStream];
+    if (all || realtime || rest || webhook) {
+        return [[ARTStatsMessageTraffic alloc] initWithAll:all
+                                                  realtime:realtime
+                                                      rest:rest
+                                                   webhook:webhook];
     }
     
     return [ARTStatsMessageTraffic empty];

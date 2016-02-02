@@ -166,7 +166,7 @@ class Stats: QuickSpec {
 
                     let expected = NSCalendar(identifier: NSCalendarIdentifierGregorian)?.dateFromComponents(dateComponents)
 
-                    expect(stats?.interval).to(equal(expected))
+                    expect(stats?.intervalTime()).to(equal(expected))
                 }
             }
         }
