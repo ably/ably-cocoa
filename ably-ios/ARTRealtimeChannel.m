@@ -274,14 +274,11 @@
             [self onError:message];
             break;
         case ARTProtocolMessageSync:
+            [self.presenceMap syncMessageProcessed];
             break;
         default:
             [self.logger warn:@"ARTRealtime, unknown ARTProtocolMessage action: %tu", message.action];
             break;
-    }
-    
-    if(message.action == ARTProtocolMessageSync) {
-        [self.presenceMap syncMessageProcessed];
     }
 }
 
