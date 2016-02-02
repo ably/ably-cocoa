@@ -20,11 +20,11 @@
 
 - (instancetype)initDefaults {
     self = [super initDefaults];
-    _restPort = [ARTDefault TLSPort];
-    _realtimePort = [ARTDefault TLSPort];
+    _port = [ARTDefault port];
+    _tlsPort = [ARTDefault tlsPort];
     _queueMessages = YES;
     _echoMessages = YES;
-    _binary = false;
+    _useBinaryProtocol = false;
     _autoConnect = true;
     _tls = YES;
     _logLevel = ARTLogLevelNone;
@@ -38,54 +38,44 @@
 }
 
 - (NSString*)getRestHost {
+    if (_restHost) {
+        return _restHost;
+    }
     return _environment ? [NSString stringWithFormat:@"%@-%@", _environment, [ARTDefault restHost]] : [ARTDefault restHost];
 }
 
 - (NSString*)getRealtimeHost {
+    if (_realtimeHost) {
+        return _realtimeHost;
+    }
     return _environment ? [NSString stringWithFormat:@"%@-%@", _environment, [ARTDefault realtimeHost]] : [ARTDefault realtimeHost];
 }
 
-+ (NSURL*)restUrl:(NSString *)host port:(int)port tls:(BOOL)tls {
+- (NSURL*)restUrl {
     NSURLComponents *components = [[NSURLComponents alloc] init];
-    components.scheme = tls ? @"https" : @"http";
-    components.host = host;
-    components.port = [NSNumber numberWithInt:port];
+    components.scheme = self.tls ? @"https" : @"http";
+    components.host = self.restHost;
+    components.port = [NSNumber numberWithInteger:(self.tls ? self.tlsPort : self.port)];
     return components.URL;
 }
 
-- (NSURL *)restUrl {
-    return [ARTClientOptions restUrl:self.restHost port:self.restPort tls:self.tls];
-}
-
-+ (NSURL*)realtimeUrl:(NSString *)host port:(int)port tls:(BOOL)tls {
+- (NSURL*)realtimeUrl {
     NSURLComponents *components = [[NSURLComponents alloc] init];
-    components.scheme = tls ? @"wss" : @"ws";
-    components.host = host;
-    components.port = [NSNumber numberWithInt:port];
+    components.scheme = self.tls ? @"wss" : @"ws";
+    components.host = self.realtimeHost;
+    components.port = [NSNumber numberWithInteger:(self.tls ? self.tlsPort : self.port)];
     return components.URL;
-}
-
-- (NSURL *)realtimeUrl {
-    return [ARTClientOptions realtimeUrl:self.realtimeHost port:self.realtimePort tls:self.tls];
-}
-
-- (bool)isFallbackPermitted {
-    // FIXME: self.restHost is immutable!
-    return [self.restHost isEqualToString:[ARTDefault restHost]];
 }
 
 - (id)copyWithZone:(NSZone *)zone {
     ARTClientOptions *options = [super copyWithZone:zone];
 
-    options.restPort = self.restPort;
-    options.realtimePort = self.realtimePort;
+    options.port = self.port;
     options.queueMessages = self.queueMessages;
     options.echoMessages = self.echoMessages;
     options.recover = self.recover;
-    options.binary = self.binary;
+    options.useBinaryProtocol = self.useBinaryProtocol;
     options.autoConnect = self.autoConnect;
-    options.connectionSerial = self.connectionSerial;
-    options.resumeKey = self.resumeKey;
     options.environment = self.environment;
     options.tls = self.tls;
     options.logLevel = self.logLevel;

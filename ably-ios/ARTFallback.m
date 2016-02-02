@@ -46,7 +46,7 @@
 }
 
 + (bool)shouldTryFallback:(ARTHttpResponse *) response  options:(ARTClientOptions *) options {
-    if(![options isFallbackPermitted]) {
+    if(![options.restHost isEqualToString:[ARTDefault restHost]]) {
         return false;
     }
     switch(response.error.statusCode) { //this ably server returned an internal error

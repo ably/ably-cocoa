@@ -14,21 +14,19 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTClientOptions : ARTAuthOptions
 
-@property (readonly, getter=getRestHost) NSString *restHost;
-@property (readonly, getter=getRealtimeHost) NSString *realtimeHost;
+@property (readwrite, strong, nonatomic, getter=getRestHost) NSString *restHost;
+@property (readwrite, strong, nonatomic, getter=getRealtimeHost) NSString *realtimeHost;
 
-@property (nonatomic, assign, nonatomic) int restPort;
-@property (nonatomic, assign, nonatomic) int realtimePort;
+@property (nonatomic, assign) NSInteger port;
+@property (nonatomic, assign) NSInteger tlsPort;
 @property (readwrite, strong, nonatomic) NSString *environment;
 @property (nonatomic, assign) BOOL tls;
 @property (nonatomic, assign) ARTLogLevel logLevel;
 
 @property (readwrite, assign, nonatomic) BOOL queueMessages;
 @property (readwrite, assign, nonatomic) BOOL echoMessages;
-@property (readwrite, assign, nonatomic) BOOL binary;
+@property (readwrite, assign, nonatomic) BOOL useBinaryProtocol;
 @property (readwrite, assign, nonatomic) BOOL autoConnect;
-@property (readwrite, assign, nonatomic) int64_t connectionSerial;
-@property (art_nullable, readwrite, copy, nonatomic) NSString *resumeKey;
 @property (art_nullable, readwrite, copy, nonatomic) NSString *recover;
 
 /**
@@ -63,12 +61,7 @@ ART_ASSUME_NONNULL_BEGIN
  */
 @property (readwrite, assign, nonatomic) NSTimeInterval httpMaxRetryDuration;
 
-- (bool)isFallbackPermitted;
-
-+ (NSURL*)restUrl:(NSString *)host port:(int)port tls:(BOOL)tls;
 - (NSURL *)restUrl;
-
-+ (NSURL*)realtimeUrl:(NSString *)host port:(int)port tls:(BOOL)tls;
 - (NSURL *)realtimeUrl;
 
 @end

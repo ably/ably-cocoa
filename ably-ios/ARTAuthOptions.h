@@ -81,6 +81,8 @@ ART_ASSUME_NONNULL_BEGIN
  */
 @property (readwrite, strong, nonatomic, art_nullable) NSString *clientId;
 
+@property (readwrite, strong, nonatomic, art_nullable) ARTTokenParams *defaultTokenParams;
+
 - (instancetype)init;
 - (instancetype)initWithKey:(NSString *)key;
 - (instancetype)initWithToken:(NSString *)token;

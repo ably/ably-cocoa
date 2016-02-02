@@ -52,7 +52,7 @@ class AblyTests {
     class var jsonRestOptions: ARTClientOptions {
         get {
             let options = AblyTests.clientOptions()
-            options.binary = false
+            options.useBinaryProtocol = false
             return options
         }
     }
@@ -71,7 +71,7 @@ class AblyTests {
     }
 
     class func setupOptions(options: ARTClientOptions, debug: Bool = false) -> ARTClientOptions {
-        let request = NSMutableURLRequest(URL: NSURL(string: "https://\(options.restHost):\(options.restPort)/apps")!)
+        let request = NSMutableURLRequest(URL: NSURL(string: "https://\(options.restHost):\(options.tlsPort)/apps")!)
         request.HTTPMethod = "POST"
         request.HTTPBody = try? appSetupJson["post_apps"].rawData()
 
@@ -422,8 +422,8 @@ class TestProxyTransport: ARTWebSocketTransport {
 
     var actionsIgnored = [ARTProtocolMessageAction]()
 
-    override func setupWebSocket(params: [NSURLQueryItem], withOptions options: ARTClientOptions) -> NSURL {
-        let url = super.setupWebSocket(params, withOptions: options)
+    override func setupWebSocket(params: [NSURLQueryItem], withOptions options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?) -> NSURL {
+        let url = super.setupWebSocket(params, withOptions: options, resumeKey: resumeKey, connectionSerial: connectionSerial)
         lastUrl = url
         return url
     }

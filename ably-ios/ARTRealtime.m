@@ -108,7 +108,9 @@
 
 #pragma mark - ARTRealtime implementation
 
-@implementation ARTRealtime
+@implementation ARTRealtime {
+    BOOL _resuming;
+}
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options {
     return [self initWithLogger:[[ARTLog alloc] init] andOptions:options];
@@ -250,10 +252,6 @@
     _eventEmitter = [[ARTEventEmitter alloc] init];
 }
 
-- (BOOL)isFromResume {
-    return self.options.resumeKey != nil;
-}
-
 - (void)transition:(ARTRealtimeConnectionState)state {
     [self transition:state withErrorInfo:nil];
 }
@@ -277,11 +275,14 @@
             // Create transport and initiate connection
             // TODO: ConnectionManager
             if (!_transport) {
+                NSString *resumeKey = nil;
+                NSNumber *connectionSerial = nil;
                 if (previousState == ARTRealtimeFailed || previousState == ARTRealtimeDisconnected) {
-                    self.options.connectionSerial = self.connectionSerial;
-                    self.options.resumeKey = self.connectionKey;
+                    resumeKey = self.connectionKey;
+                    connectionSerial = [NSNumber numberWithInteger:self.connectionSerial];
+                    _resuming = true;
                 }
-                _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options];
+                _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:resumeKey connectionSerial:connectionSerial];
                 _transport.delegate = self;
                 [_transport connect];
             }
@@ -435,7 +436,7 @@
 
 - (void)onConnected:(ARTProtocolMessage *)message {
     // Resuming
-    if ([self isFromResume]) {
+    if (_resuming) {
         if (message.error && ![message.connectionId isEqualToString:self.connectionId]) {
             [self.logger warn:@"ARTRealtime: connection has reconnected, but resume failed. Detaching all channels"];
             // Fatal error, detach all channels
@@ -443,7 +444,7 @@
                 [channel detachChannel:[ARTStatus state:ARTStateConnectionDisconnected info:message.error]];
             }
 
-            self.options.resumeKey = nil;
+            _resuming = false;
 
             for (ARTRealtimeChannel *channel in self.channels) {
                 if([channel.presenceMap stillSyncing]) {
@@ -461,7 +462,7 @@
         case ARTRealtimeConnecting:
             self.connectionId = message.connectionId;
             self.connectionKey = message.connectionKey;
-            if (![self isFromResume]) {
+            if (!_resuming) {
                 self.connectionSerial = -1;
                 self.msgSerial = 0;
                 self.pendingMessageStartSerial = 0;

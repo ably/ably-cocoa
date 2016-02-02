@@ -13,7 +13,8 @@
 + (NSArray*)fallbackHosts;
 + (NSString*)restHost;
 + (NSString*)realtimeHost;
-+ (int)TLSPort;
++ (int)port;
++ (int)tlsPort;
 
 /**
  Default in seconds of requested time to live for the token.

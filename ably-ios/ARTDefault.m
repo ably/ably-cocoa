@@ -27,7 +27,11 @@ static int _realtimeRequestTimeout = 10.0;
     return DefaultRealtimeHost;
 }
 
-+ (int)TLSPort {
++ (int)port {
+    return 80;
+}
+
++ (int)tlsPort {
     return 443;
 }
 

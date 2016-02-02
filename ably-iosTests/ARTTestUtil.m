@@ -71,12 +71,12 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
     else {
         options.environment = @"sandbox";
     }
-    options.binary = NO;
+    options.useBinaryProtocol = NO;
     if (debug) {
         options.logLevel = ARTLogLevelVerbose;
     }
 
-    NSString *urlStr = [NSString stringWithFormat:@"https://%@:%d/apps", options.restHost, options.restPort];
+    NSString *urlStr = [NSString stringWithFormat:@"https://%@:%ld/apps", options.restHost, (long)options.tlsPort];
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
     req.HTTPMethod = @"POST";
     req.HTTPBody = appSpecData;
@@ -146,7 +146,7 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
 + (ARTClientOptions *)clientOptions {
     ARTClientOptions* options = [[ARTClientOptions alloc] init];
     options.environment = @"sandbox";
-    options.binary = false;
+    options.useBinaryProtocol = false;
     return options;
 }
 

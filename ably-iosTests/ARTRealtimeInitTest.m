@@ -84,8 +84,7 @@
 -(void)testInitWithPort {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithPort"];
     [self getBaseOptions:^(ARTClientOptions * options) {
-        options.realtimePort = 9998;
-        options.restPort = 9998;
+        options.port = 9998;
         ARTRealtime * realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;
         [realtime on:^(ARTConnectionStateChange *stateChange) {
