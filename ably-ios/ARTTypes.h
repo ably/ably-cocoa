@@ -123,9 +123,15 @@ typedef void (^ARTTokenCallback)(ARTAuthTokenDetails *__art_nullable tokenDetail
                        previous:(ARTRealtimeConnectionState)previous
                          reason:(ARTErrorInfo *__art_nullable)reason;
 
+- (instancetype)initWithCurrent:(ARTRealtimeConnectionState)current
+                       previous:(ARTRealtimeConnectionState)previous
+                         reason:(ARTErrorInfo *__art_nullable)reason
+                        retryIn:(NSTimeInterval)retryIn;
+
 @property (readonly, nonatomic) ARTRealtimeConnectionState current;
 @property (readonly, nonatomic) ARTRealtimeConnectionState previous;
 @property (readonly, nonatomic, art_nullable) ARTErrorInfo *reason;
+@property (readonly, nonatomic) NSTimeInterval retryIn;
 
 @end
 

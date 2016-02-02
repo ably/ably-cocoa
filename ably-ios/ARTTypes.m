@@ -76,11 +76,16 @@ NSString *generateNonce() {
 @implementation ARTConnectionStateChange
 
 - (instancetype)initWithCurrent:(ARTRealtimeConnectionState)current previous:(ARTRealtimeConnectionState)previous reason:(ARTErrorInfo *)reason {
+    return [self initWithCurrent:current previous:previous reason:reason retryIn:(NSTimeInterval)0];
+}
+
+- (instancetype)initWithCurrent:(ARTRealtimeConnectionState)current previous:(ARTRealtimeConnectionState)previous reason:(ARTErrorInfo *)reason retryIn:(NSTimeInterval)retryIn {
     self = [self init];
     if (self) {
         _current = current;
         _previous = previous;
         _reason = reason;
+        _retryIn = retryIn;
     }
     return self;
 }
