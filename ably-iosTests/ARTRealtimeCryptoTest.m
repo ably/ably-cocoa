@@ -68,9 +68,8 @@
                     XCTAssertTrue(page != nil);
                     XCTAssertEqual([page count], 2);
                     ARTMessage *stringMessage = [page objectAtIndex:0];
-                    //ARTMessage * dataMessage = [page objectAtIndex:1];
-                    //TODO work out why these arent equivalent
-                    //XCTAssertEqualObjects([dataMessage content], dataPayload);
+                    ARTMessage * dataMessage = [page objectAtIndex:1];
+                    XCTAssertEqualObjects([dataMessage content], dataPayload);
                     XCTAssertEqualObjects([stringMessage content], stringPayload);
                     [exp fulfill];
                 } error:nil];

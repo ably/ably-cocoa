@@ -8,6 +8,7 @@
 
 #import "ARTBaseMessage.h"
 #import "ARTLog.h"
+#import "ARTStatus.h"
 
 @implementation ARTBaseMessage
 
@@ -26,33 +27,37 @@
     message->_id = self.id;
     message->_clientId = self.clientId;
     message->_timestamp = self.timestamp;
-    message->_payload = self.payload;
+    message->_data = self.data;
     message->_connectionId = self.connectionId;
     message->_encoding = self.encoding;
     return message;
 }
 
-- (instancetype)messageWithPayload:(ARTPayload *)payload {
+- (instancetype)messageWithData:(id)data encoding:(NSString *)encoding {
     ARTBaseMessage *message = [self copy];
-    message.payload = payload;
+    message.data = data;
+    message.encoding = encoding;
     return message;
 }
 
-- (instancetype)decode:(id<ARTPayloadEncoder>)encoder {
-    ARTPayload *payload = self.payload;
-    [encoder decode:payload output:&payload];
-    return [self messageWithPayload:payload];
+- (ARTStatus *)decodeWithEncoder:(ARTDataEncoder*)encoder output:(id *)output {
+    ARTDataEncoderOutput *decoded = [encoder decode:self.data encoding:self.encoding];
+    *output = [self copy];
+    ((ARTBaseMessage *)*output).data = decoded.data;
+    ((ARTBaseMessage *)*output).encoding = decoded.encoding;
+    return decoded.status;
 }
 
-- (instancetype)encode:(id<ARTPayloadEncoder>)encoder {
-    ARTPayload *payload = self.payload;
-    [encoder encode:payload output:&payload];
-    return [self messageWithPayload:payload];
+- (ARTStatus *)encodeWithEncoder:(ARTDataEncoder*)encoder output:(id *)output {
+    ARTDataEncoderOutput *encoded = [encoder encode:self.data];
+    *output = [self copy];
+    ((ARTBaseMessage *)*output).data = encoded.data;
+    ((ARTBaseMessage *)*output).encoding = [self.encoding artAddEncoding:encoded.encoding];
+    return encoded.status;
 }
 
 - (id)content {
-    // FIXME: payload.payload
-    return self.payload.payload;
+    return self.data;
 }
 
 - (NSString *)description {
@@ -62,7 +67,7 @@
     [description appendFormat:@" connectionId: %@,\n", self.connectionId];
     [description appendFormat:@" timestamp: %@,\n", self.timestamp];
     [description appendFormat:@" encoding: %@,\n", self.encoding];
-    [description appendFormat:@" payload: %@\n", self.payload];
+    [description appendFormat:@" data: %@\n", self.data];
     [description appendFormat:@"}"];
     return description;
 }

@@ -366,7 +366,7 @@ class RealtimeClientConnection: QuickSpec {
                     expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
 
                     channel.subscribe { message, errorInfo in
-                        expect(message.payload.payload as? String).to(equal("message_string"))
+                        expect(message.data as? String).to(equal("message_string"))
                         TotalReach.shared++
                     }
 

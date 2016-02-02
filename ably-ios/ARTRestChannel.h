@@ -18,7 +18,6 @@ ART_ASSUME_NONNULL_BEGIN
 @interface ARTRestChannel : ARTChannel
 
 @property (nonatomic, weak) ARTRest *rest;
-@property (readonly, getter=getLogger) ARTLog *logger;
 
 - (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRest *)rest;
 

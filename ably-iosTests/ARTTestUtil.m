@@ -13,7 +13,7 @@
 #import "ARTRealtime.h"
 #import "ARTRealtimeChannel.h"
 #import "ARTRealtimePresence.h"
-#import "ARTPayload.h"
+#import "ARTDataEncoder.h"
 #import "ARTProtocolMessage.h"
 #import "ARTEventEmitter.h"
 #import "ARTURLSessionServerTrust.h"
@@ -27,8 +27,8 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
 
 @implementation ARTTestUtil
 
-+ (ARTCipherPayloadEncoder *)getTestCipherEncoder {
-    ARTCipherPayloadEncoder *e = nil;
++ (ARTCipherDataEncoder *)getTestCipherEncoder {
+    ARTCipherDataEncoder *e = nil;
     return e;
 }
 

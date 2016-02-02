@@ -14,21 +14,9 @@ import SwiftyJSON
 extension ARTMessage {
     public override func isEqual(object: AnyObject?) -> Bool {
         if let other = object as? ARTMessage {
-            return self.name == other.name && self.payload == other.payload
-        }
-        
-        return super.isEqual(object)
-    }
-}
-
-extension ARTPayload {
-    public override func isEqual(object: AnyObject?) -> Bool {
-        if let other = object as? ARTPayload {
-            if let selfPayload = self.payload as? NSObject {
-                if let otherPayload = other.payload as? NSObject {
-                    return selfPayload == otherPayload && self.encoding == other.encoding
-                }
-            }
+            return self.name == other.name &&
+                self.encoding == other.encoding &&
+                self.data as! NSObject == other.data as! NSObject
         }
         
         return super.isEqual(object)
@@ -89,7 +77,7 @@ class RestChannel: QuickSpec {
                     
                     expect(publishError).toEventually(beNil(), timeout: testTimeout)
                     expect(publishedMessage?.name).toEventually(equal(name), timeout: testTimeout)
-                    expect(publishedMessage?.payload.payload as? String).toEventually(equal(data), timeout: testTimeout)
+                    expect(publishedMessage?.data as? String).toEventually(equal(data), timeout: testTimeout)
                 }
             }
             
@@ -108,7 +96,7 @@ class RestChannel: QuickSpec {
                     
                     expect(publishError).toEventually(beNil(), timeout: testTimeout)
                     expect(publishedMessage?.name).toEventually(equal(name), timeout: testTimeout)
-                    expect(publishedMessage?.payload.payload).toEventually(beNil(), timeout: testTimeout)
+                    expect(publishedMessage?.data).toEventually(beNil(), timeout: testTimeout)
                 }
             }
             
@@ -127,7 +115,7 @@ class RestChannel: QuickSpec {
                     
                     expect(publishError).toEventually(beNil(), timeout: testTimeout)
                     expect(publishedMessage?.name).toEventually(beNil(), timeout: testTimeout)
-                    expect(publishedMessage?.payload.payload as? String).toEventually(equal(data), timeout: testTimeout)
+                    expect(publishedMessage?.data as? String).toEventually(equal(data), timeout: testTimeout)
                 }
             }
             
@@ -146,7 +134,7 @@ class RestChannel: QuickSpec {
                     
                     expect(publishError).toEventually(beNil(), timeout: testTimeout)
                     expect(publishedMessage?.name).toEventually(beNil(), timeout: testTimeout)
-                    expect(publishedMessage?.payload.payload).toEventually(beNil(), timeout: testTimeout)
+                    expect(publishedMessage?.data).toEventually(beNil(), timeout: testTimeout)
                 }
             }
             
@@ -164,7 +152,7 @@ class RestChannel: QuickSpec {
                     
                     expect(publishError).toEventually(beNil(), timeout: testTimeout)
                     expect(publishedMessage?.name).toEventually(beNil(), timeout: testTimeout)
-                    expect(publishedMessage?.payload.payload).toEventually(beNil(), timeout: testTimeout)
+                    expect(publishedMessage?.data).toEventually(beNil(), timeout: testTimeout)
                 }
             }
             
@@ -194,9 +182,10 @@ class RestChannel: QuickSpec {
                     
                     expect(publishError).toEventually(beNil(), timeout: testTimeout)
                     expect(publishedMessages.count).toEventually(equal(messages.count), timeout: testTimeout)
-                    expect(publishedMessages).toEventually(contain(messages.first), timeout: testTimeout)
-                    expect(publishedMessages).toEventually(contain(messages.last), timeout: testTimeout)
-
+                    for (i, publishedMessage) in publishedMessages.reverse().enumerate() {
+                        expect(publishedMessage.data as? NSObject).to(equal(messages[i].data as? NSObject))
+                        expect(publishedMessage.name).to(equal(messages[i].name))
+                    }
                     expect(mockExecutor.requests.count).to(equal(1))
                 }
             }
@@ -209,7 +198,12 @@ class RestChannel: QuickSpec {
             // RSP3
             context("get") {
                 it("should return presence fixture data") {
-                    let channel = client.channels.get("persisted:presence_fixtures")
+                    let cipherParams = ARTCipherParams.init(
+                        algorithm: appSetupJson["cipher"]["algorithm"].string!,
+                        keySpec: appSetupJson["cipher"]["key"].string!.dataUsingEncoding(NSUTF8StringEncoding),
+                        ivSpec: ARTIvParameterSpec.ivSpecWithIv(appSetupJson["cipher"]["iv"].string!.dataUsingEncoding(NSUTF8StringEncoding))
+                    )
+                    let channel = client.channels.get("persisted:presence_fixtures", options:ARTChannelOptions.init(encrypted: cipherParams))
                     var presenceMessages: [ARTPresenceMessage] = []
 
                     channel.presence().get() { result, _ in
@@ -220,7 +214,6 @@ class RestChannel: QuickSpec {
 
                     expect(presenceMessages.count).toEventually(equal(presenceFixtures.count), timeout: testTimeout)
                     for message in presenceMessages {
-                        
                         let fixtureMessage = presenceFixtures.filter({ (key, value) -> Bool in
                             return message.clientId == value["clientId"].stringValue
                         }).first!.1
@@ -228,10 +221,11 @@ class RestChannel: QuickSpec {
                         expect(message.content()).toNot(beNil())
                         expect(message.action).to(equal(ARTPresenceAction.Present))
 
-                        // skip the encrypted message for now
-                        if message.payload.encoding.rangeOfString("cipher") == nil {
-                            expect(message.content() as? NSObject).to(equal(fixtureMessage["data"].object as? NSObject))
-                        }
+                        let encodedFixture = channel.dataEncoder.decode(
+                            fixtureMessage["data"].object,
+                            encoding:fixtureMessage.asDictionary!["encoding"] as? String
+                        )
+                        expect(message.content() as? NSObject).to(equal(encodedFixture.data as? NSObject));
                     }
                 }
             }
@@ -428,7 +422,7 @@ class RestChannel: QuickSpec {
                         for (index, item) in (result.items.reverse().enumerate()) {
                             totalReceived++
 
-                            switch (item as? ARTMessage)?.payload.payload {
+                            switch (item as? ARTMessage)?.data {
                             case let value as NSDictionary:
                                 expect(value).to(equal(cases[index]))
                                 break

@@ -20,7 +20,6 @@
 #import "ARTEventEmitter.h"
 #import "ARTTestUtil.h"
 #import "ARTCrypto.h"
-#import "ARTPayload+Private.h"
 
 @interface ARTRealtimeChannelTest : XCTestCase {
     ARTRealtime * _realtime;
@@ -336,23 +335,6 @@
                 
             }
         }];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-}
-
-/**
- Currently the payloadArraySizeLimit is default to INT_MAX. Here we bring that number down to 2
- To show that publishing an array over the limit throws an exception.
- */
--(void) testPublishTooManyInArray {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testPublishTooManyInArray"];
-    [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
-        _realtime = realtime;
-        ARTRealtimeChannel *channel = [realtime channel:@"channel"];
-        NSArray * messages = @[@"test1", @"test2", @"test3"];
-        [ARTPayload getPayloadArraySizeLimit:2 modify:true];
-        XCTAssertThrows([channel publish:messages cb:^(ARTStatus *status) {}]);
-        [exp fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }

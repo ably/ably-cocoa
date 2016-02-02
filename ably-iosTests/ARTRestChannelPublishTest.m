@@ -13,7 +13,6 @@
 #import "ARTPresenceMessage.h"
 #import "ARTRest.h"
 #import "ARTTestUtil.h"
-#import "ARTPayload+Private.h"
 #import "ARTLog.h"
 #import "ARTRestChannel.h"
 #import "ARTChannelCollection.h"
@@ -94,26 +93,6 @@
                 [exp fulfill];
             } error:nil];
         }];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-}
-
-
-/**
- Currently the payloadArraySizeLimit is default to INT_MAX. Here we bring that number down to 2
- To show that publishing an array over the limit throws an exception.
- */
--(void) testPublishTooManyInArray {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testPublishTooManyInArray"];
-    [ARTTestUtil testRest:^(ARTRest *rest) {
-        _rest = rest;
-        ARTChannel *channel = [rest.channels get:@"channel"];
-        NSArray *messages = @[[[ARTMessage alloc] initWithData:@"test1" name:nil],
-                              [[ARTMessage alloc] initWithData:@"test2" name:nil],
-                              [[ARTMessage alloc] initWithData:@"test3" name:nil]];
-        [ARTPayload getPayloadArraySizeLimit:2 modify:true];
-        XCTAssertThrows([channel publish:messages callback:^(NSError *error) {}]);
-        [exp fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }

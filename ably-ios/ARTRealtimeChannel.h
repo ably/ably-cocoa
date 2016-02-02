@@ -43,7 +43,7 @@
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status;
 
 - (void)onChannelMessage:(ARTProtocolMessage *)message;
-- (void)publishMessages:(NSArray *)messages cb:(ARTStatusCallback)cb;
+- (void)publishMessages:(__GENERIC(NSArray, ARTMessage *) *)messages cb:(ARTStatusCallback)cb;
 - (void)publishPresence:(ARTPresenceMessage *)pm cb:(ARTStatusCallback)cb;
 - (void)publishProtocolMessage:(ARTProtocolMessage *)pm cb:(ARTStatusCallback)cb;
 
@@ -62,8 +62,8 @@
 
 - (void)broadcastPresence:(ARTPresenceMessage *)pm;
 
-- (void)publish:(id)payload withName:(NSString *)name cb:(ARTStatusCallback)cb;
-- (void)publish:(id)payload cb:(ARTStatusCallback)cb;
+- (void)publish:(id)data withName:(NSString *)name cb:(ARTStatusCallback)cb;
+- (void)publish:(id)data cb:(ARTStatusCallback)cb;
 
 - (id<ARTSubscription>)subscribe:(ARTRealtimeChannelMessageCb)cb;
 - (id<ARTSubscription>)subscribeToName:(NSString *)name cb:(ARTRealtimeChannelMessageCb)cb;

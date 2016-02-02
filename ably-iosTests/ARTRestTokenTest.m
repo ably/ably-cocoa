@@ -15,7 +15,7 @@
 #import "ARTTestUtil.h"
 #import "ARTRest+Private.h"
 #import "ARTLog.h"
-#import "ARTPayload.h"
+#import "ARTDataEncoder.h"
 #import "ARTRestChannel.h"
 #import "ARTChannelCollection.h"
 #import "ARTAuthTokenDetails.h"

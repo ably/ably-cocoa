@@ -8,7 +8,8 @@
 
 #import <Foundation/Foundation.h>
 #import "CompatibilityMacros.h"
-#import "ARTPayload.h"
+#import "ARTDataEncoder.h"
+#import "ARTStatus.h"
 
 ART_ASSUME_NONNULL_BEGIN
 
@@ -27,18 +28,17 @@ ART_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) NSString *connectionId;
 
 /// Any transformation applied to the data for this message
-@property (strong, nonatomic) NSString *encoding;
+@property (strong, nonatomic, art_nullable) NSString *encoding;
 
-/// The message payload.
-@property (strong, nonatomic) ARTPayload *payload;
+@property (strong, nonatomic, art_nullable) id data;
 
-- (instancetype)decode:(id<ARTPayloadEncoder>)encoder;
-- (instancetype)encode:(id<ARTPayloadEncoder>)encoder;
+- (ARTStatus *__art_nonnull)decodeWithEncoder:(ARTDataEncoder*)encoder output:(id __art_nonnull*__art_nonnull)output;
+- (ARTStatus *__art_nonnull)encodeWithEncoder:(ARTDataEncoder*)encoder output:(id __art_nonnull*__art_nonnull)output;
 
 - (id)content;
 - (NSString *)description;
 
-- (instancetype)messageWithPayload:(ARTPayload *)payload;
+- (instancetype)messageWithData:(id)data encoding:(NSString *)encoding;
 
 @end
 

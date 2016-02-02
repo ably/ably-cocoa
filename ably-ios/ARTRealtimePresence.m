@@ -13,6 +13,7 @@
 #import "ARTPresenceMap.h"
 #import "ARTPresenceMessage.h"
 #import "ARTRealtimeChannelSubscription.h"
+#import "ARTStatus.h"
 
 @implementation ARTRealtimePresence
 
@@ -45,9 +46,7 @@
     ARTPresenceMessage *msg = [[ARTPresenceMessage alloc] init];
     msg.action = ARTPresenceEnter;
     msg.clientId = clientId;
-    if(data) {
-        msg.payload = [ARTPayload payloadWithPayload:data encoding:@""];
-    }
+    msg.data = data;
 
     msg.connectionId = [self channel].realtime.connectionId;
     [[self channel] publishPresence:msg cb:cb];
@@ -65,9 +64,7 @@
         cb([ARTStatus state:ARTStateNoClientId]);
         return;
     }
-    if(data) {
-        msg.payload = [ARTPayload payloadWithPayload:data encoding:@""];
-    }
+    msg.data = data;
     msg.connectionId = [self channel].realtime.connectionId;
 
     [[self channel] publishPresence:msg cb:cb];
@@ -86,10 +83,7 @@
     }
     ARTPresenceMessage *msg = [[ARTPresenceMessage alloc] init];
     msg.action = ARTPresenceLeave;
-
-    if(data) {
-        msg.payload= [ARTPayload payloadWithPayload:data encoding:@""];
-    }
+    msg.data = data;
     msg.clientId = clientId;
     msg.connectionId = [self channel].realtime.connectionId;
     if(!msg.clientId) {
