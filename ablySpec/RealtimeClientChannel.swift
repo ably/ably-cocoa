@@ -81,7 +81,7 @@ class RealtimeClientChannel: QuickSpec {
             context("connection state") {
 
                 // RTL3a
-                context("changes to FAILED") {
+                pending("changes to FAILED") {
 
                     it("ATTACHING channel should transition to FAILED") {
                         let options = AblyTests.commonAppSetup()
