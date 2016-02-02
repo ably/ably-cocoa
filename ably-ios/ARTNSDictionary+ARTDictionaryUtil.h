@@ -15,6 +15,7 @@
 - (NSDate *)artDate:(id)key;
 - (NSArray *)artArray:(id)key;
 - (NSDictionary *)artDictionary:(id)key;
+- (NSInteger)artInteger:(id)key;
 
 - (id)artTyped:(Class)cls key:(id)key;
 
