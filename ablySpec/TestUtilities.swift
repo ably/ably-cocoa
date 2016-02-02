@@ -9,6 +9,7 @@
 import Foundation
 import XCTest
 import Quick
+import Nimble
 import SwiftyJSON
 import SwiftWebSocket
 
@@ -31,6 +32,7 @@ let appSetupJson = JSON(data: NSData(contentsOfFile: pathForTestResource("ably-c
 
 let testTimeout: NSTimeInterval = 10.0
 
+/// Common test utilities.
 class AblyTests {
 
     class func checkError(errorInfo: ARTErrorInfo?, withAlternative message: String) {
@@ -266,12 +268,15 @@ func publishTestMessage(rest: ARTRest, failOnError: Bool = true) -> PublishTestM
     return PublishTestMessage(client: rest, failOnError: failOnError)
 }
 
-/// Realtime - Publish message
-func publishTestMessage(realtime: ARTRealtime, completion: Optional<(NSError?)->()>) -> PublishTestMessage {
+/// Realtime - Publish message with callback
+/// (publishes if connection state changes to CONNECTED and channel state changes to ATTACHED)
+func publishFirstTestMessage(realtime: ARTRealtime, completion: Optional<(NSError?)->()>) -> PublishTestMessage {
     return PublishTestMessage(client: realtime, failOnError: false, completion: completion)
 }
 
-func publishTestMessage(realtime: ARTRealtime, failOnError: Bool = true) -> PublishTestMessage {
+/// Realtime - Publish message
+/// (publishes if connection state changes to CONNECTED and channel state changes to ATTACHED)
+func publishFirstTestMessage(realtime: ARTRealtime, failOnError: Bool = true) -> PublishTestMessage {
     return PublishTestMessage(client: realtime, failOnError: failOnError)
 }
 
@@ -336,7 +341,6 @@ public func delay(seconds: NSTimeInterval, closure: ()->()) {
         dispatch_get_main_queue(), closure)
 }
 
-// TODO: after merge use robrix/Box
 class Box<T> {
     let unbox: T
     init(_ value: T) {
@@ -344,7 +348,6 @@ class Box<T> {
     }
 }
 
-// TODO: after merge use antitypical/Result
 enum Result<T> {
     case Success(Box<T>)
     case Failure(String)
@@ -384,9 +387,7 @@ func extractBodyAsJSON(request: NSMutableURLRequest?) -> Result<NSDictionary> {
     return Result.Success(Box(httpBody))
 }
 
-/*
- Records each request and response for test purpose.
- */
+/// Records each request and response for test purpose.
 @objc
 class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
     // Who executes the request
@@ -408,9 +409,8 @@ class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
     }
 }
 
-/*
- Records each message for test purpose.
-*/
+
+/// Records each message for test purpose.
 class TestProxyTransport: ARTWebSocketTransport {
 
     var lastUrl: NSURL?
@@ -501,4 +501,33 @@ extension ARTWebSocketTransport {
         webSocketDelegate.webSocketError(error)
     }
 
+}
+
+
+// MARK: - Custom Nimble Matchers
+
+/// A Nimble matcher that succeeds when two dates are quite the same.
+public func beCloseTo<T: NSDate>(expectedValue: NSDate?) -> MatcherFunc<T?> {
+    return MatcherFunc { actualExpression, failureMessage in
+        failureMessage.postfixMessage = "equal <\(expectedValue)>"
+        guard let actualValue = try actualExpression.evaluate() as? NSDate else { return false }
+        guard let expectedValue = expectedValue else { return false }
+        return abs(actualValue.timeIntervalSince1970 - expectedValue.timeIntervalSince1970) < 0.5
+    }
+}
+
+/// A Nimble matcher that succeeds when a param exists.
+public func haveParam(key: String, withValue expectedValue: String) -> NonNilMatcherFunc<String> {
+    return NonNilMatcherFunc { actualExpression, failureMessage in
+        failureMessage.postfixMessage = "param <\(key)=\(expectedValue)> exists"
+        guard let actualValue = try actualExpression.evaluate() else { return false }
+        let queryItems = actualValue.componentsSeparatedByString("&")
+        for item in queryItems {
+            let param = item.componentsSeparatedByString("=")
+            if let currentKey = param.first, let currentValue = param.last where currentKey == key && currentValue == expectedValue {
+                return true
+            }
+        }
+        return false
+    }
 }
