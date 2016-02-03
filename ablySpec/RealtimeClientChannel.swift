@@ -216,6 +216,27 @@ class RealtimeClientChannel: QuickSpec {
             // RTL4
             describe("attach") {
 
+                // RTL4a
+                it("if already ATTACHED or ATTACHING nothing is done") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+
+                    var errorInfo: ARTErrorInfo?
+                    let channel = client.channels.get("test")
+
+                    errorInfo = channel.attach()
+                    expect(errorInfo).to(beNil())
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
+
+                    errorInfo = channel.attach()
+                    expect(errorInfo).to(beNil())
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                    errorInfo = channel.attach()
+                    expect(errorInfo).to(beNil())
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+                }
+
                 // RTL4b
                 context("results in an error if the connection state is") {
 
