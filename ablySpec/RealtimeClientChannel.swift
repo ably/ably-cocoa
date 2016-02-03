@@ -77,6 +77,65 @@ class RealtimeClientChannel: QuickSpec {
                 expect(channel2.presenceMap.members["Client 2"]!.action).to(equal(ARTPresenceAction.Enter))
             }
 
+            // RTL3
+            context("connection state") {
+
+                // RTL3a
+                pending("changes to FAILED") {
+
+                    it("ATTACHING channel should transition to FAILED") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        client.setTransportClass(TestProxyTransport.self)
+                        client.connect()
+                        defer { client.close() }
+
+                        let channel = client.channel("test")
+                        channel.attach()
+                        let transport = client.transport as! TestProxyTransport
+                        transport.actionsIgnored += [.Attached]
+
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.subscribeToStateChanges { state, status in
+                                if state == .Failed {
+                                    expect(status.state).to(equal(ARTState.Error))
+                                    expect(status.errorInfo!.code).to(equal(90000))
+                                    done()
+                                }
+                            }
+                            client.onError(AblyTests.newErrorProtocolMessage())
+                        }
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
+                    }
+
+                    it("ATTACHED channel should transition to FAILED") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.close() }
+
+                        let channel = client.channel("test")
+                        channel.attach()
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.subscribeToStateChanges { state, status in
+                                if state == .Failed {
+                                    expect(status.state).to(equal(ARTState.Error))
+                                    expect(status.errorInfo!.code).to(equal(90000))
+                                    done()
+                                }
+                            }
+                            client.onError(AblyTests.newErrorProtocolMessage())
+                        }
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
+                    }
+
+                }
+
+            }
+
             // RTL4
             describe("attach") {
 
