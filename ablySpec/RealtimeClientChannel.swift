@@ -38,6 +38,26 @@ class RealtimeClientChannel: QuickSpec {
                     expect(transport.protocolMessagesReceived.filter({ $0.action == .Attached })).to(haveCount(1))
                 }
 
+                // RTL4e
+                it("should transition the channel state to FAILED if the user does not have sufficient permissions") {
+                    let options = AblyTests.clientOptions()
+                    options.token = getTestToken(capability: "{ \"main\":[\"subscribe\"] }")
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+
+                    let channel = client.channel("test")
+                    channel.attach()
+
+                    channel.subscribeToStateChanges { state, status in
+                        if state == .Failed {
+                            expect(status.state).to(equal(ARTState.Error))
+                            expect(status.errorInfo!.code).to(equal(40160))
+                        }
+                    }
+
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Failed), timeout: testTimeout)
+                }
+
             }
 
             // RTL6
