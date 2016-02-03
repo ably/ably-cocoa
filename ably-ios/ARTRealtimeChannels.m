@@ -31,28 +31,28 @@
     return self;
 }
 
-- (id)makeChannel:(NSString *)channelName options:(ARTChannelOptions *)options {
-    return [ARTRealtimeChannel channelWithRealtime:_realtime andName:channelName withOptions:options];
+- (id)makeChannel:(NSString *)name options:(ARTChannelOptions *)options {
+    return [ARTRealtimeChannel channelWithRealtime:_realtime andName:name withOptions:options];
 }
 
 - (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(__unsafe_unretained id  _Nonnull *)buffer count:(NSUInteger)len {
     return [_channels countByEnumeratingWithState:state objects:buffer count:len];
 }
 
-- (ARTRealtimeChannel *)get:(NSString *)channelName {
-    return [_channels get:channelName];
+- (ARTRealtimeChannel *)get:(NSString *)name {
+    return [_channels get:name];
 }
 
-- (ARTRealtimeChannel *)get:(NSString *)channelName options:(ARTChannelOptions *)options {
-    return [_channels get:channelName options:options];
+- (ARTRealtimeChannel *)get:(NSString *)name options:(ARTChannelOptions *)options {
+    return [_channels get:name options:options];
 }
 
-- (BOOL)exists:(NSString *)channelName {
-    return [_channels exists:channelName];
+- (BOOL)exists:(NSString *)name {
+    return [_channels exists:name];
 }
 
-- (void)release:(NSString *)channelName {
-    [_channels release:channelName];
+- (void)release:(NSString *)name {
+    [_channels release:name];
 }
 
 @end

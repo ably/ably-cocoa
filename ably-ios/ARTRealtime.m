@@ -40,7 +40,6 @@
 @property (readwrite, strong, nonatomic) ARTRest *rest;
 @property (readonly, strong, nonatomic) NSMutableArray *stateSubscriptions;
 
-@property (readonly, strong, nonatomic) __GENERIC(NSMutableDictionary, NSString *, ARTRealtimeChannel *) *allChannels;
 @property (readwrite, assign, nonatomic) ARTRealtimeConnectionState state;
 
 @property (readwrite, assign, nonatomic) CFRunLoopTimerRef connectTimeout;
@@ -324,9 +323,7 @@
     } else if (![self shouldQueueEvents]) {
         [self failQueuedMessages:[self defaultError]];
         // For every Channel
-        for (NSString *channelName in self.allChannels) {
-            // Channel
-            ARTRealtimeChannel *channel = [self.allChannels objectForKey:channelName];
+        for (ARTRealtimeChannel* channel in self.channels) {
             if (channel.state == ARTRealtimeChannelInitialised || channel.state == ARTRealtimeChannelAttaching || channel.state == ARTRealtimeChannelAttached) {
                 if(state == ARTRealtimeClosing) {
                     //do nothing. Closed state is coming.
@@ -443,15 +440,13 @@
         if (message.error && ![message.connectionId isEqualToString:self.connectionId]) {
             [self.logger warn:@"ARTRealtime: connection has reconnected, but resume failed. Detaching all channels"];
             // Fatal error, detach all channels
-            for (NSString *channelName in self.allChannels) {
-                ARTRealtimeChannel *channel = [self.allChannels objectForKey:channelName];
+            for (ARTRealtimeChannel *channel in self.channels) {
                 [channel detachChannel:[ARTStatus state:ARTStateConnectionDisconnected info:message.error]];
             }
 
             self.options.resumeKey = nil;
 
-            for (NSString *channelName in self.allChannels) {
-                ARTRealtimeChannel *channel = [self.allChannels objectForKey:channelName];
+            for (ARTRealtimeChannel *channel in self.channels) {
                 if([channel.presenceMap stillSyncing]) {
                     [channel requestContinueSync];
                 }
@@ -521,7 +516,7 @@
 
 - (void)onChannelMessage:(ARTProtocolMessage *)message {
     // TODO work out which states this can be received in / error info?
-    ARTRealtimeChannel *channel = [self.allChannels objectForKey:message.channel];
+    ARTRealtimeChannel *channel = [self.channels get:message.channel];
     [channel onChannelMessage:message];
 }
 

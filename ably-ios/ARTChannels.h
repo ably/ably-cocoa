@@ -15,9 +15,9 @@
 
 @interface __GENERIC(ARTChannels, ChannelType) : NSObject<NSFastEnumeration>
 
-- (BOOL)exists:(NSString *)channelName;
-- (ChannelType)get:(NSString *)channelName;
-- (ChannelType)get:(NSString *)channelName options:(ARTChannelOptions *)options;
-- (void)release:(NSString *)channelName;
+- (BOOL)exists:(NSString *)name;
+- (ChannelType)get:(NSString *)name;
+- (ChannelType)get:(NSString *)name options:(ARTChannelOptions *)options;
+- (void)release:(NSString *)name;
 
 @end

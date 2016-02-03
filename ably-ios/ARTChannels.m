@@ -38,27 +38,27 @@
     return count;
 }
 
-- (BOOL)exists:(NSString *)channelName {
-    return self->_channels[channelName] != nil;
+- (BOOL)exists:(NSString *)name {
+    return self->_channels[name] != nil;
 }
 
-- (id)get:(NSString *)channelName {
-    return [self _getChannel:channelName options:nil];
+- (id)get:(NSString *)name {
+    return [self _getChannel:name options:nil];
 }
 
-- (id)get:(NSString *)channelName options:(ARTChannelOptions *)options {
-    return [self _getChannel:channelName options:options];
+- (id)get:(NSString *)name options:(ARTChannelOptions *)options {
+    return [self _getChannel:name options:options];
 }
 
-- (void)release:(NSString *)channelName {
-    [self->_channels removeObjectForKey:channelName];
+- (void)release:(NSString *)name {
+    [self->_channels removeObjectForKey:name];
 }
 
-- (ARTRestChannel *)_getChannel:(NSString *)channelName options:(ARTChannelOptions *)options {
-    ARTRestChannel *channel = self->_channels[channelName];
+- (ARTRestChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions *)options {
+    ARTRestChannel *channel = self->_channels[name];
     if (!channel) {
-        channel = [_delegate makeChannel:channelName options:options];
-        [self->_channels setObject:channel forKey:channelName];
+        channel = [_delegate makeChannel:name options:options];
+        [self->_channels setObject:channel forKey:name];
     } else if (options) {
         channel.options = options;
     }

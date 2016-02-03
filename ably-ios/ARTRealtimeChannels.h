@@ -23,10 +23,10 @@ ART_ASSUME_NONNULL_BEGIN
 // We copy this from the parent class and replace ChannelType by ARTRealtimeChannel * because
 // Swift ignores Objective-C generics and thinks this is returning an id, failing to compile.
 // Thus, we can't make ARTRealtimeChannels inherit from ARTChannels; we have to compose them instead.
-- (BOOL)exists:(NSString *)channelName;
-- (ARTRealtimeChannel *)get:(NSString *)channelName;
-- (ARTRealtimeChannel *)get:(NSString *)channelName options:(ARTChannelOptions *)options;
-- (void)release:(NSString *)channelName;
+- (BOOL)exists:(NSString *)name;
+- (ARTRealtimeChannel *)get:(NSString *)name;
+- (ARTRealtimeChannel *)get:(NSString *)name options:(ARTChannelOptions *)options;
+- (void)release:(NSString *)name;
 
 @end
 
