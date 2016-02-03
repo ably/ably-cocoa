@@ -19,7 +19,7 @@ class RealtimeClientChannel: QuickSpec {
                 let client1 = ARTRealtime(options: options)
                 defer { client1.close() }
 
-                let channel1 = client1.channel("room")
+                let channel1 = client1.channels.get("room")
                 channel1.attach()
 
                 waitUntil(timeout: testTimeout) { done in
@@ -33,7 +33,7 @@ class RealtimeClientChannel: QuickSpec {
                 let client2 = ARTRealtime(options: options)
                 defer { client2.close() }
 
-                let channel2 = client2.channel(channel1.name)
+                let channel2 = client2.channels.get(channel1.name)
                 channel2.attach()
 
                 expect(channel2.presence().isSyncComplete()).to(beFalse())
@@ -91,7 +91,7 @@ class RealtimeClientChannel: QuickSpec {
                         client.connect()
                         defer { client.close() }
 
-                        let channel = client.channel("test")
+                        let channel = client.channels.get("test")
                         channel.attach()
                         let transport = client.transport as! TestProxyTransport
                         transport.actionsIgnored += [.Attached]
@@ -115,7 +115,7 @@ class RealtimeClientChannel: QuickSpec {
                         let client = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { client.close() }
 
-                        let channel = client.channel("test")
+                        let channel = client.channels.get("test")
                         channel.attach()
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
 
@@ -151,7 +151,7 @@ class RealtimeClientChannel: QuickSpec {
                     expect(client.connection().state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
                     let transport = client.transport as! TestProxyTransport
 
-                    let channel = client.channel("test")
+                    let channel = client.channels.get("test")
                     channel.attach()
 
                     expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
@@ -168,7 +168,7 @@ class RealtimeClientChannel: QuickSpec {
                     let client = ARTRealtime(options: options)
                     defer { client.close() }
 
-                    let channel = client.channel("test")
+                    let channel = client.channels.get("test")
                     channel.attach()
 
                     channel.subscribeToStateChanges { state, status in
@@ -196,7 +196,7 @@ class RealtimeClientChannel: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             client.eventEmitter.on { state, error in
                                 if state == .Connected {
-                                    let channel = client.channel("test")
+                                    let channel = client.channels.get("test")
                                     channel.subscribeToStateChanges { state, status in
                                         if state == .Attached {
                                             channel.publish("message", cb: { status in
@@ -220,7 +220,7 @@ class RealtimeClientChannel: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             client.eventEmitter.on { state, error in
                                 if state == .Connected {
-                                    let channel = client.channel("test")
+                                    let channel = client.channels.get("test")
                                     channel.subscribeToStateChanges { channelState, channelStatus in
                                         if channelState == .Attached {
                                             channel.publish("message", cb: { status in
@@ -256,7 +256,7 @@ class RealtimeClientChannel: QuickSpec {
                         TotalMessages.succeeded = 0
                         TotalMessages.failed = 0
 
-                        let channelToSucceed = client.channel("channelToSucceed")
+                        let channelToSucceed = client.channels.get("channelToSucceed")
                         channelToSucceed.subscribeToStateChanges { state, status in
                             if state == .Attached {
                                 for index in 1...TotalMessages.expected {
@@ -270,7 +270,7 @@ class RealtimeClientChannel: QuickSpec {
                         }
                         channelToSucceed.attach()
 
-                        let channelToFail = client.channel("channelToFail")
+                        let channelToFail = client.channels.get("channelToFail")
                         channelToFail.subscribeToStateChanges { channelState, channelStatus in
                             if channelState == .Attached {
                                 for index in 1...TotalMessages.expected {

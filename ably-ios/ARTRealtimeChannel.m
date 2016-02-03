@@ -305,7 +305,7 @@
 
 - (void)releaseChannel {
     [self detachChannel:ARTStateOk];
-    [self.realtime removeChannel:self.name];
+    [self.realtime.channels release:self.name];
 }
 
 - (void)detachChannel:(ARTStatus *)error {

@@ -33,7 +33,7 @@ add pod ably to your Podfile.
 ### Subscribing to a channel
 
 ```
-ARTRealtimeChannel * channel = [client channel:@"test"];
+ARTRealtimeChannel * channel = [client.channels get:@"test"];
 [channel subscribe:^(ARTMessage *message) {
      NSString *content =[message content];
      NSLog(@"message is %@", content);
@@ -69,7 +69,7 @@ ARTRealtimeChannel * channel = [client channel:@"test"];
     ARTOptions * options = [[ARTOptions alloc] initWithKey:@"xxxxx"];
     options.clientId = @"john.doe";
     ARTRealtime * client = [[ARTRealtime alloc] initWithOptions:options];
-    ARTRealtimeChannel * channel = [client channel:@"test"];
+    ARTRealtimeChannel * channel = [client.channels get:@"test"];
     [channel publishPresenceEnter:@"I'm here" cb:^(ARTStatus *status) {
         if(status != ARTStatusOk) {
             //something went wrong
@@ -95,7 +95,7 @@ ARTRealtimeChannel * channel = [client channel:@"test"];
 ## Using the REST API
 ```
    ARTRest * client = [ARTRest alloc] initWithKey:@"xxxxx"];
-   ARTRestChannel * channel = [client channel:@"test"];
+   ARTRestChannel * channel = [client.channels get:@"test"];
 ```
 
 ## Publishing a message to a channel

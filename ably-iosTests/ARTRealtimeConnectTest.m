@@ -32,7 +32,7 @@
 - (void)tearDown {
     [super tearDown];
     if (_realtime) {
-        [_realtime removeAllChannels];
+        [ARTTestUtil removeAllChannels:_realtime];
         [_realtime.eventEmitter removeEvents];
         [_realtime close];
     }
@@ -121,7 +121,7 @@
         [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if(state == ARTRealtimeConnected) {
                 XCTAssertEqual([realtime connectionSerial], -1);
-                ARTRealtimeChannel * c =[realtime channel:@"chan"];
+                ARTRealtimeChannel * c =[realtime.channels get:@"chan"];
                 [c publish:@"message" cb:^(ARTStatus *status) {
                     XCTAssertEqual([realtime connectionSerial], 0);
                     [c publish:@"message2" cb:^(ARTStatus *status) {

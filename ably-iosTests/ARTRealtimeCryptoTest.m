@@ -17,6 +17,7 @@
 #import "ARTCrypto.h"
 #import "ARTDataQuery.h"
 #import "ARTPaginatedResult.h"
+#import "ARTChannelOptions.h"
 
 @interface ARTRealtimeCryptoTest : XCTestCase {
     ARTRealtime * _realtime;
@@ -36,7 +37,7 @@
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
     if (_realtime) {
-        [_realtime removeAllChannels];
+        [ARTTestUtil removeAllChannels:_realtime];
         [_realtime close];
     }
     _realtime = nil;
@@ -50,7 +51,7 @@
                                                                               initWithBase64EncodedString:@"HO4cYSP8LybPYBPZPHQOtg==" options:0]];
         NSData *keySpec = [[NSData alloc] initWithBase64EncodedString:@"WUP6u0K7MXI5Zeo0VppPwg==" options:0];
         ARTCipherParams *params =[[ARTCipherParams alloc] initWithAlgorithm:@"aes" keySpec:keySpec ivSpec:ivSpec];
-        ARTRealtimeChannel *channel = [realtime channel:@"test" cipherParams:params];
+        ARTRealtimeChannel *channel = [realtime.channels get:@"test" options:[[ARTChannelOptions alloc] initEncrypted:params]];
         XCTAssert(channel);
         NSString *dataStr = @"someDataPayload";
         NSData *dataPayload = [dataStr  dataUsingEncoding:NSUTF8StringEncoding];
@@ -86,14 +87,14 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
 
-        ARTRealtimeChannel * channel = [realtime channel:channelName];
+        ARTRealtimeChannel * channel = [realtime.channels get:channelName];
         [channel publish:firstMessageText cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
             ARTIvParameterSpec * ivSpec = [[ARTIvParameterSpec alloc] initWithIv:[[NSData alloc]
                                                                                   initWithBase64EncodedString:@"HO4cYSP8LybPYBPZPHQOtg==" options:0]];
             NSData * keySpec = [[NSData alloc] initWithBase64EncodedString:@"WUP6u0K7MXI5Zeo0VppPwg==" options:0];
             ARTCipherParams * params =[[ARTCipherParams alloc] initWithAlgorithm:@"aes" keySpec:keySpec ivSpec:ivSpec];
-            ARTRealtimeChannel * c = [realtime channel:channelName cipherParams:params];
+            ARTRealtimeChannel * c = [realtime.channels get:channelName options:[[ARTChannelOptions alloc] initEncrypted:params]];
             XCTAssert(c);
             NSData * dataPayload = [@"someDataPayload"  dataUsingEncoding:NSUTF8StringEncoding];
             NSString * stringPayload = @"someString";

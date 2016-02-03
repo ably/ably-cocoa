@@ -239,7 +239,7 @@ class PublishTestMessage {
 
         client.eventEmitter.on { state, error in
             if state == .Connected {
-                let channel = client.channel("test")
+                let channel = client.channels.get("test")
                 channel.subscribeToStateChanges { state, status in
                     switch state {
                     case .Attached:
@@ -475,7 +475,9 @@ class ARTRealtimeExtended: ARTRealtime {
 extension ARTRealtime {
 
     func dispose() {
-        removeAllChannels()
+        for channel in self.channels {
+            self.channels.release(channel.name)
+        }
         eventEmitter.removeEvents()
     }
 

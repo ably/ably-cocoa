@@ -9,6 +9,14 @@
 import Quick
 import Nimble
 
+func countChannels(channels: ARTRealtimeChannels) -> Int {
+    var i = 0
+    for _ in channels {
+        i++
+    }
+    return i
+}
+
 class RealtimeClientConnection: QuickSpec {
 
     override func spec() {
@@ -347,7 +355,7 @@ class RealtimeClientConnection: QuickSpec {
                 for _ in 1...max {
                     let client = ARTRealtime(options: options)
                     disposable.append(client)
-                    let channel = client.channel(channelName)
+                    let channel = client.channels.get(channelName)
 
                     channel.subscribeToStateChanges { state, status in
                         if state == .Attached {
@@ -362,7 +370,7 @@ class RealtimeClientConnection: QuickSpec {
 
                 TotalReach.shared = 0
                 for client in disposable {
-                    let channel = client.channel(channelName)
+                    let channel = client.channels.get(channelName)
                     expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
 
                     channel.subscribe { message, errorInfo in
@@ -379,8 +387,9 @@ class RealtimeClientConnection: QuickSpec {
                 expect(TotalReach.shared).toEventually(equal(max*max - max), timeout: testTimeout)
 
                 expect(disposable.count).to(equal(max))
-                expect(disposable.first?.channels().count).to(equal(1))
-                expect(disposable.last?.channels().count).to(equal(1))
+
+                expect(countChannels(disposable.first!.channels)).to(equal(1))
+                expect(countChannels(disposable.last!.channels)).to(equal(1))
             }
 
             // RTN6
@@ -465,7 +474,7 @@ class RealtimeClientConnection: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             client.eventEmitter.on { state, error in
                                 if state == .Connected {
-                                    let channel = client.channel("test")
+                                    let channel = client.channels.get("test")
                                     channel.subscribeToStateChanges { state, status in
                                         if state == .Attached {
                                             channel.presence().enterClient("client_string", data: nil, cb: { status in
@@ -531,7 +540,7 @@ class RealtimeClientConnection: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             client.eventEmitter.on { state, error in
                                 if state == .Connected {
-                                    let channel = client.channel("test")
+                                    let channel = client.channels.get("test")
                                     channel.subscribeToStateChanges { state, status in
                                         if state == .Attached {
                                             channel.presence().enterClient("invalid", data: nil, cb: { status in
@@ -576,7 +585,7 @@ class RealtimeClientConnection: QuickSpec {
                             client.close()
                         }
 
-                        let channel = client.channel("channel")
+                        let channel = client.channels.get("channel")
                         channel.attach()
 
                         waitUntil(timeout: testTimeout) { done in
@@ -639,7 +648,7 @@ class RealtimeClientConnection: QuickSpec {
                             client.close()
                         }
 
-                        let channel = client.channel("channel")
+                        let channel = client.channels.get("channel")
                         let transport = client.transport as! TestProxyTransport
                         transport.actionsIgnored += [.Ack, .Nack]
 
@@ -667,7 +676,7 @@ class RealtimeClientConnection: QuickSpec {
                             client.close()
                         }
 
-                        let channel = client.channel("channel")
+                        let channel = client.channels.get("channel")
                         let transport = client.transport as! TestProxyTransport
                         transport.actionsIgnored += [.Ack, .Nack]
 
@@ -696,7 +705,7 @@ class RealtimeClientConnection: QuickSpec {
                         client.connect()
                         defer { client.close() }
 
-                        let channel = client.channel("channel")
+                        let channel = client.channels.get("channel")
 
                         let transport = client.transport as! TestProxyTransport
                         transport.actionsIgnored += [.Ack, .Nack]
@@ -867,7 +876,7 @@ class RealtimeClientConnection: QuickSpec {
                 pending("should not update when a message is sent but increments by one when ACK is received") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.close() }
-                    let channel = client.channel("test")
+                    let channel = client.channels.get("test")
 
                     for index in 0...5 {
                         waitUntil(timeout: testTimeout) { done in
@@ -888,7 +897,7 @@ class RealtimeClientConnection: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
                     defer { client.close() }
-                    let channel = client.channel("test")
+                    let channel = client.channels.get("test")
 
                     var lastSerial: Int64 = 0
                     for _ in 1...5 {
@@ -903,7 +912,7 @@ class RealtimeClientConnection: QuickSpec {
 
                     let recoveredClient = ARTRealtime(options: options)
                     defer { recoveredClient.close() }
-                    let recoveredChannel = recoveredClient.channel("test")
+                    let recoveredChannel = recoveredClient.channels.get("test")
 
                     waitUntil(timeout: testTimeout) { done in
                         recoveredChannel.publish("message", cb: { status in
@@ -1173,7 +1182,7 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: options)
                     defer { client.close() }
 
-                    let channel = client.channel("test")
+                    let channel = client.channels.get("test")
                     channel.attach()
 
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
@@ -1200,7 +1209,7 @@ class RealtimeClientConnection: QuickSpec {
                         let client = ARTRealtime(options: options)
                         defer { client.close() }
 
-                        let channel = client.channel("test")
+                        let channel = client.channels.get("test")
                         channel.attach()
 
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
@@ -1238,7 +1247,7 @@ class RealtimeClientConnection: QuickSpec {
                         let client = ARTRealtime(options: options)
                         defer { client.close() }
 
-                        let channel = client.channel("test")
+                        let channel = client.channels.get("test")
                         channel.attach()
 
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
@@ -1266,7 +1275,7 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: options)
                     defer { client.close() }
 
-                    let channel = client.channel("test")
+                    let channel = client.channels.get("test")
                     channel.attach()
 
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)

@@ -42,13 +42,13 @@
 
 - (void)tearDown {
     if (_realtime) {
-        [_realtime removeAllChannels];
+        [ARTTestUtil removeAllChannels:_realtime];
         [_realtime.eventEmitter removeEvents];
         [_realtime close];
     }
     _realtime = nil;
     if (_realtime2) {
-        [_realtime2 removeAllChannels];
+        [ARTTestUtil removeAllChannels:_realtime2];
         [_realtime2.eventEmitter removeEvents];
         [_realtime2 close];
     }
@@ -94,8 +94,8 @@
     NSString *channelName = @"testSingleEcho";
     [self withRealtimeClientId:^(ARTRealtime *realtime1) {
         [self withRealtimeClientId2:^(ARTRealtime *realtime2) {
-            ARTRealtimeChannel *channel = [_realtime channel:channelName];
-            ARTRealtimeChannel *channel2 = [_realtime2 channel:channelName];
+            ARTRealtimeChannel *channel = [_realtime.channels get:channelName];
+            ARTRealtimeChannel *channel2 = [_realtime2.channels get:channelName];
 
             __block NSUInteger attached = 0;
             // Channel 1
@@ -149,8 +149,8 @@
             }
         }];
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-        ARTRealtimeChannel *channel = [realtime channel:channelName];
-        ARTRealtimeChannel *channel2 = [realtime channel:channelName];
+        ARTRealtimeChannel *channel = [realtime.channels get:channelName];
+        ARTRealtimeChannel *channel2 = [realtime.channels get:channelName];
         [channel2 attach];
         [channel attach];
         XCTestExpectation *expectChannel2Connected = [self expectationWithDescription:@"presence message"];
@@ -178,7 +178,7 @@
 - (void) testEnterAttachesTheChannel {
     XCTestExpectation *exp = [self expectationWithDescription:@"testEnterAttachesTheChannel"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel *channel = [realtime channel:@"channel"];
+        ARTRealtimeChannel *channel = [realtime.channels get:@"channel"];
         XCTAssertEqual(channel.state, ARTRealtimeChannelInitialised);
         [channel.presence enter:@"entered" cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
@@ -194,7 +194,7 @@
     NSString * channelName = @"presBeforeAttachTest";
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel *channel = [realtime channel:channelName];
+        ARTRealtimeChannel *channel = [realtime.channels get:channelName];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
         }];
         
@@ -211,7 +211,7 @@
     NSString * channelName = @"presBeforeAttachTest";
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel *channel = [realtime channel:channelName];
+        ARTRealtimeChannel *channel = [realtime.channels get:channelName];
         [channel.presence update:@"update"  cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
         }];
@@ -229,7 +229,7 @@
     NSString * presenceEnter = @"client_has_entered";
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel *channel = [realtime channel:channelName];
+        ARTRealtimeChannel *channel = [realtime.channels get:channelName];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
             XCTAssertEqualObjects([message content], presenceEnter);
             [expectation fulfill];
@@ -258,7 +258,7 @@
     NSString * presenceLeave = @"byebye";
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel *channel = [realtime channel:channelName];
+        ARTRealtimeChannel *channel = [realtime.channels get:channelName];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
             
             if(message.action == ARTPresenceEnter) {
@@ -295,7 +295,7 @@
     NSString * secondEnter = @"secondEnter";
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel *channel = [realtime channel:channelName];
+        ARTRealtimeChannel *channel = [realtime.channels get:channelName];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
             if(message.action == ARTPresenceEnter) {
                 XCTAssertEqualObjects([message content], presenceEnter);
@@ -331,7 +331,7 @@
     NSString * update = @"updateMessage";
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel *channel = [realtime channel:channelName];
+        ARTRealtimeChannel *channel = [realtime.channels get:channelName];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
             if(message.action == ARTPresenceEnter) {
                 XCTAssertEqualObjects([message content], presenceEnter);
@@ -366,7 +366,7 @@
     NSString * presenceEnter = @"client_has_entered";
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel *channel = [realtime channel:channelName];
+        ARTRealtimeChannel *channel = [realtime.channels get:channelName];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
             if(message.action == ARTPresenceEnter) {
                 XCTAssertEqualObjects([message content], presenceEnter);
@@ -401,7 +401,7 @@
 
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel *channel = [realtime channel:channelName];
+        ARTRealtimeChannel *channel = [realtime.channels get:channelName];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
             if(message.action == ARTPresenceEnter) {
                 XCTAssertEqualObjects([message content], presenceEnter);
@@ -436,7 +436,7 @@
     NSString * update = @"update_message";
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel *channel = [realtime channel:@"testUpdateNoEnter"];
+        ARTRealtimeChannel *channel = [realtime.channels get:@"testUpdateNoEnter"];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
             if(message.action == ARTPresenceEnter) {
                 XCTAssertEqualObjects([message content], update);
@@ -472,8 +472,8 @@
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
         [options setClientId:[self getSecondClientId]];
         _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
-        ARTRealtimeChannel *channel = [_realtime channel:channelName];
-        ARTRealtimeChannel *channel2 = [_realtime2 channel:channelName];
+        ARTRealtimeChannel *channel = [_realtime.channels get:channelName];
+        ARTRealtimeChannel *channel2 = [_realtime2.channels get:channelName];
         [channel.presence enter:enter cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
             [channel2.presence enter:enter2 cb:^(ARTStatus *status) {
@@ -502,7 +502,7 @@
     XCTestExpectation *exp = [self expectationWithDescription:@"testEnterNoClientId"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        ARTRealtimeChannel * channel = [realtime channel:@"testEnterNoClientId"];
+        ARTRealtimeChannel * channel = [realtime.channels get:@"testEnterNoClientId"];
         XCTAssertThrows([channel.presence enter:@"thisWillFail" cb:^(ARTStatus *status){}]);
         [exp fulfill];
     }];
@@ -512,7 +512,7 @@
 -(void) testEnterOnDetached {
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel * channel = [realtime channel:@"testEnterNoClientId"];
+        ARTRealtimeChannel * channel = [realtime.channels get:@"testEnterNoClientId"];
         [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
             if(cState == ARTRealtimeChannelAttached) {
                 [channel detach];
@@ -532,7 +532,7 @@
 -(void) testEnterOnFailed {
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel * channel = [realtime channel:@"testEnterNoClientId"];
+        ARTRealtimeChannel * channel = [realtime.channels get:@"testEnterNoClientId"];
         [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
             if(cState == ARTRealtimeChannelAttached) {
                 [channel setFailed:[ARTStatus state:ARTStateError]];
@@ -557,13 +557,13 @@
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         options.clientId = [self getClientId];
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
-        ARTRealtimeChannel *channel = [_realtime channel:channelName];
+        ARTRealtimeChannel *channel = [_realtime.channels get:channelName];
         [channel.presence publishPresenceEnter:@"hi" cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
             [options setClientId: [self getSecondClientId]];
             XCTAssertEqual(options.clientId, [self getSecondClientId]);
            _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
-            ARTRealtimeChannel *channel2 = [_realtime2 channel:channelName];
+            ARTRealtimeChannel *channel2 = [_realtime2.channels get:channelName];
             [channel2.presence publishPresenceEnter:@"hi2" cb:^(ARTStatus *status) {
                 XCTAssertEqual(ARTStateOk, status.state);
                 [channel2.presence getWithParams:@{@"client_id" : [self getSecondClientId]} cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
@@ -588,7 +588,7 @@
     NSString * leave = @"bye";
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel *channel = [realtime channel:@"testEnterAndGet"];
+        ARTRealtimeChannel *channel = [realtime.channels get:@"testEnterAndGet"];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
             if(message.action == ARTPresenceEnter)  {
                 XCTAssertEqualObjects([message content], enter);
@@ -627,7 +627,7 @@
     NSString * enter = @"enter";
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel *channel = [realtime channel:@"testEnterLeaveNoData"];
+        ARTRealtimeChannel *channel = [realtime.channels get:@"testEnterLeaveNoData"];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
             if(message.action == ARTPresenceEnter) {
                 XCTAssertEqualObjects([message content], enter);
@@ -664,7 +664,7 @@
     NSString * enter = @"enter";
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel *channel = [realtime channel:@"testEnterAndGet"];
+        ARTRealtimeChannel *channel = [realtime.channels get:@"testEnterAndGet"];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
             if(message.action == ARTPresenceEnter)  {
                 XCTAssertEqualObjects([message content], enter);
@@ -690,7 +690,7 @@
     NSString * leave = @"bye";
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel *channel = [realtime channel:@"testEnterAndGet"];
+        ARTRealtimeChannel *channel = [realtime.channels get:@"testEnterAndGet"];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
             if(message.action == ARTPresenceEnter)  {
                 XCTAssertEqualObjects([message content], enter);
@@ -714,7 +714,7 @@
 -(void) testLeaveOnDetached {
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel * channel = [realtime channel:@"testEnterNoClientId"];
+        ARTRealtimeChannel * channel = [realtime.channels get:@"testEnterNoClientId"];
         [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
             if(cState == ARTRealtimeChannelAttached) {
                 [channel detach];
@@ -732,7 +732,7 @@
 -(void) testLeaveOnFailed {
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel * channel = [realtime channel:@"testEnterNoClientId"];
+        ARTRealtimeChannel * channel = [realtime.channels get:@"testEnterNoClientId"];
         [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
             if(cState == ARTRealtimeChannelAttached) {
                 [channel setFailed:[ARTStatus state:ARTStateError]];
@@ -752,7 +752,7 @@
     NSString * channelName = @"presBeforeAttachTest";
     NSString * presenceEnter = @"client_has_entered";
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel *channel = [realtime channel:channelName];
+        ARTRealtimeChannel *channel = [realtime.channels get:channelName];
         [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if(state == ARTRealtimeConnected) {
                 [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
@@ -770,7 +770,7 @@
 -(void) testGetFailsOnDetachedOrFailed {
     XCTestExpectation *exp = [self expectationWithDescription:@"testEnterAndGet"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel * channel = [realtime channel:@"channel"];
+        ARTRealtimeChannel * channel = [realtime.channels get:@"channel"];
         __block bool hasDisconnected = false;
         [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if(state == ARTRealtimeConnected) {
@@ -798,7 +798,7 @@
     XCTestExpectation *exp = [self expectationWithDescription:@"testEnterClient"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        ARTRealtimeChannel *channel = [realtime channel:@"channelName"];
+        ARTRealtimeChannel *channel = [realtime.channels get:@"channelName"];
         [channel.presence  enterClient:clientId data:nil cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
             [channel.presence  enterClient:clientId2 data:nil cb:^(ARTStatus *status) {
@@ -822,7 +822,7 @@
 - (void)testEnterClientIdFailsOnError {
     XCTestExpectation *exp = [self expectationWithDescription:@"testEnterClientIdFailsOnError"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel *channel = [realtime channel:@"channelName"];
+        ARTRealtimeChannel *channel = [realtime.channels get:@"channelName"];
         [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
             if(state == ARTRealtimeConnected) {
                 [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
@@ -844,7 +844,7 @@
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         options.clientId = nil;
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
-        ARTRealtimeChannel *channel = [_realtime channel:@"channelName"];
+        ARTRealtimeChannel *channel = [_realtime.channels get:@"channelName"];
         [channel.presence  enterClient:otherClientId data:@"" cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
             [channel.presence updateClient:otherClientId data:data cb:^(ARTStatus *status) {
@@ -887,13 +887,13 @@
 
     [ARTTestUtil testRealtime:options callback:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        ARTRealtimeChannel *channel = [realtime channel:channelName];
+        ARTRealtimeChannel *channel = [realtime.channels get:channelName];
         const int count = 250;
         __block bool channel2SawAllPresences = false;
 
         [ARTTestUtil testRealtime:^(ARTRealtime *realtime2) {
             _realtime2 = realtime2;
-            ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
+            ARTRealtimeChannel *channel2 = [realtime2.channels get:channelName];
             __block int numReceived = 0;
 
             [channel2 subscribeToStateChanges:^(ARTRealtimeChannelState c, ARTStatus * s) {
@@ -940,7 +940,7 @@
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         options.clientId = [self getClientId];
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
-        ARTRealtimeChannel *channel = [_realtime channel:channelName];
+        ARTRealtimeChannel *channel = [_realtime.channels get:channelName];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
         }];
         [channel.presence enter:@"hi" cb:^(ARTStatus *status) {
@@ -948,7 +948,7 @@
             [options setClientId: [self getSecondClientId]];
             XCTAssertEqual(options.clientId, [self getSecondClientId]);
             _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
-            ARTRealtimeChannel *channel2 = [_realtime2 channel:channelName];
+            ARTRealtimeChannel *channel2 = [_realtime2.channels get:channelName];
             [channel2.presence get:^(ARTPaginatedResult *result, NSError *error) {
                 XCTAssert(!error);
                 XCTAssertFalse([channel2.presence isSyncComplete]);
@@ -977,7 +977,7 @@
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         options.clientId = [self getClientId];
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
-        ARTRealtimeChannel *channel = [_realtime channel:channelName];
+        ARTRealtimeChannel *channel = [_realtime.channels get:channelName];
         [channel.presence subscribeToPresence:^(ARTPresenceMessage * message) {
         }];
         [channel.presence publishPresenceEnter:@"hi" cb:^(ARTStatus *status) {
@@ -985,7 +985,7 @@
             [options setClientId: [self getSecondClientId]];
             XCTAssertEqual(options.clientId, [self getSecondClientId]);
             _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
-            ARTRealtimeChannel *channel2 = [_realtime2 channel:channelName];
+            ARTRealtimeChannel *channel2 = [_realtime2.channels get:channelName];
             [channel2.presence getWithParams:@{@"wait_for_sync": @"true"} cb:^(ARTStatus *status, id<ARTPaginatedResult> result) {
                 XCTAssertEqual(ARTStateOk, status.state);
                 ARTPresenceMap * map = channel2.presenceMap;
@@ -1009,7 +1009,7 @@
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         options.clientId = [self getClientId];
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
-        ARTRealtimeChannel *channel = [_realtime channel:channelName];
+        ARTRealtimeChannel *channel = [_realtime.channels get:channelName];
         XCTAssertThrows([channel.presence leave:@"" cb:^(ARTStatus *status) {}]); // leave before enter
         [channel.presence enter:nil cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
@@ -1030,7 +1030,7 @@
     NSString * leave1 = @"leave1";
     XCTestExpectation *exp = [self expectationWithDescription:@"testSubscribeToAction"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
-        ARTRealtimeChannel *channel = [realtime channel:channelName];
+        ARTRealtimeChannel *channel = [realtime.channels get:channelName];
         
         __block bool gotUpdate = false;
         __block bool gotEnter = false;
@@ -1083,7 +1083,7 @@
 
     [ARTTestUtil testRealtime:options callback:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        ARTRealtimeChannel *channel = [realtime channel:channelName];
+        ARTRealtimeChannel *channel = [realtime.channels get:channelName];
 
         const int count = 120;
         
@@ -1096,7 +1096,7 @@
                     _realtime2 = realtime2;
                     __block bool hasFailed = false;
 
-                    ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
+                    ARTRealtimeChannel *channel2 = [realtime2.channels get:channelName];
                     [channel2 subscribeToStateChanges:^(ARTRealtimeChannelState c, ARTStatus * s) {
                         if(c == ARTRealtimeChannelAttached) {
                             //channel2 enters itself
@@ -1145,14 +1145,14 @@
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         options.clientId = [self getClientId];
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
-        ARTRealtimeChannel *channel = [_realtime channel:channelName];
+        ARTRealtimeChannel *channel = [_realtime.channels get:channelName];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {}];
         [channel.presence enter:@"hi" cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
 
             [ARTTestUtil testRealtime:^(ARTRealtime *realtime2) {
                 _realtime2 = realtime2;
-                ARTRealtimeChannel *channel2 = [_realtime2 channel:channelName];
+                ARTRealtimeChannel *channel2 = [_realtime2.channels get:channelName];
                 [channel2.presence enterClient:client1 data:@"data" cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
                     [channel2.presence updateClient:client1 data:@"data2" cb:^(ARTStatus *status) {
@@ -1185,7 +1185,7 @@
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         options.clientId = [self getClientId];
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
-        ARTRealtimeChannel *channel = [_realtime channel:channelName];
+        ARTRealtimeChannel *channel = [_realtime.channels get:channelName];
         NSData * dataPayload = [@"someDataPayload"  dataUsingEncoding:NSUTF8StringEncoding];
         [channel.presence enter:dataPayload cb:^(ARTStatus *status) {
              XCTAssertEqual(ARTStateOk, status.state);
@@ -1212,11 +1212,11 @@
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         options.clientId = [self getClientId];
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
-        ARTRealtimeChannel *channel = [_realtime channel:channelName];
+        ARTRealtimeChannel *channel = [_realtime.channels get:channelName];
 
         options.clientId = @"clientId2";
         _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
-        ARTRealtimeChannel *channel2 = [_realtime2 channel:channelName];
+        ARTRealtimeChannel *channel2 = [_realtime2.channels get:channelName];
 
         [channel2.presence subscribe:^(ARTPresenceMessage * message) {
             if (message.action == ARTPresenceLeave) {

@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "ARTTypes.h"
 #import "ARTLog.h"
+#import "ARTRealtimeChannels.h"
 
 @class ARTStatus;
 @class ARTMessage;
@@ -26,6 +27,7 @@
 @class ARTRealtimeChannel;
 @class ARTAuth;
 @class ARTProtocolMessage;
+@class ARTRealtimeChannels;
 
 ART_ASSUME_NONNULL_BEGIN
 
@@ -34,6 +36,8 @@ ART_ASSUME_NONNULL_BEGIN
 #pragma mark - ARTRealtime
 
 @interface ARTRealtime : NSObject
+
+@property (nonatomic, strong, readonly) ARTRealtimeChannels *channels;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
@@ -60,18 +64,12 @@ Instance the Ably library with the given options.
 - (art_nullable NSString *)connectionKey;
 - (NSString *)recoveryKey;
 - (ARTAuth *)auth;
-- (__GENERIC(NSDictionary, NSString *, ARTRealtimeChannel *) *)channels;
 - (void)time:(ARTTimeCallback)cb;
 
 typedef void (^ARTRealtimePingCb)(ARTStatus *);
 - (void)ping:(ARTRealtimePingCb)cb;
 
 - (BOOL)stats:(ARTStatsQuery *)query callback:(ARTStatsCallback)completion error:(NSError **)errorPtr;
-
-- (ARTRealtimeChannel *)channel:(NSString *)channelName;
-- (ARTRealtimeChannel *)channel:(NSString *)channelName cipherParams:(art_nullable ARTCipherParams *)cipherParams;
-- (void)removeChannel:(NSString *)name;
-- (void)removeAllChannels;
 
 // Message sending
 - (void)send:(ARTProtocolMessage *)msg cb:(art_nullable ARTStatusCallback)cb;

@@ -250,7 +250,7 @@ class Auth : QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             client.eventEmitter.on({ state, error in
                                 if state == .Connected && error == nil {
-                                    let currentChannel = client.channel("test")
+                                    let currentChannel = client.channels.get("test")
                                     currentChannel.subscribe({ message, errorInfo in
                                         done()
                                     })

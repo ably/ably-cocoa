@@ -127,7 +127,7 @@
         
         _rest = [[ARTRest alloc] initWithLogger:logger andOptions:options];
         _eventEmitter = [[ARTEventEmitter alloc] initWithRealtime:self];
-        _allChannels = [NSMutableDictionary dictionary];
+        _channels = [[ARTRealtimeChannels alloc] initWithRealtime:self];
         _transport = nil;
         _transportClass = [ARTWebSocketTransport class];
         self.state = ARTRealtimeInitialized;
@@ -197,10 +197,6 @@
     return self.rest.auth;
 }
 
-- (NSDictionary *)channels {
-    return _allChannels;
-}
-
 - (ARTConnection *)connection {
     return _connection;
 }
@@ -247,28 +243,6 @@
 
 - (BOOL)stats:(ARTStatsQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *result, NSError *error))completion error:(NSError **)errorPtr {
     return [self.rest stats:query callback:completion error:errorPtr];
-}
-
-- (ARTRealtimeChannel *)channel:(NSString *)channelName {
-    return [self channel:channelName cipherParams:nil];
-}
-
-- (ARTRealtimeChannel *)channel:(NSString *)channelName cipherParams:(ARTCipherParams *)cipherParams {
-    ARTRealtimeChannel *channel = [self.allChannels objectForKey:channelName];
-    if (!channel) {
-        channel = [ARTRealtimeChannel channelWithRealtime:self andName:channelName withOptions:[[ARTChannelOptions alloc] initEncrypted:cipherParams]];
-        [self.allChannels setObject:channel forKey:channelName];
-    }
-
-    return channel;
-}
-
-- (void)removeAllChannels {
-    [_allChannels removeAllObjects];
-}
-
-- (void)removeChannel:(NSString *)name {
-    [_allChannels removeObjectForKey:name];
 }
 
 - (void)unsubscribeState:(ARTRealtimeChannelStateSubscription *)subscription {

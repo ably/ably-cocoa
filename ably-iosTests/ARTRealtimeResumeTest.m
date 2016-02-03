@@ -34,13 +34,13 @@
 
 - (void)tearDown {
     if (_realtime) {
-        [_realtime removeAllChannels];
+        [ARTTestUtil removeAllChannels:_realtime];
         [_realtime.eventEmitter removeEvents];
         [_realtime close];
     }
     _realtime = nil;
     if (_realtime2) {
-        [_realtime2 removeAllChannels];
+        [ARTTestUtil removeAllChannels:_realtime2];
         [_realtime2.eventEmitter removeEvents];
         [_realtime2 close];
     }
@@ -65,8 +65,8 @@
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
 
-        ARTRealtimeChannel *channelA = [_realtime channel:channelName];
-        ARTRealtimeChannel *channelB = [_realtime2 channel:channelName];
+        ARTRealtimeChannel *channelA = [_realtime.channels get:channelName];
+        ARTRealtimeChannel *channelB = [_realtime2.channels get:channelName];
 
         [channelA subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
             if (cState == ARTRealtimeChannelAttached) {
@@ -121,8 +121,8 @@
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
         
-        ARTRealtimeChannel *channel = [_realtime channel:channelName];
-        ARTRealtimeChannel *channel2 = [_realtime2 channel:channelName];
+        ARTRealtimeChannel *channel = [_realtime.channels get:channelName];
+        ARTRealtimeChannel *channel2 = [_realtime2.channels get:channelName];
         [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
             if(cState == ARTRealtimeChannelAttached) {
                 [channel2 attach];
