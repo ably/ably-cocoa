@@ -13,6 +13,33 @@ class RealtimeClientChannel: QuickSpec {
     override func spec() {
         describe("Channel") {
 
+            // RTL4
+            describe("attach") {
+
+                // RTL4c
+                it("should send an ATTACH ProtocolMessage, change state to ATTACHING and change state to ATTACHED after confirmation") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+                    client.setTransportClass(TestProxyTransport.self)
+                    client.connect()
+                    defer { client.close() }
+
+                    expect(client.connection().state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                    let transport = client.transport as! TestProxyTransport
+
+                    let channel = client.channel("test")
+                    channel.attach()
+
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
+                    expect(transport.protocolMessagesSent.filter({ $0.action == .Attach })).to(haveCount(1))
+
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+                    expect(transport.protocolMessagesReceived.filter({ $0.action == .Attached })).to(haveCount(1))
+                }
+
+            }
+
             // RTL6
             describe("publish") {
 
