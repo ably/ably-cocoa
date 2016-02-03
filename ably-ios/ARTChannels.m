@@ -1,32 +1,31 @@
 //
-//  ARTChannelCollection.m
+//  ARTChannels.m
 //  ably
 //
 //  Created by Ricardo Pereira on 01/10/2015.
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTChannelCollection.h"
-#import "ARTChannelCollection+Private.h"
+#import "ARTChannels+Private.h"
 
 #import "ARTRest+Private.h"
-#import "ARTRestChannel.h"
 #import "ARTChannel+Private.h"
 #import "ARTChannelOptions.h"
+#import "ARTRestChannel.h"
 
-@interface ARTChannelCollection() {
+@interface ARTChannels() {
     __weak ARTRest *_rest;
+    __weak id<ARTChannelsDelegate> _delegate;
 }
 
 @end
 
-// FIXME: RestChannelCollection
-@implementation ARTChannelCollection
+@implementation ARTChannels
 
-- (instancetype)initWithRest:(ARTRest *)rest {
+- (instancetype)initWithDelegate:(id)delegate {
     if (self = [super init]) {
-        _rest = rest;
         _channels = [[NSMutableDictionary alloc] init];
+        _delegate = delegate;
     }
     return self;
 }
@@ -43,22 +42,22 @@
     return self->_channels[channelName] != nil;
 }
 
-- (ARTRestChannel *)get:(NSString *)channelName {
+- (id)get:(NSString *)channelName {
     return [self _getChannel:channelName options:nil];
 }
 
-- (ARTRestChannel *)get:(NSString *)channelName options:(ARTChannelOptions *)options {
+- (id)get:(NSString *)channelName options:(ARTChannelOptions *)options {
     return [self _getChannel:channelName options:options];
 }
 
-- (void)releaseChannel:(ARTChannel *)channel {
-    [self->_channels removeObjectForKey:channel.name];
+- (void)release:(NSString *)channelName {
+    [self->_channels removeObjectForKey:channelName];
 }
 
 - (ARTRestChannel *)_getChannel:(NSString *)channelName options:(ARTChannelOptions *)options {
     ARTRestChannel *channel = self->_channels[channelName];
     if (!channel) {
-        channel = [[_rest.channelClass alloc] initWithName:channelName withOptions:options andRest:_rest];
+        channel = [_delegate makeChannel:channelName options:options];
         [self->_channels setObject:channel forKey:channelName];
     } else if (options) {
         channel.options = options;

@@ -13,7 +13,7 @@
 #import "ARTPresenceMessage.h"
 #import "ARTRest.h"
 #import "ARTRestChannel.h"
-#import "ARTChannelCollection.h"
+#import "ARTChannels.h"
 #import "ARTTestUtil.h"
 #import "ARTDataQuery.h"
 #import "ARTPaginatedResult.h"

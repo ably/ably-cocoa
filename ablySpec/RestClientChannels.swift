@@ -11,7 +11,7 @@ import Quick
 import Foundation
 
 // Swift isn't yet smart enough to do this automatically when bridging Objective-C APIs
-extension ARTChannelCollection: SequenceType {
+extension ARTRestChannels: SequenceType {
     public func generate() -> NSFastGenerator {
         return NSFastGenerator(self)
     }
@@ -43,8 +43,7 @@ class RestClientChannels: QuickSpec {
             context("channels") {
                 // RSN1
                 it("should return collection of channels") {
-                    let channels = client.channels;
-                    expect(channels).to(beAnInstanceOf(ARTChannelCollection));
+                    let _: ARTRestChannels = client.channels
                 }
 
                 // RSN3
@@ -109,7 +108,7 @@ class RestClientChannels: QuickSpec {
                         weak var channel = client.channels.get(channelName)
 
                         expect(channel).to(beAChannel(named: channelName))
-                        client.channels.releaseChannel(channel!)
+                        client.channels.release(channel!.name)
 
                         expect(channel).to(beNil())
                     }

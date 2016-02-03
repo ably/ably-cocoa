@@ -15,7 +15,7 @@
 #import "ARTTestUtil.h"
 #import "ARTLog.h"
 #import "ARTRestChannel.h"
-#import "ARTChannelCollection.h"
+#import "ARTChannels.h"
 #import "ARTDataQuery.h"
 #import "ARTPaginatedResult.h"
 

@@ -9,7 +9,7 @@
 #import "ARTRest+Private.h"
 
 #import "ARTChannel+Private.h"
-#import "ARTChannelCollection.h"
+#import "ARTRestChannels.h"
 #import "ARTDataQuery+Private.h"
 #import "ARTPaginatedResult+Private.h"
 #import "ARTAuth+Private.h"
@@ -80,7 +80,7 @@
         _fallbackCount = 0;
         
         _auth = [[ARTAuth alloc] init:self withOptions:_options];
-        _channels = [[ARTChannelCollection alloc] initWithRest:self];
+        _channels = [[ARTRestChannels alloc] initWithRest:self];
 
         [self.logger debug:__FILE__ line:__LINE__ message:@"initialised %p", self];
     }

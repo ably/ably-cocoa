@@ -9,10 +9,11 @@
 #import <Foundation/Foundation.h>
 #import "ARTTypes.h"
 #import "ARTLog.h"
+#import "ARTRestChannels.h"
 
 @protocol ARTHTTPExecutor;
 
-@class ARTChannelCollection;
+@class ARTRestChannels;
 @class ARTClientOptions;
 @class ARTAuth;
 @class ARTCancellable;
@@ -35,7 +36,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (id<ARTCancellable>)internetIsUp:(void (^)(bool isUp))cb;
 
 @property (nonatomic, strong, readonly) ARTLog *logger;
-@property (nonatomic, strong, readonly) ARTChannelCollection *channels;
+@property (nonatomic, strong, readonly) ARTRestChannels *channels;
 @property (nonatomic, strong, readonly) ARTAuth *auth;
 @property (nonatomic, strong, readonly) ARTClientOptions *options;
 

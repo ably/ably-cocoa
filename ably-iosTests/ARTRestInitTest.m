@@ -18,7 +18,7 @@
 #import "ARTRest+Private.h"
 #import "ARTClientOptions.h"
 #import "ARTChannel.h"
-#import "ARTChannelCollection.h"
+#import "ARTChannels.h"
 
 
 @interface ARTRestInitTest : XCTestCase {
