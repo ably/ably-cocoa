@@ -315,6 +315,25 @@ class RealtimeClientChannel: QuickSpec {
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Failed), timeout: testTimeout)
                 }
 
+                // RTL4f
+                it("should transition the channel state to FAILED if ATTACHED ProtocolMessage is not received") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+                    client.setTransportClass(TestProxyTransport.self)
+                    client.connect()
+                    defer { client.close() }
+
+                    expect(client.connection().state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                    let transport = client.transport as! TestProxyTransport
+                    transport.actionsIgnored += [.Attached]
+
+                    let channel = client.channels.get("test")
+                    channel.attach()
+
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Failed), timeout: ARTDefault.realtimeRequestTimeout())
+                }
+
             }
 
             // RTL6
