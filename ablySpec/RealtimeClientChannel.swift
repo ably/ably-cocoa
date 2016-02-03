@@ -13,6 +13,70 @@ class RealtimeClientChannel: QuickSpec {
     override func spec() {
         describe("Channel") {
 
+            // RTL1
+            it("should process all incoming messages and presence messages as soon as a Channel becomes attached") {
+                let options = AblyTests.commonAppSetup()
+                let client1 = ARTRealtime(options: options)
+                defer { client1.close() }
+
+                let channel1 = client1.channel("room")
+                channel1.attach()
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel1.presence().enterClient("Client 1", data: nil) { status in
+                        expect(status.state).to(equal(ARTState.Ok))
+                        done()
+                    }
+                }
+
+                options.clientId = "Client 2"
+                let client2 = ARTRealtime(options: options)
+                defer { client2.close() }
+
+                let channel2 = client2.channel(channel1.name)
+                channel2.attach()
+
+                expect(channel2.presence().isSyncComplete()).to(beFalse())
+
+                expect(channel1.presenceMap.members).to(haveCount(1))
+                expect(channel2.presenceMap.members).to(haveCount(0))
+
+                expect(channel2.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                expect(channel2.presence().isSyncComplete()).toEventually(beTrue(), timeout: testTimeout)
+
+                expect(channel1.presenceMap.members).to(haveCount(1))
+                expect(channel2.presenceMap.members).to(haveCount(1))
+
+                // Check if receives incoming messages
+                channel2.subscribeToName("Client 1") { message, errorInfo in
+                    expect(message.data as? String).to(equal("message"))
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel1.publish("message", cb: { status in
+                        expect(status.state).to(equal(ARTState.Ok))
+                        done()
+                    })
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel2.presence().enter(nil) { status in
+                        expect(status.state).to(equal(ARTState.Ok))
+                        done()
+                    }
+                }
+
+                expect(channel1.presenceMap.members).to(haveCount(2))
+                expect(channel1.presenceMap.members).to(allKeysPass({ $0.hasPrefix("Client") }))
+                expect(channel1.presenceMap.members).to(allValuesPass({ $0.action == .Enter }))
+
+                expect(channel2.presenceMap.members).to(haveCount(2))
+                expect(channel2.presenceMap.members).to(allKeysPass({ $0.hasPrefix("Client") }))
+                expect(channel2.presenceMap.members["Client 1"]!.action).to(equal(ARTPresenceAction.Present))
+                expect(channel2.presenceMap.members["Client 2"]!.action).to(equal(ARTPresenceAction.Enter))
+            }
+
             // RTL4
             describe("attach") {
 

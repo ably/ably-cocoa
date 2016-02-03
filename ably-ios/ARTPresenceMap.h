@@ -7,22 +7,24 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "CompatibilityMacros.h"
 
 @class ARTPresenceMessage;
 
+ART_ASSUME_NONNULL_BEGIN
+
 /// Used to maintain a list of members present on a channel
-@interface ARTPresenceMap : NSObject {
-    
-}
+@interface ARTPresenceMap : NSObject
+
+/// List of members.
+/// The key is the clientId and the value is the latest relevant ARTPresenceMessage for that clientId.
+@property (readonly, atomic, getter=getMembers) __GENERIC(NSDictionary, NSString *, ARTPresenceMessage *) *members;
 
 @property (readwrite, nonatomic, assign) int64_t syncSerial;
 
 - (ARTPresenceMessage *)getClient:(NSString *) clientId;
 - (void)put:(ARTPresenceMessage *) message;
 
-//of the form <NSString *, ARTPresenceMessage*> where
-// the key is the clientId and the value is the latest relevant ARTPresenceMessage for that clientId.
-- (NSDictionary *) members;
 - (void)startSync;
 - (void)endSync;
 - (BOOL)isSyncComplete;
@@ -33,3 +35,5 @@ typedef void(^VoidCb)();
 - (void)onSync:(VoidCb) cb;
 
 @end
+
+ART_ASSUME_NONNULL_END

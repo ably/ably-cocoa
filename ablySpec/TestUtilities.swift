@@ -531,3 +531,69 @@ public func haveParam(key: String, withValue expectedValue: String) -> NonNilMat
         return false
     }
 }
+
+/// A Nimble matcher that succeeds when all Keys from a Dictionary are valid.
+public func allKeysPass<U: CollectionType where U: DictionaryLiteralConvertible, U.Generator.Element == (U.Key, U.Value)> (passFunc: (U.Key) -> Bool) -> NonNilMatcherFunc<U> {
+
+    let elementEvaluator: (Expression<U.Generator.Element>, FailureMessage) throws -> Bool = {
+        expression, failureMessage in
+        failureMessage.postfixMessage = "pass a condition"
+        let value = try expression.evaluate()!
+        return passFunc(value.0)
+    }
+
+    return NonNilMatcherFunc { actualExpression, failureMessage in
+        failureMessage.actualValue = nil
+        if let actualValue = try actualExpression.evaluate() {
+            for item in actualValue {
+                let exp = Expression(expression: { item }, location: actualExpression.location)
+                if try !elementEvaluator(exp, failureMessage) {
+                    failureMessage.postfixMessage =
+                        "all \(failureMessage.postfixMessage),"
+                        + " but failed first at element <\(item.0)>"
+                        + " in <\(actualValue.map({ $0.0 }))>"
+                    return false
+                }
+            }
+            failureMessage.postfixMessage = "all \(failureMessage.postfixMessage)"
+        } else {
+            failureMessage.postfixMessage = "all pass (use beNil() to match nils)"
+            return false
+        }
+
+        return true
+    }
+}
+
+/// A Nimble matcher that succeeds when all Values from a Dictionary are valid.
+public func allValuesPass<U: CollectionType where U: DictionaryLiteralConvertible, U.Generator.Element == (U.Key, U.Value)> (passFunc: (U.Value) -> Bool) -> NonNilMatcherFunc<U> {
+
+    let elementEvaluator: (Expression<U.Generator.Element>, FailureMessage) throws -> Bool = {
+        expression, failureMessage in
+        failureMessage.postfixMessage = "pass a condition"
+        let value = try expression.evaluate()!
+        return passFunc(value.1)
+    }
+
+    return NonNilMatcherFunc { actualExpression, failureMessage in
+        failureMessage.actualValue = nil
+        if let actualValue = try actualExpression.evaluate() {
+            for item in actualValue {
+                let exp = Expression(expression: { item }, location: actualExpression.location)
+                if try !elementEvaluator(exp, failureMessage) {
+                    failureMessage.postfixMessage =
+                        "all \(failureMessage.postfixMessage),"
+                        + " but failed first at element <\(item.1)>"
+                        + " in <\(actualValue.map({ $0.1 }))>"
+                    return false
+                }
+            }
+            failureMessage.postfixMessage = "all \(failureMessage.postfixMessage)"
+        } else {
+            failureMessage.postfixMessage = "all pass (use beNil() to match nils)"
+            return false
+        }
+
+        return true
+    }
+}
