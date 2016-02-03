@@ -24,17 +24,17 @@ ART_ASSUME_NONNULL_BEGIN
 - (__GENERIC(ARTEventListener, ItemType) *)on:(EventType)event call:(void (^)(ItemType))cb;
 - (void)on:(EventType)event callListener:(__GENERIC(ARTEventListener, ItemType) *)listener;
 
-- (__GENERIC(ARTEventListener, ItemType) *)onAll:(void (^)(ItemType))cb;
-- (void)onAllCallListener:(__GENERIC(ARTEventListener, ItemType) *)listener;
+- (__GENERIC(ARTEventListener, ItemType) *)on:(void (^)(ItemType))cb;
+- (void)onCallListener:(__GENERIC(ARTEventListener, ItemType) *)listener;
 
 - (__GENERIC(ARTEventListener, ItemType) *)once:(EventType)event call:(void (^)(ItemType))cb;
 - (void)once:(EventType)event callListener:(__GENERIC(ARTEventListener, ItemType) *)listener;
 
-- (__GENERIC(ARTEventListener, ItemType) *)onceAll:(void (^)(ItemType))cb;
-- (void)onceAllCallListener:(__GENERIC(ARTEventListener, ItemType) *)listener;
+- (__GENERIC(ARTEventListener, ItemType) *)once:(void (^)(ItemType))cb;
+- (void)onceCallListener:(__GENERIC(ARTEventListener, ItemType) *)listener;
 
 - (void)off:(EventType)event listener:(__GENERIC(ARTEventListener, ItemType) *)listener;
-- (void)offAll:(__GENERIC(ARTEventListener, ItemType) *)listener;
+- (void)off:(__GENERIC(ARTEventListener, ItemType) *)listener;
 
 - (void)emit:(EventType)event with:(ItemType)data;
 
@@ -47,17 +47,17 @@ ART_ASSUME_NONNULL_BEGIN
 #define ART_EMBED_INTERFACE_EVENT_EMITTER(EventType, ItemType) - (__GENERIC(ARTEventListener, ItemType) *)on:(EventType)event call:(void (^)(ItemType))cb;\
 - (void)on:(EventType)event callListener:(__GENERIC(ARTEventListener, ItemType) *)listener;\
 \
-- (__GENERIC(ARTEventListener, ItemType) *)onAll:(void (^)(ItemType))cb;\
-- (void)onAllCallListener:(__GENERIC(ARTEventListener, ItemType) *)listener;\
+- (__GENERIC(ARTEventListener, ItemType) *)on:(void (^)(ItemType))cb;\
+- (void)onCallListener:(__GENERIC(ARTEventListener, ItemType) *)listener;\
 \
 - (__GENERIC(ARTEventListener, ItemType) *)once:(EventType)event call:(void (^)(ItemType))cb;\
 - (void)once:(EventType)event callListener:(__GENERIC(ARTEventListener, ItemType) *)listener;\
 \
-- (__GENERIC(ARTEventListener, ItemType) *)onceAll:(void (^)(ItemType))cb;\
-- (void)onceAllCallListener:(__GENERIC(ARTEventListener, ItemType) *)listener;\
+- (__GENERIC(ARTEventListener, ItemType) *)once:(void (^)(ItemType))cb;\
+- (void)onceCallListener:(__GENERIC(ARTEventListener, ItemType) *)listener;\
 \
 - (void)off:(EventType)event listener:(__GENERIC(ARTEventListener, ItemType) *)listener;\
-- (void)offAll:(__GENERIC(ARTEventListener, ItemType) *)listener;
+- (void)off:(__GENERIC(ARTEventListener, ItemType) *)listener;
 
 // This macro adds methods to a class implementation that just bridge calls to an internal
 // instance variable, which must be called _eventEmitter, of type ARTEventEmitter *.
@@ -71,12 +71,12 @@ return [_eventEmitter on:event call:cb];\
 [_eventEmitter on:event callListener:listener];\
 }\
 \
-- (__GENERIC(ARTEventListener, ItemType) *)onAll:(void (^)(ItemType))cb {\
-return [_eventEmitter onAll:cb];\
+- (__GENERIC(ARTEventListener, ItemType) *)on:(void (^)(ItemType))cb {\
+return [_eventEmitter on:cb];\
 }\
 \
-- (void)onAllCallListener:(__GENERIC(ARTEventListener, ItemType) *)listener {\
-[_eventEmitter onAllCallListener:(__GENERIC(ARTEventListener, ItemType) *)listener];\
+- (void)onCallListener:(__GENERIC(ARTEventListener, ItemType) *)listener {\
+[_eventEmitter onCallListener:(__GENERIC(ARTEventListener, ItemType) *)listener];\
 }\
 \
 - (__GENERIC(ARTEventListener, ItemType) *)once:(EventType)event call:(void (^)(ItemType))cb {\
@@ -87,20 +87,20 @@ return [_eventEmitter once:event call:cb];\
 [_eventEmitter once:event callListener:listener];\
 }\
 \
-- (__GENERIC(ARTEventListener, ItemType) *)onceAll:(void (^)(ItemType))cb {\
-return [_eventEmitter onceAll:cb];\
+- (__GENERIC(ARTEventListener, ItemType) *)once:(void (^)(ItemType))cb {\
+return [_eventEmitter once:cb];\
 }\
 \
-- (void)onceAllCallListener:(__GENERIC(ARTEventListener, ItemType) *)listener {\
-[_eventEmitter onceAllCallListener:listener];\
+- (void)onceCallListener:(__GENERIC(ARTEventListener, ItemType) *)listener {\
+[_eventEmitter onceCallListener:listener];\
 }\
 \
 - (void)off:(EventType)event listener:listener {\
 [_eventEmitter off:event listener:listener];\
 }\
 \
-- (void)offAll:(__GENERIC(ARTEventListener, ItemType) *)listener {\
-[_eventEmitter offAll:listener];\
+- (void)off:(__GENERIC(ARTEventListener, ItemType) *)listener {\
+[_eventEmitter off:listener];\
 }\
 \
 - (void)emit:(EventType)event with:(ItemType)data {\

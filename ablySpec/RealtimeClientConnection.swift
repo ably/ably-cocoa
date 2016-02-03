@@ -49,7 +49,7 @@ class RealtimeClientConnection: QuickSpec {
                     client.connect()
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.onAll { stateChange in
+                        client.on { stateChange in
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
@@ -86,7 +86,7 @@ class RealtimeClientConnection: QuickSpec {
                     client.connect()
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.onAll { stateChange in
+                        client.on { stateChange in
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
@@ -123,7 +123,7 @@ class RealtimeClientConnection: QuickSpec {
                 expect(options.autoConnect).to(beTrue(), description: "autoConnect should be true by default")
 
                 // The only way to control this functionality is with the options flag
-                ARTRealtime(options: options).onAll { stateChange in
+                ARTRealtime(options: options).on { stateChange in
                     let state = stateChange.current
                     let errorInfo = stateChange.reason
                     switch state {
@@ -144,7 +144,7 @@ class RealtimeClientConnection: QuickSpec {
                 var waiting = true
 
                 waitUntil(timeout: testTimeout) { done in
-                    client.onAll { stateChange in
+                    client.on { stateChange in
                         let state = stateChange.current
                         let errorInfo = stateChange.reason
                         switch state {
@@ -177,7 +177,7 @@ class RealtimeClientConnection: QuickSpec {
                     var events: [ARTRealtimeConnectionState] = []
 
                     waitUntil(timeout: testTimeout) { done in
-                        connection.onAll { stateChange in
+                        connection.on { stateChange in
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
@@ -236,7 +236,7 @@ class RealtimeClientConnection: QuickSpec {
                     var events: [ARTRealtimeConnectionState] = []
 
                     waitUntil(timeout: testTimeout) { done in
-                        connection.onAll { stateChange in
+                        connection.on { stateChange in
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
@@ -270,7 +270,7 @@ class RealtimeClientConnection: QuickSpec {
                     var events: [ARTRealtimeConnectionState] = []
 
                     waitUntil(timeout: testTimeout) { done in
-                        connection.onAll { stateChange in
+                        connection.on { stateChange in
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
@@ -308,7 +308,7 @@ class RealtimeClientConnection: QuickSpec {
                     expect(connection.state.rawValue).to(equal(ARTRealtimeConnectionState.Initialized.rawValue), description: "Missing INITIALIZED state")
 
                     waitUntil(timeout: testTimeout) { done in
-                        connection.onAll { stateChange in
+                        connection.on { stateChange in
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
@@ -337,7 +337,7 @@ class RealtimeClientConnection: QuickSpec {
 
                     var errorInfo: ARTErrorInfo?
                     waitUntil(timeout: testTimeout) { done in
-                        connection.onAll { stateChange in
+                        connection.on { stateChange in
                             let state = stateChange.current
                             let reason = stateChange.reason
                             switch state {
@@ -423,7 +423,7 @@ class RealtimeClientConnection: QuickSpec {
                 client.connect()
 
                 waitUntil(timeout: testTimeout) { done in
-                    client.onAll { stateChange in
+                    client.on { stateChange in
                         let state = stateChange.current
                         let error = stateChange.reason
                         expect(error).to(beNil())
@@ -496,7 +496,7 @@ class RealtimeClientConnection: QuickSpec {
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            client.onAll { stateChange in
+                            client.on { stateChange in
                                 let state = stateChange.current
                                 let error = stateChange.reason
                                 if state == .Connected {
@@ -564,7 +564,7 @@ class RealtimeClientConnection: QuickSpec {
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            client.onAll { stateChange in
+                            client.on { stateChange in
                                 let state = stateChange.current
                                 let error = stateChange.reason
                                 if state == .Connected {
@@ -772,7 +772,7 @@ class RealtimeClientConnection: QuickSpec {
                     expect(connection.id).to(beNil())
 
                     waitUntil(timeout: testTimeout) { done in
-                        connection.onAll { stateChange in
+                        connection.on { stateChange in
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             expect(errorInfo).to(beNil())
@@ -800,7 +800,7 @@ class RealtimeClientConnection: QuickSpec {
                         for _ in 1...max {
                             disposable.append(ARTRealtime(options: options))
                             let currentConnection = disposable.last!.connection()
-                            currentConnection.onAll { stateChange in
+                            currentConnection.on { stateChange in
                                 let state = stateChange.current
                                 let errorInfo = stateChange.reason
                                 if state == .Connected {
@@ -838,7 +838,7 @@ class RealtimeClientConnection: QuickSpec {
                     expect(connection.key).to(beNil())
 
                     waitUntil(timeout: testTimeout) { done in
-                        connection.onAll { stateChange in
+                        connection.on { stateChange in
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             expect(errorInfo).to(beNil())
@@ -864,7 +864,7 @@ class RealtimeClientConnection: QuickSpec {
                         for _ in 1...max {
                             disposable.append(ARTRealtime(options: options))
                             let currentConnection = disposable.last!.connection()
-                            currentConnection.onAll { stateChange in
+                            currentConnection.on { stateChange in
                                 let state = stateChange.current
                                 let errorInfo = stateChange.reason
                                 if state == .Connected {
@@ -899,7 +899,7 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.close() }
                     waitUntil(timeout: testTimeout) { done in
-                        client.onAll { stateChange in
+                        client.on { stateChange in
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             if state == .Connected {
@@ -979,7 +979,7 @@ class RealtimeClientConnection: QuickSpec {
                     var states: [ARTRealtimeConnectionState] = []
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.onAll { stateChange in
+                        client.on { stateChange in
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
@@ -1021,7 +1021,7 @@ class RealtimeClientConnection: QuickSpec {
                     var start: NSDate?
                     var end: NSDate?
 
-                    client.onAll { stateChange in
+                    client.on { stateChange in
                         let state = stateChange.current
                         let errorInfo = stateChange.reason
                         switch state {
@@ -1064,7 +1064,7 @@ class RealtimeClientConnection: QuickSpec {
                     var states: [ARTRealtimeConnectionState] = []
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.onAll { stateChange in
+                        client.on { stateChange in
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
@@ -1105,7 +1105,7 @@ class RealtimeClientConnection: QuickSpec {
                 defer { client.close() }
 
                 waitUntil(timeout: testTimeout) { done in
-                    client.onAll { stateChange in
+                    client.on { stateChange in
                         let state = stateChange.current
                         let errorInfo = stateChange.reason
                         switch state {
@@ -1142,7 +1142,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.onAll { stateChange in
+                        client.on { stateChange in
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
@@ -1190,7 +1190,7 @@ class RealtimeClientConnection: QuickSpec {
                     defer { client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.onAll { stateChange in
+                        client.on { stateChange in
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {

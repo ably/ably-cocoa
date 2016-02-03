@@ -35,7 +35,7 @@ class RealtimeClient: QuickSpec {
                     let client = ARTRealtime(options: options)
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.onAll { stateChange in
+                        client.on { stateChange in
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
@@ -75,7 +75,7 @@ class RealtimeClient: QuickSpec {
                     let client = ARTRealtime(options: options)
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.onAll { stateChange in
+                        client.on { stateChange in
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
@@ -97,7 +97,7 @@ class RealtimeClient: QuickSpec {
                     let newClient = ARTRealtime(options: options)
 
                     waitUntil(timeout: testTimeout) { done in
-                        newClient.onAll { stateChange in
+                        newClient.on { stateChange in
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
@@ -179,7 +179,7 @@ class RealtimeClient: QuickSpec {
                     let client = ARTRealtime(options: options)
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.onAll { stateChange in
+                        client.on { stateChange in
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
@@ -280,7 +280,7 @@ class RealtimeClient: QuickSpec {
                 var endInterval: UInt?
 
                 waitUntil(timeout: testTimeout + options.suspendedRetryTimeout) { done in
-                    client.onAll { stateChange in
+                    client.on { stateChange in
                         let state = stateChange.current
                         let errorInfo = stateChange.reason
                         switch state {

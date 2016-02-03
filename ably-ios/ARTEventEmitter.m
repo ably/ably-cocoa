@@ -145,23 +145,23 @@
     [self addObject:entry toArrayWithKey:event inDictionary:self.listeners];
 }
 
-- (ARTEventListener *)onAll:(void (^)(id __art_nonnull))cb {
+- (ARTEventListener *)on:(void (^)(id __art_nonnull))cb {
     ARTEventListener *listener = [[ARTEventListener alloc] initWithBlock:cb];
-    [self onAllCallListener:listener];
+    [self onCallListener:listener];
     return listener;
 }
 
-- (void)onAllCallListener:(ARTEventListener *)listener {
+- (void)onCallListener:(ARTEventListener *)listener {
     [self addOnAllEntry:[[ARTEventEmitterEntry alloc] initWithListener:listener once:false]];
 }
 
-- (ARTEventListener *)onceAll:(void (^)(id __art_nonnull))cb {
+- (ARTEventListener *)once:(void (^)(id __art_nonnull))cb {
     ARTEventListener *listener = [[ARTEventListener alloc] initWithBlock:cb];
-    [self onceAllCallListener:listener];
+    [self onceCallListener:listener];
     return listener;
 }
 
-- (void)onceAllCallListener:(ARTEventListener *)listener {
+- (void)onceCallListener:(ARTEventListener *)listener {
     [self addOnAllEntry:[[ARTEventEmitterEntry alloc] initWithListener:listener once:true]];
 }
 
@@ -185,7 +185,7 @@
     [self removeObject:listener fromArrayWithKey:event inDictionary:self.listeners];
 }
 
-- (void)offAll:(ARTEventListener *)listener {
+- (void)off:(ARTEventListener *)listener {
     [self.totalListeners artRemoveObject:listener];
     for (id event in [self.ignoring keyEnumerator]) {
         [self removeObject:listener fromArrayWithKey:event inDictionary:self.ignoring];

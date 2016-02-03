@@ -45,7 +45,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"attachOnce"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime.channels get:@"attach"];
@@ -143,7 +143,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"detach"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime.channels get:@"detach"];
@@ -168,7 +168,7 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         __block BOOL detachingHit = NO;
-        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime.channels get:@"detach"];
@@ -225,7 +225,7 @@
     XCTestExpectation *  expectation = [self expectationWithDescription:@"testDetachingIgnoresDetach"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             
             if (state == ARTRealtimeConnected) {
@@ -253,7 +253,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"testAttachFailsOnFailedConnection"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime.channels get:@"attach"];
@@ -272,7 +272,7 @@
                     }
                 }];
                 [channel attach];
-                [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+                [realtime on:^(ARTConnectionStateChange *stateChange) {
                     ARTRealtimeConnectionState state = stateChange.current;
                     if(state == ARTRealtimeFailed) {
                         hasFailed = true;
@@ -380,7 +380,7 @@
             [realtime connect];
         }];
 
-        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             ARTErrorInfo *errorInfo = stateChange.reason;
             if (state == ARTRealtimeConnected) {

@@ -49,7 +49,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"initWithOptions"];
     [ARTTestUtil testRealtime:^(ARTRealtime * realtime) {
         _realtime = realtime;
-        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if(state == ARTRealtimeConnected) {
                 [expectation fulfill];
@@ -68,7 +68,7 @@
         options.environment = @"test";
         ARTRealtime * realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;
-        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if(state == ARTRealtimeFailed) {
                 [expectation fulfill];
@@ -88,7 +88,7 @@
         options.restPort = 9998;
         ARTRealtime * realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;
-        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if(state == ARTRealtimeFailed) {
                 [expectation fulfill];
@@ -117,7 +117,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"testInitAutoConnectDefault"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if(state == ARTRealtimeConnected) {
                 [expectation fulfill];
@@ -133,7 +133,7 @@
         options.autoConnect = false;
         ARTRealtime * realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;
-        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if(state == ARTRealtimeConnected) {
                 [expectation fulfill];

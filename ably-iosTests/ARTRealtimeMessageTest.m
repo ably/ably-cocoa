@@ -262,7 +262,7 @@
             messagesReceived++;
         }];
         __block bool connectingHappened = false;
-        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if(state ==ARTRealtimeConnecting) {
                 if(connectingHappened) {
@@ -327,7 +327,7 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [_realtime.channels get:@"testSingleSendText"];
-        [_realtime onAll:^(ARTConnectionStateChange *stateChange) {
+        [_realtime on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if(state == ARTRealtimeConnected) {
                 [channel attach];

@@ -44,8 +44,8 @@ class Utilities: QuickSpec {
                     listenerFooOrBar = eventEmitter.on("foo", call: { receivedFooOrBar = $0 as? Int })
                     eventEmitter.on("bar", callListener: listenerFooOrBar!)
                     listenerBarOnce = eventEmitter.once("bar", call: { receivedBarOnce = $0 as? Int })
-                    listenerAll = eventEmitter.onAll { receivedAll = $0 as? Int }
-                    listenerAllOnce = eventEmitter.onceAll { receivedAllOnce = $0 as? Int }
+                    listenerAll = eventEmitter.on { receivedAll = $0 as? Int }
+                    listenerAllOnce = eventEmitter.once { receivedAllOnce = $0 as? Int }
                 }
 
                 it("should emit events to all relevant listeners") {
@@ -89,7 +89,7 @@ class Utilities: QuickSpec {
                 }
                 
                 it("should stop receiving events when calling off") {
-                    eventEmitter.offAll(listenerFoo1!)
+                    eventEmitter.off(listenerFoo1!)
                     eventEmitter.emit("foo", with: 123)
                     
                     expect(receivedFoo1).to(beNil())
@@ -117,7 +117,7 @@ class Utilities: QuickSpec {
                     expect(receivedAll).to(equal(222))
                 }
 
-                it("should receive only once after calling onAll and then once") {
+                it("should receive only once after calling on and then once") {
                     eventEmitter.once("foo", callListener: listenerAll!)
 
                     eventEmitter.emit("foo", with: 123)

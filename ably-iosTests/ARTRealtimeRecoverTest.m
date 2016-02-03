@@ -71,7 +71,7 @@
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
 
         __block NSString *firstConnectionId = nil;
-        [_realtime onAll:^(ARTConnectionStateChange *stateChange) {
+        [_realtime on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 firstConnectionId = [_realtime connectionId];
@@ -88,7 +88,7 @@
                 _realtimeNonRecovered = [[ARTRealtime alloc] initWithOptions:options];
 
                 ARTRealtimeChannel *c2 = [_realtimeNonRecovered.channels get:channelName];
-                [_realtimeNonRecovered onAll:^(ARTConnectionStateChange *stateChange) {
+                [_realtimeNonRecovered on:^(ARTConnectionStateChange *stateChange) {
                     ARTRealtimeConnectionState state2 = stateChange.current;
                     if (state2 == ARTRealtimeConnected) {
                         // Sending other message to the same channel to check if the recovered connection receives it
@@ -100,7 +100,7 @@
                             ARTRealtime *realtimeRecovered = [[ARTRealtime alloc] initWithOptions:options];
                             ARTRealtimeChannel *c3 = [realtimeRecovered.channels get:channelName];
 
-                            [realtimeRecovered onAll:^(ARTConnectionStateChange *stateChange) {
+                            [realtimeRecovered on:^(ARTConnectionStateChange *stateChange) {
                                 ARTRealtimeConnectionState cState = stateChange.current;
                                 if (cState == ARTRealtimeConnected) {
                                     XCTAssertEqualObjects([realtimeRecovered connectionId], firstConnectionId);
@@ -124,7 +124,7 @@
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         options.recover = @"bad_recovery_key:1234";
         _realtimeRecover = [[ARTRealtime alloc] initWithOptions:options];
-        [_realtimeRecover onAll:^(ARTConnectionStateChange *stateChange) {
+        [_realtimeRecover on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState cState = stateChange.current;
             ARTErrorInfo *errorInfo = stateChange.reason;
             if (cState == ARTRealtimeFailed) {

@@ -248,7 +248,7 @@ class Auth : QuickSpec {
                         client.connect()
 
                         waitUntil(timeout: testTimeout) { done in
-                            client.onAll { stateChange in
+                            client.on { stateChange in
                                 let state = stateChange.current
                                 let error = stateChange.reason
                                 if state == .Connected && error == nil {

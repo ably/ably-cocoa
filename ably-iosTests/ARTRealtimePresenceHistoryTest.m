@@ -102,7 +102,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime.channels get:[self channelName]];
-        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 [channel attach];
@@ -141,7 +141,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime.channels get:@"testSimpleText"];
-        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 [channel attach];
@@ -174,7 +174,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime.channels get:@"persisted:testSimpleText"];
-        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 [channel attach];
@@ -283,7 +283,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime.channels get:@"testWaitTextBackward"];
-        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 [channel attach];
@@ -420,7 +420,7 @@
 
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime.channels get:@"testWaitText"];
-        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 [channel attach];
@@ -545,7 +545,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime.channels get:[self channelName]];
-        [realtime onAll:^(ARTConnectionStateChange *stateChange) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 [channel attach];
