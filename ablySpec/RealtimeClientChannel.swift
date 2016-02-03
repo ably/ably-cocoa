@@ -188,7 +188,9 @@ class RealtimeClientChannel: QuickSpec {
 
                         expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
                         client.close()
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
+                        expect(client.connection().state).to(equal(ARTRealtimeConnectionState.Closing))
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
+                        expect(client.connection().state).to(equal(ARTRealtimeConnectionState.Closed))
                     }
 
                     it("ATTACHED channel should transition to DETACHED") {
@@ -201,7 +203,9 @@ class RealtimeClientChannel: QuickSpec {
 
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
                         client.close()
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
+                        expect(client.connection().state).to(equal(ARTRealtimeConnectionState.Closing))
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
+                        expect(client.connection().state).to(equal(ARTRealtimeConnectionState.Closed))
                     }
 
                 }
