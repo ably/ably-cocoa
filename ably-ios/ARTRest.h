@@ -33,12 +33,8 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (BOOL)stats:(art_nullable ARTStatsQuery *)query callback:(ARTStatsCallback)callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
 
-- (id<ARTCancellable>)internetIsUp:(void (^)(bool isUp))cb;
-
-@property (nonatomic, strong, readonly) ARTLog *logger;
 @property (nonatomic, strong, readonly) ARTRestChannels *channels;
 @property (nonatomic, strong, readonly) ARTAuth *auth;
-@property (nonatomic, strong, readonly) ARTClientOptions *options;
 
 @end
 

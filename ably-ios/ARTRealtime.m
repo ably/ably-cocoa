@@ -12,7 +12,7 @@
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTStatus.h"
 #import "ARTDefault.h"
-#import "ARTRest.h"
+#import "ARTRest+Private.h"
 #import "ARTAuth+Private.h"
 #import "ARTMessage.h"
 #import "ARTClientOptions.h"

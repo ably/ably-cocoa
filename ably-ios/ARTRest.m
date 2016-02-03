@@ -30,24 +30,6 @@
 #import "ARTTokenParams.h"
 #import "ARTTokenDetails.h"
 
-@interface ARTRest ()
-
-@property (readonly, strong, nonatomic) id<ARTEncoder> defaultEncoder;
-@property (readonly, strong, nonatomic) NSString *defaultEncoding; //Content-Type
-@property (readonly, strong, nonatomic) NSDictionary *encoders;
-
-@property (nonatomic, strong) id<ARTHTTPExecutor> httpExecutor;
-@property (readonly, nonatomic, assign) Class channelClass;
-
-@property (nonatomic, strong) NSURL *baseUrl;
-
-// MARK: Not accessible by tests
-@property (readonly, strong, nonatomic) ARTHttp *http;
-@property (strong, nonatomic) ARTAuth *auth;
-@property (readwrite, assign, nonatomic) int fallbackCount;
-
-@end
-
 @implementation ARTRest
 
 - (instancetype)initWithLogger:(ARTLog *)logger andOptions:(ARTClientOptions *)options {
