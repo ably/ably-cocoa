@@ -49,7 +49,6 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
     ARTRealtimeChannelAttached,
     ARTRealtimeChannelDetaching,
     ARTRealtimeChannelDetached,
-    ARTRealtimeChannelClosed,
     ARTRealtimeChannelFailed
 };
 

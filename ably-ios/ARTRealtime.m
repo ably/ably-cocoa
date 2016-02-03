@@ -358,7 +358,7 @@
                     //do nothing. Closed state is coming.
                 }
                 else if(state == ARTRealtimeClosed) {
-                    [channel setClosed:[ARTStatus state:ARTStateOk]];
+                    [channel detachChannel:[ARTStatus state:ARTStateOk]];
                 }
                 else if(state == ARTRealtimeSuspended) {
                     [channel detachChannel:[self defaultError]];

@@ -347,7 +347,7 @@
                 [realtime close];
             }
             else if(state != ARTRealtimeChannelAttaching) {
-                XCTAssertEqual(ARTRealtimeChannelClosed, state);
+                XCTAssertEqual(ARTRealtimeChannelDetached, state);
                 [exp fulfill];
             }
         }];
