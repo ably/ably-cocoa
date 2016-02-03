@@ -171,7 +171,7 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 // RTL3b
-                context("changes to CLOSED") {
+                pending("changes to CLOSED") {
 
                     it("ATTACHING channel should transition to DETACHED") {
                         let options = AblyTests.commonAppSetup()
