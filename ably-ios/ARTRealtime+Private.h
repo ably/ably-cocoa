@@ -9,6 +9,7 @@
 #import "ARTRealtime.h"
 #import "ARTEventEmitter.h"
 #import "ARTTypes.h"
+#import "ARTQueuedMessage.h"
 
 #import "ARTRealtimeTransport.h"
 
@@ -26,11 +27,42 @@ ART_ASSUME_NONNULL_BEGIN
 @end
 
 /// ARTRealtime private methods that are used for whitebox testing.
-@interface ARTRealtime (Private)
+@interface ARTRealtime ()
 
 @property (readwrite, strong, nonatomic) ARTRest *rest;
 @property (readonly, getter=getTransport) id<ARTRealtimeTransport> transport;
-@property (readonly, strong, nonatomic) NSMutableArray *stateSubscriptions;
+@property (readonly, getter=getLogger) ARTLog *logger;
+
+@property (readwrite, assign, nonatomic, art_nullable) CFRunLoopTimerRef connectTimeout;
+@property (readwrite, assign, nonatomic, art_nullable) CFRunLoopTimerRef suspendTimeout;
+@property (readwrite, assign, nonatomic, art_nullable) CFRunLoopTimerRef retryTimeout;
+@property (readwrite, assign, nonatomic, art_nullable) CFRunLoopTimerRef closeTimeout;
+@property (readwrite, assign, nonatomic, art_nullable) CFRunLoopTimerRef pingTimeout;
+
+/// Current protocol `msgSerial`. Starts at zero.
+@property (readwrite, assign, nonatomic) int64_t msgSerial;
+
+/// List of queued messages on a connection in the disconnected or connecting states.
+@property (readwrite, strong, nonatomic) __GENERIC(NSMutableArray, ARTQueuedMessage*) *queuedMessages;
+
+/// List of pending messages waiting for ACK/NACK action to confirm the success receipt and acceptance.
+@property (readonly, strong, nonatomic) __GENERIC(NSMutableArray, ARTQueuedMessage*) *pendingMessages;
+
+/// First `msgSerial` pending message.
+@property (readwrite, assign, nonatomic) int64_t pendingMessageStartSerial;
+
+@property (nonatomic, copy, art_nullable) ARTRealtimePingCb pingCb;
+@property (readonly, getter=getClientOptions) ARTClientOptions *options;
+@property (readonly, getter=getClientId) NSString *clientId;
+
+@end
+
+@interface ARTRealtime (Private)
+
+- (void)ping:(ARTRealtimePingCb)cb;
+- (void)close;
+- (BOOL)connect;
+- (BOOL)isActive;
 
 // Transport Events
 - (void)onHeartbeat;
@@ -42,13 +74,13 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)onNack:(ARTProtocolMessage *)message;
 - (void)onChannelMessage:(ARTProtocolMessage *)message;
 
-- (int64_t)connectionSerial;
-
 // FIXME: Connection should manage the transport
 - (void)setTransportClass:(Class)transportClass;
-- (ARTConnection *)connection;
 
 - (void)resetEventEmitter;
+
+// Message sending
+- (void)send:(ARTProtocolMessage *)msg cb:(art_nullable ARTStatusCallback)cb;
 
 @end
 

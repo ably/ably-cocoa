@@ -164,6 +164,7 @@
 		EB89D40C1C61C6EA007FA5B7 /* ARTRealtimeChannels.m in Sources */ = {isa = PBXBuildFile; fileRef = EB89D40A1C61C6EA007FA5B7 /* ARTRealtimeChannels.m */; };
 		EB89D40D1C61C6EA007FA5B7 /* ARTRealtimeChannels.m in Sources */ = {isa = PBXBuildFile; fileRef = EB89D40A1C61C6EA007FA5B7 /* ARTRealtimeChannels.m */; };
 		EB8AC6431C6515ED002ABA92 /* ARTTokenParams+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB8AC6421C6515ED002ABA92 /* ARTTokenParams+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		EB89D40F1C62303E007FA5B7 /* ARTConnection+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB89D40E1C62303E007FA5B7 /* ARTConnection+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -374,6 +375,7 @@
 		EB89D4081C61C5ED007FA5B7 /* ARTRealtimeChannels.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTRealtimeChannels.h; sourceTree = "<group>"; };
 		EB89D40A1C61C6EA007FA5B7 /* ARTRealtimeChannels.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimeChannels.m; sourceTree = "<group>"; };
 		EB8AC6421C6515ED002ABA92 /* ARTTokenParams+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTTokenParams+Private.h"; sourceTree = "<group>"; };
+		EB89D40E1C62303E007FA5B7 /* ARTConnection+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTConnection+Private.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -589,6 +591,7 @@
 				D746AE4A1BBD70F0003ECEF8 /* ARTRealtimeChannelSubscription.m */,
 				EB89D4081C61C5ED007FA5B7 /* ARTRealtimeChannels.h */,
 				EB89D40A1C61C6EA007FA5B7 /* ARTRealtimeChannels.m */,
+				EB89D40E1C62303E007FA5B7 /* ARTConnection+Private.h */,
 			);
 			name = Realtime;
 			sourceTree = "<group>";
@@ -729,6 +732,7 @@
 				EB8AC6431C6515ED002ABA92 /* ARTTokenParams+Private.h in Headers */,
 				D746AE1D1BBB5207003ECEF8 /* ARTDataQuery.h in Headers */,
 				D746AE4B1BBD70F0003ECEF8 /* ARTRealtimeChannelSubscription.h in Headers */,
+				EB89D40F1C62303E007FA5B7 /* ARTConnection+Private.h in Headers */,
 				D746AE281BBB61C9003ECEF8 /* ARTPresence.h in Headers */,
 				EB89D4091C61C5ED007FA5B7 /* ARTRealtimeChannels.h in Headers */,
 				96E408431A38939E00087F77 /* ARTProtocolMessage.h in Headers */,

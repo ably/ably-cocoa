@@ -262,7 +262,7 @@
             messagesReceived++;
         }];
         __block bool connectingHappened = false;
-        [realtime on:^(ARTConnectionStateChange *stateChange) {
+        [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if(state ==ARTRealtimeConnecting) {
                 if(connectingHappened) {
@@ -295,7 +295,7 @@
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
-        XCTAssertFalse([_realtime2.connectionKey isEqualToString:_realtime.connectionKey]);
+        XCTAssertFalse([_realtime2.connection.key isEqualToString:_realtime.connection.key]);
         ARTRealtimeChannel *c1 = [_realtime.channels get:channelName];
         [c1 publish:@"message" cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
@@ -310,8 +310,8 @@
                     ARTMessage *m1 = messages[1];
                     XCTAssertEqualObjects(m0.data, @"message2");
                     XCTAssertEqualObjects(m1.data, @"message");
-                    XCTAssertEqualObjects(m0.connectionId, _realtime2.connectionId);
-                    XCTAssertEqualObjects(m1.connectionId, _realtime.connectionId);
+                    XCTAssertEqualObjects(m0.connectionId, _realtime2.connection.id);
+                    XCTAssertEqualObjects(m1.connectionId, _realtime.connection.id);
                     XCTAssertFalse([m0.connectionId isEqualToString:m1.connectionId]);
                     [exp fulfill];
                 } error:nil];
@@ -327,7 +327,7 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [_realtime.channels get:@"testSingleSendText"];
-        [_realtime on:^(ARTConnectionStateChange *stateChange) {
+        [_realtime.connection on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if(state == ARTRealtimeConnected) {
                 [channel attach];

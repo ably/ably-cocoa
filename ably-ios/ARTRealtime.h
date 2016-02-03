@@ -11,6 +11,7 @@
 #import "ARTLog.h"
 #import "ARTRealtimeChannels.h"
 #import "ARTEventEmitter.h"
+#import "ARTConnection.h"
 
 @class ARTStatus;
 @class ARTMessage;
@@ -37,7 +38,9 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtime : NSObject
 
+@property (nonatomic, strong, readonly) ARTConnection *connection;
 @property (nonatomic, strong, readonly) ARTRealtimeChannels *channels;
+@property (readonly, getter=getAuth) ARTAuth *auth;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
@@ -56,29 +59,8 @@ Instance the Ably library with the given options.
 - (instancetype)initWithOptions:(ARTClientOptions *)options;
 - (instancetype)initWithLogger:(ARTLog *)logger andOptions:(ARTClientOptions *)options;
 
-// FIXME: consistent names like Connect/Disconnect, Open/Close
-- (void)close;
-- (BOOL)connect;
-- (BOOL)isActive;
-
-- (ARTRealtimeConnectionState)state;
-- (art_nullable NSString *)connectionId;
-- (art_nullable NSString *)connectionKey;
-- (NSString *)recoveryKey;
-- (ARTAuth *)auth;
 - (void)time:(ARTTimeCallback)cb;
-
-typedef void (^ARTRealtimePingCb)(ARTStatus *);
-- (void)ping:(ARTRealtimePingCb)cb;
-
 - (BOOL)stats:(ARTStatsQuery *)query callback:(ARTStatsCallback)completion error:(NSError **)errorPtr;
-
-// Message sending
-- (void)send:(ARTProtocolMessage *)msg cb:(art_nullable ARTStatusCallback)cb;
-
-@property (readonly, getter=getLogger) ARTLog *logger;
-
-ART_EMBED_INTERFACE_EVENT_EMITTER(NSNumber *, ARTConnectionStateChange *)
 
 @end
 

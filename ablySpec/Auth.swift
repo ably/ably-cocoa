@@ -157,7 +157,7 @@ class Auth : QuickSpec {
                     client.connect()
 
                     if let transport = client.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
-                        expect(query).to(haveParam("accessToken", withValue: client.auth().tokenDetails?.token ?? ""))
+                        expect(query).to(haveParam("accessToken", withValue: client.auth.tokenDetails?.token ?? ""))
                     }
                     else {
                         XCTFail("MockTransport is not working")
@@ -248,7 +248,7 @@ class Auth : QuickSpec {
                         client.connect()
 
                         waitUntil(timeout: testTimeout) { done in
-                            client.on { stateChange in
+                            client.connection.on { stateChange in
                                 let stateChange = stateChange!
                                 let state = stateChange.current
                                 let error = stateChange.reason

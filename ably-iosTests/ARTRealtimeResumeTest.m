@@ -86,7 +86,7 @@
             }
         }];
 
-        [_realtime on:^(ARTConnectionStateChange *stateChange) {
+        [_realtime.connection on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeFailed) {
                 // 4. Client A is disconnected and B sends message
@@ -155,7 +155,7 @@
             }
         }];
         
-        [_realtime on:^(ARTConnectionStateChange *stateChange) {
+        [_realtime.connection on:^(ARTConnectionStateChange *stateChange) {
             [channel attach];
         }];
     }];

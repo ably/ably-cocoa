@@ -261,7 +261,7 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
     XCTestExpectation *expectation = [testCase expectationWithDescription:@"testRealtime"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withDebug:debug cb:^(ARTClientOptions *options) {
         ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
-        [realtime on:^(ARTConnectionStateChange *stateChange) {
+        [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             ARTErrorInfo *errorInfo = stateChange.reason;
             if (state == ARTRealtimeFailed) {

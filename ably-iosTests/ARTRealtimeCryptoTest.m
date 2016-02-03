@@ -38,7 +38,7 @@
     [super tearDown];
     if (_realtime) {
         [ARTTestUtil removeAllChannels:_realtime];
-        [_realtime close];
+        [_realtime.connection close];
     }
     _realtime = nil;
 }

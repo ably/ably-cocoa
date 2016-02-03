@@ -48,7 +48,7 @@
     msg.clientId = clientId;
     msg.data = data;
 
-    msg.connectionId = [self channel].realtime.connectionId;
+    msg.connectionId = [self channel].realtime.connection.id;
     [[self channel] publishPresence:msg cb:cb];
 }
 
@@ -65,7 +65,7 @@
         return;
     }
     msg.data = data;
-    msg.connectionId = [self channel].realtime.connectionId;
+    msg.connectionId = [self channel].realtime.connection.id;
 
     [[self channel] publishPresence:msg cb:cb];
 }
@@ -85,7 +85,7 @@
     msg.action = ARTPresenceLeave;
     msg.data = data;
     msg.clientId = clientId;
-    msg.connectionId = [self channel].realtime.connectionId;
+    msg.connectionId = [self channel].realtime.connection.id;
     if(!msg.clientId) {
         cb([ARTStatus state:ARTStateNoClientId]);
         return;

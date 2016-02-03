@@ -17,5 +17,6 @@ framework module ably {
         header "ARTBaseMessage+Private.h"
         header "ARTDefault+Private.h"
         header "ARTTokenParams+Private.h"
+        header "ARTConnection+Private.h"
     }
 }

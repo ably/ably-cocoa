@@ -34,12 +34,12 @@
     [super tearDown];
     if (_realtime) {
         [ARTTestUtil removeAllChannels:_realtime];
-        [_realtime close];
+        [_realtime.connection close];
     }
     _realtime = nil;
     if (_realtime2) {
         [ARTTestUtil removeAllChannels:_realtime2];
-        [_realtime2 close];
+        [_realtime2.connection close];
     }
     _realtime2 = nil;
 }
@@ -312,7 +312,7 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 
-    [_realtime close];
+    [_realtime.connection close];
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"firstExpectation"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
@@ -385,7 +385,7 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 
-    [_realtime close];
+    [_realtime.connection close];
 
     XCTestExpectation *expectation = [self expectationWithDescription:@"firstExpectation"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {

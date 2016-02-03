@@ -237,7 +237,7 @@ class PublishTestMessage {
             }
         }
 
-        client.on { stateChange in
+        client.connection.on { stateChange in
             let stateChange = stateChange!
             let state = stateChange.current
             if state == .Connected {
@@ -443,30 +443,14 @@ class TestProxyTransport: ARTWebSocketTransport {
 
 }
 
-class ARTRealtimeExtended: ARTRealtime {
-
-    private var lostStateActive: Bool = false
-
-    override func connectionId() -> String? {
-        if lostStateActive {
-            return "lost"
-        }
-        return super.connectionId()
-    }
-
-    override func connectionKey() -> String? {
-        if lostStateActive {
-            return "lost"
-        }
-        return super.connectionKey()
-    }
-
+extension ARTRealtime {
     func simulateLostConnection() {
         //1. Abruptly disconnect
         //2. Change the `Connection#id` and `Connection#key` before the client 
         //   library attempts to reconnect and resume the connection
-        onDisconnected()
-        lostStateActive = true
+        self.connection.setId("lost")
+        self.connection.setKey("lost")
+        self.onDisconnected()
     }
     
 }
