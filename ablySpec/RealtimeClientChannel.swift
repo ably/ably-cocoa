@@ -24,7 +24,7 @@ class RealtimeClientChannel: QuickSpec {
                 channel1.attach()
 
                 waitUntil(timeout: testTimeout) { done in
-                    channel1.presence().enterClient("Client 1", data: nil) { status in
+                    channel1.presence.enterClient("Client 1", data: nil) { status in
                         expect(status.state).to(equal(ARTState.Ok))
                         done()
                     }
@@ -37,32 +37,32 @@ class RealtimeClientChannel: QuickSpec {
                 let channel2 = client2.channels.get(channel1.name)
                 channel2.attach()
 
-                expect(channel2.presence().isSyncComplete()).to(beFalse())
+                expect(channel2.presence.isSyncComplete()).to(beFalse())
 
                 expect(channel1.presenceMap.members).to(haveCount(1))
                 expect(channel2.presenceMap.members).to(haveCount(0))
 
                 expect(channel2.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
 
-                expect(channel2.presence().isSyncComplete()).toEventually(beTrue(), timeout: testTimeout)
+                expect(channel2.presence.isSyncComplete()).toEventually(beTrue(), timeout: testTimeout)
 
                 expect(channel1.presenceMap.members).to(haveCount(1))
                 expect(channel2.presenceMap.members).to(haveCount(1))
 
                 // Check if receives incoming messages
-                channel2.subscribeToName("Client 1") { message, errorInfo in
+                channel2.subscribe("Client 1") { message in
                     expect(message.data as? String).to(equal("message"))
                 }
 
                 waitUntil(timeout: testTimeout) { done in
-                    channel1.publish("message", cb: { status in
-                        expect(status.state).to(equal(ARTState.Ok))
+                    channel1.publish("message", data: nil) { errorInfo in
+                        expect(errorInfo).to(beNil())
                         done()
-                    })
+                    }
                 }
 
                 waitUntil(timeout: testTimeout) { done in
-                    channel2.presence().enter(nil) { status in
+                    channel2.presence.enter(nil) { status in
                         expect(status.state).to(equal(ARTState.Ok))
                         done()
                     }
@@ -100,10 +100,9 @@ class RealtimeClientChannel: QuickSpec {
                         expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
 
                         waitUntil(timeout: testTimeout) { done in
-                            channel.subscribeToStateChanges { state, status in
-                                if state == .Failed {
-                                    expect(status.state).to(equal(ARTState.Error))
-                                    expect(status.errorInfo!.code).to(equal(90000))
+                            channel.on { errorInfo in
+                                if channel.state == .Failed {
+                                    expect(errorInfo!.code).to(equal(90000))
                                     done()
                                 }
                             }
@@ -121,10 +120,9 @@ class RealtimeClientChannel: QuickSpec {
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
 
                         waitUntil(timeout: testTimeout) { done in
-                            channel.subscribeToStateChanges { state, status in
-                                if state == .Failed {
-                                    expect(status.state).to(equal(ARTState.Error))
-                                    expect(status.errorInfo!.code).to(equal(90000))
+                            channel.on { errorInfo in
+                                if channel.state == .Failed {
+                                    expect(errorInfo!.code).to(equal(90000))
                                     done()
                                 }
                             }
@@ -326,10 +324,9 @@ class RealtimeClientChannel: QuickSpec {
                     let channel = client.channels.get("test")
                     channel.attach()
 
-                    channel.subscribeToStateChanges { state, status in
-                        if state == .Failed {
-                            expect(status.state).to(equal(ARTState.Error))
-                            expect(status.errorInfo!.code).to(equal(40160))
+                    channel.on { errorInfo in
+                        if channel.state == .Failed {
+                            expect(errorInfo!.code).to(equal(40160))
                         }
                     }
 
@@ -376,10 +373,10 @@ class RealtimeClientChannel: QuickSpec {
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        restChannel.publish(data, callback: { errorInfo in
+                        restChannel.publish(nil, data: data) { errorInfo in
                             expect(errorInfo).to(beNil())
                             done()
-                        })
+                        }
                     }
 
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
@@ -394,10 +391,10 @@ class RealtimeClientChannel: QuickSpec {
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        realtimeChannel.publish(data, cb: { status in
-                            expect(status.state).to(equal(ARTState.Ok))
+                        realtimeChannel.publish(nil, data: data) { errorInfo in
+                            expect(errorInfo).to(beNil())
                             done()
-                        })
+                        }
                     }
 
                     expect(restEncodedMessage!.data as? NSObject).to(equal(realtimeEncodedMessage!.data as? NSObject))
@@ -422,12 +419,12 @@ class RealtimeClientChannel: QuickSpec {
                                 let error = stateChange.reason
                                 if state == .Connected {
                                     let channel = client.channels.get("test")
-                                    channel.subscribeToStateChanges { state, status in
-                                        if state == .Attached {
-                                            channel.publish("message", cb: { status in
-                                                expect(status.state).to(equal(ARTState.Ok))
+                                    channel.on { errorInfo in
+                                        if channel.state == .Attached {
+                                            channel.publish(nil, data: "message") { errorInfo in
+                                                expect(errorInfo).to(beNil())
                                                 done()
-                                            })
+                                            }
                                         }
                                     }
                                     channel.attach()
@@ -449,17 +446,17 @@ class RealtimeClientChannel: QuickSpec {
                                 let error = stateChange.reason
                                 if state == .Connected {
                                     let channel = client.channels.get("test")
-                                    channel.subscribeToStateChanges { channelState, channelStatus in
-                                        if channelState == .Attached {
-                                            channel.publish("message", cb: { status in
-                                                expect(status.state).to(equal(ARTState.Error))
-                                                guard let errorInfo = status.errorInfo else {
+                                    channel.on { errorInfo in
+                                        if channel.state == .Attached {
+                                            channel.publish(nil, data: "message") { errorInfo in
+                                                expect(errorInfo).toNot(beNil())
+                                                guard let errorInfo = errorInfo else {
                                                     XCTFail("ErrorInfo is nil"); done(); return
                                                 }
                                                 // Unable to perform channel operation
                                                 expect(errorInfo.code).to(equal(40160))
                                                 done()
-                                            })
+                                            }
                                         }
                                     }
                                     channel.attach()
@@ -485,28 +482,28 @@ class RealtimeClientChannel: QuickSpec {
                         TotalMessages.failed = 0
 
                         let channelToSucceed = client.channels.get("channelToSucceed")
-                        channelToSucceed.subscribeToStateChanges { state, status in
-                            if state == .Attached {
+                        channelToSucceed.on { errorInfo in
+                            if channelToSucceed.state == .Attached {
                                 for index in 1...TotalMessages.expected {
-                                    channelToSucceed.publish("message\(index)", cb: { status in
-                                        if status.state == .Ok {
+                                    channelToSucceed.publish(nil, data: "message\(index)") { errorInfo in
+                                        if errorInfo == nil {
                                             expect(index).to(equal(++TotalMessages.succeeded), description: "Callback was invoked with an invalid sequence")
                                         }
-                                    })
+                                    }
                                 }
                             }
                         }
                         channelToSucceed.attach()
 
                         let channelToFail = client.channels.get("channelToFail")
-                        channelToFail.subscribeToStateChanges { channelState, channelStatus in
-                            if channelState == .Attached {
+                        channelToFail.on { errorInfo in
+                            if channelToFail.state == .Attached {
                                 for index in 1...TotalMessages.expected {
-                                    channelToFail.publish("message\(index)", cb: { status in
-                                        if status.state == .Error {
+                                    channelToFail.publish(nil, data: "message\(index)") { errorInfo in
+                                        if errorInfo != nil {
                                             expect(index).to(equal(++TotalMessages.failed), description: "Callback was invoked with an invalid sequence")
                                         }
-                                    })
+                                    }
                                 }
                             }
                         }
@@ -531,17 +528,16 @@ class RealtimeClientChannel: QuickSpec {
                         let channel = client.channels.get("test")
 
                         var resultClientId: String?
-                        channel.subscribe { message, errorInfo in
-                            expect(errorInfo).to(beNil())
+                        channel.subscribe() { message in
                             resultClientId = message.clientId
                         }
 
                         let message = ARTMessage(data: "message", name: nil)
                         message.clientId = "client_string"
 
-                        channel.publish(message, cb: { status in
-                            expect(status.state).to(equal(ARTState.Ok))
-                        })
+                        channel.publish([message]) { errorInfo in
+                            expect(errorInfo).to(beNil())
+                        }
 
                         expect(resultClientId).toEventually(equal(message.clientId), timeout: testTimeout)
                     }

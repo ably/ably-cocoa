@@ -78,8 +78,8 @@
 
                 ARTRealtimeChannel *channel = [_realtime.channels get:channelName];
                 // Sending a message
-                [channel publish:c1Message cb:^(ARTStatus *status) {
-                    XCTAssertEqual(ARTStateOk, status.state);
+                [channel publish:nil data:c1Message cb:^(ARTErrorInfo *errorInfo) {
+                    XCTAssertNil(errorInfo);
                     [_realtime onDisconnected];
                 }];
             }
@@ -92,8 +92,8 @@
                     ARTRealtimeConnectionState state2 = stateChange.current;
                     if (state2 == ARTRealtimeConnected) {
                         // Sending other message to the same channel to check if the recovered connection receives it
-                        [c2 publish:c2Message cb:^(ARTStatus *status) {
-                            XCTAssertEqual(ARTStateOk, status.state);
+                        [c2 publish:nil data:c2Message cb:^(ARTErrorInfo *errorInfo) {
+                            XCTAssertNil(errorInfo);
 
                             options.recover = [_realtime.connection recoveryKey];
                             XCTAssertFalse(options.recover == nil);
@@ -104,7 +104,7 @@
                                 ARTRealtimeConnectionState cState = stateChange.current;
                                 if (cState == ARTRealtimeConnected) {
                                     XCTAssertEqualObjects(realtimeRecovered.connection.id, firstConnectionId);
-                                    [c3 subscribe:^(ARTMessage *message, ARTErrorInfo *errorInfo) {
+                                    [c3 subscribe:^(ARTMessage *message) {
                                         XCTAssertEqualObjects(c2Message, [message data]);
                                         [expectation fulfill];
                                     }];

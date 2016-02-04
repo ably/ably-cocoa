@@ -136,9 +136,9 @@
             if(state == ARTRealtimeConnected) {
                 XCTAssertEqual(realtime.connection.serial, -1);
                 ARTRealtimeChannel * c =[realtime.channels get:@"chan"];
-                [c publish:@"message" cb:^(ARTStatus *status) {
+                [c publish:nil data:@"message" cb:^(ARTErrorInfo *errorInfo) {
                     XCTAssertEqual(realtime.connection.serial, 0);
-                    [c publish:@"message2" cb:^(ARTStatus *status) {
+                    [c publish:nil data:@"message2" cb:^(ARTErrorInfo *errorInfo) {
                         XCTAssertEqual(realtime.connection.serial, 1);
                         [expectation fulfill];
                     }];

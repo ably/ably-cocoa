@@ -41,8 +41,7 @@ class RestClient: QuickSpec {
 
                     let publishTask = publishTestMessage(client, failOnError: false)
 
-                    expect(publishTask.error?.domain).toEventually(equal(ARTAblyErrorDomain), timeout: testTimeout)
-                    expect(publishTask.error?.code).toEventually(equal(40005))
+                    expect(publishTask.error?.code).toEventually(equal(40005), timeout:testTimeout)
                 }
 
                 pending("should accept a token") {
@@ -76,7 +75,6 @@ class RestClient: QuickSpec {
 
                     let publishTask = publishTestMessage(client, failOnError: false)
 
-                    expect(publishTask.error?.domain).toEventually(equal(ARTAblyErrorDomain), timeout: testTimeout)
                     expect(publishTask.error?.code).toEventually(equal(40005), timeout: testTimeout)
                 }
             }

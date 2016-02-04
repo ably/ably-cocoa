@@ -17,11 +17,9 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTRestChannel : ARTChannel
 
-@property (nonatomic, weak) ARTRest *rest;
+@property (readonly, getter=getPresence) ARTRestPresence *presence;
 
 - (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRest *)rest;
-
-- (ARTRestPresence *)presence;
 
 @end
 

@@ -50,7 +50,7 @@
         ARTAuth * auth = rest.auth;
         XCTAssertEqual(auth.method, ARTAuthMethodToken);
         ARTRestChannel *c = [rest.channels get:@"getChannel"];
-        [c publish:@"something" callback:^(NSError *error) {
+        [c publish:nil data:@"something" cb:^(ARTErrorInfo *error) {
             XCTAssert(!error);
             [expectation fulfill];
         }];
@@ -69,7 +69,7 @@
         ARTAuth * auth = rest.auth;
         XCTAssertEqual(auth.method, ARTAuthMethodToken);
         ARTChannel * c= [rest.channels get:@"getChannel"];
-        [c publish:@"something" callback:^(NSError *error) {
+        [c publish:nil data:@"something" cb:^(ARTErrorInfo *error) {
             XCTAssert(error);
             [expectation fulfill];
         }];
@@ -98,7 +98,7 @@
         _rest = rest;
         ARTAuth *auth = rest.auth;
         ARTChannel *c = [rest.channels get:@"getChannel"];
-        [c publish:@"invokeTokenRequest" callback:^(NSError *error) {
+        [c publish:nil data:@"invokeTokenRequest" cb:^(ARTErrorInfo *error) {
             XCTAssert(!error);
             NSTimeInterval secs = [auth.tokenDetails.expires timeIntervalSinceDate:auth.tokenDetails.issued];
             XCTAssertEqual(secs, 3600);
@@ -121,7 +121,7 @@
         _rest2 = secondRest;
         XCTAssertEqual(auth.method, ARTAuthMethodToken);
         ARTChannel *c = [secondRest.channels get:@"getChannel"];
-        [c publish:@"something" callback:^(NSError *error) {
+        [c publish:nil data:@"something" cb:^(ARTErrorInfo *error) {
             XCTAssert(!error);
             [expectation fulfill];
         }];

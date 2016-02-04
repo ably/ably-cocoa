@@ -156,7 +156,7 @@ class RealtimeClient: QuickSpec {
 
                 let client = ARTRealtime(options: options)
 
-                client.channels.get("test").subscribe({ message, errorInfo in
+                client.channels.get("test").subscribe({ message in
                     // Attached
                 })
 

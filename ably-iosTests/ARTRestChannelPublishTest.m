@@ -43,9 +43,9 @@
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTChannel *channel = [rest.channels get:@"testTypesByText"];
-        [channel publish:message1 callback:^(NSError *error) {
+        [channel publish:nil data:message1 cb:^(ARTErrorInfo *error) {
             XCTAssert(!error);
-            [channel publish:message2 callback:^(NSError *error) {
+            [channel publish:nil data:message2 cb:^(ARTErrorInfo *error) {
                 XCTAssert(!error);
                 ARTDataQuery *query = [[ARTDataQuery alloc] init];
                 query.direction = ARTQueryDirectionForwards;
@@ -78,7 +78,7 @@
                               [[ARTMessage alloc] initWithData:test2 name:nil],
                               [[ARTMessage alloc] initWithData:test3 name:nil]];
 
-        [channel publishMessages:messages callback:^(NSError *error) {
+        [channel publish:messages cb:^(ARTErrorInfo *error) {
             XCTAssert(!error);
             [channel history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
                 XCTAssert(!error);
@@ -102,7 +102,7 @@
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTChannel *channel = [rest.channels get:@"testTypesByText"];
-        XCTAssertThrows([channel publish:channel callback:^(NSError *error){}]);
+        XCTAssertThrows([channel publish:nil data:channel cb:^(ARTErrorInfo *error){}]);
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];

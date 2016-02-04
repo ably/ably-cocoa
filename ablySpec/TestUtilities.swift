@@ -204,11 +204,11 @@ func ==(lhs: ARTAuthOptions, rhs: ARTAuthOptions) -> Bool {
 
 class PublishTestMessage {
 
-    var completion: Optional<(NSError?)->()>
-    var error: NSError? = NSError(domain: "", code: -1, userInfo: nil)
+    var completion: Optional<(ARTErrorInfo?)->()>
+    var error: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
 
-    init(client: ARTRest, failOnError: Bool = true, completion: Optional<(NSError?)->()> = nil) {
-        client.channels.get("test").publish("message") { error in
+    init(client: ARTRest, failOnError: Bool = true, completion: Optional<(ARTErrorInfo?)->()> = nil) {
+        client.channels.get("test").publish(nil, data: "message") { error in
             self.error = error
             if let callback = completion {
                 callback(error)
@@ -219,15 +219,10 @@ class PublishTestMessage {
         }
     }
 
-    init(client: ARTRealtime, failOnError: Bool = true, completion: Optional<(NSError?)->()> = nil) {
-        let complete: (ARTStatus)->() = { status in
+    init(client: ARTRealtime, failOnError: Bool = true, completion: Optional<(ARTErrorInfo?)->()> = nil) {
+        let complete: (ARTErrorInfo?)->() = { errorInfo in
             // ARTErrorInfo to NSError
-            if let errorInfo = status.errorInfo where errorInfo.code != 0 {
-                self.error = NSError(domain: ARTAblyErrorDomain, code: Int(errorInfo.code), userInfo: [NSLocalizedDescriptionKey:errorInfo.message])
-            }
-            else {
-                self.error = nil
-            }
+            self.error = errorInfo
 
             if let callback = completion {
                 callback(self.error)
@@ -242,14 +237,14 @@ class PublishTestMessage {
             let state = stateChange.current
             if state == .Connected {
                 let channel = client.channels.get("test")
-                channel.subscribeToStateChanges { state, status in
-                    switch state {
+                channel.on { errorInfo in
+                    switch channel.state {
                     case .Attached:
-                        channel.publish("message", cb: { status in
-                            complete(status)
-                        })
+                        channel.publish(nil, data: "message") { errorInfo in
+                            complete(errorInfo)
+                        }
                     case .Failed:
-                        complete(status)
+                        complete(errorInfo)
                     default:
                         break
                     }
@@ -262,7 +257,7 @@ class PublishTestMessage {
 }
 
 /// Rest - Publish message
-func publishTestMessage(rest: ARTRest, completion: Optional<(NSError?)->()>) -> PublishTestMessage {
+func publishTestMessage(rest: ARTRest, completion: Optional<(ARTErrorInfo?)->()>) -> PublishTestMessage {
     return PublishTestMessage(client: rest, failOnError: false, completion: completion)
 }
 
@@ -272,7 +267,7 @@ func publishTestMessage(rest: ARTRest, failOnError: Bool = true) -> PublishTestM
 
 /// Realtime - Publish message with callback
 /// (publishes if connection state changes to CONNECTED and channel state changes to ATTACHED)
-func publishFirstTestMessage(realtime: ARTRealtime, completion: Optional<(NSError?)->()>) -> PublishTestMessage {
+func publishFirstTestMessage(realtime: ARTRealtime, completion: Optional<(ARTErrorInfo?)->()>) -> PublishTestMessage {
     return PublishTestMessage(client: realtime, failOnError: false, completion: completion)
 }
 

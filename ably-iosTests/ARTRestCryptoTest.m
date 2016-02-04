@@ -45,9 +45,9 @@
         XCTAssert(c);
         NSData * dataPayload = [@"someDataPayload"  dataUsingEncoding:NSUTF8StringEncoding];
         NSString * stringPayload = @"someString";
-        [c publish:dataPayload callback:^(NSError *error) {
+        [c publish:nil data:dataPayload cb:^(ARTErrorInfo *error) {
             XCTAssert(!error);
-            [c publish:stringPayload callback:^(NSError *error) {
+            [c publish:nil data:stringPayload cb:^(ARTErrorInfo *error) {
                 XCTAssert(!error);
                 [c history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
                     XCTAssert(!error);
@@ -82,9 +82,9 @@
         XCTAssert(c);
         NSData * dataPayload = [@"someDataPayload"  dataUsingEncoding:NSUTF8StringEncoding];
         NSString * stringPayload = @"someString";
-        [c publish:dataPayload callback:^(NSError *error) {
+        [c publish:nil data:dataPayload cb:^(ARTErrorInfo *error) {
             XCTAssert(!error);
-            [c publish:stringPayload callback:^(NSError *error) {
+            [c publish:nil data:stringPayload cb:^(ARTErrorInfo *error) {
                 XCTAssert(!error);
                 [c history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
                     XCTAssert(!error);

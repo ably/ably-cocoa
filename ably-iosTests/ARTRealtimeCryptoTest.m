@@ -57,11 +57,11 @@
         NSData *dataPayload = [dataStr  dataUsingEncoding:NSUTF8StringEncoding];
         NSString *stringPayload = @"someString";
 
-        [channel publish:dataPayload cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStateOk, status.state);
-            [channel publish:stringPayload cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStateOk, status.state);
-                ARTDataQuery *query = [[ARTDataQuery alloc] init];
+        [channel publish:nil data:dataPayload cb:^(ARTErrorInfo *errorInfo) {
+            XCTAssertNil(errorInfo);
+            [channel publish:nil data:stringPayload cb:^(ARTErrorInfo *errorInfo) {
+                XCTAssertNil(errorInfo);
+                ARTRealtimeHistoryQuery *query = [[ARTRealtimeHistoryQuery alloc] init];
                 [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
                     XCTAssert(!error);
                     XCTAssertFalse([result hasNext]);
@@ -88,8 +88,8 @@
         _realtime = realtime;
 
         ARTRealtimeChannel * channel = [realtime.channels get:channelName];
-        [channel publish:firstMessageText cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStateOk, status.state);
+        [channel publish:nil data:firstMessageText cb:^(ARTErrorInfo *errorInfo) {
+            XCTAssertNil(errorInfo);
             ARTIvParameterSpec * ivSpec = [[ARTIvParameterSpec alloc] initWithIv:[[NSData alloc]
                                                                                   initWithBase64EncodedString:@"HO4cYSP8LybPYBPZPHQOtg==" options:0]];
             NSData * keySpec = [[NSData alloc] initWithBase64EncodedString:@"WUP6u0K7MXI5Zeo0VppPwg==" options:0];
@@ -98,11 +98,11 @@
             XCTAssert(c);
             NSData * dataPayload = [@"someDataPayload"  dataUsingEncoding:NSUTF8StringEncoding];
             NSString * stringPayload = @"someString";
-            [c publish:dataPayload cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStateOk, status.state);
-                [c publish:stringPayload cb:^(ARTStatus *status) {
-                    XCTAssertEqual(ARTStateOk, status.state);
-                    [c history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+            [c publish:nil data:dataPayload cb:^(ARTErrorInfo *errorInfo) {
+                XCTAssertNil(errorInfo);
+                [c publish:nil data:stringPayload cb:^(ARTErrorInfo *errorInfo) {
+                    XCTAssertNil(errorInfo);
+                    [c history:[[ARTRealtimeHistoryQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
                         XCTAssert(!error);
                         XCTAssertFalse([result hasNext]);
                         NSArray * page = [result items];

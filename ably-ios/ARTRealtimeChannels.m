@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "ARTRealtimeChannels.h"
 #import "ARTChannels+Private.h"
+#import "ARTRealtimeChannel+Private.h"
 
 @interface ARTRealtimeChannels ()
 

@@ -50,11 +50,11 @@
 
         if (state == ARTRealtimeConnected) {
             ARTRealtimeChannel *channel = [realtime.channels get:@"persisted:testHistory"];
-            [channel publish:@"testString" cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStateOk, status.state);
-                [channel publish:@"testString2" cb:^(ARTStatus *status) {
-                    XCTAssertEqual(ARTStateOk, status.state);
-                    [channel history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+            [channel publish:nil data:@"testString" cb:^(ARTErrorInfo *errorInfo) {
+                XCTAssertNil(errorInfo);
+                [channel publish:nil data:@"testString2" cb:^(ARTErrorInfo *errorInfo) {
+                    XCTAssertNil(errorInfo);
+                    [channel history:[[ARTRealtimeHistoryQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
                         XCTAssert(!error);
                         NSArray *messages = [result items];
                         XCTAssertEqual(2, messages.count);
@@ -74,18 +74,18 @@
 -(void) publishTestStrings:(ARTRealtimeChannel *) channel
                      count:(int) count
                     prefix:(NSString *) prefix
-                        cb:(void (^) (ARTStatus *status)) cb
+                        cb:(void (^) (ARTErrorInfo *errorInfo)) cb
 {
     {
         __block int numReceived =0;
         __block bool done =false;
         for(int i=0; i < count; i++) {
             NSString * pub = [prefix stringByAppendingString:[NSString stringWithFormat:@"%d", i]];
-            [channel publish:pub cb:^(ARTStatus *status) {
-                if(status.state != ARTStateOk) {
+            [channel publish:nil data:pub cb:^(ARTErrorInfo *errorInfo) {
+                if(channel.state != ARTStateOk) {
                     if(!done) {
                         done = true;
-                        cb(status);
+                        cb(errorInfo);
                     }
                     return;
                 }
@@ -93,7 +93,7 @@
                 if(numReceived ==count) {
                     if(!done) {
                         done = true;
-                        cb(status);
+                        cb(errorInfo);
                         return;
                     }
                     
@@ -111,11 +111,11 @@
         NSString * both = @"historyBoth";
         ARTRealtimeChannel *channel1 = [realtime.channels get:both];
         ARTRealtimeChannel *channel2 = [realtime.channels get:both];
-        [channel1 publish:@"testString" cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStateOk, status.state);
-            [channel2 publish:@"testString2" cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStateOk, status.state);
-                [channel1 history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+        [channel1 publish:nil data:@"testString" cb:^(ARTErrorInfo *errorInfo) {
+            XCTAssertNil(errorInfo);
+            [channel2 publish:nil data:@"testString2" cb:^(ARTErrorInfo *errorInfo) {
+                XCTAssertNil(errorInfo);
+                [channel1 history:[[ARTRealtimeHistoryQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
                     XCTAssert(!error);
                     NSArray *messages = [result items];
                     XCTAssertEqual(2, messages.count);
@@ -126,7 +126,7 @@
                     [expectation1 fulfill];
                     
                 } error:nil];
-                [channel2 history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+                [channel2 history:[[ARTRealtimeHistoryQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
                     XCTAssert(!error);
                     NSArray *messages = [result items];
                     XCTAssertEqual(2, messages.count);
@@ -148,11 +148,11 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"persisted:testHistory"];
-        [channel publish:@"testString" cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStateOk, status.state);
-            [channel publish:@"testString2" cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStateOk, status.state);
-                ARTDataQuery* query = [[ARTDataQuery alloc] init];
+        [channel publish:nil data:@"testString" cb:^(ARTErrorInfo *errorInfo) {
+            XCTAssertNil(errorInfo);
+            [channel publish:nil data:@"testString2" cb:^(ARTErrorInfo *errorInfo) {
+                XCTAssertNil(errorInfo);
+                ARTRealtimeHistoryQuery* query = [[ARTRealtimeHistoryQuery alloc] init];
                 query.direction = ARTQueryDirectionForwards;
                 [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
                     XCTAssert(!error);
@@ -177,10 +177,10 @@
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"realHistChan"];
         
-        [self publishTestStrings:channel count:5 prefix:@"testString" cb:^(ARTStatus *status){
-            XCTAssertEqual(ARTStateOk, status.state);
+        [self publishTestStrings:channel count:5 prefix:@"testString" cb:^(ARTErrorInfo *errorInfo){
+            XCTAssertNil(errorInfo);
 
-            ARTDataQuery *query = [[ARTDataQuery alloc] init];
+            ARTRealtimeHistoryQuery *query = [[ARTRealtimeHistoryQuery alloc] init];
             query.limit = 2;
             query.direction = ARTQueryDirectionForwards;
             
@@ -210,7 +210,7 @@
                          ARTMessage * firstMessage = [items objectAtIndex:0];
                          XCTAssertEqualObjects(@"testString4", [firstMessage data]);
                          [result3 first:^(ARTPaginatedResult *result4, NSError *error) {
-                             XCTAssertEqual(ARTStateOk, status.state);
+                             XCTAssertNil(errorInfo);
                              XCTAssertTrue([result4 hasNext]);
                              NSArray * items = [result4 items];
                              XCTAssertEqual([items count], 2);
@@ -234,10 +234,10 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"histRealBackChan"];
-        [self publishTestStrings:channel count:5 prefix:@"testString" cb:^(ARTStatus *status){
-            XCTAssertEqual(ARTStateOk, status.state);
+        [self publishTestStrings:channel count:5 prefix:@"testString" cb:^(ARTErrorInfo *errorInfo){
+            XCTAssertNil(errorInfo);
 
-            ARTDataQuery *query = [[ARTDataQuery alloc] init];
+            ARTRealtimeHistoryQuery *query = [[ARTRealtimeHistoryQuery alloc] init];
             query.limit = 2;
             query.direction = ARTQueryDirectionBackwards;
 
@@ -268,7 +268,7 @@
                          ARTMessage * firstMessage = [items objectAtIndex:0];
                          XCTAssertEqualObjects(@"testString0", [firstMessage data]);
                          [result3 first:^(ARTPaginatedResult *result4, NSError *error) {
-                             XCTAssertEqual(ARTStateOk, status.state);
+                             XCTAssert(!error);
                              XCTAssertTrue([result4 hasNext]);
                              NSArray * items = [result4 items];
                              XCTAssertEqual([items count], 2);
@@ -277,7 +277,7 @@
                              XCTAssertEqualObjects(@"testString4", [firstMessage data]);
                              XCTAssertEqualObjects(@"testString3", [secondMessage data]);
                              [result2 first:^(ARTPaginatedResult *result, NSError *error) {
-                                 XCTAssertEqual(ARTStateOk, status.state);
+                                 XCTAssert(!error);
                                  XCTAssertTrue([result hasNext]);
                                  NSArray * items = [result items];
                                  XCTAssertEqual([items count], 2);
@@ -343,7 +343,7 @@
                 sleep([ARTTestUtil bigSleep]);
 
                 [ARTTestUtil publishRealtimeMessages:thirdBatch count:thirdBatchTotal channel:channel completion:^{
-                    ARTDataQuery *query = [[ARTDataQuery alloc] init];
+                    ARTRealtimeHistoryQuery *query = [[ARTRealtimeHistoryQuery alloc] init];
                     query.start = [NSDate dateWithTimeIntervalSince1970:intervalStart/1000];
                     query.end = [NSDate dateWithTimeIntervalSince1970:intervalEnd/1000];
                     query.direction = ARTQueryDirectionBackwards;
@@ -416,7 +416,7 @@
                 sleep([ARTTestUtil bigSleep]);
 
                 [ARTTestUtil publishRealtimeMessages:thirdBatch count:thirdBatchTotal channel:channel completion:^{
-                    ARTDataQuery *query = [[ARTDataQuery alloc] init];
+                    ARTRealtimeHistoryQuery *query = [[ARTRealtimeHistoryQuery alloc] init];
                     query.start = [NSDate dateWithTimeIntervalSince1970:intervalStart/1000];
                     query.end = [NSDate dateWithTimeIntervalSince1970:intervalEnd/1000];
                     query.direction = ARTQueryDirectionForwards;
@@ -465,15 +465,15 @@
         for(int i=0; i < firstBatchTotal; i++) {
             NSString *pub = [NSString stringWithFormat:@"test%d", i];
             sleep([ARTTestUtil smallSleep]);
-            [channel publish:pub cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStateOk, status.state);
+            [channel publish:nil data:pub cb:^(ARTErrorInfo *errorInfo) {
+                XCTAssertNil(errorInfo);
                 ++numReceived;
                 if (numReceived == firstBatchTotal) {
                     ARTRealtime *realtime2 =[[ARTRealtime alloc] initWithOptions:options];
                     _realtime2 = realtime2;
                     ARTRealtimeChannel *channel2 = [realtime2.channels get:channelName];
 
-                    ARTDataQuery *query = [[ARTDataQuery alloc] init];
+                    ARTRealtimeHistoryQuery *query = [[ARTRealtimeHistoryQuery alloc] init];
                     query.direction = ARTQueryDirectionBackwards;
 
                     [channel2 history:query callback:^(ARTPaginatedResult *result, NSError *error) {

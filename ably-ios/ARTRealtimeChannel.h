@@ -11,75 +11,40 @@
 #import "ARTLog.h"
 #import "ARTRestChannel.h"
 #import "ARTPresenceMessage.h"
+#import "ARTEventEmitter.h"
+#import "ARTRealtimePresence.h"
+#import "ARTDataQuery.h"
 
-@protocol ARTSubscription;
+@interface ARTRealtimeHistoryQuery : ARTDataQuery
 
-@class ARTRealtime;
-@class ARTDataQuery;
-@class ARTRealtimePresence;
-@class ARTPresenceMap;
-@class ARTMessage;
-@class ARTProtocolMessage;
-@class ARTRealtimeChannelSubscription;
-@class ARTRealtimeChannelStateSubscription;
+@property (nonatomic, assign) BOOL untilAttach;
+
+@end
+
+ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimeChannel : ARTRestChannel
 
-@property (readonly, weak, nonatomic) ARTRealtime *realtime;
 @property (readwrite, assign, nonatomic) ARTRealtimeChannelState state;
-@property (readwrite, strong, nonatomic) NSMutableArray *queuedMessages;
-@property (readwrite, strong, nonatomic) NSString *attachSerial;
-@property (readonly, strong, nonatomic) NSMutableDictionary *subscriptions;
-@property (readonly, strong, nonatomic) NSMutableArray *presenceSubscriptions;
-@property (readonly, strong, nonatomic) NSMutableDictionary *presenceDict;
-@property (readonly, getter=getClientId) NSString *clientId;
-@property (readonly, strong, nonatomic) NSMutableArray *stateSubscriptions;
-@property (readwrite, strong, nonatomic) ARTPresenceMap *presenceMap;
-@property (readwrite, assign, nonatomic) ARTPresenceAction lastPresenceAction;
+@property (readonly, strong, nonatomic, art_nullable) ARTErrorInfo *errorReason;
+@property (readonly, getter=getPresence) ARTRealtimePresence *presence;
 
-- (instancetype)initWithRealtime:(ARTRealtime *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options;
-+ (instancetype)channelWithRealtime:(ARTRealtime *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options;
+- (void)attach;
+- (void)attach:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb;
 
-- (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status;
+- (void)detach;
+- (void)detach:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb;
 
-- (void)onChannelMessage:(ARTProtocolMessage *)message;
-- (void)publishMessages:(__GENERIC(NSArray, ARTMessage *) *)messages cb:(ARTStatusCallback)cb;
-- (void)publishPresence:(ARTPresenceMessage *)pm cb:(ARTStatusCallback)cb;
-- (void)publishProtocolMessage:(ARTProtocolMessage *)pm cb:(ARTStatusCallback)cb;
+- (__GENERIC(ARTEventListener, ARTMessage *) *)subscribe:(void (^)(ARTMessage *message))cb;
+- (__GENERIC(ARTEventListener, ARTMessage *) *)subscribe:(NSString *)name cb:(void (^)(ARTMessage *message))cb;
 
-- (void)setAttached:(ARTProtocolMessage *)message;
-- (void)setDetached:(ARTProtocolMessage *)message;
-- (void)onMessage:(ARTProtocolMessage *)message;
-- (void)onPresence:(ARTProtocolMessage *)message;
-- (void)onError:(ARTProtocolMessage *)error;
-- (void)setSuspended:(ARTStatus *)error;
+- (void)unsubscribe:(__GENERIC(ARTEventListener, ARTMessage *) *)listener;
+- (void)unsubscribe:(NSString *)name listener:(__GENERIC(ARTEventListener, ARTMessage *) *)listener;
 
-- (void)sendQueuedMessages;
-- (void)failQueuedMessages:(ARTStatus *)status;
+- (BOOL)history:(art_nullable ARTRealtimeHistoryQuery *)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *__art_nullable result, NSError *__art_nullable error))callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
 
-- (void)unsubscribe:(ARTRealtimeChannelSubscription *)subscription;
-- (void)unsubscribeState:(ARTRealtimeChannelStateSubscription *)subscription;
-
-- (void)broadcastPresence:(ARTPresenceMessage *)pm;
-
-- (void)publish:(id)data withName:(NSString *)name cb:(ARTStatusCallback)cb;
-- (void)publish:(id)data cb:(ARTStatusCallback)cb;
-
-- (id<ARTSubscription>)subscribe:(ARTRealtimeChannelMessageCb)cb;
-- (id<ARTSubscription>)subscribeToName:(NSString *)name cb:(ARTRealtimeChannelMessageCb)cb;
-- (id<ARTSubscription>)subscribeToNames:(NSArray *)names cb:(ARTRealtimeChannelMessageCb)cb;
-- (id<ARTSubscription>)subscribeToStateChanges:(ARTRealtimeChannelStateCb)cb;
-
-- (ARTErrorInfo *)attach;
-- (ARTErrorInfo *)detach;
-- (void)detachChannel:(ARTStatus *) error;
-
-- (void)requestContinueSync;
-
-- (void)releaseChannel;
-- (ARTRealtimeChannelState)state;
-
-- (ARTRealtimePresence *)presence;
-- (ARTPresenceMap *)presenceMap;
+ART_EMBED_INTERFACE_EVENT_EMITTER(ARTRealtimeChannelState, ARTErrorInfo *)
 
 @end
+
+ART_ASSUME_NONNULL_END

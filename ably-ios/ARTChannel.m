@@ -34,15 +34,12 @@
     }
 }
 
-- (void)publish:(id)data callback:(ARTErrorCallback)callback {
-    [self publish:data name:nil callback:callback];
+- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
+    [self internalPostMessages:[self encodeMessageIfNeeded:[[ARTMessage alloc] initWithData:data name:name]]
+                      callback:callback];
 }
 
-- (void)publish:(id)data name:(NSString *)name callback:(ARTErrorCallback)callback {
-    [self publishMessage:[[ARTMessage alloc] initWithData:data name:name] callback:callback];
-}
-
-- (void)publishMessages:(NSArray *)messages callback:(ARTErrorCallback)callback {
+- (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
     [self internalPostMessages:[messages artMap:^id(ARTMessage *message) {
         return [self encodeMessageIfNeeded:message];
     }] callback:callback];
@@ -60,16 +57,12 @@
     return message;
 }
 
-- (void)publishMessage:(ARTMessage *)message callback:(ARTErrorCallback)callback {
-    [self internalPostMessages:[self encodeMessageIfNeeded:message] callback:callback];
-}
-
 - (BOOL)history:(ARTDataQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, NSError *))callback error:(NSError **)errorPtr {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
     return NO;
 }
 
-- (void)internalPostMessages:(id)data callback:(ARTErrorCallback)callback {
+- (void)internalPostMessages:(id)data callback:(void (^)(ARTErrorInfo *__art_nullable error))callback {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 

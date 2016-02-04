@@ -42,7 +42,7 @@ ARTRealtimeChannel * channel = [client.channels get:@"test"];
 
 ### Publishing to a channel
 ```
-    [channel publish:@"Hello, Channel!" cb:^(ARTStatus *status) {
+    [channel publish:nil data:@"Hello, Channel!" cb:^(ARTErrorInfo *errorInfo) {
         if(status.status != ARTStatusOk) {
             //something went wrong.
         }
@@ -100,7 +100,7 @@ ARTRealtimeChannel * channel = [client.channels get:@"test"];
 
 ## Publishing a message to a channel
 ```
-   [channel publish:@"Hello, channel!" cb:^(ARTStatus *status){
+   [channel publish:nil data:@"Hello, channel!" cb:^(ARTErrorInfo *errorInfo){
        if(status.status != ARTStatusOk) {
            //something went wrong
        }

@@ -13,11 +13,12 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTChannel()
 
+@property (readonly, getter=getLogger) ARTLog *logger;
 @property (nonatomic, strong, art_null_resettable) ARTChannelOptions *options;
 @property (nonatomic, strong, readonly) ARTDataEncoder *dataEncoder;
 
 - (ARTMessage *__art_nonnull)encodeMessageIfNeeded:(ARTMessage *__art_nonnull)message;
-- (void)internalPostMessages:(id)data callback:(art_nullable ARTErrorCallback)callback;
+- (void)internalPostMessages:(id)data callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;
 
 @end
 

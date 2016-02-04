@@ -13,18 +13,6 @@
 @class ARTRealtime;
 @class ARTRealtimeChannel;
 
-@interface ARTRealtimeChannelSubscription : NSObject <ARTSubscription>
-
-@property (readonly, weak, nonatomic) ARTRealtimeChannel *channel;
-@property (readonly, strong, nonatomic) ARTRealtimeChannelMessageCb cb;
-
-- (instancetype)initWithChannel:(ARTRealtimeChannel *)channel cb:(ARTRealtimeChannelMessageCb)cb;
-
-- (void)unsubscribe;
-
-@end
-
-
 @interface ARTRealtimeChannelPresenceSubscription : NSObject <ARTSubscription>
 
 @property (readonly, strong, nonatomic) NSMutableSet *excludedActions;
@@ -36,18 +24,6 @@
 
 - (void)excludeAction:(ARTPresenceAction)action;
 - (void)excludeAllActionsExcept:(ARTPresenceAction)action;
-
-- (void)unsubscribe;
-
-@end
-
-
-@interface ARTRealtimeChannelStateSubscription : NSObject <ARTSubscription>
-
-@property (readonly, weak, nonatomic) ARTRealtimeChannel *channel;
-@property (readonly, strong, nonatomic) ARTRealtimeChannelStateCb cb;
-
-- (instancetype)initWithChannel:(ARTRealtimeChannel *)channel cb:(ARTRealtimeChannelStateCb)cb;
 
 - (void)unsubscribe;
 

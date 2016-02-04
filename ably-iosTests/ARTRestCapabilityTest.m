@@ -69,11 +69,11 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"testSimpleDisconnected"];
     [self withRestRestrictCap:^(ARTRest * rest) {
         ARTRestChannel *channel = [rest.channels get:@"canpublish:test"];
-        [channel publish:@"publish" callback:^(NSError *error) {
+        [channel publish:nil data:@"publish" cb:^(ARTErrorInfo *error) {
             XCTAssert(!error);
             NSLog(@"%@", error);
             ARTRestChannel *channel2 = [rest.channels get:@"cannotPublishToThisChannelName"];
-            [channel2 publish:@"publish" callback:^(NSError *error) {
+            [channel2 publish:nil data:@"publish" cb:^(ARTErrorInfo *error) {
                 XCTAssert(error);
                 NSLog(@"%@", error);
                 [expectation fulfill];

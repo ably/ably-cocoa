@@ -65,10 +65,10 @@ class RestChannel: QuickSpec {
             // RSL1b
             context("with name and data arguments") {
                 it("publishes the message and invokes callback with success") {
-                    var publishError: NSError? = NSError(domain: "", code: -1, userInfo: nil)
+                    var publishError: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
                     
-                    channel.publish(data, name: name) { error in
+                    channel.publish(name, data: data) { error in
                         publishError = error
                         try! channel.history(nil) { result, _ in
                             publishedMessage = result?.items.first as? ARTMessage
@@ -84,10 +84,10 @@ class RestChannel: QuickSpec {
             // RSL1b, RSL1e
             context("with name only") {
                 it("publishes the message and invokes callback with success") {
-                    var publishError: NSError? = NSError(domain: "", code: -1, userInfo: nil)
+                    var publishError: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
                     
-                    channel.publish(nil, name: name) { error in
+                    channel.publish(name, data: nil) { error in
                         publishError = error
                         try! channel.history(nil) { result, _ in
                             publishedMessage = result?.items.first as? ARTMessage
@@ -103,10 +103,10 @@ class RestChannel: QuickSpec {
             // RSL1b, RSL1e
             context("with data only") {
                 it("publishes the message and invokes callback with success") {
-                    var publishError: NSError? = NSError(domain: "", code: -1, userInfo: nil)
+                    var publishError: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
                     
-                    channel.publish(data) { error in
+                    channel.publish(nil, data: data) { error in
                         publishError = error
                         try! channel.history(nil) { result, _ in
                             publishedMessage = result?.items.first as? ARTMessage
@@ -122,10 +122,10 @@ class RestChannel: QuickSpec {
             // RSL1b, RSL1e
             context("with neither name nor data") {
                 it("publishes the message and invokes callback with success") {
-                    var publishError: NSError? = NSError(domain: "", code: -1, userInfo: nil)
+                    var publishError: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
                     
-                    channel.publish(nil) { error in
+                    channel.publish(nil, data: nil) { error in
                         publishError = error
                         try! channel.history(nil) { result, _ in
                             publishedMessage = result?.items.first as? ARTMessage
@@ -140,10 +140,10 @@ class RestChannel: QuickSpec {
             
             context("with a Message object") {
                 it("publishes the message and invokes callback with success") {
-                    var publishError: NSError? = NSError(domain: "", code: -1, userInfo: nil)
+                    var publishError: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
                     
-                    channel.publishMessage(ARTMessage(data:data, name: name)) { error in
+                    channel.publish([ARTMessage(data:data, name: name)]) { error in
                         publishError = error
                         try! channel.history(nil) { result, _ in
                             publishedMessage = result?.items.first as? ARTMessage
@@ -163,14 +163,14 @@ class RestChannel: QuickSpec {
                     defer { client.httpExecutor = oldExecutor}
                     client.httpExecutor = mockExecutor
 
-                    var publishError: NSError? = NSError(domain: "", code: -1, userInfo: nil)
+                    var publishError: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessages: [ARTMessage] = []
 
                     let messages = [
                         ARTMessage(data: "foo", name: "bar"),
                         ARTMessage(data: "baz", name: "bat")
                     ]
-                    channel.publishMessages(messages) { error in
+                    channel.publish(messages) { error in
                         publishError = error
                         client.httpExecutor = oldExecutor
                         try! channel.history(nil) { result, _ in
@@ -206,7 +206,7 @@ class RestChannel: QuickSpec {
                     let channel = client.channels.get("persisted:presence_fixtures", options:ARTChannelOptions.init(encrypted: cipherParams))
                     var presenceMessages: [ARTPresenceMessage] = []
 
-                    channel.presence().get() { result, _ in
+                    channel.presence.get() { result, _ in
                         if let items = result?.items as? [ARTPresenceMessage] {
                             presenceMessages.appendContentsOf(items)
                         }
@@ -261,7 +261,7 @@ class RestChannel: QuickSpec {
 
                 validCases.forEach { caseTest in
                     waitUntil(timeout: testTimeout) { done in
-                        channel.publish(caseTest.value, callback: { error in
+                        channel.publish(nil, data: caseTest.value) { error in
                             expect(error).to(beNil())
                             guard let httpBody = mockExecutor.requests.last!.HTTPBody else {
                                 XCTFail("HTTPBody is nil");
@@ -269,7 +269,7 @@ class RestChannel: QuickSpec {
                             }
                             expect(caseTest.expected).to(equal(JSON(data: httpBody)))
                             done()
-                        })
+                        }
                     }
                 }
 
@@ -277,7 +277,7 @@ class RestChannel: QuickSpec {
 
                 invalidCases.forEach { caseItem in
                     waitUntil(timeout: testTimeout) { done in
-                        expect { channel.publish(caseItem, callback: nil) }.to(raiseException(named: NSInvalidArgumentException))
+                        expect { channel.publish(nil, data: caseItem, cb: nil) }.to(raiseException(named: NSInvalidArgumentException))
                         done()
                     }
                 }
@@ -296,7 +296,7 @@ class RestChannel: QuickSpec {
 
                 encodingCases.forEach { caseItem in
                     waitUntil(timeout: testTimeout) { done in
-                        channel.publish(caseItem.value, callback: { error in
+                        channel.publish(nil, data: caseItem.value, cb: { error in
                             expect(error).to(beNil())
                             guard let httpBody = mockExecutor.requests.last!.HTTPBody else {
                                 XCTFail("HTTPBody is nil");
@@ -314,7 +314,7 @@ class RestChannel: QuickSpec {
                 it("binary payload should be encoded as Base64 and represented as a JSON string") {
                     client.httpExecutor = mockExecutor
                     waitUntil(timeout: testTimeout) { done in
-                        channel.publish(binaryData, callback: { error in
+                        channel.publish(nil, data: binaryData, cb: { error in
                             expect(error).to(beNil())
                             guard let httpBody = mockExecutor.requests.last!.HTTPBody else {
                                 XCTFail("HTTPBody is nil");
@@ -333,7 +333,7 @@ class RestChannel: QuickSpec {
                 it("string payload should be represented as a JSON string") {
                     client.httpExecutor = mockExecutor
                     waitUntil(timeout: testTimeout) { done in
-                        channel.publish(text, callback: { error in
+                        channel.publish(nil, data: text, cb: { error in
                             expect(error).to(beNil())
 
                             if let request = mockExecutor.requests.last, let http = request.HTTPBody {
@@ -357,7 +357,7 @@ class RestChannel: QuickSpec {
                         client.httpExecutor = mockExecutor
                         // JSON Array
                         waitUntil(timeout: testTimeout) { done in
-                            channel.publish(array, callback: { error in
+                            channel.publish(nil, data: array, cb: { error in
                                 expect(error).to(beNil())
 
                                 if let request = mockExecutor.requests.last, let http = request.HTTPBody {
@@ -378,7 +378,7 @@ class RestChannel: QuickSpec {
                         client.httpExecutor = mockExecutor
                         // JSON Object
                         waitUntil(timeout: testTimeout) { done in
-                            channel.publish(dictionary, callback: { error in
+                            channel.publish(nil, data: dictionary, cb: { error in
                                 expect(error).to(beNil())
 
                                 if let request = mockExecutor.requests.last, let http = request.HTTPBody {
@@ -403,7 +403,7 @@ class RestChannel: QuickSpec {
 
                     cases.forEach { caseTest in
                         waitUntil(timeout: testTimeout) { done in
-                            channel.publish(caseTest, callback: { error in
+                            channel.publish(nil, data: caseTest, cb: { error in
                                 expect(error).to(beNil())
                                 done()
                             })

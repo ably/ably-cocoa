@@ -184,37 +184,37 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
 + (void)publishRestMessages:(NSString *)prefix count:(int)count channel:(ARTChannel *)channel completion:(void (^)())completion {
     NSString *pattern = [prefix stringByAppendingString:@"%d"];
     __block int numReceived = 0;
-    __block __weak ARTErrorCallback weakCallback;
-    ARTErrorCallback callback;
+    __block __weak void (^weakCallback)(ARTErrorInfo *__art_nullable error);
+    void (^callback)(ARTErrorInfo *__art_nullable error);
 
-    weakCallback = callback = ^(NSError *error) {
+    weakCallback = callback = ^(ARTErrorInfo *error) {
         if (++numReceived != count) {
-            [channel publish:[NSString stringWithFormat:pattern, numReceived] callback:weakCallback];
+            [channel publish:nil data:[NSString stringWithFormat:pattern, numReceived] cb:weakCallback];
         }
         else {
             completion();
         }
     };
 
-    [channel publish:[NSString stringWithFormat:pattern, numReceived] callback:callback];
+    [channel publish:nil data:[NSString stringWithFormat:pattern, numReceived] cb:callback];
 }
 
 + (void)publishRealtimeMessages:(NSString *)prefix count:(int)count channel:(ARTRealtimeChannel *)channel completion:(void (^)())completion {
     __block int numReceived = 0;
-    __block __weak ARTStatusCallback weakCb;
+    __block __weak void (^weakCb)(ARTErrorInfo *__art_nullable error);
     NSString * pattern = [prefix stringByAppendingString:@"%d"];
-    ARTStatusCallback cb;
+    void (^cb)(ARTErrorInfo *__art_nullable error);
     
-    weakCb = cb = ^(ARTStatus *status) {
+    weakCb = cb = ^(ARTErrorInfo *errorInfo) {
         ++numReceived;
         if(numReceived !=count) {
-            [channel publish:[NSString stringWithFormat:pattern, numReceived] cb:weakCb];
+            [channel publish:nil data:[NSString stringWithFormat:pattern, numReceived] cb:weakCb];
         }
         else {
             completion();
         }
     };
-    [channel publish:[NSString stringWithFormat:pattern, numReceived] cb:cb];
+    [channel publish:nil data:[NSString stringWithFormat:pattern, numReceived] cb:cb];
     
 }
 

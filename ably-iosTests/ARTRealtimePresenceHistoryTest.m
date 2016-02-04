@@ -108,8 +108,8 @@
                 [channel attach];
             }
         }];
-        [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
-            if(cState == ARTRealtimeChannelAttached) {
+        [channel on:^(ARTErrorInfo *errorInfo) {
+            if(channel.state == ARTRealtimeChannelAttached) {
                 [channel.presence enter:[self enter1Str] cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
                     //second enter gets treated as an update.
@@ -147,8 +147,8 @@
                 [channel attach];
             }
         }];
-        [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
-            if(cState == ARTRealtimeChannelAttached) {
+        [channel on:^(ARTErrorInfo *errorInfo) {
+            if(channel.state == ARTRealtimeChannelAttached) {
                 [channel.presence enter:presenceEnter cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
 
@@ -180,8 +180,8 @@
                 [channel attach];
             }
         }];
-        [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
-            if(cState == ARTRealtimeChannelAttached) {
+        [channel on:^(ARTErrorInfo *errorInfo) {
+            if(channel.state == ARTRealtimeChannelAttached) {
                 [channel.presence enter:presenceEnter1 cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
                     [channel.presence enter:presenceEnter2 cb:^(ARTStatus *status) {
@@ -230,8 +230,8 @@
         ARTRealtimeChannel *channel = [realtime1.channels get:channelName];
        
     
-        [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState1, ARTStatus *reason1) {
-            if(cState1 == ARTRealtimeChannelAttached)
+        [channel on:^(ARTErrorInfo *errorInfo) {
+            if(channel.state == ARTRealtimeChannelAttached)
             {
                 [self withRealtimeClientId2:^(ARTRealtime *realtime2) {
                     ARTRealtimeChannel *channel2 = [realtime2.channels get:channelName];
@@ -289,8 +289,8 @@
                 [channel attach];
             }
         }];
-        [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
-            if(cState == ARTRealtimeChannelAttached) {
+        [channel on:^(ARTErrorInfo *errorInfo) {
+            if(channel.state == ARTRealtimeChannelAttached) {
                 [channel.presence enter:presenceEnter1 cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
 
@@ -432,8 +432,8 @@
         int secondBatchTotal = [self secondBatchSize];
         int thirdBatchTotal = [self thirdBatchSize];
     
-        [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
-            if(cState == ARTRealtimeChannelAttached) {
+        [channel on:^(ARTErrorInfo *errorInfo) {
+            if(channel.state == ARTRealtimeChannelAttached) {
                 [channel.presence enter:[self enter1Str] cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
 
@@ -551,8 +551,8 @@
                 [channel attach];
             }
         }];
-        [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
-            if(cState == ARTRealtimeChannelAttached) {
+        [channel on:^(ARTErrorInfo *errorInfo) {
+            if(channel.state == ARTRealtimeChannelAttached) {
                 [channel.presence enter:[self enter1Str] cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
                     [channel.presence enter:[self enter2Str] cb:^(ARTStatus *status) {
@@ -561,8 +561,8 @@
                             XCTAssertEqual(ARTStateOk, status2.state);
                             [self withRealtimeClientId2:^(ARTRealtime *realtime2) {
                                 ARTRealtimeChannel * channel2 = [realtime2.channels get:[self channelName]];
-                                [channel2 subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
-                                    if(cState == ARTRealtimeChannelAttached) {
+                                [channel2 on:^(ARTErrorInfo *errorInfo) {
+                                    if(channel2.state == ARTRealtimeChannelAttached) {
                                         ARTDataQuery *query = [[ARTDataQuery alloc] init];
                                         query.direction = ARTQueryDirectionForwards;
                                         [channel2.presence history:query callback:^(ARTPaginatedResult *c2Result, NSError *error2) {

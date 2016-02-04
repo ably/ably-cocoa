@@ -12,26 +12,6 @@
 #import "ARTRealtimeChannel.h"
 #import "ARTRealtimePresence.h"
 
-#pragma mark - ARTRealtimeChannelSubscription
-
-@implementation ARTRealtimeChannelSubscription
-
-- (instancetype)initWithChannel:(ARTRealtimeChannel *)channel cb:(ARTRealtimeChannelMessageCb)cb {
-    self = [super init];
-    if (self) {
-        _channel = channel;
-        _cb = cb;
-    }
-    return self;
-}
-
-- (void)unsubscribe {
-    [self.channel unsubscribe:self];
-}
-
-@end
-
-
 #pragma mark - ARTRealtimeChannelPresenceSubscription
 
 @implementation ARTRealtimeChannelPresenceSubscription
@@ -65,26 +45,6 @@
 
 - (void)unsubscribe {
     [self.channel.presence unsubscribe:self];
-}
-
-@end
-
-
-#pragma mark - ARTRealtimeChannelStateSubscription
-
-@implementation ARTRealtimeChannelStateSubscription
-
-- (instancetype)initWithChannel:(ARTRealtimeChannel *)channel cb:(ARTRealtimeChannelStateCb)cb {
-    self = [super init];
-    if (self) {
-        _channel = channel;
-        _cb = cb;
-    }
-    return self;
-}
-
-- (void)unsubscribe {
-    [self.channel unsubscribeState:self];
 }
 
 @end

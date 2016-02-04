@@ -51,13 +51,13 @@
                 ARTRealtimeChannel *channel = [realtime.channels get:@"attach"];
 
                 __block bool hasAttached = false;
-                [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
-                    if(state == ARTRealtimeChannelAttaching) {
-                        XCTAssertEqual(ARTStateOk, reason.state);
+                [channel on:^(ARTErrorInfo *errorInfo) {
+                    if(channel.state == ARTRealtimeChannelAttaching) {
+                        XCTAssertNil(errorInfo);
                         [channel attach];
                     }
                     if (state == ARTRealtimeChannelAttached) {
-                        XCTAssertEqual(ARTStateOk, reason.state);
+                        XCTAssertNil(errorInfo);
                         [channel attach];
                         
                         if(!hasAttached) {
@@ -88,20 +88,20 @@
         [channel attach];
         __block bool detachedReached = false;
         
-        [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
-            if (state == ARTRealtimeChannelAttached) {
+        [channel on:^(ARTErrorInfo *errorInfo) {
+            if (channel.state == ARTRealtimeChannelAttached) {
                 if(!detachedReached) {
                     [channel detach];
                 }
             }
-            if(state == ARTRealtimeChannelDetaching) {
+            if(channel.state == ARTRealtimeChannelDetaching) {
                 detachedReached = true;
                 [channel attach];
             }
-            if(state == ARTRealtimeChannelDetached) {
+            if(channel.state == ARTRealtimeChannelDetached) {
                 XCTFail(@"Should not have reached detached state");
             }
-            if(state == ARTRealtimeChannelAttaching) {
+            if(channel.state == ARTRealtimeChannelAttaching) {
                 if(detachedReached) {
                     [expectation fulfill];
                 }
@@ -123,13 +123,13 @@
         ARTRealtimeChannel *channel2 = [realtime.channels get:@"test_attach_multiple2"];
         [channel2 attach];
 
-        [channel1 subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
-            if (state == ARTRealtimeChannelAttached) {
+        [channel1 on:^(ARTErrorInfo *errorInfo) {
+            if (channel1.state == ARTRealtimeChannelAttached) {
                 [expectation1 fulfill];
             }
         }];
-        [channel2 subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
-            if (state == ARTRealtimeChannelAttached) {
+        [channel2 on:^(ARTErrorInfo *errorInfo) {
+            if (channel2.state == ARTRealtimeChannelAttached) {
                 [expectation2 fulfill];
             }
         }];
@@ -147,8 +147,8 @@
             ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime.channels get:@"detach"];
-                [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
-                    if (state == ARTRealtimeChannelAttached) {
+                [channel on:^(ARTErrorInfo *errorInfo) {
+                    if (channel.state == ARTRealtimeChannelAttached) {
                         [channel detach];
                     }
                     else if(state == ARTRealtimeChannelDetached) {
@@ -172,8 +172,8 @@
             ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime.channels get:@"detach"];
-                [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
-                    if (state == ARTRealtimeChannelAttached) {
+                [channel on:^(ARTErrorInfo *errorInfo) {
+                    if (channel.state == ARTRealtimeChannelAttached) {
                         [channel detach];
                     }
                     else if(state == ARTRealtimeChannelDetaching) {
@@ -201,17 +201,17 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"attaching_to_detaching"];
-        [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
-            if (state == ARTRealtimeChannelAttached) {
+        [channel on:^(ARTErrorInfo *errorInfo) {
+            if (channel.state == ARTRealtimeChannelAttached) {
                 XCTFail(@"Should not have made it to attached");
             }
-            else if( state == ARTRealtimeChannelAttaching) {
+            else if( channel.state == ARTRealtimeChannelAttaching) {
                 [channel detach];
             }
-            else if(state == ARTRealtimeChannelDetaching) {
+            else if(channel.state == ARTRealtimeChannelDetaching) {
                 [expectation fulfill];
             }
-            else if(state == ARTRealtimeChannelDetached) {
+            else if(channel.state == ARTRealtimeChannelDetached) {
                 XCTFail(@"Should not have made it to detached");
                 
             }
@@ -230,7 +230,7 @@
             
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime.channels get:@"testDetachingIgnoresDetach"];
-                [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
+                [channel on:^(ARTErrorInfo *errorInfo) {
 
                     if (state == ARTRealtimeChannelAttached) {
                         [channel detach];
@@ -258,16 +258,16 @@
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime.channels get:@"attach"];
                 __block bool hasFailed = false;
-                [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
-                    if (state == ARTRealtimeChannelAttached) {
+                [channel on:^(ARTErrorInfo *errorInfo) {
+                    if (channel.state == ARTRealtimeChannelAttached) {
                         if(!hasFailed) {
-                            XCTAssertEqual(ARTStateOk, reason.state);
+                            XCTAssertNil(errorInfo);
                             [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
                         }
                     }
                     else if(state == ARTRealtimeChannelFailed) {
                         [channel attach];
-                        XCTAssertEqual(ARTStateError, reason.state);
+                        XCTAssertNil(errorInfo);
                         [expectation fulfill];
                     }
                 }];
@@ -293,9 +293,9 @@
             _realtime = realtime;
 
             ARTRealtimeChannel * channel = [realtime.channels get:@"some_unpermitted_channel"];
-            [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
-                if(cState != ARTRealtimeChannelAttaching) {
-                    XCTAssertEqual(cState, ARTRealtimeChannelFailed);
+            [channel on:^(ARTErrorInfo *errorInfo) {
+                if(channel.state != ARTRealtimeChannelAttaching) {
+                    XCTAssertEqual(channel.state, ARTRealtimeChannelFailed);
                     [expectation fulfill];
                 }
             }];
@@ -310,12 +310,12 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel1 = [realtime.channels get:@"channel"];
-        [channel1 subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
-            if (state == ARTRealtimeChannelAttaching) {
+        [channel1 on:^(ARTErrorInfo *errorInfo) {
+            if (channel1.state == ARTRealtimeChannelAttaching) {
                 [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
             }
             else {
-                XCTAssertEqual(ARTRealtimeChannelFailed, state);
+                XCTAssertEqual(ARTRealtimeChannelFailed, channel1.state);
                 [exp fulfill];
             }
         }];
@@ -329,12 +329,12 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel1 = [realtime.channels get:@"channel"];
-        [channel1 subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
-            if (state == ARTRealtimeChannelAttached) {
+        [channel1 on:^(ARTErrorInfo *errorInfo) {
+            if (channel1.state == ARTRealtimeChannelAttached) {
                 [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
             }
-            else if(state != ARTRealtimeChannelAttaching) {
-                XCTAssertEqual(ARTRealtimeChannelFailed, state);
+            else if(channel1.state != ARTRealtimeChannelAttaching) {
+                XCTAssertEqual(ARTRealtimeChannelFailed, channel1.state);
                 [exp fulfill];
             }
         }];
@@ -348,12 +348,12 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel1 = [realtime.channels get:@"channel"];
-        [channel1 subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
-            if (state == ARTRealtimeChannelAttached) {
+        [channel1 on:^(ARTErrorInfo *errorInfo) {
+            if (channel1.state == ARTRealtimeChannelAttached) {
                 [realtime close];
             }
-            else if(state != ARTRealtimeChannelAttaching) {
-                XCTAssertEqual(ARTRealtimeChannelDetached, state);
+            else if(channel1.state != ARTRealtimeChannelAttaching) {
+                XCTAssertEqual(ARTRealtimeChannelDetached, channel1.state);
                 [exp fulfill];
             }
         }];
