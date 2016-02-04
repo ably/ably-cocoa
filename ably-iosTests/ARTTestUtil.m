@@ -288,4 +288,14 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
     return protocolMessage;
 }
 
++ (void)removeAllChannels:(ARTRealtime *)realtime {
+    NSMutableArray *names = [[NSMutableArray alloc] init];
+    for (ARTRealtimeChannel *channel in realtime.channels) {
+        [names addObject:channel.name];
+    }
+    for (NSString *name in names) {
+        [realtime.channels release:name];
+    }
+}
+
 @end

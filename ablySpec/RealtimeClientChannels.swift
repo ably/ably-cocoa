@@ -9,6 +9,13 @@
 import Quick
 import Nimble
 
+// Swift isn't yet smart enough to do this automatically when bridging Objective-C APIs
+extension ARTRealtimeChannels: SequenceType {
+    public func generate() -> NSFastGenerator {
+        return NSFastGenerator(self)
+    }
+}
+
 class RealtimeClientChannels: QuickSpec {
     override func spec() {
         describe("Channels") {
@@ -17,23 +24,18 @@ class RealtimeClientChannels: QuickSpec {
             it("should exist methods to check if a channel exists or iterate through the existing channels") {
                 let client = ARTRealtime(options: AblyTests.commonAppSetup())
                 defer { client.close() }
-                var disposable = [ARTChannel]()
+                var disposable = [ARTRealtimeChannel]()
 
-                disposable.append(client.channel("test1"))
-                disposable.append(client.channel("test2"))
-                disposable.append(client.channel("test3"))
+                disposable.append(client.channels.get("test1"))
+                disposable.append(client.channels.get("test2"))
+                disposable.append(client.channels.get("test3"))
 
-                expect(client.channels()["test2"]).toNot(beNil())
-                expect(client.channels().contains{ (name, _) in name == "test2" }).to(beTrue())
-                expect(client.channels().contains{ $0.0 == "test2" }).to(beTrue()) //Same as last one
-                expect(client.channels()["testX"]).to(beNil())
+                expect(client.channels.get("test2")).toNot(beNil())
+                expect(client.channels.exists("test2")).to(beTrue())
+                expect(client.channels.exists("testX")).to(beFalse())
 
-                client.channels().forEach { name, channel in
-                    expect(disposable.contains(channel)).to(beTrue())
-                }
-
-                for (_, channel) in client.channels() {
-                    expect(disposable.contains(channel)).to(beTrue())
+                for channel in client.channels {
+                    expect(disposable.contains(channel as! ARTRealtimeChannel)).to(beTrue())
                 }
             }
 

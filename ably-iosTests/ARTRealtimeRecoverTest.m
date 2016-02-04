@@ -33,7 +33,7 @@
 
 - (void)tearDown {
     if (_realtime) {
-        [_realtime removeAllChannels];
+        [ARTTestUtil removeAllChannels:_realtime];
         [_realtime.eventEmitter removeEvents];
         [_realtime close];
     }
@@ -75,7 +75,7 @@
             if (state == ARTRealtimeConnected) {
                 firstConnectionId = [_realtime connectionId];
 
-                ARTRealtimeChannel *channel = [_realtime channel:channelName];
+                ARTRealtimeChannel *channel = [_realtime.channels get:channelName];
                 // Sending a message
                 [channel publish:c1Message cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
@@ -86,7 +86,7 @@
                 options.recover = nil;
                 _realtimeNonRecovered = [[ARTRealtime alloc] initWithOptions:options];
 
-                ARTRealtimeChannel *c2 = [_realtimeNonRecovered channel:channelName];
+                ARTRealtimeChannel *c2 = [_realtimeNonRecovered.channels get:channelName];
                 [_realtimeNonRecovered.eventEmitter on:^(ARTRealtimeConnectionState state2, ARTErrorInfo *errorInfo) {
                     if (state2 == ARTRealtimeConnected) {
                         // Sending other message to the same channel to check if the recovered connection receives it
@@ -96,7 +96,7 @@
                             options.recover = [_realtime recoveryKey];
                             XCTAssertFalse(options.recover == nil);
                             ARTRealtime *realtimeRecovered = [[ARTRealtime alloc] initWithOptions:options];
-                            ARTRealtimeChannel *c3 = [realtimeRecovered channel:channelName];
+                            ARTRealtimeChannel *c3 = [realtimeRecovered.channels get:channelName];
 
                             [realtimeRecovered.eventEmitter on:^(ARTRealtimeConnectionState cState, ARTErrorInfo* errorInfo) {
                                 if (cState == ARTRealtimeConnected) {

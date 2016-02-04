@@ -17,7 +17,7 @@
 #import "ARTLog.h"
 #import "ARTDataEncoder.h"
 #import "ARTRestChannel.h"
-#import "ARTChannelCollection.h"
+#import "ARTChannels.h"
 #import "ARTAuthTokenDetails.h"
 #import "ARTAuth.h"
 

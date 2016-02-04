@@ -33,12 +33,12 @@
 - (void)tearDown {
     [super tearDown];
     if (_realtime) {
-        [_realtime removeAllChannels];
+        [ARTTestUtil removeAllChannels:_realtime];
         [_realtime close];
     }
     _realtime = nil;
     if (_realtime2) {
-        [_realtime2 removeAllChannels];
+        [ARTTestUtil removeAllChannels:_realtime2];
         [_realtime2 close];
     }
     _realtime2 = nil;
@@ -49,7 +49,7 @@
         _realtime = realtime;
 
         if (state == ARTRealtimeConnected) {
-            ARTRealtimeChannel *channel = [realtime channel:@"persisted:testHistory"];
+            ARTRealtimeChannel *channel = [realtime.channels get:@"persisted:testHistory"];
             [channel publish:@"testString" cb:^(ARTStatus *status) {
                 XCTAssertEqual(ARTStateOk, status.state);
                 [channel publish:@"testString2" cb:^(ARTStatus *status) {
@@ -109,8 +109,8 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         NSString * both = @"historyBoth";
-        ARTRealtimeChannel *channel1 = [realtime channel:both];
-        ARTRealtimeChannel *channel2 = [realtime channel:both];
+        ARTRealtimeChannel *channel1 = [realtime.channels get:both];
+        ARTRealtimeChannel *channel2 = [realtime.channels get:both];
         [channel1 publish:@"testString" cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
             [channel2 publish:@"testString2" cb:^(ARTStatus *status) {
@@ -147,7 +147,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryForward"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        ARTRealtimeChannel *channel = [realtime channel:@"persisted:testHistory"];
+        ARTRealtimeChannel *channel = [realtime.channels get:@"persisted:testHistory"];
         [channel publish:@"testString" cb:^(ARTStatus *status) {
             XCTAssertEqual(ARTStateOk, status.state);
             [channel publish:@"testString2" cb:^(ARTStatus *status) {
@@ -175,7 +175,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryForwardPagination"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        ARTRealtimeChannel *channel = [realtime channel:@"realHistChan"];
+        ARTRealtimeChannel *channel = [realtime.channels get:@"realHistChan"];
         
         [self publishTestStrings:channel count:5 prefix:@"testString" cb:^(ARTStatus *status){
             XCTAssertEqual(ARTStateOk, status.state);
@@ -237,7 +237,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryBackwardagination"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        ARTRealtimeChannel *channel = [realtime channel:@"histRealBackChan"];
+        ARTRealtimeChannel *channel = [realtime.channels get:@"histRealBackChan"];
         [self publishTestStrings:channel count:5 prefix:@"testString" cb:^(ARTStatus *status){
             XCTAssertEqual(ARTStateOk, status.state);
 
@@ -326,7 +326,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"firstExpectation"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        ARTRealtimeChannel *channel = [realtime channel:@"testTimeBackwards"];
+        ARTRealtimeChannel *channel = [realtime.channels get:@"testTimeBackwards"];
 
         int firstBatchTotal = 3;
         int secondBatchTotal = 2;
@@ -399,7 +399,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"firstExpectation"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        ARTRealtimeChannel *channel = [realtime channel:@"test_history_time_forwards"];
+        ARTRealtimeChannel *channel = [realtime.channels get:@"test_history_time_forwards"];
 
         int firstBatchTotal = 3;
         int secondBatchTotal = 2;
@@ -465,7 +465,7 @@
         ARTRealtime * realtime =[[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;
 
-        ARTRealtimeChannel *channel = [realtime channel:channelName];
+        ARTRealtimeChannel *channel = [realtime.channels get:channelName];
         
         int firstBatchTotal =3;
         //send first batch, which we won't recieve in the history request
@@ -480,7 +480,7 @@
                 if (numReceived == firstBatchTotal) {
                     ARTRealtime *realtime2 =[[ARTRealtime alloc] initWithOptions:options];
                     _realtime2 = realtime2;
-                    ARTRealtimeChannel *channel2 = [realtime2 channel:channelName];
+                    ARTRealtimeChannel *channel2 = [realtime2.channels get:channelName];
 
                     ARTDataQuery *query = [[ARTDataQuery alloc] init];
                     query.direction = ARTQueryDirectionBackwards;

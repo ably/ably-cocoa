@@ -147,11 +147,11 @@ class RealtimeClient: QuickSpec {
 
                 let client = ARTRealtime(options: options)
 
-                client.channel("test").subscribe({ message, errorInfo in
+                client.channels.get("test").subscribe({ message, errorInfo in
                     // Attached
                 })
 
-                expect(client.channels()["test"]).toNot(beNil())
+                expect(client.channels.get("test")).toNot(beNil())
                 client.close()
             }
 

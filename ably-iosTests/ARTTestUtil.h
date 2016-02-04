@@ -78,4 +78,6 @@ typedef void (^ARTRealtimeTestCallback)(ARTRealtime *realtime, ARTRealtimeConnec
 
 + (ARTProtocolMessage *)newErrorProtocolMessage;
 
++ (void)removeAllChannels:(ARTRealtime *)realtime;
+
 @end
