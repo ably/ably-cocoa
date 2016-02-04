@@ -22,16 +22,10 @@ ART_ASSUME_NONNULL_BEGIN
 @interface __GENERIC(ARTEventEmitter, EventType, ItemType) : NSObject
 
 - (__GENERIC(ARTEventListener, ItemType) *)on:(EventType)event call:(void (^)(ItemType __art_nullable))cb;
-- (void)on:(EventType)event callListener:(__GENERIC(ARTEventListener, ItemType) *)listener;
-
 - (__GENERIC(ARTEventListener, ItemType) *)on:(void (^)(ItemType __art_nullable))cb;
-- (void)onCallListener:(__GENERIC(ARTEventListener, ItemType) *)listener;
 
 - (__GENERIC(ARTEventListener, ItemType) *)once:(EventType)event call:(void (^)(ItemType __art_nullable))cb;
-- (void)once:(EventType)event callListener:(__GENERIC(ARTEventListener, ItemType) *)listener;
-
 - (__GENERIC(ARTEventListener, ItemType) *)once:(void (^)(ItemType __art_nullable))cb;
-- (void)onceCallListener:(__GENERIC(ARTEventListener, ItemType) *)listener;
 
 - (void)off:(EventType)event listener:(__GENERIC(ARTEventListener, ItemType) *)listener;
 - (void)off:(__GENERIC(ARTEventListener, ItemType) *)listener;
@@ -45,16 +39,10 @@ ART_ASSUME_NONNULL_BEGIN
 // as the spec say. It's supposed to be used together with ART_EMBED_IMPLEMENTATION_EVENT_EMITTER
 // in the implementation of the class.
 #define ART_EMBED_INTERFACE_EVENT_EMITTER(EventType, ItemType) - (__GENERIC(ARTEventListener, ItemType) *)on:(EventType)event call:(void (^)(ItemType __art_nullable))cb;\
-- (void)on:(EventType)event callListener:(__GENERIC(ARTEventListener, ItemType) *)listener;\
-\
 - (__GENERIC(ARTEventListener, ItemType) *)on:(void (^)(ItemType __art_nullable))cb;\
-- (void)onCallListener:(__GENERIC(ARTEventListener, ItemType) *)listener;\
 \
 - (__GENERIC(ARTEventListener, ItemType) *)once:(EventType)event call:(void (^)(ItemType __art_nullable))cb;\
-- (void)once:(EventType)event callListener:(__GENERIC(ARTEventListener, ItemType) *)listener;\
-\
 - (__GENERIC(ARTEventListener, ItemType) *)once:(void (^)(ItemType __art_nullable))cb;\
-- (void)onceCallListener:(__GENERIC(ARTEventListener, ItemType) *)listener;\
 \
 - (void)off:(EventType)event listener:(__GENERIC(ARTEventListener, ItemType) *)listener;\
 - (void)off:(__GENERIC(ARTEventListener, ItemType) *)listener;
@@ -67,32 +55,16 @@ ART_ASSUME_NONNULL_BEGIN
 return [_eventEmitter on:event call:cb];\
 }\
 \
-- (void)on:(EventType)event callListener:(__GENERIC(ARTEventListener, ItemType) *)listener {\
-[_eventEmitter on:event callListener:listener];\
-}\
-\
 - (__GENERIC(ARTEventListener, ItemType) *)on:(void (^)(ItemType __art_nullable))cb {\
 return [_eventEmitter on:cb];\
-}\
-\
-- (void)onCallListener:(__GENERIC(ARTEventListener, ItemType) *)listener {\
-[_eventEmitter onCallListener:(__GENERIC(ARTEventListener, ItemType) *)listener];\
 }\
 \
 - (__GENERIC(ARTEventListener, ItemType) *)once:(EventType)event call:(void (^)(ItemType __art_nullable))cb {\
 return [_eventEmitter once:event call:cb];\
 }\
 \
-- (void)once:(EventType)event callListener:(__GENERIC(ARTEventListener, ItemType) *)listener {\
-[_eventEmitter once:event callListener:listener];\
-}\
-\
 - (__GENERIC(ARTEventListener, ItemType) *)once:(void (^)(ItemType __art_nullable))cb {\
 return [_eventEmitter once:cb];\
-}\
-\
-- (void)onceCallListener:(__GENERIC(ARTEventListener, ItemType) *)listener {\
-[_eventEmitter onceCallListener:listener];\
 }\
 \
 - (void)off:(EventType)event listener:listener {\

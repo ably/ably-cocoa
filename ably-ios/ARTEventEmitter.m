@@ -13,40 +13,15 @@
 #import "ARTRealtimeChannel.h"
 #import "ARTRealtimeChannelSubscription.h"
 
-@interface NSMutableArray (AsSet)
-
-- (id)member:(id)object;
-- (void)addObjectReplacing:(id)object;
-
-@end
-
 @implementation NSMutableArray (AsSet)
 
-- (id)member:(id)object {
-    for (id item in self) {
-        if ([item isEqual:object]) {
-            return item;
-        }
-    }
-    return nil;
-}
-
-- (void)addObjectReplacing:(id)object {
-    for (int i = 0; i < [self count]; i++) {
-        id item = [self objectAtIndex:i];
-        if ([item isEqual:object] || [object isEqual:item]) {
-            [self replaceObjectAtIndex:i withObject:object];
-            return;
-        }
-    }
-    [self addObject:object];
-}
-
-- (void)artRemoveObject:(id)object {
-    for (id item in self) {
-        if ([item isEqual:object]) {
-            [self removeObject:item];
-            return;
+- (void)artRemoveWhere:(BOOL (^)(id))cond {
+    NSUInteger l = [self count];
+    for (NSInteger i = 0; i < l; i++) {
+        if (cond([self objectAtIndex:i])) {
+            [self removeObjectAtIndex:i];
+            i--;
+            l--;
         }
     }
 }
@@ -103,95 +78,55 @@
     if (self) {
         _listeners = [[NSMutableDictionary alloc] init];
         _totalListeners = [[NSMutableArray alloc] init];
-        _ignoring = [[NSMutableDictionary alloc] init];
     }
     return self;
 }
 
 - (ARTEventListener *)on:(id)event call:(void (^)(id __art_nonnull))cb {
     ARTEventListener *listener = [[ARTEventListener alloc] initWithBlock:cb];
-    [self on:event callListener:listener];
-    return listener;
-}
-
-- (void)on:(id)event callListener:(ARTEventListener *)listener {
     [self addOnEntry:[[ARTEventEmitterEntry alloc] initWithListener:listener once:false] event:event];
+    return listener;
 }
 
 - (ARTEventListener *)once:(id)event call:(void (^)(id __art_nonnull))cb {
     ARTEventListener *listener = [[ARTEventListener alloc] initWithBlock:cb];
-    [self once:event callListener:listener];
+    [self addOnEntry:[[ARTEventEmitterEntry alloc] initWithListener:listener once:true] event:event];
     return listener;
 }
 
-- (void)once:(id)event callListener:(ARTEventListener *)listener {
-    [self addOnEntry:[[ARTEventEmitterEntry alloc] initWithListener:listener once:true] event:event];
-}
-
 - (void)addOnEntry:(ARTEventEmitterEntry *)entry event:(id)event {
-    if ([self.totalListeners member:entry.listener] != nil) {
-        // Already listening to everything! No need to add. Just check if it
-        // is ignoring it, and un-ignore it if so.
-        [self removeObject:entry.listener fromArrayWithKey:event inDictionary:self.ignoring];
-        if (!entry.once) {
-            // But 'once' listeners still need to be added. emit will check
-            // listeners before totalListeners. If a listener has once=true
-            // and also is in totalListeners, after dispatching the event to it,
-            // the event will be added to its ignored set.
-            return;
-        }
-    }
-    
     [self addObject:entry toArrayWithKey:event inDictionary:self.listeners];
 }
 
 - (ARTEventListener *)on:(void (^)(id __art_nonnull))cb {
     ARTEventListener *listener = [[ARTEventListener alloc] initWithBlock:cb];
-    [self onCallListener:listener];
-    return listener;
-}
-
-- (void)onCallListener:(ARTEventListener *)listener {
     [self addOnAllEntry:[[ARTEventEmitterEntry alloc] initWithListener:listener once:false]];
+    return listener;
 }
 
 - (ARTEventListener *)once:(void (^)(id __art_nonnull))cb {
     ARTEventListener *listener = [[ARTEventListener alloc] initWithBlock:cb];
-    [self onceCallListener:listener];
+    [self addOnAllEntry:[[ARTEventEmitterEntry alloc] initWithListener:listener once:true]];
     return listener;
 }
 
-- (void)onceCallListener:(ARTEventListener *)listener {
-    [self addOnAllEntry:[[ARTEventEmitterEntry alloc] initWithListener:listener once:true]];
-}
-
 - (void)addOnAllEntry:(ARTEventEmitterEntry *)entry {
-    [self.totalListeners addObjectReplacing:entry];
-    
-    // Maybe cb was already listening to some events; remove it from their
-    // entries in listeners if so.
-    for (NSMutableArray *listenersToEvent in [self.listeners allValues]) {
-        [listenersToEvent artRemoveObject:entry.listener];
-    }
+    [self.totalListeners addObject:entry];
 }
 
 - (void)off:(id)event listener:(ARTEventListener *)listener {
-    if ([self.totalListeners member:listener] != nil) {
-        // It is listening to everything but now wants to ignore a particular
-        // event. Just mark it in its ignoring entry; emit will check that.
-        [self addObject:listener toArrayWithKey:event inDictionary:self.ignoring];
-        return;
-    }
-    [self removeObject:listener fromArrayWithKey:event inDictionary:self.listeners];
+    [self removeObject:listener fromArrayWithKey:event inDictionary:self.listeners where:^BOOL(id entry) {
+        return ((ARTEventEmitterEntry *)entry).listener == listener;
+    }];
 }
 
 - (void)off:(ARTEventListener *)listener {
-    [self.totalListeners artRemoveObject:listener];
-    for (id event in [self.ignoring keyEnumerator]) {
-        [self removeObject:listener fromArrayWithKey:event inDictionary:self.ignoring];
-    }
-    for (id event in [self.listeners keyEnumerator]) {
-        [self removeObject:listener fromArrayWithKey:event inDictionary:self.listeners];
+    BOOL (^cond)(id) = ^BOOL(id entry) {
+        return ((ARTEventEmitterEntry *)entry).listener == listener;
+    };
+    [self.totalListeners artRemoveWhere:cond];
+    for (id event in [self.listeners allKeys]) {
+        [self removeObject:listener fromArrayWithKey:event inDictionary:self.listeners where:cond];
     }
 }
 
@@ -203,48 +138,25 @@
     @try {
         for (ARTEventEmitterEntry *entry in listenersForEvent) {
             if (entry.once) {
-                NSMutableArray *ign = [self.ignoring objectForKey:event];
-                if (ign && [ign member:entry.listener]) {
-                    // If you call 'onAll', then 'once(A)' and then 'off(A)',
-                    // 'onAll' will add to totalListeners, 'once(A)' will add
-                    // to listeners and 'off(A)' will add to ignoring. We've found
-                    // here one of those cases; just keep going. (If 'on' or 'once'
-                    // is called again, it will remove A from ignoring and replace this
-                    // entry, so it's fine to leave it here.)
-                    [toRemoveFromListenersForEvent addObjectReplacing:entry];
-                    continue;
-                }
-
-                [toRemoveFromListenersForEvent addObjectReplacing:entry];
-                if ([self.totalListeners member:entry]) {
-                    // If you call 'onAll' and then 'once(A)', you end up here, and you need
-                    // to ignore from now on A so that 'once' has effect.
-                    [self addObject:entry.listener toArrayWithKey:event inDictionary:self.ignoring];
-                }
+                [toRemoveFromListenersForEvent addObject:entry];
             }
             
-            [toCall addObjectReplacing:entry];
+            [toCall addObject:entry];
         }
         
         for (ARTEventEmitterEntry *entry in self.totalListeners) {
-            NSMutableArray *ign = [self.ignoring objectForKey:event];
-            if (ign && [ign member:entry.listener]) {
-                continue;
-            }
-            
             if (entry.once) {
-                [toRemoveFromTotalListeners addObjectReplacing:entry];
+                [toRemoveFromTotalListeners addObject:entry];
             }
-
-            [toCall addObjectReplacing:entry];
+            [toCall addObject:entry];
         }
     }
     @finally {
         for (ARTEventEmitterEntry *entry in toRemoveFromListenersForEvent) {
-            [listenersForEvent artRemoveObject:entry.listener];
+            [listenersForEvent removeObject:entry];
         }
         for (ARTEventEmitterEntry *entry in toRemoveFromTotalListeners) {
-            [self.totalListeners artRemoveObject:entry.listener];
+            [self.totalListeners removeObject:entry];
         }
         for (ARTEventEmitterEntry *entry in toCall) {
             [entry.listener call:data];
@@ -258,7 +170,7 @@
         array = [[NSMutableArray alloc] init];
         [dict setObject:array forKey:key];
     }
-    [array addObjectReplacing:obj];
+    [array addObject:obj];
 }
 
 - (void)removeObject:(id)obj fromArrayWithKey:(id)key inDictionary:(NSMutableDictionary *)dict {
@@ -266,7 +178,18 @@
     if (array == nil) {
         return;
     }
-    [array artRemoveObject:obj];
+    [array removeObject:obj];
+    if ([array count] == 0) {
+        [dict removeObjectForKey:key];
+    }
+}
+
+- (void)removeObject:(id)obj fromArrayWithKey:(id)key inDictionary:(NSMutableDictionary *)dict where:(BOOL(^)(id))cond {
+    NSMutableArray *array = [dict objectForKey:key];
+    if (array == nil) {
+        return;
+    }
+    [array artRemoveWhere:cond];
     if ([array count] == 0) {
         [dict removeObjectForKey:key];
     }

@@ -17,19 +17,13 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readwrite, nonatomic) BOOL once;
 
 - (instancetype)initWithListener:(__GENERIC(ARTEventListener, ItemType) *)listener once:(BOOL)once;
-// ARTEventEmitterEntry are compared only using their listener.
-- (BOOL)isEqual:(id)object;
 
 @end
 
 @interface __GENERIC(ARTEventEmitter, EventType, ItemType) ()
 
-// The reason we use arrays as sets is that blocks are not hashable.
-
 @property (readwrite, nonatomic) __GENERIC(NSMutableDictionary, EventType, __GENERIC(NSMutableArray, __GENERIC(ARTEventEmitterEntry, ItemType) *) *) *listeners;
-// totalListeners listen to all events, except those in exceptions.
 @property (readwrite, nonatomic) __GENERIC(NSMutableArray, __GENERIC(ARTEventEmitterEntry, ItemType) *) *totalListeners;
-@property (readwrite, nonatomic) __GENERIC(NSMutableDictionary, EventType, __GENERIC(NSMutableArray, __GENERIC(ARTEventListener, ItemType) *) *) *ignoring;
 
 @end
 
