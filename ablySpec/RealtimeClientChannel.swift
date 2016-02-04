@@ -552,6 +552,52 @@ class RealtimeClientChannel: QuickSpec {
 
                 }
 
+                // RTL6i
+                context("expect either") {
+
+                    it("an array of Message objects") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        client.setTransportClass(TestProxyTransport.self)
+                        client.connect()
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+                        typealias JSONObject = NSDictionary
+
+                        var result = [JSONObject]()
+                        channel.subscribe { message in
+                            result.append(message.data as! JSONObject)
+                        }
+
+                        let messages = [ARTMessage(data: ["key":1], name: nil), ARTMessage(data: ["key":2], name: nil)]
+                        channel.publish(messages)
+
+                        let transport = client.transport as! TestProxyTransport
+
+                        expect(transport.protocolMessagesSent.filter{ $0.action == .Message }).toEventually(haveCount(1), timeout: testTimeout)
+                        expect(result).toEventually(equal(messages.map{ $0.data as! JSONObject }), timeout: testTimeout)
+                    }
+
+                    it("a name string and data payload") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+
+                        let expectedResult = "string_data"
+                        var result: String?
+
+                        channel.subscribe("event") { message in
+                            result = message.data as? String
+                        }
+
+                        channel.publish("event", data: expectedResult, cb: nil)
+
+                        expect(result).toEventually(equal(expectedResult), timeout: testTimeout)
+                    }
+
+                }
+
             }
 
             // RTL7
