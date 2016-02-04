@@ -107,7 +107,7 @@
         [request setValue:self.rest.defaultEncoding forHTTPHeaderField:@"Content-Type"];
     }
 
-    [self.logger debug:__FILE__ line:__LINE__ message:@"post message %@", request];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"post message %@", [[NSString alloc] initWithData:encodedMessage encoding:NSUTF8StringEncoding]];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (callback) {
             callback(error);
