@@ -238,6 +238,7 @@ class PublishTestMessage {
         }
 
         client.on { stateChange in
+            let stateChange = stateChange!
             let state = stateChange.current
             if state == .Connected {
                 let channel = client.channels.get("test")

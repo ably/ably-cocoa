@@ -36,6 +36,7 @@ class RealtimeClient: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         client.on { stateChange in
+                            let stateChange = stateChange!
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
@@ -76,6 +77,7 @@ class RealtimeClient: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         client.on { stateChange in
+                            let stateChange = stateChange!
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
@@ -98,6 +100,7 @@ class RealtimeClient: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         newClient.on { stateChange in
+                            let stateChange = stateChange!
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
@@ -180,6 +183,7 @@ class RealtimeClient: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         client.on { stateChange in
+                            let stateChange = stateChange!
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
@@ -281,6 +285,7 @@ class RealtimeClient: QuickSpec {
 
                 waitUntil(timeout: testTimeout + options.suspendedRetryTimeout) { done in
                     client.on { stateChange in
+                        let stateChange = stateChange!
                         let state = stateChange.current
                         let errorInfo = stateChange.reason
                         switch state {
