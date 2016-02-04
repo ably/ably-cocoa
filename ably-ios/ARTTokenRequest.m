@@ -12,8 +12,6 @@
 
 @implementation ARTTokenRequest
 
-@dynamic timestamp;
-
 - (instancetype)initWithTokenParams:(ARTTokenParams *)tokenParams keyName:(NSString *)keyName nonce:(NSString *)nonce mac:(NSString *)mac {
     if (self = [super init]) {
         self.ttl = tokenParams.ttl;

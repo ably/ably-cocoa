@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTTokenParams.h"
+#import "ARTTokenParams+Private.h"
 
 #include <CommonCrypto/CommonDigest.h>
 #include <CommonCrypto/CommonHMAC.h>
@@ -18,19 +18,28 @@
 @implementation ARTTokenParams
 
 - (instancetype)init {
+    return [self initWithClientId:nil nonce:nil];
+}
+
+- (instancetype)initWithClientId:(NSString *)clientId {
+    return [self initWithClientId:clientId nonce:nil];
+}
+
+- (instancetype)initWithClientId:(NSString *)clientId nonce:(NSString *)nonce {
     if (self = [super init]) {
         _timestamp = [NSDate date];
         _ttl = [ARTDefault ttl];
         _capability = @"{\"*\":[\"*\"]}"; // allow all
-        _clientId = nil;
+        _clientId = clientId;
+        _nonce = nonce;
     }
     return self;
 }
 
-- (instancetype)initWithClientId:(NSString *)clientId {
-    if (self = [self init]) {
-        _clientId = clientId;
-    }
+- (instancetype)initWithOptions:(ARTClientOptions *)options {
+    self = [self initWithClientId:options.clientId];
+    if (options.ttl) _ttl = options.ttl;
+    if (options.capability) _capability = options.capability;
     return self;
 }
 
@@ -134,19 +143,18 @@ static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
 }
 
 - (ARTTokenRequest *)sign:(NSString *)key {
-    return [self sign:key withNonce:generateNonce()];
+    return [self sign:key withNonce:self.nonce ? self.nonce : generateNonce()];
 }
 
-- (ARTTokenRequest *)sign:(NSString *)key withNonce:(NSString *)randomNonce {
+- (ARTTokenRequest *)sign:(NSString *)key withNonce:(NSString *)nonce {
     NSArray *keyComponents = decomposeKey(key);
     NSString *keyName = keyComponents[0];
     NSString *keySecret = keyComponents[1];
-    NSString *nonce = randomNonce;
     NSString *clientId = self.clientId ? self.clientId : @"";
-
+    
     NSString *signText = [NSString stringWithFormat:@"%@\n%lld\n%@\n%@\n%lld\n%@\n", keyName, timeIntervalToMiliseconds(self.ttl), self.capability, clientId, dateToMiliseconds(self.timestamp), nonce];
     NSString *mac = hmacForDataAndKey([signText dataUsingEncoding:NSUTF8StringEncoding], [keySecret dataUsingEncoding:NSUTF8StringEncoding]);
-
+    
     return [[ARTTokenRequest alloc] initWithTokenParams:self keyName:keyName nonce:nonce mac:mac];
 }
 

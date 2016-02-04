@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "ARTTypes.h"
+#import "ARTClientOptions.h"
 
 @class ARTTokenRequest;
 
@@ -31,26 +32,23 @@ ART_ASSUME_NONNULL_BEGIN
 /**
  A clientId to associate with this token.
  */
-@property (art_nullable, nonatomic, copy) NSString *clientId;
+@property (art_nullable, nonatomic, copy, readwrite) NSString *clientId;
 
 /**
  Timestamp (in millis since the epoch) of this request. Timestamps, in conjunction with the nonce, are used to prevent n requests from being replayed.
  */
 @property (nonatomic, strong, null_resettable) NSDate *timestamp;
 
+@property (nonatomic, readonly, strong) NSString *nonce;
+
 - (instancetype)init;
-- (instancetype)initWithClientId:(NSString *)clientId;
+- (instancetype)initWithClientId:(NSString *__art_nullable)clientId;
+- (instancetype)initWithClientId:(NSString *__art_nullable)clientId nonce:(NSString *__art_nullable)nonce;
+- (instancetype)initWithOptions:(ARTClientOptions *)options;
 
 - (__GENERIC(NSMutableArray, NSURLQueryItem *) *)toArray;
 - (__GENERIC(NSArray, NSURLQueryItem *) *)toArrayWithUnion:(NSArray *)items;
 - (__GENERIC(NSDictionary, NSString *, NSString *) *)toDictionaryWithUnion:(__GENERIC(NSArray, NSURLQueryItem *) *)items;
-
-@end
-
-@interface ARTTokenParams(SignedRequest)
-
-- (ARTTokenRequest *)sign:(NSString *)key;
-- (ARTTokenRequest *)sign:(NSString *)key withNonce:(NSString *)randomNonce;
 
 @end
 

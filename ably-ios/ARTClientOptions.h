@@ -30,6 +30,16 @@ ART_ASSUME_NONNULL_BEGIN
 @property (art_nullable, readwrite, copy, nonatomic) NSString *recover;
 
 /**
+ Represents time to live (expiry) of this token in seconds.
+ */
+@property (nonatomic, assign) NSTimeInterval ttl;
+
+/**
+ Contains the capability JSON stringified.
+ */
+@property (nonatomic, copy) NSString *capability;
+
+/**
  Represents the timeout (in seconds) to retry connection when it's disconnected.
  When the connection is in the DISCONNECTED state, how frequently the client library attempts to reconnect automatically.
  */

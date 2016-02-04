@@ -12,7 +12,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTAuth ()
 
-@property (nonatomic, readonly, strong) ARTAuthOptions *options;
+@property (nonatomic, readonly, strong) ARTClientOptions *options;
 @property (nonatomic, readonly, assign) ARTAuthMethod method;
 
 @property (nonatomic, weak) ARTLog *logger;
