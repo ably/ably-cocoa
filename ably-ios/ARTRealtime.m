@@ -228,7 +228,7 @@
                 NSNumber *connectionSerial = nil;
                 if (previousState == ARTRealtimeFailed || previousState == ARTRealtimeDisconnected) {
                     resumeKey = self.connection.key;
-                    connectionSerial = [NSNumber numberWithInteger:self.connection.serial];
+                    connectionSerial = [NSNumber numberWithLongLong:self.connection.serial];
                     _resuming = true;
                 }
                 _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:resumeKey connectionSerial:connectionSerial];
