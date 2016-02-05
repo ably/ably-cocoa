@@ -10,27 +10,34 @@
 #import "ARTTypes.h"
 #import "ARTPresenceMessage.h"
 
-@protocol ARTSubscription;
-
 @class ARTChannel;
 @class __GENERIC(ARTPaginatedResult, ItemType);
 @class ARTDataQuery;
 
 ART_ASSUME_NONNULL_BEGIN
 
+@interface ARTPresenceQuery : NSObject
+
+@property (nonatomic, readwrite) NSUInteger limit;
+@property (nonatomic, strong, readwrite) NSString *clientId;
+@property (nonatomic, strong, readwrite) NSString *connectionId;
+
+- (instancetype)init;
+- (instancetype)initWithClientId:(NSString *__art_nullable)clientId connectionId:(NSString *__art_nullable)connectionId;
+- (instancetype)initWithLimit:(NSUInteger)limit clientId:(NSString *__art_nullable)clientId connectionId:(NSString *__art_nullable)connectionId;
+
+@end
+
 /**
  A class that provides access to presence operations and state for the associated Channel.
  */
 @interface ARTPresence : NSObject
 
-@property (readonly, getter=getChannel) ARTChannel *channel;
-
-- (instancetype)initWithChannel:(ARTChannel *)channel;
-
 /**
  Get the presence state for one channel
  */
 - (void)get:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *__art_nullable result, NSError *__art_nullable error))callback;
+- (void)get:(ARTPresenceQuery *)query cb:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *__art_nullable result, NSError *__art_nullable error))callback;
 
 /**
  Obtain recent presence history for one channel

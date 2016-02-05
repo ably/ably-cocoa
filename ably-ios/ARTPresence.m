@@ -10,6 +10,28 @@
 
 #import "ARTChannel.h"
 
+@implementation ARTPresenceQuery
+
+- (instancetype)init {
+    return [self initWithClientId:nil connectionId:nil];
+}
+
+- (instancetype)initWithClientId:(NSString *)clientId connectionId:(NSString *)connectionId {
+    return [self initWithLimit:100 clientId:clientId connectionId:connectionId];
+}
+
+- (instancetype)initWithLimit:(NSUInteger)limit clientId:(NSString *)clientId connectionId:(NSString *)connectionId {
+    self = [super init];
+    if (self) {
+        _limit = limit;
+        _clientId = clientId;
+        _connectionId = connectionId;
+    }
+    return self;
+}
+
+@end
+
 @interface ARTPresence () {
     __weak ARTChannel *_channel;
 }
@@ -30,6 +52,10 @@
 }
 
 - (void)get:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, NSError *error))callback {
+    [self get:[[ARTPresenceQuery alloc] init] cb:callback];
+}
+
+- (void)get:(ARTPresenceQuery *)query cb:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, NSError * _Nullable))callback {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 

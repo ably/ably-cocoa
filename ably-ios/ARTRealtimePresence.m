@@ -14,6 +14,7 @@
 #import "ARTPresenceMessage.h"
 #import "ARTRealtimeChannelSubscription.h"
 #import "ARTStatus.h"
+#import "ARTPresence+Private.h"
 
 @implementation ARTRealtimePresence
 
