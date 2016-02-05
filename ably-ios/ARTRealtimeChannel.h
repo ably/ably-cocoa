@@ -15,12 +15,6 @@
 #import "ARTRealtimePresence.h"
 #import "ARTDataQuery.h"
 
-@interface ARTRealtimeHistoryQuery : ARTDataQuery
-
-@property (nonatomic, assign) BOOL untilAttach;
-
-@end
-
 ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimeChannel : ARTRestChannel

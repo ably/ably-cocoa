@@ -514,8 +514,8 @@ class RealtimeClientConnection: QuickSpec {
                                     let channel = client.channels.get("test")
                                     channel.on { errorInfo in
                                         if channel.state == .Attached {
-                                            channel.presence.enterClient("client_string", data: nil, cb: { status in
-                                                expect(status.state).to(equal(ARTState.Ok))
+                                            channel.presence.enterClient("client_string", data: nil, cb: { errorInfo in
+                                                expect(errorInfo).to(beNil())
                                                 done()
                                             })
                                         }
@@ -583,8 +583,8 @@ class RealtimeClientConnection: QuickSpec {
                                     let channel = client.channels.get("test")
                                     channel.on { errorInfo in
                                         if channel.state == .Attached {
-                                            channel.presence.enterClient("invalid", data: nil, cb: { status in
-                                                expect(status.state).to(equal(ARTState.Error))
+                                            channel.presence.enterClient("invalid", data: nil, cb: { errorInfo in
+                                                expect(errorInfo).toNot(beNil())
                                                 done()
                                             })
                                         }
@@ -646,8 +646,8 @@ class RealtimeClientConnection: QuickSpec {
                         expect(TotalMessages.succeeded).toEventually(equal(TotalMessages.expected), timeout: testTimeout)
 
                         waitUntil(timeout: testTimeout) { done in
-                            channel.presence.enterClient("invalid", data: nil, cb: { status in
-                                expect(status.state).to(equal(ARTState.Error))
+                            channel.presence.enterClient("invalid", data: nil, cb: { errorInfo in
+                                expect(errorInfo).toNot(beNil())
                                 done()
                             })
                         }

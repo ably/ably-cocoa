@@ -27,4 +27,10 @@ typedef NS_ENUM(NSUInteger, ARTQueryDirection) {
 
 @end
 
+@interface ARTRealtimeHistoryQuery : ARTDataQuery
+
+@property (nonatomic, assign) BOOL untilAttach;
+
+@end
+
 ART_ASSUME_NONNULL_END

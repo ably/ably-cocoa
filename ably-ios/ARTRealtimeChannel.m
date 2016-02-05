@@ -24,10 +24,6 @@
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTStatus.h"
 
-@implementation ARTRealtimeHistoryQuery
-
-@end
-
 @interface ARTRealtimeChannel () {
     ARTRealtimePresence *_realtimePresence;
 }
@@ -94,12 +90,12 @@
     [self.realtime send:msg cb:^(ARTStatus *status) {}];
 }
 
-- (void)publishPresence:(ARTPresenceMessage *)msg cb:(ARTStatusCallback)cb {
+- (void)publishPresence:(ARTPresenceMessage *)msg cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb {
     if (!msg.clientId) {
         msg.clientId = self.clientId;
     }
     if (!msg.clientId) {
-        cb([ARTStatus state:ARTStateNoClientId]);
+        if (cb) cb([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
         return;
     }
     _lastPresenceAction = msg.action;
@@ -118,7 +114,9 @@
     pm.channel = self.name;
     pm.presence = @[msg];
     
-    [self publishProtocolMessage:pm cb:cb];
+    [self publishProtocolMessage:pm cb:^void(ARTStatus *status) {
+        if (cb) cb(status.errorInfo);
+    }];
 }
 
 - (void)publishProtocolMessage:(ARTProtocolMessage *)pm cb:(ARTStatusCallback)cb {

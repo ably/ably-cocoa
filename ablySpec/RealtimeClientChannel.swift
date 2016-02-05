@@ -24,8 +24,8 @@ class RealtimeClientChannel: QuickSpec {
                 channel1.attach()
 
                 waitUntil(timeout: testTimeout) { done in
-                    channel1.presence.enterClient("Client 1", data: nil) { status in
-                        expect(status.state).to(equal(ARTState.Ok))
+                    channel1.presence.enterClient("Client 1", data: nil) { errorInfo in
+                        expect(errorInfo).to(beNil())
                         done()
                     }
                 }
@@ -37,14 +37,14 @@ class RealtimeClientChannel: QuickSpec {
                 let channel2 = client2.channels.get(channel1.name)
                 channel2.attach()
 
-                expect(channel2.presence.isSyncComplete()).to(beFalse())
+                expect(channel2.presence.syncComplete).to(beFalse())
 
                 expect(channel1.presenceMap.members).to(haveCount(1))
                 expect(channel2.presenceMap.members).to(haveCount(0))
 
                 expect(channel2.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
 
-                expect(channel2.presence.isSyncComplete()).toEventually(beTrue(), timeout: testTimeout)
+                expect(channel2.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
 
                 expect(channel1.presenceMap.members).to(haveCount(1))
                 expect(channel2.presenceMap.members).to(haveCount(1))
@@ -62,8 +62,8 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 waitUntil(timeout: testTimeout) { done in
-                    channel2.presence.enter(nil) { status in
-                        expect(status.state).to(equal(ARTState.Ok))
+                    channel2.presence.enter(nil) { errorInfo in
+                        expect(errorInfo).to(beNil())
                         done()
                     }
                 }

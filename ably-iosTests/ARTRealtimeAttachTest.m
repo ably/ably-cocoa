@@ -385,8 +385,8 @@
             ARTErrorInfo *errorInfo = stateChange.reason;
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime.channels get:@"some_unpermitted_channel"];
-                [channel.presence enter:@"not_allowed_here" cb:^(ARTStatus *status) {
-                    XCTAssertEqual(ARTStateError, status.state);
+                [channel.presence enter:@"not_allowed_here" cb:^(ARTErrorInfo *errorInfo) {
+                    XCTAssertNotNil(errorInfo);
                     [expect fulfill];
                 }];
             }

@@ -391,8 +391,8 @@
         waitForWithTimeout(&attached, @[channel, channel2], 20.0);
 
         // Enters "firstClientId"
-        [channel.presence enter:@"First Client" cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStateOk, status.state);
+        [channel.presence enter:@"First Client" cb:^(ARTErrorInfo *errorInfo) {
+            XCTAssertNil(errorInfo);
             [exp2 fulfill];
         }];
     }];

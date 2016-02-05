@@ -220,11 +220,11 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
 
 + (void)publishEnterMessages:(NSString *)clientIdPrefix count:(int)count channel:(ARTRealtimeChannel *)channel completion:(void (^)())completion {
     __block int numReceived = 0;
-    __block __weak ARTStatusCallback weakCb;
-    ARTStatusCallback cb;
+   __block __weak void (^weakCb)(ARTErrorInfo *__art_nullable error);
+    void (^cb)(ARTErrorInfo *__art_nullable error);
 
     NSString *pattern = [clientIdPrefix stringByAppendingString:@"%d"];
-    weakCb = cb = ^(ARTStatus *status) {
+    weakCb = cb = ^(ARTErrorInfo *errorInfo) {
         ++numReceived;
         if (numReceived != count) {
             [channel.presence enterClient:[NSString stringWithFormat:pattern, numReceived] data:@"entered" cb:weakCb];

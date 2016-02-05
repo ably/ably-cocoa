@@ -46,3 +46,7 @@ static NSString *queryDirectionToString(ARTQueryDirection direction) {
 }
 
 @end
+
+@implementation ARTRealtimeHistoryQuery
+
+@end

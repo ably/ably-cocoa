@@ -13,6 +13,8 @@
 @class ARTPresenceMap;
 @class ARTProtocolMessage;
 
+ART_ASSUME_NONNULL_BEGIN
+
 @interface ARTRealtimeChannel ()
 
 @property (readonly, weak, nonatomic) ARTRealtime *realtime;
@@ -37,7 +39,7 @@
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status;
 
 - (void)onChannelMessage:(ARTProtocolMessage *)message;
-- (void)publishPresence:(ARTPresenceMessage *)pm cb:(ARTStatusCallback)cb;
+- (void)publishPresence:(ARTPresenceMessage *)pm cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb;
 - (void)publishProtocolMessage:(ARTProtocolMessage *)pm cb:(ARTStatusCallback)cb;
 
 - (void)setAttached:(ARTProtocolMessage *)message;
@@ -61,3 +63,5 @@
 - (void)releaseChannel;
 
 @end
+
+ART_ASSUME_NONNULL_END
