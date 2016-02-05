@@ -552,6 +552,38 @@ class RealtimeClientChannel: QuickSpec {
 
                 }
 
+                // RTL6g
+                context("Identified clients with clientId") {
+
+                    // RTL6g1
+                    context("When publishing a Message with clientId set to null") {
+
+                        // RTL6g1a
+                        it("should be unnecessary to set clientId of the Message before publishing") {
+                            let options = AblyTests.commonAppSetup()
+                            options.autoConnect = false
+                            let client = ARTRealtime(options: options)
+                            client.setTransportClass(TestProxyTransport.self)
+                            client.connect()
+                            defer { client.close() }
+
+                            let channel = client.channels.get("test")
+
+                            channel.publish(nil, data: "message") { errorInfo in
+                                expect(errorInfo).to(beNil())
+                            }
+
+                            let transport = client.transport as! TestProxyTransport
+                            expect(transport.protocolMessagesSent.filter { $0.action == .Message }).toEventually(haveCount(1), timeout: testTimeout)
+
+                            let messageSent = transport.protocolMessagesSent.filter({ $0.action == .Message })[0]
+                            expect(messageSent.messages![0].clientId).to(beNil())
+                        }
+
+                    }
+
+                }
+
             }
 
             // RTL7
