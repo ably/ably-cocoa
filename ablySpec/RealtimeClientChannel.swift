@@ -559,7 +559,7 @@ class RealtimeClientChannel: QuickSpec {
                     context("When publishing a Message with clientId set to null") {
 
                         // RTL6g1a
-                        it("should be unnecessary to set clientId of the Message before publishing") {
+                        pending("should be unnecessary to set clientId of the Message before publishing") {
                             let options = AblyTests.commonAppSetup()
                             options.autoConnect = false
                             let client = ARTRealtime(options: options)
