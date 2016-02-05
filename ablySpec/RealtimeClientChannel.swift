@@ -294,7 +294,7 @@ class RealtimeClientChannel: QuickSpec {
                 context("Unidentified clients using Basic Auth") {
 
                     // RTL6e1
-                    it("should have the provided clientId on received message when it was published with clientId") {
+                    pending("should have the provided clientId on received message when it was published with clientId") {
                         let client = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { client.close() }
 
