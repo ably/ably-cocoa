@@ -76,30 +76,67 @@ class Utilities: QuickSpec {
                     expect(receivedAllOnce).to(equal(123))
                 }
                 
-                it("should stop receiving events when calling off") {
-                    eventEmitter.off(listenerFoo1!)
-                    eventEmitter.emit("foo", with: 123)
-                    
-                    expect(receivedFoo1).to(beNil())
-                    expect(receivedFoo2).to(equal(123))
-                    expect(receivedAll).to(equal(123))
-                    
-                    eventEmitter.emit("bar", with: 222)
-                    
-                    expect(receivedFoo2).to(equal(123))
-                    expect(receivedAll).to(equal(222))
-                    
-                    eventEmitter.off(listenerAll!)
-                    eventEmitter.emit("bar", with: 333)
-                    
-                    expect(receivedAll).to(equal(222))
+                context("calling off with a single listener argument") {
+                    it("should stop receiving events when calling off with a single listener argument") {
+                        eventEmitter.off(listenerFoo1!)
+                        eventEmitter.emit("foo", with: 123)
+                        
+                        expect(receivedFoo1).to(beNil())
+                        expect(receivedFoo2).to(equal(123))
+                        expect(receivedAll).to(equal(123))
+                        
+                        eventEmitter.emit("bar", with: 222)
+                        
+                        expect(receivedFoo2).to(equal(123))
+                        expect(receivedAll).to(equal(222))
+                        
+                        eventEmitter.off(listenerAll!)
+                        eventEmitter.emit("bar", with: 333)
+                        
+                        expect(receivedAll).to(equal(222))
+                    }
                 }
+                
+                context("calling off with listener and event arguments") {
+                    it("should still receive events if off doesn't match the listener's criteria") {
+                        eventEmitter.off("foo", listener: listenerAll!)
+                        eventEmitter.emit("foo", with: 111)
 
-                it("should receive events if off doesn't match the listener's criteria") {
-                    eventEmitter.off("foo", listener: listenerAll!)
-                    eventEmitter.emit("foo", with: 111)
+                        expect(receivedFoo1).to(equal(111))
+                        expect(receivedAll).to(equal(111))
+                    }
+                
+                    it("should stop receive events if off matches the listener's criteria") {
+                        eventEmitter.off("foo", listener: listenerFoo1!)
+                        eventEmitter.emit("foo", with: 111)
 
-                    expect(receivedAll).to(equal(111))
+                        expect(receivedFoo1).to(beNil())
+                        expect(receivedAll).to(equal(111))
+                    }
+                }
+                
+                context("calling off with no arguments") {
+                    it("should remove all listeners") {
+                        eventEmitter.off()
+                        eventEmitter.emit("foo", with: 111)
+                        
+                        expect(receivedFoo1).to(beNil())
+                        expect(receivedFoo2).to(beNil())
+                        expect(receivedAll).to(beNil())
+                        
+                        eventEmitter.emit("bar", with: 111)
+                        
+                        expect(receivedBar).to(beNil())
+                        expect(receivedBarOnce).to(beNil())
+                        expect(receivedAll).to(beNil())
+                    }
+                    
+                    it("should allow listening again") {
+                        eventEmitter.off()
+                        eventEmitter.on("foo", call: { receivedFoo1 = $0 as? Int })
+                        eventEmitter.emit("foo", with: 111)
+                        expect(receivedFoo1).to(equal(111))
+                    }
                 }
             }
         }

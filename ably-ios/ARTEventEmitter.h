@@ -29,6 +29,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (void)off:(EventType)event listener:(__GENERIC(ARTEventListener, ItemType) *)listener;
 - (void)off:(__GENERIC(ARTEventListener, ItemType) *)listener;
+- (void)off;
 
 - (void)emit:(EventType)event with:(ItemType)data;
 
@@ -45,7 +46,8 @@ ART_ASSUME_NONNULL_BEGIN
 - (__GENERIC(ARTEventListener, ItemType) *)once:(void (^)(ItemType __art_nullable))cb;\
 \
 - (void)off:(EventType)event listener:(__GENERIC(ARTEventListener, ItemType) *)listener;\
-- (void)off:(__GENERIC(ARTEventListener, ItemType) *)listener;
+- (void)off:(__GENERIC(ARTEventListener, ItemType) *)listener;\
+- (void)off;
 
 // This macro adds methods to a class implementation that just bridge calls to an internal
 // instance variable, which must be called _eventEmitter, of type ARTEventEmitter *.
@@ -73,6 +75,9 @@ return [_eventEmitter once:cb];\
 \
 - (void)off:(__GENERIC(ARTEventListener, ItemType) *)listener {\
 [_eventEmitter off:listener];\
+}\
+- (void)off {\
+[_eventEmitter off];\
 }\
 \
 - (void)emit:(EventType)event with:(ItemType)data {\

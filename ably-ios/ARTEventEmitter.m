@@ -76,8 +76,7 @@
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _listeners = [[NSMutableDictionary alloc] init];
-        _anyListeners = [[NSMutableArray alloc] init];
+        [self resetListeners];
     }
     return self;
 }
@@ -128,6 +127,15 @@
     for (id event in [self.listeners allKeys]) {
         [self removeObject:listener fromArrayWithKey:event inDictionary:self.listeners where:cond];
     }
+}
+
+- (void)off {
+    [self resetListeners];
+}
+
+- (void)resetListeners {
+    _listeners = [[NSMutableDictionary alloc] init];
+    _anyListeners = [[NSMutableArray alloc] init];
 }
 
 - (void)emit:(id)event with:(id)data {
