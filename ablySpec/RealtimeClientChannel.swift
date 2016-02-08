@@ -290,6 +290,36 @@ class RealtimeClientChannel: QuickSpec {
 
                 }
 
+                // RTL6e
+                context("Unidentified clients using Basic Auth") {
+
+                    // RTL6e1
+                    pending("should have the provided clientId on received message when it was published with clientId") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.close() }
+
+                        expect(client.auth().clientId).to(beNil())
+
+                        let channel = client.channels.get("test")
+
+                        var resultClientId: String?
+                        channel.subscribe { message, errorInfo in
+                            expect(errorInfo).to(beNil())
+                            resultClientId = message.clientId
+                        }
+
+                        let message = ARTMessage(data: "message", name: nil)
+                        message.clientId = "client_string"
+
+                        channel.publish(message, cb: { status in
+                            expect(status.state).to(equal(ARTState.Ok))
+                        })
+
+                        expect(resultClientId).toEventually(equal(message.clientId), timeout: testTimeout)
+                    }
+
+                }
+
             }
 
         }
