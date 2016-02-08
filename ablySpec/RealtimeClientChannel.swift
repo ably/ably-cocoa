@@ -190,20 +190,14 @@ class RealtimeClientChannel: QuickSpec {
                 // RTL6a
                 it("should encode messages in the same way as the RestChannel") {
                     let data = ["value":1]
-                    var restEncodedMessage: ARTMessage?
-                    var realtimeEncodedMessage: ARTMessage?
 
                     let rest = ARTRest(options: AblyTests.commonAppSetup())
                     let restChannel = rest.channels.get("test")
 
-                    let restBlock: @convention(block) (AspectInfo, ARTMessage) -> Void = { info, message in
-                        let invocation = info.originalInvocation()
-                        invocation.invoke()
-                        restEncodedMessage = message
+                    var restEncodedMessage: ARTMessage?
+                    restChannel.testSuite_getReturnValueFrom(Selector("encodeMessageIfNeeded:")) { value in
+                        restEncodedMessage = value as? ARTMessage
                     }
-                    let restHook = ARTRestChannel.aspect_hookSelector(restChannel)
-                    // Adds a block of code after `ARTRestChannel.encodeMessageIfNeeded` is triggered
-                    let _ = try? restHook("encodeMessageIfNeeded:", withOptions: .PositionAfter, usingBlock: unsafeBitCast(restBlock, ARTRestChannel.self))
 
                     waitUntil(timeout: testTimeout) { done in
                         restChannel.publish(data, callback: { errorInfo in
@@ -218,14 +212,10 @@ class RealtimeClientChannel: QuickSpec {
                     realtimeChannel.attach()
                     expect(realtimeChannel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
 
-                    let realtimeBlock: @convention(block) (AspectInfo, ARTMessage) -> Void = { info, message in
-                        let invocation = info.originalInvocation()
-                        invocation.invoke()
-                        realtimeEncodedMessage = message
+                    var realtimeEncodedMessage: ARTMessage?
+                    realtimeChannel.testSuite_getReturnValueFrom(Selector("encodeMessageIfNeeded:")) { value in
+                        realtimeEncodedMessage = value as? ARTMessage
                     }
-                    let realtimeHook = ARTRealtimeChannel.aspect_hookSelector(realtimeChannel)
-                    // Adds a block of code after `ARTRealtimeChannel.encodeMessageIfNeeded` is triggered
-                    let _ = try? realtimeHook("encodeMessageIfNeeded:", withOptions: .PositionAfter, usingBlock: unsafeBitCast(realtimeBlock, ARTRealtimeChannel.self))
 
                     waitUntil(timeout: testTimeout) { done in
                         realtimeChannel.publish(data, cb: { status in
@@ -235,6 +225,11 @@ class RealtimeClientChannel: QuickSpec {
                     }
 
                     expect(restEncodedMessage!.data as? NSObject).to(equal(realtimeEncodedMessage!.data as? NSObject))
+                    expect(restEncodedMessage!.data).toNot(beNil())
+                    expect(realtimeEncodedMessage!.data).toNot(beNil())
+                    expect(restEncodedMessage!.encoding).to(equal(realtimeEncodedMessage!.encoding))
+                    expect(restEncodedMessage!.encoding).toNot(beNil())
+                    expect(realtimeEncodedMessage!.encoding).toNot(beNil())
                 }
 
                 // RTL6b
