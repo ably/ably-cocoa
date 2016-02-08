@@ -31,7 +31,7 @@
 }
 
 - (id)copyWithZone:(NSZone *)zone {
-    ARTMessage *message = [super init];
+    ARTMessage *message = [super copyWithZone:zone];
     message->_name = self.name;
     return message;
 }

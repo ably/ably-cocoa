@@ -27,7 +27,7 @@
     message->_id = self.id;
     message->_clientId = self.clientId;
     message->_timestamp = self.timestamp;
-    message->_data = self.data;
+    message->_data = [self.data copy];
     message->_connectionId = self.connectionId;
     message->_encoding = self.encoding;
     return message;
