@@ -77,7 +77,7 @@
     self = [super init];
     if (self) {
         _listeners = [[NSMutableDictionary alloc] init];
-        _totalListeners = [[NSMutableArray alloc] init];
+        _anyListeners = [[NSMutableArray alloc] init];
     }
     return self;
 }
@@ -111,7 +111,7 @@
 }
 
 - (void)addOnAllEntry:(ARTEventEmitterEntry *)entry {
-    [self.totalListeners addObject:entry];
+    [self.anyListeners addObject:entry];
 }
 
 - (void)off:(id)event listener:(ARTEventListener *)listener {
@@ -124,7 +124,7 @@
     BOOL (^cond)(id) = ^BOOL(id entry) {
         return ((ARTEventEmitterEntry *)entry).listener == listener;
     };
-    [self.totalListeners artRemoveWhere:cond];
+    [self.anyListeners artRemoveWhere:cond];
     for (id event in [self.listeners allKeys]) {
         [self removeObject:listener fromArrayWithKey:event inDictionary:self.listeners where:cond];
     }
@@ -144,7 +144,7 @@
             [toCall addObject:entry];
         }
         
-        for (ARTEventEmitterEntry *entry in self.totalListeners) {
+        for (ARTEventEmitterEntry *entry in self.anyListeners) {
             if (entry.once) {
                 [toRemoveFromTotalListeners addObject:entry];
             }
@@ -156,7 +156,7 @@
             [listenersForEvent removeObject:entry];
         }
         for (ARTEventEmitterEntry *entry in toRemoveFromTotalListeners) {
-            [self.totalListeners removeObject:entry];
+            [self.anyListeners removeObject:entry];
         }
         for (ARTEventEmitterEntry *entry in toCall) {
             [entry.listener call:data];
