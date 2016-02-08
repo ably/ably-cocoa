@@ -318,11 +318,6 @@
     [self transition:ARTRealtimeChannelFailed status:error];
 }
 
-- (void)setClosed:(ARTStatus *)error  {
-    [self failQueuedMessages:error];
-    [self transition:ARTRealtimeChannelClosed status:error];
-}
-
 - (void)setSuspended:(ARTStatus *)error {
     [self failQueuedMessages:error];
     [self transition:ARTRealtimeChannelDetached status:error];

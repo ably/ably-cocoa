@@ -131,6 +131,82 @@ class RealtimeClientChannel: QuickSpec {
                         }
                         expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
                     }
+                    
+                }
+
+                // RTL3b
+                context("changes to SUSPENDED") {
+
+                    it("ATTACHING channel should transition to DETACHED") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        client.setTransportClass(TestProxyTransport.self)
+                        client.connect()
+                        defer { client.close() }
+
+                        let channel = client.channel("test")
+                        channel.attach()
+                        let transport = client.transport as! TestProxyTransport
+                        transport.actionsIgnored += [.Attached]
+
+                        expect(client.connection().state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
+                        client.onSuspended()
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
+                    }
+
+                    it("ATTACHED channel should transition to DETACHED") {
+                        let options = AblyTests.commonAppSetup()
+                        let client = ARTRealtime(options: options)
+                        defer { client.close() }
+
+                        let channel = client.channel("test")
+                        channel.attach()
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+                        client.onSuspended()
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
+                    }
+
+                }
+
+                // RTL3b
+                pending("changes to CLOSED") {
+
+                    it("ATTACHING channel should transition to DETACHED") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        client.setTransportClass(TestProxyTransport.self)
+                        client.connect()
+                        defer { client.close() }
+
+                        let channel = client.channel("test")
+                        channel.attach()
+                        let transport = client.transport as! TestProxyTransport
+                        transport.actionsIgnored += [.Attached]
+
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
+                        client.close()
+                        expect(client.connection().state).to(equal(ARTRealtimeConnectionState.Closing))
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
+                        expect(client.connection().state).to(equal(ARTRealtimeConnectionState.Closed))
+                    }
+
+                    it("ATTACHED channel should transition to DETACHED") {
+                        let options = AblyTests.commonAppSetup()
+                        let client = ARTRealtime(options: options)
+                        defer { client.close() }
+
+                        let channel = client.channel("test")
+                        channel.attach()
+
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+                        client.close()
+                        expect(client.connection().state).to(equal(ARTRealtimeConnectionState.Closing))
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
+                        expect(client.connection().state).to(equal(ARTRealtimeConnectionState.Closed))
+                    }
 
                 }
 
