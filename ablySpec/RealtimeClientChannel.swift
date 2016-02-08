@@ -145,7 +145,7 @@ class RealtimeClientChannel: QuickSpec {
                         client.connect()
                         defer { client.close() }
 
-                        let channel = client.channel("test")
+                        let channel = client.channels.get("test")
                         channel.attach()
                         let transport = client.transport as! TestProxyTransport
                         transport.actionsIgnored += [.Attached]
@@ -161,7 +161,7 @@ class RealtimeClientChannel: QuickSpec {
                         let client = ARTRealtime(options: options)
                         defer { client.close() }
 
-                        let channel = client.channel("test")
+                        let channel = client.channels.get("test")
                         channel.attach()
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
                         client.onSuspended()
@@ -181,7 +181,7 @@ class RealtimeClientChannel: QuickSpec {
                         client.connect()
                         defer { client.close() }
 
-                        let channel = client.channel("test")
+                        let channel = client.channels.get("test")
                         channel.attach()
                         let transport = client.transport as! TestProxyTransport
                         transport.actionsIgnored += [.Attached]
@@ -198,7 +198,7 @@ class RealtimeClientChannel: QuickSpec {
                         let client = ARTRealtime(options: options)
                         defer { client.close() }
 
-                        let channel = client.channel("test")
+                        let channel = client.channels.get("test")
                         channel.attach()
 
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
