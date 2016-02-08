@@ -1267,7 +1267,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SEPARATE_STRIP = YES;
-				SKIP_INSTALL = NO;
 				STRIP_STYLE = all;
 			};
 			name = Debug;
@@ -1289,7 +1288,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SEPARATE_STRIP = YES;
-				SKIP_INSTALL = NO;
 				STRIP_STYLE = all;
 			};
 			name = Release;
