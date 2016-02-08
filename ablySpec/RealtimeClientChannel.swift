@@ -215,6 +215,63 @@ class RealtimeClientChannel: QuickSpec {
             // RTL4
             describe("attach") {
 
+                // RTL4b
+                context("results in an error if the connection state is") {
+
+                    pending("CLOSING") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        client.setTransportClass(TestProxyTransport.self)
+                        client.connect()
+                        defer { client.close() }
+
+                        expect(client.connection().state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                        let transport = client.transport as! TestProxyTransport
+                        transport.actionsIgnored += [.Closed]
+
+                        let channel = client.channel("test")
+
+                        client.close()
+                        expect(client.connection().state).to(equal(ARTRealtimeConnectionState.Closing))
+
+                        expect(channel.attach()).toNot(beNil())
+                    }
+
+                    it("CLOSED") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.close() }
+
+                        let channel = client.channel("test")
+
+                        client.close()
+                        expect(client.connection().state).toEventually(equal(ARTRealtimeConnectionState.Closed), timeout: testTimeout)
+
+                        expect(channel.attach()).toNot(beNil())
+                    }
+
+                    it("SUSPENDED") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.close() }
+
+                        let channel = client.channel("test")
+                        client.onSuspended()
+                        expect(client.connection().state).to(equal(ARTRealtimeConnectionState.Suspended))
+                        expect(channel.attach()).toNot(beNil())
+                    }
+
+                    it("FAILED") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.close() }
+
+                        let channel = client.channel("test")
+                        client.onError(AblyTests.newErrorProtocolMessage())
+                        expect(client.connection().state).to(equal(ARTRealtimeConnectionState.Failed))
+                        expect(channel.attach()).toNot(beNil())
+                    }
+
+                }
+
                 // RTL4c
                 it("should send an ATTACH ProtocolMessage, change state to ATTACHING and change state to ATTACHED after confirmation") {
                     let options = AblyTests.commonAppSetup()
