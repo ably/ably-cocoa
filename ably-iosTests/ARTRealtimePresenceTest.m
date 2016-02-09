@@ -112,12 +112,12 @@
             }];
 
             [channel subscribe:^(ARTMessage *message, ARTErrorInfo *errorInfo) {
-                XCTAssertEqualObjects([message content], @"testStringEcho");
+                XCTAssertEqualObjects([message data], @"testStringEcho");
                 [expectation1 fulfill];
             }];
 
             [channel2 subscribe:^(ARTMessage *message, ARTErrorInfo *errorInfo) {
-                XCTAssertEqualObjects([message content], @"testStringEcho");
+                XCTAssertEqualObjects([message data], @"testStringEcho");
                 [expectation2 fulfill];
             }];
 
@@ -232,7 +232,7 @@
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime.channels get:channelName];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
-            XCTAssertEqualObjects([message content], presenceEnter);
+            XCTAssertEqualObjects([message data], presenceEnter);
             [expectation fulfill];
         }];
         
@@ -264,13 +264,13 @@
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
             
             if(message.action == ARTPresenceEnter) {
-                XCTAssertEqualObjects([message content], presenceEnter);
+                XCTAssertEqualObjects([message data], presenceEnter);
                 [channel.presence leave:presenceLeave cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
                 }];
             }
             if(message.action == ARTPresenceLeave) {
-                XCTAssertEqualObjects([message content], presenceLeave);
+                XCTAssertEqualObjects([message data], presenceLeave);
                 [expectation fulfill];
             }
         }];
@@ -301,13 +301,13 @@
         ARTRealtimeChannel *channel = [realtime.channels get:channelName];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
             if(message.action == ARTPresenceEnter) {
-                XCTAssertEqualObjects([message content], presenceEnter);
+                XCTAssertEqualObjects([message data], presenceEnter);
                 [channel.presence enter:secondEnter cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
                 }];
             }
             else if(message.action == ARTPresenceUpdate) {
-                XCTAssertEqualObjects([message content], secondEnter);
+                XCTAssertEqualObjects([message data], secondEnter);
                 [expectation fulfill];
             }
         }];
@@ -338,13 +338,13 @@
         ARTRealtimeChannel *channel = [realtime.channels get:channelName];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
             if(message.action == ARTPresenceEnter) {
-                XCTAssertEqualObjects([message content], presenceEnter);
+                XCTAssertEqualObjects([message data], presenceEnter);
                 [channel.presence update:update cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
                 }];
             }
             else if(message.action == ARTPresenceUpdate) {
-                XCTAssertEqualObjects([message content], update);
+                XCTAssertEqualObjects([message data], update);
                 [expectation fulfill];
             }
         }];
@@ -374,13 +374,13 @@
         ARTRealtimeChannel *channel = [realtime.channels get:channelName];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
             if(message.action == ARTPresenceEnter) {
-                XCTAssertEqualObjects([message content], presenceEnter);
+                XCTAssertEqualObjects([message data], presenceEnter);
                 [channel.presence update:nil cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
                 }];
             }
             else if(message.action == ARTPresenceUpdate) {
-                XCTAssertEqualObjects([message content], nil);
+                XCTAssertEqualObjects([message data], nil);
                 [expectation fulfill];
             }
         }];
@@ -410,13 +410,13 @@
         ARTRealtimeChannel *channel = [realtime.channels get:channelName];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
             if(message.action == ARTPresenceEnter) {
-                XCTAssertEqualObjects([message content], presenceEnter);
+                XCTAssertEqualObjects([message data], presenceEnter);
                 [channel.presence leave:@"" cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
                 }];
             }
             if(message.action == ARTPresenceLeave) {
-                XCTAssertEqualObjects([message content], presenceEnter);
+                XCTAssertEqualObjects([message data], presenceEnter);
                 [expectation fulfill];
             }
             
@@ -446,7 +446,7 @@
         ARTRealtimeChannel *channel = [realtime.channels get:@"testUpdateNoEnter"];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
             if(message.action == ARTPresenceEnter) {
-                XCTAssertEqualObjects([message content], update);
+                XCTAssertEqualObjects([message data], update);
                 [expectation fulfill];
             }
         }];
@@ -496,8 +496,8 @@
                     XCTAssertEqual(m0.action, ARTPresencePresent);
                     XCTAssertEqual(m1.action, ARTPresencePresent);
                     //TODO work out why the order seems to be random
-                    //XCTAssertEqualObjects(enter2, [m0 content]);
-                    //XCTAssertEqualObjects(enter, [m1 content]);
+                    //XCTAssertEqualObjects(enter2, [m0 data]);
+                    //XCTAssertEqualObjects(enter, [m1 data]);
                     [exp fulfill];
                 }];
             }];
@@ -580,7 +580,7 @@
                     XCTAssertEqual(1, messages.count);
                     ARTPresenceMessage *m0 = messages[0];
                     XCTAssertEqual(m0.action, ArtPresenceMessagePresent);
-                    XCTAssertEqualObjects(@"hi2", [m0 content]);
+                    XCTAssertEqualObjects(@"hi2", [m0 data]);
                     [exp fulfill];
                 }];
             }];
@@ -599,9 +599,9 @@
         ARTRealtimeChannel *channel = [realtime.channels get:@"testEnterAndGet"];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
             if(message.action == ARTPresenceEnter)  {
-                XCTAssertEqualObjects([message content], enter);
+                XCTAssertEqualObjects([message data], enter);
                 [channel.presence leave:leave cb:^(ARTStatus *status) {
-                    XCTAssertEqualObjects([message content], enter);
+                    XCTAssertEqualObjects([message data], enter);
                     [channel.presence get:^(ARTPaginatedResult *result, NSError *error) {
                         XCTAssert(!error);
                         NSArray *messages = [result items];
@@ -639,13 +639,13 @@
         ARTRealtimeChannel *channel = [realtime.channels get:@"testEnterLeaveNoData"];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
             if(message.action == ARTPresenceEnter) {
-                XCTAssertEqualObjects([message content], enter);
+                XCTAssertEqualObjects([message data], enter);
                 [channel.presence leave:@"" cb:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
                 }];
             }
             else if(message.action == ARTPresenceLeave) {
-                XCTAssertEqualObjects([message content], enter);
+                XCTAssertEqualObjects([message data], enter);
                 [expectation fulfill];
             }
         }];
@@ -677,13 +677,13 @@
         ARTRealtimeChannel *channel = [realtime.channels get:@"testEnterAndGet"];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
             if(message.action == ARTPresenceEnter)  {
-                XCTAssertEqualObjects([message content], enter);
+                XCTAssertEqualObjects([message data], enter);
                 [channel.presence leave:@"" cb:^(ARTStatus *status) {
-                    XCTAssertEqualObjects([message content], enter);
+                    XCTAssertEqualObjects([message data], enter);
                 }];
             }
             if(message.action == ARTPresenceLeave) {
-                XCTAssertEqualObjects([message content], enter);
+                XCTAssertEqualObjects([message data], enter);
                 [expectation fulfill];
             }
         }];
@@ -703,13 +703,13 @@
         ARTRealtimeChannel *channel = [realtime.channels get:@"testEnterAndGet"];
         [channel.presence subscribe:^(ARTPresenceMessage * message) {
             if(message.action == ARTPresenceEnter)  {
-                XCTAssertEqualObjects([message content], enter);
+                XCTAssertEqualObjects([message data], enter);
                 [channel.presence leave:leave cb:^(ARTStatus *status) {
-                    XCTAssertEqualObjects([message content], enter);
+                    XCTAssertEqualObjects([message data], enter);
                 }];
             }
             if(message.action == ARTPresenceLeave) {
-                XCTAssertEqualObjects([message content], leave);
+                XCTAssertEqualObjects([message data], leave);
                 [expectation fulfill];
             }
         }];
@@ -873,15 +873,15 @@
             XCTAssertEqualObjects(otherClientId, message.clientId);
             if(messageCount ==0) {
                 XCTAssertEqual(message.action, ARTPresenceEnter);
-                XCTAssertEqualObjects(message.content, @"");
+                XCTAssertEqualObjects(message.data, @"");
             }
             else if(messageCount ==1) {
                 XCTAssertEqual(message.action, ARTPresenceUpdate);
-                XCTAssertEqualObjects(message.content, data);
+                XCTAssertEqualObjects(message.data, data);
             }
             else if(messageCount ==2) {
                 XCTAssertEqual(message.action, ARTPresenceLeave);
-                XCTAssertEqualObjects(message.content, data);
+                XCTAssertEqualObjects(message.data, data);
                 [exp fulfill];
             }
             messageCount++;
@@ -971,7 +971,7 @@
                     ARTPresenceMessage * m =[map getClient:[self getClientId]];
                     XCTAssertFalse(m == nil);
                     XCTAssertEqual(m.action, ARTPresencePresent);
-                    XCTAssertEqualObjects([m content], @"hi");
+                    XCTAssertEqualObjects([m data], @"hi");
                     [exp fulfill];
                 });
             }];
@@ -1005,7 +1005,7 @@
                 ARTPresenceMessage * m =[map getClient:[self getClientId]];
                 XCTAssertFalse(m == nil);
                 XCTAssertEqual(m.action, ArtPresenceMessagePresent);
-                XCTAssertEqualObjects([m content], @"hi");
+                XCTAssertEqualObjects([m data], @"hi");
                 [exp fulfill];
             }];
             [channel2 attach];
@@ -1049,17 +1049,17 @@
         __block bool gotEnter = false;
         __block bool gotLeave = false;
         id<ARTSubscription> allSub = [channel.presence subscribe:^(ARTPresenceMessage * message) {
-            XCTAssertEqualObjects([message content], leave1);
+            XCTAssertEqualObjects([message data], leave1);
             gotLeave = true;
         }];
         [channel.presence unsubscribe:allSub action:ARTPresenceEnter];
         [channel.presence unsubscribe:allSub action:ARTPresenceUpdate];
         id<ARTSubscription> updateSub=[channel.presence subscribe:ARTPresenceUpdate cb:^(ARTPresenceMessage * message) {
-            XCTAssertEqualObjects([message content], update1);
+            XCTAssertEqualObjects([message data], update1);
             gotUpdate = true;
         }];
         id<ARTSubscription> enterSub =[channel.presence subscribe:ARTPresenceEnter cb:^(ARTPresenceMessage * message) {
-            XCTAssertEqualObjects([message content], enter1);
+            XCTAssertEqualObjects([message data], enter1);
             gotEnter = true;
         }];
         [channel.presence enter:enter1 cb:^(ARTStatus *status) {
@@ -1182,7 +1182,7 @@
                                 ARTPresenceMessage *m0 = messages[0];
                                 XCTAssertEqual(m0.action, ARTPresencePresent);
                                 XCTAssertEqualObjects(m0.clientId, [self getClientId]);
-                                XCTAssertEqualObjects([m0 content], @"hi");
+                                XCTAssertEqualObjects([m0 data], @"hi");
                                 [exp fulfill];
                             }];
                         }];
@@ -1211,7 +1211,7 @@
                 ARTPresenceMessage *m0 = messages[0];
                 XCTAssertEqual(m0.action, ARTPresencePresent);
                 XCTAssertEqualObjects(m0.clientId, [self getClientId]);
-                XCTAssertEqualObjects([m0 content], dataPayload);
+                XCTAssertEqualObjects([m0 data], dataPayload);
                 [exp fulfill];
             }];
         }];
@@ -1235,7 +1235,7 @@
 
         [channel2.presence subscribe:^(ARTPresenceMessage * message) {
             if (message.action == ARTPresenceLeave) {
-                XCTAssertEqualObjects([message content], dataPayload);
+                XCTAssertEqualObjects([message data], dataPayload);
                 [exp1 fulfill];
             }
         }];

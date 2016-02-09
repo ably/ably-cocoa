@@ -218,14 +218,14 @@ class RestChannel: QuickSpec {
                             return message.clientId == value["clientId"].stringValue
                         }).first!.1
                         
-                        expect(message.content()).toNot(beNil())
+                        expect(message.data).toNot(beNil())
                         expect(message.action).to(equal(ARTPresenceAction.Present))
 
                         let encodedFixture = channel.dataEncoder.decode(
                             fixtureMessage["data"].object,
                             encoding:fixtureMessage.asDictionary!["encoding"] as? String
                         )
-                        expect(message.content() as? NSObject).to(equal(encodedFixture.data as? NSObject));
+                        expect(message.data as? NSObject).to(equal(encodedFixture.data as? NSObject));
                     }
                 }
             }

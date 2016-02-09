@@ -13,5 +13,6 @@ framework module ably {
         header "ARTDataQuery+Private.h"
         header "ARTAuth+Private.h"
         header "ARTPaginatedResult+Private.h"
+        header "ARTBaseMessage+Private.h"
     }
 }

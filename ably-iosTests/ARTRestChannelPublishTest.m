@@ -55,8 +55,8 @@
                     XCTAssertEqual(2, messages.count);
                     ARTMessage *m0 = messages[0];
                     ARTMessage *m1 = messages[1];
-                    XCTAssertEqualObjects([m0 content], message1);
-                    XCTAssertEqualObjects([m1 content], message2);
+                    XCTAssertEqualObjects([m0 data], message1);
+                    XCTAssertEqualObjects([m1 data], message2);
                     [expectation fulfill];
                 } error:nil];
             }];
@@ -87,9 +87,9 @@
                 ARTMessage *m0 = messages[0];
                 ARTMessage *m1 = messages[1];
                 ARTMessage *m2 = messages[2];
-                XCTAssertEqualObjects([m0 content], test3);
-                XCTAssertEqualObjects([m1 content], test2);
-                XCTAssertEqualObjects([m2 content], test1);
+                XCTAssertEqualObjects([m0 data], test3);
+                XCTAssertEqualObjects([m1 data], test2);
+                XCTAssertEqualObjects([m2 data], test1);
                 [exp fulfill];
             } error:nil];
         }];

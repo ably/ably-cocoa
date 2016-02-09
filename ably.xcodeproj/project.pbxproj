@@ -596,6 +596,7 @@
 		D746AE331BBC29FF003ECEF8 /* Types */ = {
 			isa = PBXGroup;
 			children = (
+				EB0505FB1C5BD7C4006BA7E2 /* ARTBaseMessage+Private.h */,
 				D7D8F81F1BC2BE15009718F2 /* ARTAuthOptions.h */,
 				D7D8F8201BC2BE15009718F2 /* ARTAuthOptions.m */,
 				D7D8F8271BC2C706009718F2 /* ARTTokenRequest.h */,
@@ -728,6 +729,7 @@
 				D746AE401BBC5B14003ECEF8 /* ARTEventEmitter.h in Headers */,
 				D746AE531BBD85C5003ECEF8 /* ARTChannels.h in Headers */,
 				D7D8F82D1BC2C706009718F2 /* ARTTokenParams.h in Headers */,
+				EB0505FC1C5BD7C4006BA7E2 /* ARTBaseMessage+Private.h in Headers */,
 				D7F1D3771BF4DE72001A4B5E /* ARTRealtimePresence.h in Headers */,
 				1C578E1F1B3435CA00EF46EC /* ARTFallback.h in Headers */,
 				96E408471A3895E800087F77 /* ARTWebSocketTransport.h in Headers */,

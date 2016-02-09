@@ -70,8 +70,8 @@
                     XCTAssertEqual([page count], 2);
                     ARTMessage *stringMessage = [page objectAtIndex:0];
                     ARTMessage * dataMessage = [page objectAtIndex:1];
-                    XCTAssertEqualObjects([dataMessage content], dataPayload);
-                    XCTAssertEqualObjects([stringMessage content], stringPayload);
+                    XCTAssertEqualObjects([dataMessage data], dataPayload);
+                    XCTAssertEqualObjects([stringMessage data], stringPayload);
                     [exp fulfill];
                 } error:nil];
             }];
@@ -111,9 +111,9 @@
                         ARTMessage * stringMessage = [page objectAtIndex:0];
                         ARTMessage * dataMessage = [page objectAtIndex:1];
                         ARTMessage * firstMessage = [page objectAtIndex:2];
-                        XCTAssertEqualObjects([dataMessage content], dataPayload);
-                        XCTAssertEqualObjects([stringMessage content], stringPayload);
-                        XCTAssertEqualObjects([firstMessage content], firstMessageText);
+                        XCTAssertEqualObjects([dataMessage data], dataPayload);
+                        XCTAssertEqualObjects([stringMessage data], stringPayload);
+                        XCTAssertEqualObjects([firstMessage data], firstMessageText);
                         [exp fulfill];
                     } error:nil];
                 }];

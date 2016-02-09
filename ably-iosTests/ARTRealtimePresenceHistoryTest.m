@@ -157,7 +157,7 @@
                         NSArray *messages = [result items];
                         XCTAssertEqual(1, messages.count);
                         ARTPresenceMessage *m0 = messages[0];
-                        XCTAssertEqualObjects(presenceEnter, [m0 content]);
+                        XCTAssertEqualObjects(presenceEnter, [m0 data]);
                         [expectation fulfill];
                     } error:nil];
                 }];
@@ -201,11 +201,11 @@
                                  ARTPresenceMessage *m2 = messages[2];
                                  
                                  XCTAssertEqual(m0.action, ARTPresenceEnter);
-                                 XCTAssertEqualObjects(presenceEnter1, [m0 content]);
+                                 XCTAssertEqualObjects(presenceEnter1, [m0 data]);
     
-                                 XCTAssertEqualObjects(presenceEnter2, [m1 content]);
+                                 XCTAssertEqualObjects(presenceEnter2, [m1 data]);
                                  XCTAssertEqual(m1.action, ARTPresenceUpdate);
-                                 XCTAssertEqualObjects(presenceUpdate, [m2 content]);
+                                 XCTAssertEqualObjects(presenceUpdate, [m2 data]);
                                  XCTAssertEqual(m2.action, ARTPresenceUpdate);
                                  [expectation fulfill];
                             } error:nil];
@@ -254,11 +254,11 @@
                                      ARTPresenceMessage *m2 = messages[2];
                                      
                                      XCTAssertEqual(m0.action, ARTPresenceEnter);
-                                     XCTAssertEqualObjects(presenceEnter1, [m0 content]);
+                                     XCTAssertEqualObjects(presenceEnter1, [m0 data]);
                                      
-                                     XCTAssertEqualObjects(presenceEnter2, [m1 content]);
+                                     XCTAssertEqualObjects(presenceEnter2, [m1 data]);
                                      XCTAssertEqual(m1.action, ARTPresenceEnter);
-                                     XCTAssertEqualObjects(presenceUpdate, [m2 content]);
+                                     XCTAssertEqualObjects(presenceUpdate, [m2 data]);
                                      XCTAssertEqual(m2.action, ARTPresenceUpdate);
                                      [expectation fulfill];
                                  } error:nil];
@@ -311,11 +311,11 @@
                                  ARTPresenceMessage *m2 = messages[2];
                                  
                                  XCTAssertEqual(m0.action, ARTPresenceUpdate);
-                                 XCTAssertEqualObjects(presenceUpdate, [m0 content]);
+                                 XCTAssertEqualObjects(presenceUpdate, [m0 data]);
                                  
-                                 XCTAssertEqualObjects(presenceEnter2, [m1 content]);
+                                 XCTAssertEqualObjects(presenceEnter2, [m1 data]);
                                  XCTAssertEqual(m1.action, ARTPresenceUpdate);
-                                 XCTAssertEqualObjects(presenceEnter1, [m2 content]);
+                                 XCTAssertEqualObjects(presenceEnter1, [m2 data]);
                                  XCTAssertEqual(m2.action, ARTPresenceEnter);
                                  [expectation fulfill];
                              } error:nil];
@@ -339,9 +339,9 @@
         ARTPresenceMessage *m1 = messages[1];
         
         XCTAssertEqual(m0.action, ARTPresenceEnter);
-        XCTAssertEqualObjects([self enter1Str], [m0 content]);
+        XCTAssertEqualObjects([self enter1Str], [m0 data]);
         
-        XCTAssertEqualObjects([self enter2Str], [m1 content]);
+        XCTAssertEqualObjects([self enter2Str], [m1 data]);
         XCTAssertEqual(m1.action, ARTPresenceUpdate);
         
         [result next:^(ARTPaginatedResult *result2, NSError *error2) {
@@ -350,7 +350,7 @@
             XCTAssertEqual(1, messages.count);
             XCTAssertFalse([result2 hasNext]);
             ARTPresenceMessage *m0 = messages[0];
-            XCTAssertEqualObjects([self updateStr], [m0 content]);
+            XCTAssertEqualObjects([self updateStr], [m0 data]);
             XCTAssertEqual(m0.action, ARTPresenceUpdate);
         }];
     }];
@@ -368,9 +368,9 @@
         ARTPresenceMessage *m1 = messages[1];
         
         XCTAssertEqual(m0.action, ARTPresenceUpdate);
-        XCTAssertEqualObjects([self updateStr], [m0 content]);
+        XCTAssertEqualObjects([self updateStr], [m0 data]);
         
-        XCTAssertEqualObjects([self enter2Str], [m1 content]);
+        XCTAssertEqualObjects([self enter2Str], [m1 data]);
         XCTAssertEqual(m1.action, ARTPresenceUpdate);
         
         [result next:^(ARTPaginatedResult *result2, NSError *error2) {
@@ -379,7 +379,7 @@
             XCTAssertEqual(1, messages.count);
             XCTAssertFalse([result2 hasNext]);
             ARTPresenceMessage *m0 = messages[0];
-            XCTAssertEqualObjects([self enter1Str], [m0 content]);
+            XCTAssertEqualObjects([self enter1Str], [m0 data]);
             XCTAssertEqual(m0.action, ARTPresenceEnter);
         }];
     }];
@@ -519,7 +519,7 @@
             NSString * goalStr = [NSString stringWithFormat:@"second_updates%d",i];
             ARTPresenceMessage * m = [page objectAtIndex:i];
             XCTAssertEqual(ARTPresenceUpdate, m.action);
-            XCTAssertEqualObjects(goalStr, [m content]);
+            XCTAssertEqualObjects(goalStr, [m data]);
         }
     }];
 }
@@ -536,7 +536,7 @@
             NSString * goalStr = [NSString stringWithFormat:@"second_updates%d",topSize - i -1];
             ARTPresenceMessage * m = [page objectAtIndex:i];
             XCTAssertEqual(ARTPresenceUpdate, m.action);
-            XCTAssertEqualObjects(goalStr, [m content]);
+            XCTAssertEqualObjects(goalStr, [m data]);
         }
     }];
 }
@@ -575,11 +575,11 @@
                                             ARTPresenceMessage *m2 = messages[2];
                                             
                                             XCTAssertEqual(m0.action, ARTPresenceEnter);
-                                            XCTAssertEqualObjects([self enter1Str], [m0 content]);
+                                            XCTAssertEqualObjects([self enter1Str], [m0 data]);
                                             
-                                            XCTAssertEqualObjects([self enter2Str], [m1 content]);
+                                            XCTAssertEqualObjects([self enter2Str], [m1 data]);
                                             XCTAssertEqual(m1.action, ARTPresenceUpdate);
-                                            XCTAssertEqualObjects([self updateStr], [m2 content]);
+                                            XCTAssertEqualObjects([self updateStr], [m2 data]);
                                             XCTAssertEqual(m2.action, ARTPresenceUpdate);
                                             [expectation fulfill];
                                         } error:nil];
@@ -625,15 +625,15 @@
                         XCTAssertEqual(3, messages.count);
                         {
                             ARTPresenceMessage *m = messages[0];
-                            XCTAssertEqualObjects(presenceEnter3, [m content]);
+                            XCTAssertEqualObjects(presenceEnter3, [m data]);
                         }
                         {
                             ARTPresenceMessage *m = messages[1];
-                            XCTAssertEqualObjects(presenceEnter2, [m content]);
+                            XCTAssertEqualObjects(presenceEnter2, [m data]);
                         }
                         {
                             ARTPresenceMessage *m = messages[2];
-                            XCTAssertEqualObjects(presenceEnter1, [m content]);
+                            XCTAssertEqualObjects(presenceEnter1, [m data]);
                         }
                         [expectation fulfill];
                     } error:nil];

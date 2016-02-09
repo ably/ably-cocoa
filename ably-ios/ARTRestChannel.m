@@ -13,7 +13,7 @@
 #import "ARTChannel+Private.h"
 #import "ARTChannelOptions.h"
 #import "ARTMessage.h"
-#import "ARTBaseMessage.h"
+#import "ARTBaseMessage+Private.h"
 #import "ARTPaginatedResult+Private.h"
 #import "ARTDataQuery+Private.h"
 #import "ARTJsonEncoder.h"

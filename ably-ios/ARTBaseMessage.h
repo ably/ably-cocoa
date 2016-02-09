@@ -8,8 +8,6 @@
 
 #import <Foundation/Foundation.h>
 #import "CompatibilityMacros.h"
-#import "ARTDataEncoder.h"
-#import "ARTStatus.h"
 
 ART_ASSUME_NONNULL_BEGIN
 
@@ -32,10 +30,6 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic, art_nullable) id data;
 
-- (ARTStatus *__art_nonnull)decodeWithEncoder:(ARTDataEncoder*)encoder output:(id __art_nonnull*__art_nonnull)output;
-- (ARTStatus *__art_nonnull)encodeWithEncoder:(ARTDataEncoder*)encoder output:(id __art_nonnull*__art_nonnull)output;
-
-- (id)content;
 - (NSString *)description;
 
 - (instancetype)messageWithData:(id)data encoding:(NSString *)encoding;
