@@ -139,14 +139,13 @@
 }
 
 - (void)emit:(id)event with:(id)data {
-    NSMutableArray *listenersForEvent = [self.listeners objectForKey:event];
     NSMutableArray *toCall = [[NSMutableArray alloc] init];
-    NSMutableArray *toRemoveFromListenersForEvent = [[NSMutableArray alloc] init];
+    NSMutableArray *toRemoveFromListeners = [[NSMutableArray alloc] init];
     NSMutableArray *toRemoveFromTotalListeners = [[NSMutableArray alloc] init];
     @try {
-        for (ARTEventEmitterEntry *entry in listenersForEvent) {
+        for (ARTEventEmitterEntry *entry in [self.listeners objectForKey:event]) {
             if (entry.once) {
-                [toRemoveFromListenersForEvent addObject:entry];
+                [toRemoveFromListeners addObject:entry];
             }
             
             [toCall addObject:entry];
@@ -160,8 +159,8 @@
         }
     }
     @finally {
-        for (ARTEventEmitterEntry *entry in toRemoveFromListenersForEvent) {
-            [listenersForEvent removeObject:entry];
+        for (ARTEventEmitterEntry *entry in toRemoveFromListeners) {
+            [self removeObject:entry fromArrayWithKey:event inDictionary:self.listeners];
         }
         for (ARTEventEmitterEntry *entry in toRemoveFromTotalListeners) {
             [self.anyListeners removeObject:entry];
