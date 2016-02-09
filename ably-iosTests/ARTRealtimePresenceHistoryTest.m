@@ -122,10 +122,10 @@
                             query.direction = forwards ? ARTQueryDirectionForwards : ARTQueryDirectionBackwards;
                             query.limit = limit;
 
-                            [channel.presence history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                            [channel.presence history:query error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                                 cb(result, error);
                                 [expectation fulfill];
-                            } error:nil];
+                            }];
                         }];
                     }];
                 }];
@@ -152,14 +152,14 @@
                 [channel.presence enter:presenceEnter cb:^(ARTErrorInfo *errorInfo) {
                     XCTAssertNil(errorInfo);
 
-                    [channel.presence history:[[ARTRealtimeHistoryQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+                    [channel.presence history:[[ARTRealtimeHistoryQuery alloc] init] error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                         XCTAssert(!error);
                         NSArray *messages = [result items];
                         XCTAssertEqual(1, messages.count);
                         ARTPresenceMessage *m0 = messages[0];
                         XCTAssertEqualObjects(presenceEnter, [m0 data]);
                         [expectation fulfill];
-                    } error:nil];
+                    }];
                 }];
             }
         }];
@@ -192,7 +192,7 @@
                             ARTRealtimeHistoryQuery *query = [[ARTRealtimeHistoryQuery alloc] init];
                             query.direction = ARTQueryDirectionForwards;
 
-                            [channel.presence history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                            [channel.presence history:query error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                                  XCTAssert(!error);
                                  NSArray *messages = [result items];
                                  XCTAssertEqual(3, messages.count);
@@ -208,7 +208,7 @@
                                  XCTAssertEqualObjects(presenceUpdate, [m2 data]);
                                  XCTAssertEqual(m2.action, ARTPresenceUpdate);
                                  [expectation fulfill];
-                            } error:nil];
+                            }];
                         }];
                     }];
                 }];
@@ -245,7 +245,7 @@
                                 ARTRealtimeHistoryQuery *query = [[ARTRealtimeHistoryQuery alloc] init];
                                 query.direction = ARTQueryDirectionForwards;
 
-                                [channel.presence history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                                [channel.presence history:query error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                                      XCTAssert(!error);
                                      NSArray *messages = [result items];
                                      XCTAssertEqual(3, messages.count);
@@ -261,7 +261,7 @@
                                      XCTAssertEqualObjects(presenceUpdate, [m2 data]);
                                      XCTAssertEqual(m2.action, ARTPresenceUpdate);
                                      [expectation fulfill];
-                                 } error:nil];
+                                 }];
                             }];
                             
                         }];
@@ -302,7 +302,7 @@
                             ARTRealtimeHistoryQuery *query = [[ARTRealtimeHistoryQuery alloc] init];
                             query.direction = ARTQueryDirectionBackwards;
 
-                            [channel.presence history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                            [channel.presence history:query error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                                  XCTAssert(!error);
                                  NSArray *messages = [result items];
                                  XCTAssertEqual(3, messages.count);
@@ -318,7 +318,7 @@
                                  XCTAssertEqualObjects(presenceEnter1, [m2 data]);
                                  XCTAssertEqual(m2.action, ARTPresenceEnter);
                                  [expectation fulfill];
-                             } error:nil];
+                             }];
                         }];
                     }];
                 }];
@@ -500,10 +500,10 @@
         query.direction = forwards ? ARTQueryDirectionForwards : ARTQueryDirectionBackwards;
 
         XCTestExpectation *historyExpecation = [self expectationWithDescription:@"historyExpecation"];
-        [channel.presence history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+        [channel.presence history:query error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
             cb(result, error);
             [historyExpecation fulfill];
-        } error:nil];
+        }];
         [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
     }];
 }
@@ -565,7 +565,7 @@
                                     if(channel2.state == ARTRealtimeChannelAttached) {
                                         ARTRealtimeHistoryQuery *query = [[ARTRealtimeHistoryQuery alloc] init];
                                         query.direction = ARTQueryDirectionForwards;
-                                        [channel2.presence history:query callback:^(ARTPaginatedResult *c2Result, NSError *error2) {
+                                        [channel2.presence history:query error:nil callback:^(ARTPaginatedResult *c2Result, NSError *error2) {
                                             XCTAssert(!error2);
                                             NSArray *messages = [c2Result items];
                                             XCTAssertEqual(3, messages.count);
@@ -582,7 +582,7 @@
                                             XCTAssertEqualObjects([self updateStr], [m2 data]);
                                             XCTAssertEqual(m2.action, ARTPresenceUpdate);
                                             [expectation fulfill];
-                                        } error:nil];
+                                        }];
                                     }
                                 }];
                                 [channel2 attach];
@@ -619,7 +619,7 @@
                 ARTRealtimeChannel * c3 =[_realtime3.channels get:channelName];
                 [c3.presence enter:presenceEnter3 cb:^(ARTErrorInfo *errorInfo) {
                     XCTAssertNil(errorInfo);
-                    [c1.presence history:[[ARTRealtimeHistoryQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+                    [c1.presence history:[[ARTRealtimeHistoryQuery alloc] init] error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                         XCTAssert(!error);
                         NSArray *messages = [result items];
                         XCTAssertEqual(3, messages.count);
@@ -636,7 +636,7 @@
                             XCTAssertEqualObjects(presenceEnter1, [m data]);
                         }
                         [expectation fulfill];
-                    } error:nil];
+                    }];
                 }];
             }];
         }];

@@ -54,7 +54,7 @@
                 XCTAssertNil(errorInfo);
                 [channel publish:nil data:@"testString2" cb:^(ARTErrorInfo *errorInfo) {
                     XCTAssertNil(errorInfo);
-                    [channel history:[[ARTRealtimeHistoryQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+                    [channel history:[[ARTRealtimeHistoryQuery alloc] init] error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                         XCTAssert(!error);
                         NSArray *messages = [result items];
                         XCTAssertEqual(2, messages.count);
@@ -64,7 +64,7 @@
                         XCTAssertEqualObjects(@"testString", [m1 data]);
 
                         [expectation fulfill];
-                    } error:nil];
+                    }];
                 }];
             }];
         }        
@@ -115,7 +115,7 @@
             XCTAssertNil(errorInfo);
             [channel2 publish:nil data:@"testString2" cb:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
-                [channel1 history:[[ARTRealtimeHistoryQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+                [channel1 history:[[ARTRealtimeHistoryQuery alloc] init] error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                     XCTAssert(!error);
                     NSArray *messages = [result items];
                     XCTAssertEqual(2, messages.count);
@@ -125,8 +125,8 @@
                     XCTAssertEqualObjects(@"testString", [m1 data]);
                     [expectation1 fulfill];
                     
-                } error:nil];
-                [channel2 history:[[ARTRealtimeHistoryQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+                }];
+                [channel2 history:[[ARTRealtimeHistoryQuery alloc] init] error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                     XCTAssert(!error);
                     NSArray *messages = [result items];
                     XCTAssertEqual(2, messages.count);
@@ -135,7 +135,7 @@
                     XCTAssertEqualObjects(@"testString2", [m0 data]);
                     XCTAssertEqualObjects(@"testString", [m1 data]);
                     [expectation2 fulfill];
-                } error:nil];
+                }];
             }];
         }];
     }];
@@ -154,7 +154,7 @@
                 XCTAssertNil(errorInfo);
                 ARTRealtimeHistoryQuery* query = [[ARTRealtimeHistoryQuery alloc] init];
                 query.direction = ARTQueryDirectionForwards;
-                [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                [channel history:query error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                     XCTAssert(!error);
                     NSArray *messages = [result items];
                     XCTAssertEqual(2, messages.count);
@@ -164,7 +164,7 @@
                     XCTAssertEqualObjects(@"testString2", [m1 data]);
                     
                     [expectation fulfill];
-                } error:nil];
+                }];
             }];
         }];
     }];
@@ -184,7 +184,7 @@
             query.limit = 2;
             query.direction = ARTQueryDirectionForwards;
             
-            [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+            [channel history:query error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                  XCTAssert(!error);
                  XCTAssertTrue([result hasNext]);
                  NSArray * items = [result items];
@@ -222,7 +222,7 @@
                          }];
                      }];
                  }];
-             } error:nil];
+             }];
         }];
     }];
 
@@ -241,7 +241,7 @@
             query.limit = 2;
             query.direction = ARTQueryDirectionBackwards;
 
-            [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+            [channel history:query error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                  XCTAssert(!error);
                  XCTAssertTrue([result hasNext]);
                  NSArray * items = [result items];
@@ -290,7 +290,7 @@
                          }];
                      }];
                  }];
-             } error:nil];
+             }];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -348,7 +348,7 @@
                     query.end = [NSDate dateWithTimeIntervalSince1970:intervalEnd/1000];
                     query.direction = ARTQueryDirectionBackwards;
 
-                    [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                    [channel history:query error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                         XCTAssert(!error);
                         XCTAssertFalse([result hasNext]);
                         NSArray *items = [result items];
@@ -361,7 +361,7 @@
                             XCTAssertEqualObjects(goalStr, [m data]);
                         }
                         [expectation fulfill];
-                    } error:nil];
+                    }];
                 }];
             }];
         }];
@@ -421,7 +421,7 @@
                     query.end = [NSDate dateWithTimeIntervalSince1970:intervalEnd/1000];
                     query.direction = ARTQueryDirectionForwards;
 
-                    [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                    [channel history:query error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                         XCTAssert(!error);
                         XCTAssertFalse([result hasNext]);
                         NSArray * items = [result items];
@@ -435,7 +435,7 @@
                             XCTAssertEqualObjects(goalStr, [m data]);
                         }
                         [expectation fulfill];
-                    } error:nil];
+                    }];
                 }];
             }];
         }];
@@ -476,7 +476,7 @@
                     ARTRealtimeHistoryQuery *query = [[ARTRealtimeHistoryQuery alloc] init];
                     query.direction = ARTQueryDirectionBackwards;
 
-                    [channel2 history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                    [channel2 history:query error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                         XCTAssert(!error);
                         XCTAssertFalse([result hasNext]);
                         NSArray * items = [result items];
@@ -488,7 +488,7 @@
                             XCTAssertEqualObjects(goalStr, [m data]);
                         }
                         [expecation fulfill];
-                    } error:nil];
+                    }];
                 }
             }];
         }

@@ -47,7 +47,7 @@
     [ARTPaginatedResult executePaginated:[self channel].rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
 }
 
-- (BOOL)history:(ARTDataQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, NSError *error))callback error:(NSError **)errorPtr {
+- (BOOL)history:(ARTDataQuery *)query error:(NSError **)errorPtr callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, NSError *error))callback {
     if (query.limit > 1000) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain

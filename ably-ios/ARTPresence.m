@@ -9,6 +9,7 @@
 #import "ARTPresence.h"
 
 #import "ARTChannel.h"
+#import "ARTDataQuery.h"
 
 @implementation ARTPresenceQuery
 
@@ -59,7 +60,23 @@
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 
-- (BOOL)history:(ARTDataQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, NSError *error))callback error:(NSError **)errorPtr {
+- (NSError *)history:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, NSError * _Nullable))callback {
+    NSError *error = [[NSError alloc] init];
+    [self historyWithError:&error callback:callback];
+    return error;
+}
+
+- (NSError *)history:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, NSError * _Nullable))callback {
+    NSError *error = [[NSError alloc] init];
+    [self history:query error:&error callback:callback];
+    return error;
+}
+
+- (BOOL)historyWithError:(NSError *__autoreleasing  _Nullable *)errorPtr callback:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, NSError * _Nullable))callback {
+    return [self history:[[ARTDataQuery alloc] init] error:errorPtr callback:callback];
+}
+
+- (BOOL)history:(ARTDataQuery *)query error:(NSError **)errorPtr callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *, NSError *))callback {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
     return NO;
 }

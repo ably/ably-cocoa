@@ -42,7 +42,10 @@ ART_ASSUME_NONNULL_BEGIN
 /**
  Obtain recent presence history for one channel
  */
-- (BOOL)history:(art_nullable ARTDataQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *__art_nullable result, NSError *__art_nullable error))callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
+- (NSError *__art_nullable)history:(void(^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *__art_nullable result, NSError *__art_nullable error))callback;
+- (NSError *__art_nullable)history:(art_nullable ARTDataQuery *)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *__art_nullable result, NSError *__art_nullable error))callback;
+- (BOOL)historyWithError:(NSError *__art_nullable *__art_nullable)errorPtr callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *__art_nullable result, NSError *__art_nullable error))callback;
+- (BOOL)history:(art_nullable ARTDataQuery *)query error:(NSError *__art_nullable *__art_nullable)errorPtr callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *__art_nullable result, NSError *__art_nullable error))callback;
 
 @end
 

@@ -86,7 +86,7 @@
                     query.end = [NSDate dateWithTimeIntervalSince1970:intervalEnd/1000];
                     query.direction = ARTQueryDirectionBackwards;
 
-                    [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                    [channel history:query error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                         XCTAssert(!error);
                         XCTAssertFalse([result hasNext]);
                         NSArray *page = [result items];
@@ -99,7 +99,7 @@
                             XCTAssertEqualObjects(goalStr, [m data]);
                         }
                         [firstExpectation fulfill];
-                    } error:nil];
+                    }];
                 }];
             }];
         }];
@@ -157,7 +157,7 @@
                     query.end = [NSDate dateWithTimeIntervalSince1970:intervalEnd/1000];
                     query.direction = ARTQueryDirectionForwards;
 
-                    [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                    [channel history:query error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                         XCTAssert(!error);
                         XCTAssertFalse([result hasNext]);
                         NSArray *page = [result items];
@@ -171,7 +171,7 @@
                             XCTAssertEqualObjects(goalStr, [m data]);
                         }
                         [firstExpectation fulfill];
-                    } error:nil];
+                    }];
                 }];
             }];
         }];
@@ -196,7 +196,7 @@
             query.limit = 2;
             query.direction = ARTQueryDirectionBackwards;
 
-            [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+            [channel history:query error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                 XCTAssert(!error);
                 XCTAssertTrue([result hasNext]);
                 NSArray *page = [result items];
@@ -237,7 +237,7 @@
                         }];
                     }];
                 }];
-            } error:nil];
+            }];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -260,7 +260,7 @@
             query.limit = 2;
             query.direction = ARTQueryDirectionBackwards;
 
-            [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+            [channel history:query error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                 XCTAssert(!error);
                 XCTAssertTrue([result hasNext]);
                 NSArray * page = [result items];
@@ -301,7 +301,7 @@
                         }];
                     }];
                 }];
-            } error:nil];
+            }];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -323,7 +323,7 @@
             ARTDataQuery *query = [[ARTDataQuery alloc] init];
             query.limit = 2;
 
-            [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+            [channel history:query error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                 XCTAssert(!error);
                 XCTAssertTrue([result hasNext]);
                 NSArray * page = [result items];
@@ -333,7 +333,7 @@
                 XCTAssertEqualObjects(@"testString4", [firstMessage data]);
                 XCTAssertEqualObjects(@"testString3", [secondMessage data]);
                 [firstExpectation fulfill];
-            } error:nil];
+            }];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -362,7 +362,7 @@
             ARTDataQuery *query = [[ARTDataQuery alloc] init];
             query.limit = 2;
 
-            [channelTwo history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+            [channelTwo history:query error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                 XCTAssert(!error);
                 XCTAssertTrue([result hasNext]);
                 NSArray * page = [result items];
@@ -372,7 +372,7 @@
                 XCTAssertEqualObjects(@"testString4", [firstMessage data]);
                 XCTAssertEqualObjects(@"testString3", [secondMessage data]);
                 [firstExpectation fulfill];
-            } error:nil];
+            }];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -388,7 +388,7 @@
         query.limit = 1001;
 
         NSError *error = nil;
-        BOOL valid = [channelOne history:query callback:^(ARTPaginatedResult *result, NSError *error) {} error:&error];
+        BOOL valid = [channelOne history:query error:&error callback:^(ARTPaginatedResult *result, NSError *error) {}];
         XCTAssertFalse(valid);
         XCTAssertNotNil(error);
         XCTAssert(error.code == ARTDataQueryErrorLimit);
@@ -406,7 +406,7 @@
         ARTDataQuery *query = [[ARTDataQuery alloc] init];
         query.limit = 1001;
         // Forcing an invalid query where the error is ignored and the result should be invalid (the request was canceled)
-        BOOL requested = [channelOne history:query callback:^(ARTPaginatedResult *result, NSError *error) {} error:nil];
+        BOOL requested = [channelOne history:query error:nil callback:^(ARTPaginatedResult *result, NSError *error) {}];
         XCTAssertFalse(requested);
         [exp fulfill];
     }];

@@ -198,7 +198,23 @@
     return nil;
 }
 
-- (BOOL)stats:(ARTStatsQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *, NSError *))callback error:(NSError **)errorPtr {
+- (NSError *)stats:(ARTStatsCallback)callback {
+    NSError *error = nil;
+    [self statsWithError:&error callback:callback];
+    return error;
+}
+
+- (NSError *)stats:(ARTStatsQuery *)query callback:(ARTStatsCallback)callback {
+    NSError *error = nil;
+    [self stats:query error:&error callback:callback];
+    return error;
+}
+
+- (BOOL)statsWithError:(NSError *__autoreleasing  _Nullable *)errorPtr callback:(ARTStatsCallback)callback {
+    return [self stats:[[ARTStatsQuery alloc] init] error:errorPtr callback:callback];
+}
+
+- (BOOL)stats:(ARTStatsQuery *)query error:(NSError **)errorPtr callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *, NSError *))callback {
     if (query.limit > 1000) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain

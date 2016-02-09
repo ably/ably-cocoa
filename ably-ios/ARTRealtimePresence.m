@@ -31,9 +31,24 @@
     [super get:query cb:callback];
 }
 
-- (BOOL)history:(art_nullable ARTRealtimeHistoryQuery *)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *__art_nullable result, NSError *__art_nullable error))callback error:(NSError *__art_nullable *__art_nullable)errorPtr {
-    [[self channel] throwOnDisconnectedOrFailed];
-    return [super history:query callback:callback error:errorPtr];
+- (NSError *)history:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, NSError * _Nullable))callback {
+    NSError *error = [[NSError alloc] init];
+    [self historyWithError:&error callback:callback];
+    return error;
+}
+
+- (NSError *)history:(ARTRealtimeHistoryQuery *)query callback:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, NSError * _Nullable))callback {
+    NSError *error = [[NSError alloc] init];
+    [self history:query error:&error callback:callback];
+    return error;
+}
+
+- (BOOL)historyWithError:(NSError *__autoreleasing  _Nullable *)errorPtr callback:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, NSError * _Nullable))callback {
+    return [self history:[[ARTRealtimeHistoryQuery alloc] init] error:errorPtr callback:callback];
+}
+
+- (BOOL)history:(ARTRealtimeHistoryQuery *)query error:(NSError *__autoreleasing  _Nullable *)errorPtr callback:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, NSError * _Nullable))callback {
+    return [super history:query error:errorPtr callback:callback];
 }
 
 - (void)enter:(id)data {

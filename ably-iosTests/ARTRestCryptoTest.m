@@ -49,7 +49,7 @@
             XCTAssert(!error);
             [c publish:nil data:stringPayload cb:^(ARTErrorInfo *error) {
                 XCTAssert(!error);
-                [c history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+                [c history:[[ARTDataQuery alloc] init] error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                     XCTAssert(!error);
                     NSArray * page = [result items];
                     XCTAssertTrue(page != nil);
@@ -59,7 +59,7 @@
                     XCTAssertEqualObjects([dataMessage data], dataPayload);
                     XCTAssertEqualObjects([stringMessage data], stringPayload);
                     [exp fulfill];
-                } error:nil];
+                }];
             }];
         }];
     }];
@@ -86,7 +86,7 @@
             XCTAssert(!error);
             [c publish:nil data:stringPayload cb:^(ARTErrorInfo *error) {
                 XCTAssert(!error);
-                [c history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+                [c history:[[ARTDataQuery alloc] init] error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                     XCTAssert(!error);
                     NSArray * page = [result items];
                     XCTAssertTrue(page != nil);
@@ -96,7 +96,7 @@
                     XCTAssertEqualObjects([dataMessage data], dataPayload);
                     XCTAssertEqualObjects([stringMessage data], stringPayload);
                     [exp fulfill];
-                } error:nil];
+                }];
             }];
         }];
     }];

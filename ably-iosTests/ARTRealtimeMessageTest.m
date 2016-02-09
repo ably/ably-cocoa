@@ -302,7 +302,7 @@
             ARTRealtimeChannel *c2 = [_realtime2.channels get:channelName];
             [c2 publish:nil data:@"message2" cb:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
-                [c1 history:[[ARTRealtimeHistoryQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+                [c1 history:[[ARTRealtimeHistoryQuery alloc] init] error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                     XCTAssert(!error);
                     NSArray *messages = [result items];
                     XCTAssertEqual(2, messages.count);
@@ -314,7 +314,7 @@
                     XCTAssertEqualObjects(m1.connectionId, _realtime.connection.id);
                     XCTAssertFalse([m0.connectionId isEqualToString:m1.connectionId]);
                     [exp fulfill];
-                } error:nil];
+                }];
             }];
         }];
     }];

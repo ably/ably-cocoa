@@ -13,6 +13,7 @@
 #import "ARTChannelOptions.h"
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTBaseMessage+Private.h"
+#import "ARTDataQuery.h"
 
 @implementation ARTChannel
 
@@ -34,9 +35,17 @@
     }
 }
 
+- (void)publish:(NSString *)name data:(id)data {
+    [self publish:name data:data cb:nil];
+}
+
 - (void)publish:(art_nullable NSString *)name data:(art_nullable id)data cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
     [self internalPostMessages:[self encodeMessageIfNeeded:[[ARTMessage alloc] initWithData:data name:name]]
                       callback:callback];
+}
+
+- (void)publish:(NSArray<ARTMessage *> *)messages {
+    [self publish:messages cb:nil];
 }
 
 - (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
@@ -57,7 +66,23 @@
     return message;
 }
 
-- (BOOL)history:(ARTDataQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, NSError *))callback error:(NSError **)errorPtr {
+- (NSError *)history:(void (^)(ARTPaginatedResult<ARTMessage *> * _Nullable, NSError * _Nullable))callback {
+    NSError *error = nil;
+    [self historyWithError:&error callback:callback];
+    return error;
+}
+
+- (NSError *)history:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult<ARTMessage *> * _Nullable, NSError * _Nullable))callback {
+    NSError *error = nil;
+    [self history:query error:&error callback:callback];
+    return error;
+}
+
+- (BOOL)historyWithError:(NSError *__autoreleasing  _Nullable *)errorPtr callback:(void (^)(ARTPaginatedResult<ARTMessage *> * _Nullable, NSError * _Nullable))callback {
+    return [self history:[[ARTDataQuery alloc] init] error:errorPtr callback:callback];
+}
+
+- (BOOL)history:(ARTDataQuery *)query error:(NSError **)errorPtr callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, NSError *))callback {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
     return NO;
 }

@@ -52,7 +52,7 @@
     return _restPresence;
 }
 
-- (BOOL)history:(ARTDataQuery *)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *result, NSError *error))callback error:(NSError **)errorPtr {
+- (BOOL)history:(ARTDataQuery *)query error:(NSError **)errorPtr callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *result, NSError *error))callback {
     if (query.limit > 1000) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain

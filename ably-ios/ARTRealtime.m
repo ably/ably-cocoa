@@ -28,6 +28,7 @@
 #import "ARTQueuedMessage.h"
 #import "ARTConnection+Private.h"
 #import "ARTConnectionDetails.h"
+#import "ARTStats.h"
 
 @interface ARTRealtime () <ARTRealtimeTransportDelegate> {
     Class _transportClass;
@@ -184,8 +185,25 @@
     [self.transport sendPing];
 }
 
-- (BOOL)stats:(ARTStatsQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *result, NSError *error))completion error:(NSError **)errorPtr {
-    return [self.rest stats:query callback:completion error:errorPtr];
+
+- (NSError *)stats:(ARTStatsCallback)callback {
+    NSError *error = nil;
+    [self statsWithError:&error callback:callback];
+    return error;
+}
+
+- (NSError *)stats:(ARTStatsQuery *)query callback:(ARTStatsCallback)callback {
+    NSError *error = nil;
+    [self stats:query error:&error callback:callback];
+    return error;
+}
+
+- (BOOL)statsWithError:(NSError *__autoreleasing  _Nullable *)errorPtr callback:(ARTStatsCallback)callback {
+    return [self stats:[[ARTStatsQuery alloc] init] error:errorPtr callback:callback];
+}
+
+- (BOOL)stats:(ARTStatsQuery *)query error:(NSError **)errorPtr callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *, NSError *))callback {
+    return [self.rest stats:query error:errorPtr callback:callback];
 }
 
 - (void)resetEventEmitter {

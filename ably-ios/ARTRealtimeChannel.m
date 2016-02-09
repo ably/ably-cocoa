@@ -455,8 +455,24 @@
     return self.realtime.auth.clientId;
 }
 
-- (BOOL)history:(ARTRealtimeHistoryQuery *)query callback:(void (^)(ARTPaginatedResult<ARTMessage *> * _Nullable, NSError * _Nullable))callback error:(NSError *__autoreleasing  _Nullable *)errorPtr {
-    return [super history:query callback:callback error:errorPtr];
+- (NSError *)history:(void (^)(ARTPaginatedResult<ARTMessage *> * _Nullable, NSError * _Nullable))callback {
+    NSError *error = nil;
+    [self historyWithError:&error callback:callback];
+    return error;
+}
+
+- (NSError *)history:(ARTRealtimeHistoryQuery *)query callback:(void (^)(ARTPaginatedResult<ARTMessage *> * _Nullable, NSError * _Nullable))callback {
+    NSError *error = nil;
+    [self history:query error:&error callback:callback];
+    return error;
+}
+
+- (BOOL)historyWithError:(NSError *__autoreleasing  _Nullable *)errorPtr callback:(void (^)(ARTPaginatedResult<ARTMessage *> * _Nullable, NSError * _Nullable))callback {
+    return [self history:[[ARTRealtimeHistoryQuery alloc] init] error:errorPtr callback:callback];
+}
+
+- (BOOL)history:(ARTRealtimeHistoryQuery *)query error:(NSError *__autoreleasing  _Nullable *)errorPtr callback:(void (^)(ARTPaginatedResult<ARTMessage *> * _Nullable, NSError * _Nullable))callback {
+    return [super history:query error:errorPtr callback:callback];
 }
 
 @end
