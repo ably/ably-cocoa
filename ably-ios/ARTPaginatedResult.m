@@ -49,6 +49,13 @@
 }
 
 - (void)next:(ARTPaginatedResultCallback)callback {
+    if (!_relNext) {
+        // If there is no next page, we can't make a request, so we answer the callback
+        // with a nil PaginatedResult. That's why the callback has the result as nullable
+        // anyway. (That, and that it can fail.)
+        callback(nil, nil);
+        return;
+    }
     [self.class executePaginated:_rest withRequest:_relNext andResponseProcessor:_responseProcessor callback:callback];
 }
 
