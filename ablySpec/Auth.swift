@@ -248,7 +248,10 @@ class Auth : QuickSpec {
                         client.connect()
 
                         waitUntil(timeout: testTimeout) { done in
-                            client.eventEmitter.on({ state, error in
+                            client.on { stateChange in
+                                let stateChange = stateChange!
+                                let state = stateChange.current
+                                let error = stateChange.reason
                                 if state == .Connected && error == nil {
                                     let currentChannel = client.channels.get("test")
                                     currentChannel.subscribe({ message, errorInfo in
@@ -256,7 +259,7 @@ class Auth : QuickSpec {
                                     })
                                     currentChannel.publish("ping", cb:nil)
                                 }
-                            })
+                            }
                         }
 
                         let transport = client.transport as! TestProxyTransport

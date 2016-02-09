@@ -261,7 +261,9 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
     XCTestExpectation *expectation = [testCase expectationWithDescription:@"testRealtime"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withDebug:debug cb:^(ARTClientOptions *options) {
         ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
+            ARTErrorInfo *errorInfo = stateChange.reason;
             if (state == ARTRealtimeFailed) {
                 // FIXME: XCTFail not working outside a XCTestCase method!
                 if (errorInfo) {

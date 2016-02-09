@@ -33,7 +33,7 @@
     [super tearDown];
     if (_realtime) {
         [ARTTestUtil removeAllChannels:_realtime];
-        [_realtime.eventEmitter removeEvents];
+        [_realtime resetEventEmitter];
         [_realtime close];
     }
     _realtime = nil;
@@ -42,7 +42,8 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"testConnectText"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 [expectation fulfill];
             }
@@ -55,7 +56,8 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"testConnectPing"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 [realtime ping:^(ARTStatus *status) {
                     XCTAssertEqual(ARTStateOk, status.state);
@@ -69,10 +71,13 @@
 
 - (void)testConnectStateChange {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testConnectStateChange"];
-    [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+    ARTClientOptions *options = [ARTTestUtil clientOptions];
+    options.autoConnect = false;
+    [ARTTestUtil testRealtime:options callback:^(ARTRealtime *realtime) {
         _realtime = realtime;
         __block bool connectingHappened = false;
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnecting) {
                 XCTAssertTrue([realtime connectionId] == nil);
                 XCTAssertTrue([realtime connectionKey] == nil);
@@ -87,6 +92,7 @@
                 [expectation fulfill];
             }
         }];
+        [realtime connect];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
     
@@ -94,10 +100,13 @@
 
 - (void)testConnectStateChangeClose {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testConnectStateChange"];
-    [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+    ARTClientOptions *options = [ARTTestUtil clientOptions];
+    options.autoConnect = false;
+    [ARTTestUtil testRealtime:options callback:^(ARTRealtime *realtime) {
         _realtime = realtime;
         __block bool closingHappened = false;
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
             if(state == ARTRealtimeConnected) {
                 [realtime close];
             }
@@ -110,15 +119,20 @@
                 [expectation fulfill];
             }
         }];
+        [realtime connect];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 - (void)testConnectionSerial {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testConnectStateChange"];
-    [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+    ARTClientOptions *options = [ARTTestUtil clientOptions];
+    options.autoConnect = false;
+    [ARTTestUtil testRealtime:options callback:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
+        
             if(state == ARTRealtimeConnected) {
                 XCTAssertEqual([realtime connectionSerial], -1);
                 ARTRealtimeChannel * c =[realtime.channels get:@"chan"];
@@ -133,6 +147,7 @@
                 [c attach];
             }
         }];
+        [realtime connect];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
     
@@ -144,7 +159,9 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         __block int connectionCount=0;
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
+        
             if (state == ARTRealtimeConnected) {
                 connectionCount++;
                 if(connectionCount ==1) {
@@ -167,7 +184,9 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         __block bool connectHappened = false;
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
+        
             if(state == ARTRealtimeConnected) {
                 if(connectHappened) {
                     [expectation fulfill];
@@ -204,14 +223,14 @@
         __block bool gotClosed =false;
         __block bool gotFailed= false;
         
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
-            if(state == ARTRealtimeChannelInitialised) {
-                gotInitialized = true;
-                [realtime connect];
-            }
-            else if(state == ARTRealtimeConnecting) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
+
+            if(state == ARTRealtimeConnecting) {
                 gotConnecting = true;
-                
+                if (stateChange.previous == ARTRealtimeInitialized) {
+                    gotInitialized = true;
+                }
             }
             else if(state == ARTRealtimeConnected) {
                 if(!gotConnected) {
@@ -252,16 +271,22 @@
                 [exp fulfill];
             }
         }];
+        [realtime connect];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 - (void)testConnectPingError {
     XCTestExpectation *exp = [self expectationWithDescription:@"testConnectPingError"];
-    [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
+    ARTClientOptions *options = [ARTTestUtil clientOptions];
+    options.autoConnect = false;
+    [ARTTestUtil testRealtime:options callback:^(ARTRealtime *realtime) {
         _realtime = realtime;
         __block bool hasClosed = false;
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        __block id listener = nil;
+        listener = [realtime on:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
+        
             if(state == ARTRealtimeConnected) {
                 [realtime close];
             }
@@ -274,8 +299,10 @@
                 XCTAssertTrue(hasClosed);
                 XCTAssertThrows([realtime ping:^(ARTStatus *s) {}]);
                 [exp fulfill];
+                [realtime off:listener];
             }
         }];
+        [realtime connect];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }

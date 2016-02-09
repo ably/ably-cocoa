@@ -39,13 +39,13 @@
     // Put teardown code here. This method is called after the invocation of each test method in the class.
     if (_realtime) {
         [ARTTestUtil removeAllChannels:_realtime];
-        [_realtime.eventEmitter removeEvents];
+        [_realtime resetEventEmitter];
         [_realtime close];
     }
     _realtime = nil;
     if (_realtime2) {
         [ARTTestUtil removeAllChannels:_realtime2];
-        [_realtime2.eventEmitter removeEvents];
+        [_realtime2 resetEventEmitter];
         [_realtime2 close];
     }
     _realtime2 = nil;
@@ -56,7 +56,8 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"attach"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime.channels get:@"attach"];
                 [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
@@ -299,7 +300,8 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"attach"];
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
                     if (state == ARTRealtimeChannelAttached) {
@@ -325,7 +327,8 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"attach"];
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
                     if (state == ARTRealtimeChannelAttached) {

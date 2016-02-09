@@ -10,6 +10,7 @@
 #import "ARTTypes.h"
 #import "ARTLog.h"
 #import "ARTRealtimeChannels.h"
+#import "ARTEventEmitter.h"
 
 @class ARTStatus;
 @class ARTMessage;
@@ -22,7 +23,6 @@
 @class ARTPresence;
 @class ARTPresenceMap;
 @class ARTRealtimeChannelPresenceSubscription;
-@class ARTRealtimeConnectionStateSubscription;
 @class ARTEventEmitter;
 @class ARTRealtimeChannel;
 @class ARTAuth;
@@ -74,10 +74,9 @@ typedef void (^ARTRealtimePingCb)(ARTStatus *);
 // Message sending
 - (void)send:(ARTProtocolMessage *)msg cb:(art_nullable ARTStatusCallback)cb;
 
-- (void)unsubscribeState:(ARTRealtimeConnectionStateSubscription *)subscription;
-
-@property (readonly, strong, nonatomic) ARTEventEmitter *eventEmitter;
 @property (readonly, getter=getLogger) ARTLog *logger;
+
+ART_EMBED_INTERFACE_EVENT_EMITTER(NSNumber *, ARTConnectionStateChange *)
 
 @end
 

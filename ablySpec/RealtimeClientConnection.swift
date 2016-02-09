@@ -49,7 +49,10 @@ class RealtimeClientConnection: QuickSpec {
                     client.connect()
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.eventEmitter.on { state, errorInfo in
+                        client.on { stateChange in
+                            let stateChange = stateChange!
+                            let state = stateChange.current
+                            let errorInfo = stateChange.reason
                             switch state {
                             case .Failed:
                                 AblyTests.checkError(errorInfo, withAlternative: "Failed state")
@@ -84,7 +87,10 @@ class RealtimeClientConnection: QuickSpec {
                     client.connect()
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.eventEmitter.on { state, errorInfo in
+                        client.on { stateChange in
+                            let stateChange = stateChange!
+                            let state = stateChange.current
+                            let errorInfo = stateChange.reason
                             switch state {
                             case .Failed:
                                 AblyTests.checkError(errorInfo, withAlternative: "Failed state")
@@ -119,7 +125,10 @@ class RealtimeClientConnection: QuickSpec {
                 expect(options.autoConnect).to(beTrue(), description: "autoConnect should be true by default")
 
                 // The only way to control this functionality is with the options flag
-                ARTRealtime(options: options).eventEmitter.on { state, errorInfo in
+                ARTRealtime(options: options).on { stateChange in
+                    let stateChange = stateChange!
+                    let state = stateChange.current
+                    let errorInfo = stateChange.reason
                     switch state {
                     case .Connected:
                         connected = true
@@ -138,14 +147,11 @@ class RealtimeClientConnection: QuickSpec {
                 var waiting = true
 
                 waitUntil(timeout: testTimeout) { done in
-                    client.eventEmitter.on { state, errorInfo in
+                    client.on { stateChange in
+                        let stateChange = stateChange!
+                        let state = stateChange.current
+                        let errorInfo = stateChange.reason
                         switch state {
-                        case .Initialized:
-                            // Delay 5 seconds to check if it is connecting by itself
-                            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(2.0 * Double(NSEC_PER_SEC))), dispatch_get_main_queue()) {
-                                waiting = false
-                                client.connect()
-                            }
                         case .Connected:
                             if waiting {
                                 XCTFail("Expected to be disconnected")
@@ -154,6 +160,10 @@ class RealtimeClientConnection: QuickSpec {
                         default:
                             break
                         }
+                    }
+                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(2.0 * Double(NSEC_PER_SEC))), dispatch_get_main_queue()) {
+                        waiting = false
+                        client.connect()
                     }
                 }
                 client.close()
@@ -171,11 +181,11 @@ class RealtimeClientConnection: QuickSpec {
                     var events: [ARTRealtimeConnectionState] = []
 
                     waitUntil(timeout: testTimeout) { done in
-                        connection.eventEmitter.on { state, errorInfo in
+                        connection.on { stateChange in
+                            let stateChange = stateChange!
+                            let state = stateChange.current
+                            let errorInfo = stateChange.reason
                             switch state {
-                            case .Initialized:
-                                events += [state]
-                                connection.connect()
                             case .Connecting:
                                 events += [state]
                             case .Connected:
@@ -196,8 +206,12 @@ class RealtimeClientConnection: QuickSpec {
                                 events += [state]
                                 expect(errorInfo).toNot(beNil(), description: "Error is nil")
                                 done()
+                            default:
+                                break
                             }
                         }
+                        events += [connection.state]
+                        connection.connect()
                     }
 
                     if events.count != 8 {
@@ -219,11 +233,18 @@ class RealtimeClientConnection: QuickSpec {
 
                 // RTN4b
                 it("should emit states on a new connection") {
-                    let connection = ARTRealtime(options: AblyTests.commonAppSetup()).connection()
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+
+                    let client = ARTRealtime(options: options)
+                    let connection = client.connection()
                     var events: [ARTRealtimeConnectionState] = []
 
                     waitUntil(timeout: testTimeout) { done in
-                        connection.eventEmitter.on { state, errorInfo in
+                        connection.on { stateChange in
+                            let stateChange = stateChange!
+                            let state = stateChange.current
+                            let errorInfo = stateChange.reason
                             switch state {
                             case .Connecting:
                                 events += [state]
@@ -234,6 +255,7 @@ class RealtimeClientConnection: QuickSpec {
                                 break
                             }
                         }
+                        connection.connect()
                     }
 
                     expect(events).to(haveCount(2), description: "Missing CONNECTING or CONNECTED state")
@@ -254,7 +276,10 @@ class RealtimeClientConnection: QuickSpec {
                     var events: [ARTRealtimeConnectionState] = []
 
                     waitUntil(timeout: testTimeout) { done in
-                        connection.eventEmitter.on { state, errorInfo in
+                        connection.on { stateChange in
+                            let stateChange = stateChange!
+                            let state = stateChange.current
+                            let errorInfo = stateChange.reason
                             switch state {
                             case .Connected:
                                 connection.close()
@@ -290,7 +315,10 @@ class RealtimeClientConnection: QuickSpec {
                     expect(connection.state.rawValue).to(equal(ARTRealtimeConnectionState.Initialized.rawValue), description: "Missing INITIALIZED state")
 
                     waitUntil(timeout: testTimeout) { done in
-                        connection.eventEmitter.on { state, errorInfo in
+                        connection.on { stateChange in
+                            let stateChange = stateChange!
+                            let state = stateChange.current
+                            let errorInfo = stateChange.reason
                             switch state {
                             case .Connecting:
                                 expect(connection.state.rawValue).to(equal(ARTRealtimeConnectionState.Connecting.rawValue), description: "Missing CONNECTING state")
@@ -317,7 +345,10 @@ class RealtimeClientConnection: QuickSpec {
 
                     var errorInfo: ARTErrorInfo?
                     waitUntil(timeout: testTimeout) { done in
-                        connection.eventEmitter.on { state, reason in
+                        connection.on { stateChange in
+                            let stateChange = stateChange!
+                            let state = stateChange.current
+                            let reason = stateChange.reason
                             switch state {
                             case .Connected:
                                 client.onError(AblyTests.newErrorProtocolMessage())
@@ -401,12 +432,15 @@ class RealtimeClientConnection: QuickSpec {
                 client.connect()
 
                 waitUntil(timeout: testTimeout) { done in
-                    client.eventEmitter.on({ state, error in
+                    client.on { stateChange in
+                        let stateChange = stateChange!
+                        let state = stateChange.current
+                        let error = stateChange.reason
                         expect(error).to(beNil())
                         if state == .Connected && error == nil {
                             done()
                         }
-                    })
+                    }
                 }
 
                 if let webSocketTransport = client.transport as? ARTWebSocketTransport {
@@ -472,7 +506,10 @@ class RealtimeClientConnection: QuickSpec {
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            client.eventEmitter.on { state, error in
+                            client.on { stateChange in
+                                let stateChange = stateChange!
+                                let state = stateChange.current
+                                let error = stateChange.reason
                                 if state == .Connected {
                                     let channel = client.channels.get("test")
                                     channel.subscribeToStateChanges { state, status in
@@ -497,7 +534,7 @@ class RealtimeClientConnection: QuickSpec {
                         guard let receivedAck = transport.protocolMessagesReceived.filter({ $0.action == .Ack }).last else {
                             XCTFail("No ACK action was received"); return
                         }
-                        
+
                         expect(publishedMessage.msgSerial).to(equal(receivedAck.msgSerial))
                     }
 
@@ -538,7 +575,10 @@ class RealtimeClientConnection: QuickSpec {
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            client.eventEmitter.on { state, error in
+                            client.on { stateChange in
+                                let stateChange = stateChange!
+                                let state = stateChange.current
+                                let error = stateChange.reason
                                 if state == .Connected {
                                     let channel = client.channels.get("test")
                                     channel.subscribeToStateChanges { state, status in
@@ -566,7 +606,7 @@ class RealtimeClientConnection: QuickSpec {
 
                         expect(publishedMessage.msgSerial).to(equal(receivedNack.msgSerial))
                     }
-                    
+
                 }
 
                 // RTN7b
@@ -744,7 +784,10 @@ class RealtimeClientConnection: QuickSpec {
                     expect(connection.id).to(beNil())
 
                     waitUntil(timeout: testTimeout) { done in
-                        connection.eventEmitter.on { state, errorInfo in
+                        connection.on { stateChange in
+                            let stateChange = stateChange!
+                            let state = stateChange.current
+                            let errorInfo = stateChange.reason
                             expect(errorInfo).to(beNil())
                             if state == .Connected {
                                 expect(connection.id).toNot(beNil())
@@ -770,7 +813,10 @@ class RealtimeClientConnection: QuickSpec {
                         for _ in 1...max {
                             disposable.append(ARTRealtime(options: options))
                             let currentConnection = disposable.last!.connection()
-                            currentConnection.eventEmitter.on { state, errorInfo in
+                            currentConnection.on { stateChange in
+                                let stateChange = stateChange!
+                                let state = stateChange.current
+                                let errorInfo = stateChange.reason
                                 if state == .Connected {
                                     guard let connectionId = currentConnection.id else {
                                         fail("connectionId is nil on CONNECTED")
@@ -781,7 +827,7 @@ class RealtimeClientConnection: QuickSpec {
                                     ids.append(connectionId)
 
                                     currentConnection.close()
-                                    
+
                                     if ids.count == max {
                                         done()
                                     }
@@ -806,7 +852,10 @@ class RealtimeClientConnection: QuickSpec {
                     expect(connection.key).to(beNil())
 
                     waitUntil(timeout: testTimeout) { done in
-                        connection.eventEmitter.on { state, errorInfo in
+                        connection.on { stateChange in
+                            let stateChange = stateChange!
+                            let state = stateChange.current
+                            let errorInfo = stateChange.reason
                             expect(errorInfo).to(beNil())
                             if state == .Connected {
                                 expect(connection.id).toNot(beNil())
@@ -830,7 +879,10 @@ class RealtimeClientConnection: QuickSpec {
                         for _ in 1...max {
                             disposable.append(ARTRealtime(options: options))
                             let currentConnection = disposable.last!.connection()
-                            currentConnection.eventEmitter.on { state, errorInfo in
+                            currentConnection.on { stateChange in
+                                let stateChange = stateChange!
+                                let state = stateChange.current
+                                let errorInfo = stateChange.reason
                                 if state == .Connected {
                                     guard let connectionKey = currentConnection.key else {
                                         fail("connectionKey is nil on CONNECTED")
@@ -863,7 +915,10 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.close() }
                     waitUntil(timeout: testTimeout) { done in
-                        client.eventEmitter.on { state, errorInfo in
+                        client.on { stateChange in
+                            let stateChange = stateChange!
+                            let state = stateChange.current
+                            let errorInfo = stateChange.reason
                             if state == .Connected {
                                 expect(client.connection().serial).to(equal(-1))
                                 done()
@@ -941,7 +996,10 @@ class RealtimeClientConnection: QuickSpec {
                     var states: [ARTRealtimeConnectionState] = []
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.eventEmitter.on { state, errorInfo in
+                        client.on { stateChange in
+                            let stateChange = stateChange!
+                            let state = stateChange.current
+                            let errorInfo = stateChange.reason
                             switch state {
                             case .Connected:
                                 client.close()
@@ -981,7 +1039,10 @@ class RealtimeClientConnection: QuickSpec {
                     var start: NSDate?
                     var end: NSDate?
 
-                    client.eventEmitter.on { state, errorInfo in
+                    client.on { stateChange in
+                        let stateChange = stateChange!
+                        let state = stateChange.current
+                        let errorInfo = stateChange.reason
                         switch state {
                         case .Connected:
                             client.close()
@@ -1022,7 +1083,10 @@ class RealtimeClientConnection: QuickSpec {
                     var states: [ARTRealtimeConnectionState] = []
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.eventEmitter.on { state, errorInfo in
+                        client.on { stateChange in
+                            let stateChange = stateChange!
+                            let state = stateChange.current
+                            let errorInfo = stateChange.reason
                             switch state {
                             case .Connected:
                                 states += [state]
@@ -1061,7 +1125,10 @@ class RealtimeClientConnection: QuickSpec {
                 defer { client.close() }
 
                 waitUntil(timeout: testTimeout) { done in
-                    client.eventEmitter.on { state, errorInfo in
+                    client.on { stateChange in
+                        let stateChange = stateChange!
+                        let state = stateChange.current
+                        let errorInfo = stateChange.reason
                         switch state {
                         case .Failed:
                             expect(errorInfo).toNot(beNil())
@@ -1096,7 +1163,10 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.eventEmitter.on { state, errorInfo in
+                        client.on { stateChange in
+                            let stateChange = stateChange!
+                            let state = stateChange.current
+                            let errorInfo = stateChange.reason
                             switch state {
                             case .Connected:
                                 expect(errorInfo).to(beNil())
@@ -1142,7 +1212,10 @@ class RealtimeClientConnection: QuickSpec {
                     defer { client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.eventEmitter.on { state, errorInfo in
+                        client.on { stateChange in
+                            let stateChange = stateChange!
+                            let state = stateChange.current
+                            let errorInfo = stateChange.reason
                             switch state {
                             case .Connected:
                                 fail("Should not be connected")

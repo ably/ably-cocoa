@@ -35,13 +35,13 @@
 - (void)tearDown {
     if (_realtime) {
         [ARTTestUtil removeAllChannels:_realtime];
-        [_realtime.eventEmitter removeEvents];
+        [_realtime resetEventEmitter];
         [_realtime close];
     }
     _realtime = nil;
     if (_realtime2) {
         [ARTTestUtil removeAllChannels:_realtime2];
-        [_realtime2.eventEmitter removeEvents];
+        [_realtime2 resetEventEmitter];
         [_realtime2 close];
     }
     _realtime2 = nil;
@@ -86,7 +86,8 @@
             }
         }];
 
-        [_realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [_realtime on:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeFailed) {
                 // 4. Client A is disconnected and B sends message
                 [channelB publish:message2 cb:^(ARTStatus *status) {
@@ -154,7 +155,7 @@
             }
         }];
         
-        [_realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [_realtime on:^(ARTConnectionStateChange *stateChange) {
             [channel attach];
         }];
     }];

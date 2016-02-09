@@ -237,7 +237,9 @@ class PublishTestMessage {
             }
         }
 
-        client.eventEmitter.on { state, error in
+        client.on { stateChange in
+            let stateChange = stateChange!
+            let state = stateChange.current
             if state == .Connected {
                 let channel = client.channels.get("test")
                 channel.subscribeToStateChanges { state, status in
@@ -475,10 +477,11 @@ class ARTRealtimeExtended: ARTRealtime {
 extension ARTRealtime {
 
     func dispose() {
-        for channel in self.channels {
-            self.channels.release(channel.name)
+        let names = self.channels.map({ $0.name })
+        for name in names {
+            self.channels.release(name)
         }
-        eventEmitter.removeEvents()
+        self.resetEventEmitter()
     }
 
 }

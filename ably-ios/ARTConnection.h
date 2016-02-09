@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "CompatibilityMacros.h"
 #import "ARTTypes.h"
+#import "ARTEventEmitter.h"
 
 @class ARTRealtime;
 @class ARTEventEmitter;
@@ -21,13 +22,14 @@ ART_ASSUME_NONNULL_BEGIN
 @property (art_nullable, readonly, getter=getKey) NSString *key;
 @property (readonly, getter=getSerial) int64_t serial;
 @property (readonly, getter=getState) ARTRealtimeConnectionState state;
-@property (readonly, getter=getEventEmitter) ARTEventEmitter *eventEmitter;
 
 - (instancetype)initWithRealtime:(ARTRealtime *)realtime;
 
 - (void)connect;
 - (void)close;
 - (void)ping:(ARTRealtimePingCb)cb;
+
+ART_EMBED_INTERFACE_EVENT_EMITTER(NSNumber *, ARTConnectionStateChange *)
 
 @end
 

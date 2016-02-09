@@ -34,7 +34,7 @@
 - (void)tearDown {
     if (_realtime) {
         [ARTTestUtil removeAllChannels:_realtime];
-        [_realtime.eventEmitter removeEvents];
+        [_realtime resetEventEmitter];
         [_realtime close];
     }
     _realtime = nil;
@@ -45,7 +45,8 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"attachOnce"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime.channels get:@"attach"];
 
@@ -142,7 +143,8 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"detach"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime.channels get:@"detach"];
                 [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
@@ -166,7 +168,8 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         __block BOOL detachingHit = NO;
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime.channels get:@"detach"];
                 [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
@@ -222,7 +225,8 @@
     XCTestExpectation *  expectation = [self expectationWithDescription:@"testDetachingIgnoresDetach"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
             
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime.channels get:@"testDetachingIgnoresDetach"];
@@ -249,7 +253,8 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"testAttachFailsOnFailedConnection"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime.channels get:@"attach"];
                 __block bool hasFailed = false;
@@ -267,7 +272,8 @@
                     }
                 }];
                 [channel attach];
-                [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+                [realtime on:^(ARTConnectionStateChange *stateChange) {
+                    ARTRealtimeConnectionState state = stateChange.current;
                     if(state == ARTRealtimeFailed) {
                         hasFailed = true;
                         [channel attach];
@@ -374,7 +380,9 @@
             [realtime connect];
         }];
 
-        [realtime.eventEmitter on:^(ARTRealtimeConnectionState state, ARTErrorInfo *errorInfo) {
+        [realtime on:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
+            ARTErrorInfo *errorInfo = stateChange.reason;
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime.channels get:@"some_unpermitted_channel"];
                 [channel.presence enter:@"not_allowed_here" cb:^(ARTStatus *status) {

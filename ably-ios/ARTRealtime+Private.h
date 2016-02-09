@@ -7,6 +7,8 @@
 //
 
 #import "ARTRealtime.h"
+#import "ARTEventEmitter.h"
+#import "ARTTypes.h"
 
 #import "ARTRealtimeTransport.h"
 
@@ -16,6 +18,12 @@
 @class ARTConnection;
 
 ART_ASSUME_NONNULL_BEGIN
+
+@interface ARTRealtime ()
+
+@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNumber *, ARTConnectionStateChange *) *eventEmitter;
+
+@end
 
 /// ARTRealtime private methods that are used for whitebox testing.
 @interface ARTRealtime (Private)
@@ -39,6 +47,8 @@ ART_ASSUME_NONNULL_BEGIN
 // FIXME: Connection should manage the transport
 - (void)setTransportClass:(Class)transportClass;
 - (ARTConnection *)connection;
+
+- (void)resetEventEmitter;
 
 @end
 

@@ -14,6 +14,7 @@
 @interface ARTConnection () {
     // FIXME: temporary
     __weak ARTRealtime* _realtime;
+    __weak ARTEventEmitter* _eventEmitter;
 }
 
 @end
@@ -23,6 +24,7 @@
 - (instancetype)initWithRealtime:(ARTRealtime *)realtime {
     if (self == [super init]) {
         _realtime = realtime;
+        _eventEmitter = realtime.eventEmitter;
     }
     return self;
 }
@@ -43,10 +45,6 @@
     return _realtime.state;
 }
 
-- (ARTEventEmitter *)getEventEmitter {
-    return _realtime.eventEmitter;
-}
-
 - (void)connect {
     [_realtime connect];
 }
@@ -58,5 +56,7 @@
 - (void)ping:(ARTRealtimePingCb)cb {
     [_realtime ping:cb];
 }
+
+ART_EMBED_IMPLEMENTATION_EVENT_EMITTER(NSNumber *, ARTConnectionStateChange *)
 
 @end

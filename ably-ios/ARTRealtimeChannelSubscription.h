@@ -52,15 +52,3 @@
 - (void)unsubscribe;
 
 @end
-
-
-@interface ARTRealtimeConnectionStateSubscription : NSObject <ARTSubscription>
-
-@property (readonly, weak, nonatomic) ARTRealtime *realtime;
-@property (readonly, strong, nonatomic) ARTRealtimeConnectionStateCb cb;
-
-- (instancetype)initWithRealtime:(ARTRealtime *)realtime cb:(ARTRealtimeConnectionStateCb)cb;
-
-- (void)unsubscribe;
-
-@end

@@ -88,23 +88,3 @@
 }
 
 @end
-
-
-#pragma mark - ARTRealtimeConnectionStateSubscription
-
-@implementation ARTRealtimeConnectionStateSubscription
-
-- (instancetype)initWithRealtime:(ARTRealtime *)realtime cb:(ARTRealtimeConnectionStateCb)cb {
-    self = [super init];
-    if (self) {
-        _realtime = realtime;
-        _cb = cb;
-    }
-    return self;
-}
-
-- (void)unsubscribe {
-    [self.realtime unsubscribeState:self];
-}
-
-@end

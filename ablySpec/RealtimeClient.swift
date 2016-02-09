@@ -35,7 +35,10 @@ class RealtimeClient: QuickSpec {
                     let client = ARTRealtime(options: options)
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.eventEmitter.on { state, errorInfo in
+                        client.on { stateChange in
+                            let stateChange = stateChange!
+                            let state = stateChange.current
+                            let errorInfo = stateChange.reason
                             switch state {
                             case .Connecting, .Closing, .Closed:
                                 break
@@ -73,7 +76,10 @@ class RealtimeClient: QuickSpec {
                     let client = ARTRealtime(options: options)
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.eventEmitter.on { state, errorInfo in
+                        client.on { stateChange in
+                            let stateChange = stateChange!
+                            let state = stateChange.current
+                            let errorInfo = stateChange.reason
                             switch state {
                             case .Failed:
                                 self.checkError(errorInfo, withAlternative: "Failed state")
@@ -93,7 +99,10 @@ class RealtimeClient: QuickSpec {
                     let newClient = ARTRealtime(options: options)
 
                     waitUntil(timeout: testTimeout) { done in
-                        newClient.eventEmitter.on { state, errorInfo in
+                        newClient.on { stateChange in
+                            let stateChange = stateChange!
+                            let state = stateChange.current
+                            let errorInfo = stateChange.reason
                             switch state {
                             case .Failed:
                                 self.checkError(errorInfo, withAlternative: "Failed state")
@@ -173,7 +182,10 @@ class RealtimeClient: QuickSpec {
                     let client = ARTRealtime(options: options)
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.eventEmitter.on { state, errorInfo in
+                        client.on { stateChange in
+                            let stateChange = stateChange!
+                            let state = stateChange.current
+                            let errorInfo = stateChange.reason
                             switch state {
                             case .Failed:
                                 self.checkError(errorInfo, withAlternative: "Failed state")
@@ -272,7 +284,10 @@ class RealtimeClient: QuickSpec {
                 var endInterval: UInt?
 
                 waitUntil(timeout: testTimeout + options.suspendedRetryTimeout) { done in
-                    client.eventEmitter.on { state, errorInfo in
+                    client.on { stateChange in
+                        let stateChange = stateChange!
+                        let state = stateChange.current
+                        let errorInfo = stateChange.reason
                         switch state {
                         case .Failed:
                             self.checkError(errorInfo, withAlternative: "Failed state")
