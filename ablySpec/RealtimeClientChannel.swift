@@ -8,6 +8,7 @@
 
 import Quick
 import Nimble
+import Aspects
 
 class RealtimeClientChannel: QuickSpec {
     override func spec() {
@@ -318,6 +319,51 @@ class RealtimeClientChannel: QuickSpec {
 
             // RTL6
             describe("publish") {
+
+                // RTL6a
+                it("should encode messages in the same way as the RestChannel") {
+                    let data = ["value":1]
+
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
+                    let restChannel = rest.channels.get("test")
+
+                    var restEncodedMessage: ARTMessage?
+                    restChannel.testSuite_getReturnValueFrom(Selector("encodeMessageIfNeeded:")) { value in
+                        restEncodedMessage = value as? ARTMessage
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        restChannel.publish(data, callback: { errorInfo in
+                            expect(errorInfo).to(beNil())
+                            done()
+                        })
+                    }
+
+                    let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { realtime.close() }
+                    let realtimeChannel = realtime.channels.get("test")
+                    realtimeChannel.attach()
+                    expect(realtimeChannel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                    var realtimeEncodedMessage: ARTMessage?
+                    realtimeChannel.testSuite_getReturnValueFrom(Selector("encodeMessageIfNeeded:")) { value in
+                        realtimeEncodedMessage = value as? ARTMessage
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        realtimeChannel.publish(data, cb: { status in
+                            expect(status.state).to(equal(ARTState.Ok))
+                            done()
+                        })
+                    }
+
+                    expect(restEncodedMessage!.data as? NSObject).to(equal(realtimeEncodedMessage!.data as? NSObject))
+                    expect(restEncodedMessage!.data).toNot(beNil())
+                    expect(realtimeEncodedMessage!.data).toNot(beNil())
+                    expect(restEncodedMessage!.encoding).to(equal(realtimeEncodedMessage!.encoding))
+                    expect(restEncodedMessage!.encoding).toNot(beNil())
+                    expect(realtimeEncodedMessage!.encoding).toNot(beNil())
+                }
 
                 // RTL6b
                 context("should invoke callback") {
