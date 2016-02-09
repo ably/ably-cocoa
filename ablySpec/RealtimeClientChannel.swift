@@ -217,7 +217,7 @@ class RealtimeClientChannel: QuickSpec {
             describe("attach") {
 
                 // RTL4a
-                it("if already ATTACHED or ATTACHING nothing is done") {
+                pending("if already ATTACHED or ATTACHING nothing is done") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.close() }
 
