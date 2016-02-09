@@ -17,8 +17,8 @@
 #import "ARTEventEmitter.h"
 #import "ARTStatus.h"
 #import "ARTAuth.h"
-#import "ARTAuthTokenParams.h"
-#import "ARTAuthTokenDetails.h"
+#import "ARTTokenParams.h"
+#import "ARTTokenDetails.h"
 
 @interface ARTRealtimeAttachTest : XCTestCase {
     ARTRealtime *_realtime;
@@ -372,10 +372,10 @@
         ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
 
         // FIXME: there is setupApp, testRealtime, testRest, ... try to unify them and then use this code
-        ARTAuthTokenParams *tokenParams = [[ARTAuthTokenParams alloc] initWithClientId:options.clientId];
+        ARTTokenParams *tokenParams = [[ARTTokenParams alloc] initWithClientId:options.clientId];
         tokenParams.capability = @"{\"canpublish:*\":[\"publish\"],\"canpublish:andpresence\":[\"presence\",\"publish\"],\"cansubscribe:*\":[\"subscribe\"]}";
 
-        [realtime.auth authorise:tokenParams options:options callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
+        [realtime.auth authorise:tokenParams options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
             options.token = tokenDetails.token;
             [realtime connect];
         }];

@@ -13,15 +13,15 @@
 #import "ARTHttp.h"
 #import "ARTClientOptions.h"
 #import "ARTAuthOptions.h"
-#import "ARTAuthTokenDetails.h"
-#import "ARTAuthTokenParams.h"
-#import "ARTAuthTokenRequest.h"
+#import "ARTTokenDetails.h"
+#import "ARTTokenParams.h"
+#import "ARTTokenRequest.h"
 #import "ARTEncoder.h"
 #import "ARTStatus.h"
 
 @implementation ARTAuth {
     __weak ARTRest *_rest;
-    ARTAuthTokenParams *_tokenParams;
+    ARTTokenParams *_tokenParams;
     // Dedicated to Protocol Message
     NSString *_protocolClientId;
 }
@@ -30,7 +30,7 @@
     if (self = [super init]) {
         _rest = rest;
         _tokenDetails = options.tokenDetails;
-        _tokenParams = [[ARTAuthTokenParams alloc] initWithClientId:options.clientId];
+        _tokenParams = [[ARTTokenParams alloc] initWithClientId:options.clientId];
         _options = options;
         _logger = rest.logger;
         _protocolClientId = nil;
@@ -58,7 +58,7 @@
         // Token
         [self.logger debug:__FILE__ line:__LINE__ message:@"setting up auth method Token with supplied token only"];
         _method = ARTAuthMethodToken;
-        options.tokenDetails = [[ARTAuthTokenDetails alloc] initWithToken:options.token];
+        options.tokenDetails = [[ARTTokenDetails alloc] initWithToken:options.token];
     } else if (options.authUrl && options.authCallback) {
         [NSException raise:@"ARTAuthException" format:@"Incompatible authentication configuration: please specify either authCallback and authUrl."];
     } else if (options.authUrl) {
@@ -98,17 +98,17 @@
     self.options.queryTime = customOptions.queryTime;
 }
 
-- (ARTAuthTokenParams *)mergeParams:(ARTAuthTokenParams *)customParams {
+- (ARTTokenParams *)mergeParams:(ARTTokenParams *)customParams {
     return customParams ? customParams : _tokenParams;
 }
 
-- (void)storeParams:(ARTAuthTokenParams *)customOptions {
+- (void)storeParams:(ARTTokenParams *)customOptions {
     _tokenParams.clientId = customOptions.clientId;
     _tokenParams.ttl = customOptions.ttl;
     _tokenParams.capability = customOptions.capability;
 }
 
-- (NSURL *)buildURL:(ARTAuthOptions *)options withParams:(ARTAuthTokenParams *)params {
+- (NSURL *)buildURL:(ARTAuthOptions *)options withParams:(ARTTokenParams *)params {
     NSURLComponents *urlComponents = [NSURLComponents componentsWithURL:options.authUrl resolvingAgainstBaseURL:YES];
     
     if ([options isMethodGET]) {
@@ -122,7 +122,7 @@
     return urlComponents.URL;
 }
 
-- (NSMutableURLRequest *)buildRequest:(ARTAuthOptions *)options withParams:(ARTAuthTokenParams *)params {
+- (NSMutableURLRequest *)buildRequest:(ARTAuthOptions *)options withParams:(ARTTokenParams *)params {
     NSURL *url = [self buildURL:options withParams:params];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     request.HTTPMethod = options.authMethod;
@@ -148,12 +148,12 @@
     return request;
 }
 
-- (void)requestToken:(ARTAuthTokenParams *)tokenParams withOptions:(ARTAuthOptions *)authOptions
-            callback:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
+- (void)requestToken:(ARTTokenParams *)tokenParams withOptions:(ARTAuthOptions *)authOptions
+            callback:(void (^)(ARTTokenDetails *, NSError *))callback {
     
     // The values supersede matching client library configured params and options.
     ARTAuthOptions *mergedOptions = [self mergeOptions:authOptions];
-    ARTAuthTokenParams *currentTokenParams = [self mergeParams:tokenParams];
+    ARTTokenParams *currentTokenParams = [self mergeParams:tokenParams];
     tokenParams.timestamp = [NSDate date];
 
     if (mergedOptions.authUrl) {
@@ -170,9 +170,9 @@
             }
         }];
     } else {
-        ARTAuthCallback tokenRequestFactory = mergedOptions.authCallback? : ^(ARTAuthTokenParams *tokenParams, void(^callback)(ARTAuthTokenDetails *tokenDetails, NSError *error)) {
+        ARTAuthCallback tokenRequestFactory = mergedOptions.authCallback? : ^(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *tokenDetails, NSError *error)) {
             // Create a TokenRequest and execute it
-            [self createTokenRequest:currentTokenParams options:mergedOptions callback:^(ARTAuthTokenRequest *tokenRequest, NSError *error) {
+            [self createTokenRequest:currentTokenParams options:mergedOptions callback:^(ARTTokenRequest *tokenRequest, NSError *error) {
                 if (error) {
                     callback(nil, error);
                 } else {
@@ -189,11 +189,11 @@
     }
 }
 
-- (void)handleAuthUrlResponse:(NSHTTPURLResponse *)response withData:(NSData *)data completion:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
+- (void)handleAuthUrlResponse:(NSHTTPURLResponse *)response withData:(NSData *)data completion:(void (^)(ARTTokenDetails *, NSError *))callback {
     // The token retrieved is assumed by the library to be a token string if the response has Content-Type "text/plain", or taken to be a TokenRequest or TokenDetails object if the response has Content-Type "application/json"
     if ([response.MIMEType isEqualToString:@"application/json"]) {
         NSError *decodeError = nil;
-        ARTAuthTokenDetails *tokenDetails = [_rest.defaultEncoder decodeAccessToken:data error:&decodeError];
+        ARTTokenDetails *tokenDetails = [_rest.defaultEncoder decodeAccessToken:data error:&decodeError];
         if (decodeError) {
             callback(nil, decodeError);
         } else {
@@ -206,7 +206,7 @@
             callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:NSURLErrorCancelled userInfo:@{NSLocalizedDescriptionKey:@"authUrl: token is empty"}]);
             return;
         }
-        ARTAuthTokenDetails *tokenDetails = [[ARTAuthTokenDetails alloc] initWithToken:token];
+        ARTTokenDetails *tokenDetails = [[ARTTokenDetails alloc] initWithToken:token];
         callback(tokenDetails, nil);
     }
     else {
@@ -214,7 +214,7 @@
     }
 }
 
-- (void)executeTokenRequest:(ARTAuthTokenRequest *)tokenRequest callback:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
+- (void)executeTokenRequest:(ARTTokenRequest *)tokenRequest callback:(void (^)(ARTTokenDetails *, NSError *))callback {
     NSURL *requestUrl = [NSURL URLWithString:[NSString stringWithFormat:@"/keys/%@/requestToken", tokenRequest.keyName]
                                relativeToURL:_rest.baseUrl];
     
@@ -232,7 +232,7 @@
             callback(nil, error);
         } else {
             NSError *decodeError = nil;
-            ARTAuthTokenDetails *tokenDetails = [defaultEncoder decodeAccessToken:data error:&decodeError];
+            ARTTokenDetails *tokenDetails = [defaultEncoder decodeAccessToken:data error:&decodeError];
             if (decodeError) {
                 callback(nil, decodeError);
             } else {
@@ -242,11 +242,11 @@
     }];
 }
 
-- (void)authorise:(ARTAuthTokenParams *)tokenParams options:(ARTAuthOptions *)authOptions callback:(void (^)(ARTAuthTokenDetails *, NSError *))callback {
+- (void)authorise:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
     BOOL requestNewToken = NO;
     ARTAuthOptions *mergedOptions = [self mergeOptions:authOptions];
     [self storeOptions:mergedOptions];
-    ARTAuthTokenParams *currentTokenParams = [self mergeParams:tokenParams];
+    ARTTokenParams *currentTokenParams = [self mergeParams:tokenParams];
     [self storeParams:currentTokenParams];
 
     // Reuse or not reuse the current token
@@ -273,7 +273,7 @@
     }
 
     if (requestNewToken) {
-        [self requestToken:currentTokenParams withOptions:mergedOptions callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
+        [self requestToken:currentTokenParams withOptions:mergedOptions callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
             if (error) {
                 if (callback) {
                     callback(nil, error);
@@ -292,9 +292,9 @@
     }
 }
 
-- (void)createTokenRequest:(ARTAuthTokenParams *)tokenParams options:(ARTAuthOptions *)options callback:(void (^)(ARTAuthTokenRequest *, NSError *))callback {
+- (void)createTokenRequest:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)options callback:(void (^)(ARTTokenRequest *, NSError *))callback {
     ARTAuthOptions *mergedOptions = [self mergeOptions:options];
-    ARTAuthTokenParams *mergedTokenParams = [self mergeParams:tokenParams];
+    ARTTokenParams *mergedTokenParams = [self mergeParams:tokenParams];
 
     // Validate: Capability JSON text
     NSError *errorCapability;

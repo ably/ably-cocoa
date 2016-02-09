@@ -1,5 +1,5 @@
 //
-//  ARTAuthTokenParams.h
+//  ARTTokenParams.h
 //  ably-ios
 //
 //  Created by Ricardo Pereira on 05/10/2015.
@@ -9,14 +9,14 @@
 #import <Foundation/Foundation.h>
 #import "ARTTypes.h"
 
-@class ARTAuthTokenRequest;
+@class ARTTokenRequest;
 
 ART_ASSUME_NONNULL_BEGIN
 
 /**
  Type that provided parameters of a token request.
  */
-@interface ARTAuthTokenParams : NSObject
+@interface ARTTokenParams : NSObject
 
 /**
  Represents time to live (expiry) of this token in seconds.
@@ -47,10 +47,10 @@ ART_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface ARTAuthTokenParams(SignedRequest)
+@interface ARTTokenParams(SignedRequest)
 
-- (ARTAuthTokenRequest *)sign:(NSString *)key;
-- (ARTAuthTokenRequest *)sign:(NSString *)key withNonce:(NSString *)randomNonce;
+- (ARTTokenRequest *)sign:(NSString *)key;
+- (ARTTokenRequest *)sign:(NSString *)key withNonce:(NSString *)randomNonce;
 
 @end
 

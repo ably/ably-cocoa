@@ -18,8 +18,8 @@
 #import "ARTTestUtil.h"
 #import "ARTLog.h"
 #import "ARTAuth.h"
-#import "ARTAuthTokenParams.h"
-#import "ARTAuthTokenDetails.h"
+#import "ARTTokenParams.h"
+#import "ARTTokenDetails.h"
 
 @interface ARTRestCapabilityTest : XCTestCase {
     ARTRest *_rest;
@@ -49,10 +49,10 @@
                 _rest = rest;
 
                 // FIXME: there is withRestRestrictCap, setupApp, testRealtime, testRest, ... try to unify
-                ARTAuthTokenParams *tokenParams = [[ARTAuthTokenParams alloc] initWithClientId:options.clientId];
+                ARTTokenParams *tokenParams = [[ARTTokenParams alloc] initWithClientId:options.clientId];
                 tokenParams.capability = @"{\"canpublish:*\":[\"publish\"],\"canpublish:andpresence\":[\"presence\",\"publish\"],\"cansubscribe:*\":[\"subscribe\"]}";
 
-                [rest.auth authorise:tokenParams options:options callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
+                [rest.auth authorise:tokenParams options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
                     options.token = tokenDetails.token;
                     cb(_rest);
                 }];

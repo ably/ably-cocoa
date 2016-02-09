@@ -8,7 +8,7 @@
 
 #import "ARTAuthOptions.h"
 
-#import "ARTAuthTokenDetails.h"
+#import "ARTTokenDetails.h"
 
 @implementation ARTAuthOptions
 
@@ -82,7 +82,7 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
 
 - (void)setToken:(NSString *)token {
     if (token && ![token isEqualToString:@""]) {
-        self.tokenDetails = [[ARTAuthTokenDetails alloc] initWithToken:token];
+        self.tokenDetails = [[ARTTokenDetails alloc] initWithToken:token];
     }
 }
 

@@ -27,8 +27,8 @@
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTRestChannel.h"
-#import "ARTAuthTokenParams.h"
-#import "ARTAuthTokenDetails.h"
+#import "ARTTokenParams.h"
+#import "ARTTokenDetails.h"
 
 @interface ARTRest ()
 
@@ -179,7 +179,7 @@
     }
     else {
         self.options.force = force;
-        [self.auth authorise:nil options:self.options callback:^(ARTAuthTokenDetails *tokenDetails, NSError *error) {
+        [self.auth authorise:nil options:self.options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
             if (error) {
                 if (callback) callback(nil, error);
                 return;

@@ -267,7 +267,7 @@ class RestClient: QuickSpec {
                 let client = ARTRest(options: options)
                 let auth = client.auth
 
-                let tokenParams = ARTAuthTokenParams()
+                let tokenParams = ARTTokenParams()
                 tokenParams.ttl = 3.0 //Seconds
 
                 waitUntil(timeout: testTimeout) { done in
@@ -328,7 +328,7 @@ class RestClient: QuickSpec {
                 let client = ARTRest(options: AblyTests.commonAppSetup())
                 let auth = client.auth
 
-                let tokenParams = ARTAuthTokenParams()
+                let tokenParams = ARTTokenParams()
                 tokenParams.ttl = 3.0 //Seconds
 
                 waitUntil(timeout: testTimeout) { done in
@@ -349,7 +349,7 @@ class RestClient: QuickSpec {
                         options.key = client.options.key
 
                         // Expired token
-                        options.tokenDetails = ARTAuthTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires!.dateByAddingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
+                        options.tokenDetails = ARTTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires!.dateByAddingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
 
                         options.authUrl = NSURL(string: "http://test-auth.ably.io")
 
@@ -379,7 +379,7 @@ class RestClient: QuickSpec {
                 let client = ARTRest(options: AblyTests.commonAppSetup())
                 let auth = client.auth
 
-                let tokenParams = ARTAuthTokenParams()
+                let tokenParams = ARTTokenParams()
                 tokenParams.ttl = 3.0 //Seconds
 
                 waitUntil(timeout: testTimeout) { done in
@@ -400,7 +400,7 @@ class RestClient: QuickSpec {
                         options.key = client.options.key
 
                         // Expired token
-                        options.tokenDetails = ARTAuthTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires!.dateByAddingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
+                        options.tokenDetails = ARTTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires!.dateByAddingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
 
                         let rest = ARTRest(options: options)
                         rest.httpExecutor = mockExecutor
