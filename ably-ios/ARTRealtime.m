@@ -118,6 +118,10 @@
     return [self initWithOptions:[[ARTClientOptions alloc] initWithKey:key]];
 }
 
+- (instancetype)initWithToken:(NSString *)token {
+    return [self initWithOptions:[[ARTClientOptions alloc] initWithToken:token]];
+}
+
 - (instancetype)initWithLogger:(ARTLog *)logger andOptions:(ARTClientOptions *)options {
     self = [super init];
     if (self) {

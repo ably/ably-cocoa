@@ -30,10 +30,8 @@
         _items = items;
         
         _relFirst = relFirst;
-        _hasFirst = !!relFirst;
         
         _relCurrent = relCurrent;
-        _hasCurrent = !!relCurrent;
         
         _relNext = relNext;
         _hasNext = !!relNext;
@@ -48,10 +46,6 @@
 
 - (void)first:(ARTPaginatedResultCallback)callback {
     [self.class executePaginated:_rest withRequest:_relFirst andResponseProcessor:_responseProcessor callback:callback];
-}
-
-- (void)current:(ARTPaginatedResultCallback)callback {
-    [self.class executePaginated:_rest withRequest:_relCurrent andResponseProcessor:_responseProcessor callback:callback];
 }
 
 - (void)next:(ARTPaginatedResultCallback)callback {

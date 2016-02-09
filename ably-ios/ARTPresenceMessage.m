@@ -34,4 +34,8 @@
     return description;
 }
 
+- (NSString *)memberKey {
+    return [NSString stringWithFormat:@"%@:%@", self.connectionId, self.clientId];
+}
+
 @end

@@ -18,17 +18,12 @@ ART_ASSUME_NONNULL_BEGIN
 typedef void(^ARTPaginatedResultCallback)(__GENERIC(ARTPaginatedResult, ItemType) *__art_nullable result, NSError *__art_nullable error);
 
 @property (nonatomic, strong, readonly) __GENERIC(NSArray, ItemType) *items;
-
-@property (nonatomic, readonly) BOOL hasFirst;
-@property (nonatomic, readonly) BOOL hasCurrent;
 @property (nonatomic, readonly) BOOL hasNext;
-
 @property (nonatomic, readonly) BOOL isLast;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
 - (void)first:(ARTPaginatedResultCallback)callback;
-- (void)current:(ARTPaginatedResultCallback)callback;
 - (void)next:(ARTPaginatedResultCallback)callback;
 
 @end

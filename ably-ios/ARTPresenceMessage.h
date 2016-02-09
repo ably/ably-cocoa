@@ -23,4 +23,6 @@ typedef NS_ENUM(NSUInteger, ARTPresenceAction) {
 
 @property (readwrite, assign, nonatomic) ARTPresenceAction action;
 
+- (NSString *)memberKey;
+
 @end

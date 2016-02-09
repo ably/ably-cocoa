@@ -47,6 +47,8 @@ Instance the Ably library using a key only. This is simply a convenience constru
 */
 - (instancetype)initWithKey:(NSString *)key;
 
+- (instancetype)initWithToken:(NSString *)token;
+
 /**
 Instance the Ably library with the given options.
 :param options: see ARTClientOptions for options

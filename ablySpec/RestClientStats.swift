@@ -269,7 +269,6 @@ class RestClientStats: QuickSpec {
                         let thirdPage = getPage(secondPage.next)
                         expect(thirdPage.items.count).to(equal(1))
                         expect((thirdPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(5000))
-                        expect(thirdPage.hasFirst).to(beTrue())
                         expect(thirdPage.isLast).to(beTrue())
                         
                         let firstPageAgain = getPage(thirdPage.first)
@@ -299,7 +298,6 @@ class RestClientStats: QuickSpec {
                         let thirdPage = getPage(secondPage.next)
                         expect(thirdPage.items.count).to(equal(1))
                         expect((thirdPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(7000))
-                        expect(thirdPage.hasFirst).to(beTrue())
                         expect(thirdPage.isLast).to(beTrue())
                         
                         let firstPageAgain = getPage(thirdPage.first)

@@ -476,7 +476,12 @@
     }
 
    return [[ARTConnectionDetails alloc] initWithClientId:[input artString:@"clientId"]
-                                                            connectionKey:[input artString:@"connectionKey"]];
+                                           connectionKey:[input artString:@"connectionKey"]
+                                          maxMessageSize:[input artInteger:@"maxMessageSize"]
+                                            maxFrameSize:[input artInteger:@"maxFrameSize"]
+                                          maxInboundRate:[input artInteger:@"maxInboundRate"]
+                                      connectionStateTtl:(NSTimeInterval)[input artInteger:@"connectionStateTtl"]
+                                                serverId:[input artString:@"serverId"]];
 }
 
 - (NSArray *)statsFromArray:(NSArray *)input {

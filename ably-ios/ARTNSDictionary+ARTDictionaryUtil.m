@@ -44,4 +44,12 @@
     return nil;
 }
 
+- (NSInteger)artInteger:(id)key {
+    NSNumber *number = [self artNumber:key];
+    if (!key) {
+        return -1;
+    }
+    return [number integerValue];
+}
+
 @end
