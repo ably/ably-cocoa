@@ -317,6 +317,7 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL4f
                 pending("should transition the channel state to FAILED if ATTACHED ProtocolMessage is not received") {
+                    ARTDefault.setRealtimeRequestTimeout(3.0)
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
@@ -330,8 +331,10 @@ class RealtimeClientChannel: QuickSpec {
 
                     let channel = client.channels.get("test")
                     channel.attach()
-
+                    let start = NSDate()
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Failed), timeout: ARTDefault.realtimeRequestTimeout())
+                    let end = NSDate()
+                    expect(start.dateByAddingTimeInterval(3.0)).to(beCloseTo(end))
                 }
 
             }
