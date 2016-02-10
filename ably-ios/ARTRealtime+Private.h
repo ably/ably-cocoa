@@ -53,15 +53,12 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, copy, art_nullable) ARTRealtimePingCb pingCb;
 @property (readonly, getter=getClientOptions) ARTClientOptions *options;
-@property (readonly, getter=getClientId) NSString *clientId;
 
 @end
 
 @interface ARTRealtime (Private)
 
 - (void)ping:(ARTRealtimePingCb)cb;
-- (void)close;
-- (BOOL)connect;
 - (BOOL)isActive;
 
 // Transport Events

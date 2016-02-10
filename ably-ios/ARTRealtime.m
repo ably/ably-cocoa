@@ -35,8 +35,6 @@
     id<ARTRealtimeTransport> _transport;
 }
 
-- (BOOL)connect;
-
 // Timer starters
 - (void)startConnectTimer;
 - (void)startSuspendTimer;
@@ -155,13 +153,11 @@
     _transport = nil;
 }
 
-- (BOOL)connect {
+- (void)connect {
     if(self.connection.state == ARTRealtimeClosing) {
-        return false;
+        return;
     }
     [self transition:ARTRealtimeConnecting];
-    return true;
-
 }
 
 - (void)close {

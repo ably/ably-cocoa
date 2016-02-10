@@ -196,11 +196,8 @@
                     [realtime close];
                 }
             }
-            else if(state == ARTRealtimeClosing) {
-                XCTAssertFalse([realtime connect]);
-            }
             else if(state == ARTRealtimeClosed) {
-                XCTAssertTrue([realtime connect]);
+                [realtime connect];
             }
         }];
     }];

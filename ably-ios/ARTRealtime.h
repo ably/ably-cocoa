@@ -41,6 +41,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) ARTConnection *connection;
 @property (nonatomic, strong, readonly) ARTRealtimeChannels *channels;
 @property (readonly, getter=getAuth) ARTAuth *auth;
+@property (readonly, art_nullable, getter=getClientId) NSString *clientId;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
@@ -64,6 +65,9 @@ Instance the Ably library with the given options.
 - (NSError *__art_nullable)stats:(art_nullable ARTStatsQuery *)query callback:(ARTStatsCallback)callback;
 - (BOOL)statsWithError:(NSError *__art_nullable *__art_nullable)errorPtr callback:(ARTStatsCallback)callback;
 - (BOOL)stats:(art_nullable ARTStatsQuery *)query error:(NSError *__art_nullable *__art_nullable)errorPtr callback:(ARTStatsCallback)callback;
+
+- (void)connect;
+- (void)close;
 
 @end
 
