@@ -95,7 +95,7 @@
                         [c2 publish:nil data:c2Message cb:^(ARTErrorInfo *errorInfo) {
                             XCTAssertNil(errorInfo);
 
-                            options.recover = [_realtime.connection recoveryKey];
+                            options.recover = _realtime.connection.recoveryKey;
                             XCTAssertFalse(options.recover == nil);
                             ARTRealtime *realtimeRecovered = [[ARTRealtime alloc] initWithOptions:options];
                             ARTRealtimeChannel *c3 = [realtimeRecovered.channels get:channelName];

@@ -20,6 +20,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (art_nullable, readonly, strong, nonatomic) NSString *id;
 @property (art_nullable, readonly, strong, nonatomic) NSString *key;
+@property (art_nullable, readonly, getter=getRecoveryKey) NSString *recoveryKey;
 @property (readonly, assign, nonatomic) int64_t serial;
 @property (readonly, assign, nonatomic) ARTRealtimeConnectionState state;
 @property (art_nullable, readonly, strong, nonatomic) ARTErrorInfo *errorReason;
@@ -29,7 +30,6 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)connect;
 - (void)close;
 - (void)ping:(void (^)(ARTStatus *))cb;
-- (NSString *__art_nullable)recoveryKey;
 
 ART_EMBED_INTERFACE_EVENT_EMITTER(NSNumber *, ARTConnectionStateChange *)
 

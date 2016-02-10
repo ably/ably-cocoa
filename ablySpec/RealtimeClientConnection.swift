@@ -963,7 +963,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
                     expect(lastSerial).toEventually(equal(4), timeout: testTimeout)
 
-                    options.recover = client.connection.recoveryKey()
+                    options.recover = client.connection.recoveryKey
 
                     let recoveredClient = ARTRealtime(options: options)
                     defer { recoveredClient.close() }

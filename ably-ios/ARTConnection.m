@@ -62,7 +62,7 @@
     _errorReason = errorReason;
 }
 
-- (NSString *)recoveryKey {
+- (NSString *)getRecoveryKey {
     switch(self.state) {
         case ARTRealtimeConnecting:
         case ARTRealtimeConnected:
