@@ -643,11 +643,11 @@
     }
 
     for (ARTQueuedMessage *msg in nackMessages) {
-        msg.cb([ARTStatus state:ARTStateError info:message.error]);
+        if (msg.cb) msg.cb([ARTStatus state:ARTStateError info:message.error]);
     }
 
     for (ARTQueuedMessage *msg in ackMessages) {
-        msg.cb([ARTStatus state:ARTStateOk]);
+        if (msg.cb) msg.cb([ARTStatus state:ARTStateOk]);
     }
 
     [self.logger verbose:@"ARTRealtime ACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
@@ -682,7 +682,7 @@
     self.pendingMessageStartSerial += count;
 
     for (ARTQueuedMessage *msg in nackMessages) {
-        msg.cb([ARTStatus state:ARTStateError info:message.error]);
+        if (msg.cb) msg.cb([ARTStatus state:ARTStateError info:message.error]);
     }
 
     [self.logger verbose:@"ARTRealtime NACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];

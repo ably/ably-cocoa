@@ -401,7 +401,9 @@
     attachMessage.action = ARTProtocolMessageAttach;
     attachMessage.channel = self.name;
 
-    [self.realtime send:attachMessage cb:nil];
+    [self.realtime send:attachMessage cb:(cb ? ^(ARTStatus *status) {
+        cb(status.errorInfo);
+    } : nil)];
     // Set state: Attaching
     [self transition:ARTRealtimeChannelAttaching status:[ARTStatus state:ARTStateOk]];
 }
@@ -426,7 +428,9 @@
     detachMessage.action = ARTProtocolMessageDetach;
     detachMessage.channel = self.name;
     
-    [self.realtime send:detachMessage cb:nil];
+    [self.realtime send:detachMessage cb:(cb ? ^(ARTStatus *status) {
+        cb(status.errorInfo);
+    } : nil)];
     // Set state: Detaching
     [self transition:ARTRealtimeChannelDetaching status:[ARTStatus state:ARTStateOk]];
 }
