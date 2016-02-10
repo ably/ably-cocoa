@@ -580,6 +580,32 @@ class RealtimeClientChannel: QuickSpec {
                             expect(messageSent.messages![0].clientId).to(beNil())
                         }
 
+                        // RTL6g1b
+                        it("should have clientId value as null for the Message when received") {
+                            let options = AblyTests.commonAppSetup()
+                            options.autoConnect = false
+                            let client = ARTRealtime(options: options)
+                            client.setTransportClass(TestProxyTransport.self)
+                            client.connect()
+                            defer { client.close() }
+
+                            let channel = client.channels.get("test")
+
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.subscribe { message in
+                                    expect(message.clientId).to(beNil())
+                                    done()
+                                }
+                                channel.publish(nil, data: "message")
+                            }
+
+                            let transport = client.transport as! TestProxyTransport
+                            expect(transport.protocolMessagesReceived.filter { $0.action == .Message }).toEventually(haveCount(1), timeout: testTimeout)
+
+                            let messageReceived = transport.protocolMessagesReceived.filter({ $0.action == .Message })[0]
+                            expect(messageReceived.messages![0].clientId).to(beNil())
+                        }
+
                     }
 
                 }
