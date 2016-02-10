@@ -139,6 +139,7 @@
 		D7D8F82C1BC2C706009718F2 /* ARTTokenRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = D7D8F8281BC2C706009718F2 /* ARTTokenRequest.m */; };
 		D7D8F82D1BC2C706009718F2 /* ARTTokenParams.h in Headers */ = {isa = PBXBuildFile; fileRef = D7D8F8291BC2C706009718F2 /* ARTTokenParams.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7D8F82E1BC2C706009718F2 /* ARTTokenParams.m in Sources */ = {isa = PBXBuildFile; fileRef = D7D8F82A1BC2C706009718F2 /* ARTTokenParams.m */; };
+		D7DC8AF11C6AA0C8005AF165 /* ARTDefault+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7DC8AF01C6A9FFC005AF165 /* ARTDefault+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D7EBE5A31BE8391E0086E675 /* RealtimeClientConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7EBE5A21BE8391E0086E675 /* RealtimeClientConnection.swift */; };
 		D7EBE5A41BE9F6900086E675 /* ARTConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = D7D29B401BE3DD0600374295 /* ARTConnection.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7F1D3731BF4DE07001A4B5E /* ARTRestPresence.h in Headers */ = {isa = PBXBuildFile; fileRef = D7F1D3711BF4DE07001A4B5E /* ARTRestPresence.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -352,6 +353,7 @@
 		D7D8F8281BC2C706009718F2 /* ARTTokenRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTTokenRequest.m; sourceTree = "<group>"; };
 		D7D8F8291BC2C706009718F2 /* ARTTokenParams.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTTokenParams.h; sourceTree = "<group>"; };
 		D7D8F82A1BC2C706009718F2 /* ARTTokenParams.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTTokenParams.m; sourceTree = "<group>"; };
+		D7DC8AF01C6A9FFC005AF165 /* ARTDefault+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ARTDefault+Private.h"; sourceTree = "<group>"; };
 		D7E1FDFD1C18108A002C45D7 /* Starscream.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Starscream.framework; path = "Pods/../build/Debug-iphoneos/Starscream.framework"; sourceTree = "<group>"; };
 		D7E1FE001C18119C002C45D7 /* Pods.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Pods.framework; path = "Pods/../build/Debug-iphoneos/Pods.framework"; sourceTree = "<group>"; };
 		D7EBE5A21BE8391E0086E675 /* RealtimeClientConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClientConnection.swift; sourceTree = "<group>"; };
@@ -486,6 +488,7 @@
 				85F0A60A1B6D039F00EFF45A /* ably.h */,
 				85B2C2181B6FE8DE00EA5254 /* CompatibilityMacros.h */,
 				1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */,
+				D7DC8AF01C6A9FFC005AF165 /* ARTDefault+Private.h */,
 				1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */,
 				D746AE301BBC299D003ECEF8 /* REST */,
 				D746AE311BBC29B2003ECEF8 /* Realtime */,
@@ -708,6 +711,7 @@
 				85F0A60B1B6D039F00EFF45A /* ably.h in Headers */,
 				96BF61531A35B39C004CF2B3 /* ARTRest.h in Headers */,
 				96A507BD1A3791490077CDF8 /* ARTRealtime.h in Headers */,
+				D7DC8AF11C6AA0C8005AF165 /* ARTDefault+Private.h in Headers */,
 				961343D81A42E0B7006DC822 /* ARTClientOptions.h in Headers */,
 				96BF615E1A35C1C8004CF2B3 /* ARTTypes.h in Headers */,
 				1C1EC3FA1AE26A8B00AAADD7 /* ARTStatus.h in Headers */,

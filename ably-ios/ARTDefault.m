@@ -6,12 +6,14 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTDefault.h"
+#import "ARTDefault+Private.h"
 
 @implementation ARTDefault
 
 NSString *const DefaultRestHost = @"rest.ably.io";
 NSString *const DefaultRealtimeHost = @"realtime.ably.io";
+
+static int _realtimeRequestTimeout = 10.0;
 
 + (NSArray*)fallbackHosts {
     return @[@"A.ably-realtime.com", @"B.ably-realtime.com", @"C.ably-realtime.com", @"D.ably-realtime.com", @"E.ably-realtime.com"];
@@ -42,7 +44,13 @@ NSString *const DefaultRealtimeHost = @"realtime.ably.io";
 }
 
 + (NSTimeInterval)realtimeRequestTimeout {
-    return 10.0;
+    return _realtimeRequestTimeout;
+}
+
++ (void)setRealtimeRequestTimeout:(NSTimeInterval)value {
+    @synchronized (self) {
+        _realtimeRequestTimeout = value;
+    }
 }
 
 @end
