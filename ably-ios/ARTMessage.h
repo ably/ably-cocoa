@@ -17,6 +17,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readwrite, strong, nonatomic) NSString *name;
 
 - (instancetype)initWithData:(id)data name:(art_nullable NSString *)name;
+- (instancetype)initWithData:(id)data name:(art_nullable NSString *)name clientId:(NSString *)clientId;
 
 + (__GENERIC(NSArray, ARTMessage *) *)messagesWithData:(NSArray *)data;
 + (ARTMessage *)messageWithData:(id)data name:(art_nullable NSString *)name;

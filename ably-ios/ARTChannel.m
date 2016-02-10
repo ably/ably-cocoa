@@ -44,6 +44,15 @@
                       callback:callback];
 }
 
+- (void)publish:(NSString *)name data:(id)data clientId:(NSString *)clientId {
+    [self publish:name data:data clientId:clientId cb:nil];
+}
+
+- (void)publish:(NSString *)name data:(id)data clientId:(NSString *)clientId cb:(void (^)(ARTErrorInfo * _Nullable))callback {
+    [self internalPostMessages:[self encodeMessageIfNeeded:[[ARTMessage alloc] initWithData:data name:name clientId:clientId]]
+                      callback:callback];
+}
+
 - (void)publish:(NSArray<ARTMessage *> *)messages {
     [self publish:messages cb:nil];
 }

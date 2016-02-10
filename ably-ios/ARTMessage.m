@@ -21,6 +21,13 @@
     return self;
 }
 
+- (instancetype)initWithData:(id)data name:(NSString *)name clientId:(NSString *)clientId {
+    if (self = [self initWithData:data name:name]) {
+        self.clientId = clientId;
+    }
+    return self;
+}
+
 - (NSString *)description {
     NSMutableString *description = [[super description] mutableCopy];
     [description deleteCharactersInRange:NSMakeRange(description.length - (description.length>2 ? 2:0), 2)];

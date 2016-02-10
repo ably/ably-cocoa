@@ -26,6 +26,9 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)publish:(art_nullable NSString *)name data:(art_nullable id)data;
 - (void)publish:(art_nullable NSString *)name data:(art_nullable id)data cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;
 
+- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data clientId:(NSString *)clientId;
+- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data clientId:(NSString *)clientId cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;
+
 - (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages;
 - (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;
 
