@@ -550,6 +550,38 @@ class RealtimeClientChannel: QuickSpec {
 
             }
 
+            // RTL7
+            context("subscribe") {
+
+                // RTL7b
+                it("with a single name argument subscribes a listener to only messages whose name member matches the string name") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+
+                    let channel = client.channels.get("test")
+
+                    class Test {
+                        static var counter = 0
+                        private init() {}
+                    }
+
+                    channel.subscribeToName("eventA") { message, errorInfo in
+                        expect(errorInfo).to(beNil())
+                        expect(message.name).to(equal("eventA"))
+                        expect(message.data as? String).to(equal("message"))
+                        Test.counter += 1
+                    }
+
+                    channel.publish("message", cb: nil)
+                    channel.publish("message", withName: "eventA", cb: nil)
+                    channel.publish("message", withName: "eventB", cb: nil)
+                    channel.publish("message", withName: "eventA", cb: nil)
+
+                    expect(Test.counter).toEventually(equal(2), timeout: testTimeout)
+                }
+
+            }
+
         }
     }
 }
