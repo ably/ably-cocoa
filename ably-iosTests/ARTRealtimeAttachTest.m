@@ -56,7 +56,7 @@
                         XCTAssertNil(errorInfo);
                         [channel attach];
                     }
-                    if (state == ARTRealtimeChannelAttached) {
+                    if (channel.state == ARTRealtimeChannelAttached) {
                         XCTAssertNil(errorInfo);
                         [channel attach];
                         
@@ -68,7 +68,7 @@
                             XCTFail(@"duplicate call to attach shouldnt happen");
                         }
                     }
-                    if (state == ARTRealtimeChannelDetached) {
+                    if (channel.state == ARTRealtimeChannelDetached) {
                         [expectation fulfill];
                     }
                 }];
