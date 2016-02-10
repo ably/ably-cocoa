@@ -10,7 +10,7 @@
 
 @implementation ARTMessage
 
-- (instancetype)initWithData:(id)data name:(NSString *)name {
+- (instancetype)initWithName:(NSString *)name data:(id)data {
     if (self = [self init]) {
         _name = [name copy];
         if (data) {
@@ -21,8 +21,8 @@
     return self;
 }
 
-- (instancetype)initWithData:(id)data name:(NSString *)name clientId:(NSString *)clientId {
-    if (self = [self initWithData:data name:name]) {
+- (instancetype)initWithName:(NSString *)name data:(id)data clientId:(NSString *)clientId {
+    if (self = [self initWithName:name data:data]) {
         self.clientId = clientId;
     }
     return self;

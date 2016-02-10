@@ -40,7 +40,7 @@
 }
 
 - (void)publish:(art_nullable NSString *)name data:(art_nullable id)data cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
-    [self internalPostMessages:[self encodeMessageIfNeeded:[[ARTMessage alloc] initWithData:data name:name]]
+    [self internalPostMessages:[self encodeMessageIfNeeded:[[ARTMessage alloc] initWithName:name data:data]]
                       callback:callback];
 }
 
@@ -49,7 +49,7 @@
 }
 
 - (void)publish:(NSString *)name data:(id)data clientId:(NSString *)clientId cb:(void (^)(ARTErrorInfo * _Nullable))callback {
-    [self internalPostMessages:[self encodeMessageIfNeeded:[[ARTMessage alloc] initWithData:data name:name clientId:clientId]]
+    [self internalPostMessages:[self encodeMessageIfNeeded:[[ARTMessage alloc] initWithName:name data:data clientId:clientId]]
                       callback:callback];
 }
 

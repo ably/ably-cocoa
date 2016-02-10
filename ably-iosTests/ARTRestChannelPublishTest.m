@@ -74,9 +74,9 @@
         NSString *test2 = @"test2";
         NSString *test3 = @"test3";
 
-        NSArray *messages = @[[[ARTMessage alloc] initWithData:test1 name:nil],
-                              [[ARTMessage alloc] initWithData:test2 name:nil],
-                              [[ARTMessage alloc] initWithData:test3 name:nil]];
+        NSArray *messages = @[[[ARTMessage alloc] initWithName:nil data:test1],
+                              [[ARTMessage alloc] initWithName:nil data:test2],
+                              [[ARTMessage alloc] initWithName:nil data:test3]];
 
         [channel publish:messages cb:^(ARTErrorInfo *error) {
             XCTAssert(!error);
