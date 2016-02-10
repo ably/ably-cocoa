@@ -32,6 +32,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (__GENERIC(ARTEventListener, ARTMessage *) *)subscribe:(void (^)(ARTMessage *message))cb;
 - (__GENERIC(ARTEventListener, ARTMessage *) *)subscribe:(NSString *)name cb:(void (^)(ARTMessage *message))cb;
 
+- (void)unsubscribe;
 - (void)unsubscribe:(__GENERIC(ARTEventListener, ARTMessage *) *)listener;
 - (void)unsubscribe:(NSString *)name listener:(__GENERIC(ARTEventListener, ARTMessage *) *)listener;
 

@@ -170,6 +170,9 @@
     return [self.messagesEventEmitter on:name call:cb];
 }
 
+- (void)unsubscribe {
+    [self.messagesEventEmitter off];
+}
 
 - (void)unsubscribe:(ARTEventListener<ARTMessage *> *)listener {
     [self.messagesEventEmitter off:listener];
@@ -195,6 +198,9 @@
     return [self.statesEventEmitter once:cb];
 }
 
+- (void)off {
+    [self.statesEventEmitter off];
+}
 - (void)off:(ARTRealtimeChannelState)event listener:listener {
     [self.statesEventEmitter off:[NSNumber numberWithInt:event] listener:listener];
 }
