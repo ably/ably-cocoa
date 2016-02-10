@@ -60,7 +60,6 @@ class AblyTests {
     class var authTokenCases: [String: (ARTAuthOptions) -> ()] {
         get { return [
             "useTokenAuth": { $0.useTokenAuth = true; $0.key = "fake:key" },
-            "clientId": { $0.clientId = "client"; $0.key = "fake:key" },
             "authUrl": { $0.authUrl = NSURL(string: "http://test.com") },
             "authCallback": { $0.authCallback = { _, _ in return } },
             "tokenDetails": { $0.tokenDetails = ARTTokenDetails(token: "token") },
@@ -194,7 +193,6 @@ func querySyslog(forLogsAfter startingTime: NSDate? = nil) -> AnyGenerator<Strin
 
 func ==(lhs: ARTAuthOptions, rhs: ARTAuthOptions) -> Bool {
     return lhs.token == rhs.token &&
-        lhs.clientId == rhs.clientId &&
         lhs.authMethod == rhs.authMethod &&
         lhs.authUrl == rhs.authUrl &&
         lhs.key == rhs.key

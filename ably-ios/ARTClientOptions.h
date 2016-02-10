@@ -31,14 +31,12 @@ ART_ASSUME_NONNULL_BEGIN
 @property (art_nullable, readwrite, copy, nonatomic) NSString *recover;
 
 /**
- Represents time to live (expiry) of this token in seconds.
+ The id of the client represented by this instance.
+ The clientId is relevant to presence operations, where the clientId is the principal identifier of the client in presence update messages. The clientId is also relevant to authentication; a token issued for a specific client may be used to authenticate the bearer of that token to the service.
  */
-@property (nonatomic, assign) NSTimeInterval ttl;
+@property (readwrite, strong, nonatomic, art_nullable) NSString *clientId;
 
-/**
- Contains the capability JSON stringified.
- */
-@property (nonatomic, copy) NSString *capability;
+@property (readwrite, strong, nonatomic, art_nullable) ARTTokenParams *defaultTokenParams;
 
 /**
  Represents the timeout (in seconds) to retry connection when it's disconnected.

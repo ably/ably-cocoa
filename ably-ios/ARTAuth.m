@@ -103,8 +103,7 @@
 
 - (void)storeParams:(ARTTokenParams *)customOptions {
     _options.clientId = customOptions.clientId;
-    _options.ttl = customOptions.ttl;
-    _options.capability = customOptions.capability;
+    _options.defaultTokenParams = customOptions;
 }
 
 - (NSURL *)buildURL:(ARTAuthOptions *)options withParams:(ARTTokenParams *)params {

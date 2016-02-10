@@ -38,8 +38,10 @@
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options {
     self = [self initWithClientId:options.clientId];
-    if (options.ttl) _ttl = options.ttl;
-    if (options.capability) _capability = options.capability;
+    if (options.defaultTokenParams) {
+        if (options.defaultTokenParams.ttl) _ttl = options.defaultTokenParams.ttl;
+        if (options.defaultTokenParams.capability) _capability = options.defaultTokenParams.capability;
+    }
     return self;
 }
 
