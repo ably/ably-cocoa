@@ -620,7 +620,7 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 // RTL7c
-                it("should result in an error if channel is in the FAILED state") {
+                pending("should result in an error if channel is in the FAILED state") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.close() }
 
