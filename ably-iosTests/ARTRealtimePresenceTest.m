@@ -1048,17 +1048,17 @@
         __block bool gotUpdate = false;
         __block bool gotEnter = false;
         __block bool gotLeave = false;
-        id<ARTSubscription> allSub = [channel.presence subscribe:^(ARTPresenceMessage * message) {
+        ARTEventListener *allSub = [channel.presence subscribe:^(ARTPresenceMessage * message) {
             XCTAssertEqualObjects([message data], leave1);
             gotLeave = true;
         }];
-        [channel.presence unsubscribe:allSub action:ARTPresenceEnter];
-        [channel.presence unsubscribe:allSub action:ARTPresenceUpdate];
-        id<ARTSubscription> updateSub=[channel.presence subscribe:ARTPresenceUpdate cb:^(ARTPresenceMessage * message) {
+        [channel.presence unsubscribe:ARTPresenceEnter listener:allSub];
+        [channel.presence unsubscribe:ARTPresenceUpdate listener:allSub];
+        ARTEventListener *updateSub=[channel.presence subscribe:ARTPresenceUpdate cb:^(ARTPresenceMessage * message) {
             XCTAssertEqualObjects([message data], update1);
             gotUpdate = true;
         }];
-        id<ARTSubscription> enterSub =[channel.presence subscribe:ARTPresenceEnter cb:^(ARTPresenceMessage * message) {
+        ARTEventListener *enterSub =[channel.presence subscribe:ARTPresenceEnter cb:^(ARTPresenceMessage * message) {
             XCTAssertEqualObjects([message data], enter1);
             gotEnter = true;
         }];

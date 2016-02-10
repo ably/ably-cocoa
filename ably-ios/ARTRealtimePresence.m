@@ -129,27 +129,26 @@
     return [[self channel].presenceMap isSyncComplete];
 }
 
-- (id<ARTSubscription>)subscribe:(ARTRealtimeChannelPresenceCb)cb {
-    ARTRealtimeChannelPresenceSubscription *subscription = [[ARTRealtimeChannelPresenceSubscription alloc] initWithChannel:[self channel] cb:cb];
-    [[self channel].presenceSubscriptions addObject:subscription];
+- (ARTEventListener<ARTPresenceMessage *> *)subscribe:(void (^)(ARTPresenceMessage * _Nonnull))cb {
     [[self channel] attach];
-    return subscription;
+    return [[self channel].presenceEventEmitter on:cb];
 }
 
-- (id<ARTSubscription>)subscribe:(ARTPresenceAction)action cb:(ARTRealtimeChannelPresenceCb)cb {
-    ARTRealtimeChannelPresenceSubscription *subscription = (ARTRealtimeChannelPresenceSubscription *) [self subscribe:cb];
-    [subscription excludeAllActionsExcept:action];
-    return subscription;
+- (ARTEventListener<ARTPresenceMessage *> *)subscribe:(ARTPresenceAction)action cb:(void (^)(ARTPresenceMessage * _Nonnull))cb {
+    [[self channel] attach];
+    return [[self channel].presenceEventEmitter on:[NSNumber numberWithUnsignedInteger:action] call:cb];
 }
 
-- (void)unsubscribe:(id<ARTSubscription>)subscription action:(ARTPresenceAction) action {
-    ARTRealtimeChannelPresenceSubscription * s = (ARTRealtimeChannelPresenceSubscription *)subscription;
-    [s excludeAction:action];
+- (void)unsubscribe {
+    [[self channel].presenceEventEmitter off];
 }
 
-- (void)unsubscribe:(ARTRealtimeChannelPresenceSubscription *)subscription {
-    ARTRealtimeChannelPresenceSubscription *s = (ARTRealtimeChannelPresenceSubscription *)subscription;
-    [[self channel].presenceSubscriptions removeObject:s];
+- (void)unsubscribe:(ARTEventListener<ARTPresenceMessage *> *)listener {
+    [[self channel].presenceEventEmitter off:listener];
+}
+
+- (void)unsubscribe:(ARTPresenceAction)action listener:(ARTEventListener<ARTPresenceMessage *> *)listener {
+    [[self channel].presenceEventEmitter off:[NSNumber numberWithUnsignedInteger:action] listener:listener];
 }
 
 @end
