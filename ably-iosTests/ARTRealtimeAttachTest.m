@@ -151,7 +151,7 @@
                     if (channel.state == ARTRealtimeChannelAttached) {
                         [channel detach];
                     }
-                    else if(state == ARTRealtimeChannelDetached) {
+                    else if(channel.state == ARTRealtimeChannelDetached) {
                         [expectation fulfill];
                     }
                 }];
@@ -176,10 +176,10 @@
                     if (channel.state == ARTRealtimeChannelAttached) {
                         [channel detach];
                     }
-                    else if(state == ARTRealtimeChannelDetaching) {
+                    else if(channel.state == ARTRealtimeChannelDetaching) {
                         detachingHit = YES;
                     }
-                    else if(state == ARTRealtimeChannelDetached) {
+                    else if(channel.state == ARTRealtimeChannelDetached) {
                         if(detachingHit) {
                             [expectation fulfill];
                         }
@@ -232,13 +232,13 @@
                 ARTRealtimeChannel *channel = [realtime.channels get:@"testDetachingIgnoresDetach"];
                 [channel on:^(ARTErrorInfo *errorInfo) {
 
-                    if (state == ARTRealtimeChannelAttached) {
+                    if (channel.state == ARTRealtimeChannelAttached) {
                         [channel detach];
                     }
-                    if( state == ARTRealtimeChannelDetaching) {
+                    if( channel.state == ARTRealtimeChannelDetaching) {
                         [channel detach];
                     }
-                    if(state == ARTRealtimeChannelDetached) {
+                    if(channel.state == ARTRealtimeChannelDetached) {
                         [expectation fulfill];
                     }
                 }];
@@ -265,7 +265,7 @@
                             [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
                         }
                     }
-                    else if(state == ARTRealtimeChannelFailed) {
+                    else if(channel.state == ARTRealtimeChannelFailed) {
                         [channel attach];
                         XCTAssertNil(errorInfo);
                         [expectation fulfill];
