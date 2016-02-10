@@ -57,7 +57,6 @@ Instance the Ably library with the given options.
 :param options: see ARTClientOptions for options
 */
 - (instancetype)initWithOptions:(ARTClientOptions *)options;
-- (instancetype)initWithLogger:(ARTLog *)logger andOptions:(ARTClientOptions *)options;
 
 - (void)time:(ARTTimeCallback)cb;
 

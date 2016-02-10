@@ -32,45 +32,41 @@
 
 @implementation ARTRest
 
-- (instancetype)initWithLogger:(ARTLog *)logger andOptions:(ARTClientOptions *)options {
+- (instancetype)initWithOptions:(ARTClientOptions *)options {
     self = [super init];
     if (self) {
         NSAssert(options, @"ARTRest: No options provided");
         _options = [options copy];
         _baseUrl = [options restUrl];
-        
-        if (logger) {
-            _logger = logger;
+
+        if (options.logHandler) {
+            _logger = options.logHandler;
         }
         else {
             _logger = [[ARTLog alloc] init];
         }
-        
-        if (options.logLevel != ARTLogLevelNone) {            
+
+        if (options.logLevel != ARTLogLevelNone) {
             _logger.logLevel = options.logLevel;
         }
-        
+
         _http = [[ARTHttp alloc] init];
         [_logger debug:__FILE__ line:__LINE__ message:@"%p alloc HTTP", _http];
         _httpExecutor = _http;
         _httpExecutor.logger = _logger;
         _channelClass = [ARTRestChannel class];
-        
+
         id<ARTEncoder> defaultEncoder = [[ARTJsonEncoder alloc] initWithLogger:self.logger];
         _encoders = @{ [defaultEncoder mimeType]: defaultEncoder };
         _defaultEncoding = [defaultEncoder mimeType];
         _fallbackCount = 0;
-        
+
         _auth = [[ARTAuth alloc] init:self withOptions:_options];
         _channels = [[ARTRestChannels alloc] initWithRest:self];
 
         [self.logger debug:__FILE__ line:__LINE__ message:@"initialised %p", self];
     }
     return self;
-}
-
-- (instancetype)initWithOptions:(ARTClientOptions *)options {
-    return [self initWithLogger:[[ARTLog alloc] init] andOptions:options];
 }
 
 - (instancetype)initWithKey:(NSString *)key {

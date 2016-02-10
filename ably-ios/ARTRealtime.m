@@ -80,10 +80,6 @@
     BOOL _resuming;
 }
 
-- (instancetype)initWithOptions:(ARTClientOptions *)options {
-    return [self initWithLogger:[[ARTLog alloc] init] andOptions:options];
-}
-
 - (instancetype)initWithKey:(NSString *)key {
     return [self initWithOptions:[[ARTClientOptions alloc] initWithKey:key]];
 }
@@ -92,12 +88,12 @@
     return [self initWithOptions:[[ARTClientOptions alloc] initWithToken:token]];
 }
 
-- (instancetype)initWithLogger:(ARTLog *)logger andOptions:(ARTClientOptions *)options {
+- (instancetype)initWithOptions:(ARTClientOptions *)options {
     self = [super init];
     if (self) {
         NSAssert(options, @"ARTRealtime: No options provided");
         
-        _rest = [[ARTRest alloc] initWithLogger:logger andOptions:options];
+        _rest = [[ARTRest alloc] initWithOptions:options];
         _eventEmitter = [[ARTEventEmitter alloc] init];
         _channels = [[ARTRealtimeChannels alloc] initWithRealtime:self];
         _transport = nil;

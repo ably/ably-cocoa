@@ -21,6 +21,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSInteger tlsPort;
 @property (readwrite, strong, nonatomic) NSString *environment;
 @property (nonatomic, assign) BOOL tls;
+@property (nonatomic, strong, readwrite) ARTLog *logHandler;
 @property (nonatomic, assign) ARTLogLevel logLevel;
 
 @property (readwrite, assign, nonatomic) BOOL queueMessages;

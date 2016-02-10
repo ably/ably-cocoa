@@ -25,7 +25,6 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithOptions:(ARTClientOptions *)options;
-- (instancetype)initWithLogger:(ARTLog *)logger andOptions:(ARTClientOptions *)options;
 - (instancetype)initWithKey:(NSString *)key;
 - (instancetype)initWithToken:(NSString *)tokenId;
 

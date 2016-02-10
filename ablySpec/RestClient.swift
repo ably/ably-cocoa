@@ -120,8 +120,9 @@ class RestClient: QuickSpec {
 
                     let options = AblyTests.commonAppSetup()
                     let customLogger = MyLogger()
-                    customLogger.logLevel = .Verbose
-                    let client = ARTRest(logger: customLogger, andOptions: options)
+                    options.logHandler = customLogger
+                    options.logLevel = .Verbose
+                    let client = ARTRest(options: options)
 
                     client.logger.log("This is a warning", withLevel: .Warn)
                     
