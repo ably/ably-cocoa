@@ -581,7 +581,7 @@ class RealtimeClientChannel: QuickSpec {
                         }
 
                         // RTL6g1b
-                        it("should have clientId value as null for the Message when received") {
+                        pending("should have clientId value as null for the Message when received") {
                             let options = AblyTests.commonAppSetup()
                             options.autoConnect = false
                             let client = ARTRealtime(options: options)
