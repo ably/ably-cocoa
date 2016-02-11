@@ -395,6 +395,7 @@
     if (![self.realtime isActive]) {
         [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"can't attach when not in an active state"];
         if (cb) cb([ARTErrorInfo createWithCode:90000 message:@"Can't attach when not in an active state"]);
+        return;
     }
 
     ARTProtocolMessage *attachMessage = [[ARTProtocolMessage alloc] init];
@@ -415,6 +416,7 @@
         case ARTRealtimeChannelDetached:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"can't detach when not attahed"];
             if (cb) cb([ARTErrorInfo createWithCode:90000 message:@"Can't detach when not attahed"]);
+            return;
         default:
             break;
     }
@@ -422,6 +424,7 @@
     if (![self.realtime isActive]) {
         [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"can't detach when not in an active state"];
         if (cb) cb([ARTErrorInfo createWithCode:90000 message:@"Can't detach when not in an active state"]);
+        return;
     }
 
     ARTProtocolMessage *detachMessage = [[ARTProtocolMessage alloc] init];
