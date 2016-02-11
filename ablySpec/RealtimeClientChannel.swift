@@ -608,7 +608,7 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 // RTL7d
-                context("should deliver the message even if there is an error while decoding") {
+                pending("should deliver the message even if there is an error while decoding") {
 
                     for cryptoTest in [CryptoTest.aes128, CryptoTest.aes256] {
                         it("using \(cryptoTest) ") {
