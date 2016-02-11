@@ -53,7 +53,6 @@ class AblyTests {
     class func checkError(errorInfo: ARTErrorInfo?) {
         checkError(errorInfo, withAlternative: "")
     }
-    static let allDebug = true
 
     class var jsonRestOptions: ARTClientOptions {
         get {
@@ -114,7 +113,7 @@ class AblyTests {
     class func clientOptions(debug debug: Bool = false, requestToken: Bool = false) -> ARTClientOptions {
         let options = ARTClientOptions()
         options.environment = "sandbox"
-        if debug || AblyTests.allDebug {
+        if debug {
             options.logLevel = .Debug
         }
         if requestToken {
