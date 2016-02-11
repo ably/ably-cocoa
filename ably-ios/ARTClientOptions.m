@@ -70,7 +70,10 @@
 - (id)copyWithZone:(NSZone *)zone {
     ARTClientOptions *options = [super copyWithZone:zone];
 
+    options.clientId = self.clientId;
     options.port = self.port;
+    options.restHost = self.restHost;
+    options.realtimeHost = self.realtimeHost;
     options.queueMessages = self.queueMessages;
     options.echoMessages = self.echoMessages;
     options.recover = self.recover;
@@ -82,6 +85,16 @@
     options.suspendedRetryTimeout = self.suspendedRetryTimeout;
     
     return options;
+}
+
+- (BOOL)isBasicAuth {
+    return self.useTokenAuth == false &&
+    self.key != nil &&
+    self.clientId == nil &&
+    self.token == nil &&
+    self.tokenDetails == nil &&
+    self.authUrl == nil &&
+    self.authCallback == nil;
 }
 
 @end

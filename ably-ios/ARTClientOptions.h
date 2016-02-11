@@ -70,6 +70,7 @@ ART_ASSUME_NONNULL_BEGIN
  */
 @property (readwrite, assign, nonatomic) NSTimeInterval httpMaxRetryDuration;
 
+- (BOOL)isBasicAuth;
 - (NSURL *)restUrl;
 - (NSURL *)realtimeUrl;
 

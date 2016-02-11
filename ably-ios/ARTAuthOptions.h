@@ -84,7 +84,6 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (ARTAuthOptions *)mergeWith:(ARTAuthOptions *)precedenceOptions;
 
-- (BOOL)isBasicAuth;
 - (BOOL)isMethodGET;
 - (BOOL)isMethodPOST;
 
