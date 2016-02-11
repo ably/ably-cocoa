@@ -799,6 +799,56 @@ class RealtimeClientChannel: QuickSpec {
                     }
                 }
 
+                // RTL7d
+                context("should deliver the message even if there is an error while decoding") {
+
+                    for cryptoTest in [CryptoTest.aes128, CryptoTest.aes256] {
+                        it("using \(cryptoTest) ") {
+                            let options = AblyTests.commonAppSetup()
+                            options.autoConnect = false
+                            let client = ARTRealtime(options: options)
+                            client.setTransportClass(TestProxyTransport.self)
+                            client.connect()
+                            defer { client.close() }
+
+                            let (keyData, ivData, messages) = AblyTests.loadCryptoTestData(cryptoTest)
+                            let testMessage = messages[0]
+
+                            let cipherParams = ARTCrypto.defaultParamsWithKey(keyData, iv: ivData)
+                            let channelOptions = ARTChannelOptions(encrypted: cipherParams)
+                            let channel = client.channels.get("test", options: channelOptions)
+
+                            let transport = client.transport as! TestProxyTransport
+
+                            transport.beforeProcessingSentMessage = { protocolMessage in
+                                if protocolMessage.action == .Message {
+                                    expect(protocolMessage.messages![0].data as? String).to(equal(testMessage.encrypted.data))
+                                    expect(protocolMessage.messages![0].encoding).to(equal(testMessage.encrypted.encoding))
+                                }
+                            }
+
+                            transport.beforeProcessingReceivedMessage = { protocolMessage in
+                                if protocolMessage.action == .Message {
+                                    expect(protocolMessage.messages![0].data as? String).to(equal(testMessage.encrypted.data))
+                                    expect(protocolMessage.messages![0].encoding).to(equal(testMessage.encrypted.encoding))
+                                    // Force an error decoding a message
+                                    protocolMessage.messages![0].encoding = "bad_encoding_type"
+                                }
+                            }
+
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.subscribe(testMessage.encoded.name) { message in
+                                    expect(message.data as? String).toNot(equal(testMessage.encoded.data))
+                                    done()
+                                }
+
+                                channel.publish(testMessage.encoded.name, data: testMessage.encoded.data)
+                            }
+                        }
+                    }
+
+                }
+
                 // RTL7f
                 it("should exist ensuring published messages are not echoed back to the subscriber when echoMessages is false") {
                     let options = AblyTests.commonAppSetup()
