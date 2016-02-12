@@ -20,6 +20,7 @@
 #import "ARTPaginatedResult.h"
 #import "ARTTestUtil.h"
 #import "ARTLog.h"
+#import "ARTNSArray+ARTFunctional.h"
 
 @interface ARTRealtimeMessageTest : XCTestCase {
     ARTRealtime * _realtime;
@@ -353,8 +354,10 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"channel"];
-        NSArray * messages = @[@"test1", @"test2", @"test3"];
-        [channel publish:nil data:messages cb:^(ARTErrorInfo *errorInfo) {
+        NSArray * messages = [@[@"test1", @"test2", @"test3"] artMap:^id(id data) {
+            return [[ARTMessage alloc] initWithName:nil data:data];
+        }];
+        [channel publish:messages cb:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
         }];
         __block int messageCount =0;

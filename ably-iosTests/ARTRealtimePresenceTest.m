@@ -511,8 +511,10 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel * channel = [realtime.channels get:@"testEnterNoClientId"];
-        XCTAssertThrows([channel.presence enter:@"thisWillFail" cb:^(ARTErrorInfo *errorInfo){}]);
-        [exp fulfill];
+        [channel.presence enter:@"thisWillFail" cb:^(ARTErrorInfo *errorInfo){
+            XCTAssertNotNil(errorInfo);
+            [exp fulfill];
+        }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
@@ -1048,12 +1050,10 @@
         __block bool gotUpdate = false;
         __block bool gotEnter = false;
         __block bool gotLeave = false;
-        ARTEventListener *allSub = [channel.presence subscribe:^(ARTPresenceMessage * message) {
+        ARTEventListener *leaveSub = [channel.presence subscribe:ARTPresenceLeave cb:^(ARTPresenceMessage * message) {
             XCTAssertEqualObjects([message data], leave1);
             gotLeave = true;
         }];
-        [channel.presence unsubscribe:ARTPresenceEnter listener:allSub];
-        [channel.presence unsubscribe:ARTPresenceUpdate listener:allSub];
         ARTEventListener *updateSub=[channel.presence subscribe:ARTPresenceUpdate cb:^(ARTPresenceMessage * message) {
             XCTAssertEqualObjects([message data], update1);
             gotUpdate = true;
@@ -1076,6 +1076,7 @@
                             XCTAssertTrue(gotUpdate);
                             XCTAssertTrue(gotEnter);
                             XCTAssertTrue(gotLeave);
+                            [channel.presence unsubscribe:leaveSub];
                             [exp fulfill];
                         }];
                     }];

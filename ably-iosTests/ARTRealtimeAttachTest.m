@@ -94,14 +94,14 @@
                     [channel detach];
                 }
             }
-            if(channel.state == ARTRealtimeChannelDetaching) {
+            else if(channel.state == ARTRealtimeChannelDetaching) {
                 detachedReached = true;
                 [channel attach];
             }
-            if(channel.state == ARTRealtimeChannelDetached) {
+            else if(channel.state == ARTRealtimeChannelDetached) {
                 XCTFail(@"Should not have reached detached state");
             }
-            if(channel.state == ARTRealtimeChannelAttaching) {
+            else if(channel.state == ARTRealtimeChannelAttaching) {
                 if(detachedReached) {
                     [expectation fulfill];
                 }
