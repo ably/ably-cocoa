@@ -837,8 +837,17 @@ class RealtimeClientChannel: QuickSpec {
                             }
 
                             waitUntil(timeout: testTimeout) { done in
+                                let logTime = NSDate()
+
                                 channel.subscribe(testMessage.encoded.name) { message in
-                                    expect(message.data as? String).toNot(equal(testMessage.encoded.data))
+                                    expect(message.data as? String).to(equal(testMessage.encrypted.data))
+
+                                    let logs = querySyslog(forLogsAfter: logTime)
+                                    let line = logs.reduce("") { $0 + "; " + $1 } //Reduce in one line
+                                    expect(line).to(contain("ERROR: Failed to decode data as 'bad_encoding_type' encoding is unknown"))
+
+                                    expect(channel.errorReason!.message).to(contain("Failed to decode data as 'bad_encoding_type' encoding is unknown"))
+
                                     done()
                                 }
 
