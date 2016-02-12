@@ -116,8 +116,6 @@
 		D746AE431BBC5CD0003ECEF8 /* ARTRealtimeChannel+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE421BBC5CD0003ECEF8 /* ARTRealtimeChannel+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D746AE471BBD6FE9003ECEF8 /* ARTQueuedMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE451BBD6FE9003ECEF8 /* ARTQueuedMessage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D746AE481BBD6FE9003ECEF8 /* ARTQueuedMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE461BBD6FE9003ECEF8 /* ARTQueuedMessage.m */; };
-		D746AE4B1BBD70F0003ECEF8 /* ARTRealtimeChannelSubscription.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE491BBD70F0003ECEF8 /* ARTRealtimeChannelSubscription.h */; };
-		D746AE4C1BBD70F0003ECEF8 /* ARTRealtimeChannelSubscription.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE4A1BBD70F0003ECEF8 /* ARTRealtimeChannelSubscription.m */; };
 		D746AE4F1BBD84E7003ECEF8 /* ARTChannelOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE4D1BBD84E7003ECEF8 /* ARTChannelOptions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D746AE501BBD84E7003ECEF8 /* ARTChannelOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE4E1BBD84E7003ECEF8 /* ARTChannelOptions.m */; };
 		D746AE531BBD85C5003ECEF8 /* ARTChannels.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE511BBD85C5003ECEF8 /* ARTChannels.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -332,8 +330,6 @@
 		D746AE421BBC5CD0003ECEF8 /* ARTRealtimeChannel+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTRealtimeChannel+Private.h"; sourceTree = "<group>"; };
 		D746AE451BBD6FE9003ECEF8 /* ARTQueuedMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTQueuedMessage.h; sourceTree = "<group>"; };
 		D746AE461BBD6FE9003ECEF8 /* ARTQueuedMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTQueuedMessage.m; sourceTree = "<group>"; };
-		D746AE491BBD70F0003ECEF8 /* ARTRealtimeChannelSubscription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTRealtimeChannelSubscription.h; sourceTree = "<group>"; };
-		D746AE4A1BBD70F0003ECEF8 /* ARTRealtimeChannelSubscription.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimeChannelSubscription.m; sourceTree = "<group>"; };
 		D746AE4D1BBD84E7003ECEF8 /* ARTChannelOptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTChannelOptions.h; sourceTree = "<group>"; };
 		D746AE4E1BBD84E7003ECEF8 /* ARTChannelOptions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTChannelOptions.m; sourceTree = "<group>"; };
 		D746AE511BBD85C5003ECEF8 /* ARTChannels.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTChannels.h; sourceTree = "<group>"; };
@@ -595,8 +591,6 @@
 				D746AE321BBC29EB003ECEF8 /* Transport */,
 				D746AE451BBD6FE9003ECEF8 /* ARTQueuedMessage.h */,
 				D746AE461BBD6FE9003ECEF8 /* ARTQueuedMessage.m */,
-				D746AE491BBD70F0003ECEF8 /* ARTRealtimeChannelSubscription.h */,
-				D746AE4A1BBD70F0003ECEF8 /* ARTRealtimeChannelSubscription.m */,
 				EB89D4081C61C5ED007FA5B7 /* ARTRealtimeChannels.h */,
 				EB89D40A1C61C6EA007FA5B7 /* ARTRealtimeChannels.m */,
 				EB89D40E1C62303E007FA5B7 /* ARTConnection+Private.h */,
@@ -740,7 +734,6 @@
 				96A507A51A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.h in Headers */,
 				EB8AC6431C6515ED002ABA92 /* ARTTokenParams+Private.h in Headers */,
 				D746AE1D1BBB5207003ECEF8 /* ARTDataQuery.h in Headers */,
-				D746AE4B1BBD70F0003ECEF8 /* ARTRealtimeChannelSubscription.h in Headers */,
 				EB89D40F1C62303E007FA5B7 /* ARTConnection+Private.h in Headers */,
 				D746AE281BBB61C9003ECEF8 /* ARTPresence.h in Headers */,
 				EB89D4091C61C5ED007FA5B7 /* ARTRealtimeChannels.h in Headers */,
@@ -1105,7 +1098,6 @@
 				D746AE411BBC5B14003ECEF8 /* ARTEventEmitter.m in Sources */,
 				96A507AE1A3780F60077CDF8 /* ARTJsonEncoder.m in Sources */,
 				96A507961A370F860077CDF8 /* ARTStats.m in Sources */,
-				D746AE4C1BBD70F0003ECEF8 /* ARTRealtimeChannelSubscription.m in Sources */,
 				96E408481A3895E800087F77 /* ARTWebSocketTransport.m in Sources */,
 				D7D29B421BE3DEB300374295 /* ARTConnection.m in Sources */,
 				96BF61711A35FB7C004CF2B3 /* ARTAuth.m in Sources */,

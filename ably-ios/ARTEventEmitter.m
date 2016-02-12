@@ -11,7 +11,6 @@
 #import "ARTRealtime.h"
 #import "ARTRealtime+Private.h"
 #import "ARTRealtimeChannel.h"
-#import "ARTRealtimeChannelSubscription.h"
 
 @implementation NSMutableArray (AsSet)
 

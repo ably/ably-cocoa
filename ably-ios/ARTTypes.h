@@ -97,10 +97,6 @@ typedef void (^ARTTokenCallback)(ARTTokenDetails *__art_nullable tokenDetails, N
 - (void)cancel;
 @end
 
-@protocol ARTSubscription
-- (void)unsubscribe;
-@end
-
 // FIXME: review
 @interface ARTIndirectCancellable : NSObject <ARTCancellable>
 

@@ -23,7 +23,6 @@
 @class ARTCipherParams;
 @class ARTPresence;
 @class ARTPresenceMap;
-@class ARTRealtimeChannelPresenceSubscription;
 @class ARTEventEmitter;
 @class ARTRealtimeChannel;
 @class ARTAuth;

@@ -12,7 +12,6 @@
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTPresenceMap.h"
 #import "ARTPresenceMessage.h"
-#import "ARTRealtimeChannelSubscription.h"
 #import "ARTStatus.h"
 #import "ARTPresence+Private.h"
 

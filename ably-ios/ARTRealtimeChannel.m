@@ -18,7 +18,6 @@
 #import "ARTChannelOptions.h"
 #import "ARTProtocolMessage.h"
 #import "ARTProtocolMessage+Private.h"
-#import "ARTRealtimeChannelSubscription.h"
 #import "ARTPresenceMap.h"
 #import "ARTQueuedMessage.h"
 #import "ARTNSArray+ARTFunctional.h"
@@ -39,13 +38,12 @@
         _state = ARTRealtimeChannelInitialised;
         _queuedMessages = [NSMutableArray array];
         _attachSerial = nil;
-        _subscriptions = [NSMutableDictionary dictionary];
-        _presenceSubscriptions = [NSMutableArray array];
         _presenceMap =[[ARTPresenceMap alloc] init];
         _lastPresenceAction = ARTPresenceAbsent;
         
         _statesEventEmitter = [[ARTEventEmitter alloc] init];
         _messagesEventEmitter = [[ARTEventEmitter alloc] init];
+        _presenceEventEmitter = [[ARTEventEmitter alloc] init];
     }
     return self;
 }
@@ -371,11 +369,7 @@
 }
 
 - (void)broadcastPresence:(ARTPresenceMessage *)pm {
-    for (ARTRealtimeChannelPresenceSubscription *subscription in self.presenceSubscriptions) {
-        if(![[subscription excludedActions] containsObject:[NSNumber numberWithInt:(int) pm.action]]) {
-            subscription.cb(pm);
-        }
-    }
+    [self.presenceEventEmitter emit:[NSNumber numberWithUnsignedInteger:pm.action] with:pm];
 }
 
 - (void)onError:(ARTProtocolMessage *)msg {

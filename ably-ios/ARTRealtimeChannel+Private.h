@@ -20,8 +20,6 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, weak, nonatomic) ARTRealtime *realtime;
 @property (readwrite, strong, nonatomic) NSMutableArray *queuedMessages;
 @property (readwrite, strong, nonatomic) NSString *attachSerial;
-@property (readonly, strong, nonatomic) NSMutableDictionary *subscriptions;
-@property (readonly, strong, nonatomic) NSMutableArray *presenceSubscriptions;
 @property (readonly, strong, nonatomic) NSMutableDictionary *presenceDict;
 @property (readonly, getter=getClientId) NSString *clientId;
 @property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNumber *, ARTErrorInfo *) *statesEventEmitter;
