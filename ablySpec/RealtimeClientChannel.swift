@@ -607,6 +607,55 @@ class RealtimeClientChannel: QuickSpec {
                     expect(Test.counter).toEventually(equal(2), timeout: testTimeout)
                 }
 
+                context("message cannot be decoded or decrypted") {
+
+                    // RTL7e
+                    it("should deliver with encoding attribute set indicating the residual encoding and error should be emitted") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        client.setTransportClass(TestProxyTransport.self)
+                        client.connect()
+                        defer { client.close() }
+
+                        let channelOptions = ARTChannelOptions(encrypted: ARTCrypto.defaultParams())
+                        let channel = client.channels.get("test", options: channelOptions)
+
+                        let expectedMessage = ["key":1]
+                        let expectedData = try! NSJSONSerialization.dataWithJSONObject(expectedMessage, options: NSJSONWritingOptions(rawValue: 0))
+
+                        let transport = client.transport as! TestProxyTransport
+
+                        transport.beforeProcessingReceivedMessage = { protocolMessage in
+                            if protocolMessage.action == .Message {
+                                let messageReceived = protocolMessage.messages![0]
+                                // Replacement: `json/cipher+aes-128-cbc/base64` to `invalid/cipher+aes-128-cbc/base64`
+                                let newEncoding = "invalid" + messageReceived.encoding!.substringFromIndex("json".endIndex)
+                                messageReceived.encoding = newEncoding
+                            }
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let logTime = NSDate()
+
+                            channel.subscribe { message in
+                                // Last decoding failed: NSData -> JSON object, so...
+                                expect(message.data as? NSData).to(equal(expectedData))
+                                expect(message.encoding).to(equal("invalid"))
+
+                                let logs = querySyslog(forLogsAfter: logTime)
+                                let line = logs.reduce("") { $0 + "; " + $1 } //Reduce in one line
+                                expect(line).to(contain("ERROR: ARTDataDecoded failed to decode data as 'invalid'"))
+
+                                done()
+                            }
+                            
+                            channel.publish(nil, data: expectedMessage)
+                        }
+                    }
+
+                }
+
                 // RTL7f
                 it("should exist ensuring published messages are not echoed back to the subscriber when echoMessages is false") {
                     let options = AblyTests.commonAppSetup()
