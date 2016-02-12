@@ -72,8 +72,9 @@
 
     options.clientId = self.clientId;
     options.port = self.port;
-    options.restHost = self.restHost;
-    options.realtimeHost = self.realtimeHost;
+    options.tlsPort = self.tlsPort;
+    if (options.hasCustomRestHost) options.restHost = self.restHost;
+    if (options.hasCustomRealtimeHost) options.realtimeHost = self.realtimeHost;
     options.queueMessages = self.queueMessages;
     options.echoMessages = self.echoMessages;
     options.recover = self.recover;
@@ -95,6 +96,14 @@
     self.tokenDetails == nil &&
     self.authUrl == nil &&
     self.authCallback == nil;
+}
+
+- (BOOL)hasCustomRestHost {
+    return _restHost != nil;
+}
+
+- (BOOL)hasCustomRealtimeHost {
+    return _realtimeHost != nil;
 }
 
 @end

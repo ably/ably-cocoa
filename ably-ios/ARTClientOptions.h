@@ -73,6 +73,8 @@ ART_ASSUME_NONNULL_BEGIN
 - (BOOL)isBasicAuth;
 - (NSURL *)restUrl;
 - (NSURL *)realtimeUrl;
+- (BOOL)hasCustomRestHost;
+- (BOOL)hasCustomRealtimeHost;
 
 @end
 
