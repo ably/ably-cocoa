@@ -645,8 +645,22 @@ class RealtimeClientChannel: QuickSpec {
                             }
 
                             waitUntil(timeout: testTimeout) { done in
+                                let logTime = NSDate()
+
+                                channel.on(.Failed) { errorInfo in
+                                    expect(errorInfo).toNot(beNil())
+                                    expect(errorInfo).to(equal(channel.errorReason))
+                                }
+
                                 channel.subscribe(testMessage.encoded.name) { message in
-                                    expect(message.data as? String).toNot(equal(testMessage.encoded.data))
+                                    expect(message.data as? String).to(equal(testMessage.encrypted.data))
+
+                                    let logs = querySyslog(forLogsAfter: logTime)
+                                    let line = logs.reduce("") { $0 + "; " + $1 } //Reduce in one line
+                                    expect(line).to(contain("ERROR: ARTDataDecoded failed to decode data as 'bad_encoding_type'"))
+
+                                    expect(channel.errorReason).toNot(beNil())
+
                                     done()
                                 }
 
