@@ -607,6 +607,33 @@ class RealtimeClientChannel: QuickSpec {
                     expect(Test.counter).toEventually(equal(2), timeout: testTimeout)
                 }
 
+                // RTL7f
+                it("should exist ensuring published messages are not echoed back to the subscriber when echoMessages is false") {
+                    let options = AblyTests.commonAppSetup()
+                    let client1 = ARTRealtime(options: options)
+                    defer { client1.close() }
+
+                    options.echoMessages = false
+                    let client2 = ARTRealtime(options: options)
+                    defer { client2.close() }
+
+                    let channel1 = client1.channels.get("test")
+                    let channel2 = client2.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel1.subscribe { message in
+                            expect(message.data as? String).to(equal("message"))
+                            delay(5.0) { done() }
+                        }
+
+                        channel2.subscribe { message in
+                            fail("Shouldn't receive the message")
+                        }
+
+                        channel2.publish(nil, data: "message")
+                    }
+                }
+
             }
 
         }
