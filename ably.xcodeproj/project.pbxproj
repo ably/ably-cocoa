@@ -26,7 +26,7 @@
 		1C578E1F1B3435CA00EF46EC /* ARTFallback.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C578E1D1B3435CA00EF46EC /* ARTFallback.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1C578E201B3435CA00EF46EC /* ARTFallback.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C578E1E1B3435CA00EF46EC /* ARTFallback.m */; };
 		1C578E221B3438F300EF46EC /* ARTFallbackTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C578E211B3438F300EF46EC /* ARTFallbackTest.m */; };
-		1C5DA0151A6E5FA400A2B7EF /* ably.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* ably.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		1C5DA0151A6E5FA400A2B7EF /* Ably.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* Ably.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1C6C18A31ADFDAB100AB79E4 /* ARTLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C6C18A11ADFDAB100AB79E4 /* ARTLog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1C6C18A41ADFDAB100AB79E4 /* ARTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */; };
 		1CC3D94B1AB6FBB60005BEB0 /* ARTRealtimeChannelHistoryTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CC3D94A1AB6FBB60005BEB0 /* ARTRealtimeChannelHistoryTest.m */; };
@@ -46,12 +46,12 @@
 		850BFB4D1B79323C009D0ADD /* ARTPaginatedResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */; };
 		851674EF1B7BA5CD00D35169 /* Stats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851674EE1B7BA5CD00D35169 /* Stats.swift */; };
 		853ED7C41B7A1A3C006F1C6F /* RestClientStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 853ED7C31B7A1A3C006F1C6F /* RestClientStats.swift */; };
-		856AAC8F1B6E304B00B07119 /* ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* ably.framework */; };
+		856AAC8F1B6E304B00B07119 /* Ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* Ably.framework */; };
 		856AAC971B6E30C800B07119 /* TestUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC961B6E30C800B07119 /* TestUtilities.swift */; };
 		856AAC991B6E312F00B07119 /* RestClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC981B6E312F00B07119 /* RestClient.swift */; };
 		856AAC9B1B6E326E00B07119 /* ably-common in Resources */ = {isa = PBXBuildFile; fileRef = 856AAC9A1B6E326E00B07119 /* ably-common */; };
 		85B2C2191B6FE8DE00EA5254 /* CompatibilityMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = 85B2C2181B6FE8DE00EA5254 /* CompatibilityMacros.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		85F0A60B1B6D039F00EFF45A /* ably.h in Headers */ = {isa = PBXBuildFile; fileRef = 85F0A60A1B6D039F00EFF45A /* ably.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		85F0A60B1B6D039F00EFF45A /* Ably.h in Headers */ = {isa = PBXBuildFile; fileRef = 85F0A60A1B6D039F00EFF45A /* Ably.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		89364685063FA623259AF705 /* Pods_ablyTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B445D0EF5602403F3F4A1370 /* Pods_ablyTests.framework */; };
 		960D07931A45F1D800ED8C8C /* ARTCrypto.h in Headers */ = {isa = PBXBuildFile; fileRef = 960D07911A45F1D800ED8C8C /* ARTCrypto.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		960D07941A45F1D800ED8C8C /* ARTCrypto.m in Sources */ = {isa = PBXBuildFile; fileRef = 960D07921A45F1D800ED8C8C /* ARTCrypto.m */; };
@@ -73,7 +73,7 @@
 		96A507B61A37881C0077CDF8 /* ARTNSDate+ARTUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 96A507B41A37881C0077CDF8 /* ARTNSDate+ARTUtil.m */; };
 		96A507BD1A3791490077CDF8 /* ARTRealtime.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507BB1A3791490077CDF8 /* ARTRealtime.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		96A507BE1A3791490077CDF8 /* ARTRealtime.m in Sources */ = {isa = PBXBuildFile; fileRef = 96A507BC1A3791490077CDF8 /* ARTRealtime.m */; };
-		96BF613D1A35B2AB004CF2B3 /* ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* ably.framework */; };
+		96BF613D1A35B2AB004CF2B3 /* Ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* Ably.framework */; };
 		96BF61531A35B39C004CF2B3 /* ARTRest.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF61511A35B39C004CF2B3 /* ARTRest.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		96BF61541A35B39C004CF2B3 /* ARTRest.m in Sources */ = {isa = PBXBuildFile; fileRef = 96BF61521A35B39C004CF2B3 /* ARTRest.m */; };
 		96BF61581A35B52C004CF2B3 /* ARTHttp.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF61561A35B52C004CF2B3 /* ARTHttp.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -204,7 +204,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				1C5DA0151A6E5FA400A2B7EF /* ably.framework in Copy Files */,
+				1C5DA0151A6E5FA400A2B7EF /* Ably.framework in Copy Files */,
 			);
 			name = "Copy Files";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -259,8 +259,8 @@
 		856AAC981B6E312F00B07119 /* RestClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClient.swift; sourceTree = "<group>"; };
 		856AAC9A1B6E326E00B07119 /* ably-common */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "ably-common"; sourceTree = SOURCE_ROOT; };
 		85B2C2181B6FE8DE00EA5254 /* CompatibilityMacros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompatibilityMacros.h; sourceTree = "<group>"; };
-		85F0A60A1B6D039F00EFF45A /* ably.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ably.h; sourceTree = "<group>"; };
-		85F0A60C1B6D03B700EFF45A /* ably.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = ably.modulemap; sourceTree = "<group>"; };
+		85F0A60A1B6D039F00EFF45A /* Ably.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Ably.h; sourceTree = "<group>"; };
+		85F0A60C1B6D03B700EFF45A /* Ably.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = Ably.modulemap; sourceTree = "<group>"; };
 		960D07911A45F1D800ED8C8C /* ARTCrypto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTCrypto.h; sourceTree = "<group>"; };
 		960D07921A45F1D800ED8C8C /* ARTCrypto.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTCrypto.m; sourceTree = "<group>"; };
 		960D07951A46FFC300ED8C8C /* ARTRest+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTRest+Private.h"; sourceTree = "<group>"; };
@@ -281,7 +281,7 @@
 		96A507B41A37881C0077CDF8 /* ARTNSDate+ARTUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ARTNSDate+ARTUtil.m"; sourceTree = "<group>"; };
 		96A507BB1A3791490077CDF8 /* ARTRealtime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTRealtime.h; sourceTree = "<group>"; };
 		96A507BC1A3791490077CDF8 /* ARTRealtime.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtime.m; sourceTree = "<group>"; };
-		96BF61311A35B2AB004CF2B3 /* ably.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ably.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		96BF61311A35B2AB004CF2B3 /* Ably.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Ably.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		96BF613C1A35B2AB004CF2B3 /* ablyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ablyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		96BF61421A35B2AB004CF2B3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		96BF61511A35B39C004CF2B3 /* ARTRest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTRest.h; sourceTree = "<group>"; };
@@ -385,7 +385,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				856AAC8F1B6E304B00B07119 /* ably.framework in Frameworks */,
+				856AAC8F1B6E304B00B07119 /* Ably.framework in Frameworks */,
 				2EBDBEEBF881A49F795F1D2E /* Pods_ablySpec.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -402,7 +402,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				96BF613D1A35B2AB004CF2B3 /* ably.framework in Frameworks */,
+				96BF613D1A35B2AB004CF2B3 /* Ably.framework in Frameworks */,
 				89364685063FA623259AF705 /* Pods_ablyTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -482,7 +482,7 @@
 		96BF61321A35B2AB004CF2B3 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				96BF61311A35B2AB004CF2B3 /* ably.framework */,
+				96BF61311A35B2AB004CF2B3 /* Ably.framework */,
 				96BF613C1A35B2AB004CF2B3 /* ablyTests.xctest */,
 				856AAC8A1B6E304B00B07119 /* ablySpec.xctest */,
 			);
@@ -492,7 +492,7 @@
 		96BF61331A35B2AB004CF2B3 /* ably-ios */ = {
 			isa = PBXGroup;
 			children = (
-				85F0A60A1B6D039F00EFF45A /* ably.h */,
+				85F0A60A1B6D039F00EFF45A /* Ably.h */,
 				85B2C2181B6FE8DE00EA5254 /* CompatibilityMacros.h */,
 				1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */,
 				D7DC8AF01C6A9FFC005AF165 /* ARTDefault+Private.h */,
@@ -510,7 +510,7 @@
 		96BF61341A35B2AB004CF2B3 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				85F0A60C1B6D03B700EFF45A /* ably.modulemap */,
+				85F0A60C1B6D03B700EFF45A /* Ably.modulemap */,
 				1C118A5B1AE63D89006AD19E /* Info.plist */,
 			);
 			name = "Supporting Files";
@@ -717,7 +717,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				85F0A60B1B6D039F00EFF45A /* ably.h in Headers */,
+				85F0A60B1B6D039F00EFF45A /* Ably.h in Headers */,
 				96BF61531A35B39C004CF2B3 /* ARTRest.h in Headers */,
 				96A507BD1A3791490077CDF8 /* ARTRealtime.h in Headers */,
 				D7DC8AF11C6AA0C8005AF165 /* ARTDefault+Private.h in Headers */,
@@ -807,9 +807,9 @@
 			productReference = 856AAC8A1B6E304B00B07119 /* ablySpec.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		96BF61301A35B2AB004CF2B3 /* ably */ = {
+		96BF61301A35B2AB004CF2B3 /* Ably */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 96BF61471A35B2AB004CF2B3 /* Build configuration list for PBXNativeTarget "ably" */;
+			buildConfigurationList = 96BF61471A35B2AB004CF2B3 /* Build configuration list for PBXNativeTarget "Ably" */;
 			buildPhases = (
 				79FE055B54B0AB6FDAB24FCE /* Check Pods Manifest.lock */,
 				96BF612C1A35B2AB004CF2B3 /* Sources */,
@@ -822,9 +822,9 @@
 			);
 			dependencies = (
 			);
-			name = ably;
+			name = Ably;
 			productName = "ably-ios";
-			productReference = 96BF61311A35B2AB004CF2B3 /* ably.framework */;
+			productReference = 96BF61311A35B2AB004CF2B3 /* Ably.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 		96BF613B1A35B2AB004CF2B3 /* ablyTests */ = {
@@ -884,7 +884,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				96BF61301A35B2AB004CF2B3 /* ably */,
+				96BF61301A35B2AB004CF2B3 /* Ably */,
 				96BF613B1A35B2AB004CF2B3 /* ablyTests */,
 				856AAC891B6E304B00B07119 /* ablySpec */,
 			);
@@ -1154,12 +1154,12 @@
 /* Begin PBXTargetDependency section */
 		856AAC911B6E304B00B07119 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 96BF61301A35B2AB004CF2B3 /* ably */;
+			target = 96BF61301A35B2AB004CF2B3 /* Ably */;
 			targetProxy = 856AAC901B6E304B00B07119 /* PBXContainerItemProxy */;
 		};
 		96BF613F1A35B2AB004CF2B3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 96BF61301A35B2AB004CF2B3 /* ably */;
+			target = 96BF61301A35B2AB004CF2B3 /* Ably */;
 			targetProxy = 96BF613E1A35B2AB004CF2B3 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -1383,7 +1383,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		96BF61471A35B2AB004CF2B3 /* Build configuration list for PBXNativeTarget "ably" */ = {
+		96BF61471A35B2AB004CF2B3 /* Build configuration list for PBXNativeTarget "Ably" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				96BF61481A35B2AB004CF2B3 /* Debug */,

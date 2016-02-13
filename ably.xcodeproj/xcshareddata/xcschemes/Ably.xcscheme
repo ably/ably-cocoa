@@ -15,36 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "96BF61301A35B2AB004CF2B3"
-               BuildableName = "ably.framework"
-               BlueprintName = "ably"
-               ReferencedContainer = "container:ably.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "NO"
-            buildForProfiling = "NO"
-            buildForArchiving = "NO"
-            buildForAnalyzing = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "96BF613B1A35B2AB004CF2B3"
-               BuildableName = "ablyTests.xctest"
-               BlueprintName = "ablyTests"
-               ReferencedContainer = "container:ably.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "NO"
-            buildForProfiling = "NO"
-            buildForArchiving = "NO"
-            buildForAnalyzing = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "856AAC891B6E304B00B07119"
-               BuildableName = "ablySpec.xctest"
-               BlueprintName = "ablySpec"
+               BuildableName = "Ably.framework"
+               BlueprintName = "Ably"
                ReferencedContainer = "container:ably.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -81,8 +53,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "96BF61301A35B2AB004CF2B3"
-            BuildableName = "ably.framework"
-            BlueprintName = "ably"
+            BuildableName = "Ably.framework"
+            BlueprintName = "Ably"
             ReferencedContainer = "container:ably.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -103,8 +75,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "96BF61301A35B2AB004CF2B3"
-            BuildableName = "ably.framework"
-            BlueprintName = "ably"
+            BuildableName = "Ably.framework"
+            BlueprintName = "Ably"
             ReferencedContainer = "container:ably.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -121,8 +93,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "96BF61301A35B2AB004CF2B3"
-            BuildableName = "ably.framework"
-            BlueprintName = "ably"
+            BuildableName = "Ably.framework"
+            BlueprintName = "Ably"
             ReferencedContainer = "container:ably.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
