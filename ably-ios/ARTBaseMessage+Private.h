@@ -23,8 +23,8 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTBaseMessage ()
 
-- (ARTStatus *__art_nonnull)decodeWithEncoder:(ARTDataEncoder*)encoder output:(id __art_nonnull*__art_nonnull)output;
-- (ARTStatus *__art_nonnull)encodeWithEncoder:(ARTDataEncoder*)encoder output:(id __art_nonnull*__art_nonnull)output;
+- (id __art_nonnull)decodeWithEncoder:(ARTDataEncoder*)encoder error:(NSError *__art_nullable*__art_nullable)error;
+- (id __art_nonnull)encodeWithEncoder:(ARTDataEncoder*)encoder error:(NSError *__art_nullable*__art_nullable)error;
 
 @end
 

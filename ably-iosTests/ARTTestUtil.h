@@ -71,9 +71,7 @@ typedef void (^ARTRealtimeTestCallback)(ARTRealtime *realtime, ARTRealtimeConnec
 + (void)publishRealtimeMessages:(NSString *)prefix count:(int)count channel:(ARTRealtimeChannel *)channel completion:(void (^)())completion;
 + (void)publishEnterMessages:(NSString *)clientIdPrefix count:(int)count channel:(ARTRealtimeChannel *)channel completion:(void (^)())completion;
 
-+ (NSString *)getCrypto128Json;
 + (NSString *)getTestAppSetupJson;
-+ (NSString *)getCrypto256Json;
 + (NSString *)getErrorsJson;
 
 + (ARTProtocolMessage *)newErrorProtocolMessage;

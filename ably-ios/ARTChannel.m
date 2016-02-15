@@ -67,9 +67,10 @@
     if (!self.dataEncoder) {
         return message;
     }
-    ARTStatus *status = [message encodeWithEncoder:self.dataEncoder output:&message];
-    if (status.state != ARTStateOk) {
-        [self.logger error:@"ARTChannel: error encoding data, status: %tu", status];
+    NSError *error = nil;
+    message = [message encodeWithEncoder:self.dataEncoder error:&error];
+    if (error != nil) {
+        [self.logger error:@"ARTChannel: error encoding data"];
         @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"message encoding failed" userInfo:nil];
     }
     return message;

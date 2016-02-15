@@ -322,9 +322,10 @@
     for (ARTMessage *m in message.messages) {
         ARTMessage *msg = m;
         if (dataEncoder) {
-            ARTStatus *status = [msg decodeWithEncoder:dataEncoder output:&msg];
-             if (status.state != ARTStateOk) {
-                [self.logger error:@"ARTRealtimeChannel: error decoding data, status: %tu", status];
+            NSError *error = nil;
+            msg = [msg decodeWithEncoder:dataEncoder error:&error];
+            if (error != nil) {
+                [self.logger error:@"ARTRealtimeChannel: error decoding data"];
             }
         }
         
@@ -347,9 +348,10 @@
     for (ARTPresenceMessage *p in message.presence) {
         ARTPresenceMessage *pm = p;
         if (dataEncoder) {
-            ARTStatus *status = [pm decodeWithEncoder:dataEncoder output:&pm];
-             if (status.state != ARTStateOk) {
-                [self.logger error:@"ARTRealtimeChannel: error decoding data, status: %tu", status];
+            NSError *error = nil;
+            pm = [pm decodeWithEncoder:dataEncoder error:&error];
+             if (error != nil) {
+                [self.logger error:@"ARTRealtimeChannel: error decoding data"];
             }
         }
         

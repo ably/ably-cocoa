@@ -632,7 +632,7 @@
     if (encoding.length) {
         output[@"encoding"] = encoding;
     }
-    if ([encoding isEqualToString:@"json"]) {
+    if ([encoding isEqualToString:@"json"] || [encoding isEqualToString:@"json/utf-8"]) {
         NSData *jsonData = [data dataUsingEncoding:NSUTF8StringEncoding];
         data = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:nil];
     }

@@ -39,7 +39,7 @@
             // The ART{Json,...}Encoder should take a ARTDataEncoder and use it every
             // time it is enc/decoding a message. This also applies for REST and Realtime
             // ARTMessages.
-            [message decodeWithEncoder:self.channel.dataEncoder output:&message];
+            message = [message decodeWithEncoder:self.channel.dataEncoder error:nil];
             return message;
         }];
     };

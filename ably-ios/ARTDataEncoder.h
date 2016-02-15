@@ -27,7 +27,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTDataEncoder : NSObject 
 
-- (instancetype)initWithCipherParams:(ARTCipherParams *)params logger:(ARTLog *)logger;
+- (instancetype)initWithCipherParams:(ARTCipherParams *__art_nullable)params logger:(ARTLog *)logger;
 - (ARTDataEncoderOutput *)encode:(id __art_nullable)data;
 - (ARTDataEncoderOutput *)decode:(id __art_nullable)data encoding:(NSString *__art_nullable)encoding;
 
@@ -35,7 +35,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface NSString (ARTDataEncoder)
 
-- (NSString *)artAddEncoding:(NSString *)encoding;
++ (NSString *)artAddEncoding:(NSString *)encoding toString:(NSString *__art_nullable)s;
 - (NSString *)artLastEncoding;
 - (NSString *)artRemoveLastEncoding;
 

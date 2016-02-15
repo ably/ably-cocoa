@@ -249,11 +249,11 @@ class RestChannel: QuickSpec {
             it("payloads should be binary, strings, or objects capable of JSON representation") {
                 let validCases = [
                     TestCase(value: nil, expected: JSON([:])),
-                    TestCase(value: text, expected: JSON(["data": text])),
-                    TestCase(value: integer, expected: JSON(["data": integer])),
-                    TestCase(value: decimal, expected: JSON(["data": decimal])),
-                    TestCase(value: dictionary, expected: JSON(["data": dictionary, "encoding": "json"])),
-                    TestCase(value: array, expected: JSON(["data": array, "encoding": "json"])),
+                    TestCase(value: text, expected: JSON(["data": text, "encoding": "utf-8"])),
+                    TestCase(value: integer, expected: JSON(["data": integer, "encoding": "utf-8"])),
+                    TestCase(value: decimal, expected: JSON(["data": decimal, "encoding": "utf-8"])),
+                    TestCase(value: dictionary, expected: JSON(["data": dictionary, "encoding": "json/utf-8"])),
+                    TestCase(value: array, expected: JSON(["data": array, "encoding": "json/utf-8"])),
                     TestCase(value: binaryData, expected: JSON(["data": binaryData.toBase64, "encoding": "base64"])),
                 ]
 
@@ -267,7 +267,7 @@ class RestChannel: QuickSpec {
                                 XCTFail("HTTPBody is nil");
                                 done(); return
                             }
-                            expect(caseTest.expected).to(equal(JSON(data: httpBody)))
+                            expect(JSON(data: httpBody)).to(equal(caseTest.expected))
                             done()
                         }
                     }
@@ -286,9 +286,9 @@ class RestChannel: QuickSpec {
             // RSL4b
             it("encoding attribute should represent the encoding(s) applied in right to left") {
                 let encodingCases = [
-                    TestCase(value: text, expected: nil),
-                    TestCase(value: dictionary, expected: "json"),
-                    TestCase(value: array, expected: "json"),
+                    TestCase(value: text, expected: "utf-8"),
+                    TestCase(value: dictionary, expected: "json/utf-8"),
+                    TestCase(value: array, expected: "json/utf-8"),
                     TestCase(value: binaryData, expected: "base64"),
                 ]
 
@@ -340,7 +340,7 @@ class RestChannel: QuickSpec {
                                 // String (UTF-8)
                                 let json = JSON(data: http)
                                 expect(json["data"].string).to(equal(text))
-                                expect(json["encoding"].string).to(beNil())
+                                expect(json["encoding"].string).to(equal("utf-8"))
                             }
                             else {
                                 XCTFail("No request or HTTP body found")
@@ -364,7 +364,7 @@ class RestChannel: QuickSpec {
                                     // Array
                                     let json = JSON(data: http)
                                     expect(json["data"].asArray).to(equal(array))
-                                    expect(json["encoding"].string).to(equal("json"))
+                                    expect(json["encoding"].string).to(equal("json/utf-8"))
                                 }
                                 else {
                                     XCTFail("No request or HTTP body found")
@@ -385,7 +385,7 @@ class RestChannel: QuickSpec {
                                     // Dictionary
                                     let json = JSON(data: http)
                                     expect(json["data"].asDictionary).to(equal(dictionary))
-                                    expect(json["encoding"].string).to(equal("json"))
+                                    expect(json["encoding"].string).to(equal("json/utf-8"))
                                 }
                                 else {
                                     XCTFail("No request or HTTP body found")

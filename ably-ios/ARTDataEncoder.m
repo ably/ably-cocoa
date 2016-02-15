@@ -53,46 +53,52 @@ ART_ASSUME_NONNULL_END
 }
 
 - (ARTDataEncoderOutput *)encode:(id)data {
-    NSData *encoded = nil;
     NSString *encoding = nil;
-    BOOL ok = false;
-    
+    NSData *encoded = nil;
+    NSData *toBase64 = nil;
+
     if (!data) {
         return [[ARTDataEncoderOutput alloc] initWithData:data encoding:nil status:[ARTStatus state:ARTStateOk]];
-    } else if ([data isKindOfClass:[NSData class]]) {
-        encoding = @"base64";
-        encoded = [[((NSData *)data) base64EncodedStringWithOptions:0] dataUsingEncoding:NSUTF8StringEncoding];
-        ok = encoded != nil;
-    } else if ([data isKindOfClass:[NSString class]]) {
-        encoding = @"";
-        encoded = [data dataUsingEncoding:NSUTF8StringEncoding];
-        ok = true;
-    } else if ([data isKindOfClass:[NSArray class]] || [data isKindOfClass:[NSDictionary class]]) {
-        encoding = @"json";
+    }
+
+    if ([data isKindOfClass:[NSArray class]] || [data isKindOfClass:[NSDictionary class]]) {
         NSError *error = nil;
         encoded = [NSJSONSerialization dataWithJSONObject:data options:0 error:&error];
-        ok = error == nil && encoded != nil;
+        if (error) {
+            ARTStatus *status = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithNSError:error]];
+            return [[ARTDataEncoderOutput alloc] initWithData:data encoding:nil status:status];
+        }
+        encoding = @"json/utf-8";
+    } else if ([data isKindOfClass:[NSString class]]) {
+        encoding = @"utf-8";
+        encoded = [data dataUsingEncoding:NSUTF8StringEncoding];
+    } else if ([data isKindOfClass:[NSData class]]) {
+        encoded = data;
+        toBase64 = data;
     }
-    
-    if (!ok) {
-        return [[ARTDataEncoderOutput alloc] initWithData:encoded encoding:encoding status:[ARTStatus state:ARTStateError]];
-    }
-    
+
     if (_cipher) {
-        ARTStatus *status = [_cipher encrypt:encoded output:&encoded];
+        ARTStatus *status = [_cipher encrypt:encoded output:&toBase64];
         if (status.state != ARTStateOk) {
             return [[ARTDataEncoderOutput alloc] initWithData:encoded encoding:encoding status:status];
         }
-        encoding = [encoding artAddEncoding:[self cipherEncoding]];
-        
-        // Re-encode the encrypted bytes in base64.
-        encoded = [[encoded base64EncodedStringWithOptions:0] dataUsingEncoding:NSUTF8StringEncoding];
-        if (encoded == nil) {
-            return [[ARTDataEncoderOutput alloc] initWithData:encoded encoding:encoding status:status];
-        }
-        encoding = [encoding artAddEncoding:@"base64"];
+        encoding = [NSString artAddEncoding:[self cipherEncoding] toString:encoding];
     }
-    
+
+    if (toBase64 != nil) {
+        encoded = [[toBase64 base64EncodedStringWithOptions:0] dataUsingEncoding:NSUTF8StringEncoding];
+        if (!encoded) {
+            return [[ARTDataEncoderOutput alloc] initWithData:toBase64 encoding:encoding status:[ARTStatus state:ARTStateError]];
+        }
+        encoding = [NSString artAddEncoding:@"base64" toString:encoding];
+    }
+
+    if (encoded == nil) {
+        NSError *error = [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:@{@"reason": @"must be NSString, NSData, NSArray or NSDictionary."}];
+        ARTStatus *status = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithNSError:error]];
+        return [[ARTDataEncoderOutput alloc] initWithData:data encoding:nil status:status];
+    }
+
     return [[ARTDataEncoderOutput alloc] initWithData:[[NSString alloc] initWithData:encoded encoding:NSUTF8StringEncoding]
                                              encoding:encoding
                                                status:[ARTStatus state:ARTStateOk]];
@@ -135,11 +141,6 @@ ART_ASSUME_NONNULL_END
             }
         } else if (_cipher && [encoding isEqualToString:[self cipherEncoding]] && [data isKindOfClass:[NSData class]]) {
             ARTStatus *status = [_cipher decrypt:data output:&data];
-            if (i == 1) {
-                // Because strings have no encoding, an encoded payload whose left-most encoding
-                // is a cipher will be a string.
-                data = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-            }
             ok = status.state == ARTStateOk;
         }
         
@@ -170,8 +171,8 @@ ART_ASSUME_NONNULL_END
 
 @implementation NSString (ARTPayload)
 
-- (NSString *)artAddEncoding:(NSString *)encoding {
-    return [self stringByAppendingPathComponent:encoding];
++ (NSString *)artAddEncoding:(NSString *)encoding toString:(NSString *)s {
+    return [(s ? s : @"") stringByAppendingPathComponent:encoding];
 }
 
 - (NSString *)artLastEncoding {

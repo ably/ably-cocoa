@@ -40,20 +40,26 @@
     return message;
 }
 
-- (ARTStatus *)decodeWithEncoder:(ARTDataEncoder*)encoder output:(id *)output {
+- (id)decodeWithEncoder:(ARTDataEncoder*)encoder error:(NSError **)error {
     ARTDataEncoderOutput *decoded = [encoder decode:self.data encoding:self.encoding];
-    *output = [self copy];
-    ((ARTBaseMessage *)*output).data = decoded.data;
-    ((ARTBaseMessage *)*output).encoding = decoded.encoding;
-    return decoded.status;
+    if (decoded.status.state != ARTStateOk && error) {
+        *error = [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:@{@"reason": @"decoding failed"}];
+    }
+    id ret = [self copy];
+    ((ARTBaseMessage *)ret).data = decoded.data;
+    ((ARTBaseMessage *)ret).encoding = decoded.encoding;
+    return ret;
 }
 
-- (ARTStatus *)encodeWithEncoder:(ARTDataEncoder*)encoder output:(id *)output {
+- (id)encodeWithEncoder:(ARTDataEncoder*)encoder error:(NSError **)error {
     ARTDataEncoderOutput *encoded = [encoder encode:self.data];
-    *output = [self copy];
-    ((ARTBaseMessage *)*output).data = encoded.data;
-    ((ARTBaseMessage *)*output).encoding = [self.encoding artAddEncoding:encoded.encoding];
-    return encoded.status;
+    if (encoded.status.state != ARTStateOk && error) {
+        *error = [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:@{@"reason": @"encoding failed"}];
+    }
+    id ret = [self copy];
+    ((ARTBaseMessage *)ret).data = encoded.data;
+    ((ARTBaseMessage *)ret).encoding = [NSString artAddEncoding:encoded.encoding toString:self.encoding];
+    return ret;
 }
 
 - (NSString *)description {
