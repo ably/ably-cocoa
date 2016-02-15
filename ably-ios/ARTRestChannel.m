@@ -45,14 +45,14 @@
     return _basePath;
 }
 
-- (ARTRestPresence *)presence {
+- (ARTRestPresence *)getPresence {
     if (!_restPresence) {
         _restPresence = [[ARTRestPresence alloc] initWithChannel:self];
     }
     return _restPresence;
 }
 
-- (BOOL)history:(ARTDataQuery *)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *result, NSError *error))callback error:(NSError **)errorPtr {
+- (BOOL)history:(ARTDataQuery *)query error:(NSError **)errorPtr callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *result, NSError *error))callback {
     if (query.limit > 1000) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
@@ -88,7 +88,7 @@
     return YES;
 }
 
-- (void)internalPostMessages:(id)data callback:(ARTErrorCallback)callback {
+- (void)internalPostMessages:(id)data callback:(void (^)(ARTErrorInfo *__art_nullable error))callback {
     NSData *encodedMessage = nil;
     
     if ([data isKindOfClass:[ARTMessage class]]) {
@@ -110,7 +110,8 @@
     [self.logger debug:__FILE__ line:__LINE__ message:@"post message %@", [[NSString alloc] initWithData:encodedMessage encoding:NSUTF8StringEncoding]];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (callback) {
-            callback(error);
+            ARTErrorInfo *errorInfo = error ? [ARTErrorInfo createWithNSError:error] : nil;
+            callback(errorInfo);
         }
     }];
 }

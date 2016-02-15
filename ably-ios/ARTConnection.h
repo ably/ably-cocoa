@@ -18,16 +18,18 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTConnection: NSObject
 
-@property (art_nullable, readonly, getter=getId) NSString *id;
-@property (art_nullable, readonly, getter=getKey) NSString *key;
-@property (readonly, getter=getSerial) int64_t serial;
-@property (readonly, getter=getState) ARTRealtimeConnectionState state;
+@property (art_nullable, readonly, strong, nonatomic) NSString *id;
+@property (art_nullable, readonly, strong, nonatomic) NSString *key;
+@property (art_nullable, readonly, getter=getRecoveryKey) NSString *recoveryKey;
+@property (readonly, assign, nonatomic) int64_t serial;
+@property (readonly, assign, nonatomic) ARTRealtimeConnectionState state;
+@property (art_nullable, readonly, strong, nonatomic) ARTErrorInfo *errorReason;
 
 - (instancetype)initWithRealtime:(ARTRealtime *)realtime;
 
 - (void)connect;
 - (void)close;
-- (void)ping:(ARTRealtimePingCb)cb;
+- (void)ping:(void (^)(ARTStatus *))cb;
 
 ART_EMBED_INTERFACE_EVENT_EMITTER(NSNumber *, ARTConnectionStateChange *)
 

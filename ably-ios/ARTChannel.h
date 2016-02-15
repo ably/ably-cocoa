@@ -20,17 +20,22 @@ ART_ASSUME_NONNULL_BEGIN
 @interface ARTChannel : NSObject
 
 @property (nonatomic, strong, readonly) NSString *name;
-@property (readonly, getter=getLogger) ARTLog *logger;
 
 - (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options andLogger:(ARTLog *)logger;
 
-- (void)publish:(art_nullable id)data callback:(art_nullable ARTErrorCallback)callback;
-- (void)publish:(art_nullable id)data name:(art_nullable NSString *)name callback:(art_nullable ARTErrorCallback)callback;
+- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data;
+- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;
 
-- (void)publishMessage:(ARTMessage *)message callback:(art_nullable ARTErrorCallback)callback;
-- (void)publishMessages:(__GENERIC(NSArray, ARTMessage *) *)messages callback:(art_nullable ARTErrorCallback)callback;
+- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data clientId:(NSString *)clientId;
+- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data clientId:(NSString *)clientId cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;
 
-- (BOOL)history:(art_nullable ARTDataQuery *)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *__art_nullable result, NSError *__art_nullable error))callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
+- (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages;
+- (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;
+
+- (NSError *__art_nullable)history:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *__art_nullable result, NSError *__art_nullable error))callback;
+- (NSError *__art_nullable)history:(art_nullable ARTDataQuery *)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *__art_nullable result, NSError *__art_nullable error))callback;
+- (BOOL)historyWithError:(NSError *__art_nullable *__art_nullable)errorPtr callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *__art_nullable result, NSError *__art_nullable error))callback;
+- (BOOL)history:(art_nullable ARTDataQuery *)query error:(NSError *__art_nullable *__art_nullable)errorPtr callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *__art_nullable result, NSError *__art_nullable error))callback;
 
 @end
 

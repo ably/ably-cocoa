@@ -63,8 +63,7 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
     options.queryTime = self.queryTime;
     options.useTokenAuth = self.useTokenAuth;
     options.force = self.force;
-    options.clientId = self.clientId;
-    
+
     return options;
 }
 
@@ -115,20 +114,8 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
         merged.useTokenAuth = precedenceOptions.useTokenAuth;
     if (precedenceOptions.force)
         merged.force = precedenceOptions.force;
-    if (precedenceOptions.clientId)
-        merged.clientId = precedenceOptions.clientId;
     
     return merged;
-}
-
-- (BOOL)isBasicAuth {
-    return self.useTokenAuth == false &&
-        self.key != nil &&
-        self.clientId == nil &&
-        self.token == nil &&
-        self.tokenDetails == nil &&
-        self.authUrl == nil &&
-        self.authCallback == nil;
 }
 
 - (BOOL)isMethodPOST {

@@ -49,7 +49,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"initWithOptions"];
     [ARTTestUtil testRealtime:^(ARTRealtime * realtime) {
         _realtime = realtime;
-        [realtime on:^(ARTConnectionStateChange *stateChange) {
+        [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if(state == ARTRealtimeConnected) {
                 [expectation fulfill];
@@ -68,7 +68,7 @@
         options.environment = @"test";
         ARTRealtime * realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;
-        [realtime on:^(ARTConnectionStateChange *stateChange) {
+        [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if(state == ARTRealtimeFailed) {
                 [expectation fulfill];
@@ -84,11 +84,10 @@
 -(void)testInitWithPort {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithPort"];
     [self getBaseOptions:^(ARTClientOptions * options) {
-        options.realtimePort = 9998;
-        options.restPort = 9998;
+        options.tlsPort = 9998;
         ARTRealtime * realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;
-        [realtime on:^(ARTConnectionStateChange *stateChange) {
+        [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if(state == ARTRealtimeFailed) {
                 [expectation fulfill];
@@ -105,7 +104,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithKey"];
     [self getBaseOptions:^(ARTClientOptions *options) {
         _realtime = [[ARTRealtime alloc] initWithKey:options.key];
-        if (_realtime.state == ARTRealtimeConnecting) {
+        if (_realtime.connection.state == ARTRealtimeConnecting) {
             XCTAssertEqual(_realtime.auth.options.key, options.key);
             [expectation fulfill];
         }
@@ -117,7 +116,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"testInitAutoConnectDefault"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
-        [realtime on:^(ARTConnectionStateChange *stateChange) {
+        [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if(state == ARTRealtimeConnected) {
                 [expectation fulfill];
@@ -133,7 +132,7 @@
         options.autoConnect = false;
         ARTRealtime * realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;
-        [realtime on:^(ARTConnectionStateChange *stateChange) {
+        [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if(state == ARTRealtimeConnected) {
                 [expectation fulfill];

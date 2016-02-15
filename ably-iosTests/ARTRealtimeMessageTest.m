@@ -20,6 +20,7 @@
 #import "ARTPaginatedResult.h"
 #import "ARTTestUtil.h"
 #import "ARTLog.h"
+#import "ARTNSArray+ARTFunctional.h"
 
 @interface ARTRealtimeMessageTest : XCTestCase {
     ARTRealtime * _realtime;
@@ -68,9 +69,9 @@
 
         [channel attach];
 
-        [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *reason) {
-            if (state == ARTRealtimeChannelAttached) {
-                [channel subscribe:^(ARTMessage *message, ARTErrorInfo *errorInfo) {
+        [channel on:^(ARTErrorInfo *errorInfo) {
+            if (channel.state == ARTRealtimeChannelAttached) {
+                [channel subscribe:^(ARTMessage *message) {
                     ++numReceived;
                     if (numReceived == count) {
                         [expectation fulfill];
@@ -78,7 +79,7 @@
                 }];
                 [ARTTestUtil repeat:count delay:(delay / 1000.0) block:^(int i) {
                     NSString *msg = [NSString stringWithFormat:@"Test message (_multiple_send) %d", i];
-                    [channel publish:msg withName:@"test_event" cb:^(ARTStatus *status) { 
+                    [channel publish:@"test_event" data:msg cb:^(ARTErrorInfo *errorInfo) { 
                     }];
                 }];
             }
@@ -92,12 +93,12 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"testSingleSendText"];
-        [channel subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
+        [channel subscribe:^(ARTMessage *message) {
             XCTAssertEqualObjects([message data], @"testString");
             [expectation fulfill];
         }];
-        [channel publish:@"testString" cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStateOk, status.state);
+        [channel publish:nil data:@"testString" cb:^(ARTErrorInfo *errorInfo) {
+            XCTAssertNil(errorInfo);
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -120,34 +121,34 @@
 
         __block NSUInteger attached = 0;
         // Channel 1
-        [channel subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *status) {
-            if (state == ARTRealtimeChannelAttached) {
+        [channel on:^(ARTErrorInfo *errorInfo) {
+            if (channel.state == ARTRealtimeChannelAttached) {
                 attached++;
             }
         }];
 
         // Channel 2
-        [channel2 subscribeToStateChanges:^(ARTRealtimeChannelState state, ARTStatus *status) {
-            if (state == ARTRealtimeChannelAttached) {
+        [channel2 on:^(ARTErrorInfo *errorInfo) {
+            if (channel2.state == ARTRealtimeChannelAttached) {
                 attached++;
             }
         }];
 
-        [channel subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
+        [channel subscribe:^(ARTMessage *message) {
             XCTAssertEqualObjects([message data], @"testStringEcho");
             [exp1 fulfill];
         }];
 
 
-        [channel2 subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
+        [channel2 subscribe:^(ARTMessage *message) {
             XCTAssertEqualObjects([message data], @"testStringEcho");
             [exp2 fulfill];
         }];
 
         waitForWithTimeout(&attached, @[channel, channel2], 20.0);
 
-        [channel2 publish:@"testStringEcho" cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStateOk, status.state);
+        [channel2 publish:nil data:@"testStringEcho" cb:^(ARTErrorInfo *errorInfo) {
+            XCTAssertNil(errorInfo);
             [exp3 fulfill];
         }];
     }];
@@ -174,7 +175,7 @@
     
         ARTRealtimeChannel *channel = [_realtime.channels get:channelName];
         __block bool gotMessage1 = false;
-        [channel subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
+        [channel subscribe:^(ARTMessage *message) {
             if([[message data] isEqualToString:message1]) {
                 gotMessage1 = true;
             }
@@ -184,11 +185,11 @@
                 [exp fulfill];
             }
         }];
-        [channel publish:message1 cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStateOk, status.state);
+        [channel publish:nil data:message1 cb:^(ARTErrorInfo *errorInfo) {
+            XCTAssertNil(errorInfo);
             ARTRealtimeChannel * channel2 = [_realtime2.channels get:channelName];
-            [channel2 publish:message2 cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStateOk, status.state);
+            [channel2 publish:nil data:message2 cb:^(ARTErrorInfo *errorInfo) {
+                XCTAssertNil(errorInfo);
             }];
         }];
     }];
@@ -206,16 +207,16 @@
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
         ARTRealtimeChannel *channel = [_realtime.channels get:channelName];
-        [channel subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
+        [channel subscribe:^(ARTMessage *message) {
             //message1 should never arrive
             XCTAssertEqualObjects([message data], message2);
             [exp fulfill];
         }];
-        [channel publish:message1 cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStateOk, status.state);
+        [channel publish:nil data:message1 cb:^(ARTErrorInfo *errorInfo) {
+            XCTAssertNil(errorInfo);
             ARTRealtimeChannel * channel2 = [_realtime2.channels get:channelName];
-            [channel2 publish:message2 cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStateOk, status.state);
+            [channel2 publish:nil data:message2 cb:^(ARTErrorInfo *errorInfo) {
+                XCTAssertNil(errorInfo);
             }];
         }];
     }];
@@ -227,11 +228,11 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"testSubscribeAttaches"];
-        [channel subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
+        [channel subscribe:^(ARTMessage *message) {
         }];
-        [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
-            XCTAssertEqual(ARTStateOk, reason.state);
-            if(cState == ARTRealtimeChannelAttached) {
+        [channel on:^(ARTErrorInfo *errorInfo) {
+            XCTAssert(!errorInfo);
+            if(channel.state == ARTRealtimeChannelAttached) {
                 [expectation fulfill];
             }   
         }];
@@ -251,7 +252,7 @@
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"testMessageQueue"];
         __block int messagesReceived = 0;
-        [channel subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
+        [channel subscribe:^(ARTMessage *message) {
             if(messagesReceived ==0) {
                 XCTAssertEqualObjects([message data], connectingMessage);
             }
@@ -262,7 +263,7 @@
             messagesReceived++;
         }];
         __block bool connectingHappened = false;
-        [realtime on:^(ARTConnectionStateChange *stateChange) {
+        [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if(state ==ARTRealtimeConnecting) {
                 if(connectingHappened) {
@@ -270,15 +271,15 @@
                 }
                 else {
                     connectingHappened = true;
-                    [channel publish:connectingMessage cb:^(ARTStatus *status) {
-                        XCTAssertEqual(ARTStateOk, status.state);
+                    [channel publish:nil data:connectingMessage cb:^(ARTErrorInfo *errorInfo) {
+                        XCTAssertNil(errorInfo);
                         [realtime onDisconnected];
                     }];
                 }
             }
             else if(state == ARTRealtimeDisconnected) {
-                [channel publish:disconnectedMessage cb:^(ARTStatus *status) {
-                    XCTAssertEqual(ARTStateOk, status.state);
+                [channel publish:nil data:disconnectedMessage cb:^(ARTErrorInfo *errorInfo) {
+                    XCTAssertNil(errorInfo);
                 }];
                 [realtime connect];
             }
@@ -295,14 +296,14 @@
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
-        XCTAssertFalse([_realtime2.connectionKey isEqualToString:_realtime.connectionKey]);
+        XCTAssertFalse([_realtime2.connection.key isEqualToString:_realtime.connection.key]);
         ARTRealtimeChannel *c1 = [_realtime.channels get:channelName];
-        [c1 publish:@"message" cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStateOk, status.state);
+        [c1 publish:nil data:@"message" cb:^(ARTErrorInfo *errorInfo) {
+            XCTAssertNil(errorInfo);
             ARTRealtimeChannel *c2 = [_realtime2.channels get:channelName];
-            [c2 publish:@"message2" cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStateOk, status.state);
-                [c1 history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+            [c2 publish:nil data:@"message2" cb:^(ARTErrorInfo *errorInfo) {
+                XCTAssertNil(errorInfo);
+                [c1 history:[[ARTRealtimeHistoryQuery alloc] init] error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                     XCTAssert(!error);
                     NSArray *messages = [result items];
                     XCTAssertEqual(2, messages.count);
@@ -310,11 +311,11 @@
                     ARTMessage *m1 = messages[1];
                     XCTAssertEqualObjects(m0.data, @"message2");
                     XCTAssertEqualObjects(m1.data, @"message");
-                    XCTAssertEqualObjects(m0.connectionId, _realtime2.connectionId);
-                    XCTAssertEqualObjects(m1.connectionId, _realtime.connectionId);
+                    XCTAssertEqualObjects(m0.connectionId, _realtime2.connection.id);
+                    XCTAssertEqualObjects(m1.connectionId, _realtime.connection.id);
                     XCTAssertFalse([m0.connectionId isEqualToString:m1.connectionId]);
                     [exp fulfill];
-                } error:nil];
+                }];
             }];
         }];
     }];
@@ -327,20 +328,20 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [_realtime.channels get:@"testSingleSendText"];
-        [_realtime on:^(ARTConnectionStateChange *stateChange) {
+        [_realtime.connection on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if(state == ARTRealtimeConnected) {
                 [channel attach];
             }
         }];
-        [channel subscribeToStateChanges:^(ARTRealtimeChannelState cState, ARTStatus *reason) {
-            if(cState == ARTRealtimeChannelAttached) {
-                [channel publish:@"testString" cb:^(ARTStatus *status) {
-                    XCTAssertEqual(ARTStateOk, status.state);
+        [channel on:^(ARTErrorInfo *errorInfo) {
+            if(channel.state == ARTRealtimeChannelAttached) {
+                [channel publish:nil data:@"testString" cb:^(ARTErrorInfo *errorInfo) {
+                    XCTAssertNil(errorInfo);
                 }];
             }
         }];
-        [channel subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
+        [channel subscribe:^(ARTMessage *message) {
             XCTAssertEqualObjects([message data], @"testString");
             [exp fulfill];
         }];
@@ -353,12 +354,14 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"channel"];
-        NSArray * messages = @[@"test1", @"test2", @"test3"];
-        [channel publish:messages cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStateOk, status.state);
+        NSArray * messages = [@[@"test1", @"test2", @"test3"] artMap:^id(id data) {
+            return [[ARTMessage alloc] initWithName:nil data:data];
+        }];
+        [channel publish:messages cb:^(ARTErrorInfo *errorInfo) {
+            XCTAssertNil(errorInfo);
         }];
         __block int messageCount =0;
-        [channel subscribe:^(ARTMessage * message, ARTErrorInfo *errorInfo) {
+        [channel subscribe:^(ARTMessage *message) {
             if(messageCount ==0) {
                 XCTAssertEqualObjects([message data], @"test1");
             }
@@ -380,10 +383,10 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"channel"];
-        [channel publish:@"test" withName:@"messageName" cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStateOk, status.state);
+        [channel publish:@"messageName" data:@"test" cb:^(ARTErrorInfo *errorInfo) {
+            XCTAssertNil(errorInfo);
         }];
-        [channel subscribe:^(ARTMessage *message, ARTErrorInfo *errorInfo) {
+        [channel subscribe:^(ARTMessage *message) {
             XCTAssertEqualObjects(message.data, @"test");
             XCTAssertEqualObjects(message.name, @"messageName");
             [exp fulfill];
@@ -401,17 +404,17 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:channelName];
-        [channel subscribeToName:messageName cb:^(ARTMessage *message, ARTErrorInfo *errorInfo) {
+        [channel subscribe:messageName cb:^(ARTMessage *message) {
             XCTAssertEqualObjects([message data], messageContent);
             [exp fulfill];
         }];
 
-        [channel publish:@"unnamed_wont_arrive" cb:^(ARTStatus *status) {
-            XCTAssertEqual(ARTStateOk, status.state);
-            [channel publish:@"wrong_name_wont_arrive" withName:@"wrongName" cb:^(ARTStatus *status) {
-                XCTAssertEqual(ARTStateOk, status.state);
-                [channel publish:messageContent withName:messageName cb:^(ARTStatus *status) {
-                    XCTAssertEqual(ARTStateOk, status.state);
+        [channel publish:nil data:@"unnamed_wont_arrive" cb:^(ARTErrorInfo *errorInfo) {
+            XCTAssertNil(errorInfo);
+            [channel publish:@"wrongName" data:@"wrong_name_wont_arrive" cb:^(ARTErrorInfo *errorInfo) {
+                XCTAssertNil(errorInfo);
+                [channel publish:messageName data:messageContent cb:^(ARTErrorInfo *errorInfo) {
+                    XCTAssertNil(errorInfo);
                 }];
             }];
         }];

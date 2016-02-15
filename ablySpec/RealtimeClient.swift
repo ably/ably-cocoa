@@ -35,7 +35,7 @@ class RealtimeClient: QuickSpec {
                     let client = ARTRealtime(options: options)
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.on { stateChange in
+                        client.connection.on { stateChange in
                             let stateChange = stateChange!
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
@@ -76,7 +76,7 @@ class RealtimeClient: QuickSpec {
                     let client = ARTRealtime(options: options)
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.on { stateChange in
+                        client.connection.on { stateChange in
                             let stateChange = stateChange!
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
@@ -86,8 +86,8 @@ class RealtimeClient: QuickSpec {
                                 done()
                             case .Connected:
                                 self.checkError(errorInfo)
-                                expect(client.recoveryKey()).to(equal("\(client.connectionKey() ?? ""):\(client.connectionSerial())"), description: "recoveryKey wrong formed")
-                                options.recover = client.recoveryKey()
+                                expect(client.connection.recoveryKey).to(equal("\(client.connection.key ?? ""):\(client.connection.serial)"), description: "recoveryKey wrong formed")
+                                options.recover = client.connection.recoveryKey
                                 done()
                             default:
                                 break
@@ -99,7 +99,7 @@ class RealtimeClient: QuickSpec {
                     let newClient = ARTRealtime(options: options)
 
                     waitUntil(timeout: testTimeout) { done in
-                        newClient.on { stateChange in
+                        newClient.connection.on { stateChange in
                             let stateChange = stateChange!
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
@@ -156,7 +156,7 @@ class RealtimeClient: QuickSpec {
 
                 let client = ARTRealtime(options: options)
 
-                client.channels.get("test").subscribe({ message, errorInfo in
+                client.channels.get("test").subscribe({ message in
                     // Attached
                 })
 
@@ -171,7 +171,7 @@ class RealtimeClient: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
 
-                    expect(client.auth().options.key).to(equal(options.key))
+                    expect(client.auth.options.key).to(equal(options.key))
                     client.close()
                 }
 
@@ -182,7 +182,7 @@ class RealtimeClient: QuickSpec {
                     let client = ARTRealtime(options: options)
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.on { stateChange in
+                        client.connection.on { stateChange in
                             let stateChange = stateChange!
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
@@ -192,7 +192,7 @@ class RealtimeClient: QuickSpec {
                                 done()
                             case .Connected:
                                 self.checkError(errorInfo)
-                                expect(client.auth().clientId).to(equal(options.clientId))
+                                expect(client.auth.clientId).to(equal(options.clientId))
                                 done()
                             default:
                                 break
@@ -213,7 +213,7 @@ class RealtimeClient: QuickSpec {
                     // Async
                     waitUntil(timeout: testTimeout) { done in
                         // Proxy from `client.rest.stats`
-                        try! client.stats(query, callback: { paginated, error in
+                        client.stats(query, callback: { paginated, error in
                             expect(paginated).toNot(beNil())
                             done()
                         })
@@ -227,7 +227,7 @@ class RealtimeClient: QuickSpec {
                     var paginatedResult: ARTPaginatedResult?
 
                     // Realtime
-                    try! client.stats(query, callback: { paginated, error in
+                    client.stats(query, callback: { paginated, error in
                         if let e = error {
                             XCTFail(e.description)
                         }
@@ -240,7 +240,7 @@ class RealtimeClient: QuickSpec {
 
                     // Rest
                     waitUntil(timeout: testTimeout) { done in
-                        try! client.rest.stats(query, callback: { paginated, error in
+                        client.rest.stats(query, callback: { paginated, error in
                             defer { done() }
                             if let e = error {
                                 XCTFail(e.description)
@@ -284,7 +284,7 @@ class RealtimeClient: QuickSpec {
                 var endInterval: UInt?
 
                 waitUntil(timeout: testTimeout + options.suspendedRetryTimeout) { done in
-                    client.on { stateChange in
+                    client.connection.on { stateChange in
                         let stateChange = stateChange!
                         let state = stateChange.current
                         let errorInfo = stateChange.reason

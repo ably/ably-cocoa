@@ -55,7 +55,7 @@
         _rest = rest;
         ARTChannel *c = [rest.channels get:@"test"];
         XCTAssert(c);
-        [c publish:@"message" callback:^(NSError *error) {
+        [c publish:nil data:@"message" cb:^(ARTErrorInfo *error) {
             // "Invalid credentials" because it is sending the request to the production server
             XCTAssert(error);
             XCTAssertEqual(error.code, 40100);
@@ -77,7 +77,7 @@
         _rest = rest;
         ARTChannel * c = [rest.channels get:@"test"];
         XCTAssert(c);
-        [c publish:@"message" callback:^(NSError *error) {
+        [c publish:nil data:@"message" cb:^(ARTErrorInfo *error) {
             XCTAssert(error);
             XCTAssertEqual(40005, error.code);
             [exp fulfill];
@@ -93,7 +93,7 @@
         _rest = rest;
        ARTChannel * c = [rest.channels get:@"test"];
        XCTAssert(c);
-       [c publish:@"message" callback:^(NSError *error) {
+       [c publish:nil data:@"message" cb:^(ARTErrorInfo *error) {
            XCTAssert(!error);
            [exp fulfill];
        }];
@@ -110,7 +110,7 @@
         ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
         ARTChannel * c = [rest.channels get:@"test"];
-        [c publish:@"message" callback:^(NSError *error) {
+        [c publish:nil data:@"message" cb:^(ARTErrorInfo *error) {
             XCTAssert(!error);
             [exp fulfill];
         }];
@@ -125,7 +125,7 @@
         _rest = rest;
         ARTChannel * c = [rest.channels get:@"test"];
         XCTAssert(c);
-        [c publish:@"message" callback:^(NSError *error) {
+        [c publish:nil data:@"message" cb:^(ARTErrorInfo *error) {
             XCTAssert(!error);
             ARTAuth * auth = rest.auth;
             XCTAssert(auth);

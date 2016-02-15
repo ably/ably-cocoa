@@ -41,15 +41,10 @@ private func queryStats(client: ARTRest, _ query: ARTStatsQuery) -> ARTPaginated
     let dummyError = NSError(domain: "", code: -1, userInfo: nil);
     var error: NSError? = dummyError
 
-    do {
-        try client.stats(query, callback: { result, err in
-            stats = result
-            error = err
-        })
-    }
-    catch let e as NSError {
-        error = e
-    }
+    client.stats(query, callback: { result, err in
+        stats = result
+        error = err
+    })
 
     while error === dummyError {
         CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Bool(0))
@@ -310,14 +305,15 @@ class RestClientStats: QuickSpec {
                 context("query") {
                     // RSC6b1
                     context("start") {
-                        it("should throw when later than end") {
+                        it("should return an error when later than end") {
                             let client = ARTRest(key: "fake:key")
                             let query = ARTStatsQuery()
                             
                             query.start = NSDate.distantFuture()
                             query.end = NSDate.distantPast()
 
-                            expect{ try client.stats(query, callback:{ status, result in }) }.to(throwError())
+                            let error = client.stats(query, callback:{ status, result in })
+                            expect(error).toNot(beNil())
                         }
                     }
                     
@@ -338,13 +334,14 @@ class RestClientStats: QuickSpec {
                             expect(query.limit).to(equal(100));
                         }
                         
-                        it("should throw when greater than 1000") {
+                        it("should return an error when greater than 1000") {
                             let client = ARTRest(key: "fake:key")
                             let query = ARTStatsQuery()
                             
                             query.limit = 1001;
-                            
-                            expect{ try client.stats(query, callback: { status, result in }) }.to(throwError())
+
+                            let error = client.stats(query, callback: { status, result in })
+                            expect(error).toNot(beNil())
                         }
                     }
                     

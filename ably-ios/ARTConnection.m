@@ -6,20 +6,21 @@
 //  Copyright © 2015 Ably. All rights reserved.
 //
 
-#import "ARTConnection.h"
+#import "ARTConnection+Private.h"
 
 #import "ARTRealtime+Private.h"
 #import "ARTEventEmitter.h"
 
 @interface ARTConnection () {
     // FIXME: temporary
-    __weak ARTRealtime* _realtime;
     __weak ARTEventEmitter* _eventEmitter;
 }
 
 @end
 
-@implementation ARTConnection
+@implementation ARTConnection {
+    __weak ARTRealtime *_realtime;
+}
 
 - (instancetype)initWithRealtime:(ARTRealtime *)realtime {
     if (self == [super init]) {
@@ -27,22 +28,6 @@
         _eventEmitter = realtime.eventEmitter;
     }
     return self;
-}
-
-- (NSString *)getId {
-    return _realtime.connectionId;
-}
-
-- (NSString *)getKey {
-    return _realtime.connectionKey;
-}
-
-- (int64_t)getSerial {
-    return _realtime.connectionSerial;
-}
-
-- (ARTRealtimeConnectionState)getState {
-    return _realtime.state;
 }
 
 - (void)connect {
@@ -55,6 +40,40 @@
 
 - (void)ping:(ARTRealtimePingCb)cb {
     [_realtime ping:cb];
+}
+
+- (void)setId:(NSString *)newId {
+    _id = newId;
+}
+
+- (void)setKey:(NSString *)key {
+    _key = key;
+}
+
+- (void)setSerial:(int64_t)serial {
+    _serial = serial;
+}
+
+- (void)setState:(ARTRealtimeConnectionState)state {
+    _state = state;
+}
+
+- (void)setErrorReason:(ARTErrorInfo * _Nullable)errorReason {
+    _errorReason = errorReason;
+}
+
+- (NSString *)getRecoveryKey {
+    switch(self.state) {
+        case ARTRealtimeConnecting:
+        case ARTRealtimeConnected:
+        case ARTRealtimeDisconnected:
+        case ARTRealtimeSuspended: {
+            NSString *recStr = self.key;
+            NSString *str = [recStr stringByAppendingString:[NSString stringWithFormat:@":%ld", (long)self.serial]];
+            return str;
+        } default:
+            return nil;
+    }
 }
 
 ART_EMBED_IMPLEMENTATION_EVENT_EMITTER(NSNumber *, ARTConnectionStateChange *)

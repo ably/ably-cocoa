@@ -48,13 +48,15 @@ enum {
 @property (readonly, strong, nonatomic) ARTLog *logger;
 @property (readonly, strong, nonatomic) ARTAuth *auth;
 @property (readonly, strong, nonatomic) ARTClientOptions *options;
+@property (readonly, strong, nonatomic) NSString *resumeKey;
+@property (readonly, strong, nonatomic) NSNumber *connectionSerial;
 
 @end
 
 @implementation ARTWebSocketTransport
 
 // FIXME: Realtime sould be extending from RestClient
-- (instancetype)initWithRest:(ARTRest *)rest options:(ARTClientOptions *)options {
+- (instancetype)initWithRest:(ARTRest *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
     self = [super init];
     if (self) {
         _rl = CFRunLoopGetCurrent();
@@ -66,6 +68,8 @@ enum {
         _logger = rest.logger;
         _auth = rest.auth;
         _options = options;
+        _resumeKey = resumeKey;
+        _connectionSerial = connectionSerial;
 
         [self.logger debug:__FILE__ line:__LINE__ message:@"%p alloc", self];
     }
@@ -93,7 +97,7 @@ enum {
     if ([self.options isBasicAuth]) {
         // Basic
         NSURLQueryItem *keyParam = [NSURLQueryItem queryItemWithName:@"key" value:self.options.key];
-        [self setupWebSocket:@[keyParam] withOptions:self.options];
+        [self setupWebSocket:@[keyParam] withOptions:self.options resumeKey:self.resumeKey connectionSerial:self.connectionSerial];
         // Connect
         [self.websocket open];
     }
@@ -111,7 +115,7 @@ enum {
             }
 
             NSURLQueryItem *accessTokenParam = [NSURLQueryItem queryItemWithName:@"accessToken" value:(tokenDetails.token)];
-            [selfStrong setupWebSocket:@[accessTokenParam] withOptions:selfStrong.options];
+            [selfStrong setupWebSocket:@[accessTokenParam] withOptions:selfStrong.options resumeKey:self.resumeKey connectionSerial:self.connectionSerial];
             // Connect
             [selfStrong.websocket open];
         }];
@@ -122,7 +126,7 @@ enum {
     return self.websocket.readyState == WebSocketReadyStateOpen;
 }
 
-- (NSURL *)setupWebSocket:(__GENERIC(NSArray, NSURLQueryItem *) *)params withOptions:(ARTClientOptions *)options {
+- (NSURL *)setupWebSocket:(__GENERIC(NSArray, NSURLQueryItem *) *)params withOptions:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
     NSArray *queryItems = params;
 
     // ClientID
@@ -156,11 +160,11 @@ enum {
             [self.logger error:@"ARTWebSocketTransport: recovery string is malformed, ignoring: '%@'", options.recover];
         }
     }
-    else if (options.resumeKey != nil) {
-        NSURLQueryItem *resumeKeyParam = [NSURLQueryItem queryItemWithName:@"resume" value:options.resumeKey];
+    else if (resumeKey != nil && connectionSerial != nil) {
+        NSURLQueryItem *resumeKeyParam = [NSURLQueryItem queryItemWithName:@"resume" value:resumeKey];
         queryItems = [queryItems arrayByAddingObject:resumeKeyParam];
 
-        NSURLQueryItem *connectionSerialParam = [NSURLQueryItem queryItemWithName:@"connectionSerial" value:[NSString stringWithFormat:@"%lld", options.connectionSerial]];
+        NSURLQueryItem *connectionSerialParam = [NSURLQueryItem queryItemWithName:@"connectionSerial" value:[NSString stringWithFormat:@"%lld", (long long)[connectionSerial integerValue]]];
         queryItems = [queryItems arrayByAddingObject:connectionSerialParam];
     }
 

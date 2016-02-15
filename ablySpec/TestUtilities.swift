@@ -52,7 +52,7 @@ class AblyTests {
     class var jsonRestOptions: ARTClientOptions {
         get {
             let options = AblyTests.clientOptions()
-            options.binary = false
+            options.useBinaryProtocol = false
             return options
         }
     }
@@ -60,7 +60,6 @@ class AblyTests {
     class var authTokenCases: [String: (ARTAuthOptions) -> ()] {
         get { return [
             "useTokenAuth": { $0.useTokenAuth = true; $0.key = "fake:key" },
-            "clientId": { $0.clientId = "client"; $0.key = "fake:key" },
             "authUrl": { $0.authUrl = NSURL(string: "http://test.com") },
             "authCallback": { $0.authCallback = { _, _ in return } },
             "tokenDetails": { $0.tokenDetails = ARTTokenDetails(token: "token") },
@@ -71,7 +70,7 @@ class AblyTests {
     }
 
     class func setupOptions(options: ARTClientOptions, debug: Bool = false) -> ARTClientOptions {
-        let request = NSMutableURLRequest(URL: NSURL(string: "https://\(options.restHost):\(options.restPort)/apps")!)
+        let request = NSMutableURLRequest(URL: NSURL(string: "https://\(options.restHost):\(options.tlsPort)/apps")!)
         request.HTTPMethod = "POST"
         request.HTTPBody = try? appSetupJson["post_apps"].rawData()
 
@@ -194,7 +193,6 @@ func querySyslog(forLogsAfter startingTime: NSDate? = nil) -> AnyGenerator<Strin
 
 func ==(lhs: ARTAuthOptions, rhs: ARTAuthOptions) -> Bool {
     return lhs.token == rhs.token &&
-        lhs.clientId == rhs.clientId &&
         lhs.authMethod == rhs.authMethod &&
         lhs.authUrl == rhs.authUrl &&
         lhs.key == rhs.key
@@ -204,11 +202,11 @@ func ==(lhs: ARTAuthOptions, rhs: ARTAuthOptions) -> Bool {
 
 class PublishTestMessage {
 
-    var completion: Optional<(NSError?)->()>
-    var error: NSError? = NSError(domain: "", code: -1, userInfo: nil)
+    var completion: Optional<(ARTErrorInfo?)->()>
+    var error: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
 
-    init(client: ARTRest, failOnError: Bool = true, completion: Optional<(NSError?)->()> = nil) {
-        client.channels.get("test").publish("message") { error in
+    init(client: ARTRest, failOnError: Bool = true, completion: Optional<(ARTErrorInfo?)->()> = nil) {
+        client.channels.get("test").publish(nil, data: "message") { error in
             self.error = error
             if let callback = completion {
                 callback(error)
@@ -219,15 +217,10 @@ class PublishTestMessage {
         }
     }
 
-    init(client: ARTRealtime, failOnError: Bool = true, completion: Optional<(NSError?)->()> = nil) {
-        let complete: (ARTStatus)->() = { status in
+    init(client: ARTRealtime, failOnError: Bool = true, completion: Optional<(ARTErrorInfo?)->()> = nil) {
+        let complete: (ARTErrorInfo?)->() = { errorInfo in
             // ARTErrorInfo to NSError
-            if let errorInfo = status.errorInfo where errorInfo.code != 0 {
-                self.error = NSError(domain: ARTAblyErrorDomain, code: Int(errorInfo.code), userInfo: [NSLocalizedDescriptionKey:errorInfo.message])
-            }
-            else {
-                self.error = nil
-            }
+            self.error = errorInfo
 
             if let callback = completion {
                 callback(self.error)
@@ -237,19 +230,19 @@ class PublishTestMessage {
             }
         }
 
-        client.on { stateChange in
+        client.connection.on { stateChange in
             let stateChange = stateChange!
             let state = stateChange.current
             if state == .Connected {
                 let channel = client.channels.get("test")
-                channel.subscribeToStateChanges { state, status in
-                    switch state {
+                channel.on { errorInfo in
+                    switch channel.state {
                     case .Attached:
-                        channel.publish("message", cb: { status in
-                            complete(status)
-                        })
+                        channel.publish(nil, data: "message") { errorInfo in
+                            complete(errorInfo)
+                        }
                     case .Failed:
-                        complete(status)
+                        complete(errorInfo)
                     default:
                         break
                     }
@@ -262,7 +255,7 @@ class PublishTestMessage {
 }
 
 /// Rest - Publish message
-func publishTestMessage(rest: ARTRest, completion: Optional<(NSError?)->()>) -> PublishTestMessage {
+func publishTestMessage(rest: ARTRest, completion: Optional<(ARTErrorInfo?)->()>) -> PublishTestMessage {
     return PublishTestMessage(client: rest, failOnError: false, completion: completion)
 }
 
@@ -272,7 +265,7 @@ func publishTestMessage(rest: ARTRest, failOnError: Bool = true) -> PublishTestM
 
 /// Realtime - Publish message with callback
 /// (publishes if connection state changes to CONNECTED and channel state changes to ATTACHED)
-func publishFirstTestMessage(realtime: ARTRealtime, completion: Optional<(NSError?)->()>) -> PublishTestMessage {
+func publishFirstTestMessage(realtime: ARTRealtime, completion: Optional<(ARTErrorInfo?)->()>) -> PublishTestMessage {
     return PublishTestMessage(client: realtime, failOnError: false, completion: completion)
 }
 
@@ -422,8 +415,8 @@ class TestProxyTransport: ARTWebSocketTransport {
 
     var actionsIgnored = [ARTProtocolMessageAction]()
 
-    override func setupWebSocket(params: [NSURLQueryItem], withOptions options: ARTClientOptions) -> NSURL {
-        let url = super.setupWebSocket(params, withOptions: options)
+    override func setupWebSocket(params: [NSURLQueryItem], withOptions options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?) -> NSURL {
+        let url = super.setupWebSocket(params, withOptions: options, resumeKey: resumeKey, connectionSerial: connectionSerial)
         lastUrl = url
         return url
     }
@@ -443,30 +436,14 @@ class TestProxyTransport: ARTWebSocketTransport {
 
 }
 
-class ARTRealtimeExtended: ARTRealtime {
-
-    private var lostStateActive: Bool = false
-
-    override func connectionId() -> String? {
-        if lostStateActive {
-            return "lost"
-        }
-        return super.connectionId()
-    }
-
-    override func connectionKey() -> String? {
-        if lostStateActive {
-            return "lost"
-        }
-        return super.connectionKey()
-    }
-
+extension ARTRealtime {
     func simulateLostConnection() {
         //1. Abruptly disconnect
         //2. Change the `Connection#id` and `Connection#key` before the client 
         //   library attempts to reconnect and resume the connection
-        onDisconnected()
-        lostStateActive = true
+        self.connection.setId("lost")
+        self.connection.setKey("lost")
+        self.onDisconnected()
     }
     
 }

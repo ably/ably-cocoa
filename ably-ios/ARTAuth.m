@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "ARTAuth.h"
+#import "ARTAuth+Private.h"
 
 #import "ARTRest.h"
 #import "ARTRest+Private.h"
@@ -14,7 +14,7 @@
 #import "ARTClientOptions.h"
 #import "ARTAuthOptions.h"
 #import "ARTTokenDetails.h"
-#import "ARTTokenParams.h"
+#import "ARTTokenParams+Private.h"
 #import "ARTTokenRequest.h"
 #import "ARTEncoder.h"
 #import "ARTStatus.h"
@@ -30,7 +30,6 @@
     if (self = [super init]) {
         _rest = rest;
         _tokenDetails = options.tokenDetails;
-        _tokenParams = [[ARTTokenParams alloc] initWithClientId:options.clientId];
         _options = options;
         _logger = rest.logger;
         _protocolClientId = nil;
@@ -99,13 +98,12 @@
 }
 
 - (ARTTokenParams *)mergeParams:(ARTTokenParams *)customParams {
-    return customParams ? customParams : _tokenParams;
+    return customParams ? customParams : [[ARTTokenParams alloc] initWithOptions:self.options];
 }
 
 - (void)storeParams:(ARTTokenParams *)customOptions {
-    _tokenParams.clientId = customOptions.clientId;
-    _tokenParams.ttl = customOptions.ttl;
-    _tokenParams.capability = customOptions.capability;
+    _options.clientId = customOptions.clientId;
+    _options.defaultTokenParams = customOptions;
 }
 
 - (NSURL *)buildURL:(ARTAuthOptions *)options withParams:(ARTTokenParams *)params {

@@ -10,13 +10,20 @@
 
 @implementation ARTMessage
 
-- (instancetype)initWithData:(id)data name:(NSString *)name {
+- (instancetype)initWithName:(NSString *)name data:(id)data {
     if (self = [self init]) {
         _name = [name copy];
         if (data) {
             self.data = data;
             self.encoding = @"";
         }
+    }
+    return self;
+}
+
+- (instancetype)initWithName:(NSString *)name data:(id)data clientId:(NSString *)clientId {
+    if (self = [self initWithName:name data:data]) {
+        self.clientId = clientId;
     }
     return self;
 }

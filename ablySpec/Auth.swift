@@ -35,7 +35,7 @@ class Auth : QuickSpec {
                 client.httpExecutor = mockExecutor
                 
                 waitUntil(timeout: testTimeout) { done in
-                    client.channels.get("test").publish("message") { error in
+                    client.channels.get("test").publish(nil, data: "message") { error in
                         done()
                     }
                 }
@@ -76,7 +76,7 @@ class Auth : QuickSpec {
                     clientHTTP.httpExecutor = mockExecutor
                     
                     waitUntil(timeout: testTimeout) { done in
-                        clientHTTP.channels.get("test").publish("message") { error in
+                        clientHTTP.channels.get("test").publish(nil, data: "message") { error in
                             done()
                         }
                     }
@@ -99,7 +99,7 @@ class Auth : QuickSpec {
                     clientHTTPS.httpExecutor = mockExecutor
                     
                     waitUntil(timeout: testTimeout) { done in
-                        clientHTTPS.channels.get("test").publish("message") { error in
+                        clientHTTPS.channels.get("test").publish(nil, data: "message") { error in
                             done()
                         }
                     }
@@ -124,7 +124,7 @@ class Auth : QuickSpec {
                     client.httpExecutor = mockExecutor
                     
                     waitUntil(timeout: testTimeout) { done in
-                        client.channels.get("test").publish("message") { error in
+                        client.channels.get("test").publish(nil, data: "message") { error in
                             done()
                         }
                     }
@@ -157,7 +157,7 @@ class Auth : QuickSpec {
                     client.connect()
 
                     if let transport = client.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
-                        expect(query).to(haveParam("accessToken", withValue: client.auth().tokenDetails?.token ?? ""))
+                        expect(query).to(haveParam("accessToken", withValue: client.auth.tokenDetails?.token ?? ""))
                     }
                     else {
                         XCTFail("MockTransport is not working")
@@ -248,16 +248,16 @@ class Auth : QuickSpec {
                         client.connect()
 
                         waitUntil(timeout: testTimeout) { done in
-                            client.on { stateChange in
+                            client.connection.on { stateChange in
                                 let stateChange = stateChange!
                                 let state = stateChange.current
                                 let error = stateChange.reason
                                 if state == .Connected && error == nil {
                                     let currentChannel = client.channels.get("test")
-                                    currentChannel.subscribe({ message, errorInfo in
+                                    currentChannel.subscribe({ message in
                                         done()
                                     })
-                                    currentChannel.publish("ping", cb:nil)
+                                    currentChannel.publish(nil, data: "ping", cb:nil)
                                 }
                             }
                         }
@@ -391,7 +391,7 @@ class Auth : QuickSpec {
                     client.httpExecutor = mockExecutor
                     
                     waitUntil(timeout: testTimeout) { done in
-                        client.channels.get("test").publish("message") { error in
+                        client.channels.get("test").publish(nil, data: "message") { error in
                             if let e = error {
                                 XCTFail(e.description)
                             }
@@ -419,7 +419,7 @@ class Auth : QuickSpec {
                     client.httpExecutor = mockExecutor
                     
                     waitUntil(timeout: testTimeout) { done in
-                        client.channels.get("test").publish("message") { error in
+                        client.channels.get("test").publish(nil, data: "message") { error in
                             if let e = error {
                                 XCTFail(e.description)
                             }

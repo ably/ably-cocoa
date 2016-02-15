@@ -8,7 +8,7 @@
 
 #import "ARTRestPresence.h"
 
-#import "ARTPresence.h"
+#import "ARTPresence+Private.h"
 #import "ARTRest+Private.h"
 #import "ARTRestChannel+Private.h"
 #import "ARTPaginatedResult+Private.h"
@@ -28,7 +28,7 @@
     return (ARTRestChannel *)super.channel;
 }
 
-- (void)get:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, NSError *error))callback {
+- (void)get:(ARTPresenceQuery *)query cb:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, NSError * _Nullable))callback {
     NSURL *requestUrl = [NSURL URLWithString:[[self channel].basePath stringByAppendingPathComponent:@"presence"]];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
 
@@ -47,7 +47,7 @@
     [ARTPaginatedResult executePaginated:[self channel].rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
 }
 
-- (BOOL)history:(ARTDataQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, NSError *error))callback error:(NSError **)errorPtr {
+- (BOOL)history:(ARTDataQuery *)query error:(NSError **)errorPtr callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, NSError *error))callback {
     if (query.limit > 1000) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain

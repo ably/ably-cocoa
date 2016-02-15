@@ -71,12 +71,12 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
     else {
         options.environment = @"sandbox";
     }
-    options.binary = NO;
+    options.useBinaryProtocol = NO;
     if (debug) {
         options.logLevel = ARTLogLevelVerbose;
     }
 
-    NSString *urlStr = [NSString stringWithFormat:@"https://%@:%d/apps", options.restHost, options.restPort];
+    NSString *urlStr = [NSString stringWithFormat:@"https://%@:%ld/apps", options.restHost, (long)options.tlsPort];
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
     req.HTTPMethod = @"POST";
     req.HTTPBody = appSpecData;
@@ -146,7 +146,7 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
 + (ARTClientOptions *)clientOptions {
     ARTClientOptions* options = [[ARTClientOptions alloc] init];
     options.environment = @"sandbox";
-    options.binary = false;
+    options.useBinaryProtocol = false;
     return options;
 }
 
@@ -184,47 +184,47 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
 + (void)publishRestMessages:(NSString *)prefix count:(int)count channel:(ARTChannel *)channel completion:(void (^)())completion {
     NSString *pattern = [prefix stringByAppendingString:@"%d"];
     __block int numReceived = 0;
-    __block __weak ARTErrorCallback weakCallback;
-    ARTErrorCallback callback;
+    __block __weak void (^weakCallback)(ARTErrorInfo *__art_nullable error);
+    void (^callback)(ARTErrorInfo *__art_nullable error);
 
-    weakCallback = callback = ^(NSError *error) {
+    weakCallback = callback = ^(ARTErrorInfo *error) {
         if (++numReceived != count) {
-            [channel publish:[NSString stringWithFormat:pattern, numReceived] callback:weakCallback];
+            [channel publish:nil data:[NSString stringWithFormat:pattern, numReceived] cb:weakCallback];
         }
         else {
             completion();
         }
     };
 
-    [channel publish:[NSString stringWithFormat:pattern, numReceived] callback:callback];
+    [channel publish:nil data:[NSString stringWithFormat:pattern, numReceived] cb:callback];
 }
 
 + (void)publishRealtimeMessages:(NSString *)prefix count:(int)count channel:(ARTRealtimeChannel *)channel completion:(void (^)())completion {
     __block int numReceived = 0;
-    __block __weak ARTStatusCallback weakCb;
+    __block __weak void (^weakCb)(ARTErrorInfo *__art_nullable error);
     NSString * pattern = [prefix stringByAppendingString:@"%d"];
-    ARTStatusCallback cb;
+    void (^cb)(ARTErrorInfo *__art_nullable error);
     
-    weakCb = cb = ^(ARTStatus *status) {
+    weakCb = cb = ^(ARTErrorInfo *errorInfo) {
         ++numReceived;
         if(numReceived !=count) {
-            [channel publish:[NSString stringWithFormat:pattern, numReceived] cb:weakCb];
+            [channel publish:nil data:[NSString stringWithFormat:pattern, numReceived] cb:weakCb];
         }
         else {
             completion();
         }
     };
-    [channel publish:[NSString stringWithFormat:pattern, numReceived] cb:cb];
+    [channel publish:nil data:[NSString stringWithFormat:pattern, numReceived] cb:cb];
     
 }
 
 + (void)publishEnterMessages:(NSString *)clientIdPrefix count:(int)count channel:(ARTRealtimeChannel *)channel completion:(void (^)())completion {
     __block int numReceived = 0;
-    __block __weak ARTStatusCallback weakCb;
-    ARTStatusCallback cb;
+   __block __weak void (^weakCb)(ARTErrorInfo *__art_nullable error);
+    void (^cb)(ARTErrorInfo *__art_nullable error);
 
     NSString *pattern = [clientIdPrefix stringByAppendingString:@"%d"];
-    weakCb = cb = ^(ARTStatus *status) {
+    weakCb = cb = ^(ARTErrorInfo *errorInfo) {
         ++numReceived;
         if (numReceived != count) {
             [channel.presence enterClient:[NSString stringWithFormat:pattern, numReceived] data:@"entered" cb:weakCb];
@@ -261,7 +261,7 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
     XCTestExpectation *expectation = [testCase expectationWithDescription:@"testRealtime"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withDebug:debug cb:^(ARTClientOptions *options) {
         ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
-        [realtime on:^(ARTConnectionStateChange *stateChange) {
+        [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             ARTErrorInfo *errorInfo = stateChange.reason;
             if (state == ARTRealtimeFailed) {

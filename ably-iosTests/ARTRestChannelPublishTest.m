@@ -43,13 +43,13 @@
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTChannel *channel = [rest.channels get:@"testTypesByText"];
-        [channel publish:message1 callback:^(NSError *error) {
+        [channel publish:nil data:message1 cb:^(ARTErrorInfo *error) {
             XCTAssert(!error);
-            [channel publish:message2 callback:^(NSError *error) {
+            [channel publish:nil data:message2 cb:^(ARTErrorInfo *error) {
                 XCTAssert(!error);
                 ARTDataQuery *query = [[ARTDataQuery alloc] init];
                 query.direction = ARTQueryDirectionForwards;
-                [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                [channel history:query error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                     XCTAssert(!error);
                     NSArray *messages = [result items];
                     XCTAssertEqual(2, messages.count);
@@ -58,7 +58,7 @@
                     XCTAssertEqualObjects([m0 data], message1);
                     XCTAssertEqualObjects([m1 data], message2);
                     [expectation fulfill];
-                } error:nil];
+                }];
             }];
         }];
     }];
@@ -74,13 +74,13 @@
         NSString *test2 = @"test2";
         NSString *test3 = @"test3";
 
-        NSArray *messages = @[[[ARTMessage alloc] initWithData:test1 name:nil],
-                              [[ARTMessage alloc] initWithData:test2 name:nil],
-                              [[ARTMessage alloc] initWithData:test3 name:nil]];
+        NSArray *messages = @[[[ARTMessage alloc] initWithName:nil data:test1],
+                              [[ARTMessage alloc] initWithName:nil data:test2],
+                              [[ARTMessage alloc] initWithName:nil data:test3]];
 
-        [channel publishMessages:messages callback:^(NSError *error) {
+        [channel publish:messages cb:^(ARTErrorInfo *error) {
             XCTAssert(!error);
-            [channel history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+            [channel history:[[ARTDataQuery alloc] init] error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
                 XCTAssert(!error);
                 NSArray *messages = [result items];
                 XCTAssertEqual(3, messages.count);
@@ -91,7 +91,7 @@
                 XCTAssertEqualObjects([m1 data], test2);
                 XCTAssertEqualObjects([m2 data], test1);
                 [exp fulfill];
-            } error:nil];
+            }];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
@@ -102,7 +102,7 @@
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTChannel *channel = [rest.channels get:@"testTypesByText"];
-        XCTAssertThrows([channel publish:channel callback:^(NSError *error){}]);
+        XCTAssertThrows([channel publish:nil data:channel cb:^(ARTErrorInfo *error){}]);
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];

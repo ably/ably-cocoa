@@ -9,6 +9,12 @@
 
 #import "ARTRestChannel.h"
 
+@interface ARTRestChannel ()
+
+@property (nonatomic, weak) ARTRest *rest;
+
+@end
+
 @interface ARTRestChannel (Private)
 
 @property (readonly, getter=getBasePath) NSString *basePath;

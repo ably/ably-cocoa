@@ -14,7 +14,7 @@
 
 - (instancetype)initEncrypted:(ARTCipherParams *)cipherParams {
     if (self = [super init]) {
-        self->_isEncrypted = YES;
+        self->_encrypted = YES;
         self->_cipherParams = cipherParams;
     }
     

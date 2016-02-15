@@ -7,16 +7,18 @@
 //
 
 #import "ARTRest.h"
+#import "ARTHttp.h"
 
 @protocol ARTEncoder;
 @protocol ARTHTTPExecutor;
 
 ART_ASSUME_NONNULL_BEGIN
 
-/// ARTRest private methods that are used for whitebox testing
-@interface ARTRest (Private)
+/// ARTRest private methods that are used internally and for whitebox testing
+@interface ARTRest ()
 
-@property (readonly, strong, nonatomic) id<ARTEncoder> defaultEncoder;
+@property (nonatomic, strong, readonly) ARTClientOptions *options;
+@property (readonly, strong, nonatomic) __GENERIC(id, ARTEncoder) defaultEncoder;
 @property (readonly, strong, nonatomic) NSString *defaultEncoding; //Content-Type
 @property (readonly, strong, nonatomic) NSDictionary *encoders;
 
@@ -25,8 +27,12 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) NSURL *baseUrl;
 
-// FIXME: used for Realtime. Review because ARTRealtime does not use ARTRest as base class
-- (NSString *)formatQueryParams:(NSDictionary *)queryParams;
+@property (nonatomic, strong, readonly) ARTLog *logger;
+
+// MARK: Not accessible by tests
+@property (readonly, strong, nonatomic) ARTHttp *http;
+@property (strong, nonatomic) ARTAuth *auth;
+@property (readwrite, assign, nonatomic) int fallbackCount;
 
 // MARK: ARTHTTPExecutor
 
@@ -38,7 +44,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (void)calculateAuthorization:(ARTAuthMethod)method completion:(void (^)(NSString *__art_nonnull authorization, NSError *__art_nullable error))callback;
 
-- (id<ARTCancellable>)postTestStats:(NSArray *)stats cb:(void(^)(ARTStatus * status)) cb;
+- (id<ARTCancellable>)internetIsUp:(void (^)(bool isUp))cb;
 
 @end
 

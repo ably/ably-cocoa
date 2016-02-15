@@ -13,6 +13,7 @@
 #import "ARTChannelOptions.h"
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTBaseMessage+Private.h"
+#import "ARTDataQuery.h"
 
 @implementation ARTChannel
 
@@ -34,15 +35,29 @@
     }
 }
 
-- (void)publish:(id)data callback:(ARTErrorCallback)callback {
-    [self publish:data name:nil callback:callback];
+- (void)publish:(NSString *)name data:(id)data {
+    [self publish:name data:data cb:nil];
 }
 
-- (void)publish:(id)data name:(NSString *)name callback:(ARTErrorCallback)callback {
-    [self publishMessage:[[ARTMessage alloc] initWithData:data name:name] callback:callback];
+- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
+    [self internalPostMessages:[self encodeMessageIfNeeded:[[ARTMessage alloc] initWithName:name data:data]]
+                      callback:callback];
 }
 
-- (void)publishMessages:(NSArray *)messages callback:(ARTErrorCallback)callback {
+- (void)publish:(NSString *)name data:(id)data clientId:(NSString *)clientId {
+    [self publish:name data:data clientId:clientId cb:nil];
+}
+
+- (void)publish:(NSString *)name data:(id)data clientId:(NSString *)clientId cb:(void (^)(ARTErrorInfo * _Nullable))callback {
+    [self internalPostMessages:[self encodeMessageIfNeeded:[[ARTMessage alloc] initWithName:name data:data clientId:clientId]]
+                      callback:callback];
+}
+
+- (void)publish:(NSArray<ARTMessage *> *)messages {
+    [self publish:messages cb:nil];
+}
+
+- (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
     [self internalPostMessages:[messages artMap:^id(ARTMessage *message) {
         return [self encodeMessageIfNeeded:message];
     }] callback:callback];
@@ -60,16 +75,28 @@
     return message;
 }
 
-- (void)publishMessage:(ARTMessage *)message callback:(ARTErrorCallback)callback {
-    [self internalPostMessages:[self encodeMessageIfNeeded:message] callback:callback];
+- (NSError *)history:(void (^)(ARTPaginatedResult<ARTMessage *> * _Nullable, NSError * _Nullable))callback {
+    NSError *error = nil;
+    [self historyWithError:&error callback:callback];
+    return error;
 }
 
-- (BOOL)history:(ARTDataQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, NSError *))callback error:(NSError **)errorPtr {
+- (NSError *)history:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult<ARTMessage *> * _Nullable, NSError * _Nullable))callback {
+    NSError *error = nil;
+    [self history:query error:&error callback:callback];
+    return error;
+}
+
+- (BOOL)historyWithError:(NSError *__autoreleasing  _Nullable *)errorPtr callback:(void (^)(ARTPaginatedResult<ARTMessage *> * _Nullable, NSError * _Nullable))callback {
+    return [self history:[[ARTDataQuery alloc] init] error:errorPtr callback:callback];
+}
+
+- (BOOL)history:(ARTDataQuery *)query error:(NSError **)errorPtr callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, NSError *))callback {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
     return NO;
 }
 
-- (void)internalPostMessages:(id)data callback:(ARTErrorCallback)callback {
+- (void)internalPostMessages:(id)data callback:(void (^)(ARTErrorInfo *__art_nullable error))callback {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 

@@ -30,65 +30,43 @@
 #import "ARTTokenParams.h"
 #import "ARTTokenDetails.h"
 
-@interface ARTRest ()
-
-@property (readonly, strong, nonatomic) id<ARTEncoder> defaultEncoder;
-@property (readonly, strong, nonatomic) NSString *defaultEncoding; //Content-Type
-@property (readonly, strong, nonatomic) NSDictionary *encoders;
-
-@property (nonatomic, strong) id<ARTHTTPExecutor> httpExecutor;
-@property (readonly, nonatomic, assign) Class channelClass;
-
-@property (nonatomic, strong) NSURL *baseUrl;
-
-// MARK: Not accessible by tests
-@property (readonly, strong, nonatomic) ARTHttp *http;
-@property (strong, nonatomic) ARTAuth *auth;
-@property (readwrite, assign, nonatomic) int fallbackCount;
-
-@end
-
 @implementation ARTRest
 
-- (instancetype)initWithLogger:(ARTLog *)logger andOptions:(ARTClientOptions *)options {
+- (instancetype)initWithOptions:(ARTClientOptions *)options {
     self = [super init];
     if (self) {
         NSAssert(options, @"ARTRest: No options provided");
         _options = [options copy];
         _baseUrl = [options restUrl];
-        
-        if (logger) {
-            _logger = logger;
+
+        if (options.logHandler) {
+            _logger = options.logHandler;
         }
         else {
             _logger = [[ARTLog alloc] init];
         }
-        
-        if (options.logLevel != ARTLogLevelNone) {            
+
+        if (options.logLevel != ARTLogLevelNone) {
             _logger.logLevel = options.logLevel;
         }
-        
+
         _http = [[ARTHttp alloc] init];
         [_logger debug:__FILE__ line:__LINE__ message:@"%p alloc HTTP", _http];
         _httpExecutor = _http;
         _httpExecutor.logger = _logger;
         _channelClass = [ARTRestChannel class];
-        
+
         id<ARTEncoder> defaultEncoder = [[ARTJsonEncoder alloc] initWithLogger:self.logger];
         _encoders = @{ [defaultEncoder mimeType]: defaultEncoder };
         _defaultEncoding = [defaultEncoder mimeType];
         _fallbackCount = 0;
-        
+
         _auth = [[ARTAuth alloc] init:self withOptions:_options];
         _channels = [[ARTRestChannels alloc] initWithRest:self];
 
         [self.logger debug:__FILE__ line:__LINE__ message:@"initialised %p", self];
     }
     return self;
-}
-
-- (instancetype)initWithOptions:(ARTClientOptions *)options {
-    return [self initWithLogger:[[ARTLog alloc] init] andOptions:options];
 }
 
 - (instancetype)initWithKey:(NSString *)key {
@@ -216,7 +194,23 @@
     return nil;
 }
 
-- (BOOL)stats:(ARTStatsQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *, NSError *))callback error:(NSError **)errorPtr {
+- (NSError *)stats:(ARTStatsCallback)callback {
+    NSError *error = nil;
+    [self statsWithError:&error callback:callback];
+    return error;
+}
+
+- (NSError *)stats:(ARTStatsQuery *)query callback:(ARTStatsCallback)callback {
+    NSError *error = nil;
+    [self stats:query error:&error callback:callback];
+    return error;
+}
+
+- (BOOL)statsWithError:(NSError *__autoreleasing  _Nullable *)errorPtr callback:(ARTStatsCallback)callback {
+    return [self stats:[[ARTStatsQuery alloc] init] error:errorPtr callback:callback];
+}
+
+- (BOOL)stats:(ARTStatsQuery *)query error:(NSError **)errorPtr callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *, NSError *))callback {
     if (query.limit > 1000) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain

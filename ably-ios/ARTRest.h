@@ -25,20 +25,18 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithOptions:(ARTClientOptions *)options;
-- (instancetype)initWithLogger:(ARTLog *)logger andOptions:(ARTClientOptions *)options;
 - (instancetype)initWithKey:(NSString *)key;
 - (instancetype)initWithToken:(NSString *)tokenId;
 
 - (void)time:(ARTTimeCallback)callback;
 
-- (BOOL)stats:(art_nullable ARTStatsQuery *)query callback:(ARTStatsCallback)callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
+- (NSError *__art_nullable)stats:(ARTStatsCallback)callback;
+- (NSError *__art_nullable)stats:(art_nullable ARTStatsQuery *)query callback:(ARTStatsCallback)callback;
+- (BOOL)statsWithError:(NSError *__art_nullable *__art_nullable)errorPtr callback:(ARTStatsCallback)callback;
+- (BOOL)stats:(art_nullable ARTStatsQuery *)query error:(NSError *__art_nullable *__art_nullable)errorPtr callback:(ARTStatsCallback)callback;
 
-- (id<ARTCancellable>)internetIsUp:(void (^)(bool isUp))cb;
-
-@property (nonatomic, strong, readonly) ARTLog *logger;
 @property (nonatomic, strong, readonly) ARTRestChannels *channels;
 @property (nonatomic, strong, readonly) ARTAuth *auth;
-@property (nonatomic, strong, readonly) ARTClientOptions *options;
 
 @end
 

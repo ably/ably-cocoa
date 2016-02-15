@@ -12,8 +12,8 @@
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTPresenceMap.h"
 #import "ARTPresenceMessage.h"
-#import "ARTRealtimeChannelSubscription.h"
 #import "ARTStatus.h"
+#import "ARTPresence+Private.h"
 
 @implementation ARTRealtimePresence
 
@@ -25,57 +25,100 @@
     return (ARTRealtimeChannel *)super.channel;
 }
 
-- (void)get:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, NSError *error))callback {
+- (void)get:(ARTRealtimePresenceQuery *)query cb:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, NSError * _Nullable))callback {
     [[self channel] throwOnDisconnectedOrFailed];
-    [super get:callback];
+    [super get:query cb:callback];
 }
 
-- (BOOL)history:(ARTDataQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, NSError *error))callback error:(NSError **)errorPtr {
-    [[self channel] throwOnDisconnectedOrFailed];
-    return [super history:query callback:callback error:errorPtr];
+- (NSError *)history:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, NSError * _Nullable))callback {
+    NSError *error = [[NSError alloc] init];
+    [self historyWithError:&error callback:callback];
+    return error;
 }
 
-- (void)enter:(id)data cb:(ARTStatusCallback)cb {
+- (NSError *)history:(ARTRealtimeHistoryQuery *)query callback:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, NSError * _Nullable))callback {
+    NSError *error = [[NSError alloc] init];
+    [self history:query error:&error callback:callback];
+    return error;
+}
+
+- (BOOL)historyWithError:(NSError *__autoreleasing  _Nullable *)errorPtr callback:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, NSError * _Nullable))callback {
+    return [self history:[[ARTRealtimeHistoryQuery alloc] init] error:errorPtr callback:callback];
+}
+
+- (BOOL)history:(ARTRealtimeHistoryQuery *)query error:(NSError *__autoreleasing  _Nullable *)errorPtr callback:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, NSError * _Nullable))callback {
+    return [super history:query error:errorPtr callback:callback];
+}
+
+- (void)enter:(id)data {
+    [self enter:data cb:nil];
+}
+
+- (void)enter:(id)data cb:(void (^)(ARTErrorInfo * _Nullable))cb {
     [self enterClient:[self channel].clientId data:data cb:cb];
 }
 
-- (void)enterClient:(NSString *)clientId data:(id)data cb:(ARTStatusCallback)cb {
+- (void)enterClient:(NSString *)clientId data:(id)data {
+    [self enterClient:clientId data:data cb:nil];
+}
+
+- (void)enterClient:(NSString *)clientId data:(id)data cb:(void (^)(ARTErrorInfo * _Nullable))cb {
     if(!clientId) {
-        [NSException raise:@"Cannot publish presence without a clientId" format:@""];
+        if (cb) cb([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
+        return;
     }
     ARTPresenceMessage *msg = [[ARTPresenceMessage alloc] init];
     msg.action = ARTPresenceEnter;
     msg.clientId = clientId;
     msg.data = data;
 
-    msg.connectionId = [self channel].realtime.connectionId;
+    msg.connectionId = [self channel].realtime.connection.id;
     [[self channel] publishPresence:msg cb:cb];
 }
 
-- (void)update:(id)data cb:(ARTStatusCallback)cb {
+- (void)update:(id)data {
+    [self update:data cb:nil];
+}
+
+- (void)update:(id)data cb:(void (^)(ARTErrorInfo * _Nullable))cb {
     [self updateClient:[self channel].clientId data:data cb:cb];
 }
 
-- (void)updateClient:(NSString *)clientId data:(id)data cb:(ARTStatusCallback)cb {
+- (void)updateClient:(NSString *)clientId data:(id)data {
+    [self updateClient:clientId data:data cb:nil];
+}
+
+- (void)updateClient:(NSString *)clientId data:(id)data cb:(void (^)(ARTErrorInfo * _Nullable))cb {
+    if (!clientId) {
+        if (cb) cb([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
+        return;
+    }
     ARTPresenceMessage *msg = [[ARTPresenceMessage alloc] init];
     msg.action = ARTPresenceUpdate;
     msg.clientId = clientId;
-    if(!msg.clientId) {
-        cb([ARTStatus state:ARTStateNoClientId]);
-        return;
-    }
     msg.data = data;
-    msg.connectionId = [self channel].realtime.connectionId;
+    msg.connectionId = [self channel].realtime.connection.id;
 
     [[self channel] publishPresence:msg cb:cb];
 }
 
-- (void)leave:(id) data cb:(ARTStatusCallback)cb {
+- (void)leave:(id)data {
+    [self leave:data cb:nil];
+}
+
+- (void)leave:(id)data cb:(void (^)(ARTErrorInfo * _Nullable))cb {
     [self leaveClient:[self channel].clientId data:data cb:cb];
 }
 
-- (void) leaveClient:(NSString *) clientId data:(id) data cb:(ARTStatusCallback) cb {
+- (void)leaveClient:(NSString *)clientId data:(id)data {
+    [self leaveClient:clientId data:data cb:nil];
+}
 
+- (void)leaveClient:(NSString *)clientId data:(id)data cb:(void (^)(ARTErrorInfo * _Nullable))cb {
+    if (!clientId) {
+        if (cb) cb([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
+        return;
+    }
     if([clientId isEqualToString:[self channel].clientId]) {
         if([self channel].lastPresenceAction != ARTPresenceEnter && [self channel].lastPresenceAction != ARTPresenceUpdate) {
             [NSException raise:@"Cannot leave a channel before you've entered it" format:@""];
@@ -85,11 +128,7 @@
     msg.action = ARTPresenceLeave;
     msg.data = data;
     msg.clientId = clientId;
-    msg.connectionId = [self channel].realtime.connectionId;
-    if(!msg.clientId) {
-        cb([ARTStatus state:ARTStateNoClientId]);
-        return;
-    }
+    msg.connectionId = [self channel].realtime.connection.id;
     [[self channel] publishPresence:msg cb:cb];
 }
 
@@ -97,27 +136,26 @@
     return [[self channel].presenceMap isSyncComplete];
 }
 
-- (id<ARTSubscription>)subscribe:(ARTRealtimeChannelPresenceCb)cb {
-    ARTRealtimeChannelPresenceSubscription *subscription = [[ARTRealtimeChannelPresenceSubscription alloc] initWithChannel:[self channel] cb:cb];
-    [[self channel].presenceSubscriptions addObject:subscription];
+- (ARTEventListener<ARTPresenceMessage *> *)subscribe:(void (^)(ARTPresenceMessage * _Nonnull))cb {
     [[self channel] attach];
-    return subscription;
+    return [[self channel].presenceEventEmitter on:cb];
 }
 
-- (id<ARTSubscription>)subscribe:(ARTPresenceAction)action cb:(ARTRealtimeChannelPresenceCb)cb {
-    ARTRealtimeChannelPresenceSubscription *subscription = (ARTRealtimeChannelPresenceSubscription *) [self subscribe:cb];
-    [subscription excludeAllActionsExcept:action];
-    return subscription;
+- (ARTEventListener<ARTPresenceMessage *> *)subscribe:(ARTPresenceAction)action cb:(void (^)(ARTPresenceMessage * _Nonnull))cb {
+    [[self channel] attach];
+    return [[self channel].presenceEventEmitter on:[NSNumber numberWithUnsignedInteger:action] call:cb];
 }
 
-- (void)unsubscribe:(id<ARTSubscription>)subscription action:(ARTPresenceAction) action {
-    ARTRealtimeChannelPresenceSubscription * s = (ARTRealtimeChannelPresenceSubscription *)subscription;
-    [s excludeAction:action];
+- (void)unsubscribe {
+    [[self channel].presenceEventEmitter off];
 }
 
-- (void)unsubscribe:(ARTRealtimeChannelPresenceSubscription *)subscription {
-    ARTRealtimeChannelPresenceSubscription *s = (ARTRealtimeChannelPresenceSubscription *)subscription;
-    [[self channel].presenceSubscriptions removeObject:s];
+- (void)unsubscribe:(ARTEventListener<ARTPresenceMessage *> *)listener {
+    [[self channel].presenceEventEmitter off:listener];
+}
+
+- (void)unsubscribe:(ARTPresenceAction)action listener:(ARTEventListener<ARTPresenceMessage *> *)listener {
+    [[self channel].presenceEventEmitter off:[NSNumber numberWithUnsignedInteger:action] listener:listener];
 }
 
 @end
