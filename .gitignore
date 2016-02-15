@@ -50,3 +50,6 @@ Carthage/Build
 
 # Log
 xcodebuild.log
+
+# Scan
+test_output/
