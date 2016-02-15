@@ -222,17 +222,25 @@ class RealtimeClientChannel: QuickSpec {
                     var errorInfo: ARTErrorInfo?
                     let channel = client.channels.get("test")
 
-                    errorInfo = channel.attach()
-                    expect(errorInfo).to(beNil())
+                    channel.attach { errorInfo in
+                        expect(errorInfo).to(beNil())
+                    }
                     expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
 
-                    errorInfo = channel.attach()
-                    expect(errorInfo).to(beNil())
+                    channel.attach { errorInfo in
+                        expect(errorInfo).to(beNil())
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
+                    }
+
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
 
-                    errorInfo = channel.attach()
-                    expect(errorInfo).to(beNil())
-                    expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach { errorInfo in
+                            expect(errorInfo).to(beNil())
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+                            done()
+                        }
+                    }
                 }
 
                 // RTL4b
@@ -343,7 +351,7 @@ class RealtimeClientChannel: QuickSpec {
                     client.connect()
                     defer { client.close() }
 
-                    expect(client.connection().state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
                     let transport = client.transport as! TestProxyTransport
                     transport.actionsIgnored += [.Attached]
 
@@ -561,15 +569,14 @@ class RealtimeClientChannel: QuickSpec {
                         private init() {}
                     }
 
-                    channel.subscribe { message, errorInfo in
-                        expect(errorInfo).to(beNil())
+                    channel.subscribe { message in
                         expect(message.data as? String).to(equal("message"))
                         Test.counter += 1
                     }
 
-                    channel.publish("message", cb: nil)
-                    channel.publish("message", withName: "eventA", cb: nil)
-                    channel.publish("message", withName: "eventB", cb: nil)
+                    channel.publish(nil, data: "message")
+                    channel.publish("eventA", data: "message")
+                    channel.publish("eventB", data: "message")
 
                     expect(Test.counter).toEventually(equal(3), timeout: testTimeout)
                 }
@@ -586,17 +593,16 @@ class RealtimeClientChannel: QuickSpec {
                         private init() {}
                     }
 
-                    channel.subscribeToName("eventA") { message, errorInfo in
-                        expect(errorInfo).to(beNil())
+                    channel.subscribe("eventA") { message in
                         expect(message.name).to(equal("eventA"))
                         expect(message.data as? String).to(equal("message"))
                         Test.counter += 1
                     }
 
-                    channel.publish("message", cb: nil)
-                    channel.publish("message", withName: "eventA", cb: nil)
-                    channel.publish("message", withName: "eventB", cb: nil)
-                    channel.publish("message", withName: "eventA", cb: nil)
+                    channel.publish(nil, data: "message")
+                    channel.publish("eventA", data: "message")
+                    channel.publish("eventB", data: "message")
+                    channel.publish("eventA", data: "message")
 
                     expect(Test.counter).toEventually(equal(2), timeout: testTimeout)
                 }
