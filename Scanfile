@@ -4,6 +4,6 @@
 # In general, you can use the options available
 # scan --help
 
-scheme "ably"
+scheme "Ably"
 open_report false
 clean true

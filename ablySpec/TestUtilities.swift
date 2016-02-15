@@ -13,7 +13,7 @@ import Nimble
 import SwiftyJSON
 import SwiftWebSocket
 
-import ably.Private
+import Ably.Private
 
 class Configuration : QuickConfiguration {
     override class func configure(configuration: Quick.Configuration!) {

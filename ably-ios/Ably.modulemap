@@ -1,0 +1,26 @@
+framework module Ably {
+    umbrella header "Ably.h"
+
+    export *
+    module * { export * }
+
+    explicit module Private {
+        header "ARTAuth+Private.h"
+        header "ARTBaseMessage+Private.h"
+        header "ARTChannel+Private.h"
+        header "ARTChannels+Private.h"
+        header "ARTConnection+Private.h"
+        header "ARTDataQuery+Private.h"
+        header "ARTDefault+Private.h"
+        header "ARTEventEmitter+Private.h"
+        header "ARTRealtime+Private.h"
+        header "ARTRealtimeChannel+Private.h"
+        header "ARTRest+Private.h"
+        header "ARTRestChannel+Private.h"
+        header "ARTPaginatedResult+Private.h"
+        header "ARTPresence+Private.h"
+        header "ARTProtocolMessage+Private.h"
+        header "ARTTokenParams+Private.h"
+        header "ARTURLSessionServerTrust.h"
+    }
+}
