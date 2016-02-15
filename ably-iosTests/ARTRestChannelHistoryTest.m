@@ -201,8 +201,8 @@
                 XCTAssertTrue([result hasNext]);
                 NSArray *page = [result items];
                 XCTAssertEqual([page count], 2);
-                ARTMessage *firstMessage = [page objectAtIndex:0];
-                ARTMessage *secondMessage =[page objectAtIndex:1];
+                //ARTMessage *firstMessage = [page objectAtIndex:0];
+                //ARTMessage *secondMessage =[page objectAtIndex:1];
                 // FIXME: doesn't respect the order
                 //XCTAssertEqualObjects(@"testString0", [firstMessage data]);
                 //XCTAssertEqualObjects(@"testString1", [secondMessage data]);
@@ -211,8 +211,8 @@
                     XCTAssert(!error);
                     NSArray * page = [result2 items];
                     XCTAssertEqual([page count], 2);
-                    ARTMessage * firstMessage = [page objectAtIndex:0];
-                    ARTMessage * secondMessage =[page objectAtIndex:1];
+                    //ARTMessage * firstMessage = [page objectAtIndex:0];
+                    //ARTMessage * secondMessage =[page objectAtIndex:1];
                     //XCTAssertEqualObjects(@"testString2", [firstMessage data]);
                     //XCTAssertEqualObjects(@"testString3", [secondMessage data]);
 
@@ -221,7 +221,7 @@
                         XCTAssertFalse([result3 hasNext]);
                         NSArray * page = [result3 items];
                         XCTAssertEqual([page count], 1);
-                        ARTMessage * firstMessage = [page objectAtIndex:0];
+                        //ARTMessage * firstMessage = [page objectAtIndex:0];
                         //XCTAssertEqualObjects(@"testString4", [firstMessage data]);
 
                         [result3 first:^(ARTPaginatedResult *result4, NSError *error) {
@@ -229,8 +229,8 @@
                             XCTAssertTrue([result4 hasNext]);
                             NSArray * page = [result4 items];
                             XCTAssertEqual([page count], 2);
-                            ARTMessage * firstMessage = [page objectAtIndex:0];
-                            ARTMessage * secondMessage =[page objectAtIndex:1];
+                            //ARTMessage * firstMessage = [page objectAtIndex:0];
+                            //ARTMessage * secondMessage =[page objectAtIndex:1];
                             //XCTAssertEqualObjects(@"testString0", [firstMessage data]);
                             //XCTAssertEqualObjects(@"testString1", [secondMessage data]);
                             [firstExpectation fulfill];

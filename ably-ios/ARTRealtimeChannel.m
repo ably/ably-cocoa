@@ -297,7 +297,7 @@
 }
 
 - (void)releaseChannel {
-    [self detachChannel:ARTStateOk];
+    [self detachChannel:[ARTStatus state:ARTStateOk]];
     [self.realtime.channels release:self.name];
 }
 
