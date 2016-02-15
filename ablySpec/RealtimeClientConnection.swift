@@ -171,6 +171,7 @@ class RealtimeClientConnection: QuickSpec {
 
             // RTN4
             context("event emitter") {
+
                 // RTN4a
                 it("should emit events for state changes") {
                     let options = AblyTests.commonAppSetup()
@@ -205,6 +206,7 @@ class RealtimeClientConnection: QuickSpec {
                             case .Failed:
                                 events += [state]
                                 expect(errorInfo).toNot(beNil(), description: "Error is nil")
+                                connection.off()
                                 done()
                             default:
                                 break
