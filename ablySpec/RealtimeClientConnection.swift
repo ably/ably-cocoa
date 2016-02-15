@@ -466,21 +466,17 @@ class RealtimeClientConnection: QuickSpec {
             // RTN7
             context("ACK and NACK") {
 
-                let options = AblyTests.commonAppSetup()
-                options.autoConnect = false
-                options.clientId = "client_string"
-                let client = ARTRealtime(options: options)
-                client.setTransportClass(TestProxyTransport.self)
-
                 // RTN7a
                 context("should expect either an ACK or NACK to confirm") {
 
                     it("successful receipt and acceptance of message") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        options.clientId = "client_string"
+                        let client = ARTRealtime(options: options)
+                        client.setTransportClass(TestProxyTransport.self)
                         client.connect()
-                        defer {
-                            client.dispose()
-                            client.close()
-                        }
+                        defer { client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
                             publishFirstTestMessage(client, completion: { error in
@@ -503,11 +499,13 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     it("successful receipt and acceptance of presence") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        options.clientId = "client_string"
+                        let client = ARTRealtime(options: options)
+                        client.setTransportClass(TestProxyTransport.self)
                         client.connect()
-                        defer {
-                            client.dispose()
-                            client.close()
-                        }
+                        defer { client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.on { stateChange in
@@ -549,10 +547,7 @@ class RealtimeClientConnection: QuickSpec {
                         let client = ARTRealtime(options: options)
                         client.setTransportClass(TestProxyTransport.self)
                         client.connect()
-                        defer {
-                            client.dispose()
-                            client.close()
-                        }
+                        defer { client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
                             publishFirstTestMessage(client, completion: { error in
@@ -575,11 +570,13 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     it("presence failure") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        options.clientId = "client_string"
+                        let client = ARTRealtime(options: options)
+                        client.setTransportClass(TestProxyTransport.self)
                         client.connect()
-                        defer {
-                            client.dispose()
-                            client.close()
-                        }
+                        defer { client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.on { stateChange in
@@ -626,11 +623,13 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     it("should contain unique serially incrementing msgSerial along with the count") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        options.clientId = "client_string"
+                        let client = ARTRealtime(options: options)
+                        client.setTransportClass(TestProxyTransport.self)
                         client.connect()
-                        defer {
-                            client.dispose()
-                            client.close()
-                        }
+                        defer { client.close() }
 
                         let channel = client.channels.get("channel")
                         channel.attach()
@@ -689,11 +688,13 @@ class RealtimeClientConnection: QuickSpec {
                 pending("should trigger the failure callback for the remaining pending messages if") {
 
                     it("connection is closed") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        options.clientId = "client_string"
+                        let client = ARTRealtime(options: options)
+                        client.setTransportClass(TestProxyTransport.self)
                         client.connect()
-                        defer {
-                            client.dispose()
-                            client.close()
-                        }
+                        defer { client.close() }
 
                         let channel = client.channels.get("channel")
                         let transport = client.transport as! TestProxyTransport
@@ -717,11 +718,13 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     it("connection state enters FAILED") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        options.clientId = "client_string"
+                        let client = ARTRealtime(options: options)
+                        client.setTransportClass(TestProxyTransport.self)
                         client.connect()
-                        defer {
-                            client.dispose()
-                            client.close()
-                        }
+                        defer { client.close() }
 
                         let channel = client.channels.get("channel")
                         let transport = client.transport as! TestProxyTransport
