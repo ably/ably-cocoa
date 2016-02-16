@@ -200,6 +200,7 @@ class RealtimeClientConnection: QuickSpec {
                                 client.onError(AblyTests.newErrorProtocolMessage())
                             case .Closing:
                                 events += [state]
+                                client.onClosed()
                             case .Closed:
                                 events += [state]
                                 client.onSuspended()

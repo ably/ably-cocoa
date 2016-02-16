@@ -65,6 +65,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)onHeartbeat;
 - (void)onConnected:(ARTProtocolMessage *)message;
 - (void)onDisconnected;
+- (void)onClosed;
 - (void)onSuspended;
 - (void)onError:(ARTProtocolMessage *)message;
 - (void)onAck:(ARTProtocolMessage *)message;

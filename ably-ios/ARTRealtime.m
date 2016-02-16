@@ -296,10 +296,6 @@
     }
     
     [self.connection emit:[NSNumber numberWithInt:state] with:[[ARTConnectionStateChange alloc] initWithCurrent:state previous:previousState reason:errorInfo]];
-
-    if (state == ARTRealtimeClosing) {
-        [self transition:ARTRealtimeClosed];
-    }
 }
 
 - (void)startConnectTimer {
@@ -416,7 +412,6 @@
             [self transition:ARTRealtimeConnected withErrorInfo:message.error];
             break;
         default:
-            NSAssert(false, @"Invalid Realtime state: expected Connecting has current state");
             break;
     }
 }
@@ -430,6 +425,21 @@
             break;
         default:
             NSAssert(false, @"Invalid Realtime state: expected Connected has current state");
+            break;
+    }
+}
+
+- (void)onClosed {
+    [self.logger info:@"ARTRealtime closed"];
+    switch (self.connection.state) {
+        case ARTRealtimeClosed:
+            break;
+        case ARTRealtimeClosing:
+            [self.connection setId:nil];
+            [self transition:ARTRealtimeClosed];
+            break;
+        default:
+            NSAssert(false, @"Invalid Realtime state: expected Closing or Closed has current state");
             break;
     }
 }
@@ -736,7 +746,7 @@
             [self onNack:message];
             break;
         case ARTProtocolMessageClosed:
-            [self transition:ARTRealtimeClosed];
+            [self onClosed];
             break;
         default:
             [self onChannelMessage:message];
@@ -758,7 +768,11 @@
 }
 
 - (void)realtimeTransportDisconnected:(id<ARTRealtimeTransport>)transport {
-    [self transition:ARTRealtimeDisconnected];
+    if (self.connection.state == ARTRealtimeClosing) {
+        [self transition:ARTRealtimeClosed];
+    } else {
+        [self transition:ARTRealtimeDisconnected];
+    }
 }
 
 - (void)realtimeTransportFailed:(id<ARTRealtimeTransport>)transport withErrorInfo:(ARTErrorInfo *)errorInfo {
