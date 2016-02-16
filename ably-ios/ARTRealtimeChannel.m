@@ -386,7 +386,7 @@
         case ARTRealtimeChannelAttaching:
         case ARTRealtimeChannelAttached:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"already attached"];
-            if (cb) cb([ARTErrorInfo createWithCode:90000 message:@"Already attached"]);
+            if (cb) cb(nil);
             return;
         default:
             break;
@@ -415,7 +415,7 @@
         case ARTRealtimeChannelDetaching:
         case ARTRealtimeChannelDetached:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"can't detach when not attahed"];
-            if (cb) cb([ARTErrorInfo createWithCode:90000 message:@"Can't detach when not attahed"]);
+            if (cb) cb(nil);
             return;
         default:
             break;
