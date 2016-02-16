@@ -630,6 +630,8 @@ class RealtimeClientChannel: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.subscribe { message in
+                            // FIXME: error handling
+                            //https://github.com/ably/ably-ios/pull/208#discussion_r53043622
                             done()
                         }
                     }
