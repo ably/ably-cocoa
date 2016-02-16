@@ -828,6 +828,33 @@ class RealtimeClientChannel: QuickSpec {
 
             }
 
+            // RTL8
+            context("unsubscribe") {
+
+                // RTL8a
+                it("with no arguments unsubscribes the provided listener to all messages if subscribed") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let listener = channel.subscribe { message in
+                            fail("Listener shouldn't exist")
+                            done()
+                        }
+
+                        channel.unsubscribe(listener)
+
+                        channel.publish(nil, data: "message") { errorInfo in
+                            expect(errorInfo).to(beNil())
+                            done()
+                        }
+                    }
+                }
+
+            }
+
             // RTL10
             context("history") {
 
