@@ -217,7 +217,8 @@
     }
 
     self.state = state;
-    
+    _errorReason = status.errorInfo;
+
     [self.statesEventEmitter emit:[NSNumber numberWithInt:state] with:status.errorInfo];
 }
 
