@@ -246,7 +246,7 @@ class RealtimeClientChannel: QuickSpec {
                 // RTL4b
                 context("results in an error if the connection state is") {
 
-                    pending("CLOSING") {
+                    it("CLOSING") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
                         let client = ARTRealtime(options: options)
