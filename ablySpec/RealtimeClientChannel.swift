@@ -609,6 +609,38 @@ class RealtimeClientChannel: QuickSpec {
 
             }
 
+            // RTL8
+            context("unsubscribe") {
+
+                // RTL8a
+                it("with no arguments unsubscribes the provided listener to all messages if subscribed") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+
+                    let channel = client.channels.get("test")
+
+                    var listener: ARTEventListener?
+                    waitUntil(timeout: testTimeout) { done in
+                        listener = channel.subscribe { message in
+                            expect(message.data as? String).to(equal("message"))
+                            done()
+                        }
+                        channel.publish(nil, data: "message")
+                    }
+
+                    channel.unsubscribe(listener!)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "message") { errorInfo in
+                            expect(errorInfo).to(beNil())
+                            // If `unsubscribe` fails then the test suite will raise "Done closure's was called multiple times."
+                            delay(1.0) { done() }
+                        }
+                    }
+                }
+
+            }
+
         }
     }
 }
