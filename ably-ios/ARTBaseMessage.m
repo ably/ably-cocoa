@@ -42,8 +42,9 @@
 
 - (id)decodeWithEncoder:(ARTDataEncoder*)encoder error:(NSError **)error {
     ARTDataEncoderOutput *decoded = [encoder decode:self.data encoding:self.encoding];
-    if (decoded.status.state != ARTStateOk && error) {
-        *error = [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:@{@"reason": @"decoding failed"}];
+    if (decoded.errorInfo && error) {
+        *error = [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:@{NSLocalizedDescriptionKey: @"decoding failed",
+                                                                               NSLocalizedFailureReasonErrorKey: decoded.errorInfo}];
     }
     id ret = [self copy];
     ((ARTBaseMessage *)ret).data = decoded.data;
@@ -53,8 +54,9 @@
 
 - (id)encodeWithEncoder:(ARTDataEncoder*)encoder error:(NSError **)error {
     ARTDataEncoderOutput *encoded = [encoder encode:self.data];
-    if (encoded.status.state != ARTStateOk && error) {
-        *error = [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:@{@"reason": @"encoding failed"}];
+    if (encoded.errorInfo && error) {
+        *error = [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:@{NSLocalizedDescriptionKey: @"encoding failed",
+                                                                               NSLocalizedFailureReasonErrorKey: encoded.errorInfo}];
     }
     id ret = [self copy];
     ((ARTBaseMessage *)ret).data = encoded.data;

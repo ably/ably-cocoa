@@ -16,8 +16,7 @@ class Crypto : QuickSpec {
             for keyLength in ["128", "256"] {
                 context("with fixtures from crypto-data-\(keyLength).json") {
                     let (key, iv, items) = AblyTests.loadCryptoTestData("ably-common/test-resources/crypto-data-\(keyLength).json")
-                    let logger = ARTLog.init()
-                    let decoder = ARTDataEncoder.init(cipherParams: nil, logger: logger)
+                    let decoder = ARTDataEncoder.init(cipherParams: nil, error: nil)
                     let cipherParams = ARTCipherParams.init(
                         algorithm: "aes",
                         keySpec: key,
@@ -32,7 +31,7 @@ class Crypto : QuickSpec {
 
                     it("should encrypt messages as expected in the fixtures") {
                         for item in items {
-                            let encrypter = ARTDataEncoder.init(cipherParams: cipherParams, logger: logger)
+                            let encrypter = ARTDataEncoder.init(cipherParams: cipherParams, error: nil)
 
                             let fixture = extractMessage(item.encoded)
                             let encryptedFixture = extractMessage(item.encrypted)
@@ -53,7 +52,7 @@ class Crypto : QuickSpec {
 
                     it("should decrypt messages as expected in the fixtures") {
                         for item in items {
-                            let encrypter = ARTDataEncoder.init(cipherParams: cipherParams, logger: logger)
+                            let encrypter = ARTDataEncoder.init(cipherParams: cipherParams, error: nil)
 
                             let fixture = extractMessage(item.encoded)
                             let encryptedFixture = extractMessage(item.encrypted)

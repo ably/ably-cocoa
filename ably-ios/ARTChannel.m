@@ -21,7 +21,12 @@
     if (self = [super init]) {
         _name = name;
         self.options = options;
-        _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:_options.cipherParams logger:logger];
+        NSError *error;
+        _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:_options.cipherParams error:&error];
+        if (error != nil) {
+            [logger warn:@"creating ARTDataEncoder: %@", error];
+            _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:nil error:nil];
+        }
         _logger = logger;
     }
     return self;
@@ -70,8 +75,8 @@
     NSError *error = nil;
     message = [message encodeWithEncoder:self.dataEncoder error:&error];
     if (error != nil) {
-        [self.logger error:@"ARTChannel: error encoding data"];
-        @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"message encoding failed" userInfo:nil];
+        [self.logger error:@"ARTChannel: error encoding data: %@", error];
+        [NSException raise:NSInvalidArgumentException format:@"ARTChannel: error encoding data: %@", error];
     }
     return message;
 }

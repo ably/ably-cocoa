@@ -10,24 +10,14 @@
 #import "ARTLog.h"
 #import "ARTDataEncoder.h"
 
-@interface ARTDataEncoder ()
-
-ART_ASSUME_NONNULL_BEGIN
-
-@property (readonly, nonatomic) ARTLog *logger;
-
-ART_ASSUME_NONNULL_END
-
-@end
-
 @implementation ARTDataEncoderOutput
 
-- (id)initWithData:(id)data encoding:(NSString *)encoding status:(ARTStatus *)status {
+- (id)initWithData:(id)data encoding:(NSString *)encoding errorInfo:(ARTErrorInfo *)errorInfo {
     self = [super init];
     if (self) {
         _data = data;
         _encoding = encoding;
-        _status = status;
+        _errorInfo = errorInfo;
     }
     return self;
 }
@@ -38,14 +28,19 @@ ART_ASSUME_NONNULL_END
     id<ARTChannelCipher> _cipher;
 }
 
-- (instancetype)initWithCipherParams:(ARTCipherParams *)params logger:(ARTLog *)logger {
+- (instancetype)initWithCipherParams:(ARTCipherParams *)params error:(NSError **)error {
     self = [super init];
     if (self) {
-        _logger = logger;
         if (params) {
             _cipher = [ARTCrypto cipherWithParams:params];
             if (!_cipher) {
-                [self.logger error:@"ARTDataEncoder failed to create cipher with name %@", params.algorithm];
+                if (error) {
+                    NSString *desc = [NSString stringWithFormat:@"ARTDataEncoder failed to create cipher with name %@", params.algorithm];
+                    *error = [NSError errorWithDomain:ARTAblyErrorDomain
+                                                 code:0
+                                             userInfo:@{NSLocalizedDescriptionKey: desc}];
+                }
+                return nil;
             }
         }
     }
@@ -58,15 +53,14 @@ ART_ASSUME_NONNULL_END
     NSData *toBase64 = nil;
 
     if (!data) {
-        return [[ARTDataEncoderOutput alloc] initWithData:data encoding:nil status:[ARTStatus state:ARTStateOk]];
+        return [[ARTDataEncoderOutput alloc] initWithData:data encoding:nil errorInfo:nil];
     }
 
     if ([data isKindOfClass:[NSArray class]] || [data isKindOfClass:[NSDictionary class]]) {
         NSError *error = nil;
         encoded = [NSJSONSerialization dataWithJSONObject:data options:0 error:&error];
         if (error) {
-            ARTStatus *status = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithNSError:error]];
-            return [[ARTDataEncoderOutput alloc] initWithData:data encoding:nil status:status];
+            return [[ARTDataEncoderOutput alloc] initWithData:data encoding:nil errorInfo:[ARTErrorInfo createWithNSError:error]];
         }
         encoding = @"json/utf-8";
     } else if ([data isKindOfClass:[NSString class]]) {
@@ -80,7 +74,8 @@ ART_ASSUME_NONNULL_END
     if (_cipher) {
         ARTStatus *status = [_cipher encrypt:encoded output:&toBase64];
         if (status.state != ARTStateOk) {
-            return [[ARTDataEncoderOutput alloc] initWithData:encoded encoding:encoding status:status];
+            ARTErrorInfo *errorInfo = status.errorInfo ? status.errorInfo : [ARTErrorInfo createWithCode:0 message:@"encrypt failed"];
+            return [[ARTDataEncoderOutput alloc] initWithData:encoded encoding:encoding errorInfo:errorInfo];
         }
         encoding = [NSString artAddEncoding:[self cipherEncoding] toString:encoding];
     }
@@ -88,33 +83,31 @@ ART_ASSUME_NONNULL_END
     if (toBase64 != nil) {
         encoded = [[toBase64 base64EncodedStringWithOptions:0] dataUsingEncoding:NSUTF8StringEncoding];
         if (!encoded) {
-            return [[ARTDataEncoderOutput alloc] initWithData:toBase64 encoding:encoding status:[ARTStatus state:ARTStateError]];
+            return [[ARTDataEncoderOutput alloc] initWithData:toBase64 encoding:encoding errorInfo:[ARTErrorInfo createWithCode:0 message:@"base64 failed"]];
         }
         encoding = [NSString artAddEncoding:@"base64" toString:encoding];
     }
 
     if (encoded == nil) {
-        NSError *error = [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:@{@"reason": @"must be NSString, NSData, NSArray or NSDictionary."}];
-        ARTStatus *status = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithNSError:error]];
-        return [[ARTDataEncoderOutput alloc] initWithData:data encoding:nil status:status];
+        return [[ARTDataEncoderOutput alloc] initWithData:data encoding:nil errorInfo:[ARTErrorInfo createWithCode:0 message:@"must be NSString, NSData, NSArray or NSDictionary."]];
     }
 
     return [[ARTDataEncoderOutput alloc] initWithData:[[NSString alloc] initWithData:encoded encoding:NSUTF8StringEncoding]
                                              encoding:encoding
-                                               status:[ARTStatus state:ARTStateOk]];
+                                            errorInfo:nil];
 }
 
 - (ARTDataEncoderOutput *)decode:(id)data encoding:(NSString *)encoding {
     if (!data || !encoding ) {
-        return [[ARTDataEncoderOutput alloc] initWithData:data encoding:encoding status:[ARTStatus state:ARTStateOk]];
+        return [[ARTDataEncoderOutput alloc] initWithData:data encoding:encoding errorInfo:nil];
     }
     
-    BOOL ok = false;
+    ARTErrorInfo *errorInfo = nil;
     NSArray *encodings = [encoding componentsSeparatedByString:@"/"];
     NSString *outputEncoding = [NSString stringWithString:encoding];
     
     for (NSUInteger i = [encodings count]; i > 0; i--) {
-        ok = false;
+        errorInfo = nil;
         NSString *encoding = [encodings objectAtIndex:i-1];
         
         if ([encoding isEqualToString:@"base64"]) {
@@ -123,38 +116,47 @@ ART_ASSUME_NONNULL_END
             }
             if ([data isKindOfClass:[NSString class]]) {
                 data = [[NSData alloc] initWithBase64EncodedString:(NSString *)data options:0];
-                ok = data != nil;
+            } else {
+                errorInfo = [ARTErrorInfo createWithCode:0 message:[NSString stringWithFormat:@"invalid data type: '%@'", [data class]]];
             }
         } else if ([encoding isEqualToString:@""] || [encoding isEqualToString:@"utf-8"]) {
             if ([data isKindOfClass:[NSData class]]) { // E. g. when decrypted.
                 data = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
             }
-            ok = [data isKindOfClass:[NSString class]];
+            if (![data isKindOfClass:[NSString class]]) {
+                errorInfo = [ARTErrorInfo createWithCode:0 message:[NSString stringWithFormat:@"invalid data type: '%@'", [data class]]];
+            }
         } else if ([encoding isEqualToString:@"json"]) {
             if ([data isKindOfClass:[NSData class]]) { // E. g. when decrypted.
                 data = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
             }
             if ([data isKindOfClass:[NSString class]]) {
                 NSData *jsonData = [data dataUsingEncoding:NSUTF8StringEncoding];
-                data = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:nil];
-                ok = data != nil;
+                NSError *error;
+                data = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
+                if (error != nil) {
+                    errorInfo = [ARTErrorInfo createWithNSError:error];
+                }
             }
         } else if (_cipher && [encoding isEqualToString:[self cipherEncoding]] && [data isKindOfClass:[NSData class]]) {
             ARTStatus *status = [_cipher decrypt:data output:&data];
-            ok = status.state == ARTStateOk;
+            if (status.state != ARTStateOk) {
+                errorInfo = status.errorInfo ? status.errorInfo : [ARTErrorInfo createWithCode:0 message:@"decrypt failed"];
+            }
+        } else {
+            errorInfo = [ARTErrorInfo createWithCode:0 message:[NSString stringWithFormat:@"unknown encoding: '%@'", encoding]];
         }
         
-        if (ok) {
+        if (errorInfo == nil) {
             outputEncoding = [outputEncoding artRemoveLastEncoding];
         } else {
-            [self.logger error:@"ARTDataDecoded failed to decode data as '%@': (%@)%@", encoding, [data class], data];
             break;
         }
     }
     
     return [[ARTDataEncoderOutput alloc] initWithData:data
                                              encoding:outputEncoding
-                                               status:[ARTStatus state:(ok ? ARTStateOk : ARTStateError)]];
+                                            errorInfo:errorInfo];
 }
 
 - (NSString *)cipherEncoding {
