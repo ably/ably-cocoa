@@ -10,17 +10,25 @@ Visit https://www.ably.io/documentation for a complete API reference and more ex
 
 ## Installation
 
-You can install Ably for iOS either through CocoaPods or manually.
+You can install Ably for iOS through CocoaPods, Carthage or manually.
 
 ### Installing through [CocoaPods](https://cocoapods.org/) (recommended)
 
 Add this line to your application's Podfile:
 
-    pod 'ably', '~> 0.8'
+    pod 'Ably', '~> 0.8'
 
 And then install the dependency:
 
     $ pod install
+
+### Installing through [Carthage](https://github.com/Carthage/Carthage/)
+
+Add this line to your application's Cartfile:
+
+    github "ably/ably-ios" ~> 0.8
+
+And then run `carthage update` to build the framework and drag the built Ably.framework into your Xcode project.
 
 ### Manual installation 
 
