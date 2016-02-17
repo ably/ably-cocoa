@@ -609,6 +609,44 @@ class RealtimeClientChannel: QuickSpec {
 
             }
 
+            // RTL10
+            context("history") {
+
+                // RTL10a 
+                it("should support all the same params as Rest") {
+                    let options = AblyTests.commonAppSetup()
+
+                    let rest = ARTRest(options: options)
+
+                    let realtime = ARTRealtime(options: options)
+                    defer { realtime.close() }
+
+                    let channelRest = rest.channels.get("test")
+                    let channelRealtime = realtime.channels.get("test")
+
+                    let queryRealtime = ARTRealtimeHistoryQuery()
+                    queryRealtime.start = NSDate()
+                    queryRealtime.end = NSDate()
+                    queryRealtime.direction = .Forwards
+                    queryRealtime.limit = 50
+
+                    let queryRest = queryRealtime as ARTDataQuery
+
+                    waitUntil(timeout: testTimeout) { done in
+                        try! channelRest.history(queryRest) { _, _ in
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        try! channelRealtime.history(queryRealtime) { _, _ in
+                            done()
+                        }
+                    }
+                }
+
+            }
+
         }
     }
 }
