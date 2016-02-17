@@ -71,7 +71,7 @@
 
         [channel history:^(ARTPaginatedResult<ARTMessage *> *messagesPage, NSError *error) {
             NSLog(@"%@", messagesPage.items);
-        }];
+        } error:nil];
     }];
 }
 
@@ -89,7 +89,7 @@
                 // retrieved the next page in nextPage
             }];
             NSLog(@"%d", messagesPage.hasNext); // true, there are more pages
-        }];
+        } error:nil];
     }];
 }
 
@@ -150,7 +150,7 @@
                 // retrieved the next page in nextPage
             }];
             NSLog(@"%d", messagesPage.hasNext); // true, there are more pages
-        }];
+        } error:nil];
     }];
 }
 

@@ -62,7 +62,7 @@
             [channel publish:nil data:stringPayload cb:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
                 ARTRealtimeHistoryQuery *query = [[ARTRealtimeHistoryQuery alloc] init];
-                [channel history:query error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
+                [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
                     XCTAssert(!error);
                     XCTAssertFalse([result hasNext]);
                     NSArray *page = [result items];
@@ -73,7 +73,7 @@
                     XCTAssertEqualObjects([dataMessage data], dataPayload);
                     XCTAssertEqualObjects([stringMessage data], stringPayload);
                     [exp fulfill];
-                }];
+                } error:nil];
             }];
         }];
     }];
@@ -102,7 +102,7 @@
                 XCTAssertNil(errorInfo);
                 [c publish:nil data:stringPayload cb:^(ARTErrorInfo *errorInfo) {
                     XCTAssertNil(errorInfo);
-                    [c history:[[ARTRealtimeHistoryQuery alloc] init] error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
+                    [c history:^(ARTPaginatedResult *result, NSError *error) {
                         XCTAssert(!error);
                         XCTAssertFalse([result hasNext]);
                         NSArray * page = [result items];
@@ -115,7 +115,7 @@
                         XCTAssertEqualObjects([stringMessage data], stringPayload);
                         XCTAssertEqualObjects([firstMessage data], firstMessageText);
                         [exp fulfill];
-                    }];
+                    } error:nil];
                 }];
             }];
         }];

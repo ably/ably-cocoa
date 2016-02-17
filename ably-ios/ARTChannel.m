@@ -75,23 +75,11 @@
     return message;
 }
 
-- (NSError *)history:(void (^)(ARTPaginatedResult<ARTMessage *> * _Nullable, NSError * _Nullable))callback {
-    NSError *error = nil;
-    [self historyWithError:&error callback:callback];
-    return error;
+- (BOOL)history:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, NSError *))callback error:(NSError **)errorPtr {
+    return [self history:[[ARTDataQuery alloc] init] callback:callback error:errorPtr];
 }
 
-- (NSError *)history:(ARTDataQuery *)query callback:(void (^)(ARTPaginatedResult<ARTMessage *> * _Nullable, NSError * _Nullable))callback {
-    NSError *error = nil;
-    [self history:query error:&error callback:callback];
-    return error;
-}
-
-- (BOOL)historyWithError:(NSError *__autoreleasing  _Nullable *)errorPtr callback:(void (^)(ARTPaginatedResult<ARTMessage *> * _Nullable, NSError * _Nullable))callback {
-    return [self history:[[ARTDataQuery alloc] init] error:errorPtr callback:callback];
-}
-
-- (BOOL)history:(ARTDataQuery *)query error:(NSError **)errorPtr callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, NSError *))callback {
+- (BOOL)history:(ARTDataQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, NSError *))callback error:(NSError **)errorPtr {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
     return NO;
 }
