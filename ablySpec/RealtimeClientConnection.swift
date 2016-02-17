@@ -687,7 +687,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN7c
-                pending("should trigger the failure callback for the remaining pending messages if") {
+                context("should trigger the failure callback for the remaining pending messages if") {
 
                     it("connection is closed") {
                         let options = AblyTests.commonAppSetup()
@@ -765,22 +765,20 @@ class RealtimeClientConnection: QuickSpec {
                         let transport = client.transport as! TestProxyTransport
                         transport.actionsIgnored += [.Ack, .Nack]
 
-                        waitUntil(timeout: testTimeout + options.disconnectedRetryTimeout) { done in
-                            channel.on { errorInfo in
-                                if channel.state == .Attached {
-                                    channel.publish(nil, data: "message", cb: { errorInfo in
-                                        expect(errorInfo).toNot(beNil())
-                                        done()
-                                    })
-                                    // Wait until the message is pushed to Ably first
-                                    delay(1.0) {
-                                        client.simulateLostConnection()
-                                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connecting), timeout: options.disconnectedRetryTimeout)
-                                    }
-                                }
-                            }
-                            channel.attach()
+                        channel.attach()
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                        var gotPublishedCallback = false
+                        channel.publish(nil, data: "message", cb: { errorInfo in
+                            expect(errorInfo).toNot(beNil())
+                            gotPublishedCallback = true
+                        })
+
+                        // Wait until the message is pushed to Ably first
+                        delay(1.0) {
+                            client.simulateLostConnection()
                         }
+                        expect(gotPublishedCallback).toEventually(beTrue(), timeout: testTimeout)
                     }
 
                 }

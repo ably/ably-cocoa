@@ -467,6 +467,7 @@ extension ARTWebSocketTransport {
 
     func simulateIncomingNormalClose() {
         let CLOSE_NORMAL = 1000
+        self.closing = true
         let webSocketDelegate = self as! WebSocketDelegate
         webSocketDelegate.webSocketClose(CLOSE_NORMAL, reason: "", wasClean: true)
     }

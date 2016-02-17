@@ -140,12 +140,32 @@
         }
         case ARTRealtimeChannelAttached:
         {
-            [self.realtime send:pm cb:cb];
+            [self sendMessage:pm cb:cb];
             break;
         }
         default:
             NSAssert(NO, @"Invalid State");
     }
+}
+
+
+- (void)sendMessage:(ARTProtocolMessage *)pm cb:(ARTStatusCallback)cb {
+    __block BOOL gotFailure = false;
+    __block ARTEventListener *listener = [self.realtime.connection on:^(ARTConnectionStateChange *stateChange) {
+        if (stateChange.current != ARTRealtimeClosed && stateChange.current != ARTRealtimeFailed && stateChange.current != ARTRealtimeDisconnected) {
+            return;
+        }
+        gotFailure = true;
+        [self.realtime.connection off:listener];
+        if (!cb) return;
+        ARTErrorInfo *reason = stateChange.reason ? stateChange.reason : [ARTErrorInfo createWithCode:0 message:@"connection broken before receiving publishing acknowledgement."];
+        cb([ARTStatus state:ARTStateError info:reason]);
+    }];
+
+    [self.realtime send:pm cb:^(ARTStatus *status) {
+        [self.realtime.connection off:listener];
+        if (cb && !gotFailure) cb(status);
+    }];
 }
 
 - (ARTPresenceMap *) presenceMap {
@@ -446,7 +466,7 @@
     NSArray *qms = self.queuedMessages;
     self.queuedMessages = [NSMutableArray array];
     for (ARTQueuedMessage *qm in qms) {
-        [self.realtime send:qm.msg cb:qm.cb];
+        [self sendMessage:qm.msg cb:qm.cb];
     }
 }
 

@@ -41,7 +41,6 @@ enum {
 @property (readonly, assign, nonatomic) CFRunLoopRef rl;
 @property (readonly, strong, nonatomic) dispatch_queue_t queue;
 @property (readwrite, strong, nonatomic) WebSocket *websocket;
-@property (readwrite, assign, nonatomic) BOOL closing;
 
 // From RestClient
 @property (readwrite, strong, nonatomic) id<ARTEncoder> encoder;
