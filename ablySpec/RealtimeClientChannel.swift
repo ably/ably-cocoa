@@ -840,6 +840,11 @@ class RealtimeClientChannel: QuickSpec {
                     let realtime = ARTRealtime(options: options)
                     defer { realtime.close() }
 
+                    var restChannelHistoryMethodWasCalled = false
+                    ARTRestChannel.testSuite_injectIntoClassMethod("history:callback:error:") {
+                        restChannelHistoryMethodWasCalled = true
+                    }
+
                     let channelRest = rest.channels.get("test")
                     let channelRealtime = realtime.channels.get("test")
 
@@ -856,12 +861,15 @@ class RealtimeClientChannel: QuickSpec {
                             done()
                         }
                     }
+                    expect(restChannelHistoryMethodWasCalled).to(beTrue())
+                    restChannelHistoryMethodWasCalled = false
 
                     waitUntil(timeout: testTimeout) { done in
                         try! channelRealtime.history(queryRealtime) { _, _ in
                             done()
                         }
                     }
+                    expect(restChannelHistoryMethodWasCalled).to(beTrue())
                 }
 
             }
