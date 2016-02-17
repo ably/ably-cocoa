@@ -296,10 +296,6 @@
     }
     
     [self.connection emit:[NSNumber numberWithInt:state] with:[[ARTConnectionStateChange alloc] initWithCurrent:state previous:previousState reason:errorInfo]];
-
-    if (state == ARTRealtimeClosing) {
-        [self transition:ARTRealtimeClosed];
-    }
 }
 
 - (void)startConnectTimer {
@@ -416,7 +412,6 @@
             [self transition:ARTRealtimeConnected withErrorInfo:message.error];
             break;
         default:
-            NSAssert(false, @"Invalid Realtime state: expected Connecting has current state");
             break;
     }
 }
