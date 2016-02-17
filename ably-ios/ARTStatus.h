@@ -18,6 +18,7 @@ typedef NS_ENUM(NSUInteger, ARTState) {
     ARTStateAccessRefused,
     ARTStateNeverConnected,
     ARTStateConnectionTimedOut,
+    ARTStateAttachTimedOut,
     ARTStateNotAttached,
     ARTStateInvalidArgs,
     ARTStateCryptoBadPadding,

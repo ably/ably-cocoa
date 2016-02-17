@@ -79,6 +79,9 @@ ART_ASSUME_NONNULL_BEGIN
 // Message sending
 - (void)send:(ARTProtocolMessage *)msg cb:(art_nullable ARTStatusCallback)cb;
 
+- (CFRunLoopTimerRef)startTimer:(void(^)())onTimeout interval:(NSTimeInterval)interval;
+- (void)cancelTimer:(CFRunLoopTimerRef)timer;
+
 @end
 
 ART_ASSUME_NONNULL_END
