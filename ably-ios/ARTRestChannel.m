@@ -78,8 +78,7 @@
     ARTPaginatedResultResponseProcessor responseProcessor = ^NSArray *(NSHTTPURLResponse *response, NSData *data) {
         id<ARTEncoder> encoder = [_rest.encoders objectForKey:response.MIMEType];
         return [[encoder decodeMessages:data] artMap:^(ARTMessage *message) {
-            [message decodeWithEncoder:self.dataEncoder output:&message];
-            return message;
+            return [message decodeWithEncoder:self.dataEncoder error:nil];
         }];
     };
 

@@ -100,8 +100,8 @@
     
     if (msg.data && self.dataEncoder) {
         ARTDataEncoderOutput *encoded = [self.dataEncoder encode:msg.data];
-        if (encoded.status.state != ARTStateOk) {
-            [self.logger warn:@"bad status encoding presence message %d",(int) encoded.status];
+        if (encoded.errorInfo) {
+            [self.logger warn:@"error encoding presence message: %@", encoded.errorInfo];
         }
         msg.data = encoded.data;
         msg.encoding = encoded.encoding;
@@ -322,9 +322,11 @@
     for (ARTMessage *m in message.messages) {
         ARTMessage *msg = m;
         if (dataEncoder) {
-            ARTStatus *status = [msg decodeWithEncoder:dataEncoder output:&msg];
-             if (status.state != ARTStateOk) {
-                [self.logger error:@"ARTRealtimeChannel: error decoding data, status: %tu", status];
+            NSError *error = nil;
+            msg = [msg decodeWithEncoder:dataEncoder error:&error];
+            if (error != nil) {
+                [self.logger error:@"ARTRealtimeChannel: error decoding data: %@", error];
+                [NSException raise:NSInvalidArgumentException format:@"ARTRealtimeChannel: error decoding data: %@", error];
             }
         }
         
@@ -347,9 +349,10 @@
     for (ARTPresenceMessage *p in message.presence) {
         ARTPresenceMessage *pm = p;
         if (dataEncoder) {
-            ARTStatus *status = [pm decodeWithEncoder:dataEncoder output:&pm];
-             if (status.state != ARTStateOk) {
-                [self.logger error:@"ARTRealtimeChannel: error decoding data, status: %tu", status];
+            NSError *error = nil;
+            pm = [pm decodeWithEncoder:dataEncoder error:&error];
+            if (error != nil) {
+                [self.logger error:@"ARTRealtimeChannel: error decoding data: %@", error];
             }
         }
         

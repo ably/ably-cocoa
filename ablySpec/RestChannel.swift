@@ -267,7 +267,7 @@ class RestChannel: QuickSpec {
                                 XCTFail("HTTPBody is nil");
                                 done(); return
                             }
-                            expect(caseTest.expected).to(equal(JSON(data: httpBody)))
+                            expect(JSON(data: httpBody)).to(equal(caseTest.expected))
                             done()
                         }
                     }

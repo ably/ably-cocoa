@@ -15,6 +15,11 @@ import SwiftWebSocket
 
 import Ably.Private
 
+enum CryptoTest: String {
+    case aes128 = "crypto-data-128"
+    case aes256 = "crypto-data-256"
+}
+
 class Configuration : QuickConfiguration {
     override class func configure(configuration: Quick.Configuration!) {
         configuration.beforeEach {
@@ -28,9 +33,10 @@ func pathForTestResource(resourcePath: String) -> String {
     return testBundle.pathForResource(resourcePath, ofType: "")!
 }
 
-let appSetupJson = JSON(data: NSData(contentsOfFile: pathForTestResource("ably-common/test-resources/test-app-setup.json"))!, options: .MutableContainers)
+let appSetupJson = JSON(data: NSData(contentsOfFile: pathForTestResource(testResourcesPath + "test-app-setup.json"))!, options: .MutableContainers)
 
 let testTimeout: NSTimeInterval = 10.0
+let testResourcesPath = "ably-common/test-resources/"
 
 /// Common test utilities.
 class AblyTests {
@@ -123,7 +129,41 @@ class AblyTests {
         protocolMessage.error = ARTErrorInfo.createWithCode(0, message: "Fail test")
         return protocolMessage
     }
-    
+
+    struct CryptoTestItem {
+
+        struct TestMessage {
+            let name: String
+            let data: String
+            let encoding: String
+        }
+
+        let encoded: TestMessage
+        let encrypted: TestMessage
+
+        init(object: JSON) {
+            let encodedJson = object["encoded"]
+            encoded = TestMessage(name: encodedJson["name"].stringValue, data: encodedJson["data"].stringValue, encoding: encodedJson["encoding"].string ?? "")
+            let encryptedJson = object["encrypted"]
+            encrypted = TestMessage(name: encryptedJson["name"].stringValue, data: encryptedJson["data"].stringValue, encoding: encryptedJson["encoding"].stringValue)
+        }
+
+    }
+
+    class func loadCryptoTestData(file: String) -> (key: NSData, iv: NSData, items: [CryptoTestItem]) {
+        let json = JSON(data: NSData(contentsOfFile: pathForTestResource(file))!)
+
+        let keyData = NSData(base64EncodedString: json["key"].stringValue, options: NSDataBase64DecodingOptions(rawValue: 0))!
+        let ivData = NSData(base64EncodedString: json["iv"].stringValue, options: NSDataBase64DecodingOptions(rawValue: 0))!
+        let items = json["items"].map{ $0.1 }.map(CryptoTestItem.init)
+        
+        return (keyData, ivData, items)
+    }
+
+    class func loadCryptoTestData(crypto: CryptoTest) -> (key: NSData, iv: NSData, items: [CryptoTestItem]) {
+        return loadCryptoTestData(testResourcesPath + crypto.rawValue + ".json")
+    }
+
 }
 
 class NSURLSessionServerTrustSync: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate {

@@ -230,6 +230,9 @@
     ARTPresenceMessage *message = [[ARTPresenceMessage alloc] init];
     message.id = [input artString:@"id"];
     message.data = [input objectForKey:@"data"];
+    if ([message.data isKindOfClass:[NSDictionary class]] || [message.data isKindOfClass:[NSArray class]]) {
+
+    }
     message.encoding = [input artString:@"encoding"];
     message.clientId = [input artString:@"clientId"];
     message.timestamp = [input artDate:@"timestamp"];
@@ -631,10 +634,6 @@
 - (void)writeData:(id)data encoding:(NSString *)encoding toDictionary:(NSMutableDictionary *)output {
     if (encoding.length) {
         output[@"encoding"] = encoding;
-    }
-    if ([encoding isEqualToString:@"json"]) {
-        NSData *jsonData = [data dataUsingEncoding:NSUTF8StringEncoding];
-        data = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:nil];
     }
     output[@"data"] = data;
 }

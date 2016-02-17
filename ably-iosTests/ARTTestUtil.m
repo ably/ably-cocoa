@@ -41,17 +41,8 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
     return [ARTTestUtil getFileByName:@"ably-common/protocol/errors.json"];
 }
 
-+ (NSString *)getCrypto256Json {
-    
-   return [ARTTestUtil getFileByName:@"ably-common/test-resources/crypto-data-256.json"];
-}
-
 + (NSString *)getTestAppSetupJson {
     return [ARTTestUtil getFileByName:@"ably-common/test-resources/test-app-setup.json"];
-}
-
-+ (NSString *)getCrypto128Json {
-    return [ARTTestUtil getFileByName:@"ably-common/test-resources/crypto-data-128.json"];
 }
 
 + (void)setupApp:(ARTClientOptions *)options withDebug:(BOOL)debug withAlteration:(TestAlteration)alt  appId:(NSString *)appId cb:(void (^)(ARTClientOptions *))cb {
