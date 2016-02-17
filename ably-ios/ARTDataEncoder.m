@@ -49,29 +49,41 @@
 
 - (ARTDataEncoderOutput *)encode:(id)data {
     NSString *encoding = nil;
-    NSData *encoded = nil;
+    id encoded = nil;
     NSData *toBase64 = nil;
 
     if (!data) {
         return [[ARTDataEncoderOutput alloc] initWithData:data encoding:nil errorInfo:nil];
     }
 
+    NSData *jsonEncoded = nil;
     if ([data isKindOfClass:[NSArray class]] || [data isKindOfClass:[NSDictionary class]]) {
         NSError *error = nil;
-        encoded = [NSJSONSerialization dataWithJSONObject:data options:0 error:&error];
+        // Just check the error; we don't want to actually JSON-encode this. It's more like "convert to JSON-compatible data".
+        // We will store the result, though, because if we're encrypting, then yes, we need to use the JSON-encoded
+        // data before encrypting.
+        jsonEncoded = [NSJSONSerialization dataWithJSONObject:data options:0 error:&error];
         if (error) {
             return [[ARTDataEncoderOutput alloc] initWithData:data encoding:nil errorInfo:[ARTErrorInfo createWithNSError:error]];
         }
-        encoding = @"json/utf-8";
+        encoded = data;
+        encoding = @"json";
     } else if ([data isKindOfClass:[NSString class]]) {
-        encoding = @"utf-8";
-        encoded = [data dataUsingEncoding:NSUTF8StringEncoding];
+        encoding = @"";
+        encoded = data;
     } else if ([data isKindOfClass:[NSData class]]) {
         encoded = data;
         toBase64 = data;
     }
 
     if (_cipher) {
+        if ([encoded isKindOfClass:[NSArray class]] || [encoded isKindOfClass:[NSDictionary class]]) {
+            encoded = jsonEncoded;
+            encoding = [NSString artAddEncoding:@"utf-8" toString:encoding];
+        } else if ([encoded isKindOfClass:[NSString class]]) {
+            encoded = [data dataUsingEncoding:NSUTF8StringEncoding];
+            encoding = [NSString artAddEncoding:@"utf-8" toString:encoding];
+        }
         ARTStatus *status = [_cipher encrypt:encoded output:&toBase64];
         if (status.state != ARTStateOk) {
             ARTErrorInfo *errorInfo = status.errorInfo ? status.errorInfo : [ARTErrorInfo createWithCode:0 message:@"encrypt failed"];
@@ -85,6 +97,7 @@
         if (!encoded) {
             return [[ARTDataEncoderOutput alloc] initWithData:toBase64 encoding:encoding errorInfo:[ARTErrorInfo createWithCode:0 message:@"base64 failed"]];
         }
+        encoded = [[NSString alloc] initWithData:encoded encoding:NSUTF8StringEncoding];
         encoding = [NSString artAddEncoding:@"base64" toString:encoding];
     }
 
@@ -92,7 +105,7 @@
         return [[ARTDataEncoderOutput alloc] initWithData:data encoding:nil errorInfo:[ARTErrorInfo createWithCode:0 message:@"must be NSString, NSData, NSArray or NSDictionary."]];
     }
 
-    return [[ARTDataEncoderOutput alloc] initWithData:[[NSString alloc] initWithData:encoded encoding:NSUTF8StringEncoding]
+    return [[ARTDataEncoderOutput alloc] initWithData:encoded
                                              encoding:encoding
                                             errorInfo:nil];
 }
@@ -109,7 +122,7 @@
     for (NSUInteger i = [encodings count]; i > 0; i--) {
         errorInfo = nil;
         NSString *encoding = [encodings objectAtIndex:i-1];
-        
+
         if ([encoding isEqualToString:@"base64"]) {
             if ([data isKindOfClass:[NSData class]]) { // E. g. when decrypted.
                 data = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
@@ -117,14 +130,14 @@
             if ([data isKindOfClass:[NSString class]]) {
                 data = [[NSData alloc] initWithBase64EncodedString:(NSString *)data options:0];
             } else {
-                errorInfo = [ARTErrorInfo createWithCode:0 message:[NSString stringWithFormat:@"invalid data type: '%@'", [data class]]];
+                errorInfo = [ARTErrorInfo createWithCode:0 message:[NSString stringWithFormat:@"invalid data type for 'base64' decoding: '%@'", [data class]]];
             }
         } else if ([encoding isEqualToString:@""] || [encoding isEqualToString:@"utf-8"]) {
             if ([data isKindOfClass:[NSData class]]) { // E. g. when decrypted.
                 data = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
             }
             if (![data isKindOfClass:[NSString class]]) {
-                errorInfo = [ARTErrorInfo createWithCode:0 message:[NSString stringWithFormat:@"invalid data type: '%@'", [data class]]];
+                errorInfo = [ARTErrorInfo createWithCode:0 message:[NSString stringWithFormat:@"invalid data type for '%@' decoding: '%@'", encoding, [data class]]];
             }
         } else if ([encoding isEqualToString:@"json"]) {
             if ([data isKindOfClass:[NSData class]]) { // E. g. when decrypted.
@@ -137,6 +150,8 @@
                 if (error != nil) {
                     errorInfo = [ARTErrorInfo createWithNSError:error];
                 }
+            } else if (![data isKindOfClass:[NSArray class]] && ![data isKindOfClass:[NSDictionary class]]) {
+                errorInfo = [ARTErrorInfo createWithCode:0 message:[NSString stringWithFormat:@"invalid data type for 'json' decoding: '%@'", [data class]]];
             }
         } else if (_cipher && [encoding isEqualToString:[self cipherEncoding]] && [data isKindOfClass:[NSData class]]) {
             ARTStatus *status = [_cipher decrypt:data output:&data];
@@ -146,7 +161,7 @@
         } else {
             errorInfo = [ARTErrorInfo createWithCode:0 message:[NSString stringWithFormat:@"unknown encoding: '%@'", encoding]];
         }
-        
+
         if (errorInfo == nil) {
             outputEncoding = [outputEncoding artRemoveLastEncoding];
         } else {
