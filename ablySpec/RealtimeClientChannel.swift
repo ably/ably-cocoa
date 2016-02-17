@@ -1185,7 +1185,9 @@ class RealtimeClientChannel: QuickSpec {
 
                                 let logs = querySyslog(forLogsAfter: logTime)
                                 let line = logs.reduce("") { $0 + "; " + $1 } //Reduce in one line
-                                expect(line).to(contain("ERROR: ARTDataDecoded failed to decode data as 'invalid'"))
+                                expect(line).to(contain("ERROR: Failed to decode data as 'invalid' encoding is unknown"))
+
+                                expect(channel.errorReason!.message).to(contain("Failed to decode data as 'invalid' encoding is unknown"))
 
                                 done()
                             }
