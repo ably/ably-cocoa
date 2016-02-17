@@ -638,6 +638,11 @@ class RealtimeClientChannel: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             let logTime = NSDate()
 
+                            channel.on(.Failed) { errorInfo in
+                                expect(errorInfo).toNot(beNil())
+                                expect(errorInfo).to(equal(channel.errorReason))
+                            }
+
                             channel.subscribe { message in
                                 // Last decoding failed: NSData -> JSON object, so...
                                 expect(message.data as? NSData).to(equal(expectedData))
@@ -646,6 +651,8 @@ class RealtimeClientChannel: QuickSpec {
                                 let logs = querySyslog(forLogsAfter: logTime)
                                 let line = logs.reduce("") { $0 + "; " + $1 } //Reduce in one line
                                 expect(line).to(contain("ERROR: ARTDataDecoded failed to decode data as 'invalid'"))
+
+                                expect(channel.errorReason).toNot(beNil())
 
                                 done()
                             }
