@@ -78,7 +78,7 @@ class ReadmeExamples : QuickSpec {
 
             let channel = client.channels.get("test")
 
-            channel.history { messagesPage, error in
+            try! channel.history { messagesPage, error in
                 let messagesPage = messagesPage!
                 print(messagesPage.items)
                 print(messagesPage.items.first)
@@ -149,7 +149,7 @@ class ReadmeExamples : QuickSpec {
             let client = ARTRest(options: options)
             let channel = client.channels.get("test")
 
-            channel.history { messagesPage, error in
+            try! channel.history { messagesPage, error in
                 let messagesPage = messagesPage!
                 print(messagesPage.items.first)
                 print((messagesPage.items.first as? ARTMessage)?.data) // payload for the message
