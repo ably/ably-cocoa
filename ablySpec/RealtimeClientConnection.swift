@@ -774,11 +774,16 @@ class RealtimeClientConnection: QuickSpec {
                             gotPublishedCallback = true
                         })
 
+                        let oldConnectionId = client.connection.id!
                         // Wait until the message is pushed to Ably first
                         delay(1.0) {
                             client.simulateLostConnection()
+                            expect(client.connection.id).to(beNil())
+                            expect(gotPublishedCallback).to(beFalse())
+                            expect(client.connection.id).toEventuallyNot(beNil(), timeout: testTimeout) // Connection ID resetted.
+                            expect(client.connection.id).toNot(equal(oldConnectionId))
+                            expect(gotPublishedCallback).to(beTrue())
                         }
-                        expect(gotPublishedCallback).toEventually(beTrue(), timeout: testTimeout)
                     }
 
                 }
