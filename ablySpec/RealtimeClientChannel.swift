@@ -180,7 +180,7 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 // RTL3b
-                pending("changes to CLOSED") {
+                context("changes to CLOSED") {
 
                     it("ATTACHING channel should transition to DETACHED") {
                         let options = AblyTests.commonAppSetup()
@@ -256,7 +256,7 @@ class RealtimeClientChannel: QuickSpec {
                 // RTL4b
                 context("results in an error if the connection state is") {
 
-                    pending("CLOSING") {
+                    it("CLOSING") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
                         let client = ARTRealtime(options: options)

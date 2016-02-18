@@ -299,10 +299,6 @@
     }
     
     [self.connection emit:[NSNumber numberWithInt:state] with:[[ARTConnectionStateChange alloc] initWithCurrent:state previous:previousState reason:errorInfo]];
-
-    if (state == ARTRealtimeClosing) {
-        [self transition:ARTRealtimeClosed];
-    }
 }
 
 - (void)startConnectTimer {
@@ -419,7 +415,6 @@
             [self transition:ARTRealtimeConnected withErrorInfo:message.error];
             break;
         default:
-            NSAssert(false, @"Invalid Realtime state: expected Connecting has current state");
             break;
     }
 }
@@ -432,7 +427,22 @@
             [self transition:ARTRealtimeDisconnected];
             break;
         default:
-            NSAssert(false, @"Invalid Realtime state: expected Connected has current state");
+            NSAssert(false, @"Invalid Realtime state transitioning to Disconnected: expected Connected");
+            break;
+    }
+}
+
+- (void)onClosed {
+    [self.logger info:@"ARTRealtime closed"];
+    switch (self.connection.state) {
+        case ARTRealtimeClosed:
+            break;
+        case ARTRealtimeClosing:
+            [self.connection setId:nil];
+            [self transition:ARTRealtimeClosed];
+            break;
+        default:
+            NSAssert(false, @"Invalid Realtime state transitioning to Closed: expected Closing or Closed");
             break;
     }
 }
@@ -739,7 +749,7 @@
             [self onNack:message];
             break;
         case ARTProtocolMessageClosed:
-            [self transition:ARTRealtimeClosed];
+            [self onClosed];
             break;
         default:
             [self onChannelMessage:message];
@@ -761,7 +771,11 @@
 }
 
 - (void)realtimeTransportDisconnected:(id<ARTRealtimeTransport>)transport {
-    [self transition:ARTRealtimeDisconnected];
+    if (self.connection.state == ARTRealtimeClosing) {
+        [self transition:ARTRealtimeClosed];
+    } else {
+        [self transition:ARTRealtimeDisconnected];
+    }
 }
 
 - (void)realtimeTransportFailed:(id<ARTRealtimeTransport>)transport withErrorInfo:(ARTErrorInfo *)errorInfo {
