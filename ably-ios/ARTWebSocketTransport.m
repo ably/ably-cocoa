@@ -85,11 +85,20 @@ enum {
 - (void)send:(ARTProtocolMessage *)msg {
     [self.logger debug:__FILE__ line:__LINE__ message:@"%p sending action %lu with %@", self, (unsigned long)msg.action, msg.messages];
     NSData *data = [self.encoder encodeProtocolMessage:msg];
+    [self sendWithData:data];
+}
+
+- (void)sendWithData:(NSData *)data {
     [self.websocket sendWithData:data];
 }
 
 - (void)receive:(ARTProtocolMessage *)msg {
     [self.delegate realtimeTransport:self didReceiveMessage:msg];
+}
+
+- (void)receiveWithData:(NSData *)data {
+    ARTProtocolMessage *pm = [self.encoder decodeProtocolMessage:data];
+    [self receive:pm];
 }
 
 - (void)connect {
@@ -300,8 +309,7 @@ enum {
 
         ARTWebSocketTransport *s = weakSelf;
         if (s) {
-            ARTProtocolMessage *pm = [s.encoder decodeProtocolMessage:data];
-            [s receive:pm];
+            [s receiveWithData:data];
         }
     });
     CFRunLoopWakeUp(self.rl);
@@ -314,8 +322,7 @@ enum {
     CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
         ARTWebSocketTransport *s = weakSelf;
         if (s) {
-            ARTProtocolMessage *pm = [s.encoder decodeProtocolMessage:data];
-            [s receive:pm];
+            [s receiveWithData:data];
         }
     });
     CFRunLoopWakeUp(self.rl);

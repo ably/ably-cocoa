@@ -22,5 +22,6 @@ framework module Ably {
         header "ARTProtocolMessage+Private.h"
         header "ARTTokenParams+Private.h"
         header "ARTURLSessionServerTrust.h"
+        header "ARTWebSocketTransport+Private.h"
     }
 }
