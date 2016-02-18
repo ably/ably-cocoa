@@ -444,7 +444,6 @@ class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
     }
 }
 
-
 /// Records each message for test purpose.
 class TestProxyTransport: ARTWebSocketTransport {
 
@@ -489,22 +488,65 @@ class TestProxyTransport: ARTWebSocketTransport {
 
 }
 
+
+// MARK: - Extensions
+
+extension ARTMessage {
+
+    public override func isEqual(object: AnyObject?) -> Bool {
+        if let other = object as? ARTMessage {
+            return self.name == other.name &&
+                self.encoding == other.encoding &&
+                self.data as! NSObject == other.data as! NSObject
+        }
+
+        return super.isEqual(object)
+    }
+
+}
+
+extension NSObject {
+
+    var toBase64: String {
+        return (try? NSJSONSerialization.dataWithJSONObject(self, options: NSJSONWritingOptions(rawValue: 0)).base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0))) ?? ""
+    }
+
+}
+
+extension NSData {
+
+    override var toBase64: String {
+        return self.base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0))
+    }
+
+    var toUTF8String: String {
+        return NSString(data: self, encoding: NSUTF8StringEncoding) as! String
+    }
+    
+}
+
+extension JSON {
+
+    var asArray: NSArray? {
+        return object as? NSArray
+    }
+
+    var asDictionary: NSDictionary? {
+        return object as? NSDictionary
+    }
+
+}
+
 extension ARTRealtime {
+
     func simulateLostConnection() {
         //1. Abruptly disconnect
-        //2. Change the `Connection#id` and `Connection#key` before the client 
+        //2. Change the `Connection#id` and `Connection#key` before the client
         //   library attempts to reconnect and resume the connection
         self.connection.setId("lost")
         self.connection.setKey("lost")
         self.onDisconnected()
     }
-    
-}
-
-
-// MARK: - Extensions
-
-extension ARTRealtime {
 
     func dispose() {
         let names = self.channels.map({ $0.name })

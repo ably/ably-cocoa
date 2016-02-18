@@ -11,40 +11,6 @@ import Quick
 import Foundation
 import SwiftyJSON
 
-extension ARTMessage {
-    public override func isEqual(object: AnyObject?) -> Bool {
-        if let other = object as? ARTMessage {
-            return self.name == other.name &&
-                self.encoding == other.encoding &&
-                self.data as! NSObject == other.data as! NSObject
-        }
-        
-        return super.isEqual(object)
-    }
-}
-
-extension NSObject {
-    var toBase64: String {
-        return (try? NSJSONSerialization.dataWithJSONObject(self, options: NSJSONWritingOptions(rawValue: 0)).base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0))) ?? ""
-    }
-}
-
-extension NSData {
-    override var toBase64: String {
-        return self.base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0))
-    }
-}
-
-extension JSON {
-    var asArray: NSArray? {
-        return object as? NSArray
-    }
-
-    var asDictionary: NSDictionary? {
-        return object as? NSDictionary
-    }
-}
-
 class RestChannel: QuickSpec {
     override func spec() {
         var client: ARTRest!
