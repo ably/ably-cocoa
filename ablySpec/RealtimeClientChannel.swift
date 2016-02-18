@@ -720,49 +720,32 @@ class RealtimeClientChannel: QuickSpec {
                     // RTL6g1
                     context("When publishing a Message with clientId set to null") {
 
-                        // RTL6g1a
-                        pending("should be unnecessary to set clientId of the Message before publishing") {
+                        // RTL6g1a & RTL6g1b
+                        pending("should be unnecessary to set clientId of the Message before publishing and have clientId value as null for the Message when received") {
                             let options = AblyTests.commonAppSetup()
+                            options.clientId = "client_string"
                             options.autoConnect = false
                             let client = ARTRealtime(options: options)
                             client.setTransportClass(TestProxyTransport.self)
                             client.connect()
                             defer { client.close() }
-
                             let channel = client.channels.get("test")
 
-                            channel.publish(nil, data: "message") { errorInfo in
-                                expect(errorInfo).to(beNil())
-                            }
-
-                            let transport = client.transport as! TestProxyTransport
-                            expect(transport.protocolMessagesSent.filter { $0.action == .Message }).toEventually(haveCount(1), timeout: testTimeout)
-
-                            let messageSent = transport.protocolMessagesSent.filter({ $0.action == .Message })[0]
-                            expect(messageSent.messages![0].clientId).to(beNil())
-                        }
-
-                        // RTL6g1b
-                        pending("should have clientId value as null for the Message when received") {
-                            let options = AblyTests.commonAppSetup()
-                            options.autoConnect = false
-                            let client = ARTRealtime(options: options)
-                            client.setTransportClass(TestProxyTransport.self)
-                            client.connect()
-                            defer { client.close() }
-
-                            let channel = client.channels.get("test")
+                            let message = ARTMessage(name: nil, data: "message")
+                            expect(message.clientId).to(beNil())
 
                             waitUntil(timeout: testTimeout) { done in
-                                channel.subscribe { message in
+                                channel.subscribe() { message in
                                     expect(message.clientId).to(beNil())
                                     done()
                                 }
-                                channel.publish(nil, data: "message")
+                                channel.publish([message])
                             }
 
                             let transport = client.transport as! TestProxyTransport
-                            expect(transport.protocolMessagesReceived.filter { $0.action == .Message }).toEventually(haveCount(1), timeout: testTimeout)
+
+                            let messageSent = transport.protocolMessagesSent.filter({ $0.action == .Message })[0]
+                            expect(messageSent.messages![0].clientId).to(beNil())
 
                             let messageReceived = transport.protocolMessagesReceived.filter({ $0.action == .Message })[0]
                             expect(messageReceived.messages![0].clientId).to(beNil())
