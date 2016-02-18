@@ -49,7 +49,7 @@
                 XCTAssert(!error);
                 ARTDataQuery *query = [[ARTDataQuery alloc] init];
                 query.direction = ARTQueryDirectionForwards;
-                [channel history:query error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
+                [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
                     XCTAssert(!error);
                     NSArray *messages = [result items];
                     XCTAssertEqual(2, messages.count);
@@ -58,7 +58,7 @@
                     XCTAssertEqualObjects([m0 data], message1);
                     XCTAssertEqualObjects([m1 data], message2);
                     [expectation fulfill];
-                }];
+                } error:nil];
             }];
         }];
     }];
@@ -80,7 +80,7 @@
 
         [channel publish:messages cb:^(ARTErrorInfo *error) {
             XCTAssert(!error);
-            [channel history:[[ARTDataQuery alloc] init] error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
+            [channel history:^(ARTPaginatedResult *result, NSError *error) {
                 XCTAssert(!error);
                 NSArray *messages = [result items];
                 XCTAssertEqual(3, messages.count);
@@ -91,7 +91,7 @@
                 XCTAssertEqualObjects([m1 data], test2);
                 XCTAssertEqualObjects([m2 data], test1);
                 [exp fulfill];
-            }];
+            } error:nil];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];

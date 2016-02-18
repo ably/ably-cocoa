@@ -12,10 +12,16 @@
 @implementation NSObject (TestSuite)
 
 - (void)testSuite_getReturnValueFrom:(SEL)selector callback:(void (^)(id))callback {
-    [self aspect_hookSelector:selector withOptions:0 usingBlock:^(id<AspectInfo> info) {
+    [self aspect_hookSelector:selector withOptions:AspectPositionAfter usingBlock:^(id<AspectInfo> info) {
         __autoreleasing id result;
         [[info originalInvocation] getReturnValue:&result];
         callback([result copy]);
+    } error:nil];
+}
+
+- (void)testSuite_injectIntoMethod:(SEL)selector code:(void (^)(void))block {
+    [self aspect_hookSelector:selector withOptions:AspectPositionAfter usingBlock:^(id<AspectInfo> info) {
+        block();
     } error:nil];
 }
 
