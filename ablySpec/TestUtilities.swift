@@ -491,6 +491,14 @@ class TestProxyTransport: ARTWebSocketTransport {
 
 // MARK: - Extensions
 
+extension SequenceType where Generator.Element: NSData {
+
+    var toJSONArray: [AnyObject] {
+        return map({ try! NSJSONSerialization.JSONObjectWithData($0, options: NSJSONReadingOptions(rawValue: 0)) })
+    }
+    
+}
+
 extension ARTMessage {
 
     public override func isEqual(object: AnyObject?) -> Bool {
