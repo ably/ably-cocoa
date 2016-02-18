@@ -22,9 +22,11 @@
 #import "ARTQueuedMessage.h"
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTStatus.h"
+#import "ARTDefault.h"
 
 @interface ARTRealtimeChannel () {
     ARTRealtimePresence *_realtimePresence;
+    CFRunLoopTimerRef _attachTimer;
 }
 
 @end
@@ -212,6 +214,7 @@
 }
 
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status {
+    [self cancelAttachTimer];
     if (self.state == state) {
         return;
     }
@@ -220,6 +223,15 @@
     _errorReason = status.errorInfo;
 
     [self.statesEventEmitter emit:[NSNumber numberWithInt:state] with:status.errorInfo];
+}
+
+- (void)cancelAttachTimer {
+    [self.realtime cancelTimer:_attachTimer];
+    _attachTimer = nil;
+}
+
+- (void)dealloc {
+    [self cancelAttachTimer];
 }
 
 /**
@@ -298,6 +310,7 @@
 }
 
 - (void)releaseChannel {
+    [self cancelAttachTimer];
     [self detachChannel:[ARTStatus state:ARTStateOk]];
     [self.realtime.channels release:self.name];
 }
@@ -406,11 +419,27 @@
     attachMessage.action = ARTProtocolMessageAttach;
     attachMessage.channel = self.name;
 
-    [self.realtime send:attachMessage cb:(cb ? ^(ARTStatus *status) {
-        cb(status.errorInfo);
-    } : nil)];
+    __block BOOL attached = false;
+    __block BOOL timeouted = false;
+
+    [self.realtime send:attachMessage cb:^(ARTStatus *status) {
+        attached = true;
+        if (cb && !timeouted) cb(status.errorInfo);
+    }];
     // Set state: Attaching
     [self transition:ARTRealtimeChannelAttaching status:[ARTStatus state:ARTStateOk]];
+
+    _attachTimer = [self.realtime startTimer:^{
+        _attachTimer = nil;
+        if (!attached) {
+            timeouted = true;
+            ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTStateAttachTimedOut message:@"attach timed out"];
+            ARTStatus *status = [ARTStatus state:ARTStateAttachTimedOut info:errorInfo];
+            _errorReason = errorInfo;
+            [self transition:ARTRealtimeChannelFailed status:status];
+            if (cb) cb(errorInfo);
+        }
+    } interval:[ARTDefault realtimeRequestTimeout]];
 }
 
 - (void)detach:(void (^)(ARTErrorInfo * _Nullable))cb {

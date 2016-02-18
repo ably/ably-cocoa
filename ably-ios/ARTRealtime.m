@@ -64,10 +64,6 @@
 - (void)sendQueuedMessages;
 - (void)failQueuedMessages:(ARTStatus *)error;
 
-// Util
-- (CFRunLoopTimerRef)startTimer:(void(^)())onTimeout interval:(NSTimeInterval)interval;
-- (void)cancelTimer:(CFRunLoopTimerRef)timer;
-
 @end
 
 
