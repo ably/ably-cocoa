@@ -557,7 +557,7 @@ class RealtimeClientChannel: QuickSpec {
                             resultClientId = message.clientId
                         }
 
-                        let message = ARTMessage(data: "message", name: nil)
+                        let message = ARTMessage(name: nil, data: "message")
                         message.clientId = "client_string"
 
                         channel.publish([message]) { errorInfo in
@@ -587,7 +587,7 @@ class RealtimeClientChannel: QuickSpec {
                             result.append(message.data as! JSONObject)
                         }
 
-                        let messages = [ARTMessage(data: ["key":1], name: nil), ARTMessage(data: ["key":2], name: nil)]
+                        let messages = [ARTMessage(name: nil, data: ["key":1]), ARTMessage(name: nil, data: ["key":2])]
                         channel.publish(messages)
 
                         let transport = client.transport as! TestProxyTransport

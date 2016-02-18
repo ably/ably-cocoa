@@ -24,7 +24,7 @@ class Crypto : QuickSpec {
                     )
 
                     func extractMessage(fixture: AblyTests.CryptoTestItem.TestMessage) -> ARTMessage {
-                        let msg = ARTMessage.init(data: fixture.data, name: fixture.name)
+                        let msg = ARTMessage(name: fixture.name, data: fixture.data)
                         msg.encoding = fixture.encoding
                         return msg
                     }
