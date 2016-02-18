@@ -52,8 +52,21 @@
     return [_channels exists:name];
 }
 
+- (void)release:(NSString *)name cb:(void (^)(ARTErrorInfo * _Nullable))cb {
+    ARTRealtimeChannel *channel = _channels.channels[name];
+    if (channel) {
+        [channel detach:^(ARTErrorInfo *errorInfo) {
+            [channel off];
+            [channel unsubscribe];
+            [channel.presence unsubscribe];
+            [_channels release:name];
+            if (cb) cb(errorInfo);
+        }];
+    }
+}
+
 - (void)release:(NSString *)name {
-    [_channels release:name];
+    [self release:name cb:nil];
 }
 
 @end

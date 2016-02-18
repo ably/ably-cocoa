@@ -103,6 +103,7 @@
             }
             else if(channel.state == ARTRealtimeChannelAttaching) {
                 if(detachedReached) {
+                    [channel off];
                     [expectation fulfill];
                 }
             }
@@ -209,6 +210,7 @@
                 [channel detach];
             }
             else if(channel.state == ARTRealtimeChannelDetaching) {
+                [channel off];
                 [expectation fulfill];
             }
             else if(channel.state == ARTRealtimeChannelDetached) {
@@ -299,13 +301,13 @@
                 if(channel.state != ARTRealtimeChannelAttaching) {
                     XCTAssertEqual(channel.state, ARTRealtimeChannelFailed);
                     [expectation fulfill];
+                    [channel off];
                 }
             }];
             [channel attach];
         }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
-
 
 - (void)testAttachingChannelFails {
     XCTestExpectation *exp = [self expectationWithDescription:@"testAttachingChannelFails"];

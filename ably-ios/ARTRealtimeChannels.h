@@ -26,6 +26,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (BOOL)exists:(NSString *)name;
 - (ARTRealtimeChannel *)get:(NSString *)name;
 - (ARTRealtimeChannel *)get:(NSString *)name options:(ARTChannelOptions *)options;
+- (void)release:(NSString *)name cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable))errorInfo;
 - (void)release:(NSString *)name;
 
 @end
