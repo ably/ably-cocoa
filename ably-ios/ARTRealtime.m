@@ -215,6 +215,8 @@
     ARTRealtimeConnectionState previousState = self.connection.state;
     [self.connection setState:state];
 
+    ARTStatus *status = nil;
+
     // On enter logic
     switch (self.connection.state) {
         case ARTRealtimeConnecting:
@@ -250,7 +252,8 @@
             _transport = nil;
             break;
         case ARTRealtimeFailed:
-            [self.transport abort:[ARTStatus state:ARTStateConnectionFailed info:errorInfo]];
+            status = [ARTStatus state:ARTStateConnectionFailed info:errorInfo];
+            [self.transport abort:status];
             self.transport.delegate = nil;
             _transport = nil;
             break;
@@ -272,7 +275,11 @@
     if ([self shouldSendEvents]) {
         [self sendQueuedMessages];
     } else if (![self shouldQueueEvents]) {
-        [self failQueuedMessages:[self defaultError]];
+        [self failQueuedMessages:status];
+        ARTStatus *channelStatus = status;
+        if (!channelStatus) {
+            channelStatus = [self defaultError];
+        }
         // For every Channel
         for (ARTRealtimeChannel* channel in self.channels) {
             if (channel.state == ARTRealtimeChannelInitialised || channel.state == ARTRealtimeChannelAttaching || channel.state == ARTRealtimeChannelAttached) {
@@ -283,14 +290,14 @@
                     [channel detachChannel:[ARTStatus state:ARTStateOk]];
                 }
                 else if(state == ARTRealtimeSuspended) {
-                    [channel detachChannel:[self defaultError]];
+                    [channel detachChannel:channelStatus];
                 }
                 else {
-                    [channel setFailed:[self defaultError]];
+                    [channel setFailed:channelStatus];
                 }
             }
             else {
-                [channel setSuspended:[self defaultError]];
+                [channel setSuspended:channelStatus];
             }
         }
     }

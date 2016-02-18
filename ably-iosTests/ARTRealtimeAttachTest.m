@@ -266,9 +266,11 @@
                         }
                     }
                     else if(channel.state == ARTRealtimeChannelFailed) {
-                        [channel attach];
-                        XCTAssertNil(errorInfo);
-                        [expectation fulfill];
+                        XCTAssertNotNil(errorInfo);
+                        [channel attach:^(ARTErrorInfo *errorInfo) {
+                            XCTAssertNotNil(errorInfo);
+                            [expectation fulfill];
+                        }];
                     }
                 }];
                 [channel attach];

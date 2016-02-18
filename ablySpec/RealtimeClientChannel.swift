@@ -82,7 +82,7 @@ class RealtimeClientChannel: QuickSpec {
             context("connection state") {
 
                 // RTL3a
-                pending("changes to FAILED") {
+                context("changes to FAILED") {
 
                     it("ATTACHING channel should transition to FAILED") {
                         let options = AblyTests.commonAppSetup()
@@ -100,13 +100,18 @@ class RealtimeClientChannel: QuickSpec {
                         expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
 
                         waitUntil(timeout: testTimeout) { done in
+                            let error = AblyTests.newErrorProtocolMessage()
                             channel.on { errorInfo in
                                 if channel.state == .Failed {
-                                    expect(errorInfo!.code).to(equal(90000))
+                                    guard let errorInfo = errorInfo else {
+                                        fail("errorInfo is nil"); done(); return
+                                    }
+                                    expect(errorInfo).to(equal(error.error))
+                                    expect(channel.errorReason).to(equal(errorInfo))
                                     done()
                                 }
                             }
-                            client.onError(AblyTests.newErrorProtocolMessage())
+                            client.onError(error)
                         }
                         expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
                     }
@@ -120,13 +125,18 @@ class RealtimeClientChannel: QuickSpec {
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
 
                         waitUntil(timeout: testTimeout) { done in
+                            let error = AblyTests.newErrorProtocolMessage()
                             channel.on { errorInfo in
                                 if channel.state == .Failed {
-                                    expect(errorInfo!.code).to(equal(90000))
+                                    guard let errorInfo = errorInfo else {
+                                        fail("errorInfo is nil"); done(); return
+                                    }
+                                    expect(errorInfo).to(equal(error.error))
+                                    expect(channel.errorReason).to(equal(errorInfo))
                                     done()
                                 }
                             }
-                            client.onError(AblyTests.newErrorProtocolMessage())
+                            client.onError(error)
                         }
                         expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
                     }
