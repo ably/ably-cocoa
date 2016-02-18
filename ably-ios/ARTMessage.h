@@ -14,7 +14,7 @@ ART_ASSUME_NONNULL_BEGIN
 @interface ARTMessage : ARTBaseMessage
 
 /// The event name, if available
-@property (readwrite, strong, nonatomic) NSString *name;
+@property (art_nullable, readwrite, strong, nonatomic) NSString *name;
 
 - (instancetype)initWithName:(art_nullable NSString *)name data:(id)data;
 - (instancetype)initWithName:(art_nullable NSString *)name data:(id)data clientId:(NSString *)clientId;

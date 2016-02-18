@@ -552,6 +552,151 @@ class RealtimeClientChannel: QuickSpec {
 
                 }
 
+                // RTL6i
+                context("expect either") {
+
+                    it("an array of Message objects") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        client.setTransportClass(TestProxyTransport.self)
+                        client.connect()
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+                        typealias JSONObject = NSDictionary
+
+                        var result = [JSONObject]()
+                        channel.subscribe { message in
+                            result.append(message.data as! JSONObject)
+                        }
+
+                        let messages = [ARTMessage(data: ["key":1], name: nil), ARTMessage(data: ["key":2], name: nil)]
+                        channel.publish(messages)
+
+                        let transport = client.transport as! TestProxyTransport
+
+                        expect(transport.protocolMessagesSent.filter{ $0.action == .Message }).toEventually(haveCount(1), timeout: testTimeout)
+                        expect(result).toEventually(equal(messages.map{ $0.data as! JSONObject }), timeout: testTimeout)
+                    }
+
+                    it("a name string and data payload") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+
+                        let expectedResult = "string_data"
+                        var result: String?
+
+                        channel.subscribe("event") { message in
+                            result = message.data as? String
+                        }
+
+                        channel.publish("event", data: expectedResult, cb: nil)
+
+                        expect(result).toEventually(equal(expectedResult), timeout: testTimeout)
+                    }
+
+                    it("allows name to be null") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        client.setTransportClass(TestProxyTransport.self)
+                        client.connect()
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+
+                        let expectedObject = ["data": "message"]
+
+                        var resultMessage: ARTMessage?
+                        channel.subscribe { message in
+                            resultMessage = message
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: expectedObject["data"]) { errorInfo in
+                                expect(errorInfo).to(beNil())
+                                done()
+                            }
+                        }
+
+                        let transport = client.transport as! TestProxyTransport
+
+                        let rawMessagesSent = transport.rawDataSent.toJSONArray.filter({ $0["action"] == ARTProtocolMessageAction.Message.rawValue })
+                        let messagesList = (rawMessagesSent[0] as! NSDictionary)["messages"] as! NSArray
+                        let resultObject = messagesList[0] as! NSDictionary
+
+                        expect(resultObject).to(equal(expectedObject))
+
+                        expect(resultMessage).toNotEventually(beNil(), timeout: testTimeout)
+                        expect(resultMessage!.name).to(beNil())
+                        expect(resultMessage!.data as? String).to(equal(expectedObject["data"]))
+                    }
+
+                    it("allows data to be null") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        client.setTransportClass(TestProxyTransport.self)
+                        client.connect()
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+
+                        let expectedObject = ["name": "click"]
+
+                        var resultMessage: ARTMessage?
+                        channel.subscribe(expectedObject["name"]!) { message in
+                            resultMessage = message
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(expectedObject["name"], data: nil) { errorInfo in
+                                expect(errorInfo).to(beNil())
+                                done()
+                            }
+                        }
+
+                        let transport = client.transport as! TestProxyTransport
+
+                        let rawMessagesSent = transport.rawDataSent.toJSONArray.filter({ $0["action"] == ARTProtocolMessageAction.Message.rawValue })
+                        let messagesList = (rawMessagesSent[0] as! NSDictionary)["messages"] as! NSArray
+                        let resultObject = messagesList[0] as! NSDictionary
+
+                        expect(resultObject).to(equal(expectedObject))
+
+                        expect(resultMessage).toNotEventually(beNil(), timeout: testTimeout)
+                        expect(resultMessage!.name).to(equal(expectedObject["name"]))
+                        expect(resultMessage!.data).to(beNil())
+                    }
+
+                    it("allows name and data to be assigned") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        client.setTransportClass(TestProxyTransport.self)
+                        client.connect()
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+
+                        let expectedObject = ["name":"click", "data":"message"]
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(expectedObject["name"], data: expectedObject["data"]) { errorInfo in
+                                expect(errorInfo).to(beNil())
+                                done()
+                            }
+                        }
+
+                        let transport = client.transport as! TestProxyTransport
+
+                        let rawMessagesSent = transport.rawDataSent.toJSONArray.filter({ $0["action"] == ARTProtocolMessageAction.Message.rawValue })
+                        let messagesList = (rawMessagesSent[0] as! NSDictionary)["messages"] as! NSArray
+                        let resultObject = messagesList[0] as! NSDictionary
+
+                        expect(resultObject).to(equal(expectedObject))
+                    }
+
+                }
+
             }
 
             // RTL7
