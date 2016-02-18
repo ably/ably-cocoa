@@ -752,6 +752,36 @@ class RealtimeClientChannel: QuickSpec {
                     expect(Test.counter).toEventually(equal(2), timeout: testTimeout)
                 }
 
+                // RTL7c
+                it("should implicitly attach the channel") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+
+                    let channel = client.channels.get("test")
+
+                    channel.subscribe { _ in }
+
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+                }
+
+                // RTL7c
+                pending("should result in an error if channel is in the FAILED state") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+
+                    let channel = client.channels.get("test")
+                    channel.onError(AblyTests.newErrorProtocolMessage())
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.subscribe { message in
+                            // FIXME: error handling
+                            //https://github.com/ably/ably-ios/pull/208#discussion_r53043622
+                            done()
+                        }
+                    }
+                }
+
                 // RTL7f
                 it("should exist ensuring published messages are not echoed back to the subscriber when echoMessages is false") {
                     let options = AblyTests.commonAppSetup()
