@@ -424,7 +424,7 @@
             [self transition:ARTRealtimeDisconnected];
             break;
         default:
-            NSAssert(false, @"Invalid Realtime state: expected Connected has current state");
+            NSAssert(false, @"Invalid Realtime state transitioning to Disconnected: expected Connected");
             break;
     }
 }
@@ -439,7 +439,7 @@
             [self transition:ARTRealtimeClosed];
             break;
         default:
-            NSAssert(false, @"Invalid Realtime state: expected Closing or Closed has current state");
+            NSAssert(false, @"Invalid Realtime state transitioning to Closed: expected Closing or Closed");
             break;
     }
 }
