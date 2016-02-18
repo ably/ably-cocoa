@@ -952,7 +952,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN10b
-                pending("should not update when a message is sent but increments by one when ACK is received") {
+                it("should not update when a message is sent but increments by one when ACK is received") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer {
                         client.dispose()
@@ -960,7 +960,11 @@ class RealtimeClientConnection: QuickSpec {
                     }
                     let channel = client.channels.get("test")
 
-                    for index in 0...5 {
+                    expect(client.connection.serial).to(equal(-1))
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                    expect(client.connection.serial).to(equal(-1))
+
+                    for index in 0...3 {
                         waitUntil(timeout: testTimeout) { done in
                             channel.publish(nil, data: "message", cb: { errorInfo in
                                 expect(errorInfo).to(beNil())

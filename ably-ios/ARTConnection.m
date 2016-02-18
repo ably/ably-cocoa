@@ -26,6 +26,7 @@
     if (self == [super init]) {
         _realtime = realtime;
         _eventEmitter = realtime.eventEmitter;
+        _serial = -1;
     }
     return self;
 }
