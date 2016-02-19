@@ -39,12 +39,16 @@
 
 @implementation ARTCipherParams
 
-- (instancetype)initWithAlgorithm:(NSString *)algorithm key:(NSData *)key keyLength:(NSUInteger)keyLenght iv:(NSData *)iv {
+- (instancetype)initWithAlgorithm:(NSString *)algorithm key:(NSData *)key keyLength:(NSUInteger)keyLength {
+    return [self initWithAlgorithm:algorithm key:key keyLength:keyLength iv:[ARTCrypto generateSecureRandomData:keyLength]];
+}
+
+- (instancetype)initWithAlgorithm:(NSString *)algorithm key:(NSData *)key keyLength:(NSUInteger)keyLength iv:(NSData *)iv {
     self = [super init];
     if (self) {
         _algorithm = algorithm;
         _key = key;
-        _keyLength = keyLenght;
+        _keyLength = keyLength;
         _iv = iv;
     }
     return self;
@@ -306,18 +310,18 @@
     if (nil == key) {
         return nil;
     }
-    return [self getDefaultParamsWithKey:key];
+    return [self getDefaultParams:key];
 }
 
-+ (ARTCipherParams *)getDefaultParamsWithKey:(NSData *)key {
++ (ARTCipherParams *)getDefaultParams:(NSData *)key {
     NSData *ivData = [self generateSecureRandomData:[self defaultBlockLength]];
     if (nil == ivData) {
         return nil;
     }
-    return [self getDefaultParamsWithKey:key iv:ivData];
+    return [self getDefaultParams:key iv:ivData];
 }
 
-+ (ARTCipherParams *)getDefaultParamsWithKey:(NSData *)key iv:(NSData *)iv {
++ (ARTCipherParams *)getDefaultParams:(NSData *)key iv:(NSData *)iv {
     return [[ARTCipherParams alloc] initWithAlgorithm:[self defaultAlgorithm] key:key keyLength:[self defaultBlockLength] iv:iv];
 }
 

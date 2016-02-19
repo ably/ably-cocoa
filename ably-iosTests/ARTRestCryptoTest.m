@@ -13,7 +13,7 @@
 #import "ARTPresenceMessage.h"
 #import "ARTRest.h"
 #import "ARTTestUtil.h"
-#import "ARTCrypto.h"
+#import "ARTCrypto+Private.h"
 #import "ARTLog.h"
 #import "ARTRestChannel.h"
 #import "ARTChannelOptions.h"

@@ -18,14 +18,13 @@
 @property (readonly, getter=getMode) NSString *mode;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithAlgorithm:(NSString *)algorithm key:(NSData *)key keyLength:(NSUInteger)keyLenght iv:(NSData *)iv;
+- (instancetype)initWithAlgorithm:(NSString *)algorithm key:(NSData *)key keyLength:(NSUInteger)keyLength;
 
 @end
 
 @interface ARTCrypto : NSObject
 
 + (ARTCipherParams *)getDefaultParams;
-+ (ARTCipherParams *)getDefaultParamsWithKey:(NSData *)key;
-+ (ARTCipherParams *)getDefaultParamsWithKey:(NSData *)key iv:(NSData *)iv;
++ (ARTCipherParams *)getDefaultParams:(NSData *)key;
 
 @end

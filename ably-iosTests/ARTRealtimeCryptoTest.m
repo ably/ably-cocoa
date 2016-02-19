@@ -14,7 +14,7 @@
 #import "ARTRealtime.h"
 #import "ARTRealtimeChannel.h"
 #import "ARTTestUtil.h"
-#import "ARTCrypto.h"
+#import "ARTCrypto+Private.h"
 #import "ARTDataQuery.h"
 #import "ARTPaginatedResult.h"
 #import "ARTChannelOptions.h"

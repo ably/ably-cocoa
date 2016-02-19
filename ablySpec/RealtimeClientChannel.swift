@@ -10,6 +10,8 @@ import Quick
 import Nimble
 import Aspects
 
+import Ably.Private
+
 class RealtimeClientChannel: QuickSpec {
     override func spec() {
         describe("Channel") {
@@ -1085,8 +1087,8 @@ class RealtimeClientChannel: QuickSpec {
                             let (keyData, ivData, messages) = AblyTests.loadCryptoTestData(cryptoTest)
                             let testMessage = messages[0]
 
-                            let cipherParams = ARTCrypto.defaultParamsWithKey(keyData, iv: ivData)
-                            let channelOptions = ARTChannelOptions(encrypted: cipherParams)
+                            let cipherParams = ARTCipherParams(algorithm: "aes", key: keyData, keyLength: UInt(keyData.length), iv: ivData)
+                            let channelOptions = ARTChannelOptions(encrypted: true, cipherParams: cipherParams)
                             let channel = client.channels.get("test", options: channelOptions)
 
                             let transport = client.transport as! TestProxyTransport
@@ -1489,6 +1491,92 @@ class RealtimeClientChannel: QuickSpec {
                                 }
                             }
                             sameChannel.publish("foo", data: nil)
+                        }
+                    }
+                }
+            }
+
+            context("crypto") {
+                it("if configured for encryption, channels encrypt and decrypt messages' data") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+
+                    let clientSender = ARTRealtime(options: options)
+                    clientSender.setTransportClass(TestProxyTransport.self)
+                    defer { clientSender.close() }
+                    clientSender.connect()
+
+                    let clientReceiver = ARTRealtime(options: options)
+                    clientReceiver.setTransportClass(TestProxyTransport.self)
+                    defer { clientReceiver.close() }
+                    clientReceiver.connect()
+
+                    let cipherParams = ARTCrypto.getDefaultParams()
+                    let sender = clientSender.channels.get("test", options: ARTChannelOptions(encrypted: true, cipherParams: cipherParams))
+                    let receiver = clientReceiver.channels.get("test", options: ARTChannelOptions(encrypted: true, cipherParams: cipherParams))
+
+                    var received = [ARTMessage]()
+
+                    waitUntil(timeout: testTimeout) { done in
+                        receiver.attach { _ in
+                            receiver.subscribe { message in
+                                receiver.unsubscribe()
+                                received.append(message)
+                                done()
+                            }
+
+                            sender.publish("first", data: "first data")
+                        }
+                    }
+                    if received.count != 1 {
+                        fail("should have received one message")
+                        return
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        receiver.detach { _ in
+                            sender.publish("second", data: "second data") { _ in done() }
+                        }
+                    }
+                    if receiver.state != .Detached {
+                        fail("receiver should be detached")
+                        return
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        receiver.attach { _ in
+                            receiver.subscribe { message in
+                                received.append(message)
+                                done()
+                            }
+                            sender.publish("third", data: "third data")
+                        }
+                    }
+                    if received.count != 2 {
+                        fail("should've received two messages")
+                        return
+                    }
+
+                    expect(received[0].name).to(equal("first"))
+                    expect(received[0].data as? NSString).to(equal("first data"))
+                    expect(received[1].name).to(equal("third"))
+                    expect(received[1].data as? NSString).to(equal("third data"))
+
+                    let senderTransport = clientSender.transport as! TestProxyTransport
+                    let senderMessages = senderTransport.protocolMessagesSent.filter({ $0.action == .Message })
+                    for protocolMessage in senderMessages {
+                        for message in protocolMessage.messages! {
+                            expect(message.data! as? String).toNot(equal("\(message.name!) data"))
+                            expect(message.encoding).to(equal("utf-8/cipher+aes-256-cbc/base64"))
+                        }
+                    }
+
+                    let receiverTransport = clientReceiver.transport as! TestProxyTransport
+                    let receiverMessages = receiverTransport.protocolMessagesReceived.filter({ $0.action == .Message })
+                    for protocolMessage in receiverMessages {
+                        for message in protocolMessage.messages! {
+                            expect(message.data! as? String).toNot(equal("\(message.name!) data"))
+                            expect(message.encoding).to(equal("utf-8/cipher+aes-256-cbc/base64"))
                         }
                     }
                 }

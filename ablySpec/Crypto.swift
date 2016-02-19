@@ -10,6 +10,8 @@ import Nimble
 import Quick
 import SwiftyJSON
 
+import Ably.Private
+
 class Crypto : QuickSpec {
     override func spec() {
         describe("Crypto") {
@@ -17,7 +19,7 @@ class Crypto : QuickSpec {
                 context("with fixtures from \(cryptoTest).json") {
                     let (key, iv, items) = AblyTests.loadCryptoTestData(cryptoTest)
                     let decoder = ARTDataEncoder.init(cipherParams: nil, error: nil)
-                    let cipherParams = ARTCipherParams.init(algorithm: "aes", key: key, keyLength: UInt(key.length), iv: iv)
+                    let cipherParams = ARTCipherParams(algorithm: "aes", key: key, keyLength: UInt(key.length), iv: iv)
 
                     func extractMessage(fixture: AblyTests.CryptoTestItem.TestMessage) -> ARTMessage {
                         let msg = ARTMessage(name: fixture.name, data: fixture.data)

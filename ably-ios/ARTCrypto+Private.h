@@ -15,6 +15,7 @@
 @interface ARTCipherParams ()
 
 @property (nonatomic, weak) ARTLog *logger;
+- (instancetype)initWithAlgorithm:(NSString *)algorithm key:(NSData *)key keyLength:(NSUInteger)keyLength iv:(NSData *)iv;
 
 @end
 
