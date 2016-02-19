@@ -980,6 +980,33 @@ class RealtimeClientChannel: QuickSpec {
                     expect(restChannelHistoryMethodWasCalled).to(beTrue())
                 }
 
+                // RTL10c
+                it("should return a PaginatedResult page") {
+                    let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { realtime.close() }
+                    let channel = realtime.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "message") { errorInfo in
+                            expect(errorInfo).to(beNil())
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        try! channel.history { result, _ in
+                            expect(result).to(beAKindOf(ARTPaginatedResult))
+                            expect(result!.items).to(haveCount(1))
+                            expect(result!.hasNext).to(beFalse())
+                            // Obj-C generics get lost in translation
+                            //Something related: https://lists.swift.org/pipermail/swift-evolution/Week-of-Mon-20160111/006792.html
+                            let messages = result!.items as! [ARTMessage]
+                            expect(messages[0].data as? String).to(equal("message"))
+                            done()
+                        }
+                    }
+                }
+
             }
 
         }
