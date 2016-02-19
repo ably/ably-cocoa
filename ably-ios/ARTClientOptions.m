@@ -84,6 +84,11 @@
     options.tls = self.tls;
     options.logLevel = self.logLevel;
     options.suspendedRetryTimeout = self.suspendedRetryTimeout;
+    options.disconnectedRetryTimeout = self.disconnectedRetryTimeout;
+    options.httpMaxRetryCount = self.httpMaxRetryCount;
+    options.httpMaxRetryDuration = self.httpMaxRetryDuration;
+    options.httpOpenTimeout = self.httpOpenTimeout;
+    options.httpRequestTimeout = self.httpRequestTimeout;
     
     return options;
 }

@@ -752,6 +752,7 @@ class RealtimeClientConnection: QuickSpec {
                     it("lost connection state") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
+                        options.disconnectedRetryTimeout = 0.1
                         let client = ARTRealtime(options: options)
                         client.setTransportClass(TestProxyTransport.self)
                         client.connect()
@@ -776,14 +777,15 @@ class RealtimeClientConnection: QuickSpec {
 
                         let oldConnectionId = client.connection.id!
                         // Wait until the message is pushed to Ably first
-                        delay(1.0) {
-                            client.simulateLostConnection()
-                            expect(client.connection.id).to(beNil())
-                            expect(gotPublishedCallback).to(beFalse())
-                            expect(client.connection.id).toEventuallyNot(beNil(), timeout: testTimeout) // Connection ID resetted.
-                            expect(client.connection.id).toNot(equal(oldConnectionId))
-                            expect(gotPublishedCallback).to(beTrue())
+                        waitUntil(timeout: testTimeout) { done in
+                            delay(1.0) { done() }
                         }
+
+                        client.simulateLostConnection()
+                        expect(gotPublishedCallback).to(beFalse())
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                        expect(client.connection.id).toNot(equal(oldConnectionId))
+                        expect(gotPublishedCallback).to(beTrue())
                     }
 
                 }
@@ -1360,12 +1362,12 @@ class RealtimeClientConnection: QuickSpec {
                                 done()
                             })
                         }
-
+                        
                         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connecting), timeout: options.suspendedRetryTimeout)
-
+                        
                         channel.attach()
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
-
+                        
                         waitUntil(timeout: testTimeout) { done in
                             // Accept publishing of messages
                             channel.publish(nil, data: "message", cb: { errorInfo in
@@ -1374,7 +1376,7 @@ class RealtimeClientConnection: QuickSpec {
                             })
                         }
                     }
-
+                    
                     it("when a connection enters CLOSED state") {
                         let options = AblyTests.commonAppSetup()
                         let client = ARTRealtime(options: options)
@@ -1384,14 +1386,14 @@ class RealtimeClientConnection: QuickSpec {
                         }
                         let channel = client.channels.get("test")
                         channel.attach()
-
+                        
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
-
+                        
                         client.close()
-
+                        
                         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Closed))
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
-
+                        
                         waitUntil(timeout: testTimeout) { done in
                             // Reject publishing of messages
                             channel.publish(nil, data: "message", cb: { errorInfo in
@@ -1401,9 +1403,9 @@ class RealtimeClientConnection: QuickSpec {
                             })
                         }
                     }
-
+                    
                 }
-
+                
                 // RTN18c
                 it("when a connection enters FAILED state, all channels will move to FAILED state") {
                     let options = AblyTests.commonAppSetup()
@@ -1414,14 +1416,14 @@ class RealtimeClientConnection: QuickSpec {
                     }
                     let channel = client.channels.get("test")
                     channel.attach()
-
+                    
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
-
+                    
                     client.onError(AblyTests.newErrorProtocolMessage())
-
+                    
                     expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Failed))
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Failed), timeout: testTimeout)
-
+                    
                     waitUntil(timeout: testTimeout) { done in
                         // Reject publishing of messages
                         channel.publish(nil, data: "message", cb: { errorInfo in
@@ -1431,9 +1433,9 @@ class RealtimeClientConnection: QuickSpec {
                         })
                     }
                 }
-
+                
             }
-
+            
         }
     }
 }

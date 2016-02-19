@@ -442,7 +442,7 @@ extension ARTRealtime {
         //2. Change the `Connection#id` and `Connection#key` before the client 
         //   library attempts to reconnect and resume the connection
         self.connection.setId("lost")
-        self.connection.setKey("lost")
+        self.connection.setKey("xxxxx!xxxxxxx-xxxxxxxx-xxxxxxxx")
         self.onDisconnected()
     }
     

@@ -151,8 +151,10 @@
 
 - (void)sendMessage:(ARTProtocolMessage *)pm cb:(ARTStatusCallback)cb {
     __block BOOL gotFailure = false;
+    NSString *oldConnectionId = self.realtime.connection.id;
     __block ARTEventListener *listener = [self.realtime.connection on:^(ARTConnectionStateChange *stateChange) {
-        if (stateChange.current != ARTRealtimeClosed && stateChange.current != ARTRealtimeFailed && stateChange.current != ARTRealtimeDisconnected) {
+        if (!(stateChange.current == ARTRealtimeClosed || stateChange.current == ARTRealtimeFailed
+              || (stateChange.current == ARTRealtimeConnected && ![oldConnectionId isEqual:self.realtime.connection.id] /* connection state lost */))) {
             return;
         }
         gotFailure = true;
