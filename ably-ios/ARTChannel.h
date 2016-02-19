@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "ARTTypes.h"
 #import "ARTDataEncoder.h"
+#import "ARTLog.h"
 
 @class ARTChannelOptions;
 @class ARTMessage;

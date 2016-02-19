@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "ARTCrypto.h"
+#import "ARTCrypto+Private.h"
 
 #import <CommonCrypto/CommonCrypto.h>
 
@@ -37,42 +37,27 @@
 
 @end
 
-@implementation ARTIvParameterSpec
+@implementation ARTCipherParams
 
-- (instancetype)initWithIv:(NSData *)iv {
+- (instancetype)initWithAlgorithm:(NSString *)algorithm key:(NSData *)key keyLength:(NSUInteger)keyLenght iv:(NSData *)iv {
     self = [super init];
     if (self) {
+        _algorithm = algorithm;
+        _key = key;
+        _keyLength = keyLenght;
         _iv = iv;
     }
     return self;
 }
 
-+ (instancetype)ivSpecWithIv:(NSData *)iv {
-    return [[ARTIvParameterSpec alloc] initWithIv:iv];
-}
-
-@end
-
-@implementation ARTCipherParams
-
-- (instancetype)initWithAlgorithm:(NSString *)algorithm keySpec:(NSData *)keySpec ivSpec:(ARTIvParameterSpec *)ivSpec {
-    self = [super init];
-    if (self) {
-        _algorithm = algorithm;
-        _keySpec = keySpec;
-        _ivSpec = ivSpec;
-    }
-    return self;
-}
-
-+ (instancetype)cipherParamsWithAlgorithm:(NSString *)algorithm keySpec:(NSData *)keySpec ivSpec:(ARTIvParameterSpec *)ivSpec {
-    return [[ARTCipherParams alloc] initWithAlgorithm:algorithm keySpec:keySpec ivSpec:ivSpec];
+- (NSString *)getMode {
+    return @"CBC";
 }
 
 - (BOOL)ccAlgorithm:(CCAlgorithm *)algorithm {
     if (NSOrderedSame == [self.algorithm compare:@"AES" options:NSCaseInsensitiveSearch]) {
-        if ([self.ivSpec.iv length] != 16) {
-            [self.logger error:@"ArtCrypto Error iv length is not 16: %d", (int)[self.ivSpec.iv length]];
+        if ([self.iv length] != 16) {
+            [self.logger error:@"ArtCrypto Error iv length is not 16: %d", (int)[self.iv length]];
             return NO;
         }
         *algorithm = kCCAlgorithmAES128;
@@ -99,8 +84,8 @@
 - (id)initWithCipherParams:(ARTCipherParams *)cipherParams {
     self = [super init];
     if (self) {
-        _keySpec = cipherParams.keySpec;
-        _iv = cipherParams.ivSpec.iv;
+        _keySpec = cipherParams.key;
+        _iv = cipherParams.iv;
         _blockLength = [_iv length];
 
         if (![cipherParams ccAlgorithm:&_algorithm]) {
@@ -316,30 +301,29 @@
     return outputData;
 }
 
-+ (ARTCipherParams *)defaultParams {
++ (ARTCipherParams *)getDefaultParams {
     NSData *key = [self generateSecureRandomData:[self defaultKeyLength]];
     if (nil == key) {
         return nil;
     }
-    return [self defaultParamsWithKey:key];
+    return [self getDefaultParamsWithKey:key];
 }
 
-+ (ARTCipherParams *)defaultParamsWithKey:(NSData *)key {
++ (ARTCipherParams *)getDefaultParamsWithKey:(NSData *)key {
     NSData *ivData = [self generateSecureRandomData:[self defaultBlockLength]];
     if (nil == ivData) {
         return nil;
     }
-    return [self defaultParamsWithKey:key iv:ivData];
+    return [self getDefaultParamsWithKey:key iv:ivData];
 }
 
-+ (ARTCipherParams *)defaultParamsWithKey:(NSData *)keySpec iv:(NSData *)iv {
-    ARTIvParameterSpec *ivSpec = [ARTIvParameterSpec ivSpecWithIv:iv];
-    return [ARTCipherParams cipherParamsWithAlgorithm:[self defaultAlgorithm] keySpec:keySpec ivSpec:ivSpec];
++ (ARTCipherParams *)getDefaultParamsWithKey:(NSData *)key iv:(NSData *)iv {
+    return [[ARTCipherParams alloc] initWithAlgorithm:[self defaultAlgorithm] key:key keyLength:[self defaultBlockLength] iv:iv];
 }
 
 + (id<ARTChannelCipher>)cipherWithParams:(ARTCipherParams *)params {
     if (!params) {
-        params = [self defaultParams];
+        params = [self getDefaultParams];
     }
 
     return [ARTCbcCipher cbcCipherWithParams:params];

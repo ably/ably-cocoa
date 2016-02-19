@@ -17,11 +17,7 @@ class Crypto : QuickSpec {
                 context("with fixtures from \(cryptoTest).json") {
                     let (key, iv, items) = AblyTests.loadCryptoTestData(cryptoTest)
                     let decoder = ARTDataEncoder.init(cipherParams: nil, error: nil)
-                    let cipherParams = ARTCipherParams.init(
-                        algorithm: "aes",
-                        keySpec: key,
-                        ivSpec: ARTIvParameterSpec.init(iv: iv)
-                    )
+                    let cipherParams = ARTCipherParams.init(algorithm: "aes", key: key, keyLength: UInt(key.length), iv: iv)
 
                     func extractMessage(fixture: AblyTests.CryptoTestItem.TestMessage) -> ARTMessage {
                         let msg = ARTMessage(name: fixture.name, data: fixture.data)

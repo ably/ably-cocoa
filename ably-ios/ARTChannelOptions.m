@@ -12,23 +12,12 @@
 
 @implementation ARTChannelOptions
 
-- (instancetype)initEncrypted:(ARTCipherParams *)cipherParams {
+- (instancetype)initEncrypted:(BOOL)encrypted cipherParams:(ARTCipherParams *)cipherParams {
     if (self = [super init]) {
-        self->_encrypted = YES;
+        self->_encrypted = encrypted;
         self->_cipherParams = cipherParams;
     }
-    
     return self;
-}
-
-+ (instancetype)unencrypted {
-    static id unencrypted;
-    static dispatch_once_t once;
-    dispatch_once(&once, ^{
-        unencrypted = [[ARTChannelOptions alloc] init];
-    });
-    
-    return unencrypted;
 }
 
 @end

@@ -164,12 +164,14 @@ class RestClientChannel: QuickSpec {
             // RSP3
             context("get") {
                 it("should return presence fixture data") {
+                    let key = appSetupJson["cipher"]["key"].string!.dataUsingEncoding(NSUTF8StringEncoding)!
                     let cipherParams = ARTCipherParams.init(
                         algorithm: appSetupJson["cipher"]["algorithm"].string!,
-                        keySpec: appSetupJson["cipher"]["key"].string!.dataUsingEncoding(NSUTF8StringEncoding),
-                        ivSpec: ARTIvParameterSpec.ivSpecWithIv(appSetupJson["cipher"]["iv"].string!.dataUsingEncoding(NSUTF8StringEncoding))
+                        key: key,
+                        keyLength: UInt(key.length),
+                        iv: appSetupJson["cipher"]["iv"].string!.dataUsingEncoding(NSUTF8StringEncoding)
                     )
-                    let channel = client.channels.get("persisted:presence_fixtures", options:ARTChannelOptions.init(encrypted: cipherParams))
+                    let channel = client.channels.get("persisted:presence_fixtures", options:ARTChannelOptions.init(encrypted: true, cipherParams: cipherParams))
                     var presenceMessages: [ARTPresenceMessage] = []
 
                     channel.presence.get() { result, _ in

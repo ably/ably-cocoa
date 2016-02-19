@@ -34,7 +34,7 @@
 
 - (void)setOptions:(ARTChannelOptions *)options {
     if (!options) {
-        _options = [ARTChannelOptions unencrypted];
+        _options = [[ARTChannelOptions alloc] initEncrypted:false cipherParams:nil];
     } else {
         _options = options;
     }

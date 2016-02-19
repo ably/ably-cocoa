@@ -18,9 +18,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL encrypted;
 @property (nonatomic, strong, art_nullable) ARTCipherParams *cipherParams;
 
-+ (instancetype)unencrypted;
-
-- (instancetype)initEncrypted:(ARTCipherParams *)cipherParams;
+- (instancetype)initEncrypted:(BOOL)encrypted cipherParams:(ARTCipherParams *__art_nullable)cipherParams;
 
 @end
 

@@ -8,55 +8,24 @@
 
 #import <Foundation/Foundation.h>
 #import "ARTTypes.h"
-#import "ARTLog.h"
 #import "ARTStatus.h"
 
-@class ARTLog;
-
-@interface ARTIvParameterSpec : NSObject
-@property (nonatomic, weak) ARTLog * logger;
-@property (readonly, nonatomic) NSData *iv;
-
-- (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithIv:(NSData *)iv;
-+ (instancetype)ivSpecWithIv:(NSData *)iv;
-
-@end
-
 @interface ARTCipherParams : NSObject
-@property (nonatomic, weak) ARTLog *logger;
 @property (readonly, strong, nonatomic) NSString *algorithm;
-@property (readonly, strong, nonatomic) NSData *keySpec;
-@property (readonly, strong, nonatomic) ARTIvParameterSpec *ivSpec;
+@property (readonly, strong, nonatomic) NSData *key;
+@property (readonly, nonatomic) NSUInteger keyLength;
+@property (readonly, strong, nonatomic) NSData *iv;
+@property (readonly, getter=getMode) NSString *mode;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithAlgorithm:(NSString *)algorithm keySpec:(NSData *)keySpec ivSpec:(ARTIvParameterSpec *)ivSpec;
-+ (instancetype)cipherParamsWithAlgorithm:(NSString *)algorithm keySpec:(NSData *)keySpec ivSpec:(ARTIvParameterSpec *)ivSpec;
-
-@end
-
-@protocol ARTChannelCipher
-
-- (ARTStatus *)encrypt:(NSData *)plaintext output:(NSData **)output;
-- (ARTStatus *)decrypt:(NSData *)ciphertext output:(NSData **)output;
-- (NSString *)cipherName;
-- (size_t) keyLength;
-
+- (instancetype)initWithAlgorithm:(NSString *)algorithm key:(NSData *)key keyLength:(NSUInteger)keyLenght iv:(NSData *)iv;
 
 @end
 
 @interface ARTCrypto : NSObject
 
-+ (NSString *)defaultAlgorithm;
-+ (int)defaultKeyLength;
-+ (int)defaultBlockLength;
-
-+ (NSData *)generateRandomData:(size_t)length;
-+ (NSData *)generateSecureRandomData:(size_t)length;
-
-+ (ARTCipherParams *)defaultParams;
-+ (ARTCipherParams *)defaultParamsWithKey:(NSData *)key;
-+ (ARTCipherParams *)defaultParamsWithKey:(NSData *)key iv:(NSData *)iv;
-+ (id<ARTChannelCipher>)cipherWithParams:(ARTCipherParams *)params;
++ (ARTCipherParams *)getDefaultParams;
++ (ARTCipherParams *)getDefaultParamsWithKey:(NSData *)key;
++ (ARTCipherParams *)getDefaultParamsWithKey:(NSData *)key iv:(NSData *)iv;
 
 @end

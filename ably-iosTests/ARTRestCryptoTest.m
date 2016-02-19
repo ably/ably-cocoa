@@ -71,12 +71,11 @@
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest =rest;
         
-        ARTIvParameterSpec * ivSpec = [[ARTIvParameterSpec alloc] initWithIv:[[NSData alloc]
-                                                                              initWithBase64EncodedString:@"HO4cYSP8LybPYBPZPHQOtg==" options:0]];
+        NSData * ivSpec = [[NSData alloc] initWithBase64EncodedString:@"HO4cYSP8LybPYBPZPHQOtg==" options:0];
     
         NSData * keySpec = [[NSData alloc] initWithBase64EncodedString:@"WUP6u0K7MXI5Zeo0VppPwg==" options:0];
-        ARTCipherParams *params =[[ARTCipherParams alloc] initWithAlgorithm:@"aes" keySpec:keySpec ivSpec:ivSpec];
-        ARTChannelOptions *channelOptions = [[ARTChannelOptions alloc] initEncrypted:params];
+        ARTCipherParams *params =[[ARTCipherParams alloc] initWithAlgorithm:@"aes" key:keySpec keyLength:[keySpec length] iv:ivSpec];
+        ARTChannelOptions *channelOptions = [[ARTChannelOptions alloc] initEncrypted:true cipherParams:params];
 
         ARTRestChannel *c = [rest.channels get:@"test" options:channelOptions];
         XCTAssert(c);

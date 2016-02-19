@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "ARTCrypto.h"
+#import "ARTCrypto+Private.h"
 #import "ARTLog.h"
 #import "ARTDataEncoder.h"
 
