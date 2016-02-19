@@ -1150,7 +1150,7 @@ class RealtimeClientChannel: QuickSpec {
                 context("message cannot be decoded or decrypted") {
 
                     // RTL7e
-                    it("should deliver with encoding attribute set indicating the residual encoding and error should be emitted") {
+                    pending("should deliver with encoding attribute set indicating the residual encoding and error should be emitted") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
                         let client = ARTRealtime(options: options)
