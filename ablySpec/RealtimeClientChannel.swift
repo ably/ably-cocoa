@@ -876,6 +876,31 @@ class RealtimeClientChannel: QuickSpec {
                     expect(Test.counter).toEventually(equal(2), timeout: testTimeout)
                 }
 
+                it("with a attach callback should subscribe and call the callback when attached") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+
+                    let channel = client.channels.get("test")
+
+                    let publishedMessage = ARTMessage(name: "foo", data: "bar")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Initialised))
+
+                        channel.subscribeWithAttachCallback({ errorInfo in
+                            expect(errorInfo).to(beNil())
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+                            channel.publish([publishedMessage])
+                        }) { message in
+                            expect(message.name).to(equal(publishedMessage.name))
+                            expect(message.data as? NSObject).to(equal(publishedMessage.data as? NSObject))
+                            done()
+                        }
+
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
+                    }
+                }
+
                 // RTL7c
                 it("should implicitly attach the channel") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())

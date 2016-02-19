@@ -48,6 +48,9 @@
         _statesEventEmitter = [[ARTEventEmitter alloc] init];
         _messagesEventEmitter = [[ARTEventEmitter alloc] init];
         _presenceEventEmitter = [[ARTEventEmitter alloc] init];
+
+        _attachedEventEmitter = [[ARTEventEmitter alloc] init];
+        _detachedEventEmitter = [[ARTEventEmitter alloc] init];
     }
     return self;
 }
@@ -163,12 +166,20 @@
 }
 
 - (ARTEventListener<ARTMessage *> *)subscribe:(void (^)(ARTMessage * _Nonnull))cb {
-    [self attach];
+    return [self subscribeWithAttachCallback:nil cb:cb];
+}
+
+- (ARTEventListener<ARTMessage *> *)subscribeWithAttachCallback:(void (^)(ARTErrorInfo * _Nullable))onAttach cb:(void (^)(ARTMessage * _Nonnull))cb {
+    [self attach:onAttach];
     return [self.messagesEventEmitter on:cb];
 }
 
 - (ARTEventListener<ARTMessage *> *)subscribe:(NSString *)name cb:(void (^)(ARTMessage * _Nonnull))cb {
-    [self attach];
+    return [self subscribe:name onAttach:nil cb:cb];
+}
+
+- (ARTEventListener<ARTMessage *> *)subscribe:(NSString *)name onAttach:(void (^)(ARTErrorInfo * _Nullable))onAttach cb:(void (^)(ARTMessage * _Nonnull))cb {
+    [self attach:onAttach];
     return [self.messagesEventEmitter on:name call:cb];
 }
 
