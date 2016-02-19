@@ -239,7 +239,7 @@ class RealtimeClientChannel: QuickSpec {
 
                     channel.attach { errorInfo in
                         expect(errorInfo).to(beNil())
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
                     }
 
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
@@ -380,6 +380,113 @@ class RealtimeClientChannel: QuickSpec {
                     expect(start.dateByAddingTimeInterval(3.0)).to(beCloseTo(end, within: 0.5))
                 }
 
+                it("if called with a callback should call it once attached") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach { errorInfo in
+                            expect(errorInfo).to(beNil())
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+                            done()
+                        }
+                    }
+                }
+
+                it("if called with a callback and already attaching should call the callback once attached") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach()
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
+                        channel.attach { errorInfo in
+                            expect(errorInfo).to(beNil())
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+                            done()
+                        }
+                    }
+                }
+
+                it("if called with a callback and already attached should call the callback with nil error") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+
+                    let channel = client.channels.get("test")
+
+                    channel.attach()
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach { errorInfo in
+                            expect(errorInfo).to(beNil())
+                            done()
+                        }
+                    }
+                }
+            }
+
+            describe("detach") {
+                it("if called with a callback should call it once detached") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+
+                    let channel = client.channels.get("test")
+
+                    channel.attach()
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.detach { errorInfo in
+                            expect(errorInfo).to(beNil())
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
+                            done()
+                        }
+                    }
+                }
+
+                it("if called with a callback and already detaching should call the callback once detached") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+
+                    let channel = client.channels.get("test")
+
+                    channel.attach()
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.detach()
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Detaching))
+                        channel.detach { errorInfo in
+                            expect(errorInfo).to(beNil())
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
+                            done()
+                        }
+                    }
+                }
+
+                it("if called with a callback and already detached should should call the callback with nil error") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+
+                    let channel = client.channels.get("test")
+
+                    channel.attach()
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+                    channel.detach()
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.detach { errorInfo in
+                            expect(errorInfo).to(beNil())
+                            done()
+                        }
+                    }
+                }
             }
 
             // RTL6

@@ -31,7 +31,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)off:(__GENERIC(ARTEventListener, ItemType) *)listener;
 - (void)off;
 
-- (void)emit:(EventType)event with:(ItemType)data;
+- (void)emit:(EventType)event with:(ItemType __art_nullable)data;
 
 @end
 

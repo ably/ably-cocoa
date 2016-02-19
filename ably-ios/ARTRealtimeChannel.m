@@ -27,6 +27,8 @@
 @interface ARTRealtimeChannel () {
     ARTRealtimePresence *_realtimePresence;
     CFRunLoopTimerRef _attachTimer;
+    __GENERIC(ARTEventEmitter, NSNull *, ARTErrorInfo *) *_attachedEventEmitter;
+    __GENERIC(ARTEventEmitter, NSNull *, ARTErrorInfo *) *_detachedEventEmitter;
 }
 
 @end
@@ -300,6 +302,7 @@
         [self.presenceDict setObject:pm forKey:pm.clientId];
     }
     [self transition:ARTRealtimeChannelAttached status:[ARTStatus state:ARTStateOk]];
+    [_attachedEventEmitter emit:[NSNull null] with:nil];
 }
 
 - (void)setDetached:(ARTProtocolMessage *)message {
@@ -307,6 +310,7 @@
     
     ARTStatus *reason = [ARTStatus state:ARTStateNotAttached info:message.error];
     [self detachChannel:reason];
+    [_detachedEventEmitter emit:[NSNull null] with:nil];
 }
 
 - (void)releaseChannel {
@@ -401,6 +405,9 @@
 - (void)attach:(void (^)(ARTErrorInfo * _Nullable))cb {
     switch (self.state) {
         case ARTRealtimeChannelAttaching:
+            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"already attaching"];
+            if (cb) [_attachedEventEmitter once:cb];
+            return;
         case ARTRealtimeChannelAttached:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"already attached"];
             if (cb) cb(nil);
@@ -419,35 +426,35 @@
     attachMessage.action = ARTProtocolMessageAttach;
     attachMessage.channel = self.name;
 
-    __block BOOL attached = false;
     __block BOOL timeouted = false;
 
-    [self.realtime send:attachMessage cb:^(ARTStatus *status) {
-        attached = true;
-        if (cb && !timeouted) cb(status.errorInfo);
-    }];
+    [self.realtime send:attachMessage cb:nil];
+    if (cb) [_attachedEventEmitter once:cb];
     // Set state: Attaching
     [self transition:ARTRealtimeChannelAttaching status:[ARTStatus state:ARTStateOk]];
 
     _attachTimer = [self.realtime startTimer:^{
-        _attachTimer = nil;
-        if (!attached) {
-            timeouted = true;
-            ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTStateAttachTimedOut message:@"attach timed out"];
-            ARTStatus *status = [ARTStatus state:ARTStateAttachTimedOut info:errorInfo];
-            _errorReason = errorInfo;
-            [self transition:ARTRealtimeChannelFailed status:status];
-            if (cb) cb(errorInfo);
-        }
+        timeouted = true;
+        ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTStateAttachTimedOut message:@"attach timed out"];
+        ARTStatus *status = [ARTStatus state:ARTStateAttachTimedOut info:errorInfo];
+        _errorReason = errorInfo;
+        [self transition:ARTRealtimeChannelFailed status:status];
+        [_attachedEventEmitter emit:[NSNull null] with:errorInfo];
     } interval:[ARTDefault realtimeRequestTimeout]];
 }
 
 - (void)detach:(void (^)(ARTErrorInfo * _Nullable))cb {
     switch (self.state) {
         case ARTRealtimeChannelInitialised:
-        case ARTRealtimeChannelDetaching:
-        case ARTRealtimeChannelDetached:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"can't detach when not attached"];
+            if (cb) [_detachedEventEmitter once:cb];
+            return;
+        case ARTRealtimeChannelDetaching:
+            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"already detaching"];
+            if (cb) [_detachedEventEmitter once:cb];
+            return;
+        case ARTRealtimeChannelDetached:
+            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"already detached"];
             if (cb) cb(nil);
             return;
         default:
@@ -464,9 +471,8 @@
     detachMessage.action = ARTProtocolMessageDetach;
     detachMessage.channel = self.name;
     
-    [self.realtime send:detachMessage cb:(cb ? ^(ARTStatus *status) {
-        cb(status.errorInfo);
-    } : nil)];
+    [self.realtime send:detachMessage cb:nil];
+    if (cb) [_detachedEventEmitter once:cb];
     // Set state: Detaching
     [self transition:ARTRealtimeChannelDetaching status:[ARTStatus state:ARTStateOk]];
 }
