@@ -153,6 +153,24 @@ class RealtimeClientChannel: QuickSpec {
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
                 }
 
+                // RTL2c
+                it("should contain an ErrorInfo object with details when an error occurs") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    let error = AblyTests.newErrorProtocolMessage()
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.on(.Failed) { errorInfo in
+                            expect(errorInfo).to(equal(error.error))
+                            expect(channel.errorReason).to(equal(error.error))
+                            done()
+                        }
+                        channel.onError(error)
+                    }
+                }
+
             }
 
             // RTL3
