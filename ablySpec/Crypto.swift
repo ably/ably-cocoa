@@ -13,9 +13,9 @@ import SwiftyJSON
 class Crypto : QuickSpec {
     override func spec() {
         describe("Crypto") {
-            for keyLength in ["128", "256"] {
-                context("with fixtures from crypto-data-\(keyLength).json") {
-                    let (key, iv, items) = AblyTests.loadCryptoTestData("ably-common/test-resources/crypto-data-\(keyLength).json")
+            for cryptoTest in CryptoTest.all {
+                context("with fixtures from \(cryptoTest).json") {
+                    let (key, iv, items) = AblyTests.loadCryptoTestData(cryptoTest)
                     let decoder = ARTDataEncoder.init(cipherParams: nil, error: nil)
                     let cipherParams = ARTCipherParams.init(
                         algorithm: "aes",
@@ -24,7 +24,7 @@ class Crypto : QuickSpec {
                     )
 
                     func extractMessage(fixture: AblyTests.CryptoTestItem.TestMessage) -> ARTMessage {
-                        let msg = ARTMessage.init(data: fixture.data, name: fixture.name)
+                        let msg = ARTMessage(name: fixture.name, data: fixture.data)
                         msg.encoding = fixture.encoding
                         return msg
                     }

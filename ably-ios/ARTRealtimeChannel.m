@@ -67,7 +67,7 @@
 }
 
 - (void)publish:(NSString *)name data:(id)data cb:(void (^)(ARTErrorInfo * _Nullable))cb {
-    NSArray *messages = [NSArray arrayWithObject:[ARTMessage messageWithData:data name:name]];
+    NSArray *messages = [NSArray arrayWithObject:[[ARTMessage alloc] initWithName:name data:data]];
     [self publish:messages cb:cb];
 }
 

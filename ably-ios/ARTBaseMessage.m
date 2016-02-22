@@ -33,13 +33,6 @@
     return message;
 }
 
-- (instancetype)messageWithData:(id)data encoding:(NSString *)encoding {
-    ARTBaseMessage *message = [self copy];
-    message.data = data;
-    message.encoding = encoding;
-    return message;
-}
-
 - (id)decodeWithEncoder:(ARTDataEncoder*)encoder error:(NSError **)error {
     ARTDataEncoderOutput *decoded = [encoder decode:self.data encoding:self.encoding];
     if (decoded.errorInfo && error) {

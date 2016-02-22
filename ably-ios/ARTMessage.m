@@ -43,20 +43,4 @@
     return message;
 }
 
-+ (ARTMessage *)messageWithData:(id)data name:(NSString *)name {
-    ARTMessage *message = [[ARTMessage alloc] init];
-    message.name = name;
-    message.data = data;
-    message.encoding = @"";
-    return message;
-}
-
-+ (NSArray *)messagesWithData:(NSArray *)data {
-    NSMutableArray * messages =[[NSMutableArray alloc] initWithCapacity:[data count]];
-    for (int i=0; i < [data count]; i++) {
-        [messages addObject:[ARTMessage messageWithData:[data objectAtIndex:i] name:nil]];
-    }
-    return messages;
-}
-
 @end

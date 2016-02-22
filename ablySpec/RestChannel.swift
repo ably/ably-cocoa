@@ -109,7 +109,7 @@ class RestChannel: QuickSpec {
                     var publishError: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
                     
-                    channel.publish([ARTMessage(data:data, name: name)]) { error in
+                    channel.publish([ARTMessage(name: name, data: data)]) { error in
                         publishError = error
                         try! channel.history { result, _ in
                             publishedMessage = result?.items.first as? ARTMessage
@@ -133,8 +133,8 @@ class RestChannel: QuickSpec {
                     var publishedMessages: [ARTMessage] = []
 
                     let messages = [
-                        ARTMessage(data: "foo", name: "bar"),
-                        ARTMessage(data: "baz", name: "bat")
+                        ARTMessage(name: "bar", data: "foo"),
+                        ARTMessage(name: "bat", data: "baz")
                     ]
                     channel.publish(messages) { error in
                         publishError = error

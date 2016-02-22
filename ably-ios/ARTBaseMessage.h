@@ -32,8 +32,6 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (NSString *)description;
 
-- (instancetype)messageWithData:(id)data encoding:(NSString *)encoding;
-
 @end
 
 ART_ASSUME_NONNULL_END

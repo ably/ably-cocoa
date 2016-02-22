@@ -18,6 +18,10 @@ import Ably.Private
 enum CryptoTest: String {
     case aes128 = "crypto-data-128"
     case aes256 = "crypto-data-256"
+
+    static var all: [CryptoTest] {
+        return [.aes128, .aes256]
+    }
 }
 
 class Configuration : QuickConfiguration {
