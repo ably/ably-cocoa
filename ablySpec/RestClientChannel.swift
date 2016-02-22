@@ -1,5 +1,5 @@
 //
-//  RestChannel.swift
+//  RestClientChannel.swift
 //  ably
 //
 //  Created by Yavor Georgiev on 23.08.15.
@@ -11,7 +11,7 @@ import Quick
 import Foundation
 import SwiftyJSON
 
-class RestChannel: QuickSpec {
+class RestClientChannel: QuickSpec {
     override func spec() {
         var client: ARTRest!
         var channel: ARTChannel! //ARTRestChannel
