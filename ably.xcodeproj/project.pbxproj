@@ -106,7 +106,7 @@
 		D746AE251BBB611C003ECEF8 /* ARTChannel+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE241BBB611C003ECEF8 /* ARTChannel+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D746AE281BBB61C9003ECEF8 /* ARTPresence.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE261BBB61C9003ECEF8 /* ARTPresence.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D746AE291BBB61C9003ECEF8 /* ARTPresence.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE271BBB61C9003ECEF8 /* ARTPresence.m */; };
-		D746AE2C1BBB625E003ECEF8 /* RestChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D746AE2A1BBB625E003ECEF8 /* RestChannel.swift */; };
+		D746AE2C1BBB625E003ECEF8 /* RestClientChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D746AE2A1BBB625E003ECEF8 /* RestClientChannel.swift */; };
 		D746AE2D1BBB625E003ECEF8 /* RestClientChannels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D746AE2B1BBB625E003ECEF8 /* RestClientChannels.swift */; };
 		D746AE2F1BBBE7D7003ECEF8 /* ARTPaginatedResult+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE2E1BBBE7D7003ECEF8 /* ARTPaginatedResult+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D746AE381BBC3201003ECEF8 /* ARTMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE361BBC3201003ECEF8 /* ARTMessage.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -153,7 +153,6 @@
 		EB1AE0CE1C5C3A4900D62250 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1AE0CD1C5C3A4900D62250 /* Utilities.swift */; };
 		EB20F8D71C653F2300EF3978 /* ARTPresence+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB20F8D61C653F1E00EF3978 /* ARTPresence+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EB3239441C59AB0400892664 /* ARTDataEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB3239421C59AB0400892664 /* ARTDataEncoder.m */; };
-		EB3239451C59AB0400892664 /* ARTDataEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB3239421C59AB0400892664 /* ARTDataEncoder.m */; };
 		EB7913A81C6E54C3000ABF9B /* Crypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB7913A71C6E54C3000ABF9B /* Crypto.swift */; };
 		EB82F8511C59D29B00661917 /* ARTDataEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = EB3239461C59AB2C00892664 /* ARTDataEncoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EB82F8521C59D30500661917 /* ARTDataEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB3239421C59AB0400892664 /* ARTDataEncoder.m */; };
@@ -161,11 +160,9 @@
 		EB89D4041C61C1A4007FA5B7 /* ARTRestChannels.h in Headers */ = {isa = PBXBuildFile; fileRef = EB89D4021C61C1A4007FA5B7 /* ARTRestChannels.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EB89D4051C61C1A4007FA5B7 /* ARTRestChannels.m in Sources */ = {isa = PBXBuildFile; fileRef = EB89D4031C61C1A4007FA5B7 /* ARTRestChannels.m */; };
 		EB89D4061C61C1B8007FA5B7 /* ARTRestChannels.m in Sources */ = {isa = PBXBuildFile; fileRef = EB89D4031C61C1A4007FA5B7 /* ARTRestChannels.m */; };
-		EB89D4071C61C1B9007FA5B7 /* ARTRestChannels.m in Sources */ = {isa = PBXBuildFile; fileRef = EB89D4031C61C1A4007FA5B7 /* ARTRestChannels.m */; };
 		EB89D4091C61C5ED007FA5B7 /* ARTRealtimeChannels.h in Headers */ = {isa = PBXBuildFile; fileRef = EB89D4081C61C5ED007FA5B7 /* ARTRealtimeChannels.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EB89D40B1C61C6EA007FA5B7 /* ARTRealtimeChannels.m in Sources */ = {isa = PBXBuildFile; fileRef = EB89D40A1C61C6EA007FA5B7 /* ARTRealtimeChannels.m */; };
 		EB89D40C1C61C6EA007FA5B7 /* ARTRealtimeChannels.m in Sources */ = {isa = PBXBuildFile; fileRef = EB89D40A1C61C6EA007FA5B7 /* ARTRealtimeChannels.m */; };
-		EB89D40D1C61C6EA007FA5B7 /* ARTRealtimeChannels.m in Sources */ = {isa = PBXBuildFile; fileRef = EB89D40A1C61C6EA007FA5B7 /* ARTRealtimeChannels.m */; };
 		EB89D40F1C62303E007FA5B7 /* ARTConnection+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB89D40E1C62303E007FA5B7 /* ARTConnection+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EB8AC6431C6515ED002ABA92 /* ARTTokenParams+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB8AC6421C6515ED002ABA92 /* ARTTokenParams+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EBAB9A6F1C69702800AF036B /* ReadmeExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBAB9A6E1C69702800AF036B /* ReadmeExamples.swift */; };
@@ -324,7 +321,7 @@
 		D746AE241BBB611C003ECEF8 /* ARTChannel+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTChannel+Private.h"; sourceTree = "<group>"; };
 		D746AE261BBB61C9003ECEF8 /* ARTPresence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTPresence.h; path = "ably-ios/ARTPresence.h"; sourceTree = SOURCE_ROOT; };
 		D746AE271BBB61C9003ECEF8 /* ARTPresence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPresence.m; sourceTree = "<group>"; };
-		D746AE2A1BBB625E003ECEF8 /* RestChannel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestChannel.swift; sourceTree = "<group>"; };
+		D746AE2A1BBB625E003ECEF8 /* RestClientChannel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClientChannel.swift; sourceTree = "<group>"; };
 		D746AE2B1BBB625E003ECEF8 /* RestClientChannels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClientChannels.swift; sourceTree = "<group>"; };
 		D746AE2E1BBBE7D7003ECEF8 /* ARTPaginatedResult+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTPaginatedResult+Private.h"; sourceTree = "<group>"; };
 		D746AE361BBC3201003ECEF8 /* ARTMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTMessage.h; sourceTree = "<group>"; };
@@ -460,13 +457,13 @@
 				D780846D1C68B3E50083009D /* NSObject+TestSuite.m */,
 				D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */,
 				856AAC951B6E30C800B07119 /* ablySpec-Bridging-Header.h */,
+				EBAB9A6E1C69702800AF036B /* ReadmeExamples.swift */,
 				D7C1B8761BBEA81A0087B55F /* Auth.swift */,
 				856AAC981B6E312F00B07119 /* RestClient.swift */,
 				853ED7C31B7A1A3C006F1C6F /* RestClientStats.swift */,
-				D746AE2A1BBB625E003ECEF8 /* RestChannel.swift */,
+				D746AE2A1BBB625E003ECEF8 /* RestClientChannel.swift */,
 				D746AE2B1BBB625E003ECEF8 /* RestClientChannels.swift */,
 				D723046F1BB72CED00F1ABDA /* RealtimeClient.swift */,
-				EBAB9A6E1C69702800AF036B /* ReadmeExamples.swift */,
 				D7EBE5A21BE8391E0086E675 /* RealtimeClientConnection.swift */,
 				D74EFAEA1C4D09B500CFF98E /* RealtimeClientChannel.swift */,
 				D71D30031C5F7B2F002115B0 /* RealtimeClientChannels.swift */,
@@ -1061,14 +1058,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				856AAC991B6E312F00B07119 /* RestClient.swift in Sources */,
-				D746AE2C1BBB625E003ECEF8 /* RestChannel.swift in Sources */,
-				EB89D40D1C61C6EA007FA5B7 /* ARTRealtimeChannels.m in Sources */,
+				D746AE2C1BBB625E003ECEF8 /* RestClientChannel.swift in Sources */,
 				D71D30041C5F7B2F002115B0 /* RealtimeClientChannels.swift in Sources */,
 				D714A63E1C74D4B2002F2CA0 /* NSObject+TestSuite.swift in Sources */,
 				856AAC971B6E30C800B07119 /* TestUtilities.swift in Sources */,
 				D780846E1C68B3E50083009D /* NSObject+TestSuite.m in Sources */,
 				853ED7C41B7A1A3C006F1C6F /* RestClientStats.swift in Sources */,
-				EB89D4071C61C1B9007FA5B7 /* ARTRestChannels.m in Sources */,
 				D74EFAEB1C4D09B500CFF98E /* RealtimeClientChannel.swift in Sources */,
 				851674EF1B7BA5CD00D35169 /* Stats.swift in Sources */,
 				EB1AE0CE1C5C3A4900D62250 /* Utilities.swift in Sources */,
@@ -1076,7 +1071,6 @@
 				EB7913A81C6E54C3000ABF9B /* Crypto.swift in Sources */,
 				D746AE2D1BBB625E003ECEF8 /* RestClientChannels.swift in Sources */,
 				EBAB9A6F1C69702800AF036B /* ReadmeExamples.swift in Sources */,
-				EB3239451C59AB0400892664 /* ARTDataEncoder.m in Sources */,
 				D7C1B8771BBEA81A0087B55F /* Auth.swift in Sources */,
 				D7EBE5A31BE8391E0086E675 /* RealtimeClientConnection.swift in Sources */,
 			);
