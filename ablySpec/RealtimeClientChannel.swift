@@ -78,6 +78,70 @@ class RealtimeClientChannel: QuickSpec {
                 expect(channel2.presenceMap.members["Client 2"]!.action).to(equal(ARTPresenceAction.Enter))
             }
 
+            // RTL2
+            context("EventEmitter and states") {
+
+                // RTL2a
+                it("should implement the EventEmitter and emit events for state changes") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+
+                    let channel = client.channels.get("test")
+                    expect(channel.statesEventEmitter).to(beAKindOf(ARTEventEmitter.self))
+
+                    var channelOnMethodCalled = false
+                    channel.testSuite_injectIntoMethod("on:") {
+                        channelOnMethodCalled = true
+                    }
+
+                    // The `channel.on` should use `statesEventEmitter`
+                    var statesEventEmitterOnMethodCalled = false
+                    channel.statesEventEmitter.testSuite_injectIntoMethod("on:") {
+                        statesEventEmitterOnMethodCalled = true
+                    }
+
+                    var emitCounter = 0
+                    channel.statesEventEmitter.testSuite_injectIntoMethod("emit:with:") {
+                        emitCounter += 1
+                    }
+
+                    var states = [ARTRealtimeChannelState]()
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.on { errorInfo in
+                            states += [channel.state]
+                            switch channel.state {
+                            case .Attached:
+                                channel.detach()
+                            case .Detached:
+                                channel.onError(AblyTests.newErrorProtocolMessage())
+                            case .Failed:
+                                done()
+                            default:
+                                break
+                            }
+                        }
+                        channel.attach()
+                    }
+                    channel.off()
+
+                    expect(channelOnMethodCalled).to(beTrue())
+                    expect(statesEventEmitterOnMethodCalled).to(beTrue())
+                    expect(emitCounter).to(equal(5))
+
+                    if states.count != 5 {
+                        fail("Missing some states")
+                        return
+                    }
+
+                    expect(states[0].rawValue).to(equal(ARTRealtimeChannelState.Attaching.rawValue), description: "Should be ATTACHING state")
+                    expect(states[1].rawValue).to(equal(ARTRealtimeChannelState.Attached.rawValue), description: "Should be ATTACHED state")
+                    expect(states[2].rawValue).to(equal(ARTRealtimeChannelState.Detaching.rawValue), description: "Should be DETACHING state")
+                    expect(states[3].rawValue).to(equal(ARTRealtimeChannelState.Detached.rawValue), description: "Should be DETACHED state")
+                    expect(states[4].rawValue).to(equal(ARTRealtimeChannelState.Failed.rawValue), description: "Should be FAILED state")
+                }
+
+            }
+
             // RTL3
             context("connection state") {
 
