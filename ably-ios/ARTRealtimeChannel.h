@@ -30,7 +30,9 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)detach:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb;
 
 - (__GENERIC(ARTEventListener, ARTMessage *) *)subscribe:(void (^)(ARTMessage *message))cb;
+- (__GENERIC(ARTEventListener, ARTMessage *) *)subscribeWithAttachCallback:(art_nullable void (^)(ARTErrorInfo *__art_nullable))onAttach cb:(void (^)(ARTMessage *message))cb;
 - (__GENERIC(ARTEventListener, ARTMessage *) *)subscribe:(NSString *)name cb:(void (^)(ARTMessage *message))cb;
+- (__GENERIC(ARTEventListener, ARTMessage *) *)subscribe:(NSString *)name onAttach:(art_nullable void (^)(ARTErrorInfo *__art_nullable))onAttach cb:(void (^)(ARTMessage *message))cb;
 
 - (void)unsubscribe;
 - (void)unsubscribe:(__GENERIC(ARTEventListener, ARTMessage *) *)listener;
