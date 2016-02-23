@@ -7,12 +7,19 @@
 //
 
 #import "ARTDataQuery.h"
+#import "ARTRealtimeChannel.h"
 
 ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTDataQuery(Private)
 
 - (NSMutableArray /* <NSURLQueryItem *> */ *)asQueryItems;
+
+@end
+
+@interface ARTRealtimeHistoryQuery ()
+
+@property (weak, readwrite) ARTRealtimeChannel *realtimeChannel;
 
 @end
 

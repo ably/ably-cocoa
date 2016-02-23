@@ -1206,7 +1206,6 @@ class RealtimeClientChannel: QuickSpec {
 
             // RTL10
             context("history") {
-
                 // RTL10a 
                 it("should support all the same params as Rest") {
                     let options = AblyTests.commonAppSetup()
@@ -1249,7 +1248,7 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 // RTL10b
-                pending("supports the param untilAttach") {
+                context("supports the param untilAttach") {
 
                     it("should be false as default") {
                         let query = ARTRealtimeHistoryQuery()
@@ -1267,11 +1266,11 @@ class RealtimeClientChannel: QuickSpec {
                         do {
                             try channel.history(query, callback: { _, _ in })
                         }
-                        catch ARTRealtimeHistoryError.NotAttached {
-                            return
-                        }
-                        catch {
-                            fail("Shouldn't raise a global error")
+                        catch let error as NSError {
+                            if error.code == ARTRealtimeHistoryError.NotAttached.rawValue {
+                                return
+                            }
+                            fail("Shouldn't raise a global error, got \(error)")
                         }
                         fail("Should raise an error")
                     }
@@ -1283,7 +1282,7 @@ class RealtimeClientChannel: QuickSpec {
                     let cases = [CaseTest(untilAttach: true), CaseTest(untilAttach: false)]
 
                     for caseItem in cases {
-                        it("where value is \(caseItem.untilAttach), should pass the querystring param from_serial with the serial number assigned to the channel") {
+                        it("where value is \(caseItem.untilAttach), should pass the querystring param fromSerial with the serial number assigned to the channel") {
                             let client = ARTRealtime(options: AblyTests.commonAppSetup())
                             defer { client.close() }
                             let channel = client.channels.get("test")
@@ -1294,6 +1293,7 @@ class RealtimeClientChannel: QuickSpec {
                             let query = ARTRealtimeHistoryQuery()
                             query.untilAttach = caseItem.untilAttach
 
+                            channel.attach()
                             expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
 
                             waitUntil(timeout: testTimeout) { done in
@@ -1306,10 +1306,10 @@ class RealtimeClientChannel: QuickSpec {
                             let queryString = mockExecutor.requests.last!.URL!.query
 
                             if query.untilAttach {
-                                expect(queryString).to(contain("from_serial=\(channel.attachSerial)"))
+                                expect(queryString).to(contain("fromSerial=\(channel.attachSerial!)"))
                             }
                             else {
-                                expect(queryString).toNot(contain("from_serial"))
+                                expect(queryString).toNot(contain("fromSerial"))
                             }
                         }
                     }
@@ -1339,7 +1339,7 @@ class RealtimeClientChannel: QuickSpec {
                         }
 
                         client2.connect()
-                        let channel2 = client1.channels.get("test")
+                        let channel2 = client2.channels.get("test")
                         channel2.attach()
                         expect(channel2.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
 
@@ -1367,8 +1367,8 @@ class RealtimeClientChannel: QuickSpec {
                             try! channel2.history(query) { result, errorInfo in
                                 expect(result!.items).to(haveCount(20))
                                 expect(result!.hasNext).to(beFalse())
-                                expect((result!.items.first! as! ARTMessage).data as? String).to(equal("message 19"))
-                                expect((result!.items.last! as! ARTMessage).data as? String).to(equal("message 0"))
+                                expect((result!.items.first as? ARTMessage)?.data as? String).to(equal("message 19"))
+                                expect((result!.items.last as? ARTMessage)?.data as? String).to(equal("message 0"))
                                 done()
                             }
                         }
