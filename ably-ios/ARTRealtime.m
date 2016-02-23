@@ -298,7 +298,7 @@
         }
     }
     
-    [self.connection emit:[NSNumber numberWithInt:state] with:[[ARTConnectionStateChange alloc] initWithCurrent:state previous:previousState reason:errorInfo]];
+    [self.connection emit:state with:[[ARTConnectionStateChange alloc] initWithCurrent:state previous:previousState reason:errorInfo]];
 }
 
 - (void)startConnectTimer {
