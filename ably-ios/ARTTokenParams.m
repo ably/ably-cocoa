@@ -15,7 +15,9 @@
 #import "ARTEncoder.h"
 #import "ARTTokenRequest.h"
 
-@implementation ARTTokenParams
+@implementation ARTTokenParams {
+    NSDate *_timestamp;
+}
 
 - (instancetype)init {
     return [self initWithClientId:nil nonce:nil];
@@ -27,7 +29,7 @@
 
 - (instancetype)initWithClientId:(NSString *)clientId nonce:(NSString *)nonce {
     if (self = [super init]) {
-        _timestamp = [NSDate date];
+        _timestamp = nil;
         _ttl = [ARTDefault ttl];
         _capability = @"{\"*\":[\"*\"]}"; // allow all
         _clientId = clientId;
@@ -51,11 +53,14 @@
 }
 
 - (void)setTimestamp:(NSDate *)timestamp {
-    if (timestamp == nil) {
-        timestamp = [NSDate date];
-    }
-    
     _timestamp = timestamp;
+}
+
+- (NSDate *)getTimestamp {
+    if (_timestamp == nil) {
+        _timestamp = [NSDate date];
+    }
+    return _timestamp;
 }
 
 - (NSMutableArray *)toArray {
