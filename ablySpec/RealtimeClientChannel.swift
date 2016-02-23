@@ -140,6 +140,19 @@ class RealtimeClientChannel: QuickSpec {
                     expect(states[4].rawValue).to(equal(ARTRealtimeChannelState.Failed.rawValue), description: "Should be FAILED state")
                 }
 
+                // RTL2b
+                it("state attribute should be the current state of the channel") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+
+                    let channel = client.channels.get("test")
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Initialised))
+
+                    channel.attach()
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+                }
+
             }
 
             // RTL3
