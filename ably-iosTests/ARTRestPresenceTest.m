@@ -86,12 +86,12 @@
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTRestChannel *channel = [rest.channels get:@"persisted:presence_fixtures"];
-        [channel.presence history:[[ARTDataQuery alloc] init] error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
+        [channel.presence history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
             XCTAssert(!error);
             NSArray *presence = [result items];
             XCTAssertEqual(6, [presence count]);
             [expectation fulfill];
-        }];
+        } error:nil];
     }];
      [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
@@ -101,14 +101,14 @@
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTRestChannel *channel = [rest.channels get:@"persisted:presence_fixtures"];
-        [channel.presence history:[[ARTDataQuery alloc] init] error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
+        [channel.presence history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
             XCTAssert(!error);
             NSArray *presence = [result items];
             XCTAssertEqual(6, [presence count]);
             ARTPresenceMessage * m = [presence objectAtIndex:[presence count] -1];
             XCTAssertEqualObjects(@"true", [m data]);
             [expectation fulfill];
-        }];
+        } error:nil];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
@@ -120,14 +120,14 @@
         ARTRestChannel *channel = [rest.channels get:@"persisted:presence_fixtures"];
         ARTDataQuery *query = [[ARTDataQuery alloc] init];
         query.direction = ARTQueryDirectionForwards;
-        [channel.presence history:query error:nil callback:^(ARTPaginatedResult *result, NSError *error) {
+        [channel.presence history:query callback:^(ARTPaginatedResult *result, NSError *error) {
             XCTAssert(!error);
             NSArray *presence = [result items];
             XCTAssertEqual(6, [presence count]);
             ARTPresenceMessage * m = [presence objectAtIndex:0];
             XCTAssertEqualObjects(@"true", [m data]);
             [expectation fulfill];
-        }];
+        } error:nil];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
@@ -140,7 +140,7 @@
         ARTDataQuery *query = [[ARTDataQuery alloc] init];
         query.limit = 1001;
         NSError *error;
-        BOOL valid = [channelOne.presence history:query error:&error callback:^(ARTPaginatedResult *result, NSError *error){}];
+        BOOL valid = [channelOne.presence history:query callback:^(ARTPaginatedResult *result, NSError *error){} error:&error];
         XCTAssertFalse(valid);
         XCTAssertNotNil(error);
         XCTAssert(error.code == ARTDataQueryErrorLimit);
@@ -157,7 +157,7 @@
         ARTDataQuery *query = [[ARTDataQuery alloc] init];
         query.limit = 1001;
         // Forcing an invalid query where the error is ignored and the result should be invalid (the request was canceled)
-        BOOL requested = [channelOne.presence history:query error:nil callback:^(ARTPaginatedResult *result, NSError *error){}];
+        BOOL requested = [channelOne.presence history:query callback:^(ARTPaginatedResult *result, NSError *error){} error:nil];
         XCTAssertFalse(requested);
         [exp fulfill];
     }];
