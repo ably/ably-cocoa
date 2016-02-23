@@ -324,12 +324,6 @@
     [_detachedEventEmitter emit:[NSNull null] with:nil];
 }
 
-- (void)releaseChannel {
-    [self cancelAttachTimer];
-    [self detachChannel:[ARTStatus state:ARTStateOk]];
-    [self.realtime.channels release:self.name];
-}
-
 - (void)detachChannel:(ARTStatus *)error {
     [self failQueuedMessages:error];
     [self transition:ARTRealtimeChannelDetached status:error];

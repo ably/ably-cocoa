@@ -59,8 +59,6 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (void)requestContinueSync;
 
-- (void)releaseChannel;
-
 @end
 
 ART_ASSUME_NONNULL_END

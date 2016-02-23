@@ -243,8 +243,7 @@
             XCTAssertEqualObjects([d valueForKey:@"channel2"], c2);
             XCTAssertEqualObjects([d valueForKey:@"channel3"], c3);
         }
-        [realtime.channels release:c3.name];
-        {
+        [realtime.channels release:c3.name cb:^(ARTErrorInfo *errorInfo) {
             NSMutableDictionary * d = [[NSMutableDictionary alloc] init];
             for (ARTRealtimeChannel *channel in realtime.channels) {
                 [d setValue:channel forKey:channel.name];
@@ -252,7 +251,7 @@
             XCTAssertEqual([[d allKeys] count], 2);
             XCTAssertEqualObjects([d valueForKey:@"channel"], c1);
             XCTAssertEqualObjects([d valueForKey:@"channel2"], c2);
-        }
+        }];
         
         [exp fulfill];
     }];
@@ -385,6 +384,7 @@
 
         [channel2.presence subscribe:^(ARTPresenceMessage *message) {
             XCTAssertEqualObjects(message.clientId, firstClientId);
+            [channel2 off];
             [exp1 fulfill];
         }];
 
