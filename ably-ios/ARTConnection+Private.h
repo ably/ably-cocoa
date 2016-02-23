@@ -22,7 +22,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)setSerial:(int64_t)serial;
 - (void)setState:(ARTRealtimeConnectionState)state;
 
-- (void)emit:(NSNumber *)event with:(ARTConnectionStateChange *)data;
+- (void)emit:(ARTRealtimeConnectionState)event with:(ARTConnectionStateChange *)data;
 
 @end
 

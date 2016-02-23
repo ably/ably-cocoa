@@ -77,6 +77,35 @@
     }
 }
 
-ART_EMBED_IMPLEMENTATION_EVENT_EMITTER(NSNumber *, ARTConnectionStateChange *)
+- (__GENERIC(ARTEventListener, ARTConnectionStateChange *) *)on:(ARTRealtimeConnectionState)event call:(void (^)(ARTConnectionStateChange *))cb {
+    return [_eventEmitter on:[NSNumber numberWithInt:event] call:cb];
+}
+
+- (__GENERIC(ARTEventListener, ARTConnectionStateChange *) *)on:(void (^)(ARTConnectionStateChange *))cb {
+    return [_eventEmitter on:cb];
+}
+
+- (__GENERIC(ARTEventListener, ARTConnectionStateChange *) *)once:(ARTRealtimeConnectionState)event call:(void (^)(ARTConnectionStateChange *))cb {
+    return [_eventEmitter once:[NSNumber numberWithInt:event] call:cb];
+}
+
+- (__GENERIC(ARTEventListener, ARTConnectionStateChange *) *)once:(void (^)(ARTConnectionStateChange *))cb {
+    return [_eventEmitter once:cb];
+}
+
+- (void)off {
+    [_eventEmitter off];
+}
+- (void)off:(ARTRealtimeConnectionState)event listener:listener {
+    [_eventEmitter off:[NSNumber numberWithInt:event] listener:listener];
+}
+
+- (void)off:(__GENERIC(ARTEventListener, ARTConnectionStateChange *) *)listener {
+    [_eventEmitter off:listener];
+}
+
+- (void)emit:(ARTRealtimeConnectionState)event with:(ARTConnectionStateChange *)data {
+    [_eventEmitter emit:[NSNumber numberWithInt:event] with:data];
+}
 
 @end

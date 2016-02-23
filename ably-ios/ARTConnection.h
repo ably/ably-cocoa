@@ -31,7 +31,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)close;
 - (void)ping:(void (^)(ARTStatus *))cb;
 
-ART_EMBED_INTERFACE_EVENT_EMITTER(NSNumber *, ARTConnectionStateChange *)
+ART_EMBED_INTERFACE_EVENT_EMITTER(ARTRealtimeConnectionState, ARTConnectionStateChange *)
 
 @end
 
