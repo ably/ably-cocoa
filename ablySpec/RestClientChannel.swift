@@ -36,7 +36,7 @@ class RestClientChannel: QuickSpec {
                     
                     channel.publish(name, data: data) { error in
                         publishError = error
-                        try! channel.history { result, _ in
+                        channel.history { result, _ in
                             publishedMessage = result?.items.first as? ARTMessage
                         }
                     }
@@ -55,7 +55,7 @@ class RestClientChannel: QuickSpec {
                     
                     channel.publish(name, data: nil) { error in
                         publishError = error
-                        try! channel.history { result, _ in
+                        channel.history { result, _ in
                             publishedMessage = result?.items.first as? ARTMessage
                         }
                     }
@@ -74,7 +74,7 @@ class RestClientChannel: QuickSpec {
                     
                     channel.publish(nil, data: data) { error in
                         publishError = error
-                        try! channel.history { result, _ in
+                        channel.history { result, _ in
                             publishedMessage = result?.items.first as? ARTMessage
                         }
                     }
@@ -93,7 +93,7 @@ class RestClientChannel: QuickSpec {
                     
                     channel.publish(nil, data: nil) { error in
                         publishError = error
-                        try! channel.history { result, _ in
+                        channel.history { result, _ in
                             publishedMessage = result?.items.first as? ARTMessage
                         }
                     }
@@ -111,7 +111,7 @@ class RestClientChannel: QuickSpec {
                     
                     channel.publish([ARTMessage(name: name, data: data)]) { error in
                         publishError = error
-                        try! channel.history { result, _ in
+                        channel.history { result, _ in
                             publishedMessage = result?.items.first as? ARTMessage
                         }
                     }
@@ -139,7 +139,7 @@ class RestClientChannel: QuickSpec {
                     channel.publish(messages) { error in
                         publishError = error
                         client.httpExecutor = oldExecutor
-                        try! channel.history { result, _ in
+                        channel.history { result, _ in
                             if let items = result?.items as? [ARTMessage] {
                                 publishedMessages.appendContentsOf(items)
                             }
@@ -377,7 +377,7 @@ class RestClientChannel: QuickSpec {
                     }
 
                     var totalReceived = 0
-                    try! channel.history { result, error in
+                    channel.history { result, error in
                         expect(error).to(beNil())
                         guard let result = result else {
                             XCTFail("Result is nil")

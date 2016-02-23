@@ -38,7 +38,8 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)unsubscribe:(__GENERIC(ARTEventListener, ARTMessage *) *)listener;
 - (void)unsubscribe:(NSString *)name listener:(__GENERIC(ARTEventListener, ARTMessage *) *)listener;
 
-- (BOOL)history:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *__art_nullable result, NSError *__art_nullable error))callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
+- (void)history:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *__art_nullable result, NSError *__art_nullable error))callback;
+
 - (BOOL)history:(art_nullable ARTRealtimeHistoryQuery *)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *__art_nullable result, NSError *__art_nullable error))callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
 
 ART_EMBED_INTERFACE_EVENT_EMITTER(ARTRealtimeChannelState, ARTErrorInfo *)

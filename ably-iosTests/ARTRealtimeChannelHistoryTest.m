@@ -64,7 +64,7 @@
                         XCTAssertEqualObjects(@"testString", [m1 data]);
 
                         [expectation fulfill];
-                    } error:nil];
+                    }];
                 }];
             }];
         }        
@@ -125,7 +125,7 @@
                     XCTAssertEqualObjects(@"testString", [m1 data]);
                     [expectation1 fulfill];
                     
-                } error:nil];
+                }];
                 [channel2 history:^(ARTPaginatedResult *result, NSError *error) {
                     XCTAssert(!error);
                     NSArray *messages = [result items];
@@ -135,7 +135,7 @@
                     XCTAssertEqualObjects(@"testString2", [m0 data]);
                     XCTAssertEqualObjects(@"testString", [m1 data]);
                     [expectation2 fulfill];
-                } error:nil];
+                }];
             }];
         }];
     }];
