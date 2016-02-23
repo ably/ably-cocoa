@@ -115,7 +115,7 @@
                         XCTAssertEqualObjects([stringMessage data], stringPayload);
                         XCTAssertEqualObjects([firstMessage data], firstMessageText);
                         [exp fulfill];
-                    } error:nil];
+                    }];
                 }];
             }];
         }];

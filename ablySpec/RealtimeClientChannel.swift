@@ -1231,7 +1231,7 @@ class RealtimeClientChannel: QuickSpec {
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        try! channel.history { result, _ in
+                        channel.history { result, _ in
                             expect(result).to(beAKindOf(ARTPaginatedResult))
                             expect(result!.items).to(haveCount(1))
                             expect(result!.hasNext).to(beFalse())

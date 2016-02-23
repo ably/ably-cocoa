@@ -81,8 +81,8 @@
     return message;
 }
 
-- (BOOL)history:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, NSError *))callback error:(NSError **)errorPtr {
-    return [self history:[[ARTDataQuery alloc] init] callback:callback error:errorPtr];
+- (void)history:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, NSError *))callback {
+    [self history:[[ARTDataQuery alloc] init] callback:callback error:nil];
 }
 
 - (BOOL)history:(ARTDataQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, NSError *))callback error:(NSError **)errorPtr {

@@ -91,7 +91,7 @@
                 XCTAssertEqualObjects([m1 data], test2);
                 XCTAssertEqualObjects([m2 data], test1);
                 [exp fulfill];
-            } error:nil];
+            }];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
