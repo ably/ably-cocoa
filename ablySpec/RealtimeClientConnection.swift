@@ -1310,6 +1310,48 @@ class RealtimeClientConnection: QuickSpec {
             // RTN15
             context("connection failures once CONNECTED") {
 
+                // RTN15d
+                it("should recover from disconnection and messages should be delivered once the connection is resumed") {
+                    let options = AblyTests.commonAppSetup()
+                    options.disconnectedRetryTimeout = 1.0
+
+                    let client1 = ARTRealtime(options: options)
+                    defer { client1.close() }
+                    let channel1 = client1.channels.get("test")
+
+                    let client2 = ARTRealtime(options: options)
+                    defer { client2.close() }
+                    let channel2 = client2.channels.get("test")
+
+                    let expectedMessages = ["message X", "message Y"]
+                    var receivedMessages = [String]()
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel1.subscribeWithAttachCallback({ errorInfo in
+                            expect(errorInfo).to(beNil())
+                            done()
+                        }, cb: { message in
+                            receivedMessages.append(message.data as! String)
+                        })
+                    }
+
+                    client1.onDisconnected()
+
+                    channel2.publish(expectedMessages.map{ ARTMessage(name: nil, data: $0) }) { errorInfo in
+                        expect(errorInfo).to(beNil())
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client1.connection.once(.Connecting) { _ in
+                            expect(receivedMessages).to(beEmpty())
+                            done()
+                        }
+                    }
+
+                    expect(client1.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                    expect(receivedMessages).toEventually(equal(expectedMessages), timeout: testTimeout)
+                }
+
                 // RTN15e
                 context("when a connection is resumed") {
 
@@ -1350,7 +1392,6 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
             }
-
 
             // RTN18
             context("state change side effects") {
