@@ -1393,6 +1393,66 @@ class RealtimeClientConnection: QuickSpec {
 
             }
 
+            // RTN15
+            context("connection failures once CONNECTED") {
+
+                // RTN15a
+                it("should not receive published messages until the connection reconnects successfully") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    options.disconnectedRetryTimeout = 1.0
+
+                    let client1 = ARTRealtime(options: options)
+                    defer { client1.close() }
+                    let channel1 = client1.channels.get("test")
+
+                    var states = [ARTRealtimeConnectionState]()
+                    client1.connection.on() { stateChange in
+                        states = states + [stateChange!.current]
+                    }
+                    client1.connect()
+
+                    let client2 = ARTRealtime(options: options)
+                    client2.connect()
+                    defer { client2.close() }
+                    let channel2 = client2.channels.get("test")
+
+                    channel1.subscribe { message in
+                        fail("Shouldn't receive the messsage")
+                    }
+
+                    expect(channel1.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                    let firstConnection: (id: String, key: String) = (client1.connection.id!, client1.connection.key!)
+
+                    // Connection state cannot be resumed
+                    client1.simulateLostConnection()
+
+                    channel2.publish(nil, data: "message") { errorInfo in
+                        expect(errorInfo).to(beNil())
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client1.connection.once(.Connecting) { _ in
+                            expect(client1.resuming).to(beTrue())
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client1.connection.once(.Connected) { _ in
+                            expect(client1.resuming).to(beFalse())
+                            expect(client1.connection.id).toNot(equal(firstConnection.id))
+                            expect(client1.connection.key).toNot(equal(firstConnection.key))
+                            done()
+                        }
+                    }
+
+                    expect(states).to(equal([.Connecting, .Connected, .Disconnected, .Connecting, .Connected]))
+                }
+
+            }
+
             // RTN18
             context("state change side effects") {
 
