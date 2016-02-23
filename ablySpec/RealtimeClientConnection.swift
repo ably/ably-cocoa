@@ -1362,12 +1362,12 @@ class RealtimeClientConnection: QuickSpec {
                                 done()
                             })
                         }
-                        
+
                         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connecting), timeout: options.suspendedRetryTimeout)
-                        
+
                         channel.attach()
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
-                        
+
                         waitUntil(timeout: testTimeout) { done in
                             // Accept publishing of messages
                             channel.publish(nil, data: "message", cb: { errorInfo in
