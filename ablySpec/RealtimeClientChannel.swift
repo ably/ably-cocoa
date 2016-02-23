@@ -1244,6 +1244,57 @@ class RealtimeClientChannel: QuickSpec {
                     }
                 }
 
+                // RTL10d
+                it("should retrieve all available messages") {
+                    let options = AblyTests.commonAppSetup()
+                    let client1 = ARTRealtime(options: options)
+                    defer { client1.close() }
+
+                    let client2 = ARTRealtime(options: options)
+                    defer { client2.close() }
+
+                    let channel1 = client1.channels.get("test")
+                    channel1.attach()
+                    expect(channel1.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                    var messages = [ARTMessage]()
+                    for i in 0..<20 {
+                        messages.append(ARTMessage(name: nil, data: "message \(i)"))
+                    }
+                    waitUntil(timeout: testTimeout) { done in
+                        channel1.publish(messages) { errorInfo in
+                            expect(errorInfo).to(beNil())
+                            done()
+                        }
+                    }
+
+                    let channel2 = client2.channels.get("test")
+                    channel2.attach()
+                    expect(channel2.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                    let query = ARTRealtimeHistoryQuery()
+                    query.limit = 10
+
+                    waitUntil(timeout: testTimeout) { done in
+                        try! channel2.history(query) { result, errorInfo in
+                            expect(result!.items).to(haveCount(10))
+                            expect(result!.hasNext).to(beTrue())
+                            expect(result!.isLast).to(beFalse())
+                            expect((result!.items.first! as! ARTMessage).data as? String).to(equal("message 19"))
+                            expect((result!.items.last! as! ARTMessage).data as? String).to(equal("message 10"))
+
+                            result!.next { result, errorInfo in
+                                expect(result!.items).to(haveCount(10))
+                                expect(result!.hasNext).to(beFalse())
+                                expect(result!.isLast).to(beTrue())
+                                expect((result!.items.first! as! ARTMessage).data as? String).to(equal("message 9"))
+                                expect((result!.items.last! as! ARTMessage).data as? String).to(equal("message 0"))
+                                done()
+                            }
+                        }
+                    }
+                }
+
             }
 
         }
