@@ -172,25 +172,12 @@
     [self.transport sendPing];
 }
 
-
-- (NSError *)stats:(ARTStatsCallback)callback {
-    NSError *error = nil;
-    [self statsWithError:&error callback:callback];
-    return error;
+- (BOOL)stats:(ARTStatsCallback)callback {
+    return [self stats:[[ARTStatsQuery alloc] init] callback:callback error:nil];
 }
 
-- (NSError *)stats:(ARTStatsQuery *)query callback:(ARTStatsCallback)callback {
-    NSError *error = nil;
-    [self stats:query error:&error callback:callback];
-    return error;
-}
-
-- (BOOL)statsWithError:(NSError *__autoreleasing  _Nullable *)errorPtr callback:(ARTStatsCallback)callback {
-    return [self stats:[[ARTStatsQuery alloc] init] error:errorPtr callback:callback];
-}
-
-- (BOOL)stats:(ARTStatsQuery *)query error:(NSError **)errorPtr callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *, NSError *))callback {
-    return [self.rest stats:query error:errorPtr callback:callback];
+- (BOOL)stats:(ARTStatsQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *, NSError *))callback error:(NSError **)errorPtr {
+    return [self.rest stats:query callback:callback error:errorPtr];
 }
 
 - (void)resetEventEmitter {
