@@ -1225,6 +1225,26 @@ class RealtimeClientChannel: QuickSpec {
                         expect(query.untilAttach).to(equal(false))
                     }
 
+                    it("should invoke an error when the untilAttach is specified and the channel is not attached") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+
+                        let query = ARTRealtimeHistoryQuery()
+                        query.untilAttach = true
+
+                        do {
+                            try channel.history(query, callback: { _, _ in })
+                        }
+                        catch ARTRealtimeHistoryError.NotAttached {
+                            return
+                        }
+                        catch {
+                            fail("Shouldn't raise a global error")
+                        }
+                        fail("Should raise an error")
+                    }
+
                     struct CaseTest {
                         let untilAttach: Bool
                     }
