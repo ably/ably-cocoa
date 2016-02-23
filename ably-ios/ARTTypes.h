@@ -57,6 +57,10 @@ typedef NS_ENUM(NSInteger, ARTDataQueryError) {
     ARTDataQueryErrorTimestampRange = 2,
 };
 
+typedef NS_ENUM(NSInteger, ARTRealtimeHistoryError) {
+    ARTRealtimeHistoryErrorNotAttached = ARTDataQueryErrorTimestampRange + 1
+};
+
 ART_ASSUME_NONNULL_BEGIN
 
 /// Decompose API key

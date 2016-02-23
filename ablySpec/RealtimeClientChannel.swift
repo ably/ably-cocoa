@@ -1217,6 +1217,134 @@ class RealtimeClientChannel: QuickSpec {
                     expect(restChannelHistoryMethodWasCalled).to(beTrue())
                 }
 
+                // RTL10b
+                pending("supports the param untilAttach") {
+
+                    it("should be false as default") {
+                        let query = ARTRealtimeHistoryQuery()
+                        expect(query.untilAttach).to(equal(false))
+                    }
+
+                    it("should invoke an error when the untilAttach is specified and the channel is not attached") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+
+                        let query = ARTRealtimeHistoryQuery()
+                        query.untilAttach = true
+
+                        do {
+                            try channel.history(query, callback: { _, _ in })
+                        }
+                        catch ARTRealtimeHistoryError.NotAttached {
+                            return
+                        }
+                        catch {
+                            fail("Shouldn't raise a global error")
+                        }
+                        fail("Should raise an error")
+                    }
+
+                    struct CaseTest {
+                        let untilAttach: Bool
+                    }
+
+                    let cases = [CaseTest(untilAttach: true), CaseTest(untilAttach: false)]
+
+                    for caseItem in cases {
+                        it("where value is \(caseItem.untilAttach), should pass the querystring param from_serial with the serial number assigned to the channel") {
+                            let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                            defer { client.close() }
+                            let channel = client.channels.get("test")
+
+                            let mockExecutor = MockHTTPExecutor()
+                            client.rest.httpExecutor = mockExecutor
+
+                            let query = ARTRealtimeHistoryQuery()
+                            query.untilAttach = caseItem.untilAttach
+
+                            expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                            waitUntil(timeout: testTimeout) { done in
+                                try! channel.history(query) { _, errorInfo in
+                                    expect(errorInfo).to(beNil())
+                                    done()
+                                }
+                            }
+
+                            let queryString = mockExecutor.requests.last!.URL!.query
+
+                            if query.untilAttach {
+                                expect(queryString).to(contain("from_serial=\(channel.attachSerial)"))
+                            }
+                            else {
+                                expect(queryString).toNot(contain("from_serial"))
+                            }
+                        }
+                    }
+
+                    it("should retrieve messages prior to the moment that the channel was attached") {
+                        let options = AblyTests.commonAppSetup()
+                        let client1 = ARTRealtime(options: options)
+                        defer { client1.close() }
+
+                        options.autoConnect = false
+                        let client2 = ARTRealtime(options: options)
+                        defer { client2.close() }
+
+                        let channel1 = client1.channels.get("test")
+                        channel1.attach()
+                        expect(channel1.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                        var messages = [ARTMessage]()
+                        for i in 0..<20 {
+                            messages.append(ARTMessage(name: nil, data: "message \(i)"))
+                        }
+                        waitUntil(timeout: testTimeout) { done in
+                            channel1.publish(messages) { errorInfo in
+                                expect(errorInfo).to(beNil())
+                                done()
+                            }
+                        }
+
+                        client2.connect()
+                        let channel2 = client1.channels.get("test")
+                        channel2.attach()
+                        expect(channel2.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                        var counter = 20
+                        channel2.subscribe { message in
+                            expect(message.data as? String).to(equal("message \(counter)"))
+                            counter += 1
+                        }
+
+                        messages = [ARTMessage]()
+                        for i in 20..<40 {
+                            messages.append(ARTMessage(name: nil, data: "message \(i)"))
+                        }
+                        waitUntil(timeout: testTimeout) { done in
+                            channel1.publish(messages) { errorInfo in
+                                expect(errorInfo).to(beNil())
+                                done()
+                            }
+                        }
+
+                        let query = ARTRealtimeHistoryQuery()
+                        query.untilAttach = true
+
+                        waitUntil(timeout: testTimeout) { done in
+                            try! channel2.history(query) { result, errorInfo in
+                                expect(result!.items).to(haveCount(20))
+                                expect(result!.hasNext).to(beFalse())
+                                expect((result!.items.first! as! ARTMessage).data as? String).to(equal("message 19"))
+                                expect((result!.items.last! as! ARTMessage).data as? String).to(equal("message 0"))
+                                done()
+                            }
+                        }
+                    }
+
+                }
+
                 // RTL10c
                 it("should return a PaginatedResult page") {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
