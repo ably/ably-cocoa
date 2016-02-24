@@ -41,7 +41,7 @@ private func queryStats(client: ARTRest, _ query: ARTStatsQuery) -> ARTPaginated
     let dummyError = NSError(domain: "", code: -1, userInfo: nil);
     var error: NSError? = dummyError
 
-    client.stats(query, callback: { result, err in
+    try! client.stats(query, callback: { result, err in
         stats = result
         error = err
     })
@@ -312,8 +312,7 @@ class RestClientStats: QuickSpec {
                             query.start = NSDate.distantFuture()
                             query.end = NSDate.distantPast()
 
-                            let error = client.stats(query, callback:{ status, result in })
-                            expect(error).toNot(beNil())
+                            expect{try client.stats(query, callback:{ status, result in })}.to(throwError())
                         }
                     }
                     
@@ -340,8 +339,7 @@ class RestClientStats: QuickSpec {
                             
                             query.limit = 1001;
 
-                            let error = client.stats(query, callback: { status, result in })
-                            expect(error).toNot(beNil())
+                            expect{try client.stats(query, callback:{ status, result in })}.to(throwError())
                         }
                     }
                     

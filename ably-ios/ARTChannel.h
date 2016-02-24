@@ -33,7 +33,6 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;
 
 - (void)history:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *__art_nullable result, NSError *__art_nullable error))callback;
-
 - (BOOL)history:(art_nullable ARTDataQuery *)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *__art_nullable result, NSError *__art_nullable error))callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
 
 @end
