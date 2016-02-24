@@ -1307,6 +1307,51 @@ class RealtimeClientConnection: QuickSpec {
 
             }
 
+            // RTN15
+            context("connection failures once CONNECTED") {
+
+                // RTN15e
+                context("when a connection is resumed") {
+
+                    it("the connection#key may change and will be provided in the first CONNECTED ProtocolMessage#connectionDetails") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        options.disconnectedRetryTimeout = 1.0
+
+                        let client = ARTRealtime(options: options)
+                        client.setTransportClass(TestProxyTransport.self)
+                        client.connect()
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+
+                        channel.attach()
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                        client.onDisconnected()
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.Connecting) { _ in
+                                client.connection.setKey("key_to_be_replaced")
+                                done()
+                            }
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.Connected) { _ in
+                                let transport = client.transport as! TestProxyTransport
+                                let firstConnectionDetails = transport.protocolMessagesReceived.filter{ $0.action == .Connected }[0].connectionDetails
+                                expect(firstConnectionDetails!.connectionKey).toNot(beNil())
+                                expect(client.connection.key).to(equal(firstConnectionDetails!.connectionKey))
+                                done()
+                            }
+                        }
+                    }
+
+                }
+
+            }
+
+
             // RTN18
             context("state change side effects") {
 
