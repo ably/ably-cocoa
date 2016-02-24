@@ -152,12 +152,13 @@
 - (void)sendMessage:(ARTProtocolMessage *)pm cb:(ARTStatusCallback)cb {
     __block BOOL gotFailure = false;
     NSString *oldConnectionId = self.realtime.connection.id;
-    __block ARTEventListener *listener = [self.realtime.connection once:^(ARTConnectionStateChange *stateChange) {
+    __block ARTEventListener *listener = [self.realtime.connection on:^(ARTConnectionStateChange *stateChange) {
         if (!(stateChange.current == ARTRealtimeClosed || stateChange.current == ARTRealtimeFailed
               || (stateChange.current == ARTRealtimeConnected && ![oldConnectionId isEqual:self.realtime.connection.id] /* connection state lost */))) {
             return;
         }
         gotFailure = true;
+        [self.realtime.connection off:listener];
         if (!cb) return;
         ARTErrorInfo *reason = stateChange.reason ? stateChange.reason : [ARTErrorInfo createWithCode:0 message:@"connection broken before receiving publishing acknowledgement."];
         cb([ARTStatus state:ARTStateError info:reason]);
