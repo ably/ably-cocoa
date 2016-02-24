@@ -1391,6 +1391,28 @@ class RealtimeClientConnection: QuickSpec {
 
                 }
 
+                // RTN15g
+                it("when the connection resume has failed, all channels should be detached with an error reason") {
+                    let options = AblyTests.commonAppSetup()
+                    options.disconnectedRetryTimeout = 1.0
+
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { errorInfo in
+                            expect(errorInfo).to(beNil())
+                            done()
+                        }
+                    }
+
+                    client.simulateLostConnectionAndState()
+
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
+                    expect(channel.errorReason!.message).to(contain("Unable to recover connection"))
+                }
+
             }
 
             // RTN15
