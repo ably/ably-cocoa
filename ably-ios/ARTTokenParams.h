@@ -37,7 +37,7 @@ ART_ASSUME_NONNULL_BEGIN
 /**
  Timestamp (in millis since the epoch) of this request. Timestamps, in conjunction with the nonce, are used to prevent n requests from being replayed.
  */
-@property (nonatomic, strong, null_resettable) NSDate *timestamp;
+@property (nonatomic, strong, null_resettable, setter=setTimestamp:, getter=getTimestamp) NSDate *timestamp;
 
 @property (nonatomic, readonly, strong) NSString *nonce;
 

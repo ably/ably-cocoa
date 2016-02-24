@@ -1488,5 +1488,31 @@ class Auth : QuickSpec {
                 }
             }
         }
+
+        describe("TokenParams") {
+            context("timestamp") {
+                it("if explicitly set, should be returned by the getter") {
+                    let params = ARTTokenParams()
+                    params.timestamp = NSDate(timeIntervalSince1970: 123)
+                    expect(params.timestamp).to(equal(NSDate(timeIntervalSince1970: 123)))
+                }
+
+                it("if not explicitly set, should be generated at the getter and stick") {
+                    let params = ARTTokenParams()
+
+                    waitUntil(timeout: testTimeout) { done in
+                        delay(0.25) {
+                            let now = NSDate().artToIntegerMs()
+                            let firstParamsTimestamp = params.timestamp.artToIntegerMs()
+                            expect(firstParamsTimestamp).to(beCloseTo(now, within: 1.0))
+                            delay(0.25) {
+                                expect(params.timestamp.artToIntegerMs()).to(equal(firstParamsTimestamp))
+                                done()
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
