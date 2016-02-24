@@ -564,7 +564,7 @@ extension ARTRealtime {
         //2. Change the `Connection#id` and `Connection#key` before the client
         //   library attempts to reconnect and resume the connection
         self.connection.setId("lost")
-        self.connection.setKey("lost")
+        self.connection.setKey("xxxxx!xxxxxxx-xxxxxxxx-xxxxxxxx")
         self.onDisconnected()
     }
 
@@ -582,6 +582,7 @@ extension ARTWebSocketTransport {
 
     func simulateIncomingNormalClose() {
         let CLOSE_NORMAL = 1000
+        self.closing = true
         let webSocketDelegate = self as! WebSocketDelegate
         webSocketDelegate.webSocketClose(CLOSE_NORMAL, reason: "", wasClean: true)
     }

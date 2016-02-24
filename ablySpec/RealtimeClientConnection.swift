@@ -688,7 +688,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN7c
-                pending("should trigger the failure callback for the remaining pending messages if") {
+                context("should trigger the failure callback for the remaining pending messages if") {
 
                     it("connection is closed") {
                         let options = AblyTests.commonAppSetup()
@@ -753,6 +753,7 @@ class RealtimeClientConnection: QuickSpec {
                     it("lost connection state") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
+                        options.disconnectedRetryTimeout = 0.1
                         let client = ARTRealtime(options: options)
                         client.setTransportClass(TestProxyTransport.self)
                         client.connect()
@@ -766,22 +767,26 @@ class RealtimeClientConnection: QuickSpec {
                         let transport = client.transport as! TestProxyTransport
                         transport.actionsIgnored += [.Ack, .Nack]
 
-                        waitUntil(timeout: testTimeout + options.disconnectedRetryTimeout) { done in
-                            channel.on { errorInfo in
-                                if channel.state == .Attached {
-                                    channel.publish(nil, data: "message", cb: { errorInfo in
-                                        expect(errorInfo).toNot(beNil())
-                                        done()
-                                    })
-                                    // Wait until the message is pushed to Ably first
-                                    delay(1.0) {
-                                        client.simulateLostConnection()
-                                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connecting), timeout: options.disconnectedRetryTimeout)
-                                    }
-                                }
-                            }
-                            channel.attach()
+                        channel.attach()
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                        var gotPublishedCallback = false
+                        channel.publish(nil, data: "message", cb: { errorInfo in
+                            expect(errorInfo).toNot(beNil())
+                            gotPublishedCallback = true
+                        })
+
+                        let oldConnectionId = client.connection.id!
+                        // Wait until the message is pushed to Ably first
+                        waitUntil(timeout: testTimeout) { done in
+                            delay(1.0) { done() }
                         }
+
+                        client.simulateLostConnection()
+                        expect(gotPublishedCallback).to(beFalse())
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                        expect(client.connection.id).toNot(equal(oldConnectionId))
+                        expect(gotPublishedCallback).to(beTrue())
                     }
 
                 }
@@ -1376,7 +1381,7 @@ class RealtimeClientConnection: QuickSpec {
                             })
                         }
                     }
-
+                    
                     it("when a connection enters CLOSED state") {
                         let options = AblyTests.commonAppSetup()
                         let client = ARTRealtime(options: options)
@@ -1386,14 +1391,14 @@ class RealtimeClientConnection: QuickSpec {
                         }
                         let channel = client.channels.get("test")
                         channel.attach()
-
+                        
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
-
+                        
                         client.close()
-
+                        
                         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Closed))
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
-
+                        
                         waitUntil(timeout: testTimeout) { done in
                             // Reject publishing of messages
                             channel.publish(nil, data: "message", cb: { errorInfo in
@@ -1403,9 +1408,9 @@ class RealtimeClientConnection: QuickSpec {
                             })
                         }
                     }
-
+                    
                 }
-
+                
                 // RTN18c
                 it("when a connection enters FAILED state, all channels will move to FAILED state") {
                     let options = AblyTests.commonAppSetup()
@@ -1416,14 +1421,14 @@ class RealtimeClientConnection: QuickSpec {
                     }
                     let channel = client.channels.get("test")
                     channel.attach()
-
+                    
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
-
+                    
                     client.onError(AblyTests.newErrorProtocolMessage())
-
+                    
                     expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Failed))
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Failed), timeout: testTimeout)
-
+                    
                     waitUntil(timeout: testTimeout) { done in
                         // Reject publishing of messages
                         channel.publish(nil, data: "message", cb: { errorInfo in
@@ -1433,9 +1438,9 @@ class RealtimeClientConnection: QuickSpec {
                         })
                     }
                 }
-
+                
             }
-
+            
         }
     }
 }

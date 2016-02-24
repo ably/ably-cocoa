@@ -235,7 +235,7 @@ class RealtimeClientChannel: QuickSpec {
                         }
                         expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
                     }
-                    
+
                 }
 
                 // RTL3b

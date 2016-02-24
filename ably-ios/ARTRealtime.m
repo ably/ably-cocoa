@@ -423,7 +423,6 @@
     [self.logger info:@"ARTRealtime disconnected"];
     switch (self.connection.state) {
         case ARTRealtimeConnected:
-            [self.connection setId:nil];
             [self transition:ARTRealtimeDisconnected];
             break;
         default:
