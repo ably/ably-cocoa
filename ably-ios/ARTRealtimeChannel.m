@@ -193,6 +193,10 @@
 }
 
 - (ARTEventListener<ARTMessage *> *)subscribeWithAttachCallback:(void (^)(ARTErrorInfo * _Nullable))onAttach cb:(void (^)(ARTMessage * _Nonnull))cb {
+    if (self.state == ARTRealtimeChannelFailed) {
+        if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
+        return nil;
+    }
     [self attach:onAttach];
     return [self.messagesEventEmitter on:cb];
 }
@@ -202,6 +206,10 @@
 }
 
 - (ARTEventListener<ARTMessage *> *)subscribe:(NSString *)name onAttach:(void (^)(ARTErrorInfo * _Nullable))onAttach cb:(void (^)(ARTMessage * _Nonnull))cb {
+    if (self.state == ARTRealtimeChannelFailed) {
+        if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
+        return nil;
+    }
     [self attach:onAttach];
     return [self.messagesEventEmitter on:name call:cb];
 }
