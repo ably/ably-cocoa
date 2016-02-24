@@ -9,6 +9,8 @@
 import Nimble
 import Quick
 
+import Ably.Private
+
 class RestClient: QuickSpec {
     override func spec() {
 
@@ -44,7 +46,10 @@ class RestClient: QuickSpec {
                     expect(publishTask.error?.code).toEventually(equal(40005), timeout:testTimeout)
                 }
 
-                pending("should accept a token") {
+                it("should accept a token") {
+                    ARTClientOptions.setDefaultEnvironment("sandbox")
+                    defer { ARTClientOptions.setDefaultEnvironment("sandbox") }
+
                     let client = ARTRest(token: getTestToken())
                     let publishTask = publishTestMessage(client)
                     expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
