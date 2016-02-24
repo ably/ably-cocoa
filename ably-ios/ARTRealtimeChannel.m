@@ -226,7 +226,7 @@
     [self.messagesEventEmitter off:name listener:listener];
 }
 
-- (__GENERIC(ARTEventListener, ARTErrorInfo *) *)on:(ARTRealtimeChannelState)event call:(void (^)(ARTErrorInfo *))cb {
+- (__GENERIC(ARTEventListener, ARTErrorInfo *) *)on:(ARTChannelEvent)event call:(void (^)(ARTErrorInfo *))cb {
     return [self.statesEventEmitter on:[NSNumber numberWithInt:event] call:cb];
 }
 
@@ -234,7 +234,7 @@
     return [self.statesEventEmitter on:cb];
 }
 
-- (__GENERIC(ARTEventListener, ARTErrorInfo *) *)once:(ARTRealtimeChannelState)event call:(void (^)(ARTErrorInfo *))cb {
+- (__GENERIC(ARTEventListener, ARTErrorInfo *) *)once:(ARTChannelEvent)event call:(void (^)(ARTErrorInfo *))cb {
     return [self.statesEventEmitter once:[NSNumber numberWithInt:event] call:cb];
 }
 
@@ -245,7 +245,7 @@
 - (void)off {
     [self.statesEventEmitter off];
 }
-- (void)off:(ARTRealtimeChannelState)event listener:listener {
+- (void)off:(ARTChannelEvent)event listener:listener {
     [self.statesEventEmitter off:[NSNumber numberWithInt:event] listener:listener];
 }
 
@@ -253,7 +253,7 @@
     [self.statesEventEmitter off:listener];
 }
 
-- (void)emit:(ARTRealtimeChannelState)event with:(ARTErrorInfo *)data {
+- (void)emit:(ARTChannelEvent)event with:(ARTErrorInfo *)data {
     [self.statesEventEmitter emit:[NSNumber numberWithInt:event] with:data];
 }
 
@@ -266,7 +266,7 @@
     self.state = state;
     _errorReason = status.errorInfo;
 
-    [self.statesEventEmitter emit:[NSNumber numberWithInt:state] with:status.errorInfo];
+    [self emit:(ARTChannelEvent)state with:status.errorInfo];
 }
 
 - (void)cancelAttachTimer {
@@ -379,8 +379,10 @@
             NSError *error = nil;
             msg = [msg decodeWithEncoder:dataEncoder error:&error];
             if (error != nil) {
-                [self.logger error:@"ARTRealtimeChannel: error decoding data: %@", error];
-                [NSException raise:NSInvalidArgumentException format:@"ARTRealtimeChannel: error decoding data: %@", error];
+                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:(ARTErrorInfo *)error.userInfo[NSLocalizedFailureReasonErrorKey] prepend:@"Failed to decode data: "];
+                [self.logger error:@"%@", errorInfo.message];
+                _errorReason = errorInfo;
+                [self emit:ARTChannelEventError with:errorInfo];
             }
         }
         
@@ -406,7 +408,8 @@
             NSError *error = nil;
             pm = [pm decodeWithEncoder:dataEncoder error:&error];
             if (error != nil) {
-                [self.logger error:@"ARTRealtimeChannel: error decoding data: %@", error];
+                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:(ARTErrorInfo *)error.userInfo[NSLocalizedFailureReasonErrorKey] prepend:@"Failed to decode data: "];
+                [self.logger error:@"%@", errorInfo.message];
             }
         }
         

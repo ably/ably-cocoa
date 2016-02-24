@@ -53,6 +53,7 @@ FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
 + (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message;
 // FIXME: base NSError
 + (ARTErrorInfo *)createWithNSError:(NSError *)error;
++ (ARTErrorInfo *)wrap:(ARTErrorInfo *)error prepend:(NSString *)prepend;
 
 - (NSString *)description;
 

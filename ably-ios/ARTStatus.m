@@ -45,6 +45,10 @@ NSInteger getStatusFromCode(NSInteger code) {
     return [[[ARTErrorInfo alloc] init] setCode:error.code status:getStatusFromCode(error.code) message:error.description];
 }
 
++ (ARTErrorInfo *)wrap:(ARTErrorInfo *)error prepend:(NSString *)prepend {
+    return [ARTErrorInfo createWithCode:error.code status:error.statusCode message:[NSString stringWithFormat:@"%@%@", prepend, error.message]];
+}
+
 - (NSString *)description {
     return [NSString stringWithFormat:@"ARTErrorInfo with code %ld, message: %@", (long)self.statusCode, self.message];
 }
