@@ -8,6 +8,7 @@
 
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTChannel+Private.h"
+#import "ARTDataQuery+Private.h"
 
 #import "ARTRealtime+Private.h"
 #import "ARTMessage.h"
@@ -533,7 +534,16 @@
 }
 
 - (BOOL)history:(ARTRealtimeHistoryQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, NSError *))callback error:(NSError **)errorPtr {
-    return [super history:query callback:callback error:errorPtr];
+    query.realtimeChannel = self;
+    @try {
+        return [super history:query callback:callback error:errorPtr];
+    }
+    @catch (NSError *error) {
+        if (errorPtr) {
+            *errorPtr = error;
+        }
+        return false;
+    }
 }
 
 @end

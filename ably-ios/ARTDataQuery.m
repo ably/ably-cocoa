@@ -7,6 +7,7 @@
 //
 
 #import "ARTDataQuery+Private.h"
+#import "ARTRealtimeChannel+Private.h"
 
 @implementation ARTDataQuery
 
@@ -48,5 +49,17 @@ static NSString *queryDirectionToString(ARTQueryDirection direction) {
 @end
 
 @implementation ARTRealtimeHistoryQuery
+
+- (NSMutableArray *)asQueryItems {
+    NSMutableArray *items = [super asQueryItems];
+    if (self.untilAttach) {
+        NSAssert(self.realtimeChannel, @"ARTRealtimeHistoryQuery used from outside ARTRealitmeChannel.history");
+        if (self.realtimeChannel.state != ARTRealtimeChannelAttached) {
+            @throw [NSError errorWithDomain:ARTAblyErrorDomain code:ARTRealtimeHistoryErrorNotAttached userInfo:nil];
+        }
+        [items addObject:[NSURLQueryItem queryItemWithName:@"fromSerial" value:self.realtimeChannel.attachSerial]];
+    }
+    return items;
+}
 
 @end
