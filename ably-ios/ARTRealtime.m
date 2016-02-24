@@ -69,9 +69,7 @@
 
 #pragma mark - ARTRealtime implementation
 
-@implementation ARTRealtime {
-    BOOL _resuming;
-}
+@implementation ARTRealtime
 
 - (instancetype)initWithKey:(NSString *)key {
     return [self initWithOptions:[[ARTClientOptions alloc] initWithKey:key]];
