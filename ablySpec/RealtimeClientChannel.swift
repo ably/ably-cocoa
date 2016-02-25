@@ -923,7 +923,7 @@ class RealtimeClientChannel: QuickSpec {
                     context("When publishing a Message with clientId set to null") {
 
                         // RTL6g1a & RTL6g1b
-                        pending("should be unnecessary to set clientId of the Message before publishing and have clientId value as null for the Message when received") {
+                        it("should be unnecessary to set clientId of the Message before publishing and have clientId value set for the Message when received") {
                             let options = AblyTests.commonAppSetup()
                             options.clientId = "client_string"
                             options.autoConnect = false
@@ -938,7 +938,7 @@ class RealtimeClientChannel: QuickSpec {
 
                             waitUntil(timeout: testTimeout) { done in
                                 channel.subscribe() { message in
-                                    expect(message.clientId).to(beNil())
+                                    expect(message.clientId).to(equal(options.clientId))
                                     done()
                                 }
                                 channel.publish([message])
@@ -950,7 +950,7 @@ class RealtimeClientChannel: QuickSpec {
                             expect(messageSent.messages![0].clientId).to(beNil())
 
                             let messageReceived = transport.protocolMessagesReceived.filter({ $0.action == .Message })[0]
-                            expect(messageReceived.messages![0].clientId).to(beNil())
+                            expect(messageReceived.messages![0].clientId).to(equal(options.clientId))
                         }
 
                     }
