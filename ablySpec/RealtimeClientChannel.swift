@@ -1079,6 +1079,7 @@ class RealtimeClientChannel: QuickSpec {
                         it("using \(cryptoTest) ") {
                             let options = AblyTests.commonAppSetup()
                             options.autoConnect = false
+                            options.logHandler = ARTLog(capturingOutput: true)
                             let client = ARTRealtime(options: options)
                             client.setTransportClass(TestProxyTransport.self)
                             client.connect()
@@ -1115,8 +1116,9 @@ class RealtimeClientChannel: QuickSpec {
                                 channel.subscribe(testMessage.encoded.name) { message in
                                     expect(message.data as? String).to(equal(testMessage.encrypted.data))
 
-                                    let logs = querySyslog(forLogsAfter: logTime)
-                                    let line = logs.reduce("") { $0 + "; " + $1 } //Reduce in one line
+                                    let logs = options.logHandler.captured
+                                    let line = logs.reduce("") { $0 + "; " + $1.toString() } //Reduce in one line
+
                                     expect(line).to(contain("ERROR: Failed to decode data: unknown encoding: 'bad_encoding_type'"))
 
                                     callbacks -= 1

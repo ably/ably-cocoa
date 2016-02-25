@@ -212,23 +212,9 @@ class NSURLSessionServerTrustSync: NSObject, NSURLSessionDelegate, NSURLSessionT
 
 }
 
-func querySyslog(forLogsAfter startingTime: NSDate? = nil) -> AnyGenerator<String> {
-    let query = asl_new(UInt32(ASL_TYPE_QUERY))
-    asl_set_query(query, ASL_KEY_SENDER, NSProcessInfo.processInfo().processName, UInt32(ASL_QUERY_OP_EQUAL))
-    if let date = startingTime {
-        asl_set_query(query, ASL_KEY_TIME, "\(date.timeIntervalSince1970)", UInt32(ASL_QUERY_OP_GREATER_EQUAL))
-    }
-
-    let response = asl_search(nil, query)
-    return anyGenerator {
-        let entry = asl_next(response)
-        if entry != nil {
-            return String.fromCString(asl_get(entry, ASL_KEY_MSG))
-        } else {
-            asl_free(response)
-            asl_free(query)
-            return nil
-        }
+extension NSDate {
+    func isBefore(other: NSDate) -> Bool {
+        return self.compare(other) == NSComparisonResult.OrderedAscending
     }
 }
 

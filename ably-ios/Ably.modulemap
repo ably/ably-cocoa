@@ -25,5 +25,6 @@ framework module Ably {
         header "ARTWebSocketTransport+Private.h"
         header "ARTClientOptions+Private.h"
         header "ARTCrypto+Private.h"
+        header "ARTLog+Private.h"
     }
 }
