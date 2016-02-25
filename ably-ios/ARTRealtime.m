@@ -395,7 +395,7 @@
             [self.connection setId:message.connectionId];
             [self.connection setKey:message.connectionKey];
             if (!_resuming) {
-                [self.connection setSerial:-1];
+                [self.connection setSerial:message.connectionSerial];
                 self.msgSerial = 0;
                 self.pendingMessageStartSerial = 0;
             }
