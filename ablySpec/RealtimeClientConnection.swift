@@ -1196,13 +1196,16 @@ class RealtimeClientConnection: QuickSpec {
             }
 
             // RTN14b
-            pending("connection request fails") {
+            context("connection request fails") {
 
                 // NOTE: the connection doesn't retry to request a new token if any failure occurs
 
                 it("should not emit error with a renewable token") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
+                    options.authCallback = { tokenParams, callback in
+                        callback(getTestTokenDetails(key: options.key, capability: tokenParams.capability, ttl: tokenParams.ttl), nil)
+                    }
                     let tokenTtl = 1.0
                     options.token = getTestToken(key: options.key, ttl: tokenTtl)
 
@@ -1219,6 +1222,8 @@ class RealtimeClientConnection: QuickSpec {
                             done()
                         }
                     }
+
+                    var transport: TestProxyTransport!
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.on { stateChange in
@@ -1239,9 +1244,9 @@ class RealtimeClientConnection: QuickSpec {
                             }
                         }
                         client.connect()
+                        transport = client.transport as! TestProxyTransport
                     }
 
-                    let transport = client.transport as! TestProxyTransport
                     let failures = transport.protocolMessagesReceived.filter({ $0.action == .Error })
 
                     if failures.count != 1 {
@@ -1272,6 +1277,8 @@ class RealtimeClientConnection: QuickSpec {
                         client.close()
                     }
 
+                    var transport: TestProxyTransport!
+
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.on { stateChange in
                             let stateChange = stateChange!
@@ -1292,9 +1299,9 @@ class RealtimeClientConnection: QuickSpec {
                             }
                         }
                         client.connect()
+                        transport = client.transport as! TestProxyTransport
                     }
 
-                    let transport = client.transport as! TestProxyTransport
                     let failures = transport.protocolMessagesReceived.filter({ $0.action == .Error })
 
                     if failures.count != 1 {

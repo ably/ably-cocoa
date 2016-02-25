@@ -101,18 +101,27 @@ enum {
 }
 
 - (void)connect {
+    [self connectForcingNewToken:false];
+}
+
+- (void)connectForcingNewToken:(BOOL)forceNewToken {
     [self.logger debug:__FILE__ line:__LINE__ message:@"%p websocket connect", self];
-    if ([self.options isBasicAuth]) {
+    ARTClientOptions *options = self.options;
+    if (forceNewToken) {
+        options = [options copy];
+        options.force = true;
+    }
+    if ([options isBasicAuth]) {
         // Basic
-        NSURLQueryItem *keyParam = [NSURLQueryItem queryItemWithName:@"key" value:self.options.key];
-        [self setupWebSocket:@[keyParam] withOptions:self.options resumeKey:self.resumeKey connectionSerial:self.connectionSerial];
+        NSURLQueryItem *keyParam = [NSURLQueryItem queryItemWithName:@"key" value:options.key];
+        [self setupWebSocket:@[keyParam] withOptions:options resumeKey:self.resumeKey connectionSerial:self.connectionSerial];
         // Connect
         [self.websocket open];
     }
     else {
         __weak ARTWebSocketTransport *selfWeak = self;
         // Token
-        [self.auth authorise:nil options:self.options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+        [self.auth authorise:nil options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
             ARTWebSocketTransport *selfStrong = selfWeak;
             if (!selfStrong) return;
 
