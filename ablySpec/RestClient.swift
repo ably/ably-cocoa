@@ -48,7 +48,7 @@ class RestClient: QuickSpec {
 
                 it("should accept a token") {
                     ARTClientOptions.setDefaultEnvironment("sandbox")
-                    defer { ARTClientOptions.setDefaultEnvironment("sandbox") }
+                    defer { ARTClientOptions.setDefaultEnvironment(nil) }
 
                     let client = ARTRest(token: getTestToken())
                     let publishTask = publishTestMessage(client)
