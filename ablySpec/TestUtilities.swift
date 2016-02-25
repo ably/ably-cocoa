@@ -568,6 +568,16 @@ extension ARTRealtime {
         self.onDisconnected()
     }
 
+    func simulateSuspended() {
+        waitUntil(timeout: testTimeout) { done in
+            self.connection.on(.Closed) { _ in
+                self.onSuspended()
+                done()
+            }
+            self.close()
+        }
+    }
+
     func dispose() {
         let names = self.channels.map({ $0.name })
         for name in names {

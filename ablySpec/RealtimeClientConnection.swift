@@ -1339,10 +1339,11 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN18b
-                pending("all channels will move to DETACHED state") {
+                context("all channels will move to DETACHED state") {
 
                     it("when a connection enters SUSPENDED state") {
                         let options = AblyTests.commonAppSetup()
+                        options.suspendedRetryTimeout = 0.1
                         let client = ARTRealtime(options: options)
                         defer {
                             client.dispose()
@@ -1354,7 +1355,7 @@ class RealtimeClientConnection: QuickSpec {
 
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
 
-                        client.onSuspended()
+                        client.simulateSuspended()
 
                         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Suspended))
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
@@ -1368,8 +1369,7 @@ class RealtimeClientConnection: QuickSpec {
                             })
                         }
 
-                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connecting), timeout: options.suspendedRetryTimeout)
-
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connecting), timeout: options.suspendedRetryTimeout + 1.0)
                         channel.attach()
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
 
@@ -1396,7 +1396,7 @@ class RealtimeClientConnection: QuickSpec {
                         
                         client.close()
                         
-                        expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Closed))
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Closed), timeout: testTimeout)
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
                         
                         waitUntil(timeout: testTimeout) { done in
