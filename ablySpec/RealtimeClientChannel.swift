@@ -1050,7 +1050,7 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 // RTL7c
-                pending("should result in an error if channel is in the FAILED state") {
+                it("should result in an error if channel is in the FAILED state") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.close() }
 
@@ -1059,11 +1059,14 @@ class RealtimeClientChannel: QuickSpec {
                     expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
 
                     waitUntil(timeout: testTimeout) { done in
-                        channel.subscribe { message in
-                            // FIXME: error handling
-                            //https://github.com/ably/ably-ios/pull/208#discussion_r53043622
-                            done()
-                        }
+                        channel.subscribeWithAttachCallback({ errorInfo in
+                            expect(errorInfo).toNot(beNil())
+
+                            channel.subscribe("foo", onAttach: { errorInfo in
+                                expect(errorInfo).toNot(beNil())
+                                done()
+                            }) { _ in }
+                        }) { _ in }
                     }
                 }
 
