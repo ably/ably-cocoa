@@ -782,7 +782,7 @@ class RealtimeClientConnection: QuickSpec {
                             delay(1.0) { done() }
                         }
 
-                        client.simulateLostConnection()
+                        client.simulateLostConnectionAndState()
                         expect(gotPublishedCallback).to(beFalse())
                         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
                         expect(client.connection.id).toNot(equal(oldConnectionId))
@@ -1426,7 +1426,7 @@ class RealtimeClientConnection: QuickSpec {
                     let firstConnection: (id: String, key: String) = (client1.connection.id!, client1.connection.key!)
 
                     // Connection state cannot be resumed
-                    client1.simulateLostConnection()
+                    client1.simulateLostConnectionAndState()
 
                     channel2.publish(nil, data: "message") { errorInfo in
                         expect(errorInfo).to(beNil())
