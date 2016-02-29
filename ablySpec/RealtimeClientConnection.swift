@@ -1025,7 +1025,7 @@ class RealtimeClientConnection: QuickSpec {
             context("close") {
 
                 // RTN12a
-                pending("should send a CLOSE action, change state to CLOSING and receive a CLOSED action") {
+                it("should send a CLOSE action, change state to CLOSING and receive a CLOSED action") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
@@ -1069,7 +1069,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN12b
-                pending("should transition to CLOSED action when the close process timeouts") {
+                it("should transition to CLOSED action when the close process timeouts") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
