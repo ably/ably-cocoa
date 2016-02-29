@@ -6,9 +6,11 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "ARTClientOptions.h"
+#import "ARTClientOptions+Private.h"
 
 #import "ARTDefault.h"
+
+NSString *ARTDefaultEnvironment = nil;
 
 @interface ARTClientOptions ()
 
@@ -22,6 +24,7 @@
     self = [super initDefaults];
     _port = [ARTDefault port];
     _tlsPort = [ARTDefault tlsPort];
+    _environment = ARTDefaultEnvironment;
     _queueMessages = YES;
     _echoMessages = YES;
     _useBinaryProtocol = false;
@@ -109,6 +112,10 @@
 
 - (BOOL)hasCustomRealtimeHost {
     return _realtimeHost != nil;
+}
+
++ (void)setDefaultEnvironment:(NSString *)environment {
+    ARTDefaultEnvironment = environment;
 }
 
 @end
