@@ -5,3 +5,4 @@
 #include <ably/ably.h>
 #include <asl.h>
 #include "NSObject+TestSuite.h"
+#include "ARTTestUtil.h"

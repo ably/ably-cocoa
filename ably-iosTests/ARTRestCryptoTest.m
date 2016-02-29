@@ -74,8 +74,8 @@
         NSData * ivSpec = [[NSData alloc] initWithBase64EncodedString:@"HO4cYSP8LybPYBPZPHQOtg==" options:0];
     
         NSData * keySpec = [[NSData alloc] initWithBase64EncodedString:@"WUP6u0K7MXI5Zeo0VppPwg==" options:0];
-        ARTCipherParams *params =[[ARTCipherParams alloc] initWithAlgorithm:@"aes" key:keySpec keyLength:[keySpec length] iv:ivSpec];
-        ARTChannelOptions *channelOptions = [[ARTChannelOptions alloc] initEncrypted:true cipherParams:params];
+        ARTCipherParams *params =[[ARTCipherParams alloc] initWithAlgorithm:@"aes" key:keySpec iv:ivSpec];
+        ARTChannelOptions *channelOptions = [[ARTChannelOptions alloc] initWithCipher:params];
 
         ARTRestChannel *c = [rest.channels get:@"test" options:channelOptions];
         XCTAssert(c);

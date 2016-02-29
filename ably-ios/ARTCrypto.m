@@ -10,9 +10,11 @@
 
 #import <CommonCrypto/CommonCrypto.h>
 
+#define ART_CBC_BLOCK_LENGTH (16)
+
 @interface ARTCipherParams ()
 
-- (BOOL)ccAlgorithm:(CCAlgorithm *)algorithm;
+- (BOOL)ccAlgorithm:(CCAlgorithm *)algorithm error:(NSError **)error;
 
 @end
 
@@ -23,33 +25,51 @@
 
 @end
 
-@interface ARTCbcCipher : NSObject<ARTChannelCipher>
+@interface ARTCbcCipher ()
 
-- (id)initWithCipherParams:(ARTCipherParams *)cipherParams;
-+ (instancetype)cbcCipherWithParams:(ARTCipherParams *)cipherParams;
-
-
-@property (nonatomic, weak) ARTLog * logger;
-@property (readonly, strong, nonatomic) NSData *keySpec;
-@property NSData *iv;
-@property (readonly) NSUInteger blockLength;
 @property CCAlgorithm algorithm;
+
+@end
+
+@implementation NSString (ARTCipherKeyCompatible)
+
+- (NSData *)toData {
+    NSString *key = self;
+    key = [key stringByReplacingOccurrencesOfString:@"-" withString:@"+"];
+    key = [key stringByReplacingOccurrencesOfString:@"_" withString:@"/"];
+    return [[NSData alloc] initWithBase64EncodedString:key options:0];
+}
+
+@end
+
+@implementation NSData (ARTCipherKeyCompatible)
+
+- (NSData *)toData {
+    return self;
+}
 
 @end
 
 @implementation ARTCipherParams
 
-- (instancetype)initWithAlgorithm:(NSString *)algorithm key:(NSData *)key keyLength:(NSUInteger)keyLength {
-    return [self initWithAlgorithm:algorithm key:key keyLength:keyLength iv:[ARTCrypto generateSecureRandomData:keyLength]];
+- (instancetype)initWithAlgorithm:(NSString *)algorithm key:(id<ARTCipherKeyCompatible>)key {
+    NSData *keyData = [key toData];
+    return [self initWithAlgorithm:algorithm key:keyData iv:nil];
 }
 
-- (instancetype)initWithAlgorithm:(NSString *)algorithm key:(NSData *)key keyLength:(NSUInteger)keyLength iv:(NSData *)iv {
+- (instancetype)initWithAlgorithm:(NSString *)algorithm key:(id<ARTCipherKeyCompatible>)key iv:(NSData *)iv {
     self = [super init];
     if (self) {
         _algorithm = algorithm;
-        _key = key;
-        _keyLength = keyLength;
+        _key = [key toData];
+        _keyLength = [_key length] * 8;
         _iv = iv;
+
+        CCAlgorithm ccAlgorithm;
+        NSError *error;
+        if (![self ccAlgorithm:&ccAlgorithm error:&error]) {
+            [NSException raise:NSInvalidArgumentException format:@"%@", error.userInfo[NSLocalizedFailureReasonErrorKey]];
+        }
     }
     return self;
 }
@@ -58,13 +78,16 @@
     return @"CBC";
 }
 
-- (BOOL)ccAlgorithm:(CCAlgorithm *)algorithm {
+- (BOOL)ccAlgorithm:(CCAlgorithm *)algorithm error:(NSError **)error {
+    NSString *errorMsg;
     if (NSOrderedSame == [self.algorithm compare:@"AES" options:NSCaseInsensitiveSearch]) {
-        if ([self.iv length] != 16) {
-            [self.logger error:@"ArtCrypto Error iv length is not 16: %d", (int)[self.iv length]];
-            return NO;
+        if (self.iv != nil && [self.iv length] != ART_CBC_BLOCK_LENGTH) {
+            errorMsg = [NSString stringWithFormat:@"iv length expected to be %d, got %d instead", ART_CBC_BLOCK_LENGTH, (int)[self.iv length]];
+        } else if (self.keyLength != 128 && self.keyLength != 256) {
+            errorMsg = [NSString stringWithFormat:@"invalid key length for AES algorithm: %d", (int)self.keyLength];
+        } else {
+            *algorithm = kCCAlgorithmAES128;
         }
-        *algorithm = kCCAlgorithmAES128;
     } else if (NSOrderedSame == [self.algorithm compare:@"DES" options:NSCaseInsensitiveSearch]) {
         *algorithm = kCCAlgorithmDES;
     } else if (NSOrderedSame == [self.algorithm compare:@"3DES" options:NSCaseInsensitiveSearch]) {
@@ -76,9 +99,28 @@
     } else if (NSOrderedSame == [self.algorithm compare:@"RC2" options:NSCaseInsensitiveSearch]) {
         *algorithm = kCCAlgorithmRC2;
     } else {
+        errorMsg = [NSString stringWithFormat:@"unknown algorithm: %@", self.algorithm];
+    }
+
+    if (errorMsg) {
+        [self.logger error:@"ARTCrypto.ccAlgorithm: %@", errorMsg];
+        if (error) *error = [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:@{NSLocalizedFailureReasonErrorKey: errorMsg}];
         return NO;
     }
+
     return YES;
+}
+
+- (ARTCipherParams *)toCipherParams {
+    return self;
+}
+
+@end
+
+@implementation NSDictionary (ARTCipherParamsCompatible)
+
+- (ARTCipherParams *)toCipherParams {
+    return [ARTCrypto getDefaultParams:self];
 }
 
 @end
@@ -90,9 +132,9 @@
     if (self) {
         _keySpec = cipherParams.key;
         _iv = cipherParams.iv;
-        _blockLength = [_iv length];
+        _blockLength = ART_CBC_BLOCK_LENGTH;
 
-        if (![cipherParams ccAlgorithm:&_algorithm]) {
+        if (![cipherParams ccAlgorithm:&_algorithm error:nil]) {
             return nil;
         }
     }
@@ -107,10 +149,8 @@
     return [[self alloc] initWithCipherParams:cipherParams];
 }
 
-
-
 - (ARTStatus *)encrypt:(NSData *)plaintext output:(NSData *__autoreleasing *)output {
-    // Encryptions must be serialized as they depend on the final block of the previous iteration
+    NSData *iv = self.iv != nil ? self.iv : [ARTCrypto generateSecureRandomData:self.blockLength];
     NSData *ciphertext = nil;
 
     // The maximum cipher text is plaintext length + block length. We are also prepending this with the IV so need 2 block lengths in addition to the plaintext length.
@@ -123,7 +163,7 @@
     }
 
     // Copy the iv first
-    memcpy(buf, [self.iv bytes], self.blockLength);
+    memcpy(buf, [iv bytes], self.blockLength);
 
     void *ciphertextBuf = ((char *)buf) + self.blockLength;
     size_t ciphertextBufLen = outputBufLen - self.blockLength;
@@ -131,12 +171,12 @@
     const void *key = [self.keySpec bytes];
     size_t keyLen = [self.keySpec length];
 
-    const void *iv = [self.iv bytes];
+    const void *ivBytes = [iv bytes];
     const void *dataIn = [plaintext bytes];
     size_t dataInLen = [plaintext length];
 
     size_t bytesWritten = 0;
-    CCCryptorStatus status = CCCrypt(kCCEncrypt, self.algorithm, kCCOptionPKCS7Padding, key, keyLen, iv, dataIn, dataInLen, ciphertextBuf, ciphertextBufLen, &bytesWritten);
+    CCCryptorStatus status = CCCrypt(kCCEncrypt, self.algorithm, kCCOptionPKCS7Padding, key, keyLen, ivBytes, dataIn, dataInLen, ciphertextBuf, ciphertextBufLen, &bytesWritten);
 
     if (status) {
         [self.logger error:@"ARTCrypto error encrypting. Status is %d", status];
@@ -149,15 +189,6 @@
         [self.logger error:@"ARTCrypto error encrypting. cipher text is nil"];
         free(buf);
         return [ARTStatus state:ARTStateError];
-    }
-
-    // Finally update the iv. This should be the last *blockSize* bytes of the cipher text
-    const void *newIvData = ((const uint8_t *)[ciphertext bytes]) + [ciphertext length] - self.blockLength;
-    NSData *newIv = [NSData dataWithBytes:newIvData length:self.blockLength];
-    if (newIv) {
-        self.iv = newIv;
-    } else {
-        [self.logger warn:@"ARTCrypto error encrypting. error updating iv"];
     }
 
     *output = ciphertext;
@@ -267,24 +298,11 @@
 }
 
 + (int)defaultKeyLength {
-    return 16;
+    return 256;
 }
 
 + (int)defaultBlockLength {
-    return 16;
-}
-
-+ (NSData *)generateRandomData:(size_t)length {
-    void *buf = malloc(length);
-    if (!buf) {
-        return nil;
-    }
-    arc4random_buf(buf, length);
-    NSData *outputData = [NSData dataWithBytesNoCopy:buf length:length freeWhenDone:YES];
-    if (!outputData) {
-        free(buf);
-    }
-    return outputData;
+    return 128;
 }
 
 + (NSData *)generateSecureRandomData:(size_t)length {
@@ -305,31 +323,27 @@
     return outputData;
 }
 
-+ (ARTCipherParams *)getDefaultParams {
-    NSData *key = [self generateSecureRandomData:[self defaultKeyLength]];
-    if (nil == key) {
-        return nil;
++ (ARTCipherParams *)getDefaultParams:(NSDictionary *)values {
+    NSString *algorithm = values[@"algorithm"];
+    if (algorithm == nil) {
+        algorithm = [ARTCrypto defaultAlgorithm];
     }
-    return [self getDefaultParams:key];
+    NSString *key = values[@"key"];
+    if (key == nil) {
+        [NSException raise:NSInvalidArgumentException format:@"missing key parameter"];
+    }
+    return [[ARTCipherParams alloc] initWithAlgorithm:algorithm key:key];
 }
 
-+ (ARTCipherParams *)getDefaultParams:(NSData *)key {
-    NSData *ivData = [self generateSecureRandomData:[self defaultBlockLength]];
-    if (nil == ivData) {
-        return nil;
-    }
-    return [self getDefaultParams:key iv:ivData];
++ (NSData *)generateRandomKey {
+    return [self generateRandomKey:[self defaultKeyLength]];
 }
 
-+ (ARTCipherParams *)getDefaultParams:(NSData *)key iv:(NSData *)iv {
-    return [[ARTCipherParams alloc] initWithAlgorithm:[self defaultAlgorithm] key:key keyLength:[self defaultBlockLength] iv:iv];
++ (NSData *)generateRandomKey:(NSUInteger)length {
+    return [self generateSecureRandomData:length / 8];
 }
 
 + (id<ARTChannelCipher>)cipherWithParams:(ARTCipherParams *)params {
-    if (!params) {
-        params = [self getDefaultParams];
-    }
-
     return [ARTCbcCipher cbcCipherWithParams:params];
 }
 

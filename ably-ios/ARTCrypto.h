@@ -10,21 +10,49 @@
 #import "ARTTypes.h"
 #import "ARTStatus.h"
 
-@interface ARTCipherParams : NSObject
+ART_ASSUME_NONNULL_BEGIN
+
+@protocol ARTCipherKeyCompatible <NSObject>
+- (NSData *)toData;
+@end
+
+@interface NSString (ARTCipherKeyCompatible) <ARTCipherKeyCompatible>
+- (NSData *)toData;
+@end
+
+@interface NSData (ARTCipherKeyCompatible) <ARTCipherKeyCompatible>
+- (NSData *)toData;
+@end
+
+@class ARTCipherParams;
+
+@protocol ARTCipherParamsCompatible <NSObject>
+- (ARTCipherParams *)toCipherParams;
+@end
+
+@interface NSDictionary (ARTCipherParamsCompatible) <ARTCipherParamsCompatible>
+- (ARTCipherParams *)toCipherParams;
+@end
+
+@interface ARTCipherParams : NSObject <ARTCipherParamsCompatible>
 @property (readonly, strong, nonatomic) NSString *algorithm;
 @property (readonly, strong, nonatomic) NSData *key;
 @property (readonly, nonatomic) NSUInteger keyLength;
-@property (readonly, strong, nonatomic) NSData *iv;
 @property (readonly, getter=getMode) NSString *mode;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithAlgorithm:(NSString *)algorithm key:(NSData *)key keyLength:(NSUInteger)keyLength;
+- (instancetype)initWithAlgorithm:(NSString *)algorithm key:(id<ARTCipherKeyCompatible>)key;
+
+- (ARTCipherParams *)toCipherParams;
 
 @end
 
 @interface ARTCrypto : NSObject
 
-+ (ARTCipherParams *)getDefaultParams;
-+ (ARTCipherParams *)getDefaultParams:(NSData *)key;
++ (ARTCipherParams *)getDefaultParams:(NSDictionary *)values;
++ (NSData *)generateRandomKey;
++ (NSData *)generateRandomKey:(NSUInteger)length;
 
 @end
+
+ART_ASSUME_NONNULL_END

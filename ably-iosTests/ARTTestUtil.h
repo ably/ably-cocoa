@@ -13,12 +13,14 @@
 #import "ARTRest.h"
 #import "ARTRealtime.h"
 
+ART_ASSUME_NONNULL_BEGIN
+
 @class ARTChannel;
 @class XCTestExpectation;
 @class ARTRealtimeChannel;
 @class ARTCipherDataEncoder;
 
-void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeout);
+void waitForWithTimeout(NSUInteger *_Nonnull counter, NSArray *list, NSTimeInterval timeout);
 
 @interface ARTTestUtil : NSObject
 
@@ -78,4 +80,8 @@ typedef void (^ARTRealtimeTestCallback)(ARTRealtime *realtime, ARTRealtimeConnec
 
 + (void)removeAllChannels:(ARTRealtime *)realtime;
 
++ (void)convertException:(void (^)())block error:(NSError *__art_nullable*__art_nullable)error;
+
 @end
+
+ART_ASSUME_NONNULL_END

@@ -1087,8 +1087,8 @@ class RealtimeClientChannel: QuickSpec {
                             let (keyData, ivData, messages) = AblyTests.loadCryptoTestData(cryptoTest)
                             let testMessage = messages[0]
 
-                            let cipherParams = ARTCipherParams(algorithm: "aes", key: keyData, keyLength: UInt(keyData.length), iv: ivData)
-                            let channelOptions = ARTChannelOptions(encrypted: true, cipherParams: cipherParams)
+                            let cipherParams = ARTCipherParams(algorithm: "aes", key: keyData, iv: ivData)
+                            let channelOptions = ARTChannelOptions(cipher: cipherParams)
                             let channel = client.channels.get("test", options: channelOptions)
 
                             let transport = client.transport as! TestProxyTransport
@@ -1511,9 +1511,9 @@ class RealtimeClientChannel: QuickSpec {
                     defer { clientReceiver.close() }
                     clientReceiver.connect()
 
-                    let cipherParams = ARTCrypto.getDefaultParams()
-                    let sender = clientSender.channels.get("test", options: ARTChannelOptions(encrypted: true, cipherParams: cipherParams))
-                    let receiver = clientReceiver.channels.get("test", options: ARTChannelOptions(encrypted: true, cipherParams: cipherParams))
+                    let key = ARTCrypto.generateRandomKey()
+                    let sender = clientSender.channels.get("test", options: ARTChannelOptions(cipherKey: key))
+                    let receiver = clientReceiver.channels.get("test", options: ARTChannelOptions(cipherKey: key))
 
                     var received = [ARTMessage]()
 

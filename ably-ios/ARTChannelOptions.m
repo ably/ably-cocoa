@@ -12,12 +12,15 @@
 
 @implementation ARTChannelOptions
 
-- (instancetype)initEncrypted:(BOOL)encrypted cipherParams:(ARTCipherParams *)cipherParams {
+- (instancetype)initWithCipher:(id<ARTCipherParamsCompatible>)cipherParams {
     if (self = [super init]) {
-        self->_encrypted = encrypted;
-        self->_cipherParams = cipherParams;
+        self->_cipher = [cipherParams toCipherParams];
     }
     return self;
+}
+
+- (instancetype)initWithCipherKey:(id<ARTCipherKeyCompatible>)key {
+    return [self initWithCipher:@{@"key": key}];
 }
 
 @end
