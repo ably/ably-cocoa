@@ -20,7 +20,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) NSDate *timestamp;
 
 /// The id of the publisher of this message
-@property (strong, nonatomic) NSString *clientId;
+@property (strong, nonatomic, art_nullable) NSString *clientId;
 
 /// The connection id of the publisher of this message
 @property (strong, nonatomic) NSString *connectionId;
