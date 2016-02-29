@@ -37,7 +37,7 @@ class RestClientChannels: QuickSpec {
             channelName = NSProcessInfo.processInfo().globallyUniqueString
         }
 
-        let cipherParams = ARTCipherParams(algorithm: nil, keySpec: nil, ivSpec: nil)
+        let cipherParams: ARTCipherParams? = nil
 
         describe("RestClient") {
             context("channels") {
@@ -59,7 +59,7 @@ class RestClientChannels: QuickSpec {
 
                     // RSN3b
                     it("should return a channel with the provided options") {
-                        let options = ARTChannelOptions(encrypted: cipherParams)
+                        let options = ARTChannelOptions(cipher: cipherParams)
                         let channel = client.channels.get(channelName, options: options)
 
                         expect(channel).to(beAChannel(named: channelName))
@@ -68,7 +68,7 @@ class RestClientChannels: QuickSpec {
 
                     // RSN3b
                     it("should not replace the options on an existing channel when none are provided") {
-                        let options = ARTChannelOptions(encrypted: cipherParams)
+                        let options = ARTChannelOptions(cipher: cipherParams)
                         let channel = client.channels.get(channelName, options: options)
 
                         let newButSameChannel = client.channels.get(channelName)
@@ -82,7 +82,7 @@ class RestClientChannels: QuickSpec {
                         let channel = client.channels.get(channelName)
                         let oldOptions = channel.options
 
-                        let newOptions = ARTChannelOptions(encrypted: cipherParams)
+                        let newOptions = ARTChannelOptions(cipher: cipherParams)
                         let newButSameChannel = client.channels.get(channelName, options: newOptions)
 
                         expect(newButSameChannel).to(beIdenticalTo(channel))

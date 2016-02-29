@@ -22,7 +22,7 @@
         _name = name;
         self.options = options;
         NSError *error;
-        _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:_options.cipherParams error:&error];
+        _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:_options.cipher error:&error];
         if (error != nil) {
             [logger warn:@"creating ARTDataEncoder: %@", error];
             _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:nil error:nil];
@@ -34,7 +34,7 @@
 
 - (void)setOptions:(ARTChannelOptions *)options {
     if (!options) {
-        _options = [ARTChannelOptions unencrypted];
+        _options = [[ARTChannelOptions alloc] initWithCipher:nil];
     } else {
         _options = options;
     }

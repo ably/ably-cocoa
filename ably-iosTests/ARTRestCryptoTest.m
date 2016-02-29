@@ -13,7 +13,7 @@
 #import "ARTPresenceMessage.h"
 #import "ARTRest.h"
 #import "ARTTestUtil.h"
-#import "ARTCrypto.h"
+#import "ARTCrypto+Private.h"
 #import "ARTLog.h"
 #import "ARTRestChannel.h"
 #import "ARTChannelOptions.h"
@@ -71,12 +71,11 @@
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest =rest;
         
-        ARTIvParameterSpec * ivSpec = [[ARTIvParameterSpec alloc] initWithIv:[[NSData alloc]
-                                                                              initWithBase64EncodedString:@"HO4cYSP8LybPYBPZPHQOtg==" options:0]];
+        NSData * ivSpec = [[NSData alloc] initWithBase64EncodedString:@"HO4cYSP8LybPYBPZPHQOtg==" options:0];
     
         NSData * keySpec = [[NSData alloc] initWithBase64EncodedString:@"WUP6u0K7MXI5Zeo0VppPwg==" options:0];
-        ARTCipherParams *params =[[ARTCipherParams alloc] initWithAlgorithm:@"aes" keySpec:keySpec ivSpec:ivSpec];
-        ARTChannelOptions *channelOptions = [[ARTChannelOptions alloc] initEncrypted:params];
+        ARTCipherParams *params =[[ARTCipherParams alloc] initWithAlgorithm:@"aes" key:keySpec iv:ivSpec];
+        ARTChannelOptions *channelOptions = [[ARTChannelOptions alloc] initWithCipher:params];
 
         ARTRestChannel *c = [rest.channels get:@"test" options:channelOptions];
         XCTAssert(c);

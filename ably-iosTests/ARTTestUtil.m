@@ -291,4 +291,14 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
     }
 }
 
++ (void)convertException:(void (^)())block error:(NSError *__autoreleasing  _Nullable *)error {
+    @try {
+        block();
+        [NSException raise:NSInvalidArgumentException format:@"exception not thrown"];
+    }
+    @catch (NSException *exception) {
+        *error = [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:@{NSLocalizedFailureReasonErrorKey:exception.reason}];
+    }
+}
+
 @end

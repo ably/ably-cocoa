@@ -8,55 +8,51 @@
 
 #import <Foundation/Foundation.h>
 #import "ARTTypes.h"
-#import "ARTLog.h"
 #import "ARTStatus.h"
 
-@class ARTLog;
+ART_ASSUME_NONNULL_BEGIN
 
-@interface ARTIvParameterSpec : NSObject
-@property (nonatomic, weak) ARTLog * logger;
-@property (readonly, nonatomic) NSData *iv;
-
-- (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithIv:(NSData *)iv;
-+ (instancetype)ivSpecWithIv:(NSData *)iv;
-
+@protocol ARTCipherKeyCompatible <NSObject>
+- (NSData *)toData;
 @end
 
-@interface ARTCipherParams : NSObject
-@property (nonatomic, weak) ARTLog *logger;
+@interface NSString (ARTCipherKeyCompatible) <ARTCipherKeyCompatible>
+- (NSData *)toData;
+@end
+
+@interface NSData (ARTCipherKeyCompatible) <ARTCipherKeyCompatible>
+- (NSData *)toData;
+@end
+
+@class ARTCipherParams;
+
+@protocol ARTCipherParamsCompatible <NSObject>
+- (ARTCipherParams *)toCipherParams;
+@end
+
+@interface NSDictionary (ARTCipherParamsCompatible) <ARTCipherParamsCompatible>
+- (ARTCipherParams *)toCipherParams;
+@end
+
+@interface ARTCipherParams : NSObject <ARTCipherParamsCompatible>
 @property (readonly, strong, nonatomic) NSString *algorithm;
-@property (readonly, strong, nonatomic) NSData *keySpec;
-@property (readonly, strong, nonatomic) ARTIvParameterSpec *ivSpec;
+@property (readonly, strong, nonatomic) NSData *key;
+@property (readonly, nonatomic) NSUInteger keyLength;
+@property (readonly, getter=getMode) NSString *mode;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithAlgorithm:(NSString *)algorithm keySpec:(NSData *)keySpec ivSpec:(ARTIvParameterSpec *)ivSpec;
-+ (instancetype)cipherParamsWithAlgorithm:(NSString *)algorithm keySpec:(NSData *)keySpec ivSpec:(ARTIvParameterSpec *)ivSpec;
+- (instancetype)initWithAlgorithm:(NSString *)algorithm key:(id<ARTCipherKeyCompatible>)key;
 
-@end
-
-@protocol ARTChannelCipher
-
-- (ARTStatus *)encrypt:(NSData *)plaintext output:(NSData **)output;
-- (ARTStatus *)decrypt:(NSData *)ciphertext output:(NSData **)output;
-- (NSString *)cipherName;
-- (size_t) keyLength;
-
+- (ARTCipherParams *)toCipherParams;
 
 @end
 
 @interface ARTCrypto : NSObject
 
-+ (NSString *)defaultAlgorithm;
-+ (int)defaultKeyLength;
-+ (int)defaultBlockLength;
-
-+ (NSData *)generateRandomData:(size_t)length;
-+ (NSData *)generateSecureRandomData:(size_t)length;
-
-+ (ARTCipherParams *)defaultParams;
-+ (ARTCipherParams *)defaultParamsWithKey:(NSData *)key;
-+ (ARTCipherParams *)defaultParamsWithKey:(NSData *)key iv:(NSData *)iv;
-+ (id<ARTChannelCipher>)cipherWithParams:(ARTCipherParams *)params;
++ (ARTCipherParams *)getDefaultParams:(NSDictionary *)values;
++ (NSData *)generateRandomKey;
++ (NSData *)generateRandomKey:(NSUInteger)length;
 
 @end
+
+ART_ASSUME_NONNULL_END

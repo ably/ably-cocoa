@@ -19,7 +19,7 @@
 #import "ARTRealtimePresence.h"
 #import "ARTEventEmitter.h"
 #import "ARTTestUtil.h"
-#import "ARTCrypto.h"
+#import "ARTCrypto+Private.h"
 #import "ARTChannelOptions.h"
 
 @interface ARTRealtimeChannelTest : XCTestCase {
@@ -266,12 +266,11 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *c1 = [realtime.channels get:channelName];
-        ARTIvParameterSpec * ivSpec = [[ARTIvParameterSpec alloc] initWithIv:[[NSData alloc]
-                                                                              initWithBase64EncodedString:@"HO4cYSP8LybPYBPZPHQOtg==" options:0]];
+        NSData * ivSpec = [[NSData alloc] initWithBase64EncodedString:@"HO4cYSP8LybPYBPZPHQOtg==" options:0];
         
         NSData * keySpec = [[NSData alloc] initWithBase64EncodedString:@"WUP6u0K7MXI5Zeo0VppPwg==" options:0];
-        ARTCipherParams * params =[[ARTCipherParams alloc] initWithAlgorithm:@"aes" keySpec:keySpec ivSpec:ivSpec];
-        ARTRealtimeChannel *c2 = [realtime.channels get:channelName options:[[ARTChannelOptions alloc] initEncrypted:params]];
+        ARTCipherParams * params =[[ARTCipherParams alloc] initWithAlgorithm:@"aes" key:keySpec iv:ivSpec];
+        ARTRealtimeChannel *c2 = [realtime.channels get:channelName options:[[ARTChannelOptions alloc] initWithCipher:params]];
         [c1 publish:nil data:firstMessage cb:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
             [c2 publish:nil data:secondMessage cb:^(ARTErrorInfo *errorInfo) {
