@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTLog.h"
+#import "ARTLog+Private.h"
 
 static const char *logLevelName(ARTLogLevel level) {
     switch(level) {
@@ -27,20 +27,58 @@ static const char *logLevelName(ARTLogLevel level) {
     }
 }
 
-@implementation ARTLog
+@implementation ARTLogLine
+
+- (id)initWithDate:(NSDate *)date level:(ARTLogLevel)level message:(NSString *)message {
+    self = [self init];
+    if (self) {
+        _date = date;
+        _level = level;
+        _message = message;
+    }
+    return self;
+}
+
+- (NSString *)toString {
+    return [NSString stringWithFormat:@"%s: %@", logLevelName(self.level), self.message];
+}
+
+@end
+
+@implementation ARTLog {
+    NSMutableArray *_captured;
+}
 
 - (instancetype)init {
+    return [self initCapturingOutput:false];
+}
+
+- (instancetype)initCapturingOutput:(BOOL)capturing {
     if (self = [super init]) {
         // Default
         self->_logLevel = ARTLogLevelWarn;
+        if (capturing) {
+            self->_captured = [[NSMutableArray alloc] init];
+        }
     }
     return self;
 }
 
 - (void)log:(NSString *)message level:(ARTLogLevel)level {
+    ARTLogLine *logLine = [[ARTLogLine alloc] initWithDate:[NSDate date] level:level message:message];
     if (level >= self.logLevel) {
-        NSLog(@"%s: %@", logLevelName(level), message);
+        NSLog(@"%@", [logLine toString]);
+        if (_captured) {
+            [_captured addObject:logLine];
+        }
     }
+}
+
+- (NSArray *)getCaptured {
+    if (!_captured) {
+        [NSException raise:NSInternalInconsistencyException format:@"tried to get captured output in non-capturing instance; use initCapturingOutput:true if you want captured output."];
+    }
+    return _captured;
 }
 
 - (ARTLog *)verboseMode {
@@ -111,9 +149,7 @@ static const char *logLevelName(ARTLogLevel level) {
 }
 
 - (void)log:(NSString *)message withLevel:(ARTLogLevel)level {
-    if (level >= self.logLevel) {
-        NSLog(@"%s: %@", logLevelName(level), message);
-    }
+    [self log:message level:level];
 }
 
 @end

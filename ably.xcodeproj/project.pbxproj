@@ -154,6 +154,7 @@
 		EB20F8D71C653F2300EF3978 /* ARTPresence+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB20F8D61C653F1E00EF3978 /* ARTPresence+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EB503C881C7E4A090053AF00 /* ARTClientOptions+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB503C871C7E4A090053AF00 /* ARTClientOptions+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EB5E058D1C77027600A48B39 /* ARTCrypto+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB5E058C1C77027600A48B39 /* ARTCrypto+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		EB503C8A1C7F1FE40053AF00 /* ARTLog+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB503C891C7F1FE40053AF00 /* ARTLog+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EB7913A81C6E54C3000ABF9B /* Crypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB7913A71C6E54C3000ABF9B /* Crypto.swift */; };
 		EB82F8511C59D29B00661917 /* ARTDataEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = EB3239461C59AB2C00892664 /* ARTDataEncoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EB82F8521C59D30500661917 /* ARTDataEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB3239421C59AB0400892664 /* ARTDataEncoder.m */; };
@@ -375,6 +376,7 @@
 		EB3239461C59AB2C00892664 /* ARTDataEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTDataEncoder.h; path = "ably-ios/ARTDataEncoder.h"; sourceTree = SOURCE_ROOT; };
 		EB503C871C7E4A090053AF00 /* ARTClientOptions+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTClientOptions+Private.h"; sourceTree = "<group>"; };
 		EB5E058C1C77027600A48B39 /* ARTCrypto+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTCrypto+Private.h"; sourceTree = "<group>"; };
+		EB503C891C7F1FE40053AF00 /* ARTLog+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTLog+Private.h"; sourceTree = "<group>"; };
 		EB7913A71C6E54C3000ABF9B /* Crypto.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Crypto.swift; sourceTree = "<group>"; };
 		EB89D4021C61C1A4007FA5B7 /* ARTRestChannels.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTRestChannels.h; sourceTree = "<group>"; };
 		EB89D4031C61C1A4007FA5B7 /* ARTRestChannels.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestChannels.m; sourceTree = "<group>"; };
@@ -687,6 +689,7 @@
 				96A507A31A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.h */,
 				96A507A41A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.m */,
 				EB5E058C1C77027600A48B39 /* ARTCrypto+Private.h */,
+				EB503C891C7F1FE40053AF00 /* ARTLog+Private.h */,
 			);
 			name = Utilities;
 			sourceTree = "<group>";
@@ -768,6 +771,7 @@
 				D7F1D3771BF4DE72001A4B5E /* ARTRealtimePresence.h in Headers */,
 				1C578E1F1B3435CA00EF46EC /* ARTFallback.h in Headers */,
 				96E408471A3895E800087F77 /* ARTWebSocketTransport.h in Headers */,
+				EB503C8A1C7F1FE40053AF00 /* ARTLog+Private.h in Headers */,
 				96E4083F1A3892C700087F77 /* ARTRealtimeTransport.h in Headers */,
 				D746AE4F1BBD84E7003ECEF8 /* ARTChannelOptions.h in Headers */,
 				D7588AF31BFF91B800BB8279 /* ARTURLSessionServerTrust.h in Headers */,

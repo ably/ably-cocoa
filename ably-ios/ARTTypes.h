@@ -52,6 +52,16 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
     ARTRealtimeChannelFailed
 };
 
+typedef NS_ENUM(NSUInteger, ARTChannelEvent) {
+    ARTChannelEventInitialised,
+    ARTChannelEventAttaching,
+    ARTChannelEventAttached,
+    ARTChannelEventDetaching,
+    ARTChannelEventDetached,
+    ARTChannelEventFailed,
+    ARTChannelEventError
+};
+
 typedef NS_ENUM(NSInteger, ARTDataQueryError) {
     ARTDataQueryErrorLimit = 1,
     ARTDataQueryErrorTimestampRange = 2,

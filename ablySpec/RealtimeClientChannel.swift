@@ -1073,12 +1073,13 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 // RTL7d
-                pending("should deliver the message even if there is an error while decoding") {
+                context("should deliver the message even if there is an error while decoding") {
 
                     for cryptoTest in [CryptoTest.aes128, CryptoTest.aes256] {
                         it("using \(cryptoTest) ") {
                             let options = AblyTests.commonAppSetup()
                             options.autoConnect = false
+                            options.logHandler = ARTLog(capturingOutput: true)
                             let client = ARTRealtime(options: options)
                             client.setTransportClass(TestProxyTransport.self)
                             client.connect()
@@ -1111,17 +1112,32 @@ class RealtimeClientChannel: QuickSpec {
 
                             waitUntil(timeout: testTimeout) { done in
                                 let logTime = NSDate()
-
+                                var callbacks = 2
                                 channel.subscribe(testMessage.encoded.name) { message in
                                     expect(message.data as? String).to(equal(testMessage.encrypted.data))
 
-                                    let logs = querySyslog(forLogsAfter: logTime)
-                                    let line = logs.reduce("") { $0 + "; " + $1 } //Reduce in one line
-                                    expect(line).to(contain("ERROR: Failed to decode data as 'bad_encoding_type' encoding is unknown"))
+                                    let logs = options.logHandler.captured
+                                    let line = logs.reduce("") { $0 + "; " + $1.toString() } //Reduce in one line
 
-                                    expect(channel.errorReason!.message).to(contain("Failed to decode data as 'bad_encoding_type' encoding is unknown"))
+                                    expect(line).to(contain("ERROR: Failed to decode data: unknown encoding: 'bad_encoding_type'"))
 
-                                    done()
+                                    callbacks -= 1
+                                    if callbacks == 0 {
+                                        done()
+                                    }
+                                }
+
+                                channel.on(.Error) { errorInfo in
+                                    guard let errorInfo = errorInfo else {
+                                        return
+                                    }
+                                    expect(errorInfo.message).to(contain("Failed to decode data: unknown encoding: 'bad_encoding_type'"))
+                                    expect(errorInfo).to(beIdenticalTo(channel.errorReason))
+
+                                    callbacks -= 1
+                                    if callbacks == 0 {
+                                        done()
+                                    }
                                 }
 
                                 channel.publish(testMessage.encoded.name, data: testMessage.encoded.data)

@@ -87,29 +87,33 @@ class RestClient: QuickSpec {
             context("logging") {
                 // RSC2
                 it("should output to the system log and the log level should be Warn") {
-                    let logTime = NSDate()
-                    let client = ARTRest(options: AblyTests.commonAppSetup())
+                    let options = AblyTests.commonAppSetup()
+                    options.logHandler = ARTLog(capturingOutput: true)
+                    let client = ARTRest(options: options)
 
                     client.logger.log("This is a warning", withLevel: .Warn)
-                    let logs = querySyslog(forLogsAfter: logTime)
-
-                    // Logs is AnyGenerator, reduced in one line
-                    let line = logs.reduce("") { $1 + $0 }
 
                     expect(client.logger.logLevel).to(equal(ARTLogLevel.Warn))
-                    expect(line).to(contain("WARN: This is a warning"))
+                    guard let line = options.logHandler.captured.last else {
+                        fail("didn't log line.")
+                        return
+                    }
+                    expect(line.level).to(equal(ARTLogLevel.Warn))
+                    expect(line.toString()).to(equal("WARN: This is a warning"))
                 }
 
                 // RSC3
                 it("should have a mutable log level") {
-                    let logTime = NSDate()
-                    let client = ARTRest(options: AblyTests.commonAppSetup())
+                    let options = AblyTests.commonAppSetup()
+                    options.logHandler = ARTLog(capturingOutput: true)
+                    let client = ARTRest(options: options)
                     client.logger.logLevel = .Error
 
+                    let logTime = NSDate()
                     client.logger.log("This is a warning", withLevel: .Warn)
-                    let logs = querySyslog(forLogsAfter: logTime)
 
-                    expect(logs).toNot(contain("WARN: This is a warning"))
+                    let logs = options.logHandler.captured.filter({!$0.date.isBefore(logTime)})
+                    expect(logs).to(beEmpty())
                 }
 
                 // RSC4
