@@ -9,10 +9,11 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 #import "ARTMessage.h"
-#import "ARTClientOptions.h"
+#import "ARTClientOptions+Private.h"
 #import "ARTPresenceMessage.h"
 #import "ARTRest.h"
 #import "ARTAuth.h"
+#import "ARTAuth+Private.h"
 #import "ARTTestUtil.h"
 #import "ARTLog.h"
 #import "ARTRest+Private.h"
@@ -51,16 +52,20 @@
 -(void)testInitWithKey {
     XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithKey"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
-        ARTRest *rest = [[ARTRest alloc] initWithKey:options.key];
-        _rest = rest;
-        ARTChannel *c = [rest.channels get:@"test"];
-        XCTAssert(c);
-        [c publish:nil data:@"message" cb:^(ARTErrorInfo *error) {
-            // "Invalid credentials" because it is sending the request to the production server
-            XCTAssert(error);
-            XCTAssertEqual(error.code, 40100);
-            [exp fulfill];
-        }];
+        @try {
+            [ARTClientOptions setDefaultEnvironment:@"sandbox"];
+            ARTRest *rest = [[ARTRest alloc] initWithKey:options.key];
+            _rest = rest;
+            ARTChannel *c = [rest.channels get:@"test"];
+            XCTAssert(c);
+            [c publish:nil data:@"message" cb:^(ARTErrorInfo *error) {
+                XCTAssertNil(error);
+                [exp fulfill];
+            }];
+        }
+        @finally {
+            [ARTClientOptions setDefaultEnvironment:nil];
+        }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
@@ -72,17 +77,21 @@
 
 -(void)testInitWithKeyBad {
     XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithKeyBad"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    @try {
+        [ARTClientOptions setDefaultEnvironment:@"sandbox"];
         ARTRest * rest = [[ARTRest alloc] initWithKey:@"badkey:secret"];
         _rest = rest;
         ARTChannel * c = [rest.channels get:@"test"];
         XCTAssert(c);
         [c publish:nil data:@"message" cb:^(ARTErrorInfo *error) {
             XCTAssert(error);
-            XCTAssertEqual(40005, error.code);
+            XCTAssertEqual(40005, error.code); //invalid credential
             [exp fulfill];
         }];
-    }];
+    }
+    @finally {
+        [ARTClientOptions setDefaultEnvironment:nil];
+    }
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 

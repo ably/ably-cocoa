@@ -1346,10 +1346,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 5759328ECCA19EBD28AF6419 /* Pods-ablyTests.debug.xcconfig */;
 			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/build/Debug-iphoneos",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -1366,10 +1362,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 57FFDFF64A343614DE0A41C7 /* Pods-ablyTests.release.xcconfig */;
 			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/build/Debug-iphoneos",
-				);
 				INFOPLIST_FILE = "ably-iosTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
