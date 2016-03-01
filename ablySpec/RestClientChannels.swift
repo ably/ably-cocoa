@@ -103,7 +103,7 @@ class RestClientChannels: QuickSpec {
                 }
 
                 // RSN4
-                context("releaseChannel") {
+                pending("releaseChannel") {
                     it("should release a channel") {
                         weak var channel = client.channels.get(channelName)
 
