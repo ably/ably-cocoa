@@ -985,7 +985,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN10c
-                pending("should have last known connection serial from restored connection") {
+                it("should have last known connection serial from restored connection") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
                     defer {
@@ -1007,15 +1007,15 @@ class RealtimeClientConnection: QuickSpec {
 
                     let recoveredClient = ARTRealtime(options: options)
                     defer { recoveredClient.close() }
-                    let recoveredChannel = recoveredClient.channels.get("test")
+                    expect(recoveredClient.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
 
                     waitUntil(timeout: testTimeout) { done in
-                        recoveredChannel.publish(nil, data: "message", cb: { errorInfo in
+                        expect(recoveredClient.connection.serial).to(equal(lastSerial))
+                        recoveredClient.channels.get("test").publish(nil, data: "message", cb: { errorInfo in
                             expect(errorInfo).to(beNil())
                             expect(recoveredClient.connection.serial).to(equal(lastSerial + 1))
                             done()
                         })
-                        expect(recoveredClient.connection.serial).to(equal(lastSerial))
                     }
                 }
 
