@@ -255,7 +255,7 @@
 		853ED7C31B7A1A3C006F1C6F /* RestClientStats.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClientStats.swift; sourceTree = "<group>"; };
 		856AAC8A1B6E304B00B07119 /* AblyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AblyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		856AAC8E1B6E304B00B07119 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		856AAC951B6E30C800B07119 /* ablySpec-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ablySpec-Bridging-Header.h"; sourceTree = "<group>"; };
+		856AAC951B6E30C800B07119 /* AblySpec-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AblySpec-Bridging-Header.h"; sourceTree = "<group>"; };
 		856AAC961B6E30C800B07119 /* TestUtilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestUtilities.swift; sourceTree = "<group>"; };
 		856AAC981B6E312F00B07119 /* RestClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClient.swift; sourceTree = "<group>"; };
 		856AAC9A1B6E326E00B07119 /* ably-common */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "ably-common"; sourceTree = SOURCE_ROOT; };
@@ -450,7 +450,7 @@
 			name = realtime;
 			sourceTree = "<group>";
 		};
-		856AAC8B1B6E304B00B07119 /* ablySpec */ = {
+		856AAC8B1B6E304B00B07119 /* Spec */ = {
 			isa = PBXGroup;
 			children = (
 				856AAC9A1B6E326E00B07119 /* ably-common */,
@@ -459,7 +459,7 @@
 				D780846C1C68B3E50083009D /* NSObject+TestSuite.h */,
 				D780846D1C68B3E50083009D /* NSObject+TestSuite.m */,
 				D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */,
-				856AAC951B6E30C800B07119 /* ablySpec-Bridging-Header.h */,
+				856AAC951B6E30C800B07119 /* AblySpec-Bridging-Header.h */,
 				EBAB9A6E1C69702800AF036B /* ReadmeExamples.swift */,
 				D7C1B8761BBEA81A0087B55F /* Auth.swift */,
 				856AAC981B6E312F00B07119 /* RestClient.swift */,
@@ -474,15 +474,15 @@
 				EB1AE0CD1C5C3A4900D62250 /* Utilities.swift */,
 				EB7913A71C6E54C3000ABF9B /* Crypto.swift */,
 			);
-			path = ablySpec;
+			path = Spec;
 			sourceTree = "<group>";
 		};
 		96BF61271A35B2AB004CF2B3 = {
 			isa = PBXGroup;
 			children = (
-				96BF61331A35B2AB004CF2B3 /* ably-ios */,
-				96BF61401A35B2AB004CF2B3 /* ably-iosTests */,
-				856AAC8B1B6E304B00B07119 /* ablySpec */,
+				96BF61331A35B2AB004CF2B3 /* Source */,
+				96BF61401A35B2AB004CF2B3 /* Tests */,
+				856AAC8B1B6E304B00B07119 /* Spec */,
 				96BF61321A35B2AB004CF2B3 /* Products */,
 				B7FA72C0B06CA0A207042965 /* Pods */,
 				FAFEC5BB8312EB69E84C28D4 /* Frameworks */,
@@ -499,7 +499,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		96BF61331A35B2AB004CF2B3 /* ably-ios */ = {
+		96BF61331A35B2AB004CF2B3 /* Source */ = {
 			isa = PBXGroup;
 			children = (
 				85F0A60A1B6D039F00EFF45A /* Ably.h */,
@@ -514,7 +514,7 @@
 				D746AE341BBC2B60003ECEF8 /* Utilities */,
 				96BF61341A35B2AB004CF2B3 /* Supporting Files */,
 			);
-			path = "ably-ios";
+			path = Source;
 			sourceTree = "<group>";
 		};
 		96BF61341A35B2AB004CF2B3 /* Supporting Files */ = {
@@ -526,7 +526,7 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		96BF61401A35B2AB004CF2B3 /* ably-iosTests */ = {
+		96BF61401A35B2AB004CF2B3 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
 				1C118AB61AE6485C006AD19E /* ably-common */,
@@ -539,7 +539,7 @@
 				1C578E211B3438F300EF46EC /* ARTFallbackTest.m */,
 				EBAB9A701C69719900AF036B /* ARTReadmeExamples.m */,
 			);
-			path = "ably-iosTests";
+			path = Tests;
 			sourceTree = "<group>";
 		};
 		96BF61411A35B2AB004CF2B3 /* Supporting Files */ = {
@@ -1188,12 +1188,12 @@
 				CLANG_ENABLE_MODULES = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_NO_COMMON_BLOCKS = YES;
-				INFOPLIST_FILE = ablySpec/Info.plist;
+				INFOPLIST_FILE = Spec/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = AblyTests;
-				SWIFT_OBJC_BRIDGING_HEADER = "ablySpec/ablySpec-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -1206,12 +1206,12 @@
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_NO_COMMON_BLOCKS = YES;
-				INFOPLIST_FILE = ablySpec/Info.plist;
+				INFOPLIST_FILE = Spec/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = AblyTests;
-				SWIFT_OBJC_BRIDGING_HEADER = "ablySpec/ablySpec-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
 			};
 			name = Release;
 		};
@@ -1308,12 +1308,12 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = "ably-ios/Info.plist";
+				INFOPLIST_FILE = Source/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MACH_O_TYPE = mh_dylib;
-				MODULEMAP_FILE = "ably-ios/ably.modulemap";
+				MODULEMAP_FILE = Source/Ably.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SEPARATE_STRIP = YES;
@@ -1329,12 +1329,12 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = "ably-ios/Info.plist";
+				INFOPLIST_FILE = Source/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MACH_O_TYPE = mh_dylib;
-				MODULEMAP_FILE = "ably-ios/ably.modulemap";
+				MODULEMAP_FILE = Source/Ably.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SEPARATE_STRIP = YES;
@@ -1346,11 +1346,8 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 5759328ECCA19EBD28AF6419 /* Pods-ablyTests.debug.xcconfig */;
 			buildSettings = {
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				INFOPLIST_FILE = "ably-iosTests/Info.plist";
+				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
+				INFOPLIST_FILE = Tests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = AblyTests;
@@ -1362,7 +1359,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 57FFDFF64A343614DE0A41C7 /* Pods-ablyTests.release.xcconfig */;
 			buildSettings = {
-				INFOPLIST_FILE = "ably-iosTests/Info.plist";
+				INFOPLIST_FILE = Tests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = AblyTests;
