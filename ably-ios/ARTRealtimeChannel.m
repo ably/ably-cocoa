@@ -28,6 +28,7 @@
 @interface ARTRealtimeChannel () {
     ARTRealtimePresence *_realtimePresence;
     CFRunLoopTimerRef _attachTimer;
+    CFRunLoopTimerRef _detachTimer;
     __GENERIC(ARTEventEmitter, NSNull *, ARTErrorInfo *) *_attachedEventEmitter;
     __GENERIC(ARTEventEmitter, NSNull *, ARTErrorInfo *) *_detachedEventEmitter;
 }
@@ -259,6 +260,7 @@
 
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status {
     [self cancelAttachTimer];
+    [self cancelDetachTimer];
     if (self.state == state) {
         return;
     }
@@ -274,8 +276,14 @@
     _attachTimer = nil;
 }
 
+- (void)cancelDetachTimer {
+    [self.realtime cancelTimer:_detachTimer];
+    _detachTimer = nil;
+}
+
 - (void)dealloc {
     [self cancelAttachTimer];
+    [self cancelDetachTimer];
 }
 
 /**
@@ -510,10 +518,22 @@
     detachMessage.action = ARTProtocolMessageDetach;
     detachMessage.channel = self.name;
     
+    __block BOOL timeouted = false;
+
     [self.realtime send:detachMessage cb:nil];
     if (cb) [_detachedEventEmitter once:cb];
     // Set state: Detaching
     [self transition:ARTRealtimeChannelDetaching status:[ARTStatus state:ARTStateOk]];
+
+    _detachTimer = [self.realtime startTimer:^{
+        timeouted = true;
+        ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTStateDetachTimedOut message:@"detach timed out"];
+        ARTStatus *status = [ARTStatus state:ARTStateDetachTimedOut info:errorInfo];
+        _errorReason = errorInfo;
+        [self transition:ARTRealtimeChannelFailed status:status];
+        [_detachedEventEmitter emit:[NSNull null] with:errorInfo];
+    } interval:[ARTDefault realtimeRequestTimeout]];
+
 }
 
 - (void)detach {

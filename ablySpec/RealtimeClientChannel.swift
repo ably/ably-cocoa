@@ -528,6 +528,82 @@ class RealtimeClientChannel: QuickSpec {
             }
 
             describe("detach") {
+                // RTL5a
+                it("if state is INITIALISED, DETACHED or DETACHING nothing is done") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+
+                    var errorInfo: ARTErrorInfo?
+                    let channel = client.channels.get("test")
+
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Initialised))
+                    channel.detach { errorInfo in
+                        expect(errorInfo).to(beNil())
+                    }
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Initialised))
+
+                    channel.attach()
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attaching), timeout: testTimeout)
+
+                    channel.detach { errorInfo in
+                        expect(errorInfo).to(beNil())
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
+                    }
+
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Detaching))
+                    channel.detach { errorInfo in
+                        expect(errorInfo).to(beNil())
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
+                    }
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Detaching))
+
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.detach { errorInfo in
+                            expect(errorInfo).to(beNil())
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
+                            done()
+                        }
+                    }
+                }
+
+                // RTL5b
+                it("results in an error if the connection state is FAILED") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+
+                    let channel = client.channels.get("test")
+                    client.onError(AblyTests.newErrorProtocolMessage())
+                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Failed))
+                    expect(channel.detach()).toNot(beNil())
+                }
+
+                // RTL5d
+                it("should send a DETACH ProtocolMessage, change state to DETACHING and change state to DETACHED after confirmation") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+                    client.setTransportClass(TestProxyTransport.self)
+                    client.connect()
+                    defer { client.close() }
+
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                    let transport = client.transport as! TestProxyTransport
+
+                    let channel = client.channels.get("test")
+                    channel.attach()
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+                    channel.detach()
+
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Detaching))
+                    expect(transport.protocolMessagesSent.filter({ $0.action == .Detach })).to(haveCount(1))
+
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
+                    expect(transport.protocolMessagesReceived.filter({ $0.action == .Detached })).to(haveCount(1))
+                }
+
+                // RTL5e
                 it("if called with a callback should call it once detached") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.close() }
@@ -546,6 +622,7 @@ class RealtimeClientChannel: QuickSpec {
                     }
                 }
 
+                // RTL5e
                 it("if called with a callback and already detaching should call the callback once detached") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.close() }
@@ -566,6 +643,7 @@ class RealtimeClientChannel: QuickSpec {
                     }
                 }
 
+                // RTL5e
                 it("if called with a callback and already detached should should call the callback with nil error") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.close() }
@@ -584,6 +662,39 @@ class RealtimeClientChannel: QuickSpec {
                         }
                     }
                 }
+
+                // RTL5f
+                it("should transition the channel state to FAILED if DETACHED ProtocolMessage is not received") {
+                    ARTDefault.setRealtimeRequestTimeout(3.0)
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+                    client.setTransportClass(TestProxyTransport.self)
+                    client.connect()
+                    defer { client.close() }
+
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                    let transport = client.transport as! TestProxyTransport
+                    transport.actionsIgnored += [.Detached]
+
+                    let channel = client.channels.get("test")
+                    channel.attach()
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                    var callbackCalled = false
+                    channel.detach { errorInfo in
+                        expect(errorInfo).toNot(beNil())
+                        expect(errorInfo).to(equal(channel.errorReason))
+                        callbackCalled = true
+                    }
+                    let start = NSDate()
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Failed), timeout: testTimeout)
+                    expect(channel.errorReason).toNot(beNil())
+                    expect(callbackCalled).to(beTrue())
+                    let end = NSDate()
+                    expect(start.dateByAddingTimeInterval(3.0)).to(beCloseTo(end, within: 0.5))
+                }
+
             }
 
             // RTL6
