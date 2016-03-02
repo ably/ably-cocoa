@@ -18,4 +18,4 @@ install:
   - pod install
 script:
   # Run tests
-  - xcodebuild -workspace './ably.xcworkspace' -scheme 'Ably' -destination 'platform=iOS Simulator,OS=9.2,name=iPhone 4s' clean test
+  - xcodebuild -workspace './Ably.xcworkspace' -scheme 'Ably' -destination 'platform=iOS Simulator,OS=9.2,name=iPhone 4s' clean test
