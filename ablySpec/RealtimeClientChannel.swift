@@ -1183,11 +1183,11 @@ class RealtimeClientChannel: QuickSpec {
                                 expect(message.data as? NSData).to(equal(expectedData))
                                 expect(message.encoding).to(equal("invalid"))
 
-                                let logs = querySyslog(forLogsAfter: logTime)
-                                let line = logs.reduce("") { $0 + "; " + $1 } //Reduce in one line
-                                expect(line).to(contain("ERROR: Failed to decode data as 'invalid' encoding is unknown"))
+                                let logs = options.logHandler.captured
+                                let line = logs.reduce("") { $0 + "; " + $1.toString() } //Reduce in one line
+                                expect(line).to(contain("ERROR: Failed to decode data: unknown encoding: 'invalid'"))
 
-                                expect(channel.errorReason!.message).to(contain("Failed to decode data as 'invalid' encoding is unknown"))
+                                expect(channel.errorReason!.message).to(contain("Failed to decode data: unknown encoding: 'invalid'"))
 
                                 done()
                             }
