@@ -545,7 +545,7 @@ extension JSON {
 
 extension ARTRealtime {
 
-    func simulateLostConnection() {
+    func simulateLostConnectionAndState() {
         //1. Abruptly disconnect
         //2. Change the `Connection#id` and `Connection#key` before the client
         //   library attempts to reconnect and resume the connection
