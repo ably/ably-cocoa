@@ -69,7 +69,10 @@
 
 #pragma mark - ARTRealtime implementation
 
-@implementation ARTRealtime
+@implementation ARTRealtime {
+    BOOL _resuming;
+    BOOL _renewingToken;
+}
 
 - (instancetype)initWithKey:(NSString *)key {
     return [self initWithOptions:[[ARTClientOptions alloc] initWithKey:key]];
@@ -365,6 +368,8 @@
 }
 
 - (void)onConnected:(ARTProtocolMessage *)message {
+    _renewingToken = false;
+
     // Resuming
     if (_resuming) {
         if (message.error && ![message.connectionId isEqualToString:self.connection.id]) {
@@ -436,9 +441,24 @@
     if (message.channel) {
         [self onChannelMessage:message];
     } else {
+        ARTErrorInfo *error = message.error;
+        if (!_renewingToken && error && error.statusCode == 401 && error.code >= 40140 && error.code < 40150 && [self isTokenRenewable]) {
+            [self connectWithRenewedToken];
+            return;
+        }
         [self.connection setId:nil];
         [self transition:ARTRealtimeFailed withErrorInfo:message.error];
     }
+}
+
+- (BOOL)isTokenRenewable {
+    return self.options.authCallback || self.options.authUrl || self.options.key;
+}
+
+- (void)connectWithRenewedToken {
+    _renewingToken = true;
+    [self.transport close];
+    [self.transport connectForcingNewToken:true];
 }
 
 - (void)onAck:(ARTProtocolMessage *)message {

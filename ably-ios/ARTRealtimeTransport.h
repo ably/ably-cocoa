@@ -38,6 +38,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)send:(ARTProtocolMessage *)msg;
 - (void)receive:(ARTProtocolMessage *)msg;
 - (void)connect;
+- (void)connectForcingNewToken:(BOOL)forceNewToken;
 - (void)sendClose;
 - (void)sendPing;
 - (void)close;
