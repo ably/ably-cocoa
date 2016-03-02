@@ -253,7 +253,7 @@
 		850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPaginatedResult.m; sourceTree = "<group>"; };
 		851674EE1B7BA5CD00D35169 /* Stats.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stats.swift; sourceTree = "<group>"; };
 		853ED7C31B7A1A3C006F1C6F /* RestClientStats.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClientStats.swift; sourceTree = "<group>"; };
-		856AAC8A1B6E304B00B07119 /* ablySpec.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ablySpec.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		856AAC8A1B6E304B00B07119 /* AblyRealtimeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AblyRealtimeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		856AAC8E1B6E304B00B07119 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		856AAC951B6E30C800B07119 /* ablySpec-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ablySpec-Bridging-Header.h"; sourceTree = "<group>"; };
 		856AAC961B6E30C800B07119 /* TestUtilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestUtilities.swift; sourceTree = "<group>"; };
@@ -283,7 +283,7 @@
 		96A507BB1A3791490077CDF8 /* ARTRealtime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTRealtime.h; sourceTree = "<group>"; };
 		96A507BC1A3791490077CDF8 /* ARTRealtime.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtime.m; sourceTree = "<group>"; };
 		96BF61311A35B2AB004CF2B3 /* Ably.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Ably.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		96BF613C1A35B2AB004CF2B3 /* ablyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ablyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		96BF613C1A35B2AB004CF2B3 /* AblyRealtimeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AblyRealtimeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		96BF61421A35B2AB004CF2B3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		96BF61511A35B39C004CF2B3 /* ARTRest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTRest.h; sourceTree = "<group>"; };
 		96BF61521A35B39C004CF2B3 /* ARTRest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRest.m; sourceTree = "<group>"; };
@@ -493,8 +493,8 @@
 			isa = PBXGroup;
 			children = (
 				96BF61311A35B2AB004CF2B3 /* Ably.framework */,
-				96BF613C1A35B2AB004CF2B3 /* ablyTests.xctest */,
-				856AAC8A1B6E304B00B07119 /* ablySpec.xctest */,
+				96BF613C1A35B2AB004CF2B3 /* AblyRealtimeTests.xctest */,
+				856AAC8A1B6E304B00B07119 /* AblyRealtimeTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -806,9 +806,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		856AAC891B6E304B00B07119 /* ablySpec */ = {
+		856AAC891B6E304B00B07119 /* AblyRealtimeSpec */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 856AAC921B6E304B00B07119 /* Build configuration list for PBXNativeTarget "ablySpec" */;
+			buildConfigurationList = 856AAC921B6E304B00B07119 /* Build configuration list for PBXNativeTarget "AblyRealtimeSpec" */;
 			buildPhases = (
 				27B27D0D8064045DDB5F1511 /* Check Pods Manifest.lock */,
 				856AAC861B6E304B00B07119 /* Sources */,
@@ -822,9 +822,9 @@
 			dependencies = (
 				856AAC911B6E304B00B07119 /* PBXTargetDependency */,
 			);
-			name = ablySpec;
+			name = AblyRealtimeSpec;
 			productName = ablySpec;
-			productReference = 856AAC8A1B6E304B00B07119 /* ablySpec.xctest */;
+			productReference = 856AAC8A1B6E304B00B07119 /* AblyRealtimeTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		96BF61301A35B2AB004CF2B3 /* Ably */ = {
@@ -847,9 +847,9 @@
 			productReference = 96BF61311A35B2AB004CF2B3 /* Ably.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		96BF613B1A35B2AB004CF2B3 /* ablyTests */ = {
+		96BF613B1A35B2AB004CF2B3 /* AblyRealtimeTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 96BF614A1A35B2AB004CF2B3 /* Build configuration list for PBXNativeTarget "ablyTests" */;
+			buildConfigurationList = 96BF614A1A35B2AB004CF2B3 /* Build configuration list for PBXNativeTarget "AblyRealtimeTests" */;
 			buildPhases = (
 				C7C27017D1EF1F2805104DB8 /* Check Pods Manifest.lock */,
 				96BF61381A35B2AB004CF2B3 /* Sources */,
@@ -865,9 +865,9 @@
 			dependencies = (
 				96BF613F1A35B2AB004CF2B3 /* PBXTargetDependency */,
 			);
-			name = ablyTests;
+			name = AblyRealtimeTests;
 			productName = "ably-iosTests";
-			productReference = 96BF613C1A35B2AB004CF2B3 /* ablyTests.xctest */;
+			productReference = 96BF613C1A35B2AB004CF2B3 /* AblyRealtimeTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -892,7 +892,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 96BF612B1A35B2AB004CF2B3 /* Build configuration list for PBXProject "ably" */;
+			buildConfigurationList = 96BF612B1A35B2AB004CF2B3 /* Build configuration list for PBXProject "AblyRealtime" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -905,8 +905,8 @@
 			projectRoot = "";
 			targets = (
 				96BF61301A35B2AB004CF2B3 /* Ably */,
-				96BF613B1A35B2AB004CF2B3 /* ablyTests */,
-				856AAC891B6E304B00B07119 /* ablySpec */,
+				96BF613B1A35B2AB004CF2B3 /* AblyRealtimeTests */,
+				856AAC891B6E304B00B07119 /* AblyRealtimeSpec */,
 			);
 		};
 /* End PBXProject section */
@@ -1192,7 +1192,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = AblyRealtimeTests;
 				SWIFT_OBJC_BRIDGING_HEADER = "ablySpec/ablySpec-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -1210,7 +1210,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = AblyRealtimeTests;
 				SWIFT_OBJC_BRIDGING_HEADER = "ablySpec/ablySpec-Bridging-Header.h";
 			};
 			name = Release;
@@ -1353,7 +1353,7 @@
 				INFOPLIST_FILE = "ably-iosTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = AblyRealtimeTests;
 				VALID_ARCHS = "arm64 armv7 armv7s";
 			};
 			name = Debug;
@@ -1365,7 +1365,7 @@
 				INFOPLIST_FILE = "ably-iosTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = AblyRealtimeTests;
 				VALID_ARCHS = "arm64 armv7 armv7s";
 			};
 			name = Release;
@@ -1373,7 +1373,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		856AAC921B6E304B00B07119 /* Build configuration list for PBXNativeTarget "ablySpec" */ = {
+		856AAC921B6E304B00B07119 /* Build configuration list for PBXNativeTarget "AblyRealtimeSpec" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				856AAC931B6E304B00B07119 /* Debug */,
@@ -1382,7 +1382,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		96BF612B1A35B2AB004CF2B3 /* Build configuration list for PBXProject "ably" */ = {
+		96BF612B1A35B2AB004CF2B3 /* Build configuration list for PBXProject "AblyRealtime" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				96BF61451A35B2AB004CF2B3 /* Debug */,
@@ -1400,7 +1400,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		96BF614A1A35B2AB004CF2B3 /* Build configuration list for PBXNativeTarget "ablyTests" */ = {
+		96BF614A1A35B2AB004CF2B3 /* Build configuration list for PBXNativeTarget "AblyRealtimeTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				96BF614B1A35B2AB004CF2B3 /* Debug */,
