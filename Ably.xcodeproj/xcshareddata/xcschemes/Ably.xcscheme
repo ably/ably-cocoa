@@ -17,7 +17,7 @@
                BlueprintIdentifier = "96BF61301A35B2AB004CF2B3"
                BuildableName = "Ably.framework"
                BlueprintName = "Ably"
-               ReferencedContainer = "container:ably.xcodeproj">
+               ReferencedContainer = "container:Ably.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "96BF613B1A35B2AB004CF2B3"
-               BuildableName = "ablyTests.xctest"
-               BlueprintName = "ablyTests"
-               ReferencedContainer = "container:ably.xcodeproj">
+               BuildableName = "AblyRealtimeTests.xctest"
+               BlueprintName = "AblyTests"
+               ReferencedContainer = "container:Ably.xcodeproj">
             </BuildableReference>
          </TestableReference>
          <TestableReference
@@ -43,9 +43,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "856AAC891B6E304B00B07119"
-               BuildableName = "ablySpec.xctest"
-               BlueprintName = "ablySpec"
-               ReferencedContainer = "container:ably.xcodeproj">
+               BuildableName = "AblyTests.xctest"
+               BlueprintName = "AblySpec"
+               ReferencedContainer = "container:Ably.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,7 +55,7 @@
             BlueprintIdentifier = "96BF61301A35B2AB004CF2B3"
             BuildableName = "Ably.framework"
             BlueprintName = "Ably"
-            ReferencedContainer = "container:ably.xcodeproj">
+            ReferencedContainer = "container:Ably.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -77,7 +77,7 @@
             BlueprintIdentifier = "96BF61301A35B2AB004CF2B3"
             BuildableName = "Ably.framework"
             BlueprintName = "Ably"
-            ReferencedContainer = "container:ably.xcodeproj">
+            ReferencedContainer = "container:Ably.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -95,7 +95,7 @@
             BlueprintIdentifier = "96BF61301A35B2AB004CF2B3"
             BuildableName = "Ably.framework"
             BlueprintName = "Ably"
-            ReferencedContainer = "container:ably.xcodeproj">
+            ReferencedContainer = "container:Ably.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>
