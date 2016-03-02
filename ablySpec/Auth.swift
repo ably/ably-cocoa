@@ -715,8 +715,71 @@ class Auth : QuickSpec {
             }
         }
 
+        struct ExpectedTokenParams {
+            static let clientId = "client_from_params"
+            static let ttl = 5.0
+            static let capability = "{\"cansubscribe:*\":[\"subscribe\"]}"
+        }
+
         // RSA9
         describe("createTokenRequest") {
+            // RSA9h
+            it("should supersede any configured params and options when TokenParams and AuthOptions were provided") {
+                let options = AblyTests.commonAppSetup()
+                options.clientId = "client_string"
+                let rest = ARTRest(options: options)
+
+                let tokenParams = ARTTokenParams()
+                let defaultTtl = tokenParams.ttl
+                let defaultCapability = tokenParams.capability
+
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.createTokenRequest(nil, options: nil) { tokenRequest, error in
+                        expect(error).to(beNil())
+                        guard let tokenRequest = tokenRequest else {
+                            XCTFail("tokenRequest is nil"); done(); return
+                        }
+                        expect(tokenRequest.clientId).to(equal(options.clientId))
+                        expect(tokenRequest.ttl).to(equal(defaultTtl))
+                        expect(tokenRequest.capability).to(equal(defaultCapability))
+                        done()
+                    }
+                }
+
+                tokenParams.ttl = ExpectedTokenParams.ttl
+                tokenParams.capability = ExpectedTokenParams.capability
+                tokenParams.clientId = nil
+
+                let authOptions = ARTAuthOptions()
+                authOptions.force = true
+                authOptions.queryTime = true
+
+                var serverDate = NSDate()
+                waitUntil(timeout: testTimeout) { done in
+                    rest.time { date, error in
+                        expect(error).to(beNil())
+                        guard let date = date else {
+                            XCTFail("No server time"); done(); return
+                        }
+                        serverDate = date
+                        done()
+                    }
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.createTokenRequest(tokenParams, options: authOptions) { tokenRequest, error in
+                        expect(error).to(beNil())
+                        guard let tokenRequest = tokenRequest else {
+                            XCTFail("TokenDetails is nil"); done(); return
+                        }
+                        expect(tokenRequest.clientId).to(beNil())
+                        expect(tokenRequest.timestamp).to(beCloseTo(serverDate, within: 1.0)) //1 Second
+                        expect(tokenRequest.ttl).to(equal(ExpectedTokenParams.ttl))
+                        expect(tokenRequest.capability).to(equal(ExpectedTokenParams.capability))
+                        done()
+                    }
+                }
+            }
 
             // RSA9a
             it("should create and sign a TokenRequest") {
@@ -1138,12 +1201,6 @@ class Auth : QuickSpec {
                         done()
                     }
                 }
-            }
-
-            struct ExpectedTokenParams {
-                static let clientId = "client_from_params"
-                static let ttl = 5.0
-                static let capability = "{\"cansubscribe:*\":[\"subscribe\"]}"
             }
 
             // RSA10g
