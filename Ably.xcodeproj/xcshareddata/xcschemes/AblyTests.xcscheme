@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0700"
+   LastUpgradeVersion = "0720"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -16,10 +16,10 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "856AAC891B6E304B00B07119"
-               BuildableName = "ablySpec.xctest"
-               BlueprintName = "ablySpec"
-               ReferencedContainer = "container:ably.xcodeproj">
+               BlueprintIdentifier = "96BF613B1A35B2AB004CF2B3"
+               BuildableName = "AblyTests.xctest"
+               BlueprintName = "AblyTests"
+               ReferencedContainer = "container:Ably.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>

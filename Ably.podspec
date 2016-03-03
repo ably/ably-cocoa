@@ -14,8 +14,8 @@ Pod::Spec.new do |s|
   s.documentation_url = "https://www.ably.io/documentation"
   s.platform          = :ios, '8.0'
   s.requires_arc      = true
-  s.source_files      = 'ably-ios/*.{h,m}'
-  s.module_map        = 'ably-ios/ably.modulemap'
+  s.source_files      = 'Source/*.{h,m}'
+  s.module_map        = 'Source/Ably.modulemap'
   s.pod_target_xcconfig = { 'HEADER_SEARCH_PATHS' => '$CONFIGURATION_BUILD_DIR/SwiftWebSocket.framework/Headers' }
   s.dependency 'SwiftWebSocket', '~> 2.5'
 end
