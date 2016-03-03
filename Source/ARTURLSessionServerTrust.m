@@ -23,7 +23,7 @@
     return self;
 }
 
-- (void)get:(NSURLRequest *)request completion:(ARTHttpRequestCallback)callback {
+- (void)get:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
     NSURLSessionDataTask *task = [_session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         callback((NSHTTPURLResponse *)response, data, error);
     }];

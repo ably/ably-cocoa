@@ -168,7 +168,7 @@
     return self;
 }
 
-- (void)executeRequest:(NSMutableURLRequest *)request completion:(ARTHttpRequestCallback)callback {
+- (void)executeRequest:(NSMutableURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
     [self.logger debug:@"%@ %@", request.HTTPMethod, request.URL.absoluteString];
     [self.logger verbose:@"Headers %@", request.allHTTPHeaderFields];
 

@@ -9,8 +9,12 @@
 #import <UIKit/UIKit.h>
 #import "ARTTypes.h"
 
+ART_ASSUME_NONNULL_BEGIN
+
 @interface ARTURLSessionServerTrust : NSObject<NSURLSessionDelegate, NSURLSessionTaskDelegate>
 
-- (void)get:(NSURLRequest *)request completion:(ARTHttpRequestCallback)callback;
+- (void)get:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback;
 
 @end
+
+ART_ASSUME_NONNULL_END
