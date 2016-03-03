@@ -25,9 +25,9 @@
     return (ARTRealtimeChannel *)super.channel;
 }
 
-- (void)get:(ARTRealtimePresenceQuery *)query cb:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, NSError * _Nullable))callback {
+- (void)get:(ARTRealtimePresenceQuery *)query callback:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, NSError * _Nullable))callback {
     [[self channel] throwOnDisconnectedOrFailed];
-    [super get:query cb:callback];
+    [super get:query callback:callback];
 }
 
 - (void)history:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *, NSError *))callback {
@@ -39,18 +39,18 @@
 }
 
 - (void)enter:(id)data {
-    [self enter:data cb:nil];
+    [self enter:data callback:nil];
 }
 
-- (void)enter:(id)data cb:(void (^)(ARTErrorInfo * _Nullable))cb {
-    [self enterClient:[self channel].clientId data:data cb:cb];
+- (void)enter:(id)data callback:(void (^)(ARTErrorInfo * _Nullable))cb {
+    [self enterClient:[self channel].clientId data:data callback:cb];
 }
 
 - (void)enterClient:(NSString *)clientId data:(id)data {
-    [self enterClient:clientId data:data cb:nil];
+    [self enterClient:clientId data:data callback:nil];
 }
 
-- (void)enterClient:(NSString *)clientId data:(id)data cb:(void (^)(ARTErrorInfo * _Nullable))cb {
+- (void)enterClient:(NSString *)clientId data:(id)data callback:(void (^)(ARTErrorInfo * _Nullable))cb {
     if(!clientId) {
         if (cb) cb([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
         return;
@@ -61,22 +61,22 @@
     msg.data = data;
 
     msg.connectionId = [self channel].realtime.connection.id;
-    [[self channel] publishPresence:msg cb:cb];
+    [[self channel] publishPresence:msg callback:cb];
 }
 
 - (void)update:(id)data {
-    [self update:data cb:nil];
+    [self update:data callback:nil];
 }
 
-- (void)update:(id)data cb:(void (^)(ARTErrorInfo * _Nullable))cb {
-    [self updateClient:[self channel].clientId data:data cb:cb];
+- (void)update:(id)data callback:(void (^)(ARTErrorInfo * _Nullable))cb {
+    [self updateClient:[self channel].clientId data:data callback:cb];
 }
 
 - (void)updateClient:(NSString *)clientId data:(id)data {
-    [self updateClient:clientId data:data cb:nil];
+    [self updateClient:clientId data:data callback:nil];
 }
 
-- (void)updateClient:(NSString *)clientId data:(id)data cb:(void (^)(ARTErrorInfo * _Nullable))cb {
+- (void)updateClient:(NSString *)clientId data:(id)data callback:(void (^)(ARTErrorInfo * _Nullable))cb {
     if (!clientId) {
         if (cb) cb([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
         return;
@@ -87,22 +87,22 @@
     msg.data = data;
     msg.connectionId = [self channel].realtime.connection.id;
 
-    [[self channel] publishPresence:msg cb:cb];
+    [[self channel] publishPresence:msg callback:cb];
 }
 
 - (void)leave:(id)data {
-    [self leave:data cb:nil];
+    [self leave:data callback:nil];
 }
 
-- (void)leave:(id)data cb:(void (^)(ARTErrorInfo * _Nullable))cb {
-    [self leaveClient:[self channel].clientId data:data cb:cb];
+- (void)leave:(id)data callback:(void (^)(ARTErrorInfo * _Nullable))cb {
+    [self leaveClient:[self channel].clientId data:data callback:cb];
 }
 
 - (void)leaveClient:(NSString *)clientId data:(id)data {
-    [self leaveClient:clientId data:data cb:nil];
+    [self leaveClient:clientId data:data callback:nil];
 }
 
-- (void)leaveClient:(NSString *)clientId data:(id)data cb:(void (^)(ARTErrorInfo * _Nullable))cb {
+- (void)leaveClient:(NSString *)clientId data:(id)data callback:(void (^)(ARTErrorInfo * _Nullable))cb {
     if (!clientId) {
         if (cb) cb([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
         return;
@@ -117,7 +117,7 @@
     msg.data = data;
     msg.clientId = clientId;
     msg.connectionId = [self channel].realtime.connection.id;
-    [[self channel] publishPresence:msg cb:cb];
+    [[self channel] publishPresence:msg callback:cb];
 }
 
 - (BOOL)isSyncComplete {
@@ -129,7 +129,7 @@
     return [[self channel].presenceEventEmitter on:cb];
 }
 
-- (ARTEventListener<ARTPresenceMessage *> *)subscribe:(ARTPresenceAction)action cb:(void (^)(ARTPresenceMessage * _Nonnull))cb {
+- (ARTEventListener<ARTPresenceMessage *> *)subscribe:(ARTPresenceAction)action callback:(void (^)(ARTPresenceMessage * _Nonnull))cb {
     [[self channel] attach];
     return [[self channel].presenceEventEmitter on:[NSNumber numberWithUnsignedInteger:action] call:cb];
 }

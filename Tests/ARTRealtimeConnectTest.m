@@ -136,9 +136,9 @@
             if(state == ARTRealtimeConnected) {
                 XCTAssertEqual(realtime.connection.serial, -1);
                 ARTRealtimeChannel * c =[realtime.channels get:@"chan"];
-                [c publish:nil data:@"message" cb:^(ARTErrorInfo *errorInfo) {
+                [c publish:nil data:@"message" callback:^(ARTErrorInfo *errorInfo) {
                     XCTAssertEqual(realtime.connection.serial, 0);
-                    [c publish:nil data:@"message2" cb:^(ARTErrorInfo *errorInfo) {
+                    [c publish:nil data:@"message2" callback:^(ARTErrorInfo *errorInfo) {
                         XCTAssertEqual(realtime.connection.serial, 1);
                         [expectation fulfill];
                     }];
@@ -207,7 +207,7 @@
 
 - (void)testConnectStates {
     XCTestExpectation *exp = [self expectationWithDescription:@"testConnectStates"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.autoConnect = false;
         ARTRealtime * realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;

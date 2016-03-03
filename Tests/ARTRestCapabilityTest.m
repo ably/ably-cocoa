@@ -41,7 +41,7 @@
 - (void)withRestRestrictCap:(void (^)(ARTRest *rest))cb {
     if (!_rest) {
         ARTClientOptions * theOptions = [ARTTestUtil clientOptions];
-        [ARTTestUtil setupApp:theOptions withAlteration:TestAlterationRestrictCapability cb:^(ARTClientOptions *options) {
+        [ARTTestUtil setupApp:theOptions withAlteration:TestAlterationRestrictCapability callback:^(ARTClientOptions *options) {
             if (options) {
                 options.clientId = @"client_string";
                 
@@ -69,11 +69,11 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"testSimpleDisconnected"];
     [self withRestRestrictCap:^(ARTRest * rest) {
         ARTRestChannel *channel = [rest.channels get:@"canpublish:test"];
-        [channel publish:nil data:@"publish" cb:^(ARTErrorInfo *error) {
+        [channel publish:nil data:@"publish" callback:^(ARTErrorInfo *error) {
             XCTAssert(!error);
             NSLog(@"%@", error);
             ARTRestChannel *channel2 = [rest.channels get:@"cannotPublishToThisChannelName"];
-            [channel2 publish:nil data:@"publish" cb:^(ARTErrorInfo *error) {
+            [channel2 publish:nil data:@"publish" callback:^(ARTErrorInfo *error) {
                 XCTAssert(error);
                 NSLog(@"%@", error);
                 [expectation fulfill];

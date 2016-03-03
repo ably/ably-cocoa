@@ -291,7 +291,7 @@
 
 - (void)testAttachRestricted {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testSimpleDisconnected"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withAlteration:TestAlterationRestrictCapability cb:^(ARTClientOptions * options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withAlteration:TestAlterationRestrictCapability callback:^(ARTClientOptions * options) {
 
             ARTRealtime * realtime =[[ARTRealtime alloc] initWithOptions:options];
             _realtime = realtime;
@@ -368,7 +368,7 @@
 
 - (void)testPresenceEnterRestricted {
     XCTestExpectation *expect = [self expectationWithDescription:@"testSimpleDisconnected"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withAlteration:TestAlterationRestrictCapability cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withAlteration:TestAlterationRestrictCapability callback:^(ARTClientOptions *options) {
         // Connection
         options.clientId = @"some_client_id";
         options.autoConnect = false;
@@ -389,7 +389,7 @@
             ARTErrorInfo *errorInfo = stateChange.reason;
             if (state == ARTRealtimeConnected) {
                 ARTRealtimeChannel *channel = [realtime.channels get:@"some_unpermitted_channel"];
-                [channel.presence enter:@"not_allowed_here" cb:^(ARTErrorInfo *errorInfo) {
+                [channel.presence enter:@"not_allowed_here" callback:^(ARTErrorInfo *errorInfo) {
                     XCTAssertNotNil(errorInfo);
                     [expect fulfill];
                 }];

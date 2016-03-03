@@ -68,19 +68,19 @@
     return _realtimePresence;
 }
 
-- (void)publish:(NSString *)name data:(id)data cb:(void (^)(ARTErrorInfo * _Nullable))cb {
+- (void)publish:(NSString *)name data:(id)data callback:(void (^)(ARTErrorInfo * _Nullable))cb {
     NSArray *messages = [NSArray arrayWithObject:[[ARTMessage alloc] initWithName:name data:data]];
-    [self publish:messages cb:cb];
+    [self publish:messages callback:cb];
 }
 
--(void)publish:(NSArray<ARTMessage *> *)messages cb:(void (^)(ARTErrorInfo * _Nullable))cb {
+-(void)publish:(NSArray<ARTMessage *> *)messages callback:(void (^)(ARTErrorInfo * _Nullable))cb {
     ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
     msg.action = ARTProtocolMessageMessage;
     msg.channel = self.name;
     msg.messages = [messages artMap:^id(ARTMessage *message) {
         return [self encodeMessageIfNeeded:message];
     }];
-    [self publishProtocolMessage:msg cb:^void(ARTStatus *status) {
+    [self publishProtocolMessage:msg callback:^void(ARTStatus *status) {
         if (cb) cb(status.errorInfo);
     }];
 }
@@ -94,10 +94,10 @@
     msg.channel = self.name;
 
 
-    [self.realtime send:msg cb:^(ARTStatus *status) {}];
+    [self.realtime send:msg callback:^(ARTStatus *status) {}];
 }
 
-- (void)publishPresence:(ARTPresenceMessage *)msg cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb {
+- (void)publishPresence:(ARTPresenceMessage *)msg callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb {
     if (!msg.clientId) {
         msg.clientId = self.clientId;
     }
@@ -121,19 +121,19 @@
     pm.channel = self.name;
     pm.presence = @[msg];
     
-    [self publishProtocolMessage:pm cb:^void(ARTStatus *status) {
+    [self publishProtocolMessage:pm callback:^void(ARTStatus *status) {
         if (cb) cb(status.errorInfo);
     }];
 }
 
-- (void)publishProtocolMessage:(ARTProtocolMessage *)pm cb:(ARTStatusCallback)cb {
+- (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(ARTStatusCallback)cb {
     switch (self.state) {
         case ARTRealtimeChannelInitialised:
             [self attach];
             // intentional fall-through
         case ARTRealtimeChannelAttaching:
         {
-            ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:pm cb:cb];
+            ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:pm callback:cb];
             [self.queuedMessages addObject:qm];
             break;
         }
@@ -149,7 +149,7 @@
         }
         case ARTRealtimeChannelAttached:
         {
-            [self sendMessage:pm cb:cb];
+            [self sendMessage:pm callback:cb];
             break;
         }
         default:
@@ -158,7 +158,7 @@
 }
 
 
-- (void)sendMessage:(ARTProtocolMessage *)pm cb:(ARTStatusCallback)cb {
+- (void)sendMessage:(ARTProtocolMessage *)pm callback:(ARTStatusCallback)cb {
     __block BOOL gotFailure = false;
     NSString *oldConnectionId = self.realtime.connection.id;
     __block ARTEventListener *listener = [self.realtime.connection on:^(ARTConnectionStateChange *stateChange) {
@@ -173,7 +173,7 @@
         cb([ARTStatus state:ARTStateError info:reason]);
     }];
 
-    [self.realtime send:pm cb:^(ARTStatus *status) {
+    [self.realtime send:pm callback:^(ARTStatus *status) {
         [self.realtime.connection off:listener];
         if (cb && !gotFailure) cb(status);
     }];
@@ -190,10 +190,10 @@
 }
 
 - (ARTEventListener<ARTMessage *> *)subscribe:(void (^)(ARTMessage * _Nonnull))cb {
-    return [self subscribeWithAttachCallback:nil cb:cb];
+    return [self subscribeWithAttachCallback:nil callback:cb];
 }
 
-- (ARTEventListener<ARTMessage *> *)subscribeWithAttachCallback:(void (^)(ARTErrorInfo * _Nullable))onAttach cb:(void (^)(ARTMessage * _Nonnull))cb {
+- (ARTEventListener<ARTMessage *> *)subscribeWithAttachCallback:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTMessage * _Nonnull))cb {
     if (self.state == ARTRealtimeChannelFailed) {
         if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
         return nil;
@@ -202,11 +202,11 @@
     return [self.messagesEventEmitter on:cb];
 }
 
-- (ARTEventListener<ARTMessage *> *)subscribe:(NSString *)name cb:(void (^)(ARTMessage * _Nonnull))cb {
-    return [self subscribe:name onAttach:nil cb:cb];
+- (ARTEventListener<ARTMessage *> *)subscribe:(NSString *)name callback:(void (^)(ARTMessage * _Nonnull))cb {
+    return [self subscribe:name onAttach:nil callback:cb];
 }
 
-- (ARTEventListener<ARTMessage *> *)subscribe:(NSString *)name onAttach:(void (^)(ARTErrorInfo * _Nullable))onAttach cb:(void (^)(ARTMessage * _Nonnull))cb {
+- (ARTEventListener<ARTMessage *> *)subscribe:(NSString *)name onAttach:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTMessage * _Nonnull))cb {
     if (self.state == ARTRealtimeChannelFailed) {
         if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
         return nil;
@@ -475,7 +475,7 @@
 
     __block BOOL timeouted = false;
 
-    [self.realtime send:attachMessage cb:nil];
+    [self.realtime send:attachMessage callback:nil];
     if (cb) [_attachedEventEmitter once:cb];
     // Set state: Attaching
     [self transition:ARTRealtimeChannelAttaching status:[ARTStatus state:ARTStateOk]];
@@ -520,7 +520,7 @@
     
     __block BOOL timeouted = false;
 
-    [self.realtime send:detachMessage cb:nil];
+    [self.realtime send:detachMessage callback:nil];
     if (cb) [_detachedEventEmitter once:cb];
     // Set state: Detaching
     [self transition:ARTRealtimeChannelDetaching status:[ARTStatus state:ARTStateOk]];
@@ -544,7 +544,7 @@
     NSArray *qms = self.queuedMessages;
     self.queuedMessages = [NSMutableArray array];
     for (ARTQueuedMessage *qm in qms) {
-        [self sendMessage:qm.msg cb:qm.cb];
+        [self sendMessage:qm.msg callback:qm.cb];
     }
 }
 

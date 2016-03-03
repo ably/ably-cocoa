@@ -257,7 +257,7 @@ class Auth : QuickSpec {
                                     currentChannel.subscribe({ message in
                                         done()
                                     })
-                                    currentChannel.publish(nil, data: "ping", cb:nil)
+                                    currentChannel.publish(nil, data: "ping", callback:nil)
                                 }
                             }
                         }

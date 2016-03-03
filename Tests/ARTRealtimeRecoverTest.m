@@ -44,7 +44,7 @@
 
 - (void)withRealtime:(void (^)(ARTRealtime *realtime))cb {
     if (!_realtime) {
-        [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+        [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
             _options = options;
             _realtime = [[ARTRealtime alloc] initWithOptions:options];
             cb(_realtime);
@@ -55,7 +55,7 @@
     }
 }
 
-- (void)withRealtimeRecover:(NSString *) recover cb:(void (^)(ARTRealtime *realtime))cb {
+- (void)withRealtimeRecover:(NSString *) recover callback:(void (^)(ARTRealtime *realtime))cb {
     _options.recover = recover;
     _realtimeRecover = [[ARTRealtime alloc] initWithOptions:_options];
     cb(_realtimeRecover);
@@ -67,7 +67,7 @@
     NSString * c2Message= @"c2 says hi";
 
     XCTestExpectation *expectation = [self expectationWithDescription:@"testRecoverDisconnected"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
 
         __block NSString *firstConnectionId = nil;
@@ -78,7 +78,7 @@
 
                 ARTRealtimeChannel *channel = [_realtime.channels get:channelName];
                 // Sending a message
-                [channel publish:nil data:c1Message cb:^(ARTErrorInfo *errorInfo) {
+                [channel publish:nil data:c1Message callback:^(ARTErrorInfo *errorInfo) {
                     XCTAssertNil(errorInfo);
                     [_realtime onDisconnected];
                 }];
@@ -92,7 +92,7 @@
                     ARTRealtimeConnectionState state2 = stateChange.current;
                     if (state2 == ARTRealtimeConnected) {
                         // Sending other message to the same channel to check if the recovered connection receives it
-                        [c2 publish:nil data:c2Message cb:^(ARTErrorInfo *errorInfo) {
+                        [c2 publish:nil data:c2Message callback:^(ARTErrorInfo *errorInfo) {
                             XCTAssertNil(errorInfo);
 
                             options.recover = _realtime.connection.recoveryKey;
@@ -121,7 +121,7 @@
 
 - (void)testRecoverFails {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testRecoverDisconnected"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.recover = @"bad_recovery_key:1234";
         _realtimeRecover = [[ARTRealtime alloc] initWithOptions:options];
         [_realtimeRecover.connection on:^(ARTConnectionStateChange *stateChange) {

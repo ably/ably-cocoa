@@ -28,7 +28,7 @@
     return (ARTRestChannel *)super.channel;
 }
 
-- (void)get:(ARTPresenceQuery *)query cb:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, NSError * _Nullable))callback {
+- (void)get:(ARTPresenceQuery *)query callback:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, NSError * _Nullable))callback {
     NSURL *requestUrl = [NSURL URLWithString:[[self channel].basePath stringByAppendingPathComponent:@"presence"]];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
 

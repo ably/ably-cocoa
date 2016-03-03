@@ -79,7 +79,7 @@
                 }];
                 [ARTTestUtil repeat:count delay:(delay / 1000.0) block:^(int i) {
                     NSString *msg = [NSString stringWithFormat:@"Test message (_multiple_send) %d", i];
-                    [channel publish:@"test_event" data:msg cb:^(ARTErrorInfo *errorInfo) { 
+                    [channel publish:@"test_event" data:msg callback:^(ARTErrorInfo *errorInfo) { 
                     }];
                 }];
             }
@@ -97,7 +97,7 @@
             XCTAssertEqualObjects([message data], @"testString");
             [expectation fulfill];
         }];
-        [channel publish:nil data:@"testString" cb:^(ARTErrorInfo *errorInfo) {
+        [channel publish:nil data:@"testString" callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
         }];
     }];
@@ -110,7 +110,7 @@
     XCTestExpectation *exp3 = [self expectationWithDescription:@"testSingleSendEchoText3"];
     NSString *channelName = @"testSingleEcho";
     
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         ARTRealtime * realtime1 = [[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime1;
         ARTRealtime * realtime2 = [[ARTRealtime alloc] initWithOptions:options];
@@ -147,7 +147,7 @@
 
         waitForWithTimeout(&attached, @[channel, channel2], 20.0);
 
-        [channel2 publish:nil data:@"testStringEcho" cb:^(ARTErrorInfo *errorInfo) {
+        [channel2 publish:nil data:@"testStringEcho" callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
             [exp3 fulfill];
         }];
@@ -169,7 +169,7 @@
     NSString * message1 = @"message1";
     NSString * message2 = @"message2";
     
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
     
@@ -185,10 +185,10 @@
                 [exp fulfill];
             }
         }];
-        [channel publish:nil data:message1 cb:^(ARTErrorInfo *errorInfo) {
+        [channel publish:nil data:message1 callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
             ARTRealtimeChannel * channel2 = [_realtime2.channels get:channelName];
-            [channel2 publish:nil data:message2 cb:^(ARTErrorInfo *errorInfo) {
+            [channel2 publish:nil data:message2 callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
             }];
         }];
@@ -202,7 +202,7 @@
     NSString * message1 = @"message1";
     NSString * message2 = @"message2";
     
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.echoMessages = false;
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
@@ -212,10 +212,10 @@
             XCTAssertEqualObjects([message data], message2);
             [exp fulfill];
         }];
-        [channel publish:nil data:message1 cb:^(ARTErrorInfo *errorInfo) {
+        [channel publish:nil data:message1 callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
             ARTRealtimeChannel * channel2 = [_realtime2.channels get:channelName];
-            [channel2 publish:nil data:message2 cb:^(ARTErrorInfo *errorInfo) {
+            [channel2 publish:nil data:message2 callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
             }];
         }];
@@ -271,14 +271,14 @@
                 }
                 else {
                     connectingHappened = true;
-                    [channel publish:nil data:connectingMessage cb:^(ARTErrorInfo *errorInfo) {
+                    [channel publish:nil data:connectingMessage callback:^(ARTErrorInfo *errorInfo) {
                         XCTAssertNil(errorInfo);
                         [realtime onDisconnected];
                     }];
                 }
             }
             else if(state == ARTRealtimeDisconnected) {
-                [channel publish:nil data:disconnectedMessage cb:^(ARTErrorInfo *errorInfo) {
+                [channel publish:nil data:disconnectedMessage callback:^(ARTErrorInfo *errorInfo) {
                     XCTAssertNil(errorInfo);
                 }];
                 [realtime connect];
@@ -293,15 +293,15 @@
 - (void)testConnectionIdsInMessage {
     XCTestExpectation *exp = [self expectationWithDescription:@"testConnectionIdsInMessage"];
     NSString * channelName = @"channelName";
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
         XCTAssertFalse([_realtime2.connection.key isEqualToString:_realtime.connection.key]);
         ARTRealtimeChannel *c1 = [_realtime.channels get:channelName];
-        [c1 publish:nil data:@"message" cb:^(ARTErrorInfo *errorInfo) {
+        [c1 publish:nil data:@"message" callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
             ARTRealtimeChannel *c2 = [_realtime2.channels get:channelName];
-            [c2 publish:nil data:@"message2" cb:^(ARTErrorInfo *errorInfo) {
+            [c2 publish:nil data:@"message2" callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
                 [c1 history:^(ARTPaginatedResult *result, NSError *error) {
                     XCTAssert(!error);
@@ -336,7 +336,7 @@
         }];
         [channel on:^(ARTErrorInfo *errorInfo) {
             if(channel.state == ARTRealtimeChannelAttached) {
-                [channel publish:nil data:@"testString" cb:^(ARTErrorInfo *errorInfo) {
+                [channel publish:nil data:@"testString" callback:^(ARTErrorInfo *errorInfo) {
                     XCTAssertNil(errorInfo);
                 }];
             }
@@ -357,7 +357,7 @@
         NSArray * messages = [@[@"test1", @"test2", @"test3"] artMap:^id(id data) {
             return [[ARTMessage alloc] initWithName:nil data:data];
         }];
-        [channel publish:messages cb:^(ARTErrorInfo *errorInfo) {
+        [channel publish:messages callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
         }];
         __block int messageCount =0;
@@ -383,7 +383,7 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"channel"];
-        [channel publish:@"messageName" data:@"test" cb:^(ARTErrorInfo *errorInfo) {
+        [channel publish:@"messageName" data:@"test" callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
         }];
         [channel subscribe:^(ARTMessage *message) {
@@ -404,16 +404,16 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:channelName];
-        [channel subscribe:messageName cb:^(ARTMessage *message) {
+        [channel subscribe:messageName callback:^(ARTMessage *message) {
             XCTAssertEqualObjects([message data], messageContent);
             [exp fulfill];
         }];
 
-        [channel publish:nil data:@"unnamed_wont_arrive" cb:^(ARTErrorInfo *errorInfo) {
+        [channel publish:nil data:@"unnamed_wont_arrive" callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
-            [channel publish:@"wrongName" data:@"wrong_name_wont_arrive" cb:^(ARTErrorInfo *errorInfo) {
+            [channel publish:@"wrongName" data:@"wrong_name_wont_arrive" callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
-                [channel publish:messageName data:messageContent cb:^(ARTErrorInfo *errorInfo) {
+                [channel publish:messageName data:messageContent callback:^(ARTErrorInfo *errorInfo) {
                     XCTAssertNil(errorInfo);
                 }];
             }];

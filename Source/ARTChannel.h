@@ -25,13 +25,13 @@ ART_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options andLogger:(ARTLog *)logger;
 
 - (void)publish:(art_nullable NSString *)name data:(art_nullable id)data;
-- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;
+- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;
 
 - (void)publish:(art_nullable NSString *)name data:(art_nullable id)data clientId:(NSString *)clientId;
-- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data clientId:(NSString *)clientId cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;
+- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data clientId:(NSString *)clientId callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;
 
 - (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages;
-- (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;
+- (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;
 
 - (void)history:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *__art_nullable result, NSError *__art_nullable error))callback;
 - (BOOL)history:(art_nullable ARTDataQuery *)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *__art_nullable result, NSError *__art_nullable error))callback error:(NSError *__art_nullable *__art_nullable)errorPtr;

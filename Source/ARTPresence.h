@@ -37,7 +37,7 @@ ART_ASSUME_NONNULL_BEGIN
  Get the presence state for one channel
  */
 - (void)get:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *__art_nullable result, NSError *__art_nullable error))callback;
-- (void)get:(ARTPresenceQuery *)query cb:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *__art_nullable result, NSError *__art_nullable error))callback;
+- (void)get:(ARTPresenceQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *__art_nullable result, NSError *__art_nullable error))callback;
 
 /**
  Obtain recent presence history for one channel

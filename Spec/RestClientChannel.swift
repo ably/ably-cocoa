@@ -244,7 +244,7 @@ class RestClientChannel: QuickSpec {
 
                 invalidCases.forEach { caseItem in
                     waitUntil(timeout: testTimeout) { done in
-                        expect { channel.publish(nil, data: caseItem, cb: nil) }.to(raiseException(named: NSInvalidArgumentException))
+                        expect { channel.publish(nil, data: caseItem, callback: nil) }.to(raiseException(named: NSInvalidArgumentException))
                         done()
                     }
                 }
@@ -263,7 +263,7 @@ class RestClientChannel: QuickSpec {
 
                 encodingCases.forEach { caseItem in
                     waitUntil(timeout: testTimeout) { done in
-                        channel.publish(nil, data: caseItem.value, cb: { error in
+                        channel.publish(nil, data: caseItem.value, callback: { error in
                             expect(error).to(beNil())
                             guard let httpBody = mockExecutor.requests.last!.HTTPBody else {
                                 XCTFail("HTTPBody is nil");
@@ -281,7 +281,7 @@ class RestClientChannel: QuickSpec {
                 it("binary payload should be encoded as Base64 and represented as a JSON string") {
                     client.httpExecutor = mockExecutor
                     waitUntil(timeout: testTimeout) { done in
-                        channel.publish(nil, data: binaryData, cb: { error in
+                        channel.publish(nil, data: binaryData, callback: { error in
                             expect(error).to(beNil())
                             guard let httpBody = mockExecutor.requests.last!.HTTPBody else {
                                 XCTFail("HTTPBody is nil");
@@ -300,7 +300,7 @@ class RestClientChannel: QuickSpec {
                 it("string payload should be represented as a JSON string") {
                     client.httpExecutor = mockExecutor
                     waitUntil(timeout: testTimeout) { done in
-                        channel.publish(nil, data: text, cb: { error in
+                        channel.publish(nil, data: text, callback: { error in
                             expect(error).to(beNil())
 
                             if let request = mockExecutor.requests.last, let http = request.HTTPBody {
@@ -324,7 +324,7 @@ class RestClientChannel: QuickSpec {
                         client.httpExecutor = mockExecutor
                         // JSON Array
                         waitUntil(timeout: testTimeout) { done in
-                            channel.publish(nil, data: array, cb: { error in
+                            channel.publish(nil, data: array, callback: { error in
                                 expect(error).to(beNil())
 
                                 if let request = mockExecutor.requests.last, let http = request.HTTPBody {
@@ -345,7 +345,7 @@ class RestClientChannel: QuickSpec {
                         client.httpExecutor = mockExecutor
                         // JSON Object
                         waitUntil(timeout: testTimeout) { done in
-                            channel.publish(nil, data: dictionary, cb: { error in
+                            channel.publish(nil, data: dictionary, callback: { error in
                                 expect(error).to(beNil())
 
                                 if let request = mockExecutor.requests.last, let http = request.HTTPBody {
@@ -370,7 +370,7 @@ class RestClientChannel: QuickSpec {
 
                     cases.forEach { caseTest in
                         waitUntil(timeout: testTimeout) { done in
-                            channel.publish(nil, data: caseTest, cb: { error in
+                            channel.publish(nil, data: caseTest, callback: { error in
                                 expect(error).to(beNil())
                                 done()
                             })

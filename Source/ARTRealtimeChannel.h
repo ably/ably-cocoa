@@ -30,9 +30,9 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)detach:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb;
 
 - (__GENERIC(ARTEventListener, ARTMessage *) *__art_nullable)subscribe:(void (^)(ARTMessage *message))cb;
-- (__GENERIC(ARTEventListener, ARTMessage *) *__art_nullable)subscribeWithAttachCallback:(art_nullable void (^)(ARTErrorInfo *__art_nullable))onAttach cb:(void (^)(ARTMessage *message))cb;
-- (__GENERIC(ARTEventListener, ARTMessage *) *__art_nullable)subscribe:(NSString *)name cb:(void (^)(ARTMessage *message))cb;
-- (__GENERIC(ARTEventListener, ARTMessage *) *__art_nullable)subscribe:(NSString *)name onAttach:(art_nullable void (^)(ARTErrorInfo *__art_nullable))onAttach cb:(void (^)(ARTMessage *message))cb;
+- (__GENERIC(ARTEventListener, ARTMessage *) *__art_nullable)subscribeWithAttachCallback:(art_nullable void (^)(ARTErrorInfo *__art_nullable))onAttach callback:(void (^)(ARTMessage *message))cb;
+- (__GENERIC(ARTEventListener, ARTMessage *) *__art_nullable)subscribe:(NSString *)name callback:(void (^)(ARTMessage *message))cb;
+- (__GENERIC(ARTEventListener, ARTMessage *) *__art_nullable)subscribe:(NSString *)name onAttach:(art_nullable void (^)(ARTErrorInfo *__art_nullable))onAttach callback:(void (^)(ARTMessage *message))cb;
 
 - (void)unsubscribe;
 - (void)unsubscribe:(__GENERIC(ARTEventListener, ARTMessage *) *__art_nullable)listener;
