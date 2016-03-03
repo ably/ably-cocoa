@@ -42,9 +42,9 @@ ART_ASSUME_NONNULL_BEGIN
  - Parameter callback: Completion callback (ARTTokenDetails, NSError).
  */
 - (void)requestToken:(art_nullable ARTTokenParams *)tokenParams withOptions:(art_nullable ARTAuthOptions *)authOptions
-            callback:(ARTTokenCallback)callback;
+            callback:(void (^)(ARTTokenDetails *__art_nullable, NSError *__art_nullable))callback;
 
-- (void)authorise:(art_nullable ARTTokenParams *)tokenParams options:(art_nullable ARTAuthOptions *)authOptions callback:(ARTTokenCallback)callback;
+- (void)authorise:(art_nullable ARTTokenParams *)tokenParams options:(art_nullable ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *__art_nullable, NSError *__art_nullable))callback;
 
 - (void)createTokenRequest:(art_nullable ARTTokenParams *)tokenParams options:(art_nullable ARTAuthOptions *)options
                   callback:(void (^)(ARTTokenRequest *__art_nullable tokenRequest, NSError *__art_nullable error))callback;

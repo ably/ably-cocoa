@@ -84,10 +84,6 @@ uint64_t timeIntervalToMiliseconds(NSTimeInterval seconds);
 
 NSString *generateNonce();
 
-// MARK: Callbacks definitions
-
-typedef void (^ARTTokenCallback)(ARTTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error);
-
 // FIXME: review
 @protocol ARTCancellable
 - (void)cancel;
