@@ -194,7 +194,7 @@
     return nil;
 }
 
-- (BOOL)stats:(ARTStatsCallback)callback {
+- (BOOL)stats:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *__art_nullable, NSError *__art_nullable))callback {
     return [self stats:[[ARTStatsQuery alloc] init] callback:callback error:nil];
 }
 

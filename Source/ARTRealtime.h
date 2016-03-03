@@ -60,8 +60,8 @@ Instance the Ably library with the given options.
 
 - (void)time:(ARTTimeCallback)cb;
 
-- (BOOL)stats:(ARTStatsCallback)callback;
-- (BOOL)stats:(art_nullable ARTStatsQuery *)query callback:(ARTStatsCallback)callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
+- (BOOL)stats:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *__art_nullable, NSError *__art_nullable))callback;
+- (BOOL)stats:(art_nullable ARTStatsQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *__art_nullable, NSError *__art_nullable))callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
 
 - (void)connect;
 - (void)close;
