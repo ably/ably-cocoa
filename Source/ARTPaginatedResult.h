@@ -14,17 +14,14 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface __GENERIC(ARTPaginatedResult, ItemType) : NSObject
 
-// FIXME: review with Stats callback
-typedef void(^ARTPaginatedResultCallback)(__GENERIC(ARTPaginatedResult, ItemType) *__art_nullable result, NSError *__art_nullable error);
-
 @property (nonatomic, strong, readonly) __GENERIC(NSArray, ItemType) *items;
 @property (nonatomic, readonly) BOOL hasNext;
 @property (nonatomic, readonly) BOOL isLast;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
-- (void)first:(ARTPaginatedResultCallback)callback;
-- (void)next:(ARTPaginatedResultCallback)callback;
+- (void)first:(void (^)(__GENERIC(ARTPaginatedResult, ItemType) *__art_nullable result, NSError *__art_nullable error))callback;
+- (void)next:(void (^)(__GENERIC(ARTPaginatedResult, ItemType) *__art_nullable result, NSError *__art_nullable error))callback;
 
 @end
 
