@@ -164,7 +164,7 @@
     [self.rest time:cb];
 }
 
-- (void)ping:(ARTRealtimePingCb) cb {
+- (void)ping:(void (^)(ARTErrorInfo *)) cb {
     if(self.connection.state == ARTRealtimeClosed || self.connection.state == ARTRealtimeFailed) {
         [NSException raise:@"Can't ping a closed or failed connection" format:@"%@:", [ARTRealtime ARTRealtimeStateToStr:self.connection.state]];
     }
