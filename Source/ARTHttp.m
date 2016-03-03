@@ -194,7 +194,7 @@
     }];
 }
 
-- (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method url:(NSURL *)url headers:(NSDictionary *)headers body:(NSData *)body callback:(ARTHttpCb)cb {
+- (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method url:(NSURL *)url headers:(NSDictionary *)headers body:(NSData *)body callback:(void (^)(ARTHttpResponse *))cb {
     return [self makeRequest:[[ARTHttpRequest alloc] initWithMethod:method url:url headers:headers body:body] callback:cb];
 }
 
