@@ -86,11 +86,7 @@ NSString *generateNonce();
 
 // MARK: Callbacks definitions
 
-typedef void (^ARTRealtimeChannelStateCb)(ARTRealtimeChannelState, ARTStatus *);
-
-typedef void (^ARTRealtimeChannelPresenceCb)(ARTPresenceMessage *);
-
-typedef void (^ARTRealtimePingCb)(ARTStatus *);
+typedef void (^ARTRealtimePingCb)(ARTErrorInfo *__art_nullable);
 
 typedef void (^ARTStatusCallback)(ARTStatus *status);
 
