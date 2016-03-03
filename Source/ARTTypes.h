@@ -86,8 +86,6 @@ NSString *generateNonce();
 
 // MARK: Callbacks definitions
 
-typedef void (^ARTAuthCallback)(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error));
-
 typedef void (^ARTTokenCallback)(ARTTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error);
 
 // FIXME: review
