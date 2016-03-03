@@ -16,6 +16,12 @@ install:
   # Install CocoaPods
   - gem install cocoapods -v '0.39.0' --no-rdoc --no-ri --no-document --quiet
   - pod install
+before_script:
+  # List of schemes
+  - xcodebuild -workspace ./Ably.xcworkspace -list
 script:
   # Run tests
-  - xcodebuild -workspace './Ably.xcworkspace' -scheme 'Ably' -destination 'platform=iOS Simulator,OS=9.2,name=iPhone 4s' clean test
+  # Use `travis_wait` when a long running command or compile step regularly takes longer than 10 minutes without producing any output.
+  # It writes a short line to the build log every minute for 20 minutes, extending the amount of time your command has to finish.
+  # Prefix `travis_wait` with a greater number. To extend the wait time to 30 minutes:
+  - travis_wait 30 scan
