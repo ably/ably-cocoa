@@ -10,8 +10,6 @@ import Nimble
 import Quick
 import SwiftyJSON
 
-import Ably.Private
-
 class Crypto : QuickSpec {
     override func spec() {
         describe("Crypto") {
