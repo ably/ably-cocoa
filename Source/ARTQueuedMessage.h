@@ -16,9 +16,9 @@
 @property (readonly, strong, nonatomic) ARTProtocolMessage *msg;
 @property (readonly, strong, nonatomic) NSMutableArray *cbs;
 
-- (instancetype)initWithProtocolMessage:(ARTProtocolMessage *)msg callback:(ARTStatusCallback)cb;
-- (BOOL)mergeFrom:(ARTProtocolMessage *)msg callback:(ARTStatusCallback)cb;
+- (instancetype)initWithProtocolMessage:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb;
+- (BOOL)mergeFrom:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb;
 
-- (ARTStatusCallback)cb;
+- (void (^)(ARTStatus *))cb;
 
 @end

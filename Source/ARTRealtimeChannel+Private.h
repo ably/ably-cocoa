@@ -39,7 +39,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (void)onChannelMessage:(ARTProtocolMessage *)message;
 - (void)publishPresence:(ARTPresenceMessage *)pm callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb;
-- (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(ARTStatusCallback)cb;
+- (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb;
 
 - (void)setAttached:(ARTProtocolMessage *)message;
 - (void)setDetached:(ARTProtocolMessage *)message;

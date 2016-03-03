@@ -86,8 +86,6 @@ NSString *generateNonce();
 
 // MARK: Callbacks definitions
 
-typedef void (^ARTStatusCallback)(ARTStatus *status);
-
 typedef void (^ARTHttpCb)(ARTHttpResponse *response);
 
 typedef void (^ARTHttpRequestCallback)(NSHTTPURLResponse *__art_nullable response, NSData *__art_nullable data, NSError *__art_nullable error);

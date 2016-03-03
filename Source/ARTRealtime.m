@@ -560,8 +560,7 @@
     return [self shouldQueueEvents] || [self shouldSendEvents];
 }
 
-- (void)sendImpl:(ARTProtocolMessage *)msg callback:(ARTStatusCallback)cb {
-
+- (void)sendImpl:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb {
     if (msg.ackRequired) {
         msg.msgSerial = self.msgSerial++;
         ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg callback:cb];
@@ -572,7 +571,7 @@
     [self.transport send:msg];
 }
 
-- (void)send:(ARTProtocolMessage *)msg callback:(ARTStatusCallback)cb {
+- (void)send:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb {
     if ([self shouldSendEvents]) {
         [self sendImpl:msg callback:cb];
     } else if ([self shouldQueueEvents]) {

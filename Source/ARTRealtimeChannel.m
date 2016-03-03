@@ -126,7 +126,7 @@
     }];
 }
 
-- (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(ARTStatusCallback)cb {
+- (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb {
     switch (self.state) {
         case ARTRealtimeChannelInitialised:
             [self attach];
@@ -157,8 +157,7 @@
     }
 }
 
-
-- (void)sendMessage:(ARTProtocolMessage *)pm callback:(ARTStatusCallback)cb {
+- (void)sendMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb {
     __block BOOL gotFailure = false;
     NSString *oldConnectionId = self.realtime.connection.id;
     __block ARTEventListener *listener = [self.realtime.connection on:^(ARTConnectionStateChange *stateChange) {
