@@ -1261,9 +1261,10 @@ class RealtimeClientChannel: QuickSpec {
                 context("message cannot be decoded or decrypted") {
 
                     // RTL7e
-                    pending("should deliver with encoding attribute set indicating the residual encoding and error should be emitted") {
+                    it("should deliver with encoding attribute set indicating the residual encoding and error should be emitted") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
+                        options.logHandler = ARTLog(capturingOutput: true)
                         let client = ARTRealtime(options: options)
                         client.setTransportClass(TestProxyTransport.self)
                         client.connect()
@@ -1280,8 +1281,8 @@ class RealtimeClientChannel: QuickSpec {
                         transport.beforeProcessingReceivedMessage = { protocolMessage in
                             if protocolMessage.action == .Message {
                                 let messageReceived = protocolMessage.messages![0]
-                                // Replacement: `json/cipher+aes-128-cbc/base64` to `invalid/cipher+aes-128-cbc/base64`
-                                let newEncoding = "invalid" + messageReceived.encoding!.substringFromIndex("json".endIndex)
+                                // Replacement: `json/utf-8/cipher+aes-256-cbc/base64` to `invalid/cipher+aes-256-cbc/base64`
+                                let newEncoding = "invalid" + messageReceived.encoding!.substringFromIndex("json/utf-8".endIndex)
                                 messageReceived.encoding = newEncoding
                             }
                         }
