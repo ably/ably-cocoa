@@ -24,5 +24,4 @@ script:
   # Use `travis_wait` when a long running command or compile step regularly takes longer than 10 minutes without producing any output.
   # It writes a short line to the build log every minute for 20 minutes, extending the amount of time your command has to finish.
   # Prefix `travis_wait` with a greater number to extend the wait time.
-  - travis_wait 15 scan --scheme "AblySpec" --open_report false && travis_wait 15 scan --scheme "AblyTests" --open_report false
-  # Fails immediately when one of the scan commands returns a non-zero exit code.
+  - travis_wait 30 scan --scheme "Ably" --open_report false
