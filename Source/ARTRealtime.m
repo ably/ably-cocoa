@@ -164,7 +164,7 @@
     [self.rest time:cb];
 }
 
-- (void)ping:(ARTRealtimePingCb) cb {
+- (void)ping:(void (^)(ARTErrorInfo *)) cb {
     if(self.connection.state == ARTRealtimeClosed || self.connection.state == ARTRealtimeFailed) {
         [NSException raise:@"Can't ping a closed or failed connection" format:@"%@:", [ARTRealtime ARTRealtimeStateToStr:self.connection.state]];
     }
@@ -173,7 +173,7 @@
     [self.transport sendPing];
 }
 
-- (BOOL)stats:(ARTStatsCallback)callback {
+- (BOOL)stats:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *__art_nullable, NSError *__art_nullable))callback {
     return [self stats:[[ARTStatsQuery alloc] init] callback:callback error:nil];
 }
 
@@ -560,8 +560,7 @@
     return [self shouldQueueEvents] || [self shouldSendEvents];
 }
 
-- (void)sendImpl:(ARTProtocolMessage *)msg callback:(ARTStatusCallback)cb {
-
+- (void)sendImpl:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb {
     if (msg.ackRequired) {
         msg.msgSerial = self.msgSerial++;
         ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg callback:cb];
@@ -572,7 +571,7 @@
     [self.transport send:msg];
 }
 
-- (void)send:(ARTProtocolMessage *)msg callback:(ARTStatusCallback)cb {
+- (void)send:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb {
     if ([self shouldSendEvents]) {
         [self sendImpl:msg callback:cb];
     } else if ([self shouldQueueEvents]) {

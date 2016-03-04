@@ -54,14 +54,14 @@ ART_ASSUME_NONNULL_BEGIN
 /// Client is trying to resume the last connection
 @property (readwrite, assign, nonatomic) BOOL resuming;
 
-@property (nonatomic, copy, art_nullable) ARTRealtimePingCb pingCb;
+@property (nonatomic, copy, art_nullable) void (^pingCb)(ARTErrorInfo *__art_nullable);
 @property (readonly, getter=getClientOptions) ARTClientOptions *options;
 
 @end
 
 @interface ARTRealtime (Private)
 
-- (void)ping:(ARTRealtimePingCb)cb;
+- (void)ping:(void (^)(ARTErrorInfo *))cb;
 - (BOOL)isActive;
 
 // Transport Events
@@ -81,7 +81,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)resetEventEmitter;
 
 // Message sending
-- (void)send:(ARTProtocolMessage *)msg callback:(art_nullable ARTStatusCallback)cb;
+- (void)send:(ARTProtocolMessage *)msg callback:(art_nullable void (^)(ARTStatus *))cb;
 
 - (CFRunLoopTimerRef)startTimer:(void(^)())onTimeout interval:(NSTimeInterval)interval;
 - (void)cancelTimer:(CFRunLoopTimerRef)timer;

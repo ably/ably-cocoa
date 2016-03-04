@@ -168,7 +168,7 @@
     return self;
 }
 
-- (void)executeRequest:(NSMutableURLRequest *)request completion:(ARTHttpRequestCallback)callback {
+- (void)executeRequest:(NSMutableURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
     [self.logger debug:@"%@ %@", request.HTTPMethod, request.URL.absoluteString];
     [self.logger verbose:@"Headers %@", request.allHTTPHeaderFields];
 
@@ -194,7 +194,7 @@
     }];
 }
 
-- (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method url:(NSURL *)url headers:(NSDictionary *)headers body:(NSData *)body callback:(ARTHttpCb)cb {
+- (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method url:(NSURL *)url headers:(NSDictionary *)headers body:(NSData *)body callback:(void (^)(ARTHttpResponse *))cb {
     return [self makeRequest:[[ARTHttpRequest alloc] initWithMethod:method url:url headers:headers body:body] callback:cb];
 }
 

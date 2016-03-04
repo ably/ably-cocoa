@@ -168,7 +168,7 @@
             }
         }];
     } else {
-        ARTAuthCallback tokenRequestFactory = mergedOptions.authCallback? : ^(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *tokenDetails, NSError *error)) {
+        void (^tokenRequestFactory)(ARTTokenParams *, void(^)(ARTTokenDetails *__art_nullable, NSError *__art_nullable)) = mergedOptions.authCallback? : ^(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *tokenDetails, NSError *error)) {
             // Create a TokenRequest and execute it
             [self createTokenRequest:currentTokenParams options:mergedOptions callback:^(ARTTokenRequest *tokenRequest, NSError *error) {
                 if (error) {

@@ -98,7 +98,7 @@
     return @"persisted:runTestChannelName";
 }
 
--(void) runTestLimit:(int)limit forwards:(bool)forwards callback:(ARTPaginatedResultCallback)cb {
+-(void) runTestLimit:(int)limit forwards:(bool)forwards callback:(void (^)(ARTPaginatedResult *__art_nullable result, NSError *__art_nullable error))cb {
     XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime.channels get:[self channelName]];
@@ -402,7 +402,7 @@
 
 
 // TODO: consider using a pattern similar to ARTTestUtil testPublish.
--(void) runTestTimeForwards:(bool) forwards limit:(int) limit callback:(ARTPaginatedResultCallback) cb {
+-(void) runTestTimeForwards:(bool) forwards limit:(int) limit callback:(void (^)(ARTPaginatedResult *__art_nullable result, NSError *__art_nullable error)) cb {
     __block long long timeOffset= 0;
     
     XCTestExpectation *e = [self expectationWithDescription:@"getTime"];

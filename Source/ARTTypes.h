@@ -84,24 +84,6 @@ uint64_t timeIntervalToMiliseconds(NSTimeInterval seconds);
 
 NSString *generateNonce();
 
-// MARK: Callbacks definitions
-
-typedef void (^ARTRealtimePingCb)(ARTErrorInfo *__art_nullable);
-
-typedef void (^ARTStatusCallback)(ARTStatus *status);
-
-typedef void (^ARTHttpCb)(ARTHttpResponse *response);
-
-typedef void (^ARTHttpRequestCallback)(NSHTTPURLResponse *__art_nullable response, NSData *__art_nullable data, NSError *__art_nullable error);
-
-typedef void (^ARTStatsCallback)(__GENERIC(ARTPaginatedResult, ARTStats *) *__art_nullable result, NSError *__art_nullable error);
-
-typedef void (^ARTTimeCallback)(NSDate *__art_nullable time, NSError *__art_nullable error);
-
-typedef void (^ARTAuthCallback)(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error));
-
-typedef void (^ARTTokenCallback)(ARTTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error);
-
 // FIXME: review
 @protocol ARTCancellable
 - (void)cancel;

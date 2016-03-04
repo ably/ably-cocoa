@@ -422,7 +422,7 @@ class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
     var requests: [NSMutableURLRequest] = []
     var responses: [NSHTTPURLResponse] = []
 
-    func executeRequest(request: NSMutableURLRequest, completion callback: ARTHttpRequestCallback?) {
+    func executeRequest(request: NSMutableURLRequest, completion callback: ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?) {
         self.requests.append(request)
         self.executor.executeRequest(request, completion: { response, data, error in
             if let httpResponse = response {

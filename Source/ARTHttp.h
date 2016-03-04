@@ -18,7 +18,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, weak) ARTLog *logger;
 
-- (void)executeRequest:(NSMutableURLRequest *)request completion:(art_nullable ARTHttpRequestCallback)callback;
+- (void)executeRequest:(NSMutableURLRequest *)request completion:(art_nullable void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback;
 
 @end
 
@@ -62,7 +62,8 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init;
 
-- (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method url:(NSURL *)url headers:(art_nullable NSDictionary *)headers body:(art_nullable NSData *)body callback:(ARTHttpCb)cb;
+- (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method url:(NSURL *)url headers:(art_nullable NSDictionary *)headers body:(art_nullable NSData *)body callback:(void (^)(ARTHttpResponse *))cb;
+
 
 @end
 

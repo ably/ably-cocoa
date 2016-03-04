@@ -57,7 +57,7 @@ private func queryStats(client: ARTRest, _ query: ARTStatsQuery) -> ARTPaginated
     return stats!
 }
 
-private func getPage(paginator: (ARTPaginatedResultCallback) -> Void) -> ARTPaginatedResult {
+private func getPage(paginator: ((ARTPaginatedResult?, NSError?) -> Void) -> Void) -> ARTPaginatedResult {
     var newResult: ARTPaginatedResult?
     let dummyError = NSError(domain: "", code: -1, userInfo: nil);
     var error: NSError? = dummyError

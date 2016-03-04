@@ -39,7 +39,7 @@
     [_realtime close];
 }
 
-- (void)ping:(ARTRealtimePingCb)cb {
+- (void)ping:(void (^)(ARTErrorInfo *))cb {
     [_realtime ping:cb];
 }
 

@@ -35,7 +35,7 @@ ART_ASSUME_NONNULL_BEGIN
  
  This enables a client to obtain token requests from another entity, so tokens can be renewed without the client requiring access to keys.
  */
-@property (nonatomic, copy, art_nullable) ARTAuthCallback authCallback;
+@property (nonatomic, copy, art_nullable) void (^authCallback)(ARTTokenParams *, void(^)(ARTTokenDetails *__art_nullable, NSError *__art_nullable));
 
 /**
  A URL to queryto obtain a signed token request.
