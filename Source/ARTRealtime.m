@@ -357,11 +357,12 @@
     if(self.pingCb) {
         [self cancelPingTimer];
         if(self.connection.state != ARTRealtimeConnected) {
-            [self.logger warn:@"ARTRealtime received a ping when in state %@", [ARTRealtime ARTRealtimeStateToStr:self.connection.state]];
-            self.pingCb([ARTStatus state:ARTStateError]);
+            NSString *msg = [NSString stringWithFormat:@"ARTRealtime received a ping when in state %@", [ARTRealtime ARTRealtimeStateToStr:self.connection.state]];
+            [self.logger warn:@"%@", msg];
+            self.pingCb([ARTErrorInfo createWithCode:0 message:msg]);
         }
         else {
-            self.pingCb([ARTStatus state:ARTStateOk]);
+            self.pingCb(nil);
         }
         self.pingCb = nil;
     }
@@ -493,7 +494,7 @@
 
 - (void)onPingTimerFired {
     if(self.pingCb) {
-        self.pingCb([ARTStatus state:ARTStateConnectionFailed]);
+        self.pingCb([ARTErrorInfo createWithCode:0 status:ARTStateConnectionFailed message:@"connection failed"]);
         self.pingCb = nil;
     }
 }

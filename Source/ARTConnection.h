@@ -29,7 +29,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (void)connect;
 - (void)close;
-- (void)ping:(void (^)(ARTStatus *))cb;
+- (void)ping:(void (^)(ARTErrorInfo *__art_nullable))cb;
 
 ART_EMBED_INTERFACE_EVENT_EMITTER(ARTRealtimeConnectionState, ARTConnectionStateChange *)
 

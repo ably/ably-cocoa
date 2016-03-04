@@ -59,8 +59,8 @@
         [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
             if (state == ARTRealtimeConnected) {
-                [realtime.connection ping:^(ARTStatus *status) {
-                    XCTAssertEqual(ARTStateOk, status.state);
+                [realtime.connection ping:^(ARTErrorInfo *error) {
+                    XCTAssertNil(error);
                     [expectation fulfill];
                 }];
             }
@@ -289,12 +289,12 @@
             }
             if(state == ARTRealtimeClosed) {
                 hasClosed = true;
-                XCTAssertThrows([realtime.connection ping:^(ARTStatus *s) {}]);
+                XCTAssertThrows([realtime.connection ping:^(ARTErrorInfo *e) {}]);
                 [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
             }
             if(state == ARTRealtimeFailed) {
                 XCTAssertTrue(hasClosed);
-                XCTAssertThrows([realtime.connection ping:^(ARTStatus *s) {}]);
+                XCTAssertThrows([realtime.connection ping:^(ARTErrorInfo *e) {}]);
                 [exp fulfill];
                 [realtime.connection off:listener];
             }
