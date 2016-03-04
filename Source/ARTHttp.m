@@ -198,7 +198,7 @@
     return [self makeRequest:[[ARTHttpRequest alloc] initWithMethod:method url:url headers:headers body:body] callback:cb];
 }
 
-- (id<ARTCancellable>)makeRequest:(ARTHttpRequest *)artRequest callback:(void (^)(ARTHttpResponse *))cb __deprecated {
+- (id<ARTCancellable>)makeRequest:(ARTHttpRequest *)artRequest callback:(void (^)(ARTHttpResponse *))cb {
 
     if(![artRequest.method isEqualToString:@"GET"] && ![artRequest.method isEqualToString:@"POST"]){
         [NSException raise:@"Http method must be GET or POST" format:@""];
