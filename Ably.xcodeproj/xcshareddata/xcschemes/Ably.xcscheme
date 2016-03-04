@@ -43,7 +43,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "856AAC891B6E304B00B07119"
-               BuildableName = "AblyTests.xctest"
+               BuildableName = "AblySpec.xctest"
                BlueprintName = "AblySpec"
                ReferencedContainer = "container:Ably.xcodeproj">
             </BuildableReference>
