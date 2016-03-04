@@ -252,7 +252,7 @@
 		850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPaginatedResult.m; sourceTree = "<group>"; };
 		851674EE1B7BA5CD00D35169 /* Stats.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stats.swift; sourceTree = "<group>"; };
 		853ED7C31B7A1A3C006F1C6F /* RestClientStats.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClientStats.swift; sourceTree = "<group>"; };
-		856AAC8A1B6E304B00B07119 /* AblyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AblyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		856AAC8A1B6E304B00B07119 /* AblySpec.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AblySpec.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		856AAC8E1B6E304B00B07119 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		856AAC951B6E30C800B07119 /* AblySpec-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AblySpec-Bridging-Header.h"; sourceTree = "<group>"; };
 		856AAC961B6E30C800B07119 /* TestUtilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestUtilities.swift; sourceTree = "<group>"; };
@@ -492,7 +492,7 @@
 			children = (
 				96BF61311A35B2AB004CF2B3 /* Ably.framework */,
 				96BF613C1A35B2AB004CF2B3 /* AblyTests.xctest */,
-				856AAC8A1B6E304B00B07119 /* AblyTests.xctest */,
+				856AAC8A1B6E304B00B07119 /* AblySpec.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -820,7 +820,7 @@
 			);
 			name = AblySpec;
 			productName = AblySpec;
-			productReference = 856AAC8A1B6E304B00B07119 /* AblyTests.xctest */;
+			productReference = 856AAC8A1B6E304B00B07119 /* AblySpec.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		96BF61301A35B2AB004CF2B3 /* Ably */ = {
@@ -1189,7 +1189,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
-				PRODUCT_NAME = AblyTests;
+				PRODUCT_NAME = AblySpec;
 				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -1207,7 +1207,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
-				PRODUCT_NAME = AblyTests;
+				PRODUCT_NAME = AblySpec;
 				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
 			};
 			name = Release;
