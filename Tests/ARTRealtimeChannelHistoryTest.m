@@ -50,9 +50,9 @@
 
         if (state == ARTRealtimeConnected) {
             ARTRealtimeChannel *channel = [realtime.channels get:@"persisted:testHistory"];
-            [channel publish:nil data:@"testString" cb:^(ARTErrorInfo *errorInfo) {
+            [channel publish:nil data:@"testString" callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
-                [channel publish:nil data:@"testString2" cb:^(ARTErrorInfo *errorInfo) {
+                [channel publish:nil data:@"testString2" callback:^(ARTErrorInfo *errorInfo) {
                     XCTAssertNil(errorInfo);
                     [channel history:^(ARTPaginatedResult *result, NSError *error) {
                         XCTAssert(!error);
@@ -74,14 +74,14 @@
 -(void) publishTestStrings:(ARTRealtimeChannel *) channel
                      count:(int) count
                     prefix:(NSString *) prefix
-                        cb:(void (^) (ARTErrorInfo *errorInfo)) cb
+                        callback:(void (^) (ARTErrorInfo *errorInfo)) cb
 {
     {
         __block int numReceived =0;
         __block bool done =false;
         for(int i=0; i < count; i++) {
             NSString * pub = [prefix stringByAppendingString:[NSString stringWithFormat:@"%d", i]];
-            [channel publish:nil data:pub cb:^(ARTErrorInfo *errorInfo) {
+            [channel publish:nil data:pub callback:^(ARTErrorInfo *errorInfo) {
                 if(channel.state != ARTStateOk) {
                     if(!done) {
                         done = true;
@@ -111,9 +111,9 @@
         NSString * both = @"historyBoth";
         ARTRealtimeChannel *channel1 = [realtime.channels get:both];
         ARTRealtimeChannel *channel2 = [realtime.channels get:both];
-        [channel1 publish:nil data:@"testString" cb:^(ARTErrorInfo *errorInfo) {
+        [channel1 publish:nil data:@"testString" callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
-            [channel2 publish:nil data:@"testString2" cb:^(ARTErrorInfo *errorInfo) {
+            [channel2 publish:nil data:@"testString2" callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
                 [channel1 history:^(ARTPaginatedResult *result, NSError *error) {
                     XCTAssert(!error);
@@ -148,9 +148,9 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"persisted:testHistory"];
-        [channel publish:nil data:@"testString" cb:^(ARTErrorInfo *errorInfo) {
+        [channel publish:nil data:@"testString" callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
-            [channel publish:nil data:@"testString2" cb:^(ARTErrorInfo *errorInfo) {
+            [channel publish:nil data:@"testString2" callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
                 ARTRealtimeHistoryQuery* query = [[ARTRealtimeHistoryQuery alloc] init];
                 query.direction = ARTQueryDirectionForwards;
@@ -177,7 +177,7 @@
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"realHistChan"];
         
-        [self publishTestStrings:channel count:5 prefix:@"testString" cb:^(ARTErrorInfo *errorInfo){
+        [self publishTestStrings:channel count:5 prefix:@"testString" callback:^(ARTErrorInfo *errorInfo){
             XCTAssertNil(errorInfo);
 
             ARTRealtimeHistoryQuery *query = [[ARTRealtimeHistoryQuery alloc] init];
@@ -234,7 +234,7 @@
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"histRealBackChan"];
-        [self publishTestStrings:channel count:5 prefix:@"testString" cb:^(ARTErrorInfo *errorInfo){
+        [self publishTestStrings:channel count:5 prefix:@"testString" callback:^(ARTErrorInfo *errorInfo){
             XCTAssertNil(errorInfo);
 
             ARTRealtimeHistoryQuery *query = [[ARTRealtimeHistoryQuery alloc] init];
@@ -452,7 +452,7 @@
 
     NSString *channelName = @"test_history_time_forwards";
     XCTestExpectation *expecation = [self expectationWithDescription:@"send_first_batch"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         ARTRealtime * realtime =[[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;
 
@@ -465,7 +465,7 @@
         for(int i=0; i < firstBatchTotal; i++) {
             NSString *pub = [NSString stringWithFormat:@"test%d", i];
             sleep([ARTTestUtil smallSleep]);
-            [channel publish:nil data:pub cb:^(ARTErrorInfo *errorInfo) {
+            [channel publish:nil data:pub callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
                 ++numReceived;
                 if (numReceived == firstBatchTotal) {

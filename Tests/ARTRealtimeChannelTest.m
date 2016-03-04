@@ -151,7 +151,7 @@
         ARTEventListener __block *subscription = [channel subscribe:^(ARTMessage *message) {
             if([[message data] isEqualToString:@"testString"]) {
                 [channel unsubscribe:subscription];
-                [channel publish:nil data:lostMessage cb:^(ARTErrorInfo *errorInfo) {
+                [channel publish:nil data:lostMessage callback:^(ARTErrorInfo *errorInfo) {
                     XCTAssertNil(errorInfo);
                 }];
             }
@@ -160,7 +160,7 @@
             }
         }];
 
-        [channel publish:nil data:@"testString" cb:^(ARTErrorInfo *errorInfo) {
+        [channel publish:nil data:@"testString" callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
             NSString * finalMessage = @"final";
             [channel subscribe:^(ARTMessage * message) {
@@ -168,7 +168,7 @@
                     [expectation fulfill];
                 }
             }];
-            [channel publish:nil data:finalMessage cb:^(ARTErrorInfo *errorInfo) {
+            [channel publish:nil data:finalMessage callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
             }];
         }];
@@ -190,7 +190,7 @@
             }
             else if(channel.state == ARTRealtimeChannelDetached) {
                 if(!gotCb) {
-                    [channel publish:nil data:@"will_fail" cb:^(ARTErrorInfo *errorInfo) {
+                    [channel publish:nil data:@"will_fail" callback:^(ARTErrorInfo *errorInfo) {
                         XCTAssertNotNil(errorInfo);
                         XCTAssertEqual(90001, errorInfo.code);
                         gotCb = true;
@@ -215,7 +215,7 @@
                 [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
             }
             else if(channel.state == ARTRealtimeChannelFailed) {
-                [channel publish:nil data:@"will_fail" cb:^(ARTErrorInfo *errorInfo) {
+                [channel publish:nil data:@"will_fail" callback:^(ARTErrorInfo *errorInfo) {
                     XCTAssertNotNil(errorInfo);
                     [expectation fulfill];
                 }];
@@ -243,7 +243,7 @@
             XCTAssertEqualObjects([d valueForKey:@"channel2"], c2);
             XCTAssertEqualObjects([d valueForKey:@"channel3"], c3);
         }
-        [realtime.channels release:c3.name cb:^(ARTErrorInfo *errorInfo) {
+        [realtime.channels release:c3.name callback:^(ARTErrorInfo *errorInfo) {
             NSMutableDictionary * d = [[NSMutableDictionary alloc] init];
             for (ARTRealtimeChannel *channel in realtime.channels) {
                 [d setValue:channel forKey:channel.name];
@@ -271,9 +271,9 @@
         NSData * keySpec = [[NSData alloc] initWithBase64EncodedString:@"WUP6u0K7MXI5Zeo0VppPwg==" options:0];
         ARTCipherParams * params =[[ARTCipherParams alloc] initWithAlgorithm:@"aes" key:keySpec iv:ivSpec];
         ARTRealtimeChannel *c2 = [realtime.channels get:channelName options:[[ARTChannelOptions alloc] initWithCipher:params]];
-        [c1 publish:nil data:firstMessage cb:^(ARTErrorInfo *errorInfo) {
+        [c1 publish:nil data:firstMessage callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
-            [c2 publish:nil data:secondMessage cb:^(ARTErrorInfo *errorInfo) {
+            [c2 publish:nil data:secondMessage callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
             }];
         }];
@@ -353,7 +353,7 @@
 
     XCTestExpectation *exp1 = [self expectationWithDescription:@"testClientIdPreserved1"];
     XCTestExpectation *exp2 = [self expectationWithDescription:@"testClientIdPreserved2"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withDebug:NO cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withDebug:NO callback:^(ARTClientOptions *options) {
         // First instance
         options.clientId = firstClientId;
         ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
@@ -390,7 +390,7 @@
         waitForWithTimeout(&attached, @[channel, channel2], 20.0);
 
         // Enters "firstClientId"
-        [channel.presence enter:@"First Client" cb:^(ARTErrorInfo *errorInfo) {
+        [channel.presence enter:@"First Client" callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
             [exp2 fulfill];
         }];

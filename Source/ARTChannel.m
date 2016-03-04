@@ -41,28 +41,28 @@
 }
 
 - (void)publish:(NSString *)name data:(id)data {
-    [self publish:name data:data cb:nil];
+    [self publish:name data:data callback:nil];
 }
 
-- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
+- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
     [self internalPostMessages:[self encodeMessageIfNeeded:[[ARTMessage alloc] initWithName:name data:data]]
                       callback:callback];
 }
 
 - (void)publish:(NSString *)name data:(id)data clientId:(NSString *)clientId {
-    [self publish:name data:data clientId:clientId cb:nil];
+    [self publish:name data:data clientId:clientId callback:nil];
 }
 
-- (void)publish:(NSString *)name data:(id)data clientId:(NSString *)clientId cb:(void (^)(ARTErrorInfo * _Nullable))callback {
+- (void)publish:(NSString *)name data:(id)data clientId:(NSString *)clientId callback:(void (^)(ARTErrorInfo * _Nullable))callback {
     [self internalPostMessages:[self encodeMessageIfNeeded:[[ARTMessage alloc] initWithName:name data:data clientId:clientId]]
                       callback:callback];
 }
 
 - (void)publish:(NSArray<ARTMessage *> *)messages {
-    [self publish:messages cb:nil];
+    [self publish:messages callback:nil];
 }
 
-- (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
+- (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
     [self internalPostMessages:[messages artMap:^id(ARTMessage *message) {
         return [self encodeMessageIfNeeded:message];
     }] callback:callback];

@@ -186,7 +186,7 @@ channel.subscribe("myEvent") { message in
 **Objective-C**
 
 ```objective-c
-[channel subscribe:@"myEvent" cb:^(ARTMessage *message) {
+[channel subscribe:@"myEvent" callback:^(ARTMessage *message) {
     NSLog(@"%@", message.name);
     NSLog(@"%@", message.data);
 }];
@@ -256,7 +256,7 @@ channel.presence.enter("john.doe") { errorInfo in
 **Objective-C**
 
 ```objective-c
-[channel.presence enter:@"john.doe" cb:^(ARTErrorInfo *errorInfo) {
+[channel.presence enter:@"john.doe" callback:^(ARTErrorInfo *errorInfo) {
     [channel.presence get:^(ARTPaginatedResult<ARTPresenceMessage *> *result, NSError *error) {
         // members is the array of members present
     }];

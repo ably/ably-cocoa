@@ -923,7 +923,7 @@ class RealtimeClientChannel: QuickSpec {
                             result = message.data as? String
                         }
 
-                        channel.publish("event", data: expectedResult, cb: nil)
+                        channel.publish("event", data: expectedResult, callback: nil)
 
                         expect(result).toEventually(equal(expectedResult), timeout: testTimeout)
                     }

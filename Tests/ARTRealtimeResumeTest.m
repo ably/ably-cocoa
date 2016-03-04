@@ -55,7 +55,7 @@
     NSString * message2 = @"message2";
     NSString * message3 = @"message3";
     NSString * message4 = @"message4";
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
         
@@ -69,8 +69,8 @@
         [channel2 on:^(ARTErrorInfo *errorInfo) {
             //both channels are attached. lets get to work.
             if(channel2.state == ARTRealtimeChannelAttached) {
-                [channel2 publish:nil data:message1 cb:^(ARTErrorInfo *errorInfo) {
-                    [channel2 publish:nil data:message2 cb:^(ARTErrorInfo *errorInfo) {
+                [channel2 publish:nil data:message1 callback:^(ARTErrorInfo *errorInfo) {
+                    [channel2 publish:nil data:message2 callback:^(ARTErrorInfo *errorInfo) {
                         XCTAssertNil(errorInfo);
                     }];
                 }];
@@ -81,8 +81,8 @@
             if([msg isEqualToString:message2]) {
                 //disconnect connection1
                 [_realtime onError:[ARTTestUtil newErrorProtocolMessage]];
-                [channel2 publish:nil data:message3 cb:^(ARTErrorInfo *errorInfo) {
-                    [channel2 publish:nil data:message4 cb:^(ARTErrorInfo *errorInfo) {
+                [channel2 publish:nil data:message3 callback:^(ARTErrorInfo *errorInfo) {
+                    [channel2 publish:nil data:message4 callback:^(ARTErrorInfo *errorInfo) {
                         [_realtime connect];
                     }];
                 }];

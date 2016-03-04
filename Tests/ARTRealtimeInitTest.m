@@ -41,7 +41,7 @@
 }
 
 -(void) getBaseOptions:(void (^)(ARTClientOptions * options)) cb {
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withDebug:NO cb:cb];
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withDebug:NO callback:cb];
 }
 
 
@@ -128,7 +128,7 @@
 
 -(void) testInitAutoConnectFalse {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testInitAutoConnectDefault"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.autoConnect = false;
         ARTRealtime * realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;

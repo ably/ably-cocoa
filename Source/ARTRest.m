@@ -187,7 +187,7 @@
 }
 
 - (id<ARTCancellable>)internetIsUp:(void (^)(bool isUp)) cb {
-    [self.http makeRequestWithMethod:@"GET" url:[NSURL URLWithString:@"http://internet-up.ably-realtime.com/is-the-internet-up.txt"] headers:nil body:nil cb:^(ARTHttpResponse *response) {
+    [self.http makeRequestWithMethod:@"GET" url:[NSURL URLWithString:@"http://internet-up.ably-realtime.com/is-the-internet-up.txt"] headers:nil body:nil callback:^(ARTHttpResponse *response) {
         NSString * str = [[NSString alloc] initWithData:response.body encoding:NSUTF8StringEncoding];
         cb(response.status == 200 && [str isEqualToString:@"yes\n"]);
     }];

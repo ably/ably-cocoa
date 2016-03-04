@@ -348,7 +348,7 @@
 
     NSString *channelName = @"testHistoryTwoClients";
     XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
         ARTRest *rest2 = [[ARTRest alloc] initWithOptions:options];

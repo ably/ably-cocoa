@@ -559,11 +559,11 @@
     return [self shouldQueueEvents] || [self shouldSendEvents];
 }
 
-- (void)sendImpl:(ARTProtocolMessage *)msg cb:(ARTStatusCallback)cb {
+- (void)sendImpl:(ARTProtocolMessage *)msg callback:(ARTStatusCallback)cb {
 
     if (msg.ackRequired) {
         msg.msgSerial = self.msgSerial++;
-        ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg cb:cb];
+        ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg callback:cb];
         [self.pendingMessages addObject:qm];
     }
 
@@ -571,17 +571,17 @@
     [self.transport send:msg];
 }
 
-- (void)send:(ARTProtocolMessage *)msg cb:(ARTStatusCallback)cb {
+- (void)send:(ARTProtocolMessage *)msg callback:(ARTStatusCallback)cb {
     if ([self shouldSendEvents]) {
-        [self sendImpl:msg cb:cb];
+        [self sendImpl:msg callback:cb];
     } else if ([self shouldQueueEvents]) {
         BOOL merged = NO;
         if ([self.queuedMessages count]) {
             ARTQueuedMessage *lastQueued = [self.queuedMessages objectAtIndex:(self.queuedMessages.count) - 1];
-            merged = [lastQueued mergeFrom:msg cb:cb];
+            merged = [lastQueued mergeFrom:msg callback:cb];
         }
         if (!merged) {
-            ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg cb:cb];
+            ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg callback:cb];
             [self.queuedMessages addObject:qm];
         }
     } else {
@@ -597,7 +597,7 @@
     self.queuedMessages = [NSMutableArray array];
 
     for (ARTQueuedMessage *message in qms) {
-        [self sendImpl:message.msg cb:message.cb];
+        [self sendImpl:message.msg callback:message.cb];
     }
 }
 

@@ -45,7 +45,7 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
     return [ARTTestUtil getFileByName:@"ably-common/test-resources/test-app-setup.json"];
 }
 
-+ (void)setupApp:(ARTClientOptions *)options withDebug:(BOOL)debug withAlteration:(TestAlteration)alt  appId:(NSString *)appId cb:(void (^)(ARTClientOptions *))cb {
++ (void)setupApp:(ARTClientOptions *)options withDebug:(BOOL)debug withAlteration:(TestAlteration)alt  appId:(NSString *)appId callback:(void (^)(ARTClientOptions *))cb {
     NSString *str = [ARTTestUtil getTestAppSetupJson];
     if (str == nil) {
         [NSException raise:@"error getting test-app-setup.json loaded. Maybe ably-common is missing" format:@""];
@@ -118,20 +118,20 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
     }];
 }
 
-+ (void)setupApp:(ARTClientOptions *)options withDebug:(BOOL)debug withAlteration:(TestAlteration)alt cb:(void (^)(ARTClientOptions *))cb {
-    [ARTTestUtil setupApp:options withDebug:debug withAlteration:alt appId:nil cb:cb];
++ (void)setupApp:(ARTClientOptions *)options withDebug:(BOOL)debug withAlteration:(TestAlteration)alt callback:(void (^)(ARTClientOptions *))cb {
+    [ARTTestUtil setupApp:options withDebug:debug withAlteration:alt appId:nil callback:cb];
 }
 
-+ (void)setupApp:(ARTClientOptions *)options withAlteration:(TestAlteration)alt cb:(void (^)(ARTClientOptions *))cb {
-    [ARTTestUtil setupApp:options withDebug:NO withAlteration:alt cb:cb];
++ (void)setupApp:(ARTClientOptions *)options withAlteration:(TestAlteration)alt callback:(void (^)(ARTClientOptions *))cb {
+    [ARTTestUtil setupApp:options withDebug:NO withAlteration:alt callback:cb];
 }
 
-+ (void)setupApp:(ARTClientOptions *)options withDebug:(BOOL)debug cb:(void (^)(ARTClientOptions *))cb {
-    [ARTTestUtil setupApp:options withDebug:debug withAlteration:TestAlterationNone cb:cb];
++ (void)setupApp:(ARTClientOptions *)options withDebug:(BOOL)debug callback:(void (^)(ARTClientOptions *))cb {
+    [ARTTestUtil setupApp:options withDebug:debug withAlteration:TestAlterationNone callback:cb];
 }
 
-+ (void)setupApp:(ARTClientOptions *)options cb:(void (^)(ARTClientOptions *))cb {
-    [ARTTestUtil setupApp:options withDebug:NO withAlteration:TestAlterationNone cb:cb];
++ (void)setupApp:(ARTClientOptions *)options callback:(void (^)(ARTClientOptions *))cb {
+    [ARTTestUtil setupApp:options withDebug:NO withAlteration:TestAlterationNone callback:cb];
 }
 
 + (ARTClientOptions *)clientOptions {
@@ -180,14 +180,14 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
 
     weakCallback = callback = ^(ARTErrorInfo *error) {
         if (++numReceived != count) {
-            [channel publish:nil data:[NSString stringWithFormat:pattern, numReceived] cb:weakCallback];
+            [channel publish:nil data:[NSString stringWithFormat:pattern, numReceived] callback:weakCallback];
         }
         else {
             completion();
         }
     };
 
-    [channel publish:nil data:[NSString stringWithFormat:pattern, numReceived] cb:callback];
+    [channel publish:nil data:[NSString stringWithFormat:pattern, numReceived] callback:callback];
 }
 
 + (void)publishRealtimeMessages:(NSString *)prefix count:(int)count channel:(ARTRealtimeChannel *)channel completion:(void (^)())completion {
@@ -199,13 +199,13 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
     weakCb = cb = ^(ARTErrorInfo *errorInfo) {
         ++numReceived;
         if(numReceived !=count) {
-            [channel publish:nil data:[NSString stringWithFormat:pattern, numReceived] cb:weakCb];
+            [channel publish:nil data:[NSString stringWithFormat:pattern, numReceived] callback:weakCb];
         }
         else {
             completion();
         }
     };
-    [channel publish:nil data:[NSString stringWithFormat:pattern, numReceived] cb:cb];
+    [channel publish:nil data:[NSString stringWithFormat:pattern, numReceived] callback:cb];
     
 }
 
@@ -218,31 +218,31 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
     weakCb = cb = ^(ARTErrorInfo *errorInfo) {
         ++numReceived;
         if (numReceived != count) {
-            [channel.presence enterClient:[NSString stringWithFormat:pattern, numReceived] data:@"entered" cb:weakCb];
+            [channel.presence enterClient:[NSString stringWithFormat:pattern, numReceived] data:@"entered" callback:weakCb];
         }
         else {
             completion();
         }
     };
-    [channel.presence enterClient:[NSString stringWithFormat:pattern, numReceived] data:@"" cb:weakCb];
+    [channel.presence enterClient:[NSString stringWithFormat:pattern, numReceived] data:@"" callback:weakCb];
 }
 
 + (void)testRest:(ARTRestConstructorCb)cb {
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
         cb(rest);
     }];
 }
 
 + (void)testRealtime:(ARTClientOptions *)options callback:(ARTRealtimeConstructorCb)cb {
-    [ARTTestUtil setupApp:options cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:options callback:^(ARTClientOptions *options) {
         ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
         cb(realtime);
     }];
 }
 
 + (void)testRealtime:(ARTRealtimeConstructorCb)cb {
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
         cb(realtime);
     }];
@@ -250,7 +250,7 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
 
 + (void)testRealtimeV2:(XCTestCase *)testCase withDebug:(BOOL)debug callback:(ARTRealtimeTestCallback)callback {
     XCTestExpectation *expectation = [testCase expectationWithDescription:@"testRealtime"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withDebug:debug cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withDebug:debug callback:^(ARTClientOptions *options) {
         ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
         [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;

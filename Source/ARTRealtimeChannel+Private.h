@@ -38,8 +38,8 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status;
 
 - (void)onChannelMessage:(ARTProtocolMessage *)message;
-- (void)publishPresence:(ARTPresenceMessage *)pm cb:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb;
-- (void)publishProtocolMessage:(ARTProtocolMessage *)pm cb:(ARTStatusCallback)cb;
+- (void)publishPresence:(ARTPresenceMessage *)pm callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb;
+- (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(ARTStatusCallback)cb;
 
 - (void)setAttached:(ARTProtocolMessage *)message;
 - (void)setDetached:(ARTProtocolMessage *)message;

@@ -42,7 +42,7 @@
 
 - (void)testTokenSimple {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testRestTimeBadHost"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.useTokenAuth = true;
         options.clientId = @"testToken";
         ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
@@ -50,7 +50,7 @@
         ARTAuth * auth = rest.auth;
         XCTAssertEqual(auth.method, ARTAuthMethodToken);
         ARTRestChannel *c = [rest.channels get:@"getChannel"];
-        [c publish:nil data:@"something" cb:^(ARTErrorInfo *error) {
+        [c publish:nil data:@"something" callback:^(ARTErrorInfo *error) {
             XCTAssert(!error);
             [expectation fulfill];
         }];
@@ -60,7 +60,7 @@
 
 - (void)testInitWithBadToken {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithToken"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.useTokenAuth = true;
         options.clientId = @"testToken";
         options.token = @"this_is_a_bad_token";
@@ -69,7 +69,7 @@
         ARTAuth * auth = rest.auth;
         XCTAssertEqual(auth.method, ARTAuthMethodToken);
         ARTChannel * c= [rest.channels get:@"getChannel"];
-        [c publish:nil data:@"something" cb:^(ARTErrorInfo *error) {
+        [c publish:nil data:@"something" callback:^(ARTErrorInfo *error) {
             XCTAssert(error);
             [expectation fulfill];
         }];
@@ -79,7 +79,7 @@
 
 -(void)testAuthURLForcesToken {
     XCTestExpectation *exp = [self expectationWithDescription:@"testClientIdForcesToken"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.authUrl = [NSURL URLWithString:@"some_url"];
         ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
@@ -92,13 +92,13 @@
 
 -(void)testTTLDefaultOneHour {
     XCTestExpectation *exp = [self expectationWithDescription:@"testTTLDefaultOneHour"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.clientId = @"clientIdThatForcesToken";
         ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
         ARTAuth *auth = rest.auth;
         ARTChannel *c = [rest.channels get:@"getChannel"];
-        [c publish:nil data:@"invokeTokenRequest" cb:^(ARTErrorInfo *error) {
+        [c publish:nil data:@"invokeTokenRequest" callback:^(ARTErrorInfo *error) {
             XCTAssert(!error);
             NSTimeInterval secs = [auth.tokenDetails.expires timeIntervalSinceDate:auth.tokenDetails.issued];
             XCTAssertEqual(secs, 3600);
@@ -110,7 +110,7 @@
 
 - (void)testInitWithBorrowedAuthCb {
     XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithToken"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.useTokenAuth = true;
         options.clientId = @"testToken";
         ARTRest * firstRest = [[ARTRest alloc] initWithOptions:options];
@@ -121,7 +121,7 @@
         _rest2 = secondRest;
         XCTAssertEqual(auth.method, ARTAuthMethodToken);
         ARTChannel *c = [secondRest.channels get:@"getChannel"];
-        [c publish:nil data:@"something" cb:^(ARTErrorInfo *error) {
+        [c publish:nil data:@"something" callback:^(ARTErrorInfo *error) {
             XCTAssert(!error);
             [expectation fulfill];
         }];

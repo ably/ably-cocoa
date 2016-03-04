@@ -53,10 +53,10 @@
 }
 
 - (void)get:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, NSError *error))callback {
-    [self get:[[ARTPresenceQuery alloc] init] cb:callback];
+    [self get:[[ARTPresenceQuery alloc] init] callback:callback];
 }
 
-- (void)get:(ARTPresenceQuery *)query cb:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, NSError * _Nullable))callback {
+- (void)get:(ARTPresenceQuery *)query callback:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, NSError * _Nullable))callback {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 

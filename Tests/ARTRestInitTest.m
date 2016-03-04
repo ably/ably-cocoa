@@ -51,14 +51,14 @@
 
 -(void)testInitWithKey {
     XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithKey"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         @try {
             [ARTClientOptions setDefaultEnvironment:@"sandbox"];
             ARTRest *rest = [[ARTRest alloc] initWithKey:options.key];
             _rest = rest;
             ARTChannel *c = [rest.channels get:@"test"];
             XCTAssert(c);
-            [c publish:nil data:@"message" cb:^(ARTErrorInfo *error) {
+            [c publish:nil data:@"message" callback:^(ARTErrorInfo *error) {
                 XCTAssertNil(error);
                 [exp fulfill];
             }];
@@ -83,7 +83,7 @@
         _rest = rest;
         ARTChannel * c = [rest.channels get:@"test"];
         XCTAssert(c);
-        [c publish:nil data:@"message" cb:^(ARTErrorInfo *error) {
+        [c publish:nil data:@"message" callback:^(ARTErrorInfo *error) {
             XCTAssert(error);
             XCTAssertEqual(40005, error.code); //invalid credential
             [exp fulfill];
@@ -97,12 +97,12 @@
 
 -(void)testInitWithOptions {
     XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
        ARTChannel * c = [rest.channels get:@"test"];
        XCTAssert(c);
-       [c publish:nil data:@"message" cb:^(ARTErrorInfo *error) {
+       [c publish:nil data:@"message" callback:^(ARTErrorInfo *error) {
            XCTAssert(!error);
            [exp fulfill];
        }];
@@ -112,14 +112,14 @@
 
 -(void)testInitWithOptionsEnvironment {
     XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         ARTClientOptions *envOptions = [[ARTClientOptions alloc] init];
         envOptions.key = options.key;
         envOptions.environment = @"sandbox";
         ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
         ARTChannel * c = [rest.channels get:@"test"];
-        [c publish:nil data:@"message" cb:^(ARTErrorInfo *error) {
+        [c publish:nil data:@"message" callback:^(ARTErrorInfo *error) {
             XCTAssert(!error);
             [exp fulfill];
         }];
@@ -129,12 +129,12 @@
 
 -(void)testGetAuth {
     XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] cb:^(ARTClientOptions *options) {
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
         ARTChannel * c = [rest.channels get:@"test"];
         XCTAssert(c);
-        [c publish:nil data:@"message" cb:^(ARTErrorInfo *error) {
+        [c publish:nil data:@"message" callback:^(ARTErrorInfo *error) {
             XCTAssert(!error);
             ARTAuth * auth = rest.auth;
             XCTAssert(auth);

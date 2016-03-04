@@ -194,11 +194,11 @@
     }];
 }
 
-- (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method url:(NSURL *)url headers:(NSDictionary *)headers body:(NSData *)body cb:(ARTHttpCb)cb {
-    return [self makeRequest:[[ARTHttpRequest alloc] initWithMethod:method url:url headers:headers body:body] cb:cb];
+- (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method url:(NSURL *)url headers:(NSDictionary *)headers body:(NSData *)body callback:(ARTHttpCb)cb {
+    return [self makeRequest:[[ARTHttpRequest alloc] initWithMethod:method url:url headers:headers body:body] callback:cb];
 }
 
-- (id<ARTCancellable>)makeRequest:(ARTHttpRequest *)artRequest cb:(void (^)(ARTHttpResponse *))cb __deprecated {
+- (id<ARTCancellable>)makeRequest:(ARTHttpRequest *)artRequest callback:(void (^)(ARTHttpResponse *))cb __deprecated {
 
     if(![artRequest.method isEqualToString:@"GET"] && ![artRequest.method isEqualToString:@"POST"]){
         [NSException raise:@"Http method must be GET or POST" format:@""];

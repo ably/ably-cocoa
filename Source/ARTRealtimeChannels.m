@@ -52,7 +52,7 @@
     return [_channels exists:name];
 }
 
-- (void)release:(NSString *)name cb:(void (^)(ARTErrorInfo * _Nullable))cb {
+- (void)release:(NSString *)name callback:(void (^)(ARTErrorInfo * _Nullable))cb {
     ARTRealtimeChannel *channel = _channels.channels[name];
     if (channel) {
         [channel detach:^(ARTErrorInfo *errorInfo) {
@@ -66,7 +66,7 @@
 }
 
 - (void)release:(NSString *)name {
-    [self release:name cb:nil];
+    [self release:name callback:nil];
 }
 
 @end
