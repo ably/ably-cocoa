@@ -56,6 +56,15 @@ class RealtimeClientChannels: QuickSpec {
                     expect(client.channels.collection).to(haveCount(1))
                 }
 
+                // RTS3b
+                it("should be possible to specify a ChannelOptions") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    let options = ARTChannelOptions()
+                    let channel = client.channels.get("test", options: options)
+                    expect(channel.options).to(beIdenticalTo(options))
+                }
+
             }
 
             // RTS4
