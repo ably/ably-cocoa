@@ -1640,41 +1640,6 @@ class RealtimeClientChannel: QuickSpec {
 
             }
 
-            context("channels") {
-                // RTS4
-                context("release") {
-                    it("should release a channel") {
-                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
-                        defer { client.close() }
-
-                        let channel = client.channels.get("test")
-                        channel.subscribe { _ in
-                            fail("shouldn't happen")
-                        }
-                        channel.presence.subscribe { _ in
-                            fail("shouldn't happen")
-                        }
-                        waitUntil(timeout: testTimeout) { done in
-                            client.channels.release("test") { errorInfo in
-                                expect(errorInfo).to(beNil())
-                                expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
-                                done()
-                            }
-                        }
-
-                        let sameChannel = client.channels.get("test")
-                        waitUntil(timeout: testTimeout) { done in
-                            sameChannel.subscribe { _ in
-                                sameChannel.presence.enterClient("foo", data: nil) { _ in
-                                    delay(0.0) { done() } // Delay to make sure EventEmitter finish its cycle.
-                                }
-                            }
-                            sameChannel.publish("foo", data: nil)
-                        }
-                    }
-                }
-            }
-
             context("crypto") {
                 it("if configured for encryption, channels encrypt and decrypt messages' data") {
                     let options = AblyTests.commonAppSetup()
