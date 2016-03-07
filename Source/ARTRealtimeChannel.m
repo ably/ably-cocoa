@@ -178,7 +178,7 @@
     }];
 }
 
-- (ARTPresenceMap *) presenceMap {
+- (ARTPresenceMap *)presenceMap {
     return _presenceMap;
 }
 
@@ -188,8 +188,8 @@
     }
 }
 
-- (ARTEventListener<ARTMessage *> *)subscribe:(void (^)(ARTMessage * _Nonnull))cb {
-    return [self subscribeWithAttachCallback:nil callback:cb];
+- (ARTEventListener<ARTMessage *> *)subscribe:(void (^)(ARTMessage * _Nonnull))callback {
+    return [self subscribeWithAttachCallback:nil callback:callback];
 }
 
 - (ARTEventListener<ARTMessage *> *)subscribeWithAttachCallback:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTMessage * _Nonnull))cb {
@@ -448,15 +448,15 @@
     [self attach:nil];
 }
 
-- (void)attach:(void (^)(ARTErrorInfo * _Nullable))cb {
+- (void)attach:(void (^)(ARTErrorInfo * _Nullable))callback {
     switch (self.state) {
         case ARTRealtimeChannelAttaching:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"already attaching"];
-            if (cb) [_attachedEventEmitter once:cb];
+            if (callback) [_attachedEventEmitter once:callback];
             return;
         case ARTRealtimeChannelAttached:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"already attached"];
-            if (cb) cb(nil);
+            if (callback) callback(nil);
             return;
         default:
             break;
@@ -464,7 +464,7 @@
     
     if (![self.realtime isActive]) {
         [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"can't attach when not in an active state"];
-        if (cb) cb([ARTErrorInfo createWithCode:90000 message:@"Can't attach when not in an active state"]);
+        if (callback) callback([ARTErrorInfo createWithCode:90000 message:@"Can't attach when not in an active state"]);
         return;
     }
 
@@ -475,7 +475,7 @@
     __block BOOL timeouted = false;
 
     [self.realtime send:attachMessage callback:nil];
-    if (cb) [_attachedEventEmitter once:cb];
+    if (callback) [_attachedEventEmitter once:callback];
     // Set state: Attaching
     [self transition:ARTRealtimeChannelAttaching status:[ARTStatus state:ARTStateOk]];
 
@@ -489,19 +489,19 @@
     } interval:[ARTDefault realtimeRequestTimeout]];
 }
 
-- (void)detach:(void (^)(ARTErrorInfo * _Nullable))cb {
+- (void)detach:(void (^)(ARTErrorInfo * _Nullable))callback {
     switch (self.state) {
         case ARTRealtimeChannelInitialised:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"can't detach when not attached"];
-            if (cb) [_detachedEventEmitter once:cb];
+            if (callback) [_detachedEventEmitter once:callback];
             return;
         case ARTRealtimeChannelDetaching:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"already detaching"];
-            if (cb) [_detachedEventEmitter once:cb];
+            if (callback) [_detachedEventEmitter once:callback];
             return;
         case ARTRealtimeChannelDetached:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"already detached"];
-            if (cb) cb(nil);
+            if (callback) callback(nil);
             return;
         default:
             break;
@@ -509,7 +509,7 @@
     
     if (![self.realtime isActive]) {
         [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"can't detach when not in an active state"];
-        if (cb) cb([ARTErrorInfo createWithCode:90000 message:@"Can't detach when not in an active state"]);
+        if (callback) callback([ARTErrorInfo createWithCode:90000 message:@"Can't detach when not in an active state"]);
         return;
     }
 
@@ -520,7 +520,7 @@
     __block BOOL timeouted = false;
 
     [self.realtime send:detachMessage callback:nil];
-    if (cb) [_detachedEventEmitter once:cb];
+    if (callback) [_detachedEventEmitter once:callback];
     // Set state: Detaching
     [self transition:ARTRealtimeChannelDetaching status:[ARTStatus state:ARTStateOk]];
 

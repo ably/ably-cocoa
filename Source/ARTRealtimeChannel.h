@@ -24,12 +24,12 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, getter=getPresence) ARTRealtimePresence *presence;
 
 - (void)attach;
-- (void)attach:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb;
+- (void)attach:(art_nullable void (^)(ARTErrorInfo *__art_nullable))callback;
 
 - (void)detach;
-- (void)detach:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb;
+- (void)detach:(art_nullable void (^)(ARTErrorInfo *__art_nullable))callback;
 
-- (__GENERIC(ARTEventListener, ARTMessage *) *__art_nullable)subscribe:(void (^)(ARTMessage *message))cb;
+- (__GENERIC(ARTEventListener, ARTMessage *) *__art_nullable)subscribe:(void (^)(ARTMessage *message))callback;
 - (__GENERIC(ARTEventListener, ARTMessage *) *__art_nullable)subscribeWithAttachCallback:(art_nullable void (^)(ARTErrorInfo *__art_nullable))onAttach callback:(void (^)(ARTMessage *message))cb;
 - (__GENERIC(ARTEventListener, ARTMessage *) *__art_nullable)subscribe:(NSString *)name callback:(void (^)(ARTMessage *message))cb;
 - (__GENERIC(ARTEventListener, ARTMessage *) *__art_nullable)subscribe:(NSString *)name onAttach:(art_nullable void (^)(ARTErrorInfo *__art_nullable))onAttach callback:(void (^)(ARTMessage *message))cb;
