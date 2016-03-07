@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTRealtimeChannels.h"
+#import "ARTRealtimeChannels+Private.h"
 #import "ARTChannels+Private.h"
 #import "ARTRealtimeChannel+Private.h"
 
@@ -67,6 +67,10 @@
 
 - (void)release:(NSString *)name {
     [self release:name callback:nil];
+}
+
+- (NSMutableDictionary *)getCollection {
+    return _channels.channels;
 }
 
 @end

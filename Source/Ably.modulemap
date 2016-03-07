@@ -15,6 +15,7 @@ framework module Ably {
         header "ARTEventEmitter+Private.h"
         header "ARTRealtime+Private.h"
         header "ARTRealtimeChannel+Private.h"
+        header "ARTRealtimeChannels+Private.h"
         header "ARTRest+Private.h"
         header "ARTRestChannel+Private.h"
         header "ARTPaginatedResult+Private.h"
