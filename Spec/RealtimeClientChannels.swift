@@ -65,6 +65,16 @@ class RealtimeClientChannels: QuickSpec {
                     expect(channel.options).to(beIdenticalTo(options))
                 }
 
+                // RTS3c
+                it("accessing an existing Channel with options should update the options and then return the object") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    expect(client.channels.get("test").options).toNot(beNil())
+                    let options = ARTChannelOptions()
+                    let channel = client.channels.get("test", options: options)
+                    expect(channel.options).to(beIdenticalTo(options))
+                }
+
             }
 
             // RTS4
