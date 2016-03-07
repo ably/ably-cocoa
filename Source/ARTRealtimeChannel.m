@@ -41,7 +41,7 @@
     self = [super initWithName:name withOptions:options andRest:realtime.rest];
     if (self) {
         _realtime = realtime;
-        _state = ARTRealtimeChannelInitialised;
+        _state = ARTRealtimeChannelInitialized;
         _queuedMessages = [NSMutableArray array];
         _attachSerial = nil;
         _presenceMap =[[ARTPresenceMap alloc] init];
@@ -128,7 +128,7 @@
 
 - (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb {
     switch (self.state) {
-        case ARTRealtimeChannelInitialised:
+        case ARTRealtimeChannelInitialized:
             [self attach];
             // intentional fall-through
         case ARTRealtimeChannelAttaching:
@@ -491,7 +491,7 @@
 
 - (void)detach:(void (^)(ARTErrorInfo * _Nullable))cb {
     switch (self.state) {
-        case ARTRealtimeChannelInitialised:
+        case ARTRealtimeChannelInitialized:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"can't detach when not attached"];
             if (cb) [_detachedEventEmitter once:cb];
             return;

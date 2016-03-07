@@ -102,7 +102,7 @@
         _connection = [[ARTConnection alloc] initWithRealtime:self];
         [self.connection setState:ARTRealtimeInitialized];
 
-        [self.logger debug:__FILE__ line:__LINE__ message:@"initialised %p", self];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"initialized %p", self];
         
         if (options.autoConnect) {
             [self connect];
@@ -266,7 +266,7 @@
         }
         // For every Channel
         for (ARTRealtimeChannel* channel in self.channels) {
-            if (channel.state == ARTRealtimeChannelInitialised || channel.state == ARTRealtimeChannelAttaching || channel.state == ARTRealtimeChannelAttached) {
+            if (channel.state == ARTRealtimeChannelInitialized || channel.state == ARTRealtimeChannelAttaching || channel.state == ARTRealtimeChannelAttached) {
                 if(state == ARTRealtimeClosing) {
                     //do nothing. Closed state is coming.
                 }

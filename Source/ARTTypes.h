@@ -44,7 +44,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
 };
 
 typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
-    ARTRealtimeChannelInitialised,
+    ARTRealtimeChannelInitialized,
     ARTRealtimeChannelAttaching,
     ARTRealtimeChannelAttached,
     ARTRealtimeChannelDetaching,
@@ -53,7 +53,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
 };
 
 typedef NS_ENUM(NSUInteger, ARTChannelEvent) {
-    ARTChannelEventInitialised,
+    ARTChannelEventInitialized,
     ARTChannelEventAttaching,
     ARTChannelEventAttached,
     ARTChannelEventDetaching,
