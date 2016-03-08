@@ -133,6 +133,14 @@ class AblyTests {
         return protocolMessage
     }
 
+    class func newRealtime(options: ARTClientOptions) -> ARTRealtime {
+        options.autoConnect = false
+        let realtime = ARTRealtime(options: options)
+        realtime.setTransportClass(TestProxyTransport.self)
+        realtime.connect()
+        return realtime
+    }
+
     struct CryptoTestItem {
 
         struct TestMessage {
