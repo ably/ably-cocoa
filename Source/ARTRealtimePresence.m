@@ -124,9 +124,9 @@
     return [[self channel].presenceMap isSyncComplete];
 }
 
-- (ARTEventListener<ARTPresenceMessage *> *)subscribe:(void (^)(ARTPresenceMessage * _Nonnull))cb {
+- (ARTEventListener<ARTPresenceMessage *> *)subscribe:(void (^)(ARTPresenceMessage * _Nonnull))callback {
     [[self channel] attach];
-    return [[self channel].presenceEventEmitter on:cb];
+    return [[self channel].presenceEventEmitter on:callback];
 }
 
 - (ARTEventListener<ARTPresenceMessage *> *)subscribe:(ARTPresenceAction)action callback:(void (^)(ARTPresenceMessage * _Nonnull))cb {

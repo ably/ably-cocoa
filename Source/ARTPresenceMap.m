@@ -76,8 +76,8 @@
     return self.syncStarted && self.syncComplete;
 }
 
-- (BOOL) stillSyncing {
-    return self.syncStarted && ! self.syncComplete;
+- (BOOL)stillSyncing {
+    return self.syncStarted && !self.syncComplete;
 }
 
 #pragma mark private

@@ -47,7 +47,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)leaveClient:(NSString *)clientId data:(id __art_nullable)data;
 - (void)leaveClient:(NSString *)clientId data:(id __art_nullable)data callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb;
 
-- (__GENERIC(ARTEventListener, ARTPresenceMessage *) *)subscribe:(void (^)(ARTPresenceMessage *message))cb;
+- (__GENERIC(ARTEventListener, ARTPresenceMessage *) *)subscribe:(void (^)(ARTPresenceMessage *message))callback;
 - (__GENERIC(ARTEventListener, ARTPresenceMessage *) *)subscribe:(ARTPresenceAction)action callback:(void (^)(ARTPresenceMessage *message))cb;
 - (void)unsubscribe;
 - (void)unsubscribe:(__GENERIC(ARTEventListener, ARTPresenceMessage *) *)listener;
