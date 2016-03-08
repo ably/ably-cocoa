@@ -39,6 +39,77 @@ class RealtimeClientChannels: QuickSpec {
                 }
             }
 
+            // RTS3
+            context("get") {
+
+                // RTS3a
+                it("should create a new Channel if none exists or return the existing one") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+
+                    expect(client.channels.collection).to(haveCount(0))
+                    let channel = client.channels.get("test")
+                    expect(channel.name).to(equal("test"))
+
+                    expect(client.channels.collection).to(haveCount(1))
+                    expect(client.channels.get("test")).to(beIdenticalTo(channel))
+                    expect(client.channels.collection).to(haveCount(1))
+                }
+
+                // RTS3b
+                it("should be possible to specify a ChannelOptions") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    let options = ARTChannelOptions()
+                    let channel = client.channels.get("test", options: options)
+                    expect(channel.options).to(beIdenticalTo(options))
+                }
+
+                // RTS3c
+                it("accessing an existing Channel with options should update the options and then return the object") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    expect(client.channels.get("test").options).toNot(beNil())
+                    let options = ARTChannelOptions()
+                    let channel = client.channels.get("test", options: options)
+                    expect(channel.options).to(beIdenticalTo(options))
+                }
+
+            }
+
+            // RTS4
+            context("release") {
+                it("should release a channel") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+
+                    let channel = client.channels.get("test")
+                    channel.subscribe { _ in
+                        fail("shouldn't happen")
+                    }
+                    channel.presence.subscribe { _ in
+                        fail("shouldn't happen")
+                    }
+                    waitUntil(timeout: testTimeout) { done in
+                        client.channels.release("test") { errorInfo in
+                            expect(errorInfo).to(beNil())
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
+                            done()
+                        }
+                    }
+
+                    let sameChannel = client.channels.get("test")
+                    waitUntil(timeout: testTimeout) { done in
+                        sameChannel.subscribe { _ in
+                            sameChannel.presence.enterClient("foo", data: nil) { _ in
+                                delay(0.0) { done() } // Delay to make sure EventEmitter finish its cycle.
+                            }
+                        }
+                        sameChannel.publish("foo", data: nil)
+                    }
+                }
+            }
+
         }
     }
 }
