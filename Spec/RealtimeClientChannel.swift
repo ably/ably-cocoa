@@ -148,7 +148,7 @@ class RealtimeClientChannel: QuickSpec {
                     defer { client.close() }
 
                     let channel = client.channels.get("test")
-                    expect(channel.state).to(equal(ARTRealtimeChannelState.Initialised))
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Initialized))
 
                     channel.attach()
                     expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
@@ -536,11 +536,11 @@ class RealtimeClientChannel: QuickSpec {
                     var errorInfo: ARTErrorInfo?
                     let channel = client.channels.get("test")
 
-                    expect(channel.state).to(equal(ARTRealtimeChannelState.Initialised))
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Initialized))
                     channel.detach { errorInfo in
                         expect(errorInfo).to(beNil())
                     }
-                    expect(channel.state).to(equal(ARTRealtimeChannelState.Initialised))
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Initialized))
 
                     channel.attach()
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attaching), timeout: testTimeout)
@@ -1134,7 +1134,7 @@ class RealtimeClientChannel: QuickSpec {
                     let publishedMessage = ARTMessage(name: "foo", data: "bar")
 
                     waitUntil(timeout: testTimeout) { done in
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.Initialised))
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Initialized))
 
                         channel.subscribeWithAttachCallback({ errorInfo in
                             expect(errorInfo).to(beNil())

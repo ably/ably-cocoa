@@ -64,7 +64,7 @@
         _auth = [[ARTAuth alloc] init:self withOptions:_options];
         _channels = [[ARTRestChannels alloc] initWithRest:self];
 
-        [self.logger debug:__FILE__ line:__LINE__ message:@"initialised %p", self];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"initialized %p", self];
     }
     return self;
 }

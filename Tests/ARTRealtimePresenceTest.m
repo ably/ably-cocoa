@@ -180,7 +180,7 @@
     XCTestExpectation *exp = [self expectationWithDescription:@"testEnterAttachesTheChannel"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime.channels get:@"channel"];
-        XCTAssertEqual(channel.state, ARTRealtimeChannelInitialised);
+        XCTAssertEqual(channel.state, ARTRealtimeChannelInitialized);
         [channel.presence enter:@"entered" callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
             XCTAssertEqual(channel.state, ARTRealtimeChannelAttached);
