@@ -19,11 +19,9 @@ class RealtimeClientChannel: QuickSpec {
             // RTL1
             it("should process all incoming messages and presence messages as soon as a Channel becomes attached") {
                 let options = AblyTests.commonAppSetup()
-                let client1 = ARTRealtime(options: options)
+                let client1 = AblyTests.newRealtime(options)
                 defer { client1.close() }
-
                 let channel1 = client1.channels.get("room")
-                channel1.attach()
 
                 waitUntil(timeout: testTimeout) { done in
                     channel1.presence.enterClient("Client 1", data: nil) { errorInfo in
@@ -33,10 +31,14 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 options.clientId = "Client 2"
-                let client2 = ARTRealtime(options: options)
+                let client2 = AblyTests.newRealtime(options)
                 defer { client2.close() }
-
                 let channel2 = client2.channels.get(channel1.name)
+
+                channel2.subscribe("Client 1") { message in
+                    expect(message.data as? String).to(equal("message"))
+                }
+
                 channel2.attach()
 
                 expect(channel2.presence.syncComplete).to(beFalse())
@@ -49,12 +51,7 @@ class RealtimeClientChannel: QuickSpec {
                 expect(channel2.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
 
                 expect(channel1.presenceMap.members).to(haveCount(1))
-                expect(channel2.presenceMap.members).to(haveCount(1))
-
-                // Check if receives incoming messages
-                channel2.subscribe("Client 1") { message in
-                    expect(message.data as? String).to(equal("message"))
-                }
+                expect(channel2.presenceMap.members).toEventually(haveCount(1), timeout: testTimeout)
 
                 waitUntil(timeout: testTimeout) { done in
                     channel1.publish("message", data: nil) { errorInfo in
@@ -70,11 +67,11 @@ class RealtimeClientChannel: QuickSpec {
                     }
                 }
 
-                expect(channel1.presenceMap.members).to(haveCount(2))
+                expect(channel1.presenceMap.members).toEventually(haveCount(2), timeout: testTimeout)
                 expect(channel1.presenceMap.members).to(allKeysPass({ $0.hasPrefix("Client") }))
                 expect(channel1.presenceMap.members).to(allValuesPass({ $0.action == .Enter }))
 
-                expect(channel2.presenceMap.members).to(haveCount(2))
+                expect(channel2.presenceMap.members).toEventually(haveCount(2), timeout: testTimeout)
                 expect(channel2.presenceMap.members).to(allKeysPass({ $0.hasPrefix("Client") }))
                 expect(channel2.presenceMap.members["Client 1"]!.action).to(equal(ARTPresenceAction.Present))
                 expect(channel2.presenceMap.members["Client 2"]!.action).to(equal(ARTPresenceAction.Enter))
