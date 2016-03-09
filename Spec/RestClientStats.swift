@@ -81,10 +81,7 @@ class RestClientStats: QuickSpec {
     override func spec() {
         describe("RestClient") {
             // RSC6
-            pending("stats") {
-                // Temporarily disabled until #https://github.com/ably/ably-ios/issues/142
-                // is figured out.
-
+            context("stats") {
                 // RSC6a
                 context("result") {
                     let calendar = NSCalendar(identifier: NSCalendarIdentifierGregorian)!
