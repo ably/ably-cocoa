@@ -144,6 +144,10 @@ class AblyTests {
         return realtime
     }
 
+    class func newRandomString() -> String {
+        return NSProcessInfo.processInfo().globallyUniqueString
+    }
+
     struct CryptoTestItem {
 
         struct TestMessage {

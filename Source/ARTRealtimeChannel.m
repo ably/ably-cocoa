@@ -298,19 +298,23 @@
 }
 
 - (void)onChannelMessage:(ARTProtocolMessage *)message {
-    
-    if(message.action ==ARTProtocolMessageAttached && [message isSyncEnabled]) {
+    if (message.action == ARTProtocolMessageAttached && [message isSyncEnabled]) {
         [self.presenceMap startSync];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"PresenceMap Sync started"];
     }
-    else if(message.action == ARTProtocolMessageSync || message.action == ARTProtocolMessagePresence) {
-        [self.logger info:@"ARTRealtime sync message received"];
+    else if (message.action == ARTProtocolMessageSync || message.action == ARTProtocolMessagePresence) {
         self.presenceMap.syncSerial = message.connectionSerial;
-        for(int i=0; i< [message.presence count]; i++) {
+
+        if (message.action == ARTProtocolMessageSync)
+            [self.logger info:@"ARTRealtime Sync message received"];
+
+        for (int i=0; i<[message.presence count]; i++) {
             [self.presenceMap put:[message.presence objectAtIndex:i]];
         }
-        NSString * channelSerial = message.channelSerial;
-        if([self isLastChannelSerial:channelSerial]) {
+
+        if ([self isLastChannelSerial:message.channelSerial]) {
             [self.presenceMap endSync];
+            [self.logger debug:__FILE__ line:__LINE__ message:@"PresenceMap Sync ended"];
         }
     }
     
