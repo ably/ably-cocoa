@@ -120,6 +120,9 @@ class AblyTests {
         if debug {
             options.logLevel = .Debug
         }
+        else {
+            options.logLevel = .Info
+        }
         if requestToken {
             options.token = getTestToken()
         }

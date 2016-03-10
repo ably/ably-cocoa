@@ -87,7 +87,12 @@ class RestClient: QuickSpec {
             context("logging") {
                 // RSC2
                 it("should output to the system log and the log level should be Warn") {
-                    let options = AblyTests.commonAppSetup()
+                    ARTClientOptions.setDefaultEnvironment("sandbox")
+                    defer {
+                        ARTClientOptions.setDefaultEnvironment(nil)
+                    }
+
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.logHandler = ARTLog(capturingOutput: true)
                     let client = ARTRest(options: options)
 
