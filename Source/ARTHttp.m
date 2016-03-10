@@ -216,8 +216,7 @@
     request.HTTPBody = artRequest.body;
     [self.logger debug:@"ARTHttp: makeRequest %@", [request allHTTPHeaderFields]];
 
-    CFRunLoopRef rl = CFRunLoopGetCurrent();
-    CFRetain(rl);
+    __block CFRunLoopRef rl = CFRunLoopGetCurrent();
 
     [self.urlSession get:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
@@ -243,7 +242,6 @@
             }
         }
         CFRunLoopWakeUp(rl);
-        CFRelease(rl);
     }];
     return nil;
 }
