@@ -82,39 +82,46 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
     __block CFRunLoopRef rl = CFRunLoopGetCurrent();
     
     [[[ARTURLSessionServerTrust alloc] init] get:req completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
-        if (response.statusCode < 200 || response.statusCode >= 300) {
-            NSLog(@"Status Code: %ld", (long)response.statusCode);
-            NSLog(@"Body: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
-            cb(nil);
-            return;
+        @try {
+            if (response.statusCode < 200 || response.statusCode >= 300) {
+                NSLog(@"Status Code: %ld", (long)response.statusCode);
+                NSLog(@"Body: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+                CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
+                    cb(nil);
+                });
+                return;
+            }
+
+            NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+            if (!json) {
+                NSLog(@"No response");
+                CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
+                    cb(nil);
+                });
+                return;
+            }
+            else if (debug) {
+                NSLog(@"Response: %@", json);
+            }
+
+            NSDictionary *key = json[@"keys"][(alt == TestAlterationRestrictCapability ? 1 :0)];
+
+            ARTClientOptions *testOptions = [options copy];
+
+            testOptions.key = key[@"keyStr"];
+
+            if (alt == TestAlterationBadKeyId || alt == TestAlterationBadKeyValue)
+            {
+                testOptions.key = @"badKey";
+            }
+            
+            CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
+                cb(testOptions);
+            });
         }
-
-        NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-        if (!json) {
-            NSLog(@"No response");
-            return;
+        @finally {
+            CFRunLoopWakeUp(rl);
         }
-        else if (debug) {
-            NSLog(@"Response: %@", json);
-        }
-
-        NSDictionary *key = json[@"keys"][(alt == TestAlterationRestrictCapability ? 1 :0)];
-
-        ARTClientOptions *testOptions = [options copy];
-
-        // TODO: assign key[@"capability"]
-
-        testOptions.key = key[@"keyStr"];
-
-        if (alt == TestAlterationBadKeyId || alt == TestAlterationBadKeyValue)
-        {
-            testOptions.key = @"badKey";
-        }
-
-        CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
-            cb(testOptions);
-        });
-        CFRunLoopWakeUp(rl);
     }];
 }
 
