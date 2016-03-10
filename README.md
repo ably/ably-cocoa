@@ -16,7 +16,7 @@ You can install Ably for iOS through CocoaPods, Carthage or manually.
 
 Add this line to your application's Podfile:
 
-    pod 'Ably', '~> 0.8'
+    pod 'Ably', :git => 'https://github.com/ably/ably-ios.git', :branch => '0.8.0-beta.1'
 
 And then install the dependency:
 
