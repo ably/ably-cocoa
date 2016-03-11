@@ -320,33 +320,6 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-- (void)testDetachFails {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testDetachFails"];
-    [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
-        _realtime = realtime;
-        ARTRealtimeChannel *channel = [realtime.channels get:@"attach"];
-        [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
-            ARTRealtimeConnectionState state = stateChange.current;
-            if (state == ARTRealtimeConnected) {
-                [channel on:^(ARTErrorInfo *errorInfo) {
-                    if (channel.state == ARTRealtimeChannelAttached) {
-                        [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
-                    }
-                }];
-                [channel attach];
-            }
-            else if(state == ARTRealtimeFailed) {
-                [channel detach:^(ARTErrorInfo *errorInfo) {
-                    XCTAssert(errorInfo);
-                    XCTAssertEqual(errorInfo.code, 90000);
-                    [exp fulfill];
-                }];
-            }
-        }];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-}
-
 - (void) testClientIdPreserved {
     NSString *firstClientId = @"firstClientId";
     NSString *channelName = @"channelName";
