@@ -37,6 +37,10 @@
     return (ARTRealtimeChannel *)super.channel;
 }
 
+- (void)get:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, NSError * _Nullable))callback {
+    [self get:[[ARTRealtimePresenceQuery alloc] init] callback:callback];
+}
+
 - (void)get:(ARTRealtimePresenceQuery *)query callback:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, NSError * _Nullable))callback {
     [[self channel] throwOnDisconnectedOrFailed];
     [super get:query callback:callback];
