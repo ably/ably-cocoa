@@ -17,6 +17,14 @@
 
 @implementation ARTRealtimePresenceQuery
 
+- (instancetype)initWithLimit:(NSUInteger)limit clientId:(NSString *)clientId connectionId:(NSString *)connectionId {
+    self = [super initWithLimit:limit clientId:clientId connectionId:connectionId];
+    if (self) {
+        _waitForSync = true;
+    }
+    return self;
+}
+
 @end
 
 @implementation ARTRealtimePresence
