@@ -15,6 +15,10 @@
 #import "ARTStatus.h"
 #import "ARTPresence+Private.h"
 
+@implementation ARTRealtimePresenceQuery
+
+@end
+
 @implementation ARTRealtimePresence
 
 - (instancetype)initWithChannel:(ARTRealtimeChannel *)channel {
