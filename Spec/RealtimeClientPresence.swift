@@ -188,6 +188,58 @@ class RealtimeClientPresence: QuickSpec {
                     expect(presenceQueryWasCreated).to(beTrue())
                 }
 
+                // RTP11b
+                it("should implicitly attach the channel") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Initialized))
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.get() { membersPage, error in
+                            expect(error).to(beNil())
+                            expect(membersPage).toNot(beNil())
+                            done()
+                        }
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
+                    }
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+                }
+
+                // RTP11b
+                it("should result in an error if the channel is in the FAILED state") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    channel.onError(AblyTests.newErrorProtocolMessage())
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.get() { members, error in
+                            expect(error!.message).to(contain("invalid channel state"))
+                            expect(members).to(beNil())
+                            done()
+                        }
+                    }
+                }
+
+                // RTP11b
+                it("should result in an error if the channel moves to the FAILED state") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let error = AblyTests.newErrorProtocolMessage()
+                        channel.presence.get() { members, error in
+                            expect(error).to(equal(error))
+                            expect(members).to(beNil())
+                            done()
+                        }
+                        channel.onError(error)
+                    }
+                }
+
             }
 
         }
