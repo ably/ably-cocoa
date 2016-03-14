@@ -21,18 +21,16 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, atomic, getter=getMembers) __GENERIC(NSDictionary, NSString *, ARTPresenceMessage *) *members;
 
 @property (readwrite, nonatomic, assign) int64_t syncSerial;
+@property (readonly, nonatomic, assign) BOOL syncComplete;
+@property (readonly, nonatomic, getter=getSyncInProgress) BOOL syncInProgress;
 
-- (ARTPresenceMessage *)getClient:(NSString *) clientId;
-- (void)put:(ARTPresenceMessage *) message;
+- (void)put:(ARTPresenceMessage *)message;
+- (void)clean;
 
 - (void)startSync;
 - (void)endSync;
-- (BOOL)isSyncComplete;
-- (BOOL)stillSyncing;
 
-typedef void(^VoidCb)();
-- (void)syncMessageProcessed;
-- (void)onSync:(VoidCb) cb;
+- (void)onceSyncEnds:(void (^)(__GENERIC(NSArray, ARTPresenceMessage *) *))callback;
 
 @end
 

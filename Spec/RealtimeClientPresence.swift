@@ -55,7 +55,7 @@ class RealtimeClientPresence: QuickSpec {
                     expect(attached.flags & 0x1).to(equal(0))
                     expect(attached.isSyncEnabled()).to(beFalse())
                     expect(channel.presence.syncComplete).to(beFalse())
-                    expect(channel.presenceMap.isSyncComplete()).to(beFalse())
+                    expect(channel.presenceMap.syncComplete).to(beFalse())
                 }
 
                 it("when members are present") {
@@ -95,7 +95,6 @@ class RealtimeClientPresence: QuickSpec {
                     expect(channel.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
 
                     expect(transport.protocolMessagesReceived.filter({ $0.action == .Sync })).to(haveCount(3))
-
                 }
             }
 

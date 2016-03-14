@@ -100,7 +100,7 @@
         ARTRealtimeChannel *channel = [client.channels get:@"test"];
         
         [channel.presence enter:@"john.doe" callback:^(ARTErrorInfo *errorInfo) {
-            [channel.presence get:^(ARTPaginatedResult<ARTPresenceMessage *> *result, NSError *error) {
+            [channel.presence get:^(NSArray<ARTPresenceMessage *> *result, ARTErrorInfo *error) {
                 // members is the array of members present
             }];
         }];

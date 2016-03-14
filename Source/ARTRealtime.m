@@ -383,7 +383,7 @@
             _resuming = false;
 
             for (ARTRealtimeChannel *channel in self.channels) {
-                if([channel.presenceMap stillSyncing]) {
+                if (channel.presenceMap.syncInProgress) {
                     [channel requestContinueSync];
                 }
             }

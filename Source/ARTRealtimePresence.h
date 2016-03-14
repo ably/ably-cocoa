@@ -23,11 +23,12 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimePresence : ARTRestPresence
 
-@property (readonly, getter=isSyncComplete) BOOL syncComplete;
+@property (readonly, getter=getSyncComplete) BOOL syncComplete;
 
 - (instancetype)initWithChannel:(ARTRealtimeChannel *)channel;
 
-- (void)get:(ARTRealtimePresenceQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *__art_nullable result, NSError *__art_nullable error))callback;
+- (void)get:(void (^)(__GENERIC(NSArray, ARTPresenceMessage *) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback;
+- (void)get:(ARTRealtimePresenceQuery *)query callback:(void (^)(__GENERIC(NSArray, ARTPresenceMessage *) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback;
 
 - (void)enter:(id __art_nullable)data;
 - (void)enter:(id __art_nullable)data callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb;
