@@ -38,8 +38,8 @@ private func postTestStats(stats: JSON) -> ARTClientOptions {
 
 private func queryStats(client: ARTRest, _ query: ARTStatsQuery) -> ARTPaginatedResult {
     var stats: ARTPaginatedResult?
-    let dummyError = NSError(domain: "", code: -1, userInfo: nil);
-    var error: NSError? = dummyError
+    let dummyError = ARTErrorInfo()
+    var error: ARTErrorInfo? = dummyError
 
     try! client.stats(query, callback: { result, err in
         stats = result
@@ -51,16 +51,16 @@ private func queryStats(client: ARTRest, _ query: ARTStatsQuery) -> ARTPaginated
     }
     
     if let error = error {
-        XCTFail(error.localizedDescription)
+        XCTFail(error.message)
     }
     
     return stats!
 }
 
-private func getPage(paginator: ((ARTPaginatedResult?, NSError?) -> Void) -> Void) -> ARTPaginatedResult {
+private func getPage(paginator: ((ARTPaginatedResult?, ARTErrorInfo?) -> Void) -> Void) -> ARTPaginatedResult {
     var newResult: ARTPaginatedResult?
-    let dummyError = NSError(domain: "", code: -1, userInfo: nil);
-    var error: NSError? = dummyError
+    let dummyError = ARTErrorInfo()
+    var error: ARTErrorInfo? = dummyError
     paginator({ paginatorResult, err in
         newResult = paginatorResult
         error = err
@@ -71,7 +71,7 @@ private func getPage(paginator: ((ARTPaginatedResult?, NSError?) -> Void) -> Voi
     }
     
     if let error = error {
-        XCTFail(error.localizedDescription)
+        XCTFail(error.message)
     }
     
     return newResult!

@@ -76,7 +76,7 @@
                             query.end = [NSDate dateWithTimeIntervalSince1970:intervalEnd/1000];
                             query.direction = ARTQueryDirectionBackwards;
 
-                            [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                            [channel history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
                                 XCTAssert(!error);
                                 XCTAssertFalse([result hasNext]);
                                 NSArray *page = [result items];
@@ -143,7 +143,7 @@
                             query.end = [NSDate dateWithTimeIntervalSince1970:intervalEnd/1000];
                             query.direction = ARTQueryDirectionForwards;
 
-                            [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                            [channel history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
                                 XCTAssert(!error);
                                 XCTAssertFalse([result hasNext]);
                                 NSArray *page = [result items];
@@ -184,7 +184,7 @@
             query.limit = 2;
             query.direction = ARTQueryDirectionBackwards;
 
-            [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+            [channel history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
                 XCTAssert(!error);
                 XCTAssertTrue([result hasNext]);
                 NSArray *page = [result items];
@@ -195,7 +195,7 @@
                 //XCTAssertEqualObjects(@"testString0", [firstMessage data]);
                 //XCTAssertEqualObjects(@"testString1", [secondMessage data]);
 
-                [result next:^(ARTPaginatedResult *result2, NSError *error) {
+                [result next:^(ARTPaginatedResult *result2, ARTErrorInfo *error) {
                     XCTAssert(!error);
                     NSArray *page = [result2 items];
                     XCTAssertEqual([page count], 2);
@@ -204,7 +204,7 @@
                     //XCTAssertEqualObjects(@"testString2", [firstMessage data]);
                     //XCTAssertEqualObjects(@"testString3", [secondMessage data]);
 
-                    [result2 next:^(ARTPaginatedResult *result3, NSError *error) {
+                    [result2 next:^(ARTPaginatedResult *result3, ARTErrorInfo *error) {
                         XCTAssert(!error);
                         XCTAssertFalse([result3 hasNext]);
                         NSArray *page = [result3 items];
@@ -212,7 +212,7 @@
                         //ARTMessage *firstMessage = [page objectAtIndex:0];
                         //XCTAssertEqualObjects(@"testString4", [firstMessage data]);
 
-                        [result3 first:^(ARTPaginatedResult *result4, NSError *error) {
+                        [result3 first:^(ARTPaginatedResult *result4, ARTErrorInfo *error) {
                             XCTAssert(!error);
                             XCTAssertTrue([result4 hasNext]);
                             NSArray *page = [result4 items];
@@ -248,7 +248,7 @@
             query.limit = 2;
             query.direction = ARTQueryDirectionBackwards;
 
-            [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+            [channel history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
                 XCTAssert(!error);
                 XCTAssertTrue([result hasNext]);
                 NSArray *page = [result items];
@@ -258,7 +258,7 @@
                 XCTAssertEqualObjects(@"testString4", [firstMessage data]);
                 XCTAssertEqualObjects(@"testString3", [secondMessage data]);
 
-                [result next:^(ARTPaginatedResult *result2, NSError *error) {
+                [result next:^(ARTPaginatedResult *result2, ARTErrorInfo *error) {
                     XCTAssert(!error);
                     NSArray *page = [result2 items];
                     XCTAssertEqual([page count], 2);
@@ -268,7 +268,7 @@
                     XCTAssertEqualObjects(@"testString2", [firstMessage data]);
                     XCTAssertEqualObjects(@"testString1", [secondMessage data]);
 
-                    [result2 next:^(ARTPaginatedResult *result3, NSError *error) {
+                    [result2 next:^(ARTPaginatedResult *result3, ARTErrorInfo *error) {
                         XCTAssert(!error);
                         XCTAssertFalse([result3 hasNext]);
                         NSArray *page = [result3 items];
@@ -276,7 +276,7 @@
                         ARTMessage *firstMessage = [page objectAtIndex:0];
                         XCTAssertEqualObjects(@"testString0", [firstMessage data]);
 
-                        [result3 first:^(ARTPaginatedResult *result4, NSError *error) {
+                        [result3 first:^(ARTPaginatedResult *result4, ARTErrorInfo *error) {
                             XCTAssert(!error);
                             XCTAssertTrue([result4 hasNext]);
                             NSArray *page = [result4 items];
@@ -311,7 +311,7 @@
             ARTDataQuery *query = [[ARTDataQuery alloc] init];
             query.limit = 2;
 
-            [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+            [channel history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
                 XCTAssert(!error);
                 XCTAssertTrue([result hasNext]);
                 NSArray *page = [result items];
@@ -350,7 +350,7 @@
             ARTDataQuery *query = [[ARTDataQuery alloc] init];
             query.limit = 2;
 
-            [channelTwo history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+            [channelTwo history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
                 XCTAssert(!error);
                 XCTAssertTrue([result hasNext]);
                 NSArray *page = [result items];
@@ -376,7 +376,7 @@
         query.limit = 1001;
 
         NSError *error = nil;
-        BOOL valid = [channelOne history:query callback:^(ARTPaginatedResult *result, NSError *error) {} error:&error];
+        BOOL valid = [channelOne history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {} error:&error];
         XCTAssertFalse(valid);
         XCTAssertNotNil(error);
         XCTAssert(error.code == ARTDataQueryErrorLimit);
@@ -394,7 +394,7 @@
         ARTDataQuery *query = [[ARTDataQuery alloc] init];
         query.limit = 1001;
         // Forcing an invalid query where the error is ignored and the result should be invalid (the request was canceled)
-        BOOL requested = [channelOne history:query callback:^(ARTPaginatedResult *result, NSError *error) {} error:nil];
+        BOOL requested = [channelOne history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {} error:nil];
         XCTAssertFalse(requested);
         [exp fulfill];
     }];

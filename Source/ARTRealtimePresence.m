@@ -46,11 +46,11 @@
     [super get:query callback:callback];
 }
 
-- (void)history:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *, NSError *))callback {
+- (void)history:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *, ARTErrorInfo *))callback {
     [self history:[[ARTRealtimeHistoryQuery alloc] init] callback:callback error:nil];
 }
 
-- (BOOL)history:(ARTRealtimeHistoryQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *, NSError *))callback error:(NSError **)errorPtr {
+- (BOOL)history:(ARTRealtimeHistoryQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
     return [super history:query callback:callback error:errorPtr];
 }
 
@@ -58,7 +58,7 @@
     [self enter:data callback:nil];
 }
 
-- (void)enter:(id)data callback:(void (^)(ARTErrorInfo * _Nullable))cb {
+- (void)enter:(id)data callback:(void (^)(ARTErrorInfo *))cb {
     [self enterClient:[self channel].clientId data:data callback:cb];
 }
 
@@ -66,7 +66,7 @@
     [self enterClient:clientId data:data callback:nil];
 }
 
-- (void)enterClient:(NSString *)clientId data:(id)data callback:(void (^)(ARTErrorInfo * _Nullable))cb {
+- (void)enterClient:(NSString *)clientId data:(id)data callback:(void (^)(ARTErrorInfo *))cb {
     if(!clientId) {
         if (cb) cb([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
         return;

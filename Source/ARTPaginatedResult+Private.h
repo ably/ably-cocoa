@@ -18,7 +18,7 @@ typedef __GENERIC(NSArray, ItemType) *__art_nullable(^ARTPaginatedResultResponse
 
 + (void)executePaginated:(ARTRest *)rest withRequest:(NSMutableURLRequest *)request
               andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
-                       callback:(void (^)(__GENERIC(ARTPaginatedResult, ItemType) *__art_nullable result, NSError *__art_nullable error))callback;
+                       callback:(void (^)(__GENERIC(ARTPaginatedResult, ItemType) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback;
 
 @end
 

@@ -68,7 +68,7 @@
     }] callback:callback];
 }
 
-- (ARTMessage *)encodeMessageIfNeeded:(ARTMessage *)message  {
+- (ARTMessage *)encodeMessageIfNeeded:(ARTMessage *)message {
     if (!self.dataEncoder) {
         return message;
     }
@@ -81,11 +81,11 @@
     return message;
 }
 
-- (void)history:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, NSError *))callback {
+- (void)history:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, ARTErrorInfo *))callback {
     [self history:[[ARTDataQuery alloc] init] callback:callback error:nil];
 }
 
-- (BOOL)history:(ARTDataQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, NSError *))callback error:(NSError **)errorPtr {
+- (BOOL)history:(ARTDataQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
     return NO;
 }

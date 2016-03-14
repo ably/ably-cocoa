@@ -298,7 +298,7 @@
             ARTRealtimeChannel *c2 = [_realtime2.channels get:channelName];
             [c2 publish:nil data:@"message2" callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
-                [c1 history:^(ARTPaginatedResult *result, NSError *error) {
+                [c1 history:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
                     XCTAssert(!error);
                     NSArray *messages = [result items];
                     XCTAssertEqual(2, messages.count);

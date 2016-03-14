@@ -45,7 +45,7 @@
                 XCTAssert(!error);
                 ARTDataQuery *query = [[ARTDataQuery alloc] init];
                 query.direction = ARTQueryDirectionForwards;
-                [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                [channel history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
                     XCTAssert(!error);
                     NSArray *messages = [result items];
                     XCTAssertEqual(2, messages.count);
@@ -76,7 +76,7 @@
 
         [channel publish:messages callback:^(ARTErrorInfo *error) {
             XCTAssert(!error);
-            [channel history:^(ARTPaginatedResult *result, NSError *error) {
+            [channel history:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
                 XCTAssert(!error);
                 NSArray *messages = [result items];
                 XCTAssertEqual(3, messages.count);

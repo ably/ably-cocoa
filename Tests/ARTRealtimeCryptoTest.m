@@ -55,7 +55,7 @@
             [channel publish:nil data:stringPayload callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
                 ARTRealtimeHistoryQuery *query = [[ARTRealtimeHistoryQuery alloc] init];
-                [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                [channel history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
                     XCTAssert(!error);
                     XCTAssertFalse([result hasNext]);
                     NSArray *page = [result items];
@@ -94,7 +94,7 @@
                 XCTAssertNil(errorInfo);
                 [c publish:nil data:stringPayload callback:^(ARTErrorInfo *errorInfo) {
                     XCTAssertNil(errorInfo);
-                    [c history:^(ARTPaginatedResult *result, NSError *error) {
+                    [c history:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
                         XCTAssert(!error);
                         XCTAssertFalse([result hasNext]);
                         NSArray *page = [result items];
