@@ -176,7 +176,7 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
 }
 
 + (float)timeout {
-    return 120.0;
+    return 10.0;
 }
 
 + (void)publishRestMessages:(NSString *)prefix count:(int)count channel:(ARTChannel *)channel completion:(void (^)())completion {
