@@ -217,8 +217,6 @@
             return 3;
         case ARTPresenceUpdate:
             return 4;
-        case ARTPresenceLast:
-            return 5;
     }
 }
 

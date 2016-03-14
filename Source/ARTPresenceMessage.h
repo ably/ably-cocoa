@@ -14,8 +14,7 @@ typedef NS_ENUM(NSUInteger, ARTPresenceAction) {
     ARTPresencePresent,
     ARTPresenceEnter,
     ARTPresenceLeave,
-    ARTPresenceUpdate,
-    ARTPresenceLast
+    ARTPresenceUpdate
 };
 
 /// List of members present on a channel
