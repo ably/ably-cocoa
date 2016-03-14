@@ -38,40 +38,7 @@ NSString *generateNonce() {
     return [NSString stringWithFormat:@"%08lu%08lu", (long)r1, (long)r2];
 }
 
-// MARK: ARTIndirectCancellable
-
-@interface ARTIndirectCancellable ()
-
-@property (readwrite, assign, nonatomic) BOOL isCancelled;
-
-@end
-
-@implementation ARTIndirectCancellable
-
-- (instancetype)init {
-    self = [super init];
-    if (self) {
-        _cancellable = nil;
-        _isCancelled = NO;
-    }
-    return self;
-}
-
-- (instancetype)initWithCancellable:(id<ARTCancellable>)cancellable {
-    self = [super init];
-    if (self) {
-        _cancellable = cancellable;
-        _isCancelled = NO;
-    }
-    return self;
-}
-
-- (void)cancel {
-    [self.cancellable cancel];
-    self.isCancelled = YES;
-}
-
-@end
+#pragma mark - ARTConnectionStateChange
 
 @implementation ARTConnectionStateChange
 
