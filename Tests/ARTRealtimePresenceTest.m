@@ -121,7 +121,7 @@
                 [expectation2 fulfill];
             }];
 
-            waitForWithTimeout(&attached, @[channel, channel2], 20.0);
+            waitForWithTimeout(&attached, @[channel, channel2], 1.5);
 
             [channel2 publish:nil data:@"testStringEcho" callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
@@ -949,15 +949,14 @@
 }
 */
 
--(void) testPresenceMap {
+- (void)testPresenceMap {
     XCTestExpectation *exp = [self expectationWithDescription:@"testPresenceMap"];
     NSString * channelName = @"channelName";
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.clientId = [self getClientId];
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
         ARTRealtimeChannel *channel = [_realtime.channels get:channelName];
-        [channel.presence subscribe:^(ARTPresenceMessage * message) {
-        }];
+
         [channel.presence enter:@"hi" callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
             [options setClientId: [self getSecondClientId]];
@@ -967,7 +966,8 @@
             [channel2.presence get:^(ARTPaginatedResult *result, NSError *error) {
                 XCTAssert(!error);
                 XCTAssertFalse([channel2.presence isSyncComplete]);
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+
+                [ARTTestUtil delay:1.0 block:^{
                     XCTAssertTrue([channel2.presence isSyncComplete]);
                     ARTPresenceMap * map = channel2.presenceMap;
                     ARTPresenceMessage * m =[map getClient:[self getClientId]];
@@ -975,7 +975,7 @@
                     XCTAssertEqual(m.action, ARTPresencePresent);
                     XCTAssertEqualObjects([m data], @"hi");
                     [exp fulfill];
-                });
+                }];
             }];
             [channel2 attach];
         }];
@@ -1162,7 +1162,6 @@
         options.clientId = [self getClientId];
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
         ARTRealtimeChannel *channel = [_realtime.channels get:channelName];
-        [channel.presence subscribe:^(ARTPresenceMessage * message) {}];
         [channel.presence enter:@"hi" callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
 
@@ -1259,7 +1258,7 @@
         [channel2 attach];
         [channel attach];
 
-        waitForWithTimeout(&attached, @[channel, channel2], 20.0);
+        waitForWithTimeout(&attached, @[channel, channel2], 1.5);
 
         // Presence
         [channel.presence enter:dataPayload callback:^(ARTErrorInfo *errorInfo) {

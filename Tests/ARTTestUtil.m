@@ -308,4 +308,10 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
     }
 }
 
++ (void)delay:(NSTimeInterval)timeout block:(dispatch_block_t)block {
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(timeout * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        block();
+    });
+}
+
 @end

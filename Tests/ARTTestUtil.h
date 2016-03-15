@@ -82,6 +82,8 @@ typedef void (^ARTRealtimeTestCallback)(ARTRealtime *realtime, ARTRealtimeConnec
 
 + (void)convertException:(void (^)())block error:(NSError *__art_nullable*__art_nullable)error;
 
++ (void)delay:(NSTimeInterval)timeout block:(dispatch_block_t)block;
+
 @end
 
 ART_ASSUME_NONNULL_END

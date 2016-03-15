@@ -366,7 +366,7 @@
             }];
         }];
     }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout]+8.0 handler:nil];
 }
 
 - (void)testTimeForwards {
@@ -440,7 +440,7 @@
             }];
         }];
     }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout]+8.0 handler:nil];
 }
 
 - (void)testHistoryFromAttach {
