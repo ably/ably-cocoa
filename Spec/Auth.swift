@@ -1561,7 +1561,7 @@ class Auth : QuickSpec {
                         delay(0.25) {
                             let now = NSDate().artToIntegerMs()
                             let firstParamsTimestamp = params.timestamp.artToIntegerMs()
-                            expect(firstParamsTimestamp).to(beCloseTo(now, within: 1.0))
+                            expect(firstParamsTimestamp).to(beCloseTo(now, within: 1.5))
                             delay(0.25) {
                                 expect(params.timestamp.artToIntegerMs()).to(equal(firstParamsTimestamp))
                                 done()
