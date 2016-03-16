@@ -20,8 +20,6 @@ ART_ASSUME_NONNULL_BEGIN
 @class ARTRealtimeChannel;
 @class ARTCipherDataEncoder;
 
-void waitForWithTimeout(NSUInteger *_Nonnull counter, NSArray *list, NSTimeInterval timeout);
-
 @interface ARTTestUtil : NSObject
 
 typedef NS_ENUM(NSUInteger, TestAlteration) {
@@ -81,6 +79,9 @@ typedef void (^ARTRealtimeTestCallback)(ARTRealtime *realtime, ARTRealtimeConnec
 + (void)removeAllChannels:(ARTRealtime *)realtime;
 
 + (void)convertException:(void (^)())block error:(NSError *__art_nullable*__art_nullable)error;
+
++ (void)waitForWithTimeout:(NSUInteger *_Nonnull)counter list:(NSArray *)list timeout:(NSTimeInterval)timeout;
++ (void)delay:(NSTimeInterval)timeout block:(dispatch_block_t)block;
 
 @end
 

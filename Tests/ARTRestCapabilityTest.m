@@ -71,11 +71,9 @@
         ARTRestChannel *channel = [rest.channels get:@"canpublish:test"];
         [channel publish:nil data:@"publish" callback:^(ARTErrorInfo *error) {
             XCTAssert(!error);
-            NSLog(@"%@", error);
             ARTRestChannel *channel2 = [rest.channels get:@"cannotPublishToThisChannelName"];
             [channel2 publish:nil data:@"publish" callback:^(ARTErrorInfo *error) {
                 XCTAssert(error);
-                NSLog(@"%@", error);
                 [expectation fulfill];
             }];
             

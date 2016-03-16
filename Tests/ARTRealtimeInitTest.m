@@ -18,6 +18,7 @@
 #import "ARTEventEmitter.h"
 #import "ARTAuth.h"
 #import "ARTRealtime+Private.h"
+#import "ARTDefault.h"
 
 @interface ARTRealtimeInitTest : XCTestCase {
     ARTRealtime * _realtime;
@@ -97,7 +98,7 @@
             }
         }];
     }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout]+[ARTDefault connectTimeout] handler:nil];
 }
 
 -(void) testInitWithKey {

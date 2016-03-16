@@ -18,13 +18,6 @@
 #import "ARTEventEmitter.h"
 #import "ARTURLSessionServerTrust.h"
 
-void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeout) {
-    NSTimeInterval limitInterval = [[[NSDate date] dateByAddingTimeInterval:timeout] timeIntervalSince1970];
-    while (*counter != list.count && [[NSDate date] timeIntervalSince1970] < limitInterval) {
-        CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.1, false);
-    }
-}
-
 @implementation ARTTestUtil
 
 + (ARTCipherDataEncoder *)getTestCipherEncoder {
@@ -176,7 +169,7 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
 }
 
 + (float)timeout {
-    return 120.0;
+    return 10.0;
 }
 
 + (void)publishRestMessages:(NSString *)prefix count:(int)count channel:(ARTChannel *)channel completion:(void (^)())completion {
@@ -305,6 +298,19 @@ void waitForWithTimeout(NSUInteger *counter, NSArray *list, NSTimeInterval timeo
     }
     @catch (NSException *exception) {
         *error = [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:@{NSLocalizedFailureReasonErrorKey:exception.reason}];
+    }
+}
+
++ (void)delay:(NSTimeInterval)timeout block:(dispatch_block_t)block {
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(timeout * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        block();
+    });
+}
+
++ (void)waitForWithTimeout:(NSUInteger *)counter list:(NSArray *)list timeout:(NSTimeInterval)timeout {
+    NSTimeInterval limitInterval = [[[NSDate date] dateByAddingTimeInterval:timeout] timeIntervalSince1970];
+    while (*counter != list.count && [[NSDate date] timeIntervalSince1970] < limitInterval) {
+        CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.1, false);
     }
 }
 
