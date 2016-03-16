@@ -360,7 +360,7 @@
             [exp1 fulfill];
         }];
 
-        waitForWithTimeout(&attached, @[channel, channel2], 1.5);
+        [ARTTestUtil waitForWithTimeout:&attached list:@[channel, channel2] timeout:1.5];
 
         // Enters "firstClientId"
         [channel.presence enter:@"First Client" callback:^(ARTErrorInfo *errorInfo) {

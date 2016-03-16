@@ -145,7 +145,7 @@
             [exp2 fulfill];
         }];
 
-        waitForWithTimeout(&attached, @[channel, channel2], 1.5);
+        [ARTTestUtil waitForWithTimeout:&attached list:@[channel, channel2] timeout:1.5];
 
         [channel2 publish:nil data:@"testStringEcho" callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
