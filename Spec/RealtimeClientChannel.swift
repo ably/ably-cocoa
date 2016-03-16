@@ -1329,7 +1329,7 @@ class RealtimeClientChannel: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         channel1.subscribe { message in
                             expect(message.data as? String).to(equal("message"))
-                            delay(5.0) { done() }
+                            delay(1.0) { done() }
                         }
 
                         channel2.subscribe { message in
