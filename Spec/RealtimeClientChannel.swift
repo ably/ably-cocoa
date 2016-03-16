@@ -573,7 +573,13 @@ class RealtimeClientChannel: QuickSpec {
                     let channel = client.channels.get("test")
                     client.onError(AblyTests.newErrorProtocolMessage())
                     expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Failed))
-                    expect(channel.detach()).toNot(beNil())
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.detach() { errorInfo in
+                            expect(errorInfo!.code).to(equal(90000))
+                            done()
+                        }
+                    }
                 }
 
                 // RTL5d
