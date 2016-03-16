@@ -41,7 +41,7 @@
 }
 
 - (void)testTokenSimple {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testRestTimeBadHost"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testRestTimeBadHost"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.useTokenAuth = true;
         options.clientId = @"testToken";
@@ -59,7 +59,7 @@
 }
 
 - (void)testInitWithBadToken {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithToken"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithToken"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.useTokenAuth = true;
         options.clientId = @"testToken";
@@ -78,7 +78,7 @@
 }
 
 -(void)testAuthURLForcesToken {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testClientIdForcesToken"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testClientIdForcesToken"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.authUrl = [NSURL URLWithString:@"some_url"];
         ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
@@ -91,7 +91,7 @@
 }
 
 -(void)testTTLDefaultOneHour {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testTTLDefaultOneHour"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testTTLDefaultOneHour"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.clientId = @"clientIdThatForcesToken";
         ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
@@ -109,7 +109,7 @@
 }
 
 - (void)testInitWithBorrowedAuthCb {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithToken"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithToken"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.useTokenAuth = true;
         options.clientId = @"testToken";

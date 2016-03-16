@@ -39,7 +39,7 @@
 }
 
 -(void)testInternetIsUp {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testInternetIsUp"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testInternetIsUp"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         [rest internetIsUp:^(bool isUp) {
             XCTAssertTrue(isUp);
@@ -50,7 +50,7 @@
 }
 
 -(void)testInitWithKey {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithKey"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithKey"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         @try {
             [ARTClientOptions setDefaultEnvironment:@"sandbox"];
@@ -76,7 +76,7 @@
 }
 
 -(void)testInitWithKeyBad {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithKeyBad"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithKeyBad"];
     @try {
         [ARTClientOptions setDefaultEnvironment:@"sandbox"];
         ARTRest * rest = [[ARTRest alloc] initWithKey:@"badkey:secret"];
@@ -96,7 +96,7 @@
 }
 
 -(void)testInitWithOptions {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
@@ -111,7 +111,7 @@
 }
 
 -(void)testInitWithOptionsEnvironment {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         ARTClientOptions *envOptions = [[ARTClientOptions alloc] init];
         envOptions.key = options.key;
@@ -128,7 +128,7 @@
 }
 
 -(void)testGetAuth {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
@@ -153,7 +153,7 @@
 }
 
 - (void)testRestTime {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testRestTime"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testRestTime"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         [rest time:^(NSDate *date, NSError *error) {

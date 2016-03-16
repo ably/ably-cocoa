@@ -49,12 +49,12 @@
 }
 
 -(void) testSimpleDisconnected {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testSimpleDisconnected"];
     NSString * channelName = @"resumeChannel";
     NSString * message1 = @"message1";
     NSString * message2 = @"message2";
     NSString * message3 = @"message3";
     NSString * message4 = @"message4";
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testSimpleDisconnected"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = [[ARTRealtime alloc] initWithOptions:options];

@@ -37,7 +37,7 @@
 }
 
 - (void)testPresence {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTRestChannel *channel = [rest.channels get:@"persisted:presence_fixtures"];
@@ -82,7 +82,7 @@
 }
 
 - (void)testHistory {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTRestChannel *channel = [rest.channels get:@"persisted:presence_fixtures"];
@@ -97,7 +97,7 @@
 }
 
 - (void)testHistoryDefaultBackwards {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTRestChannel *channel = [rest.channels get:@"persisted:presence_fixtures"];
@@ -114,7 +114,7 @@
 }
 
 - (void)testHistoryDirection {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTRestChannel *channel = [rest.channels get:@"persisted:presence_fixtures"];
@@ -133,7 +133,7 @@
 }
 
 - (void)testPresenceLimit {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTRestChannel *channelOne = [rest.channels get:@"name"];
@@ -150,7 +150,7 @@
 }
 
 - (void)testPresenceLimitIgnoringError {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTRestChannel *channelOne = [rest.channels get:@"name"];

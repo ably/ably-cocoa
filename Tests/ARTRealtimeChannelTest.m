@@ -53,7 +53,7 @@
 }
 
 - (void)testAttach {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"attach"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"attach"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
@@ -75,7 +75,7 @@
 
 
 - (void)testAttachBeforeConnect     {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"attach_before_connect"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"attach_before_connect"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"attach_before_connect"];
@@ -91,7 +91,7 @@
 }
 
 - (void)testAttachDetach {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"attach_detach"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"attach_detach"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"attach_detach"];
@@ -114,7 +114,7 @@
 
 - (void) testAttachDetachAttach {
     
-    XCTestExpectation *expectation = [self expectationWithDescription:@"attach_detach_attach"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"attach_detach_attach"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"attach_detach_attach"];
@@ -143,8 +143,8 @@
 
 - (void)testSubscribeUnsubscribe {
     
-    XCTestExpectation *expectation = [self expectationWithDescription:@"publish"];
     NSString * lostMessage = @"lost";
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"publish"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"test"];
@@ -179,7 +179,7 @@
 
 
 - (void) testSuspendingDetachesChannel {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testSuspendingDetachesChannel"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testSuspendingDetachesChannel"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"channel"];
@@ -206,7 +206,7 @@
 }
 
 - (void) testFailingFailsChannel {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testSuspendingDetachesChannel"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testSuspendingDetachesChannel"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"channel"];
@@ -227,7 +227,7 @@
 }
 
 - (void) testGetChannels {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testGetChannels"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testGetChannels"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *c1 = [realtime.channels get:@"channel"];
@@ -259,10 +259,10 @@
 }
 
 - (void) testGetSameChannelWithParams {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testGetChannels"];
     NSString * channelName = @"channel";
     NSString * firstMessage = @"firstMessage";
     NSString * secondMessage = @"secondMessage";
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testGetChannels"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *c1 = [realtime.channels get:channelName];
@@ -294,7 +294,7 @@
 
 
 - (void)testAttachFails {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testAttachFails"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testAttachFails"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"attach"];
@@ -324,8 +324,8 @@
     NSString *firstClientId = @"firstClientId";
     NSString *channelName = @"channelName";
 
-    XCTestExpectation *exp1 = [self expectationWithDescription:@"testClientIdPreserved1"];
-    XCTestExpectation *exp2 = [self expectationWithDescription:@"testClientIdPreserved2"];
+    __weak XCTestExpectation *exp1 = [self expectationWithDescription:@"testClientIdPreserved1"];
+    __weak XCTestExpectation *exp2 = [self expectationWithDescription:@"testClientIdPreserved2"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withDebug:NO callback:^(ARTClientOptions *options) {
         // First instance
         options.clientId = firstClientId;

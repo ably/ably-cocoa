@@ -248,32 +248,6 @@
     }];
 }
 
-+ (void)testRealtimeV2:(XCTestCase *)testCase withDebug:(BOOL)debug callback:(ARTRealtimeTestCallback)callback {
-    XCTestExpectation *expectation = [testCase expectationWithDescription:@"testRealtime"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withDebug:debug callback:^(ARTClientOptions *options) {
-        ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
-        [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
-            ARTRealtimeConnectionState state = stateChange.current;
-            ARTErrorInfo *errorInfo = stateChange.reason;
-            if (state == ARTRealtimeFailed) {
-                // FIXME: XCTFail not working outside a XCTestCase method!
-                if (errorInfo) {
-                    //XCTFail(@"%@", errorInfo);
-                    NSLog(@"Realtime connection failed: %@", errorInfo);
-                }
-                else {
-                    //XCTFail();
-                    NSLog(@"Realtime connection failed");
-                }
-                [expectation fulfill];
-            }
-            else
-                callback(realtime, state, expectation);
-        }];
-    }];
-    [testCase waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-}
-
 + (ARTProtocolMessage *)newErrorProtocolMessage {
     ARTProtocolMessage* protocolMessage = [[ARTProtocolMessage alloc] init];
     protocolMessage.action = ARTProtocolMessageError;

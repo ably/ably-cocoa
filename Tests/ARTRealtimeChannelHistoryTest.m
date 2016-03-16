@@ -45,30 +45,46 @@
 }
 
 - (void)testHistory {
-    [ARTTestUtil testRealtimeV2:self withDebug:NO callback:^(ARTRealtime *realtime, ARTRealtimeConnectionState state, XCTestExpectation *expectation) {
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testHistory"];
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
+        ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;
-
-        if (state == ARTRealtimeConnected) {
-            ARTRealtimeChannel *channel = [realtime.channels get:@"persisted:testHistory"];
-            [channel publish:nil data:@"testString" callback:^(ARTErrorInfo *errorInfo) {
-                XCTAssertNil(errorInfo);
-                [channel publish:nil data:@"testString2" callback:^(ARTErrorInfo *errorInfo) {
-                    XCTAssertNil(errorInfo);
-                    [channel history:^(ARTPaginatedResult *result, NSError *error) {
-                        XCTAssert(!error);
-                        NSArray *messages = [result items];
-                        XCTAssertEqual(2, messages.count);
-                        ARTMessage *m0 = messages[0];
-                        ARTMessage *m1 = messages[1];
-                        XCTAssertEqualObjects(@"testString2", [m0 data]);
-                        XCTAssertEqualObjects(@"testString", [m1 data]);
-
-                        [expectation fulfill];
+        [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
+            ARTRealtimeConnectionState state = stateChange.current;
+            ARTErrorInfo *errorInfo = stateChange.reason;
+            if (state == ARTRealtimeFailed) {
+                if (errorInfo) {
+                    XCTFail(@"Realtime connection failed: %@", errorInfo);
+                }
+                else {
+                    XCTFail(@"Realtime connection failed");
+                }
+                [expectation fulfill];
+            }
+            else {
+                if (state == ARTRealtimeConnected) {
+                    ARTRealtimeChannel *channel = [realtime.channels get:@"persisted:testHistory"];
+                    [channel publish:nil data:@"testString" callback:^(ARTErrorInfo *errorInfo) {
+                        XCTAssertNil(errorInfo);
+                        [channel publish:nil data:@"testString2" callback:^(ARTErrorInfo *errorInfo) {
+                            XCTAssertNil(errorInfo);
+                            [channel history:^(ARTPaginatedResult *result, NSError *error) {
+                                XCTAssert(!error);
+                                NSArray *messages = [result items];
+                                XCTAssertEqual(2, messages.count);
+                                ARTMessage *m0 = messages[0];
+                                ARTMessage *m1 = messages[1];
+                                XCTAssertEqualObjects(@"testString2", [m0 data]);
+                                XCTAssertEqualObjects(@"testString", [m1 data]);
+                                [expectation fulfill];
+                            }];
+                        }];
                     }];
-                }];
-            }];
-        }        
+                }
+            }
+        }];
     }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 -(void) publishTestStrings:(ARTRealtimeChannel *) channel
@@ -104,8 +120,8 @@
 }
 
 - (void) testHistoryBothChannels {
-    XCTestExpectation *expectation1 = [self expectationWithDescription:@"historyBothChanels1"];
-    XCTestExpectation *expectation2 = [self expectationWithDescription:@"historyBothChanels2"];
+    __weak XCTestExpectation *expectation1 = [self expectationWithDescription:@"historyBothChanels1"];
+    __weak XCTestExpectation *expectation2 = [self expectationWithDescription:@"historyBothChanels2"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         NSString * both = @"historyBoth";
@@ -144,7 +160,7 @@
 
 
 - (void)testHistoryForward {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryForward"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryForward"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"persisted:testHistory"];
@@ -172,7 +188,7 @@
 }
 
 -(void) testHistoryForwardPagination {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryForwardPagination"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryForwardPagination"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"realHistChan"];
@@ -230,7 +246,7 @@
 }
 
 -(void) testHistoryBackwardPagination {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryBackwardagination"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryBackwardagination"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"histRealBackChan"];
@@ -299,7 +315,7 @@
 - (void)testTimeBackwards {
     __block long long timeOffset= 0;
 
-    XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
+    __weak XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         [realtime time:^(NSDate *time, NSError *error) {
@@ -314,7 +330,7 @@
 
     [_realtime.connection close];
     
-    XCTestExpectation *expectation = [self expectationWithDescription:@"firstExpectation"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"firstExpectation"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"testTimeBackwards"];
@@ -368,7 +384,7 @@
 - (void)testTimeForwards {
     __block long long timeOffset = 0;
 
-    XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
+    __weak XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         [realtime time:^(NSDate *time, NSError *error) {
@@ -383,7 +399,7 @@
 
     [_realtime.connection close];
 
-    XCTestExpectation *expectation = [self expectationWithDescription:@"firstExpectation"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"firstExpectation"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"test_history_time_forwards"];
@@ -436,14 +452,14 @@
 }
 
 - (void)testHistoryFromAttach {
-    XCTestExpectation *e = [self expectationWithDescription:@"waitExp"];
+    __weak XCTestExpectation *e = [self expectationWithDescription:@"waitExp"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         [e fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 
     NSString *channelName = @"test_history_time_forwards";
-    XCTestExpectation *expecation = [self expectationWithDescription:@"send_first_batch"];
+    __weak XCTestExpectation *expecation = [self expectationWithDescription:@"send_first_batch"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         ARTRealtime * realtime =[[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;

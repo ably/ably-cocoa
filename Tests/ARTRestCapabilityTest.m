@@ -66,8 +66,8 @@
 }
 
 - (void)testPublishRestricted {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testSimpleDisconnected"];
     [self withRestRestrictCap:^(ARTRest * rest) {
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testSimpleDisconnected"];
         ARTRestChannel *channel = [rest.channels get:@"canpublish:test"];
         [channel publish:nil data:@"publish" callback:^(ARTErrorInfo *error) {
             XCTAssert(!error);

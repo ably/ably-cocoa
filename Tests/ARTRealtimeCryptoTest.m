@@ -44,7 +44,7 @@
 }
 
 - (void)testSendEncodedMessage {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testSendEncodedMessage"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testSendEncodedMessage"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         NSData * ivSpec = [[NSData alloc] initWithBase64EncodedString:@"HO4cYSP8LybPYBPZPHQOtg==" options:0];
@@ -80,7 +80,7 @@
 }
 
 - (void)testSendEncodedMessageOnExistingChannel {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testSendEncodedMessageOnExistingChannel"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testSendEncodedMessageOnExistingChannel"];
     NSString *channelName = @"channelName";
     NSString *firstMessageText = @"firstMessage";
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {

@@ -53,7 +53,7 @@
 - (void)multipleSendName:(NSString *)name count:(int)count delay:(int)delay {
     __block int numReceived = 0;
     
-    XCTestExpectation *e = [self expectationWithDescription:@"waitExp"];
+    __weak XCTestExpectation *e = [self expectationWithDescription:@"waitExp"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         [e fulfill];
@@ -62,7 +62,7 @@
 
     [_realtime close];
 
-    XCTestExpectation *expectation = [self expectationWithDescription:@"multiple_send"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"multiple_send"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:name];
@@ -89,7 +89,7 @@
 }
 
 - (void)testSingleSendText {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testSingleSendText"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testSingleSendText"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"testSingleSendText"];
@@ -105,9 +105,9 @@
 }
 
 - (void)testSingleSendEchoText {
-    XCTestExpectation *exp1 = [self expectationWithDescription:@"testSingleSendEchoText1"];
-    XCTestExpectation *exp2 = [self expectationWithDescription:@"testSingleSendEchoText2"];
-    XCTestExpectation *exp3 = [self expectationWithDescription:@"testSingleSendEchoText3"];
+    __weak XCTestExpectation *exp1 = [self expectationWithDescription:@"testSingleSendEchoText1"];
+    __weak XCTestExpectation *exp2 = [self expectationWithDescription:@"testSingleSendEchoText2"];
+    __weak XCTestExpectation *exp3 = [self expectationWithDescription:@"testSingleSendEchoText3"];
     NSString *channelName = @"testSingleEcho";
     
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
@@ -164,10 +164,10 @@
 }
 
 - (void)testEchoMessagesDefault {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testEchoMessagesDefault"];
     NSString * channelName = @"channel";
     NSString * message1 = @"message1";
     NSString * message2 = @"message2";
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testEchoMessagesDefault"];
     
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
@@ -197,10 +197,10 @@
 }
 
 - (void)testEchoMessagesFalse {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testEchoMessagesFalse"];
     NSString * channelName = @"channel";
     NSString * message1 = @"message1";
     NSString * message2 = @"message2";
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testEchoMessagesFalse"];
     
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.echoMessages = false;
@@ -224,7 +224,7 @@
 }
 
 - (void)testSubscribeAttaches {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testSingleSendText"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testSingleSendText"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"testSubscribeAttaches"];
@@ -242,9 +242,9 @@
 
 
 - (void)testMessageQueue {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testMessageQueue"];
     NSString * connectingMessage = @"connectingMessage";
     NSString * disconnectedMessage = @"disconnectedMessage";
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testMessageQueue"];
 
     ARTClientOptions *options = [ARTTestUtil clientOptions];
     options.autoConnect = false;
@@ -291,8 +291,8 @@
 
 
 - (void)testConnectionIdsInMessage {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testConnectionIdsInMessage"];
     NSString * channelName = @"channelName";
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testConnectionIdsInMessage"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
@@ -323,7 +323,7 @@
 }
 
 -(void) testPublishImmediate {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testPublishImmediate"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testPublishImmediate"];
     
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
@@ -350,7 +350,7 @@
 }
 
 -(void) testPublishArray {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testPublishArray"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testPublishArray"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"channel"];
@@ -379,7 +379,7 @@
 }
 
 -(void) testPublishWithName {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testPublishWithName"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testPublishWithName"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"channel"];
@@ -397,10 +397,10 @@
 
 
 - (void)testSubscribeToName {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testSubscribeToName"];
     NSString * channelName = @"channel";
     NSString * messageName =@"messageName";
     NSString * messageContent = @"content";
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testSubscribeToName"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:channelName];

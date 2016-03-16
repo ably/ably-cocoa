@@ -42,7 +42,7 @@
 }
 
 - (void) testAttachOnce {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"attachOnce"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"attachOnce"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
@@ -81,7 +81,7 @@
 }
 
 -(void) testSkipsFromDetachingToAttaching {
-    XCTestExpectation *  expectation = [self expectationWithDescription:@"detaching_to_attaching"];
+    __weak XCTestExpectation * expectation = [self expectationWithDescription:@"detaching_to_attaching"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"detaching_to_attaching"];
@@ -115,8 +115,8 @@
 }
 
 - (void) testAttachMultipleChannels {
-    XCTestExpectation *expectation1 = [self expectationWithDescription:@"test_attach_multiple1"];
-    XCTestExpectation *expectation2 = [self expectationWithDescription:@"test_attach_multiple2"];
+    __weak XCTestExpectation *expectation1 = [self expectationWithDescription:@"test_attach_multiple1"];
+    __weak XCTestExpectation *expectation2 = [self expectationWithDescription:@"test_attach_multiple2"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel1 = [realtime.channels get:@"test_attach_multiple1"];
@@ -141,7 +141,7 @@
 
 
 - (void)testDetach {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"detach"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"detach"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
@@ -165,7 +165,7 @@
 }
 
 - (void)testDetaching {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"detach"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"detach"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         __block BOOL detachingHit = NO;
@@ -198,7 +198,7 @@
 }
 
 -(void) testSkipsFromAttachingToDetaching {
-    XCTestExpectation *  expectation = [self expectationWithDescription:@"attaching_to_detaching"];
+    __weak XCTestExpectation * expectation = [self expectationWithDescription:@"attaching_to_detaching"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"attaching_to_detaching"];
@@ -224,7 +224,7 @@
 }
 
 -(void)testDetachingIgnoresDetach {
-    XCTestExpectation *  expectation = [self expectationWithDescription:@"testDetachingIgnoresDetach"];
+    __weak XCTestExpectation * expectation = [self expectationWithDescription:@"testDetachingIgnoresDetach"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
@@ -252,7 +252,7 @@
 }
 
 - (void) testAttachFailsOnFailedConnection {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testAttachFailsOnFailedConnection"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testAttachFailsOnFailedConnection"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
@@ -290,8 +290,8 @@
 }
 
 - (void)testAttachRestricted {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testSimpleDisconnected"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withAlteration:TestAlterationRestrictCapability callback:^(ARTClientOptions * options) {
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testSimpleDisconnected"];
 
             ARTRealtime * realtime =[[ARTRealtime alloc] initWithOptions:options];
             _realtime = realtime;
@@ -310,7 +310,7 @@
 }
 
 - (void)testAttachingChannelFails {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testAttachingChannelFails"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testAttachingChannelFails"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel1 = [realtime.channels get:@"channel"];
@@ -329,7 +329,7 @@
 }
 
 - (void)testAttachedChannelFails {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testAttachedChannelFails"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testAttachedChannelFails"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel1 = [realtime.channels get:@"channel"];
@@ -348,7 +348,7 @@
 }
 
 - (void)testChannelClosesOnClose {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testChannelClosesOnClose"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testChannelClosesOnClose"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel1 = [realtime.channels get:@"channel"];
@@ -367,7 +367,7 @@
 }
 
 - (void)testPresenceEnterRestricted {
-    XCTestExpectation *expect = [self expectationWithDescription:@"testSimpleDisconnected"];
+    __weak XCTestExpectation *expect = [self expectationWithDescription:@"testSimpleDisconnected"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] withAlteration:TestAlterationRestrictCapability callback:^(ARTClientOptions *options) {
         // Connection
         options.clientId = @"some_client_id";

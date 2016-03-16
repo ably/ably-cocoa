@@ -99,7 +99,7 @@
 }
 
 -(void) runTestLimit:(int)limit forwards:(bool)forwards callback:(void (^)(ARTPaginatedResult *__art_nullable result, NSError *__art_nullable error))cb {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime.channels get:[self channelName]];
         [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
@@ -138,7 +138,7 @@
 
 - (void)testPresenceHistory {
     NSString * presenceEnter = @"client_has_entered";
-    XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime.channels get:@"testSimpleText"];
         [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
@@ -171,7 +171,7 @@
     NSString * presenceEnter1 = @"client_has_entered";
     NSString * presenceEnter2 = @"client_has_entered2";
     NSString * presenceUpdate= @"client_has_updated";
-    XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime.channels get:@"persisted:testSimpleText"];
         [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
@@ -225,7 +225,7 @@
     NSString * presenceUpdate= @"client_has_updated";
     NSString * channelName = @"testSecondChannel";
 
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testSingleSendEchoText"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testSingleSendEchoText"];
     [self withRealtimeClientId:^(ARTRealtime *realtime1) {
         ARTRealtimeChannel *channel = [realtime1.channels get:channelName];
        
@@ -280,7 +280,7 @@
     NSString * presenceEnter1 = @"client_has_entered";
     NSString * presenceEnter2 = @"client_has_entered2";
     NSString * presenceUpdate= @"client_has_updated";
-    XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime.channels get:@"testWaitTextBackward"];
         [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
@@ -405,7 +405,7 @@
 -(void) runTestTimeForwards:(bool) forwards limit:(int) limit callback:(void (^)(ARTPaginatedResult *__art_nullable result, NSError *__art_nullable error)) cb {
     __block long long timeOffset= 0;
     
-    XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
+    __weak XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
     [self withRealtimeClientId:^(ARTRealtime  *realtime) {
         [realtime time:^(NSDate *time, NSError *error) {
             XCTAssert(!error);
@@ -426,7 +426,7 @@
                 [channel attach];
             }
         }];
-        XCTestExpectation *firstBatchExpectation= [self expectationWithDescription:@"firstBatchExpectation"];
+        __weak XCTestExpectation *firstBatchExpectation= [self expectationWithDescription:@"firstBatchExpectation"];
         
         int firstBatchTotal = [self firstBatchSize];
         int secondBatchTotal = [self secondBatchSize];
@@ -459,7 +459,7 @@
         sleep([ARTTestUtil bigSleep]);
         long long start = [ARTTestUtil nowMilli] + timeOffset;
 
-        XCTestExpectation * secondBatchExpectation= [self expectationWithDescription:@"secondBatchExpectation"];
+        __weak XCTestExpectation *secondBatchExpectation= [self expectationWithDescription:@"secondBatchExpectation"];
         __block int numReceived=0;
         for(int i=0;i < secondBatchTotal; i++) {
             NSString * str = [NSString stringWithFormat:@"second_updates%d", i];
@@ -479,7 +479,7 @@
 
 
         numReceived = 0;
-        XCTestExpectation *thirdBatchExpectation = [self expectationWithDescription:@"thirdBatchExpectation"];
+        __weak XCTestExpectation *thirdBatchExpectation = [self expectationWithDescription:@"thirdBatchExpectation"];
         for(int i=0;i < thirdBatchTotal; i++) {
             NSString * str = [NSString stringWithFormat:@"third_updates%d", i];
             [channel.presence update:str callback:^(ARTErrorInfo *errorInfo) {
@@ -499,7 +499,7 @@
         query.limit = limit;
         query.direction = forwards ? ARTQueryDirectionForwards : ARTQueryDirectionBackwards;
 
-        XCTestExpectation *historyExpecation = [self expectationWithDescription:@"historyExpecation"];
+        __weak XCTestExpectation *historyExpecation = [self expectationWithDescription:@"historyExpecation"];
         [channel.presence history:query callback:^(ARTPaginatedResult *result, NSError *error) {
             cb(result, error);
             [historyExpecation fulfill];
@@ -542,7 +542,7 @@
 }
 
 - (void)testFromAttach {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime.channels get:[self channelName]];
         [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
@@ -604,7 +604,7 @@
     NSString * presenceEnter3 = @"enter3";
     
     NSString * channelName = @"chanName";
-    XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.clientId = [self getClientId];
         _realtime = [[ARTRealtime alloc] initWithOptions:options];

@@ -43,22 +43,10 @@ typedef NS_ENUM(NSUInteger, TestAlteration) {
 
 typedef void (^ARTRestConstructorCb)(ARTRest *rest);
 typedef void (^ARTRealtimeConstructorCb)(ARTRealtime *realtime);
-typedef void (^ARTRealtimeTestCallback)(ARTRealtime *realtime, ARTRealtimeConnectionState state, XCTestExpectation *expectation);
 
 + (void)testRest:(ARTRestConstructorCb)cb;
-
 + (void)testRealtime:(ARTClientOptions *)options callback:(ARTRealtimeConstructorCb)cb;
-
-// FIXME: try to unify testRealtime, testRealtimeV2 and others that are private
 + (void)testRealtime:(ARTRealtimeConstructorCb)cb;
-
-/**
- New RealtimeClient instance
-
- Creates implicitly a XCTestExpectation.
- The callback is called only if the RealtimeClient gets connected.
- */
-+ (void)testRealtimeV2:(XCTestCase *)testCase withDebug:(BOOL)debug callback:(ARTRealtimeTestCallback)callback;
 
 + (void)repeat:(int)count i:(int)i delay:(NSTimeInterval)delay block:(void (^)(int))block;
 + (void)repeat:(int)count delay:(NSTimeInterval)delay block:(void (^)(int))block ;

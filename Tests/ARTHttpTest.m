@@ -31,7 +31,7 @@
 }
 
 -(void) testPingGoogle {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"get"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"get"];
     
     [self.http makeRequestWithMethod:@"GET" url:[NSURL URLWithString:@"http://www.google.com"] headers:nil body:nil callback:^(ARTHttpResponse *response) {
         XCTAssertEqual(response.status, 200);
@@ -41,7 +41,7 @@
     [self waitForExpectationsWithTimeout:10.0 handler:nil];
 }
 - (void)testNonExistantPath {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"get"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"get"];
 
     [self.http makeRequestWithMethod:@"GET" url:[NSURL URLWithString:@"http://rest.ably.io"] headers:nil body:nil callback:^(ARTHttpResponse *response) {
         XCTAssertEqual(response.status, 404);

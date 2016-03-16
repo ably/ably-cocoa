@@ -38,7 +38,7 @@
 }
 
 -(void) testSendBinary {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testSendBinary"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testSendBinary"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest =rest;
         ARTChannel * c = [rest.channels get:@"test"];
@@ -67,7 +67,7 @@
 }
 
 -(void) testSendEncodedMessage {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testSendBinary"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testSendBinary"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest =rest;
         

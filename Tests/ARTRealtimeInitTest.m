@@ -47,8 +47,8 @@
 
 
 -(void)testInitWithOptions {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"initWithOptions"];
     [ARTTestUtil testRealtime:^(ARTRealtime * realtime) {
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"initWithOptions"];
         _realtime = realtime;
         [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
             ARTRealtimeConnectionState state = stateChange.current;
@@ -64,8 +64,8 @@
 }
 
 -(void)testInitWithHost {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithHost"];
     [self getBaseOptions:^(ARTClientOptions * options) {
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithHost"];
         options.environment = @"test";
         ARTRealtime * realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;
@@ -83,8 +83,8 @@
 }
 
 -(void)testInitWithPort {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithPort"];
     [self getBaseOptions:^(ARTClientOptions * options) {
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithPort"];
         options.tlsPort = 9998;
         ARTRealtime * realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;
@@ -102,7 +102,7 @@
 }
 
 -(void) testInitWithKey {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithKey"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testInitWithKey"];
     [self getBaseOptions:^(ARTClientOptions *options) {
         _realtime = [[ARTRealtime alloc] initWithKey:options.key];
         if (_realtime.connection.state == ARTRealtimeConnecting) {
@@ -114,7 +114,7 @@
 }
 
 -(void) testInitAutoConnectDefault {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testInitAutoConnectDefault"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testInitAutoConnectDefault"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
@@ -128,7 +128,7 @@
 }
 
 -(void) testInitAutoConnectFalse {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testInitAutoConnectDefault"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testInitAutoConnectDefault"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.autoConnect = false;
         ARTRealtime * realtime = [[ARTRealtime alloc] initWithOptions:options];

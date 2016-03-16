@@ -66,7 +66,7 @@
     NSString * c1Message = @"c1 says hi";
     NSString * c2Message= @"c2 says hi";
 
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testRecoverDisconnected"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testRecoverDisconnected"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
 
@@ -120,7 +120,7 @@
 }
 
 - (void)testRecoverFails {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testRecoverDisconnected"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testRecoverDisconnected"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.recover = @"bad_recovery_key:1234";
         _realtimeRecover = [[ARTRealtime alloc] initWithOptions:options];

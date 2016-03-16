@@ -40,7 +40,7 @@
 - (void)testTimeBackwards {
     __block long long timeOffset = 0;
     
-    XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
+    __weak XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         [rest time:^(NSDate *time, NSError *error) {
@@ -53,7 +53,7 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
     
-    XCTestExpectation *firstExpectation = [self expectationWithDescription:@"firstExpectation"];
+    __weak XCTestExpectation *firstExpectation = [self expectationWithDescription:@"firstExpectation"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTRestChannel *channel = [rest.channels get:@"testTimeBackwards"];
@@ -106,7 +106,7 @@
 - (void)testTimeForwards {
     __block long long timeOffset = 0;
     
-    XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
+    __weak XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         [rest time:^(NSDate *time, NSError *error) {
@@ -119,7 +119,7 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 
-    XCTestExpectation *firstExpectation = [self expectationWithDescription:@"getTime"];
+    __weak XCTestExpectation *firstExpectation = [self expectationWithDescription:@"getTime"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTChannel *channel = [rest.channels get:@"test_history_time_forwards"];
@@ -172,13 +172,13 @@
 }
 
 - (void)testHistoryForwardPagination {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryForwardPagination"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryForwardPagination"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
     
-    XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
+    __weak XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTChannel *channel = [rest.channels get:@"testHistoryForwardPagination"];
@@ -236,13 +236,13 @@
 }
 
 - (void)testHistoryBackwardPagination {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"e"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"e"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 
-    XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
+    __weak XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTChannel *channel = [rest.channels get:@"testHistoryBackwardPagination"];
@@ -300,13 +300,13 @@
 }
 
 - (void)testHistoryBackwardDefault {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"e"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"e"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 
-    XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
+    __weak XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTChannel *channel = [rest.channels get:@"testHistoryBackwardDefault"];
@@ -332,14 +332,14 @@
 }
 
 -(void) testHistoryTwoClients {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"e"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"e"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 
     NSString *channelName = @"testHistoryTwoClients";
-    XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
+    __weak XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
@@ -371,7 +371,7 @@
 }
 
 - (void)testHistoryLimit {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTChannel *channelOne = [rest.channels get:@"name"];
@@ -390,7 +390,7 @@
 }
 
 - (void)testHistoryLimitIgnoringError {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTChannel *channelOne = [rest.channels get:@"name"];
