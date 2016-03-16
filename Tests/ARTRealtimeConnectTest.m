@@ -18,7 +18,7 @@
 #import "ARTRealtimeChannel.h"
 
 @interface ARTRealtimeConnectTest : XCTestCase {
-    ARTRealtime * _realtime;
+    ARTRealtime *_realtime;
 }
 @end
 
@@ -38,7 +38,8 @@
     }
     _realtime = nil;
 }
-- (void)testConnectText{
+
+- (void)testConnectText {
     __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testConnectText"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
@@ -95,7 +96,6 @@
         [realtime connect];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    
 }
 
 - (void)testConnectStateChangeClose {
@@ -135,7 +135,7 @@
         
             if(state == ARTRealtimeConnected) {
                 XCTAssertEqual(realtime.connection.serial, -1);
-                ARTRealtimeChannel * c =[realtime.channels get:@"chan"];
+                ARTRealtimeChannel *c =[realtime.channels get:@"chan"];
                 [c publish:nil data:@"message" callback:^(ARTErrorInfo *errorInfo) {
                     XCTAssertEqual(realtime.connection.serial, 0);
                     [c publish:nil data:@"message2" callback:^(ARTErrorInfo *errorInfo) {
@@ -150,9 +150,7 @@
         [realtime connect];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    
 }
-
 
 - (void)testConnectAfterClose {
     __weak XCTestExpectation *expectation = [self expectationWithDescription:@"test_connect_text"];
@@ -202,14 +200,13 @@
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    
 }
 
 - (void)testConnectStates {
     __weak XCTestExpectation *exp = [self expectationWithDescription:@"testConnectStates"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.autoConnect = false;
-        ARTRealtime * realtime = [[ARTRealtime alloc] initWithOptions:options];
+        ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;
         __block bool gotInitialized =false;
         __block bool gotConnecting =false;
@@ -303,6 +300,5 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
-
 
 @end

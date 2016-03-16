@@ -23,13 +23,12 @@
 #import "ARTChannelOptions.h"
 
 @interface ARTRealtimeChannelTest : XCTestCase {
-    ARTRealtime * _realtime;
-    ARTRealtime * _realtime2;
+    ARTRealtime *_realtime;
+    ARTRealtime *_realtime2;
 }
 @end
 
 @implementation ARTRealtimeChannelTest
-
 
 - (void)setUp {
     [super setUp];
@@ -69,12 +68,10 @@
             }
         }];
     }];
-    
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-
-- (void)testAttachBeforeConnect     {
+- (void)testAttachBeforeConnect {
     __weak XCTestExpectation *expectation = [self expectationWithDescription:@"attach_before_connect"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
@@ -86,7 +83,6 @@
             }
         }];
     }];
-    
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
@@ -108,12 +104,10 @@
             }
         }];
     }];
-    
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-- (void) testAttachDetachAttach {
-    
+- (void)testAttachDetachAttach {
     __weak XCTestExpectation *expectation = [self expectationWithDescription:@"attach_detach_attach"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
@@ -140,11 +134,9 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-
 - (void)testSubscribeUnsubscribe {
-    
-    NSString * lostMessage = @"lost";
     __weak XCTestExpectation *expectation = [self expectationWithDescription:@"publish"];
+    NSString *lostMessage = @"lost";
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *channel = [realtime.channels get:@"test"];
@@ -162,8 +154,8 @@
 
         [channel publish:nil data:@"testString" callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
-            NSString * finalMessage = @"final";
-            [channel subscribe:^(ARTMessage * message) {
+            NSString *finalMessage = @"final";
+            [channel subscribe:^(ARTMessage *message) {
                 if([[message data] isEqualToString:finalMessage]) {
                     [expectation fulfill];
                 }
@@ -175,10 +167,8 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
- 
 
-
-- (void) testSuspendingDetachesChannel {
+- (void)testSuspendingDetachesChannel {
     __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testSuspendingDetachesChannel"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
@@ -205,7 +195,7 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-- (void) testFailingFailsChannel {
+- (void)testFailingFailsChannel {
     __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testSuspendingDetachesChannel"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
@@ -226,7 +216,7 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-- (void) testGetChannels {
+- (void)testGetChannels {
     __weak XCTestExpectation *exp = [self expectationWithDescription:@"testGetChannels"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
@@ -234,7 +224,7 @@
         ARTRealtimeChannel *c2 = [realtime.channels get:@"channel2"];
         ARTRealtimeChannel *c3 = [realtime.channels get:@"channel3"];
         {
-            NSMutableDictionary * d = [[NSMutableDictionary alloc] init];
+            NSMutableDictionary *d = [[NSMutableDictionary alloc] init];
             for (ARTRealtimeChannel *channel in realtime.channels) {
                 [d setValue:channel forKey:channel.name];
             }
@@ -244,7 +234,7 @@
             XCTAssertEqualObjects([d valueForKey:@"channel3"], c3);
         }
         [realtime.channels release:c3.name callback:^(ARTErrorInfo *errorInfo) {
-            NSMutableDictionary * d = [[NSMutableDictionary alloc] init];
+            NSMutableDictionary *d = [[NSMutableDictionary alloc] init];
             for (ARTRealtimeChannel *channel in realtime.channels) {
                 [d setValue:channel forKey:channel.name];
             }
@@ -258,18 +248,18 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-- (void) testGetSameChannelWithParams {
-    NSString * channelName = @"channel";
-    NSString * firstMessage = @"firstMessage";
-    NSString * secondMessage = @"secondMessage";
+- (void)testGetSameChannelWithParams {
     __weak XCTestExpectation *exp = [self expectationWithDescription:@"testGetChannels"];
+    NSString *channelName = @"channel";
+    NSString *firstMessage = @"firstMessage";
+    NSString *secondMessage = @"secondMessage";
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         ARTRealtimeChannel *c1 = [realtime.channels get:channelName];
-        NSData * ivSpec = [[NSData alloc] initWithBase64EncodedString:@"HO4cYSP8LybPYBPZPHQOtg==" options:0];
+        NSData *ivSpec = [[NSData alloc] initWithBase64EncodedString:@"HO4cYSP8LybPYBPZPHQOtg==" options:0];
         
-        NSData * keySpec = [[NSData alloc] initWithBase64EncodedString:@"WUP6u0K7MXI5Zeo0VppPwg==" options:0];
-        ARTCipherParams * params =[[ARTCipherParams alloc] initWithAlgorithm:@"aes" key:keySpec iv:ivSpec];
+        NSData *keySpec = [[NSData alloc] initWithBase64EncodedString:@"WUP6u0K7MXI5Zeo0VppPwg==" options:0];
+        ARTCipherParams *params =[[ARTCipherParams alloc] initWithAlgorithm:@"aes" key:keySpec iv:ivSpec];
         ARTRealtimeChannel *c2 = [realtime.channels get:channelName options:[[ARTChannelOptions alloc] initWithCipher:params]];
         [c1 publish:nil data:firstMessage callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
@@ -278,7 +268,7 @@
             }];
         }];
         __block int messageCount =0;
-        [c1 subscribe:^(ARTMessage * message) {
+        [c1 subscribe:^(ARTMessage *message) {
             if(messageCount ==0) {
                 XCTAssertEqualObjects([message data], firstMessage);
             }
@@ -291,7 +281,6 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
-
 
 - (void)testAttachFails {
     __weak XCTestExpectation *exp = [self expectationWithDescription:@"testAttachFails"];

@@ -193,7 +193,7 @@
 + (void)publishRealtimeMessages:(NSString *)prefix count:(int)count channel:(ARTRealtimeChannel *)channel completion:(void (^)())completion {
     __block int numReceived = 0;
     __block __weak void (^weakCb)(ARTErrorInfo *__art_nullable error);
-    NSString * pattern = [prefix stringByAppendingString:@"%d"];
+    NSString *pattern = [prefix stringByAppendingString:@"%d"];
     void (^cb)(ARTErrorInfo *__art_nullable error);
     
     weakCb = cb = ^(ARTErrorInfo *errorInfo) {

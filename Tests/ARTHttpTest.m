@@ -30,7 +30,7 @@
     [super tearDown];
 }
 
--(void) testPingGoogle {
+- (void)testPingGoogle {
     __weak XCTestExpectation *expectation = [self expectationWithDescription:@"get"];
     
     [self.http makeRequestWithMethod:@"GET" url:[NSURL URLWithString:@"http://www.google.com"] headers:nil body:nil callback:^(ARTHttpResponse *response) {
@@ -50,6 +50,5 @@
 
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
-
 
 @end

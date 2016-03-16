@@ -18,18 +18,14 @@
 #import "ARTDataQuery.h"
 #import "ARTPaginatedResult.h"
 
-@interface ARTRestChannelHistoryTest : XCTestCase
-{
+@interface ARTRestChannelHistoryTest : XCTestCase {
     ARTRest *_rest;
     ARTRest *_rest2;
 }
+
 @end
 
 @implementation ARTRestChannelHistoryTest
-
-- (void)setUp {
-    [super setUp];
-}
 
 - (void)tearDown {
     [super tearDown];
@@ -87,9 +83,9 @@
                                 XCTAssertTrue(page != nil);
                                 XCTAssertEqual([page count], secondBatchTotal);
                                 for (int i=0; i < [page count]; i++) {
-                                    NSString * pattern = [secondBatch stringByAppendingString:@"%d"];
-                                    NSString * goalStr = [NSString stringWithFormat:pattern, secondBatchTotal -1 -i];
-                                    ARTMessage * m = [page objectAtIndex:i];
+                                    NSString *pattern = [secondBatch stringByAppendingString:@"%d"];
+                                    NSString *goalStr = [NSString stringWithFormat:pattern, secondBatchTotal -1 -i];
+                                    ARTMessage *m = [page objectAtIndex:i];
                                     XCTAssertEqualObjects(goalStr, [m data]);
                                 }
                                 [firstExpectation fulfill];
@@ -201,28 +197,28 @@
 
                 [result next:^(ARTPaginatedResult *result2, NSError *error) {
                     XCTAssert(!error);
-                    NSArray * page = [result2 items];
+                    NSArray *page = [result2 items];
                     XCTAssertEqual([page count], 2);
-                    //ARTMessage * firstMessage = [page objectAtIndex:0];
-                    //ARTMessage * secondMessage =[page objectAtIndex:1];
+                    //ARTMessage *firstMessage = [page objectAtIndex:0];
+                    //ARTMessage *secondMessage =[page objectAtIndex:1];
                     //XCTAssertEqualObjects(@"testString2", [firstMessage data]);
                     //XCTAssertEqualObjects(@"testString3", [secondMessage data]);
 
                     [result2 next:^(ARTPaginatedResult *result3, NSError *error) {
                         XCTAssert(!error);
                         XCTAssertFalse([result3 hasNext]);
-                        NSArray * page = [result3 items];
+                        NSArray *page = [result3 items];
                         XCTAssertEqual([page count], 1);
-                        //ARTMessage * firstMessage = [page objectAtIndex:0];
+                        //ARTMessage *firstMessage = [page objectAtIndex:0];
                         //XCTAssertEqualObjects(@"testString4", [firstMessage data]);
 
                         [result3 first:^(ARTPaginatedResult *result4, NSError *error) {
                             XCTAssert(!error);
                             XCTAssertTrue([result4 hasNext]);
-                            NSArray * page = [result4 items];
+                            NSArray *page = [result4 items];
                             XCTAssertEqual([page count], 2);
-                            //ARTMessage * firstMessage = [page objectAtIndex:0];
-                            //ARTMessage * secondMessage =[page objectAtIndex:1];
+                            //ARTMessage *firstMessage = [page objectAtIndex:0];
+                            //ARTMessage *secondMessage =[page objectAtIndex:1];
                             //XCTAssertEqualObjects(@"testString0", [firstMessage data]);
                             //XCTAssertEqualObjects(@"testString1", [secondMessage data]);
                             [firstExpectation fulfill];
@@ -255,19 +251,19 @@
             [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
                 XCTAssert(!error);
                 XCTAssertTrue([result hasNext]);
-                NSArray * page = [result items];
+                NSArray *page = [result items];
                 XCTAssertEqual([page count], 2);
-                ARTMessage * firstMessage = [page objectAtIndex:0];
-                ARTMessage * secondMessage =[page objectAtIndex:1];
+                ARTMessage *firstMessage = [page objectAtIndex:0];
+                ARTMessage *secondMessage =[page objectAtIndex:1];
                 XCTAssertEqualObjects(@"testString4", [firstMessage data]);
                 XCTAssertEqualObjects(@"testString3", [secondMessage data]);
 
                 [result next:^(ARTPaginatedResult *result2, NSError *error) {
                     XCTAssert(!error);
-                    NSArray * page = [result2 items];
+                    NSArray *page = [result2 items];
                     XCTAssertEqual([page count], 2);
-                    ARTMessage * firstMessage = [page objectAtIndex:0];
-                    ARTMessage * secondMessage =[page objectAtIndex:1];
+                    ARTMessage *firstMessage = [page objectAtIndex:0];
+                    ARTMessage *secondMessage =[page objectAtIndex:1];
 
                     XCTAssertEqualObjects(@"testString2", [firstMessage data]);
                     XCTAssertEqualObjects(@"testString1", [secondMessage data]);
@@ -275,18 +271,18 @@
                     [result2 next:^(ARTPaginatedResult *result3, NSError *error) {
                         XCTAssert(!error);
                         XCTAssertFalse([result3 hasNext]);
-                        NSArray * page = [result3 items];
+                        NSArray *page = [result3 items];
                         XCTAssertEqual([page count], 1);
-                        ARTMessage * firstMessage = [page objectAtIndex:0];
+                        ARTMessage *firstMessage = [page objectAtIndex:0];
                         XCTAssertEqualObjects(@"testString0", [firstMessage data]);
 
                         [result3 first:^(ARTPaginatedResult *result4, NSError *error) {
                             XCTAssert(!error);
                             XCTAssertTrue([result4 hasNext]);
-                            NSArray * page = [result4 items];
+                            NSArray *page = [result4 items];
                             XCTAssertEqual([page count], 2);
-                            ARTMessage * firstMessage = [page objectAtIndex:0];
-                            ARTMessage * secondMessage =[page objectAtIndex:1];
+                            ARTMessage *firstMessage = [page objectAtIndex:0];
+                            ARTMessage *secondMessage =[page objectAtIndex:1];
                             XCTAssertEqualObjects(@"testString4", [firstMessage data]);
                             XCTAssertEqualObjects(@"testString3", [secondMessage data]);
                             [firstExpectation fulfill];
@@ -318,10 +314,10 @@
             [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
                 XCTAssert(!error);
                 XCTAssertTrue([result hasNext]);
-                NSArray * page = [result items];
+                NSArray *page = [result items];
                 XCTAssertEqual([page count], 2);
-                ARTMessage * firstMessage = [page objectAtIndex:0];
-                ARTMessage * secondMessage =[page objectAtIndex:1];
+                ARTMessage *firstMessage = [page objectAtIndex:0];
+                ARTMessage *secondMessage =[page objectAtIndex:1];
                 XCTAssertEqualObjects(@"testString4", [firstMessage data]);
                 XCTAssertEqualObjects(@"testString3", [secondMessage data]);
                 [firstExpectation fulfill];
@@ -331,7 +327,7 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
--(void) testHistoryTwoClients {
+- (void)testHistoryTwoClients {
     __weak XCTestExpectation *expectation = [self expectationWithDescription:@"e"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         [expectation fulfill];
@@ -357,10 +353,10 @@
             [channelTwo history:query callback:^(ARTPaginatedResult *result, NSError *error) {
                 XCTAssert(!error);
                 XCTAssertTrue([result hasNext]);
-                NSArray * page = [result items];
+                NSArray *page = [result items];
                 XCTAssertEqual([page count], 2);
-                ARTMessage * firstMessage = [page objectAtIndex:0];
-                ARTMessage * secondMessage =[page objectAtIndex:1];
+                ARTMessage *firstMessage = [page objectAtIndex:0];
+                ARTMessage *secondMessage =[page objectAtIndex:1];
                 XCTAssertEqualObjects(@"testString4", [firstMessage data]);
                 XCTAssertEqualObjects(@"testString3", [secondMessage data]);
                 [firstExpectation fulfill];

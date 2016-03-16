@@ -23,13 +23,10 @@
 @interface ARTRestPresenceTest : XCTestCase {
     ARTRest *_rest;
 }
+
 @end
 
 @implementation ARTRestPresenceTest
-
-- (void)setUp {
-    [super setUp];
-}
 
 - (void)tearDown {
     _rest = nil;
@@ -105,7 +102,7 @@
             XCTAssert(!error);
             NSArray *presence = [result items];
             XCTAssertEqual(6, [presence count]);
-            ARTPresenceMessage * m = [presence objectAtIndex:[presence count] -1];
+            ARTPresenceMessage *m = [presence objectAtIndex:[presence count] -1];
             XCTAssertEqualObjects(@"true", [m data]);
             [expectation fulfill];
         } error:nil];
@@ -124,7 +121,7 @@
             XCTAssert(!error);
             NSArray *presence = [result items];
             XCTAssertEqual(6, [presence count]);
-            ARTPresenceMessage * m = [presence objectAtIndex:0];
+            ARTPresenceMessage *m = [presence objectAtIndex:0];
             XCTAssertEqualObjects(@"true", [m data]);
             [expectation fulfill];
         } error:nil];

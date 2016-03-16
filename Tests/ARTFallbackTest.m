@@ -14,12 +14,11 @@
 
 @implementation ARTFallbackTest
 
--(void)testAllHostsIncludedOnce {
-    
-    ARTFallback * f = [[ARTFallback alloc] init];
-    NSArray * defaultHosts = [ARTDefault fallbackHosts];
-    NSSet * defaultSet = [NSSet setWithArray:defaultHosts];
-    NSMutableArray * hostsRandomised = [NSMutableArray array];
+- (void)testAllHostsIncludedOnce {
+    ARTFallback *f = [[ARTFallback alloc] init];
+    NSArray *defaultHosts = [ARTDefault fallbackHosts];
+    NSSet *defaultSet = [NSSet setWithArray:defaultHosts];
+    NSMutableArray *hostsRandomised = [NSMutableArray array];
     for(int i=0;i < [defaultHosts count]; i++) {
         [hostsRandomised addObject:[f popFallbackHost]];
     }

@@ -18,18 +18,15 @@
 #import "ARTEventEmitter.h"
 
 @interface ARTRealtimeRecoverTest : XCTestCase {
-    ARTRealtime * _realtime;
-    ARTRealtime * _realtimeRecover;
-    ARTRealtime * _realtimeNonRecovered;
-    ARTClientOptions * _options;
+    ARTRealtime *_realtime;
+    ARTRealtime *_realtimeRecover;
+    ARTRealtime *_realtimeNonRecovered;
+    ARTClientOptions *_options;
 }
+
 @end
 
 @implementation ARTRealtimeRecoverTest
-
-- (void)setUp {
-    [super setUp];
-}
 
 - (void)tearDown {
     if (_realtime) {
@@ -62,9 +59,9 @@
 }
 
 - (void)testRecoverDisconnected {
-    NSString * channelName = @"chanName";
-    NSString * c1Message = @"c1 says hi";
-    NSString * c2Message= @"c2 says hi";
+    NSString *channelName = @"chanName";
+    NSString *c1Message = @"c1 says hi";
+    NSString *c2Message= @"c2 says hi";
 
     __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testRecoverDisconnected"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {

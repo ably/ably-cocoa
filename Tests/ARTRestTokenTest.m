@@ -30,10 +30,6 @@
 
 @implementation ARTRestTokenTest
 
-- (void)setUp {
-    [super setUp];
-}
-
 - (void)tearDown {
     _rest = nil;
     _rest2 = nil;
@@ -45,9 +41,9 @@
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.useTokenAuth = true;
         options.clientId = @"testToken";
-        ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
+        ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
-        ARTAuth * auth = rest.auth;
+        ARTAuth *auth = rest.auth;
         XCTAssertEqual(auth.method, ARTAuthMethodToken);
         ARTRestChannel *c = [rest.channels get:@"getChannel"];
         [c publish:nil data:@"something" callback:^(ARTErrorInfo *error) {
@@ -64,11 +60,11 @@
         options.useTokenAuth = true;
         options.clientId = @"testToken";
         options.token = @"this_is_a_bad_token";
-        ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
+        ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
-        ARTAuth * auth = rest.auth;
+        ARTAuth *auth = rest.auth;
         XCTAssertEqual(auth.method, ARTAuthMethodToken);
-        ARTChannel * c= [rest.channels get:@"getChannel"];
+        ARTChannel *c= [rest.channels get:@"getChannel"];
         [c publish:nil data:@"something" callback:^(ARTErrorInfo *error) {
             XCTAssert(error);
             [expectation fulfill];
@@ -113,11 +109,11 @@
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.useTokenAuth = true;
         options.clientId = @"testToken";
-        ARTRest * firstRest = [[ARTRest alloc] initWithOptions:options];
+        ARTRest *firstRest = [[ARTRest alloc] initWithOptions:options];
         _rest = firstRest;
-        ARTAuth * auth = firstRest.auth;
+        ARTAuth *auth = firstRest.auth;
         //options.authCallback = [auth getTheAuthCb]; //?!
-        ARTRest * secondRest = [[ARTRest alloc] initWithOptions:options];
+        ARTRest *secondRest = [[ARTRest alloc] initWithOptions:options];
         _rest2 = secondRest;
         XCTAssertEqual(auth.method, ARTAuthMethodToken);
         ARTChannel *c = [secondRest.channels get:@"getChannel"];
