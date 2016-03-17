@@ -21,25 +21,21 @@
 #import "ARTChannel.h"
 #import "ARTChannels.h"
 
-
 @interface ARTRestInitTest : XCTestCase {
     ARTRest *_rest;
 }
+
 @end
 
 @implementation ARTRestInitTest
-
-- (void)setUp {
-    [super setUp];
-}
 
 - (void)tearDown {
     _rest = nil;
     [super tearDown];
 }
 
--(void)testInternetIsUp {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testInternetIsUp"];
+- (void)testInternetIsUp {
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testInternetIsUp"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         [rest internetIsUp:^(bool isUp) {
             XCTAssertTrue(isUp);
@@ -49,8 +45,8 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
--(void)testInitWithKey {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithKey"];
+- (void)testInitWithKey {
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithKey"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         @try {
             [ARTClientOptions setDefaultEnvironment:@"sandbox"];
@@ -70,18 +66,18 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
--(void)testInitWithNoKey {
-    NSString * key = @"";
+- (void)testInitWithNoKey {
+    NSString *key = @"";
     XCTAssertThrows([[ARTRest alloc] initWithKey:key]);
 }
 
--(void)testInitWithKeyBad {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithKeyBad"];
+- (void)testInitWithKeyBad {
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithKeyBad"];
     @try {
         [ARTClientOptions setDefaultEnvironment:@"sandbox"];
-        ARTRest * rest = [[ARTRest alloc] initWithKey:@"badkey:secret"];
+        ARTRest *rest = [[ARTRest alloc] initWithKey:@"badkey:secret"];
         _rest = rest;
-        ARTChannel * c = [rest.channels get:@"test"];
+        ARTChannel *c = [rest.channels get:@"test"];
         XCTAssert(c);
         [c publish:nil data:@"message" callback:^(ARTErrorInfo *error) {
             XCTAssert(error);
@@ -95,30 +91,13 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
--(void)testInitWithOptions {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
+- (void)testInitWithOptions {
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
-        ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
+        ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
-       ARTChannel * c = [rest.channels get:@"test"];
-       XCTAssert(c);
-       [c publish:nil data:@"message" callback:^(ARTErrorInfo *error) {
-           XCTAssert(!error);
-           [exp fulfill];
-       }];
-   }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-}
-
--(void)testInitWithOptionsEnvironment {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
-        ARTClientOptions *envOptions = [[ARTClientOptions alloc] init];
-        envOptions.key = options.key;
-        envOptions.environment = @"sandbox";
-        ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
-        _rest = rest;
-        ARTChannel * c = [rest.channels get:@"test"];
+        ARTChannel *c = [rest.channels get:@"test"];
+        XCTAssert(c);
         [c publish:nil data:@"message" callback:^(ARTErrorInfo *error) {
             XCTAssert(!error);
             [exp fulfill];
@@ -127,16 +106,33 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
--(void)testGetAuth {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
+- (void)testInitWithOptionsEnvironment {
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
-        ARTRest * rest = [[ARTRest alloc] initWithOptions:options];
+        ARTClientOptions *envOptions = [[ARTClientOptions alloc] init];
+        envOptions.key = options.key;
+        envOptions.environment = @"sandbox";
+        ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
-        ARTChannel * c = [rest.channels get:@"test"];
+        ARTChannel *c = [rest.channels get:@"test"];
+        [c publish:nil data:@"message" callback:^(ARTErrorInfo *error) {
+            XCTAssert(!error);
+            [exp fulfill];
+        }];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+}
+
+- (void)testGetAuth {
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithOptions"];
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
+        ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
+        _rest = rest;
+        ARTChannel *c = [rest.channels get:@"test"];
         XCTAssert(c);
         [c publish:nil data:@"message" callback:^(ARTErrorInfo *error) {
             XCTAssert(!error);
-            ARTAuth * auth = rest.auth;
+            ARTAuth *auth = rest.auth;
             XCTAssert(auth);
             ARTAuthOptions *authOptions = auth.options;
             XCTAssertEqual(authOptions.key, options.key);
@@ -147,13 +143,13 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
--(void)testInitWithOptionsBad {
+- (void)testInitWithOptionsBad {
     XCTAssertThrows([[ARTClientOptions alloc] initWithKey:@"bad"]);
     XCTAssertThrows([[ARTRest alloc] initWithOptions:[[ARTClientOptions alloc] init]]);
 }
 
 - (void)testRestTime {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testRestTime"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testRestTime"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         [rest time:^(NSDate *date, NSError *error) {

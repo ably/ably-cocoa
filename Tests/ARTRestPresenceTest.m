@@ -23,13 +23,10 @@
 @interface ARTRestPresenceTest : XCTestCase {
     ARTRest *_rest;
 }
+
 @end
 
 @implementation ARTRestPresenceTest
-
-- (void)setUp {
-    [super setUp];
-}
 
 - (void)tearDown {
     _rest = nil;
@@ -37,7 +34,7 @@
 }
 
 - (void)testPresence {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTRestChannel *channel = [rest.channels get:@"persisted:presence_fixtures"];
@@ -82,7 +79,7 @@
 }
 
 - (void)testHistory {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTRestChannel *channel = [rest.channels get:@"persisted:presence_fixtures"];
@@ -97,7 +94,7 @@
 }
 
 - (void)testHistoryDefaultBackwards {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTRestChannel *channel = [rest.channels get:@"persisted:presence_fixtures"];
@@ -105,7 +102,7 @@
             XCTAssert(!error);
             NSArray *presence = [result items];
             XCTAssertEqual(6, [presence count]);
-            ARTPresenceMessage * m = [presence objectAtIndex:[presence count] -1];
+            ARTPresenceMessage *m = [presence objectAtIndex:[presence count] -1];
             XCTAssertEqualObjects(@"true", [m data]);
             [expectation fulfill];
         } error:nil];
@@ -114,7 +111,7 @@
 }
 
 - (void)testHistoryDirection {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTRestChannel *channel = [rest.channels get:@"persisted:presence_fixtures"];
@@ -124,7 +121,7 @@
             XCTAssert(!error);
             NSArray *presence = [result items];
             XCTAssertEqual(6, [presence count]);
-            ARTPresenceMessage * m = [presence objectAtIndex:0];
+            ARTPresenceMessage *m = [presence objectAtIndex:0];
             XCTAssertEqualObjects(@"true", [m data]);
             [expectation fulfill];
         } error:nil];
@@ -133,7 +130,7 @@
 }
 
 - (void)testPresenceLimit {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTRestChannel *channelOne = [rest.channels get:@"name"];
@@ -150,7 +147,7 @@
 }
 
 - (void)testPresenceLimitIgnoringError {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTRestChannel *channelOne = [rest.channels get:@"name"];

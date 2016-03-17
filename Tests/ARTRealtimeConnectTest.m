@@ -18,7 +18,7 @@
 #import "ARTRealtimeChannel.h"
 
 @interface ARTRealtimeConnectTest : XCTestCase {
-    ARTRealtime * _realtime;
+    ARTRealtime *_realtime;
 }
 @end
 
@@ -38,8 +38,9 @@
     }
     _realtime = nil;
 }
-- (void)testConnectText{
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testConnectText"];
+
+- (void)testConnectText {
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testConnectText"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
@@ -53,7 +54,7 @@
 }
 
 - (void)testConnectPing {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testConnectPing"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testConnectPing"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
@@ -70,7 +71,7 @@
 }
 
 - (void)testConnectStateChange {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testConnectStateChange"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testConnectStateChange"];
     ARTClientOptions *options = [ARTTestUtil clientOptions];
     options.autoConnect = false;
     [ARTTestUtil testRealtime:options callback:^(ARTRealtime *realtime) {
@@ -95,11 +96,10 @@
         [realtime connect];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    
 }
 
 - (void)testConnectStateChangeClose {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testConnectStateChange"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testConnectStateChange"];
     ARTClientOptions *options = [ARTTestUtil clientOptions];
     options.autoConnect = false;
     [ARTTestUtil testRealtime:options callback:^(ARTRealtime *realtime) {
@@ -125,7 +125,7 @@
 }
 
 - (void)testConnectionSerial {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testConnectStateChange"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testConnectStateChange"];
     ARTClientOptions *options = [ARTTestUtil clientOptions];
     options.autoConnect = false;
     [ARTTestUtil testRealtime:options callback:^(ARTRealtime *realtime) {
@@ -135,7 +135,7 @@
         
             if(state == ARTRealtimeConnected) {
                 XCTAssertEqual(realtime.connection.serial, -1);
-                ARTRealtimeChannel * c =[realtime.channels get:@"chan"];
+                ARTRealtimeChannel *c =[realtime.channels get:@"chan"];
                 [c publish:nil data:@"message" callback:^(ARTErrorInfo *errorInfo) {
                     XCTAssertEqual(realtime.connection.serial, 0);
                     [c publish:nil data:@"message2" callback:^(ARTErrorInfo *errorInfo) {
@@ -150,12 +150,10 @@
         [realtime connect];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    
 }
 
-
 - (void)testConnectAfterClose {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"test_connect_text"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"test_connect_text"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         __block int connectionCount=0;
@@ -180,7 +178,7 @@
 }
 
 - (void)testConnectingFromClosing {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testConnectStateChange"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testConnectStateChange"];
     [ARTTestUtil testRealtime:^(ARTRealtime *realtime) {
         _realtime = realtime;
         __block bool connectHappened = false;
@@ -202,14 +200,13 @@
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    
 }
 
 - (void)testConnectStates {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testConnectStates"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testConnectStates"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.autoConnect = false;
-        ARTRealtime * realtime = [[ARTRealtime alloc] initWithOptions:options];
+        ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime = realtime;
         __block bool gotInitialized =false;
         __block bool gotConnecting =false;
@@ -274,7 +271,7 @@
 }
 
 - (void)testConnectPingError {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testConnectPingError"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testConnectPingError"];
     ARTClientOptions *options = [ARTTestUtil clientOptions];
     options.autoConnect = false;
     [ARTTestUtil testRealtime:options callback:^(ARTRealtime *realtime) {
@@ -303,6 +300,5 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
-
 
 @end

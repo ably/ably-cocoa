@@ -29,10 +29,6 @@
 
 @implementation ARTRestCapabilityTest
 
-- (void)setUp {
-    [super setUp];
-}
-
 - (void)tearDown {
     _rest = nil;
     [super tearDown];
@@ -40,7 +36,7 @@
 
 - (void)withRestRestrictCap:(void (^)(ARTRest *rest))cb {
     if (!_rest) {
-        ARTClientOptions * theOptions = [ARTTestUtil clientOptions];
+        ARTClientOptions *theOptions = [ARTTestUtil clientOptions];
         [ARTTestUtil setupApp:theOptions withAlteration:TestAlterationRestrictCapability callback:^(ARTClientOptions *options) {
             if (options) {
                 options.clientId = @"client_string";
@@ -66,8 +62,8 @@
 }
 
 - (void)testPublishRestricted {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testSimpleDisconnected"];
-    [self withRestRestrictCap:^(ARTRest * rest) {
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testSimpleDisconnected"];
+    [self withRestRestrictCap:^(ARTRest *rest) {
         ARTRestChannel *channel = [rest.channels get:@"canpublish:test"];
         [channel publish:nil data:@"publish" callback:^(ARTErrorInfo *error) {
             XCTAssert(!error);

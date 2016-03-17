@@ -19,18 +19,14 @@
 #import "ARTTestUtil.h"
 #import "ARTRealtime+Private.h"
 
-@interface ARTRealtimeResumeTest : XCTestCase
-{
-    ARTRealtime * _realtime;
-    ARTRealtime * _realtime2;
+@interface ARTRealtimeResumeTest : XCTestCase {
+    ARTRealtime *_realtime;
+    ARTRealtime *_realtime2;
 }
+
 @end
 
 @implementation ARTRealtimeResumeTest
-
-- (void)setUp {
-    [super setUp];
-}
 
 - (void)tearDown {
     if (_realtime) {
@@ -48,13 +44,13 @@
     [super tearDown];
 }
 
--(void) testSimpleDisconnected {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testSimpleDisconnected"];
-    NSString * channelName = @"resumeChannel";
-    NSString * message1 = @"message1";
-    NSString * message2 = @"message2";
-    NSString * message3 = @"message3";
-    NSString * message4 = @"message4";
+- (void)testSimpleDisconnected {
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testSimpleDisconnected"];
+    NSString *channelName = @"resumeChannel";
+    NSString *message1 = @"message1";
+    NSString *message2 = @"message2";
+    NSString *message3 = @"message3";
+    NSString *message4 = @"message4";
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         _realtime = [[ARTRealtime alloc] initWithOptions:options];
         _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
@@ -76,8 +72,8 @@
                 }];
             }
         }];
-        [channel subscribe:^(ARTMessage * message) {
-            NSString * msg = [message data];
+        [channel subscribe:^(ARTMessage *message) {
+            NSString *msg = [message data];
             if([msg isEqualToString:message2]) {
                 //disconnect connection1
                 [_realtime onError:[ARTTestUtil newErrorProtocolMessage]];

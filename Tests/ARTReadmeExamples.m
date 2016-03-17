@@ -75,7 +75,7 @@
     }];
 }
 
-- (void) testQueryingTheHistory {
+- (void)testQueryingTheHistory {
     ARTClientOptions *options = [ARTTestUtil clientOptions];
     [ARTTestUtil testRealtime:options callback:^(ARTRealtime *client) {
         ARTRealtimeChannel *channel = [client.channels get:@"test"];
@@ -133,7 +133,6 @@
 - (void)testRestPublishMessage {
     [ARTTestUtil testRest:^(ARTRest *client) {
         ARTRestChannel *channel = [client.channels get:@"test"];
-        
         [channel publish:@"myEvent" data:@"Hello!"];
     }];
 }

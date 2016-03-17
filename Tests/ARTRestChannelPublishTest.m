@@ -22,13 +22,10 @@
 @interface ARTRestChannelPublishTest : XCTestCase {
     ARTRest *_rest;
 }
+
 @end
 
 @implementation ARTRestChannelPublishTest
-
-- (void)setUp {
-    [super setUp];
-}
 
 - (void)tearDown {
     [super tearDown];
@@ -36,10 +33,9 @@
 }
 
 - (void)testTypesByText {
-
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
-    NSString * message1 = @"message1";
-    NSString * message2 = @"message2";
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
+    NSString *message1 = @"message1";
+    NSString *message2 = @"message2";
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTChannel *channel = [rest.channels get:@"testTypesByText"];
@@ -65,8 +61,8 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
--(void) testPublishArray {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testPublishArray"];
+- (void)testPublishArray {
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testPublishArray"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTRestChannel *channel = [rest.channels get:@"channel"];
@@ -98,7 +94,7 @@
 }
 
 - (void)testPublishUnJsonableType {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTChannel *channel = [rest.channels get:@"testTypesByText"];

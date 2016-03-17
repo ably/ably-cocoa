@@ -18,18 +18,14 @@
 #import "ARTDataQuery.h"
 #import "ARTPaginatedResult.h"
 
-@interface ARTRestChannelHistoryTest : XCTestCase
-{
+@interface ARTRestChannelHistoryTest : XCTestCase {
     ARTRest *_rest;
     ARTRest *_rest2;
 }
+
 @end
 
 @implementation ARTRestChannelHistoryTest
-
-- (void)setUp {
-    [super setUp];
-}
 
 - (void)tearDown {
     [super tearDown];
@@ -40,7 +36,7 @@
 - (void)testTimeBackwards {
     __block long long timeOffset = 0;
     
-    XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
+    __weak XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         [rest time:^(NSDate *time, NSError *error) {
@@ -53,7 +49,7 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
     
-    XCTestExpectation *firstExpectation = [self expectationWithDescription:@"firstExpectation"];
+    __weak XCTestExpectation *firstExpectation = [self expectationWithDescription:@"firstExpectation"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTRestChannel *channel = [rest.channels get:@"testTimeBackwards"];
@@ -87,9 +83,9 @@
                                 XCTAssertTrue(page != nil);
                                 XCTAssertEqual([page count], secondBatchTotal);
                                 for (int i=0; i < [page count]; i++) {
-                                    NSString * pattern = [secondBatch stringByAppendingString:@"%d"];
-                                    NSString * goalStr = [NSString stringWithFormat:pattern, secondBatchTotal -1 -i];
-                                    ARTMessage * m = [page objectAtIndex:i];
+                                    NSString *pattern = [secondBatch stringByAppendingString:@"%d"];
+                                    NSString *goalStr = [NSString stringWithFormat:pattern, secondBatchTotal -1 -i];
+                                    ARTMessage *m = [page objectAtIndex:i];
                                     XCTAssertEqualObjects(goalStr, [m data]);
                                 }
                                 [firstExpectation fulfill];
@@ -106,7 +102,7 @@
 - (void)testTimeForwards {
     __block long long timeOffset = 0;
     
-    XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
+    __weak XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         [rest time:^(NSDate *time, NSError *error) {
@@ -119,7 +115,7 @@
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 
-    XCTestExpectation *firstExpectation = [self expectationWithDescription:@"getTime"];
+    __weak XCTestExpectation *firstExpectation = [self expectationWithDescription:@"getTime"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTChannel *channel = [rest.channels get:@"test_history_time_forwards"];
@@ -172,13 +168,13 @@
 }
 
 - (void)testHistoryForwardPagination {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryForwardPagination"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryForwardPagination"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
     
-    XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
+    __weak XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTChannel *channel = [rest.channels get:@"testHistoryForwardPagination"];
@@ -201,28 +197,28 @@
 
                 [result next:^(ARTPaginatedResult *result2, NSError *error) {
                     XCTAssert(!error);
-                    NSArray * page = [result2 items];
+                    NSArray *page = [result2 items];
                     XCTAssertEqual([page count], 2);
-                    //ARTMessage * firstMessage = [page objectAtIndex:0];
-                    //ARTMessage * secondMessage =[page objectAtIndex:1];
+                    //ARTMessage *firstMessage = [page objectAtIndex:0];
+                    //ARTMessage *secondMessage =[page objectAtIndex:1];
                     //XCTAssertEqualObjects(@"testString2", [firstMessage data]);
                     //XCTAssertEqualObjects(@"testString3", [secondMessage data]);
 
                     [result2 next:^(ARTPaginatedResult *result3, NSError *error) {
                         XCTAssert(!error);
                         XCTAssertFalse([result3 hasNext]);
-                        NSArray * page = [result3 items];
+                        NSArray *page = [result3 items];
                         XCTAssertEqual([page count], 1);
-                        //ARTMessage * firstMessage = [page objectAtIndex:0];
+                        //ARTMessage *firstMessage = [page objectAtIndex:0];
                         //XCTAssertEqualObjects(@"testString4", [firstMessage data]);
 
                         [result3 first:^(ARTPaginatedResult *result4, NSError *error) {
                             XCTAssert(!error);
                             XCTAssertTrue([result4 hasNext]);
-                            NSArray * page = [result4 items];
+                            NSArray *page = [result4 items];
                             XCTAssertEqual([page count], 2);
-                            //ARTMessage * firstMessage = [page objectAtIndex:0];
-                            //ARTMessage * secondMessage =[page objectAtIndex:1];
+                            //ARTMessage *firstMessage = [page objectAtIndex:0];
+                            //ARTMessage *secondMessage =[page objectAtIndex:1];
                             //XCTAssertEqualObjects(@"testString0", [firstMessage data]);
                             //XCTAssertEqualObjects(@"testString1", [secondMessage data]);
                             [firstExpectation fulfill];
@@ -236,13 +232,13 @@
 }
 
 - (void)testHistoryBackwardPagination {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"e"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"e"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 
-    XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
+    __weak XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTChannel *channel = [rest.channels get:@"testHistoryBackwardPagination"];
@@ -255,19 +251,19 @@
             [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
                 XCTAssert(!error);
                 XCTAssertTrue([result hasNext]);
-                NSArray * page = [result items];
+                NSArray *page = [result items];
                 XCTAssertEqual([page count], 2);
-                ARTMessage * firstMessage = [page objectAtIndex:0];
-                ARTMessage * secondMessage =[page objectAtIndex:1];
+                ARTMessage *firstMessage = [page objectAtIndex:0];
+                ARTMessage *secondMessage =[page objectAtIndex:1];
                 XCTAssertEqualObjects(@"testString4", [firstMessage data]);
                 XCTAssertEqualObjects(@"testString3", [secondMessage data]);
 
                 [result next:^(ARTPaginatedResult *result2, NSError *error) {
                     XCTAssert(!error);
-                    NSArray * page = [result2 items];
+                    NSArray *page = [result2 items];
                     XCTAssertEqual([page count], 2);
-                    ARTMessage * firstMessage = [page objectAtIndex:0];
-                    ARTMessage * secondMessage =[page objectAtIndex:1];
+                    ARTMessage *firstMessage = [page objectAtIndex:0];
+                    ARTMessage *secondMessage =[page objectAtIndex:1];
 
                     XCTAssertEqualObjects(@"testString2", [firstMessage data]);
                     XCTAssertEqualObjects(@"testString1", [secondMessage data]);
@@ -275,18 +271,18 @@
                     [result2 next:^(ARTPaginatedResult *result3, NSError *error) {
                         XCTAssert(!error);
                         XCTAssertFalse([result3 hasNext]);
-                        NSArray * page = [result3 items];
+                        NSArray *page = [result3 items];
                         XCTAssertEqual([page count], 1);
-                        ARTMessage * firstMessage = [page objectAtIndex:0];
+                        ARTMessage *firstMessage = [page objectAtIndex:0];
                         XCTAssertEqualObjects(@"testString0", [firstMessage data]);
 
                         [result3 first:^(ARTPaginatedResult *result4, NSError *error) {
                             XCTAssert(!error);
                             XCTAssertTrue([result4 hasNext]);
-                            NSArray * page = [result4 items];
+                            NSArray *page = [result4 items];
                             XCTAssertEqual([page count], 2);
-                            ARTMessage * firstMessage = [page objectAtIndex:0];
-                            ARTMessage * secondMessage =[page objectAtIndex:1];
+                            ARTMessage *firstMessage = [page objectAtIndex:0];
+                            ARTMessage *secondMessage =[page objectAtIndex:1];
                             XCTAssertEqualObjects(@"testString4", [firstMessage data]);
                             XCTAssertEqualObjects(@"testString3", [secondMessage data]);
                             [firstExpectation fulfill];
@@ -300,13 +296,13 @@
 }
 
 - (void)testHistoryBackwardDefault {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"e"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"e"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 
-    XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
+    __weak XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTChannel *channel = [rest.channels get:@"testHistoryBackwardDefault"];
@@ -318,10 +314,10 @@
             [channel history:query callback:^(ARTPaginatedResult *result, NSError *error) {
                 XCTAssert(!error);
                 XCTAssertTrue([result hasNext]);
-                NSArray * page = [result items];
+                NSArray *page = [result items];
                 XCTAssertEqual([page count], 2);
-                ARTMessage * firstMessage = [page objectAtIndex:0];
-                ARTMessage * secondMessage =[page objectAtIndex:1];
+                ARTMessage *firstMessage = [page objectAtIndex:0];
+                ARTMessage *secondMessage =[page objectAtIndex:1];
                 XCTAssertEqualObjects(@"testString4", [firstMessage data]);
                 XCTAssertEqualObjects(@"testString3", [secondMessage data]);
                 [firstExpectation fulfill];
@@ -331,15 +327,15 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
--(void) testHistoryTwoClients {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"e"];
+- (void)testHistoryTwoClients {
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"e"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 
     NSString *channelName = @"testHistoryTwoClients";
-    XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
+    __weak XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
         _rest = rest;
@@ -357,10 +353,10 @@
             [channelTwo history:query callback:^(ARTPaginatedResult *result, NSError *error) {
                 XCTAssert(!error);
                 XCTAssertTrue([result hasNext]);
-                NSArray * page = [result items];
+                NSArray *page = [result items];
                 XCTAssertEqual([page count], 2);
-                ARTMessage * firstMessage = [page objectAtIndex:0];
-                ARTMessage * secondMessage =[page objectAtIndex:1];
+                ARTMessage *firstMessage = [page objectAtIndex:0];
+                ARTMessage *secondMessage =[page objectAtIndex:1];
                 XCTAssertEqualObjects(@"testString4", [firstMessage data]);
                 XCTAssertEqualObjects(@"testString3", [secondMessage data]);
                 [firstExpectation fulfill];
@@ -371,7 +367,7 @@
 }
 
 - (void)testHistoryLimit {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTChannel *channelOne = [rest.channels get:@"name"];
@@ -390,7 +386,7 @@
 }
 
 - (void)testHistoryLimitIgnoringError {
-    XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
+    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTChannel *channelOne = [rest.channels get:@"name"];
