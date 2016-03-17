@@ -45,7 +45,7 @@
             XCTAssert(!error);
             [c publish:nil data:stringPayload callback:^(ARTErrorInfo *error) {
                 XCTAssert(!error);
-                [c history:^(ARTPaginatedResult *result, NSError *error) {
+                [c history:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
                     XCTAssert(!error);
                     NSArray *page = [result items];
                     XCTAssertTrue(page != nil);
@@ -81,7 +81,7 @@
             XCTAssert(!error);
             [c publish:nil data:stringPayload callback:^(ARTErrorInfo *error) {
                 XCTAssert(!error);
-                [c history:^(ARTPaginatedResult *result, NSError *error) {
+                [c history:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
                     XCTAssert(!error);
                     NSArray *page = [result items];
                     XCTAssertTrue(page != nil);

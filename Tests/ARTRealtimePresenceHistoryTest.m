@@ -95,7 +95,7 @@
     return @"persisted:runTestChannelName";
 }
 
-- (void)runTestLimit:(int)limit forwards:(bool)forwards callback:(void (^)(ARTPaginatedResult *__art_nullable result, NSError *__art_nullable error))cb {
+- (void)runTestLimit:(int)limit forwards:(bool)forwards callback:(void (^)(ARTPaginatedResult *__art_nullable result, ARTErrorInfo *__art_nullable error))cb {
     __weak XCTestExpectation *expectation = [self expectationWithDescription:@"expectation"];
     [self withRealtimeClientId:^(ARTRealtime *realtime) {
         ARTRealtimeChannel *channel = [realtime.channels get:[self channelName]];
@@ -119,7 +119,7 @@
                             query.direction = forwards ? ARTQueryDirectionForwards : ARTQueryDirectionBackwards;
                             query.limit = limit;
 
-                            [channel.presence history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                            [channel.presence history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
                                 cb(result, error);
                                 [expectation fulfill];
                             } error:nil];
@@ -148,7 +148,7 @@
                 [channel.presence enter:presenceEnter callback:^(ARTErrorInfo *errorInfo) {
                     XCTAssertNil(errorInfo);
 
-                    [channel.presence history:[[ARTRealtimeHistoryQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+                    [channel.presence history:[[ARTRealtimeHistoryQuery alloc] init] callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
                         XCTAssert(!error);
                         NSArray *messages = [result items];
                         XCTAssertEqual(1, messages.count);
@@ -189,7 +189,7 @@
                             ARTRealtimeHistoryQuery *query = [[ARTRealtimeHistoryQuery alloc] init];
                             query.direction = ARTQueryDirectionForwards;
 
-                            [channel.presence history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                            [channel.presence history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
                                  XCTAssert(!error);
                                  NSArray *messages = [result items];
                                  XCTAssertEqual(3, messages.count);
@@ -240,7 +240,7 @@
                                 ARTRealtimeHistoryQuery *query = [[ARTRealtimeHistoryQuery alloc] init];
                                 query.direction = ARTQueryDirectionForwards;
 
-                                [channel.presence history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                                [channel.presence history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
                                      XCTAssert(!error);
                                      NSArray *messages = [result items];
                                      XCTAssertEqual(3, messages.count);
@@ -295,7 +295,7 @@
                             ARTRealtimeHistoryQuery *query = [[ARTRealtimeHistoryQuery alloc] init];
                             query.direction = ARTQueryDirectionBackwards;
 
-                            [channel.presence history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+                            [channel.presence history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
                                  XCTAssert(!error);
                                  NSArray *messages = [result items];
                                  XCTAssertEqual(3, messages.count);
@@ -322,7 +322,7 @@
 }
 
 - (void)testLimitForward {
-    [self runTestLimit:2 forwards:true callback:^(ARTPaginatedResult *result, NSError *error) {
+    [self runTestLimit:2 forwards:true callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
         XCTAssert(!error);
         NSArray *messages = [result items];
         XCTAssertEqual(2, messages.count);
@@ -336,8 +336,7 @@
         XCTAssertEqualObjects([self enter2Str], [m1 data]);
         XCTAssertEqual(m1.action, ARTPresenceUpdate);
         
-        [result next:^(ARTPaginatedResult *result2, NSError *error2) {
-            
+        [result next:^(ARTPaginatedResult *result2, ARTErrorInfo *error2) {
             NSArray *messages = [result2 items];
             XCTAssertEqual(1, messages.count);
             XCTAssertFalse([result2 hasNext]);
@@ -349,7 +348,7 @@
 }
 
 - (void)testLimitBackward {
-    [self runTestLimit:2 forwards:false callback:^(ARTPaginatedResult *result, NSError *error) {
+    [self runTestLimit:2 forwards:false callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
         XCTAssert(!error);
         NSArray *messages = [result items];
         XCTAssertEqual(2, messages.count);
@@ -363,8 +362,7 @@
         XCTAssertEqualObjects([self enter2Str], [m1 data]);
         XCTAssertEqual(m1.action, ARTPresenceUpdate);
         
-        [result next:^(ARTPaginatedResult *result2, NSError *error2) {
-            
+        [result next:^(ARTPaginatedResult *result2, ARTErrorInfo *error2) {
             NSArray *messages = [result2 items];
             XCTAssertEqual(1, messages.count);
             XCTAssertFalse([result2 hasNext]);
@@ -387,7 +385,7 @@
 }
 
 // TODO: consider using a pattern similar to ARTTestUtil testPublish.
-- (void)runTestTimeForwards:(bool) forwards limit:(int) limit callback:(void (^)(ARTPaginatedResult *__art_nullable result, NSError *__art_nullable error)) cb {
+- (void)runTestTimeForwards:(bool) forwards limit:(int) limit callback:(void (^)(ARTPaginatedResult *__art_nullable result, ARTErrorInfo *__art_nullable error)) cb {
     __block long long timeOffset= 0;
     
     __weak XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
@@ -485,7 +483,7 @@
         query.direction = forwards ? ARTQueryDirectionForwards : ARTQueryDirectionBackwards;
 
         __weak XCTestExpectation *historyExpecation = [self expectationWithDescription:@"historyExpecation"];
-        [channel.presence history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+        [channel.presence history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
             cb(result, error);
             [historyExpecation fulfill];
         } error:nil];
@@ -494,7 +492,7 @@
 }
 
 - (void)testTimeForward {
-    [self runTestTimeForwards:true limit:100 callback:^(ARTPaginatedResult *result, NSError *error) {
+    [self runTestTimeForwards:true limit:100 callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
         XCTAssert(!error);
         XCTAssertFalse([result hasNext]);
         NSArray *page = [result items];
@@ -510,7 +508,7 @@
 }
 
 - (void)testTimeBackward {
-    [self runTestTimeForwards:false limit:100 callback:^(ARTPaginatedResult *result, NSError *error) {
+    [self runTestTimeForwards:false limit:100 callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
         XCTAssert(!error);
         XCTAssertFalse([result hasNext]);
         NSArray *page = [result items];
@@ -550,7 +548,7 @@
                                     if(channel2.state == ARTRealtimeChannelAttached) {
                                         ARTRealtimeHistoryQuery *query = [[ARTRealtimeHistoryQuery alloc] init];
                                         query.direction = ARTQueryDirectionForwards;
-                                        [channel2.presence history:query callback:^(ARTPaginatedResult *c2Result, NSError *error2) {
+                                        [channel2.presence history:query callback:^(ARTPaginatedResult *c2Result, ARTErrorInfo *error2) {
                                             XCTAssert(!error2);
                                             NSArray *messages = [c2Result items];
                                             XCTAssertEqual(3, messages.count);
@@ -604,7 +602,7 @@
                 ARTRealtimeChannel *c3 =[_realtime3.channels get:channelName];
                 [c3.presence enter:presenceEnter3 callback:^(ARTErrorInfo *errorInfo) {
                     XCTAssertNil(errorInfo);
-                    [c1.presence history:[[ARTRealtimeHistoryQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+                    [c1.presence history:[[ARTRealtimeHistoryQuery alloc] init] callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
                         XCTAssert(!error);
                         NSArray *messages = [result items];
                         XCTAssertEqual(3, messages.count);

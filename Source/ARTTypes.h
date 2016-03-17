@@ -89,17 +89,7 @@ NSString *generateNonce();
 - (void)cancel;
 @end
 
-// FIXME: review
-@interface ARTIndirectCancellable : NSObject <ARTCancellable>
-
-@property (readwrite, strong, nonatomic) id<ARTCancellable> cancellable;
-@property (readonly, assign, nonatomic) BOOL isCancelled;
-
-- (instancetype)init;
-- (instancetype)initWithCancellable:(id<ARTCancellable>)cancellable;
-- (void)cancel;
-
-@end
+#pragma mark - ARTConnectionStateChange
 
 @interface ARTConnectionStateChange : NSObject
 

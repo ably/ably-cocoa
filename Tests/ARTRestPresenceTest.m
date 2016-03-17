@@ -39,7 +39,7 @@
         _rest = rest;
         ARTRestChannel *channel = [rest.channels get:@"persisted:presence_fixtures"];
 
-        [channel.presence get:^(ARTPaginatedResult *result, NSError *error) {
+        [channel.presence get:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
             XCTAssert(!error);
             NSArray *presence = [result items];
 
@@ -83,7 +83,7 @@
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTRestChannel *channel = [rest.channels get:@"persisted:presence_fixtures"];
-        [channel.presence history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+        [channel.presence history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
             XCTAssert(!error);
             NSArray *presence = [result items];
             XCTAssertEqual(6, [presence count]);
@@ -98,7 +98,7 @@
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
         ARTRestChannel *channel = [rest.channels get:@"persisted:presence_fixtures"];
-        [channel.presence history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, NSError *error) {
+        [channel.presence history:[[ARTDataQuery alloc] init] callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
             XCTAssert(!error);
             NSArray *presence = [result items];
             XCTAssertEqual(6, [presence count]);
@@ -117,7 +117,7 @@
         ARTRestChannel *channel = [rest.channels get:@"persisted:presence_fixtures"];
         ARTDataQuery *query = [[ARTDataQuery alloc] init];
         query.direction = ARTQueryDirectionForwards;
-        [channel.presence history:query callback:^(ARTPaginatedResult *result, NSError *error) {
+        [channel.presence history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
             XCTAssert(!error);
             NSArray *presence = [result items];
             XCTAssertEqual(6, [presence count]);
@@ -137,7 +137,7 @@
         ARTDataQuery *query = [[ARTDataQuery alloc] init];
         query.limit = 1001;
         NSError *error;
-        BOOL valid = [channelOne.presence history:query callback:^(ARTPaginatedResult *result, NSError *error){} error:&error];
+        BOOL valid = [channelOne.presence history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error){} error:&error];
         XCTAssertFalse(valid);
         XCTAssertNotNil(error);
         XCTAssert(error.code == ARTDataQueryErrorLimit);
@@ -154,7 +154,7 @@
         ARTDataQuery *query = [[ARTDataQuery alloc] init];
         query.limit = 1001;
         // Forcing an invalid query where the error is ignored and the result should be invalid (the request was canceled)
-        BOOL requested = [channelOne.presence history:query callback:^(ARTPaginatedResult *result, NSError *error){} error:nil];
+        BOOL requested = [channelOne.presence history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error){} error:nil];
         XCTAssertFalse(requested);
         [exp fulfill];
     }];

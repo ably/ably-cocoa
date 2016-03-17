@@ -8,13 +8,14 @@
 
 #import "ARTPresenceMap.h"
 #import "ARTPresenceMessage.h"
+#import "ARTEventEmitter.h"
 
-@interface ARTPresenceMap ()
+@interface ARTPresenceMap () {
+    BOOL _syncStarted;
+    __GENERIC(ARTEventEmitter, NSNull *, __GENERIC(NSArray, ARTPresenceMessage *) *) *_syncEndedEventEmitter;
+}
 
-@property (readwrite, strong, atomic) __GENERIC(NSMutableDictionary, NSString *, ARTPresenceMessage *) *mostRecentMessageForMember;
-@property (readonly, nonatomic, assign) bool syncStarted;
-@property (readonly, nonatomic, assign) bool syncComplete;
-@property (nonatomic, copy) VoidCb cb;
+@property (readwrite, strong, atomic) __GENERIC(NSMutableDictionary, NSString *, ARTPresenceMessage *) *recentMembers;
 
 @end
 
@@ -23,61 +24,58 @@
 - (id)init {
     self = [super init];
     if(self) {
-        _mostRecentMessageForMember = [NSMutableDictionary dictionary];
+        _recentMembers = [NSMutableDictionary dictionary];
         _syncStarted = false;
         _syncComplete = false;
-        _cb = nil;
+        _syncEndedEventEmitter = [[ARTEventEmitter alloc] init];
     }
     return self;
 }
 
 - (__GENERIC(NSDictionary, NSString *, ARTPresenceMessage *) *)getMembers {
-    return self.mostRecentMessageForMember;
+    return self.recentMembers;
 }
 
-- (void)onSync:(VoidCb)cb {
-    _cb = cb;
-}
-
-- (void)syncMessageProcessed {
-    if(self.cb) {
-        self.cb();
+- (void)put:(ARTPresenceMessage *)message {
+    ARTPresenceMessage *latest = [self.recentMembers objectForKey:message.clientId];
+    if (!latest || !message.timestamp || latest.timestamp < message.timestamp) {
+        [self.recentMembers setObject:message forKey:message.clientId];
     }
 }
 
-- (ARTPresenceMessage *)getClient:(NSString *) clientId {
-    return [self.mostRecentMessageForMember objectForKey:clientId];
-}
-
-- (void)put:(ARTPresenceMessage *) message {
-    ARTPresenceMessage * latest = [self.mostRecentMessageForMember objectForKey:message.clientId];
-    if(!latest || latest.timestamp < message.timestamp) {
-        [self.mostRecentMessageForMember setObject:message forKey:message.clientId];
+- (void)clean {
+    for (NSString *key in [self.recentMembers allKeys]) {
+        ARTPresenceMessage *message = [self.recentMembers objectForKey:key];
+        if (message.action == ARTPresenceAbsent || message.action == ARTPresenceLeave) {
+            [self.recentMembers removeObjectForKey:key];
+        }
     }
 }
 
 - (void)startSync {
-    self.mostRecentMessageForMember = [NSMutableDictionary dictionary];
+    _recentMembers = [NSMutableDictionary dictionary];
     _syncStarted = true;
+    _syncComplete = false;
 }
 
 - (void)endSync {
-    NSArray * keys = [self.mostRecentMessageForMember allKeys];
-    for(NSString * key in keys) {
-        ARTPresenceMessage * message = [self.mostRecentMessageForMember objectForKey:key];
-        if(message.action == ARTPresenceAbsent || message.action == ARTPresenceLeave) {
-            [self.mostRecentMessageForMember removeObjectForKey:key];
-        }
-    }
+    [self clean];
+    _syncStarted = false;
     _syncComplete = true;
+    [_syncEndedEventEmitter emit:[NSNull null] with:[self.recentMembers allValues]];
 }
 
-- (BOOL)isSyncComplete {
-    return self.syncStarted && self.syncComplete;
+- (void)onceSyncEnds:(void (^)(NSArray<ARTPresenceMessage *> *))callback {
+    if (self.syncInProgress) {
+        [_syncEndedEventEmitter once:callback];
+    }
+    else {
+        callback([self.recentMembers allValues]);
+    }
 }
 
-- (BOOL)stillSyncing {
-    return self.syncStarted && !self.syncComplete;
+- (BOOL)getSyncInProgress {
+    return _syncStarted && !_syncComplete;
 }
 
 #pragma mark private

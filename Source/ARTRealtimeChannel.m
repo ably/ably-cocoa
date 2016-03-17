@@ -44,7 +44,7 @@
         _state = ARTRealtimeChannelInitialized;
         _queuedMessages = [NSMutableArray array];
         _attachSerial = nil;
-        _presenceMap =[[ARTPresenceMap alloc] init];
+        _presenceMap = [[ARTPresenceMap alloc] init];
         _lastPresenceAction = ARTPresenceAbsent;
         
         _statesEventEmitter = [[ARTEventEmitter alloc] init];
@@ -92,7 +92,6 @@
     msg.action = ARTProtocolMessageSync;
     msg.msgSerial = self.presenceMap.syncSerial;
     msg.channel = self.name;
-
 
     [self.realtime send:msg callback:^(ARTStatus *status) {}];
 }
@@ -183,7 +182,7 @@
 }
 
 - (void)throwOnDisconnectedOrFailed {
-    if(self.realtime.connection.state == ARTRealtimeFailed || self.realtime.connection.state == ARTRealtimeDisconnected) {
+    if (self.realtime.connection.state == ARTRealtimeFailed || self.realtime.connection.state == ARTRealtimeDisconnected) {
         [NSException raise:@"realtime cannot perform action in disconnected or failed state" format:@"state: %d", (int)self.realtime.connection.state];
     }
 }
@@ -298,26 +297,6 @@
 }
 
 - (void)onChannelMessage:(ARTProtocolMessage *)message {
-    if (message.action == ARTProtocolMessageAttached && [message isSyncEnabled]) {
-        [self.presenceMap startSync];
-        [self.logger debug:__FILE__ line:__LINE__ message:@"PresenceMap Sync started"];
-    }
-    else if (message.action == ARTProtocolMessageSync || message.action == ARTProtocolMessagePresence) {
-        self.presenceMap.syncSerial = message.connectionSerial;
-
-        if (message.action == ARTProtocolMessageSync)
-            [self.logger info:@"ARTRealtime Sync message received"];
-
-        for (int i=0; i<[message.presence count]; i++) {
-            [self.presenceMap put:[message.presence objectAtIndex:i]];
-        }
-
-        if ([self isLastChannelSerial:message.channelSerial]) {
-            [self.presenceMap endSync];
-            [self.logger debug:__FILE__ line:__LINE__ message:@"PresenceMap Sync ended"];
-        }
-    }
-    
     switch (message.action) {
         case ARTProtocolMessageAttached:
             [self setAttached:message];
@@ -335,7 +314,7 @@
             [self onError:message];
             break;
         case ARTProtocolMessageSync:
-            [self.presenceMap syncMessageProcessed];
+            [self onSync:message];
             break;
         default:
             [self.logger warn:@"ARTRealtime, unknown ARTProtocolMessage action: %tu", message.action];
@@ -351,11 +330,13 @@
     self.attachSerial = message.channelSerial;
     [self sendQueuedMessages];
     
-    for (ARTPresenceMessage *pm in message.presence) {
-        [self.presenceDict setObject:pm forKey:pm.clientId];
-    }
     [self transition:ARTRealtimeChannelAttached status:[ARTStatus state:ARTStateOk]];
     [_attachedEventEmitter emit:[NSNull null] with:nil];
+
+    if ([message isSyncEnabled]) {
+        [self.presenceMap startSync];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"PresenceMap Sync started"];
+    }
 }
 
 - (void)setDetached:(ARTProtocolMessage *)message {
@@ -414,28 +395,45 @@
     int i = 0;
     ARTDataEncoder *dataEncoder = self.dataEncoder;
     for (ARTPresenceMessage *p in message.presence) {
-        ARTPresenceMessage *pm = p;
+        ARTPresenceMessage *presence = p;
         if (dataEncoder) {
             NSError *error = nil;
-            pm = [pm decodeWithEncoder:dataEncoder error:&error];
+            presence = [p decodeWithEncoder:dataEncoder error:&error];
             if (error != nil) {
                 ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:(ARTErrorInfo *)error.userInfo[NSLocalizedFailureReasonErrorKey] prepend:@"Failed to decode data: "];
                 [self.logger error:@"%@", errorInfo.message];
             }
         }
         
-        if (!pm.timestamp) {
-            pm.timestamp = message.timestamp;
+        if (!presence.timestamp) {
+            presence.timestamp = message.timestamp;
         }
         
-        if (!pm.id) {
-            pm.id = [NSString stringWithFormat:@"%@:%d", message.id, i];
+        if (!presence.id) {
+            presence.id = [NSString stringWithFormat:@"%@:%d", message.id, i];
         }
-        
-        [self.presenceDict setObject:pm forKey:pm.clientId];
-        [self broadcastPresence:pm];
+
+        [self.presenceMap put:[message.presence objectAtIndex:i]];
+        [self.presenceMap clean];
+        [self broadcastPresence:presence];
         
         ++i;
+    }
+}
+
+- (void)onSync:(ARTProtocolMessage *)message {
+    self.presenceMap.syncSerial = message.connectionSerial;
+
+    if (message.action == ARTProtocolMessageSync)
+        [self.logger info:@"ARTRealtime Sync message received"];
+
+    for (int i=0; i<[message.presence count]; i++) {
+        [self.presenceMap put:[message.presence objectAtIndex:i]];
+    }
+
+    if ([self isLastChannelSerial:message.channelSerial]) {
+        [self.presenceMap endSync];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"PresenceMap Sync ended"];
     }
 }
 
@@ -563,11 +561,11 @@
     return self.realtime.auth.clientId;
 }
 
-- (void)history:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, NSError *))callback {
+- (void)history:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, ARTErrorInfo *))callback {
     [self history:[[ARTRealtimeHistoryQuery alloc] init] callback:callback error:nil];
 }
 
-- (BOOL)history:(ARTRealtimeHistoryQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, NSError *))callback error:(NSError **)errorPtr {
+- (BOOL)history:(ARTRealtimeHistoryQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
     query.realtimeChannel = self;
     @try {
         return [super history:query callback:callback error:errorPtr];
