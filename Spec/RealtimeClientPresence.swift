@@ -136,6 +136,60 @@ class RealtimeClientPresence: QuickSpec {
                 }
             }
 
+            // RTP11
+            context("get") {
+
+                context("query") {
+                    it("waitForSync should be true by default") {
+                        expect(ARTRealtimePresenceQuery().waitForSync).to(beTrue())
+                    }
+                }
+
+                // RTP11a
+                it("should return a list of current members on the channel") {
+                    let options = AblyTests.commonAppSetup()
+
+                    var disposable = [ARTRealtime]()
+                    defer {
+                        for clientItem in disposable {
+                            clientItem.close()
+                        }
+                    }
+
+                    let expectedData = "online"
+                    waitUntil(timeout: testTimeout) { done in
+                        disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 150, data:expectedData, options: options) {
+                            done()
+                        }
+                    }
+
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    var presenceQueryWasCreated = false
+                    ARTRealtimePresenceQuery.testSuite_injectIntoClassMethod("init") { // Default initialiser
+                        presenceQueryWasCreated = true
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.get { members, error in
+                            expect(error).to(beNil())
+                            expect(members).to(haveCount(150))
+                            expect(members!.first).to(beAnInstanceOf(ARTPresenceMessage))
+                            expect(members).to(allPass({ member in
+                                return NSRegularExpression.match(member!.clientId, pattern: "^user(\\d+)$")
+                                    && (member!.data as? NSObject) == expectedData
+                            }))
+                            done()
+                        }
+                    }
+
+                    expect(presenceQueryWasCreated).to(beTrue())
+                }
+
+            }
+
         }
     }
 }
