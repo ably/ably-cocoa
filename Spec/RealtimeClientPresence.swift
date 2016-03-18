@@ -77,6 +77,35 @@ class RealtimeClientPresence: QuickSpec {
                 }
             }
 
+            // RTP4
+            it("should receive all 250 members") {
+                let options = AblyTests.commonAppSetup()
+                var clientSource: ARTRealtime!
+                defer { clientSource.close() }
+
+                let clientTarget = ARTRealtime(options: options)
+                defer { clientTarget.close() }
+                let channel = clientTarget.channels.get("test")
+
+                channel.presence.subscribe { member in
+                    expect(member.action).to(equal(ARTPresenceAction.Present))
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    clientSource = AblyTests.addMembersSequentiallyToChannel("test", members: 250, options: options) {
+                        done()
+                    }.first
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.presence.get() { members, error in
+                        expect(error).to(beNil())
+                        expect(members).to(haveCount(250))
+                        done()
+                    }
+                }
+            }
+
             // RTP6
             context("subscribe") {
 
