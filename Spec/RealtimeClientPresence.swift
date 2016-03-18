@@ -9,27 +9,6 @@
 import Quick
 import Nimble
 
-func addRandomMembersToChannel(channelName: String, members: Int = 1, options: ARTClientOptions, done: ()->()) -> [ARTRealtime] {
-    let client = ARTRealtime(options: options)
-    let channel = client.channels.get(channelName)
-
-    class Total {
-        static var count: Int = 0
-    }
-
-    channel.attach() { _ in
-        for _ in 1...members {
-            channel.presence.enterClient(AblyTests.newRandomString(), data: nil) { _ in
-                Total.count += 1
-                if Total.count == members {
-                    done()
-                }
-            }
-        }
-    }
-    return [client]
-}
-
 class RealtimeClientPresence: QuickSpec {
     override func spec() {
         describe("Presence") {
@@ -69,7 +48,7 @@ class RealtimeClientPresence: QuickSpec {
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        disposable += addRandomMembersToChannel("test", members: 250, options: options) {
+                        disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 250, options: options) {
                             done()
                         }
                     }
