@@ -227,12 +227,12 @@ channel.history { messagesPage, error in
 **Objective-C**
 
 ```objective-c
-[channel history:^(ARTPaginatedResult<ARTMessage *> *messagesPage, NSError *error) {
+[channel history:^(ARTPaginatedResult<ARTMessage *> *messagesPage, ARTErrorInfo *error) {
     NSLog(@"%@", messagesPage.items);
     NSLog(@"%@", messagesPage.items.firstObject);
     NSLog(@"%@", messagesPage.items.firstObject.data); // payload for the message
     NSLog(@"%lu", (unsigned long)[messagesPage.items count]); // number of messages in the current page of history
-    [messagesPage next:^(ARTPaginatedResult<ARTMessage *> *nextPage, NSError *error) {
+    [messagesPage next:^(ARTPaginatedResult<ARTMessage *> *nextPage, ARTErrorInfo *error) {
         // retrieved the next page in nextPage
     }];
     NSLog(@"%d", messagesPage.hasNext); // true, there are more pages
@@ -257,7 +257,7 @@ channel.presence.enter("john.doe") { errorInfo in
 
 ```objective-c
 [channel.presence enter:@"john.doe" callback:^(ARTErrorInfo *errorInfo) {
-    [channel.presence get:^(ARTPaginatedResult<ARTPresenceMessage *> *result, NSError *error) {
+    [channel.presence get:^(ARTPaginatedResult<ARTPresenceMessage *> *result, ARTErrorInfo *error) {
         // members is the array of members present
     }];
 }];
@@ -284,12 +284,12 @@ channel.presence.history { presencePage, error in
 **Objective-C**
 
 ```objective-c
-[channel.presence history:^(ARTPaginatedResult<ARTPresenceMessage *> *presencePage, NSError *error) {
+[channel.presence history:^(ARTPaginatedResult<ARTPresenceMessage *> *presencePage, ARTErrorInfo *error) {
     ARTPresenceMessage *first = (ARTPresenceMessage *)presencePage.items.firstObject;
     NSLog(@"%lu", (unsigned long)first.action); // Any of ARTPresenceEnter, ARTPresenceUpdate or ARTPresenceLeave
     NSLog(@"%@", first.clientId); // client ID of member
     NSLog(@"%@", first.data); // optional data payload of member
-    [presencePage next:^(ARTPaginatedResult<ARTPresenceMessage *> *nextPage, NSError *error) {
+    [presencePage next:^(ARTPaginatedResult<ARTPresenceMessage *> *nextPage, ARTErrorInfo *error) {
         // retrieved the next page in nextPage
     }];
 }];
@@ -348,11 +348,11 @@ channel.history { messagesPage, error in
 **Objective-C**
 
 ```objective-c
-[channel history:^(ARTPaginatedResult<ARTMessage *> *messagesPage, NSError *error) {
+[channel history:^(ARTPaginatedResult<ARTMessage *> *messagesPage, ARTErrorInfo *error) {
     NSLog(@"%@", messagesPage.items.firstObject);
     NSLog(@"%@", messagesPage.items.firstObject.data); // payload for the message
     NSLog(@"%lu", (unsigned long)[messagesPage.items count]); // number of messages in the current page of history
-    [messagesPage next:^(ARTPaginatedResult<ARTMessage *> *nextPage, NSError *error) {
+    [messagesPage next:^(ARTPaginatedResult<ARTMessage *> *nextPage, ARTErrorInfo *error) {
         // retrieved the next page in nextPage
     }];
     NSLog(@"%d", messagesPage.hasNext); // true, there are more pages
@@ -378,10 +378,10 @@ channel.presence.get { membersPage, error in
 **Objective-C**
 
 ```objective-c
-[channel.presence get:^(ARTPaginatedResult<ARTPresenceMessage *> *membersPage, NSError *error) {
+[channel.presence get:^(ARTPaginatedResult<ARTPresenceMessage *> *membersPage, ARTErrorInfo *error) {
     NSLog(@"%@", membersPage.items.firstObject);
     NSLog(@"%@", membersPage.items.firstObject.data); // payload for the message
-    [membersPage next:^(ARTPaginatedResult<ARTMessage *> *nextPage, NSError *error) {
+    [membersPage next:^(ARTPaginatedResult<ARTMessage *> *nextPage, ARTErrorInfo *error) {
         // retrieved the next page in nextPage
     }];
     NSLog(@"%d", membersPage.hasNext); // true, there are more pages
@@ -407,11 +407,11 @@ channel.presence.history { presencePage, error in
 **Objective-C**
 
 ```objective-c
-[channel.presence history:^(ARTPaginatedResult<ARTPresenceMessage *> *presencePage, NSError *error) {
+[channel.presence history:^(ARTPaginatedResult<ARTPresenceMessage *> *presencePage, ARTErrorInfo *error) {
     ARTPresenceMessage *first = (ARTPresenceMessage *)presencePage.items.firstObject;
     NSLog(@"%@", first.clientId); // client ID of member
     NSLog(@"%@", first.data); // optional data payload of member
-    [presencePage next:^(ARTPaginatedResult<ARTPresenceMessage *> *nextPage, NSError *error) {
+    [presencePage next:^(ARTPaginatedResult<ARTPresenceMessage *> *nextPage, ARTErrorInfo *error) {
         // retrieved the next page in nextPage
     }];
 }];
@@ -455,9 +455,9 @@ client.stats { statsPage, error in
 **Objective-C**
 
 ```objective-c
-[client stats:^(ARTPaginatedResult<ARTStats *> *statsPage, NSError *error) {
+[client stats:^(ARTPaginatedResult<ARTStats *> *statsPage, ARTErrorInfo *error) {
     NSLog(@"%@", statsPage.items.firstObject);
-    [statsPage next:^(ARTPaginatedResult<ARTStats *> *nextPage, NSError *error) {
+    [statsPage next:^(ARTPaginatedResult<ARTStats *> *nextPage, ARTErrorInfo *error) {
         // retrieved the next page in nextPage
     }];
 }];
