@@ -328,15 +328,15 @@
 
 - (void)setAttached:(ARTProtocolMessage *)message {
     self.attachSerial = message.channelSerial;
-    [self sendQueuedMessages];
-    
-    [self transition:ARTRealtimeChannelAttached status:[ARTStatus state:ARTStateOk]];
-    [_attachedEventEmitter emit:[NSNull null] with:nil];
-
     if ([message isSyncEnabled]) {
         [self.presenceMap startSync];
         [self.logger debug:__FILE__ line:__LINE__ message:@"PresenceMap Sync started"];
     }
+
+    [self sendQueuedMessages];
+
+    [self transition:ARTRealtimeChannelAttached status:[ARTStatus state:ARTStateOk]];
+    [_attachedEventEmitter emit:[NSNull null] with:nil];
 }
 
 - (void)setDetached:(ARTProtocolMessage *)message {

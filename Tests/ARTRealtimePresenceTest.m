@@ -920,7 +920,7 @@
 */
 
 - (void)testPresenceMap {
-    NSString * channelName = @"channelName";
+    NSString *channelName = @"channelName";
     __weak XCTestExpectation *exp = [self expectationWithDescription:@"testPresenceMap"];
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         options.clientId = [self getClientId];
@@ -932,7 +932,9 @@
             XCTAssertEqual(options.clientId, [self getSecondClientId]);
             _realtime2 = [[ARTRealtime alloc] initWithOptions:options];
             ARTRealtimeChannel *channel2 = [_realtime2.channels get:channelName];
-            [channel2.presence get:^(NSArray *members, ARTErrorInfo *error) {
+            ARTRealtimePresenceQuery *query = [[ARTRealtimePresenceQuery alloc] init];
+            query.waitForSync = false;
+            [channel2.presence get:query callback:^(NSArray *members, ARTErrorInfo *error) {
                 XCTAssert(!error);
                 XCTAssertFalse(channel2.presence.syncComplete);
                 [ARTTestUtil delay:1.0 block:^{
