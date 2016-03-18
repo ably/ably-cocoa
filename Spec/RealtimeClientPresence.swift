@@ -79,7 +79,7 @@ class RealtimeClientPresence: QuickSpec {
             }
 
             // RTP3
-            it("should complete the SYNC operation when the connection is disconnected unexpectedly") {
+            pending("should complete the SYNC operation when the connection is disconnected unexpectedly") {
                 let options = AblyTests.commonAppSetup()
                 options.disconnectedRetryTimeout = 1.0
                 var clientSecondary: ARTRealtime!
