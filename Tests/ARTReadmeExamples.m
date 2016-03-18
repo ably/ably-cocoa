@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <XCTest/XCTest.h>
 #import "ARTTestUtil.h"
-#import "ably.h"
+#import "AblyRealtime.h"
 
 @interface ARTReadmeExamples : XCTestCase
 @end

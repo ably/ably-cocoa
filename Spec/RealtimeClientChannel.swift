@@ -10,8 +10,6 @@ import Quick
 import Nimble
 import Aspects
 
-import Ably.Private
-
 class RealtimeClientChannel: QuickSpec {
     override func spec() {
         describe("Channel") {

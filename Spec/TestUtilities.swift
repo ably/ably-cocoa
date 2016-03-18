@@ -13,7 +13,7 @@ import Nimble
 import SwiftyJSON
 import SwiftWebSocket
 
-import Ably.Private
+import AblyRealtime.Private
 
 enum CryptoTest: String {
     case aes128 = "crypto-data-128"

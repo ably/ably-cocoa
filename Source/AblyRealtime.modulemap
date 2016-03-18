@@ -1,5 +1,5 @@
-framework module Ably {
-    umbrella header "Ably.h"
+framework module AblyRealtime {
+    umbrella header "AblyRealtime.h"
 
     export *
     module * { export * }

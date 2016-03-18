@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <ably/CompatibilityMacros.h>
+#import "CompatibilityMacros.h"
 
 /// `NSObject` extensions. Aspects lib allows you to add code to existing methods but it has some limitations with Swift because the NSInvocation is unavailable: https://developer.apple.com/library/mac/documentation/Cocoa/Reference/Foundation/Classes/NSInvocation_Class/
 @interface NSObject (TestSuite)
