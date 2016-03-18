@@ -98,6 +98,7 @@
 		D714A6401C75F0C5002F2CA0 /* ARTWebSocketTransport+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D714A63F1C75F0C5002F2CA0 /* ARTWebSocketTransport+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D71D30041C5F7B2F002115B0 /* RealtimeClientChannels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71D30031C5F7B2F002115B0 /* RealtimeClientChannels.swift */; };
 		D72304701BB72CED00F1ABDA /* RealtimeClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D723046F1BB72CED00F1ABDA /* RealtimeClient.swift */; };
+		D72768211C9C19040022F8B2 /* RestClientPresence.swift in Sources */ = {isa = PBXBuildFile; fileRef = D72768201C9C19040022F8B2 /* RestClientPresence.swift */; };
 		D746AE1D1BBB5207003ECEF8 /* ARTDataQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE1A1BBB5207003ECEF8 /* ARTDataQuery.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D746AE1E1BBB5207003ECEF8 /* ARTDataQuery+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE1B1BBB5207003ECEF8 /* ARTDataQuery+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D746AE1F1BBB5207003ECEF8 /* ARTDataQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE1C1BBB5207003ECEF8 /* ARTDataQuery.m */; };
@@ -131,8 +132,8 @@
 		D7B17EE41C07208B00A6958E /* ARTConnectionDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = D7B17EE21C07208B00A6958E /* ARTConnectionDetails.m */; };
 		D7C1B8771BBEA81A0087B55F /* Auth.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C1B8761BBEA81A0087B55F /* Auth.swift */; };
 		D7C1B8791BBF5F810087B55F /* ARTAuth+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1B8781BBF5F460087B55F /* ARTAuth+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		D7CEF1321C8DD3BC004FB242 /* RealtimeClientPresence.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7CEF1311C8DD3BC004FB242 /* RealtimeClientPresence.swift */; };
 		D7CEF12D1C8D821D004FB242 /* ARTRealtimeChannels+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7CEF12C1C8D821D004FB242 /* ARTRealtimeChannels+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		D7CEF1321C8DD3BC004FB242 /* RealtimeClientPresence.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7CEF1311C8DD3BC004FB242 /* RealtimeClientPresence.swift */; };
 		D7D29B421BE3DEB300374295 /* ARTConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = D7D29B411BE3DEB300374295 /* ARTConnection.m */; };
 		D7D8F8211BC2BE16009718F2 /* ARTAuthOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = D7D8F81F1BC2BE15009718F2 /* ARTAuthOptions.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7D8F8221BC2BE16009718F2 /* ARTAuthOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = D7D8F8201BC2BE15009718F2 /* ARTAuthOptions.m */; };
@@ -314,6 +315,7 @@
 		D714A63F1C75F0C5002F2CA0 /* ARTWebSocketTransport+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTWebSocketTransport+Private.h"; sourceTree = "<group>"; };
 		D71D30031C5F7B2F002115B0 /* RealtimeClientChannels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClientChannels.swift; sourceTree = "<group>"; };
 		D723046F1BB72CED00F1ABDA /* RealtimeClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClient.swift; sourceTree = "<group>"; };
+		D72768201C9C19040022F8B2 /* RestClientPresence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClientPresence.swift; sourceTree = "<group>"; };
 		D746AE1A1BBB5207003ECEF8 /* ARTDataQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTDataQuery.h; sourceTree = "<group>"; };
 		D746AE1B1BBB5207003ECEF8 /* ARTDataQuery+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTDataQuery+Private.h"; sourceTree = "<group>"; };
 		D746AE1C1BBB5207003ECEF8 /* ARTDataQuery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDataQuery.m; sourceTree = "<group>"; };
@@ -349,8 +351,8 @@
 		D7B17EE21C07208B00A6958E /* ARTConnectionDetails.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTConnectionDetails.m; sourceTree = "<group>"; };
 		D7C1B8761BBEA81A0087B55F /* Auth.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Auth.swift; sourceTree = "<group>"; };
 		D7C1B8781BBF5F460087B55F /* ARTAuth+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ARTAuth+Private.h"; sourceTree = "<group>"; };
-		D7CEF1311C8DD3BC004FB242 /* RealtimeClientPresence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClientPresence.swift; sourceTree = "<group>"; };
 		D7CEF12C1C8D821D004FB242 /* ARTRealtimeChannels+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTRealtimeChannels+Private.h"; sourceTree = "<group>"; };
+		D7CEF1311C8DD3BC004FB242 /* RealtimeClientPresence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClientPresence.swift; sourceTree = "<group>"; };
 		D7D29B401BE3DD0600374295 /* ARTConnection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTConnection.h; sourceTree = "<group>"; };
 		D7D29B411BE3DEB300374295 /* ARTConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTConnection.m; sourceTree = "<group>"; };
 		D7D8F81F1BC2BE15009718F2 /* ARTAuthOptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTAuthOptions.h; sourceTree = "<group>"; };
@@ -468,6 +470,7 @@
 				853ED7C31B7A1A3C006F1C6F /* RestClientStats.swift */,
 				D746AE2A1BBB625E003ECEF8 /* RestClientChannel.swift */,
 				D746AE2B1BBB625E003ECEF8 /* RestClientChannels.swift */,
+				D72768201C9C19040022F8B2 /* RestClientPresence.swift */,
 				D723046F1BB72CED00F1ABDA /* RealtimeClient.swift */,
 				D7EBE5A21BE8391E0086E675 /* RealtimeClientConnection.swift */,
 				D74EFAEA1C4D09B500CFF98E /* RealtimeClientChannel.swift */,
@@ -1075,6 +1078,7 @@
 				D71D30041C5F7B2F002115B0 /* RealtimeClientChannels.swift in Sources */,
 				D714A63E1C74D4B2002F2CA0 /* NSObject+TestSuite.swift in Sources */,
 				856AAC971B6E30C800B07119 /* TestUtilities.swift in Sources */,
+				D72768211C9C19040022F8B2 /* RestClientPresence.swift in Sources */,
 				D780846E1C68B3E50083009D /* NSObject+TestSuite.m in Sources */,
 				D7CEF1321C8DD3BC004FB242 /* RealtimeClientPresence.swift in Sources */,
 				853ED7C41B7A1A3C006F1C6F /* RestClientStats.swift in Sources */,
