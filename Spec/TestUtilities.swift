@@ -582,6 +582,20 @@ extension JSON {
 
 }
 
+extension NSRegularExpression {
+
+    class func match(value: String?, pattern: String) -> Bool {
+        guard let value = value else {
+            return false
+        }
+        let options = NSRegularExpressionOptions()
+        let regex = try! NSRegularExpression(pattern: pattern, options: options)
+        let range = NSMakeRange(0, value.lengthOfBytesUsingEncoding(NSUTF8StringEncoding))
+        return regex.rangeOfFirstMatchInString(value, options: [], range: range).location != NSNotFound
+    }
+
+}
+
 extension ARTRealtime {
 
     func simulateLostConnectionAndState() {
