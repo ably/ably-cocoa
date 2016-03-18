@@ -77,6 +77,43 @@ class RealtimeClientPresence: QuickSpec {
                 }
             }
 
+            // RTP5
+            context("Channel state change side effects") {
+
+                // RTP5a
+                it("all queued presence messages should fail immediately if the channel enters the FAILED state") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let protocolError = AblyTests.newErrorProtocolMessage()
+                        channel.presence.enterClient("user", data: nil) { error in
+                            expect(error).to(beIdenticalTo(protocolError.error))
+                            done()
+                        }
+                        channel.onError(protocolError)
+                    }
+                }
+
+
+                // RTP5a
+                it("all queued presence messages should fail immediately if the channel enters the DETACHED state") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enterClient("user", data: nil) { error in
+                            expect(error).toNot(beNil())
+                            done()
+                        }
+                        channel.detach()
+                    }
+                }
+
+            }
+
             // RTP15e
             let cases: [String:(ARTRealtimePresence, Optional<(ARTErrorInfo?)->Void>)->()] = [
                 "enterClient": { $0.enterClient("john", data: nil, callback: $1) },
