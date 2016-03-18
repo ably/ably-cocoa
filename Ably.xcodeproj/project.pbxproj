@@ -51,7 +51,7 @@
 		856AAC991B6E312F00B07119 /* RestClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC981B6E312F00B07119 /* RestClient.swift */; };
 		856AAC9B1B6E326E00B07119 /* ably-common in Resources */ = {isa = PBXBuildFile; fileRef = 856AAC9A1B6E326E00B07119 /* ably-common */; };
 		85B2C2191B6FE8DE00EA5254 /* CompatibilityMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = 85B2C2181B6FE8DE00EA5254 /* CompatibilityMacros.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		85F0A60B1B6D039F00EFF45A /* Ably.h in Headers */ = {isa = PBXBuildFile; fileRef = 85F0A60A1B6D039F00EFF45A /* Ably.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		85F0A60B1B6D039F00EFF45A /* AblyRealtime.h in Headers */ = {isa = PBXBuildFile; fileRef = 85F0A60A1B6D039F00EFF45A /* AblyRealtime.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		960D07931A45F1D800ED8C8C /* ARTCrypto.h in Headers */ = {isa = PBXBuildFile; fileRef = 960D07911A45F1D800ED8C8C /* ARTCrypto.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		960D07941A45F1D800ED8C8C /* ARTCrypto.m in Sources */ = {isa = PBXBuildFile; fileRef = 960D07921A45F1D800ED8C8C /* ARTCrypto.m */; };
 		960D07971A46FFC300ED8C8C /* ARTRest+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 960D07951A46FFC300ED8C8C /* ARTRest+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -261,8 +261,8 @@
 		856AAC981B6E312F00B07119 /* RestClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClient.swift; sourceTree = "<group>"; };
 		856AAC9A1B6E326E00B07119 /* ably-common */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "ably-common"; sourceTree = SOURCE_ROOT; };
 		85B2C2181B6FE8DE00EA5254 /* CompatibilityMacros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompatibilityMacros.h; sourceTree = "<group>"; };
-		85F0A60A1B6D039F00EFF45A /* Ably.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Ably.h; sourceTree = "<group>"; };
-		85F0A60C1B6D03B700EFF45A /* Ably.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = Ably.modulemap; sourceTree = "<group>"; };
+		85F0A60A1B6D039F00EFF45A /* AblyRealtime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AblyRealtime.h; sourceTree = "<group>"; };
+		85F0A60C1B6D03B700EFF45A /* AblyRealtime.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = AblyRealtime.modulemap; sourceTree = "<group>"; };
 		960D07911A45F1D800ED8C8C /* ARTCrypto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTCrypto.h; sourceTree = "<group>"; };
 		960D07921A45F1D800ED8C8C /* ARTCrypto.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTCrypto.m; sourceTree = "<group>"; };
 		960D07951A46FFC300ED8C8C /* ARTRest+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTRest+Private.h"; sourceTree = "<group>"; };
@@ -505,7 +505,7 @@
 		96BF61331A35B2AB004CF2B3 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				85F0A60A1B6D039F00EFF45A /* Ably.h */,
+				85F0A60A1B6D039F00EFF45A /* AblyRealtime.h */,
 				85B2C2181B6FE8DE00EA5254 /* CompatibilityMacros.h */,
 				1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */,
 				D7DC8AF01C6A9FFC005AF165 /* ARTDefault+Private.h */,
@@ -523,7 +523,7 @@
 		96BF61341A35B2AB004CF2B3 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				85F0A60C1B6D03B700EFF45A /* Ably.modulemap */,
+				85F0A60C1B6D03B700EFF45A /* AblyRealtime.modulemap */,
 				1C118A5B1AE63D89006AD19E /* Info.plist */,
 			);
 			name = "Supporting Files";
@@ -734,7 +734,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				85F0A60B1B6D039F00EFF45A /* Ably.h in Headers */,
+				85F0A60B1B6D039F00EFF45A /* AblyRealtime.h in Headers */,
 				96BF61531A35B39C004CF2B3 /* ARTRest.h in Headers */,
 				96A507BD1A3791490077CDF8 /* ARTRealtime.h in Headers */,
 				EB5E058D1C77027600A48B39 /* ARTCrypto+Private.h in Headers */,
@@ -1318,7 +1318,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MACH_O_TYPE = mh_dylib;
-				MODULEMAP_FILE = Source/Ably.modulemap;
+				MODULEMAP_FILE = Source/AblyRealtime.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SEPARATE_STRIP = YES;
@@ -1339,7 +1339,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MACH_O_TYPE = mh_dylib;
-				MODULEMAP_FILE = Source/Ably.modulemap;
+				MODULEMAP_FILE = Source/AblyRealtime.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SEPARATE_STRIP = YES;
