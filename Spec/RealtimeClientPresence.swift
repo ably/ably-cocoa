@@ -136,6 +136,29 @@ class RealtimeClientPresence: QuickSpec {
                 }
             }
 
+            // RTP16
+            context("Connection state conditions") {
+
+                // RTP16a
+                it("all presence messages are published immediately if the connection is CONNECTED") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enterClient("user", data: nil) { error in
+                            expect(error).to(beNil())
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+                            expect(channel.queuedMessages).to(haveCount(0))
+                            done()
+                        }
+                        expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connecting))
+                        expect(channel.queuedMessages).to(haveCount(1))
+                    }
+                }
+
+            }
+
             // RTP11
             context("get") {
 
