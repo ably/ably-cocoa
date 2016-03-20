@@ -323,6 +323,34 @@ class RealtimeClientPresence: QuickSpec {
                     }
                 }
 
+                // RTP16b
+                it("all presence messages will be queued and delivered as soon as the connection state returns to CONNECTED") {
+                    let options = AblyTests.commonAppSetup()
+                    options.disconnectedRetryTimeout = 1.0
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+                    expect(client.options.queueMessages).to(beTrue())
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { _ in
+                            client.onDisconnected()
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enterClient("user", data: nil) { error in
+                            expect(error).to(beNil())
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+                            expect(channel.queuedMessages).to(haveCount(0))
+                            done()
+                        }
+                        expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Disconnected))
+                        expect(channel.queuedMessages).to(haveCount(1))
+                    }
+                }
+
             }
 
             // RTP11
