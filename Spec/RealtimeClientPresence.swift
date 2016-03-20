@@ -405,7 +405,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP16c
-                it("should result in an error if the connection state is INITIALIZED") {
+                pending("should result in an error if the connection state is INITIALIZED") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
