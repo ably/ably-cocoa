@@ -77,6 +77,23 @@ class RealtimeClientPresence: QuickSpec {
                 }
             }
 
+            // RTP7
+            context("unsubscribe") {
+
+                // RTP7a
+                it("with no arguments unsubscribes the listener if previously subscribed with an action-specific subscription") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    let listener = channel.presence.subscribe { _ in }
+                    expect(channel.presenceEventEmitter.anyListeners).to(haveCount(1))
+                    channel.presence.unsubscribe(listener)
+                    expect(channel.presenceEventEmitter.anyListeners).to(haveCount(0))
+                }
+
+            }
+
             // RTP15e
             let cases: [String:(ARTRealtimePresence, Optional<(ARTErrorInfo?)->Void>)->()] = [
                 "enterClient": { $0.enterClient("john", data: nil, callback: $1) },
