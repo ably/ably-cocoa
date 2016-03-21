@@ -246,7 +246,7 @@ class RealtimeClientPresence: QuickSpec {
             context("history") {
 
                 // RTP12b
-                context("supports the param untilAttach") {
+                pending("supports the param untilAttach") {
 
                     it("should be false as default") {
                         let query = ARTRealtimeHistoryQuery()
