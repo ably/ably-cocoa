@@ -77,6 +77,45 @@ class RealtimeClientPresence: QuickSpec {
                 }
             }
 
+            // RTP9
+            context("update") {
+
+                // RTP9c
+                it("optionally a callback can be provided that is called for success") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.update("online") { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+                }
+
+                // RTP9c
+                it("optionally a callback can be provided that is called for failure") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let protocolError = AblyTests.newErrorProtocolMessage()
+                        channel.presence.update("online") { error in
+                            expect(error).to(beIdenticalTo(protocolError.error))
+                            done()
+                        }
+                        channel.onError(protocolError)
+                    }
+                }
+
+            }
+
             // RTP15e
             let cases: [String:(ARTRealtimePresence, Optional<(ARTErrorInfo?)->Void>)->()] = [
                 "enterClient": { $0.enterClient("john", data: nil, callback: $1) },
