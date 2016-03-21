@@ -99,7 +99,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP6c
-                it("should result in an error if the channel is in the FAILED state") {
+                pending("should result in an error if the channel is in the FAILED state") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.close() }
                     let channel = client.channels.get("test")
@@ -116,7 +116,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP6c
-                it("should result in an error if the channel moves to the FAILED state") {
+                pending("should result in an error if the channel moves to the FAILED state") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.close() }
                     let channel = client.channels.get("test")
