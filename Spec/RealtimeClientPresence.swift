@@ -77,6 +77,65 @@ class RealtimeClientPresence: QuickSpec {
                 }
             }
 
+            // RTP10
+            context("leave") {
+
+                // RTP10a
+                it("should leave the current client from the channel and the data will be updated with the value provided") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.subscribe(.Enter) { member in
+                            expect(member.data as? NSObject).to(equal("online"))
+                            done()
+                        }
+                        channel.presence.enter("online")
+                    }
+
+                    expect(channel.presenceMap.members).toEventually(haveCount(1), timeout: testTimeout)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.subscribe(.Leave) { member in
+                            expect(member.data as? NSObject).to(equal("offline"))
+                            done()
+                        }
+                        channel.presence.leave("offline")
+                    }
+
+                    expect(channel.presenceMap.members).toEventually(haveCount(0), timeout: testTimeout)
+                }
+
+                // RTP10a
+                it("should leave the current client with no data") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.subscribe(.Enter) { member in
+                            expect(member.data as? NSObject).to(equal("online"))
+                            done()
+                        }
+                        channel.presence.enter("online")
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.subscribe(.Leave) { member in
+                            expect(member.data as? NSObject).to(equal("online"))
+                            done()
+                        }
+                        channel.presence.leave(nil)
+                    }
+                }
+
+            }
+
             // RTP15e
             let cases: [String:(ARTRealtimePresence, Optional<(ARTErrorInfo?)->Void>)->()] = [
                 "enterClient": { $0.enterClient("john", data: nil, callback: $1) },
