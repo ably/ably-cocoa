@@ -819,6 +819,26 @@ class RealtimeClientPresence: QuickSpec {
                 expect(user50LeaveTimestamp).to(beGreaterThan(user50PresentTimestamp))
             }
 
+            // RTP8
+            context("enter") {
+                // RTP8h
+                it("should result in an error if the client does not have required presence permission") {
+                    let options = AblyTests.clientOptions()
+                    options.token = getTestToken(capability: "{ \"cannotpresence:john\":[\"publish\"] }")
+                    options.clientId = "john"
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    let channel = client.channels.get("cannotpresence")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enter(nil) { error in
+                            expect(error!.message).to(contain("no permission"))
+                            done()
+                        }
+                    }
+                }
+            }
+
             // RTP15e
             let cases: [String:(ARTRealtimePresence, Optional<(ARTErrorInfo?)->Void>)->()] = [
                 "enterClient": { $0.enterClient("john", data: nil, callback: $1) },
