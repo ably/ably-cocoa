@@ -242,6 +242,125 @@ class RealtimeClientPresence: QuickSpec {
 
             }
 
+            // RTP12
+            context("history") {
+
+                // RTP12b
+                context("supports the param untilAttach") {
+
+                    it("should be false as default") {
+                        let query = ARTRealtimeHistoryQuery()
+                        expect(query.untilAttach).to(equal(false))
+                    }
+
+                    it("should invoke an error when the untilAttach is specified and the channel is not attached") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+
+                        let query = ARTRealtimeHistoryQuery()
+                        query.untilAttach = true
+
+                        do {
+                            try channel.presence.history(query, callback: { _, _ in })
+                        }
+                        catch let error as NSError {
+                            if error.code == ARTRealtimeHistoryError.NotAttached.rawValue {
+                                return
+                            }
+                            fail("Shouldn't raise a global error, got \(error)")
+                        }
+                        fail("Should raise an error")
+                    }
+
+                    struct CaseTest {
+                        let untilAttach: Bool
+                    }
+
+                    let cases = [CaseTest(untilAttach: true), CaseTest(untilAttach: false)]
+
+                    for caseItem in cases {
+                        it("where value is \(caseItem.untilAttach), should pass the querystring param fromSerial with the serial number assigned to the channel") {
+                            let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                            defer { client.close() }
+                            let channel = client.channels.get("test")
+
+                            let mockExecutor = MockHTTPExecutor()
+                            client.rest.httpExecutor = mockExecutor
+
+                            let query = ARTRealtimeHistoryQuery()
+                            query.untilAttach = caseItem.untilAttach
+
+                            channel.attach()
+                            expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                            waitUntil(timeout: testTimeout) { done in
+                                try! channel.presence.history(query) { _, errorInfo in
+                                    expect(errorInfo).to(beNil())
+                                    done()
+                                }
+                            }
+
+                            let queryString = mockExecutor.requests.last!.URL!.query
+
+                            if query.untilAttach {
+                                expect(queryString).to(contain("fromSerial=\(channel.attachSerial!)"))
+                            }
+                            else {
+                                expect(queryString).toNot(contain("fromSerial"))
+                            }
+                        }
+                    }
+
+                    it("should retrieve members prior to the moment that the channel was attached") {
+                        let options = AblyTests.commonAppSetup()
+
+                        var disposable = [ARTRealtime]()
+                        defer {
+                            for clientItem in disposable {
+                                clientItem.close()
+                            }
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 25, options: options) {
+                                done()
+                            }
+                        }
+
+                        let client = ARTRealtime(options: options)
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.attach() { _ in
+                                done()
+                            }
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 35, options: options) {
+                                done()
+                            }
+                        }
+
+                        let query = ARTRealtimeHistoryQuery()
+                        query.untilAttach = true
+
+                        waitUntil(timeout: testTimeout) { done in
+                            try! channel.presence.history(query) { result, errorInfo in
+                                expect(result!.items).to(haveCount(35))
+                                expect(result!.hasNext).to(beFalse())
+                                expect((result!.items.first as? ARTPresenceMessage)?.clientId).to(equal("user55"))
+                                expect((result!.items.last as? ARTPresenceMessage)?.clientId).to(equal("user35"))
+                                done()
+                            }
+                        }
+                    }
+
+                }
+
+            }
+
         }
     }
 }
