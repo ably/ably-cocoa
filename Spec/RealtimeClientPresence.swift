@@ -245,7 +245,7 @@ class RealtimeClientPresence: QuickSpec {
             // RTP12
             context("history") {
 
-                // RTP12c
+                // RTP12c, RTP12d
                 it("should return a PaginatedResult page") {
                     let options = AblyTests.commonAppSetup()
 
