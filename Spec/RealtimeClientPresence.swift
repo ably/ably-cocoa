@@ -81,7 +81,7 @@ class RealtimeClientPresence: QuickSpec {
             context("enter") {
 
                 // RTP8e
-                it("optional data can be included when entering a channel") {
+                pending("optional data can be included when entering a channel") {
                     let options = AblyTests.commonAppSetup()
 
                     options.clientId = "john"
@@ -108,7 +108,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP8e
-                it("should emit the data attribute in the LEAVE event when data is provided when entering but no data is provided when leaving") {
+                pending("should emit the data attribute in the LEAVE event when data is provided when entering but no data is provided when leaving") {
                     let options = AblyTests.commonAppSetup()
 
                     options.clientId = "john"
