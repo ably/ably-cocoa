@@ -668,6 +668,52 @@ class RealtimeClientPresence: QuickSpec {
 
             }
 
+            // RTP12
+            context("history") {
+
+                // RTP12a
+                it("should support all the same params as Rest") {
+                    let options = AblyTests.commonAppSetup()
+
+                    let rest = ARTRest(options: options)
+
+                    let realtime = ARTRealtime(options: options)
+                    defer { realtime.close() }
+
+                    var restPresenceHistoryMethodWasCalled = false
+                    ARTRestPresence.testSuite_injectIntoClassMethod("history:callback:error:") {
+                        restPresenceHistoryMethodWasCalled = true
+                    }
+
+                    let channelRest = rest.channels.get("test")
+                    let channelRealtime = realtime.channels.get("test")
+
+                    let queryRealtime = ARTRealtimeHistoryQuery()
+                    queryRealtime.start = NSDate()
+                    queryRealtime.end = NSDate()
+                    queryRealtime.direction = .Forwards
+                    queryRealtime.limit = 50
+
+                    let queryRest = queryRealtime as ARTDataQuery
+
+                    waitUntil(timeout: testTimeout) { done in
+                        try! channelRest.presence.history(queryRest) { _, _ in
+                            done()
+                        }
+                    }
+                    expect(restPresenceHistoryMethodWasCalled).to(beTrue())
+                    restPresenceHistoryMethodWasCalled = false
+
+                    waitUntil(timeout: testTimeout) { done in
+                        try! channelRealtime.presence.history(queryRealtime) { _, _ in
+                            done()
+                        }
+                    }
+                    expect(restPresenceHistoryMethodWasCalled).to(beTrue())
+                }
+
+            }
+
         }
     }
 }
