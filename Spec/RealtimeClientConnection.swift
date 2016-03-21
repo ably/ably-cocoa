@@ -1737,7 +1737,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN19b
-                it("should resent the ATTACH or DETACH message if there are any pending channels") {
+                pending("should resent the ATTACH or DETACH message if there are any pending channels") {
                     let options = AblyTests.commonAppSetup()
                     options.disconnectedRetryTimeout = 1.0
                     let client = AblyTests.newRealtime(options)
