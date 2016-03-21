@@ -1701,6 +1701,31 @@ class RealtimeClientConnection: QuickSpec {
                 }
             }
 
+            context("Transport disconnected side effects") {
+
+                // RTN19a
+                it("should resend any ProtocolMessage that is awaiting a ACK/NACK") {
+                    let options = AblyTests.commonAppSetup()
+                    options.logLevel = .Debug
+                    options.disconnectedRetryTimeout = 1.0
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "message") { error in
+                            expect(error).to(beNil())
+                            let transport = client.transport as! TestProxyTransport
+                            expect(transport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(2))
+                            expect(transport.protocolMessagesSent.filter{ $0.action == .Message }).to(haveCount(2))
+                            done()
+                        }
+                        client.onDisconnected()
+                    }
+                }
+
+            }
+
         }
     }
 }
