@@ -30,6 +30,8 @@ ART_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithRealtime:(ARTRealtime *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options;
 + (instancetype)channelWithRealtime:(ARTRealtime *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options;
 
+- (bool)isLastChannelSerial:(NSString *)channelSerial;
+
 @end
 
 @interface ARTRealtimeChannel (Private)
