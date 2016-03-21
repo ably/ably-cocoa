@@ -1736,6 +1736,28 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
+                // RTN19b
+                it("should resent the ATTACH or DETACH message if there are any pending channels") {
+                    let options = AblyTests.commonAppSetup()
+                    options.disconnectedRetryTimeout = 1.0
+                    let client = AblyTests.newRealtime(options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { error in
+                            expect(error).to(beNil())
+                            let transport = client.transport as! TestProxyTransport
+                            expect(transport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(2))
+                            expect(transport.protocolMessagesSent.filter{ $0.action == .Attached }).to(haveCount(1))
+                            expect(transport.protocolMessagesSent.filter{ $0.action == .Attach }).to(haveCount(2))
+                            done()
+                        }
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
+                        client.onDisconnected()
+                    }
+                }
+
             }
 
         }
