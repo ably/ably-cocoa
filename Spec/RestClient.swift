@@ -768,10 +768,42 @@ class RestClient: QuickSpec {
 
             }
 
+            // RSC8a
+            it("should use MsgPack binary protocol") {
+                let options = AblyTests.commonAppSetup()
+                expect(options.useBinaryProtocol).to(beTrue())
+
+                let rest = ARTRest(options: options)
+                rest.httpExecutor = testHTTPExecutor
+                waitUntil(timeout: testTimeout) { done in
+                    rest.channels.get("test").publish(nil, data: "message") { error in
+                        done()
+                    }
+                }
+
+                switch extractBodyAsMsgPack(testHTTPExecutor.requests.first) {
+                case .Failure(let error):
+                    fail(error)
+                default: break
+                }
+
+                let realtime = AblyTests.newRealtime(options)
+                defer { realtime.close() }
+                waitUntil(timeout: testTimeout) { done in
+                    realtime.channels.get("test").publish(nil, data: "message") { error in
+                        done()
+                    }
+                }
+
+                let transport = realtime.transport as! TestProxyTransport
+                let object = AblyTests.msgpackToJSON(transport.rawDataSent.last!)
+                expect(object["messages"][0]["data"].string).to(equal("message"))
+            }
+
             // RSC8b
             it("should use JSON text protocol") {
                 let options = AblyTests.commonAppSetup()
-                expect(options.useBinaryProtocol).to(beFalse())
+                options.useBinaryProtocol = false
 
                 let rest = ARTRest(options: options)
                 rest.httpExecutor = testHTTPExecutor

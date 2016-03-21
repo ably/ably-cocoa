@@ -50,7 +50,9 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import "ARTStats.h"
 #import "ARTWebSocketTransport.h"
 #import "ARTEncoder.h"
+#import "ARTJsonLikeEncoder.h"
 #import "ARTJsonEncoder.h"
+#import "ARTMsgpackEncoder.h"
 #import "ARTPaginatedResult.h"
 
 #import "ARTNSDictionary+ARTDictionaryUtil.h"

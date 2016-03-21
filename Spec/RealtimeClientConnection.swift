@@ -61,7 +61,7 @@ class RealtimeClientConnection: QuickSpec {
                                 if let transport = client.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
                                     expect(query).to(haveParam("key", withValue: options.key ?? ""))
                                     expect(query).to(haveParam("echo", withValue: "true"))
-                                    expect(query).to(haveParam("format", withValue: "json"))
+                                    expect(query).to(haveParam("format", withValue: "msgpack"))
                                 }
                                 else {
                                     XCTFail("MockTransport isn't working")
@@ -99,7 +99,7 @@ class RealtimeClientConnection: QuickSpec {
                                 if let transport = client.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
                                     expect(query).to(haveParam("accessToken", withValue: client.auth.tokenDetails?.token ?? ""))
                                     expect(query).to(haveParam("echo", withValue: "false"))
-                                    expect(query).to(haveParam("format", withValue: "json"))
+                                    expect(query).to(haveParam("format", withValue: "msgpack"))
                                     expect(query).to(haveParam("client_id", withValue: "client_string"))
                                 }
                                 else {

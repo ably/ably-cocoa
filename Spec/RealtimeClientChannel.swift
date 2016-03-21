@@ -1480,7 +1480,7 @@ class RealtimeClientChannel: QuickSpec {
 
                         let transport = client.transport as! TestProxyTransport
 
-                        let rawMessagesSent = transport.rawDataSent.toJSONArray.filter({ $0["action"] == ARTProtocolMessageAction.Message.rawValue })
+                        let rawMessagesSent = transport.rawDataSent.toMsgPackArray.filter({ $0["action"] == ARTProtocolMessageAction.Message.rawValue })
                         let messagesList = (rawMessagesSent[0] as! NSDictionary)["messages"] as! NSArray
                         let resultObject = messagesList[0] as! NSDictionary
 
@@ -1517,7 +1517,7 @@ class RealtimeClientChannel: QuickSpec {
 
                         let transport = client.transport as! TestProxyTransport
 
-                        let rawMessagesSent = transport.rawDataSent.toJSONArray.filter({ $0["action"] == ARTProtocolMessageAction.Message.rawValue })
+                        let rawMessagesSent = transport.rawDataSent.toMsgPackArray.filter({ $0["action"] == ARTProtocolMessageAction.Message.rawValue })
                         let messagesList = (rawMessagesSent[0] as! NSDictionary)["messages"] as! NSArray
                         let resultObject = messagesList[0] as! NSDictionary
 
@@ -1549,7 +1549,7 @@ class RealtimeClientChannel: QuickSpec {
 
                         let transport = client.transport as! TestProxyTransport
 
-                        let rawMessagesSent = transport.rawDataSent.toJSONArray.filter({ $0["action"] == ARTProtocolMessageAction.Message.rawValue })
+                        let rawMessagesSent = transport.rawDataSent.toMsgPackArray.filter({ $0["action"] == ARTProtocolMessageAction.Message.rawValue })
                         let messagesList = (rawMessagesSent[0] as! NSDictionary)["messages"] as! NSArray
                         let resultObject = messagesList[0] as! NSDictionary
 
@@ -1848,8 +1848,8 @@ class RealtimeClientChannel: QuickSpec {
 
                             transport.beforeProcessingReceivedMessage = { protocolMessage in
                                 if protocolMessage.action == .Message {
-                                    expect(protocolMessage.messages![0].data as? String).to(equal(testMessage.encrypted.data))
-                                    expect(protocolMessage.messages![0].encoding).to(equal(testMessage.encrypted.encoding))
+                                    expect(protocolMessage.messages![0].data as? NSObject).to(equal(AblyTests.base64ToData(testMessage.encrypted.data)))
+                                    expect(protocolMessage.messages![0].encoding).to(equal("utf-8/cipher+aes-\(cryptoTest == CryptoTest.aes128 ? "128" : "256")-cbc"))
                                     // Force an error decoding a message
                                     protocolMessage.messages![0].encoding = "bad_encoding_type"
                                 }
@@ -1858,7 +1858,7 @@ class RealtimeClientChannel: QuickSpec {
                             waitUntil(timeout: testTimeout) { done in
                                 let partlyDone = AblyTests.splitDone(2, done: done)
                                 channel.subscribe(testMessage.encoded.name) { message in
-                                    expect(message.data as? String).to(equal(testMessage.encrypted.data))
+                                    expect(message.data as? NSObject).to(equal(AblyTests.base64ToData(testMessage.encrypted.data)))
 
                                     let logs = options.logHandler.captured
                                     let line = logs.reduce("") { $0 + "; " + $1.toString() } //Reduce in one line
@@ -2400,8 +2400,8 @@ class RealtimeClientChannel: QuickSpec {
                     let receiverMessages = receiverTransport.protocolMessagesReceived.filter({ $0.action == .Message })
                     for protocolMessage in receiverMessages {
                         for message in protocolMessage.messages! {
-                            expect(message.data! as? String).toNot(equal("\(message.name!) data"))
-                            expect(message.encoding).to(equal("utf-8/cipher+aes-256-cbc/base64"))
+                            expect(message.data! as? NSObject).toNot(equal("\(message.name!) data"))
+                            expect(message.encoding).to(equal("utf-8/cipher+aes-256-cbc"))
                         }
                     }
                 }

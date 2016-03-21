@@ -15,7 +15,9 @@
 #import "ARTAuth+Private.h"
 #import "ARTHttp.h"
 #import "ARTEncoder.h"
+#import "ARTJsonLikeEncoder.h"
 #import "ARTJsonEncoder.h"
+#import "ARTMsgPackEncoder.h"
 #import "ARTMessage.h"
 #import "ARTPresence.h"
 #import "ARTPresenceMessage.h"
@@ -57,9 +59,13 @@
         _httpExecutor = _http;
         _httpExecutor.logger = _logger;
 
-        id<ARTEncoder> defaultEncoder = [[ARTJsonEncoder alloc] initWithLogger:self.logger];
-        _encoders = @{ [defaultEncoder mimeType]: defaultEncoder };
-        _defaultEncoding = [defaultEncoder mimeType];
+        id<ARTEncoder> jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithLogger:self.logger delegate:[[ARTJsonEncoder alloc] init]];
+        id<ARTEncoder> msgPackEncoder = [[ARTJsonLikeEncoder alloc] initWithLogger:self.logger delegate:[[ARTMsgPackEncoder alloc] init]];
+        _encoders = @{
+            [jsonEncoder mimeType]: jsonEncoder,
+            [msgPackEncoder mimeType]: msgPackEncoder
+        };
+        _defaultEncoding = (_options.useBinaryProtocol ? [msgPackEncoder mimeType] : [jsonEncoder mimeType]);
         _fallbackCount = 0;
 
         _auth = [[ARTAuth alloc] init:self withOptions:_options];

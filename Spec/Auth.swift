@@ -224,7 +224,7 @@ class Auth : QuickSpec {
                             }
                         }
 
-                        switch extractBodyAsJSON(testHTTPExecutor.requests.first) {
+                        switch extractBodyAsMsgPack(testHTTPExecutor.requests.first) {
                         case .Failure(let error):
                             XCTFail(error)
                         case .Success(let httpBody):
@@ -400,7 +400,7 @@ class Auth : QuickSpec {
                         }
                     }
                     
-                    switch extractBodyAsJSON(testHTTPExecutor.requests.last) {
+                    switch extractBodyAsMsgPack(testHTTPExecutor.requests.last) {
                     case .Failure(let error):
                         XCTFail(error)
                     case .Success(let httpBody):
@@ -552,7 +552,7 @@ class Auth : QuickSpec {
                         }
                         
                         // TokenRequest
-                        switch extractBodyAsJSON(testHTTPExecutor.requests.last) {
+                        switch extractBodyAsMsgPack(testHTTPExecutor.requests.last) {
                         case .Failure(let error):
                             XCTFail(error)
                         case .Success(let httpBody):
@@ -1238,9 +1238,9 @@ class Auth : QuickSpec {
                         }
                         expect(tokenRequest.ttl).to(equal(ARTDefault.ttl()))
                         // Check if the encoder changes the TTL to milliseconds
-                        let jsonEncoder = rest.defaultEncoder as! ARTJsonEncoder
-                        let data = jsonEncoder.encodeTokenRequest(tokenRequest)
-                        let jsonObject = try! NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions(rawValue: 0))  as! NSDictionary
+                        let encoder = rest.defaultEncoder as! ARTJsonLikeEncoder
+                        let data = encoder.encodeTokenRequest(tokenRequest)
+                        let jsonObject = encoder.delegate!.decode(data!) as! NSDictionary
                         let ttl = jsonObject["ttl"] as! NSNumber
                         expect(ttl).to(equal(60 * 60 * 1000))
                     })
@@ -1733,7 +1733,9 @@ class Auth : QuickSpec {
                         return
                     }
 
-                    guard let tokenDetailsJSON = NSString(data: ARTJsonEncoder().encodeTokenDetails(tokenDetails) ?? NSData(), encoding: NSUTF8StringEncoding) else {
+                    let encoder = ARTJsonLikeEncoder()
+                    encoder.delegate = ARTJsonEncoder()
+                    guard let tokenDetailsJSON = NSString(data: encoder.encodeTokenDetails(tokenDetails) ?? NSData(), encoding: NSUTF8StringEncoding) else {
                         XCTFail("JSON TokenDetails is empty")
                         return
                     }
