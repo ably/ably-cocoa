@@ -77,6 +77,30 @@ class RealtimeClientPresence: QuickSpec {
                 }
             }
 
+            // RTP9
+            context("update") {
+
+                // RTP9b
+                it("should enter current client into the channel if the client was not already entered") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    expect(channel.presenceMap.members).to(haveCount(0))
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.subscribe(.Enter) { member in
+                            expect(member.clientId).to(equal("john"))
+                            expect(member.data as? NSObject).to(equal("online"))
+                            done()
+                        }
+                        channel.presence.update("online")
+                    }
+                }
+
+            }
+
             // RTP15e
             let cases: [String:(ARTRealtimePresence, Optional<(ARTErrorInfo?)->Void>)->()] = [
                 "enterClient": { $0.enterClient("john", data: nil, callback: $1) },
