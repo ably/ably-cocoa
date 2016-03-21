@@ -372,6 +372,36 @@ class RealtimeClientPresence: QuickSpec {
 
             }
 
+            // RTP6
+            context("subscribe") {
+
+                // RTP6b
+                it("with a single action argument") {
+                    let options = AblyTests.commonAppSetup()
+
+                    let client1 = ARTRealtime(options: options)
+                    defer { client1.close() }
+                    let channel1 = client1.channels.get("test")
+
+                    let client2 = ARTRealtime(options: options)
+                    defer { client2.close() }
+                    let channel2 = client2.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel1.presence.subscribe(.Update) { member in
+                            expect(member.action).to(equal(ARTPresenceAction.Update))
+                            expect(member.clientId).to(equal("john"))
+                            expect(member.data as? NSObject).to(equal("away"))
+                            done()
+                        }
+                        channel2.presence.enterClient("john", data: "online")
+                        channel2.presence.updateClient("john", data: "away")
+                        channel2.presence.leaveClient("john", data: nil)
+                    }
+                }
+
+            }
+
             // RTP15e
             let cases: [String:(ARTRealtimePresence, Optional<(ARTErrorInfo?)->Void>)->()] = [
                 "enterClient": { $0.enterClient("john", data: nil, callback: $1) },
