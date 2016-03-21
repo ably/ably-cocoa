@@ -440,7 +440,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP10e
-                it("should result in an error if the client does not have required presence permission") {
+                pending("should result in an error if the client does not have required presence permission") {
                     let options = AblyTests.clientOptions()
                     options.token = getTestToken(capability: "{ \"cannotpresence:john\":[\"publish\"] }")
                     options.clientId = "john"
