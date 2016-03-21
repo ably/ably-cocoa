@@ -1704,7 +1704,7 @@ class RealtimeClientConnection: QuickSpec {
             context("Transport disconnected side effects") {
 
                 // RTN19a
-                it("should resend any ProtocolMessage that is awaiting a ACK/NACK") {
+                pending("should resend any ProtocolMessage that is awaiting a ACK/NACK") {
                     let options = AblyTests.commonAppSetup()
                     options.logLevel = .Debug
                     options.disconnectedRetryTimeout = 1.0
