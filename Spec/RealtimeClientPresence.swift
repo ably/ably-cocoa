@@ -77,6 +77,72 @@ class RealtimeClientPresence: QuickSpec {
                 }
             }
 
+            // RTP8
+            context("enter") {
+
+                // RTP8e
+                it("optional data can be included when entering a channel") {
+                    let options = AblyTests.commonAppSetup()
+
+                    options.clientId = "john"
+                    let client1 = ARTRealtime(options: options)
+                    defer { client1.close() }
+                    let channel1 = client1.channels.get("test")
+
+                    options.clientId = "mary"
+                    let client2 = ARTRealtime(options: options)
+                    defer { client2.close() }
+                    let channel2 = client2.channels.get("test")
+
+                    let expectedData = ["clock":NSDate()]
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel1.presence.subscribe { member in
+                            expect(member.data as? NSObject).to(equal(expectedData))
+                            done()
+                        }
+                        channel2.presence.enter(expectedData) { error in
+                            expect(error).to(beNil())
+                        }
+                    }
+                }
+
+                // RTP8e
+                it("should emit the data attribute in the LEAVE event when data is provided when entering but no data is provided when leaving") {
+                    let options = AblyTests.commonAppSetup()
+
+                    options.clientId = "john"
+                    let client1 = ARTRealtime(options: options)
+                    defer { client1.close() }
+                    let channel1 = client1.channels.get("test")
+
+                    options.clientId = "mary"
+                    let client2 = ARTRealtime(options: options)
+                    defer { client2.close() }
+                    let channel2 = client2.channels.get("test")
+
+                    let expectedData = ["clock":NSDate()]
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel2.presence.enter(expectedData) { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel1.presence.subscribe { member in
+                            expect(member.data as? NSObject).to(equal(expectedData))
+                            done()
+                        }
+                        channel2.presence.leave(nil) { error in
+                            expect(error).to(beNil())
+                        }
+                    }
+                }
+
+            }
+
             // RTP15e
             let cases: [String:(ARTRealtimePresence, Optional<(ARTErrorInfo?)->Void>)->()] = [
                 "enterClient": { $0.enterClient("john", data: nil, callback: $1) },
