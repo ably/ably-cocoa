@@ -843,6 +843,33 @@ class Auth : QuickSpec {
                 }
 
             }
+
+            // RSA8f4
+            it("ensure the message published with a wildcard '*' has the provided clientId") {
+                let token = getTestToken()
+                let options = ARTClientOptions(token: token)
+                options.environment = "sandbox"
+                options.clientId = "john"
+
+                let rest = ARTRest(options: options)
+                rest.httpExecutor = mockExecutor
+                let channel = rest.channels.get("test")
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.publish([ARTMessage(name: nil, data: "no client", clientId: "john")]) { error in
+                        expect(error).to(beNil())
+                        switch extractBodyAsJSON(mockExecutor.requests.first) {
+                        case .Failure(let error):
+                            fail(error)
+                        case .Success(let httpBody):
+                            expect(httpBody.unbox["clientId"] as? String).to(equal("john"))
+                        }
+                        done()
+                    }
+                }
+                expect(rest.auth.clientId).to(equal("*"))
+            }
+
         }
 
         struct ExpectedTokenParams {
