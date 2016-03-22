@@ -153,6 +153,7 @@ class Auth : QuickSpec {
                     options.autoConnect = false
 
                     let client = ARTRealtime(options: options)
+                    defer { client.close() }
                     client.setTransportClass(TestProxyTransport.self)
                     client.connect()
 
@@ -162,8 +163,6 @@ class Auth : QuickSpec {
                     else {
                         XCTFail("MockTransport is not working")
                     }
-
-                    client.close()
                 }
             }
 
@@ -614,6 +613,34 @@ class Auth : QuickSpec {
                             } else {
                                 fail("Missing header in request: \(header), expected: \(expectedValue)")
                             }
+                        }
+                    }
+                }
+
+                // RSA8c2
+                it("TokenParams should take precedence over any configured authParams when a name conflict occurs") {
+                    let options = ARTClientOptions()
+                    options.clientId = "john"
+                    options.authUrl = NSURL(string: "http://auth.ably.io")
+                    options.authMethod = "GET"
+                    options.authHeaders = ["X-Header-1": "foo1", "X-Header-2": "foo2"]
+                    let authParams = [
+                        "key": "secret",
+                        "clientId": "should be overridden"
+                    ]
+                    options.authParams = authParams.map { NSURLQueryItem(name: $0, value: $1) }
+
+                    let tokenParams = ARTTokenParams()
+                    tokenParams.clientId = "tester"
+
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = mockExecutor
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.auth.requestToken(tokenParams, withOptions: nil) { tokenDetails, error in
+                            let query = mockExecutor.requests[0].URL!.query
+                            expect(query).to(haveParam("clientId", withValue: tokenParams.clientId!))
+                            done()
                         }
                     }
                 }
