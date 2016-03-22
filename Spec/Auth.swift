@@ -892,7 +892,7 @@ class Auth : QuickSpec {
         }
 
         // RSA8f3
-        it("ensure the message published with a wildcard '*' does not have a clientId") {
+        pending("ensure the message published with a wildcard '*' does not have a clientId") {
             let token = getTestToken()
             let options = ARTClientOptions(token: token)
             options.environment = "sandbox"
