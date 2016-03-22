@@ -877,7 +877,7 @@ class Auth : QuickSpec {
             }
 
             // RSA8f1
-            it("ensure the message published does not have a clientId") {
+            pending("ensure the message published does not have a clientId") {
                 let token = getTestToken()
                 let options = ARTClientOptions(token: token)
                 options.environment = "sandbox"
