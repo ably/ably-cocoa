@@ -77,6 +77,47 @@ class RealtimeClientPresence: QuickSpec {
                 }
             }
 
+            // RTP6
+            context("subscribe") {
+
+                // RTP6a
+                pending("with no arguments should subscribe a listener to all presence messages") {
+                    let options = AblyTests.commonAppSetup()
+
+                    let client1 = ARTRealtime(options: options)
+                    defer { client1.close() }
+                    let channel1 = client1.channels.get("test")
+
+                    let client2 = ARTRealtime(options: options)
+                    defer { client2.close() }
+                    let channel2 = client2.channels.get("test")
+
+                    var receivedMembers = [ARTPresenceMessage]()
+                    channel1.presence.subscribe { member in
+                        receivedMembers.append(member)
+                    }
+
+                    channel2.presence.enterClient("john", data: "online")
+                    channel2.presence.updateClient("john", data: "away")
+                    channel2.presence.leaveClient("john", data: nil)
+
+                    expect(receivedMembers).toEventually(haveCount(3), timeout: testTimeout)
+
+                    expect(receivedMembers[0].action).to(equal(ARTPresenceAction.Enter))
+                    expect(receivedMembers[0].data as? NSObject).to(equal("online"))
+                    expect(receivedMembers[0].clientId).to(equal("john"))
+
+                    expect(receivedMembers[1].action).to(equal(ARTPresenceAction.Update))
+                    expect(receivedMembers[1].data as? NSObject).to(equal("away"))
+                    expect(receivedMembers[1].clientId).to(equal("john"))
+
+                    expect(receivedMembers[2].action).to(equal(ARTPresenceAction.Leave))
+                    expect(receivedMembers[2].data).to(beNil())
+                    expect(receivedMembers[2].clientId).to(equal("john"))
+                }
+
+            }
+
             // RTP15e
             let cases: [String:(ARTRealtimePresence, Optional<(ARTErrorInfo?)->Void>)->()] = [
                 "enterClient": { $0.enterClient("john", data: nil, callback: $1) },
