@@ -845,7 +845,7 @@ class Auth : QuickSpec {
             }
 
             // RSA8f4
-            it("ensure the message published with a wildcard '*' has the provided clientId") {
+            pending("ensure the message published with a wildcard '*' has the provided clientId") {
                 let token = getTestToken()
                 let options = ARTClientOptions(token: token)
                 options.environment = "sandbox"
