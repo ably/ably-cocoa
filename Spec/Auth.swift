@@ -779,7 +779,7 @@ class Auth : QuickSpec {
             // RSA8d
             context("When authCallback option is set, it will invoke the callback") {
 
-                it("with a token string") {
+                pending("with a token string") {
                     let options = AblyTests.clientOptions()
                     let expectedTokenParams = ARTTokenParams()
 
@@ -816,7 +816,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("with a TokenRequest") {
+                pending("with a TokenRequest") {
                     let options = AblyTests.clientOptions()
                     let expectedTokenParams = ARTTokenParams()
 
