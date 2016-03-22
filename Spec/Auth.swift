@@ -775,6 +775,67 @@ class Auth : QuickSpec {
                 }
 
             }
+
+            // RSA8d
+            context("When authCallback option is set, it will invoke the callback") {
+
+                it("with a token string") {
+                    let options = AblyTests.clientOptions()
+                    let expectedTokenParams = ARTTokenParams()
+
+                    options.authCallback = { tokenParams, completion in
+                        expect(tokenParams).to(beIdenticalTo(expectedTokenParams))
+                        // TODO: call the completion with a token string
+                        //completion("token_string", nil)
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        ARTRest(options: options).auth.requestToken(expectedTokenParams, withOptions: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            expect(tokenDetails!.token).to(equal("token_string"))
+                            done()
+                        }
+                    }
+                }
+
+                it("with a TokenDetails") {
+                    let expectedTokenParams = ARTTokenParams()
+
+                    let options = AblyTests.clientOptions()
+                    options.authCallback = { tokenParams, completion in
+                        expect(tokenParams).to(beIdenticalTo(expectedTokenParams))
+                        completion(ARTTokenDetails(token: "token_from_details"), nil)
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        ARTRest(options: options).auth.requestToken(expectedTokenParams, withOptions: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            expect(tokenDetails!.token).to(equal("token_from_details"))
+                            done()
+                        }
+                    }
+                }
+
+                it("with a TokenRequest") {
+                    let options = AblyTests.clientOptions()
+                    let expectedTokenParams = ARTTokenParams()
+
+                    options.authCallback = { tokenParams, completion in
+                        expect(tokenParams).to(beIdenticalTo(expectedTokenParams))
+                        // TODO: call the completion with a TokenRequest
+                        //completion(ARTTokenRequest(), nil)
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        ARTRest(options: options).auth.requestToken(expectedTokenParams, withOptions: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            expect(tokenDetails!.token).to(equal("token_from_request"))
+                            done()
+                        }
+                    }
+                }
+
+            }
         }
 
         struct ExpectedTokenParams {
