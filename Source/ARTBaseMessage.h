@@ -17,7 +17,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) NSString *id;
 
 /// The timestamp for this message
-@property (strong, nonatomic) NSDate *timestamp;
+@property (strong, nonatomic, art_nullable) NSDate *timestamp;
 
 /// The id of the publisher of this message
 @property (strong, nonatomic, art_nullable) NSString *clientId;
