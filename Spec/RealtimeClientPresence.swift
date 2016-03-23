@@ -75,6 +75,48 @@ class RealtimeClientPresence: QuickSpec {
 
                     expect(transport.protocolMessagesReceived.filter({ $0.action == .Sync })).to(haveCount(3))
                 }
+
+            }
+
+            // RTP3
+            pending("should complete the SYNC operation when the connection is disconnected unexpectedly") {
+                let options = AblyTests.commonAppSetup()
+                options.disconnectedRetryTimeout = 1.0
+                var clientSecondary: ARTRealtime!
+                defer { clientSecondary.close() }
+
+                waitUntil(timeout: testTimeout) { done in
+                    clientSecondary = AblyTests.addMembersSequentiallyToChannel("test", members: 150, options: options) {
+                        done()
+                    }.first
+                }
+
+                let client = AblyTests.newRealtime(options)
+                defer { client.close() }
+                let channel = client.channels.get("test")
+
+                var lastSyncSerial: String?
+                waitUntil(timeout: testTimeout) { done in
+                    channel.attach() { _ in
+                        let transport = client.transport as! TestProxyTransport
+                        transport.beforeProcessingReceivedMessage = { protocolMessage in
+                            if protocolMessage.action == .Sync {
+                                lastSyncSerial = protocolMessage.channelSerial
+                                client.onDisconnected()
+                                done()
+                            }
+                        }
+                    }
+                }
+
+                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connecting), timeout: options.disconnectedRetryTimeout + 1.0)
+
+                //Client library requests a SYNC resume by sending a SYNC ProtocolMessage with the last received sync serial number
+                let transport = client.transport as! TestProxyTransport
+                expect(transport.protocolMessagesSent.filter{ $0.action == .Sync }).toEventually(haveCount(1), timeout: testTimeout)
+                expect(transport.protocolMessagesSent.filter{ $0.action == .Sync }.first!.channelSerial).to(equal(lastSyncSerial))
+
+                expect(transport.protocolMessagesReceived.filter{ $0.action == .Sync }).to(haveCount(2))
             }
 
             // RTP6
