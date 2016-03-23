@@ -243,6 +243,33 @@ class RealtimeClientPresence: QuickSpec {
 
             }
 
+
+            // RTP5
+            context("Channel state change side effects") {
+
+                // RTP5b
+                pending("all queued presence messages will be sent immediately and a presence SYNC will be initiated implicitly if a channel enters the ATTACHED state") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+                    channel.attach()
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enterClient("user", data: nil) { error in
+                            expect(error).to(beNil())
+                            expect(channel.queuedMessages).to(haveCount(0))
+                            done()
+                        }
+                        expect(channel.queuedMessages).to(haveCount(1))
+                    }
+
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+                    expect(channel.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
+                    expect(channel.presenceMap.members).to(haveCount(1))
+                }
+
+            }
+
             // RTP15e
             let cases: [String:(ARTRealtimePresence, Optional<(ARTErrorInfo?)->Void>)->()] = [
                 "enterClient": { $0.enterClient("john", data: nil, callback: $1) },
