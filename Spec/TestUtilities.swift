@@ -582,6 +582,29 @@ extension JSON {
 
 }
 
+
+extension NSDate: Comparable { }
+
+public func ==(lhs: NSDate, rhs: NSDate) -> Bool {
+    return (lhs.compare(rhs) == .OrderedSame)
+}
+
+public func <(lhs: NSDate, rhs: NSDate) -> Bool {
+    return (lhs.compare(rhs) == .OrderedAscending)
+}
+
+public func >(lhs: NSDate, rhs: NSDate) -> Bool {
+    return (lhs.compare(rhs) == .OrderedDescending)
+}
+
+public func <=(lhs: NSDate, rhs: NSDate) -> Bool {
+    return (lhs < rhs || lhs == rhs)
+}
+
+public func >=(lhs: NSDate, rhs: NSDate) -> Bool {
+    return (lhs > rhs || lhs == rhs)
+}
+
 extension NSRegularExpression {
 
     class func match(value: String?, pattern: String) -> Bool {
