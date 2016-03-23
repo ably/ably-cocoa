@@ -78,7 +78,7 @@ class RealtimeClientPresence: QuickSpec {
             }
 
             // RTP4
-            it("should receive all 250 members") {
+            pending("should receive all 250 members") {
                 let options = AblyTests.commonAppSetup()
                 var clientSource: ARTRealtime!
                 defer { clientSource.close() }
