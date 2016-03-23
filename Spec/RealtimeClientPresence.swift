@@ -352,7 +352,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP16b
-                it("all presence messages will be lost if queueMessages has been explicitly set to false") {
+                pending("all presence messages will be lost if queueMessages has been explicitly set to false") {
                     let options = AblyTests.commonAppSetup()
                     options.disconnectedRetryTimeout = 1.0
                     options.queueMessages = false
