@@ -15,8 +15,8 @@
 
 ART_ASSUME_NONNULL_BEGIN
 
-@property (readonly, strong, nonatomic, art_nullable) NSString *clientId;
-@property (readonly, strong, nonatomic, art_nullable) NSString *connectionKey;
+@property (readonly, getter=getClientId, art_nullable) NSString *clientId;
+@property (readonly, getter=getConnectionKey, art_nullable) NSString *connectionKey;
 // In those, -1 means 'undefined'.
 @property (readonly, nonatomic) NSInteger maxMessageSize;
 @property (readonly, nonatomic) NSInteger maxFrameSize;
