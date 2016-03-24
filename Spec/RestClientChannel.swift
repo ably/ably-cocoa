@@ -155,6 +155,27 @@ class RestClientChannel: QuickSpec {
                     expect(mockExecutor.requests.count).to(equal(1))
                 }
             }
+
+            // RSL1f
+            context("Unidentified clients using Basic Auth") {
+                // RSL1f1
+                it("should publish message with the provided clientId") {
+                    let client = ARTRest(options: AblyTests.commonAppSetup())
+                    let channel = client.channels.get("test")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish([ARTMessage(name: nil, data: "message", clientId: "tester")]) { error in
+                            expect(error).to(beNil())
+                            expect(client.auth.method).to(equal(ARTAuthMethod.Basic))
+                            channel.history { page, error in
+                                expect(error).to(beNil())
+                                expect(page!.items[0].clientId).to(equal("tester"))
+                                done()
+                            }
+                        }
+                    }
+                }
+            }
+
         }
         
         // RSL3, RSP1
