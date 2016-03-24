@@ -215,7 +215,7 @@ class Auth : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             // Token
-                            client.calculateAuthorization(ARTAuthMethod.Token) { token, error in
+                            client.prepareAuthorisationHeader(ARTAuthMethod.Token) { token, error in
                                 if let e = error {
                                     XCTFail(e.description)
                                 }
@@ -287,7 +287,7 @@ class Auth : QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         // Basic
-                        clientBasic.calculateAuthorization(ARTAuthMethod.Basic) { token, error in
+                        clientBasic.prepareAuthorisationHeader(ARTAuthMethod.Basic) { token, error in
                             if let e = error {
                                 XCTFail(e.description)
                             }
@@ -301,7 +301,7 @@ class Auth : QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         // Last TokenDetails
-                        clientToken.calculateAuthorization(ARTAuthMethod.Token) { token, error in
+                        clientToken.prepareAuthorisationHeader(ARTAuthMethod.Token) { token, error in
                             if let e = error {
                                 XCTFail(e.description)
                             }
@@ -483,7 +483,7 @@ class Auth : QuickSpec {
                         // TokenDetails
                         waitUntil(timeout: 10) { done in
                             // Token
-                            client.calculateAuthorization(ARTAuthMethod.Token) { token, error in
+                            client.prepareAuthorisationHeader(ARTAuthMethod.Token) { token, error in
                                 if let e = error {
                                     XCTFail(e.description)
                                 }
