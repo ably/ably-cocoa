@@ -449,6 +449,60 @@ class RealtimeClientPresence: QuickSpec {
                     }
                 }
 
+                // RTP16c
+                pending("should result in an error if the connection state is INITIALIZED") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+                    expect(client.options.queueMessages).to(beTrue())
+
+                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Initialized))
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enterClient("user", data: nil) { error in
+                            expect(error).toNot(beNil())
+                            expect(channel.queuedMessages).to(haveCount(0))
+                            done()
+                        }
+                        expect(channel.queuedMessages).to(haveCount(0))
+                    }
+                }
+
+                // RTP16c
+                let cases: [ARTRealtimeConnectionState:(ARTRealtime)->()] = [
+                    .Suspended: { client in client.onSuspended() },
+                    .Closed: { client in client.close() },
+                    .Failed: { client in client.onError(AblyTests.newErrorProtocolMessage()) }
+                ]
+                for (connectionState, performMethod) in cases {
+                    it("should result in an error if the connection state is \(connectionState)") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+                        expect(client.options.queueMessages).to(beTrue())
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.attach() { _ in
+                                performMethod(client)
+                                done()
+                            }
+                        }
+
+                        expect(client.connection.state).toEventually(equal(connectionState), timeout: testTimeout)
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.presence.enterClient("user", data: nil) { error in
+                                expect(error).toNot(beNil())
+                                expect(channel.queuedMessages).to(haveCount(0))
+                                done()
+                            }
+                            expect(channel.queuedMessages).to(haveCount(0))
+                        }
+                    }
+                }
+
             }
 
             // RTP11
