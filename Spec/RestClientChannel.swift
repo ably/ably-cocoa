@@ -229,6 +229,31 @@ class RestClientChannel: QuickSpec {
                     }
                 }
 
+                // RSL1g3
+                it("when publishing a Message with a different clientId attribute value to the identified client’s clientId") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+                    let client = ARTRest(options: options)
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let message = ARTMessage(name: nil, data: "message", clientId: "tester")
+                        channel.publish([message]) { error in
+                            expect(error!.code).to(equal(40012))
+                            expect(error!.message).to(contain("mismatched clientId"))
+                            done()
+                        }
+                    }
+
+                    // Remains available
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "message") { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+                }
+
                 // RSL1g4
                 pending("when publishing a Message with an explicit clientId that is incompatible with the identified client’s clientId") {
                     let options = AblyTests.commonAppSetup()
