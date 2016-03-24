@@ -314,40 +314,43 @@ class Auth : QuickSpec {
                 }
                 
                 // RSA15c
-                it("should cancel request when clientId is invalid") {
-                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                context("Incompatible client") {
 
-                    let client = ARTRest(options: options)
-
-                    // FIXME: Implemented validation of invalid chars
-                    
-                    // Check unquoted
-                    let clientIdQuoted = "\"client_string\""
-                    options.clientId = clientIdQuoted
-
-                    waitUntil(timeout: testTimeout) { done in
-                        // Token
-                        client.calculateAuthorization(ARTAuthMethod.Token) { token, error in
-                            if let e = error {
-                                XCTFail(e.description)
+                    it("with Realtime, it should change the connection state to FAILED and emit an error") {
+                        let options = ARTClientOptions()
+                        options.clientId = "john"
+                        options.autoConnect = false
+                        options.authCallback = { tokenParams, completion in
+                            let rest = ARTRest(options: AblyTests.commonAppSetup())
+                            rest.auth.createTokenRequest(ARTTokenParams(clientId: "wrong"), options: nil) { tokenRequest, error in
+                                rest.auth.executeTokenRequest(tokenRequest!, callback: completion)
                             }
-                            expect(client.auth.clientId).to(beNil())
-                            done()
+                        }
+                        let realtime = ARTRealtime(options: options)
+                        defer { realtime.close() }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            realtime.connection.once(.Failed) { stateChange in
+                                expect(stateChange!.reason!.code).toNot(equal(40102))
+                                expect(stateChange!.reason!.description).toNot(contain("incompatible credentials"))
+                                done()
+                            }
+                            realtime.connect()
                         }
                     }
-                    
-                    // Check unescaped
-                    let clientIdBreaklined = "client_string\n"
-                    options.clientId = clientIdBreaklined
 
-                    waitUntil(timeout: testTimeout) { done in
-                        // Token
-                        client.calculateAuthorization(ARTAuthMethod.Token) { token, error in
-                            if let e = error {
-                                XCTFail(e.description)
+                    it("with Rest, it should result in an appropriate error response") {
+                        let options = AblyTests.commonAppSetup()
+                        options.clientId = "john"
+                        let rest = ARTRest(options: options)
+
+                        waitUntil(timeout: testTimeout) { done in
+                            rest.auth.requestToken(ARTTokenParams(clientId: "wrong"), withOptions: nil) { tokenDetails, error in
+                                expect(error!.code).toNot(equal(40102))
+                                expect(error!.description).toNot(contain("incompatible credentials"))
+                                expect(tokenDetails).to(beNil())
+                                done()
                             }
-                            expect(client.auth.clientId).to(beNil())
-                            done()
                         }
                     }
                 }
