@@ -463,7 +463,7 @@ class Auth : QuickSpec {
                     }
 
                     // RSA12b
-                    it("identity may change and become identified") {
+                    pending("identity may change and become identified") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
                         options.defaultTokenParams = ARTTokenParams(clientId: "tester")
