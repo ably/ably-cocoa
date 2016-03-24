@@ -314,7 +314,7 @@ class Auth : QuickSpec {
                 }
                 
                 // RSA15c
-                context("Incompatible client") {
+                pending("Incompatible client") {
 
                     it("with Realtime, it should change the connection state to FAILED and emit an error") {
                         let options = ARTClientOptions()
