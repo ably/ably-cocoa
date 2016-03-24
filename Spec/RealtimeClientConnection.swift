@@ -1667,7 +1667,40 @@ class RealtimeClientConnection: QuickSpec {
                 }
                 
             }
-            
+
+            // RTN19
+            it("attributes within ConnectionDetails should be used as defaults") {
+                let options = AblyTests.commonAppSetup()
+                options.autoConnect = false
+                let realtime = AblyTests.newRealtime(options)
+                defer { realtime.close() }
+
+                waitUntil(timeout: testTimeout) { done in
+                    realtime.connection.once(.Connecting) { stateChange in
+                        expect(stateChange!.reason).to(beNil())
+
+                        let transport = realtime.transport as! TestProxyTransport
+                        transport.beforeProcessingReceivedMessage = { protocolMessage in
+                            if protocolMessage.action == .Connected {
+                                protocolMessage.connectionDetails!.clientId = "john"
+                                protocolMessage.connectionDetails!.connectionKey = "123"
+                            }
+                        }
+                    }
+                    realtime.connection.once(.Connected) { stateChange in
+                        expect(stateChange!.reason).to(beNil())
+
+                        let transport = realtime.transport as! TestProxyTransport
+                        let connectedProtocolMessage = transport.protocolMessagesReceived.filter{ $0.action == .Connected }[0]
+
+                        expect(realtime.auth.clientId).to(equal(connectedProtocolMessage.connectionDetails!.clientId))
+                        expect(realtime.connection.key).to(equal(connectedProtocolMessage.connectionDetails!.connectionKey))
+                        done()
+                    }
+                    realtime.connect()
+                }
+            }
+
         }
     }
 }
