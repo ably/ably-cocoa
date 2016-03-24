@@ -462,6 +462,30 @@ class Auth : QuickSpec {
                         }
                     }
 
+                    // RSA12b
+                    it("identity may change and become identified") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        options.defaultTokenParams = ARTTokenParams(clientId: "tester")
+                        let realtime = ARTRealtime(options: options)
+                        defer { realtime.close() }
+                        expect(realtime.auth.clientId).to(beNil())
+
+                        waitUntil(timeout: testTimeout) { done in
+                            realtime.connection.once(.Connecting) { stateChange in
+                                expect(stateChange!.reason).to(beNil())
+                                expect(realtime.auth.clientId).to(beNil())
+                            }
+                            realtime.connection.once(.Connected) { stateChange in
+                                expect(stateChange!.reason).to(beNil())
+                                expect(realtime.auth.clientId).to(equal("tester"))
+                                expect(realtime.auth.tokenDetails!.clientId).to(equal("tester"))
+                                done()
+                            }
+                            realtime.connect()
+                        }
+                    }
+
                 }
                 
                 // RSA7b
