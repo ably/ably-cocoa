@@ -441,13 +441,26 @@ class Auth : QuickSpec {
                 }
                 
                 // RSA12
-                it("should accept any clientId") {
-                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-                    //options.tokenDetails = ARTTokenDetails(clientId: "*")
-                    let client = ARTRest(options: options)
-                    print(client.auth.tokenDetails?.clientId)
-                    
-                    // TODO: no way to test '*' from Ably staging server
+                context("Auth#clientId attribute is null") {
+
+                    // RSA12a
+                    it("identity should be anonymous for all operations") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let realtime = ARTRealtime(options: options)
+                        defer { realtime.close() }
+                        expect(realtime.auth.clientId).to(beNil())
+
+                        waitUntil(timeout: testTimeout) { done in
+                            realtime.connection.once(.Connected) { stateChange in
+                                expect(stateChange!.reason).to(beNil())
+                                expect(realtime.auth.clientId).to(beNil())
+                                done()
+                            }
+                            realtime.connect()
+                        }
+                    }
+
                 }
                 
                 // RSA7b
