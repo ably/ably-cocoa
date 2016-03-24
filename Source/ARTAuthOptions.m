@@ -45,6 +45,15 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
     return self;
 }
 
+- (instancetype)initWithTokenDetails:(ARTTokenDetails *)tokenDetails {
+    self = [super init];
+    if (self) {
+        _tokenDetails = tokenDetails;
+        return [self initDefaults];
+    }
+    return self;
+}
+
 - (instancetype)initDefaults {
     _authMethod = ARTAuthOptionsMethodDefault;
     return self;
