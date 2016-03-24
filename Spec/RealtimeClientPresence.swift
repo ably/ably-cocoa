@@ -956,7 +956,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP10b
-                it("optionally a callback can be provided that is called for failure") {
+                pending("optionally a callback can be provided that is called for failure") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
                     let client = ARTRealtime(options: options)
