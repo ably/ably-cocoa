@@ -594,9 +594,10 @@ class RealtimeClientPresence: QuickSpec {
                     let channel = client.channels.get("test")
 
                     var presenceQueryWasCreated = false
-                    ARTRealtimePresenceQuery.testSuite_injectIntoClassMethod("init") { // Default initialiser
+                    let hook = ARTRealtimePresenceQuery.testSuite_injectIntoClassMethod("init") { // Default initialiser
                         presenceQueryWasCreated = true
                     }
+                    defer { hook?.remove() }
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.get { members, error in
@@ -681,9 +682,10 @@ class RealtimeClientPresence: QuickSpec {
                     defer { realtime.close() }
 
                     var restPresenceHistoryMethodWasCalled = false
-                    ARTRestPresence.testSuite_injectIntoClassMethod("history:callback:error:") {
+                    var hook = ARTRestPresence.testSuite_injectIntoClassMethod("history:callback:error:") {
                         restPresenceHistoryMethodWasCalled = true
                     }
+                    defer { hook?.remove() }
 
                     let channelRest = rest.channels.get("test")
                     let channelRealtime = realtime.channels.get("test")

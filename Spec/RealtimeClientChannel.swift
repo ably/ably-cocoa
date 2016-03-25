@@ -1401,9 +1401,10 @@ class RealtimeClientChannel: QuickSpec {
                     defer { realtime.close() }
 
                     var restChannelHistoryMethodWasCalled = false
-                    ARTRestChannel.testSuite_injectIntoClassMethod("history:callback:error:") {
+                    let hook = ARTRestChannel.testSuite_injectIntoClassMethod("history:callback:error:") {
                         restChannelHistoryMethodWasCalled = true
                     }
+                    defer { hook?.remove() }
 
                     let channelRest = rest.channels.get("test")
                     let channelRealtime = realtime.channels.get("test")
