@@ -596,6 +596,14 @@ extension NSRegularExpression {
 
 }
 
+extension String {
+
+    func replace(value: String, withString string: String) -> String {
+        return self.stringByReplacingOccurrencesOfString(value, withString: string, options: NSStringCompareOptions.LiteralSearch, range: nil)
+    }
+
+}
+
 extension ARTRealtime {
 
     func simulateLostConnectionAndState() {
