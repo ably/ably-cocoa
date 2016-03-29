@@ -251,6 +251,51 @@ class RestClientPresence: QuickSpec {
                     }
                 }
 
+                // RSP3a3
+                it("connectionId should filter members by the provided connectionId") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRest(options: options)
+                    let channel = client.channels.get("test")
+
+                    var disposable = [ARTRealtime]()
+                    defer {
+                        for clientItem in disposable {
+                            clientItem.close()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        // One connection
+                        disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 6, options: options) {
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        // Another connection
+                        disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 3, startFrom: 7, options: options) {
+                            done()
+                        }
+                    }
+
+                    let query = ARTRealtimePresenceQuery()
+                    // Return all members from last connection (connectionId from the last connection)
+                    query.connectionId = disposable.last!.connection.id!
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.get(query) { membersPage, error in
+                            expect(error).to(beNil())
+                            expect(membersPage!.items).to(haveCount(3))
+                            expect(membersPage!.hasNext).to(beFalse())
+                            expect(membersPage!.isLast).to(beTrue())
+                            expect(membersPage!.items).to(allPass({ member in
+                                return NSRegularExpression.match(member!.clientId, pattern: "^user(7|8|9)")
+                            }))
+                            done()
+                        }
+                    }
+                }
+
             }
 
             // RSP4
