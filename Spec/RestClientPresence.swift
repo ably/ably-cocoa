@@ -75,6 +75,21 @@ class RestClientPresence: QuickSpec {
                     }
                 }
 
+                // RSP3a1
+                it("limit should support up to 1000 items") {
+                    let client = ARTRest(options: AblyTests.commonAppSetup())
+                    let channel = client.channels.get("test")
+
+                    let query = ARTPresenceQuery()
+                    expect(query.limit).to(equal(100))
+
+                    query.limit = 1001
+                    expect{ try channel.presence.get(query, callback: { _, _ in }) }.to(throwError())
+
+                    query.limit = 1000
+                    expect{ try channel.presence.get(query, callback: { _, _ in }) }.toNot(throwError())
+                }
+
             }
 
         }
