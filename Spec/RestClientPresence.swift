@@ -91,7 +91,7 @@ class RestClientPresence: QuickSpec {
                 }
 
                 // RSP3a2
-                it("clientId should filter members by the provided clientId") {
+                pending("clientId should filter members by the provided clientId") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
