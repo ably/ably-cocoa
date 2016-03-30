@@ -193,6 +193,51 @@ class RestClientPresence: QuickSpec {
 
             }
 
+            // RSP4
+            context("history") {
+
+                // RSP4b
+                context("query argument") {
+
+                    // RSP4b3
+                    it("limit supports up to 1000 members") {
+                        let options = AblyTests.commonAppSetup()
+                        let client = ARTRest(options: options)
+                        let channel = client.channels.get("test")
+
+                        var realtime: ARTRealtime!
+                        defer { realtime.close() }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            realtime = AblyTests.addMembersSequentiallyToChannel("test", members: 1, options: options) {
+                                done()
+                            }.first
+                        }
+
+                        let query = ARTDataQuery()
+                        expect(query.limit).to(equal(100))
+                        query.limit = 1
+
+                        waitUntil(timeout: testTimeout) { done in
+                            try! channel.presence.history(query) { membersPage, error in
+                                expect(error).to(beNil())
+                                expect(membersPage!.items).to(haveCount(1))
+                                expect(membersPage!.hasNext).to(beFalse())
+                                expect(membersPage!.isLast).to(beTrue())
+                                done()
+                            }
+                        }
+
+                        query.limit = 1001
+
+                        expect { try channel.presence.history(query) { _, _ in } }.to(throwError { (error: ErrorType) in
+                            expect(error._code).to(equal(ARTDataQueryError.Limit.rawValue))
+                        })
+                    }
+                }
+
+            }
+
         }
     }
 }
