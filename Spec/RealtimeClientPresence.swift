@@ -402,6 +402,62 @@ class RealtimeClientPresence: QuickSpec {
 
             }
 
+            // RTP8
+            context("enter") {
+
+                // RTP8b
+                it("optionally a callback can be provided that is called for success") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+
+                    let client1 = ARTRealtime(options: options)
+                    defer { client1.close() }
+                    let channel1 = client1.channels.get("test")
+
+                    let client2 = ARTRealtime(options: options)
+                    defer { client2.close() }
+                    let channel2 = client2.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel1.presence.subscribe(.Enter) { member in
+                            expect(member.clientId).to(equal(options.clientId))
+                            expect(member.data as? NSObject).to(equal("online"))
+                            done()
+                        }
+                        channel2.presence.enter("online") { error in
+                            expect(error).to(beNil())
+                        }
+                    }
+                }
+
+                // RTP8b
+                it("optionally a callback can be provided that is called for failure") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+
+                    let client1 = ARTRealtime(options: options)
+                    defer { client1.close() }
+                    let channel1 = client1.channels.get("test")
+
+                    let client2 = ARTRealtime(options: options)
+                    defer { client2.close() }
+                    let channel2 = client2.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel1.presence.subscribe(.Enter) { member in
+                            fail("shouldn't be called")
+                        }
+                        let protocolError = AblyTests.newErrorProtocolMessage()
+                        channel2.presence.enter("online") { error in
+                            expect(error).to(beIdenticalTo(protocolError.error))
+                            done()
+                        }
+                        channel2.onError(protocolError)
+                    }
+                }
+
+            }
+
             // RTP15e
             let cases: [String:(ARTRealtimePresence, Optional<(ARTErrorInfo?)->Void>)->()] = [
                 "enterClient": { $0.enterClient("john", data: nil, callback: $1) },
