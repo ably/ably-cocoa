@@ -463,7 +463,9 @@
         [self.logger info:@"ARTRealtime Sync message received"];
 
     for (int i=0; i<[message.presence count]; i++) {
-        [self.presenceMap put:[message.presence objectAtIndex:i]];
+        ARTPresenceMessage *presence = [message.presence objectAtIndex:i];
+        [self.presenceMap put:presence];
+        [self broadcastPresence:presence];
     }
 
     if ([self isLastChannelSerial:message.channelSerial]) {
