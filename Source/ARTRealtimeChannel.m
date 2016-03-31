@@ -283,16 +283,16 @@
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status {
     [self cancelAttachTimer];
     [self cancelDetachTimer];
+    if (self.state == state) {
+        return;
+    }
+    self.state = state;
+    _errorReason = status.errorInfo;
+
     if (state == ARTRealtimeChannelFailed) {
         [_attachedEventEmitter emit:[NSNull null] with:status.errorInfo];
         [_detachedEventEmitter emit:[NSNull null] with:status.errorInfo];
     }
-    if (self.state == state) {
-        return;
-    }
-
-    self.state = state;
-    _errorReason = status.errorInfo;
 
     [self emit:(ARTChannelEvent)state with:status.errorInfo];
 }

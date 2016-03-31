@@ -206,7 +206,7 @@ class RealtimeClientPresence: QuickSpec {
                     defer { client.close() }
                     let channel = client.channels.get("test")
 
-                    let listener = channel.presence.subscribe { _ in }
+                    let listener = channel.presence.subscribe { _ in }!
                     expect(channel.presenceEventEmitter.anyListeners).to(haveCount(1))
                     channel.presence.unsubscribe(listener)
                     expect(channel.presenceEventEmitter.anyListeners).to(haveCount(0))
@@ -318,7 +318,7 @@ class RealtimeClientPresence: QuickSpec {
                     defer { client.close() }
                     let channel = client.channels.get("test")
 
-                    let listener = channel.presence.subscribe(.Present) { _ in }
+                    let listener = channel.presence.subscribe(.Present) { _ in }!
                     expect(channel.presenceEventEmitter.listeners).to(haveCount(1))
                     channel.presence.unsubscribe(.Present, listener: listener)
                     expect(channel.presenceEventEmitter.listeners).to(haveCount(0))
@@ -348,37 +348,44 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP6c
-                pending("should result in an error if the channel is in the FAILED state") {
+                it("should result in an error if the channel is in the FAILED state") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.close() }
-                    let channel = client.channels.get("test")
 
+                    let channel = client.channels.get("test")
                     channel.onError(AblyTests.newErrorProtocolMessage())
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
 
                     waitUntil(timeout: testTimeout) { done in
-                        channel.presence.subscribe { member in
-                            // TODO: missing error
-                            done()
-                        }
+                        channel.presence.subscribeWithAttachCallback({ errorInfo in
+                            expect(errorInfo).toNot(beNil())
+
+                            channel.presence.subscribe(.Enter, onAttach: { errorInfo in
+                                expect(errorInfo).toNot(beNil())
+                                done()
+                            }) { _ in }
+                        }) { _ in }
                     }
-                    expect(channel.presenceEventEmitter.anyListeners).to(haveCount(0))
                 }
 
                 // RTP6c
-                pending("should result in an error if the channel moves to the FAILED state") {
+                it("should result in an error if the channel moves to the FAILED state") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.close() }
                     let channel = client.channels.get("test")
 
                     waitUntil(timeout: testTimeout) { done in
                         let error = AblyTests.newErrorProtocolMessage()
-                        channel.presence.subscribe { _ in
-                            // TODO: missing error
-                            done()
-                        }
+                        channel.presence.subscribeWithAttachCallback({ errorInfo in
+                            expect(errorInfo).toNot(beNil())
+
+                            channel.presence.subscribe(.Enter, onAttach: { errorInfo in
+                                expect(errorInfo).toNot(beNil())
+                                done()
+                            }) { _ in }
+                        }) {_ in }
                         channel.onError(error)
                     }
-                    expect(channel.presenceEventEmitter.anyListeners).to(haveCount(0))
                 }
 
             }
