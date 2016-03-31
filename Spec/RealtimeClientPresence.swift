@@ -842,7 +842,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP16b
-                pending("all presence messages will be lost if queueMessages has been explicitly set to false") {
+                it("all presence messages will be lost if queueMessages has been explicitly set to false") {
                     let options = AblyTests.commonAppSetup()
                     options.disconnectedRetryTimeout = 1.0
                     options.queueMessages = false
@@ -850,6 +850,8 @@ class RealtimeClientPresence: QuickSpec {
                     defer { client.close() }
                     let channel = client.channels.get("test")
                     expect(client.options.queueMessages).to(beFalse())
+
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.attach() { _ in
