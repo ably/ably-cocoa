@@ -256,24 +256,38 @@ class RealtimeClientPresence: QuickSpec {
             context("Channel state change side effects") {
 
                 // RTP5b
-                pending("all queued presence messages will be sent immediately and a presence SYNC will be initiated implicitly if a channel enters the ATTACHED state") {
-                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
-                    defer { client.close() }
-                    let channel = client.channels.get("test")
-                    channel.attach()
+                it("all queued presence messages will be sent immediately and a presence SYNC will be initiated implicitly if a channel enters the ATTACHED state") {
+                    let options = AblyTests.commonAppSetup()
+                    let client1 = AblyTests.newRealtime(options)
+                    defer { client1.close() }
+                    let channel1 = client1.channels.get("room")
 
                     waitUntil(timeout: testTimeout) { done in
-                        channel.presence.enterClient("user", data: nil) { error in
-                            expect(error).to(beNil())
-                            expect(channel.queuedMessages).to(haveCount(0))
+                        channel1.presence.enterClient("Client 1", data: nil) { errorInfo in
+                            expect(errorInfo).to(beNil())
                             done()
                         }
-                        expect(channel.queuedMessages).to(haveCount(1))
                     }
 
-                    expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
-                    expect(channel.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
-                    expect(channel.presenceMap.members).to(haveCount(1))
+                    let client2 = AblyTests.newRealtime(options)
+                    defer { client2.close() }
+                    let channel2 = client2.channels.get(channel1.name)
+
+                    channel2.presence.enterClient("Client 2", data: nil) { error in
+                        expect(error).to(beNil())
+                        expect(channel2.queuedMessages).to(haveCount(0))
+                        expect(channel2.state).to(equal(ARTRealtimeChannelState.Attached))
+                    }
+                    expect(channel2.queuedMessages).to(haveCount(1))
+
+                    expect(channel2.presence.syncComplete).to(beFalse())
+
+                    expect(channel1.presenceMap.members).to(haveCount(1))
+                    expect(channel2.presenceMap.members).to(haveCount(0))
+
+                    expect(channel2.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+                    
+                    expect(channel2.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
                 }
 
             }
