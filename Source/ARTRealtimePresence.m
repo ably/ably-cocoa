@@ -55,15 +55,13 @@
 - (void)get:(ARTRealtimePresenceQuery *)query callback:(void (^)(NSArray<ARTPresenceMessage *> *, ARTErrorInfo *))callback {
     [self.channel throwOnDisconnectedOrFailed];
     [self.channel attach:^(ARTErrorInfo *error) {
-        if (query.waitForSync) {
+        if (error) {
+            callback(nil, error);
+        } else if (query.waitForSync) {
             [self.channel.presenceMap onceSyncEnds:^(NSArray<ARTPresenceMessage *> *members) {
                 callback(members, nil);
             }];
-        }
-        else if (error) {
-            callback(nil, error);
-        }
-        else {
+        } else {
             callback(self.channel.presenceMap.members.allValues, nil);
         }
     }];

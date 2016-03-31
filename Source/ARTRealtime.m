@@ -266,7 +266,7 @@
         }
         // For every Channel
         for (ARTRealtimeChannel* channel in self.channels) {
-            if (channel.state == ARTRealtimeChannelInitialized || channel.state == ARTRealtimeChannelAttaching || channel.state == ARTRealtimeChannelAttached) {
+            if (channel.state == ARTRealtimeChannelInitialized || channel.state == ARTRealtimeChannelAttaching || channel.state == ARTRealtimeChannelAttached || channel.state == ARTRealtimeChannelFailed) {
                 if(state == ARTRealtimeClosing) {
                     //do nothing. Closed state is coming.
                 }
@@ -379,18 +379,17 @@
             for (ARTRealtimeChannel *channel in self.channels) {
                 [channel detachChannel:[ARTStatus state:ARTStateConnectionDisconnected info:message.error]];
             }
-
-            _resuming = false;
-
-            for (ARTRealtimeChannel *channel in self.channels) {
-                if (channel.presenceMap.syncInProgress) {
-                    [channel requestContinueSync];
-                }
-            }
         }
         else if (message.error) {
             [self.logger warn:@"ARTRealtime: connection has resumed with non-fatal error %@", message.error.message];
             // The error will be emitted on `transition`
+        }
+        _resuming = false;
+
+        for (ARTRealtimeChannel *channel in self.channels) {
+            if (channel.presenceMap.syncInProgress) {
+                [channel requestContinueSync];
+            }
         }
     }
 

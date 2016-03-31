@@ -8,6 +8,7 @@
 
 import Quick
 import Nimble
+import Foundation
 
 class RealtimeClientPresence: QuickSpec {
     override func spec() {
@@ -79,7 +80,7 @@ class RealtimeClientPresence: QuickSpec {
             }
 
             // RTP3
-            pending("should complete the SYNC operation when the connection is disconnected unexpectedly") {
+            it("should complete the SYNC operation when the connection is disconnected unexpectedly") {
                 let options = AblyTests.commonAppSetup()
                 options.disconnectedRetryTimeout = 1.0
                 var clientSecondary: ARTRealtime!
@@ -99,7 +100,7 @@ class RealtimeClientPresence: QuickSpec {
                 waitUntil(timeout: testTimeout) { done in
                     channel.attach() { _ in
                         let transport = client.transport as! TestProxyTransport
-                        transport.beforeProcessingReceivedMessage = { protocolMessage in
+                        transport.afterProcessingReceivedMessage = { protocolMessage in
                             if protocolMessage.action == .Sync {
                                 lastSyncSerial = protocolMessage.channelSerial
                                 client.onDisconnected()
@@ -110,13 +111,14 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connecting), timeout: options.disconnectedRetryTimeout + 1.0)
+                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
 
                 //Client library requests a SYNC resume by sending a SYNC ProtocolMessage with the last received sync serial number
                 let transport = client.transport as! TestProxyTransport
                 expect(transport.protocolMessagesSent.filter{ $0.action == .Sync }).toEventually(haveCount(1), timeout: testTimeout)
                 expect(transport.protocolMessagesSent.filter{ $0.action == .Sync }.first!.channelSerial).to(equal(lastSyncSerial))
 
-                expect(transport.protocolMessagesReceived.filter{ $0.action == .Sync }).to(haveCount(2))
+                expect(transport.protocolMessagesReceived.filter{ $0.action == .Sync }).toEventually(haveCount(2), timeout: testTimeout)
             }
 
             // RTP4
@@ -152,7 +154,7 @@ class RealtimeClientPresence: QuickSpec {
             context("subscribe") {
 
                 // RTP6a
-                pending("with no arguments should subscribe a listener to all presence messages") {
+                it("with no arguments should subscribe a listener to all presence messages") {
                     let options = AblyTests.commonAppSetup()
 
                     let client1 = ARTRealtime(options: options)
@@ -168,9 +170,15 @@ class RealtimeClientPresence: QuickSpec {
                         receivedMembers.append(member)
                     }
 
-                    channel2.presence.enterClient("john", data: "online")
-                    channel2.presence.updateClient("john", data: "away")
-                    channel2.presence.leaveClient("john", data: nil)
+                    waitUntil(timeout: testTimeout) { done in
+                        channel2.presence.enterClient("john", data: "online") { err in
+                            channel2.presence.updateClient("john", data: "away") { err in
+                                channel2.presence.leaveClient("john", data: nil) { err in
+                                    done()
+                                }
+                            }
+                        }
+                    }
 
                     expect(receivedMembers).toEventually(haveCount(3), timeout: testTimeout)
 
@@ -183,7 +191,7 @@ class RealtimeClientPresence: QuickSpec {
                     expect(receivedMembers[1].clientId).to(equal("john"))
 
                     expect(receivedMembers[2].action).to(equal(ARTPresenceAction.Leave))
-                    expect(receivedMembers[2].data).to(beNil())
+                    expect(receivedMembers[2].data as? NSObject).to(equal("away"))
                     expect(receivedMembers[2].clientId).to(equal("john"))
                 }
 
@@ -227,7 +235,7 @@ class RealtimeClientPresence: QuickSpec {
 
 
                 // RTP5a
-                pending("all queued presence messages should fail immediately if the channel enters the DETACHED state") {
+                it("all queued presence messages should fail immediately if the channel enters the DETACHED state") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.close() }
                     let channel = client.channels.get("test")
@@ -806,7 +814,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP16b
-                pending("all presence messages will be queued and delivered as soon as the connection state returns to CONNECTED") {
+                it("all presence messages will be queued and delivered as soon as the connection state returns to CONNECTED") {
                     let options = AblyTests.commonAppSetup()
                     options.disconnectedRetryTimeout = 1.0
                     let client = ARTRealtime(options: options)
@@ -860,7 +868,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP16c
-                pending("should result in an error if the connection state is INITIALIZED") {
+                it("should result in an error if the connection state is INITIALIZED") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
@@ -987,7 +995,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP11b
-                pending("should result in an error if the channel is in the FAILED state") {
+                it("should result in an error if the channel is in the FAILED state") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.close() }
                     let channel = client.channels.get("test")
@@ -996,7 +1004,7 @@ class RealtimeClientPresence: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.get() { members, error in
-                            expect(error!.message).to(contain("invalid channel state"))
+                            expect(error!.message).to(contain("can't attach when in a failed state"))
                             expect(members).to(beNil())
                             done()
                         }
@@ -1004,19 +1012,19 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP11b
-                pending("should result in an error if the channel moves to the FAILED state") {
+                it("should result in an error if the channel moves to the FAILED state") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.close() }
                     let channel = client.channels.get("test")
 
                     waitUntil(timeout: testTimeout) { done in
-                        let error = AblyTests.newErrorProtocolMessage()
+                        let protoError = AblyTests.newErrorProtocolMessage()
                         channel.presence.get() { members, error in
-                            expect(error).to(equal(error))
+                            expect(error).to(equal(protoError.error))
                             expect(members).to(beNil())
                             done()
                         }
-                        channel.onError(error)
+                        channel.onError(protoError)
                     }
                 }
 
