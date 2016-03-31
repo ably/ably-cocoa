@@ -761,7 +761,10 @@ class RealtimeClientPresence: QuickSpec {
                         transport.beforeProcessingReceivedMessage = { protocolMessage in
                             // A leave event for a member can arrive before that member is later registered as present as part of the initial SYNC operation.
                             if protocolMessage.action == .Sync {
-                                client.onChannelMessage(AblyTests.newPresenceProtocolMessage("test", action: .Leave, clientId: "user50"))
+                                let msg = AblyTests.newPresenceProtocolMessage("test", action: .Leave, clientId: "user50")
+                                // Ensure it happens "later" than the PRESENT message.
+                                msg.timestamp = NSDate().dateByAddingTimeInterval(1.0)
+                                client.onChannelMessage(msg)
                                 done()
                             }
                         }

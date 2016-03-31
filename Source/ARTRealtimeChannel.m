@@ -413,10 +413,13 @@
             presence.id = [NSString stringWithFormat:@"%@:%d", message.id, i];
         }
 
-        [self.presenceMap put:[message.presence objectAtIndex:i]];
-        [self.presenceMap clean];
+        [self.presenceMap onceSyncEnds:^(__GENERIC(NSArray, ARTPresenceMessage *) *msgs) {
+            [self.presenceMap put:presence];
+            [self.presenceMap clean];
+        }];
+
         [self broadcastPresence:presence];
-        
+
         ++i;
     }
 }
