@@ -176,6 +176,30 @@ class RestClientChannel: QuickSpec {
                 }
             }
 
+            // RSL1g
+            context("Identified clients with a clientId") {
+
+                // RSL1g2
+                it("when publishing a Message with the clientId attribute set to the identified client’s clientId") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+                    let client = ARTRest(options: options)
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let message = ARTMessage(name: nil, data: "message", clientId: options.clientId!)
+                        channel.publish([message]) { error in
+                            expect(error).to(beNil())
+                            channel.history { page, error in
+                                expect(error).to(beNil())
+                                expect(page!.items[0].clientId).to(equal("john"))
+                                done()
+                            }
+                        }
+                    }
+                }
+            }
+
         }
         
         // RSL3, RSP1
