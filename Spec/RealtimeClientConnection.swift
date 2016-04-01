@@ -1704,22 +1704,34 @@ class RealtimeClientConnection: QuickSpec {
             context("Transport disconnected side effects") {
 
                 // RTN19a
-                pending("should resend any ProtocolMessage that is awaiting a ACK/NACK") {
+                it("should resend any ProtocolMessage that is awaiting a ACK/NACK") {
                     let options = AblyTests.commonAppSetup()
                     options.logLevel = .Debug
-                    options.disconnectedRetryTimeout = 1.0
-                    let client = ARTRealtime(options: options)
+                    options.disconnectedRetryTimeout = 0.1
+                    let client = AblyTests.newRealtime(options)
                     defer { client.close() }
                     let channel = client.channels.get("test")
+                    let transport = client.transport as! TestProxyTransport
+
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
 
                     waitUntil(timeout: testTimeout) { done in
+                        channel.attach { _ in done() }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        transport.ignoreSends = true
                         channel.publish(nil, data: "message") { error in
                             expect(error).to(beNil())
-                            let transport = client.transport as! TestProxyTransport
-                            expect(transport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(2))
-                            expect(transport.protocolMessagesSent.filter{ $0.action == .Message }).to(haveCount(2))
+                            let newTransport = client.transport as! TestProxyTransport
+                            expect(transport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
+                            expect(newTransport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
+                            expect(transport.protocolMessagesSent.filter{ $0.action == .Message }).to(haveCount(0))
+                            expect(transport.protocolMessagesSentIgnored.filter{ $0.action == .Message }).to(haveCount(1))
+                            expect(newTransport.protocolMessagesSent.filter{ $0.action == .Message }).to(haveCount(1))
                             done()
                         }
+                        transport.ignoreSends = false
                         client.onDisconnected()
                     }
                 }
