@@ -1143,6 +1143,67 @@ class RealtimeClientPresence: QuickSpec {
 
             }
 
+            // RTP12
+            context("history") {
+
+                // RTP12c, RTP12d
+                it("should return a PaginatedResult page") {
+                    let options = AblyTests.commonAppSetup()
+
+                    var clientSecondary: ARTRealtime!
+                    defer { clientSecondary.close() }
+
+                    let expectedData = ["x", "y"]
+                    let expectedPattern = "^user(\\d+)$"
+                    waitUntil(timeout: testTimeout) { done in
+                        clientSecondary = AblyTests.addMembersSequentiallyToChannel("test", members: 150, data: expectedData, options: options) {
+                            done()
+                        }.first
+                    }
+
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.history { membersPage, error in
+                            expect(error).to(beNil())
+
+                            let membersPage = membersPage!
+                            expect(membersPage).to(beAnInstanceOf(ARTPaginatedResult))
+                            expect(membersPage.items).to(haveCount(100))
+
+                            let members = membersPage.items as! [ARTPresenceMessage]
+                            expect(members).to(allPass({ member in
+                                return NSRegularExpression.match(member!.clientId, pattern: expectedPattern)
+                                    && (member!.data as? NSObject) == expectedData
+                            }))
+
+                            expect(membersPage.hasNext).to(beTrue())
+                            expect(membersPage.isLast).to(beFalse())
+
+                            membersPage.next { nextPage, error in
+                                expect(error).to(beNil())
+                                let nextPage = nextPage!
+                                expect(nextPage).to(beAnInstanceOf(ARTPaginatedResult))
+                                expect(nextPage.items).to(haveCount(50))
+
+                                let members = nextPage.items as! [ARTPresenceMessage]
+                                expect(members).to(allPass({ member in
+                                    return NSRegularExpression.match(member!.clientId, pattern: expectedPattern)
+                                        && (member!.data as? NSObject) == expectedData
+                                }))
+
+                                expect(nextPage.hasNext).to(beFalse())
+                                expect(nextPage.isLast).to(beTrue())
+                                done()
+                            }
+                        }
+                    }
+                }
+
+            }
+
         }
     }
 }
