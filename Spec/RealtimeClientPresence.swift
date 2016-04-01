@@ -526,6 +526,25 @@ class RealtimeClientPresence: QuickSpec {
 
             }
 
+            // RTP8
+            context("enter") {
+
+                // RTP8i
+                it("should result in an error if Ably service determines that the client is unidentified") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enter(nil) { error in
+                            expect(error!.message).to(contain("presence message without clientId"))
+                            done()
+                        }
+                    }
+                }
+
+            }
+
             // RTP15e
             let cases: [String:(ARTRealtimePresence, Optional<(ARTErrorInfo?)->Void>)->()] = [
                 "enterClient": { $0.enterClient("john", data: nil, callback: $1) },
