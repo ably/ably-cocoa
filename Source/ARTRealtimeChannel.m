@@ -288,7 +288,7 @@
  Checks that a channelSerial is the final serial in a sequence of sync messages,
  by checking that there is nothing after the colon
  */
-- (bool)isLastChannelSerial:(NSString *) channelSerial {
+- (bool)isLastChannelSerial:(NSString *)channelSerial {
     NSArray * a = [channelSerial componentsSeparatedByString:@":"];
     if([a count] >1 && ![[a objectAtIndex:1] isEqualToString:@""] ) {
         return false;

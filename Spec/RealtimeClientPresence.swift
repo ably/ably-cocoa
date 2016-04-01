@@ -1016,6 +1016,83 @@ class RealtimeClientPresence: QuickSpec {
                     }
                 }
 
+                // RTP11c
+                context("Query (set of params)") {
+
+                    // RTP11c1
+                    it("waitForSync is true, should wait until SYNC is complete before returning a list of members") {
+                        let options = AblyTests.commonAppSetup()
+                        var clientSecondary: ARTRealtime!
+                        defer { clientSecondary.close() }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            clientSecondary = AblyTests.addMembersSequentiallyToChannel("test", members: 150, options: options) {
+                                done()
+                            }.first
+                        }
+
+                        let client = AblyTests.newRealtime(options)
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+
+                        let query = ARTRealtimePresenceQuery()
+                        expect(query.waitForSync).to(beTrue())
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.attach() { error in
+                                expect(error).to(beNil())
+                                let transport = client.transport as! TestProxyTransport
+                                transport.beforeProcessingReceivedMessage = { protocolMessage in
+                                    if protocolMessage.action == .Sync {
+                                        channel.presence.get(query) { members, error in
+                                            expect(error).to(beNil())
+                                            expect(members).to(haveCount(150))
+                                            done()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // RTP11c1
+                    it("waitForSync is false, should return immediately the known set of presence members") {
+                        let options = AblyTests.commonAppSetup()
+                        var clientSecondary: ARTRealtime!
+                        defer { clientSecondary.close() }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            clientSecondary = AblyTests.addMembersSequentiallyToChannel("test", members: 150, options: options) {
+                                done()
+                            }.first
+                        }
+
+                        let client = AblyTests.newRealtime(options)
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+
+                        let query = ARTRealtimePresenceQuery()
+                        query.waitForSync = false
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.attach() { error in
+                                expect(error).to(beNil())
+                                let transport = client.transport as! TestProxyTransport
+                                transport.beforeProcessingReceivedMessage = { message in
+                                    if message.action == .Sync && channel.isLastChannelSerial(message.channelSerial!)  {
+                                        channel.presence.get(query) { members, error in
+                                            expect(error).to(beNil())
+                                            expect(members).to(haveCount(100))
+                                            done()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }
+
             }
 
         }
