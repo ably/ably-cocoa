@@ -136,6 +136,63 @@ class RestClientPresence: QuickSpec {
 
             }
 
+            // RSP4
+            context("history") {
+
+                // RSP4b
+                context("query argument") {
+
+                    // RSP4b2
+                    it("direction should change the order of the members") {
+                        let options = AblyTests.commonAppSetup()
+                        let client = ARTRest(options: options)
+                        let channel = client.channels.get("test")
+
+                        var disposable = [ARTRealtime]()
+                        defer {
+                            for clientItem in disposable {
+                                clientItem.close()
+                            }
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 10, data:nil, options: options) {
+                                done()
+                            }
+                        }
+
+                        let query = ARTDataQuery()
+                        expect(query.direction).to(equal(ARTQueryDirection.Backwards))
+
+                        waitUntil(timeout: testTimeout) { done in
+                            try! channel.presence.history(query) { membersPage, error in
+                                expect(error).to(beNil())
+                                let firstMember = membersPage!.items.first as! ARTPresenceMessage
+                                expect(firstMember.clientId).to(equal("user10"))
+                                let lastMember = membersPage!.items.last as! ARTPresenceMessage
+                                expect(lastMember.clientId).to(equal("user1"))
+                                done()
+                            }
+                        }
+
+                        query.direction = .Forwards
+
+                        waitUntil(timeout: testTimeout) { done in
+                            try! channel.presence.history(query) { membersPage, error in
+                                expect(error).to(beNil())
+                                let firstMember = membersPage!.items.first as! ARTPresenceMessage
+                                expect(firstMember.clientId).to(equal("user1"))
+                                let lastMember = membersPage!.items.last as! ARTPresenceMessage
+                                expect(lastMember.clientId).to(equal("user10"))
+                                done()
+                            }
+                        }
+                    }
+
+                }
+
+            }
+
         }
     }
 }
