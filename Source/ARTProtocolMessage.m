@@ -83,7 +83,7 @@
 }
 
 - (BOOL)ackRequired {
-    return self.action == ARTProtocolMessageMessage || self.action == ARTProtocolMessagePresence || self.action == ARTProtocolMessageDetach;
+    return self.action == ARTProtocolMessageMessage || self.action == ARTProtocolMessagePresence;
 }
 
 - (BOOL)isSyncEnabled {
