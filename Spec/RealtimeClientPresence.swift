@@ -88,8 +88,13 @@ class RealtimeClientPresence: QuickSpec {
                     defer { client.close() }
                     let channel = client.channels.get("test")
 
-                    channel.attach()
-                    channel.detach()
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { _ in
+                            channel.detach() { _ in done() }
+                        }
+                    }
+                    
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.enter(nil) { error in
@@ -108,6 +113,8 @@ class RealtimeClientPresence: QuickSpec {
                     let channel = client.channels.get("test")
 
                     channel.onError(AblyTests.newErrorProtocolMessage())
+
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.enter(nil) { error in
