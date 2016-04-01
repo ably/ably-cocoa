@@ -108,7 +108,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP8e
-                pending("should emit the data attribute in the LEAVE event when data is provided when entering but no data is provided when leaving") {
+                it("should emit the data attribute in the LEAVE event when data is provided when entering but no data is provided when leaving") {
                     let options = AblyTests.commonAppSetup()
 
                     options.clientId = "john"
@@ -121,7 +121,7 @@ class RealtimeClientPresence: QuickSpec {
                     defer { client2.close() }
                     let channel2 = client2.channels.get("test")
 
-                    let expectedData = ["clock":NSDate()]
+                    let expectedData = ["clock":NSDate().timeIntervalSince1970]
 
                     waitUntil(timeout: testTimeout) { done in
                         channel2.presence.enter(expectedData) { error in
