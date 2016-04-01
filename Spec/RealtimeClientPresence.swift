@@ -477,6 +477,55 @@ class RealtimeClientPresence: QuickSpec {
 
             }
 
+            // RTP8
+            context("enter") {
+
+                // RTP8g
+                it("should result in an error immediately if the channel is DETACHED") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { _ in
+                            channel.detach() { _ in done() }
+                        }
+                    }
+                    
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enter(nil) { error in
+                            expect(error!.message).to(contain("invalid channel state"))
+                            done()
+                        }
+                    }
+                }
+
+                // RTP8g
+                it("should result in an error immediately if the channel is FAILED") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    channel.onError(AblyTests.newErrorProtocolMessage())
+
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enter(nil) { error in
+                            expect(error!.message).to(contain("invalid channel state"))
+                            done()
+                        }
+                    }
+                }
+
+            }
+
             // RTP15e
             let cases: [String:(ARTRealtimePresence, Optional<(ARTErrorInfo?)->Void>)->()] = [
                 "enterClient": { $0.enterClient("john", data: nil, callback: $1) },
