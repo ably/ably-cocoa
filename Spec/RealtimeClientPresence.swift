@@ -822,8 +822,8 @@ class RealtimeClientPresence: QuickSpec {
             // RTP8
             context("enter") {
                 // RTP8h
-                pending("should result in an error if the client does not have required presence permission") {
-                    let options = AblyTests.clientOptions()
+                it("should result in an error if the client does not have required presence permission") {
+                    let options = AblyTests.commonAppSetup()
                     options.token = getTestToken(capability: "{ \"cannotpresence:john\":[\"publish\"] }")
                     options.clientId = "john"
                     let client = ARTRealtime(options: options)
@@ -832,7 +832,10 @@ class RealtimeClientPresence: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.enter(nil) { error in
-                            expect(error!.message).to(contain("no permission"))
+                            guard let error = error else {
+                                fail("error expected"); done(); return
+                            }
+                            expect(error.message).to(contain("Channel denied access based on given capability"))
                             done()
                         }
                     }
