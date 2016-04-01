@@ -503,7 +503,27 @@ class Auth : QuickSpec {
                     }
                     
                     // RSA7b3
-                    // TODO: Realtime.connection
+                    it("should CONNECTED ProtocolMessages contain a clientId") {
+                        let options = AblyTests.commonAppSetup()
+                        options.clientId = "john"
+                        options.autoConnect = false
+                        let realtime = AblyTests.newRealtime(options)
+                        defer { realtime.close() }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            realtime.connection.once(.Connected) { stateChange in
+                                expect(stateChange!.reason).to(beNil())
+                                expect(realtime.auth.clientId).to(equal("john"))
+
+                                let transport = realtime.transport as! TestProxyTransport
+                                let connectedProtocolMessage = transport.protocolMessagesReceived.filter{ $0.action == .Connected }[0]
+                                expect(connectedProtocolMessage.connectionDetails!.clientId).to(equal("john"))
+                                done()
+                            }
+                            realtime.connect()
+                        }
+                    }
+
                 }
                 
                 // RSA7c
