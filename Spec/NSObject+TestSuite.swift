@@ -11,11 +11,11 @@ import Aspects
 extension NSObject {
 
     /// Inject a block of code to the identified class method.
-    class func testSuite_injectIntoClassMethod(selector: Selector, code: ()->()) {
+    class func testSuite_injectIntoClassMethod(selector: Selector, code: ()->()) -> AspectToken? {
         let block: @convention(block) (AspectInfo) -> Void = { _ in
             code()
         }
-        let _ = try! self.aspect_hookSelector(selector, withOptions: .PositionAfter, usingBlock: unsafeBitCast(block, AnyObject.self))
+        return try? self.aspect_hookSelector(selector, withOptions: .PositionAfter, usingBlock: unsafeBitCast(block, AnyObject.self))
     }
 
 }
