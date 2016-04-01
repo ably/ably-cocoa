@@ -1325,16 +1325,19 @@ class RealtimeClientChannel: QuickSpec {
                     let channel2 = client2.channels.get("test")
 
                     waitUntil(timeout: testTimeout) { done in
-                        channel1.subscribe { message in
-                            expect(message.data as? String).to(equal("message"))
-                            delay(1.0) { done() }
-                        }
+                        channel1.attach { err in
+                            expect(err).to(beNil())
+                            channel1.subscribe { message in
+                                expect(message.data as? String).to(equal("message"))
+                                delay(1.0) { done() }
+                            }
 
-                        channel2.subscribe { message in
-                            fail("Shouldn't receive the message")
-                        }
+                            channel2.subscribe { message in
+                                fail("Shouldn't receive the message")
+                            }
 
-                        channel2.publish(nil, data: "message")
+                            channel2.publish(nil, data: "message")
+                        }
                     }
                 }
 
