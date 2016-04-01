@@ -440,17 +440,17 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP10e
-                pending("should result in an error if the client does not have required presence permission") {
+                it("should result in an error if the client does not have required presence permission") {
                     let options = AblyTests.clientOptions()
-                    options.token = getTestToken(capability: "{ \"cannotpresence:john\":[\"publish\"] }")
+                    options.token = getTestToken(capability: "{ \"cannotpresence:other\":[\"publish\"] }")
                     options.clientId = "john"
                     let client = ARTRealtime(options: options)
                     defer { client.close() }
                     let channel = client.channels.get("cannotpresence")
 
                     waitUntil(timeout: testTimeout) { done in
-                        channel.presence.leave(nil) { error in
-                            expect(error!.message).to(contain("no permission"))
+                        channel.presence.leaveClient("other", data: nil) { error in
+                            expect(error!.message).to(contain("Channel denied access based on given capability"))
                             done()
                         }
                     }
