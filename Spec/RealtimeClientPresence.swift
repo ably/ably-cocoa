@@ -246,7 +246,7 @@ class RealtimeClientPresence: QuickSpec {
             context("history") {
 
                 // RTP12b
-                pending("supports the param untilAttach") {
+                context("supports the param untilAttach") {
 
                     it("should be false as default") {
                         let query = ARTRealtimeHistoryQuery()
@@ -338,7 +338,7 @@ class RealtimeClientPresence: QuickSpec {
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 35, options: options) {
+                            disposable += AblyTests.addMembersSequentiallyToChannel("test", startFrom: 26, members: 35, options: options) {
                                 done()
                             }
                         }
@@ -348,10 +348,10 @@ class RealtimeClientPresence: QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             try! channel.presence.history(query) { result, errorInfo in
-                                expect(result!.items).to(haveCount(35))
+                                expect(result!.items).to(haveCount(25))
                                 expect(result!.hasNext).to(beFalse())
-                                expect((result!.items.first as? ARTPresenceMessage)?.clientId).to(equal("user55"))
-                                expect((result!.items.last as? ARTPresenceMessage)?.clientId).to(equal("user35"))
+                                expect((result!.items.first as? ARTPresenceMessage)?.clientId).to(equal("user25"))
+                                expect((result!.items.last as? ARTPresenceMessage)?.clientId).to(equal("user1"))
                                 done()
                             }
                         }

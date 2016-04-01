@@ -14,6 +14,7 @@
 #import "ARTPresenceMessage.h"
 #import "ARTStatus.h"
 #import "ARTPresence+Private.h"
+#import "ARTDataQuery+Private.h"
 
 #pragma mark - ARTRealtimePresenceQuery
 
@@ -74,7 +75,16 @@
 }
 
 - (BOOL)history:(ARTRealtimeHistoryQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
-    return [super history:query callback:callback error:errorPtr];
+    query.realtimeChannel = self.channel;
+    @try {
+        return [super history:query callback:callback error:errorPtr];
+    }
+    @catch (NSError *error) {
+        if (errorPtr) {
+            *errorPtr = error;
+        }
+        return false;
+    }
 }
 
 - (void)enter:(id)data {
