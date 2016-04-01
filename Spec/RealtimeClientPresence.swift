@@ -95,7 +95,7 @@ class RealtimeClientPresence: QuickSpec {
                     }
                 }
 
-                // RTP8e
+                // RTP9e
                 it("should result in an error immediately if the channel is DETACHED") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
@@ -114,7 +114,7 @@ class RealtimeClientPresence: QuickSpec {
                     }
                 }
 
-                // RTP8e
+                // RTP9e
                 it("should result in an error immediately if the channel is FAILED") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
@@ -132,8 +132,8 @@ class RealtimeClientPresence: QuickSpec {
                     }
                 }
 
-                // RTP8e
-                pending("should result in an error if the client does not have required presence permission") {
+                // RTP9e
+                it("should result in an error if the client does not have required presence permission") {
                     let options = AblyTests.clientOptions()
                     options.token = getTestToken(capability: "{ \"cannotpresence:john\":[\"publish\"] }")
                     options.clientId = "john"
@@ -143,13 +143,13 @@ class RealtimeClientPresence: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.update(nil) { error in
-                            expect(error!.message).to(contain("no permission"))
+                            expect(error!.message).to(contain("Channel denied access based on given capability"))
                             done()
                         }
                     }
                 }
 
-                // RTP8e
+                // RTP9e
                 it("should result in an error if Ably service determines that the client is unidentified") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.close() }

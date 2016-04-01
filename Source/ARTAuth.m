@@ -336,10 +336,10 @@
         if ([self.tokenDetails.clientId isEqual:@"*"])
             // Any client
             return nil;
-        else
+        else if (self.tokenDetails.clientId)
             return self.tokenDetails.clientId;
     }
-    else if (self.options) {
+    if (self.options) {
         return self.options.clientId;
     }
     else {
