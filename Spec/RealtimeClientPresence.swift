@@ -956,27 +956,30 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP10b
-                pending("optionally a callback can be provided that is called for failure") {
+                it("optionally a callback can be provided that is called for failure") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
-                    let client = ARTRealtime(options: options)
+                    let client = AblyTests.newRealtime(options)
                     defer { client.close() }
                     let channel = client.channels.get("test")
 
-                    waitUntil(timeout: testTimeout) { done in
-                        channel.presence.enter("online") { error in
-                            expect(error).to(beNil())
-                            done()
-                        }
-                    }
+                   waitUntil(timeout: testTimeout) { done in
+                       channel.presence.enter("online") { error in
+                           expect(error).to(beNil())
+                           done()
+                       }
+                   }
 
                     waitUntil(timeout: testTimeout) { done in
-                        let protocolError = AblyTests.newErrorProtocolMessage()
-                        channel.presence.leave("offline") { error in
-                            expect(error).to(beIdenticalTo(protocolError.error))
-                            done()
+                        let sentError = ARTErrorInfo.createWithCode(0, message: "test error")
+                        let transport = client.transport as! TestProxyTransport
+                        transport.replaceAcksWithNacks(sentError) { doneReplacing in
+                            channel.presence.leave("offline") { error in
+                                expect(error).to(beIdenticalTo(sentError))
+                                doneReplacing()
+                                done()
+                            }
                         }
-                        channel.onError(protocolError)
                     }
                 }
 

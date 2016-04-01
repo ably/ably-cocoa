@@ -495,6 +495,7 @@ class TestProxyTransport: ARTWebSocketTransport {
 
     private(set) var rawDataSent = [NSData]()
     private(set) var rawDataReceived = [NSData]()
+    private var replacingAcksWithNacks: ARTErrorInfo?
     
     var beforeProcessingSentMessage: Optional<(ARTProtocolMessage)->()> = nil
     var beforeProcessingReceivedMessage: Optional<(ARTProtocolMessage)->()> = nil
@@ -522,6 +523,12 @@ class TestProxyTransport: ARTWebSocketTransport {
     }
 
     override func receive(msg: ARTProtocolMessage) {
+        if msg.action == .Ack {
+            if let error = replacingAcksWithNacks {
+                msg.action = .Nack
+                msg.error = error
+            }
+        }
         protocolMessagesReceived.append(msg)
         if actionsIgnored.contains(msg.action) {
             return
@@ -540,6 +547,10 @@ class TestProxyTransport: ARTWebSocketTransport {
         super.receiveWithData(data)
     }
 
+    func replaceAcksWithNacks(error: ARTErrorInfo, block: (() -> ()) -> ()) {
+        replacingAcksWithNacks = error
+        block({ self.replacingAcksWithNacks = nil })
+    }
 }
 
 
@@ -687,7 +698,6 @@ extension ARTWebSocketTransport {
         let webSocketDelegate = self as! WebSocketDelegate
         webSocketDelegate.webSocketError(error)
     }
-
 }
 
 
