@@ -38,7 +38,7 @@
 
 - (void)put:(ARTPresenceMessage *)message {
     ARTPresenceMessage *latest = [self.recentMembers objectForKey:message.clientId];
-    if (!latest || !message.timestamp || latest.timestamp < message.timestamp) {
+    if (!latest || !message.timestamp || [latest.timestamp timeIntervalSince1970] <= [message.timestamp timeIntervalSince1970]) {
         [self.recentMembers setObject:message forKey:message.clientId];
     }
 }

@@ -416,9 +416,9 @@
         [self.presenceMap onceSyncEnds:^(__GENERIC(NSArray, ARTPresenceMessage *) *msgs) {
             [self.presenceMap put:presence];
             [self.presenceMap clean];
-        }];
 
-        [self broadcastPresence:presence];
+            [self broadcastPresence:presence];
+        }];
 
         ++i;
     }
