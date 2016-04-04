@@ -19,34 +19,31 @@ NSInteger getStatusFromCode(NSInteger code) {
 
 @implementation ARTErrorInfo
 
-- (ARTErrorInfo *)setCode:(NSInteger)code message:(NSString *)message {
-    _code = code;
-    _statusCode = getStatusFromCode(code);
-    _message = message;
-    return self;
-}
-
-- (ARTErrorInfo *)setCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message {
-    _code = code;
-    _statusCode = status;
-    _message = message;
-    return self;
-}
-
 + (ARTErrorInfo *)createWithCode:(NSInteger)code message:(NSString *)message {
-    return [[[ARTErrorInfo alloc] init] setCode:code message:message];
+    return [ARTErrorInfo createWithCode:code status:getStatusFromCode(code) message:message];
 }
 
 + (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message {
-    return [[[ARTErrorInfo alloc] init] setCode:code status:status message:message];
+    return [[super alloc] initWithDomain:ARTAblyErrorDomain code:code userInfo:@{@"status": [NSNumber numberWithInteger:status], NSLocalizedDescriptionKey:message}];
 }
 
 + (ARTErrorInfo *)createWithNSError:(NSError *)error {
-    return [[[ARTErrorInfo alloc] init] setCode:error.code status:getStatusFromCode(error.code) message:error.description];
+    if ([error isKindOfClass:[ARTErrorInfo class]]) {
+        return (ARTErrorInfo *)error;
+    }
+    return [ARTErrorInfo createWithCode:error.code message:error.description];
 }
 
 + (ARTErrorInfo *)wrap:(ARTErrorInfo *)error prepend:(NSString *)prepend {
     return [ARTErrorInfo createWithCode:error.code status:error.statusCode message:[NSString stringWithFormat:@"%@%@", prepend, error.message]];
+}
+
+- (NSString *)getMessage {
+    return (NSString *)self.userInfo[NSLocalizedDescriptionKey];
+}
+
+- (NSInteger)getStatus {
+    return [(NSNumber *)self.userInfo[@"status"] integerValue];
 }
 
 - (NSString *)description {

@@ -42,14 +42,10 @@ ART_ASSUME_NONNULL_BEGIN
 
 FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
 
-@interface ARTErrorInfo : NSObject
+@interface ARTErrorInfo : NSError
 
-@property (readonly, copy, nonatomic) NSString *message;
-@property (readonly, assign, nonatomic) NSInteger statusCode;
-@property (readonly, assign, nonatomic) NSInteger code;
-
-- (ARTErrorInfo *)setCode:(NSInteger) code message:(NSString *) message;
-- (ARTErrorInfo *)setCode:(NSInteger) code status:(NSInteger) status message:(NSString *) message;
+@property (readonly, getter=getMessage) NSString *message;
+@property (readonly, getter=getStatus) NSInteger statusCode;
 
 + (ARTErrorInfo *)createWithCode:(NSInteger)code message:(NSString *)message;
 + (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message;
