@@ -52,12 +52,18 @@
     return _channel;
 }
 
+
 - (void)get:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, ARTErrorInfo *error))callback {
-    [self get:[[ARTPresenceQuery alloc] init] callback:callback];
+    [self get:[[ARTPresenceQuery alloc] init] callback:callback error:nil];
 }
 
-- (void)get:(ARTPresenceQuery *)query callback:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, ARTErrorInfo * _Nullable))callback {
+- (BOOL)get:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, ARTErrorInfo *error))callback error:(NSError **)errorPtr {
+    return [self get:[[ARTPresenceQuery alloc] init] callback:callback error:errorPtr];
+}
+
+- (BOOL)get:(ARTPresenceQuery *)query callback:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> * _Nullable, ARTErrorInfo * _Nullable))callback error:(NSError **)errorPtr {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
+    return false;
 }
 
 - (void)history:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *, ARTErrorInfo *))callback {

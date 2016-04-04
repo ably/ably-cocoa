@@ -76,7 +76,7 @@ class RestClientPresence: QuickSpec {
                 }
 
                 // RSP3a1
-                pending("limit should support up to 1000 items") {
+                it("limit should support up to 1000 items") {
                     let client = ARTRest(options: AblyTests.commonAppSetup())
                     let channel = client.channels.get("test")
 
