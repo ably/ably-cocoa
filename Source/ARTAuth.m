@@ -154,6 +154,18 @@
     ARTTokenParams *currentTokenParams = [self mergeParams:tokenParams];
     tokenParams.timestamp = [NSDate date];
 
+    void (^checkerCallback)(ARTTokenDetails *__art_nullable, NSError *__art_nullable) = ^(ARTTokenDetails *tokenDetails, NSError *error) {
+        if (error) {
+            callback(nil, error);
+            return;
+        }
+        if (self.clientId && tokenDetails.clientId && ![tokenDetails.clientId isEqualToString:@"*"] && ![self.clientId isEqual:tokenDetails.clientId]) {
+            if (callback) callback(nil, [ARTErrorInfo createWithCode:40102 message:@"incompatible credentials"]);
+            return;
+        }
+        callback(tokenDetails, nil);
+    };
+
     if (mergedOptions.authUrl) {
         NSMutableURLRequest *request = [self buildRequest:mergedOptions withParams:currentTokenParams];
         
@@ -161,10 +173,10 @@
         
         [_rest executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (error) {
-                callback(nil, error);
+                checkerCallback(nil, error);
             } else {
                 [self.logger debug:@"ARTAuth: authUrl response %@", response];
-                [self handleAuthUrlResponse:response withData:data completion:callback];
+                [self handleAuthUrlResponse:response withData:data completion:checkerCallback];
             }
         }];
     } else {
@@ -183,7 +195,7 @@
             [self.logger debug:@"ARTAuth: using authCallback"];
         }
 
-        tokenRequestFactory(currentTokenParams, callback);
+        tokenRequestFactory(currentTokenParams, checkerCallback);
     }
 }
 

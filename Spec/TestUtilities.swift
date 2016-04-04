@@ -368,7 +368,7 @@ func getTestToken(key key: String? = nil, capability: String? = nil, ttl: NSTime
 }
 
 /// Access TokenDetails
-func getTestTokenDetails(key key: String? = nil, capability: String? = nil, ttl: NSTimeInterval? = nil) -> ARTTokenDetails? {
+func getTestTokenDetails(key key: String? = nil, capability: String? = nil, ttl: NSTimeInterval? = nil, clientId: String? = nil) -> ARTTokenDetails? {
     let options: ARTClientOptions
     if let key = key {
         options = AblyTests.clientOptions()
@@ -391,6 +391,10 @@ func getTestTokenDetails(key key: String? = nil, capability: String? = nil, ttl:
     if let ttl = ttl {
         if tokenParams == nil { tokenParams = ARTTokenParams() }
         tokenParams!.ttl = ttl
+    }
+    if let clientId = clientId {
+        if tokenParams == nil { tokenParams = ARTTokenParams() }
+        tokenParams!.clientId = clientId
     }
 
     client.auth.requestToken(tokenParams, withOptions: nil) { _tokenDetails, _error in

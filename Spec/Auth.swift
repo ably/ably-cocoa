@@ -314,25 +314,24 @@ class Auth : QuickSpec {
                 }
                 
                 // RSA15c
-                pending("Incompatible client") {
+                context("Incompatible client") {
 
                     it("with Realtime, it should change the connection state to FAILED and emit an error") {
-                        let options = ARTClientOptions()
+                        let options = AblyTests.commonAppSetup()
+                        let wrongTokenDetails = getTestTokenDetails(clientId: "wrong")
+
                         options.clientId = "john"
                         options.autoConnect = false
                         options.authCallback = { tokenParams, completion in
-                            let rest = ARTRest(options: AblyTests.commonAppSetup())
-                            rest.auth.createTokenRequest(ARTTokenParams(clientId: "wrong"), options: nil) { tokenRequest, error in
-                                rest.auth.executeTokenRequest(tokenRequest!, callback: completion)
-                            }
+                            completion(wrongTokenDetails, nil)
                         }
                         let realtime = ARTRealtime(options: options)
                         defer { realtime.close() }
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.connection.once(.Failed) { stateChange in
-                                expect(stateChange!.reason!.code).toNot(equal(40102))
-                                expect(stateChange!.reason!.description).toNot(contain("incompatible credentials"))
+                                expect(stateChange!.reason!.code).to(equal(40102))
+                                expect(stateChange!.reason!.description).to(contain("incompatible credentials"))
                                 done()
                             }
                             realtime.connect()
@@ -346,8 +345,8 @@ class Auth : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             rest.auth.requestToken(ARTTokenParams(clientId: "wrong"), withOptions: nil) { tokenDetails, error in
-                                expect(error!.code).toNot(equal(40102))
-                                expect(error!.description).toNot(contain("incompatible credentials"))
+                                expect(error!.code).to(equal(40102))
+                                expect(error!.description).to(contain("incompatible credentials"))
                                 expect(tokenDetails).to(beNil())
                                 done()
                             }
@@ -728,14 +727,14 @@ class Auth : QuickSpec {
             context("should support all TokenParams") {
 
                 let options = AblyTests.commonAppSetup()
-                let currentCliend = "client_string"
-                options.clientId = currentCliend
+                let currentClientId = "client_string"
+                options.clientId = currentClientId
 
                 let rest = ARTRest(options: options)
 
                 it("using defaults") {
                     // Default values
-                    let defaultTokenParams = ARTTokenParams(clientId: currentCliend)
+                    let defaultTokenParams = ARTTokenParams(clientId: currentClientId)
 
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.requestToken(nil, withOptions: nil, callback: { tokenDetails, error in
@@ -753,17 +752,17 @@ class Auth : QuickSpec {
 
                 it("overriding defaults") {
                     // Custom values
-                    let expectedClientId = "token_client"
                     let expectedTtl = 4800.0
                     let expectedCapability = "{\"canpublish:*\":[\"publish\"]}"
 
-                    let tokenParams = ARTTokenParams(clientId: expectedClientId)
+                    let tokenParams = ARTTokenParams(clientId: currentClientId)
                     tokenParams.ttl = expectedTtl
                     tokenParams.capability = expectedCapability
 
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.requestToken(tokenParams, withOptions: nil, callback: { tokenDetails, error in
-                            expect(tokenDetails?.clientId).to(equal(expectedClientId))
+                            expect(error).to(beNil())
+                            expect(tokenDetails?.clientId).to(equal(options.clientId))
                             expect(tokenDetails?.capability).to(equal(expectedCapability))
                             expect(tokenDetails?.issued).toNot(beNil())
                             expect(tokenDetails?.expires).toNot(beNil())
@@ -1556,7 +1555,7 @@ class Auth : QuickSpec {
                 options.clientId = "client_string"
                 let rest = ARTRest(options: options)
 
-                let tokenParams = ARTTokenParams()
+                let tokenParams = ARTTokenParams(clientId: options.clientId)
                 let defaultTtl = tokenParams.ttl
                 let defaultCapability = tokenParams.capability
 
@@ -1599,7 +1598,6 @@ class Auth : QuickSpec {
                         guard let tokenDetails = tokenDetails else {
                             XCTFail("TokenDetails is nil"); done(); return
                         }
-                        expect(tokenDetails.clientId).to(beNil())
                         expect(tokenDetails.issued).to(beCloseTo(serverDate, within: 1.0)) //1 Second
                         expect(tokenDetails.issued!.dateByAddingTimeInterval(ExpectedTokenParams.ttl)).to(beCloseTo(tokenDetails.expires))
                         expect(tokenDetails.capability).to(equal(ExpectedTokenParams.capability))
