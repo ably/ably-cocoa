@@ -161,7 +161,7 @@ class AblyTests {
         return NSProcessInfo.processInfo().globallyUniqueString
     }
 
-    class func addMembersSequentiallyToChannel(channelName: String, members: Int = 1, data: AnyObject? = nil, options: ARTClientOptions, done: ()->()) -> [ARTRealtime] {
+    class func addMembersSequentiallyToChannel(channelName: String, members: Int = 1, startFrom: Int = 1, data: AnyObject? = nil, options: ARTClientOptions, done: ()->()) -> [ARTRealtime] {
         let client = ARTRealtime(options: options)
         let channel = client.channels.get(channelName)
 
@@ -171,7 +171,7 @@ class AblyTests {
 
         Total.count = 0
         channel.attach() { _ in
-            for i in 1...members {
+            for i in startFrom..<startFrom+members {
                 channel.presence.enterClient("user\(i)", data: data) { _ in
                     Total.count += 1
                     if Total.count == members {
