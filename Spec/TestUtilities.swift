@@ -485,6 +485,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     
     var beforeProcessingSentMessage: Optional<(ARTProtocolMessage)->()> = nil
     var beforeProcessingReceivedMessage: Optional<(ARTProtocolMessage)->()> = nil
+    var afterProcessingReceivedMessage: Optional<(ARTProtocolMessage)->()> = nil
 
     var actionsIgnored = [ARTProtocolMessageAction]()
 
@@ -516,6 +517,9 @@ class TestProxyTransport: ARTWebSocketTransport {
             performEvent(msg)
         }
         super.receive(msg)
+        if let performEvent = afterProcessingReceivedMessage {
+            performEvent(msg)
+        }
     }
 
     override func receiveWithData(data: NSData) {

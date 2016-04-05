@@ -24,6 +24,7 @@
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTStatus.h"
 #import "ARTDefault.h"
+#import "ARTClientOptions.h"
 
 @interface ARTRealtimeChannel () {
     ARTRealtimePresence *_realtimePresence;
@@ -90,13 +91,27 @@
     
     ARTProtocolMessage * msg = [[ARTProtocolMessage alloc] init];
     msg.action = ARTProtocolMessageSync;
-    msg.msgSerial = self.presenceMap.syncSerial;
+    msg.msgSerial = self.presenceMap.syncMsgSerial;
+    msg.channelSerial = self.presenceMap.syncChannelSerial;
     msg.channel = self.name;
 
     [self.realtime send:msg callback:^(ARTStatus *status) {}];
 }
 
 - (void)publishPresence:(ARTPresenceMessage *)msg callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb {
+    switch (_realtime.connection.state) {
+        case ARTRealtimeConnected:
+            break;
+        case ARTRealtimeConnecting:
+        case ARTRealtimeDisconnected:
+            if (_realtime.options.queueMessages) {
+                break;
+            }
+        default:
+            if (cb) cb([ARTErrorInfo createWithCode:ARTStateBadConnectionState message:@"attempted to publish presence message in a bad connection state"]);
+            return;
+    }
+
     if (!msg.clientId) {
         msg.clientId = self.clientId;
     }
@@ -148,7 +163,16 @@
         }
         case ARTRealtimeChannelAttached:
         {
-            [self sendMessage:pm callback:cb];
+            if (_realtime.connection.state == ARTRealtimeConnected) {
+                [self sendMessage:pm callback:cb];
+            } else {
+                ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:pm callback:cb];
+                [self.queuedMessages addObject:qm];
+
+                [_realtime.connection once:ARTRealtimeConnected call:^(ARTConnectionStateChange *__art_nullable change) {
+                    [self sendQueuedMessages];
+                }];
+            }
             break;
         }
         default:
@@ -262,9 +286,13 @@
     if (self.state == state) {
         return;
     }
-
     self.state = state;
     _errorReason = status.errorInfo;
+
+    if (state == ARTRealtimeChannelFailed) {
+        [_attachedEventEmitter emit:[NSNull null] with:status.errorInfo];
+        [_detachedEventEmitter emit:[NSNull null] with:status.errorInfo];
+    }
 
     [self emit:(ARTChannelEvent)state with:status.errorInfo];
 }
@@ -327,6 +355,9 @@
 }
 
 - (void)setAttached:(ARTProtocolMessage *)message {
+    if (self.state == ARTRealtimeChannelFailed) {
+        return;
+    }
     self.attachSerial = message.channelSerial;
     if ([message isSyncEnabled]) {
         [self.presenceMap startSync];
@@ -340,9 +371,12 @@
 }
 
 - (void)setDetached:(ARTProtocolMessage *)message {
+    if (self.state == ARTRealtimeChannelFailed) {
+        return;
+    }
     self.attachSerial = nil;
     
-    ARTStatus *reason = [ARTStatus state:ARTStateNotAttached info:message.error];
+    ARTStatus *reason = [ARTStatus state:ARTStateNotAttached info:[ARTErrorInfo createWithCode:0 message:@"channel has detached"]];
     [self detachChannel:reason];
     [_detachedEventEmitter emit:[NSNull null] with:nil];
 }
@@ -422,13 +456,16 @@
 }
 
 - (void)onSync:(ARTProtocolMessage *)message {
-    self.presenceMap.syncSerial = message.connectionSerial;
+    self.presenceMap.syncMsgSerial = message.msgSerial;
+    self.presenceMap.syncChannelSerial = message.channelSerial;
 
     if (message.action == ARTProtocolMessageSync)
         [self.logger info:@"ARTRealtime Sync message received"];
 
     for (int i=0; i<[message.presence count]; i++) {
-        [self.presenceMap put:[message.presence objectAtIndex:i]];
+        ARTPresenceMessage *presence = [message.presence objectAtIndex:i];
+        [self.presenceMap put:presence];
+        [self broadcastPresence:presence];
     }
 
     if ([self isLastChannelSerial:message.channelSerial]) {
@@ -459,6 +496,10 @@
         case ARTRealtimeChannelAttached:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"already attached"];
             if (callback) callback(nil);
+            return;
+        case ARTRealtimeChannelFailed:
+            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"can't attach when in a failed state"];
+            if (callback) callback([ARTErrorInfo createWithCode:90000 message:@"can't attach when in a failed state"]);
             return;
         default:
             break;
@@ -504,6 +545,10 @@
         case ARTRealtimeChannelDetached:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"already detached"];
             if (callback) callback(nil);
+            return;
+        case ARTRealtimeChannelFailed:
+            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"can't detach when in a failed state"];
+            if (callback) callback([ARTErrorInfo createWithCode:90000 message:@"can't detach when in a failed state"]);
             return;
         default:
             break;

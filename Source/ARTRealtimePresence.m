@@ -55,15 +55,13 @@
 - (void)get:(ARTRealtimePresenceQuery *)query callback:(void (^)(NSArray<ARTPresenceMessage *> *, ARTErrorInfo *))callback {
     [self.channel throwOnDisconnectedOrFailed];
     [self.channel attach:^(ARTErrorInfo *error) {
-        if (query.waitForSync) {
+        if (error) {
+            callback(nil, error);
+        } else if (query.waitForSync) {
             [self.channel.presenceMap onceSyncEnds:^(NSArray<ARTPresenceMessage *> *members) {
                 callback(members, nil);
             }];
-        }
-        else if (error) {
-            callback(nil, error);
-        }
-        else {
+        } else {
             callback(self.channel.presenceMap.members.allValues, nil);
         }
     }];
@@ -164,12 +162,28 @@
 }
 
 - (ARTEventListener<ARTPresenceMessage *> *)subscribe:(void (^)(ARTPresenceMessage * _Nonnull))callback {
-    [self.channel attach];
-    return [self.channel.presenceEventEmitter on:callback];
+    return [self subscribeWithAttachCallback:nil callback:callback];
+}
+
+- (ARTEventListener<ARTPresenceMessage *> *)subscribeWithAttachCallback:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTPresenceMessage * _Nonnull))cb {
+    if (self.channel.state == ARTRealtimeChannelFailed) {
+        if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
+        return nil;
+    }
+    [self.channel attach:onAttach];
+    return [self.channel.presenceEventEmitter on:cb];
 }
 
 - (ARTEventListener<ARTPresenceMessage *> *)subscribe:(ARTPresenceAction)action callback:(void (^)(ARTPresenceMessage * _Nonnull))cb {
-    [self.channel attach];
+    return [self subscribe:action onAttach:nil callback:cb];
+}
+
+- (ARTEventListener<ARTPresenceMessage *> *)subscribe:(ARTPresenceAction)action onAttach:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTPresenceMessage * _Nonnull))cb {
+    if (self.channel.state == ARTRealtimeChannelFailed) {
+        if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
+        return nil;
+    }
+    [self.channel attach:onAttach];
     return [self.channel.presenceEventEmitter on:[NSNumber numberWithUnsignedInteger:action] call:cb];
 }
 
