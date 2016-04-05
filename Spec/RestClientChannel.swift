@@ -243,6 +243,7 @@ class RestClientChannel: QuickSpec {
             }
         }
 
+        // RSL4
         describe("message encoding") {
 
             struct TestCase {
@@ -457,5 +458,77 @@ class RestClientChannel: QuickSpec {
                 }
             }
         }
+
+        // RSL6
+        describe("message decoding") {
+
+            // RSL6b
+            it("should deliver with a binary payload when the payload was successfully decoded but it could not be decrypted") {
+                let options = AblyTests.commonAppSetup()
+                let clientEncrypted = ARTRest(options: options)
+
+                let channelOptions = ARTChannelOptions(cipher: ["key":ARTCrypto.generateRandomKey()])
+                let channelEncrypted = clientEncrypted.channels.get("test", options: channelOptions)
+
+                let expectedMessage = ["something":1]
+
+                waitUntil(timeout: testTimeout) { done in
+                    channelEncrypted.publish(nil, data: expectedMessage) { error in
+                        done()
+                    }
+                }
+
+                let client = ARTRest(options: options)
+                let channel = client.channels.get("test")
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.history { result, error in
+                        let message = (result!.items as! [ARTMessage])[0]
+                        expect(message.data is NSData).to(beTrue())
+                        expect(message.encoding).to(equal("json/utf-8/cipher+aes-256-cbc"))
+                        done()
+                    }
+                }
+            }
+
+            // RSL6b
+            it("should deliver with encoding attribute set indicating the residual encoding and error should be emitted") {
+                let options = AblyTests.commonAppSetup()
+                options.logHandler = ARTLog(capturingOutput: true)
+                let client = ARTRest(options: options)
+                let channelOptions = ARTChannelOptions(cipher: ["key":ARTCrypto.generateRandomKey()])
+                let channel = client.channels.get("test", options: channelOptions)
+                client.httpExecutor = mockExecutor
+
+                let expectedMessage = ["something":1]
+                let expectedData = try! NSJSONSerialization.dataWithJSONObject(expectedMessage, options: NSJSONWritingOptions(rawValue: 0))
+
+                mockExecutor.beforeProcessingDataResponse = { data in
+                    let dataStr = String(data: data!, encoding: NSUTF8StringEncoding)!
+                    return dataStr.replace("json/utf-8", withString: "invalid").dataUsingEncoding(NSUTF8StringEncoding)!
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.publish(nil, data: expectedMessage) { error in
+                        done()
+                    }
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.history { result, error in
+                        let message = (result!.items as! [ARTMessage])[0]
+                        expect(message.data as? NSData).to(equal(expectedData))
+                        expect(message.encoding).to(equal("invalid"))
+
+                        let logs = options.logHandler.captured
+                        let line = logs.reduce("") { $0 + "; " + $1.toString() } //Reduce in one line
+                        expect(line).to(contain("ERROR: Failed to decode data: unknown encoding: 'invalid'"))
+                        done()
+                    }
+                }
+            }
+
+        }
+
     }
 }

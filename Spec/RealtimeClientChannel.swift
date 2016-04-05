@@ -1223,7 +1223,6 @@ class RealtimeClientChannel: QuickSpec {
                             }
 
                             waitUntil(timeout: testTimeout) { done in
-                                let logTime = NSDate()
                                 var callbacks = 2
                                 channel.subscribe(testMessage.encoded.name) { message in
                                     expect(message.data as? String).to(equal(testMessage.encrypted.data))
@@ -1289,8 +1288,6 @@ class RealtimeClientChannel: QuickSpec {
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            let logTime = NSDate()
-
                             channel.subscribe { message in
                                 // Last decoding failed: NSData -> JSON object, so...
                                 expect(message.data as? NSData).to(equal(expectedData))

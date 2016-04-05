@@ -474,13 +474,20 @@ class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
     var requests: [NSMutableURLRequest] = []
     var responses: [NSHTTPURLResponse] = []
 
+    var beforeProcessingDataResponse: Optional<(NSData?)->(NSData)> = nil
+
     func executeRequest(request: NSMutableURLRequest, completion callback: ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?) {
         self.requests.append(request)
         self.executor.executeRequest(request, completion: { response, data, error in
             if let httpResponse = response {
                 self.responses.append(httpResponse)
             }
-            callback?(response, data, error)
+            if let performEvent = self.beforeProcessingDataResponse {
+                callback?(response, performEvent(data), error)
+            }
+            else {
+                callback?(response, data, error)
+            }
         })
     }
 }
@@ -649,6 +656,14 @@ extension NSRegularExpression {
         let regex = try! NSRegularExpression(pattern: pattern, options: options)
         let range = NSMakeRange(0, value.lengthOfBytesUsingEncoding(NSUTF8StringEncoding))
         return regex.rangeOfFirstMatchInString(value, options: [], range: range).location != NSNotFound
+    }
+
+}
+
+extension String {
+
+    func replace(value: String, withString string: String) -> String {
+        return self.stringByReplacingOccurrencesOfString(value, withString: string, options: NSStringCompareOptions.LiteralSearch, range: nil)
     }
 
 }
