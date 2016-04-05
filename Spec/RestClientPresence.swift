@@ -253,6 +253,83 @@ class RestClientPresence: QuickSpec {
 
             }
 
+            // RSP4
+            context("history") {
+
+                // RSP4b
+                context("query argument") {
+
+                    // RSP4b1
+                    it("start and end should filter members between those two times") {
+                        let options = AblyTests.commonAppSetup()
+                        let client = ARTRest(options: options)
+                        let channel = client.channels.get("test")
+
+                        var disposable = [ARTRealtime]()
+                        defer {
+                            for clientItem in disposable {
+                                clientItem.close()
+                            }
+                        }
+
+                        let query = ARTDataQuery()
+
+                        waitUntil(timeout: testTimeout) { done in
+                            disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 25, data:nil, options: options) {
+                                done()
+                            }
+                        }
+
+                        query.start = NSDate()
+
+                        waitUntil(timeout: testTimeout) { done in
+                            disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 3, data:nil, options: options) {
+                                done()
+                            }
+                        }
+
+                        query.end = NSDate()
+
+                        waitUntil(timeout: testTimeout) { done in
+                            disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 10, data:nil, options: options) {
+                                done()
+                            }
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            try! channel.presence.history(query) { membersPage, error in
+                                expect(error).to(beNil())
+                                expect(membersPage!.items).to(haveCount(3))
+                                done()
+                            }
+                        }
+                    }
+
+                    // RSP4b1
+                    it("start must be equal to or less than end and is unaffected by the request direction") {
+                        let client = ARTRest(options: AblyTests.commonAppSetup())
+                        let channel = client.channels.get("test")
+
+                        let query = ARTDataQuery()
+                        query.direction = .Backwards
+                        query.end = NSDate()
+                        query.start = query.end!.dateByAddingTimeInterval(10.0)
+
+                        expect { try channel.presence.history(query) { _, _ in } }.to(throwError { (error: ErrorType) in
+                            expect(error._code).to(equal(ARTDataQueryError.TimestampRange.rawValue))
+                        })
+
+                        query.direction = .Forwards
+
+                        expect { try channel.presence.history(query) { _, _ in } }.to(throwError { (error: ErrorType) in
+                            expect(error._code).to(equal(ARTDataQueryError.TimestampRange.rawValue))
+                        })
+                    }
+
+                }
+
+            }
+
         }
     }
 }
