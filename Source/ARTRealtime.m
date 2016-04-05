@@ -221,6 +221,20 @@
                 _transport.delegate = self;
                 [_transport connect];
             }
+
+            if (previousState == ARTRealtimeDisconnected) {
+                __GENERIC(NSArray, ARTQueuedMessage *) *pending = self.pendingMessages;
+                _pendingMessages = [[NSMutableArray alloc] init];
+                for (ARTQueuedMessage *queued in pending) {
+                    [self send:queued.msg callback:^(ARTStatus *__art_nonnull status) {
+                        for (id cb in queued.cbs) {
+                            ((void(^)(ARTStatus *__art_nonnull))cb)(status);
+                        }
+                    }];
+                }
+
+            }
+
             break;
         case ARTRealtimeConnected:
             [self cancelSuspendTimer];
