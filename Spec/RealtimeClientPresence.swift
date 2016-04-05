@@ -994,6 +994,51 @@ class RealtimeClientPresence: QuickSpec {
 
             }
 
+            // RTP8
+            context("enter") {
+
+                // RTP8d
+                it("implicitly attaches the Channel") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Initialized))
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enter("online") { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
+                    }
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+                }
+
+                // RTP8d
+                it("should result in an error if the channel is in the FAILED state") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    channel.onError(AblyTests.newErrorProtocolMessage())
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enter("online") { error in
+                            expect(error!.message).to(contain("invalid channel state"))
+                            done()
+                        }
+                    }
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
+                }
+
+            }
+
             // RTP15e
             let cases: [String:(ARTRealtimePresence, Optional<(ARTErrorInfo?)->Void>)->()] = [
                 "enterClient": { $0.enterClient("john", data: nil, callback: $1) },
