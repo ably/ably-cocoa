@@ -42,7 +42,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (void)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback;
 
-- (void)calculateAuthorization:(ARTAuthMethod)method completion:(void (^)(NSString *__art_nonnull authorization, NSError *__art_nullable error))callback;
+- (void)prepareAuthorisationHeader:(ARTAuthMethod)method completion:(void (^)(NSString *__art_nonnull authorization, NSError *__art_nullable error))callback;
 
 - (id<ARTCancellable>)internetIsUp:(void (^)(bool isUp))cb;
 

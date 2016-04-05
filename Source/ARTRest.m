@@ -108,7 +108,7 @@
 }
 
 - (void)executeRequestWithAuthentication:(NSMutableURLRequest *)request withMethod:(ARTAuthMethod)method force:(BOOL)force completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
-    [self calculateAuthorization:method force:force completion:^(NSString *authorization, NSError *error) {
+    [self prepareAuthorisationHeader:method force:force completion:^(NSString *authorization, NSError *error) {
         if (error && callback) {
             callback(nil, nil, error);
         } else {
@@ -142,11 +142,11 @@
     }];
 }
 
-- (void)calculateAuthorization:(ARTAuthMethod)method completion:(void (^)(NSString *authorization, NSError *error))callback {
-    [self calculateAuthorization:method force:NO completion:callback];
+- (void)prepareAuthorisationHeader:(ARTAuthMethod)method completion:(void (^)(NSString *authorization, NSError *error))callback {
+    [self prepareAuthorisationHeader:method force:NO completion:callback];
 }
 
-- (void)calculateAuthorization:(ARTAuthMethod)method force:(BOOL)force completion:(void (^)(NSString *authorization, NSError *error))callback {
+- (void)prepareAuthorisationHeader:(ARTAuthMethod)method force:(BOOL)force completion:(void (^)(NSString *authorization, NSError *error))callback {
     [self.logger debug:__FILE__ line:__LINE__ message:@"calculating authorization %lu", (unsigned long)method];
     // FIXME: use encoder and should be managed on ARTAuth
     if (method == ARTAuthMethodBasic) {

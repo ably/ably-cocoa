@@ -464,8 +464,7 @@
 
     NSDictionary *error = [input valueForKey:@"error"];
     if (error) {
-        message.error = [[ARTErrorInfo alloc] init];
-        [message.error setCode:[[error artNumber:@"code"] intValue] status:[[error artNumber:@"statusCode"] intValue] message:[error artString:@"message"]];
+        message.error = [ARTErrorInfo createWithCode:[[error artNumber:@"code"] intValue] status:[[error artNumber:@"statusCode"] intValue] message:[error artString:@"message"]];
     }
 
     return message;

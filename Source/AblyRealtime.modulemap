@@ -6,6 +6,7 @@ framework module AblyRealtime {
 
     explicit module Private {
         header "ARTAuth+Private.h"
+        header "ARTAuthOptions+Private.h"
         header "ARTBaseMessage+Private.h"
         header "ARTChannel+Private.h"
         header "ARTChannels+Private.h"

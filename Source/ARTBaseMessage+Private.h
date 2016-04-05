@@ -6,14 +6,6 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-//
-//  ARTBaseMessage.h
-//  ably-ios
-//
-//  Created by Jason Choy on 08/12/2014.
-//  Copyright (c) 2014 Ably. All rights reserved.
-//
-
 #import "CompatibilityMacros.h"
 #import "ARTBaseMessage.h"
 #import "ARTDataEncoder.h"

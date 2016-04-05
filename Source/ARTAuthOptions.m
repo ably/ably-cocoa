@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTAuthOptions.h"
+#import "ARTAuthOptions+Private.h"
 
 #import "ARTTokenDetails.h"
 
@@ -40,6 +40,15 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
     self = [super init];
     if (self) {
         [self setToken:token];
+        return [self initDefaults];
+    }
+    return self;
+}
+
+- (instancetype)initWithTokenDetails:(ARTTokenDetails *)tokenDetails {
+    self = [super init];
+    if (self) {
+        _tokenDetails = tokenDetails;
         return [self initDefaults];
     }
     return self;
