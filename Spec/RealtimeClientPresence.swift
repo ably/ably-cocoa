@@ -868,7 +868,7 @@ class RealtimeClientPresence: QuickSpec {
                     defer { client.close() }
                     let channel = client.channels.get("test")
 
-                    channel.attach()
+                                        channel.attach()
                     channel.detach()
 
                     waitUntil(timeout: testTimeout) { done in
@@ -926,6 +926,70 @@ class RealtimeClientPresence: QuickSpec {
                             done()
                         }
                     }
+                }
+            }
+
+            // RTP10
+            context("leave") {
+
+                // RTP10b
+                it("optionally a callback can be provided that is called for success") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enter("online") { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.leave("offline") { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+                }
+
+                // RTP10b
+                it("optionally a callback can be provided that is called for failure") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+                    let client = AblyTests.newRealtime(options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                   waitUntil(timeout: testTimeout) { done in
+                       channel.presence.enter("online") { error in
+                           expect(error).to(beNil())
+                           done()
+                       }
+                   }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let sentError = ARTErrorInfo.createWithCode(0, message: "test error")
+                        let transport = client.transport as! TestProxyTransport
+                        transport.replaceAcksWithNacks(sentError) { doneReplacing in
+                            channel.presence.leave("offline") { error in
+                                expect(error).to(beIdenticalTo(sentError))
+                                doneReplacing()
+                                done()
+                            }
+                        }
+                    }
+                }
+
+                it("should raise an exception if client is not present") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+                    expect(channel.presence.leave("offline")).to(raiseException())
                 }
 
             }
