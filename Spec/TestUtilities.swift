@@ -479,6 +479,23 @@ func extractBodyAsJSON(request: NSMutableURLRequest?) -> Result<NSDictionary> {
     return Result.Success(Box(httpBody))
 }
 
+func extractBodyAsMessages(request: NSMutableURLRequest?) -> Result<[NSDictionary]> {
+    guard let request = request
+        else { return Result(error: "No request found") }
+
+    guard let bodyData = request.HTTPBody
+        else { return Result(error: "No HTTPBody") }
+
+    guard let json = try? NSJSONSerialization.JSONObjectWithData(bodyData, options: .MutableLeaves)
+        else { return Result(error: "Invalid json") }
+
+    guard let httpBody = json as? NSArray
+        else { return Result(error: "HTTPBody has invalid format") }
+
+    return Result.Success(Box(httpBody.map{$0 as! NSDictionary}))
+}
+
+
 /// Records each request and response for test purpose.
 @objc
 class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
