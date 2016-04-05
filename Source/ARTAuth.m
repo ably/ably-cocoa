@@ -180,22 +180,28 @@
             }
         }];
     } else {
-        void (^tokenRequestFactory)(ARTTokenParams *, void(^)(ARTTokenDetails *__art_nullable, NSError *__art_nullable)) = mergedOptions.authCallback? : ^(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *tokenDetails, NSError *error)) {
-            // Create a TokenRequest and execute it
-            [self createTokenRequest:currentTokenParams options:mergedOptions callback:^(ARTTokenRequest *tokenRequest, NSError *error) {
-                if (error) {
-                    callback(nil, error);
-                } else {
-                    [self executeTokenRequest:tokenRequest callback:callback];
-                }
-            }];
+        void (^tokenDetailsFactory)(ARTTokenParams *, void(^)(ARTTokenDetails *__art_nullable, NSError *__art_nullable));
+        if (mergedOptions.authCallback) {
+            tokenDetailsFactory = ^(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *__art_nullable, NSError *__art_nullable)) {
+                mergedOptions.authCallback(tokenParams, ^(id<ARTTokenDetailsCompatible> tokenDetailsCompat, NSError *error) {
+                    [tokenDetailsCompat toTokenDetails:self callback:callback];
+                });
+            };
+            [self.logger debug:@"ARTAuth: using authCallback"];
+        } else {
+            tokenDetailsFactory = ^(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *__art_nullable, NSError *__art_nullable)) {
+                // Create a TokenRequest and execute it
+                [self createTokenRequest:currentTokenParams options:mergedOptions callback:^(ARTTokenRequest *tokenRequest, NSError *error) {
+                    if (error) {
+                        callback(nil, error);
+                    } else {
+                        [self executeTokenRequest:tokenRequest callback:callback];
+                    }
+                }];
+            };
         };
 
-        if (tokenRequestFactory == mergedOptions.authCallback) {
-            [self.logger debug:@"ARTAuth: using authCallback"];
-        }
-
-        tokenRequestFactory(currentTokenParams, checkerCallback);
+        tokenDetailsFactory(currentTokenParams, checkerCallback);
     }
 }
 
@@ -357,6 +363,14 @@
     else {
         return nil;
     }
+}
+
+@end
+
+@implementation NSString (ARTTokenDetailsCompatible)
+
+- (void)toTokenDetails:(ARTAuth *)auth callback:(void (^)(ARTTokenDetails * _Nullable, NSError * _Nullable))callback {
+    callback([[ARTTokenDetails alloc] initWithToken:self], nil);
 }
 
 @end

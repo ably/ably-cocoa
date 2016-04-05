@@ -7,8 +7,8 @@
 //
 
 #import "ARTTokenRequest.h"
-
 #import "ARTTokenParams.h"
+#import "ARTAuth+Private.h"
 
 @implementation ARTTokenRequest
 
@@ -32,6 +32,14 @@
 - (NSString *)description {
     return [NSString stringWithFormat: @"ARTTokenRequest: keyName=%@ clientId=%@ nonce=%@ mac=%@ ttl=%f capability=%@ timestamp=%@",
             self.keyName, self.clientId, self.nonce, self.mac, self.ttl, self.capability, self.timestamp];
+}
+
+@end
+
+@implementation ARTTokenRequest (ARTTokenDetailsCompatible)
+
+- (void)toTokenDetails:(ARTAuth *)auth callback:(void (^)(ARTTokenDetails * _Nullable, NSError * _Nullable))callback {
+    [auth executeTokenRequest:self callback:callback];
 }
 
 @end

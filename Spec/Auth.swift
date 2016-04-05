@@ -779,14 +779,13 @@ class Auth : QuickSpec {
             // RSA8d
             context("When authCallback option is set, it will invoke the callback") {
 
-                pending("with a token string") {
+                it("with a token string") {
                     let options = AblyTests.clientOptions()
                     let expectedTokenParams = ARTTokenParams()
 
                     options.authCallback = { tokenParams, completion in
                         expect(tokenParams).to(beIdenticalTo(expectedTokenParams))
-                        // TODO: call the completion with a token string
-                        //completion("token_string", nil)
+                        completion("token_string", nil)
                     }
 
                     waitUntil(timeout: testTimeout) { done in
@@ -816,20 +815,28 @@ class Auth : QuickSpec {
                     }
                 }
 
-                pending("with a TokenRequest") {
-                    let options = AblyTests.clientOptions()
+                it("with a TokenRequest") {
+                    let options = AblyTests.commonAppSetup()
                     let expectedTokenParams = ARTTokenParams()
+                    expectedTokenParams.clientId = "foo"
+                    var rest: ARTRest!
 
                     options.authCallback = { tokenParams, completion in
                         expect(tokenParams).to(beIdenticalTo(expectedTokenParams))
-                        // TODO: call the completion with a TokenRequest
-                        //completion(ARTTokenRequest(), nil)
+                        rest.auth.createTokenRequest(tokenParams, options: options) { tokenRequest, error in
+                            completion(tokenRequest, error)
+                        }
                     }
 
+                    rest = ARTRest(options: options)
+
                     waitUntil(timeout: testTimeout) { done in
-                        ARTRest(options: options).auth.requestToken(expectedTokenParams, withOptions: nil) { tokenDetails, error in
+                        rest.auth.requestToken(expectedTokenParams, withOptions: nil) { tokenDetails, error in
                             expect(error).to(beNil())
-                            expect(tokenDetails!.token).to(equal("token_from_request"))
+                            guard let tokenDetails = tokenDetails else {
+                                fail("tokenDetails is nil"); done(); return
+                            }
+                            expect(tokenDetails.clientId).to(equal(expectedTokenParams.clientId))
                             done()
                         }
                     }
@@ -1379,7 +1386,7 @@ class Auth : QuickSpec {
                     let authOptions = ARTAuthOptions()
                     authOptions.authCallback = { tokenParams, completion in
                         authCallbackHasBeenInvoked = true
-                        completion(nil, nil)
+                        completion(ARTTokenDetails(token: "token"), nil)
                     }
                     authOptions.useTokenAuth = true
                     authOptions.queryTime = true
@@ -1389,7 +1396,9 @@ class Auth : QuickSpec {
                             expect(authCallbackHasBeenInvoked).to(beTrue())
 
                             authCallbackHasBeenInvoked = false
-                            auth.authorise(nil, options: nil) { tokenDetails, error in
+                            let options = ARTAuthOptions()
+                            options.force = true
+                            auth.authorise(nil, options: options) { tokenDetails, error in
                                 expect(authCallbackHasBeenInvoked).to(beTrue())
                                 expect(auth.options.useTokenAuth).to(beTrue())
                                 expect(auth.options.queryTime).to(beTrue())

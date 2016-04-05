@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "ARTTypes.h"
+#import "ARTAuthOptions.h"
 
 ART_ASSUME_NONNULL_BEGIN
 
@@ -45,6 +46,9 @@ ART_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithToken:(NSString *)token;
 - (instancetype)initWithToken:(NSString *)token expires:(art_nullable NSDate *)expires issued:(art_nullable  NSDate *)issued capability:(art_nullable  NSString *)capability clientId:(art_nullable NSString *)clientId;
 
+@end
+
+@interface ARTTokenDetails (ARTTokenDetailsCompatible) <ARTTokenDetailsCompatible>
 @end
 
 ART_ASSUME_NONNULL_END
