@@ -287,12 +287,15 @@ class RealtimeClientPresence: QuickSpec {
                     let channel2 = client2.channels.get("test")
 
                     waitUntil(timeout: testTimeout) { done in
-                        channel1.presence.subscribe(.Enter) { member in
-                            expect(member.clientId).to(equal(options.clientId))
-                            expect(member.data as? NSObject).to(equal("online"))
-                            done()
+                        channel1.attach { err in 
+                            expect(err).to(beNil())
+                            channel1.presence.subscribe(.Enter) { member in
+                                expect(member.clientId).to(equal(options.clientId))
+                                expect(member.data as? NSObject).to(equal("online"))
+                                done()
+                            }
+                            channel2.presence.enter("online")
                         }
-                        channel2.presence.enter("online")
                     }
                 }
 
