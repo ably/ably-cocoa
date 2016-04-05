@@ -89,6 +89,7 @@
         
         _rest = [[ARTRest alloc] initWithOptions:options];
         _eventEmitter = [[ARTEventEmitter alloc] init];
+        _reconnectedEventEmitter = [[ARTEventEmitter alloc] init];
         _channels = [[ARTRealtimeChannels alloc] initWithRealtime:self];
         _transport = nil;
         _transportClass = [ARTWebSocketTransport class];
@@ -233,6 +234,7 @@
                     }];
                 }
 
+                [_reconnectedEventEmitter emit:[NSNull null] with:nil];
             }
 
             break;

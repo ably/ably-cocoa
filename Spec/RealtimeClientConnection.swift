@@ -1736,6 +1736,68 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
+                // RTN19b
+                it("should resent the ATTACH message if there are any pending channels") {
+                    let options = AblyTests.commonAppSetup()
+                    options.disconnectedRetryTimeout = 0.1
+                    let client = AblyTests.newRealtime(options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+                    let transport = client.transport as! TestProxyTransport
+
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        transport.ignoreSends = true
+                        channel.attach() { error in
+                            expect(error).to(beNil())
+                            let newTransport = client.transport as! TestProxyTransport
+                            expect(transport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
+                            expect(newTransport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
+                            expect(transport.protocolMessagesSent.filter{ $0.action == .Attach }).to(haveCount(0))
+                            expect(transport.protocolMessagesSentIgnored.filter{ $0.action == .Attach }).to(haveCount(1))
+                            expect(newTransport.protocolMessagesSent.filter{ $0.action == .Attach }).to(haveCount(1))
+                            done()
+                        }
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
+                        transport.ignoreSends = false
+                        client.onDisconnected()
+                    }
+                }
+
+                // RTN19b
+                it("should resent the DETACH message if there are any pending channels") {
+                    let options = AblyTests.commonAppSetup()
+                    options.disconnectedRetryTimeout = 0.1
+                    let client = AblyTests.newRealtime(options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+                    let transport = client.transport as! TestProxyTransport
+
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { _ in done() }
+                    }
+
+                    waitUntil(timeout: testTimeout * 1000) { done in
+                        transport.ignoreSends = true
+                        channel.detach() { error in
+                            expect(error).to(beNil())
+                            let newTransport = client.transport as! TestProxyTransport
+                            expect(transport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
+                            expect(newTransport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
+                            expect(transport.protocolMessagesSent.filter{ $0.action == .Detach }).to(haveCount(0))
+                            expect(transport.protocolMessagesSentIgnored.filter{ $0.action == .Detach }).to(haveCount(1))
+                            expect(newTransport.protocolMessagesSent.filter{ $0.action == .Detach }).to(haveCount(1))
+                            done()
+                        }
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Detaching))
+                        transport.ignoreSends = false
+                        client.onDisconnected()
+                    }
+                }
+
             }
 
         }
