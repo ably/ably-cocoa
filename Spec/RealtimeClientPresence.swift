@@ -761,6 +761,64 @@ class RealtimeClientPresence: QuickSpec {
 
             }
 
+            // RTP2
+            pending("should be used a PresenceMap to maintain a list of members") {
+                let options = AblyTests.commonAppSetup()
+                var clientSecondary: ARTRealtime!
+                defer { clientSecondary.close() }
+
+                waitUntil(timeout: testTimeout) { done in
+                    clientSecondary = AblyTests.addMembersSequentiallyToChannel("test", members: 100, options: options) {
+                        done()
+                    }.first
+                }
+
+                let client = AblyTests.newRealtime(options)
+                defer { client.close() }
+                let channel = client.channels.get("test")
+
+                var user50LeaveTimestamp: NSDate?
+                channel.presence.subscribe(.Leave) { member in
+                    expect(member.clientId).to(equal("user50"))
+                    user50LeaveTimestamp = member.timestamp
+                }
+
+                var user50PresentTimestamp: NSDate?
+                channel.presenceMap.testSuite_getArgumentFrom("put:", atIndex: 0) { arg0 in
+                    let member = arg0 as! ARTPresenceMessage
+                    if member.clientId == "user50" && member.action == .Present {
+                        user50PresentTimestamp = member.timestamp
+                    }
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.attach() { _ in
+                        let transport = client.transport as! TestProxyTransport
+                        transport.beforeProcessingReceivedMessage = { protocolMessage in
+                            // A leave event for a member can arrive before that member is later registered as present as part of the initial SYNC operation.
+                            if protocolMessage.action == .Sync {
+                                let msg = AblyTests.newPresenceProtocolMessage("test", action: .Leave, clientId: "user50")
+                                // Ensure it happens "later" than the PRESENT message.
+                                msg.timestamp = NSDate().dateByAddingTimeInterval(1.0)
+                                client.onChannelMessage(msg)
+                                done()
+                            }
+                        }
+                    }
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.presence.get { members, error in
+                        expect(error).to(beNil())
+                        expect(members).to(haveCount(99))
+                        expect(members!.filter{ $0.clientId == "user50" }).to(haveCount(0))
+                        done()
+                    }
+                }
+
+                expect(user50LeaveTimestamp).to(beGreaterThan(user50PresentTimestamp))
+            }
+
             // RTP15e
             let cases: [String:(ARTRealtimePresence, Optional<(ARTErrorInfo?)->Void>)->()] = [
                 "enterClient": { $0.enterClient("john", data: nil, callback: $1) },

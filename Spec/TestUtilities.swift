@@ -136,6 +136,19 @@ class AblyTests {
         return protocolMessage
     }
 
+    class func newPresenceProtocolMessage(channel: String, action: ARTPresenceAction, clientId: String) -> ARTProtocolMessage {
+        let protocolMessage = ARTProtocolMessage()
+        protocolMessage.action = .Presence
+        protocolMessage.channel = channel
+        protocolMessage.timestamp = NSDate()
+        let presenceMessage = ARTPresenceMessage()
+        presenceMessage.action = action
+        presenceMessage.clientId = clientId
+        presenceMessage.timestamp = NSDate()
+        protocolMessage.presence = [presenceMessage]
+        return protocolMessage
+    }
+
     class func newRealtime(options: ARTClientOptions) -> ARTRealtime {
         options.autoConnect = false
         let realtime = ARTRealtime(options: options)
@@ -584,6 +597,29 @@ extension JSON {
         return object as? NSDictionary
     }
 
+}
+
+
+extension NSDate: Comparable { }
+
+public func ==(lhs: NSDate, rhs: NSDate) -> Bool {
+    return (lhs.compare(rhs) == .OrderedSame)
+}
+
+public func <(lhs: NSDate, rhs: NSDate) -> Bool {
+    return (lhs.compare(rhs) == .OrderedAscending)
+}
+
+public func >(lhs: NSDate, rhs: NSDate) -> Bool {
+    return (lhs.compare(rhs) == .OrderedDescending)
+}
+
+public func <=(lhs: NSDate, rhs: NSDate) -> Bool {
+    return (lhs < rhs || lhs == rhs)
+}
+
+public func >=(lhs: NSDate, rhs: NSDate) -> Bool {
+    return (lhs > rhs || lhs == rhs)
 }
 
 extension NSRegularExpression {
