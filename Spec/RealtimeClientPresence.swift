@@ -1039,6 +1039,106 @@ class RealtimeClientPresence: QuickSpec {
 
             }
 
+            // RTP10
+            context("leave") {
+
+                // RTP10e
+                it("should result in an error immediately if the client is anonymous") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.leave(nil) { error in
+                            expect(error!.message).to(contain("attempted to publish presence message without clientId"))
+                            done()
+                        }
+                    }
+                }
+
+                // RTP10e
+                it("should result in an error immediately if the channel is DETACHED") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enter(nil) { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    channel.detach()
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.leave(nil) { error in
+                            expect(error!.message).to(contain("invalid channel state"))
+                            done()
+                        }
+                    }
+                }
+
+                // RTP10e
+                it("should result in an error immediately if the channel is FAILED") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enter(nil) { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    channel.onError(AblyTests.newErrorProtocolMessage())
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.leave(nil) { error in
+                            expect(error!.message).to(contain("invalid channel state"))
+                            done()
+                        }
+                    }
+                }
+
+                // RTP10e
+                it("should result in an error if the client does not have required presence permission") {
+                    let options = AblyTests.clientOptions()
+                    options.token = getTestToken(capability: "{ \"cannotpresence:other\":[\"publish\"] }")
+                    options.clientId = "john"
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    let channel = client.channels.get("cannotpresence")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.leaveClient("other", data: nil) { error in
+                            expect(error!.message).to(contain("Channel denied access based on given capability"))
+                            done()
+                        }
+                    }
+                }
+
+                // RTP10e
+                it("should result in an error if Ably service determines that the client is unidentified") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.leave(nil) { error in
+                            expect(error!.message).to(contain("presence message without clientId"))
+                            done()
+                        }
+                    }
+                }
+
+            }
+
             // RTP15e
             let cases: [String:(ARTRealtimePresence, Optional<(ARTErrorInfo?)->Void>)->()] = [
                 "enterClient": { $0.enterClient("john", data: nil, callback: $1) },
