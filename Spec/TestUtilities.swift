@@ -497,32 +497,37 @@ func extractBodyAsMessages(request: NSMutableURLRequest?) -> Result<[NSDictionar
 
 
 /// Records each request and response for test purpose.
-@objc
 class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
-    // Who executes the request
-    private let executor = ARTHttp()
-    
+
+    var http: ARTHttp? = ARTHttp()
     var logger: ARTLog?
     
     var requests: [NSMutableURLRequest] = []
     var responses: [NSHTTPURLResponse] = []
 
+    var beforeRequest: Optional<(NSMutableURLRequest)->()> = nil
     var beforeProcessingDataResponse: Optional<(NSData?)->(NSData)> = nil
 
     func executeRequest(request: NSMutableURLRequest, completion callback: ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?) {
         self.requests.append(request)
-        self.executor.executeRequest(request, completion: { response, data, error in
-            if let httpResponse = response {
-                self.responses.append(httpResponse)
-            }
-            if let performEvent = self.beforeProcessingDataResponse {
-                callback?(response, performEvent(data), error)
-            }
-            else {
-                callback?(response, data, error)
-            }
-        })
+        if let performEvent = beforeRequest {
+            performEvent(request)
+        }
+        if let http = self.http {
+            http.executeRequest(request, completion: { response, data, error in
+                if let httpResponse = response {
+                    self.responses.append(httpResponse)
+                }
+                if let performEvent = self.beforeProcessingDataResponse {
+                    callback?(response, performEvent(data), error)
+                }
+                else {
+                    callback?(response, data, error)
+                }
+            })
+        }
     }
+
 }
 
 /// Records each message for test purpose.
