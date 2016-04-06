@@ -102,9 +102,22 @@
     
     if ([data isKindOfClass:[ARTMessage class]]) {
         ARTMessage *message = (ARTMessage *)data;
-        message.clientId = self.rest.auth.clientId;
+        if (message.clientId && self.rest.auth.clientId && ![message.clientId isEqualToString:self.rest.auth.clientId]) {
+            callback([ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
+            return;
+        }
+        else {
+            message.clientId = self.rest.auth.clientId;
+        }
         encodedMessage = [self.rest.defaultEncoder encodeMessage:message];
     } else if ([data isKindOfClass:[NSArray class]]) {
+        __GENERIC(NSArray, ARTMessage *) *messages = (NSArray *)data;
+        for (ARTMessage *message in messages) {
+            if (message.clientId && self.rest.auth.clientId && ![message.clientId isEqualToString:self.rest.auth.clientId]) {
+                callback([ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
+                return;
+            }
+        }
         encodedMessage = [self.rest.defaultEncoder encodeMessages:data];
     }
     
