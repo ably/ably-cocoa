@@ -320,34 +320,36 @@ class RestClientPresence: QuickSpec {
                         let query = ARTDataQuery()
 
                         waitUntil(timeout: testTimeout) { done in
-                            disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 25, data:nil, options: options) {
+                            disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 25, options: options) {
                                 done()
                             }
                         }
 
                         query.start = NSDate()
 
-                        delay(2.0) {
-                            waitUntil(timeout: testTimeout) { done in
-                                disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 3, data:nil, options: options) {
-                                    done()
-                                }
+                        waitUntil(timeout: testTimeout) { done in
+                            delay(1.5) { done() }
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 3, options: options) {
+                                done()
                             }
+                        }
 
-                            query.end = NSDate()
+                        query.end = NSDate()
 
-                            waitUntil(timeout: testTimeout) { done in
-                                disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 10, data:nil, options: options) {
-                                    done()
-                                }
+                        waitUntil(timeout: testTimeout) { done in
+                            disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 10, options: options) {
+                                done()
                             }
+                        }
 
-                            waitUntil(timeout: testTimeout) { done in
-                                try! channel.presence.history(query) { membersPage, error in
-                                    expect(error).to(beNil())
-                                    expect(membersPage!.items).to(haveCount(3))
-                                    done()
-                                }
+                        waitUntil(timeout: testTimeout) { done in
+                            try! channel.presence.history(query) { membersPage, error in
+                                expect(error).to(beNil())
+                                expect(membersPage!.items).to(haveCount(3))
+                                done()
                             }
                         }
                     }

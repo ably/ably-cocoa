@@ -427,15 +427,23 @@ class RealtimeClientPresence: QuickSpec {
                     let channel2 = client2.channels.get("test")
 
                     waitUntil(timeout: testTimeout) { done in
+                        let partlyDone = AblyTests.splitDone(2, done: done)
                         channel1.presence.subscribe(.Update) { member in
                             expect(member.action).to(equal(ARTPresenceAction.Update))
                             expect(member.clientId).to(equal("john"))
                             expect(member.data as? NSObject).to(equal("away"))
-                            done()
+                            partlyDone()
                         }
-                        channel2.presence.enterClient("john", data: "online")
-                        channel2.presence.updateClient("john", data: "away")
-                        channel2.presence.leaveClient("john", data: nil)
+                        channel2.presence.enterClient("john", data: "online") { error in
+                            expect(error).to(beNil())
+                            channel2.presence.updateClient("john", data: "away") { error in
+                                expect(error).to(beNil())
+                                channel2.presence.leaveClient("john", data: nil) { error in
+                                    expect(error).to(beNil())
+                                    partlyDone()
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -1218,12 +1226,14 @@ class RealtimeClientPresence: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         channel1.attach { error in
                             expect(error).to(beNil())
-                            channel1.presence.subscribe { member in
+                            let partlyDone = AblyTests.splitDone(2, done: done)
+                            channel1.presence.subscribe(.Enter) { member in
                                 expect(member.data as? NSObject).to(equal(expectedData))
-                                done()
+                                partlyDone()
                             }
                             channel2.presence.enter(expectedData) { error in
                                 expect(error).to(beNil())
+                                partlyDone()
                             }
                         }
                     }
@@ -1255,23 +1265,14 @@ class RealtimeClientPresence: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         channel1.attach { err in
                             expect(err).to(beNil())
-
-                            var waitingFor = 2
+                            let partlyDone = AblyTests.splitDone(2, done: done)
                             channel1.presence.subscribe(.Leave) { member in
                                 expect(member.data as? NSObject).to(equal(expectedData))
-                                
-                                waitingFor--
-                                if waitingFor == 0 {
-                                    done()
-                                }
+                                partlyDone()
                             }
                             channel2.presence.leave(nil) { error in
                                 expect(error).to(beNil())
-
-                                waitingFor--
-                                if waitingFor == 0 {
-                                    done()
-                                }
+                                partlyDone()
                             }
                         }
                     }

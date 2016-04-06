@@ -1223,7 +1223,7 @@ class RealtimeClientChannel: QuickSpec {
                             }
 
                             waitUntil(timeout: testTimeout) { done in
-                                var callbacks = 2
+                                let partlyDone = AblyTests.splitDone(2, done: done)
                                 channel.subscribe(testMessage.encoded.name) { message in
                                     expect(message.data as? String).to(equal(testMessage.encrypted.data))
 
@@ -1232,10 +1232,7 @@ class RealtimeClientChannel: QuickSpec {
 
                                     expect(line).to(contain("ERROR: Failed to decode data: unknown encoding: 'bad_encoding_type'"))
 
-                                    callbacks -= 1
-                                    if callbacks == 0 {
-                                        done()
-                                    }
+                                    partlyDone()
                                 }
 
                                 channel.on(.Error) { errorInfo in
@@ -1245,10 +1242,7 @@ class RealtimeClientChannel: QuickSpec {
                                     expect(errorInfo.message).to(contain("Failed to decode data: unknown encoding: 'bad_encoding_type'"))
                                     expect(errorInfo).to(beIdenticalTo(channel.errorReason))
 
-                                    callbacks -= 1
-                                    if callbacks == 0 {
-                                        done()
-                                    }
+                                    partlyDone()
                                 }
 
                                 channel.publish(testMessage.encoded.name, data: testMessage.encoded.data)
