@@ -44,3 +44,13 @@
 }
 
 @end
+
+@class ARTAuth;
+
+@implementation ARTTokenDetails (ARTTokenDetailsCompatible)
+
+- (void)toTokenDetails:(ARTAuth *)auth callback:(void (^)(ARTTokenDetails * _Nullable, NSError * _Nullable))callback {
+    callback(self, nil);
+}
+
+@end

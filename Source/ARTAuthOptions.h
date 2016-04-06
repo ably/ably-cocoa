@@ -10,6 +10,14 @@
 #import "ARTTypes.h"
 
 @class ARTTokenDetails;
+@class ARTAuth;
+
+@protocol ARTTokenDetailsCompatible <NSObject>
+- (void)toTokenDetails:(ARTAuth *__art_nonnull)auth callback:(void (^__art_nonnull)(ARTTokenDetails *__art_nullable, NSError *__art_nullable))callback;
+@end
+
+@interface NSString (ARTTokenDetailsCompatible) <ARTTokenDetailsCompatible>
+@end
 
 ART_ASSUME_NONNULL_BEGIN
 
@@ -35,7 +43,7 @@ ART_ASSUME_NONNULL_BEGIN
  
  This enables a client to obtain token requests from another entity, so tokens can be renewed without the client requiring access to keys.
  */
-@property (nonatomic, copy, art_nullable) void (^authCallback)(ARTTokenParams *, void(^)(ARTTokenDetails *__art_nullable, NSError *__art_nullable));
+@property (nonatomic, copy, art_nullable) void (^authCallback)(ARTTokenParams *, void(^)(id<ARTTokenDetailsCompatible> __art_nullable, NSError *__art_nullable));
 
 /**
  A URL to queryto obtain a signed token request.
