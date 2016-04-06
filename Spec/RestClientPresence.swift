@@ -91,7 +91,7 @@ class RestClientPresence: QuickSpec {
                 }
 
                 // RSP3a2
-                pending("clientId should filter members by the provided clientId") {
+                it("clientId should filter members by the provided clientId") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
@@ -106,7 +106,7 @@ class RestClientPresence: QuickSpec {
 
                     expect(realtimeChannel.presenceMap.members).toEventually(haveCount(3), timeout: testTimeout)
 
-                    let query = ARTRealtimePresenceQuery()
+                    let query = ARTPresenceQuery()
                     query.clientId = "john"
 
                     waitUntil(timeout: testTimeout) { done in
