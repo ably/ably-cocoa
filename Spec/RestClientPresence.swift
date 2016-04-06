@@ -110,7 +110,7 @@ class RestClientPresence: QuickSpec {
                     query.clientId = "john"
 
                     waitUntil(timeout: testTimeout) { done in
-                        channel.presence.get(query) { membersPage, error in
+                        try! channel.presence.get(query) { membersPage, error in
                             expect(error).to(beNil())
                             expect(membersPage!.items).to(haveCount(1))
                             let member = membersPage!.items[0] as! ARTPresenceMessage
