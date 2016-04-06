@@ -31,6 +31,21 @@
     return self;
 }
 
+- (NSMutableArray *)asQueryItems {
+    NSMutableArray *items = [NSMutableArray array];
+
+    if (self.clientId) {
+        [items addObject:[NSURLQueryItem queryItemWithName:@"clientId" value:self.clientId]];
+    }
+    if (self.connectionId) {
+        [items addObject:[NSURLQueryItem queryItemWithName:@"connectionId" value:self.connectionId]];
+    }
+
+    [items addObject:[NSURLQueryItem queryItemWithName:@"limit" value:[NSString stringWithFormat:@"%lu", (unsigned long)self.limit]]];
+
+    return items;
+}
+
 @end
 
 @interface ARTPresence () {

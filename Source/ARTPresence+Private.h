@@ -11,6 +11,12 @@
 
 #import "ARTPresence.h"
 
+@interface ARTPresenceQuery ()
+
+- (__GENERIC(NSMutableArray, NSURLQueryItem *) *)asQueryItems;
+
+@end
+
 @interface ARTPresence ()
 
 @property (readonly, getter=getChannel) ARTChannel *channel;

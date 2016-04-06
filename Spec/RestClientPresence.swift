@@ -252,7 +252,7 @@ class RestClientPresence: QuickSpec {
                 }
 
                 // RSP3a3
-                pending("connectionId should filter members by the provided connectionId") {
+                it("connectionId should filter members by the provided connectionId") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
@@ -283,7 +283,7 @@ class RestClientPresence: QuickSpec {
                     query.connectionId = disposable.last!.connection.id!
 
                     waitUntil(timeout: testTimeout) { done in
-                        channel.presence.get(query) { membersPage, error in
+                        try! channel.presence.get(query) { membersPage, error in
                             expect(error).to(beNil())
                             expect(membersPage!.items).to(haveCount(3))
                             expect(membersPage!.hasNext).to(beFalse())
@@ -327,25 +327,27 @@ class RestClientPresence: QuickSpec {
 
                         query.start = NSDate()
 
-                        waitUntil(timeout: testTimeout) { done in
-                            disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 3, data:nil, options: options) {
-                                done()
+                        delay(2.0) {
+                            waitUntil(timeout: testTimeout) { done in
+                                disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 3, data:nil, options: options) {
+                                    done()
+                                }
                             }
-                        }
 
-                        query.end = NSDate()
+                            query.end = NSDate()
 
-                        waitUntil(timeout: testTimeout) { done in
-                            disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 10, data:nil, options: options) {
-                                done()
+                            waitUntil(timeout: testTimeout) { done in
+                                disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 10, data:nil, options: options) {
+                                    done()
+                                }
                             }
-                        }
 
-                        waitUntil(timeout: testTimeout) { done in
-                            try! channel.presence.history(query) { membersPage, error in
-                                expect(error).to(beNil())
-                                expect(membersPage!.items).to(haveCount(3))
-                                done()
+                            waitUntil(timeout: testTimeout) { done in
+                                try! channel.presence.history(query) { membersPage, error in
+                                    expect(error).to(beNil())
+                                    expect(membersPage!.items).to(haveCount(3))
+                                    done()
+                                }
                             }
                         }
                     }
