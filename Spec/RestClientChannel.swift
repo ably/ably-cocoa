@@ -245,8 +245,7 @@ class RestClientChannel: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         let message = ARTMessage(name: nil, data: "message", clientId: "tester")
                         channel.publish([message]) { error in
-                            expect(error!.code).to(equal(40012))
-                            expect(error!.message).to(contain("mismatched clientId"))
+                            expect(error!.code).to(equal(Int(ARTState.MismatchedClientId.rawValue)))
 
                             mockExecutor.http = ARTHttp()
                             channel.history { page, error in
