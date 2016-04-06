@@ -22,106 +22,106 @@ class RestClientChannel: QuickSpec {
             channel = client.channels.get(NSProcessInfo.processInfo().globallyUniqueString)
             mockExecutor = MockHTTPExecutor()
         }
-        
+
         // RSL1
         describe("publish") {
             let name = "foo"
             let data = "bar"
-            
+
             // RSL1b
             context("with name and data arguments") {
                 it("publishes the message and invokes callback with success") {
                     var publishError: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
-                    
+
                     channel.publish(name, data: data) { error in
                         publishError = error
                         channel.history { result, _ in
                             publishedMessage = result?.items.first as? ARTMessage
                         }
                     }
-                    
+
                     expect(publishError).toEventually(beNil(), timeout: testTimeout)
                     expect(publishedMessage?.name).toEventually(equal(name), timeout: testTimeout)
                     expect(publishedMessage?.data as? String).toEventually(equal(data), timeout: testTimeout)
                 }
             }
-            
+
             // RSL1b, RSL1e
             context("with name only") {
                 it("publishes the message and invokes callback with success") {
                     var publishError: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
-                    
+
                     channel.publish(name, data: nil) { error in
                         publishError = error
                         channel.history { result, _ in
                             publishedMessage = result?.items.first as? ARTMessage
                         }
                     }
-                    
+
                     expect(publishError).toEventually(beNil(), timeout: testTimeout)
                     expect(publishedMessage?.name).toEventually(equal(name), timeout: testTimeout)
                     expect(publishedMessage?.data).toEventually(beNil(), timeout: testTimeout)
                 }
             }
-            
+
             // RSL1b, RSL1e
             context("with data only") {
                 it("publishes the message and invokes callback with success") {
                     var publishError: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
-                    
+
                     channel.publish(nil, data: data) { error in
                         publishError = error
                         channel.history { result, _ in
                             publishedMessage = result?.items.first as? ARTMessage
                         }
                     }
-                    
+
                     expect(publishError).toEventually(beNil(), timeout: testTimeout)
                     expect(publishedMessage?.name).toEventually(beNil(), timeout: testTimeout)
                     expect(publishedMessage?.data as? String).toEventually(equal(data), timeout: testTimeout)
                 }
             }
-            
+
             // RSL1b, RSL1e
             context("with neither name nor data") {
                 it("publishes the message and invokes callback with success") {
                     var publishError: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
-                    
+
                     channel.publish(nil, data: nil) { error in
                         publishError = error
                         channel.history { result, _ in
                             publishedMessage = result?.items.first as? ARTMessage
                         }
                     }
-                    
+
                     expect(publishError).toEventually(beNil(), timeout: testTimeout)
                     expect(publishedMessage?.name).toEventually(beNil(), timeout: testTimeout)
                     expect(publishedMessage?.data).toEventually(beNil(), timeout: testTimeout)
                 }
             }
-            
+
             context("with a Message object") {
                 it("publishes the message and invokes callback with success") {
                     var publishError: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
-                    
+
                     channel.publish([ARTMessage(name: name, data: data)]) { error in
                         publishError = error
                         channel.history { result, _ in
                             publishedMessage = result?.items.first as? ARTMessage
                         }
                     }
-                    
+
                     expect(publishError).toEventually(beNil(), timeout: testTimeout)
                     expect(publishedMessage?.name).toEventually(beNil(), timeout: testTimeout)
                     expect(publishedMessage?.data).toEventually(beNil(), timeout: testTimeout)
                 }
             }
-            
+
             // RSL1c
             context("with an array of Message objects") {
                 it("publishes the messages in a single request and invokes callback with success") {
@@ -145,7 +145,7 @@ class RestClientChannel: QuickSpec {
                             }
                         }
                     }
-                    
+
                     expect(publishError).toEventually(beNil(), timeout: testTimeout)
                     expect(publishedMessages.count).toEventually(equal(messages.count), timeout: testTimeout)
                     for (i, publishedMessage) in publishedMessages.reverse().enumerate() {
@@ -179,6 +179,33 @@ class RestClientChannel: QuickSpec {
             // RSL1g
             context("Identified clients with a clientId") {
 
+                // RSL1g1
+                context("when publishing a Message with the clientId attribute set to null") {
+
+                    // RSL1g1a, RSL1g1b
+                    it("should be unnecessary to set clientId of the Message before publishing") {
+                        let options = AblyTests.commonAppSetup()
+                        options.clientId = "john"
+                        let client = ARTRest(options: options)
+                        let channel = client.channels.get("test")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let message = ARTMessage(name: nil, data: "message")
+                            expect(message.clientId).to(beNil())
+
+                            channel.publish([message]) { error in
+                                expect(error).to(beNil())
+                                channel.history { page, error in
+                                    expect(error).to(beNil())
+                                    expect(page!.items[0].clientId).to(equal("john"))
+                                    done()
+                                }
+                            }
+                        }
+                    }
+
+                }
+
                 // RSL1g2
                 it("when publishing a Message with the clientId attribute set to the identified client’s clientId") {
                     let options = AblyTests.commonAppSetup()
@@ -199,13 +226,12 @@ class RestClientChannel: QuickSpec {
                     }
                 }
             }
-
         }
-        
+
         // RSL3, RSP1
         describe("presence") {
             let presenceFixtures = appSetupJson["post_apps"]["channels"][0]["presence"]
-            
+
             // RSP3
             context("get") {
                 it("should return presence fixture data") {
@@ -229,7 +255,7 @@ class RestClientChannel: QuickSpec {
                         let fixtureMessage = presenceFixtures.filter({ (key, value) -> Bool in
                             return message.clientId == value["clientId"].stringValue
                         }).first!.1
-                        
+
                         expect(message.data).toNot(beNil())
                         expect(message.action).to(equal(ARTPresenceAction.Present))
 
