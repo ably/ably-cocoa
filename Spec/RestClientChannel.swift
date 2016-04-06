@@ -230,7 +230,7 @@ class RestClientChannel: QuickSpec {
                 }
 
                 // RSL1g3
-                pending("when publishing a Message with a different clientId attribute value to the identified client’s clientId") {
+                it("when publishing a Message with a different clientId attribute value to the identified client’s clientId") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
                     let client = ARTRest(options: options)
@@ -245,8 +245,7 @@ class RestClientChannel: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         let message = ARTMessage(name: nil, data: "message", clientId: "tester")
                         channel.publish([message]) { error in
-                            expect(error!.code).to(equal(40012))
-                            expect(error!.message).to(contain("mismatched clientId"))
+                            expect(error!.code).to(equal(Int(ARTState.MismatchedClientId.rawValue)))
                             done()
                         }
                     }
