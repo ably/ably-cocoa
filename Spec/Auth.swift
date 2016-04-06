@@ -869,17 +869,14 @@ class Auth : QuickSpec {
 
             // RSA8f2
             it("ensure that the message is rejected") {
-                let token = getTestToken()
-                let options = ARTClientOptions(token: token)
-                options.environment = "sandbox"
-                options.clientId = "john"
-
+                let options = AblyTests.commonAppSetup()
+                options.token = getTestToken(clientId: nil)
                 let rest = ARTRest(options: options)
-                rest.httpExecutor = mockExecutor
                 let channel = rest.channels.get("test")
 
                 waitUntil(timeout: testTimeout) { done in
-                    channel.publish([ARTMessage(name: nil, data: "no client", clientId: "john")]) { error in
+                    let message = ARTMessage(name: nil, data: "message with an explicit clientId", clientId: "john")
+                    channel.publish([message]) { error in
                         expect(error!.message).to(contain("mismatched clientId"))
                         done()
                     }
