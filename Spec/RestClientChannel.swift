@@ -234,7 +234,13 @@ class RestClientChannel: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
                     let client = ARTRest(options: options)
+                    client.httpExecutor = mockExecutor
                     let channel = client.channels.get("test")
+
+                    // Reject before the message is sent to the server
+                    let hook = channel.testSuite_injectIntoMethodBefore("publish:callback:") {
+                        mockExecutor.http = nil
+                    }
 
                     waitUntil(timeout: testTimeout) { done in
                         let message = ARTMessage(name: nil, data: "message", clientId: "tester")
@@ -244,6 +250,9 @@ class RestClientChannel: QuickSpec {
                             done()
                         }
                     }
+
+                    hook.remove()
+                    mockExecutor.http = ARTHttp()
 
                     // Remains available
                     waitUntil(timeout: testTimeout) { done in
