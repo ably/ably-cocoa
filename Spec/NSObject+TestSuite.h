@@ -20,8 +20,11 @@ ART_ASSUME_NONNULL_BEGIN
 /// Get argument at index from the identified instance method.
 - (void)testSuite_getArgumentFrom:(SEL)selector atIndex:(NSInteger)index callback:(void (^)(id))callback;
 
-/// Inject a block of code to the identified instance method.
-- (void)testSuite_injectIntoMethod:(SEL)selector code:(void (^)(void))block;
+/// Inject a block of code after the identified instance method.
+- (void)testSuite_injectIntoMethodAfter:(SEL)selector code:(void (^)(void))block;
+
+/// Inject a block of code before the identified instance method.
+- (void)testSuite_injectIntoMethodBefore:(SEL)selector code:(void (^)(void))block;
 
 ART_ASSUME_NONNULL_END
 

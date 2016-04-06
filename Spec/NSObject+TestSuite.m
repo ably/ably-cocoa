@@ -27,7 +27,13 @@
     } error:nil];
 }
 
-- (void)testSuite_injectIntoMethod:(SEL)selector code:(void (^)(void))block {
+- (void)testSuite_injectIntoMethodBefore:(SEL)selector code:(void (^)(void))block {
+    [self aspect_hookSelector:selector withOptions:AspectPositionBefore usingBlock:^(id<AspectInfo> info) {
+        block();
+    } error:nil];
+}
+
+- (void)testSuite_injectIntoMethodAfter:(SEL)selector code:(void (^)(void))block {
     [self aspect_hookSelector:selector withOptions:AspectPositionAfter usingBlock:^(id<AspectInfo> info) {
         block();
     } error:nil];

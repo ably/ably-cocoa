@@ -87,18 +87,18 @@ class RealtimeClientChannel: QuickSpec {
                     expect(channel.statesEventEmitter).to(beAKindOf(ARTEventEmitter.self))
 
                     var channelOnMethodCalled = false
-                    channel.testSuite_injectIntoMethod(#selector(ARTEventEmitter.on(_:))) {
+                    channel.testSuite_injectIntoMethodAfter(#selector(ARTEventEmitter.on(_:))) {
                         channelOnMethodCalled = true
                     }
 
                     // The `channel.on` should use `statesEventEmitter`
                     var statesEventEmitterOnMethodCalled = false
-                    channel.statesEventEmitter.testSuite_injectIntoMethod(#selector(ARTEventEmitter.on(_:))) {
+                    channel.statesEventEmitter.testSuite_injectIntoMethodAfter(#selector(ARTEventEmitter.on(_:))) {
                         statesEventEmitterOnMethodCalled = true
                     }
 
                     var emitCounter = 0
-                    channel.statesEventEmitter.testSuite_injectIntoMethod(#selector(ARTEventEmitter.emit(_:with:))) {
+                    channel.statesEventEmitter.testSuite_injectIntoMethodAfter(#selector(ARTEventEmitter.emit(_:with:))) {
                         emitCounter += 1
                     }
 
