@@ -230,7 +230,7 @@ class RestClientChannel: QuickSpec {
                 }
 
                 // RSL1g3
-                it("when publishing a Message with a different clientId attribute value to the identified client’s clientId") {
+                pending("when publishing a Message with a different clientId attribute value to the identified client’s clientId") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
                     let client = ARTRest(options: options)
