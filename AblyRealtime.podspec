@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name              = "AblyRealtime"
-  s.version           = "0.8.0-beta.3"
+  s.version           = "0.8.0-beta.4"
   s.summary           = "iOS client for Ably"
   s.description       = <<-DESC
                         iOS client library for ably.io, the realtime messaging service, written in Objective-C and ready for Swift 2.0.
@@ -17,5 +17,5 @@ Pod::Spec.new do |s|
   s.source_files      = 'Source/*.{h,m}'
   s.module_map        = 'Source/AblyRealtime.modulemap'
   s.pod_target_xcconfig = { 'HEADER_SEARCH_PATHS' => '$CONFIGURATION_BUILD_DIR/SwiftWebSocket.framework/Headers' }
-  s.dependency 'SwiftWebSocket', '~> 2.5'
+  s.dependency 'SwiftWebSocket', '~> 2.6'
 end
