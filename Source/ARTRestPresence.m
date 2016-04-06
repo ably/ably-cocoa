@@ -38,8 +38,9 @@
         return NO;
     }
 
-    NSURL *requestUrl = [NSURL URLWithString:[[self channel].basePath stringByAppendingPathComponent:@"presence"]];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
+    NSURLComponents *requestUrl = [NSURLComponents componentsWithString:[[self channel].basePath stringByAppendingPathComponent:@"presence"]];
+    requestUrl.queryItems = [query asQueryItems];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl.URL];
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data) {
         id<ARTEncoder> encoder = [[self channel].rest.encoders objectForKey:response.MIMEType];
