@@ -877,26 +877,30 @@ class Auth : QuickSpec {
             }
 
             // RSA8f1
-            pending("ensure the message published does not have a clientId") {
-                let token = getTestToken()
-                let options = ARTClientOptions(token: token)
-                options.environment = "sandbox"
-                options.clientId = "john"
-
+            it("ensure the message published does not have a clientId") {
+                let options = AblyTests.commonAppSetup()
+                options.token = getTestToken(clientId: nil)
                 let rest = ARTRest(options: options)
                 rest.httpExecutor = mockExecutor
                 let channel = rest.channels.get("test")
 
                 waitUntil(timeout: testTimeout) { done in
-                    channel.publish([ARTMessage(name: nil, data: "no client")]) { error in
+                    let message = ARTMessage(name: nil, data: "message without an explicit clientId")
+                    expect(message.clientId).to(beNil())
+                    channel.publish([message]) { error in
                         expect(error).to(beNil())
-                        switch extractBodyAsJSON(mockExecutor.requests.first) {
+                        switch extractBodyAsMessages(mockExecutor.requests.first) {
                         case .Failure(let error):
                             fail(error)
                         case .Success(let httpBody):
-                            expect(httpBody.unbox["clientId"]).to(beNil())
+                            expect(httpBody.unbox.first!["clientId"]).to(beNil())
                         }
-                        done()
+                        channel.history { page, error in
+                            expect(error).to(beNil())
+                            expect(page!.items).to(haveCount(1))
+                            expect((page!.items[0] as! ARTMessage).clientId).to(beNil())
+                            done()
+                        }
                     }
                 }
                 expect(rest.auth.clientId).to(beNil())
