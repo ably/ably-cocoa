@@ -828,7 +828,8 @@ class RealtimeClientChannel: QuickSpec {
                                 for index in 1...TotalMessages.expected {
                                     channelToSucceed.publish(nil, data: "message\(index)") { errorInfo in
                                         if errorInfo == nil {
-                                            expect(index).to(equal(++TotalMessages.succeeded), description: "Callback was invoked with an invalid sequence")
+                                            TotalMessages.succeeded += 1
+                                            expect(index).to(equal(TotalMessages.succeeded), description: "Callback was invoked with an invalid sequence")
                                         }
                                     }
                                 }
@@ -842,7 +843,8 @@ class RealtimeClientChannel: QuickSpec {
                                 for index in 1...TotalMessages.expected {
                                     channelToFail.publish(nil, data: "message\(index)") { errorInfo in
                                         if errorInfo != nil {
-                                            expect(index).to(equal(++TotalMessages.failed), description: "Callback was invoked with an invalid sequence")
+                                            TotalMessages.failed += 1
+                                            expect(index).to(equal(TotalMessages.failed), description: "Callback was invoked with an invalid sequence")
                                         }
                                     }
                                 }

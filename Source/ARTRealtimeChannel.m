@@ -14,7 +14,7 @@
 #import "ARTMessage.h"
 #import "ARTBaseMessage+Private.h"
 #import "ARTAuth.h"
-#import "ARTRealtimePresence.h"
+#import "ARTRealtimePresence+Private.h"
 #import "ARTChannel.h"
 #import "ARTChannelOptions.h"
 #import "ARTProtocolMessage.h"
@@ -24,6 +24,7 @@
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTStatus.h"
 #import "ARTDefault.h"
+#import "ARTRest.h"
 #import "ARTClientOptions.h"
 
 @interface ARTRealtimeChannel () {
@@ -39,9 +40,10 @@
 @implementation ARTRealtimeChannel
 
 - (instancetype)initWithRealtime:(ARTRealtime *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options {
-    self = [super initWithName:name withOptions:options andRest:realtime.rest];
+    self = [super initWithName:name andOptions:options andLogger:realtime.options.logHandler];
     if (self) {
         _realtime = realtime;
+        _restChannel = [_realtime.rest.channels get:self.name options:options];
         _state = ARTRealtimeChannelInitialized;
         _queuedMessages = [NSMutableArray array];
         _attachSerial = nil;
@@ -645,13 +647,13 @@
 - (BOOL)history:(ARTRealtimeHistoryQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
     query.realtimeChannel = self;
     @try {
-        return [super history:query callback:callback error:errorPtr];
+        return [_restChannel history:query callback:callback error:errorPtr];
     }
     @catch (NSError *error) {
         if (errorPtr) {
             *errorPtr = error;
         }
-        return false;
+        return NO;
     }
 }
 

@@ -12,7 +12,7 @@ import Nimble
 func countChannels(channels: ARTRealtimeChannels) -> Int {
     var i = 0
     for _ in channels {
-        i++
+        i += 1
     }
     return i
 }
@@ -393,7 +393,7 @@ class RealtimeClientConnection: QuickSpec {
 
                     channel.on { errorInfo in
                         if channel.state == .Attached {
-                            TotalReach.shared++
+                            TotalReach.shared += 1
                         }
                     }
 
@@ -409,7 +409,7 @@ class RealtimeClientConnection: QuickSpec {
 
                     channel.subscribe { message in
                         expect(message.data as? String).to(equal("message_string"))
-                        TotalReach.shared++
+                        TotalReach.shared += 1
                     }
 
                     channel.publish(nil, data: "message_string", callback: nil)
@@ -648,7 +648,7 @@ class RealtimeClientConnection: QuickSpec {
                         for index in 1...TotalMessages.expected {
                             channel.publish(nil, data: "message\(index)") { errorInfo in
                                 if errorInfo == nil {
-                                    TotalMessages.succeeded++
+                                    TotalMessages.succeeded += 1
                                 }
                             }
                         }

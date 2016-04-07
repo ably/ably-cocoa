@@ -6,7 +6,7 @@
 //  Copyright © 2015 Ably. All rights reserved.
 //
 
-#import "ARTRestPresence.h"
+#import "ARTRestPresence+Private.h"
 
 #import "ARTPresence+Private.h"
 #import "ARTRest+Private.h"
@@ -18,14 +18,63 @@
 #import "ARTChannel+Private.h"
 #import "ARTBaseMessage+Private.h"
 
-@implementation ARTRestPresence
+#import "ARTChannel.h"
+#import "ARTDataQuery.h"
 
-- (instancetype)initWithChannel:(ARTRestChannel *)channel {
-    return [super initWithChannel:channel];
+@implementation ARTPresenceQuery
+
+- (instancetype)init {
+    return [self initWithClientId:nil connectionId:nil];
 }
 
-- (ARTRestChannel *)channel {
-    return (ARTRestChannel *)super.channel;
+- (instancetype)initWithClientId:(NSString *)clientId connectionId:(NSString *)connectionId {
+    return [self initWithLimit:100 clientId:clientId connectionId:connectionId];
+}
+
+- (instancetype)initWithLimit:(NSUInteger)limit clientId:(NSString *)clientId connectionId:(NSString *)connectionId {
+    self = [super init];
+    if (self) {
+        _limit = limit;
+        _clientId = clientId;
+        _connectionId = connectionId;
+    }
+    return self;
+}
+
+- (NSMutableArray *)asQueryItems {
+    NSMutableArray *items = [NSMutableArray array];
+
+    if (self.clientId) {
+        [items addObject:[NSURLQueryItem queryItemWithName:@"clientId" value:self.clientId]];
+    }
+    if (self.connectionId) {
+        [items addObject:[NSURLQueryItem queryItemWithName:@"connectionId" value:self.connectionId]];
+    }
+
+    [items addObject:[NSURLQueryItem queryItemWithName:@"limit" value:[NSString stringWithFormat:@"%lu", (unsigned long)self.limit]]];
+
+    return items;
+}
+
+@end
+
+@implementation ARTRestPresence {
+    __weak ARTRestChannel *_channel;
+}
+
+- (instancetype)initWithChannel:(ARTRestChannel *)channel {
+    if (self = [super init]) {
+        _channel = channel;
+    }
+    return self;
+}
+
+- (void)get:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, ARTErrorInfo *error))callback {
+    [self get:[[ARTPresenceQuery alloc] init] callback:callback error:nil];
+}
+
+- (BOOL)get:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, ARTErrorInfo *error))callback error:(NSError **)errorPtr {
+    return [self get:[[ARTPresenceQuery alloc] init] callback:callback error:errorPtr];
 }
 
 - (BOOL)get:(ARTPresenceQuery *)query callback:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
@@ -38,24 +87,28 @@
         return NO;
     }
 
-    NSURLComponents *requestUrl = [NSURLComponents componentsWithString:[[self channel].basePath stringByAppendingPathComponent:@"presence"]];
+    NSURLComponents *requestUrl = [NSURLComponents componentsWithString:[_channel.basePath stringByAppendingPathComponent:@"presence"]];
     requestUrl.queryItems = [query asQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl.URL];
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data) {
-        id<ARTEncoder> encoder = [[self channel].rest.encoders objectForKey:response.MIMEType];
+        id<ARTEncoder> encoder = [_channel.rest.encoders objectForKey:response.MIMEType];
         return [[encoder decodePresenceMessages:data] artMap:^(ARTPresenceMessage *message) {
             // FIXME: This should be refactored to be done by ART{Json,...}Encoder.
             // The ART{Json,...}Encoder should take a ARTDataEncoder and use it every
             // time it is enc/decoding a message. This also applies for REST and Realtime
             // ARTMessages.
-            message = [message decodeWithEncoder:self.channel.dataEncoder error:nil];
+            message = [message decodeWithEncoder:_channel.dataEncoder error:nil];
             return message;
         }];
     };
 
-    [ARTPaginatedResult executePaginated:[self channel].rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
+    [ARTPaginatedResult executePaginated:_channel.rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
     return YES;
+}
+
+- (void)history:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *, ARTErrorInfo *))callback {
+    [self history:[[ARTDataQuery alloc] init] callback:callback error:nil];
 }
 
 - (BOOL)history:(ARTDataQuery *)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, ARTErrorInfo *error))callback error:(NSError **)errorPtr {
@@ -76,16 +129,16 @@
         return NO;
     }
 
-    NSURLComponents *requestUrl = [NSURLComponents componentsWithString:[[self channel].basePath stringByAppendingPathComponent:@"presence/history"]];
+    NSURLComponents *requestUrl = [NSURLComponents componentsWithString:[_channel.basePath stringByAppendingPathComponent:@"presence/history"]];
     requestUrl.queryItems = [query asQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl.URL];
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data) {
-        id<ARTEncoder> encoder = [[self channel].rest.encoders objectForKey:response.MIMEType];
+        id<ARTEncoder> encoder = [_channel.rest.encoders objectForKey:response.MIMEType];
         return [encoder decodePresenceMessages:data];
     };
 
-    [ARTPaginatedResult executePaginated:[self channel].rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
+    [ARTPaginatedResult executePaginated:_channel.rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
     return YES;
 }
 

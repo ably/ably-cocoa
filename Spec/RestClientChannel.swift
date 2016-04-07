@@ -168,7 +168,8 @@ class RestClientChannel: QuickSpec {
                             expect(client.auth.method).to(equal(ARTAuthMethod.Basic))
                             channel.history { page, error in
                                 expect(error).to(beNil())
-                                expect(page!.items[0].clientId).to(equal("tester"))
+                                let item = page!.items[0] as! ARTMessage
+                                expect(item.clientId).to(equal("tester"))
                                 done()
                             }
                         }
@@ -197,7 +198,8 @@ class RestClientChannel: QuickSpec {
                                 expect(error).to(beNil())
                                 channel.history { page, error in
                                     expect(error).to(beNil())
-                                    expect(page!.items[0].clientId).to(equal("john"))
+                                    let item = page!.items[0] as! ARTMessage
+                                    expect(item.clientId).to(equal("john"))
                                     done()
                                 }
                             }
@@ -219,7 +221,8 @@ class RestClientChannel: QuickSpec {
                             expect(error).to(beNil())
                             channel.history { page, error in
                                 expect(error).to(beNil())
-                                expect(page!.items[0].clientId).to(equal("john"))
+                                let item = page!.items[0] as! ARTMessage
+                                expect(item.clientId).to(equal("john"))
                                 done()
                             }
                         }
@@ -459,7 +462,7 @@ class RestClientChannel: QuickSpec {
                         expect(result.hasNext).to(beFalse())
 
                         for (index, item) in (result.items.reverse().enumerate()) {
-                            totalReceived++
+                            totalReceived += 1
 
                             switch (item as? ARTMessage)?.data {
                             case let value as NSDictionary:

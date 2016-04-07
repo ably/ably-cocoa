@@ -118,7 +118,7 @@
     __weak XCTestExpectation *firstExpectation = [self expectationWithDescription:@"getTime"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
-        ARTChannel *channel = [rest.channels get:@"test_history_time_forwards"];
+        ARTRestChannel *channel = [rest.channels get:@"test_history_time_forwards"];
 
         int firstBatchTotal = 2;
         int secondBatchTotal = 5;
@@ -177,7 +177,7 @@
     __weak XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
-        ARTChannel *channel = [rest.channels get:@"testHistoryForwardPagination"];
+        ARTRestChannel *channel = [rest.channels get:@"testHistoryForwardPagination"];
         
         [ARTTestUtil publishRestMessages:@"testString" count:5 channel:channel completion:^{
             ARTDataQuery *query = [[ARTDataQuery alloc] init];
@@ -241,7 +241,7 @@
     __weak XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
-        ARTChannel *channel = [rest.channels get:@"testHistoryBackwardPagination"];
+        ARTRestChannel *channel = [rest.channels get:@"testHistoryBackwardPagination"];
 
         [ARTTestUtil publishRestMessages:@"testString" count:5 channel:channel completion:^{
             ARTDataQuery *query = [[ARTDataQuery alloc] init];
@@ -305,7 +305,7 @@
     __weak XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
-        ARTChannel *channel = [rest.channels get:@"testHistoryBackwardDefault"];
+        ARTRestChannel *channel = [rest.channels get:@"testHistoryBackwardDefault"];
 
         [ARTTestUtil publishRestMessages:@"testString" count:5 channel:channel completion:^{
             ARTDataQuery *query = [[ARTDataQuery alloc] init];
@@ -342,10 +342,10 @@
         ARTRest *rest2 = [[ARTRest alloc] initWithOptions:options];
         _rest2 = rest2;
 
-        ARTChannel *channelOne = [rest.channels get:channelName];
+        ARTRestChannel *channelOne = [rest.channels get:channelName];
 
         [ARTTestUtil publishRestMessages:@"testString" count:5 channel:channelOne completion:^{
-            ARTChannel *channelTwo = [rest2.channels get:channelName];
+            ARTRestChannel *channelTwo = [rest2.channels get:channelName];
 
             ARTDataQuery *query = [[ARTDataQuery alloc] init];
             query.limit = 2;
@@ -370,7 +370,7 @@
     __weak XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
-        ARTChannel *channelOne = [rest.channels get:@"name"];
+        ARTRestChannel *channelOne = [rest.channels get:@"name"];
 
         ARTDataQuery *query = [[ARTDataQuery alloc] init];
         query.limit = 1001;
@@ -389,7 +389,7 @@
     __weak XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
-        ARTChannel *channelOne = [rest.channels get:@"name"];
+        ARTRestChannel *channelOne = [rest.channels get:@"name"];
 
         ARTDataQuery *query = [[ARTDataQuery alloc] init];
         query.limit = 1001;

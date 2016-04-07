@@ -87,6 +87,7 @@ NSString *ARTDefaultEnvironment = nil;
     options.environment = self.environment;
     options.tls = self.tls;
     options.logLevel = self.logLevel;
+    options.logHandler = self.logHandler;
     options.suspendedRetryTimeout = self.suspendedRetryTimeout;
     options.disconnectedRetryTimeout = self.disconnectedRetryTimeout;
     options.httpMaxRetryCount = self.httpMaxRetryCount;
