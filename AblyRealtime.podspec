@@ -17,5 +17,5 @@ Pod::Spec.new do |s|
   s.source_files      = 'Source/*.{h,m}'
   s.module_map        = 'Source/AblyRealtime.modulemap'
   s.pod_target_xcconfig = { 'HEADER_SEARCH_PATHS' => '$CONFIGURATION_BUILD_DIR/SwiftWebSocket.framework/Headers' }
-  s.dependency 'SwiftWebSocket', '~> 2.6'
+  s.dependency 'SwiftWebSocket', '~> 2.5'
 end

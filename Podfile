@@ -1,6 +1,6 @@
 platform :ios, '8.0'
 use_frameworks!
-podspec :path => 'Ably.podspec'
+podspec :path => 'AblyRealtime.podspec'
 
 target 'AblySpec' do
     pod 'Quick', '0.9.1'
