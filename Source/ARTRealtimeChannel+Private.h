@@ -7,6 +7,7 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
+#import "ARTRestChannel.h"
 #import "ARTRealtimeChannel.h"
 #import "ARTEventEmitter.h"
 
@@ -18,6 +19,7 @@ ART_ASSUME_NONNULL_BEGIN
 @interface ARTRealtimeChannel ()
 
 @property (readonly, weak, nonatomic) ARTRealtime *realtime;
+@property (readonly, strong, nonatomic) ARTRestChannel *restChannel;
 @property (readwrite, strong, nonatomic) NSMutableArray *queuedMessages;
 @property (readwrite, strong, nonatomic, art_nullable) NSString *attachSerial;
 @property (readonly, getter=getClientId) NSString *clientId;

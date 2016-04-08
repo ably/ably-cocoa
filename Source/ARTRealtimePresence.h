@@ -10,8 +10,7 @@
 #import "ARTRestPresence.h"
 #import "ARTDataQuery.h"
 #import "ARTEventEmitter.h"
-
-@class ARTRealtimeChannel;
+#import "ARTRealtimeChannel.h"
 
 ART_ASSUME_NONNULL_BEGIN
 
@@ -21,11 +20,9 @@ ART_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface ARTRealtimePresence : ARTRestPresence
+@interface ARTRealtimePresence : ARTPresence
 
 @property (readonly, getter=getSyncComplete) BOOL syncComplete;
-
-- (instancetype)initWithChannel:(ARTRealtimeChannel *)channel;
 
 - (void)get:(void (^)(__GENERIC(NSArray, ARTPresenceMessage *) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback;
 - (void)get:(ARTRealtimePresenceQuery *)query callback:(void (^)(__GENERIC(NSArray, ARTPresenceMessage *) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback;
@@ -58,7 +55,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)unsubscribe:(ARTPresenceAction)action listener:(__GENERIC(ARTEventListener, ARTPresenceMessage *) *)listener;
 
 - (void)history:(void(^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback;
-- (BOOL)history:(art_nullable ARTRealtimeHistoryQuery *)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
+- (BOOL)history:(ARTRealtimeHistoryQuery *__art_nullable)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
 
 @end
 

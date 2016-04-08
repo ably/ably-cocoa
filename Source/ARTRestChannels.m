@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "ARTRestChannels.h"
 #import "ARTChannels+Private.h"
+#import "ARTRestChannel+Private.h"
 
 @interface ARTRestChannels ()
 

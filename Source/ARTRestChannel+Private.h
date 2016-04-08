@@ -11,6 +11,8 @@
 
 @interface ARTRestChannel ()
 
+- (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRest *)rest;
+
 @property (nonatomic, weak) ARTRest *rest;
 
 @end

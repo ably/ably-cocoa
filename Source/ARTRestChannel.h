@@ -19,7 +19,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (readonly, getter=getPresence) ARTRestPresence *presence;
 
-- (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRest *)rest;
+- (BOOL)history:(art_nullable ARTDataQuery *)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
 
 @end
 

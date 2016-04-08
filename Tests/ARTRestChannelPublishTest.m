@@ -38,7 +38,7 @@
     NSString *message2 = @"message2";
     [ARTTestUtil testRest:^(ARTRest *rest) {
         _rest = rest;
-        ARTChannel *channel = [rest.channels get:@"testTypesByText"];
+        ARTRestChannel *channel = [rest.channels get:@"testTypesByText"];
         [channel publish:nil data:message1 callback:^(ARTErrorInfo *error) {
             XCTAssert(!error);
             [channel publish:nil data:message2 callback:^(ARTErrorInfo *error) {

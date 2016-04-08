@@ -9,7 +9,7 @@
 #import "ARTRestChannel+Private.h"
 
 #import "ARTRest+Private.h"
-#import "ARTRestPresence.h"
+#import "ARTRestPresence+Private.h"
 #import "ARTChannel+Private.h"
 #import "ARTChannelOptions.h"
 #import "ARTMessage.h"
@@ -50,6 +50,10 @@
         _restPresence = [[ARTRestPresence alloc] initWithChannel:self];
     }
     return _restPresence;
+}
+
+- (void)history:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, ARTErrorInfo *))callback {
+    [self history:[[ARTDataQuery alloc] init] callback:callback error:nil];
 }
 
 - (BOOL)history:(ARTDataQuery *)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *result, ARTErrorInfo *error))callback error:(NSError **)errorPtr {

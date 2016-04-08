@@ -6,9 +6,9 @@
 //  Copyright © 2015 Ably. All rights reserved.
 //
 
-#import "ARTRealtimePresence.h"
+#import "ARTRealtimePresence+Private.h"
 
-#import "ARTRealtime.h"
+#import "ARTRealtime+Private.h"
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTPresenceMap.h"
 #import "ARTPresenceMessage.h"
@@ -32,21 +32,15 @@
 
 #pragma mark - ARTRealtimePresence
 
-@interface ARTRealtimePresence ()
-
-@property (readonly, getter=getChannel) ARTRealtimeChannel *channel;
-
-@end
-
-@implementation ARTRealtimePresence
-
-- (instancetype)initWithChannel:(ARTRealtimeChannel *)channel {
-    self = [super initWithChannel:channel];
-    return self;
+@implementation ARTRealtimePresence {
+    __weak ARTRealtimeChannel *_channel;
 }
 
-- (ARTRealtimeChannel *)getChannel {
-    return (ARTRealtimeChannel *)super.channel;
+- (instancetype)initWithChannel:(ARTRealtimeChannel *)channel {
+    if (self = [super init]) {
+        _channel = channel;
+    }
+    return self;
 }
 
 - (void)get:(void (^)(NSArray<ARTPresenceMessage *> *, ARTErrorInfo *))callback {
@@ -54,16 +48,16 @@
 }
 
 - (void)get:(ARTRealtimePresenceQuery *)query callback:(void (^)(NSArray<ARTPresenceMessage *> *, ARTErrorInfo *))callback {
-    [self.channel throwOnDisconnectedOrFailed];
-    [self.channel attach:^(ARTErrorInfo *error) {
+    [_channel throwOnDisconnectedOrFailed];
+    [_channel attach:^(ARTErrorInfo *error) {
         if (error) {
             callback(nil, error);
         } else if (query.waitForSync) {
-            [self.channel.presenceMap onceSyncEnds:^(NSArray<ARTPresenceMessage *> *members) {
+            [_channel.presenceMap onceSyncEnds:^(NSArray<ARTPresenceMessage *> *members) {
                 callback(members, nil);
             }];
         } else {
-            callback(self.channel.presenceMap.members.allValues, nil);
+            callback(_channel.presenceMap.members.allValues, nil);
         }
     }];
 }
@@ -73,9 +67,9 @@
 }
 
 - (BOOL)history:(ARTRealtimeHistoryQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
-    query.realtimeChannel = self.channel;
+    query.realtimeChannel = _channel;
     @try {
-        return [super history:query callback:callback error:errorPtr];
+        return [_channel.restChannel.presence history:query callback:callback error:errorPtr];
     }
     @catch (NSError *error) {
         if (errorPtr) {
@@ -90,7 +84,7 @@
 }
 
 - (void)enter:(id)data callback:(void (^)(ARTErrorInfo *))cb {
-    [self enterClient:self.channel.clientId data:data callback:cb];
+    [self enterClient:_channel.clientId data:data callback:cb];
 }
 
 - (void)enterClient:(NSString *)clientId data:(id)data {
@@ -107,8 +101,8 @@
     msg.clientId = clientId;
     msg.data = data;
 
-    msg.connectionId = self.channel.realtime.connection.id;
-    [self.channel publishPresence:msg callback:cb];
+    msg.connectionId = _channel.realtime.connection.id;
+    [_channel publishPresence:msg callback:cb];
 }
 
 - (void)update:(id)data {
@@ -116,7 +110,7 @@
 }
 
 - (void)update:(id)data callback:(void (^)(ARTErrorInfo * _Nullable))cb {
-    [self updateClient:self.channel.clientId data:data callback:cb];
+    [self updateClient:_channel.clientId data:data callback:cb];
 }
 
 - (void)updateClient:(NSString *)clientId data:(id)data {
@@ -132,9 +126,9 @@
     msg.action = ARTPresenceUpdate;
     msg.clientId = clientId;
     msg.data = data;
-    msg.connectionId = self.channel.realtime.connection.id;
+    msg.connectionId = _channel.realtime.connection.id;
 
-    [self.channel publishPresence:msg callback:cb];
+    [_channel publishPresence:msg callback:cb];
 }
 
 - (void)leave:(id)data {
@@ -142,7 +136,7 @@
 }
 
 - (void)leave:(id)data callback:(void (^)(ARTErrorInfo * _Nullable))cb {
-    [self leaveClient:self.channel.clientId data:data callback:cb];
+    [self leaveClient:_channel.clientId data:data callback:cb];
 }
 
 - (void)leaveClient:(NSString *)clientId data:(id)data {
@@ -154,8 +148,8 @@
         if (cb) cb([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
         return;
     }
-    if ([clientId isEqualToString:self.channel.clientId]) {
-        if(self.channel.lastPresenceAction != ARTPresenceEnter && self.channel.lastPresenceAction != ARTPresenceUpdate) {
+    if ([clientId isEqualToString:_channel.clientId]) {
+        if(_channel.lastPresenceAction != ARTPresenceEnter && _channel.lastPresenceAction != ARTPresenceUpdate) {
             [NSException raise:@"Cannot leave a channel before you've entered it" format:@""];
         }
     }
@@ -163,12 +157,12 @@
     msg.action = ARTPresenceLeave;
     msg.data = data;
     msg.clientId = clientId;
-    msg.connectionId = self.channel.realtime.connection.id;
-    [self.channel publishPresence:msg callback:cb];
+    msg.connectionId = _channel.realtime.connection.id;
+    [_channel publishPresence:msg callback:cb];
 }
 
 - (BOOL)getSyncComplete {
-    return self.channel.presenceMap.syncComplete;
+    return _channel.presenceMap.syncComplete;
 }
 
 - (ARTEventListener<ARTPresenceMessage *> *)subscribe:(void (^)(ARTPresenceMessage * _Nonnull))callback {
@@ -176,12 +170,12 @@
 }
 
 - (ARTEventListener<ARTPresenceMessage *> *)subscribeWithAttachCallback:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTPresenceMessage * _Nonnull))cb {
-    if (self.channel.state == ARTRealtimeChannelFailed) {
+    if (_channel.state == ARTRealtimeChannelFailed) {
         if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
         return nil;
     }
-    [self.channel attach:onAttach];
-    return [self.channel.presenceEventEmitter on:cb];
+    [_channel attach:onAttach];
+    return [_channel.presenceEventEmitter on:cb];
 }
 
 - (ARTEventListener<ARTPresenceMessage *> *)subscribe:(ARTPresenceAction)action callback:(void (^)(ARTPresenceMessage * _Nonnull))cb {
@@ -189,24 +183,24 @@
 }
 
 - (ARTEventListener<ARTPresenceMessage *> *)subscribe:(ARTPresenceAction)action onAttach:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTPresenceMessage * _Nonnull))cb {
-    if (self.channel.state == ARTRealtimeChannelFailed) {
+    if (_channel.state == ARTRealtimeChannelFailed) {
         if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
         return nil;
     }
-    [self.channel attach:onAttach];
-    return [self.channel.presenceEventEmitter on:[NSNumber numberWithUnsignedInteger:action] call:cb];
+    [_channel attach:onAttach];
+    return [_channel.presenceEventEmitter on:[NSNumber numberWithUnsignedInteger:action] call:cb];
 }
 
 - (void)unsubscribe {
-    [self.channel.presenceEventEmitter off];
+    [_channel.presenceEventEmitter off];
 }
 
 - (void)unsubscribe:(ARTEventListener<ARTPresenceMessage *> *)listener {
-    [self.channel.presenceEventEmitter off:listener];
+    [_channel.presenceEventEmitter off:listener];
 }
 
 - (void)unsubscribe:(ARTPresenceAction)action listener:(ARTEventListener<ARTPresenceMessage *> *)listener {
-    [self.channel.presenceEventEmitter off:[NSNumber numberWithUnsignedInteger:action] listener:listener];
+    [_channel.presenceEventEmitter off:[NSNumber numberWithUnsignedInteger:action] listener:listener];
 }
 
 @end

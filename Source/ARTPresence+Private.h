@@ -10,6 +10,7 @@
 #define ARTPresence_Private_h
 
 #import "ARTPresence.h"
+#import "ARTChannel.h"
 
 @interface ARTPresenceQuery ()
 
