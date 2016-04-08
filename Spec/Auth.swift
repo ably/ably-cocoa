@@ -843,6 +843,29 @@ class Auth : QuickSpec {
                 }
 
             }
+
+            // RSA8f4
+            it("ensure the message published with a wildcard '*' has the provided clientId") {
+                let options = AblyTests.commonAppSetup()
+                // Request a token with a wildcard '*' value clientId
+                options.token = getTestToken(clientId: "*")
+                let rest = ARTRest(options: options)
+                let channel = rest.channels.get("test")
+
+                waitUntil(timeout: testTimeout) { done in
+                    let message = ARTMessage(name: nil, data: "message with an explicit clientId", clientId: "john")
+                    channel.publish([message]) { error in
+                        expect(error).to(beNil())
+                        channel.history { page, error in
+                            expect(error).to(beNil())
+                            expect(page!.items[0].clientId).to(equal("john"))
+                            done()
+                        }
+                    }
+                }
+                expect(rest.auth.clientId).to(beNil())
+            }
+
         }
 
         struct ExpectedTokenParams {

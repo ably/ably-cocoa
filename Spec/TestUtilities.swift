@@ -369,8 +369,8 @@ func publishFirstTestMessage(realtime: ARTRealtime, failOnError: Bool = true) ->
 }
 
 /// Access Token
-func getTestToken(key key: String? = nil, capability: String? = nil, ttl: NSTimeInterval? = nil) -> String {
-    if let tokenDetails = getTestTokenDetails(key: key, capability: capability, ttl: ttl) {
+func getTestToken(key key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: NSTimeInterval? = nil) -> String {
+    if let tokenDetails = getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl) {
         return tokenDetails.token
     }
     else {
@@ -380,7 +380,7 @@ func getTestToken(key key: String? = nil, capability: String? = nil, ttl: NSTime
 }
 
 /// Access TokenDetails
-func getTestTokenDetails(key key: String? = nil, capability: String? = nil, ttl: NSTimeInterval? = nil, clientId: String? = nil) -> ARTTokenDetails? {
+func getTestTokenDetails(key key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: NSTimeInterval? = nil) -> ARTTokenDetails? {
     let options: ARTClientOptions
     if let key = key {
         options = AblyTests.clientOptions()
