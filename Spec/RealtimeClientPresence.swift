@@ -426,25 +426,28 @@ class RealtimeClientPresence: QuickSpec {
                     defer { client2.close() }
                     let channel2 = client2.channels.get("test")
 
+                    var count = 0
+                    channel1.presence.subscribe(.Update) { member in
+                        expect(member.action).to(equal(ARTPresenceAction.Update))
+                        expect(member.clientId).to(equal("john"))
+                        expect(member.data as? NSObject).to(equal("away"))
+                        count += 1
+                    }
+
                     waitUntil(timeout: testTimeout) { done in
-                        let partlyDone = AblyTests.splitDone(2, done: done)
-                        channel1.presence.subscribe(.Update) { member in
-                            expect(member.action).to(equal(ARTPresenceAction.Update))
-                            expect(member.clientId).to(equal("john"))
-                            expect(member.data as? NSObject).to(equal("away"))
-                            partlyDone()
-                        }
                         channel2.presence.enterClient("john", data: "online") { error in
                             expect(error).to(beNil())
                             channel2.presence.updateClient("john", data: "away") { error in
                                 expect(error).to(beNil())
                                 channel2.presence.leaveClient("john", data: nil) { error in
                                     expect(error).to(beNil())
-                                    partlyDone()
+                                    done()
                                 }
                             }
                         }
                     }
+
+                    expect(count).toEventually(equal(1), timeout: testTimeout)
                 }
 
             }
