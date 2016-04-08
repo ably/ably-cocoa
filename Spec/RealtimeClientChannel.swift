@@ -87,18 +87,18 @@ class RealtimeClientChannel: QuickSpec {
                     expect(channel.statesEventEmitter).to(beAKindOf(ARTEventEmitter.self))
 
                     var channelOnMethodCalled = false
-                    channel.testSuite_injectIntoMethod("on:") {
+                    channel.testSuite_injectIntoMethod(#selector(ARTEventEmitter.on(_:))) {
                         channelOnMethodCalled = true
                     }
 
                     // The `channel.on` should use `statesEventEmitter`
                     var statesEventEmitterOnMethodCalled = false
-                    channel.statesEventEmitter.testSuite_injectIntoMethod("on:") {
+                    channel.statesEventEmitter.testSuite_injectIntoMethod(#selector(ARTEventEmitter.on(_:))) {
                         statesEventEmitterOnMethodCalled = true
                     }
 
                     var emitCounter = 0
-                    channel.statesEventEmitter.testSuite_injectIntoMethod("emit:with:") {
+                    channel.statesEventEmitter.testSuite_injectIntoMethod(#selector(ARTEventEmitter.emit(_:with:))) {
                         emitCounter += 1
                     }
 
@@ -709,7 +709,7 @@ class RealtimeClientChannel: QuickSpec {
                     let restChannel = rest.channels.get("test")
 
                     var restEncodedMessage: ARTMessage?
-                    restChannel.testSuite_getReturnValueFrom(Selector("encodeMessageIfNeeded:")) { value in
+                    restChannel.testSuite_getReturnValueFrom(#selector(ARTChannel.encodeMessageIfNeeded(_:))) { value in
                         restEncodedMessage = value as? ARTMessage
                     }
 
@@ -727,7 +727,7 @@ class RealtimeClientChannel: QuickSpec {
                     expect(realtimeChannel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
 
                     var realtimeEncodedMessage: ARTMessage?
-                    realtimeChannel.testSuite_getReturnValueFrom(Selector("encodeMessageIfNeeded:")) { value in
+                    realtimeChannel.testSuite_getReturnValueFrom(#selector(ARTChannel.encodeMessageIfNeeded(_:))) { value in
                         realtimeEncodedMessage = value as? ARTMessage
                     }
 
@@ -1397,7 +1397,7 @@ class RealtimeClientChannel: QuickSpec {
                     defer { realtime.close() }
 
                     var restChannelHistoryMethodWasCalled = false
-                    let hook = ARTRestChannel.testSuite_injectIntoClassMethod("history:callback:error:") {
+                    let hook = ARTRestChannel.testSuite_injectIntoClassMethod(#selector(ARTRestChannel.history(_:callback:))) {
                         restChannelHistoryMethodWasCalled = true
                     }
                     defer { hook?.remove() }

@@ -731,7 +731,7 @@ class Auth : QuickSpec {
 
                 let hook = ARTAuth.aspect_hookSelector(rest.auth)
                 // Adds a block of code after `createTokenRequest` is triggered
-                let token = try? hook("createTokenRequest:options:callback:", withOptions: .PositionAfter, usingBlock:  unsafeBitCast(block, ARTAuth.self))
+                let token = try? hook(#selector(ARTAuth.createTokenRequest(_:options:callback:)), withOptions: .PositionAfter, usingBlock:  unsafeBitCast(block, ARTAuth.self))
 
                 expect(token).toNot(beNil())
 
@@ -881,7 +881,8 @@ class Auth : QuickSpec {
                         expect(error).to(beNil())
                         channel.history { page, error in
                             expect(error).to(beNil())
-                            expect(page!.items[0].clientId).to(equal("john"))
+                            let item = page!.items[0] as! ARTMessage
+                            expect(item.clientId).to(equal("john"))
                             done()
                         }
                     }
@@ -1045,7 +1046,7 @@ class Auth : QuickSpec {
 
                     let hook = ARTRest.aspect_hookSelector(rest)
                     // Adds a block of code after `time` is triggered
-                    let _ = try? hook(Selector("time:"), withOptions: .PositionAfter, usingBlock:  unsafeBitCast(block, ARTRest.self))
+                    let _ = try? hook(#selector(ARTRest.time(_:)), withOptions: .PositionAfter, usingBlock:  unsafeBitCast(block, ARTRest.self))
 
                     let authOptions = ARTAuthOptions()
                     authOptions.queryTime = true
@@ -1340,7 +1341,7 @@ class Auth : QuickSpec {
 
                 let hook = ARTAuth.aspect_hookSelector(rest.auth)
                 // Adds a block of code after `requestToken` is triggered
-                let token = try? hook("requestToken:withOptions:callback:", withOptions: .PositionAfter, usingBlock:  unsafeBitCast(block, ARTAuth.self))
+                let token = try? hook(#selector(ARTAuth.requestToken(_:withOptions:callback:)), withOptions: .PositionAfter, usingBlock:  unsafeBitCast(block, ARTAuth.self))
 
                 expect(token).toNot(beNil())
 

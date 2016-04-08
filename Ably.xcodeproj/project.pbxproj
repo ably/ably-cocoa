@@ -912,7 +912,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 96BF612B1A35B2AB004CF2B3 /* Build configuration list for PBXProject "Ably" */;
+			buildConfigurationList = 96BF612B1A35B2AB004CF2B3 /* Build configuration list for PBXProject "ably" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -1002,7 +1002,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-AblyTests/Pods-AblyTests-resources.sh\"";
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-AblyTests/Pods-AblyTests-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		D7CEF1271C897F89004FB242 /* Check Pods Manifest.lock */ = {
@@ -1402,7 +1402,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		96BF612B1A35B2AB004CF2B3 /* Build configuration list for PBXProject "Ably" */ = {
+		96BF612B1A35B2AB004CF2B3 /* Build configuration list for PBXProject "ably" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				96BF61451A35B2AB004CF2B3 /* Debug */,
