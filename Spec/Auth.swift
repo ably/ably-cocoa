@@ -448,9 +448,18 @@ class Auth : QuickSpec {
                     it("identity should be anonymous for all operations") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
-                        let realtime = ARTRealtime(options: options)
+                        let realtime = AblyTests.newRealtime(options)
                         defer { realtime.close() }
                         expect(realtime.auth.clientId).to(beNil())
+
+                        let transport = realtime.transport as! TestProxyTransport
+                        transport.beforeProcessingReceivedMessage = { message in
+                            if message.action == .Connected {
+                                if let details = message.connectionDetails {
+                                    details.clientId = nil
+                                }
+                            }
+                        }
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.connection.once(.Connected) { stateChange in
@@ -906,6 +915,37 @@ class Auth : QuickSpec {
                 expect(rest.auth.clientId).to(beNil())
             }
 
+        }
+
+        // RSA8f3
+        it("ensure the message published with a wildcard '*' does not have a clientId") {
+            let options = AblyTests.commonAppSetup()
+            // Request a token with a wildcard '*' value clientId
+            options.token = getTestToken(clientId: "*")
+            let rest = ARTRest(options: options)
+            rest.httpExecutor = mockExecutor
+            let channel = rest.channels.get("test")
+
+            waitUntil(timeout: testTimeout) { done in
+                let message = ARTMessage(name: nil, data: "no client")
+                expect(message.clientId).to(beNil())
+                channel.publish([message]) { error in
+                    expect(error).to(beNil())
+                    switch extractBodyAsMessages(mockExecutor.requests.first) {
+                    case .Failure(let error):
+                        fail(error)
+                    case .Success(let httpBody):
+                        expect(httpBody.unbox.first!["clientId"]).to(beNil())
+                    }
+                    channel.history { page, error in
+                        expect(error).to(beNil())
+                        expect(page!.items).to(haveCount(1))
+                        expect((page!.items[0] as! ARTMessage).clientId).to(beNil())
+                        done()
+                    }
+                }
+            }
+            expect(rest.auth.clientId).to(beNil())
         }
 
         struct ExpectedTokenParams {

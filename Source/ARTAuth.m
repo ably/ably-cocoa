@@ -342,12 +342,7 @@
 
 - (NSString *)getClientId {
     if (_protocolClientId) {
-        // Check wildcard
-        if ([_protocolClientId isEqual:@"*"])
-            // Any client
-            return nil;
-        else
-            return _protocolClientId;
+       return _protocolClientId;
     }
     else if (self.tokenDetails) {
         // Check wildcard
