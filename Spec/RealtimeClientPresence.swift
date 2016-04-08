@@ -795,7 +795,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 var user50PresentTimestamp: NSDate?
-                channel.presenceMap.testSuite_getArgumentFrom("put:", atIndex: 0) { arg0 in
+                channel.presenceMap.testSuite_getArgumentFrom(#selector(ARTPresenceMap.put(_:)), atIndex: 0) { arg0 in
                     let member = arg0 as! ARTPresenceMessage
                     if member.clientId == "user50" && member.action == .Present {
                         user50PresentTimestamp = member.timestamp
@@ -1672,7 +1672,7 @@ class RealtimeClientPresence: QuickSpec {
                     defer { realtime.close() }
 
                     var restPresenceHistoryMethodWasCalled = false
-                    var hook = ARTRestPresence.testSuite_injectIntoClassMethod("history:callback:error:") {
+                    var hook = ARTRestPresence.testSuite_injectIntoClassMethod(#selector(ARTRestPresence.history(_:callback:))) {
                         restPresenceHistoryMethodWasCalled = true
                     }
                     defer { hook?.remove() }

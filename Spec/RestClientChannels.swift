@@ -106,22 +106,14 @@ class RestClientChannels: QuickSpec {
                 context("releaseChannel") {
                     it("should release a channel") {
                         weak var channel: ARTRestChannel!
-                        var deallocated = false
 
                         autoreleasepool {
                             channel = client.channels.get(channelName)
-
-                            let block: @convention(block) (AspectInfo) -> Void = { _ in
-                                deallocated = true
-                            }
-
-                            let _ = try! channel.aspect_hookSelector("dealloc", withOptions: .PositionBefore, usingBlock: unsafeBitCast(block, AnyObject.self))
 
                             expect(channel).to(beAChannel(named: channelName))
                             client.channels.release(channel.name)
                         }
 
-                        expect(deallocated).to(beTrue())
                         expect(channel).to(beNil())
                     }
                 }

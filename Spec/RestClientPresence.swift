@@ -159,7 +159,8 @@ class RestClientPresence: QuickSpec {
                             expect(membersPage!.hasNext).to(beFalse())
                             expect(membersPage!.isLast).to(beTrue())
                             expect(membersPage!.items).to(allPass({ member in
-                                return NSRegularExpression.match(member!.clientId, pattern: "^user(7|8|9)")
+                                let member = member as! ARTPresenceMessage
+                                return NSRegularExpression.match(member.clientId, pattern: "^user(7|8|9)")
                             }))
                             done()
                         }
