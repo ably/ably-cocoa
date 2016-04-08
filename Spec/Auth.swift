@@ -867,6 +867,23 @@ class Auth : QuickSpec {
 
             }
 
+            // RSA8f2
+            it("ensure that the message is rejected") {
+                let options = AblyTests.commonAppSetup()
+                options.token = getTestToken(clientId: nil)
+                let rest = ARTRest(options: options)
+                let channel = rest.channels.get("test")
+
+                waitUntil(timeout: testTimeout) { done in
+                    let message = ARTMessage(name: nil, data: "message with an explicit clientId", clientId: "john")
+                    channel.publish([message]) { error in
+                        expect(error!.message).to(contain("mismatched clientId"))
+                        done()
+                    }
+                }
+                expect(rest.auth.clientId).to(beNil())
+            }
+
             // RSA8f4
             it("ensure the message published with a wildcard '*' has the provided clientId") {
                 let options = AblyTests.commonAppSetup()
