@@ -11,8 +11,8 @@
 
 @implementation NSObject (TestSuite)
 
-- (void)testSuite_getReturnValueFrom:(SEL)selector callback:(void (^)(id))callback {
-    [self aspect_hookSelector:selector withOptions:AspectPositionAfter usingBlock:^(id<AspectInfo> info) {
+- (id<AspectToken>)testSuite_getReturnValueFrom:(SEL)selector callback:(void (^)(id))callback {
+    return [self aspect_hookSelector:selector withOptions:AspectPositionAfter usingBlock:^(id<AspectInfo> info) {
         __autoreleasing id result;
         [[info originalInvocation] getReturnValue:&result];
         callback([result copy]);
@@ -27,14 +27,14 @@
     } error:nil];
 }
 
-- (void)testSuite_injectIntoMethodBefore:(SEL)selector code:(void (^)(void))block {
-    [self aspect_hookSelector:selector withOptions:AspectPositionBefore usingBlock:^(id<AspectInfo> info) {
+- (id<AspectToken>)testSuite_injectIntoMethodBefore:(SEL)selector code:(void (^)(void))block {
+    return [self aspect_hookSelector:selector withOptions:AspectPositionBefore usingBlock:^(id<AspectInfo> info) {
         block();
     } error:nil];
 }
 
-- (void)testSuite_injectIntoMethodAfter:(SEL)selector code:(void (^)(void))block {
-    [self aspect_hookSelector:selector withOptions:AspectPositionAfter usingBlock:^(id<AspectInfo> info) {
+- (id<AspectToken>)testSuite_injectIntoMethodAfter:(SEL)selector code:(void (^)(void))block {
+    return [self aspect_hookSelector:selector withOptions:AspectPositionAfter usingBlock:^(id<AspectInfo> info) {
         block();
     } error:nil];
 }
