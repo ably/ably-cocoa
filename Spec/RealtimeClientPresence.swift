@@ -1507,7 +1507,7 @@ class RealtimeClientPresence: QuickSpec {
                     let channel = client.channels.get("test")
 
                     var presenceQueryWasCreated = false
-                    let hook = ARTRealtimePresenceQuery.testSuite_injectIntoClassMethod("init") { // Default initialiser
+                    let hook = ARTRealtimePresenceQuery.testSuite_injectIntoClassMethod(#selector(ARTRealtimePresenceQuery.init as () -> ARTRealtimePresenceQuery)) { // Default initialiser: referring to the no-parameter variant of `init` as one of several overloaded methods requires an explicit `as <signature>` cast
                         presenceQueryWasCreated = true
                     }
                     defer { hook?.remove() }
