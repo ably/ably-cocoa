@@ -876,6 +876,36 @@ class Auth : QuickSpec {
 
             }
 
+            // RSA8f1
+            it("ensure the message published does not have a clientId") {
+                let options = AblyTests.commonAppSetup()
+                options.token = getTestToken(clientId: nil)
+                let rest = ARTRest(options: options)
+                rest.httpExecutor = mockExecutor
+                let channel = rest.channels.get("test")
+
+                waitUntil(timeout: testTimeout) { done in
+                    let message = ARTMessage(name: nil, data: "message without an explicit clientId")
+                    expect(message.clientId).to(beNil())
+                    channel.publish([message]) { error in
+                        expect(error).to(beNil())
+                        switch extractBodyAsMessages(mockExecutor.requests.first) {
+                        case .Failure(let error):
+                            fail(error)
+                        case .Success(let httpBody):
+                            expect(httpBody.unbox.first!["clientId"]).to(beNil())
+                        }
+                        channel.history { page, error in
+                            expect(error).to(beNil())
+                            expect(page!.items).to(haveCount(1))
+                            expect((page!.items[0] as! ARTMessage).clientId).to(beNil())
+                            done()
+                        }
+                    }
+                }
+                expect(rest.auth.clientId).to(beNil())
+            }
+
             // RSA8f2
             it("ensure that the message is rejected") {
                 let options = AblyTests.commonAppSetup()
@@ -888,6 +918,37 @@ class Auth : QuickSpec {
                     channel.publish([message]) { error in
                         expect(error!.message).to(contain("mismatched clientId"))
                         done()
+                    }
+                }
+                expect(rest.auth.clientId).to(beNil())
+            }
+
+            // RSA8f3
+            it("ensure the message published with a wildcard '*' does not have a clientId") {
+                let options = AblyTests.commonAppSetup()
+                // Request a token with a wildcard '*' value clientId
+                options.token = getTestToken(clientId: "*")
+                let rest = ARTRest(options: options)
+                rest.httpExecutor = mockExecutor
+                let channel = rest.channels.get("test")
+
+                waitUntil(timeout: testTimeout) { done in
+                    let message = ARTMessage(name: nil, data: "no client")
+                    expect(message.clientId).to(beNil())
+                    channel.publish([message]) { error in
+                        expect(error).to(beNil())
+                        switch extractBodyAsMessages(mockExecutor.requests.first) {
+                        case .Failure(let error):
+                            fail(error)
+                        case .Success(let httpBody):
+                            expect(httpBody.unbox.first!["clientId"]).to(beNil())
+                        }
+                        channel.history { page, error in
+                            expect(error).to(beNil())
+                            expect(page!.items).to(haveCount(1))
+                            expect((page!.items[0] as! ARTMessage).clientId).to(beNil())
+                            done()
+                        }
                     }
                 }
                 expect(rest.auth.clientId).to(beNil())
@@ -916,37 +977,6 @@ class Auth : QuickSpec {
                 expect(rest.auth.clientId).to(beNil())
             }
 
-        }
-
-        // RSA8f3
-        it("ensure the message published with a wildcard '*' does not have a clientId") {
-            let options = AblyTests.commonAppSetup()
-            // Request a token with a wildcard '*' value clientId
-            options.token = getTestToken(clientId: "*")
-            let rest = ARTRest(options: options)
-            rest.httpExecutor = mockExecutor
-            let channel = rest.channels.get("test")
-
-            waitUntil(timeout: testTimeout) { done in
-                let message = ARTMessage(name: nil, data: "no client")
-                expect(message.clientId).to(beNil())
-                channel.publish([message]) { error in
-                    expect(error).to(beNil())
-                    switch extractBodyAsMessages(mockExecutor.requests.first) {
-                    case .Failure(let error):
-                        fail(error)
-                    case .Success(let httpBody):
-                        expect(httpBody.unbox.first!["clientId"]).to(beNil())
-                    }
-                    channel.history { page, error in
-                        expect(error).to(beNil())
-                        expect(page!.items).to(haveCount(1))
-                        expect((page!.items[0] as! ARTMessage).clientId).to(beNil())
-                        done()
-                    }
-                }
-            }
-            expect(rest.auth.clientId).to(beNil())
         }
 
         struct ExpectedTokenParams {
