@@ -228,7 +228,37 @@ class RestClientChannel: QuickSpec {
                         }
                     }
                 }
+
+                // RSL1g4
+                pending("when publishing a Message with an explicit clientId that is incompatible with the identified client’s clientId") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = mockExecutor
+                    let channel = client.channels.get("test")
+
+                    // Reject before the message is sent to the server
+                    channel.testSuite_injectIntoMethodBefore("publish:callback:") {
+                        mockExecutor.http = nil
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let message = ARTMessage(name: nil, data: "message", clientId: "tester")
+                        channel.publish([message]) { error in
+                            expect(error!.code).to(equal(Int(ARTState.MismatchedClientId.rawValue)))
+
+                            mockExecutor.http = ARTHttp()
+                            channel.history { page, error in
+                                expect(error).to(beNil())
+                                expect(page!.items).to(haveCount(0))
+                                done()
+                            }
+                        }
+                    }
+                }
+
             }
+
         }
 
         // RSL3, RSP1
