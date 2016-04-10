@@ -497,7 +497,7 @@ func extractBodyAsMessages(request: NSMutableURLRequest?) -> Result<[NSDictionar
 
 
 /// Records each request and response for test purpose.
-class MockHTTPExecutor: NSObject, ARTHTTPExecutor {
+class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
 
     var http: ARTHttp? = ARTHttp()
     var logger: ARTLog?

@@ -1469,8 +1469,8 @@ class RealtimeClientChannel: QuickSpec {
                             defer { client.close() }
                             let channel = client.channels.get("test")
 
-                            let mockExecutor = MockHTTPExecutor()
-                            client.rest.httpExecutor = mockExecutor
+                            let testHTTPExecutor = TestProxyHTTPExecutor()
+                            client.rest.httpExecutor = testHTTPExecutor
 
                             let query = ARTRealtimeHistoryQuery()
                             query.untilAttach = caseItem.untilAttach
@@ -1485,7 +1485,7 @@ class RealtimeClientChannel: QuickSpec {
                                 }
                             }
 
-                            let queryString = mockExecutor.requests.last!.URL!.query
+                            let queryString = testHTTPExecutor.requests.last!.URL!.query
 
                             if query.untilAttach {
                                 expect(queryString).to(contain("fromSerial=\(channel.attachSerial!)"))

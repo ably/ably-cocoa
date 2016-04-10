@@ -12,10 +12,10 @@ import Quick
 class RestClient: QuickSpec {
     override func spec() {
 
-        var mockExecutor: MockHTTPExecutor!
+        var testHTTPExecutor: TestProxyHTTPExecutor!
 
         beforeEach {
-            mockExecutor = MockHTTPExecutor()
+            testHTTPExecutor = TestProxyHTTPExecutor()
         }
 
         describe("RestClient") {
@@ -151,43 +151,43 @@ class RestClient: QuickSpec {
                     let options = ARTClientOptions(key: "fake:key")
                     options.environment = "fake"
                     let client = ARTRest(options: options)
-                    client.httpExecutor = mockExecutor
+                    client.httpExecutor = testHTTPExecutor
                     
                     publishTestMessage(client, failOnError: false)
                     
-                    expect(mockExecutor.requests.first?.URL?.host).toEventually(equal("fake-rest.ably.io"), timeout: testTimeout)
+                    expect(testHTTPExecutor.requests.first?.URL?.host).toEventually(equal("fake-rest.ably.io"), timeout: testTimeout)
                 }
                 
                 it("should accept an options object with an environment set") {
                     let options = ARTClientOptions(key: "fake:key")
                     options.environment = "myEnvironment"
                     let client = ARTRest(options: options)
-                    client.httpExecutor = mockExecutor
+                    client.httpExecutor = testHTTPExecutor
                     
                     publishTestMessage(client, failOnError: false)
                     
-                    expect(mockExecutor.requests.first?.URL?.host).toEventually(equal("myEnvironment-rest.ably.io"), timeout: testTimeout)
+                    expect(testHTTPExecutor.requests.first?.URL?.host).toEventually(equal("myEnvironment-rest.ably.io"), timeout: testTimeout)
                 }
                 
                 it("should default to https://rest.ably.io") {
                     let options = ARTClientOptions(key: "fake:key")
                     let client = ARTRest(options: options)
-                    client.httpExecutor = mockExecutor
+                    client.httpExecutor = testHTTPExecutor
                     
                     publishTestMessage(client, failOnError: false)
                     
-                    expect(mockExecutor.requests.first?.URL?.absoluteString).toEventually(beginWith("https://rest.ably.io"), timeout: testTimeout)
+                    expect(testHTTPExecutor.requests.first?.URL?.absoluteString).toEventually(beginWith("https://rest.ably.io"), timeout: testTimeout)
                 }
                 
                 it("should connect over plain http:// when tls is off") {
                     let options = AblyTests.clientOptions(requestToken: true)
                     options.tls = false
                     let client = ARTRest(options: options)
-                    client.httpExecutor = mockExecutor
+                    client.httpExecutor = testHTTPExecutor
                     
                     publishTestMessage(client, failOnError: false)
                     
-                    expect(mockExecutor.requests.first?.URL?.scheme).toEventually(equal("http"), timeout: testTimeout)
+                    expect(testHTTPExecutor.requests.first?.URL?.scheme).toEventually(equal("http"), timeout: testTimeout)
                 }
             }
 
@@ -222,12 +222,12 @@ class RestClient: QuickSpec {
                 let options = AblyTests.commonAppSetup()
 
                 let clientHttps = ARTRest(options: options)
-                clientHttps.httpExecutor = mockExecutor
+                clientHttps.httpExecutor = testHTTPExecutor
 
                 options.clientId = "client_http"
                 options.tls = false
                 let clientHttp = ARTRest(options: options)
-                clientHttp.httpExecutor = mockExecutor
+                clientHttp.httpExecutor = testHTTPExecutor
 
                 waitUntil(timeout: testTimeout) { done in
                     publishTestMessage(clientHttps) { error in
@@ -241,10 +241,10 @@ class RestClient: QuickSpec {
                     }
                 }
 
-                let requestUrlA = mockExecutor.requests.first!.URL!
+                let requestUrlA = testHTTPExecutor.requests.first!.URL!
                 expect(requestUrlA.scheme).to(equal("https"))
 
-                let requestUrlB = mockExecutor.requests.last!.URL!
+                let requestUrlB = testHTTPExecutor.requests.last!.URL!
                 expect(requestUrlB.scheme).to(equal("http"))
             }
 
@@ -365,13 +365,13 @@ class RestClient: QuickSpec {
                         options.authUrl = NSURL(string: "http://test-auth.ably.io")
 
                         let rest = ARTRest(options: options)
-                        rest.httpExecutor = mockExecutor
+                        rest.httpExecutor = testHTTPExecutor
 
                         // Delay for token expiration
                         delay(tokenParams.ttl) {
                             // [40140, 40150) - token expired and will not recover because authUrl is invalid
                             publishTestMessage(rest) { error in
-                                guard let errorCode = mockExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String else {
+                                guard let errorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String else {
                                     fail("expected X-Ably-ErrorCode header in request")
                                     return
                                 }
@@ -414,13 +414,13 @@ class RestClient: QuickSpec {
                         options.tokenDetails = ARTTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires!.dateByAddingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
 
                         let rest = ARTRest(options: options)
-                        rest.httpExecutor = mockExecutor
+                        rest.httpExecutor = testHTTPExecutor
 
                         // Delay for token expiration
                         delay(tokenParams.ttl) {
                             // [40140, 40150) - token expired and will not recover because authUrl is invalid
                             publishTestMessage(rest) { error in
-                                guard let errorCode = mockExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String else {
+                                guard let errorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String else {
                                     fail("expected X-Ably-ErrorCode header in request")
                                     return
                                 }
