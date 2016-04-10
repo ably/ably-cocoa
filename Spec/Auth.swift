@@ -13,10 +13,10 @@ import Aspects
 class Auth : QuickSpec {
     override func spec() {
         
-        var mockExecutor: MockHTTPExecutor!
+        var testHTTPExecutor: TestProxyHTTPExecutor!
         
         beforeEach {
-            mockExecutor = MockHTTPExecutor()
+            testHTTPExecutor = TestProxyHTTPExecutor()
         }
 
         describe("Basic") {
@@ -32,7 +32,7 @@ class Auth : QuickSpec {
             // RSA11
             it("should send the API key in the Authorization header") {
                 let client = ARTRest(options: AblyTests.setupOptions(AblyTests.jsonRestOptions))
-                client.httpExecutor = mockExecutor
+                client.httpExecutor = testHTTPExecutor
                 
                 waitUntil(timeout: testTimeout) { done in
                     client.channels.get("test").publish(nil, data: "message") { error in
@@ -46,7 +46,7 @@ class Auth : QuickSpec {
                                 
                 let expectedAuthorization = "Basic \(key64)"
                 
-                guard let request = mockExecutor.requests.first else {
+                guard let request = testHTTPExecutor.requests.first else {
                     fail("No request found")
                     return
                 }
@@ -73,7 +73,7 @@ class Auth : QuickSpec {
                     let options = AblyTests.clientOptions(requestToken: true)
                     options.tls = false
                     let clientHTTP = ARTRest(options: options)
-                    clientHTTP.httpExecutor = mockExecutor
+                    clientHTTP.httpExecutor = testHTTPExecutor
                     
                     waitUntil(timeout: testTimeout) { done in
                         clientHTTP.channels.get("test").publish(nil, data: "message") { error in
@@ -81,7 +81,7 @@ class Auth : QuickSpec {
                         }
                     }
 
-                    guard let request = mockExecutor.requests.first else {
+                    guard let request = testHTTPExecutor.requests.first else {
                         fail("No request found")
                         return
                     }
@@ -96,7 +96,7 @@ class Auth : QuickSpec {
                     let options = AblyTests.clientOptions(requestToken: true)
                     options.tls = true
                     let clientHTTPS = ARTRest(options: options)
-                    clientHTTPS.httpExecutor = mockExecutor
+                    clientHTTPS.httpExecutor = testHTTPExecutor
                     
                     waitUntil(timeout: testTimeout) { done in
                         clientHTTPS.channels.get("test").publish(nil, data: "message") { error in
@@ -104,7 +104,7 @@ class Auth : QuickSpec {
                         }
                     }
 
-                    guard let request = mockExecutor.requests.first else {
+                    guard let request = testHTTPExecutor.requests.first else {
                         fail("No request found")
                         return
                     }
@@ -121,7 +121,7 @@ class Auth : QuickSpec {
                     options.token = getTestToken()
 
                     let client = ARTRest(options: options)
-                    client.httpExecutor = mockExecutor
+                    client.httpExecutor = testHTTPExecutor
                     
                     waitUntil(timeout: testTimeout) { done in
                         client.channels.get("test").publish(nil, data: "message") { error in
@@ -136,7 +136,7 @@ class Auth : QuickSpec {
 
                     let expectedAuthorization = "Bearer \(encodeBase64(currentToken))"
                     
-                    guard let request = mockExecutor.requests.first else {
+                    guard let request = testHTTPExecutor.requests.first else {
                         fail("No request found")
                         return
                     }
@@ -211,7 +211,7 @@ class Auth : QuickSpec {
                         options.clientId = expectedClientId
 
                         let client = ARTRest(options: options)
-                        client.httpExecutor = mockExecutor
+                        client.httpExecutor = testHTTPExecutor
 
                         waitUntil(timeout: testTimeout) { done in
                             // Token
@@ -224,7 +224,7 @@ class Auth : QuickSpec {
                             }
                         }
 
-                        switch extractBodyAsJSON(mockExecutor.requests.first) {
+                        switch extractBodyAsJSON(testHTTPExecutor.requests.first) {
                         case .Failure(let error):
                             XCTFail(error)
                         case .Success(let httpBody):
@@ -389,7 +389,7 @@ class Auth : QuickSpec {
                     options.clientId = expectedClientId
 
                     let client = ARTRest(options: options)
-                    client.httpExecutor = mockExecutor
+                    client.httpExecutor = testHTTPExecutor
                     
                     waitUntil(timeout: testTimeout) { done in
                         client.channels.get("test").publish(nil, data: "message") { error in
@@ -400,7 +400,7 @@ class Auth : QuickSpec {
                         }
                     }
                     
-                    switch extractBodyAsJSON(mockExecutor.requests.last) {
+                    switch extractBodyAsJSON(testHTTPExecutor.requests.last) {
                     case .Failure(let error):
                         XCTFail(error)
                     case .Success(let httpBody):
@@ -417,7 +417,7 @@ class Auth : QuickSpec {
                     options.clientId = "client_string"
                     
                     let client = ARTRest(options: options)
-                    client.httpExecutor = mockExecutor
+                    client.httpExecutor = testHTTPExecutor
                     
                     waitUntil(timeout: testTimeout) { done in
                         client.channels.get("test").publish(nil, data: "message") { error in
@@ -428,7 +428,7 @@ class Auth : QuickSpec {
                         }
                     }
                     
-                    let authorization = mockExecutor.requests.last?.allHTTPHeaderFields?["Authorization"] ?? ""
+                    let authorization = testHTTPExecutor.requests.last?.allHTTPHeaderFields?["Authorization"] ?? ""
                     
                     expect(authorization).toNot(equal(""))
                 }
@@ -512,7 +512,7 @@ class Auth : QuickSpec {
                         options.clientId = "client_string"
                         
                         let client = ARTRest(options: options)
-                        client.httpExecutor = mockExecutor
+                        client.httpExecutor = testHTTPExecutor
                         
                         // TokenDetails
                         waitUntil(timeout: 10) { done in
@@ -527,7 +527,7 @@ class Auth : QuickSpec {
                         }
                         
                         // TokenRequest
-                        switch extractBodyAsJSON(mockExecutor.requests.last) {
+                        switch extractBodyAsJSON(testHTTPExecutor.requests.last) {
                         case .Failure(let error):
                             XCTFail(error)
                         case .Success(let httpBody):
@@ -701,11 +701,11 @@ class Auth : QuickSpec {
                     tokenParams.clientId = "tester"
 
                     let client = ARTRest(options: options)
-                    client.httpExecutor = mockExecutor
+                    client.httpExecutor = testHTTPExecutor
 
                     waitUntil(timeout: testTimeout) { done in
                         client.auth.requestToken(tokenParams, withOptions: nil) { tokenDetails, error in
-                            let query = mockExecutor.requests[0].URL!.query
+                            let query = testHTTPExecutor.requests[0].URL!.query
                             expect(query).to(haveParam("clientId", withValue: tokenParams.clientId!))
                             done()
                         }
@@ -881,7 +881,7 @@ class Auth : QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 options.token = getTestToken(clientId: nil)
                 let rest = ARTRest(options: options)
-                rest.httpExecutor = mockExecutor
+                rest.httpExecutor = testHTTPExecutor
                 let channel = rest.channels.get("test")
 
                 waitUntil(timeout: testTimeout) { done in
@@ -889,7 +889,7 @@ class Auth : QuickSpec {
                     expect(message.clientId).to(beNil())
                     channel.publish([message]) { error in
                         expect(error).to(beNil())
-                        switch extractBodyAsMessages(mockExecutor.requests.first) {
+                        switch extractBodyAsMessages(testHTTPExecutor.requests.first) {
                         case .Failure(let error):
                             fail(error)
                         case .Success(let httpBody):
@@ -929,7 +929,7 @@ class Auth : QuickSpec {
                 // Request a token with a wildcard '*' value clientId
                 options.token = getTestToken(clientId: "*")
                 let rest = ARTRest(options: options)
-                rest.httpExecutor = mockExecutor
+                rest.httpExecutor = testHTTPExecutor
                 let channel = rest.channels.get("test")
 
                 waitUntil(timeout: testTimeout) { done in
@@ -937,7 +937,7 @@ class Auth : QuickSpec {
                     expect(message.clientId).to(beNil())
                     channel.publish([message]) { error in
                         expect(error).to(beNil())
-                        switch extractBodyAsMessages(mockExecutor.requests.first) {
+                        switch extractBodyAsMessages(testHTTPExecutor.requests.first) {
                         case .Failure(let error):
                             fail(error)
                         case .Success(let httpBody):
@@ -1472,7 +1472,7 @@ class Auth : QuickSpec {
 
                 it("should store the AuthOptions with authUrl") {
                     let rest = ARTRest(options: AblyTests.commonAppSetup())
-                    rest.httpExecutor = mockExecutor
+                    rest.httpExecutor = testHTTPExecutor
                     let auth = rest.auth
 
                     let token = getTestToken()
@@ -1500,7 +1500,7 @@ class Auth : QuickSpec {
                                 guard let tokenDetails = tokenDetails else {
                                     XCTFail("TokenDetails is nil"); done(); return
                                 }
-                                expect(mockExecutor.requests.last?.URL?.host).to(equal("echo.ably.io"))
+                                expect(testHTTPExecutor.requests.last?.URL?.host).to(equal("echo.ably.io"))
                                 expect(auth.options.force).to(beFalse())
                                 expect(auth.options.authUrl!.host).to(equal("echo.ably.io"))
                                 expect(auth.options.authHeaders!["X-Ably"]).to(equal("Test"))

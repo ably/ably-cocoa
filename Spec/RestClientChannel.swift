@@ -15,12 +15,12 @@ class RestClientChannel: QuickSpec {
     override func spec() {
         var client: ARTRest!
         var channel: ARTChannel! //ARTRestChannel
-        var mockExecutor: MockHTTPExecutor!
+        var testHTTPExecutor: TestProxyHTTPExecutor!
 
         beforeEach {
             client = ARTRest(options: AblyTests.setupOptions(AblyTests.jsonRestOptions))
             channel = client.channels.get(NSProcessInfo.processInfo().globallyUniqueString)
-            mockExecutor = MockHTTPExecutor()
+            testHTTPExecutor = TestProxyHTTPExecutor()
         }
 
         // RSL1
@@ -127,7 +127,7 @@ class RestClientChannel: QuickSpec {
                 it("publishes the messages in a single request and invokes callback with success") {
                     let oldExecutor = client.httpExecutor
                     defer { client.httpExecutor = oldExecutor}
-                    client.httpExecutor = mockExecutor
+                    client.httpExecutor = testHTTPExecutor
 
                     var publishError: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessages: [ARTMessage] = []
@@ -152,7 +152,7 @@ class RestClientChannel: QuickSpec {
                         expect(publishedMessage.data as? NSObject).to(equal(messages[i].data as? NSObject))
                         expect(publishedMessage.name).to(equal(messages[i].name))
                     }
-                    expect(mockExecutor.requests.count).to(equal(1))
+                    expect(testHTTPExecutor.requests.count).to(equal(1))
                 }
             }
 
@@ -234,12 +234,12 @@ class RestClientChannel: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
                     let client = ARTRest(options: options)
-                    client.httpExecutor = mockExecutor
+                    client.httpExecutor = testHTTPExecutor
                     let channel = client.channels.get("test")
 
                     // Reject before the message is sent to the server
                     let hook = channel.testSuite_injectIntoMethodBefore(#selector(ARTChannel.publish(_:callback:))) {
-                        mockExecutor.http = nil
+                        testHTTPExecutor.http = nil
                     }
 
                     waitUntil(timeout: testTimeout) { done in
@@ -251,7 +251,7 @@ class RestClientChannel: QuickSpec {
                     }
 
                     hook.remove()
-                    mockExecutor.http = ARTHttp()
+                    testHTTPExecutor.http = ARTHttp()
 
                     // Remains available
                     waitUntil(timeout: testTimeout) { done in
@@ -267,12 +267,12 @@ class RestClientChannel: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
                     let client = ARTRest(options: options)
-                    client.httpExecutor = mockExecutor
+                    client.httpExecutor = testHTTPExecutor
                     let channel = client.channels.get("test")
 
                     // Reject before the message is sent to the server
                     channel.testSuite_injectIntoMethodBefore(#selector(ARTChannel.publish(_:callback:))) {
-                        mockExecutor.http = nil
+                        testHTTPExecutor.http = nil
                     }
 
                     waitUntil(timeout: testTimeout) { done in
@@ -280,7 +280,7 @@ class RestClientChannel: QuickSpec {
                         channel.publish([message]) { error in
                             expect(error!.code).to(equal(Int(ARTState.MismatchedClientId.rawValue)))
 
-                            mockExecutor.http = ARTHttp()
+                            testHTTPExecutor.http = ARTHttp()
                             channel.history { page, error in
                                 expect(error).to(beNil())
                                 expect(page!.items).to(haveCount(0))
@@ -362,13 +362,13 @@ class RestClientChannel: QuickSpec {
                     TestCase(value: binaryData, expected: JSON(["data": binaryData.toBase64, "encoding": "base64"])),
                 ]
 
-                client.httpExecutor = mockExecutor
+                client.httpExecutor = testHTTPExecutor
 
                 validCases.forEach { caseTest in
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: caseTest.value) { error in
                             expect(error).to(beNil())
-                            guard let httpBody = mockExecutor.requests.last!.HTTPBody else {
+                            guard let httpBody = testHTTPExecutor.requests.last!.HTTPBody else {
                                 XCTFail("HTTPBody is nil");
                                 done(); return
                             }
@@ -397,13 +397,13 @@ class RestClientChannel: QuickSpec {
                     TestCase(value: binaryData, expected: "base64"),
                 ]
 
-                client.httpExecutor = mockExecutor
+                client.httpExecutor = testHTTPExecutor
 
                 encodingCases.forEach { caseItem in
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: caseItem.value, callback: { error in
                             expect(error).to(beNil())
-                            guard let httpBody = mockExecutor.requests.last!.HTTPBody else {
+                            guard let httpBody = testHTTPExecutor.requests.last!.HTTPBody else {
                                 XCTFail("HTTPBody is nil");
                                 done(); return
                             }
@@ -417,11 +417,11 @@ class RestClientChannel: QuickSpec {
             context("json") {
                 // RSL4d1
                 it("binary payload should be encoded as Base64 and represented as a JSON string") {
-                    client.httpExecutor = mockExecutor
+                    client.httpExecutor = testHTTPExecutor
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: binaryData, callback: { error in
                             expect(error).to(beNil())
-                            guard let httpBody = mockExecutor.requests.last!.HTTPBody else {
+                            guard let httpBody = testHTTPExecutor.requests.last!.HTTPBody else {
                                 XCTFail("HTTPBody is nil");
                                 done(); return
                             }
@@ -436,12 +436,12 @@ class RestClientChannel: QuickSpec {
 
                 // RSL4d
                 it("string payload should be represented as a JSON string") {
-                    client.httpExecutor = mockExecutor
+                    client.httpExecutor = testHTTPExecutor
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: text, callback: { error in
                             expect(error).to(beNil())
 
-                            if let request = mockExecutor.requests.last, let http = request.HTTPBody {
+                            if let request = testHTTPExecutor.requests.last, let http = request.HTTPBody {
                                 // String (UTF-8)
                                 let json = JSON(data: http)
                                 expect(json["data"].string).to(equal(text))
@@ -459,13 +459,13 @@ class RestClientChannel: QuickSpec {
                 context("json payload should be stringified either") {
 
                     it("as a JSON Array") {
-                        client.httpExecutor = mockExecutor
+                        client.httpExecutor = testHTTPExecutor
                         // JSON Array
                         waitUntil(timeout: testTimeout) { done in
                             channel.publish(nil, data: array, callback: { error in
                                 expect(error).to(beNil())
 
-                                if let request = mockExecutor.requests.last, let http = request.HTTPBody {
+                                if let request = testHTTPExecutor.requests.last, let http = request.HTTPBody {
                                     // Array
                                     let json = JSON(data: http)
                                     expect(json["data"].asArray).to(equal(array))
@@ -480,13 +480,13 @@ class RestClientChannel: QuickSpec {
                     }
 
                     it("as a JSON Object") {
-                        client.httpExecutor = mockExecutor
+                        client.httpExecutor = testHTTPExecutor
                         // JSON Object
                         waitUntil(timeout: testTimeout) { done in
                             channel.publish(nil, data: dictionary, callback: { error in
                                 expect(error).to(beNil())
 
-                                if let request = mockExecutor.requests.last, let http = request.HTTPBody {
+                                if let request = testHTTPExecutor.requests.last, let http = request.HTTPBody {
                                     // Dictionary
                                     let json = JSON(data: http)
                                     expect(json["data"].asDictionary).to(equal(dictionary))
@@ -590,12 +590,12 @@ class RestClientChannel: QuickSpec {
                 let client = ARTRest(options: options)
                 let channelOptions = ARTChannelOptions(cipher: ["key":ARTCrypto.generateRandomKey()])
                 let channel = client.channels.get("test", options: channelOptions)
-                client.httpExecutor = mockExecutor
+                client.httpExecutor = testHTTPExecutor
 
                 let expectedMessage = ["something":1]
                 let expectedData = try! NSJSONSerialization.dataWithJSONObject(expectedMessage, options: NSJSONWritingOptions(rawValue: 0))
 
-                mockExecutor.beforeProcessingDataResponse = { data in
+                testHTTPExecutor.beforeProcessingDataResponse = { data in
                     let dataStr = String(data: data!, encoding: NSUTF8StringEncoding)!
                     return dataStr.replace("json/utf-8", withString: "invalid").dataUsingEncoding(NSUTF8StringEncoding)!
                 }
