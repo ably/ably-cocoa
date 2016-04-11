@@ -496,7 +496,7 @@ class RestClient: QuickSpec {
             context("Host Fallback") {
 
                 // RSC15e
-                it("every new HTTP request is first attempted to the primary host rest.ably.io") {
+                pending("every new HTTP request is first attempted to the primary host rest.ably.io") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     let client = ARTRest(options: options)
                     client.httpExecutor = testHTTPExecutor
