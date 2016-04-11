@@ -439,6 +439,54 @@ class RestClient: QuickSpec {
                 }
             }
 
+            // RSC15
+            context("Host Fallback") {
+
+                // RSC15b
+                it("failing HTTP requests with custom endpoint should result in an error immediately") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.environment = "test"
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = testHTTPExecutor
+                    testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "message") { error in
+                            expect(error!.message).to(contain("hostname could not be found"))
+                            done()
+                        }
+                    }
+                }
+
+                // RSC15b
+                it("applies when the default rest.ably.io endpoint is being used") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = testHTTPExecutor
+                    testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                    let channel = client.channels.get("test")
+
+                    testHTTPExecutor.afterRequest = { _ in
+                        if testHTTPExecutor.requests.count == 2 {
+                            // Stop
+                            testHTTPExecutor.http = nil
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "nil") { _ in
+                            done()
+                        }
+                    }
+
+                    expect(testHTTPExecutor.requests).to(haveCount(2))
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[0].URL!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[1].URL!.absoluteString, pattern: "//[a-e].ably-rest.com")).to(beTrue())
+                }
+
+            }
+
         } //RestClient
     }
 }
