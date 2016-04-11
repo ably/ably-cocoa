@@ -506,6 +506,7 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
     var responses: [NSHTTPURLResponse] = []
 
     var beforeRequest: Optional<(NSMutableURLRequest)->()> = nil
+    var afterRequest: Optional<(NSMutableURLRequest)->()> = nil
     var beforeProcessingDataResponse: Optional<(NSData?)->(NSData)> = nil
 
     func executeRequest(request: NSMutableURLRequest, completion callback: ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?) {
@@ -525,6 +526,9 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
                     callback?(response, data, error)
                 }
             })
+        }
+        if let performEvent = afterRequest {
+            performEvent(request)
         }
     }
 
