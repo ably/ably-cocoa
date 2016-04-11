@@ -495,6 +495,40 @@ func extractBodyAsMessages(request: NSMutableURLRequest?) -> Result<[NSDictionar
     return Result.Success(Box(httpBody.map{$0 as! NSDictionary}))
 }
 
+enum NetworkAnswer {
+    case NoInternet
+    case HostUnreachable
+    case RequestTimeout(timeout: NSTimeInterval)
+    case HostInternalError(code: Int)
+    case Custom(response: NSHTTPURLResponse?, data: NSData?, error: NSError?)
+}
+
+class MockHTTP: ARTHttp {
+
+    let network: NetworkAnswer
+
+    init(network: NetworkAnswer) {
+        self.network = network
+    }
+
+    override func executeRequest(request: NSMutableURLRequest, completion callback: ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?) {
+        switch network {
+        case .NoInternet:
+            callback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1009, userInfo: [NSLocalizedDescriptionKey: "The Internet connection appears to be offline.."]))
+        case .HostUnreachable:
+            callback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1003, userInfo: [NSLocalizedDescriptionKey: "A server with the specified hostname could not be found."]))
+        case .RequestTimeout(let timeout):
+            delay(timeout) {
+                callback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1001, userInfo: [NSLocalizedDescriptionKey: "The request timed out."]))
+            }
+        case .HostInternalError(let code):
+            callback?(NSHTTPURLResponse(URL: NSURL(string: "http://ios.test.suite")!, statusCode: code, HTTPVersion: nil, headerFields: nil), nil, nil)
+        case .Custom(let response, let data, let error):
+            callback?(response, data, error)
+        }
+    }
+
+}
 
 /// Records each request and response for test purpose.
 class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
