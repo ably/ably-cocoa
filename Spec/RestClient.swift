@@ -460,7 +460,7 @@ class RestClient: QuickSpec {
                 }
 
                 // RSC15b
-                it("applies when the default rest.ably.io endpoint is being used") {
+                pending("applies when the default rest.ably.io endpoint is being used") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     let client = ARTRest(options: options)
                     client.httpExecutor = testHTTPExecutor
