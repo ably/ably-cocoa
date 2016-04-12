@@ -739,6 +739,19 @@ extension NSRegularExpression {
         return regex.rangeOfFirstMatchInString(value, options: [], range: range).location != NSNotFound
     }
 
+    class func extract(value: String?, pattern: String) -> String? {
+        guard let value = value else {
+            return nil
+        }
+        let options = NSRegularExpressionOptions()
+        let regex = try! NSRegularExpression(pattern: pattern, options: options)
+        let range = NSMakeRange(0, value.lengthOfBytesUsingEncoding(NSUTF8StringEncoding))
+        let result = regex.firstMatchInString(value, options: [], range: range)
+        guard let textRange = result?.rangeAtIndex(0) else { return nil }
+        let convertedRange =  value.startIndex.advancedBy(textRange.location)..<value.startIndex.advancedBy(textRange.location+textRange.length)
+        return value.substringWithRange(convertedRange)
+    }
+
 }
 
 extension String {
