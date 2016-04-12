@@ -606,7 +606,7 @@ class RestClient: QuickSpec {
             context("Host Fallback") {
 
                 // RSC15a
-                it("retry hosts in random order until httpMaxRetryCount has been reached") {
+                pending("retry hosts in random order until httpMaxRetryCount has been reached") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     let client = ARTRest(options: options)
                     client.httpExecutor = testHTTPExecutor
