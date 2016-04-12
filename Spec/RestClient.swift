@@ -602,6 +602,43 @@ class RestClient: QuickSpec {
 
             }
 
+            // RSC15
+            context("Host Fallback") {
+
+                // RSC15a
+                it("retry hosts in random order until httpMaxRetryCount has been reached") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = testHTTPExecutor
+                    testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                    let channel = client.channels.get("test")
+
+                    testHTTPExecutor.afterRequest = { _ in
+                        if testHTTPExecutor.requests.count > Int(options.httpMaxRetryCount) {
+                            fail("Should not retry more than \(options.httpMaxRetryCount)")
+                            testHTTPExecutor.http = nil
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "nil") { _ in
+                            done()
+                        }
+                    }
+
+                    expect(testHTTPExecutor.requests).to(haveCount(Int(options.httpMaxRetryCount)))
+
+                    let extractHostname = { (request: NSMutableURLRequest) in
+                        NSRegularExpression.extract(request.URL!.absoluteString, pattern: "[a-e].ably-rest.com")
+                    }
+                    let resultFallbackHosts = testHTTPExecutor.requests.flatMap(extractHostname)
+                    let orderedFallbackHosts = "abcde".characters.map({String($0) + ".ably-realtime.com"})
+
+                    expect(resultFallbackHosts).toNot(equal(orderedFallbackHosts))
+                }
+
+            }
+
         } //RestClient
     }
 }
