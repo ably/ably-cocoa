@@ -602,6 +602,35 @@ class TestProxyTransport: ARTWebSocketTransport {
     var actionsIgnored = [ARTProtocolMessageAction]()
     var ignoreSends = false
 
+    static var network: NetworkAnswer? = nil
+    static var networkConnectEvent: Optional<(NSURL)->()> = nil
+
+    override func connect() {
+        guard let network = TestProxyTransport.network else { super.connect(); return }
+        let hook = WebSocket.testSuite_replaceClassMethod(#selector(WebSocket.open(_:)), code: {
+            let performConnectError = { (secondsForDelay: NSTimeInterval, error: WebSocketError) in
+                delay(secondsForDelay) {
+                    self.delegate?.realtimeTransportFailed(self, withErrorInfo: ARTErrorInfo.createWithNSError(error as NSError))
+                }
+            }
+            switch network {
+            case .NoInternet, .HostUnreachable:
+                performConnectError(0.1, WebSocketError.Network("The operation couldn’t be completed. (kCFErrorDomainCFNetwork error 2.)"))
+            case .RequestTimeout(let timeout):
+                performConnectError(0.1 + timeout, WebSocketError.Network("The operation as timed out. (kCFErrorDomainCFNetwork error 2.)"))
+            case .HostInternalError(let code):
+                performConnectError(0.1, WebSocketError.InvalidResponse("\(code)"))
+            case .Host400BadRequest:
+                performConnectError(0.1, WebSocketError.InvalidHeader)
+            }
+        })
+        defer { hook?.remove() }
+        super.connect()
+        if let performNetworkConnect = TestProxyTransport.networkConnectEvent {
+            performNetworkConnect(lastUrl!)
+        }
+    }
+
     override func setupWebSocket(params: [NSURLQueryItem], withOptions options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?) -> NSURL {
         let url = super.setupWebSocket(params, withOptions: options, resumeKey: resumeKey, connectionSerial: connectionSerial)
         lastUrl = url
