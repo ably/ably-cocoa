@@ -512,7 +512,6 @@ enum NetworkAnswer {
     case RequestTimeout(timeout: NSTimeInterval)
     case HostInternalError(code: Int)
     case Host400BadRequest
-    case Custom(response: NSHTTPURLResponse?, data: NSData?, error: NSError?)
 }
 
 class MockHTTP: ARTHttp {
@@ -538,8 +537,6 @@ class MockHTTP: ARTHttp {
                 callback?(NSHTTPURLResponse(URL: NSURL(string: "http://ios.test.suite")!, statusCode: code, HTTPVersion: nil, headerFields: nil), nil, nil)
             case .Host400BadRequest:
                 callback?(NSHTTPURLResponse(URL: NSURL(string: "http://ios.test.suite")!, statusCode: 400, HTTPVersion: nil, headerFields: nil), nil, nil)
-            case .Custom(let response, let data, let error):
-                callback?(response, data, error)
             }
         }
     }
