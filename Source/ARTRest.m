@@ -29,6 +29,8 @@
 #import "ARTRestChannel.h"
 #import "ARTTokenParams.h"
 #import "ARTTokenDetails.h"
+#import "ARTDefault.h"
+#import "ARTFallback.h"
 
 @implementation ARTRest
 
@@ -120,6 +122,12 @@
 }
 
 - (void)executeRequest:(NSMutableURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
+    return [self executeRequest:request completion:callback fallbacks:nil];
+}
+
+- (void)executeRequest:(NSMutableURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback fallbacks:(ARTFallback *)fallbacks {
+    __block ARTFallback *blockFallbacks = fallbacks;
+
     [self.logger debug:__FILE__ line:__LINE__ message:@"%p executing request %@", self, request];
     [self.httpExecutor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode >= 400) {
@@ -135,11 +143,43 @@
                 }
                 callback(nil, nil, dataError);
             }
-        } else if (callback) {
+            return;
+        }
+        if (!blockFallbacks && [self shouldRetryWithFallback:request response:response error:error]) {
+            blockFallbacks = [[ARTFallback alloc] init];
+        }
+        if (error && blockFallbacks) {
+            NSString *host = [blockFallbacks popFallbackHost];
+            if (host != nil) {
+                NSMutableURLRequest *newRequest = [request copy];
+                NSURL *url = request.URL;
+                NSString *urlStr = [NSString stringWithFormat:@"%@://%@:%@%@?%@", url.scheme, host, url.port, url.path, (url.query ? url.query : @"")];
+                newRequest.URL = [NSURL URLWithString:urlStr];
+                [self executeRequest:newRequest completion:callback fallbacks:fallbacks];
+                return;
+            }
+        }
+        if (callback) {
             // Error object that indicates why the request failed
             callback(response, data, error);
         }
     }];
+}
+
+- (BOOL)shouldRetryWithFallback:(NSMutableURLRequest *)request response:(NSHTTPURLResponse *)response error:(NSError *)error {
+    if (![request.URL.host isEqualToString:[ARTDefault restHost]]) {
+        return NO;
+    }
+    if (response.statusCode >= 500 && response.statusCode <= 504) {
+        return YES;
+    }
+    if (error && (error.domain == NSURLErrorDomain && (
+        error.code == -1003 || // Unreachable
+        error.code == -1001 // timed out
+    ))) {
+        return YES;
+    }
+    return NO;
 }
 
 - (void)prepareAuthorisationHeader:(ARTAuthMethod)method completion:(void (^)(NSString *authorization, NSError *error))callback {

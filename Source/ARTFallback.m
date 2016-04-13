@@ -45,20 +45,4 @@
     return host;
 }
 
-+ (bool)shouldTryFallback:(ARTHttpResponse *) response  options:(ARTClientOptions *) options {
-    if(![options.restHost isEqualToString:[ARTDefault restHost]]) {
-        return false;
-    }
-    switch(response.error.statusCode) { //this ably server returned an internal error
-        case 500:
-        case 501:
-        case 502:
-        case 503:
-        case 504:
-            return true;
-        default:
-            return false;
-    }
-}
-
 @end
