@@ -18,4 +18,12 @@ extension NSObject {
         return try? self.aspect_hookSelector(selector, withOptions: .PositionAfter, usingBlock: unsafeBitCast(block, AnyObject.self))
     }
 
+    /// Replace identified class method with a block of code.
+    class func testSuite_replaceClassMethod(selector: Selector, code: ()->()) -> AspectToken? {
+        let block: @convention(block) (AspectInfo) -> Void = { _ in
+            code()
+        }
+        return try? self.aspect_hookSelector(selector, withOptions: .PositionInstead, usingBlock: unsafeBitCast(block, AnyObject.self))
+    }
+
 }

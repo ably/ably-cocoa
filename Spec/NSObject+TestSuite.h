@@ -28,6 +28,9 @@ ART_ASSUME_NONNULL_BEGIN
 /// Inject a block of code before the identified instance method.
 - (id<AspectToken>)testSuite_injectIntoMethodBefore:(SEL)selector code:(void (^)(void))block;
 
+/// Replace the identified instance method.
+- (id<AspectToken>)testSuite_replaceMethod:(SEL)selector code:(void (^)(void))block;
+
 ART_ASSUME_NONNULL_END
 
 @end
