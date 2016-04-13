@@ -2387,7 +2387,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN17b
-                it("applies when the default realtime.ably.io endpoint is being used") {
+                pending("applies when the default realtime.ably.io endpoint is being used") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
