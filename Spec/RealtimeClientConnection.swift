@@ -2535,7 +2535,7 @@ class RealtimeClientConnection: QuickSpec {
             context("Host Fallback") {
 
                 // RTN17c
-                it("should retry hosts in random order after checkin if an internet connection is available") {
+                pending("should retry hosts in random order after checkin if an internet connection is available") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
