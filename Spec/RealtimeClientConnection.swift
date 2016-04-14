@@ -2531,6 +2531,55 @@ class RealtimeClientConnection: QuickSpec {
 
             }
 
+            // RTN17
+            context("Host Fallback") {
+
+                // RTN17c
+                it("should retry hosts in random order after checkin if an internet connection is available") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+                    let channel = client.channels.get("test")
+
+                    let testHttpExecutor = TestProxyHTTPExecutor()
+                    client.rest.httpExecutor = testHttpExecutor
+
+                    client.setTransportClass(TestProxyTransport.self)
+                    TestProxyTransport.network = .HostUnreachable
+                    defer { TestProxyTransport.network = nil }
+
+                    var urlConnections = [NSURL]()
+                    TestProxyTransport.networkConnectEvent = { url in
+                        urlConnections.append(url)
+                        if urlConnections.count > Int(options.httpMaxRetryCount) {
+                            fail("Should not retry more than \(options.httpMaxRetryCount)")
+                            TestProxyTransport.network = nil
+                        }
+                    }
+
+                    client.connect()
+                    defer { client.close() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "message") { error in
+                            done()
+                        }
+                    }
+
+                    expect(NSRegularExpression.match(testHttpExecutor.requests[0].URL!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
+                    expect(urlConnections).to(haveCount(Int(options.httpMaxRetryCount)))
+
+                    let extractHostname = { (url: NSURL) in
+                        NSRegularExpression.extract(url.absoluteString, pattern: "[a-e].ably-realtime.com")
+                    }
+                    let resultFallbackHosts = urlConnections.flatMap(extractHostname)
+                    let orderedFallbackHosts = "abcde".characters.map({String($0) + ".ably-realtime.com"})
+
+                    expect(resultFallbackHosts).toNot(equal(orderedFallbackHosts))
+                }
+
+            }
+
             // RTN18
             context("state change side effects") {
 
