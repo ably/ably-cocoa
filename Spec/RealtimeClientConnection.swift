@@ -1929,6 +1929,29 @@ class RealtimeClientConnection: QuickSpec {
 
             }
 
+            // RTN16
+            context("Connection recovery") {
+
+                // RTN16c
+                it("Connection#recoveryKey should become becomes null when a connection is explicitly CLOSED or CLOSED") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connected) { _ in
+                            client.connection.once(.Closed) { _ in
+                                expect(client.connection.recoveryKey).to(beNil())
+                                expect(client.connection.key).to(beNil())
+                                expect(client.connection.id).to(beNil())
+                                done()
+                            }
+                            client.close()
+                        }
+                    }
+                }
+
+            }
+
             // RTN18
             context("state change side effects") {
 
