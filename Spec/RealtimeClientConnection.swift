@@ -2432,7 +2432,7 @@ class RealtimeClientConnection: QuickSpec {
                     for caseTest: NetworkAnswer in [.HostUnreachable,
                                                     .RequestTimeout(timeout: 0.1),
                                                     .HostInternalError(code: 501)] {
-                        it("\(caseTest)") {
+                        pending("\(caseTest)") {
                             let options = ARTClientOptions(key: "xxxx:xxxx")
                             options.autoConnect = false
                             let client = ARTRealtime(options: options)
