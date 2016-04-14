@@ -2491,6 +2491,53 @@ class RealtimeClientConnection: QuickSpec {
 
             }
 
+            // RTN17
+            context("Host Fallback") {
+
+                // RTN17a
+                it("every connection is first attempted to the primary host realtime.ably.io") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+                    let channel = client.channels.get("test")
+
+                    client.setTransportClass(TestProxyTransport.self)
+                    TestProxyTransport.network = .HostUnreachable
+                    defer { TestProxyTransport.network = nil }
+
+                    var urlConnections = [NSURL]()
+                    TestProxyTransport.networkConnectEvent = { url in
+                        urlConnections.append(url)
+                        if urlConnections.count == 2 {
+                            TestProxyTransport.network = nil
+                        }
+                    }
+
+                    client.connect()
+                    defer { client.close() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "message") { error in
+                            done()
+                        }
+                    }
+
+                    TestProxyTransport.network = nil
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "message") { error in
+                            done()
+                        }
+                    }
+
+                    expect(urlConnections).to(haveCount(3))
+                    expect(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io")).to(beTrue())
+                    expect(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+                    expect(NSRegularExpression.match(urlConnections[2].absoluteString, pattern: "//realtime.ably.io")).to(beTrue())
+                }
+
+            }
+
             // RTN18
             context("state change side effects") {
 
