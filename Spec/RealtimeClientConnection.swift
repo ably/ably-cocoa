@@ -2424,6 +2424,78 @@ class RealtimeClientConnection: QuickSpec {
 
             }
 
+            // RTN17
+            context("Host Fallback") {
+
+                // RTN17d
+                context("should use an alternative host when") {
+                    for caseTest: NetworkAnswer in [.HostUnreachable,
+                                                    .RequestTimeout(timeout: 0.1),
+                                                    .HostInternalError(code: 501)] {
+                        it("\(caseTest)") {
+                            let options = ARTClientOptions(key: "xxxx:xxxx")
+                            options.autoConnect = false
+                            let client = ARTRealtime(options: options)
+                            let channel = client.channels.get("test")
+
+                            client.setTransportClass(TestProxyTransport.self)
+                            TestProxyTransport.network = caseTest
+                            defer { TestProxyTransport.network = nil }
+
+                            var urlConnections = [NSURL]()
+                            TestProxyTransport.networkConnectEvent = { url in
+                                urlConnections.append(url)
+                                if urlConnections.count == 2 {
+                                    TestProxyTransport.network = nil
+                                }
+                            }
+
+                            client.connect()
+                            defer { client.close() }
+
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.publish(nil, data: "message") { error in
+                                    done()
+                                }
+                            }
+
+                            expect(urlConnections).to(haveCount(2))
+                            expect(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io")).to(beTrue())
+                            expect(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+                        }
+                    }
+                }
+
+                it("should not use an alternative host when the client receives a bad request") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+                    let channel = client.channels.get("test")
+
+                    client.setTransportClass(TestProxyTransport.self)
+                    TestProxyTransport.network = .Host400BadRequest
+                    defer { TestProxyTransport.network = nil }
+
+                    var urlConnections = [NSURL]()
+                    TestProxyTransport.networkConnectEvent = { url in
+                        urlConnections.append(url)
+                    }
+
+                    client.connect()
+                    defer { client.close() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "message") { error in
+                            done()
+                        }
+                    }
+
+                    expect(urlConnections).to(haveCount(1))
+                    expect(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io")).to(beTrue())
+                }
+
+            }
+
             // RTN18
             context("state change side effects") {
 
