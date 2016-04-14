@@ -2587,7 +2587,7 @@ class RealtimeClientConnection: QuickSpec {
 
 
                 // RTN17e
-                it("client is connected to a fallback host endpoint should do HTTP requests to the same data centre") {
+                pending("client is connected to a fallback host endpoint should do HTTP requests to the same data centre") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
