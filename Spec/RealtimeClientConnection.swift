@@ -2495,7 +2495,7 @@ class RealtimeClientConnection: QuickSpec {
             context("Host Fallback") {
 
                 // RTN17a
-                it("every connection is first attempted to the primary host realtime.ably.io") {
+                pending("every connection is first attempted to the primary host realtime.ably.io") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
