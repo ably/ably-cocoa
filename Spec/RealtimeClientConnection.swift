@@ -1735,6 +1735,39 @@ class RealtimeClientConnection: QuickSpec {
 
             }
 
+            // RTN16
+            context("Connection recovery") {
+
+                // RTN16d
+                it("when a connection is successfully recovered, Connection#id will be identical to the id of the connection that was recovered and Connection#key will always be updated to the ConnectionDetails#connectionKey provided in the first CONNECTED ProtocolMessage") {
+                    let options = AblyTests.commonAppSetup()
+                    let clientOriginal = ARTRealtime(options: options)
+                    defer { clientOriginal.close() }
+
+                    expect(clientOriginal.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+
+                    let expectedConnectionId = clientOriginal.connection.id
+
+                    options.recover = clientOriginal.connection.recoveryKey
+                    clientOriginal.onError(AblyTests.newErrorProtocolMessage())
+
+                    let clientRecover = AblyTests.newRealtime(options)
+                    defer { clientRecover.close() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        clientRecover.connection.once(.Connected) { _ in
+                            let transport = clientRecover.transport as! TestProxyTransport
+                            let firstConnectionDetails = transport.protocolMessagesReceived.filter{ $0.action == .Connected }.first!.connectionDetails
+                            expect(firstConnectionDetails!.connectionKey).toNot(beNil())
+                            expect(clientRecover.connection.id).to(equal(expectedConnectionId))
+                            expect(clientRecover.connection.key).to(equal(firstConnectionDetails!.connectionKey))
+                            done()
+                        }
+                    }
+                }
+
+            }
+
             // RTN18
             context("state change side effects") {
 
