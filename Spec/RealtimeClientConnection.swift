@@ -1546,6 +1546,37 @@ class RealtimeClientConnection: QuickSpec {
                         expect(client.msgSerial).to(equal(0))
                     }
 
+                    // RTN15c4
+                    it("ERROR ProtocolMessage indicating a fatal error in the connection") {
+                        let options = AblyTests.commonAppSetup()
+                        options.disconnectedRetryTimeout = 1.0
+                        let client = AblyTests.newRealtime(options)
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+
+                        client.onDisconnected()
+
+                        let protocolError = AblyTests.newErrorProtocolMessage()
+                        client.connection.once(.Connecting) { _ in
+                            // Resuming
+                            let transport = client.transport as! TestProxyTransport
+                            transport.actionsIgnored += [.Connected]
+                            client.onError(protocolError)
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.Failed) { stateChange in
+                                expect(stateChange!.reason).to(beIdenticalTo(protocolError.error))
+                                expect(client.connection.errorReason).to(beIdenticalTo(protocolError.error))
+                                done()
+                            }
+                        }
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
+                        expect(channel.errorReason).to(beIdenticalTo(protocolError.error))
+                    }
+
                 }
 
                 // RTN15d
