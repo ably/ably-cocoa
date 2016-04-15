@@ -492,6 +492,49 @@ class RestClient: QuickSpec {
 
             }
 
+            // RSC15
+            context("Host Fallback") {
+
+                // RSC15e
+                it("every new HTTP request is first attempted to the primary host rest.ably.io") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = testHTTPExecutor
+                    testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                    let channel = client.channels.get("test")
+
+                    testHTTPExecutor.afterRequest = { _ in
+                        if testHTTPExecutor.requests.count == 2 {
+                            // Stop
+                            testHTTPExecutor.http = nil
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "nil") { _ in
+                            done()
+                        }
+                    }
+
+                    testHTTPExecutor.http = ARTHttp()
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "nil") { _ in
+                            done()
+                        }
+                    }
+
+                    expect(testHTTPExecutor.requests).to(haveCount(3))
+                    if testHTTPExecutor.requests.count != 3 {
+                        return
+                    }
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[0].URL!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[1].URL!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[2].URL!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
+                }
+
+            }
+
         } //RestClient
     }
 }
