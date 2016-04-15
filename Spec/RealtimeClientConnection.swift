@@ -1433,7 +1433,7 @@ class RealtimeClientConnection: QuickSpec {
                 context("System's response to a resume request") {
 
                     // RTN15c1
-                    it("CONNECTED ProtocolMessage with the same connectionId as the current client, and no error") {
+                    pending("CONNECTED ProtocolMessage with the same connectionId as the current client, and no error") {
                         let options = AblyTests.commonAppSetup()
                         options.disconnectedRetryTimeout = 1.0
                         let client = AblyTests.newRealtime(options)
