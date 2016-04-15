@@ -20,6 +20,5 @@
  returns a random fallback host, returns null when all hosts have been popped.
  */
 -(NSString *) popFallbackHost;
-+(bool) shouldTryFallback:(ARTHttpResponse *) response  options:(ARTClientOptions *) options;
 
 @end

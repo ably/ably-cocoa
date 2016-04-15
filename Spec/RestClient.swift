@@ -544,7 +544,7 @@ class RestClient: QuickSpec {
                     for caseTest: NetworkAnswer in [.HostUnreachable,
                                                     .RequestTimeout(timeout: 0.1),
                                                     .HostInternalError(code: 501)] {
-                        pending("\(caseTest)") {
+                        it("\(caseTest)") {
                             let options = ARTClientOptions(key: "xxxx:xxxx")
                             let client = ARTRest(options: options)
                             client.httpExecutor = testHTTPExecutor
@@ -565,8 +565,11 @@ class RestClient: QuickSpec {
                             }
 
                             expect(testHTTPExecutor.requests).to(haveCount(2))
+                            if testHTTPExecutor.requests.count != 2 {
+                                return
+                            }
                             expect(NSRegularExpression.match(testHTTPExecutor.requests[0].URL!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
-                            expect(NSRegularExpression.match(testHTTPExecutor.requests[1].URL!.absoluteString, pattern: "//[a-e].ably-rest.com")).to(beTrue())
+                            expect(NSRegularExpression.match(testHTTPExecutor.requests[1].URL!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
                         }
                     }
 
@@ -577,7 +580,7 @@ class RestClient: QuickSpec {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     let client = ARTRest(options: options)
                     client.httpExecutor = testHTTPExecutor
-                    testHTTPExecutor.http = MockHTTP(network: .HostBadRequest)
+                    testHTTPExecutor.http = MockHTTP(network: .Host400BadRequest)
                     let channel = client.channels.get("test")
 
                     testHTTPExecutor.afterRequest = { _ in
