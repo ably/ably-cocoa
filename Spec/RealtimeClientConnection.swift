@@ -1547,7 +1547,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     // RTN15c4
-                    it("ERROR ProtocolMessage indicating a fatal error in the connection") {
+                    pending("ERROR ProtocolMessage indicating a fatal error in the connection") {
                         let options = AblyTests.commonAppSetup()
                         options.disconnectedRetryTimeout = 1.0
                         let client = AblyTests.newRealtime(options)
