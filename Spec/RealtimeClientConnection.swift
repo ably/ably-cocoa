@@ -1461,7 +1461,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     // RTN15c2
-                    it("CONNECTED ProtocolMessage with the same connectionId as the current client and an non-fatal error") {
+                    pending("CONNECTED ProtocolMessage with the same connectionId as the current client and an non-fatal error") {
                         let options = AblyTests.commonAppSetup()
                         options.disconnectedRetryTimeout = 1.0
                         let client = AblyTests.newRealtime(options)
