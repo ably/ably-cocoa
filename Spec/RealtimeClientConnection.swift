@@ -1515,6 +1515,37 @@ class RealtimeClientConnection: QuickSpec {
                         expect(client.queuedMessages).toEventually(haveCount(0), timeout: testTimeout)
                     }
 
+                    // RTN15c3
+                    it("CONNECTED ProtocolMessage with a new connectionId and an error") {
+                        let options = AblyTests.commonAppSetup()
+                        options.disconnectedRetryTimeout = 1.0
+                        let client = AblyTests.newRealtime(options)
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+
+                        let expectedConnectionId = client.connection.id
+                        client.simulateLostConnectionAndState()
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.Connected) { stateChange in
+                                expect(stateChange!.reason!.code).to(equal(80008))
+                                expect(stateChange!.reason!.message).to(contain("Unable to recover connection"))
+                                expect(client.connection.errorReason).to(beIdenticalTo(stateChange!.reason))
+                                let transport = client.transport as! TestProxyTransport
+                                let connectedPM = transport.protocolMessagesReceived.filter{ $0.action == .Connected }[0]
+                                expect(connectedPM.connectionId).toNot(equal(expectedConnectionId))
+                                expect(client.connection.id).to(equal(connectedPM.connectionId))
+                                done()
+                            }
+                        }
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
+                        expect(channel.errorReason!.code).to(equal(80008))
+                        expect(channel.errorReason!.message).to(contain("Unable to recover connection"))
+                        expect(client.msgSerial).to(equal(0))
+                    }
+
                 }
 
                 // RTN15d
