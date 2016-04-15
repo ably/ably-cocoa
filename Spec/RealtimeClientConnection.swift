@@ -1516,7 +1516,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     // RTN15c3
-                    it("CONNECTED ProtocolMessage with a new connectionId and an error") {
+                    pending("CONNECTED ProtocolMessage with a new connectionId and an error") {
                         let options = AblyTests.commonAppSetup()
                         options.disconnectedRetryTimeout = 1.0
                         let client = AblyTests.newRealtime(options)
