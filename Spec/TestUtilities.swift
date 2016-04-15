@@ -544,30 +544,31 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
     var requests: [NSMutableURLRequest] = []
     var responses: [NSHTTPURLResponse] = []
 
-    var beforeRequest: Optional<(NSMutableURLRequest)->()> = nil
-    var afterRequest: Optional<(NSMutableURLRequest)->()> = nil
+    var beforeRequest: Optional<(NSMutableURLRequest, ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?)->()> = nil
+    var afterRequest: Optional<(NSMutableURLRequest, ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?)->()> = nil
     var beforeProcessingDataResponse: Optional<(NSData?)->(NSData)> = nil
 
     func executeRequest(request: NSMutableURLRequest, completion callback: ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?) {
+        guard let http = self.http else {
+            return
+        }
         self.requests.append(request)
         if let performEvent = beforeRequest {
-            performEvent(request)
+            performEvent(request, callback)
         }
-        if let http = self.http {
-            http.executeRequest(request, completion: { response, data, error in
-                if let httpResponse = response {
-                    self.responses.append(httpResponse)
-                }
-                if let performEvent = self.beforeProcessingDataResponse {
-                    callback?(response, performEvent(data), error)
-                }
-                else {
-                    callback?(response, data, error)
-                }
-            })
-        }
+        http.executeRequest(request, completion: { response, data, error in
+            if let httpResponse = response {
+                self.responses.append(httpResponse)
+            }
+            if let performEvent = self.beforeProcessingDataResponse {
+                callback?(response, performEvent(data), error)
+            }
+            else {
+                callback?(response, data, error)
+            }
+        })
         if let performEvent = afterRequest {
-            performEvent(request)
+            performEvent(request, callback)
         }
     }
 
