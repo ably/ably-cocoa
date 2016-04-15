@@ -1460,6 +1460,61 @@ class RealtimeClientConnection: QuickSpec {
                         expect(client.queuedMessages).toEventually(haveCount(0), timeout: testTimeout)
                     }
 
+                    // RTN15c2
+                    it("CONNECTED ProtocolMessage with the same connectionId as the current client and an non-fatal error") {
+                        let options = AblyTests.commonAppSetup()
+                        options.disconnectedRetryTimeout = 1.0
+                        let client = AblyTests.newRealtime(options)
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+
+                        let expectedConnectionId = client.connection.id
+                        client.onDisconnected()
+
+                        channel.publish(nil, data: "queued message")
+                        expect(client.queuedMessages).toEventually(haveCount(1), timeout: testTimeout)
+
+                        client.connection.once(.Connecting) { _ in
+                            let transport = client.transport as! TestProxyTransport
+                            transport.beforeProcessingReceivedMessage = { protocolMessage in
+                                if protocolMessage.action == .Connected {
+                                    protocolMessage.error = ARTErrorInfo.createWithCode(0, message: "Injected error")
+                                }
+                            }
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.Connected) { stateChange in
+                                expect(stateChange!.reason!.message).to(equal("Injected error"))
+                                expect(client.connection.errorReason).to(beIdenticalTo(stateChange!.reason))
+                                let transport = client.transport as! TestProxyTransport
+                                let connectedPM = transport.protocolMessagesReceived.filter{ $0.action == .Connected }[0]
+                                expect(connectedPM.connectionId).to(equal(expectedConnectionId))
+                                expect(client.connection.id).to(equal(expectedConnectionId))
+                                done()
+                            }
+                        }
+
+                        channel.once(.Attaching) { _ in
+                            let transport = client.transport as! TestProxyTransport
+                            transport.beforeProcessingReceivedMessage = { protocolMessage in
+                                if protocolMessage.action == .Attached {
+                                    protocolMessage.error = ARTErrorInfo.createWithCode(0, message: "Channel injected error")
+                                }
+                            }
+                        }
+
+                        channel.once(.Attached) { error in
+                            expect(error!.message).to(equal("Channel injected error"))
+                            expect(channel.errorReason).to(beIdenticalTo(error))
+                        }
+
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+                        expect(client.queuedMessages).toEventually(haveCount(0), timeout: testTimeout)
+                    }
+
                 }
 
                 // RTN15d
