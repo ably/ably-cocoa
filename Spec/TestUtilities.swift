@@ -512,19 +512,21 @@ class MockHTTP: ARTHttp {
     }
 
     override func executeRequest(request: NSMutableURLRequest, completion callback: ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?) {
-        switch network {
-        case .NoInternet:
-            callback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1009, userInfo: [NSLocalizedDescriptionKey: "The Internet connection appears to be offline.."]))
-        case .HostUnreachable:
-            callback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1003, userInfo: [NSLocalizedDescriptionKey: "A server with the specified hostname could not be found."]))
-        case .RequestTimeout(let timeout):
-            delay(timeout) {
-                callback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1001, userInfo: [NSLocalizedDescriptionKey: "The request timed out."]))
+        delay(0.0) { // Delay to simulate asynchronicity.
+            switch self.network {
+            case .NoInternet:
+                callback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1009, userInfo: [NSLocalizedDescriptionKey: "The Internet connection appears to be offline.."]))
+            case .HostUnreachable:
+                callback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1003, userInfo: [NSLocalizedDescriptionKey: "A server with the specified hostname could not be found."]))
+            case .RequestTimeout(let timeout):
+                delay(timeout) {
+                    callback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1001, userInfo: [NSLocalizedDescriptionKey: "The request timed out."]))
+                }
+            case .HostInternalError(let code):
+                callback?(NSHTTPURLResponse(URL: NSURL(string: "http://ios.test.suite")!, statusCode: code, HTTPVersion: nil, headerFields: nil), nil, nil)
+            case .Custom(let response, let data, let error):
+                callback?(response, data, error)
             }
-        case .HostInternalError(let code):
-            callback?(NSHTTPURLResponse(URL: NSURL(string: "http://ios.test.suite")!, statusCode: code, HTTPVersion: nil, headerFields: nil), nil, nil)
-        case .Custom(let response, let data, let error):
-            callback?(response, data, error)
         }
     }
 
