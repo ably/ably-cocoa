@@ -468,11 +468,12 @@ class RestClient: QuickSpec {
                     let channel = client.channels.get("test")
 
                     var capturedURLs = [String]()
-                    testHTTPExecutor.afterRequest = { request in
+                    testHTTPExecutor.afterRequest = { request, callback in
                         capturedURLs.append(request.URL!.absoluteString)
                         if testHTTPExecutor.requests.count == 2 {
                             // Stop
                             testHTTPExecutor.http = nil
+                            callback!(nil, nil, nil)
                         }
                     }
 
@@ -490,25 +491,14 @@ class RestClient: QuickSpec {
                     expect(NSRegularExpression.match(capturedURLs[1], pattern: "//[a-e].ably-realtime.com")).to(beTrue())
                 }
 
-            }
-
-            // RSC15
-            context("Host Fallback") {
-
                 // RSC15e
                 it("every new HTTP request is first attempted to the primary host rest.ably.io") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.httpMaxRetryCount = 1
                     let client = ARTRest(options: options)
                     client.httpExecutor = testHTTPExecutor
                     testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
                     let channel = client.channels.get("test")
-
-                    testHTTPExecutor.afterRequest = { _ in
-                        if testHTTPExecutor.requests.count == 2 {
-                            // Stop
-                            testHTTPExecutor.http = nil
-                        }
-                    }
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: "nil") { _ in
@@ -533,10 +523,85 @@ class RestClient: QuickSpec {
                     expect(NSRegularExpression.match(testHTTPExecutor.requests[2].URL!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
                 }
 
-            }
+                // RSC15a
+                context("retry hosts in random order") {
+                    let expectedHostOrder = [4, 3, 0, 2, 1]
 
-            // RSC15
-            context("Host Fallback") {
+                    let originalARTFallback_getRandomHostIndex = ARTFallback_getRandomHostIndex
+
+                    beforeEach {
+                        ARTFallback_getRandomHostIndex = {
+                            let hostIndexes = [1, 1, 0, 0, 0]
+                            var i = 0
+                            return { count in
+                                let hostIndex = hostIndexes[i]
+                                i += 1
+                                return Int32(hostIndex)
+                            }
+                        }()
+                    }
+
+                    afterEach {
+                        ARTFallback_getRandomHostIndex = originalARTFallback_getRandomHostIndex
+                    }
+
+                    it("until httpMaxRetryCount has been reached") {
+                        let options = ARTClientOptions(key: "xxxx:xxxx")
+                        let client = ARTRest(options: options)
+                        options.httpMaxRetryCount = 3
+                        client.httpExecutor = testHTTPExecutor
+                        testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                        testHTTPExecutor.afterRequest = { _, _ in
+                            if testHTTPExecutor.requests.count > Int(1 + options.httpMaxRetryCount) {
+                                fail("Should not retry more than \(options.httpMaxRetryCount)")
+                                testHTTPExecutor.http = nil
+                            }
+                        }
+                        let channel = client.channels.get("test")
+
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: "nil") { _ in
+                                done()
+                            }
+                        }
+
+                        expect(testHTTPExecutor.requests).to(haveCount(Int(1 + options.httpMaxRetryCount)))
+
+                        let extractHostname = { (request: NSMutableURLRequest) in
+                            NSRegularExpression.extract(request.URL!.absoluteString, pattern: "[a-e].ably-realtime.com")
+                        }
+                        let resultFallbackHosts = testHTTPExecutor.requests.flatMap(extractHostname)
+                        let expectedFallbackHosts = Array(expectedHostOrder.map({ ARTDefault.fallbackHosts()[$0] as! String })[0..<Int(options.httpMaxRetryCount)])
+
+                        expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+                    }
+
+                    it("until all fallback hosts have been tried") {
+                        let options = ARTClientOptions(key: "xxxx:xxxx")
+                        options.httpMaxRetryCount = 10
+                        let client = ARTRest(options: options)
+                        client.httpExecutor = testHTTPExecutor
+                        testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                        let channel = client.channels.get("test")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: "nil") { _ in
+                                done()
+                            }
+                        }
+
+                        expect(testHTTPExecutor.requests).to(haveCount(ARTDefault.fallbackHosts().count + 1))
+
+                        let extractHostname = { (request: NSMutableURLRequest) in
+                            NSRegularExpression.extract(request.URL!.absoluteString, pattern: "[a-e].ably-realtime.com")
+                        }
+                        let resultFallbackHosts = testHTTPExecutor.requests.flatMap(extractHostname)
+                        let expectedFallbackHosts = expectedHostOrder.map { ARTDefault.fallbackHosts()[$0] as! String }
+
+                        expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+                    }
+                }
 
                 // RSC15d
                 context("should use an alternative host when") {
@@ -551,10 +616,11 @@ class RestClient: QuickSpec {
                             testHTTPExecutor.http = MockHTTP(network: caseTest)
                             let channel = client.channels.get("test")
 
-                            testHTTPExecutor.afterRequest = { _ in
+                            testHTTPExecutor.afterRequest = { _, callback in
                                 if testHTTPExecutor.requests.count == 2 {
                                     // Stop
                                     testHTTPExecutor.http = nil
+                                    callback!(nil, nil, nil)
                                 }
                             }
 

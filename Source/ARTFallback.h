@@ -7,9 +7,14 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "CompatibilityMacros.h"
+
+ART_ASSUME_NONNULL_BEGIN
 
 @class ARTHttpResponse;
 @class ARTClientOptions;
+
+extern int (^ARTFallback_getRandomHostIndex)(int count);
 
 @interface ARTFallback : NSObject
 {
@@ -22,3 +27,5 @@
 -(NSString *) popFallbackHost;
 
 @end
+
+ART_ASSUME_NONNULL_END

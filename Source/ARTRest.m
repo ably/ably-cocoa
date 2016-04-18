@@ -122,10 +122,10 @@
 }
 
 - (void)executeRequest:(NSMutableURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
-    return [self executeRequest:request completion:callback fallbacks:nil];
+    return [self executeRequest:request completion:callback fallbacks:nil retries:0];
 }
 
-- (void)executeRequest:(NSMutableURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback fallbacks:(ARTFallback *)fallbacks {
+- (void)executeRequest:(NSMutableURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback fallbacks:(ARTFallback *)fallbacks retries:(NSUInteger)retries {
     __block ARTFallback *blockFallbacks = fallbacks;
 
     [self.logger debug:__FILE__ line:__LINE__ message:@"%p executing request %@", self, request];
@@ -145,7 +145,7 @@
                 error = dataError;
             }
         }
-        if ([self shouldRetryWithFallback:request response:response error:error]) {
+        if (retries < _options.httpMaxRetryCount && [self shouldRetryWithFallback:request response:response error:error]) {
             if (!blockFallbacks && [request.URL.host isEqualToString:[ARTDefault restHost]]) {
                 blockFallbacks = [[ARTFallback alloc] init];
             }
@@ -157,7 +157,7 @@
                     NSURL *url = request.URL;
                     NSString *urlStr = [NSString stringWithFormat:@"%@://%@:%@%@?%@", url.scheme, host, url.port, url.path, (url.query ? url.query : @"")];
                     newRequest.URL = [NSURL URLWithString:urlStr];
-                    [self executeRequest:newRequest completion:callback fallbacks:fallbacks];
+                    [self executeRequest:newRequest completion:callback fallbacks:blockFallbacks retries:retries + 1];
                     return;
                 }
             }
