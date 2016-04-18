@@ -524,7 +524,6 @@ class MockHTTP: ARTHttp {
                     callback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1001, userInfo: [NSLocalizedDescriptionKey: "The request timed out."]))
                 }
             case .HostInternalError(let code):
-                print("CODE", code)
                 callback?(NSHTTPURLResponse(URL: NSURL(string: "http://ios.test.suite")!, statusCode: code, HTTPVersion: nil, headerFields: nil), nil, nil)
             case .Host400BadRequest:
                 callback?(NSHTTPURLResponse(URL: NSURL(string: "http://ios.test.suite")!, statusCode: 400, HTTPVersion: nil, headerFields: nil), nil, nil)
