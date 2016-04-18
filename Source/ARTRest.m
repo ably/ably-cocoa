@@ -136,27 +136,30 @@
                 // Send it again, requesting a new token (forward callback)
                 [self.logger debug:__FILE__ line:__LINE__ message:@"requesting new token"];
                 [self executeRequest:request withAuthOption:ARTAuthenticationNewToken completion:callback];
-            } else if (callback) {
+                return;
+            } else {
                 // Return error with HTTP StatusCode if ARTErrorStatusCode does not exist
                 if (!dataError) {
                     dataError = [NSError errorWithDomain:ARTAblyErrorDomain code:response.statusCode userInfo:@{NSLocalizedDescriptionKey:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]}];
                 }
-                callback(nil, nil, dataError);
+                error = dataError;
             }
-            return;
         }
-        if (!blockFallbacks && [self shouldRetryWithFallback:request response:response error:error]) {
-            blockFallbacks = [[ARTFallback alloc] init];
-        }
-        if (error && blockFallbacks) {
-            NSString *host = [blockFallbacks popFallbackHost];
-            if (host != nil) {
-                NSMutableURLRequest *newRequest = [request copy];
-                NSURL *url = request.URL;
-                NSString *urlStr = [NSString stringWithFormat:@"%@://%@:%@%@?%@", url.scheme, host, url.port, url.path, (url.query ? url.query : @"")];
-                newRequest.URL = [NSURL URLWithString:urlStr];
-                [self executeRequest:newRequest completion:callback fallbacks:fallbacks];
-                return;
+        if ([self shouldRetryWithFallback:request response:response error:error]) {
+            if (!blockFallbacks && [request.URL.host isEqualToString:[ARTDefault restHost]]) {
+                blockFallbacks = [[ARTFallback alloc] init];
+            }
+            if (blockFallbacks) {
+                NSString *host = [blockFallbacks popFallbackHost];
+                if (host != nil) {
+                    [self.logger debug:__FILE__ line:__LINE__ message:@"host is down; retrying request at %@", host];
+                    NSMutableURLRequest *newRequest = [request copy];
+                    NSURL *url = request.URL;
+                    NSString *urlStr = [NSString stringWithFormat:@"%@://%@:%@%@?%@", url.scheme, host, url.port, url.path, (url.query ? url.query : @"")];
+                    newRequest.URL = [NSURL URLWithString:urlStr];
+                    [self executeRequest:newRequest completion:callback fallbacks:fallbacks];
+                    return;
+                }
             }
         }
         if (callback) {
@@ -167,9 +170,6 @@
 }
 
 - (BOOL)shouldRetryWithFallback:(NSMutableURLRequest *)request response:(NSHTTPURLResponse *)response error:(NSError *)error {
-    if (![request.URL.host isEqualToString:[ARTDefault restHost]]) {
-        return NO;
-    }
     if (response.statusCode >= 500 && response.statusCode <= 504) {
         return YES;
     }

@@ -535,6 +535,73 @@ class RestClient: QuickSpec {
 
             }
 
+            // RSC15
+            context("Host Fallback") {
+
+                // RSC15d
+                context("should use an alternative host when") {
+
+                    for caseTest: NetworkAnswer in [.HostUnreachable,
+                                                    .RequestTimeout(timeout: 0.1),
+                                                    .HostInternalError(code: 501)] {
+                        it("\(caseTest)") {
+                            let options = ARTClientOptions(key: "xxxx:xxxx")
+                            let client = ARTRest(options: options)
+                            client.httpExecutor = testHTTPExecutor
+                            testHTTPExecutor.http = MockHTTP(network: caseTest)
+                            let channel = client.channels.get("test")
+
+                            testHTTPExecutor.afterRequest = { _ in
+                                if testHTTPExecutor.requests.count == 2 {
+                                    // Stop
+                                    testHTTPExecutor.http = nil
+                                }
+                            }
+
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.publish(nil, data: "nil") { _ in
+                                    done()
+                                }
+                            }
+
+                            expect(testHTTPExecutor.requests).to(haveCount(2))
+                            if testHTTPExecutor.requests.count != 2 {
+                                return
+                            }
+                            expect(NSRegularExpression.match(testHTTPExecutor.requests[0].URL!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
+                            expect(NSRegularExpression.match(testHTTPExecutor.requests[1].URL!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+                        }
+                    }
+
+                }
+
+                // RSC15d
+                it("should not use an alternative host when the client receives an bad request") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = testHTTPExecutor
+                    testHTTPExecutor.http = MockHTTP(network: .Host400BadRequest)
+                    let channel = client.channels.get("test")
+
+                    testHTTPExecutor.afterRequest = { _ in
+                        if testHTTPExecutor.requests.count == 2 {
+                            // Stop
+                            testHTTPExecutor.http = nil
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "nil") { _ in
+                            done()
+                        }
+                    }
+
+                    expect(testHTTPExecutor.requests).to(haveCount(1))
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[0].URL!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
+                }
+
+            }
+
         } //RestClient
     }
 }
