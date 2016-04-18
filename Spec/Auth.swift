@@ -939,7 +939,7 @@ class Auth : QuickSpec {
             }
 
             // RSA8f3
-            it("ensure the message published with a wildcard '*' does not have a clientId") {
+            pending("ensure the message published with a wildcard '*' does not have a clientId") {
                 let options = AblyTests.commonAppSetup()
                 // Request a token with a wildcard '*' value clientId
                 options.token = getTestToken(clientId: "*")
