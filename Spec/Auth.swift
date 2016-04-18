@@ -966,7 +966,7 @@ class Auth : QuickSpec {
                         }
                     }
                 }
-                expect(rest.auth.clientId).to(beNil())
+                expect(rest.auth.clientId).to(equal("*"))
             }
 
             // RSA8f4
