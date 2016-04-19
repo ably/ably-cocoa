@@ -41,6 +41,8 @@ typedef NS_ENUM(NSUInteger, TestAlteration) {
 
 + (ARTClientOptions *)clientOptions;
 
++ (ARTClientOptions *)newSandboxApp:(XCTestCase *)testCase withDescription:(const char *)description;
+
 typedef void (^ARTRestConstructorCb)(ARTRest *rest);
 typedef void (^ARTRealtimeConstructorCb)(ARTRealtime *realtime);
 
