@@ -28,6 +28,8 @@
 #import "ARTConnection+Private.h"
 #import "ARTConnectionDetails.h"
 #import "ARTStats.h"
+#import "ARTRealtimeTransport.h"
+#import "ARTFallback.h"
 
 #pragma mark - ARTRealtime implementation
 
@@ -39,6 +41,7 @@
     NSTimeInterval _connectionStateTtl;
     Class _transportClass;
     id<ARTRealtimeTransport> _transport;
+    ARTFallback *_fallbacks;
 }
 
 - (instancetype)initWithKey:(NSString *)key {
@@ -719,8 +722,34 @@
     }
 }
 
-- (void)realtimeTransportFailed:(id<ARTRealtimeTransport>)transport withErrorInfo:(ARTErrorInfo *)errorInfo {
-    [self transition:ARTRealtimeFailed withErrorInfo:errorInfo];
+- (void)realtimeTransportFailed:(id<ARTRealtimeTransport>)transport withError:(ARTRealtimeTransportError *)error {
+    if ([self shouldRetryWithFallback:error]) {
+        if (!_fallbacks && [error.url.host isEqualToString:[ARTDefault realtimeHost]]) {
+            _fallbacks = [[ARTFallback alloc] init];
+        }
+        if (_fallbacks) {
+            NSString *host = [_fallbacks popFallbackHost];
+            if (host != nil) {
+                [self.logger debug:__FILE__ line:__LINE__ message:@"host is down; retrying realtime connection at %@", host];
+                [self.transport changeHost:host];
+                [self.transport connect];
+                return;
+            }
+        }
+    }
+
+    [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithNSError:error.error]];
+}
+
+- (BOOL)shouldRetryWithFallback:(ARTRealtimeTransportError *)error {
+    if (
+        (error.type == ARTRealtimeTransportErrorTypeBadResponse && error.badResponseCode >= 500 && error.badResponseCode <= 504) ||
+        error.type == ARTRealtimeTransportErrorTypeHostUnreachable ||
+        error.type == ARTRealtimeTransportErrorTypeTimeout
+    ) {
+        return YES;
+    }
+    return NO;
 }
 
 - (void)realtimeTransportNeverConnected:(id<ARTRealtimeTransport>)transport {

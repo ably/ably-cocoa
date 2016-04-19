@@ -16,5 +16,4 @@ Pod::Spec.new do |s|
   s.requires_arc      = true
   s.source_files      = 'Source/*.{h,m}'
   s.module_map        = 'Source/AblyRealtime.modulemap'
-  s.dependency 'PocketSocket', '~> 1.0'
 end

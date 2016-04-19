@@ -1,1 +1,1 @@
-github "tidwall/SwiftWebSocket" ~> 2.6
+github "ably-forks/PocketSocket" ~> 1.0

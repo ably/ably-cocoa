@@ -2387,7 +2387,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN17b
-                pending("applies when the default realtime.ably.io endpoint is being used") {
+                it("applies when the default realtime.ably.io endpoint is being used") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
@@ -2415,6 +2415,9 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     expect(urlConnections).to(haveCount(2))
+                    if urlConnections.count != 2 {
+                        return
+                    }
                     expect(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io")).to(beTrue())
                     expect(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
                 }

@@ -605,9 +605,30 @@ class TestProxyTransport: ARTWebSocketTransport {
     static var network: NetworkAnswer? = nil
     static var networkConnectEvent: Optional<(NSURL)->()> = nil
 
+    var savedWebsocket: PSWebSocket!
+
     override func connect() {
-        guard let network = TestProxyTransport.network else { super.connect(); return }
         super.connect()
+
+        guard let network = TestProxyTransport.network else { super.connect(); return }
+        func performConnectError(secondsForDelay: NSTimeInterval, error: ARTRealtimeTransportError) {
+            delay(secondsForDelay) {
+                self.websocket = self.savedWebsocket
+                self.delegate!.realtimeTransportFailed(self, withError: error)
+            }
+        }
+        let error = NSError.init(domain: "", code: 0, userInfo: nil)
+        switch network {
+        case .NoInternet, .HostUnreachable:
+            performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, type: .HostUnreachable, url: lastUrl!))
+        case .RequestTimeout(let timeout):
+            performConnectError(0.1 + timeout, error: ARTRealtimeTransportError.init(error: error, type: .Timeout, url: lastUrl!))
+        case .HostInternalError(let code):
+            performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, badResponseCode: code, url: lastUrl!))
+        case .Host400BadRequest:
+            performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, badResponseCode: 400, url: lastUrl!))
+        }
+
         if let performNetworkConnect = TestProxyTransport.networkConnectEvent {
             performNetworkConnect(lastUrl!)
         }
@@ -616,6 +637,10 @@ class TestProxyTransport: ARTWebSocketTransport {
     override func setupWebSocket(params: [NSURLQueryItem], withOptions options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?) -> NSURL {
         let url = super.setupWebSocket(params, withOptions: options, resumeKey: resumeKey, connectionSerial: connectionSerial)
         lastUrl = url
+        if TestProxyTransport.network != nil {
+            self.savedWebsocket = self.websocket
+            self.websocket = nil
+        }
         return url
     }
 

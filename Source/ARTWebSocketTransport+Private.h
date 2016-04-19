@@ -11,12 +11,20 @@
 
 #import "ARTWebSocketTransport.h"
 #import "CompatibilityMacros.h"
+#import <PocketSocket/PSWebSocket.h>
 
-@interface ARTWebSocketTransport (Private)
+ART_ASSUME_NONNULL_BEGIN
+
+@interface ARTWebSocketTransport ()
+
+@property (readwrite, strong, nonatomic, art_nullable) PSWebSocket *websocket;
+@property (readwrite, strong, nonatomic, art_nullable) NSURL *websocketURL;
 
 - (void)sendWithData:(NSData *)data;
 - (void)receiveWithData:(NSData *)data;
 
 @end
+
+ART_ASSUME_NONNULL_END
 
 #endif /* ARTWebSocketTransport_Private_h */

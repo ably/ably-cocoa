@@ -6,9 +6,7 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "ARTWebSocketTransport.h"
-
-#import <PocketSocket/PSWebSocket.h>
+#import "ARTWebSocketTransport+Private.h"
 
 #import "ARTRest.h"
 #import "ARTRest+Private.h"
@@ -20,6 +18,7 @@
 #import "ARTStatus.h"
 #import "ARTEncoder.h"
 #import "ARTDefault.h"
+#import "ARTRealtimeTransport.h"
 
 enum {
     ARTWsNeverConnected = -1,
@@ -40,7 +39,6 @@ enum {
 @interface ARTWebSocketTransport () <PSWebSocketDelegate>
 
 @property (readonly, assign, nonatomic) CFRunLoopRef rl;
-@property (readwrite, strong, nonatomic) PSWebSocket *websocket;
 
 // From RestClient
 @property (readwrite, strong, nonatomic) id<ARTEncoder> encoder;
@@ -63,7 +61,7 @@ enum {
         _encoder = rest.defaultEncoder;
         _logger = rest.logger;
         _auth = rest.auth;
-        _options = options;
+        _options = [options copy];
         _resumeKey = resumeKey;
         _connectionSerial = connectionSerial;
 
@@ -124,7 +122,7 @@ enum {
 
             if (error) {
                 [selfStrong.logger error:@"ARTWebSocketTransport: token auth failed with %@", error.description];
-                [selfStrong.delegate realtimeTransportFailed:selfStrong withErrorInfo:[ARTErrorInfo createWithNSError:error]];
+                [selfStrong.delegate realtimeTransportFailed:selfStrong withError:[[ARTRealtimeTransportError alloc] initWithError:error type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
                 return;
             }
 
@@ -191,8 +189,12 @@ enum {
     NSURL *url = [urlComponents URLRelativeToURL:[options realtimeUrl]];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"%p url %@", self, url];
-    self.websocket = [PSWebSocket clientSocketWithRequest:[NSURLRequest requestWithURL:url]];
+
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+
+    self.websocket = [PSWebSocket clientSocketWithRequest:request];
     self.websocket.delegate = self;
+    self.websocketURL = url;
     return url;
 }
 
@@ -228,6 +230,9 @@ enum {
     self.websocket = nil;
 }
 
+- (void)changeHost:(NSString *)host {
+    self.options.realtimeHost = host;
+}
 
 #pragma mark - SRWebSocketDelegate
 
@@ -283,7 +288,9 @@ enum {
             case ARTWsExtension:
             case ARTWsTlsError:
                 // Failed
-                [s.delegate realtimeTransportFailed:s withErrorInfo:[ARTErrorInfo createWithCode:code message:reason]];
+                [s.delegate realtimeTransportFailed:s withError:[[ARTRealtimeTransportError alloc] initWithError:[ARTErrorInfo createWithCode:code message:reason]
+                                                                                                            type:ARTRealtimeTransportErrorTypeOther
+                                                                                                             url:self.websocketURL]];
                 break;
             default:
                 NSAssert(true, @"WebSocket close: unknown code");
@@ -300,10 +307,31 @@ enum {
     CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
         ARTWebSocketTransport *s = weakSelf;
         if (s) {
-            [s.delegate realtimeTransportFailed:s withErrorInfo:[ARTErrorInfo createWithNSError:error]];
+            [s.delegate realtimeTransportFailed:s withError:[self classifyError:error]];
         }
     });
     CFRunLoopWakeUp(self.rl);
+}
+
+- (ARTRealtimeTransportError *)classifyError:(NSError *)error {
+    ARTRealtimeTransportErrorType type = ARTRealtimeTransportErrorTypeOther;
+
+    if ([error.domain isEqualToString:PSWebSocketErrorDomain]) {
+        if (error.code == PSWebSocketErrorCodeTimedOut) {
+            type = ARTRealtimeTransportErrorTypeTimeout;
+        } else if (error.code == PSWebSocketErrorCodeConnectionFailed) {
+            type = ARTRealtimeTransportErrorTypeHostUnreachable;
+        } else if (error.code == PSWebSocketErrorCodeHandshakeFailed) {
+            id status = error.userInfo[@"HTTPStatus"];
+            if (status) {
+                return [[ARTRealtimeTransportError alloc] initWithError:error
+                                                        badResponseCode:[(NSNumber *)status integerValue]
+                                                                    url:self.websocketURL];
+            }
+        }
+    }
+
+    return [[ARTRealtimeTransportError alloc] initWithError:error type:type url:self.websocketURL];
 }
 
 - (void)webSocket:(PSWebSocket *)webSocket didReceiveMessage:(id)message {
