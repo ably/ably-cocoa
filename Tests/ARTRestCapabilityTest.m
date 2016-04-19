@@ -39,19 +39,7 @@
         ARTClientOptions *theOptions = [ARTTestUtil clientOptions];
         [ARTTestUtil setupApp:theOptions withAlteration:TestAlterationRestrictCapability callback:^(ARTClientOptions *options) {
             if (options) {
-                options.clientId = @"client_string";
-                
-                ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
-                _rest = rest;
 
-                // FIXME: there is withRestRestrictCap, setupApp, testRealtime, testRest, ... try to unify
-                ARTTokenParams *tokenParams = [[ARTTokenParams alloc] initWithClientId:options.clientId];
-                tokenParams.capability = @"{\"canpublish:*\":[\"publish\"],\"canpublish:andpresence\":[\"presence\",\"publish\"],\"cansubscribe:*\":[\"subscribe\"]}";
-
-                [rest.auth authorise:tokenParams options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
-                    options.token = tokenDetails.token;
-                    cb(_rest);
-                }];
             }
         }];
         return;
@@ -62,8 +50,17 @@
 }
 
 - (void)testPublishRestricted {
-    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testSimpleDisconnected"];
-    [self withRestRestrictCap:^(ARTRest *rest) {
+    ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
+
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
+    options.clientId = @"client_string";
+
+    ARTTokenParams *tokenParams = [[ARTTokenParams alloc] initWithClientId:options.clientId];
+    tokenParams.capability = @"{\"canpublish:*\":[\"publish\"],\"canpublish:andpresence\":[\"presence\",\"publish\"],\"cansubscribe:*\":[\"subscribe\"]}";
+
+    [[[ARTRest alloc] initWithOptions:options].auth authorise:tokenParams options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+        options.token = tokenDetails.token;
+        ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
         ARTRestChannel *channel = [rest.channels get:@"canpublish:test"];
         [channel publish:nil data:@"publish" callback:^(ARTErrorInfo *error) {
             XCTAssert(!error);
