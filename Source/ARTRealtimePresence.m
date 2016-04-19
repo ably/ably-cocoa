@@ -188,7 +188,7 @@
         return nil;
     }
     [_channel attach:onAttach];
-    return [_channel.presenceEventEmitter on:[NSNumber numberWithUnsignedInteger:action] call:cb];
+    return [_channel.presenceEventEmitter on:[NSNumber numberWithUnsignedInteger:action] callback:cb];
 }
 
 - (void)unsubscribe {

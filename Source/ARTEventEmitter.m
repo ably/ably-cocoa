@@ -80,13 +80,13 @@
     return self;
 }
 
-- (ARTEventListener *)on:(id)event call:(void (^)(id __art_nonnull))cb {
+- (ARTEventListener *)on:(id)event callback:(void (^)(id __art_nonnull))cb {
     ARTEventListener *listener = [[ARTEventListener alloc] initWithBlock:cb];
     [self addOnEntry:[[ARTEventEmitterEntry alloc] initWithListener:listener once:false] event:event];
     return listener;
 }
 
-- (ARTEventListener *)once:(id)event call:(void (^)(id __art_nonnull))cb {
+- (ARTEventListener *)once:(id)event callback:(void (^)(id __art_nonnull))cb {
     ARTEventListener *listener = [[ARTEventListener alloc] initWithBlock:cb];
     [self addOnEntry:[[ARTEventEmitterEntry alloc] initWithListener:listener once:true] event:event];
     return listener;
