@@ -1989,6 +1989,32 @@ class RealtimeClientChannel: QuickSpec {
                     }
                 }
 
+                // RTL12
+                it("attached channel may receive an additional ATTACHED ProtocolMessage") {
+                    let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+                    channel.attach()
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let attachedMessage = AblyTests.newErrorProtocolMessage()
+                        attachedMessage.action = .Attached
+                        attachedMessage.channel = "test"
+
+                        channel.once(.Error) { error in
+                            expect(error).to(beIdenticalTo(attachedMessage.error))
+                            expect(channel.errorReason).to(beIdenticalTo(error))
+                            done()
+                        }
+
+                        let transport = client.transport as! TestProxyTransport
+                        // Inject additional ATTACHED action with error
+                        transport.receive(attachedMessage)
+                    }
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+                }
+
             }
 
             context("crypto") {
