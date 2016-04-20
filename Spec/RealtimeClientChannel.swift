@@ -1110,6 +1110,75 @@ class RealtimeClientChannel: QuickSpec {
 
                 }
 
+                // RTL6c
+                context("Connection state conditions") {
+
+                    // RTL6c1
+                    it("if the connection is CONNECTED then the messages should be published immediately") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+                        expect(client.options.queueMessages).to(beTrue())
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.Connecting) { _ in
+                                expect(channel.queuedMessages).to(haveCount(1))
+                            }
+                            channel.publish(nil, data: "message") { error in
+                                expect(error).to(beNil())
+                                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+                                done()
+                            }
+                        }
+                        expect(channel.queuedMessages).to(haveCount(0))
+                    }
+
+                    // RTL6c2
+                    it("if the connection is CONNECTING or DISCONNECTED then the message should be queued and delivered as soon as the connection state returns to CONNECTED") {
+                        let options = AblyTests.commonAppSetup()
+                        options.disconnectedRetryTimeout = 1.0
+                        let client = ARTRealtime(options: options)
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+                        expect(client.options.queueMessages).to(beTrue())
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.Connected) { _ in
+                                client.onDisconnected()
+                                done()
+                            }
+                        }
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: "message") { error in
+                                expect(error).to(beNil())
+                                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+                                done()
+                            }
+                            client.connection.once(.Connecting) { _ in
+                                expect(channel.queuedMessages).to(haveCount(1))
+                            }
+                        }
+                        expect(channel.queuedMessages).to(haveCount(0))
+                    }
+
+                    // RTL6c3
+                    it("if the channel is in or moves to the FAILED state before the operation succeeds, it should result in an error") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+                        waitUntil(timeout: testTimeout) { done in
+                            let protocolError = AblyTests.newErrorProtocolMessage()
+                            channel.once(.Attaching) { _ in
+                                channel.onError(protocolError)
+                            }
+                            channel.publish(nil, data: "message") { error in
+                                expect(error).to(beIdenticalTo(protocolError.error))
+                                done()
+                            }
+                        }
+                    }
+
+                }
+
                 // RTL6d
                 it("Messages are delivered using a single ProtocolMessage where possible by bundling in all messages for that channel") {
                     let options = AblyTests.commonAppSetup()
