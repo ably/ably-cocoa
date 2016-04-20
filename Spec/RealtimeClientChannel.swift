@@ -1319,6 +1319,27 @@ class RealtimeClientChannel: QuickSpec {
 
                     }
 
+                    // RTL6g2
+                    it("when publishing a Message with the clientId attribute value set to the identified client’s clientId") {
+                        let options = AblyTests.commonAppSetup()
+                        options.clientId = "john"
+                        let client = ARTRealtime(options: options)
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+
+                        let message = ARTMessage(name: nil, data: "message", clientId: options.clientId!)
+                        var resultClientId: String?
+                        channel.subscribe() { message in
+                            resultClientId = message.clientId
+                        }
+
+                        channel.publish([message]) { error in
+                            expect(error).to(beNil())
+                        }
+
+                        expect(resultClientId).toEventually(equal(message.clientId), timeout: testTimeout)
+                    }
+
                 }
 
                 // RTL6h
