@@ -1060,6 +1060,29 @@ class RealtimeClientPresence: QuickSpec {
                     expect(channel.presence.leave("offline")).to(raiseException())
                 }
 
+                // RTP10c
+                it("entering without an explicit PresenceMessage#clientId should implicitly use the clientId of the current connection") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+                    let client = AblyTests.newRealtime(options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enter("online") { error in
+                            channel.presence.leave(nil) { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+                    }
+
+                    let transport = client.transport as! TestProxyTransport
+                    let presenceMessage = transport.protocolMessagesReceived.filter({ $0.action == .Presence })[1].presence![0]
+                    expect(presenceMessage.action).to(equal(ARTPresenceAction.Leave))
+                    expect(presenceMessage.clientId).to(equal("john"))
+                }
+
             }
 
             // RTP8
