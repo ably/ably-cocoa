@@ -1990,7 +1990,7 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 // RTL12
-                it("attached channel may receive an additional ATTACHED ProtocolMessage") {
+                pending("attached channel may receive an additional ATTACHED ProtocolMessage") {
                     let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
                     defer { client.close() }
                     let channel = client.channels.get("test")
