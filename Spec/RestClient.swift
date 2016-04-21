@@ -20,7 +20,7 @@ class RestClient: QuickSpec {
 
         describe("RestClient") {
             // G4
-            it("All REST requests should include the current API version") {
+            pending("All REST requests should include the current API version") {
                 let client = ARTRest(options: AblyTests.commonAppSetup())
                 client.httpExecutor = testHTTPExecutor
                 let channel = client.channels.get("test")
