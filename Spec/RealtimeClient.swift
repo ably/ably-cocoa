@@ -27,7 +27,7 @@ class RealtimeClient: QuickSpec {
     override func spec() {
         describe("RealtimeClient") {
             // G4
-            it("All WebSocket connections should include the current API version") {
+            pending("All WebSocket connections should include the current API version") {
                 let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
                 defer { client.close() }
                 let channel = client.channels.get("test")
