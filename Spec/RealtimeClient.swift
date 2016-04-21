@@ -26,6 +26,21 @@ class RealtimeClient: QuickSpec {
 
     override func spec() {
         describe("RealtimeClient") {
+            // G4
+            it("All WebSocket connections should include the current API version") {
+                let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                defer { client.close() }
+                let channel = client.channels.get("test")
+                waitUntil(timeout: testTimeout) { done in
+                    channel.publish(nil, data: "message") { error in
+                        expect(error).to(beNil())
+                        let transport = client.transport as! TestProxyTransport
+                        expect(transport.lastUrl!.query).to(haveParam("v", withValue: "0.8"))
+                        done()
+                    }
+                }
+            }
+
             // RTC1
             context("options") {
                 it("should support the same options as the Rest client") {
