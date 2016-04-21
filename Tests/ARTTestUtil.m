@@ -288,4 +288,15 @@
     }
 }
 
++ (ARTClientOptions *)newSandboxApp:(XCTestCase *)testCase withDescription:(const char *)description {
+    __weak XCTestExpectation *expectation = [testCase expectationWithDescription:[NSString stringWithFormat:@"%s-ClientOptions", description]];
+    __block ARTClientOptions *options;
+    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *_options) {
+        options = _options;
+        [expectation fulfill];
+    }];
+    [testCase waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    return options;
+}
+
 @end

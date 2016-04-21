@@ -17,121 +17,80 @@
 #import "ARTRealtime+Private.h"
 #import "ARTEventEmitter.h"
 
-@interface ARTRealtimeRecoverTest : XCTestCase {
-    ARTRealtime *_realtime;
-    ARTRealtime *_realtimeRecover;
-    ARTRealtime *_realtimeNonRecovered;
-    ARTClientOptions *_options;
-}
+@interface ARTRealtimeRecoverTest : XCTestCase
 
 @end
 
 @implementation ARTRealtimeRecoverTest
 
 - (void)tearDown {
-    if (_realtime) {
-        [ARTTestUtil removeAllChannels:_realtime];
-        [_realtime resetEventEmitter];
-        [_realtime close];
-    }
-    _realtime = nil;
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
     [super tearDown];
 }
 
-- (void)withRealtime:(void (^)(ARTRealtime *realtime))cb {
-    if (!_realtime) {
-        [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
-            _options = options;
-            _realtime = [[ARTRealtime alloc] initWithOptions:options];
-            cb(_realtime);
-        }];
-    }
-    else {
-        cb(_realtime);
-    }
-}
-
-- (void)withRealtimeRecover:(NSString *) recover callback:(void (^)(ARTRealtime *realtime))cb {
-    _options.recover = recover;
-    _realtimeRecover = [[ARTRealtime alloc] initWithOptions:_options];
-    cb(_realtimeRecover);
-}
-
 - (void)testRecoverDisconnected {
+    ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
     NSString *channelName = @"chanName";
     NSString *c1Message = @"c1 says hi";
-    NSString *c2Message= @"c2 says hi";
-
-    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testRecoverDisconnected"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
-        _realtime = [[ARTRealtime alloc] initWithOptions:options];
-
-        __block NSString *firstConnectionId = nil;
-        [_realtime.connection on:^(ARTConnectionStateChange *stateChange) {
-            ARTRealtimeConnectionState state = stateChange.current;
-            if (state == ARTRealtimeConnected) {
-                firstConnectionId = _realtime.connection.id;
-
-                ARTRealtimeChannel *channel = [_realtime.channels get:channelName];
-                // Sending a message
-                [channel publish:nil data:c1Message callback:^(ARTErrorInfo *errorInfo) {
-                    XCTAssertNil(errorInfo);
-                    [_realtime onDisconnected];
-                }];
-            }
-            else if (state == ARTRealtimeDisconnected) {
-                options.recover = nil;
-                _realtimeNonRecovered = [[ARTRealtime alloc] initWithOptions:options];
-
-                ARTRealtimeChannel *c2 = [_realtimeNonRecovered.channels get:channelName];
-                [_realtimeNonRecovered.connection on:^(ARTConnectionStateChange *stateChange) {
-                    ARTRealtimeConnectionState state2 = stateChange.current;
-                    if (state2 == ARTRealtimeConnected) {
-                        // Sending other message to the same channel to check if the recovered connection receives it
-                        [c2 publish:nil data:c2Message callback:^(ARTErrorInfo *errorInfo) {
-                            XCTAssertNil(errorInfo);
-
-                            options.recover = _realtime.connection.recoveryKey;
-                            XCTAssertFalse(options.recover == nil);
-                            ARTRealtime *realtimeRecovered = [[ARTRealtime alloc] initWithOptions:options];
-                            ARTRealtimeChannel *c3 = [realtimeRecovered.channels get:channelName];
-
-                            [realtimeRecovered.connection on:^(ARTConnectionStateChange *stateChange) {
-                                ARTRealtimeConnectionState cState = stateChange.current;
-                                if (cState == ARTRealtimeConnected) {
-                                    XCTAssertEqualObjects(realtimeRecovered.connection.id, firstConnectionId);
-                                    [c3 subscribe:^(ARTMessage *message) {
-                                        XCTAssertEqualObjects(c2Message, [message data]);
-                                        [expectation fulfill];
-                                    }];
-                                }
-                            }];
-                        }];
-                    }
-                }];
-            }
+    NSString *c2Message = @"c2 says hi";
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
+    ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
+    __block NSString *firstConnectionId = nil;
+    [realtime.connection once:ARTRealtimeConnected callback:^(ARTConnectionStateChange *stateChange) {
+        firstConnectionId = realtime.connection.id;
+        ARTRealtimeChannel *channel = [realtime.channels get:channelName];
+        // Sending a message
+        [channel publish:nil data:c1Message callback:^(ARTErrorInfo *errorInfo) {
+            XCTAssertNil(errorInfo);
+            [expectation fulfill];
         }];
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+
+    __weak XCTestExpectation *expectation2 = [self expectationWithDescription:[NSString stringWithFormat:@"%s-2", __FUNCTION__]];
+    [realtime.connection once:ARTRealtimeDisconnected callback:^(ARTConnectionStateChange *stateChange) {
+        options.recover = nil;
+        ARTRealtime *realtimeNonRecovered = [[ARTRealtime alloc] initWithOptions:options];
+        ARTRealtimeChannel *c2 = [realtimeNonRecovered.channels get:channelName];
+        // Sending other message to the same channel to check if the recovered connection receives it
+        [c2 publish:nil data:c2Message callback:^(ARTErrorInfo *errorInfo) {
+            XCTAssertNil(errorInfo);
+            [expectation2 fulfill];
+        }];
+    }];
+    [realtime onDisconnected];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+
+    options.recover = realtime.connection.recoveryKey;
+    XCTAssertFalse(options.recover == nil);
+
+    __weak XCTestExpectation *expectation3 = [self expectationWithDescription:[NSString stringWithFormat:@"%s-3", __FUNCTION__]];
+    ARTRealtime *realtimeRecovered = [[ARTRealtime alloc] initWithOptions:options];
+    ARTRealtimeChannel *c3 = [realtimeRecovered.channels get:channelName];
+    [c3 subscribe:^(ARTMessage *message) {
+        XCTAssertEqualObjects(c2Message, [message data]);
+        [expectation3 fulfill];
+    }];
+    [realtimeRecovered.connection once:ARTRealtimeConnected callback:^(ARTConnectionStateChange *stateChange) {
+        XCTAssertEqualObjects(realtimeRecovered.connection.id, firstConnectionId);
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 - (void)testRecoverFails {
-    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testRecoverDisconnected"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
-        options.recover = @"bad_recovery_key:1234";
-        _realtimeRecover = [[ARTRealtime alloc] initWithOptions:options];
-        [_realtimeRecover.connection on:^(ARTConnectionStateChange *stateChange) {
-            ARTRealtimeConnectionState cState = stateChange.current;
-            ARTErrorInfo *errorInfo = stateChange.reason;
-            if (cState == ARTRealtimeFailed) {
-                // 80018 - Invalid connectionKey: bad_recovery_key
-                XCTAssertEqual(errorInfo.code, 80018);
-                [expectation fulfill];
-            }
-        }];
-        [_realtimeRecover connect];
+    ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
+    options.recover = @"bad_recovery_key:1234";
+    ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
+    [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
+        ARTRealtimeConnectionState cState = stateChange.current;
+        ARTErrorInfo *errorInfo = stateChange.reason;
+        if (cState == ARTRealtimeFailed) {
+            // 80018 - Invalid connectionKey: bad_recovery_key
+            XCTAssertEqual(errorInfo.code, 80018);
+            [expectation fulfill];
+        }
     }];
+    [realtime connect];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 

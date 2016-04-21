@@ -18,10 +18,7 @@
 #import "ARTDataQuery.h"
 #import "ARTPaginatedResult.h"
 
-@interface ARTRestChannelHistoryTest : XCTestCase {
-    ARTRest *_rest;
-    ARTRest *_rest2;
-}
+@interface ARTRestChannelHistoryTest : XCTestCase
 
 @end
 
@@ -29,68 +26,63 @@
 
 - (void)tearDown {
     [super tearDown];
-    _rest = nil;
-    _rest2 = nil;
 }
 
 - (void)testTimeBackwards {
+    ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
+
     __block long long timeOffset = 0;
+    ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
     
     __weak XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
-    [ARTTestUtil testRest:^(ARTRest *rest) {
-        _rest = rest;
-        [rest time:^(NSDate *time, NSError *error) {
-            XCTAssert(!error);
-            long long serverNow = [time timeIntervalSince1970]*1000;
-            long long appNow =[ARTTestUtil nowMilli];
-            timeOffset = serverNow - appNow;
-            [e fulfill];
-        }];
+    [rest time:^(NSDate *time, NSError *error) {
+        XCTAssert(!error);
+        long long serverNow = [time timeIntervalSince1970]*1000;
+        long long appNow =[ARTTestUtil nowMilli];
+        timeOffset = serverNow - appNow;
+        [e fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
     
-    __weak XCTestExpectation *firstExpectation = [self expectationWithDescription:@"firstExpectation"];
-    [ARTTestUtil testRest:^(ARTRest *rest) {
-        _rest = rest;
-        ARTRestChannel *channel = [rest.channels get:@"testTimeBackwards"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
+    ARTRestChannel *channel = [rest.channels get:@"testTimeBackwards"];
 
-        int firstBatchTotal = 3;
-        int secondBatchTotal = 2;
-        int thirdBatchTotal = 1;
-        __block long long intervalStart = 0, intervalEnd = 0;
+    int firstBatchTotal = 3;
+    int secondBatchTotal = 2;
+    int thirdBatchTotal = 1;
+    __block long long intervalStart = 0, intervalEnd = 0;
 
-        NSString *firstBatch = @"first_batch";
-        NSString *secondBatch = @"second_batch";
-        NSString *thirdBatch = @"third_batch";
-        [ARTTestUtil publishRestMessages:firstBatch count:firstBatchTotal channel:(ARTChannel *)channel completion:^{
-            [ARTTestUtil delay:[ARTTestUtil bigSleep] block:^{
-                intervalStart += [ARTTestUtil nowMilli] + timeOffset;
+    NSString *firstBatch = @"first_batch";
+    NSString *secondBatch = @"second_batch";
+    NSString *thirdBatch = @"third_batch";
+    [ARTTestUtil publishRestMessages:firstBatch count:firstBatchTotal channel:(ARTChannel *)channel completion:^{
+        [ARTTestUtil delay:[ARTTestUtil bigSleep] block:^{
+            intervalStart += [ARTTestUtil nowMilli] + timeOffset;
 
-                [ARTTestUtil publishRestMessages:secondBatch count:secondBatchTotal channel:(ARTChannel *)channel completion:^{
-                    [ARTTestUtil delay:[ARTTestUtil bigSleep] block:^{
-                        intervalEnd += [ARTTestUtil nowMilli] + timeOffset;
+            [ARTTestUtil publishRestMessages:secondBatch count:secondBatchTotal channel:(ARTChannel *)channel completion:^{
+                [ARTTestUtil delay:[ARTTestUtil bigSleep] block:^{
+                    intervalEnd += [ARTTestUtil nowMilli] + timeOffset;
 
-                        [ARTTestUtil publishRestMessages:thirdBatch count:thirdBatchTotal channel:(ARTChannel *)channel completion:^{
-                            ARTDataQuery *query = [[ARTDataQuery alloc] init];
-                            query.start = [NSDate dateWithTimeIntervalSince1970:intervalStart/1000];
-                            query.end = [NSDate dateWithTimeIntervalSince1970:intervalEnd/1000];
-                            query.direction = ARTQueryDirectionBackwards;
+                    [ARTTestUtil publishRestMessages:thirdBatch count:thirdBatchTotal channel:(ARTChannel *)channel completion:^{
+                        ARTDataQuery *query = [[ARTDataQuery alloc] init];
+                        query.start = [NSDate dateWithTimeIntervalSince1970:intervalStart/1000];
+                        query.end = [NSDate dateWithTimeIntervalSince1970:intervalEnd/1000];
+                        query.direction = ARTQueryDirectionBackwards;
 
-                            [channel history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
-                                XCTAssert(!error);
-                                XCTAssertFalse([result hasNext]);
-                                NSArray *page = [result items];
-                                XCTAssertTrue(page != nil);
-                                XCTAssertEqual([page count], secondBatchTotal);
-                                for (int i=0; i < [page count]; i++) {
-                                    NSString *pattern = [secondBatch stringByAppendingString:@"%d"];
-                                    NSString *goalStr = [NSString stringWithFormat:pattern, secondBatchTotal -1 -i];
-                                    ARTMessage *m = [page objectAtIndex:i];
-                                    XCTAssertEqualObjects(goalStr, [m data]);
-                                }
-                                [firstExpectation fulfill];
-                            } error:nil];
-                        }];
+                        [channel history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
+                            XCTAssert(!error);
+                            XCTAssertFalse([result hasNext]);
+                            NSArray *page = [result items];
+                            XCTAssertTrue(page != nil);
+                            XCTAssertEqual([page count], secondBatchTotal);
+                            for (int i=0; i < [page count]; i++) {
+                                NSString *pattern = [secondBatch stringByAppendingString:@"%d"];
+                                NSString *goalStr = [NSString stringWithFormat:pattern, secondBatchTotal -1 -i];
+                                ARTMessage *m = [page objectAtIndex:i];
+                                XCTAssertEqualObjects(goalStr, [m data]);
+                            }
+                            [expectation fulfill];
+                        } error:nil];
                     }];
                 }];
             }];
@@ -100,65 +92,62 @@
 }
 
 - (void)testTimeForwards {
+    ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
+
     __block long long timeOffset = 0;
+    ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
     
     __weak XCTestExpectation *e = [self expectationWithDescription:@"getTime"];
-    [ARTTestUtil testRest:^(ARTRest *rest) {
-        _rest = rest;
-        [rest time:^(NSDate *time, NSError *error) {
-            XCTAssert(!error);
-            long long serverNow = [time timeIntervalSince1970]*1000;
-            long long appNow =[ARTTestUtil nowMilli];
-            timeOffset = serverNow - appNow;
-            [e fulfill];
-        }];
+    [rest time:^(NSDate *time, NSError *error) {
+        XCTAssert(!error);
+        long long serverNow = [time timeIntervalSince1970]*1000;
+        long long appNow =[ARTTestUtil nowMilli];
+        timeOffset = serverNow - appNow;
+        [e fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 
-    __weak XCTestExpectation *firstExpectation = [self expectationWithDescription:@"getTime"];
-    [ARTTestUtil testRest:^(ARTRest *rest) {
-        _rest = rest;
-        ARTRestChannel *channel = [rest.channels get:@"test_history_time_forwards"];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
+    ARTRestChannel *channel = [rest.channels get:@"test_history_time_forwards"];
 
-        int firstBatchTotal = 2;
-        int secondBatchTotal = 5;
-        int thirdBatchTotal = 3;
-        __block long long intervalStart = 0, intervalEnd = 0;
+    int firstBatchTotal = 2;
+    int secondBatchTotal = 5;
+    int thirdBatchTotal = 3;
+    __block long long intervalStart = 0, intervalEnd = 0;
 
-        NSString *firstBatch = @"first_batch";
-        NSString *secondBatch = @"second_batch";
-        NSString *thirdBatch =@"third_batch";
+    NSString *firstBatch = @"first_batch";
+    NSString *secondBatch = @"second_batch";
+    NSString *thirdBatch =@"third_batch";
 
-        [ARTTestUtil publishRestMessages:firstBatch count:firstBatchTotal channel:channel completion:^{
-            [ARTTestUtil delay:[ARTTestUtil bigSleep] block:^{
-                intervalStart += [ARTTestUtil nowMilli] + timeOffset;
+    [ARTTestUtil publishRestMessages:firstBatch count:firstBatchTotal channel:channel completion:^{
+        [ARTTestUtil delay:[ARTTestUtil bigSleep] block:^{
+            intervalStart += [ARTTestUtil nowMilli] + timeOffset;
 
-                [ARTTestUtil publishRestMessages:secondBatch count:secondBatchTotal channel:channel completion:^{
-                    [ARTTestUtil delay:[ARTTestUtil bigSleep] block:^{
-                        intervalEnd += [ARTTestUtil nowMilli] + timeOffset;
+            [ARTTestUtil publishRestMessages:secondBatch count:secondBatchTotal channel:channel completion:^{
+                [ARTTestUtil delay:[ARTTestUtil bigSleep] block:^{
+                    intervalEnd += [ARTTestUtil nowMilli] + timeOffset;
 
-                        [ARTTestUtil publishRestMessages:thirdBatch count:thirdBatchTotal channel:channel completion:^{
-                            ARTDataQuery *query = [[ARTDataQuery alloc] init];
-                            query.start = [NSDate dateWithTimeIntervalSince1970:intervalStart/1000];
-                            query.end = [NSDate dateWithTimeIntervalSince1970:intervalEnd/1000];
-                            query.direction = ARTQueryDirectionForwards;
+                    [ARTTestUtil publishRestMessages:thirdBatch count:thirdBatchTotal channel:channel completion:^{
+                        ARTDataQuery *query = [[ARTDataQuery alloc] init];
+                        query.start = [NSDate dateWithTimeIntervalSince1970:intervalStart/1000];
+                        query.end = [NSDate dateWithTimeIntervalSince1970:intervalEnd/1000];
+                        query.direction = ARTQueryDirectionForwards;
 
-                            [channel history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
-                                XCTAssert(!error);
-                                XCTAssertFalse([result hasNext]);
-                                NSArray *page = [result items];
-                                XCTAssertTrue(page != nil);
-                                XCTAssertEqual([page count], secondBatchTotal);
-                                for (int i=0; i < [page count]; i++)
-                                {
-                                    NSString * pattern = [secondBatch stringByAppendingString:@"%d"];
-                                    NSString * goalStr = [NSString stringWithFormat:pattern, i];
-                                    ARTMessage * m = [page objectAtIndex:i];
-                                    XCTAssertEqualObjects(goalStr, [m data]);
-                                }
-                                [firstExpectation fulfill];
-                            } error:nil];
-                        }];
+                        [channel history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
+                            XCTAssert(!error);
+                            XCTAssertFalse([result hasNext]);
+                            NSArray *page = [result items];
+                            XCTAssertTrue(page != nil);
+                            XCTAssertEqual([page count], secondBatchTotal);
+                            for (int i=0; i < [page count]; i++)
+                            {
+                                NSString * pattern = [secondBatch stringByAppendingString:@"%d"];
+                                NSString * goalStr = [NSString stringWithFormat:pattern, i];
+                                ARTMessage * m = [page objectAtIndex:i];
+                                XCTAssertEqualObjects(goalStr, [m data]);
+                            }
+                            [expectation fulfill];
+                        } error:nil];
                     }];
                 }];
             }];
@@ -167,238 +156,136 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout]+8.0 handler:nil];
 }
 
-- (void)testHistoryForwardPagination {
-    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testHistoryForwardPagination"];
-    [ARTTestUtil testRest:^(ARTRest *rest) {
-        [expectation fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    
-    __weak XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
-    [ARTTestUtil testRest:^(ARTRest *rest) {
-        _rest = rest;
-        ARTRestChannel *channel = [rest.channels get:@"testHistoryForwardPagination"];
-        
-        [ARTTestUtil publishRestMessages:@"testString" count:5 channel:channel completion:^{
-            ARTDataQuery *query = [[ARTDataQuery alloc] init];
-            query.limit = 2;
-            query.direction = ARTQueryDirectionBackwards;
-
-            [channel history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
-                XCTAssert(!error);
-                XCTAssertTrue([result hasNext]);
-                NSArray *page = [result items];
-                XCTAssertEqual([page count], 2);
-                //ARTMessage *firstMessage = [page objectAtIndex:0];
-                //ARTMessage *secondMessage =[page objectAtIndex:1];
-                // FIXME: doesn't respect the order
-                //XCTAssertEqualObjects(@"testString0", [firstMessage data]);
-                //XCTAssertEqualObjects(@"testString1", [secondMessage data]);
-
-                [result next:^(ARTPaginatedResult *result2, ARTErrorInfo *error) {
-                    XCTAssert(!error);
-                    NSArray *page = [result2 items];
-                    XCTAssertEqual([page count], 2);
-                    //ARTMessage *firstMessage = [page objectAtIndex:0];
-                    //ARTMessage *secondMessage =[page objectAtIndex:1];
-                    //XCTAssertEqualObjects(@"testString2", [firstMessage data]);
-                    //XCTAssertEqualObjects(@"testString3", [secondMessage data]);
-
-                    [result2 next:^(ARTPaginatedResult *result3, ARTErrorInfo *error) {
-                        XCTAssert(!error);
-                        XCTAssertFalse([result3 hasNext]);
-                        NSArray *page = [result3 items];
-                        XCTAssertEqual([page count], 1);
-                        //ARTMessage *firstMessage = [page objectAtIndex:0];
-                        //XCTAssertEqualObjects(@"testString4", [firstMessage data]);
-
-                        [result3 first:^(ARTPaginatedResult *result4, ARTErrorInfo *error) {
-                            XCTAssert(!error);
-                            XCTAssertTrue([result4 hasNext]);
-                            NSArray *page = [result4 items];
-                            XCTAssertEqual([page count], 2);
-                            //ARTMessage *firstMessage = [page objectAtIndex:0];
-                            //ARTMessage *secondMessage =[page objectAtIndex:1];
-                            //XCTAssertEqualObjects(@"testString0", [firstMessage data]);
-                            //XCTAssertEqualObjects(@"testString1", [secondMessage data]);
-                            [firstExpectation fulfill];
-                        }];
-                    }];
-                }];
-            } error:nil];
-        }];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-}
-
 - (void)testHistoryBackwardPagination {
-    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"e"];
-    [ARTTestUtil testRest:^(ARTRest *rest) {
-        [expectation fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
+    ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
+    ARTRestChannel *channel = [rest.channels get:@"testHistoryBackwardPagination"];
+    [ARTTestUtil publishRestMessages:@"testString" count:5 channel:channel completion:^{
+        ARTDataQuery *query = [[ARTDataQuery alloc] init];
+        query.limit = 2;
+        query.direction = ARTQueryDirectionBackwards;
 
-    __weak XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
-    [ARTTestUtil testRest:^(ARTRest *rest) {
-        _rest = rest;
-        ARTRestChannel *channel = [rest.channels get:@"testHistoryBackwardPagination"];
+        [channel history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
+            XCTAssert(!error);
+            XCTAssertTrue([result hasNext]);
+            NSArray *page = [result items];
+            XCTAssertEqual([page count], 2);
+            ARTMessage *firstMessage = [page objectAtIndex:0];
+            ARTMessage *secondMessage =[page objectAtIndex:1];
+            XCTAssertEqualObjects(@"testString4", [firstMessage data]);
+            XCTAssertEqualObjects(@"testString3", [secondMessage data]);
 
-        [ARTTestUtil publishRestMessages:@"testString" count:5 channel:channel completion:^{
-            ARTDataQuery *query = [[ARTDataQuery alloc] init];
-            query.limit = 2;
-            query.direction = ARTQueryDirectionBackwards;
-
-            [channel history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
+            [result next:^(ARTPaginatedResult *result2, ARTErrorInfo *error) {
                 XCTAssert(!error);
-                XCTAssertTrue([result hasNext]);
-                NSArray *page = [result items];
+                NSArray *page = [result2 items];
                 XCTAssertEqual([page count], 2);
                 ARTMessage *firstMessage = [page objectAtIndex:0];
                 ARTMessage *secondMessage =[page objectAtIndex:1];
-                XCTAssertEqualObjects(@"testString4", [firstMessage data]);
-                XCTAssertEqualObjects(@"testString3", [secondMessage data]);
 
-                [result next:^(ARTPaginatedResult *result2, ARTErrorInfo *error) {
+                XCTAssertEqualObjects(@"testString2", [firstMessage data]);
+                XCTAssertEqualObjects(@"testString1", [secondMessage data]);
+
+                [result2 next:^(ARTPaginatedResult *result3, ARTErrorInfo *error) {
                     XCTAssert(!error);
-                    NSArray *page = [result2 items];
-                    XCTAssertEqual([page count], 2);
+                    XCTAssertFalse([result3 hasNext]);
+                    NSArray *page = [result3 items];
+                    XCTAssertEqual([page count], 1);
                     ARTMessage *firstMessage = [page objectAtIndex:0];
-                    ARTMessage *secondMessage =[page objectAtIndex:1];
+                    XCTAssertEqualObjects(@"testString0", [firstMessage data]);
 
-                    XCTAssertEqualObjects(@"testString2", [firstMessage data]);
-                    XCTAssertEqualObjects(@"testString1", [secondMessage data]);
-
-                    [result2 next:^(ARTPaginatedResult *result3, ARTErrorInfo *error) {
+                    [result3 first:^(ARTPaginatedResult *result4, ARTErrorInfo *error) {
                         XCTAssert(!error);
-                        XCTAssertFalse([result3 hasNext]);
-                        NSArray *page = [result3 items];
-                        XCTAssertEqual([page count], 1);
+                        XCTAssertTrue([result4 hasNext]);
+                        NSArray *page = [result4 items];
+                        XCTAssertEqual([page count], 2);
                         ARTMessage *firstMessage = [page objectAtIndex:0];
-                        XCTAssertEqualObjects(@"testString0", [firstMessage data]);
-
-                        [result3 first:^(ARTPaginatedResult *result4, ARTErrorInfo *error) {
-                            XCTAssert(!error);
-                            XCTAssertTrue([result4 hasNext]);
-                            NSArray *page = [result4 items];
-                            XCTAssertEqual([page count], 2);
-                            ARTMessage *firstMessage = [page objectAtIndex:0];
-                            ARTMessage *secondMessage =[page objectAtIndex:1];
-                            XCTAssertEqualObjects(@"testString4", [firstMessage data]);
-                            XCTAssertEqualObjects(@"testString3", [secondMessage data]);
-                            [firstExpectation fulfill];
-                        }];
+                        ARTMessage *secondMessage =[page objectAtIndex:1];
+                        XCTAssertEqualObjects(@"testString4", [firstMessage data]);
+                        XCTAssertEqualObjects(@"testString3", [secondMessage data]);
+                        [expectation fulfill];
                     }];
                 }];
-            } error:nil];
-        }];
+            }];
+        } error:nil];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 - (void)testHistoryBackwardDefault {
-    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"e"];
-    [ARTTestUtil testRest:^(ARTRest *rest) {
-        [expectation fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
+    ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
+    ARTRestChannel *channel = [rest.channels get:@"testHistoryBackwardDefault"];
+    [ARTTestUtil publishRestMessages:@"testString" count:5 channel:channel completion:^{
+        ARTDataQuery *query = [[ARTDataQuery alloc] init];
+        query.limit = 2;
 
-    __weak XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
-    [ARTTestUtil testRest:^(ARTRest *rest) {
-        _rest = rest;
-        ARTRestChannel *channel = [rest.channels get:@"testHistoryBackwardDefault"];
-
-        [ARTTestUtil publishRestMessages:@"testString" count:5 channel:channel completion:^{
-            ARTDataQuery *query = [[ARTDataQuery alloc] init];
-            query.limit = 2;
-
-            [channel history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
-                XCTAssert(!error);
-                XCTAssertTrue([result hasNext]);
-                NSArray *page = [result items];
-                XCTAssertEqual([page count], 2);
-                ARTMessage *firstMessage = [page objectAtIndex:0];
-                ARTMessage *secondMessage =[page objectAtIndex:1];
-                XCTAssertEqualObjects(@"testString4", [firstMessage data]);
-                XCTAssertEqualObjects(@"testString3", [secondMessage data]);
-                [firstExpectation fulfill];
-            } error:nil];
-        }];
+        [channel history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
+            XCTAssert(!error);
+            XCTAssertTrue([result hasNext]);
+            NSArray *page = [result items];
+            XCTAssertEqual([page count], 2);
+            ARTMessage *firstMessage = [page objectAtIndex:0];
+            ARTMessage *secondMessage =[page objectAtIndex:1];
+            XCTAssertEqualObjects(@"testString4", [firstMessage data]);
+            XCTAssertEqualObjects(@"testString3", [secondMessage data]);
+            [expectation fulfill];
+        } error:nil];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 - (void)testHistoryTwoClients {
-    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"e"];
-    [ARTTestUtil testRest:^(ARTRest *rest) {
-        [expectation fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-
+    ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
     NSString *channelName = @"testHistoryTwoClients";
-    __weak XCTestExpectation *firstExpectation = [self expectationWithDescription:@"send_second_batch"];
-    [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
-        ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
-        _rest = rest;
-        ARTRest *rest2 = [[ARTRest alloc] initWithOptions:options];
-        _rest2 = rest2;
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
+    ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
+    ARTRest *rest2 = [[ARTRest alloc] initWithOptions:options];
+    ARTRestChannel *channelOne = [rest.channels get:channelName];
+    [ARTTestUtil publishRestMessages:@"testString" count:5 channel:channelOne completion:^{
+        ARTRestChannel *channelTwo = [rest2.channels get:channelName];
+        ARTDataQuery *query = [[ARTDataQuery alloc] init];
+        query.limit = 2;
 
-        ARTRestChannel *channelOne = [rest.channels get:channelName];
-
-        [ARTTestUtil publishRestMessages:@"testString" count:5 channel:channelOne completion:^{
-            ARTRestChannel *channelTwo = [rest2.channels get:channelName];
-
-            ARTDataQuery *query = [[ARTDataQuery alloc] init];
-            query.limit = 2;
-
-            [channelTwo history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
-                XCTAssert(!error);
-                XCTAssertTrue([result hasNext]);
-                NSArray *page = [result items];
-                XCTAssertEqual([page count], 2);
-                ARTMessage *firstMessage = [page objectAtIndex:0];
-                ARTMessage *secondMessage =[page objectAtIndex:1];
-                XCTAssertEqualObjects(@"testString4", [firstMessage data]);
-                XCTAssertEqualObjects(@"testString3", [secondMessage data]);
-                [firstExpectation fulfill];
-            } error:nil];
-        }];
+        [channelTwo history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
+            XCTAssert(!error);
+            XCTAssertTrue([result hasNext]);
+            NSArray *page = [result items];
+            XCTAssertEqual([page count], 2);
+            ARTMessage *firstMessage = [page objectAtIndex:0];
+            ARTMessage *secondMessage =[page objectAtIndex:1];
+            XCTAssertEqualObjects(@"testString4", [firstMessage data]);
+            XCTAssertEqualObjects(@"testString3", [secondMessage data]);
+            [expectation fulfill];
+        } error:nil];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 - (void)testHistoryLimit {
-    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
-    [ARTTestUtil testRest:^(ARTRest *rest) {
-        _rest = rest;
-        ARTRestChannel *channelOne = [rest.channels get:@"name"];
+    ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
+    ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
+    ARTRestChannel *channelOne = [rest.channels get:@"name"];
+    ARTDataQuery *query = [[ARTDataQuery alloc] init];
+    query.limit = 1001;
 
-        ARTDataQuery *query = [[ARTDataQuery alloc] init];
-        query.limit = 1001;
-
-        NSError *error = nil;
-        BOOL valid = [channelOne history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {} error:&error];
-        XCTAssertFalse(valid);
-        XCTAssertNotNil(error);
-        XCTAssert(error.code == ARTDataQueryErrorLimit);
-        [exp fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    NSError *error = nil;
+    BOOL valid = [channelOne history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {} error:&error];
+    XCTAssertFalse(valid);
+    XCTAssertNotNil(error);
+    XCTAssert(error.code == ARTDataQueryErrorLimit);
 }
 
 - (void)testHistoryLimitIgnoringError {
-    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testLimit"];
-    [ARTTestUtil testRest:^(ARTRest *rest) {
-        _rest = rest;
-        ARTRestChannel *channelOne = [rest.channels get:@"name"];
-
-        ARTDataQuery *query = [[ARTDataQuery alloc] init];
-        query.limit = 1001;
-        // Forcing an invalid query where the error is ignored and the result should be invalid (the request was canceled)
-        BOOL requested = [channelOne history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {} error:nil];
-        XCTAssertFalse(requested);
-        [exp fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
+    ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
+    ARTRestChannel *channelOne = [rest.channels get:@"name"];
+    ARTDataQuery *query = [[ARTDataQuery alloc] init];
+    query.limit = 1001;
+    // Forcing an invalid query where the error is ignored and the result should be invalid (the request was canceled)
+    BOOL requested = [channelOne history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {} error:nil];
+    XCTAssertFalse(requested);
 }
 
 @end

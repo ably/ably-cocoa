@@ -19,9 +19,7 @@
 #import "ARTDataQuery.h"
 #import "ARTPaginatedResult.h"
 
-@interface ARTRestChannelPublishTest : XCTestCase {
-    ARTRest *_rest;
-}
+@interface ARTRestChannelPublishTest : XCTestCase
 
 @end
 
@@ -29,79 +27,72 @@
 
 - (void)tearDown {
     [super tearDown];
-    _rest = nil;
 }
 
 - (void)testTypesByText {
-    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
+    ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
     NSString *message1 = @"message1";
     NSString *message2 = @"message2";
-    [ARTTestUtil testRest:^(ARTRest *rest) {
-        _rest = rest;
-        ARTRestChannel *channel = [rest.channels get:@"testTypesByText"];
-        [channel publish:nil data:message1 callback:^(ARTErrorInfo *error) {
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
+    ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
+    ARTRestChannel *channel = [rest.channels get:@"testTypesByText"];
+    [channel publish:nil data:message1 callback:^(ARTErrorInfo *error) {
+        XCTAssert(!error);
+        [channel publish:nil data:message2 callback:^(ARTErrorInfo *error) {
             XCTAssert(!error);
-            [channel publish:nil data:message2 callback:^(ARTErrorInfo *error) {
+            ARTDataQuery *query = [[ARTDataQuery alloc] init];
+            query.direction = ARTQueryDirectionForwards;
+            [channel history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
                 XCTAssert(!error);
-                ARTDataQuery *query = [[ARTDataQuery alloc] init];
-                query.direction = ARTQueryDirectionForwards;
-                [channel history:query callback:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
-                    XCTAssert(!error);
-                    NSArray *messages = [result items];
-                    XCTAssertEqual(2, messages.count);
-                    ARTMessage *m0 = messages[0];
-                    ARTMessage *m1 = messages[1];
-                    XCTAssertEqualObjects([m0 data], message1);
-                    XCTAssertEqualObjects([m1 data], message2);
-                    [expectation fulfill];
-                } error:nil];
-            }];
+                NSArray *messages = [result items];
+                XCTAssertEqual(2, messages.count);
+                ARTMessage *m0 = messages[0];
+                ARTMessage *m1 = messages[1];
+                XCTAssertEqualObjects([m0 data], message1);
+                XCTAssertEqualObjects([m1 data], message2);
+                [expectation fulfill];
+            } error:nil];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 - (void)testPublishArray {
-    __weak XCTestExpectation *exp = [self expectationWithDescription:@"testPublishArray"];
-    [ARTTestUtil testRest:^(ARTRest *rest) {
-        _rest = rest;
-        ARTRestChannel *channel = [rest.channels get:@"channel"];
-        NSString *test1 = @"test1";
-        NSString *test2 = @"test2";
-        NSString *test3 = @"test3";
+    ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
+    __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
+    ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
+    ARTRestChannel *channel = [rest.channels get:@"channel"];
+    NSString *test1 = @"test1";
+    NSString *test2 = @"test2";
+    NSString *test3 = @"test3";
 
-        NSArray *messages = @[[[ARTMessage alloc] initWithName:nil data:test1],
-                              [[ARTMessage alloc] initWithName:nil data:test2],
-                              [[ARTMessage alloc] initWithName:nil data:test3]];
+    NSArray *messages = @[[[ARTMessage alloc] initWithName:nil data:test1],
+                          [[ARTMessage alloc] initWithName:nil data:test2],
+                          [[ARTMessage alloc] initWithName:nil data:test3]];
 
-        [channel publish:messages callback:^(ARTErrorInfo *error) {
+    [channel publish:messages callback:^(ARTErrorInfo *error) {
+        XCTAssert(!error);
+        [channel history:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
             XCTAssert(!error);
-            [channel history:^(ARTPaginatedResult *result, ARTErrorInfo *error) {
-                XCTAssert(!error);
-                NSArray *messages = [result items];
-                XCTAssertEqual(3, messages.count);
-                ARTMessage *m0 = messages[0];
-                ARTMessage *m1 = messages[1];
-                ARTMessage *m2 = messages[2];
-                XCTAssertEqualObjects([m0 data], test3);
-                XCTAssertEqualObjects([m1 data], test2);
-                XCTAssertEqualObjects([m2 data], test1);
-                [exp fulfill];
-            }];
+            NSArray *messages = [result items];
+            XCTAssertEqual(3, messages.count);
+            ARTMessage *m0 = messages[0];
+            ARTMessage *m1 = messages[1];
+            ARTMessage *m2 = messages[2];
+            XCTAssertEqualObjects([m0 data], test3);
+            XCTAssertEqualObjects([m1 data], test2);
+            XCTAssertEqualObjects([m2 data], test1);
+            [expectation fulfill];
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 - (void)testPublishUnJsonableType {
-    __weak XCTestExpectation *expectation = [self expectationWithDescription:@"testPresence"];
-    [ARTTestUtil testRest:^(ARTRest *rest) {
-        _rest = rest;
-        ARTChannel *channel = [rest.channels get:@"testTypesByText"];
-        XCTAssertThrows([channel publish:nil data:channel callback:^(ARTErrorInfo *error){}]);
-        [expectation fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
+    ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
+    ARTChannel *channel = [rest.channels get:@"testTypesByText"];
+    XCTAssertThrows([channel publish:nil data:channel callback:^(ARTErrorInfo *error){}]);
 }
 
 @end
