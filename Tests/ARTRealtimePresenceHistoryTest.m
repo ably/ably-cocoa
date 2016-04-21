@@ -60,7 +60,7 @@
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:[self channelName]];
     [channel attach];
-    [channel once:ARTRealtimeChannelAttached callback:^(ARTErrorInfo *errorInfo) {
+    [channel once:ARTChannelEventAttached callback:^(ARTErrorInfo *errorInfo) {
         [channel.presence enter:[self enter1Str] callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
             //second enter gets treated as an update.
