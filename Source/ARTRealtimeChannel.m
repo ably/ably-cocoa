@@ -171,7 +171,7 @@
                 ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:pm callback:cb];
                 [self.queuedMessages addObject:qm];
 
-                [_realtime.connection once:ARTRealtimeConnected call:^(ARTConnectionStateChange *__art_nullable change) {
+                [_realtime.connection once:ARTRealtimeConnected callback:^(ARTConnectionStateChange *__art_nullable change) {
                     [self sendQueuedMessages];
                 }];
             }
@@ -236,7 +236,7 @@
         return nil;
     }
     [self attach:onAttach];
-    return [self.messagesEventEmitter on:name call:cb];
+    return [self.messagesEventEmitter on:name callback:cb];
 }
 
 - (void)unsubscribe {
@@ -251,16 +251,16 @@
     [self.messagesEventEmitter off:name listener:listener];
 }
 
-- (__GENERIC(ARTEventListener, ARTErrorInfo *) *)on:(ARTChannelEvent)event call:(void (^)(ARTErrorInfo *))cb {
-    return [self.statesEventEmitter on:[NSNumber numberWithInt:event] call:cb];
+- (__GENERIC(ARTEventListener, ARTErrorInfo *) *)on:(ARTChannelEvent)event callback:(void (^)(ARTErrorInfo *))cb {
+    return [self.statesEventEmitter on:[NSNumber numberWithInt:event] callback:cb];
 }
 
 - (__GENERIC(ARTEventListener, ARTErrorInfo *) *)on:(void (^)(ARTErrorInfo *))cb {
     return [self.statesEventEmitter on:cb];
 }
 
-- (__GENERIC(ARTEventListener, ARTErrorInfo *) *)once:(ARTChannelEvent)event call:(void (^)(ARTErrorInfo *))cb {
-    return [self.statesEventEmitter once:[NSNumber numberWithInt:event] call:cb];
+- (__GENERIC(ARTEventListener, ARTErrorInfo *) *)once:(ARTChannelEvent)event callback:(void (^)(ARTErrorInfo *))cb {
+    return [self.statesEventEmitter once:[NSNumber numberWithInt:event] callback:cb];
 }
 
 - (__GENERIC(ARTEventListener, ARTErrorInfo *) *)once:(void (^)(ARTErrorInfo *))cb {

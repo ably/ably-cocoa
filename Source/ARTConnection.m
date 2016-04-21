@@ -77,16 +77,16 @@
     }
 }
 
-- (__GENERIC(ARTEventListener, ARTConnectionStateChange *) *)on:(ARTRealtimeConnectionState)event call:(void (^)(ARTConnectionStateChange *))cb {
-    return [_eventEmitter on:[NSNumber numberWithInt:event] call:cb];
+- (__GENERIC(ARTEventListener, ARTConnectionStateChange *) *)on:(ARTRealtimeConnectionState)event callback:(void (^)(ARTConnectionStateChange *))cb {
+    return [_eventEmitter on:[NSNumber numberWithInt:event] callback:cb];
 }
 
 - (__GENERIC(ARTEventListener, ARTConnectionStateChange *) *)on:(void (^)(ARTConnectionStateChange *))cb {
     return [_eventEmitter on:cb];
 }
 
-- (__GENERIC(ARTEventListener, ARTConnectionStateChange *) *)once:(ARTRealtimeConnectionState)event call:(void (^)(ARTConnectionStateChange *))cb {
-    return [_eventEmitter once:[NSNumber numberWithInt:event] call:cb];
+- (__GENERIC(ARTEventListener, ARTConnectionStateChange *) *)once:(ARTRealtimeConnectionState)event callback:(void (^)(ARTConnectionStateChange *))cb {
+    return [_eventEmitter once:[NSNumber numberWithInt:event] callback:cb];
 }
 
 - (__GENERIC(ARTEventListener, ARTConnectionStateChange *) *)once:(void (^)(ARTConnectionStateChange *))cb {

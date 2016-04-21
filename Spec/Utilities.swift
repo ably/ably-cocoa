@@ -31,10 +31,10 @@ class Utilities: QuickSpec {
                     receivedBar = nil
                     receivedBarOnce = nil
                     receivedAll = nil
-                    listenerFoo1 = eventEmitter.on("foo", call: { receivedFoo1 = $0 as? Int })
-                    eventEmitter.on("foo", call: { receivedFoo2 = $0 as? Int })
-                    eventEmitter.on("bar", call: { receivedBar = $0 as? Int })
-                    eventEmitter.once("bar", call: { receivedBarOnce = $0 as? Int })
+                    listenerFoo1 = eventEmitter.on("foo", callback: { receivedFoo1 = $0 as? Int })
+                    eventEmitter.on("foo", callback: { receivedFoo2 = $0 as? Int })
+                    eventEmitter.on("bar", callback: { receivedBar = $0 as? Int })
+                    eventEmitter.once("bar", callback: { receivedBarOnce = $0 as? Int })
                     listenerAll = eventEmitter.on { receivedAll = $0 as? Int }
                     eventEmitter.once { receivedAllOnce = $0 as? Int }
                 }
@@ -133,7 +133,7 @@ class Utilities: QuickSpec {
                     
                     it("should allow listening again") {
                         eventEmitter.off()
-                        eventEmitter.on("foo", call: { receivedFoo1 = $0 as? Int })
+                        eventEmitter.on("foo", callback: { receivedFoo1 = $0 as? Int })
                         eventEmitter.emit("foo", with: 111)
                         expect(receivedFoo1).to(equal(111))
                     }
