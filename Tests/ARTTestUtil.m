@@ -169,7 +169,7 @@
 }
 
 + (float)timeout {
-    return 10.0;
+    return 20.0;
 }
 
 + (void)publishRestMessages:(NSString *)prefix count:(int)count channel:(ARTChannel *)channel completion:(void (^)())completion {

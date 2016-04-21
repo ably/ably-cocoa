@@ -39,7 +39,7 @@ func pathForTestResource(resourcePath: String) -> String {
 
 let appSetupJson = JSON(data: NSData(contentsOfFile: pathForTestResource(testResourcesPath + "test-app-setup.json"))!, options: .MutableContainers)
 
-let testTimeout: NSTimeInterval = 10.0
+let testTimeout: NSTimeInterval = 20.0
 let testResourcesPath = "ably-common/test-resources/"
 
 /// Common test utilities.
