@@ -13,6 +13,8 @@
 
 ART_ASSUME_NONNULL_BEGIN
 
+extern NSString* (^__art_nullable ARTChannels_getChannelNamePrefix)();
+
 @protocol ARTChannelsDelegate <NSObject>
 
 - (id)makeChannel:(NSString *)channel options:(ARTChannelOptions *)options;

@@ -17,6 +17,7 @@
 #import "ARTProtocolMessage.h"
 #import "ARTEventEmitter.h"
 #import "ARTURLSessionServerTrust.h"
+#import "ARTChannels+Private.h"
 
 @implementation ARTTestUtil
 
@@ -38,17 +39,15 @@
     return [ARTTestUtil getFileByName:@"ably-common/test-resources/test-app-setup.json"];
 }
 
-+ (void)setupApp:(ARTClientOptions *)options withDebug:(BOOL)debug withAlteration:(TestAlteration)alt  appId:(NSString *)appId callback:(void (^)(ARTClientOptions *))cb {
-    NSString *str = [ARTTestUtil getTestAppSetupJson];
-    if (str == nil) {
-        [NSException raise:@"error getting test-app-setup.json loaded. Maybe ably-common is missing" format:@""];
-    }
-    NSData *data = [str dataUsingEncoding:NSUTF8StringEncoding];
-    NSDictionary *topLevel = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
-    
-    NSDictionary *d = [topLevel objectForKey:@"post_apps"];
-    NSData *appSpecData = [NSJSONSerialization dataWithJSONObject:d options:0 error:nil];
-     
++ (void)setupApp:(ARTClientOptions *)options withDebug:(BOOL)debug withAlteration:(TestAlteration)alt callback:(void (^)(ARTClientOptions *))cb {
+    static NSDictionary *testApplication;
+    static int setupAppCounter = 0;
+
+    ARTChannels_getChannelNamePrefix = ^NSString*() {
+        return [NSString stringWithFormat:@"test-%d", setupAppCounter];
+    };
+    setupAppCounter += 1;
+
     if (alt == TestAlterationBadWsHost) {
         options.environment = @"test";
     }
@@ -60,11 +59,36 @@
         options.logLevel = ARTLogLevelVerbose;
     }
 
+    if (testApplication) {
+        NSDictionary *key = testApplication[@"keys"][(alt == TestAlterationRestrictCapability ? 1 :0)];
+
+        ARTClientOptions *testOptions = [options copy];
+
+        testOptions.key = key[@"keyStr"];
+
+        if (alt == TestAlterationBadKeyId || alt == TestAlterationBadKeyValue)
+        {
+            testOptions.key = @"badKey";
+        }
+        cb(testOptions);
+        return;
+    }
+
+    NSString *str = [ARTTestUtil getTestAppSetupJson];
+    if (str == nil) {
+        [NSException raise:@"error getting test-app-setup.json loaded. Maybe ably-common is missing" format:@""];
+    }
+    NSData *data = [str dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *topLevel = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
+
+    NSDictionary *d = [topLevel objectForKey:@"post_apps"];
+    NSData *appSpecData = [NSJSONSerialization dataWithJSONObject:d options:0 error:nil];
+
     NSString *urlStr = [NSString stringWithFormat:@"https://%@:%ld/apps", options.restHost, (long)options.tlsPort];
     NSMutableURLRequest *req = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlStr]];
     req.HTTPMethod = @"POST";
     req.HTTPBody = appSpecData;
-    
+
     [req setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     [req setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
 
@@ -97,29 +121,15 @@
                 NSLog(@"Response: %@", json);
             }
 
-            NSDictionary *key = json[@"keys"][(alt == TestAlterationRestrictCapability ? 1 :0)];
-
-            ARTClientOptions *testOptions = [options copy];
-
-            testOptions.key = key[@"keyStr"];
-
-            if (alt == TestAlterationBadKeyId || alt == TestAlterationBadKeyValue)
-            {
-                testOptions.key = @"badKey";
-            }
-            
+            testApplication = json;
             CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
-                cb(testOptions);
+                [ARTTestUtil setupApp:options withDebug:debug withAlteration:alt callback:cb];
             });
         }
         @finally {
             CFRunLoopWakeUp(rl);
         }
     }];
-}
-
-+ (void)setupApp:(ARTClientOptions *)options withDebug:(BOOL)debug withAlteration:(TestAlteration)alt callback:(void (^)(ARTClientOptions *))cb {
-    [ARTTestUtil setupApp:options withDebug:debug withAlteration:alt appId:nil callback:cb];
 }
 
 + (void)setupApp:(ARTClientOptions *)options withAlteration:(TestAlteration)alt callback:(void (^)(ARTClientOptions *))cb {

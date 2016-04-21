@@ -78,35 +78,46 @@ class AblyTests {
         }
     }
 
-    class func setupOptions(options: ARTClientOptions, debug: Bool = false) -> ARTClientOptions {
-        let request = NSMutableURLRequest(URL: NSURL(string: "https://\(options.restHost):\(options.tlsPort)/apps")!)
-        request.HTTPMethod = "POST"
-        request.HTTPBody = try? appSetupJson["post_apps"].rawData()
+    static var testApplication: JSON?
+    static private var setupOptionsCounter = 0
 
-        request.allHTTPHeaderFields = [
-            "Accept" : "application/json",
-            "Content-Type" : "application/json"
-        ]
+    class func setupOptions(options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false) -> ARTClientOptions {
+        ARTChannels_getChannelNamePrefix = { "test-\(setupOptionsCounter)" }
+        setupOptionsCounter += 1
 
-        let (responseData, responseError, _) = NSURLSessionServerTrustSync().get(request)
+        if forceNewApp {
+            testApplication = nil
+        }
 
-        if let error = responseError {
-            XCTFail(error.localizedDescription)
-        } else if let data = responseData {
-            let response = JSON(data: data)
+        guard let app = testApplication else {
+            let request = NSMutableURLRequest(URL: NSURL(string: "https://\(options.restHost):\(options.tlsPort)/apps")!)
+            request.HTTPMethod = "POST"
+            request.HTTPBody = try? appSetupJson["post_apps"].rawData()
+
+            request.allHTTPHeaderFields = [
+                "Accept" : "application/json",
+                "Content-Type" : "application/json"
+            ]
+
+            let (responseData, responseError, _) = NSURLSessionServerTrustSync().get(request)
+
+            if let error = responseError {
+                XCTFail(error.localizedDescription)
+                return options
+            }
+
+            testApplication = JSON(data: responseData!)
             
             if debug {
                 options.logLevel = .Verbose
-                print(response)
+                print(testApplication!)
             }
-            
-            let key = response["keys"][0]
 
-            options.key = key["keyStr"].stringValue
-            
-            return options
+            return setupOptions(options, debug: debug)
         }
         
+        let key = app["keys"][0]
+        options.key = key["keyStr"].stringValue
         return options
     }
     
@@ -815,7 +826,6 @@ extension ARTWebSocketTransport {
         webSocketDelegate.webSocketError(error)
     }
 }
-
 
 // MARK: - Custom Nimble Matchers
 

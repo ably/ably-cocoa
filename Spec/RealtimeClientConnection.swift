@@ -544,8 +544,8 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     it("message failure") {
-                        let options = AblyTests.clientOptions()
-                        options.token = getTestToken(capability: "{ \"test\":[\"subscribe\"] }")
+                        let options = AblyTests.commonAppSetup()
+                        options.token = getTestToken(key: options.key, capability: "{ \"\(ARTChannels_getChannelNamePrefix!())-test\":[\"subscribe\"] }")
                         options.autoConnect = false
                         let client = ARTRealtime(options: options)
                         client.setTransportClass(TestProxyTransport.self)

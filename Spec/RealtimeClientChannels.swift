@@ -49,7 +49,7 @@ class RealtimeClientChannels: QuickSpec {
 
                     expect(client.channels.collection).to(haveCount(0))
                     let channel = client.channels.get("test")
-                    expect(channel.name).to(equal("test"))
+                    expect(channel.name).to(equal("\(ARTChannels_getChannelNamePrefix!())-test"))
 
                     expect(client.channels.collection).to(haveCount(1))
                     expect(client.channels.get("test")).to(beIdenticalTo(channel))
