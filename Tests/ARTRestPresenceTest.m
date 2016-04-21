@@ -19,6 +19,7 @@
 #import "ARTChannels.h"
 #import "ARTDataQuery.h"
 #import "ARTPaginatedResult.h"
+#import "ARTChannels+Private.h"
 
 @interface ARTRestPresenceTest : XCTestCase
 
@@ -32,6 +33,7 @@
 
 - (void)testPresence {
     ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
+    ARTChannels_getChannelNamePrefix = nil; // Force that channel name is not changed.
 
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
@@ -75,6 +77,7 @@
 
 - (void)testHistory {
     ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
+    ARTChannels_getChannelNamePrefix = nil; // Force that channel name is not changed.
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
     ARTRestChannel *channel = [rest.channels get:@"persisted:presence_fixtures"];
@@ -89,6 +92,7 @@
 
 - (void)testHistoryDefaultBackwards {
     ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
+    ARTChannels_getChannelNamePrefix = nil; // Force that channel name is not changed.
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
     ARTRestChannel *channel = [rest.channels get:@"persisted:presence_fixtures"];
@@ -100,11 +104,13 @@
         XCTAssertEqualObjects(@"true", [m data]);
         [expectation fulfill];
     } error:nil];
+
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
 - (void)testHistoryDirection {
     ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
+    ARTChannels_getChannelNamePrefix = nil; // Force that channel name is not changed.
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
     ARTRestChannel *channel = [rest.channels get:@"persisted:presence_fixtures"];

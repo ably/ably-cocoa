@@ -12,7 +12,7 @@ import SwiftyJSON
 import Foundation
 
 private func postTestStats(stats: JSON) -> ARTClientOptions {
-    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions);
+    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions, forceNewApp: true);
     
     let keyBase64 = encodeBase64(options.key ?? "")
 

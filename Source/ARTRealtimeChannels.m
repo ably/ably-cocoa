@@ -53,7 +53,10 @@
 }
 
 - (void)release:(NSString *)name callback:(void (^)(ARTErrorInfo * _Nullable))cb {
-    ARTRealtimeChannel *channel = _channels.channels[name];
+    ARTRealtimeChannel *channel;
+    if ([self exists:name]) {
+        channel = [self get:name];
+    }
     if (channel) {
         [channel detach:^(ARTErrorInfo *errorInfo) {
             [channel off];

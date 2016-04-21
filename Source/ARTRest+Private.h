@@ -23,7 +23,6 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) NSDictionary *encoders;
 
 @property (nonatomic, strong) id<ARTHTTPExecutor> httpExecutor;
-@property (readonly, nonatomic, assign) Class channelClass;
 
 @property (nonatomic, strong) NSURL *baseUrl;
 

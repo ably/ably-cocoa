@@ -20,6 +20,7 @@
 #import "ARTAuth.h"
 #import "ARTTokenParams.h"
 #import "ARTTokenDetails.h"
+#import "ARTChannels+Private.h"
 
 @interface ARTRestCapabilityTest : XCTestCase {
     ARTRest *_rest;
@@ -34,23 +35,9 @@
     [super tearDown];
 }
 
-- (void)withRestRestrictCap:(void (^)(ARTRest *rest))cb {
-    if (!_rest) {
-        ARTClientOptions *theOptions = [ARTTestUtil clientOptions];
-        [ARTTestUtil setupApp:theOptions withAlteration:TestAlterationRestrictCapability callback:^(ARTClientOptions *options) {
-            if (options) {
-
-            }
-        }];
-        return;
-    }
-    else {
-        cb(_rest);
-    }
-}
-
 - (void)testPublishRestricted {
     ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
+    ARTChannels_getChannelNamePrefix = nil; // Force that channel name is not changed.
 
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     options.clientId = @"client_string";

@@ -21,6 +21,7 @@
 #import "ARTTestUtil.h"
 #import "ARTCrypto+Private.h"
 #import "ARTChannelOptions.h"
+#import "ARTChannels+Private.h"
 
 @interface ARTRealtimeChannelTest : XCTestCase
 
@@ -207,9 +208,13 @@
         [d setValue:channel forKey:channel.name];
     }
     XCTAssertEqual([[d allKeys] count], 3);
-    XCTAssertEqualObjects([d valueForKey:@"channel"], c1);
-    XCTAssertEqualObjects([d valueForKey:@"channel2"], c2);
-    XCTAssertEqualObjects([d valueForKey:@"channel3"], c3);
+    NSString *prefix = ARTChannels_getChannelNamePrefix();
+    __block NSString *expectedName = [NSString stringWithFormat:@"%@-channel", prefix];
+    XCTAssertEqualObjects([d valueForKey:expectedName], c1);
+    expectedName = [NSString stringWithFormat:@"%@-channel2", prefix];
+    XCTAssertEqualObjects([d valueForKey:expectedName], c2);
+    expectedName = [NSString stringWithFormat:@"%@-channel3", prefix];
+    XCTAssertEqualObjects([d valueForKey:expectedName], c3);
 
     [realtime.channels release:c3.name callback:^(ARTErrorInfo *errorInfo) {
         NSMutableDictionary *d = [[NSMutableDictionary alloc] init];
@@ -217,8 +222,10 @@
             [d setValue:channel forKey:channel.name];
         }
         XCTAssertEqual([[d allKeys] count], 2);
-        XCTAssertEqualObjects([d valueForKey:@"channel"], c1);
-        XCTAssertEqualObjects([d valueForKey:@"channel2"], c2);
+        expectedName = [NSString stringWithFormat:@"%@-channel", prefix];
+        XCTAssertEqualObjects([d valueForKey:expectedName], c1);
+        expectedName = [NSString stringWithFormat:@"%@-channel2", prefix];
+        XCTAssertEqualObjects([d valueForKey:expectedName], c2);
     }];
     
     [expectation fulfill];

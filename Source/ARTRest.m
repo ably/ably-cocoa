@@ -56,7 +56,6 @@
         [_logger debug:__FILE__ line:__LINE__ message:@"%p alloc HTTP", _http];
         _httpExecutor = _http;
         _httpExecutor.logger = _logger;
-        _channelClass = [ARTRestChannel class];
 
         id<ARTEncoder> defaultEncoder = [[ARTJsonEncoder alloc] initWithLogger:self.logger];
         _encoders = @{ [defaultEncoder mimeType]: defaultEncoder };

@@ -775,8 +775,8 @@ class RealtimeClientChannel: QuickSpec {
                     }
 
                     it("upon failure") {
-                        let options = AblyTests.clientOptions()
-                        options.token = getTestToken(capability: "{ \"test\":[\"subscribe\"] }")
+                        let options = AblyTests.commonAppSetup()
+                        options.token = getTestToken(key: options.key, capability: "{ \"\(ARTChannels_getChannelNamePrefix!())-test\":[\"subscribe\"] }")
                         let client = ARTRealtime(options: options)
                         defer { client.close() }
 
@@ -814,8 +814,8 @@ class RealtimeClientChannel: QuickSpec {
                     }
 
                     it("for all messages published") {
-                        let options = AblyTests.clientOptions()
-                        options.token = getTestToken(capability: "{ \"channelToSucceed\":[\"subscribe\", \"publish\"], \"channelToFail\":[\"subscribe\"] }")
+                        let options = AblyTests.commonAppSetup()
+                        options.token = getTestToken(key: options.key, capability: "{ \"\(ARTChannels_getChannelNamePrefix!())-channelToSucceed\":[\"subscribe\", \"publish\"], \"\(ARTChannels_getChannelNamePrefix!())-channelToFail\":[\"subscribe\"] }")
                         let client = ARTRealtime(options: options)
                         defer { client.close() }
 

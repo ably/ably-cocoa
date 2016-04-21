@@ -301,6 +301,10 @@ class RestClientChannel: QuickSpec {
             // RSP3
             context("get") {
                 it("should return presence fixture data") {
+                    let originalARTChannels_getChannelNamePrefix = ARTChannels_getChannelNamePrefix
+                    defer { ARTChannels_getChannelNamePrefix = originalARTChannels_getChannelNamePrefix }
+                    ARTChannels_getChannelNamePrefix = nil // Force that channel name is not changed.
+
                     let key = appSetupJson["cipher"]["key"].string!
                     let cipherParams = ARTCipherParams.init(
                         algorithm: appSetupJson["cipher"]["algorithm"].string!,
