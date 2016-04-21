@@ -457,6 +457,50 @@ class RestClientPresence: QuickSpec {
 
             }
 
+            // RSP5
+            it("presence messages retrieved are decoded in the same way that messages are decoded") {
+                let options = AblyTests.commonAppSetup()
+                let client = ARTRest(options: options)
+                let channel = client.channels.get("test")
+
+                let expectedData = ["test":1]
+                var decodeNumberOfCalls = 0
+                let hook = ARTBaseMessage.testSuite_injectIntoClassMethod(#selector(ARTBaseMessage.decodeWithEncoder(_:error:))) {
+                    decodeNumberOfCalls += 1
+                }
+                defer { hook?.remove() }
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.publish(nil, data: expectedData) { _ in done() }
+                }
+
+                var realtime = ARTRealtime(options: options)
+                defer { realtime.close() }
+                waitUntil(timeout: testTimeout) { done in
+                    realtime.channels.get("test").presence.enterClient("john", data: expectedData) { _ in done() }
+                }
+
+                typealias Done = () -> Void
+                func checkReceivedMessage(done: Done) -> (ARTPaginatedResult?, ARTErrorInfo?) -> Void {
+                    return { membersPage, error in
+                        expect(error).to(beNil())
+                        let member = membersPage!.items[0] as! ARTBaseMessage
+                        expect(member.data as? NSDictionary).to(equal(expectedData))
+                        done()
+                    }
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.history(checkReceivedMessage(done))
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.presence.history(checkReceivedMessage(done))
+                }
+
+                expect(decodeNumberOfCalls).to(equal(2))
+            }
+
         }
     }
 }
