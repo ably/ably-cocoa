@@ -200,6 +200,14 @@ class RestClient: QuickSpec {
 
                 expect(authOptions == options).to(beTrue())
             }
+
+            // RSC12
+            it("REST endpoint host should be configurable in the Client constructor with the option restHost") {
+                let options = ARTClientOptions()
+                expect(options.restHost).to(equal("rest.ably.io"))
+                options.restHost = "rest.ably.test"
+                expect(options.restHost).to(equal("rest.ably.test"))
+            }
             
             // RSC16
             context("time") {
