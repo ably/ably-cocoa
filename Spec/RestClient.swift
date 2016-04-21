@@ -207,7 +207,7 @@ class RestClient: QuickSpec {
             }
 
             // RSC13
-            context("should use the the connection and request timeouts specified") {
+            pending("should use the the connection and request timeouts specified") {
 
                 it("timeout for any single HTTP request and response") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
