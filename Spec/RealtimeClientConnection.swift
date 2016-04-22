@@ -1523,7 +1523,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN14c
-                it("connection attempt should fail if not connected within the default realtime request timeout") {
+                pending("connection attempt should fail if not connected within the default realtime request timeout") {
                     let options = AblyTests.commonAppSetup()
                     options.realtimeHost = "10.255.255.1" //non-routable IP address
                     options.autoConnect = false
