@@ -57,4 +57,8 @@ NSString *generateNonce() {
     return self;
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat:@"%@ - \n\t current: %@; \n\t previous: %@; \n\t reason: %@; \n\t retryIn: %f; \n", [super description], ARTRealtimeConnectionStateString(_current), ARTRealtimeConnectionStateString(_previous), _reason, _retryIn];
+}
+
 @end

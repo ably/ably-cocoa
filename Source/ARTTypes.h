@@ -42,6 +42,16 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
     ARTRealtimeClosed,
     ARTRealtimeFailed
 };
+#define ARTRealtimeConnectionStateString(enum) [@ [\
+@"ARTRealtimeInitialized", \
+@"ARTRealtimeConnecting", \
+@"ARTRealtimeConnected", \
+@"ARTRealtimeDisconnected", \
+@"ARTRealtimeSuspended", \
+@"ARTRealtimeClosing", \
+@"ARTRealtimeClosed", \
+@"ARTRealtimeFailed" \
+] objectAtIndex:enum]
 
 typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
     ARTRealtimeChannelInitialized,
