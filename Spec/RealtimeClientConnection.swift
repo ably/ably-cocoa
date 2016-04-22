@@ -1522,6 +1522,47 @@ class RealtimeClientConnection: QuickSpec {
                     expect(failures[0].error!.code).to(equal(40142))
                 }
 
+                // RTN14d
+                it("connection attempt fails for any recoverable reason") {
+                    let options = AblyTests.commonAppSetup()
+                    options.realtimeHost = "10.255.255.1" //non-routable IP address
+                    options.disconnectedRetryTimeout = 0.1
+                    options.suspendedRetryTimeout = 0.5
+                    options.autoConnect = false
+                    let expectedTime = 1.0
+                    // FIXME: connectionStateTtl is readonly
+                    //ARTDefault.connectionStateTtl = expectedTime
+
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+
+                    var totalRetry = 0
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.on(.Disconnected) { stateChange in
+                            expect(stateChange!.reason!.message).to(contain("timed out"))
+                            expect(stateChange!.previous).to(equal(ARTRealtimeConnectionState.Connecting))
+                            expect(stateChange!.retryIn).to(beCloseTo(options.disconnectedRetryTimeout))
+                        }
+
+                        var start: NSDate?
+                        client.connection.on(.Suspended) { stateChange in
+                            let end = NSDate()
+                            expect(end.timeIntervalSinceDate(start!)).to(beCloseTo(expectedTime))
+                            done()
+                        }
+
+                        client.connect()
+                        start = NSDate()
+
+                        client.connection.on(.Connecting) { stateChange in
+                            expect(stateChange!.previous).to(equal(ARTRealtimeConnectionState.Disconnected))
+                            totalRetry += 1
+                        }
+                    }
+
+                    expect(totalRetry).to(equal(Int(expectedTime / options.disconnectedRetryTimeout)))
+                }
+
             }
 
             // RTN15
