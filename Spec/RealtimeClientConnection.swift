@@ -1523,7 +1523,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN14d
-                it("connection attempt fails for any recoverable reason") {
+                pending("connection attempt fails for any recoverable reason") {
                     let options = AblyTests.commonAppSetup()
                     options.realtimeHost = "10.255.255.1" //non-routable IP address
                     options.disconnectedRetryTimeout = 0.1
