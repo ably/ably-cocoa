@@ -1429,6 +1429,39 @@ class RealtimeClientConnection: QuickSpec {
                     expect(states).to(equal([.Connecting, .Connected, .Disconnected, .Connecting, .Connected]))
                 }
 
+                // RTN15c
+                context("System's response to a resume request") {
+
+                    // RTN15c1
+                    pending("CONNECTED ProtocolMessage with the same connectionId as the current client, and no error") {
+                        let options = AblyTests.commonAppSetup()
+                        options.disconnectedRetryTimeout = 1.0
+                        let client = AblyTests.newRealtime(options)
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                        let expectedConnectionId = client.connection.id
+                        client.onDisconnected()
+
+                        channel.publish(nil, data: "queued message")
+                        expect(client.queuedMessages).toEventually(haveCount(1), timeout: testTimeout)
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.Connected) { stateChange in
+                                let transport = client.transport as! TestProxyTransport
+                                let connectedPM = transport.protocolMessagesReceived.filter{ $0.action == .Connected }[0]
+                                expect(connectedPM.connectionId).to(equal(expectedConnectionId))
+                                expect(stateChange!.reason).to(beNil())
+                                done()
+                            }
+                        }
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+                        expect(client.queuedMessages).toEventually(haveCount(0), timeout: testTimeout)
+                    }
+
+                }
+
                 // RTN15d
                 it("should recover from disconnection and messages should be delivered once the connection is resumed") {
                     let options = AblyTests.commonAppSetup()
