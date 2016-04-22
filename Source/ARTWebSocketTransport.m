@@ -8,7 +8,7 @@
 
 #import "ARTWebSocketTransport.h"
 
-#import "SwiftWebSocket-Swift.h"
+#import <PocketSocket/PSWebSocket.h>
 
 #import "ARTRest.h"
 #import "ARTRest+Private.h"
@@ -37,11 +37,10 @@ enum {
     ARTWsTlsError = 1015
 };
 
-@interface ARTWebSocketTransport () <WebSocketDelegate>
+@interface ARTWebSocketTransport () <PSWebSocketDelegate>
 
 @property (readonly, assign, nonatomic) CFRunLoopRef rl;
-@property (readonly, strong, nonatomic) dispatch_queue_t queue;
-@property (readwrite, strong, nonatomic) WebSocket *websocket;
+@property (readwrite, strong, nonatomic) PSWebSocket *websocket;
 
 // From RestClient
 @property (readwrite, strong, nonatomic) id<ARTEncoder> encoder;
@@ -58,7 +57,6 @@ enum {
     self = [super init];
     if (self) {
         _rl = CFRunLoopGetCurrent();
-        _queue = dispatch_queue_create("ARTWebSocketTransport", NULL);
         _websocket = nil;
         _closing = NO;
 
@@ -87,7 +85,7 @@ enum {
 }
 
 - (void)sendWithData:(NSData *)data {
-    [self.websocket sendWithData:data];
+    [self.websocket send:data];
 }
 
 - (void)receive:(ARTProtocolMessage *)msg {
@@ -139,7 +137,7 @@ enum {
 }
 
 - (BOOL)getIsConnected {
-    return self.websocket.readyState == WebSocketReadyStateOpen;
+    return self.websocket.readyState == PSWebSocketReadyStateOpen;
 }
 
 - (NSURL *)setupWebSocket:(__GENERIC(NSArray, NSURLQueryItem *) *)params withOptions:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
@@ -193,9 +191,8 @@ enum {
     NSURL *url = [urlComponents URLRelativeToURL:[options realtimeUrl]];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"%p url %@", self, url];
-    self.websocket = [[WebSocket alloc] initWithUrl:url];
+    self.websocket = [PSWebSocket clientSocketWithRequest:[NSURLRequest requestWithURL:url]];
     self.websocket.delegate = self;
-    self.websocket.eventQueue = self.queue;
     return url;
 }
 
@@ -215,7 +212,7 @@ enum {
 - (void)close {
     if (!_websocket) return;
     self.websocket.delegate = nil;
-    [self.websocket close:ARTWsCloseNormal reason:@"Normal Closure"];
+    [self.websocket closeWithCode:ARTWsCloseNormal reason:@"Normal Closure"];
     self.websocket = nil;
 }
 
@@ -223,10 +220,10 @@ enum {
     if (!_websocket) return;
     self.websocket.delegate = nil;
     if (reason.errorInfo) {
-        [self.websocket close:ARTWsAbnormalClose reason:reason.errorInfo.description];
+        [self.websocket closeWithCode:ARTWsAbnormalClose reason:reason.errorInfo.description];
     }
     else {
-        [self.websocket close:ARTWsAbnormalClose reason:@"Abnormal Closure"];
+        [self.websocket closeWithCode:ARTWsAbnormalClose reason:@"Abnormal Closure"];
     }
     self.websocket = nil;
 }
@@ -234,7 +231,7 @@ enum {
 
 #pragma mark - SRWebSocketDelegate
 
-- (void)webSocketOpen {
+- (void)webSocketDidOpen:(PSWebSocket *)websocket {
     ARTWebSocketTransport * __weak weakSelf = self;
     [self.logger debug:__FILE__ line:__LINE__ message:@"%p websocket did open", self];
 
@@ -247,7 +244,7 @@ enum {
     CFRunLoopWakeUp(self.rl);
 }
 
-- (void)webSocketClose:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
+- (void)webSocket:(PSWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
     ARTWebSocketTransport * __weak weakSelf = self;
     [self.logger debug:__FILE__ line:__LINE__ message:@"%p websocket did disconnect (code %ld) %@", self, (long)code, reason];
 
@@ -296,7 +293,7 @@ enum {
     CFRunLoopWakeUp(self.rl);
 }
 
-- (void)webSocketError:(NSError *)error {
+- (void)webSocket:(PSWebSocket *)webSocket didFailWithError:(NSError *)error {
     ARTWebSocketTransport * __weak weakSelf = self;
     [self.logger debug:__FILE__ line:__LINE__ message:@"%p websocket did receive error %@", self, error];
 
@@ -307,6 +304,14 @@ enum {
         }
     });
     CFRunLoopWakeUp(self.rl);
+}
+
+- (void)webSocket:(PSWebSocket *)webSocket didReceiveMessage:(id)message {
+    if ([message isKindOfClass:[NSString class]]) {
+        [self webSocketMessageText:(NSString *)message];
+    } else if ([message isKindOfClass:[NSData class]]) {
+        [self webSocketMessageData:(NSData *)message];
+    }
 }
 
 - (void)webSocketMessageText:(NSString *)text {

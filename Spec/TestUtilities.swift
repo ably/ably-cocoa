@@ -11,7 +11,7 @@ import XCTest
 import Quick
 import Nimble
 import SwiftyJSON
-import SwiftWebSocket
+import PocketSocket
 
 import AblyRealtime.Private
 
@@ -607,24 +607,6 @@ class TestProxyTransport: ARTWebSocketTransport {
 
     override func connect() {
         guard let network = TestProxyTransport.network else { super.connect(); return }
-        let hook = WebSocket.testSuite_replaceClassMethod(#selector(WebSocket.open(_:)), code: {
-            let performConnectError = { (secondsForDelay: NSTimeInterval, error: WebSocketError) in
-                delay(secondsForDelay) {
-                    self.delegate?.realtimeTransportFailed(self, withErrorInfo: ARTErrorInfo.createWithNSError(error as NSError))
-                }
-            }
-            switch network {
-            case .NoInternet, .HostUnreachable:
-                performConnectError(0.1, WebSocketError.Network("The operation couldn’t be completed. (kCFErrorDomainCFNetwork error 2.)"))
-            case .RequestTimeout(let timeout):
-                performConnectError(0.1 + timeout, WebSocketError.Network("The operation as timed out. (kCFErrorDomainCFNetwork error 2.)"))
-            case .HostInternalError(let code):
-                performConnectError(0.1, WebSocketError.InvalidResponse("\(code)"))
-            case .Host400BadRequest:
-                performConnectError(0.1, WebSocketError.InvalidHeader)
-            }
-        })
-        defer { hook?.remove() }
         super.connect()
         if let performNetworkConnect = TestProxyTransport.networkConnectEvent {
             performNetworkConnect(lastUrl!)
@@ -866,20 +848,20 @@ extension ARTWebSocketTransport {
     func simulateIncomingNormalClose() {
         let CLOSE_NORMAL = 1000
         self.closing = true
-        let webSocketDelegate = self as! WebSocketDelegate
-        webSocketDelegate.webSocketClose(CLOSE_NORMAL, reason: "", wasClean: true)
+        let webSocketDelegate = self as! PSWebSocketDelegate
+        webSocketDelegate.webSocket(nil, didCloseWithCode: CLOSE_NORMAL, reason: "", wasClean: true)
     }
 
     func simulateIncomingAbruptlyClose() {
         let CLOSE_ABNORMAL = 1006
-        let webSocketDelegate = self as! WebSocketDelegate
-        webSocketDelegate.webSocketClose(CLOSE_ABNORMAL, reason: "connection was closed abnormally", wasClean: false)
+        let webSocketDelegate = self as! PSWebSocketDelegate
+        webSocketDelegate.webSocket(nil, didCloseWithCode: CLOSE_ABNORMAL, reason: "connection was closed abnormally", wasClean: false)
     }
 
     func simulateIncomingError() {
         let error = NSError(domain: ARTAblyErrorDomain, code: 0, userInfo: [NSLocalizedDescriptionKey:"Fail test"])
-        let webSocketDelegate = self as! WebSocketDelegate
-        webSocketDelegate.webSocketError(error)
+        let webSocketDelegate = self as! PSWebSocketDelegate
+        webSocketDelegate.webSocket(nil, didFailWithError: error)
     }
 }
 
