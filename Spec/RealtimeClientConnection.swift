@@ -1599,6 +1599,35 @@ class RealtimeClientConnection: QuickSpec {
                     expect(totalRetry).to(equal(Int(expectedTime / options.disconnectedRetryTimeout)))
                 }
 
+                // RTN14e
+                it("connection state has been in the DISCONNECTED state for more than the default connectionStateTtl should change the state to SUSPENDED") {
+                    let options = AblyTests.commonAppSetup()
+                    options.realtimeHost = "10.255.255.1" //non-routable IP address
+                    options.disconnectedRetryTimeout = 0.1
+                    options.suspendedRetryTimeout = 0.5
+                    options.autoConnect = false
+                    let expectedTime = 1.0
+                    // FIXME: connectionStateTtl is readonly
+                    //ARTDefault.connectionStateTtl = expectedTime
+
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.on(.Suspended) { stateChange in
+                            expect(client.connection.errorReason!.message).to(contain("timed out"))
+
+                            let start = NSDate()
+                            client.connection.once(.Connecting) { stateChange in
+                                let end = NSDate()
+                                expect(end.timeIntervalSinceDate(start)).to(beCloseTo(options.suspendedRetryTimeout))
+                                done()
+                            }
+                        }
+                        client.connect()
+                    }
+                }
+
             }
 
             // RTN15
