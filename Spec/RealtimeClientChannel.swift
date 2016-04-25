@@ -1073,6 +1073,27 @@ class RealtimeClientChannel: QuickSpec {
 
                 }
 
+                // RTL6h
+                it("should provide an optional argument that allows the clientId value to be specified") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.subscribe { message in
+                            expect(message.name).to(equal("event"))
+                            expect(message.data as? NSObject).to(equal("data"))
+                            expect(message.clientId).to(equal("foo"))
+                            done()
+                        }
+
+                        channel.publish("event", data: "data", clientId: "foo") { errorInfo in
+                            expect(errorInfo).to(beNil())
+                        }
+                    }
+                }
+
+
             }
 
             // RTL7

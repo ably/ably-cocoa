@@ -71,20 +71,16 @@
     return _realtimePresence;
 }
 
-- (void)publish:(NSString *)name data:(id)data callback:(void (^)(ARTErrorInfo * _Nullable))cb {
-    NSArray *messages = [NSArray arrayWithObject:[[ARTMessage alloc] initWithName:name data:data]];
-    [self publish:messages callback:cb];
-}
-
--(void)publish:(NSArray<ARTMessage *> *)messages callback:(void (^)(ARTErrorInfo * _Nullable))cb {
+- (void)internalPostMessages:(id)data callback:(void (^)(ARTErrorInfo *__art_nullable error))callback {
     ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
     msg.action = ARTProtocolMessageMessage;
     msg.channel = self.name;
-    msg.messages = [messages artMap:^id(ARTMessage *message) {
-        return [self encodeMessageIfNeeded:message];
-    }];
+    if (![data isKindOfClass:[NSArray class]]) {
+        data = @[data];
+    }
+    msg.messages = data;
     [self publishProtocolMessage:msg callback:^void(ARTStatus *status) {
-        if (cb) cb(status.errorInfo);
+        if (callback) callback(status.errorInfo);
     }];
 }
 
