@@ -1111,7 +1111,7 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 // RTL6d
-                it("Messages are delivered using a single ProtocolMessage where possible by bundling in all messages for that channel") {
+                pending("Messages are delivered using a single ProtocolMessage where possible by bundling in all messages for that channel") {
                     let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
                     defer { client.close() }
                     let channel = client.channels.get("test")
