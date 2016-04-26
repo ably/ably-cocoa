@@ -1131,7 +1131,7 @@ class RealtimeClientConnection: QuickSpec {
             }
 
             // RTN11b
-            it("should emit an error if the state is CLOSING as the connection must complete the close request before reconnecting") {
+            pending("should emit an error if the state is CLOSING as the connection must complete the close request before reconnecting") {
                 let client = ARTRealtime(options: AblyTests.commonAppSetup())
                 defer { client.close() }
                 waitUntil(timeout: testTimeout) { done in
