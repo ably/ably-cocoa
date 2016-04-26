@@ -1322,6 +1322,28 @@ class RealtimeClientConnection: QuickSpec {
 
             }
 
+            // RTN13
+            context("Ping") {
+
+                // RTN13c
+                pending("should fail if a HEARTBEAT ProtocolMessage is not received within the default realtime request timeout") {
+                    let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    // TODO
+                    //ARTDefault.connectionStateTtl()
+                    waitUntil(timeout: testTimeout) { done in
+                        let start = NSDate()
+                        client.ping() { error in
+                            let end = NSDate()
+                            expect(error.message).to(contain("timed out"))
+                            expect(end.timeIntervalSinceDate(start)).to(beCloseTo(ARTDefault.connectionStateTtl()))
+                            done()
+                        }
+                    }
+                }
+
+            }
+
             // RTN14a
             it("should enter FAILED state when API key is invalid") {
                 let options = AblyTests.commonAppSetup()
