@@ -1322,6 +1322,32 @@ class RealtimeClientConnection: QuickSpec {
 
             }
 
+            // RTN13
+            context("Ping") {
+
+                // RTN13b
+                it("should immediately indicate an error if in the CLOSED or FAILED state") {
+                    let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.on(.Connected) { _ in
+                            client.onError(AblyTests.newErrorProtocolMessage())
+                            done()
+                        }
+                    }
+                    waitUntil(timeout: testTimeout) { done in
+                        client.ping() { error in
+                            expect(error).toNot(beNil())
+                            let transport = client.transport as! TestProxyTransport
+                            expect(transport.protocolMessagesSent.filter{ $0.action == .Heartbeat }).to(haveCount(1))
+                            expect(transport.protocolMessagesReceived.filter{ $0.action == .Heartbeat }).to(haveCount(0))
+                            done()
+                        }
+                    }
+                }
+
+            }
+
             // RTN14a
             it("should enter FAILED state when API key is invalid") {
                 let options = AblyTests.commonAppSetup()
