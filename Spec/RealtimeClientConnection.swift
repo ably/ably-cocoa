@@ -1326,7 +1326,7 @@ class RealtimeClientConnection: QuickSpec {
             context("Ping") {
 
                 // RTN13b
-                it("should immediately indicate an error if in the CLOSED or FAILED state") {
+                pending("should immediately indicate an error if in the CLOSED or FAILED state") {
                     let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
                     defer { client.close() }
                     waitUntil(timeout: testTimeout) { done in
