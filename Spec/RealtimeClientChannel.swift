@@ -1139,6 +1139,21 @@ class RealtimeClientChannel: QuickSpec {
 
                 }
 
+                // RTL6f
+                it("Message#connectionId should match the current Connection#id for all published messages") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.subscribe() { message in
+                            expect(message.connectionId).to(equal(client.connection.id))
+                            done()
+                        }
+                        channel.publish(nil, data: "message")
+                    }
+                }
+
                 // RTL6i
                 context("expect either") {
 
