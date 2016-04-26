@@ -2,7 +2,7 @@ platform :ios, '8.0'
 use_frameworks!
 podspec :path => 'AblyRealtime.podspec'
 
-pod 'PocketSocket', :git => 'https://github.com/ably-forks/PocketSocket.git'
+pod 'PocketSocket', '~> 1.0'
 
 target 'AblySpec' do
     pod 'Quick', '0.9.1'

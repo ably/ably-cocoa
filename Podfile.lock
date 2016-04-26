@@ -16,18 +16,9 @@ PODS:
 DEPENDENCIES:
   - Aspects
   - Nimble (= 4.0.0)
-  - PocketSocket (from `https://github.com/ably-forks/PocketSocket.git`)
+  - PocketSocket (~> 1.0)
   - Quick (= 0.9.1)
   - SwiftyJSON (= 2.3.1)
-
-EXTERNAL SOURCES:
-  PocketSocket:
-    :git: https://github.com/ably-forks/PocketSocket.git
-
-CHECKOUT OPTIONS:
-  PocketSocket:
-    :commit: 99d680f13767baeb25b3cbe8edf647e48dc8a95c
-    :git: https://github.com/ably-forks/PocketSocket.git
 
 SPEC CHECKSUMS:
   Aspects: 7595ba96a6727a58ebcbfc954497fc5d2fdde546
