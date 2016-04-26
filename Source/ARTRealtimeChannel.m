@@ -278,6 +278,10 @@
     [self.statesEventEmitter emit:[NSNumber numberWithInt:event] with:data];
 }
 
+- (ARTEventListener *)timed:(ARTEventListener *)listener deadline:(NSTimeInterval)deadline onTimeout:(void (^)())onTimeout {
+    return [self.statesEventEmitter timed:listener deadline:deadline onTimeout:onTimeout];
+}
+
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status {
     [self cancelAttachTimer];
     [self cancelDetachTimer];

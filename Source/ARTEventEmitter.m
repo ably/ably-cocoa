@@ -30,11 +30,14 @@
 @interface ARTEventListener ()
 
 - (instancetype)initWithBlock:(void (^)(id __art_nonnull))block;
+- (void)setTimerWithDeadline:(NSTimeInterval)deadline onTimeout:(void (^)())onTimeout;
+- (void)off;
 
 @end
 
 @implementation ARTEventListener {
     void (^_block)(id __art_nonnull);
+    CFRunLoopTimerRef _timer;
 }
 
 - (instancetype)initWithBlock:(void (^)(id __art_nonnull))block {
@@ -46,7 +49,30 @@
 }
 
 - (void)call:(id)argument {
+    [self cancelTimer];
     _block(argument);
+}
+
+- (void)setTimerWithDeadline:(NSTimeInterval)deadline onTimeout:(void (^)())onTimeout {
+    [self cancelTimer];
+    CFAbsoluteTime timeoutDate = CFAbsoluteTimeGetCurrent() + deadline;
+
+    CFRunLoopRef rl = CFRunLoopGetCurrent();
+    _timer = CFRunLoopTimerCreateWithHandler(kCFAllocatorDefault, timeoutDate, 0, 0, 0, onTimeout);
+    CFRunLoopAddTimer(rl, _timer, kCFRunLoopDefaultMode);
+}
+
+- (void)cancelTimer {
+    if (_timer) {
+        CFRunLoopTimerInvalidate(_timer);
+        CFRunLoopRemoveTimer(CFRunLoopGetCurrent(), _timer, kCFRunLoopDefaultMode);
+        CFRelease(_timer);
+        _timer = nil;
+    }
+}
+
+- (void)off {
+    [self cancelTimer];
 }
 
 @end
@@ -113,12 +139,14 @@
 }
 
 - (void)off:(id)event listener:(ARTEventListener *)listener {
+    [listener off];
     [self removeObject:listener fromArrayWithKey:event inDictionary:self.listeners where:^BOOL(id entry) {
         return ((ARTEventEmitterEntry *)entry).listener == listener;
     }];
 }
 
 - (void)off:(ARTEventListener *)listener {
+    [listener off];
     BOOL (^cond)(id) = ^BOOL(id entry) {
         return ((ARTEventEmitterEntry *)entry).listener == listener;
     };
@@ -133,6 +161,14 @@
 }
 
 - (void)resetListeners {
+    for (NSArray *entries in [_listeners allValues]) {
+        for (ARTEventEmitterEntry *entry in entries) {
+            [entry.listener off];
+        }
+    }
+    for (ARTEventEmitterEntry *entry in _anyListeners) {
+        [entry.listener off];
+    }
     _listeners = [[NSMutableDictionary alloc] init];
     _anyListeners = [[NSMutableArray alloc] init];
 }
@@ -199,6 +235,16 @@
     if ([array count] == 0) {
         [dict removeObjectForKey:key];
     }
+}
+
+- (ARTEventListener *)timed:(ARTEventListener *)listener deadline:(NSTimeInterval)deadline onTimeout:(void (^)())onTimeout {
+    __weak ARTEventEmitter *s = self;
+    __weak ARTEventListener *weakListener = listener;
+    [listener setTimerWithDeadline:deadline onTimeout:^void() {
+        [s off:weakListener];
+        if (onTimeout) onTimeout();
+    }];
+    return listener;
 }
 
 @end

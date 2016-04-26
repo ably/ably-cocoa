@@ -95,6 +95,18 @@ class Utilities: QuickSpec {
                         
                         expect(receivedAll).to(equal(222))
                     }
+
+                    it("should remove the timeout") {
+                        eventEmitter.timed(listenerFoo1!, deadline: 0.1, onTimeout: {
+                            fail("onTimeout callback shouldn't have been called")
+                        })
+                        eventEmitter.off(listenerFoo1!)
+                        waitUntil(timeout: 0.3) { done in
+                            delay(0.15) {
+                                done()
+                            }
+                        }
+                    }
                 }
                 
                 context("calling off with listener and event arguments") {
@@ -136,6 +148,55 @@ class Utilities: QuickSpec {
                         eventEmitter.on("foo", callback: { receivedFoo1 = $0 as? Int })
                         eventEmitter.emit("foo", with: 111)
                         expect(receivedFoo1).to(equal(111))
+                    }
+
+                    it("should remove all timeouts") {
+                        eventEmitter.timed(listenerFoo1!, deadline: 0.1, onTimeout: {
+                            fail("onTimeout callback shouldn't have been called")
+                        })
+                        eventEmitter.timed(listenerAll!, deadline: 0.1, onTimeout: {
+                            fail("onTimeout callback shouldn't have been called")
+                        })
+                        eventEmitter.off()
+                        waitUntil(timeout: 0.3) { done in
+                            delay(0.15) {
+                                done()
+                            }
+                        }
+                    }
+                }
+
+                context("the timed method") {
+                    it("should not call onTimeout if the deadline isn't reached") {
+                        eventEmitter.timed(listenerFoo1!, deadline: 0.2, onTimeout: {
+                            fail("onTimeout callback shouldn't have been called")
+                        })
+                        waitUntil(timeout: 0.4) { done in
+                            delay(0.1) {
+                                eventEmitter.emit("foo", with: 123)
+                                delay(0.15) {
+                                    expect(receivedFoo1).toNot(beNil())
+                                    done()
+                                }
+                            }
+                        }
+                    }
+
+                    it("should call onTimeout and off the listener if the deadline is reached") {
+                        var calledOnTimeout = false
+                        let beforeEmitting = NSDate()
+                        eventEmitter.timed(listenerFoo1!, deadline: 0.3, onTimeout: {
+                            calledOnTimeout = true
+                            expect(NSDate()).to(beCloseTo(beforeEmitting.dateByAddingTimeInterval(0.3), within: 0.2))
+                        })
+                        waitUntil(timeout: 0.5) { done in
+                            delay(0.35) {
+                                expect(calledOnTimeout).to(beTrue())
+                                eventEmitter.emit("foo", with: 123)
+                                expect(receivedFoo1).to(beNil())
+                                done()
+                            }
+                        }
                     }
                 }
             }
