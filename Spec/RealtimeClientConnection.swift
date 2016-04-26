@@ -1169,6 +1169,26 @@ class RealtimeClientConnection: QuickSpec {
 
             }
 
+            // RTN13
+            context("Ping") {
+
+                // RTN13a
+                it("should send a ProtocolMessage with action HEARTBEAT and expects a HEARTBEAT message in response") {
+                    let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    waitUntil(timeout: testTimeout) { done in
+                        client.ping() { error in
+                            expect(error).to(beNil())
+                            let transport = client.transport as! TestProxyTransport
+                            expect(transport.protocolMessagesSent.filter{ $0.action == .Heartbeat }).to(haveCount(1))
+                            expect(transport.protocolMessagesReceived.filter{ $0.action == .Heartbeat }).to(haveCount(1))
+                            done()
+                        }
+                    }
+                }
+
+            }
+
             // RTN14a
             it("should enter FAILED state when API key is invalid") {
                 let options = AblyTests.commonAppSetup()
