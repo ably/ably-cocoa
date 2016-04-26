@@ -1140,7 +1140,7 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 // RTL6f
-                it("Message#connectionId should match the current Connection#id for all published messages") {
+                pending("Message#connectionId should match the current Connection#id for all published messages") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.close() }
                     let channel = client.channels.get("test")
