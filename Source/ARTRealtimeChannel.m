@@ -283,11 +283,6 @@
 }
 
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status {
-    [self cancelAttachTimer];
-    [self cancelDetachTimer];
-    if (self.state == state) {
-        return;
-    }
     self.state = state;
     _errorReason = status.errorInfo;
 
@@ -299,19 +294,20 @@
     [self emit:(ARTChannelEvent)state with:status.errorInfo];
 }
 
-- (void)cancelAttachTimer {
-    [self.realtime cancelTimer:_attachTimer];
-    _attachTimer = nil;
-}
-
-- (void)cancelDetachTimer {
-    [self.realtime cancelTimer:_detachTimer];
-    _detachTimer = nil;
-}
-
 - (void)dealloc {
-    [self cancelAttachTimer];
-    [self cancelDetachTimer];
+    if (self.statesEventEmitter) {
+        [self.statesEventEmitter off];
+    }
+}
+
+- (void)unlessStateChangesBefore:(NSTimeInterval)deadline do:(void(^)())callback {
+    // Defer until next event loop execution so that any event emitted in the current
+    // one doesn't cancel the timeout.
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), dispatch_get_main_queue(), ^{
+        [self timed:[self once:^(ARTErrorInfo *errorInfo) {
+            // Any state change cancels the timeout.
+        }] deadline:deadline onTimeout:callback];
+    });
 }
 
 /**
@@ -524,8 +520,6 @@
 }
 
 - (void)attachAfterChecks:(void (^)(ARTErrorInfo * _Nullable))callback {
-    [self cancelAttachTimer];
-
     ARTProtocolMessage *attachMessage = [[ARTProtocolMessage alloc] init];
     attachMessage.action = ARTProtocolMessageAttach;
     attachMessage.channel = self.name;
@@ -534,14 +528,14 @@
 
     [self.realtime send:attachMessage callback:nil];
 
-    _attachTimer = [self.realtime startTimer:^{
+    [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
         timeouted = true;
         ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTStateAttachTimedOut message:@"attach timed out"];
         ARTStatus *status = [ARTStatus state:ARTStateAttachTimedOut info:errorInfo];
         _errorReason = errorInfo;
         [self transition:ARTRealtimeChannelFailed status:status];
         [_attachedEventEmitter emit:[NSNull null] with:errorInfo];
-    } interval:[ARTDefault realtimeRequestTimeout]];
+    }];
 
     ARTEventListener *reconnectedListener = [self.realtime.reconnectedEventEmitter once:^(NSNull *n) {
         // Disconnected and connected while attaching, re-attach.
@@ -588,8 +582,6 @@
 }
 
 - (void)detachAfterChecks:(void (^)(ARTErrorInfo * _Nullable))callback {
-    [self cancelDetachTimer];
-
     ARTProtocolMessage *detachMessage = [[ARTProtocolMessage alloc] init];
     detachMessage.action = ARTProtocolMessageDetach;
     detachMessage.channel = self.name;
@@ -598,14 +590,14 @@
 
     [self.realtime send:detachMessage callback:nil];
 
-    _detachTimer = [self.realtime startTimer:^{
+    [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
         timeouted = true;
         ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTStateDetachTimedOut message:@"detach timed out"];
         ARTStatus *status = [ARTStatus state:ARTStateDetachTimedOut info:errorInfo];
         _errorReason = errorInfo;
         [self transition:ARTRealtimeChannelFailed status:status];
         [_detachedEventEmitter emit:[NSNull null] with:errorInfo];
-    } interval:[ARTDefault realtimeRequestTimeout]];
+    }];
 
     ARTEventListener *reconnectedListener = [self.realtime.reconnectedEventEmitter once:^(NSNull *n) {
         // Disconnected and connected while attaching, re-detach.
