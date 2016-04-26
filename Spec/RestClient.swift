@@ -668,6 +668,38 @@ class RestClient: QuickSpec {
 
             }
 
+            // RSC8b
+            it("should use JSON text protocol") {
+                let options = AblyTests.commonAppSetup()
+                expect(options.useBinaryProtocol).to(beFalse())
+
+                let rest = ARTRest(options: options)
+                rest.httpExecutor = testHTTPExecutor
+                waitUntil(timeout: testTimeout) { done in
+                    rest.channels.get("test").publish(nil, data: "message") { error in
+                        done()
+                    }
+                }
+
+                switch extractBodyAsJSON(testHTTPExecutor.requests.first) {
+                case .Failure(let error):
+                    fail(error)
+                default: break
+                }
+
+                let realtime = AblyTests.newRealtime(options)
+                defer { realtime.close() }
+                waitUntil(timeout: testTimeout) { done in
+                    realtime.channels.get("test").publish(nil, data: "message") { error in
+                        done()
+                    }
+                }
+
+                let transport = realtime.transport as! TestProxyTransport
+                let object = try! NSJSONSerialization.JSONObjectWithData(transport.rawDataSent.first!, options: NSJSONReadingOptions(rawValue: 0))
+                expect(NSJSONSerialization.isValidJSONObject(object)).to(beTrue())
+            }
+
         } //RestClient
     }
 }
