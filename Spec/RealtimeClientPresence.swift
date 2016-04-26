@@ -2038,6 +2038,61 @@ class RealtimeClientPresence: QuickSpec {
                 expect(transport.protocolMessagesReceived.filter({ $0.action == .Sync })).to(haveCount(3))
             }
 
+            // RTP14
+            context("enterClient") {
+
+                // RTP14a, RTP14b, RTP14c, RTP14d
+                it("enters into presence on a channel on behalf of another clientId") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+                    expect(channel.presenceMap.members).to(haveCount(0))
+
+                    let expectedData = ["test":1]
+
+                    var encodeNumberOfCalls = 0
+                    let hookEncode = channel.dataEncoder.testSuite_injectIntoMethodAfter(#selector(ARTDataEncoder.encode(_:))) {
+                        encodeNumberOfCalls += 1
+                    }
+                    defer { hookEncode.remove() }
+
+                    var decodeNumberOfCalls = 0
+                    let hookDecode = channel.dataEncoder.testSuite_injectIntoMethodAfter(#selector(ARTDataEncoder.decode(_:encoding:))) {
+                        decodeNumberOfCalls += 1
+                    }
+                    defer { hookDecode.remove() }
+
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enterClient("test", data: expectedData)  { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    channel.presence.enterClient("john", data: nil)
+                    channel.presence.enterClient("sara", data: nil)
+                    expect(channel.presenceMap.members).toEventually(haveCount(3), timeout: testTimeout)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.get() { members, error in
+                            guard let members = members?.reduce([String:ARTPresenceMessage](), combine: { (dictionary, item) in
+                                return dictionary + [item.clientId ?? "":item]
+                            }) else { fail("No members"); done(); return }
+
+                            expect(members["test"]!.data as? NSDictionary).to(equal(expectedData))
+                            expect(members["john"]).toNot(beNil())
+                            expect(members["sara"]).toNot(beNil())
+                            done()
+                        }
+                    }
+
+                    expect(encodeNumberOfCalls).to(equal(1))
+                    expect(decodeNumberOfCalls).to(equal(1))
+                }
+
+            }
+
         }
     }
 }
