@@ -1373,6 +1373,32 @@ class RealtimeClientPresence: QuickSpec {
 
             }
 
+            // RTP15c
+            it("should also ensure that using updateClient has no side effects on a client that has entered normally using Presence#enter") {
+                let options = AblyTests.commonAppSetup()
+                options.clientId = "john"
+                let client = ARTRealtime(options: options)
+                defer { client.close() }
+                let channel = client.channels.get("test")
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.presence.enter(nil) { error in
+                        expect(error).to(beNil())
+                        channel.presence.updateClient("john", data:"mobile") { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.presence.get() { members, error in
+                        expect(members!.first!.data as? String).to(equal("mobile"))
+                        done()
+                    }
+                }
+            }
+
             // RTP15e
             let cases: [String:(ARTRealtimePresence, Optional<(ARTErrorInfo?)->Void>)->()] = [
                 "enterClient": { $0.enterClient("john", data: nil, callback: $1) },
