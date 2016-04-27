@@ -70,36 +70,6 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-- (void)testSkipsFromDetachingToAttaching {
-    ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
-    __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
-    ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
-    ARTRealtimeChannel *channel = [realtime.channels get:@"detaching_to_attaching"];
-    [channel attach];
-    __block bool detachedReached = false;
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if (channel.state == ARTRealtimeChannelAttached) {
-            if(!detachedReached) {
-                [channel detach];
-            }
-        }
-        else if(channel.state == ARTRealtimeChannelDetaching) {
-            detachedReached = true;
-            [channel attach];
-        }
-        else if(channel.state == ARTRealtimeChannelDetached) {
-            XCTFail(@"Should not have reached detached state");
-        }
-        else if(channel.state == ARTRealtimeChannelAttaching) {
-            if(detachedReached) {
-                [channel off];
-                [expectation fulfill];
-            }
-        }
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-}
-
 - (void)testAttachMultipleChannels {
     ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
     __weak XCTestExpectation *expectation1 = [self expectationWithDescription:[NSString stringWithFormat:@"%s-1", __FUNCTION__]];
