@@ -176,34 +176,46 @@ class RealtimeClientConnection: QuickSpec {
                 it("should emit events for state changes") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
+                    options.disconnectedRetryTimeout = 0.0
 
                     let client = ARTRealtime(options: options)
                     let connection = client.connection
                     var events: [ARTRealtimeConnectionState] = []
 
                     waitUntil(timeout: testTimeout) { done in
+                        var alreadyDisconnected = false
+                        var alreadyClosed = false
+
                         connection.on { stateChange in
                             let stateChange = stateChange!
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
                             case .Connecting:
-                                events += [state]
+                                if !alreadyDisconnected {
+                                    events += [state]
+                                }
                             case .Connected:
-                                events += [state]
-                                client.onDisconnected()
+                                if alreadyClosed {
+                                    client.onSuspended()
+                                } else if alreadyDisconnected {
+                                    client.close()
+                                } else {
+                                    events += [state]
+                                    client.onDisconnected()
+                                }
                             case .Disconnected:
                                 events += [state]
-                                client.close()
+                                alreadyDisconnected = true
                             case .Suspended:
                                 events += [state]
                                 client.onError(AblyTests.newErrorProtocolMessage())
                             case .Closing:
                                 events += [state]
-                                client.onClosed()
                             case .Closed:
                                 events += [state]
-                                client.onSuspended()
+                                alreadyClosed = true
+                                client.connect()
                             case .Failed:
                                 events += [state]
                                 expect(errorInfo).toNot(beNil(), description: "Error is nil")
@@ -218,7 +230,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     if events.count != 8 {
-                        fail("Missing some states")
+                        fail("Missing some states, got \(events)")
                         return
                     }
 
@@ -1023,9 +1035,29 @@ class RealtimeClientConnection: QuickSpec {
 
             // RTN12
             context("close") {
+                // RTN12f
+                it("if CONNECTING, do the operation once CONNECTED") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose() }
+
+                    client.connect()
+                    var lastStateChange: ARTConnectionStateChange?
+                    client.connection.on { stateChange in
+                        lastStateChange = stateChange
+                    }
+
+                    client.close()
+                    expect(lastStateChange).to(beNil())
+
+
+                    expect(lastStateChange).toEventuallyNot(beNil(), timeout: testTimeout)
+                    expect(lastStateChange!.current).toEventually(equal(ARTRealtimeConnectionState.Closing), timeout: testTimeout)
+                }
 
                 // RTN12a
-                it("should send a CLOSE action, change state to CLOSING and receive a CLOSED action") {
+                it("if CONNECTED, should send a CLOSE action, change state to CLOSING and receive a CLOSED action") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
@@ -1033,7 +1065,6 @@ class RealtimeClientConnection: QuickSpec {
                     client.connect()
                     defer {
                         client.dispose()
-                        client.close()
                     }
 
                     let transport = client.transport as! TestProxyTransport
@@ -1167,6 +1198,108 @@ class RealtimeClientConnection: QuickSpec {
                     expect(states[2]).to(equal(ARTRealtimeConnectionState.Closed))
                 }
 
+                // RTN12d
+                it("if DISCONNECTED, aborts the retry and moves immediately to CLOSED") {
+                    let options = AblyTests.commonAppSetup()
+                    options.disconnectedRetryTimeout = 1.0
+                    let client = ARTRealtime(options: options)
+                    defer {
+                        client.close()
+                        client.dispose()
+                    }
+
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+
+                    client.onDisconnected()
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Disconnected), timeout: testTimeout)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        client.connection.once { stateChange in
+                            expect(stateChange!.current).to(equal(ARTRealtimeConnectionState.Closed))
+                            partialDone()
+                        }
+
+                        client.close()
+
+                        delay(options.disconnectedRetryTimeout + 0.5) {
+                            // Make sure the retry doesn't happen.
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Closed))
+                            partialDone()
+                        }
+                    }
+                }
+
+                // RTN12e
+                it("if SUSPENDED, aborts the retry and moves immediately to CLOSED") {
+                    let options = AblyTests.commonAppSetup()
+                    options.suspendedRetryTimeout = 1.0
+                    let client = ARTRealtime(options: options)
+                    defer {
+                        client.close()
+                        client.dispose()
+                    }
+
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+
+                    client.onSuspended()
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Suspended), timeout: testTimeout)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        client.connection.once { stateChange in
+                            expect(stateChange!.current).to(equal(ARTRealtimeConnectionState.Closed))
+                            partialDone()
+                        }
+
+                        client.close()
+
+                        delay(options.suspendedRetryTimeout + 0.5) {
+                            // Make sure the retry doesn't happen.
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Closed))
+                            partialDone()
+                        }
+                    }
+                }
+            }
+
+            // RTN13b
+            context("ping") {
+                // RTN13b
+                it("fails if in the INITIALIZED, SUSPENDED, CLOSING, CLOSED or FAILED state") {
+                    let options = AblyTests.commonAppSetup()
+                    options.suspendedRetryTimeout = 0.1
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+                    defer {
+                        client.close()
+                        client.dispose()
+                    }
+
+                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Initialized))
+                    expect { client.ping { _ in } }.to(raiseException())
+
+                    client.connect()
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                    client.onSuspended()
+
+                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Suspended))
+                    expect { client.ping { _ in } }.to(raiseException())
+
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                    client.close()
+
+                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Closing))
+                    expect { client.ping { _ in } }.to(raiseException())
+
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Closed), timeout: testTimeout)
+                    expect { client.ping { _ in } }.to(raiseException())
+
+                    client.onError(AblyTests.newErrorProtocolMessage())
+
+                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Failed))
+                    expect { client.ping { _ in } }.to(raiseException())
+                }
             }
 
             // RTN14a

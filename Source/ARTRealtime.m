@@ -34,30 +34,9 @@
     id<ARTRealtimeTransport> _transport;
 }
 
-// Timer starters
-- (void)startConnectTimer;
-- (void)startSuspendTimer;
-- (void)startRetryTimer:(NSTimeInterval)timeout;
-- (void)startCloseTimer;
-- (void)startPingTimer;
-
-// Timer cancellers
-- (void)cancelConnectTimer;
-- (void)cancelSuspendTimer;
-- (void)cancelRetryTimer;
-- (void)cancelPingTimer;
-- (void)cancelCloseTimer;
-
-// Timer events
-- (void)onConnectTimerFired;
-- (void)onSuspendTimerFired;
-- (void)onRetryTimerFired;
-- (void)onCloseTimerFired;
-
 // State properties
 - (BOOL)shouldSendEvents;
 - (BOOL)shouldQueueEvents;
-- (NSTimeInterval)retryInterval;
 - (ARTStatus *)defaultError;
 
 // Message sending
@@ -72,6 +51,7 @@
 @implementation ARTRealtime {
     BOOL _resuming;
     BOOL _renewingToken;
+    __GENERIC(ARTEventEmitter, NSNull *, ARTErrorInfo *) *_pingEventEmitter;
 }
 
 - (instancetype)initWithKey:(NSString *)key {
@@ -90,6 +70,7 @@
         _rest = [[ARTRest alloc] initWithOptions:options];
         _eventEmitter = [[ARTEventEmitter alloc] init];
         _reconnectedEventEmitter = [[ARTEventEmitter alloc] init];
+        _pingEventEmitter = [[ARTEventEmitter alloc] init];
         _channels = [[ARTRealtimeChannels alloc] initWithRealtime:self];
         _transport = nil;
         _transportClass = [ARTWebSocketTransport class];
@@ -139,9 +120,9 @@
 - (void)dealloc {
     [self.logger debug:__FILE__ line:__LINE__ message:@"%p dealloc", self];
 
-    [self cancelConnectTimer];
-    [self cancelSuspendTimer];
-    [self cancelRetryTimer];
+    if (_connection) {
+        [_connection off];
+    }
 
     if (_transport) {
         _transport.delegate = nil;
@@ -158,7 +139,26 @@
 }
 
 - (void)close {
-    [self transition:ARTRealtimeClosing];
+    switch (self.connection.state) {
+    case ARTRealtimeInitialized:
+    case ARTRealtimeClosing:
+    case ARTRealtimeClosed:
+    case ARTRealtimeFailed:
+        return;
+    case ARTRealtimeConnecting: {
+        [_connection once:^(ARTConnectionStateChange *change) {
+            [self close];
+        }];
+        return;
+    }
+    case ARTRealtimeDisconnected:
+    case ARTRealtimeSuspended:
+        [self transition:ARTRealtimeClosed];
+        break;
+    case ARTRealtimeConnected:
+        [self transition:ARTRealtimeClosing];
+        break;
+    }
 }
 
 - (void)time:(void(^)(NSDate *time, NSError *error))cb {
@@ -166,12 +166,27 @@
 }
 
 - (void)ping:(void (^)(ARTErrorInfo *)) cb {
-    if(self.connection.state == ARTRealtimeClosed || self.connection.state == ARTRealtimeFailed) {
+    switch (self.connection.state) {
+    case ARTRealtimeInitialized:
+    case ARTRealtimeSuspended:
+    case ARTRealtimeClosing:
+    case ARTRealtimeClosed:
+    case ARTRealtimeFailed:
         [NSException raise:@"Can't ping a closed or failed connection" format:@"%@:", [ARTRealtime ARTRealtimeStateToStr:self.connection.state]];
+        return;
+    case ARTRealtimeConnecting:
+    case ARTRealtimeDisconnected: {
+        [_connection once:^(ARTConnectionStateChange *change) {
+            [self ping:cb];
+        }];
+        return;
     }
-    self.pingCb = cb;
-    [self startPingTimer];
-    [self.transport sendPing];
+    case ARTRealtimeConnected:
+        [_pingEventEmitter timed:[_pingEventEmitter once:cb] deadline:[ARTDefault realtimeRequestTimeout] onTimeout:^{
+            cb([ARTErrorInfo createWithCode:0 status:ARTStateConnectionFailed message:@"connection failed"]);
+        }];
+        [self.transport sendPing];
+    }
 }
 
 - (BOOL)stats:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *, ARTErrorInfo *))callback {
@@ -193,23 +208,17 @@
 - (void)transition:(ARTRealtimeConnectionState)state withErrorInfo:(ARTErrorInfo *)errorInfo {
     [self.logger debug:__FILE__ line:__LINE__ message:@"%p transition to %@ requested", self, [ARTRealtime ARTRealtimeStateToStr:state]];
 
-    // Cancel timers
-    [self cancelConnectTimer];
-    [self cancelRetryTimer];
-
     ARTRealtimeConnectionState previousState = self.connection.state;
     [self.connection setState:state];
 
     ARTStatus *status = nil;
 
-    // On enter logic
     switch (self.connection.state) {
-        case ARTRealtimeConnecting:
-            [self startSuspendTimer];
-            [self startConnectTimer];
+        case ARTRealtimeConnecting: {
+            [self unlessStateChangesBefore:[ARTDefault connectTimeout] do:^{
+                [self transition:ARTRealtimeFailed];
+            }];
 
-            // Create transport and initiate connection
-            // TODO: ConnectionManager
             if (!_transport) {
                 NSString *resumeKey = nil;
                 NSNumber *connectionSerial = nil;
@@ -238,15 +247,15 @@
             }
 
             break;
-        case ARTRealtimeConnected:
-            [self cancelSuspendTimer];
-            break;
-        case ARTRealtimeClosing:
-            [self startCloseTimer];
+        }
+        case ARTRealtimeClosing: {
+            [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
+                [self transition:ARTRealtimeClosed];
+            }];
             [self.transport sendClose];
             break;
+        }
         case ARTRealtimeClosed:
-            [self cancelCloseTimer];
             [self.transport close];
             self.transport.delegate = nil;
             _transport = nil;
@@ -257,19 +266,29 @@
             self.transport.delegate = nil;
             _transport = nil;
             break;
-        case ARTRealtimeDisconnected:
+        case ARTRealtimeDisconnected: {
             [self.transport close];
             self.transport.delegate = nil;
             _transport = nil;
-            break;
-        case ARTRealtimeInitialized:
-        case ARTRealtimeSuspended:
-            break;
-    }
 
-    NSTimeInterval retryInterval = [self retryInterval];
-    if (retryInterval) {
-        [self startRetryTimer:retryInterval];
+            [self unlessStateChangesBefore:self.options.disconnectedRetryTimeout do:^{
+                [self transition:ARTRealtimeConnecting];
+            }];
+
+            break;
+        }
+        case ARTRealtimeSuspended: {
+            [self.transport close];
+            self.transport.delegate = nil;
+            _transport = nil;
+            [self unlessStateChangesBefore:self.options.suspendedRetryTimeout do:^{
+                [self transition:ARTRealtimeConnecting];
+            }];
+            break;
+        }
+        case ARTRealtimeConnected:
+        case ARTRealtimeInitialized:
+            break;
     }
 
     if ([self shouldSendEvents]) {
@@ -305,83 +324,23 @@
     [self.connection emit:state with:[[ARTConnectionStateChange alloc] initWithCurrent:state previous:previousState reason:errorInfo]];
 }
 
-- (void)startConnectTimer {
-    if (!self.connectTimeout) {
-        self.connectTimeout = [self startTimer:^{
-            [self onConnectTimerFired];
-        }interval:[ARTDefault connectTimeout]];
-    }
-}
-
--(void) startCloseTimer {
-    if(!self.closeTimeout) {
-        self.closeTimeout = [self startTimer:^{
-            [self onCloseTimerFired];
-        } interval:10];
-    }
-}
-- (void)startSuspendTimer {
-    if (!self.suspendTimeout) {
-        self.suspendTimeout = [self startTimer:^{
-            [self onSuspendTimerFired];
-        }interval:self.options.suspendedRetryTimeout];
-    }
-}
-
-- (void)startRetryTimer:(NSTimeInterval)timeout {
-    if (!self.retryTimeout) {
-        self.retryTimeout = [self startTimer:^{
-            [self onRetryTimerFired];
-        }interval:timeout];
-    }
-}
-
-- (void) startPingTimer {
-    if (!self.pingTimeout) {
-        self.pingTimeout = [self startTimer:^{
-            [self onPingTimerFired];
-        }interval:10.0];
-    }
-}
-- (void)cancelConnectTimer {
-    [self cancelTimer:self.connectTimeout];
-    self.connectTimeout = nil;
-}
-
-- (void)cancelSuspendTimer {
-    [self cancelTimer:self.suspendTimeout];
-    self.suspendTimeout = nil;
-}
-
-- (void)cancelRetryTimer {
-    [self cancelTimer:self.retryTimeout];
-    self.retryTimeout = nil;
-}
-
-- (void) cancelCloseTimer {
-    [self cancelTimer:self.closeTimeout];
-    self.closeTimeout = nil;
-}
-
--(void) cancelPingTimer {
-    [self cancelTimer:self.pingTimeout];
-    self.pingTimeout = nil;
+- (void)unlessStateChangesBefore:(NSTimeInterval)deadline do:(void(^)())callback {
+    // Defer until next event loop execution so that any event emitted in the current
+    // one doesn't cancel the timeout.
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), dispatch_get_main_queue(), ^{
+        [_connection timed:[_connection once:^(ARTConnectionStateChange *change) {
+            // Any state change cancels the timeout.
+        }] deadline:deadline onTimeout:callback];
+    });
 }
 
 - (void)onHeartbeat {
     [self.logger verbose:@"ARTRealtime heartbeat received"];
-    if(self.pingCb) {
-        [self cancelPingTimer];
-        if(self.connection.state != ARTRealtimeConnected) {
-            NSString *msg = [NSString stringWithFormat:@"ARTRealtime received a ping when in state %@", [ARTRealtime ARTRealtimeStateToStr:self.connection.state]];
-            [self.logger warn:@"%@", msg];
-            self.pingCb([ARTErrorInfo createWithCode:0 message:msg]);
-        }
-        else {
-            self.pingCb(nil);
-        }
-        self.pingCb = nil;
+    if(self.connection.state != ARTRealtimeConnected) {
+        NSString *msg = [NSString stringWithFormat:@"ARTRealtime received a ping when in state %@", [ARTRealtime ARTRealtimeStateToStr:self.connection.state]];
+        [self.logger warn:@"%@", msg];
     }
+    [_pingEventEmitter emit:[NSNull null] with:nil];
 }
 
 - (void)onConnected:(ARTProtocolMessage *)message {
@@ -491,46 +450,8 @@
     [channel onChannelMessage:message];
 }
 
-- (void)onConnectTimerFired {
-    switch (self.connection.state) {
-        case ARTRealtimeConnecting:
-            [self.logger warn:@"ARTRealtime: connecting timer fired."];
-            [self transition:ARTRealtimeFailed];
-            break;
-        default:
-            NSAssert(false, @"Invalid connection state");
-            break;
-    }
-}
-
-- (void)onCloseTimerFired {
-    [self transition:ARTRealtimeClosed];
-}
-
-- (void)onPingTimerFired {
-    if(self.pingCb) {
-        self.pingCb([ARTErrorInfo createWithCode:0 status:ARTStateConnectionFailed message:@"connection failed"]);
-        self.pingCb = nil;
-    }
-}
-
 - (void)onSuspended {
     [self transition:ARTRealtimeSuspended];
-}
-
-- (void)onSuspendTimerFired {
-    switch (self.connection.state) {
-        case ARTRealtimeConnected:
-            [self onSuspended];
-            break;
-        default:
-            // TODO invalid connection state
-            break;
-    }
-}
-
-- (void)onRetryTimerFired {
-    [self transition:ARTRealtimeConnecting];
 }
 
 - (BOOL)shouldSendEvents {
@@ -553,17 +474,6 @@
             return true;
         default:
             return false;
-    }
-}
-
-- (NSTimeInterval)retryInterval {
-    switch (self.connection.state) {
-        case ARTRealtimeDisconnected:
-            return self.options.disconnectedRetryTimeout;
-        case ARTRealtimeSuspended:
-            return self.options.suspendedRetryTimeout;
-        default:
-            return 0.0;
     }
 }
 
@@ -711,24 +621,6 @@
     [self.logger verbose:@"ARTRealtime NACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
 }
 
-- (CFRunLoopTimerRef)startTimer:(void(^)())onTimeout interval:(NSTimeInterval)interval {
-    CFAbsoluteTime timeoutDate = CFAbsoluteTimeGetCurrent() + interval;
-
-    CFRunLoopRef rl = CFRunLoopGetCurrent();
-    CFRunLoopTimerRef timer = CFRunLoopTimerCreateWithHandler(kCFAllocatorDefault, timeoutDate, 0, 0, 0, onTimeout);
-    CFRunLoopAddTimer(rl, timer, kCFRunLoopDefaultMode);
-
-    return timer;
-}
-
-- (void)cancelTimer:(CFRunLoopTimerRef)timer {
-    if (timer) {
-        CFRunLoopTimerInvalidate(timer);
-        CFRunLoopRemoveTimer(CFRunLoopGetCurrent(), timer, kCFRunLoopDefaultMode);
-        CFRelease(timer);
-    }
-}
-
 - (void)realtimeTransport:(id)transport didReceiveMessage:(ARTProtocolMessage *)message {
     // TODO add in protocolListener
 
@@ -820,39 +712,39 @@
 + (NSString *)protocolStr:(ARTProtocolMessageAction) action {
     switch(action) {
         case ARTProtocolMessageHeartbeat:
-            return @"ARTProtocolMessageHeartbeat"; //0
+            return @"Heartbeat"; //0
         case ARTProtocolMessageAck:
-            return @"ARTProtocolMessageAck"; //1
+            return @"Ack"; //1
         case ARTProtocolMessageNack:
-            return @"ARTProtocolMessageNack"; //2
+            return @"Nack"; //2
         case ARTProtocolMessageConnect:
-            return @"ARTProtocolMessageConnect"; //3
+            return @"Connect"; //3
         case ARTProtocolMessageConnected:
-            return @"ARTProtocolMessageConnected"; //4
+            return @"Connected"; //4
         case ARTProtocolMessageDisconnect:
-            return @"ARTProtocolMessageDisconnect"; //5
+            return @"Disconnect"; //5
         case ARTProtocolMessageDisconnected:
-            return @"ARTProtocolMessageDisconnected"; //6
+            return @"Disconnected"; //6
         case ARTProtocolMessageClose:
-            return @"ARTProtocolMessageClose"; //7
+            return @"Close"; //7
         case ARTProtocolMessageClosed:
-            return @"ARTProtocolMessageClosed"; //8
+            return @"Closed"; //8
         case ARTProtocolMessageError:
-            return @"ARTProtocolMessageError"; //9
+            return @"Error"; //9
         case ARTProtocolMessageAttach:
-            return @"ARTProtocolMessageAttach"; //10
+            return @"Attach"; //10
         case ARTProtocolMessageAttached:
-            return @"ARTProtocolMessageAttached"; //11
+            return @"Attached"; //11
         case ARTProtocolMessageDetach:
-            return @"ARTProtocolMessageDetach"; //12
+            return @"Detach"; //12
         case ARTProtocolMessageDetached:
-            return @"ARTProtocolMessageDetached"; //13
+            return @"Detached"; //13
         case ARTProtocolMessagePresence:
-            return @"ARTProtocolMessagePresence"; //14
+            return @"Presence"; //14
         case ARTProtocolMessageMessage:
-            return @"ARTProtocolMessageMessage"; //15
+            return @"Message"; //15
         case ARTProtocolMessageSync:
-            return @"ARTProtocolMessageSync"; //16
+            return @"Sync"; //16
         default:
             return [NSString stringWithFormat: @"unknown protocol state %d", (int)action];
     }
@@ -862,23 +754,23 @@
     switch(state)
     {
         case ARTRealtimeInitialized:
-            return @"ARTRealtimeInitialized"; //0
+            return @"Initialized"; //0
         case ARTRealtimeConnecting:
-            return @"ARTRealtimeConnecting"; //1
+            return @"Connecting"; //1
         case ARTRealtimeConnected:
-            return @"ARTRealtimeConnected"; //2
+            return @"Connected"; //2
         case ARTRealtimeDisconnected:
-            return @"ARTRealtimeDisconnected"; //3
+            return @"Disconnected"; //3
         case ARTRealtimeSuspended:
-            return @"ARTRealtimeSuspended"; //4
+            return @"Suspended"; //4
         case ARTRealtimeClosing:
-            return @"ARTRealtimeClosing"; //5
+            return @"Closing"; //5
         case ARTRealtimeClosed:
-            return @"ARTRealtimeClosed"; //6
+            return @"Closed"; //6
         case ARTRealtimeFailed:
-            return @"ARTRealtimeFailed"; //7
+            return @"Failed"; //7
         default:
-            return @"unknown connectionstate";
+            return [NSString stringWithFormat: @"unknown connection state %d", (int)state];
     }
 }
 

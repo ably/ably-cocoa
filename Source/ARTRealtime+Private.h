@@ -10,6 +10,7 @@
 #import "ARTEventEmitter.h"
 #import "ARTTypes.h"
 #import "ARTQueuedMessage.h"
+#import "ARTProtocolMessage.h"
 
 #import "ARTRealtimeTransport.h"
 
@@ -24,6 +25,9 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNumber *, ARTConnectionStateChange *) *eventEmitter;
 @property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNull *, NSNull *) *reconnectedEventEmitter;
+
++ (NSString *)protocolStr:(ARTProtocolMessageAction)action;
++ (NSString *)ARTRealtimeStateToStr:(ARTRealtimeConnectionState)state;
 
 @end
 
@@ -55,7 +59,6 @@ ART_ASSUME_NONNULL_BEGIN
 /// Client is trying to resume the last connection
 @property (readwrite, assign, nonatomic) BOOL resuming;
 
-@property (nonatomic, copy, art_nullable) void (^pingCb)(ARTErrorInfo *__art_nullable);
 @property (readonly, getter=getClientOptions) ARTClientOptions *options;
 
 @end
@@ -83,9 +86,6 @@ ART_ASSUME_NONNULL_BEGIN
 
 // Message sending
 - (void)send:(ARTProtocolMessage *)msg callback:(art_nullable void (^)(ARTStatus *))cb;
-
-- (CFRunLoopTimerRef)startTimer:(void(^)())onTimeout interval:(NSTimeInterval)interval;
-- (void)cancelTimer:(CFRunLoopTimerRef)timer;
 
 @end
 

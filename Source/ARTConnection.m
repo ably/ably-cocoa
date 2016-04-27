@@ -108,4 +108,8 @@
     [_eventEmitter emit:[NSNumber numberWithInt:event] with:data];
 }
 
+- (ARTEventListener *)timed:(ARTEventListener *)listener deadline:(NSTimeInterval)deadline onTimeout:(void (^)())onTimeout {
+    return [_eventEmitter timed:listener deadline:deadline onTimeout:onTimeout];
+}
+
 @end

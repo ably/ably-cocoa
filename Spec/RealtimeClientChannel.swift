@@ -281,6 +281,7 @@ class RealtimeClientChannel: QuickSpec {
                         client.setTransportClass(TestProxyTransport.self)
                         client.connect()
                         defer { client.close() }
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
 
                         let channel = client.channels.get("test")
                         channel.attach()
@@ -345,6 +346,50 @@ class RealtimeClientChannel: QuickSpec {
                     }
                 }
 
+                context("results in an error if the channel state is") {
+                    // RTL4e
+                    it("DETACHING") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+
+                        channel.attach()
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+                        channel.detach()
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Detaching))
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.attach { error in
+                                expect(error).toNot(beNil())
+                                done()
+                            }
+                        }
+                    }
+
+                    // RTL4g
+                    it("FAILED") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+
+                        channel.attach()
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                        let errorMsg = AblyTests.newErrorProtocolMessage()
+                        errorMsg.channel = channel.name
+                        client.onError(errorMsg)
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.attach { error in
+                                expect(error).toNot(beNil())
+                                done()
+                            }
+                        }
+                    }
+                }
+
+
                 // RTL4b
                 context("results in an error if the connection state is") {
 
@@ -365,7 +410,12 @@ class RealtimeClientChannel: QuickSpec {
                         client.close()
                         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Closing))
 
-                        expect(channel.attach()).toNot(beNil())
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.attach { error in
+                                expect(error).toNot(beNil())
+                                done()
+                            }
+                        }
                     }
 
                     it("CLOSED") {
@@ -377,7 +427,12 @@ class RealtimeClientChannel: QuickSpec {
                         client.close()
                         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Closed), timeout: testTimeout)
 
-                        expect(channel.attach()).toNot(beNil())
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.attach { error in
+                                expect(error).toNot(beNil())
+                                done()
+                            }
+                        }
                     }
 
                     it("SUSPENDED") {
@@ -387,7 +442,12 @@ class RealtimeClientChannel: QuickSpec {
                         let channel = client.channels.get("test")
                         client.onSuspended()
                         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Suspended))
-                        expect(channel.attach()).toNot(beNil())
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.attach { error in
+                                expect(error).toNot(beNil())
+                                done()
+                            }
+                        }
                     }
 
                     it("FAILED") {
@@ -397,9 +457,78 @@ class RealtimeClientChannel: QuickSpec {
                         let channel = client.channels.get("test")
                         client.onError(AblyTests.newErrorProtocolMessage())
                         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Failed))
-                        expect(channel.attach()).toNot(beNil())
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.attach { error in
+                                expect(error).toNot(beNil())
+                                done()
+                            }
+                        }
                     }
 
+                }
+
+                // RTL4h
+                context("happens when connection is CONNECTED if it's currently") {
+                    it("INITIALIZED") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        defer { client.close() }
+
+                        let channel = client.channels.get("test")
+                        expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Initialized))
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.attach { error in
+                                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+                                expect(error).to(beNil())
+                                done()
+                            }
+
+                            client.connect()
+                        }
+                    }
+
+                    it("CONNECTING") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        defer { client.close() }
+
+                        let channel = client.channels.get("test")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connect()
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connecting))
+
+                            channel.attach { error in
+                                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+                    }
+
+                    it("DISCONNECTED") {
+                        let options = AblyTests.commonAppSetup()
+                        options.disconnectedRetryTimeout = 0.1
+                        let client = ARTRealtime(options: options)
+                        defer { client.close() }
+
+                        let channel = client.channels.get("test")
+
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.onDisconnected()
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Disconnected))
+
+                            channel.attach { error in
+                                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+                    }
                 }
 
                 // RTL4c
@@ -694,6 +823,125 @@ class RealtimeClientChannel: QuickSpec {
                     expect(callbackCalled).to(beTrue())
                     let end = NSDate()
                     expect(start.dateByAddingTimeInterval(3.0)).to(beCloseTo(end, within: 0.5))
+                }
+
+                // RTL5g
+                context("results in an error if the connection state is") {
+
+                    it("CLOSING") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        client.setTransportClass(TestProxyTransport.self)
+                        client.connect()
+                        defer { client.close() }
+
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                        let transport = client.transport as! TestProxyTransport
+                        transport.actionsIgnored += [.Closed]
+
+                        let channel = client.channels.get("test")
+                        channel.attach()
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                        client.close()
+                        expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Closing))
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.detach { error in
+                                expect(error).toNot(beNil())
+                                done()
+                            }
+                        }
+                    }
+
+                    it("FAILED") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.close() }
+
+                        let channel = client.channels.get("test")
+                        channel.attach()
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                        client.onError(AblyTests.newErrorProtocolMessage())
+                        expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Failed))
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.detach { error in
+                                expect(error).toNot(beNil())
+                                done()
+                            }
+                        }
+                    }
+
+                }
+
+                // RTL5h
+                context("happens when channel is ATTACHED if connection is currently") {
+                    it("INITIALIZED") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        defer { client.close() }
+
+                        let channel = client.channels.get("test")
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.attach()
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Initialized))
+
+                            channel.detach { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+
+                            client.connect()
+                        }
+                    }
+
+                    it("CONNECTING") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        defer { client.close() }
+
+                        let channel = client.channels.get("test")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connect()
+                            channel.attach()
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connecting))
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
+
+                            channel.detach { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+                    }
+
+                    it("DISCONNECTED") {
+                        let options = AblyTests.commonAppSetup()
+                        options.disconnectedRetryTimeout = 0.1
+                        let client = ARTRealtime(options: options)
+                        defer { client.close() }
+
+                        let channel = client.channels.get("test")
+
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.onDisconnected()
+                            channel.attach()
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Disconnected))
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
+
+                            channel.detach { error in
+                                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+                    }
                 }
 
             }
