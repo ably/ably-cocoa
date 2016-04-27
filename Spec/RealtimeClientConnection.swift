@@ -2040,6 +2040,61 @@ class RealtimeClientConnection: QuickSpec {
                     expect(channel.errorReason!.message).to(contain("Unable to recover connection"))
                 }
 
+                // RTN15h
+                context("DISCONNECTED message contains a token error") {
+
+                    it("if the token is renewable then error should not be emitted") {
+                        let options = AblyTests.commonAppSetup()
+                        options.disconnectedRetryTimeout = 0.1
+                        options.useTokenAuth = true
+                        let client = ARTRealtime(options: options)
+                        defer { client.close() }
+                        waitUntil(timeout: testTimeout) { done in
+                            var initialToken: String?
+                            client.connection.once(.Connected) { _ in
+                                client.simulateDropConnection(ARTErrorInfo(domain: ARTAblyErrorDomain, code: 40140, userInfo: nil))
+                                initialToken = client.auth.tokenDetails!.token
+                            }
+                            client.connection.once(.Disconnected) { stateChange in
+                                expect(stateChange!.reason).to(beNil())
+                                expect(client.connection.errorReason).to(beNil())
+                                // Reconnected
+                                client.connection.once(.Connected) { stateChange in
+                                    expect(stateChange!.reason).to(beNil())
+                                    expect(client.auth.tokenDetails!.token).toNot(equal(initialToken))
+                                    done()
+                                }
+                            }
+                        }
+                    }
+
+                    it("if the token is not renewable or token creation fails then error should be emitted") {
+                        let options = AblyTests.commonAppSetup()
+                        options.disconnectedRetryTimeout = 3.0
+                        options.token = getTestToken(ttl: 3.0)
+                        let client = ARTRealtime(options: options)
+                        defer { client.close() }
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.Connected) { _ in
+                                client.simulateDropConnection(ARTErrorInfo(domain: ARTAblyErrorDomain, code: 40150, userInfo: nil))
+                            }
+                            client.connection.once(.Disconnected) { stateChange in
+                                expect(stateChange!.reason!.code).to(equal(40150))
+                                expect(client.connection.errorReason).to(beIdenticalTo(stateChange!.reason))
+                                // Reconnected
+                                client.connection.once(.Connected) { stateChange in
+                                    fail("Should not be called")
+                                }
+                                client.connection.once(.Failed) { stateChange in
+                                    expect(stateChange!.reason!.code).to(equal(40142))
+                                    done()
+                                }
+                            }
+                        }
+                    }
+
+                }
+
             }
 
             // RTN16

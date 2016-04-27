@@ -811,6 +811,11 @@ extension ARTRealtime {
         }
     }
 
+    func simulateDropConnection(error: ARTErrorInfo) {
+        // TODO: onDisconnected should receive an ARTProtocolMessage
+        self.onDisconnected() //onDisconnected(newErrorProtocolMessage())
+    }
+
     func dispose() {
         let names = self.channels.map({ $0.name })
         for name in names {
