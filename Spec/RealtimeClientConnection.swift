@@ -218,7 +218,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     if events.count != 8 {
-                        fail("Missing some states")
+                        fail("Missing some states, got \(events)")
                         return
                     }
 

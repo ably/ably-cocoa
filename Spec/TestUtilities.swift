@@ -827,6 +827,37 @@ extension ARTWebSocketTransport {
     }
 }
 
+extension ARTRealtimeConnectionState : CustomStringConvertible {
+    public var description : String {
+        return ARTRealtime.ARTRealtimeStateToStr(self)
+    }
+}
+
+extension ARTProtocolMessageAction : CustomStringConvertible {
+    public var description : String {
+        return ARTRealtime.protocolStr(self)
+    }
+}
+
+extension ARTRealtimeChannelState : CustomStringConvertible {
+    public var description : String {
+        switch self {
+        case .Initialized:
+            return "Initialized"
+        case .Attaching:
+            return "Attaching"
+        case .Attached:
+            return "Attached"
+        case .Detaching:
+            return "Detaching"
+        case .Detached:
+            return "Detached"
+        case .Failed:
+            return "Failed"
+        }
+    }
+}
+
 // MARK: - Custom Nimble Matchers
 
 /// A Nimble matcher that succeeds when two dates are quite the same.

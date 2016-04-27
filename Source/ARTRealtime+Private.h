@@ -10,6 +10,7 @@
 #import "ARTEventEmitter.h"
 #import "ARTTypes.h"
 #import "ARTQueuedMessage.h"
+#import "ARTProtocolMessage.h"
 
 #import "ARTRealtimeTransport.h"
 
@@ -24,6 +25,9 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNumber *, ARTConnectionStateChange *) *eventEmitter;
 @property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNull *, NSNull *) *reconnectedEventEmitter;
+
++ (NSString *)protocolStr:(ARTProtocolMessageAction)action;
++ (NSString *)ARTRealtimeStateToStr:(ARTRealtimeConnectionState)state;
 
 @end
 

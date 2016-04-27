@@ -676,39 +676,39 @@
 + (NSString *)protocolStr:(ARTProtocolMessageAction) action {
     switch(action) {
         case ARTProtocolMessageHeartbeat:
-            return @"ARTProtocolMessageHeartbeat"; //0
+            return @"Heartbeat"; //0
         case ARTProtocolMessageAck:
-            return @"ARTProtocolMessageAck"; //1
+            return @"Ack"; //1
         case ARTProtocolMessageNack:
-            return @"ARTProtocolMessageNack"; //2
+            return @"Nack"; //2
         case ARTProtocolMessageConnect:
-            return @"ARTProtocolMessageConnect"; //3
+            return @"Connect"; //3
         case ARTProtocolMessageConnected:
-            return @"ARTProtocolMessageConnected"; //4
+            return @"Connected"; //4
         case ARTProtocolMessageDisconnect:
-            return @"ARTProtocolMessageDisconnect"; //5
+            return @"Disconnect"; //5
         case ARTProtocolMessageDisconnected:
-            return @"ARTProtocolMessageDisconnected"; //6
+            return @"Disconnected"; //6
         case ARTProtocolMessageClose:
-            return @"ARTProtocolMessageClose"; //7
+            return @"Close"; //7
         case ARTProtocolMessageClosed:
-            return @"ARTProtocolMessageClosed"; //8
+            return @"Closed"; //8
         case ARTProtocolMessageError:
-            return @"ARTProtocolMessageError"; //9
+            return @"Error"; //9
         case ARTProtocolMessageAttach:
-            return @"ARTProtocolMessageAttach"; //10
+            return @"Attach"; //10
         case ARTProtocolMessageAttached:
-            return @"ARTProtocolMessageAttached"; //11
+            return @"Attached"; //11
         case ARTProtocolMessageDetach:
-            return @"ARTProtocolMessageDetach"; //12
+            return @"Detach"; //12
         case ARTProtocolMessageDetached:
-            return @"ARTProtocolMessageDetached"; //13
+            return @"Detached"; //13
         case ARTProtocolMessagePresence:
-            return @"ARTProtocolMessagePresence"; //14
+            return @"Presence"; //14
         case ARTProtocolMessageMessage:
-            return @"ARTProtocolMessageMessage"; //15
+            return @"Message"; //15
         case ARTProtocolMessageSync:
-            return @"ARTProtocolMessageSync"; //16
+            return @"Sync"; //16
         default:
             return [NSString stringWithFormat: @"unknown protocol state %d", (int)action];
     }
@@ -718,23 +718,23 @@
     switch(state)
     {
         case ARTRealtimeInitialized:
-            return @"ARTRealtimeInitialized"; //0
+            return @"Initialized"; //0
         case ARTRealtimeConnecting:
-            return @"ARTRealtimeConnecting"; //1
+            return @"Connecting"; //1
         case ARTRealtimeConnected:
-            return @"ARTRealtimeConnected"; //2
+            return @"Connected"; //2
         case ARTRealtimeDisconnected:
-            return @"ARTRealtimeDisconnected"; //3
+            return @"Disconnected"; //3
         case ARTRealtimeSuspended:
-            return @"ARTRealtimeSuspended"; //4
+            return @"Suspended"; //4
         case ARTRealtimeClosing:
-            return @"ARTRealtimeClosing"; //5
+            return @"Closing"; //5
         case ARTRealtimeClosed:
-            return @"ARTRealtimeClosed"; //6
+            return @"Closed"; //6
         case ARTRealtimeFailed:
-            return @"ARTRealtimeFailed"; //7
+            return @"Failed"; //7
         default:
-            return @"unknown connectionstate";
+            return [NSString stringWithFormat: @"unknown connection state %d", (int)state];
     }
 }
 
