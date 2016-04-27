@@ -1562,6 +1562,34 @@ class RealtimeClientConnection: QuickSpec {
                     expect(states).to(equal([.Connecting, .Connected, .Disconnected, .Connecting, .Connected]))
                 }
 
+                // RTN15b
+                context("reconnects to the websocket endpoint with additional querystring params") {
+
+                    // RTN15b1, RTN15b2
+                    it("resume is the private connection key and connection_serial is the most recent ProtocolMessage#connectionSerial received") {
+                        let options = AblyTests.commonAppSetup()
+                        options.disconnectedRetryTimeout = 0.1
+                        let client = AblyTests.newRealtime(options)
+                        defer { client.close() }
+
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                        let expectedConnectionKey = client.connection.key!
+                        let expectedConnectionSerial = client.connection.serial
+                        client.onDisconnected()
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.Connected) { _ in
+                                let transport = client.transport as! TestProxyTransport
+                                let query = transport.lastUrl!.query
+                                expect(query).to(haveParam("resume", withValue: expectedConnectionKey))
+                                expect(query).to(haveParam("connectionSerial", withValue: "\(expectedConnectionSerial)"))
+                                done()
+                            }
+                        }
+                    }
+
+                }
+
                 // RTN15c
                 context("System's response to a resume request") {
 
