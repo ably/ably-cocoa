@@ -1952,6 +1952,26 @@ class RealtimeClientConnection: QuickSpec {
 
             }
 
+            // RTN16
+            context("Connection recovery") {
+
+                // RTN16e
+                it("should connect anyway if the recoverKey is no longer valid") {
+                    let options = AblyTests.commonAppSetup()
+                    options.recover = "99999!xxxxxx-xxxxxxxxx-xxxxxxxxx:-1"
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connected) { stateChange in
+                            expect(stateChange!.reason!.message).to(contain("Unable to recover connection"))
+                            expect(client.connection.errorReason).to(beIdenticalTo(stateChange!.reason))
+                            done()
+                        }
+                    }
+                }
+
+            }
+
             // RTN18
             context("state change side effects") {
 

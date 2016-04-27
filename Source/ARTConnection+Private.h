@@ -21,6 +21,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)setKey:(NSString *__art_nullable)key;
 - (void)setSerial:(int64_t)serial;
 - (void)setState:(ARTRealtimeConnectionState)state;
+- (void)setErrorReason:(ARTErrorInfo *__art_nullable)errorReason;
 
 - (void)emit:(ARTRealtimeConnectionState)event with:(ARTConnectionStateChange *)data;
 

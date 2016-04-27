@@ -322,7 +322,10 @@
             }
         }
     }
-    
+
+    if (errorInfo != nil) {
+        [self.connection setErrorReason:errorInfo];
+    }
     [self.connection emit:state with:[[ARTConnectionStateChange alloc] initWithCurrent:state previous:previousState reason:errorInfo]];
 }
 

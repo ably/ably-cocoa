@@ -59,7 +59,7 @@
     _state = state;
 }
 
-- (void)setErrorReason:(ARTErrorInfo * _Nullable)errorReason {
+- (void)setErrorReason:(ARTErrorInfo *__art_nullable)errorReason {
     _errorReason = errorReason;
 }
 
