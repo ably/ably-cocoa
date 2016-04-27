@@ -362,6 +362,7 @@ class RealtimeClientPresence: QuickSpec {
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
 
                     channel.detach()
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
 
                     channel.presence.subscribe(.Present) { _ in }
                     expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
@@ -1165,6 +1166,7 @@ class RealtimeClientPresence: QuickSpec {
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
 
                     channel.detach()
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
 
                     channel.presence.subscribe(.Present) { _ in }
                     expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
@@ -1556,7 +1558,7 @@ class RealtimeClientPresence: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.get() { members, error in
-                            expect(error!.message).to(contain("can't attach when in a failed state"))
+                            expect(error!.message).to(contain("can't attach when in DETACHING or FAILED state"))
                             expect(members).to(beNil())
                             done()
                         }

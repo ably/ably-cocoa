@@ -139,7 +139,26 @@
 }
 
 - (void)close {
-    [self transition:ARTRealtimeClosing];
+    switch (self.connection.state) {
+    case ARTRealtimeInitialized:
+    case ARTRealtimeClosing:
+    case ARTRealtimeClosed:
+    case ARTRealtimeFailed:
+        return;
+    case ARTRealtimeConnecting: {
+        [_connection once:^(ARTConnectionStateChange *change) {
+            [self close];
+        }];
+        return;
+    }
+    case ARTRealtimeDisconnected:
+    case ARTRealtimeSuspended:
+        [self transition:ARTRealtimeClosed];
+        break;
+    case ARTRealtimeConnected:
+        [self transition:ARTRealtimeClosing];
+        break;
+    }
 }
 
 - (void)time:(void(^)(NSDate *time, NSError *error))cb {
@@ -147,13 +166,27 @@
 }
 
 - (void)ping:(void (^)(ARTErrorInfo *)) cb {
-    if(self.connection.state == ARTRealtimeClosed || self.connection.state == ARTRealtimeFailed) {
+    switch (self.connection.state) {
+    case ARTRealtimeInitialized:
+    case ARTRealtimeSuspended:
+    case ARTRealtimeClosing:
+    case ARTRealtimeClosed:
+    case ARTRealtimeFailed:
         [NSException raise:@"Can't ping a closed or failed connection" format:@"%@:", [ARTRealtime ARTRealtimeStateToStr:self.connection.state]];
+        return;
+    case ARTRealtimeConnecting:
+    case ARTRealtimeDisconnected: {
+        [_connection once:^(ARTConnectionStateChange *change) {
+            [self ping:cb];
+        }];
+        return;
     }
-    [_pingEventEmitter timed:[_pingEventEmitter once:cb] deadline:10.0 onTimeout:^{
-        cb([ARTErrorInfo createWithCode:0 status:ARTStateConnectionFailed message:@"connection failed"]);
-    }];
-    [self.transport sendPing];
+    case ARTRealtimeConnected:
+        [_pingEventEmitter timed:[_pingEventEmitter once:cb] deadline:10.0 onTimeout:^{
+            cb([ARTErrorInfo createWithCode:0 status:ARTStateConnectionFailed message:@"connection failed"]);
+        }];
+        [self.transport sendPing];
+    }
 }
 
 - (BOOL)stats:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *, ARTErrorInfo *))callback {
@@ -245,6 +278,9 @@
             break;
         }
         case ARTRealtimeSuspended: {
+            [self.transport close];
+            self.transport.delegate = nil;
+            _transport = nil;
             [self unlessStateChangesBefore:self.options.suspendedRetryTimeout do:^{
                 [self transition:ARTRealtimeConnecting];
             }];
