@@ -1684,6 +1684,57 @@ class RealtimeClientConnection: QuickSpec {
 
             }
 
+            // RTN16
+            context("Connection recovery") {
+
+                // RTN16a
+                it("connection state should recover explicitly with a recover key") {
+                    let options = AblyTests.commonAppSetup()
+
+                    let clientSend = ARTRealtime(options: options)
+                    defer { clientSend.close() }
+                    let channelSend = clientSend.channels.get("test")
+
+                    let clientReceive = ARTRealtime(options: options)
+                    defer { clientReceive.close() }
+                    let channelReceive = clientReceive.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channelReceive.subscribeWithAttachCallback({ error in
+                            expect(error).to(beNil())
+                            channelSend.publish(nil, data: "message") { error in
+                                expect(error).to(beNil())
+                            }
+                        }, callback: { message in
+                            expect(message.data as? String).to(equal("message"))
+                            done()
+                        })
+                    }
+
+                    options.recover = clientReceive.connection.recoveryKey
+                    clientReceive.onError(AblyTests.newErrorProtocolMessage())
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channelSend.publish(nil, data: "queue a message") { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    let clientRecover = ARTRealtime(options: options)
+                    defer { clientRecover.close() }
+                    let channelRecover = clientRecover.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channelRecover.subscribe { message in
+                            expect(message.data as? String).to(equal("queue a message"))
+                            done()
+                        }
+                    }
+                }
+
+            }
+
             // RTN18
             context("state change side effects") {
 
