@@ -1956,7 +1956,7 @@ class RealtimeClientConnection: QuickSpec {
             context("Connection recovery") {
 
                 // RTN16e
-                pending("should connect anyway if the recoverKey is no longer valid") {
+                it("should connect anyway if the recoverKey is no longer valid") {
                     let options = AblyTests.commonAppSetup()
                     options.recover = "99999!xxxxxx-xxxxxxxxx-xxxxxxxxx:-1"
                     let client = ARTRealtime(options: options)
