@@ -2041,7 +2041,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN15h
-                context("DISCONNECTED message contains a token error") {
+                pending("DISCONNECTED message contains a token error") {
 
                     it("if the token is renewable then error should not be emitted") {
                         let options = AblyTests.commonAppSetup()
