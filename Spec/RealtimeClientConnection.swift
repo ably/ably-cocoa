@@ -1933,7 +1933,7 @@ class RealtimeClientConnection: QuickSpec {
             context("Connection recovery") {
 
                 // RTN16c
-                pending("Connection#recoveryKey should become becomes null when a connection is explicitly CLOSED or CLOSED") {
+                it("Connection#recoveryKey should become becomes null when a connection is explicitly CLOSED or CLOSED") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
                     defer { client.close() }

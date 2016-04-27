@@ -70,6 +70,9 @@
         case ARTRealtimeDisconnected:
         case ARTRealtimeSuspended: {
             NSString *recStr = self.key;
+            if (recStr == nil) {
+                return nil;
+            }
             NSString *str = [recStr stringByAppendingString:[NSString stringWithFormat:@":%ld", (long)self.serial]];
             return str;
         } default:
