@@ -258,6 +258,8 @@
         case ARTRealtimeClosed:
             [self.transport close];
             self.transport.delegate = nil;
+            _connection.key = nil;
+            _connection.id = nil;
             _transport = nil;
             break;
         case ARTRealtimeFailed:
