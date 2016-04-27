@@ -538,8 +538,9 @@ class Auth : QuickSpec {
                     
                     // RSA7b3
                     it("should CONNECTED ProtocolMessages contain a clientId") {
-                        let options = AblyTests.commonAppSetup()
-                        options.clientId = "john"
+                        let options = AblyTests.clientOptions()
+                        options.token = getTestToken(clientId: "john")
+                        expect(options.clientId).to(beNil())
                         options.autoConnect = false
                         let realtime = AblyTests.newRealtime(options)
                         defer { realtime.close() }

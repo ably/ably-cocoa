@@ -880,7 +880,7 @@ class RealtimeClientPresence: QuickSpec {
                     defer { client.close() }
                     let channel = client.channels.get("test")
 
-                                        channel.attach()
+                    channel.attach()
                     channel.detach()
 
                     waitUntil(timeout: testTimeout) { done in
