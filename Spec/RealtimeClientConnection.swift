@@ -1954,7 +1954,7 @@ class RealtimeClientConnection: QuickSpec {
             context("Operating System events for network/internet connectivity changes") {
 
                 // RTN20a
-                it("should immediately change the state to DISCONNECTED if the operating system indicates that the underlying internet connection is no longer available") {
+                pending("should immediately change the state to DISCONNECTED if the operating system indicates that the underlying internet connection is no longer available") {
                     let options = AblyTests.commonAppSetup()
                     options.disconnectedRetryTimeout = 0.5
                     let client = ARTRealtime(options: options)
