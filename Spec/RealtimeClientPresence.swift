@@ -523,9 +523,13 @@ class RealtimeClientPresence: QuickSpec {
                     }
 
                     let transport = client.transport as! TestProxyTransport
-                    let presenceMessage = transport.protocolMessagesReceived.filter({ $0.action == .Presence })[0].presence![0]
-                    expect(presenceMessage.action).to(equal(ARTPresenceAction.Enter))
-                    expect(presenceMessage.clientId).to(equal("john"))
+                    let sent = transport.protocolMessagesSent.filter({ $0.action == .Presence })[0].presence![0]
+                    expect(sent.action).to(equal(ARTPresenceAction.Enter))
+                    expect(sent.clientId).to(beNil())
+
+                    let received = transport.protocolMessagesReceived.filter({ $0.action == .Presence })[0].presence![0]
+                    expect(received.action).to(equal(ARTPresenceAction.Enter))
+                    expect(received.clientId).to(equal("john"))
                 }
 
             }

@@ -84,7 +84,7 @@
 }
 
 - (void)enter:(id)data callback:(void (^)(ARTErrorInfo *))cb {
-    [self enterClient:_channel.clientId data:data callback:cb];
+    [self enterAfterChecks:nil data:data callback:cb];
 }
 
 - (void)enterClient:(NSString *)clientId data:(id)data {
@@ -96,6 +96,10 @@
         if (cb) cb([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
         return;
     }
+    [self enterAfterChecks:clientId data:data callback:cb];
+}
+
+- (void)enterAfterChecks:(NSString *__art_nullable)clientId data:(id)data callback:(void (^)(ARTErrorInfo *))cb {
     ARTPresenceMessage *msg = [[ARTPresenceMessage alloc] init];
     msg.action = ARTPresenceEnter;
     msg.clientId = clientId;
@@ -110,7 +114,7 @@
 }
 
 - (void)update:(id)data callback:(void (^)(ARTErrorInfo * _Nullable))cb {
-    [self updateClient:_channel.clientId data:data callback:cb];
+    [self updateAfterChecks:nil data:data callback:cb];
 }
 
 - (void)updateClient:(NSString *)clientId data:(id)data {
@@ -122,6 +126,10 @@
         if (cb) cb([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
         return;
     }
+    [self updateAfterChecks:clientId data:data callback:cb];
+}
+
+- (void)updateAfterChecks:(NSString *__art_nullable)clientId data:(id)data callback:(void (^)(ARTErrorInfo *))cb {
     ARTPresenceMessage *msg = [[ARTPresenceMessage alloc] init];
     msg.action = ARTPresenceUpdate;
     msg.clientId = clientId;
@@ -136,7 +144,11 @@
 }
 
 - (void)leave:(id)data callback:(void (^)(ARTErrorInfo * _Nullable))cb {
-    [self leaveClient:_channel.clientId data:data callback:cb];
+    if (!_channel.clientId) {
+        if (cb) cb([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
+        return;
+    }
+    [self leaveAfterChecks:nil data:data callback:cb];
 }
 
 - (void)leaveClient:(NSString *)clientId data:(id)data {
@@ -148,7 +160,11 @@
         if (cb) cb([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
         return;
     }
-    if ([clientId isEqualToString:_channel.clientId]) {
+    [self leaveAfterChecks:clientId data:data callback:cb];
+}
+
+- (void)leaveAfterChecks:(NSString *__art_nullable)clientId data:(id)data callback:(void (^)(ARTErrorInfo *))cb {
+    if (!clientId || [clientId isEqualToString:_channel.clientId]) {
         if(_channel.lastPresenceAction != ARTPresenceEnter && _channel.lastPresenceAction != ARTPresenceUpdate) {
             [NSException raise:@"Cannot leave a channel before you've entered it" format:@""];
         }

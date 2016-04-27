@@ -110,10 +110,7 @@
             return;
     }
 
-    if (!msg.clientId) {
-        msg.clientId = self.clientId;
-    }
-    if (!msg.clientId) {
+    if (!msg.clientId && !_realtime.auth.clientId) {
         if (cb) cb([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
         return;
     }
