@@ -1340,6 +1340,29 @@ class RealtimeClientChannel: QuickSpec {
                         expect(resultClientId).toEventually(equal(message.clientId), timeout: testTimeout)
                     }
 
+                    // RTL6g3
+                    it("when publishing a Message with a different clientId attribute value from the identified client’s clientId, it should reject that publish operation immediately") {
+                        let options = AblyTests.commonAppSetup()
+                        options.clientId = "john"
+                        let client = ARTRealtime(options: options)
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish([ARTMessage(name: nil, data: "message", clientId: "tester")]) { error in
+                                expect(error!.message).to(contain("mismatched clientId"))
+                                done()
+                            }
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish([ARTMessage(name: nil, data: "message")]) { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+                    }
+
                 }
 
                 // RTL6h
