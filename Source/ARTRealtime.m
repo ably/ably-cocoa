@@ -182,7 +182,7 @@
         return;
     }
     case ARTRealtimeConnected:
-        [_pingEventEmitter timed:[_pingEventEmitter once:cb] deadline:10.0 onTimeout:^{
+        [_pingEventEmitter timed:[_pingEventEmitter once:cb] deadline:[ARTDefault realtimeRequestTimeout] onTimeout:^{
             cb([ARTErrorInfo createWithCode:0 status:ARTStateConnectionFailed message:@"connection failed"]);
         }];
         [self.transport sendPing];
@@ -249,7 +249,7 @@
             break;
         }
         case ARTRealtimeClosing: {
-            [self unlessStateChangesBefore:10.0 do:^{
+            [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
                 [self transition:ARTRealtimeClosed];
             }];
             [self.transport sendClose];
