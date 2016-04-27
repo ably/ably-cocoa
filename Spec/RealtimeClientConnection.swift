@@ -2644,7 +2644,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN20b
-                it("should immediately attempt to connect if the operating system indicates that the underlying internet connection is now available when DISCONNECTED or SUSPENDED") {
+                pending("should immediately attempt to connect if the operating system indicates that the underlying internet connection is now available when DISCONNECTED or SUSPENDED") {
                     let options = AblyTests.commonAppSetup()
                     options.disconnectedRetryTimeout = testTimeout + 1.0
                     let client = ARTRealtime(options: options)
