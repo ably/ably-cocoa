@@ -1061,7 +1061,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP10c
-                it("entering without an explicit PresenceMessage#clientId should implicitly use the clientId of the current connection") {
+                pending("entering without an explicit PresenceMessage#clientId should implicitly use the clientId of the current connection") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
                     let client = AblyTests.newRealtime(options)
