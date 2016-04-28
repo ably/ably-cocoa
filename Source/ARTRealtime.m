@@ -183,7 +183,7 @@
     }
     case ARTRealtimeConnected:
         [_pingEventEmitter timed:[_pingEventEmitter once:cb] deadline:[ARTDefault realtimeRequestTimeout] onTimeout:^{
-            cb([ARTErrorInfo createWithCode:0 status:ARTStateConnectionFailed message:@"connection failed"]);
+            cb([ARTErrorInfo createWithCode:0 status:ARTStateConnectionFailed message:@"timed out"]);
         }];
         [self.transport sendPing];
     }

@@ -65,7 +65,6 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtime (Private)
 
-- (void)ping:(void (^)(ARTErrorInfo *))cb;
 - (BOOL)isActive;
 
 // Transport Events

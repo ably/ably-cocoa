@@ -1300,10 +1300,6 @@ class RealtimeClientConnection: QuickSpec {
                     expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Failed))
                     expect { client.ping { _ in } }.to(raiseException())
                 }
-            }
-
-            // RTN13
-            context("Ping") {
 
                 // RTN13a
                 it("should send a ProtocolMessage with action HEARTBEAT and expects a HEARTBEAT message in response") {
@@ -1320,23 +1316,22 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
-            }
-
-            // RTN13
-            context("Ping") {
-
                 // RTN13c
-                pending("should fail if a HEARTBEAT ProtocolMessage is not received within the default realtime request timeout") {
+                it("should fail if a HEARTBEAT ProtocolMessage is not received within the default realtime request timeout") {
                     let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
                     defer { client.close() }
-                    // TODO
-                    //ARTDefault.connectionStateTtl()
                     waitUntil(timeout: testTimeout) { done in
                         let start = NSDate()
+                        let transport = client.transport as! TestProxyTransport
+                        transport.ignoreSends = true
+                        ARTDefault.setRealtimeRequestTimeout(3.0)
                         client.ping() { error in
+                            guard let error = error else {
+                                fail("expected error"); done(); return
+                            }
                             let end = NSDate()
                             expect(error.message).to(contain("timed out"))
-                            expect(end.timeIntervalSinceDate(start)).to(beCloseTo(ARTDefault.connectionStateTtl()))
+                            expect(end.timeIntervalSinceDate(start)).to(beCloseTo(ARTDefault.realtimeRequestTimeout(), within: 1.5))
                             done()
                         }
                     }

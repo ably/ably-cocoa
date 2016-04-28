@@ -59,6 +59,7 @@ Instance the Ably library with the given options.
 - (instancetype)initWithOptions:(ARTClientOptions *)options;
 
 - (void)time:(void (^)(NSDate *__art_nullable, NSError *__art_nullable))cb;
+- (void)ping:(void (^)(ARTErrorInfo *__art_nullable))cb;
 
 - (BOOL)stats:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *__art_nullable, ARTErrorInfo *__art_nullable))callback;
 - (BOOL)stats:(art_nullable ARTStatsQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *__art_nullable, ARTErrorInfo *__art_nullable))callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
