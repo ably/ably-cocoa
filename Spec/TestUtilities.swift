@@ -608,8 +608,6 @@ class TestProxyTransport: ARTWebSocketTransport {
     var savedWebsocket: PSWebSocket!
 
     override func connect() {
-        super.connect()
-
         guard let network = TestProxyTransport.network else { super.connect(); return }
         func performConnectError(secondsForDelay: NSTimeInterval, error: ARTRealtimeTransportError) {
             delay(secondsForDelay) {
@@ -617,7 +615,7 @@ class TestProxyTransport: ARTWebSocketTransport {
                 self.delegate!.realtimeTransportFailed(self, withError: error)
             }
         }
-        let error = NSError.init(domain: "", code: 0, userInfo: nil)
+        let error = NSError.init(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "TestProxyTransport error"])
         switch network {
         case .NoInternet, .HostUnreachable:
             performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, type: .HostUnreachable, url: lastUrl!))

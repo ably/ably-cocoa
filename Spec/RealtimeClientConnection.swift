@@ -2378,7 +2378,7 @@ class RealtimeClientConnection: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: "message") { error in
-                            expect(error!.message).to(contain("WebSocketError"))
+                            expect(error!.message).to(contain("TestProxyTransport error"))
                             done()
                         }
                     }
