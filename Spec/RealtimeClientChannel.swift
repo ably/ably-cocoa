@@ -1990,27 +1990,53 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 // RTL12
-                pending("attached channel may receive an additional ATTACHED ProtocolMessage") {
+                it("attached channel may receive an additional ATTACHED ProtocolMessage") {
                     let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
                     defer { client.close() }
                     let channel = client.channels.get("test")
-                    channel.attach()
-                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
-
                     waitUntil(timeout: testTimeout) { done in
-                        let attachedMessage = AblyTests.newErrorProtocolMessage()
+                        channel.attach() { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    channel.on(.Attached) { _ in
+                        fail("Should not be called")
+                    }
+
+                    var hook: AspectToken?
+                    waitUntil(timeout: testTimeout) { done in
+                        let attachedMessage = ARTProtocolMessage()
                         attachedMessage.action = .Attached
                         attachedMessage.channel = "test"
 
+                        hook = channel.testSuite_injectIntoMethodAfter(#selector(channel.onChannelMessage(_:))) {
+                            done()
+                        }
+
+                        let transport = client.transport as! TestProxyTransport
+                        // Inject additional ATTACHED action without an error
+                        transport.receive(attachedMessage)
+                    }
+                    hook!.remove()
+                    expect(channel.errorReason).to(beNil())
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let attachedMessageWithError = AblyTests.newErrorProtocolMessage()
+                        attachedMessageWithError.action = .Attached
+                        attachedMessageWithError.channel = "test"
+
                         channel.once(.Error) { error in
-                            expect(error).to(beIdenticalTo(attachedMessage.error))
+                            expect(error).to(beIdenticalTo(attachedMessageWithError.error))
                             expect(channel.errorReason).to(beIdenticalTo(error))
                             done()
                         }
 
                         let transport = client.transport as! TestProxyTransport
-                        // Inject additional ATTACHED action with error
-                        transport.receive(attachedMessage)
+                        // Inject additional ATTACHED action with an error
+                        transport.receive(attachedMessageWithError)
                     }
                     expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
                 }
