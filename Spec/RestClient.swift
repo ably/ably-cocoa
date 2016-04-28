@@ -20,7 +20,7 @@ class RestClient: QuickSpec {
 
         describe("RestClient") {
             // G4
-            pending("All REST requests should include the current API version") {
+            it("All REST requests should include the current API version") {
                 let client = ARTRest(options: AblyTests.commonAppSetup())
                 client.httpExecutor = testHTTPExecutor
                 let channel = client.channels.get("test")
@@ -28,7 +28,7 @@ class RestClient: QuickSpec {
                     channel.publish(nil, data: "message") { error in
                         expect(error).to(beNil())
                         let version = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["X-Ably-Version"]
-                        expect(version).toNot(beNil())
+                        expect(version).to(equal("0.8"))
                         done()
                     }
                 }
