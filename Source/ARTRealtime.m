@@ -172,7 +172,7 @@
     case ARTRealtimeClosing:
     case ARTRealtimeClosed:
     case ARTRealtimeFailed:
-        [NSException raise:@"Can't ping a closed or failed connection" format:@"%@:", [ARTRealtime ARTRealtimeStateToStr:self.connection.state]];
+        [NSException raise:@"Can't ping a closed or failed connection" format:@"%@:", ARTRealtimeStateToStr(self.connection.state)];
         return;
     case ARTRealtimeConnecting:
     case ARTRealtimeDisconnected: {
@@ -206,7 +206,7 @@
 }
 
 - (void)transition:(ARTRealtimeConnectionState)state withErrorInfo:(ARTErrorInfo *)errorInfo {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"%p transition to %@ requested", self, [ARTRealtime ARTRealtimeStateToStr:state]];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"%p transition to %@ requested", self, ARTRealtimeStateToStr(state)];
 
     ARTRealtimeConnectionState previousState = self.connection.state;
     [self.connection setState:state];
@@ -359,7 +359,7 @@
 - (void)onHeartbeat {
     [self.logger verbose:@"ARTRealtime heartbeat received"];
     if(self.connection.state != ARTRealtimeConnected) {
-        NSString *msg = [NSString stringWithFormat:@"ARTRealtime received a ping when in state %@", [ARTRealtime ARTRealtimeStateToStr:self.connection.state]];
+        NSString *msg = [NSString stringWithFormat:@"ARTRealtime received a ping when in state %@", ARTRealtimeStateToStr(self.connection.state)];
         [self.logger warn:@"%@", msg];
     }
     [_pingEventEmitter emit:[NSNull null] with:nil];
@@ -772,30 +772,6 @@
             return @"Sync"; //16
         default:
             return [NSString stringWithFormat: @"unknown protocol state %d", (int)action];
-    }
-}
-
-+ (NSString *)ARTRealtimeStateToStr:(ARTRealtimeConnectionState) state {
-    switch(state)
-    {
-        case ARTRealtimeInitialized:
-            return @"Initialized"; //0
-        case ARTRealtimeConnecting:
-            return @"Connecting"; //1
-        case ARTRealtimeConnected:
-            return @"Connected"; //2
-        case ARTRealtimeDisconnected:
-            return @"Disconnected"; //3
-        case ARTRealtimeSuspended:
-            return @"Suspended"; //4
-        case ARTRealtimeClosing:
-            return @"Closing"; //5
-        case ARTRealtimeClosed:
-            return @"Closed"; //6
-        case ARTRealtimeFailed:
-            return @"Failed"; //7
-        default:
-            return [NSString stringWithFormat: @"unknown connection state %d", (int)state];
     }
 }
 

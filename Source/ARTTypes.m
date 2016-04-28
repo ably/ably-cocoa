@@ -58,7 +58,31 @@ NSString *generateNonce() {
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%@ - \n\t current: %@; \n\t previous: %@; \n\t reason: %@; \n\t retryIn: %f; \n", [super description], ARTRealtimeConnectionStateString(_current), ARTRealtimeConnectionStateString(_previous), _reason, _retryIn];
+    return [NSString stringWithFormat:@"%@ - \n\t current: %@; \n\t previous: %@; \n\t reason: %@; \n\t retryIn: %f; \n", [super description], ARTRealtimeStateToStr(_current), ARTRealtimeStateToStr(_previous), _reason, _retryIn];
+}
+
+NSString *ARTRealtimeStateToStr(ARTRealtimeConnectionState state) {
+    switch(state)
+    {
+        case ARTRealtimeInitialized:
+            return @"Initialized"; //0
+        case ARTRealtimeConnecting:
+            return @"Connecting"; //1
+        case ARTRealtimeConnected:
+            return @"Connected"; //2
+        case ARTRealtimeDisconnected:
+            return @"Disconnected"; //3
+        case ARTRealtimeSuspended:
+            return @"Suspended"; //4
+        case ARTRealtimeClosing:
+            return @"Closing"; //5
+        case ARTRealtimeClosed:
+            return @"Closed"; //6
+        case ARTRealtimeFailed:
+            return @"Failed"; //7
+        default:
+            return [NSString stringWithFormat: @"unknown connection state %d", (int)state];
+    }
 }
 
 @end
