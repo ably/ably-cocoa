@@ -292,6 +292,20 @@ class RestClientChannel: QuickSpec {
 
             }
 
+            // RSL1h
+            it("should provide an optional argument that allows the clientId value to be specified") {
+                let options = AblyTests.commonAppSetup()
+                options.clientId = "john"
+                let client = ARTRest(options: options)
+                let channel = client.channels.get("test")
+                waitUntil(timeout: testTimeout) { done in
+                    channel.publish("name", data: "some data", clientId: "tester") { error in
+                        expect(error!.message).to(contain("invalid clientId"))
+                        done()
+                    }
+                }
+            }
+
         }
 
         // RSL3, RSP1
