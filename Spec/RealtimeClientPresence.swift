@@ -1432,6 +1432,32 @@ class RealtimeClientPresence: QuickSpec {
                 }
             }
 
+            // RTP15f
+            it("should indicate an error if the client is identified and has a valid clientId and the clientId argument does not match the client’s clientId") {
+                let options = AblyTests.commonAppSetup()
+                options.clientId = "john"
+                let client = ARTRealtime(options: options)
+                defer { client.close() }
+                let channel = client.channels.get("test")
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.presence.enter("browser") { error in
+                        expect(error).to(beNil())
+                        channel.presence.updateClient("tester", data:"mobile") { error in
+                            expect(error!.message).to(contain("mismatched clientId"))
+                            done()
+                        }
+                    }
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.presence.get() { members, error in
+                        expect(members!.first!.data as? String).to(equal("browser"))
+                        done()
+                    }
+                }
+            }
+
             // RTP16
             context("Connection state conditions") {
 
