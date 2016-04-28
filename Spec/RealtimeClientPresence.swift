@@ -1078,9 +1078,9 @@ class RealtimeClientPresence: QuickSpec {
                     }
 
                     let transport = client.transport as! TestProxyTransport
-                    let presenceMessage = transport.protocolMessagesReceived.filter({ $0.action == .Presence })[1].presence![0]
-                    expect(presenceMessage.action).to(equal(ARTPresenceAction.Leave))
-                    expect(presenceMessage.clientId).to(equal("john"))
+                    let leavePresenceMessage = transport.protocolMessagesReceived.filter({ $0.action == .Presence })[1].presence![0]
+                    expect(leavePresenceMessage.action).to(equal(ARTPresenceAction.Leave))
+                    expect(leavePresenceMessage.clientId).to(beNil())
                 }
 
             }
