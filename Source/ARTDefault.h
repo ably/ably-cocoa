@@ -35,4 +35,6 @@
  */
 + (NSTimeInterval)realtimeRequestTimeout;
 
++ (NSString *)version;
+
 @end
