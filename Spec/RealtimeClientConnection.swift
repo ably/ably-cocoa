@@ -1527,7 +1527,9 @@ class RealtimeClientConnection: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.realtimeHost = "10.255.255.1" //non-routable IP address
                     options.autoConnect = false
-                    ARTDefault.setRealtimeRequestTimeout(0.5)
+                    let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                    defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+
 
                     let client = ARTRealtime(options: options)
                     defer { client.close() }
