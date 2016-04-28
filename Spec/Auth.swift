@@ -443,8 +443,12 @@ class Auth : QuickSpec {
 
                 // RSA7a4
                 it("ClientOptions#clientId takes precendence when a clientId value is provided in both ClientOptions#clientId and ClientOptions#defaultTokenParams") {
-                    let options = AblyTests.commonAppSetup()
+                    let options = AblyTests.clientOptions()
                     options.clientId = "john"
+                    options.authCallback = { tokenParams, completion in
+                        expect(tokenParams.clientId).to(equal(options.clientId))
+                        completion(getTestToken(clientId: tokenParams.clientId), nil)
+                    }
                     options.defaultTokenParams = ARTTokenParams(clientId: "tester")
                     let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
