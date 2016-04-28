@@ -1363,6 +1363,46 @@ class RealtimeClientChannel: QuickSpec {
                         }
                     }
 
+                    // RTL6g4
+                    it("message should be published following authentication and received back with the clientId intact") {
+                        let options = AblyTests.clientOptions()
+                        options.authCallback = { tokenParams, completion in
+                            completion(getTestTokenDetails(clientId: "john"), nil)
+                        }
+                        let client = ARTRealtime(options: options)
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+                        let message = ARTMessage(name: nil, data: "message", clientId: "john")
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.subscribe() { received in
+                                expect(received.clientId).to(equal(message.clientId))
+                                done()
+                            }
+                            channel.publish([message]) { error in
+                                expect(error).to(beNil())
+                            }
+                        }
+                    }
+
+                    // RTL6g4
+                    it("message should be rejected by the Ably service and the message error should contain the server error") {
+                        let options = AblyTests.clientOptions()
+                        options.authCallback = { tokenParams, completion in
+                            completion(getTestTokenDetails(clientId: "john"), nil)
+                        }
+                        let client = ARTRealtime(options: options)
+                        defer { client.close() }
+                        let channel = client.channels.get("test")
+                        let message = ARTMessage(name: nil, data: "message", clientId: "tester")
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish([message]) { error in
+                                expect(error!.code).to(equal(40012))
+                                expect(error!.message).to(contain("mismatched clientId"))
+                                done()
+                            }
+                        }
+                    }
+
                 }
 
                 // RTL6h
