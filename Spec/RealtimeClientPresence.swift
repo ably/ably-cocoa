@@ -1061,7 +1061,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP10c
-                pending("entering without an explicit PresenceMessage#clientId should implicitly use the clientId of the current connection") {
+                it("entering without an explicit PresenceMessage#clientId should implicitly use the clientId of the current connection") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
                     let client = AblyTests.newRealtime(options)
@@ -1078,9 +1078,18 @@ class RealtimeClientPresence: QuickSpec {
                     }
 
                     let transport = client.transport as! TestProxyTransport
-                    let leavePresenceMessage = transport.protocolMessagesReceived.filter({ $0.action == .Presence })[1].presence![0]
-                    expect(leavePresenceMessage.action).to(equal(ARTPresenceAction.Leave))
-                    expect(leavePresenceMessage.clientId).to(beNil())
+
+                    let sent = transport.protocolMessagesSent.filter({ $0.action == .Presence })[1].presence![0]
+                    expect(sent.action).to(equal(ARTPresenceAction.Leave))
+                    expect(sent.clientId).to(beNil())
+
+                    let received = transport.protocolMessagesReceived
+                        .filter({ $0.action == .Presence })
+                        .map({ $0.presence! })
+                        .reduce([], combine: +)
+                        .filter({ $0.action == .Leave })[0]
+                    expect(received.action).to(equal(ARTPresenceAction.Leave))
+                    expect(received.clientId).to(equal("john"))
                 }
 
             }
