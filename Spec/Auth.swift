@@ -939,11 +939,17 @@ class Auth : QuickSpec {
             }
 
             // RSA8f3
-            pending("ensure the message published with a wildcard '*' does not have a clientId") {
+            it("ensure the message published with a wildcard '*' does not have a clientId") {
                 let options = AblyTests.commonAppSetup()
-                // Request a token with a wildcard '*' value clientId
-                options.token = getTestToken(clientId: "*")
                 let rest = ARTRest(options: options)
+
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.authorise(ARTTokenParams(clientId: "*"), options: nil) { _, error in
+                        expect(error).to(beNil())
+                        done()
+                    }
+                }
+
                 rest.httpExecutor = testHTTPExecutor
                 let channel = rest.channels.get("test")
 
