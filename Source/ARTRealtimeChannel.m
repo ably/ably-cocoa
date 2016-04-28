@@ -354,6 +354,15 @@
         return;
     }
     self.attachSerial = message.channelSerial;
+
+    if (self.state == ARTRealtimeChannelAttached) {
+        if (message.error != nil) {
+            _errorReason = message.error;
+            [self emit:ARTChannelEventError with:message.error];
+        }
+        return;
+    }
+
     if ([message isSyncEnabled]) {
         [self.presenceMap startSync];
         [self.logger debug:__FILE__ line:__LINE__ message:@"PresenceMap Sync started"];
