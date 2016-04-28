@@ -1263,7 +1263,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
             }
 
-            // RTN13b
+            // RTN13
             context("ping") {
                 // RTN13b
                 it("fails if in the INITIALIZED, SUSPENDED, CLOSING, CLOSED or FAILED state") {
@@ -1276,34 +1276,41 @@ class RealtimeClientConnection: QuickSpec {
                         client.dispose()
                     }
 
+                    var error: ARTErrorInfo?
+                    func ping() {
+                        error = nil
+                        client.ping() { error = $0 }
+                    }
+
                     expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Initialized))
-                    expect { client.ping { _ in } }.to(raiseException())
+                    ping()
+                    expect(error).toNot(beNil())
 
                     client.connect()
                     expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
                     client.onSuspended()
 
                     expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Suspended))
-                    expect { client.ping { _ in } }.to(raiseException())
+                    ping()
+                    expect(error).toNot(beNil())
 
                     expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
                     client.close()
 
                     expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Closing))
-                    expect { client.ping { _ in } }.to(raiseException())
+                    ping()
+                    expect(error).toNot(beNil())
 
                     expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Closed), timeout: testTimeout)
-                    expect { client.ping { _ in } }.to(raiseException())
+                    ping()
+                    expect(error).toNot(beNil())
 
                     client.onError(AblyTests.newErrorProtocolMessage())
 
                     expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Failed))
-                    expect { client.ping { _ in } }.to(raiseException())
+                    ping()
+                    expect(error).toNot(beNil())
                 }
-            }
-
-            // RTN13
-            context("Ping") {
 
                 // RTN13a
                 it("should send a ProtocolMessage with action HEARTBEAT and expects a HEARTBEAT message in response") {
@@ -1315,32 +1322,6 @@ class RealtimeClientConnection: QuickSpec {
                             let transport = client.transport as! TestProxyTransport
                             expect(transport.protocolMessagesSent.filter{ $0.action == .Heartbeat }).to(haveCount(1))
                             expect(transport.protocolMessagesReceived.filter{ $0.action == .Heartbeat }).to(haveCount(1))
-                            done()
-                        }
-                    }
-                }
-
-            }
-
-            // RTN13
-            context("Ping") {
-
-                // RTN13b
-                pending("should immediately indicate an error if in the CLOSED or FAILED state") {
-                    let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
-                    defer { client.close() }
-                    waitUntil(timeout: testTimeout) { done in
-                        client.connection.on(.Connected) { _ in
-                            client.onError(AblyTests.newErrorProtocolMessage())
-                            done()
-                        }
-                    }
-                    waitUntil(timeout: testTimeout) { done in
-                        client.ping() { error in
-                            expect(error).toNot(beNil())
-                            let transport = client.transport as! TestProxyTransport
-                            expect(transport.protocolMessagesSent.filter{ $0.action == .Heartbeat }).to(haveCount(1))
-                            expect(transport.protocolMessagesReceived.filter{ $0.action == .Heartbeat }).to(haveCount(0))
                             done()
                         }
                     }
