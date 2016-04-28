@@ -38,12 +38,6 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, getter=getTransport) id<ARTRealtimeTransport> transport;
 @property (readonly, getter=getLogger) ARTLog *logger;
 
-@property (readwrite, assign, nonatomic, art_nullable) CFRunLoopTimerRef connectTimeout;
-@property (readwrite, assign, nonatomic, art_nullable) CFRunLoopTimerRef suspendTimeout;
-@property (readwrite, assign, nonatomic, art_nullable) CFRunLoopTimerRef retryTimeout;
-@property (readwrite, assign, nonatomic, art_nullable) CFRunLoopTimerRef closeTimeout;
-@property (readwrite, assign, nonatomic, art_nullable) CFRunLoopTimerRef pingTimeout;
-
 /// Current protocol `msgSerial`. Starts at zero.
 @property (readwrite, assign, nonatomic) int64_t msgSerial;
 

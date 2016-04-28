@@ -11,5 +11,6 @@
 @interface ARTDefault (Private)
 
 + (void)setRealtimeRequestTimeout:(NSTimeInterval)value;
++ (void)setConnectionStateTtl:(NSTimeInterval)value;
 
 @end

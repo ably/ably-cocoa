@@ -1523,32 +1523,40 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN14d
-                pending("connection attempt fails for any recoverable reason") {
+                it("connection attempt fails for any recoverable reason") {
                     let options = AblyTests.commonAppSetup()
                     options.realtimeHost = "10.255.255.1" //non-routable IP address
-                    options.disconnectedRetryTimeout = 0.1
-                    options.suspendedRetryTimeout = 0.5
+                    options.disconnectedRetryTimeout = 1.0
                     options.autoConnect = false
-                    let expectedTime = 1.0
-                    // FIXME: connectionStateTtl is readonly
-                    //ARTDefault.connectionStateTtl = expectedTime
+                    let expectedTime = 3.0
+
+                    let previousConnectionStateTtl = ARTDefault.connectionStateTtl()
+                    defer { ARTDefault.setConnectionStateTtl(previousConnectionStateTtl) }
+                    ARTDefault.setConnectionStateTtl(expectedTime)
+
+                    let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                    defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                    ARTDefault.setRealtimeRequestTimeout(0.1)
 
                     let client = ARTRealtime(options: options)
                     defer { client.close() }
 
                     var totalRetry = 0
                     waitUntil(timeout: testTimeout) { done in
-                        client.connection.on(.Disconnected) { stateChange in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+
+                        client.connection.once(.Disconnected) { stateChange in
                             expect(stateChange!.reason!.message).to(contain("timed out"))
                             expect(stateChange!.previous).to(equal(ARTRealtimeConnectionState.Connecting))
                             expect(stateChange!.retryIn).to(beCloseTo(options.disconnectedRetryTimeout))
+                            partialDone()
                         }
 
                         var start: NSDate?
                         client.connection.on(.Suspended) { stateChange in
                             let end = NSDate()
-                            expect(end.timeIntervalSinceDate(start!)).to(beCloseTo(expectedTime))
-                            done()
+                            expect(end.timeIntervalSinceDate(start!)).to(beCloseTo(expectedTime, within: 0.5))
+                            partialDone()
                         }
 
                         client.connect()

@@ -16,6 +16,7 @@ NSString *const ARTDefault_version = @"0.8";
 
 
 static int _realtimeRequestTimeout = 10.0;
+static int _connectionStateTtl = 60.0;
 
 + (NSArray*)fallbackHosts {
     return @[@"a.ably-realtime.com", @"b.ably-realtime.com", @"c.ably-realtime.com", @"d.ably-realtime.com", @"e.ably-realtime.com"];
@@ -45,12 +46,8 @@ static int _realtimeRequestTimeout = 10.0;
     return 60 * 60;
 }
 
-+ (NSTimeInterval)connectTimeout {
-    return 15;
-}
-
 + (NSTimeInterval)connectionStateTtl {
-    return 60.0;
+    return _connectionStateTtl;
 }
 
 + (NSTimeInterval)realtimeRequestTimeout {
@@ -60,6 +57,12 @@ static int _realtimeRequestTimeout = 10.0;
 + (void)setRealtimeRequestTimeout:(NSTimeInterval)value {
     @synchronized (self) {
         _realtimeRequestTimeout = value;
+    }
+}
+
++ (void)setConnectionStateTtl:(NSTimeInterval)value {
+    @synchronized (self) {
+        _connectionStateTtl = value;
     }
 }
 
