@@ -54,6 +54,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (void)sendQueuedMessages;
 - (void)failQueuedMessages:(ARTStatus *)status;
+- (void)sendMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb;
 
 - (void)setSuspended:(ARTStatus *)error;
 - (void)setFailed:(ARTStatus *)error;
