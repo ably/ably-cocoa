@@ -1988,13 +1988,17 @@ class RealtimeClientConnection: QuickSpec {
                     let client = AblyTests.newRealtime(options)
                     defer { client.close() }
                     let channel = client.channels.get("test")
+
                     var resumed = false
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.Connected) { _ in
+                            var sentQueuedMessage: ARTMessage?
                             channel.publish(nil, data: "message") { _ in
                                 if resumed {
                                     let transport = client.transport as! TestProxyTransport
                                     expect(transport.protocolMessagesReceived.filter{ $0.action == .Ack }).to(haveCount(1))
+                                    let sentTransportMessage = transport.protocolMessagesSent.filter{ $0.action == .Message }.first!.messages![0]
+                                    expect(sentQueuedMessage).to(beIdenticalTo(sentTransportMessage))
                                     done()
                                 }
                                 else {
@@ -2004,6 +2008,11 @@ class RealtimeClientConnection: QuickSpec {
                             client.onDisconnected()
                             client.connection.once(.Connected) { _ in
                                 resumed = true
+                                channel.testSuite_injectIntoMethodBefore(#selector(channel.sendQueuedMessages)) {
+                                    channel.testSuite_getArgumentFrom(#selector(channel.sendMessage(_:callback:)), atIndex: 0) { arg0 in
+                                        sentQueuedMessage = (arg0 as? ARTProtocolMessage)?.messages?[0]
+                                    }
+                                }
                             }
                         }
                     }
