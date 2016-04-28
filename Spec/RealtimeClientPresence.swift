@@ -1976,6 +1976,42 @@ class RealtimeClientPresence: QuickSpec {
 
             }
 
+            // RTP13
+            it("Presence#syncComplete returns true if the initial SYNC operation has completed") {
+                let options = AblyTests.commonAppSetup()
+
+                var disposable = [ARTRealtime]()
+                defer {
+                    for clientItem in disposable {
+                        clientItem.close()
+                    }
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 250, options: options) {
+                        done()
+                    }
+                }
+
+                let client = AblyTests.newRealtime(options)
+                defer { client.close() }
+                let channel = client.channels.get("test")
+                channel.attach()
+
+                expect(channel.presence.syncComplete).to(beFalse())
+                expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                let transport = client.transport as! TestProxyTransport
+                transport.beforeProcessingReceivedMessage = { protocolMessage in
+                    if protocolMessage.action == .Sync {
+                        expect(channel.presence.syncComplete).to(beFalse())
+                    }
+                }
+
+                expect(channel.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
+                expect(transport.protocolMessagesReceived.filter({ $0.action == .Sync })).to(haveCount(3))
+            }
+
         }
     }
 }
