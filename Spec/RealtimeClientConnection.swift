@@ -1523,12 +1523,11 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN14c
-                pending("connection attempt should fail if not connected within the default realtime request timeout") {
+                it("connection attempt should fail if not connected within the default realtime request timeout") {
                     let options = AblyTests.commonAppSetup()
                     options.realtimeHost = "10.255.255.1" //non-routable IP address
                     options.autoConnect = false
-                    // FIXME: connectionStateTtl is readonly
-                    //ARTDefault.connectionStateTtl = 0.5
+                    ARTDefault.setRealtimeRequestTimeout(0.5)
 
                     let client = ARTRealtime(options: options)
                     defer { client.close() }
@@ -1537,13 +1536,13 @@ class RealtimeClientConnection: QuickSpec {
                         client.connection.on(.Disconnected) { stateChange in
                             end = NSDate()
                             expect(stateChange!.reason!.message).to(contain("timed out"))
-                            expect(client.connection.errorReason!.message).to(beIdenticalTo(stateChange!.reason))
+                            expect(client.connection.errorReason!).to(beIdenticalTo(stateChange!.reason))
                             done()
                         }
                         client.connect()
                         start = NSDate()
                     }
-                    expect(end!.timeIntervalSinceDate(start!)).to(beCloseTo(ARTDefault.connectionStateTtl()))
+                    expect(end!.timeIntervalSinceDate(start!)).to(beCloseTo(ARTDefault.realtimeRequestTimeout(), within: 1.5))
                 }
 
                 // RTN14d
