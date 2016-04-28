@@ -559,6 +559,20 @@ class Auth : QuickSpec {
                         }
                     }
 
+                    // RSA7b4
+                    it("client does not have an identity when a wildcard string '*' is present") {
+                        let options = AblyTests.clientOptions()
+                        options.token = getTestToken(clientId: "*")
+                        let realtime = ARTRealtime(options: options)
+                        defer { realtime.close() }
+                        waitUntil(timeout: testTimeout) { done in
+                            realtime.connection.on(.Connected) { _ in
+                                expect(realtime.auth.clientId).to(equal("*"))
+                                done()
+                            }
+                        }
+                    }
+
                 }
                 
                 // RSA7c
