@@ -507,6 +507,31 @@ class RealtimeClientPresence: QuickSpec {
                     }
                 }
 
+                // RTP8c
+                it("entering without an explicit PresenceMessage#clientId should implicitly use the clientId of the current connection") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+                    let client = AblyTests.newRealtime(options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enter("online") { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    let transport = client.transport as! TestProxyTransport
+                    let sent = transport.protocolMessagesSent.filter({ $0.action == .Presence })[0].presence![0]
+                    expect(sent.action).to(equal(ARTPresenceAction.Enter))
+                    expect(sent.clientId).to(beNil())
+
+                    let received = transport.protocolMessagesReceived.filter({ $0.action == .Presence })[0].presence![0]
+                    expect(received.action).to(equal(ARTPresenceAction.Enter))
+                    expect(received.clientId).to(equal("john"))
+                }
+
             }
 
             // RTP8
