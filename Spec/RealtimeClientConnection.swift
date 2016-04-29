@@ -1539,7 +1539,10 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(0.1)
 
                     let client = ARTRealtime(options: options)
-                    defer { client.close() }
+                    defer {
+                        client.connection.off()
+                        client.close()
+                    }
 
                     var totalRetry = 0
                     waitUntil(timeout: testTimeout) { done in
