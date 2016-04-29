@@ -206,6 +206,71 @@ class RestClient: QuickSpec {
                 }
             }
 
+            // RSC13
+            context("should use the the connection and request timeouts specified") {
+
+                it("timeout for any single HTTP request and response") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.restHost = "10.255.255.1" //non-routable IP address
+                    expect(options.httpRequestTimeout).to(equal(15.0)) //Seconds
+                    options.httpRequestTimeout = 0.5
+                    let client = ARTRest(options: options)
+                    let channel = client.channels.get("test")
+                    waitUntil(timeout: testTimeout) { done in
+                        let start = NSDate()
+                        channel.publish(nil, data: "message") { error in
+                            let end = NSDate()
+                            expect(end.timeIntervalSinceDate(start)).to(beCloseTo(options.httpRequestTimeout, within: 0.1))
+                            expect(error!.message).to(contain("The request timed out"))
+                            done()
+                        }
+                    }
+                }
+
+                it("max number of fallback hosts") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    expect(options.httpMaxRetryCount).to(equal(3))
+                    options.httpMaxRetryCount = 1
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = testHTTPExecutor
+                    testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+
+                    var totalRetry: UInt = 0
+                    testHTTPExecutor.afterRequest = { request, _ in
+                        if NSRegularExpression.match(request.URL!.absoluteString, pattern: "//[a-e].ably-realtime.com") {
+                            totalRetry += 1
+                        }
+                    }
+
+                    let channel = client.channels.get("test")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "nil") { _ in
+                            done()
+                        }
+                    }
+                    expect(totalRetry).to(equal(options.httpMaxRetryCount))
+                }
+
+                it("max elapsed time in which fallback host retries for HTTP requests will be attempted") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    expect(options.httpMaxRetryDuration).to(equal(10.0)) //Seconds
+                    options.httpMaxRetryDuration = 0.2
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = testHTTPExecutor
+                    testHTTPExecutor.http = MockHTTP(network: .RequestTimeout(timeout: 0.1))
+                    let channel = client.channels.get("test")
+                    waitUntil(timeout: testTimeout) { done in
+                        let start = NSDate()
+                        channel.publish(nil, data: "nil") { _ in
+                            let end = NSDate()
+                            expect(end.timeIntervalSinceDate(start)).to(beCloseTo(options.httpMaxRetryDuration, within: 0.5))
+                            done()
+                        }
+                    }
+                }
+
+            }
+
             // RSC5
             it("should provide access to the AuthOptions object passed in ClientOptions") {
                 let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)

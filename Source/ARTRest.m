@@ -128,6 +128,8 @@
     [request setValue:accept forHTTPHeaderField:@"Accept"];
     [request setValue:[ARTDefault version] forHTTPHeaderField:@"X-Ably-Version"];
 
+    [request setTimeoutInterval:_options.httpRequestTimeout];
+
     [self.logger debug:__FILE__ line:__LINE__ message:@"%p executing request %@", self, request];
     [self.httpExecutor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode >= 400) {
