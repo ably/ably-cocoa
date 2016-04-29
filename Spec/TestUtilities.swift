@@ -829,7 +829,7 @@ extension ARTWebSocketTransport {
 
 extension ARTRealtimeConnectionState : CustomStringConvertible {
     public var description : String {
-        return ARTRealtime.ARTRealtimeStateToStr(self)
+        return ARTRealtimeStateToStr(self)
     }
 }
 

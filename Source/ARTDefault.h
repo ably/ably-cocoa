@@ -21,8 +21,6 @@
  */
 + (NSTimeInterval)ttl;
 
-+ (NSTimeInterval)connectTimeout; //Realtime
-
 /**
  When the client is in the DISCONNECTED state, once this TTL has passed, the client should change the state to the SUSPENDED state signifying that the state is now lost i.e. channels need to be reattached manually.
  

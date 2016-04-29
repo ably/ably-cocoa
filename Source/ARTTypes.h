@@ -43,6 +43,9 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
     ARTRealtimeFailed
 };
 
+
+NSString *__art_nonnull ARTRealtimeStateToStr(ARTRealtimeConnectionState state);
+
 typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
     ARTRealtimeChannelInitialized,
     ARTRealtimeChannelAttaching,

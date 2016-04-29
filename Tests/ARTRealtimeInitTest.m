@@ -78,7 +78,7 @@
             XCTAssertEqual(state, ARTRealtimeConnecting);
         }
     }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout]+[ARTDefault connectTimeout] handler:nil];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout]+[ARTDefault realtimeRequestTimeout] handler:nil];
 }
 
 - (void)testInitWithKey {
