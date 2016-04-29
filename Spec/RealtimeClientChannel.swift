@@ -1207,7 +1207,8 @@ class RealtimeClientChannel: QuickSpec {
                         defer { client.close() }
                         let channel = client.channels.get("test")
 
-                        let expectedObject = ["data": "message"]
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                        let expectedObject = ["data": "message", "connectionId": client.connection.id!]
 
                         var resultMessage: ARTMessage?
                         channel.subscribe { message in
@@ -1226,7 +1227,6 @@ class RealtimeClientChannel: QuickSpec {
                         let rawMessagesSent = transport.rawDataSent.toJSONArray.filter({ $0["action"] == ARTProtocolMessageAction.Message.rawValue })
                         let messagesList = (rawMessagesSent[0] as! NSDictionary)["messages"] as! NSArray
                         let resultObject = messagesList[0] as! NSDictionary
-                        resultObject.removeObjectForKey("connectionId")
 
                         expect(resultObject).to(equal(expectedObject))
 
@@ -1244,7 +1244,8 @@ class RealtimeClientChannel: QuickSpec {
                         defer { client.close() }
                         let channel = client.channels.get("test")
 
-                        let expectedObject = ["name": "click"]
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                        let expectedObject = ["name": "click", "connectionId": client.connection.id!]
 
                         var resultMessage: ARTMessage?
                         channel.subscribe(expectedObject["name"]!) { message in
@@ -1263,7 +1264,6 @@ class RealtimeClientChannel: QuickSpec {
                         let rawMessagesSent = transport.rawDataSent.toJSONArray.filter({ $0["action"] == ARTProtocolMessageAction.Message.rawValue })
                         let messagesList = (rawMessagesSent[0] as! NSDictionary)["messages"] as! NSArray
                         let resultObject = messagesList[0] as! NSDictionary
-                        resultObject.removeObjectForKey("connectionId")
 
                         expect(resultObject).to(equal(expectedObject))
 
@@ -1281,7 +1281,8 @@ class RealtimeClientChannel: QuickSpec {
                         defer { client.close() }
                         let channel = client.channels.get("test")
 
-                        let expectedObject = ["name":"click", "data":"message"]
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                        let expectedObject = ["name": "click", "data": "message", "connectionId": client.connection.id!]
 
                         waitUntil(timeout: testTimeout) { done in
                             channel.publish(expectedObject["name"], data: expectedObject["data"]) { errorInfo in
@@ -1295,7 +1296,6 @@ class RealtimeClientChannel: QuickSpec {
                         let rawMessagesSent = transport.rawDataSent.toJSONArray.filter({ $0["action"] == ARTProtocolMessageAction.Message.rawValue })
                         let messagesList = (rawMessagesSent[0] as! NSDictionary)["messages"] as! NSArray
                         let resultObject = messagesList[0] as! NSDictionary
-                        resultObject.removeObjectForKey("connectionId")
 
                         expect(resultObject).to(equal(expectedObject))
                     }
