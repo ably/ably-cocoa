@@ -526,9 +526,11 @@
         [self sendImpl:msg callback:cb];
     } else if ([self shouldQueueEvents]) {
         BOOL merged = NO;
-        if ([self.queuedMessages count]) {
-            ARTQueuedMessage *lastQueued = [self.queuedMessages objectAtIndex:(self.queuedMessages.count) - 1];
-            merged = [lastQueued mergeFrom:msg callback:cb];
+        for (ARTQueuedMessage *queuedMsg in self.queuedMessages) {
+            merged = [queuedMsg mergeFrom:msg callback:cb];
+            if (merged) {
+                break;
+            }
         }
         if (!merged) {
             ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg callback:cb];

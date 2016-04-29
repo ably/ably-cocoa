@@ -142,8 +142,7 @@
             // intentional fall-through
         case ARTRealtimeChannelAttaching:
         {
-            ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:pm callback:cb];
-            [self.queuedMessages addObject:qm];
+            [self addToQueue:pm callback:cb];
             break;
         }
         case ARTRealtimeChannelDetaching:
@@ -161,8 +160,7 @@
             if (_realtime.connection.state == ARTRealtimeConnected) {
                 [self sendMessage:pm callback:cb];
             } else {
-                ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:pm callback:cb];
-                [self.queuedMessages addObject:qm];
+                [self addToQueue:pm callback:cb];
 
                 [_realtime.connection once:ARTRealtimeConnected callback:^(ARTConnectionStateChange *__art_nullable change) {
                     [self sendQueuedMessages];
@@ -172,6 +170,20 @@
         }
         default:
             NSAssert(NO, @"Invalid State");
+    }
+}
+
+- (void)addToQueue:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb {
+    BOOL merged = NO;
+    for (ARTQueuedMessage *queuedMsg in self.queuedMessages) {
+        merged = [queuedMsg mergeFrom:msg callback:cb];
+        if (merged) {
+            break;
+        }
+    }
+    if (!merged) {
+        ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg callback:cb];
+        [self.queuedMessages addObject:qm];
     }
 }
 
