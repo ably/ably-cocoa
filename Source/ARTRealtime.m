@@ -172,7 +172,7 @@
     case ARTRealtimeClosing:
     case ARTRealtimeClosed:
     case ARTRealtimeFailed:
-        [NSException raise:@"Can't ping a closed or failed connection" format:@"%@:", ARTRealtimeStateToStr(self.connection.state)];
+        cb([ARTErrorInfo createWithCode:0 status:ARTStateConnectionFailed message:[NSString stringWithFormat:@"Can't ping a %@ connection", ARTRealtimeStateToStr(self.connection.state)]]);
         return;
     case ARTRealtimeConnecting:
     case ARTRealtimeDisconnected: {
