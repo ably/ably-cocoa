@@ -278,6 +278,11 @@
     if (message.name) {
         [output setObject:message.name forKey:@"name"];
     }
+
+    if (message.connectionId) {
+        [output setObject:message.connectionId forKey:@"connectionId"];
+    }
+
     [self.logger verbose:@"ARTJsonEncoder: messageToDictionary %@", output];
     return output;
 }

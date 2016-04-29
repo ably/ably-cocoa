@@ -1140,7 +1140,7 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 // RTL6f
-                pending("Message#connectionId should match the current Connection#id for all published messages") {
+                it("Message#connectionId should match the current Connection#id for all published messages") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.close() }
                     let channel = client.channels.get("test")
@@ -1226,6 +1226,7 @@ class RealtimeClientChannel: QuickSpec {
                         let rawMessagesSent = transport.rawDataSent.toJSONArray.filter({ $0["action"] == ARTProtocolMessageAction.Message.rawValue })
                         let messagesList = (rawMessagesSent[0] as! NSDictionary)["messages"] as! NSArray
                         let resultObject = messagesList[0] as! NSDictionary
+                        resultObject.removeObjectForKey("connectionId")
 
                         expect(resultObject).to(equal(expectedObject))
 
@@ -1262,6 +1263,7 @@ class RealtimeClientChannel: QuickSpec {
                         let rawMessagesSent = transport.rawDataSent.toJSONArray.filter({ $0["action"] == ARTProtocolMessageAction.Message.rawValue })
                         let messagesList = (rawMessagesSent[0] as! NSDictionary)["messages"] as! NSArray
                         let resultObject = messagesList[0] as! NSDictionary
+                        resultObject.removeObjectForKey("connectionId")
 
                         expect(resultObject).to(equal(expectedObject))
 
@@ -1293,6 +1295,7 @@ class RealtimeClientChannel: QuickSpec {
                         let rawMessagesSent = transport.rawDataSent.toJSONArray.filter({ $0["action"] == ARTProtocolMessageAction.Message.rawValue })
                         let messagesList = (rawMessagesSent[0] as! NSDictionary)["messages"] as! NSArray
                         let resultObject = messagesList[0] as! NSDictionary
+                        resultObject.removeObjectForKey("connectionId")
 
                         expect(resultObject).to(equal(expectedObject))
                     }
