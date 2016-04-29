@@ -60,6 +60,27 @@
     return description;
 }
 
+- (id)copyWithZone:(NSZone *)zone {
+    ARTProtocolMessage *pm = [[[self class] allocWithZone:zone] init];
+    pm.action = self.action;
+    pm.count = self.count;
+    pm.id = self.id;
+    pm.channel = self.channel;
+    pm.channelSerial = self.channelSerial;
+    pm.connectionId = self.connectionId;
+    pm.connectionKey = self.connectionKey;
+    pm.connectionSerial = self.connectionSerial;
+    pm.hasConnectionSerial = self.hasConnectionSerial;
+    pm.msgSerial = self.msgSerial;
+    pm.timestamp = self.timestamp;
+    pm.messages = self.messages;
+    pm.presence = self.presence;
+    pm.flags = self.flags;
+    pm.error = self.error;
+    pm.connectionDetails = self.connectionDetails;
+    return pm;
+}
+
  - (BOOL)mergeFrom:(ARTProtocolMessage *)other {
      if (![other.channel isEqualToString:self.channel] || other.action != self.action) {
          return NO;
