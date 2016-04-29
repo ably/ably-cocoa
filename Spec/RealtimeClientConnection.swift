@@ -1327,6 +1327,27 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
+                // RTN13c
+                it("should fail if a HEARTBEAT ProtocolMessage is not received within the default realtime request timeout") {
+                    let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                    defer { client.close() }
+                    waitUntil(timeout: testTimeout) { done in
+                        let start = NSDate()
+                        let transport = client.transport as! TestProxyTransport
+                        transport.ignoreSends = true
+                        ARTDefault.setRealtimeRequestTimeout(3.0)
+                        client.ping() { error in
+                            guard let error = error else {
+                                fail("expected error"); done(); return
+                            }
+                            let end = NSDate()
+                            expect(error.message).to(contain("timed out"))
+                            expect(end.timeIntervalSinceDate(start)).to(beCloseTo(ARTDefault.realtimeRequestTimeout(), within: 1.5))
+                            done()
+                        }
+                    }
+                }
+
             }
 
             // RTN14a
