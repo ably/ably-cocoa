@@ -405,7 +405,7 @@
     ARTDataEncoder *dataEncoder = self.dataEncoder;
     for (ARTMessage *m in message.messages) {
         ARTMessage *msg = m;
-        if (dataEncoder) {
+        if (msg.data && dataEncoder) {
             NSError *error = nil;
             msg = [msg decodeWithEncoder:dataEncoder error:&error];
             if (error != nil) {
@@ -434,7 +434,7 @@
     ARTDataEncoder *dataEncoder = self.dataEncoder;
     for (ARTPresenceMessage *p in message.presence) {
         ARTPresenceMessage *presence = p;
-        if (dataEncoder) {
+        if (presence.data && dataEncoder) {
             NSError *error = nil;
             presence = [p decodeWithEncoder:dataEncoder error:&error];
             if (error != nil) {

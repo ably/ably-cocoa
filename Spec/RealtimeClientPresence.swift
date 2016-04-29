@@ -2042,7 +2042,7 @@ class RealtimeClientPresence: QuickSpec {
             context("enterClient") {
 
                 // RTP14a, RTP14b, RTP14c, RTP14d
-                pending("enters into presence on a channel on behalf of another clientId") {
+                it("enters into presence on a channel on behalf of another clientId") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.close() }
                     let channel = client.channels.get("test")
