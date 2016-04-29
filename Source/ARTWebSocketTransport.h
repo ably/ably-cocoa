@@ -20,8 +20,9 @@ ART_ASSUME_NONNULL_BEGIN
 @interface ARTWebSocketTransport : NSObject <ARTRealtimeTransport>
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithRest:(ARTRest *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial;
 
+@property (readonly, strong, nonatomic) NSString *resumeKey;
+@property (readonly, strong, nonatomic) NSNumber *connectionSerial;
 @property (readwrite, weak, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
 
 @property (readonly, getter=getIsConnected) BOOL isConnected;

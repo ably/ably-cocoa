@@ -13,6 +13,8 @@
 @class ARTProtocolMessage;
 @class ARTStatus;
 @class ARTErrorInfo;
+@class ARTClientOptions;
+@class ARTRest;
 
 ART_ASSUME_NONNULL_BEGIN
 
@@ -33,6 +35,11 @@ ART_ASSUME_NONNULL_BEGIN
 @end
 
 @protocol ARTRealtimeTransport
+
+- (instancetype)initWithRest:(ARTRest *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial;
+
+@property (readonly, strong, nonatomic) NSString *resumeKey;
+@property (readonly, strong, nonatomic) NSNumber *connectionSerial;
 
 @property (readwrite, weak, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
 - (void)send:(ARTProtocolMessage *)msg;
