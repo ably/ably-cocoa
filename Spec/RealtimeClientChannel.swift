@@ -576,6 +576,7 @@ class RealtimeClientChannel: QuickSpec {
                 it("should transition the channel state to FAILED if ATTACHED ProtocolMessage is not received") {
                     let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
                     defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                    ARTDefault.setRealtimeRequestTimeout(3.0)
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
@@ -798,6 +799,7 @@ class RealtimeClientChannel: QuickSpec {
                 it("should transition the channel state to FAILED if DETACHED ProtocolMessage is not received") {
                     let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
                     defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                    ARTDefault.setRealtimeRequestTimeout(3.0)
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
