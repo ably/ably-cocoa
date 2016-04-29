@@ -1600,15 +1600,21 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN14e
-                pending("connection state has been in the DISCONNECTED state for more than the default connectionStateTtl should change the state to SUSPENDED") {
+                it("connection state has been in the DISCONNECTED state for more than the default connectionStateTtl should change the state to SUSPENDED") {
                     let options = AblyTests.commonAppSetup()
                     options.realtimeHost = "10.255.255.1" //non-routable IP address
                     options.disconnectedRetryTimeout = 0.1
                     options.suspendedRetryTimeout = 0.5
                     options.autoConnect = false
                     let expectedTime = 1.0
-                    // FIXME: connectionStateTtl is readonly
-                    //ARTDefault.connectionStateTtl = expectedTime
+
+                    let previousConnectionStateTtl = ARTDefault.connectionStateTtl()
+                    defer { ARTDefault.setConnectionStateTtl(previousConnectionStateTtl) }
+                    ARTDefault.setConnectionStateTtl(expectedTime)
+
+                    let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                    defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                    ARTDefault.setRealtimeRequestTimeout(0.1)
 
                     let client = ARTRealtime(options: options)
                     defer { client.close() }
@@ -1620,7 +1626,7 @@ class RealtimeClientConnection: QuickSpec {
                             let start = NSDate()
                             client.connection.once(.Connecting) { stateChange in
                                 let end = NSDate()
-                                expect(end.timeIntervalSinceDate(start)).to(beCloseTo(options.suspendedRetryTimeout))
+                                expect(end.timeIntervalSinceDate(start)).to(beCloseTo(options.suspendedRetryTimeout, within: 0.5))
                                 done()
                             }
                         }
