@@ -85,9 +85,6 @@
 - (void)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
     request.URL = [NSURL URLWithString:request.URL.relativeString relativeToURL:self.baseUrl];
     
-    NSString *accept = [[_encoders.allValues valueForKeyPath:@"mimeType"] componentsJoinedByString:@","];
-    [request setValue:accept forHTTPHeaderField:@"Accept"];
-
     switch (authOption) {
         case ARTAuthenticationOff:
             [self executeRequest:request completion:callback];
@@ -126,6 +123,10 @@
 
 - (void)executeRequest:(NSMutableURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback fallbacks:(ARTFallback *)fallbacks retries:(NSUInteger)retries {
     __block ARTFallback *blockFallbacks = fallbacks;
+
+    NSString *accept = [[_encoders.allValues valueForKeyPath:@"mimeType"] componentsJoinedByString:@","];
+    [request setValue:accept forHTTPHeaderField:@"Accept"];
+    [request setValue:[ARTDefault version] forHTTPHeaderField:@"X-Ably-Version"];
 
     [self.logger debug:__FILE__ line:__LINE__ message:@"%p executing request %@", self, request];
     [self.httpExecutor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {

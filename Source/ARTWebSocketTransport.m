@@ -19,6 +19,7 @@
 #import "ARTTokenDetails.h"
 #import "ARTStatus.h"
 #import "ARTEncoder.h"
+#import "ARTDefault.h"
 
 enum {
     ARTWsNeverConnected = -1,
@@ -184,6 +185,9 @@ enum {
         NSURLQueryItem *connectionSerialParam = [NSURLQueryItem queryItemWithName:@"connectionSerial" value:[NSString stringWithFormat:@"%lld", (long long)[connectionSerial integerValue]]];
         queryItems = [queryItems arrayByAddingObject:connectionSerialParam];
     }
+
+    NSURLQueryItem *versionParam = [NSURLQueryItem queryItemWithName:@"v" value:[ARTDefault version]];
+    queryItems = [queryItems arrayByAddingObject:versionParam];
 
     // URL
     NSURLComponents *urlComponents = [NSURLComponents componentsWithString:@"/"];

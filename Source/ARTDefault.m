@@ -10,8 +10,10 @@
 
 @implementation ARTDefault
 
-NSString *const DefaultRestHost = @"rest.ably.io";
-NSString *const DefaultRealtimeHost = @"realtime.ably.io";
+NSString *const ARTDefault_restHost = @"rest.ably.io";
+NSString *const ARTDefault_realtimeHost = @"realtime.ably.io";
+NSString *const ARTDefault_version = @"0.8";
+
 
 static int _realtimeRequestTimeout = 10.0;
 
@@ -20,11 +22,15 @@ static int _realtimeRequestTimeout = 10.0;
 }
 
 + (NSString*)restHost {
-    return DefaultRestHost;
+    return ARTDefault_restHost;
 }
 
 + (NSString*)realtimeHost {
-    return DefaultRealtimeHost;
+    return ARTDefault_realtimeHost;
+}
+
++ (NSString *)version {
+    return ARTDefault_version;
 }
 
 + (int)port {
