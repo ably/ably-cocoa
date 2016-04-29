@@ -1522,6 +1522,31 @@ class RealtimeClientConnection: QuickSpec {
                     expect(failures[0].error!.code).to(equal(40142))
                 }
 
+                // RTN14c
+                it("connection attempt should fail if not connected within the default realtime request timeout") {
+                    let options = AblyTests.commonAppSetup()
+                    options.realtimeHost = "10.255.255.1" //non-routable IP address
+                    options.autoConnect = false
+                    let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                    defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                    ARTDefault.setRealtimeRequestTimeout(0.5)
+
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    var start, end: NSDate?
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.on(.Disconnected) { stateChange in
+                            end = NSDate()
+                            expect(stateChange!.reason!.message).to(contain("timed out"))
+                            expect(client.connection.errorReason!).to(beIdenticalTo(stateChange!.reason))
+                            done()
+                        }
+                        client.connect()
+                        start = NSDate()
+                    }
+                    expect(end!.timeIntervalSinceDate(start!)).to(beCloseTo(ARTDefault.realtimeRequestTimeout(), within: 1.5))
+                }
+
                 // RTN14d
                 it("connection attempt fails for any recoverable reason") {
                     let options = AblyTests.commonAppSetup()
