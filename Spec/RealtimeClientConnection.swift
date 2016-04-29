@@ -1529,7 +1529,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.autoConnect = false
                     let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
                     defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
-
+                    ARTDefault.setRealtimeRequestTimeout(0.5)
 
                     let client = ARTRealtime(options: options)
                     defer { client.close() }
