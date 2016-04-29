@@ -440,6 +440,31 @@ class Auth : QuickSpec {
                     
                     expect(ARTRest(options: clientOptions).options.clientId).to(equal("String"))
                 }
+
+                // RSA7a4
+                it("ClientOptions#clientId takes precendence when a clientId value is provided in both ClientOptions#clientId and ClientOptions#defaultTokenParams") {
+                    let options = AblyTests.clientOptions()
+                    options.clientId = "john"
+                    options.authCallback = { tokenParams, completion in
+                        expect(tokenParams.clientId).to(equal(options.clientId))
+                        completion(getTestToken(clientId: tokenParams.clientId), nil)
+                    }
+                    options.defaultTokenParams = ARTTokenParams(clientId: "tester")
+                    let client = ARTRest(options: options)
+                    let channel = client.channels.get("test")
+
+                    expect(client.auth.clientId).to(equal("john"))
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "message") { error in
+                            expect(error).to(beNil())
+                            channel.history() { paginatedResult, error in
+                                let message = paginatedResult!.items.first as! ARTMessage
+                                expect(message.clientId).to(equal("john"))
+                                done()
+                            }
+                        }
+                    }
+                }
                 
                 // RSA12
                 context("Auth#clientId attribute is null") {
