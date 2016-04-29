@@ -344,13 +344,8 @@
     if (_protocolClientId) {
        return _protocolClientId;
     }
-    else if (self.tokenDetails) {
-        // Check wildcard
-        if ([self.tokenDetails.clientId isEqual:@"*"])
-            // Any client
-            return nil;
-        else if (self.tokenDetails.clientId)
-            return self.tokenDetails.clientId;
+    else if (self.tokenDetails && self.tokenDetails.clientId) {
+        return self.tokenDetails.clientId;
     }
     if (self.options) {
         return self.options.clientId;
