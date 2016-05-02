@@ -818,6 +818,13 @@ extension ARTRealtime {
         self.onDisconnected()
     }
 
+    func simulateOSEventReachableInternetConnection() {
+        // TODO
+        // It depends on how the SystemConfiguration Reachablity APIs is used.
+        // Basic demonstration: https://developer.apple.com/library/ios/samplecode/Reachability/Introduction/Intro.html
+        //self.onConnecting()
+    }
+
     func dispose() {
         let names = self.channels.map({ $0.name })
         for name in names {

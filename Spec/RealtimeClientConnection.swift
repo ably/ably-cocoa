@@ -2639,6 +2639,27 @@ class RealtimeClientConnection: QuickSpec {
                             expect(stateChange!.reason).toNot(beNil())
                             done()
                         }
+                        done()
+                    }
+                }
+
+                // RTN20b
+                pending("should immediately attempt to connect if the operating system indicates that the underlying internet connection is now available when DISCONNECTED or SUSPENDED") {
+                    let options = AblyTests.commonAppSetup()
+                    options.disconnectedRetryTimeout = testTimeout + 1.0
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connecting) { stateChange in
+                            expect(stateChange!.reason).to(beNil())
+                            client.simulateOSEventNoInternetConnection()
+                            done()
+                        }
+                    }
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connected) { stateChange in
+                        }
+                        client.simulateOSEventReachableInternetConnection()
                     }
                 }
 
