@@ -48,8 +48,6 @@ enum {
 @property (readonly, strong, nonatomic) ARTLog *logger;
 @property (readonly, strong, nonatomic) ARTAuth *auth;
 @property (readonly, strong, nonatomic) ARTClientOptions *options;
-@property (readonly, strong, nonatomic) NSString *resumeKey;
-@property (readonly, strong, nonatomic) NSNumber *connectionSerial;
 
 @end
 

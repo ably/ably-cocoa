@@ -29,23 +29,6 @@
 #import "ARTConnectionDetails.h"
 #import "ARTStats.h"
 
-@interface ARTRealtime () <ARTRealtimeTransportDelegate> {
-    Class _transportClass;
-    id<ARTRealtimeTransport> _transport;
-}
-
-// State properties
-- (BOOL)shouldSendEvents;
-- (BOOL)shouldQueueEvents;
-- (ARTStatus *)defaultError;
-
-// Message sending
-- (void)sendQueuedMessages;
-- (void)failQueuedMessages:(ARTStatus *)error;
-
-@end
-
-
 #pragma mark - ARTRealtime implementation
 
 @implementation ARTRealtime {
@@ -54,6 +37,8 @@
     __GENERIC(ARTEventEmitter, NSNull *, ARTErrorInfo *) *_pingEventEmitter;
     NSDate *_startedReconnection;
     NSTimeInterval _connectionStateTtl;
+    Class _transportClass;
+    id<ARTRealtimeTransport> _transport;
 }
 
 - (instancetype)initWithKey:(NSString *)key {
@@ -410,11 +395,27 @@
 }
 
 - (void)onDisconnected {
+    [self onDisconnected:nil];
+}
+
+- (void)onDisconnected:(ARTProtocolMessage *)message {
     [self.logger info:@"ARTRealtime disconnected"];
     switch (self.connection.state) {
-        case ARTRealtimeConnected:
-            [self transition:ARTRealtimeDisconnected];
+        case ARTRealtimeConnected: {
+            ARTErrorInfo *error;
+            if (message) {
+                error = message.error;
+            }
+            if (!_renewingToken && error && error.statusCode == 401 && error.code >= 40140 && error.code < 40150 && [self isTokenRenewable]) {
+                [self connectWithRenewedToken];
+                return;
+            }
+            if (error) {
+
+            }
+            [self transition:ARTRealtimeDisconnected withErrorInfo:error];
             break;
+        }
         default:
             NSAssert(false, @"Invalid Realtime state transitioning to Disconnected: expected Connected");
             break;
@@ -457,8 +458,10 @@
 
 - (void)connectWithRenewedToken {
     _renewingToken = true;
-    [self.transport close];
-    [self.transport connectForcingNewToken:true];
+    [_transport close];
+    _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:_transport.resumeKey connectionSerial:_transport.connectionSerial];
+    _transport.delegate = self;
+    [_transport connectForcingNewToken:true];
 }
 
 - (void)onAck:(ARTProtocolMessage *)message {
@@ -678,7 +681,7 @@
             [self onConnected:message];
             break;
         case ARTProtocolMessageDisconnected:
-            [self onDisconnected];
+            [self onDisconnected:message];
             break;
         case ARTProtocolMessageAck:
             [self onAck:message];
