@@ -11,13 +11,13 @@
 
 #import "ARTWebSocketTransport.h"
 #import "CompatibilityMacros.h"
-#import <PocketSocket/PSWebSocket.h>
+#import <SocketRocket/SRWebSocket.h>
 
 ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTWebSocketTransport ()
 
-@property (readwrite, strong, nonatomic, art_nullable) PSWebSocket *websocket;
+@property (readwrite, strong, nonatomic, art_nullable) SRWebSocket *websocket;
 @property (readwrite, strong, nonatomic, art_nullable) NSURL *websocketURL;
 
 - (void)sendWithData:(NSData *)data;

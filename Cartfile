@@ -1,1 +1,1 @@
-github "ably-forks/PocketSocket" ~> 1.0
+github "square/SocketRocket" == 0.5.0
