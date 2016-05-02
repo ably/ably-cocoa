@@ -1110,6 +1110,60 @@ class RealtimeClientChannel: QuickSpec {
 
                 }
 
+                // RTL6d
+                it("Messages are delivered using a single ProtocolMessage where possible by bundling in all messages for that channel") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    let client = AblyTests.newRealtime(options)
+                    defer { client.close() }
+                    let channel = client.channels.get("test")
+
+                    // Test that the initially queued messages are sent together.
+
+                    let messagesSent = 3
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(messagesSent, done: done)
+                        for i in 1...messagesSent {
+                            channel.publish("initial", data: "message\(i)") { error in
+                                expect(error).to(beNil())
+                                partialDone()
+                            }
+                        }
+                        client.connect()
+                    }
+
+                    let transport = client.transport as! TestProxyTransport
+                    let protocolMessages = transport.protocolMessagesSent.filter{ $0.action == .Message }
+                    expect(protocolMessages).to(haveCount(1))
+                    if protocolMessages.count != 1 {
+                        return
+                    }
+                    expect(protocolMessages[0].messages).to(haveCount(messagesSent))
+
+                    // Test that publishing an array of messages sends them together. 
+
+                    // TODO: limit the total number of messages bundled per ProtocolMessage
+                    let maxMessages = 50
+
+                    var messages = [ARTMessage]()
+                    for i in 1...maxMessages {
+                        messages.append(ARTMessage(name: "total number of messages", data: "message\(i)"))
+                    }
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(messages) { error in
+                            expect(error).to(beNil())
+                            let transport = client.transport as! TestProxyTransport
+                            let protocolMessages = transport.protocolMessagesSent.filter{ $0.action == .Message }
+                            expect(protocolMessages).to(haveCount(2))
+                            if protocolMessages.count != 2 {
+                                done(); return
+                            }
+                            expect(protocolMessages[1].messages).to(haveCount(maxMessages))
+                            done()
+                        }
+                    }
+                }
+
                 // RTL6e
                 context("Unidentified clients using Basic Auth") {
 
