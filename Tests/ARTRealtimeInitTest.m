@@ -64,23 +64,6 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-- (void)testInitWithPort {
-    ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
-    __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
-    options.tlsPort = 9998;
-    ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
-    [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
-        ARTRealtimeConnectionState state = stateChange.current;
-        if(state == ARTRealtimeFailed) {
-            [expectation fulfill];
-        }
-        else {
-            XCTAssertEqual(state, ARTRealtimeConnecting);
-        }
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout]+[ARTDefault realtimeRequestTimeout] handler:nil];
-}
-
 - (void)testInitWithKey {
     ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];

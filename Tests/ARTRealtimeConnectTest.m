@@ -264,14 +264,18 @@
         }
         if(state == ARTRealtimeClosed) {
             hasClosed = true;
-            XCTAssertThrows([realtime.connection ping:^(ARTErrorInfo *e) {}]);
-            [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
+            [realtime.connection ping:^(ARTErrorInfo *e) {
+                XCTAssertNotNil(e);
+                [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
+            }];
         }
         if(state == ARTRealtimeFailed) {
             XCTAssertTrue(hasClosed);
-            XCTAssertThrows([realtime.connection ping:^(ARTErrorInfo *e) {}]);
-            [expectation fulfill];
-            [realtime.connection off:listener];
+            [realtime.connection ping:^(ARTErrorInfo *e) {
+                XCTAssertNotNil(e);
+                [expectation fulfill];
+                [realtime.connection off:listener];
+            }];
         }
     }];
     [realtime connect];
