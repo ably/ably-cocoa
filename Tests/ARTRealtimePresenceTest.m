@@ -904,44 +904,6 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-- (void)testPresenceNoSideEffects {
-    ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
-    NSString *channelName = @"channelName";
-    NSString *client1 = @"client1";
-    __weak XCTestExpectation *expectation1 = [self expectationWithDescription:[NSString stringWithFormat:@"%s-1", __FUNCTION__]];
-    options.clientId = [self getClientId];
-    ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
-    ARTRealtimeChannel *channel = [realtime.channels get:channelName];
-    [channel.presence enter:@"hi" callback:^(ARTErrorInfo *errorInfo) {
-        XCTAssertNil(errorInfo);
-        [expectation1 fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    __weak XCTestExpectation *expectation2 = [self expectationWithDescription:[NSString stringWithFormat:@"%s-2", __FUNCTION__]];
-    options.clientId = nil;
-    ARTRealtime *realtime2 = [[ARTRealtime alloc] initWithOptions:options];
-    ARTRealtimeChannel *channel2 = [realtime2.channels get:channelName];
-    [channel2.presence enterClient:client1 data:@"data" callback:^(ARTErrorInfo *errorInfo) {
-        XCTAssertNil(errorInfo);
-        [channel2.presence updateClient:client1 data:@"data2" callback:^(ARTErrorInfo *errorInfo) {
-            XCTAssertNil(errorInfo);
-            [channel2.presence leaveClient:client1 data:@"data3" callback:^(ARTErrorInfo *errorInfo) {
-                XCTAssertNil(errorInfo);
-                [channel.presence get:^(NSArray<ARTPresenceMessage *> *members, ARTErrorInfo *error) {
-                    XCTAssert(!error);
-                    XCTAssertEqual(1, members.count);
-                    //check channel hasnt changed its own state by changing presence of another clientId
-                    XCTAssertEqual(members[0].action, ARTPresenceEnter);
-                    XCTAssertEqualObjects(members[0].clientId, [self getClientId]);
-                    XCTAssertEqualObjects([members[0] data], @"hi");
-                    [expectation2 fulfill];
-                }];
-            }];
-        }];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-}
-
 - (void)testPresenceWithData {
     ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
     NSString *channelName = @"channelName";

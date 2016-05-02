@@ -1006,14 +1006,21 @@ class RealtimeClientConnection: QuickSpec {
                     }
                     let channel = client.channels.get("test")
 
-                    var lastSerial: Int64 = 0
-                    for _ in 1...5 {
-                        channel.publish(nil, data: "message", callback: { errorInfo in
-                            expect(errorInfo).to(beNil())
-                            lastSerial = client.connection.serial
-                        })
+                    // Attach first to avoid bundling publishes in the same ProtocolMessage.
+                    channel.attach()
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone((1...5).count, done: done)
+                        for _ in 1...5 {
+                            channel.publish(nil, data: "message", callback: { errorInfo in
+                                expect(errorInfo).to(beNil())
+                                partialDone()
+                            })
+                        }
                     }
-                    expect(lastSerial).toEventually(equal(4), timeout: testTimeout)
+                    let lastSerial = client.connection.serial
+                    expect(lastSerial).to(equal(4))
 
                     options.recover = client.connection.recoveryKey
 

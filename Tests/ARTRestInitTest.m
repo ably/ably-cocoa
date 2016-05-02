@@ -135,19 +135,6 @@
     XCTAssertThrows([[ARTRest alloc] initWithOptions:[[ARTClientOptions alloc] init]]);
 }
 
-- (void)testRestTime {
-    ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
-    __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
-    ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
-    [rest time:^(NSDate *date, NSError *error) {
-        XCTAssert(!error);
-        // Expect local clock and server clock to be synced within 30 seconds
-        XCTAssertEqualWithAccuracy([date timeIntervalSinceNow], 0.0, 30.0);
-        [expectation fulfill];
-    }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-}
-
 - (void)testDefaultAuthType {
     ARTRest* rest = [[ARTRest alloc] initWithKey:@"key:secret"];
     XCTAssertEqual([rest.auth method], ARTAuthMethodBasic);

@@ -403,7 +403,13 @@ class RestClientPresence: QuickSpec {
                             }
                         }
 
-                        query.start = NSDate()
+                        waitUntil(timeout: testTimeout) { done in
+                            client.time { time, error in
+                                expect(error).to(beNil())
+                                query.start = time
+                                done()
+                            }
+                        }
 
                         waitUntil(timeout: testTimeout) { done in
                             delay(1.5) { done() }
@@ -415,7 +421,13 @@ class RestClientPresence: QuickSpec {
                             }
                         }
 
-                        query.end = NSDate()
+                        waitUntil(timeout: testTimeout) { done in
+                            client.time { time, error in
+                                expect(error).to(beNil())
+                                query.end = time
+                                done()
+                            }
+                        }
 
                         waitUntil(timeout: testTimeout) { done in
                             disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 10, options: options) {

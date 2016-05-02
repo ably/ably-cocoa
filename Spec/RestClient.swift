@@ -221,7 +221,10 @@ class RestClient: QuickSpec {
                         channel.publish(nil, data: "message") { error in
                             let end = NSDate()
                             expect(end.timeIntervalSinceDate(start)).to(beCloseTo(options.httpRequestTimeout, within: 0.1))
-                            expect(error!.message).to(contain("The request timed out"))
+                            expect(error).toNot(beNil())
+                            if let error = error {
+                                expect(error.code).to(equal(-1001))
+                            }
                             done()
                         }
                     }

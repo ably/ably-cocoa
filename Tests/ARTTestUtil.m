@@ -305,7 +305,7 @@
         options = _options;
         [expectation fulfill];
     }];
-    [testCase waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [testCase waitForExpectationsWithTimeout:[ARTTestUtil timeout] * 2 handler:nil];
     return options;
 }
 
