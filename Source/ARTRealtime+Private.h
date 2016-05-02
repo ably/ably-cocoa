@@ -11,6 +11,7 @@
 #import "ARTTypes.h"
 #import "ARTQueuedMessage.h"
 #import "ARTProtocolMessage.h"
+#import "ARTReachability.h"
 
 #import "ARTRealtimeTransport.h"
 
@@ -45,6 +46,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (readwrite, strong, nonatomic) ARTRest *rest;
 @property (readonly, getter=getTransport) id<ARTRealtimeTransport> transport;
+@property (readonly, strong, nonatomic, art_nonnull) id<ARTReachability> reachability;
 @property (readonly, getter=getLogger) ARTLog *logger;
 
 /// Current protocol `msgSerial`. Starts at zero.
@@ -81,8 +83,8 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)onNack:(ARTProtocolMessage *)message;
 - (void)onChannelMessage:(ARTProtocolMessage *)message;
 
-// FIXME: Connection should manage the transport
 - (void)setTransportClass:(Class)transportClass;
+- (void)setReachabilityClass:(Class)reachabilityClass;
 
 - (void)resetEventEmitter;
 
