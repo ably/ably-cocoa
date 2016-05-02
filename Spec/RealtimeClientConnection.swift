@@ -2612,6 +2612,38 @@ class RealtimeClientConnection: QuickSpec {
 
             }
 
+            // RTN20
+            context("Operating System events for network/internet connectivity changes") {
+
+                // RTN20a
+                pending("should immediately change the state to DISCONNECTED if the operating system indicates that the underlying internet connection is no longer available") {
+                    let options = AblyTests.commonAppSetup()
+                    options.disconnectedRetryTimeout = 0.5
+                    let client = ARTRealtime(options: options)
+                    defer { client.close() }
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connecting) { stateChange in
+                            expect(stateChange!.reason).to(beNil())
+                            client.simulateOSEventNoInternetConnection()
+                            done()
+                        }
+                    }
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connected) { stateChange in
+                            client.simulateOSEventNoInternetConnection()
+                            done()
+                        }
+                    }
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connecting) { stateChange in
+                            expect(stateChange!.reason).toNot(beNil())
+                            done()
+                        }
+                    }
+                }
+
+            }
+
         }
     }
 }
