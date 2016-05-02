@@ -19,6 +19,7 @@
 #import "ARTChannelOptions.h"
 #import "ARTPresenceMessage.h"
 #import "ARTWebSocketTransport.h"
+#import "ARTOSReachability.h"
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTPresenceMap.h"
 #import "ARTProtocolMessage.h"
@@ -46,6 +47,7 @@
     NSDate *_startedReconnection;
     NSTimeInterval _connectionStateTtl;
     Class _transportClass;
+    Class _reachabilityClass;
     id<ARTRealtimeTransport> _transport;
     ARTFallback *_fallbacks;
 }
@@ -71,6 +73,7 @@
         _channels = [[ARTRealtimeChannels alloc] initWithRealtime:self];
         _transport = nil;
         _transportClass = [ARTWebSocketTransport class];
+        _reachabilityClass = [ARTOSReachability class];
         _msgSerial = 0;
         _queuedMessages = [NSMutableArray array];
         _pendingMessages = [NSMutableArray array];
@@ -230,6 +233,36 @@
         case ARTRealtimeConnecting: {
             [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
                 [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createWithCode:0 status:ARTStateConnectionFailed message:@"timed out"]];
+            }];
+
+            if (!_reachability) {
+                _reachability = [[_reachabilityClass alloc] initWithLogger:self.logger];
+            }
+            
+            // TODO: Do also for fallback hosts once https://github.com/ably/ably-ios/pull/385
+            // is merged.
+            [_reachability listenForHost:self.options.realtimeHost callback:^(BOOL reachable) {
+                if (reachable) {
+                    switch (_connection.state) {
+                        case ARTRealtimeDisconnected:
+                        case ARTRealtimeSuspended:
+                            [self transition:ARTRealtimeConnecting];
+                        default:
+                            break;
+                    }
+                } else {
+                    switch (_connection.state) {
+                        case ARTRealtimeConnecting:
+                        case ARTRealtimeConnected: {
+                            // TODO: Trigger host fallback behavior.
+                            ARTErrorInfo *unreachable = [ARTErrorInfo createWithCode:-1003 message:@"unreachable host"];
+                            [self transition:ARTRealtimeDisconnected withErrorInfo:unreachable];
+                            break;
+                        }
+                        default:
+                            break;
+                    }
+                }
             }];
 
             if (!_transport) {
@@ -430,26 +463,15 @@
 
 - (void)onDisconnected:(ARTProtocolMessage *)message {
     [self.logger info:@"R:%p ARTRealtime disconnected", self];
-    switch (self.connection.state) {
-        case ARTRealtimeConnected: {
-            ARTErrorInfo *error;
-            if (message) {
-                error = message.error;
-            }
-            if (!_renewingToken && error && error.statusCode == 401 && error.code >= 40140 && error.code < 40150 && [self isTokenRenewable]) {
-                [self connectWithRenewedToken];
-                return;
-            }
-            if (error) {
-
-            }
-            [self transition:ARTRealtimeDisconnected withErrorInfo:error];
-            break;
-        }
-        default:
-            NSAssert(false, @"Invalid Realtime state transitioning to Disconnected: expected Connected");
-            break;
+    ARTErrorInfo *error;
+    if (message) {
+        error = message.error;
     }
+    if (!_renewingToken && error && error.statusCode == 401 && error.code >= 40140 && error.code < 40150 && [self isTokenRenewable]) {
+        [self connectWithRenewedToken];
+        return;
+    }
+    [self transition:ARTRealtimeDisconnected withErrorInfo:error];
 }
 
 - (void)onClosed {
@@ -813,6 +835,10 @@
 
 - (void)setTransportClass:(Class)transportClass {
     _transportClass = transportClass;
+}
+
+- (void)setReachabilityClass:(Class)reachabilityClass {
+    _reachabilityClass = reachabilityClass;
 }
 
 + (NSString *)protocolStr:(ARTProtocolMessageAction) action {

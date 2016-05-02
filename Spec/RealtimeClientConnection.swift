@@ -396,20 +396,24 @@ class RealtimeClientConnection: QuickSpec {
                     // TODO: ConnectionStateChange object
 
                     var errorInfo: ARTErrorInfo?
-                    waitUntil(timeout: testTimeout) { done in
+                    waitUntil(timeout: testTimeout * 1000 ) { done in
                         connection.on { stateChange in
-                            let stateChange = stateChange!
-                            let state = stateChange.current
-                            let reason = stateChange.reason
-                            switch state {
-                            case .Connected:
-                                client.onError(AblyTests.newErrorProtocolMessage())
-                            case .Failed:
-                                errorInfo = reason
-                                done()
-                            default:
-                                break
+                            print("CHANGE \(stateChange!.current)")
+                            if stateChange!.current == .Failed {
+                                print("FAILED")
                             }
+                            // let stateChange = stateChange!
+                            // let state = stateChange.current
+                            // let reason = stateChange.reason
+                            // switch state {
+                            // case .Connected:
+                            //     client.onError(AblyTests.newErrorProtocolMessage())
+                            // case .Failed:
+                            //     errorInfo = reason
+                            //     done()
+                            // default:
+                            //     break
+                            // }
                         }
                     }
 
@@ -2967,50 +2971,110 @@ class RealtimeClientConnection: QuickSpec {
             context("Operating System events for network/internet connectivity changes") {
 
                 // RTN20a
-                pending("should immediately change the state to DISCONNECTED if the operating system indicates that the underlying internet connection is no longer available") {
-                    let options = AblyTests.commonAppSetup()
-                    options.disconnectedRetryTimeout = 0.5
-                    let client = ARTRealtime(options: options)
-                    defer { client.close() }
-                    waitUntil(timeout: testTimeout) { done in
-                        client.connection.once(.Connecting) { stateChange in
-                            expect(stateChange!.reason).to(beNil())
-                            client.simulateOSEventNoInternetConnection()
-                            done()
+                context("should immediately change the state to DISCONNECTED if the operating system indicates that the underlying internet connection is no longer available") {
+                    var client: ARTRealtime!
+
+                    beforeEach {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        client = ARTRealtime(options: options)
+                        client.setReachabilityClass(TestReachability.self)
+                    }
+
+                    afterEach {
+                        client.close()
+                    }
+
+                    it("when CONNECTING") {
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.on { stateChange in
+                                switch stateChange!.current {
+                                case .Connecting:
+                                    expect(stateChange!.reason).to(beNil())
+                                    guard let reachability = client.reachability as? TestReachability else {
+                                        fail("expected test reachability")
+                                        done(); return
+                                    }
+                                    expect(reachability.host).to(equal(client.options.realtimeHost))
+                                    reachability.simulate(reachable: false)
+                                case .Disconnected:
+                                    guard let reason = stateChange!.reason else {
+                                        fail("expected error reason")
+                                        done(); return
+                                    }
+                                    expect(reason.code).to(equal(-1003))
+                                    done()
+                                default:
+                                    break
+                                }
+                            }
+                            client.connect()
                         }
                     }
-                    waitUntil(timeout: testTimeout) { done in
-                        client.connection.once(.Connected) { stateChange in
-                            client.simulateOSEventNoInternetConnection()
-                            done()
+
+                    it("when CONNECTED") {
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.on { stateChange in
+                                switch stateChange!.current {
+                                case .Connected:
+                                    expect(stateChange!.reason).to(beNil())
+                                    guard let reachability = client.reachability as? TestReachability else {
+                                        fail("expected test reachability")
+                                        done(); return
+                                    }
+                                    expect(reachability.host).to(equal(client.options.realtimeHost))
+                                    reachability.simulate(reachable: false)
+                                case .Disconnected:
+                                    guard let reason = stateChange!.reason else {
+                                        fail("expected error reason")
+                                        done(); return
+                                    }
+                                    expect(reason.code).to(equal(-1003))
+                                    done()
+                                default:
+                                    break
+                                }
+                            }
+                            client.connect()
                         }
-                    }
-                    waitUntil(timeout: testTimeout) { done in
-                        client.connection.once(.Connecting) { stateChange in
-                            expect(stateChange!.reason).toNot(beNil())
-                            done()
-                        }
-                        done()
                     }
                 }
 
                 // RTN20b
-                pending("should immediately attempt to connect if the operating system indicates that the underlying internet connection is now available when DISCONNECTED or SUSPENDED") {
+                it("should immediately attempt to connect if the operating system indicates that the underlying internet connection is now available when DISCONNECTED or SUSPENDED") {
+                    var client: ARTRealtime!
                     let options = AblyTests.commonAppSetup()
-                    options.disconnectedRetryTimeout = testTimeout + 1.0
-                    let client = ARTRealtime(options: options)
+                    // Ensure it won't reconnect because of timeouts.
+                    options.disconnectedRetryTimeout = testTimeout + 10
+                    options.suspendedRetryTimeout = testTimeout + 10
+                    options.autoConnect = false
+                    client = ARTRealtime(options: options)
+                    client.setReachabilityClass(TestReachability.self)
                     defer { client.close() }
+
                     waitUntil(timeout: testTimeout) { done in
-                        client.connection.once(.Connecting) { stateChange in
-                            expect(stateChange!.reason).to(beNil())
-                            client.simulateOSEventNoInternetConnection()
-                            done()
+                        client.connection.on { stateChange in
+                            switch stateChange!.current {
+                            case .Connecting:
+                                if stateChange!.previous == .Disconnected {
+                                    client.onSuspended()
+                                } else if stateChange!.previous == .Suspended {
+                                    done()
+                                }
+                            case .Connected:
+                                client.onDisconnected()
+                            case .Disconnected, .Suspended:
+                                guard let reachability = client.reachability as? TestReachability else {
+                                    fail("expected test reachability")
+                                    done(); return
+                                }
+                                expect(reachability.host).to(equal(client.options.realtimeHost))
+                                reachability.simulate(reachable: true)
+                            default:
+                                break
+                            }
                         }
-                    }
-                    waitUntil(timeout: testTimeout) { done in
-                        client.connection.once(.Connected) { stateChange in
-                        }
-                        client.simulateOSEventReachableInternetConnection()
+                        client.connect()
                     }
                 }
 
