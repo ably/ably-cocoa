@@ -190,6 +190,10 @@
         cb([ARTStatus state:ARTStateError info:reason]);
     }];
 
+    for (ARTMessage *msg in pm.messages) {
+        msg.connectionId = _realtime.connection.id;
+    }
+
     [self.realtime send:pm callback:^(ARTStatus *status) {
         [self.realtime.connection off:listener];
         if (cb && !gotFailure) cb(status);
