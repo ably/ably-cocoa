@@ -126,7 +126,7 @@ class RealtimeClientChannel: QuickSpec {
                     expect(emitCounter).to(equal(5))
 
                     if states.count != 5 {
-                        fail("Missing some states")
+                        fail("Expecting 5 states; got \(states)")
                         return
                     }
 

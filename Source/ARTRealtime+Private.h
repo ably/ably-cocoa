@@ -24,7 +24,7 @@ ART_ASSUME_NONNULL_BEGIN
 @interface ARTRealtime () <ARTRealtimeTransportDelegate>
 
 @property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNumber *, ARTConnectionStateChange *) *eventEmitter;
-@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNull *, NSNull *) *reconnectedEventEmitter;
+@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNull *, NSNull *) *connectedEventEmitter;
 
 + (NSString *)protocolStr:(ARTProtocolMessageAction)action;
 
