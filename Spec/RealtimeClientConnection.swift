@@ -393,27 +393,21 @@ class RealtimeClientConnection: QuickSpec {
                     defer { client.close() }
                     let connection = client.connection
 
-                    // TODO: ConnectionStateChange object
-
                     var errorInfo: ARTErrorInfo?
-                    waitUntil(timeout: testTimeout * 1000 ) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         connection.on { stateChange in
-                            print("CHANGE \(stateChange!.current)")
-                            if stateChange!.current == .Failed {
-                                print("FAILED")
+                            let stateChange = stateChange!
+                            let state = stateChange.current
+                            let reason = stateChange.reason
+                            switch state {
+                            case .Connected:
+                                client.onError(AblyTests.newErrorProtocolMessage())
+                            case .Failed:
+                                errorInfo = reason
+                                done()
+                            default:
+                                break
                             }
-                            // let stateChange = stateChange!
-                            // let state = stateChange.current
-                            // let reason = stateChange.reason
-                            // switch state {
-                            // case .Connected:
-                            //     client.onError(AblyTests.newErrorProtocolMessage())
-                            // case .Failed:
-                            //     errorInfo = reason
-                            //     done()
-                            // default:
-                            //     break
-                            // }
                         }
                     }
 
