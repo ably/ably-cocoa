@@ -77,7 +77,7 @@ enum {
 }
 
 - (void)send:(ARTProtocolMessage *)msg {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"%p sending action %lu with %@", self, (unsigned long)msg.action, msg.messages];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"%p %p sending action %lu with %@", self, _delegate, (unsigned long)msg.action, msg.messages];
     NSData *data = [self.encoder encodeProtocolMessage:msg];
     [self sendWithData:data];
 }
@@ -188,7 +188,7 @@ enum {
     urlComponents.queryItems = queryItems;
     NSURL *url = [urlComponents URLRelativeToURL:[options realtimeUrl]];
 
-    [_logger debug:__FILE__ line:__LINE__ message:@"%p url %@", self, url];
+    [_logger debug:__FILE__ line:__LINE__ message:@"%p %p url %@", self, _delegate, url];
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
 
@@ -251,7 +251,7 @@ enum {
 
 - (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
     ARTWebSocketTransport * __weak weakSelf = self;
-    [self.logger debug:__FILE__ line:__LINE__ message:@"%p websocket did disconnect (code %ld) %@", self, (long)code, reason];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"%p %p websocket did disconnect (code %ld) %@", self, _delegate, (long)code, reason];
 
     CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
         ARTWebSocketTransport *s = weakSelf;
@@ -302,7 +302,7 @@ enum {
 
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
     ARTWebSocketTransport * __weak weakSelf = self;
-    [self.logger debug:__FILE__ line:__LINE__ message:@"%p websocket did receive error %@", self, error];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"%p %p websocket did receive error %@", self, _delegate, error];
 
     CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
         ARTWebSocketTransport *s = weakSelf;
@@ -342,7 +342,7 @@ enum {
 
 - (void)webSocketMessageText:(NSString *)text {
     ARTWebSocketTransport * __weak weakSelf = self;
-    [self.logger debug:__FILE__ line:__LINE__ message:@"%p websocket did receive message %@", self, text];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"%p %p websocket did receive message %@", self, _delegate, text];
 
     CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
         NSData *data = nil;
@@ -358,7 +358,7 @@ enum {
 
 - (void)webSocketMessageData:(NSData *)data {
     ARTWebSocketTransport * __weak weakSelf = self;
-    [self.logger debug:__FILE__ line:__LINE__ message:@"%p websocket did receive data %@", self, data];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"%p %p websocket did receive data %@", self, _delegate, data];
 
     CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
         ARTWebSocketTransport *s = weakSelf;
