@@ -2422,17 +2422,12 @@ class RealtimeClientConnection: QuickSpec {
                     expect(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
                 }
 
-            }
-
-            // RTN17
-            context("Host Fallback") {
-
                 // RTN17d
                 context("should use an alternative host when") {
                     for caseTest: NetworkAnswer in [.HostUnreachable,
                                                     .RequestTimeout(timeout: 0.1),
                                                     .HostInternalError(code: 501)] {
-                        pending("\(caseTest)") {
+                        it("\(caseTest)") {
                             let options = ARTClientOptions(key: "xxxx:xxxx")
                             options.autoConnect = false
                             let client = ARTRealtime(options: options)
