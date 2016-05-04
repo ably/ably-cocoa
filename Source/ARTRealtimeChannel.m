@@ -136,6 +136,18 @@
 }
 
 - (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb {
+    switch (_realtime.connection.state) {
+        case ARTRealtimeClosing:
+        case ARTRealtimeClosed: {
+            if (cb) {
+                ARTStatus *status = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:@"channel operation failed (invalid channel state)"]];
+                cb(status);
+            }
+            return;
+        }
+        default:
+            break;
+    }
     switch (self.state) {
         case ARTRealtimeChannelInitialized:
             [self attach];
