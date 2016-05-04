@@ -2355,6 +2355,24 @@ class RealtimeClientConnection: QuickSpec {
 
             // RTN17
             context("Host Fallback") {
+                let expectedHostOrder = [4, 3, 0, 2, 1]
+                let originalARTFallback_getRandomHostIndex = ARTFallback_getRandomHostIndex
+
+                beforeEach {
+                    ARTFallback_getRandomHostIndex = {
+                        let hostIndexes = [1, 1, 0, 0, 0]
+                        var i = 0
+                        return { count in
+                            let hostIndex = hostIndexes[i]
+                            i += 1
+                            return Int32(hostIndex)
+                        }
+                    }()
+                }
+
+                afterEach {
+                    ARTFallback_getRandomHostIndex = originalARTFallback_getRandomHostIndex
+                }
 
                 // RTN17b
                 it("failing connections with custom endpoint should result in an error immediately") {
@@ -2400,7 +2418,7 @@ class RealtimeClientConnection: QuickSpec {
                     var urlConnections = [NSURL]()
                     TestProxyTransport.networkConnectEvent = { url in
                         urlConnections.append(url)
-                        if urlConnections.count == 2 {
+                        if urlConnections.count == 1 {
                             TestProxyTransport.network = nil
                         }
                     }
@@ -2440,7 +2458,7 @@ class RealtimeClientConnection: QuickSpec {
                             var urlConnections = [NSURL]()
                             TestProxyTransport.networkConnectEvent = { url in
                                 urlConnections.append(url)
-                                if urlConnections.count == 2 {
+                                if urlConnections.count == 1 {
                                     TestProxyTransport.network = nil
                                 }
                             }
@@ -2490,7 +2508,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN17a
-                pending("every connection is first attempted to the primary host realtime.ably.io") {
+                it("every connection is first attempted to the primary host realtime.ably.io") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
@@ -2530,23 +2548,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN17c
-                pending("should retry hosts in random order after checkin if an internet connection is available") {
-                    let expectedHostOrder = [4, 3, 0, 2, 1]
-
-                    let originalARTFallback_getRandomHostIndex = ARTFallback_getRandomHostIndex
-                    ARTFallback_getRandomHostIndex = {
-                        let hostIndexes = [1, 1, 0, 0, 0]
-                        var i = 0
-                        return { count in
-                            let hostIndex = hostIndexes[i]
-                            i += 1
-                            return Int32(hostIndex)
-                        }
-                    }()
-                    defer {
-                        ARTFallback_getRandomHostIndex = originalARTFallback_getRandomHostIndex
-                    }
-
+                it("should retry hosts in random order after checkin if an internet connection is available") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
@@ -2587,11 +2589,10 @@ class RealtimeClientConnection: QuickSpec {
 
 
                 // RTN17e
-                pending("client is connected to a fallback host endpoint should do HTTP requests to the same data centre") {
+                it("client is connected to a fallback host endpoint should do HTTP requests to the same data centre") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
-                    let channel = client.channels.get("test")
 
                     let testHttpExecutor = TestProxyHTTPExecutor()
                     client.rest.httpExecutor = testHttpExecutor
@@ -2600,21 +2601,25 @@ class RealtimeClientConnection: QuickSpec {
                     TestProxyTransport.network = .HostUnreachable
                     defer { TestProxyTransport.network = nil }
 
-                    client.connect()
-                    defer { client.close() }
-
-                    waitUntil(timeout: testTimeout) { done in
-                        channel.publish(nil, data: "message") { error in
-                            expect(error).to(beNil())
-                            done()
+                    var urlConnections = [NSURL]()
+                    TestProxyTransport.networkConnectEvent = { url in
+                        urlConnections.append(url)
+                        if urlConnections.count == 2 {
+                            TestProxyTransport.network = nil
+                            (client.transport as! TestProxyTransport).simulateTransportSuccess()
                         }
                     }
 
-                    let transport = client.transport as! TestProxyTransport
-                    expect(NSRegularExpression.match(transport.lastUrl!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+                    client.connect()
 
-                    let tokenUrlRequest = testHttpExecutor.requests[0].URL!
-                    expect(NSRegularExpression.match(tokenUrlRequest.absoluteString, pattern: "//[a-e].ably-rest.com")).to(beTrue())
+                    expect(urlConnections).toEventually(haveCount(2), timeout: testTimeout)
+
+                    expect(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+
+                    client.time { _ in }
+
+                    let timeRequestUrl = testHttpExecutor.requests.last!.URL!
+                    expect(timeRequestUrl.host).to(equal(urlConnections[1].host))
                 }
 
             }

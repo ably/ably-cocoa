@@ -36,18 +36,6 @@ enum {
     ARTWsTlsError = 1015
 };
 
-@interface ARTWebSocketTransport () <SRWebSocketDelegate>
-
-@property (readonly, assign, nonatomic) CFRunLoopRef rl;
-
-// From RestClient
-@property (readwrite, strong, nonatomic) id<ARTEncoder> encoder;
-@property (readonly, strong, nonatomic) ARTLog *logger;
-@property (readonly, strong, nonatomic) ARTAuth *auth;
-@property (readonly, strong, nonatomic) ARTClientOptions *options;
-
-@end
-
 @implementation ARTWebSocketTransport
 
 // FIXME: Realtime sould be extending from RestClient
@@ -230,7 +218,7 @@ enum {
     self.websocket = nil;
 }
 
-- (void)changeHost:(NSString *)host {
+- (void)setHost:(NSString *)host {
     self.options.realtimeHost = host;
 }
 

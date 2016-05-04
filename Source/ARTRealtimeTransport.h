@@ -37,6 +37,8 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportErrorType) {
 - (instancetype)initWithError:(NSError *)error type:(ARTRealtimeTransportErrorType)type url:(NSURL *)url;
 - (instancetype)initWithError:(NSError *)error badResponseCode:(NSInteger)badResponseCode url:(NSURL *)url;
 
+- (NSString *)description;
+
 @end
 
 @protocol ARTRealtimeTransportDelegate
@@ -71,7 +73,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportErrorType) {
 - (void)sendPing;
 - (void)close;
 - (void)abort:(ARTStatus *)reason;
-- (void)changeHost:(NSString *)host;
+- (void)setHost:(NSString *)host;
 
 @end
 

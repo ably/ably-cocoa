@@ -22,7 +22,7 @@
 #import "ARTPresence.h"
 #import "ARTPresenceMessage.h"
 #import "ARTHttp.h"
-#import "ARTClientOptions.h"
+#import "ARTClientOptions+Private.h"
 #import "ARTDefault.h"
 #import "ARTStats.h"
 #import "ARTFallback.h"
@@ -41,7 +41,6 @@
     if (self) {
         NSAssert(options, @"ARTRest: No options provided");
         _options = [options copy];
-        _baseUrl = [options restUrl];
 
         if (options.logHandler) {
             _logger = options.logHandler;
@@ -154,7 +153,7 @@
             }
         }
         if (retries < _options.httpMaxRetryCount && [self shouldRetryWithFallback:request response:response error:error]) {
-            if (!blockFallbacks && [request.URL.host isEqualToString:[ARTDefault restHost]]) {
+            if (!blockFallbacks && [request.URL.host isEqualToString:(_prioritizedHost ? _prioritizedHost : [ARTDefault restHost])]) {
                 blockFallbacks = [[ARTFallback alloc] init];
             }
             if (blockFallbacks) {
@@ -235,9 +234,17 @@
 }
 
 - (id<ARTCancellable>)internetIsUp:(void (^)(bool isUp)) cb {
-    [self.http makeRequestWithMethod:@"GET" url:[NSURL URLWithString:@"http://internet-up.ably-realtime.com/is-the-internet-up.txt"] headers:nil body:nil callback:^(ARTHttpResponse *response) {
-        NSString * str = [[NSString alloc] initWithData:response.body encoding:NSUTF8StringEncoding];
-        cb(response.status == 200 && [str isEqualToString:@"yes\n"]);
+    NSURL *requestUrl = [NSURL URLWithString:@"http://internet-up.ably-realtime.com/is-the-internet-up.txt"];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
+    request.HTTPMethod = @"GET";
+
+    [self executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        if (error) {
+            cb(false);
+            return;
+        }
+        NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        cb(response.statusCode == 200 && str && [str isEqualToString:@"yes\n"]);
     }];
     return nil;
 }
@@ -279,6 +286,14 @@
 
 - (id<ARTEncoder>)defaultEncoder {
     return self.encoders[self.defaultEncoding];
+}
+
+- (NSURL *)getBaseUrl {
+    NSURLComponents *components = [_options restUrlComponents];
+    if (_prioritizedHost) {
+        components.host = _prioritizedHost;
+    }
+    return components.URL;
 }
 
 @end

@@ -40,7 +40,7 @@ class RestClient: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     
                     let client = ARTRest(key: options.key!)
-                    client.baseUrl = options.restUrl()
+                    client.prioritizedHost = options.restHost
 
                     let publishTask = publishTestMessage(client)
 

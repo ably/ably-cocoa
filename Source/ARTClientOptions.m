@@ -55,12 +55,16 @@ NSString *ARTDefaultEnvironment = nil;
     return _environment ? [NSString stringWithFormat:@"%@-%@", _environment, [ARTDefault realtimeHost]] : [ARTDefault realtimeHost];
 }
 
-- (NSURL*)restUrl {
+- (NSURLComponents *)restUrlComponents {
     NSURLComponents *components = [[NSURLComponents alloc] init];
     components.scheme = self.tls ? @"https" : @"http";
     components.host = self.restHost;
     components.port = [NSNumber numberWithInteger:(self.tls ? self.tlsPort : self.port)];
-    return components.URL;
+    return components;
+}
+
+- (NSURL*)restUrl {
+    return [self restUrlComponents].URL;
 }
 
 - (NSURL*)realtimeUrl {
@@ -77,8 +81,8 @@ NSString *ARTDefaultEnvironment = nil;
     options.clientId = self.clientId;
     options.port = self.port;
     options.tlsPort = self.tlsPort;
-    if (options.hasCustomRestHost) options.restHost = self.restHost;
-    if (options.hasCustomRealtimeHost) options.realtimeHost = self.realtimeHost;
+    if (self.hasCustomRestHost) options.restHost = self.restHost;
+    if (self.hasCustomRealtimeHost) options.realtimeHost = self.realtimeHost;
     options.queueMessages = self.queueMessages;
     options.echoMessages = self.echoMessages;
     options.recover = self.recover;
