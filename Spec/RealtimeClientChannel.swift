@@ -1114,22 +1114,22 @@ class RealtimeClientChannel: QuickSpec {
                 context("Connection state conditions") {
 
                     // RTL6c1
-                    it("if the connection is CONNECTED then the messages should be published immediately") {
-                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    it("if the connection is CONNECTED and the channel is ATTACHED then the messages should be published immediately") {
+                        let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
                         defer { client.close() }
                         let channel = client.channels.get("test")
-                        expect(client.options.queueMessages).to(beTrue())
+                        channel.attach()
+
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+                        expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+
                         waitUntil(timeout: testTimeout) { done in
-                            client.connection.once(.Connecting) { _ in
-                                expect(channel.queuedMessages).to(haveCount(1))
-                            }
                             channel.publish(nil, data: "message") { error in
                                 expect(error).to(beNil())
-                                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
                                 done()
                             }
+                            expect((client.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .Message })).to(haveCount(1))
                         }
-                        expect(channel.queuedMessages).to(haveCount(0))
                     }
 
                     // RTL6c2
