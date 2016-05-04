@@ -1133,31 +1133,69 @@ class RealtimeClientChannel: QuickSpec {
                     }
 
                     // RTL6c2
-                    it("if the connection is CONNECTING or DISCONNECTED then the message should be queued and delivered as soon as the connection state returns to CONNECTED") {
+                    context("the message should be queued and delivered as soon as the connection state returns to CONNECTED if the connection is") {
                         let options = AblyTests.commonAppSetup()
-                        options.disconnectedRetryTimeout = 1.0
-                        let client = ARTRealtime(options: options)
-                        defer { client.close() }
-                        let channel = client.channels.get("test")
-                        expect(client.options.queueMessages).to(beTrue())
+                        options.disconnectedRetryTimeout = 0.3
+                        options.autoConnect = false
+                        var client: ARTRealtime!
+                        var channel: ARTRealtimeChannel!
 
-                        waitUntil(timeout: testTimeout) { done in
-                            client.connection.once(.Connected) { _ in
-                                client.onDisconnected()
-                                done()
-                            }
+                        beforeEach {
+                            client = ARTRealtime(options: options)
+                            channel = client.channels.get("test")
+                            expect(client.options.queueMessages).to(beTrue())
                         }
-                        waitUntil(timeout: testTimeout) { done in
+                        afterEach { client.close() }
+
+                        func publish(done: () -> ()) {
                             channel.publish(nil, data: "message") { error in
                                 expect(error).to(beNil())
                                 expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
                                 done()
                             }
-                            client.connection.once(.Connecting) { _ in
+                        }
+
+                        it("INITIALIZED") {
+                            waitUntil(timeout: testTimeout) { done in
+                                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Initialized))
+                                publish(done)
+                                client.connect()
                                 expect(channel.queuedMessages).to(haveCount(1))
                             }
                         }
-                        expect(channel.queuedMessages).to(haveCount(0))
+
+                        it("CONNECTING") {
+                            waitUntil(timeout: testTimeout) { done in
+                                client.connect()
+                                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connecting))
+                                publish(done)
+                                expect(channel.queuedMessages).to(haveCount(1))
+                            }
+                        }
+
+                        it("DISCONNECTED") {
+                            client.connect()
+                            expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                            client.onDisconnected()
+
+                            waitUntil(timeout: testTimeout) { done in
+                                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Disconnected))
+                                publish(done)
+                                expect(channel.queuedMessages).to(haveCount(1))
+                            }
+                        }
+
+                        it("ATTTACHING") {
+                            client.connect()
+                            expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.attach()
+                                expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
+                                publish(done)
+                                expect(channel.queuedMessages).to(haveCount(1))
+                            }
+                        }
                     }
 
                     // RTL6c3
