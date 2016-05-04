@@ -228,6 +228,10 @@ enum {
     self.options.realtimeHost = host;
 }
 
+- (NSString *)host {
+    return self.options.realtimeHost;
+}
+
 #pragma mark - SRWebSocketDelegate
 
 - (void)webSocketDidOpen:(SRWebSocket *)websocket {

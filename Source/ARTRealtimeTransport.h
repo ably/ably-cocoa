@@ -73,6 +73,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportErrorType) {
 - (void)sendPing;
 - (void)close;
 - (void)abort:(ARTStatus *)reason;
+- (NSString *)host;
 - (void)setHost:(NSString *)host;
 
 @end
