@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "CompatibilityMacros.h"
 
 @protocol ARTRealtimeTransport;
 
@@ -17,6 +18,26 @@
 @class ARTRest;
 
 ART_ASSUME_NONNULL_BEGIN
+
+typedef NS_ENUM(NSUInteger, ARTRealtimeTransportErrorType) {
+    ARTRealtimeTransportErrorTypeHostUnreachable,
+    ARTRealtimeTransportErrorTypeTimeout,
+    ARTRealtimeTransportErrorTypeBadResponse,
+    ARTRealtimeTransportErrorTypeAuth,
+    ARTRealtimeTransportErrorTypeOther
+};
+
+@interface ARTRealtimeTransportError : NSObject
+
+@property (nonatomic, strong) NSError *error;
+@property (nonatomic, assign) ARTRealtimeTransportErrorType type;
+@property (nonatomic, assign) NSInteger badResponseCode;
+@property (nonatomic, strong) NSURL *url;
+
+- (instancetype)initWithError:(NSError *)error type:(ARTRealtimeTransportErrorType)type url:(NSURL *)url;
+- (instancetype)initWithError:(NSError *)error badResponseCode:(NSInteger)badResponseCode url:(NSURL *)url;
+
+@end
 
 @protocol ARTRealtimeTransportDelegate
 
@@ -30,7 +51,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)realtimeTransportNeverConnected:(id<ARTRealtimeTransport>)transport;
 - (void)realtimeTransportRefused:(id<ARTRealtimeTransport>)transport;
 - (void)realtimeTransportTooBig:(id<ARTRealtimeTransport>)transport;
-- (void)realtimeTransportFailed:(id<ARTRealtimeTransport>)transport withErrorInfo:(ARTErrorInfo *)errorInfo;
+- (void)realtimeTransportFailed:(id<ARTRealtimeTransport>)transport withError:(ARTRealtimeTransportError *)error;
 
 @end
 
@@ -50,6 +71,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)sendPing;
 - (void)close;
 - (void)abort:(ARTStatus *)reason;
+- (void)changeHost:(NSString *)host;
 
 @end
 

@@ -11,7 +11,7 @@ import XCTest
 import Quick
 import Nimble
 import SwiftyJSON
-import SwiftWebSocket
+import SocketRocket
 
 import AblyRealtime.Private
 
@@ -512,7 +512,6 @@ enum NetworkAnswer {
     case RequestTimeout(timeout: NSTimeInterval)
     case HostInternalError(code: Int)
     case Host400BadRequest
-    case Custom(response: NSHTTPURLResponse?, data: NSData?, error: NSError?)
 }
 
 class MockHTTP: ARTHttp {
@@ -538,8 +537,6 @@ class MockHTTP: ARTHttp {
                 callback?(NSHTTPURLResponse(URL: NSURL(string: "http://ios.test.suite")!, statusCode: code, HTTPVersion: nil, headerFields: nil), nil, nil)
             case .Host400BadRequest:
                 callback?(NSHTTPURLResponse(URL: NSURL(string: "http://ios.test.suite")!, statusCode: 400, HTTPVersion: nil, headerFields: nil), nil, nil)
-            case .Custom(let response, let data, let error):
-                callback?(response, data, error)
             }
         }
     }
@@ -605,9 +602,45 @@ class TestProxyTransport: ARTWebSocketTransport {
     var actionsIgnored = [ARTProtocolMessageAction]()
     var ignoreSends = false
 
+    static var network: NetworkAnswer? = nil
+    static var networkConnectEvent: Optional<(NSURL)->()> = nil
+
+    var savedWebsocket: SRWebSocket!
+
+    override func connect() {
+        super.connect()
+
+        guard let network = TestProxyTransport.network else { return }
+        func performConnectError(secondsForDelay: NSTimeInterval, error: ARTRealtimeTransportError) {
+            delay(secondsForDelay) {
+                self.websocket = self.savedWebsocket
+                self.delegate!.realtimeTransportFailed(self, withError: error)
+            }
+        }
+        let error = NSError.init(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "TestProxyTransport error"])
+        switch network {
+        case .NoInternet, .HostUnreachable:
+            performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, type: .HostUnreachable, url: lastUrl!))
+        case .RequestTimeout(let timeout):
+            performConnectError(0.1 + timeout, error: ARTRealtimeTransportError.init(error: error, type: .Timeout, url: lastUrl!))
+        case .HostInternalError(let code):
+            performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, badResponseCode: code, url: lastUrl!))
+        case .Host400BadRequest:
+            performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, badResponseCode: 400, url: lastUrl!))
+        }
+
+        if let performNetworkConnect = TestProxyTransport.networkConnectEvent {
+            performNetworkConnect(lastUrl!)
+        }
+    }
+
     override func setupWebSocket(params: [NSURLQueryItem], withOptions options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?) -> NSURL {
         let url = super.setupWebSocket(params, withOptions: options, resumeKey: resumeKey, connectionSerial: connectionSerial)
         lastUrl = url
+        if TestProxyTransport.network != nil {
+            self.savedWebsocket = self.websocket
+            self.websocket = nil
+        }
         return url
     }
 
@@ -840,20 +873,20 @@ extension ARTWebSocketTransport {
     func simulateIncomingNormalClose() {
         let CLOSE_NORMAL = 1000
         self.closing = true
-        let webSocketDelegate = self as! WebSocketDelegate
-        webSocketDelegate.webSocketClose(CLOSE_NORMAL, reason: "", wasClean: true)
+        let webSocketDelegate = self as! SRWebSocketDelegate
+        webSocketDelegate.webSocket!(nil, didCloseWithCode: CLOSE_NORMAL, reason: "", wasClean: true)
     }
 
     func simulateIncomingAbruptlyClose() {
         let CLOSE_ABNORMAL = 1006
-        let webSocketDelegate = self as! WebSocketDelegate
-        webSocketDelegate.webSocketClose(CLOSE_ABNORMAL, reason: "connection was closed abnormally", wasClean: false)
+        let webSocketDelegate = self as! SRWebSocketDelegate
+        webSocketDelegate.webSocket!(nil, didCloseWithCode: CLOSE_ABNORMAL, reason: "connection was closed abnormally", wasClean: false)
     }
 
     func simulateIncomingError() {
         let error = NSError(domain: ARTAblyErrorDomain, code: 0, userInfo: [NSLocalizedDescriptionKey:"Fail test"])
-        let webSocketDelegate = self as! WebSocketDelegate
-        webSocketDelegate.webSocketError(error)
+        let webSocketDelegate = self as! SRWebSocketDelegate
+        webSocketDelegate.webSocket!(nil, didFailWithError: error)
     }
 }
 

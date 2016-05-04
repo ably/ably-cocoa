@@ -39,4 +39,10 @@
     } error:nil];
 }
 
+- (id<AspectToken>)testSuite_replaceMethod:(SEL)selector code:(void (^)(void))block {
+    return [self aspect_hookSelector:selector withOptions:AspectPositionInstead usingBlock:^(id<AspectInfo> info) {
+        block();
+    } error:nil];
+}
+
 @end

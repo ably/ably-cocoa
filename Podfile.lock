@@ -2,21 +2,21 @@ PODS:
   - Aspects (1.4.1)
   - Nimble (4.0.0)
   - Quick (0.9.1)
-  - SwiftWebSocket (2.6.0)
+  - SocketRocket (0.5.0)
   - SwiftyJSON (2.3.1)
 
 DEPENDENCIES:
   - Aspects
   - Nimble (= 4.0.0)
   - Quick (= 0.9.1)
-  - SwiftWebSocket (~> 2.6)
+  - SocketRocket (= 0.5.0)
   - SwiftyJSON (= 2.3.1)
 
 SPEC CHECKSUMS:
   Aspects: 7595ba96a6727a58ebcbfc954497fc5d2fdde546
   Nimble: 72bcc3e2f02242e6bfaaf8d9412ca7bfe3d8b417
   Quick: a5221fc21788b6aeda934805e68b061839bc3165
-  SwiftWebSocket: c24c0dde0b33852f478ffb54226408bfe703b26b
+  SocketRocket: 2c51efccd2d73c99a923407ca4b06e7e9da95dbf
   SwiftyJSON: 592b53bee5ef3dd9b3bebc6b9cb7ee35426ae8c3
 
 COCOAPODS: 0.39.0

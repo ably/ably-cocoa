@@ -562,13 +562,15 @@
         [_attachedEventEmitter emit:[NSNull null] with:errorInfo];
     }];
 
-    ARTEventListener *reconnectedListener = [self.realtime.reconnectedEventEmitter once:^(NSNull *n) {
-        // Disconnected and connected while attaching, re-attach.
-        [self attachAfterChecks:callback];
-    }];
-    [_attachedEventEmitter once:^(ARTErrorInfo *err) {
-        [self.realtime.reconnectedEventEmitter off:reconnectedListener];
-    }];
+    if (![self.realtime shouldQueueEvents]) {
+        ARTEventListener *reconnectedListener = [self.realtime.connectedEventEmitter once:^(NSNull *n) {
+            // Disconnected and connected while attaching, re-attach.
+            [self attachAfterChecks:callback];
+        }];
+        [_attachedEventEmitter once:^(ARTErrorInfo *err) {
+            [self.realtime.connectedEventEmitter off:reconnectedListener];
+        }];
+    }
 }
 
 - (void)detach:(void (^)(ARTErrorInfo * _Nullable))callback {
@@ -624,13 +626,15 @@
         [_detachedEventEmitter emit:[NSNull null] with:errorInfo];
     }];
 
-    ARTEventListener *reconnectedListener = [self.realtime.reconnectedEventEmitter once:^(NSNull *n) {
-        // Disconnected and connected while attaching, re-detach.
-        [self detachAfterChecks:callback];
-    }];
-    [_detachedEventEmitter once:^(ARTErrorInfo *err) {
-        [self.realtime.reconnectedEventEmitter off:reconnectedListener];
-    }];
+    if (![self.realtime shouldQueueEvents]) {
+        ARTEventListener *reconnectedListener = [self.realtime.connectedEventEmitter once:^(NSNull *n) {
+            // Disconnected and connected while attaching, re-detach.
+            [self detachAfterChecks:callback];
+        }];
+        [_detachedEventEmitter once:^(ARTErrorInfo *err) {
+            [self.realtime.connectedEventEmitter off:reconnectedListener];
+        }];
+    }
 }
 
 - (void)detach {

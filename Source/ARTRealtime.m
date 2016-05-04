@@ -28,6 +28,14 @@
 #import "ARTConnection+Private.h"
 #import "ARTConnectionDetails.h"
 #import "ARTStats.h"
+#import "ARTRealtimeTransport.h"
+#import "ARTFallback.h"
+
+@interface ARTConnectionStateChange ()
+
+- (void)setRetryIn:(NSTimeInterval)retryIn;
+
+@end
 
 #pragma mark - ARTRealtime implementation
 
@@ -39,6 +47,7 @@
     NSTimeInterval _connectionStateTtl;
     Class _transportClass;
     id<ARTRealtimeTransport> _transport;
+    ARTFallback *_fallbacks;
 }
 
 - (instancetype)initWithKey:(NSString *)key {
@@ -56,7 +65,7 @@
         
         _rest = [[ARTRest alloc] initWithOptions:options];
         _eventEmitter = [[ARTEventEmitter alloc] init];
-        _reconnectedEventEmitter = [[ARTEventEmitter alloc] init];
+        _connectedEventEmitter = [[ARTEventEmitter alloc] init];
         _pingEventEmitter = [[ARTEventEmitter alloc] init];
         _channels = [[ARTRealtimeChannels alloc] initWithRealtime:self];
         _transport = nil;
@@ -69,7 +78,7 @@
         _connectionStateTtl = [ARTDefault connectionStateTtl];
         [self.connection setState:ARTRealtimeInitialized];
 
-        [self.logger debug:__FILE__ line:__LINE__ message:@"initialized %p", self];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"%p initialized %p", self, self];
         
         if (options.autoConnect) {
             [self connect];
@@ -160,13 +169,14 @@
         cb([ARTErrorInfo createWithCode:0 status:ARTStateConnectionFailed message:[NSString stringWithFormat:@"Can't ping a %@ connection", ARTRealtimeStateToStr(self.connection.state)]]);
         return;
     case ARTRealtimeConnecting:
-    case ARTRealtimeDisconnected: {
-        [_connection once:^(ARTConnectionStateChange *change) {
-            [self ping:cb];
-        }];
-        return;
-    }
+    case ARTRealtimeDisconnected:
     case ARTRealtimeConnected:
+        if (![self shouldSendEvents]) {
+            [_connectedEventEmitter once:^(NSNull *n) {
+                [self ping:cb];
+            }];
+            return;
+        }
         [_pingEventEmitter timed:[_pingEventEmitter once:cb] deadline:[ARTDefault realtimeRequestTimeout] onTimeout:^{
             cb([ARTErrorInfo createWithCode:0 status:ARTStateConnectionFailed message:@"timed out"]);
         }];
@@ -193,13 +203,21 @@
 - (void)transition:(ARTRealtimeConnectionState)state withErrorInfo:(ARTErrorInfo *)errorInfo {
     [self.logger debug:__FILE__ line:__LINE__ message:@"%p transition to %@ requested", self, ARTRealtimeStateToStr(state)];
 
-    ARTRealtimeConnectionState previousState = self.connection.state;
+    ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:state previous:self.connection.state reason:errorInfo retryIn:0];
     [self.connection setState:state];
 
-    ARTStatus *status = nil;
-    NSTimeInterval retryIn = 0;
+    [self transitionSideEffects:stateChange];
 
-    switch (self.connection.state) {
+    if (errorInfo != nil) {
+        [self.connection setErrorReason:errorInfo];
+    }
+    [self.connection emit:state with:stateChange];
+}
+
+- (void)transitionSideEffects:(ARTConnectionStateChange *)stateChange {
+    ARTStatus *status = nil;
+
+    switch (stateChange.current) {
         case ARTRealtimeConnecting: {
             [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
                 [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createWithCode:0 status:ARTStateConnectionFailed message:@"timed out"]];
@@ -208,7 +226,7 @@
             if (!_transport) {
                 NSString *resumeKey = nil;
                 NSNumber *connectionSerial = nil;
-                if (previousState == ARTRealtimeFailed || previousState == ARTRealtimeDisconnected) {
+                if (stateChange.previous == ARTRealtimeFailed || stateChange.previous == ARTRealtimeDisconnected) {
                     resumeKey = self.connection.key;
                     connectionSerial = [NSNumber numberWithLongLong:self.connection.serial];
                     _resuming = true;
@@ -216,20 +234,6 @@
                 _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:resumeKey connectionSerial:connectionSerial];
                 _transport.delegate = self;
                 [_transport connect];
-            }
-
-            if (previousState == ARTRealtimeDisconnected) {
-                __GENERIC(NSArray, ARTQueuedMessage *) *pending = self.pendingMessages;
-                _pendingMessages = [[NSMutableArray alloc] init];
-                for (ARTQueuedMessage *queued in pending) {
-                    [self send:queued.msg callback:^(ARTStatus *__art_nonnull status) {
-                        for (id cb in queued.cbs) {
-                            ((void(^)(ARTStatus *__art_nonnull))cb)(status);
-                        }
-                    }];
-                }
-
-                [_reconnectedEventEmitter emit:[NSNull null] with:nil];
             }
 
             break;
@@ -249,7 +253,7 @@
             _transport = nil;
             break;
         case ARTRealtimeFailed:
-            status = [ARTStatus state:ARTStateConnectionFailed info:errorInfo];
+            status = [ARTStatus state:ARTStateConnectionFailed info:stateChange.reason];
             [self.transport abort:status];
             self.transport.delegate = nil;
             _transport = nil;
@@ -264,16 +268,16 @@
                 }];
             }
             if ([[NSDate date] timeIntervalSinceDate:_startedReconnection] >= _connectionStateTtl) {
-                [self transition:ARTRealtimeSuspended withErrorInfo:errorInfo];
+                [self transition:ARTRealtimeSuspended withErrorInfo:stateChange.reason];
                 return;
             }
 
             [self.transport close];
             self.transport.delegate = nil;
             _transport = nil;
-            retryIn = self.options.disconnectedRetryTimeout;
+            [stateChange setRetryIn:self.options.disconnectedRetryTimeout];
 
-            [self unlessStateChangesBefore:retryIn do:^{
+            [self unlessStateChangesBefore:stateChange.retryIn do:^{
                 [self transition:ARTRealtimeConnecting];
             }];
 
@@ -283,14 +287,25 @@
             [self.transport close];
             self.transport.delegate = nil;
             _transport = nil;
-            retryIn = self.options.suspendedRetryTimeout;
-            [self unlessStateChangesBefore:retryIn do:^{
+            [stateChange setRetryIn:self.options.suspendedRetryTimeout];
+            [self unlessStateChangesBefore:stateChange.retryIn do:^{
                 [self transition:ARTRealtimeConnecting];
             }];
             break;
         }
-        case ARTRealtimeConnected:
+        case ARTRealtimeConnected: {
+            __GENERIC(NSArray, ARTQueuedMessage *) *pending = self.pendingMessages;
+            _pendingMessages = [[NSMutableArray alloc] init];
+            for (ARTQueuedMessage *queued in pending) {
+                [self send:queued.msg callback:^(ARTStatus *__art_nonnull status) {
+                    for (id cb in queued.cbs) {
+                        ((void(^)(ARTStatus *__art_nonnull))cb)(status);
+                    }
+                }];
+            }
+            [_connectedEventEmitter emit:[NSNull null] with:nil];
             break;
+        }
         case ARTRealtimeInitialized:
             break;
     }
@@ -306,13 +321,13 @@
         // For every Channel
         for (ARTRealtimeChannel* channel in self.channels) {
             if (channel.state == ARTRealtimeChannelInitialized || channel.state == ARTRealtimeChannelAttaching || channel.state == ARTRealtimeChannelAttached || channel.state == ARTRealtimeChannelFailed) {
-                if(state == ARTRealtimeClosing) {
+                if(stateChange.current == ARTRealtimeClosing) {
                     //do nothing. Closed state is coming.
                 }
-                else if(state == ARTRealtimeClosed) {
+                else if(stateChange.current == ARTRealtimeClosed) {
                     [channel detachChannel:[ARTStatus state:ARTStateOk]];
                 }
-                else if(state == ARTRealtimeSuspended) {
+                else if(stateChange.current == ARTRealtimeSuspended) {
                     [channel detachChannel:channelStatus];
                 }
                 else {
@@ -324,11 +339,6 @@
             }
         }
     }
-
-    if (errorInfo != nil) {
-        [self.connection setErrorReason:errorInfo];
-    }
-    [self.connection emit:state with:[[ARTConnectionStateChange alloc] initWithCurrent:state previous:previousState reason:errorInfo retryIn:retryIn]];
 }
 
 - (void)unlessStateChangesBefore:(NSTimeInterval)deadline do:(void(^)())callback {
@@ -342,10 +352,10 @@
 }
 
 - (void)onHeartbeat {
-    [self.logger verbose:@"ARTRealtime heartbeat received"];
+    [self.logger verbose:@"%p ARTRealtime heartbeat received", self];
     if(self.connection.state != ARTRealtimeConnected) {
         NSString *msg = [NSString stringWithFormat:@"ARTRealtime received a ping when in state %@", ARTRealtimeStateToStr(self.connection.state)];
-        [self.logger warn:@"%@", msg];
+        [self.logger warn:@"%p %@", self, msg];
     }
     [_pingEventEmitter emit:[NSNull null] with:nil];
 }
@@ -356,14 +366,14 @@
     // Resuming
     if (_resuming) {
         if (message.error && ![message.connectionId isEqualToString:self.connection.id]) {
-            [self.logger warn:@"ARTRealtime: connection has reconnected, but resume failed. Detaching all channels"];
+            [self.logger warn:@"%p ARTRealtime: connection has reconnected, but resume failed. Detaching all channels", self];
             // Fatal error, detach all channels
             for (ARTRealtimeChannel *channel in self.channels) {
                 [channel detachChannel:[ARTStatus state:ARTStateConnectionDisconnected info:message.error]];
             }
         }
         else if (message.error) {
-            [self.logger warn:@"ARTRealtime: connection has resumed with non-fatal error %@", message.error.message];
+            [self.logger warn:@"%p ARTRealtime: connection has resumed with non-fatal error %@", self, message.error.message];
             // The error will be emitted on `transition`
         }
         _resuming = false;
@@ -389,6 +399,9 @@
             }
             [self transition:ARTRealtimeConnected withErrorInfo:message.error];
             break;
+        case ARTRealtimeConnected:
+            // Renewing token.
+            [self transitionSideEffects:[[ARTConnectionStateChange alloc] initWithCurrent:ARTRealtimeConnected previous:ARTRealtimeConnected reason:nil]];
         default:
             break;
     }
@@ -399,7 +412,7 @@
 }
 
 - (void)onDisconnected:(ARTProtocolMessage *)message {
-    [self.logger info:@"ARTRealtime disconnected"];
+    [self.logger info:@"%p ARTRealtime disconnected", self];
     switch (self.connection.state) {
         case ARTRealtimeConnected: {
             ARTErrorInfo *error;
@@ -423,7 +436,7 @@
 }
 
 - (void)onClosed {
-    [self.logger info:@"ARTRealtime closed"];
+    [self.logger info:@"%p ARTRealtime closed", self];
     switch (self.connection.state) {
         case ARTRealtimeClosed:
             break;
@@ -485,7 +498,7 @@
 - (BOOL)shouldSendEvents {
     switch (self.connection.state) {
         case ARTRealtimeConnected:
-            return true;
+            return !_renewingToken;
         default:
             return false;
     }
@@ -500,6 +513,8 @@
         case ARTRealtimeConnecting:
         case ARTRealtimeDisconnected:
             return true;
+        case ARTRealtimeConnected:
+            return _renewingToken;
         default:
             return false;
     }
@@ -569,8 +584,8 @@
     int count = message.count;
     NSArray *nackMessages = nil;
     NSArray *ackMessages = nil;
-    [self.logger verbose:@"ARTRealtime ACK: msgSerial=%lld, count=%d", serial, count];
-    [self.logger verbose:@"ARTRealtime ACK (before processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
+    [self.logger verbose:@"%p ARTRealtime ACK: msgSerial=%lld, count=%d", self, serial, count];
+    [self.logger verbose:@"%p ARTRealtime ACK (before processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
 
     if (serial < self.pendingMessageStartSerial) {
         // This is an error condition and shouldn't happen but
@@ -593,7 +608,7 @@
     if (serial == self.pendingMessageStartSerial) {
         NSRange ackRange;
         if (count > self.pendingMessages.count) {
-            [self.logger error:@"ARTRealtime ACK: count response is greater than the total of pending messages"];
+            [self.logger error:@"%p ARTRealtime ACK: count response is greater than the total of pending messages", self];
             // Process all the available pending messages
             ackRange = NSMakeRange(0, self.pendingMessages.count);
         }
@@ -613,14 +628,14 @@
         if (msg.cb) msg.cb([ARTStatus state:ARTStateOk]);
     }
 
-    [self.logger verbose:@"ARTRealtime ACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
+    [self.logger verbose:@"%p ARTRealtime ACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
 }
 
 - (void)nack:(ARTProtocolMessage *)message {
     int64_t serial = message.msgSerial;
     int count = message.count;
-    [self.logger verbose:@"ARTRealtime NACK: msgSerial=%lld, count=%d", serial, count];
-    [self.logger verbose:@"ARTRealtime NACK (before processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
+    [self.logger verbose:@"%p ARTRealtime NACK: msgSerial=%lld, count=%d", self, serial, count];
+    [self.logger verbose:@"%p ARTRealtime NACK (before processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
 
     if (serial != self.pendingMessageStartSerial) {
         // This is an error condition and it shouldn't happen but
@@ -632,7 +647,7 @@
 
     NSRange nackRange;
     if (count > self.pendingMessages.count) {
-        [self.logger error:@"ARTRealtime NACK: count response is greater than the total of pending messages"];
+        [self.logger error:@"%p ARTRealtime NACK: count response is greater than the total of pending messages", self];
         // Process all the available pending messages
         nackRange = NSMakeRange(0, self.pendingMessages.count);
     }
@@ -648,16 +663,16 @@
         if (msg.cb) msg.cb([ARTStatus state:ARTStateError info:message.error]);
     }
 
-    [self.logger verbose:@"ARTRealtime NACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
+    [self.logger verbose:@"%p ARTRealtime NACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
 }
 
 - (void)realtimeTransport:(id)transport didReceiveMessage:(ARTProtocolMessage *)message {
     // TODO add in protocolListener
 
-    [self.logger verbose:@"ARTRealtime didReceive Protocol Message %@ ", [ARTRealtime protocolStr:message.action]];
+    [self.logger verbose:@"%p ARTRealtime didReceive Protocol Message %@ ", self, [ARTRealtime protocolStr:message.action]];
 
     if (message.error) {
-        [self.logger verbose:@"ARTRealtime Protocol Message with error %@ ", message.error];
+        [self.logger verbose:@"%p ARTRealtime Protocol Message with error %@ ", self, message.error];
     }
 
     NSAssert(transport == self.transport, @"Unexpected transport");
@@ -719,8 +734,34 @@
     }
 }
 
-- (void)realtimeTransportFailed:(id<ARTRealtimeTransport>)transport withErrorInfo:(ARTErrorInfo *)errorInfo {
-    [self transition:ARTRealtimeFailed withErrorInfo:errorInfo];
+- (void)realtimeTransportFailed:(id<ARTRealtimeTransport>)transport withError:(ARTRealtimeTransportError *)error {
+    if ([self shouldRetryWithFallback:error]) {
+        if (!_fallbacks && [error.url.host isEqualToString:[ARTDefault realtimeHost]]) {
+            _fallbacks = [[ARTFallback alloc] init];
+        }
+        if (_fallbacks) {
+            NSString *host = [_fallbacks popFallbackHost];
+            if (host != nil) {
+                [self.logger debug:__FILE__ line:__LINE__ message:@"%p host is down; retrying realtime connection at %@", self, host];
+                [self.transport changeHost:host];
+                [self.transport connect];
+                return;
+            }
+        }
+    }
+
+    [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithNSError:error.error]];
+}
+
+- (BOOL)shouldRetryWithFallback:(ARTRealtimeTransportError *)error {
+    if (
+        (error.type == ARTRealtimeTransportErrorTypeBadResponse && error.badResponseCode >= 500 && error.badResponseCode <= 504) ||
+        error.type == ARTRealtimeTransportErrorTypeHostUnreachable ||
+        error.type == ARTRealtimeTransportErrorTypeTimeout
+    ) {
+        return YES;
+    }
+    return NO;
 }
 
 - (void)realtimeTransportNeverConnected:(id<ARTRealtimeTransport>)transport {

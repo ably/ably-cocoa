@@ -85,4 +85,8 @@ NSString *ARTRealtimeStateToStr(ARTRealtimeConnectionState state) {
     }
 }
 
+- (void)setRetryIn:(NSTimeInterval)retryIn {
+    _retryIn = retryIn;
+}
+
 @end
