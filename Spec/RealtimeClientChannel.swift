@@ -1199,19 +1199,25 @@ class RealtimeClientChannel: QuickSpec {
                     }
 
                     // RTL6c3
-                    pending("if the channel is in or moves to the FAILED state before the operation succeeds, it should result in an error") {
+                    it("implicitly attaches the channel; if the channel is in or moves to the FAILED state before the operation succeeds, it should result in an error") {
                         let client = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { client.close() }
                         let channel = client.channels.get("test")
                         waitUntil(timeout: testTimeout) { done in
                             let protocolError = AblyTests.newErrorProtocolMessage()
-                            channel.once(.Attaching) { _ in
-                                channel.onError(protocolError)
-                            }
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.Initialized))
                             channel.publish(nil, data: "message") { error in
+                                expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
                                 expect(error).to(beIdenticalTo(protocolError.error))
-                                done()
+
+                                channel.publish(nil, data: "message") { error in
+                                    expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
+                                    expect(error).toNot(beNil())
+                                    done()
+                                }
                             }
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
+                            channel.onError(protocolError)
                         }
                     }
 

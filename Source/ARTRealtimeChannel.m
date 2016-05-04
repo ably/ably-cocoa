@@ -502,8 +502,8 @@
 }
 
 - (void)onError:(ARTProtocolMessage *)msg {
-    [self failQueuedMessages:[ARTStatus state:ARTStateError info: msg.error]];
     [self transition:ARTRealtimeChannelFailed status:[ARTStatus state:ARTStateError info: msg.error]];
+    [self failQueuedMessages:[ARTStatus state:ARTStateError info: msg.error]];
 }
 
 - (void)attach {
