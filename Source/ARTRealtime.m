@@ -238,32 +238,6 @@
             if (!_reachability) {
                 _reachability = [[_reachabilityClass alloc] initWithLogger:self.logger];
             }
-            
-            // TODO: Do also for fallback hosts once https://github.com/ably/ably-ios/pull/385
-            // is merged.
-            [_reachability listenForHost:self.options.realtimeHost callback:^(BOOL reachable) {
-                if (reachable) {
-                    switch (_connection.state) {
-                        case ARTRealtimeDisconnected:
-                        case ARTRealtimeSuspended:
-                            [self transition:ARTRealtimeConnecting];
-                        default:
-                            break;
-                    }
-                } else {
-                    switch (_connection.state) {
-                        case ARTRealtimeConnecting:
-                        case ARTRealtimeConnected: {
-                            // TODO: Trigger host fallback behavior.
-                            ARTErrorInfo *unreachable = [ARTErrorInfo createWithCode:-1003 message:@"unreachable host"];
-                            [self transition:ARTRealtimeDisconnected withErrorInfo:unreachable];
-                            break;
-                        }
-                        default:
-                            break;
-                    }
-                }
-            }];
 
             if (!_transport) {
                 NSString *resumeKey = nil;
@@ -277,6 +251,29 @@
                 _transport.delegate = self;
                 [_transport connect];
             }
+
+            [_reachability listenForHost:[_transport host] callback:^(BOOL reachable) {
+                if (reachable) {
+                    switch (_connection.state) {
+                        case ARTRealtimeDisconnected:
+                        case ARTRealtimeSuspended:
+                            [self transition:ARTRealtimeConnecting];
+                        default:
+                            break;
+                    }
+                } else {
+                    switch (_connection.state) {
+                        case ARTRealtimeConnecting:
+                        case ARTRealtimeConnected: {
+                            ARTErrorInfo *unreachable = [ARTErrorInfo createWithCode:-1003 message:@"unreachable host"];
+                            [self transition:ARTRealtimeDisconnected withErrorInfo:unreachable];
+                            break;
+                        }
+                        default:
+                            break;
+                    }
+                }
+            }];
 
             break;
         }
