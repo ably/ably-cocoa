@@ -43,6 +43,13 @@
     static NSDictionary *testApplication;
     static int setupAppCounter = 0;
 
+    if (setupAppCounter > 0 && !testApplication) {
+        // Waiting for previous request to finish to avoid a race condition.
+        while (!testApplication) {
+            CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.1, false);
+        }
+    }
+
     ARTChannels_getChannelNamePrefix = ^NSString*() {
         return [NSString stringWithFormat:@"test-%d", setupAppCounter];
     };
