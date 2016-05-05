@@ -2529,6 +2529,62 @@ class RealtimeClientConnection: QuickSpec {
                     expect(NSRegularExpression.match(urlConnections[2].absoluteString, pattern: "//realtime.ably.io")).to(beTrue())
                 }
 
+                // RTN17c
+                pending("should retry hosts in random order after checkin if an internet connection is available") {
+                    let expectedHostOrder = [4, 3, 0, 2, 1]
+
+                    let originalARTFallback_getRandomHostIndex = ARTFallback_getRandomHostIndex
+                    ARTFallback_getRandomHostIndex = {
+                        let hostIndexes = [1, 1, 0, 0, 0]
+                        var i = 0
+                        return { count in
+                            let hostIndex = hostIndexes[i]
+                            i += 1
+                            return Int32(hostIndex)
+                        }
+                    }()
+                    defer {
+                        ARTFallback_getRandomHostIndex = originalARTFallback_getRandomHostIndex
+                    }
+
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+                    let channel = client.channels.get("test")
+
+                    let testHttpExecutor = TestProxyHTTPExecutor()
+                    client.rest.httpExecutor = testHttpExecutor
+
+                    client.setTransportClass(TestProxyTransport.self)
+                    TestProxyTransport.network = .HostUnreachable
+                    defer { TestProxyTransport.network = nil }
+
+                    var urlConnections = [NSURL]()
+                    TestProxyTransport.networkConnectEvent = { url in
+                        urlConnections.append(url)
+                    }
+
+                    client.connect()
+                    defer { client.close() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "message") { error in
+                            done()
+                        }
+                    }
+
+                    expect(NSRegularExpression.match(testHttpExecutor.requests[0].URL!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
+                    expect(urlConnections).to(haveCount(6)) // default + 5 fallbacks
+
+                    let extractHostname = { (url: NSURL) in
+                        NSRegularExpression.extract(url.absoluteString, pattern: "[a-e].ably-realtime.com")
+                    }
+                    let resultFallbackHosts = urlConnections.flatMap(extractHostname)
+                    let expectedFallbackHosts = Array(expectedHostOrder.map({ ARTDefault.fallbackHosts()[$0] as! String }))
+
+                    expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+                }
+
             }
 
             // RTN18
