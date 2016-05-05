@@ -2585,6 +2585,38 @@ class RealtimeClientConnection: QuickSpec {
                     expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
                 }
 
+
+                // RTN17e
+                pending("client is connected to a fallback host endpoint should do HTTP requests to the same data centre") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+                    let channel = client.channels.get("test")
+
+                    let testHttpExecutor = TestProxyHTTPExecutor()
+                    client.rest.httpExecutor = testHttpExecutor
+
+                    client.setTransportClass(TestProxyTransport.self)
+                    TestProxyTransport.network = .HostUnreachable
+                    defer { TestProxyTransport.network = nil }
+
+                    client.connect()
+                    defer { client.close() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "message") { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    let transport = client.transport as! TestProxyTransport
+                    expect(NSRegularExpression.match(transport.lastUrl!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+
+                    let tokenUrlRequest = testHttpExecutor.requests[0].URL!
+                    expect(NSRegularExpression.match(tokenUrlRequest.absoluteString, pattern: "//[a-e].ably-rest.com")).to(beTrue())
+                }
+
             }
 
             // RTN18
