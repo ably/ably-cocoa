@@ -2489,11 +2489,6 @@ class RealtimeClientConnection: QuickSpec {
                     expect(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io")).to(beTrue())
                 }
 
-            }
-
-            // RTN17
-            context("Host Fallback") {
-
                 // RTN17a
                 pending("every connection is first attempted to the primary host realtime.ably.io") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
@@ -2508,9 +2503,7 @@ class RealtimeClientConnection: QuickSpec {
                     var urlConnections = [NSURL]()
                     TestProxyTransport.networkConnectEvent = { url in
                         urlConnections.append(url)
-                        if urlConnections.count == 2 {
-                            TestProxyTransport.network = nil
-                        }
+                        TestProxyTransport.network = nil
                     }
 
                     client.connect()
@@ -2522,7 +2515,7 @@ class RealtimeClientConnection: QuickSpec {
                         }
                     }
 
-                    TestProxyTransport.network = nil
+                    client.connect()
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: "message") { error in
