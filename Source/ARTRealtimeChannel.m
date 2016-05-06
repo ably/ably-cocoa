@@ -174,7 +174,7 @@
             } else {
                 [self addToQueue:pm callback:cb];
 
-                [_realtime.connection once:ARTRealtimeConnected callback:^(ARTConnectionStateChange *__art_nullable change) {
+                [self.realtime.internalEventEmitter once:[NSNumber numberWithInteger:ARTRealtimeConnected] callback:^(ARTConnectionStateChange *__art_nullable change) {
                     [self sendQueuedMessages];
                 }];
             }
@@ -202,13 +202,13 @@
 - (void)sendMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb {
     __block BOOL gotFailure = false;
     NSString *oldConnectionId = self.realtime.connection.id;
-    __block ARTEventListener *listener = [self.realtime.connection on:^(ARTConnectionStateChange *stateChange) {
+    __block ARTEventListener *listener = [self.realtime.internalEventEmitter on:^(ARTConnectionStateChange *stateChange) {
         if (!(stateChange.current == ARTRealtimeClosed || stateChange.current == ARTRealtimeFailed
               || (stateChange.current == ARTRealtimeConnected && ![oldConnectionId isEqual:self.realtime.connection.id] /* connection state lost */))) {
             return;
         }
         gotFailure = true;
-        [self.realtime.connection off:listener];
+        [self.realtime.internalEventEmitter off:listener];
         if (!cb) return;
         ARTErrorInfo *reason = stateChange.reason ? stateChange.reason : [ARTErrorInfo createWithCode:0 message:@"connection broken before receiving publishing acknowledgement."];
         cb([ARTStatus state:ARTStateError info:reason]);
@@ -219,7 +219,7 @@
     }
 
     [self.realtime send:pm callback:^(ARTStatus *status) {
-        [self.realtime.connection off:listener];
+        [self.realtime.internalEventEmitter off:listener];
         if (cb && !gotFailure) cb(status);
     }];
 }

@@ -196,9 +196,11 @@
     @finally {
         for (ARTEventEmitterEntry *entry in toRemoveFromListeners) {
             [self removeObject:entry fromArrayWithKey:event inDictionary:self.listeners];
+            [entry.listener off];
         }
         for (ARTEventEmitterEntry *entry in toRemoveFromTotalListeners) {
             [self.anyListeners removeObject:entry];
+            [entry.listener off];
         }
         for (ARTEventEmitterEntry *entry in toCall) {
             [entry.listener call:data];

@@ -65,6 +65,7 @@
         
         _rest = [[ARTRest alloc] initWithOptions:options];
         _eventEmitter = [[ARTEventEmitter alloc] init];
+        _internalEventEmitter = [[ARTEventEmitter alloc] init];
         _connectedEventEmitter = [[ARTEventEmitter alloc] init];
         _pingEventEmitter = [[ARTEventEmitter alloc] init];
         _channels = [[ARTRealtimeChannels alloc] initWithRealtime:self];
@@ -120,6 +121,10 @@
         [_connection off];
     }
 
+    if (_internalEventEmitter) {
+        [_internalEventEmitter off];
+    }
+
     if (_transport) {
         _transport.delegate = nil;
         [_transport close];
@@ -143,7 +148,7 @@
     case ARTRealtimeFailed:
         return;
     case ARTRealtimeConnecting: {
-        [_connection once:^(ARTConnectionStateChange *change) {
+        [_internalEventEmitter once:^(ARTConnectionStateChange *change) {
             [self close];
         }];
         return;
@@ -215,6 +220,7 @@
         [self.connection setErrorReason:errorInfo];
     }
     [self.connection emit:state with:stateChange];
+    [_internalEventEmitter emit:[NSNumber numberWithInteger:state] with:stateChange];
 }
 
 - (void)transitionSideEffects:(ARTConnectionStateChange *)stateChange {
@@ -266,7 +272,7 @@
         case ARTRealtimeDisconnected: {
             if (!_startedReconnection) {
                 _startedReconnection = [NSDate date];
-                [_connection on:^(ARTConnectionStateChange *change) {
+                [_internalEventEmitter on:^(ARTConnectionStateChange *change) {
                     if (change.current != ARTRealtimeDisconnected && change.current != ARTRealtimeConnecting) {
                         _startedReconnection = nil;
                     }
@@ -351,7 +357,7 @@
     // Defer until next event loop execution so that any event emitted in the current
     // one doesn't cancel the timeout.
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), dispatch_get_main_queue(), ^{
-        [_connection timed:[_connection once:^(ARTConnectionStateChange *change) {
+        [_internalEventEmitter timed:[_internalEventEmitter once:^(ARTConnectionStateChange *change) {
             // Any state change cancels the timeout.
         }] deadline:deadline onTimeout:callback];
     });
