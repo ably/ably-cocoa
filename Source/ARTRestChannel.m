@@ -32,7 +32,7 @@
     if (self = [super initWithName:name andOptions:options andLogger:rest.logger]) {
         _rest = rest;
         _basePath = [NSString stringWithFormat:@"/channels/%@", [name stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]]];
-        [self.logger debug:__FILE__ line:__LINE__ message:@"%p instantiating under '%@'", self, name];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p instantiating under '%@'", self, name];
     }
     return self;
 }
@@ -86,13 +86,13 @@
             message = [message decodeWithEncoder:self.dataEncoder error:&error];
             if (error != nil) {
                 ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:(ARTErrorInfo *)error.userInfo[NSLocalizedFailureReasonErrorKey] prepend:@"Failed to decode data: "];
-                [self.logger error:@"%@", errorInfo.message];
+                [self.logger error:@"RS:%p %@", _rest, errorInfo.message];
             }
             return message;
         }];
     };
 
-    [self.logger debug:__FILE__ line:__LINE__ message:@"stats request %@", request];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p stats request %@", _rest, request];
     [ARTPaginatedResult executePaginated:_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
     return YES;
 }
@@ -129,7 +129,7 @@
         [request setValue:self.rest.defaultEncoding forHTTPHeaderField:@"Content-Type"];
     }
 
-    [self.logger debug:__FILE__ line:__LINE__ message:@"post message %@", [[NSString alloc] initWithData:encodedMessage encoding:NSUTF8StringEncoding]];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p post message %@", _rest, [[NSString alloc] initWithData:encodedMessage encoding:NSUTF8StringEncoding]];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (callback) {
             ARTErrorInfo *errorInfo = error ? [ARTErrorInfo createWithNSError:error] : nil;

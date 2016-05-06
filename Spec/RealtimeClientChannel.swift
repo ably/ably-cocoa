@@ -1863,7 +1863,7 @@ class RealtimeClientChannel: QuickSpec {
                                     let logs = options.logHandler.captured
                                     let line = logs.reduce("") { $0 + "; " + $1.toString() } //Reduce in one line
 
-                                    expect(line).to(contain("ERROR: Failed to decode data: unknown encoding: 'bad_encoding_type'"))
+                                    expect(line).to(contain("Failed to decode data: unknown encoding: 'bad_encoding_type'"))
 
                                     partlyDone()
                                 }

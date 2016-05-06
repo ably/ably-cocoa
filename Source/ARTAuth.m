@@ -42,36 +42,36 @@
 }
 
 - (void)validate:(ARTClientOptions *)options {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"validating %@", options];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p validating %@", _rest, options];
     if ([options isBasicAuth]) {
         if (!options.tls) {
             [NSException raise:@"ARTAuthException" format:@"Basic authentication only connects over HTTPS (tls)."];
         }
         // Basic
-        [self.logger debug:__FILE__ line:__LINE__ message:@"setting up auth method Basic (anonymous)"];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p setting up auth method Basic (anonymous)", _rest];
         _method = ARTAuthMethodBasic;
     } else if (options.tokenDetails) {
         // TokenDetails
-        [self.logger debug:__FILE__ line:__LINE__ message:@"setting up auth method Token with token details"];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p setting up auth method Token with token details", _rest];
         _method = ARTAuthMethodToken;
     } else if (options.token) {
         // Token
-        [self.logger debug:__FILE__ line:__LINE__ message:@"setting up auth method Token with supplied token only"];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p setting up auth method Token with supplied token only", _rest];
         _method = ARTAuthMethodToken;
         options.tokenDetails = [[ARTTokenDetails alloc] initWithToken:options.token];
     } else if (options.authUrl && options.authCallback) {
         [NSException raise:@"ARTAuthException" format:@"Incompatible authentication configuration: please specify either authCallback and authUrl."];
     } else if (options.authUrl) {
         // Authentication url
-        [self.logger debug:__FILE__ line:__LINE__ message:@"setting up auth method Token with authUrl"];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p setting up auth method Token with authUrl", _rest];
         _method = ARTAuthMethodToken;
     } else if (options.authCallback) {
         // Authentication callback
-        [self.logger debug:__FILE__ line:__LINE__ message:@"setting up auth method Token with authCallback"];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p setting up auth method Token with authCallback", _rest];
         _method = ARTAuthMethodToken;
     } else if (options.key) {
         // Token
-        [self.logger debug:__FILE__ line:__LINE__ message:@"setting up auth method Token with key"];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p setting up auth method Token with key", _rest];
         _method = ARTAuthMethodToken;
     } else {
         [NSException raise:@"ARTAuthException" format:@"Could not setup authentication method with given options."];
@@ -172,13 +172,13 @@
     if (mergedOptions.authUrl) {
         NSMutableURLRequest *request = [self buildRequest:mergedOptions withParams:currentTokenParams];
         
-        [self.logger debug:__FILE__ line:__LINE__ message:@"using authUrl (%@ %@)", request.HTTPMethod, request.URL];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p using authUrl (%@ %@)", _rest, request.HTTPMethod, request.URL];
         
         [_rest executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (error) {
                 checkerCallback(nil, error);
             } else {
-                [self.logger debug:@"ARTAuth: authUrl response %@", response];
+                [self.logger debug:@"RS:%p ARTAuth: authUrl response %@", _rest, response];
                 [self handleAuthUrlResponse:response withData:data completion:checkerCallback];
             }
         }];
@@ -190,7 +190,7 @@
                     [tokenDetailsCompat toTokenDetails:self callback:callback];
                 });
             };
-            [self.logger debug:@"ARTAuth: using authCallback"];
+            [self.logger debug:@"RS:%p ARTAuth: using authCallback", _rest];
         } else {
             tokenDetailsFactory = ^(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *__art_nullable, NSError *__art_nullable)) {
                 // Create a TokenRequest and execute it
@@ -271,23 +271,23 @@
     // Reuse or not reuse the current token
     if (mergedOptions.force == NO && self.tokenDetails) {
         if (self.tokenDetails.expires == nil) {
-            [self.logger verbose:@"ARTAuth: reuse current token."];
+            [self.logger verbose:@"RS:%p ARTAuth: reuse current token.", _rest];
             requestNewToken = NO;
         }
         else if ([self.tokenDetails.expires timeIntervalSinceNow] > 0) {
-            [self.logger verbose:@"ARTAuth: current token has not expired yet. Reusing token details."];
+            [self.logger verbose:@"RS:%p ARTAuth: current token has not expired yet. Reusing token details.", _rest];
             requestNewToken = NO;
         }
         else {
-            [self.logger verbose:@"ARTAuth: current token has expired. Requesting new token."];
+            [self.logger verbose:@"RS:%p ARTAuth: current token has expired. Requesting new token.", _rest];
             requestNewToken = YES;
         }
     }
     else {
         if (mergedOptions.force == YES)
-            [self.logger verbose:@"ARTAuth: forced requesting new token."];
+            [self.logger verbose:@"RS:%p ARTAuth: forced requesting new token.", _rest];
         else
-            [self.logger verbose:@"ARTAuth: requesting new token."];
+            [self.logger verbose:@"RS:%p ARTAuth: requesting new token.", _rest];
         requestNewToken = YES;
     }
 

@@ -54,12 +54,12 @@
         }
 
         _http = [[ARTHttp alloc] init];
-        [_logger debug:__FILE__ line:__LINE__ message:@"%p alloc HTTP", _http];
+        [_logger debug:__FILE__ line:__LINE__ message:@"RS:%p %p alloc HTTP", self, _http];
         _httpExecutor = _http;
         _httpExecutor.logger = _logger;
 
-        id<ARTEncoder> jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithLogger:self.logger delegate:[[ARTJsonEncoder alloc] init]];
-        id<ARTEncoder> msgPackEncoder = [[ARTJsonLikeEncoder alloc] initWithLogger:self.logger delegate:[[ARTMsgPackEncoder alloc] init]];
+        id<ARTEncoder> jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithRest:self delegate:[[ARTJsonEncoder alloc] init]];
+        id<ARTEncoder> msgPackEncoder = [[ARTJsonLikeEncoder alloc] initWithRest:self delegate:[[ARTMsgPackEncoder alloc] init]];
         _encoders = @{
             [jsonEncoder mimeType]: jsonEncoder,
             [msgPackEncoder mimeType]: msgPackEncoder
@@ -70,7 +70,7 @@
         _auth = [[ARTAuth alloc] init:self withOptions:_options];
         _channels = [[ARTRestChannels alloc] initWithRest:self];
 
-        [self.logger debug:__FILE__ line:__LINE__ message:@"initialized %p", self];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p initialized", self];
     }
     return self;
 }
@@ -84,7 +84,7 @@
 }
 
 - (void)dealloc {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"%p dealloc", self];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p dealloc", self];
 }
 
 - (void)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
@@ -135,13 +135,13 @@
 
     [request setTimeoutInterval:_options.httpRequestTimeout];
 
-    [self.logger debug:__FILE__ line:__LINE__ message:@"%p executing request %@", self, request];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p executing request %@", self, request];
     [self.httpExecutor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode >= 400) {
             NSError *dataError = [self->_encoders[response.MIMEType] decodeError:data];
             if (dataError.code >= 40140 && dataError.code < 40150) {
                 // Send it again, requesting a new token (forward callback)
-                [self.logger debug:__FILE__ line:__LINE__ message:@"requesting new token"];
+                [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p requesting new token", self];
                 [self executeRequest:request withAuthOption:ARTAuthenticationNewToken completion:callback];
                 return;
             } else {
@@ -159,7 +159,7 @@
             if (blockFallbacks) {
                 NSString *host = [blockFallbacks popFallbackHost];
                 if (host != nil) {
-                    [self.logger debug:__FILE__ line:__LINE__ message:@"host is down; retrying request at %@", host];
+                    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p host is down; retrying request at %@", self, host];
                     NSMutableURLRequest *newRequest = [request copy];
                     NSURL *url = request.URL;
                     NSString *urlStr = [NSString stringWithFormat:@"%@://%@:%@%@?%@", url.scheme, host, url.port, url.path, (url.query ? url.query : @"")];
@@ -194,7 +194,7 @@
 }
 
 - (void)prepareAuthorisationHeader:(ARTAuthMethod)method force:(BOOL)force completion:(void (^)(NSString *authorization, NSError *error))callback {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"calculating authorization %lu", (unsigned long)method];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p calculating authorization %lu", self, (unsigned long)method];
     // FIXME: use encoder and should be managed on ARTAuth
     if (method == ARTAuthMethodBasic) {
         // Include key Base64 encoded in an Authorization header (RFC7235)
@@ -211,7 +211,7 @@
             }
             NSData *tokenData = [tokenDetails.token dataUsingEncoding:NSUTF8StringEncoding];
             NSString *tokenBase64 = [tokenData base64EncodedStringWithOptions:0];
-            [self.logger verbose:@"ARTRest: authorization bearer in Base64 %@", tokenBase64];
+            [self.logger verbose:@"RS:%p ARTRest: authorization bearer in Base64 %@", self, tokenBase64];
             if (callback) callback([NSString stringWithFormat:@"Bearer %@", tokenBase64], nil);
         }];
     }

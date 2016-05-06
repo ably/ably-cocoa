@@ -24,7 +24,7 @@
 #import "ARTTokenDetails.h"
 #import "ARTTokenRequest.h"
 #import "ARTConnectionDetails.h"
-
+#import "ARTRest+Private.h"
 
 @interface ARTJsonLikeEncoder ()
 
@@ -61,11 +61,14 @@
 
 @end
 
-@implementation ARTJsonLikeEncoder
+@implementation ARTJsonLikeEncoder {
+    ARTLog *_logger;
+}
 
-- (instancetype)initWithLogger:(ARTLog *)logger delegate:(id<ARTJsonLikeEncoderDelegate>)delegate {
+- (instancetype)initWithRest:(ARTRest *)rest delegate:(id<ARTJsonLikeEncoderDelegate>)delegate {
     if (self = [super init]) {
-        _logger = logger;
+        _rest = rest;
+        _logger = rest.logger;
         _delegate = delegate;
     }
     return self;
@@ -137,7 +140,7 @@
 
 - (NSDate *)decodeTime:(NSData *)data {
     NSArray *resp = [self decodeArray:data];
-    [self.logger verbose:@"ARTJsonEncoder: decodeTime %@", resp];
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: decodeTime %@", _rest, [_delegate formatAsString], resp];
     if (resp && resp.count == 1) {
         NSNumber *num = resp[0];
         if ([num isKindOfClass:[NSNumber class]]) {
@@ -153,7 +156,7 @@
 }
 
 - (ARTMessage *)messageFromDictionary:(NSDictionary *)input {
-    [self.logger verbose:@"ARTJsonEncoder: messageFromDictionary %@", input];
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: messageFromDictionary %@", _rest, [_delegate formatAsString], input];
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
@@ -200,7 +203,7 @@
         case 4:
             return ARTPresenceUpdate;
     }
-    [self.logger error:@"ARTJsonEncoder invalid ARTPresenceAction %d", action];
+    [_logger error:@"RS:%p ARTJsonEncoder invalid ARTPresenceAction %d", _rest, action];
     return ARTPresenceAbsent;
     
 }
@@ -222,7 +225,7 @@
 }
 
 - (ARTPresenceMessage *)presenceMessageFromDictionary:(NSDictionary *)input {
-    [self.logger verbose:@"ARTJsonEncoder: presenceMessageFromDictionary %@", input];
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: presenceMessageFromDictionary %@", _rest, [_delegate formatAsString], input];
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
@@ -281,7 +284,7 @@
         [output setObject:message.connectionId forKey:@"connectionId"];
     }
 
-    [self.logger verbose:@"ARTJsonEncoder: messageToDictionary %@", output];
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: messageToDictionary %@", _rest, [_delegate formatAsString], output];
     return output;
 }
 
@@ -320,7 +323,7 @@
     int action = [self intFromPresenceMessageAction:message.action];
     
     [output setObject:[NSNumber numberWithInt:action] forKey:@"action"];
-    [self.logger verbose:@"ARTJsonEncoder: presenceMessageToDictionary %@", output];
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: presenceMessageToDictionary %@", _rest, [_delegate formatAsString], output];
     return output;
 }
 
@@ -352,12 +355,12 @@
     if (message.presence) {
         output[@"presence"] = [self presenceMessagesToArray:message.presence];
     }
-    [self.logger verbose:@"ARTJsonEncoder: protocolMessageToDictionary %@", output];
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: protocolMessageToDictionary %@", _rest, [_delegate formatAsString], output];
     return output;
 }
 
 - (ARTTokenDetails *)tokenFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
-    [self.logger verbose:@"ARTJsonEncoder: tokenFromDictionary %@", input];
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: tokenFromDictionary %@", _rest, [_delegate formatAsString], input];
     
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
@@ -365,7 +368,7 @@
     
     NSDictionary *jsonError = [input artDictionary:@"error"];
     if (jsonError) {
-        [self.logger error:@"ARTJsonEncoder: tokenFromDictionary error %@", jsonError];
+        [_logger error:@"RS:%p ARTJsonLikeEncoder<%@>: tokenFromDictionary error %@", _rest, [_delegate formatAsString], jsonError];
         if (error) {
             NSMutableDictionary* details = [NSMutableDictionary dictionary];
             [details setValue:[jsonError artString:@"message"] forKey:NSLocalizedDescriptionKey];
@@ -392,7 +395,7 @@
 }
 
 - (NSDictionary *)tokenRequestToDictionary:(ARTTokenRequest *)tokenRequest {
-    [self.logger verbose:@"ARTJsonEncoder: tokenRequestToDictionary %@", tokenRequest];
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: tokenRequestToDictionary %@", _rest, [_delegate formatAsString], tokenRequest];
 
     NSNumber *timestamp;
     if (tokenRequest.timestamp)
@@ -441,7 +444,7 @@
 }
 
 - (ARTProtocolMessage *)protocolMessageFromDictionary:(NSDictionary *)input {
-    [self.logger verbose:@"ARTJsonEncoder: protocolMessageFromDictionary %@", input];
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: protocolMessageFromDictionary %@", _rest, [_delegate formatAsString], input];
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
@@ -509,7 +512,7 @@
 }
 
 - (ARTStats *)statsFromDictionary:(NSDictionary *)input {
-    [self.logger verbose:@"ARTJsonEncoder: statsFromDictionary %@", input];
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: statsFromDictionary %@", _rest, [_delegate formatAsString], input];
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
@@ -617,7 +620,7 @@
 }
 
 - (ARTStatsRequestCount *)statsRequestCountFromDictionary:(NSDictionary *)input {
-    [self.logger verbose:@"ARTJsonEncoder: statsRequestCountFromDictionary %@", input];
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: statsRequestCountFromDictionary %@", _rest, [_delegate formatAsString], input];
     if (![input isKindOfClass:[NSDictionary class]]) {
         return [ARTStatsRequestCount empty];
     }
@@ -640,7 +643,7 @@
 
 - (id)decode:(NSData *)data {
     id decoded = [_delegate decode:data];
-    [self.logger verbose:@"ARTJsonLikeEncoder<%@> decoding '%@'; got: %@", [_delegate formatAsString], data, decoded];
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@> decoding '%@'; got: %@", _rest, [_delegate formatAsString], data, decoded];
     return decoded;
 }
 
@@ -662,7 +665,7 @@
 
 - (NSData *)encode:(id)obj {
     NSData *encoded = [_delegate encode:obj]; 
-    [self.logger verbose:@"ARTJsonLikeEncoder<%@> encoding '%@'; got: %@", [_delegate formatAsString], obj, encoded];
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@> encoding '%@'; got: %@", _rest, [_delegate formatAsString], obj, encoded];
     return encoded;
 }
 
