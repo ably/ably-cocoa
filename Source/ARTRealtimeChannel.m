@@ -328,7 +328,12 @@
 - (void)unlessStateChangesBefore:(NSTimeInterval)deadline do:(void(^)())callback {
     // Defer until next event loop execution so that any event emitted in the current
     // one doesn't cancel the timeout.
+    ARTRealtimeChannelState state = self.state;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), dispatch_get_main_queue(), ^{
+        if (state != self.state) {
+            // Already changed; do nothing.
+            return;
+        }
         [self timed:[self once:^(ARTErrorInfo *errorInfo) {
             // Any state change cancels the timeout.
         }] deadline:deadline onTimeout:callback];

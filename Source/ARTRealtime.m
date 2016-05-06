@@ -356,7 +356,12 @@
 - (void)unlessStateChangesBefore:(NSTimeInterval)deadline do:(void(^)())callback {
     // Defer until next event loop execution so that any event emitted in the current
     // one doesn't cancel the timeout.
+    ARTRealtimeConnectionState state = self.connection.state;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), dispatch_get_main_queue(), ^{
+        if (state != self.connection.state) {
+            // Already changed; do nothing.
+            return;
+        }
         [_internalEventEmitter timed:[_internalEventEmitter once:^(ARTConnectionStateChange *change) {
             // Any state change cancels the timeout.
         }] deadline:deadline onTimeout:callback];

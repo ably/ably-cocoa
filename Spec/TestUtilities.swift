@@ -655,8 +655,16 @@ class TestProxyTransport: ARTWebSocketTransport {
             }
         }
         super.connect()
+
         if let performNetworkConnect = TestProxyTransport.networkConnectEvent {
-            performNetworkConnect(self.lastUrl!)
+            func perform() {
+                if let lastUrl = self.lastUrl {
+                    performNetworkConnect(lastUrl)
+                } else {
+                    delay(0.1) { perform() }
+                }
+            }
+            perform()
         }
     }
 
