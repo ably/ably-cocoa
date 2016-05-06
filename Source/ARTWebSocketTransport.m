@@ -102,9 +102,11 @@ enum {
         [self.websocket open];
     }
     else {
+        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p connecting with token auth; authorising", _delegate, self];
         __weak ARTWebSocketTransport *selfWeak = self;
         // Token
         [self.auth authorise:nil options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+            [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p authorised: %@ error: %@", _delegate, self, tokenDetails, error];
             ARTWebSocketTransport *selfStrong = selfWeak;
             if (!selfStrong) return;
 

@@ -294,11 +294,13 @@
     if (requestNewToken) {
         [self requestToken:currentTokenParams withOptions:mergedOptions callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
             if (error) {
+                [self.logger verbose:@"RS:%p ARTAuth: token request failed: %@", _rest, error];
                 if (callback) {
                     callback(nil, error);
                 }
             } else {
                 _tokenDetails = tokenDetails;
+                [self.logger verbose:@"RS:%p ARTAuth: token request succeeded: %@", _rest, tokenDetails];
                 if (callback) {
                     callback(self.tokenDetails, nil);
                 }
