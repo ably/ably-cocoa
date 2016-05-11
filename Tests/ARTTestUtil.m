@@ -252,6 +252,7 @@
 + (void)testRealtime:(ARTClientOptions *)options callback:(ARTRealtimeConstructorCb)cb {
     [ARTTestUtil setupApp:options callback:^(ARTClientOptions *options) {
         ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
+        [realtime setReachabilityClass:nil];
         cb(realtime);
     }];
 }
@@ -259,6 +260,7 @@
 + (void)testRealtime:(ARTRealtimeConstructorCb)cb {
     [ARTTestUtil setupApp:[ARTTestUtil clientOptions] callback:^(ARTClientOptions *options) {
         ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
+        [realtime setReachabilityClass:nil];
         cb(realtime);
     }];
 }

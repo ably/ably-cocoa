@@ -84,7 +84,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)onChannelMessage:(ARTProtocolMessage *)message;
 
 - (void)setTransportClass:(Class)transportClass;
-- (void)setReachabilityClass:(Class)reachabilityClass;
+- (void)setReachabilityClass:(Class __art_nullable)reachabilityClass;
 
 - (void)resetEventEmitter;
 

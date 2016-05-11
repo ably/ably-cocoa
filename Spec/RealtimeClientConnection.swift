@@ -2427,10 +2427,9 @@ class RealtimeClientConnection: QuickSpec {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.environment = "test"
                     options.autoConnect = false
-                    let client = ARTRealtime(options: options)
+                    let client = AblyTests.newRealtime(options)
                     let channel = client.channels.get("test")
 
-                    client.setTransportClass(TestProxyTransport.self)
                     TestProxyTransport.network = .HostUnreachable
                     defer { TestProxyTransport.network = nil }
 
