@@ -29,4 +29,29 @@
     return self;
 }
 
+- (NSString *)description {
+    NSMutableString *description = [NSMutableString stringWithFormat:@"<ARTRealtimeTransportError: %p {\n", self];
+    [description appendFormat:@"  type: %@\n", [ARTRealtimeTransportError typeDescription:self.type]];
+    [description appendFormat:@"  badResponseCode: %ld\n", (long)self.badResponseCode];
+    [description appendFormat:@"  url: %@\n", self.url];
+    [description appendFormat:@"  error: %@\n", self.error];
+    [description appendFormat:@"}>"];
+    return description;
+}
+
++ (NSString *)typeDescription:(ARTRealtimeTransportErrorType)type {
+    switch (type) {
+    case ARTRealtimeTransportErrorTypeHostUnreachable:
+        return @"Unreachable";
+    case ARTRealtimeTransportErrorTypeTimeout:
+        return @"Timeout";
+    case ARTRealtimeTransportErrorTypeBadResponse:
+        return @"BadResponse";
+    case ARTRealtimeTransportErrorTypeAuth:
+        return @"Auth";
+    case ARTRealtimeTransportErrorTypeOther:
+        return @"Other";
+    }
+}
+
 @end

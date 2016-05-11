@@ -1750,11 +1750,13 @@ class RealtimeClientPresence: QuickSpec {
                                 let transport = client.transport as! TestProxyTransport
                                 transport.beforeProcessingReceivedMessage = { protocolMessage in
                                     if protocolMessage.action == .Sync {
+                                        expect(protocolMessage.presence!.count).to(equal(100))
                                         channel.presence.get(query) { members, error in
                                             expect(error).to(beNil())
                                             expect(members).to(haveCount(150))
                                             done()
                                         }
+                                        transport.beforeProcessingReceivedMessage = nil
                                     }
                                 }
                             }

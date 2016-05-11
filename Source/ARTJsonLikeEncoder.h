@@ -10,7 +10,7 @@
 #define ARTJsonLikeEncoder_h
 
 #import "CompatibilityMacros.h"
-#import "ARTLog.h"
+#import "ARTRest.h"
 #import "ARTEncoder.h"
 
 ART_ASSUME_NONNULL_BEGIN
@@ -28,10 +28,10 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTJsonLikeEncoder : NSObject <ARTEncoder>
 
-@property (nonatomic, weak) ARTLog *logger;
+@property (nonatomic, weak) ARTRest *rest;
 @property (nonatomic, strong, art_nullable) id<ARTJsonLikeEncoderDelegate> delegate;
 
-- (instancetype)initWithLogger:(ARTLog *)logger delegate:(id<ARTJsonLikeEncoderDelegate> __art_nullable)delegate;
+- (instancetype)initWithRest:(ARTRest *)rest delegate:(id<ARTJsonLikeEncoderDelegate> __art_nullable)delegate;
 
 @end
 

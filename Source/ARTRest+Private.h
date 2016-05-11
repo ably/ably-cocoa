@@ -21,10 +21,11 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) __GENERIC(id, ARTEncoder) defaultEncoder;
 @property (readonly, strong, nonatomic) NSString *defaultEncoding; //Content-Type
 @property (readonly, strong, nonatomic) NSDictionary *encoders;
+@property (readwrite, strong, nonatomic, art_nullable) NSString *prioritizedHost;
 
 @property (nonatomic, strong) id<ARTHTTPExecutor> httpExecutor;
 
-@property (nonatomic, strong) NSURL *baseUrl;
+@property (nonatomic, readonly, getter=getBaseUrl) NSURL *baseUrl;
 
 @property (nonatomic, strong, readonly) ARTLog *logger;
 

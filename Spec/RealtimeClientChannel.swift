@@ -1224,6 +1224,7 @@ class RealtimeClientChannel: QuickSpec {
                     // RTL6c4
                     context("will result in an error if the connection is") {
                         let options = AblyTests.commonAppSetup()
+                        options.disconnectedRetryTimeout = 0.1
                         options.suspendedRetryTimeout = 0.3
                         options.autoConnect = false
                         var client: ARTRealtime!
@@ -1233,7 +1234,7 @@ class RealtimeClientChannel: QuickSpec {
 
                         beforeEach {
                             ARTDefault.setConnectionStateTtl(0.3)
-                            client = ARTRealtime(options: options)
+                            client = AblyTests.newRealtime(options)
                             channel = client.channels.get("test")
                         }
                         afterEach {
@@ -1251,7 +1252,7 @@ class RealtimeClientChannel: QuickSpec {
                         it("SUSPENDED") {
                             client.connect()
                             expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
-                            client.onDisconnected()
+                            client.onSuspended()
                             expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Suspended), timeout: testTimeout)
                             waitUntil(timeout: testTimeout) { done in
                                 publish(done)
@@ -1863,7 +1864,7 @@ class RealtimeClientChannel: QuickSpec {
                                     let logs = options.logHandler.captured
                                     let line = logs.reduce("") { $0 + "; " + $1.toString() } //Reduce in one line
 
-                                    expect(line).to(contain("ERROR: Failed to decode data: unknown encoding: 'bad_encoding_type'"))
+                                    expect(line).to(contain("Failed to decode data: unknown encoding: 'bad_encoding_type'"))
 
                                     partlyDone()
                                 }
@@ -1922,7 +1923,7 @@ class RealtimeClientChannel: QuickSpec {
 
                                 let logs = options.logHandler.captured
                                 let line = logs.reduce("") { $0 + "; " + $1.toString() } //Reduce in one line
-                                expect(line).to(contain("ERROR: Failed to decode data: unknown encoding: 'invalid'"))
+                                expect(line).to(contain("Failed to decode data: unknown encoding: 'invalid'"))
 
                                 expect(channel.errorReason!.message).to(contain("Failed to decode data: unknown encoding: 'invalid'"))
 

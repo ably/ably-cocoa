@@ -14,6 +14,7 @@
 @interface ARTClientOptions ()
 
 + (void)setDefaultEnvironment:(NSString *__art_nullable)environment;
+- (NSURLComponents *__art_nonnull)restUrlComponents;
 
 @end
 
