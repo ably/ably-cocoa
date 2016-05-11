@@ -51,7 +51,10 @@
     ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     options.environment = @"test";
+    options.autoConnect = false;
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
+    [realtime setReachabilityClass:nil];
+    [realtime connect];
     [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
         ARTRealtimeConnectionState state = stateChange.current;
         if(state == ARTRealtimeFailed) {
