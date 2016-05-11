@@ -16,4 +16,6 @@ Pod::Spec.new do |s|
   s.requires_arc      = true
   s.source_files      = 'Source/*.{h,m}'
   s.module_map        = 'Source/AblyRealtime.modulemap'
+  s.dependency 'SocketRocket', '0.5.1'
+  s.dependency 'msgpack', '0.1.8'
 end
