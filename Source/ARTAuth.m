@@ -18,6 +18,7 @@
 #import "ARTTokenRequest.h"
 #import "ARTEncoder.h"
 #import "ARTStatus.h"
+#import "ARTJsonEncoder.h"
 
 @implementation ARTAuth {
     __weak ARTRest *_rest;
@@ -116,6 +117,8 @@
         if (!urlComponents.queryItems) urlComponents.queryItems = @[];
         urlComponents.queryItems = [urlComponents.queryItems arrayByAddingObjectsFromArray:unitedParams];
     }
+
+    urlComponents.queryItems = [urlComponents.queryItems arrayByAddingObjectsFromArray:@[[NSURLQueryItem queryItemWithName:@"format" value:[_rest.defaultEncoder formatAsString]]]];
     
     return urlComponents.URL;
 }
@@ -132,11 +135,11 @@
         // When POST, use body of the POST request
         NSData *bodyData = [NSJSONSerialization dataWithJSONObject:unitedParams options:0 error:nil];
         request.HTTPBody = bodyData;
-        [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+        [request setValue:[_rest.defaultEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
         [request setValue:[NSString stringWithFormat:@"%d", (unsigned int)bodyData.length] forHTTPHeaderField:@"Content-Length"];
     }
     else {
-        [request setValue:@"application/json" forHTTPHeaderField:@"Accept"];
+        [request setValue:[_rest.defaultEncoder mimeType] forHTTPHeaderField:@"Accept"];
     }
     
     for (NSString *key in options.authHeaders) {
@@ -209,7 +212,7 @@
     // The token retrieved is assumed by the library to be a token string if the response has Content-Type "text/plain", or taken to be a TokenRequest or TokenDetails object if the response has Content-Type "application/json"
     if ([response.MIMEType isEqualToString:@"application/json"]) {
         NSError *decodeError = nil;
-        ARTTokenDetails *tokenDetails = [_rest.defaultEncoder decodeAccessToken:data error:&decodeError];
+        ARTTokenDetails *tokenDetails = [_rest.encoders[@"application/json"] decodeAccessToken:data error:&decodeError];
         if (decodeError) {
             callback(nil, decodeError);
         } else {
@@ -231,24 +234,24 @@
 }
 
 - (void)executeTokenRequest:(ARTTokenRequest *)tokenRequest callback:(void (^)(ARTTokenDetails *, NSError *))callback {
-    NSURL *requestUrl = [NSURL URLWithString:[NSString stringWithFormat:@"/keys/%@/requestToken", tokenRequest.keyName]
+    id<ARTEncoder> encoder = _rest.defaultEncoder;
+
+    NSURL *requestUrl = [NSURL URLWithString:[NSString stringWithFormat:@"/keys/%@/requestToken?format=%@", tokenRequest.keyName, [encoder formatAsString]]
                                relativeToURL:_rest.baseUrl];
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
     request.HTTPMethod = @"POST";
     
-    id<ARTEncoder> defaultEncoder = _rest.defaultEncoder;
-
-    request.HTTPBody = [defaultEncoder encodeTokenRequest:tokenRequest];
-    [request setValue:[defaultEncoder mimeType] forHTTPHeaderField:@"Accept"];
-    [request setValue:[defaultEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
+    request.HTTPBody = [encoder encodeTokenRequest:tokenRequest];
+    [request setValue:[encoder mimeType] forHTTPHeaderField:@"Accept"];
+    [request setValue:[encoder mimeType] forHTTPHeaderField:@"Content-Type"];
     
     [_rest executeRequest:request withAuthOption:ARTAuthenticationUseBasic completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             callback(nil, error);
         } else {
             NSError *decodeError = nil;
-            ARTTokenDetails *tokenDetails = [defaultEncoder decodeAccessToken:data error:&decodeError];
+            ARTTokenDetails *tokenDetails = [encoder decodeAccessToken:data error:&decodeError];
             if (decodeError) {
                 callback(nil, decodeError);
             } else {

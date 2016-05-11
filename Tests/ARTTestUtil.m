@@ -61,7 +61,6 @@
     else {
         options.environment = @"sandbox";
     }
-    options.useBinaryProtocol = NO;
     if (debug) {
         options.logLevel = ARTLogLevelVerbose;
     }
@@ -154,7 +153,6 @@
 + (ARTClientOptions *)clientOptions {
     ARTClientOptions* options = [[ARTClientOptions alloc] init];
     options.environment = @"sandbox";
-    options.useBinaryProtocol = false;
     return options;
 }
 

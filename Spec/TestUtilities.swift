@@ -45,6 +45,14 @@ let testResourcesPath = "ably-common/test-resources/"
 /// Common test utilities.
 class AblyTests {
 
+    class func base64ToData(base64: String) -> NSData {
+        return NSData(base64EncodedString: base64, options: NSDataBase64DecodingOptions(rawValue: 0))!
+    }
+
+    class func msgpackToJSON(data: NSData) -> JSON {
+        return JSON(data: ARTJsonEncoder().encode(ARTMsgPackEncoder().decode(data)))
+    }
+
     class func checkError(errorInfo: ARTErrorInfo?, withAlternative message: String) {
         if let error = errorInfo {
             XCTFail("\(error.code): \(error.message)")
@@ -61,7 +69,6 @@ class AblyTests {
     class var jsonRestOptions: ARTClientOptions {
         get {
             let options = AblyTests.clientOptions()
-            options.useBinaryProtocol = false
             return options
         }
     }
@@ -490,6 +497,21 @@ func extractBodyAsJSON(request: NSMutableURLRequest?) -> Result<NSDictionary> {
     return Result.Success(Box(httpBody))
 }
 
+func extractBodyAsMsgPack(request: NSMutableURLRequest?) -> Result<NSDictionary> {
+    guard let request = request
+        else { return Result(error: "No request found") }
+
+    guard let bodyData = request.HTTPBody
+        else { return Result(error: "No HTTPBody") }
+
+    let json = ARTMsgPackEncoder().decode(bodyData)
+
+    guard let httpBody = json as? NSDictionary
+        else { return Result(error: "expected dictionary, got \(json.dynamicType): \(json)") }
+
+    return Result.Success(Box(httpBody))
+}
+
 func extractBodyAsMessages(request: NSMutableURLRequest?) -> Result<[NSDictionary]> {
     guard let request = request
         else { return Result(error: "No request found") }
@@ -497,11 +519,10 @@ func extractBodyAsMessages(request: NSMutableURLRequest?) -> Result<[NSDictionar
     guard let bodyData = request.HTTPBody
         else { return Result(error: "No HTTPBody") }
 
-    guard let json = try? NSJSONSerialization.JSONObjectWithData(bodyData, options: .MutableLeaves)
-        else { return Result(error: "Invalid json") }
+    let json = ARTMsgPackEncoder().decode(bodyData)
 
     guard let httpBody = json as? NSArray
-        else { return Result(error: "HTTPBody has invalid format") }
+        else { return Result(error: "expected array, got \(json.dynamicType): \(json)") }
 
     return Result.Success(Box(httpBody.map{$0 as! NSDictionary}))
 }
@@ -697,8 +718,8 @@ class TestProxyTransport: ARTWebSocketTransport {
 
 extension SequenceType where Generator.Element: NSData {
 
-    var toJSONArray: [AnyObject] {
-        return map({ try! NSJSONSerialization.JSONObjectWithData($0, options: NSJSONReadingOptions(rawValue: 0)) })
+    var toMsgPackArray: [AnyObject] {
+        return map({ ARTMsgPackEncoder().decode($0) })
     }
     
 }
