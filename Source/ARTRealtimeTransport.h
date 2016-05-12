@@ -21,6 +21,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, ARTRealtimeTransportErrorType) {
     ARTRealtimeTransportErrorTypeHostUnreachable,
+    ARTRealtimeTransportErrorTypeNoInternet,
     ARTRealtimeTransportErrorTypeTimeout,
     ARTRealtimeTransportErrorTypeBadResponse,
     ARTRealtimeTransportErrorTypeAuth,
