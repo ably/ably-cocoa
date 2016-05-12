@@ -43,6 +43,8 @@
     switch (type) {
     case ARTRealtimeTransportErrorTypeHostUnreachable:
         return @"Unreachable";
+    case ARTRealtimeTransportErrorTypeNoInternet:
+        return @"NoInternet";
     case ARTRealtimeTransportErrorTypeTimeout:
         return @"Timeout";
     case ARTRealtimeTransportErrorTypeBadResponse:
