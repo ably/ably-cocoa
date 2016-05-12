@@ -278,6 +278,7 @@
             break;
         }
         case ARTRealtimeClosing: {
+            [_reachability off];
             [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
                 [self transition:ARTRealtimeClosed];
             }];
@@ -285,6 +286,7 @@
             break;
         }
         case ARTRealtimeClosed:
+            [_reachability off];
             [self.transport close];
             self.transport.delegate = nil;
             _connection.key = nil;
