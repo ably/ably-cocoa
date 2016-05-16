@@ -3,7 +3,7 @@ PODS:
   - msgpack (0.1.8)
   - Nimble (4.0.0)
   - Quick (0.9.1)
-  - SocketRocket (0.5.0)
+  - SocketRocket (0.5.1)
   - SwiftyJSON (2.3.1)
 
 DEPENDENCIES:
@@ -11,7 +11,7 @@ DEPENDENCIES:
   - msgpack (= 0.1.8)
   - Nimble (= 4.0.0)
   - Quick (= 0.9.1)
-  - SocketRocket (= 0.5.0)
+  - SocketRocket (= 0.5.1)
   - SwiftyJSON (= 2.3.1)
 
 SPEC CHECKSUMS:
@@ -19,7 +19,7 @@ SPEC CHECKSUMS:
   msgpack: 97491d2ea799408f4694f2c7d7fd79baf77853dd
   Nimble: 72bcc3e2f02242e6bfaaf8d9412ca7bfe3d8b417
   Quick: a5221fc21788b6aeda934805e68b061839bc3165
-  SocketRocket: 2c51efccd2d73c99a923407ca4b06e7e9da95dbf
+  SocketRocket: d57c7159b83c3c6655745cd15302aa24b6bae531
   SwiftyJSON: 592b53bee5ef3dd9b3bebc6b9cb7ee35426ae8c3
 
 COCOAPODS: 0.39.0

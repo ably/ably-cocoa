@@ -35,7 +35,7 @@
     ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
-    [rest internetIsUp:^(bool isUp) {
+    [rest internetIsUp:^(BOOL isUp) {
         XCTAssertTrue(isUp);
         [expectation fulfill];
     }];

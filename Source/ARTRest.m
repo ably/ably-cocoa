@@ -233,14 +233,14 @@
     }];
 }
 
-- (id<ARTCancellable>)internetIsUp:(void (^)(bool isUp)) cb {
+- (id<ARTCancellable>)internetIsUp:(void (^)(BOOL isUp)) cb {
     NSURL *requestUrl = [NSURL URLWithString:@"http://internet-up.ably-realtime.com/is-the-internet-up.txt"];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
     request.HTTPMethod = @"GET";
 
     [self executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
-            cb(false);
+            cb(NO);
             return;
         }
         NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];

@@ -44,7 +44,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (void)prepareAuthorisationHeader:(ARTAuthMethod)method completion:(void (^)(NSString *__art_nonnull authorization, NSError *__art_nullable error))callback;
 
-- (id<ARTCancellable>)internetIsUp:(void (^)(bool isUp))cb;
+- (id<ARTCancellable>)internetIsUp:(void (^)(BOOL isUp))cb;
 
 @end
 
