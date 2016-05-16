@@ -490,12 +490,6 @@ client.time { time, error in
 }];
 ```
 
-## Known limitations
-
-The following features are not implemented yet:
-
-* MessagePack transport.
-
 ## Support, feedback and troubleshooting
 
 Please visit http://support.ably.io/ for access to our knowledgebase and to ask for any assistance.
