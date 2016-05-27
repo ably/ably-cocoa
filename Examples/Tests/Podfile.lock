@@ -1,5 +1,5 @@
 PODS:
-  - AblyRealtime (0.8.1):
+  - AblyRealtime (0.8.2):
     - msgpack (= 0.1.8)
     - SocketRocket (= 0.5.1)
   - msgpack (0.1.8)
@@ -13,7 +13,7 @@ EXTERNAL SOURCES:
     :path: "../.."
 
 SPEC CHECKSUMS:
-  AblyRealtime: e996d4b76bcd16fc8c3a864a3a6b9f4f6070452d
+  AblyRealtime: 88683bc9d46e810c9f41d2d990c43b5150b96eab
   msgpack: 97491d2ea799408f4694f2c7d7fd79baf77853dd
   SocketRocket: d57c7159b83c3c6655745cd15302aa24b6bae531
 

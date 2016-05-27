@@ -133,7 +133,7 @@ enum {
 
     // ClientID
     if (options.clientId) {
-        NSURLQueryItem *clientIdParam = [NSURLQueryItem queryItemWithName:@"client_id" value:options.clientId];
+        NSURLQueryItem *clientIdParam = [NSURLQueryItem queryItemWithName:@"clientId" value:options.clientId];
         queryItems = [queryItems arrayByAddingObject:clientIdParam];
     }
 

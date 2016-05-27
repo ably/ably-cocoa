@@ -100,7 +100,7 @@ class RealtimeClientConnection: QuickSpec {
                                     expect(query).to(haveParam("accessToken", withValue: client.auth.tokenDetails?.token ?? ""))
                                     expect(query).to(haveParam("echo", withValue: "false"))
                                     expect(query).to(haveParam("format", withValue: "msgpack"))
-                                    expect(query).to(haveParam("client_id", withValue: "client_string"))
+                                    expect(query).to(haveParam("clientId", withValue: "client_string"))
                                 }
                                 else {
                                     XCTFail("MockTransport isn't working")
