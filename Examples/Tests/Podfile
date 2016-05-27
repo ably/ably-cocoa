@@ -1,0 +1,12 @@
+use_frameworks!
+
+pod 'AblyRealtime', :path => '../..'
+
+target 'Tests' do
+
+end
+
+target 'TestsTests' do
+
+end
+
