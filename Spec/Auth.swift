@@ -1697,7 +1697,7 @@ class Auth : QuickSpec {
 
                     let options = AblyTests.clientOptions()
                     options.authCallback = { tokenParams, completion in
-                        rest.auth.executeTokenRequest(currentTokenRequest!, callback: completion);
+                        completion(currentTokenRequest!, nil)
                     }
 
                     waitUntil(timeout: testTimeout) { done in
