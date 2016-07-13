@@ -357,6 +357,7 @@
         case ARTProtocolMessageAttached:
             [self setAttached:message];
             break;
+        case ARTProtocolMessageDetach:
         case ARTProtocolMessageDetached:
             [self setDetached:message];
             break;
@@ -413,7 +414,13 @@
     }
     self.attachSerial = nil;
     
-    ARTStatus *reason = [ARTStatus state:ARTStateNotAttached info:[ARTErrorInfo createWithCode:0 message:@"channel has detached"]];
+    ARTErrorInfo *errorInfo;
+    if (message.error) {
+        errorInfo = message.error;
+    } else {
+        errorInfo = [ARTErrorInfo createWithCode:0 message:@"channel has detached"];
+    }
+    ARTStatus *reason = [ARTStatus state:ARTStateNotAttached info:errorInfo];
     [self detachChannel:reason];
     [_detachedEventEmitter emit:[NSNull null] with:nil];
 }
