@@ -712,6 +712,7 @@
             // Event
             [self onConnected:message];
             break;
+        case ARTProtocolMessageDisconnect:
         case ARTProtocolMessageDisconnected:
             [self onDisconnected:message];
             break;

@@ -2943,6 +2943,26 @@ class RealtimeClientConnection: QuickSpec {
 
             }
 
+            // https://github.com/ably/ably-ios/issues/454
+            it("should not move to FAILED if received DISCONNECT with an error") {
+                let options = AblyTests.commonAppSetup()
+                let client = ARTRealtime(options: options)
+                defer {
+                    client.dispose()
+                    client.close()
+                }
+
+                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+
+                let protoMsg = ARTProtocolMessage()
+                protoMsg.action = .Disconnect
+                protoMsg.error = ARTErrorInfo.createWithCode(123, message: "test error")
+
+                client.realtimeTransport(client.transport, didReceiveMessage: protoMsg)
+
+                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Disconnected))
+                expect(client.connection.errorReason).to(equal(protoMsg.error))
+            }
         }
     }
 }
