@@ -36,6 +36,7 @@ class RealtimeClient: QuickSpec {
                         expect(error).to(beNil())
                         let transport = client.transport as! TestProxyTransport
                         expect(transport.lastUrl!.query).to(haveParam("v", withValue: "0.8"))
+                        expect(transport.lastUrl!.query).to(haveParam("lib", withValue: "ios-0.8"))
                         done()
                     }
                 }

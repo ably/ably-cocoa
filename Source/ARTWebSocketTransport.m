@@ -173,6 +173,9 @@ enum {
     NSURLQueryItem *versionParam = [NSURLQueryItem queryItemWithName:@"v" value:[ARTDefault version]];
     queryItems = [queryItems arrayByAddingObject:versionParam];
 
+    NSURLQueryItem *libVersionParam = [NSURLQueryItem queryItemWithName:@"lib" value:[ARTDefault libVersion]];
+    queryItems = [queryItems arrayByAddingObject:libVersionParam];
+
     // URL
     NSURLComponents *urlComponents = [NSURLComponents componentsWithString:@"/"];
     urlComponents.queryItems = queryItems;
