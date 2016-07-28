@@ -13,6 +13,7 @@
 NSString *const ARTDefault_restHost = @"rest.ably.io";
 NSString *const ARTDefault_realtimeHost = @"realtime.ably.io";
 NSString *const ARTDefault_version = @"0.8";
+NSString *const ARTDefault_library_version = @"0.8";
 NSString *const ARTDefault_platform = @"ios";
 
 
@@ -36,7 +37,7 @@ static int _connectionStateTtl = 60.0;
 }
 
 + (NSString *)libVersion {
-    return [@[ARTDefault_platform, ARTDefault_version] componentsJoinedByString:@"-"];
+    return [@[ARTDefault_platform, ARTDefault_library_version] componentsJoinedByString:@"-"];
 }
 
 + (int)port {
