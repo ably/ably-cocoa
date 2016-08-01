@@ -29,6 +29,8 @@ class RestClient: QuickSpec {
                         expect(error).to(beNil())
                         let version = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["X-Ably-Version"]
                         expect(version).to(equal("0.8"))
+                        let libVersion = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["X-Ably-Lib"]
+                        expect(libVersion).to(equal("0.8.3"))
                         done()
                     }
                 }
