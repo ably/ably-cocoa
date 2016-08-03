@@ -375,8 +375,8 @@ class RestClientChannel: QuickSpec {
                     TestCase(value: text, expected: JSON(["data": text])),
                     TestCase(value: integer, expected: JSON(["data": integer])),
                     TestCase(value: decimal, expected: JSON(["data": decimal])),
-                    TestCase(value: dictionary, expected: JSON(["data": dictionary, "encoding": "json"])),
-                    TestCase(value: array, expected: JSON(["data": array, "encoding": "json"])),
+                    TestCase(value: dictionary, expected: JSON(["data": JSON(dictionary).rawString(0, options: NSJSONWritingOptions.init(rawValue: 0))!, "encoding": "json"])),
+                    TestCase(value: array, expected: JSON(["data": JSON(array).rawString(0, options: NSJSONWritingOptions.init(rawValue: 0))!, "encoding": "json"])),
                     TestCase(value: binaryData, expected: JSON(["data": binaryData.toBase64, "encoding": "base64"])),
                 ]
 
@@ -486,7 +486,8 @@ class RestClientChannel: QuickSpec {
                                 if let request = testHTTPExecutor.requests.last, let http = request.HTTPBody {
                                     // Array
                                     let json = AblyTests.msgpackToJSON(http)
-                                    expect(json["data"].asArray).to(equal(array))
+                                    print(json.rawString())
+                                    expect(JSON(data: json["data"].stringValue.dataUsingEncoding(NSUTF8StringEncoding)!).asArray).to(equal(array))
                                     expect(json["encoding"].string).to(equal("json"))
                                 }
                                 else {
@@ -507,7 +508,7 @@ class RestClientChannel: QuickSpec {
                                 if let request = testHTTPExecutor.requests.last, let http = request.HTTPBody {
                                     // Dictionary
                                     let json = AblyTests.msgpackToJSON(http)
-                                    expect(json["data"].asDictionary).to(equal(dictionary))
+                                    expect(JSON(data: json["data"].stringValue.dataUsingEncoding(NSUTF8StringEncoding)!).asDictionary).to(equal(dictionary))
                                     expect(json["encoding"].string).to(equal("json"))
                                 }
                                 else {
