@@ -3010,13 +3010,21 @@ class RealtimeClientConnection: QuickSpec {
 
                     switch fixtureMessage["expectedType"].string! {
                     case "string":
-                        expect(message.data as? NSString).toNot(beNil())
-                    case "object":
-                        expect(message.data as? NSDictionary).toNot(beNil())
-                    case "array":
-                        expect(message.data as? NSArray).toNot(beNil())
+                        expect(message.data as? NSString).to(equal(fixtureMessage["expectedValue"].string!))
+                    case "jsonObject":
+                        if let data = message.data as? NSDictionary {
+                            expect(JSON(data)).to(equal(fixtureMessage["expectedValue"]))
+                        } else {
+                            fail("expected NSDictionary")
+                        }              
+                    case "jsonArray":
+                        if let data = message.data as? NSArray {
+                            expect(JSON(data)).to(equal(fixtureMessage["expectedValue"]))
+                        } else {
+                            fail("expected NSArray")
+                        }
                     case "binary":
-                        expect(message.data as? NSData).toNot(beNil())
+                        expect(message.data as? NSData).to(equal(fixtureMessage["expectedValue"].string!.dataFromHexadecimalString()!))
                     default:
                         fail("unhandled: \(fixtureMessage["expectedType"].string!)")
                     }
