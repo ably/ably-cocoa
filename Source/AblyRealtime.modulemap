@@ -29,5 +29,7 @@ framework module AblyRealtime {
         header "ARTClientOptions+Private.h"
         header "ARTCrypto+Private.h"
         header "ARTLog+Private.h"
+        header "ARTRealtimePresence+Private.h"
+        header "ARTRestPresence+Private.h"
     }
 }
