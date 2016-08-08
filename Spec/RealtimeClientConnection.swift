@@ -3011,7 +3011,7 @@ class RealtimeClientConnection: QuickSpec {
                     switch fixtureMessage["expectedType"].string! {
                     case "string":
                         expect(message.data as? NSString).toNot(beNil())
-                    case "map":
+                    case "object":
                         expect(message.data as? NSDictionary).toNot(beNil())
                     case "array":
                         expect(message.data as? NSArray).toNot(beNil())
