@@ -8,6 +8,7 @@
 
 import Quick
 import Nimble
+import SwiftyJSON
 
 func countChannels(channels: ARTRealtimeChannels) -> Int {
     var i = 0
@@ -2962,6 +2963,89 @@ class RealtimeClientConnection: QuickSpec {
 
                 expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Disconnected))
                 expect(client.connection.errorReason).to(equal(protoMsg.error))
+            }
+
+            // https://github.com/ably/wiki/issues/22
+            it("should encode and decode fixture messages as expected") {
+                let fixtures = JSON(data: NSData(contentsOfFile: pathForTestResource(testResourcesPath + "messages-encoding.json"))!, options: .MutableContainers)
+
+                let options = AblyTests.commonAppSetup()
+                let client = AblyTests.newRealtime(options)
+                defer { client.close() }
+                let channel = client.channels.get("test")
+                channel.attach()
+
+                expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+                if channel.state != .Attached {
+                    return
+                }
+
+                for (_, fixtureMessage) in fixtures["messages"] {
+                    var receivedMessage: ARTMessage?
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.subscribe { message in
+                            channel.unsubscribe()
+                            receivedMessage = message
+                            done()
+                        }
+
+                        let request = NSMutableURLRequest(URL: NSURL(string: "/channels/\(channel.name)/messages")!)
+                        request.HTTPMethod = "POST"
+                        request.HTTPBody = try! fixtureMessage.rawData()
+                        request.allHTTPHeaderFields = [
+                            "Accept" : "application/json",
+                            "Content-Type" : "application/json"
+                        ]
+                        client.rest.executeRequest(request, withAuthOption: .On, completion: { _, _, err in
+                            if let err = err {
+                                fail("\(err)")
+                            }
+                        })
+                    }
+
+                    guard let message = receivedMessage else {
+                        continue
+                    }
+
+                    switch fixtureMessage["expectedType"].string! {
+                    case "string":
+                        expect(message.data as? NSString).toNot(beNil())
+                    case "map":
+                        expect(message.data as? NSDictionary).toNot(beNil())
+                    case "array":
+                        expect(message.data as? NSArray).toNot(beNil())
+                    case "binary":
+                        expect(message.data as? NSData).toNot(beNil())
+                    default:
+                        fail("unhandled: \(fixtureMessage["expectedType"].string!)")
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish([message]) { err in
+                            if let err = err {
+                                fail("\(err)")
+                                done()
+                                return
+                            }
+
+                            let request = NSMutableURLRequest(URL: NSURL(string: "/channels/\(channel.name)/messages")!)
+                            request.HTTPMethod = "GET"
+                            request.allHTTPHeaderFields = ["Accept" : "application/json"]
+                            client.rest.executeRequest(request, withAuthOption: .On, completion: { _, data, err in
+                                if let err = err {
+                                    fail("\(err)")
+                                    done()
+                                    return
+                                }
+                                let persistedMessage = JSON(data: data!).array!.first!
+                                expect(persistedMessage["data"]).to(equal(fixtureMessage["data"]))
+                                expect(persistedMessage["encoding"]).to(equal(fixtureMessage["encoding"]))
+                                done()
+                            })
+                        }
+                    }
+                }
             }
         }
     }
