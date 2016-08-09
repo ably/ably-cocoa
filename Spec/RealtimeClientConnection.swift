@@ -3024,7 +3024,7 @@ class RealtimeClientConnection: QuickSpec {
                             fail("expected NSArray")
                         }
                     case "binary":
-                        expect(message.data as? NSData).to(equal(fixtureMessage["expectedValue"].string!.dataFromHexadecimalString()!))
+                        expect(message.data as? NSData).to(equal(fixtureMessage["expectedHexValue"].string!.dataFromHexadecimalString()!))
                     default:
                         fail("unhandled: \(fixtureMessage["expectedType"].string!)")
                     }
@@ -3037,7 +3037,7 @@ class RealtimeClientConnection: QuickSpec {
                                 return
                             }
 
-                            let request = NSMutableURLRequest(URL: NSURL(string: "/channels/\(channel.name)/messages")!)
+                            let request = NSMutableURLRequest(URL: NSURL(string: "/channels/\(channel.name)/messages?limit=1")!)
                             request.HTTPMethod = "GET"
                             request.allHTTPHeaderFields = ["Accept" : "application/json"]
                             client.rest.executeRequest(request, withAuthOption: .On, completion: { _, data, err in
