@@ -3066,30 +3066,41 @@ class RealtimeClientConnection: QuickSpec {
                 let msgpackOptions = AblyTests.commonAppSetup()
                 msgpackOptions.useBinaryProtocol = true
 
-                it("should send messages through JSON and retrieve equal messages through MsgPack") {
+                it("should send messages through raw JSON POST and retrieve equal messages through MsgPack and JSON") {
                     let restPublishClient = ARTRest(options: jsonOptions)
-                    let realtimeSubscribeClient = AblyTests.newRealtime(msgpackOptions)
-                    defer { realtimeSubscribeClient.close() }
+                    let realtimeSubscribeClientMsgPack = AblyTests.newRealtime(msgpackOptions)
+                    let realtimeSubscribeClientJSON = AblyTests.newRealtime(jsonOptions)
+                    defer {
+                        realtimeSubscribeClientMsgPack.close()
+                        realtimeSubscribeClientJSON.close()
+                    }
 
-                    let realtimeSubscribeChannel = realtimeSubscribeClient.channels.get("test-subscribe")
-                    realtimeSubscribeChannel.attach()
+                    let realtimeSubscribeChannelMsgPack = realtimeSubscribeClientMsgPack.channels.get("test-subscribe")
+                    let realtimeSubscribeChannelJSON = realtimeSubscribeClientJSON.channels.get(realtimeSubscribeChannelMsgPack.name)
 
-                    expect(realtimeSubscribeChannel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
-                    if realtimeSubscribeChannel.state != .Attached {
-                        return
+                    waitUntil(timeout: testTimeout) { done in
+                        let partlyDone = AblyTests.splitDone(2, done: done)
+                        realtimeSubscribeChannelMsgPack.attach { _ in partlyDone() }
+                        realtimeSubscribeChannelJSON.attach { _ in partlyDone() }
                     }
 
                     for (_, fixtureMessage) in fixtures["messages"] {
-                        var receivedMessage: ARTMessage?
-
                         waitUntil(timeout: testTimeout) { done in
-                            realtimeSubscribeChannel.subscribe { message in
-                                realtimeSubscribeChannel.unsubscribe()
-                                receivedMessage = message
-                                done()
+                            let partlyDone = AblyTests.splitDone(2, done: done)
+
+                            realtimeSubscribeChannelMsgPack.subscribe { message in
+                                realtimeSubscribeChannelMsgPack.unsubscribe()
+                                expectDataToMatch(message, fixtureMessage)
+                                partlyDone()
                             }
 
-                            let request = NSMutableURLRequest(URL: NSURL(string: "/channels/\(realtimeSubscribeChannel.name)/messages")!)
+                            realtimeSubscribeChannelJSON.subscribe { message in
+                                realtimeSubscribeChannelJSON.unsubscribe()
+                                expectDataToMatch(message, fixtureMessage)
+                                partlyDone()
+                            }
+
+                            let request = NSMutableURLRequest(URL: NSURL(string: "/channels/\(realtimeSubscribeChannelMsgPack.name)/messages")!)
                             request.HTTPMethod = "POST"
                             request.HTTPBody = try! fixtureMessage.rawData()
                             request.allHTTPHeaderFields = [
@@ -3102,20 +3113,16 @@ class RealtimeClientConnection: QuickSpec {
                                 }
                             })
                         }
-
-                        guard let message = receivedMessage else {
-                            continue
-                        }
-
-                        expectDataToMatch(message, fixtureMessage)
                     }
                 }
 
-                it("should send messages through MsgPack and retrieve equal messages through JSON") {
-                    let restPublishClient = ARTRest(options: msgpackOptions)
+                it("should send messages through MsgPack and JSON and retrieve equal messages through raw JSON GET") {
+                    let restPublishClientMsgPack = ARTRest(options: msgpackOptions)
+                    let restPublishClientJSON = ARTRest(options: jsonOptions)
                     let restRetrieveClient = ARTRest(options: jsonOptions)
 
-                    let restPublishChannel = restPublishClient.channels.get("test-publish")
+                    let restPublishChannelMsgPack = restPublishClientMsgPack.channels.get("test-publish")
+                    let restPublishChannelJSON = restPublishClientJSON.channels.get(restPublishChannelMsgPack.name)
 
                     for (_, fixtureMessage) in fixtures["messages"] {
                         var data: AnyObject
@@ -3125,32 +3132,34 @@ class RealtimeClientConnection: QuickSpec {
                             data = fixtureMessage["expectedValue"].object
                         }
 
-                        waitUntil(timeout: testTimeout) { done in
-                            restPublishChannel.publish("event", data: data) { err in 
-                                if let err = err {
-                                    fail("\(err)")
+                        for restPublishChannel in [restPublishChannelMsgPack, restPublishChannelJSON] {
+                            waitUntil(timeout: testTimeout) { done in
+                                restPublishChannel.publish("event", data: data) { err in 
+                                    if let err = err {
+                                        fail("\(err)")
+                                        done()
+                                        return
+                                    }
                                     done()
-                                    return
                                 }
-                                done()
                             }
-                        }
 
-                        waitUntil(timeout: testTimeout) { done in
-                            let request = NSMutableURLRequest(URL: NSURL(string: "/channels/\(restPublishChannel.name)/messages?limit=1")!)
-                            request.HTTPMethod = "GET"
-                            request.allHTTPHeaderFields = ["Accept" : "application/json"]
-                            restRetrieveClient.executeRequest(request, withAuthOption: .On, completion: { _, data, err in
-                                if let err = err {
-                                    fail("\(err)")
+                            waitUntil(timeout: testTimeout) { done in
+                                let request = NSMutableURLRequest(URL: NSURL(string: "/channels/\(restPublishChannel.name)/messages?limit=1")!)
+                                request.HTTPMethod = "GET"
+                                request.allHTTPHeaderFields = ["Accept" : "application/json"]
+                                restRetrieveClient.executeRequest(request, withAuthOption: .On, completion: { _, data, err in
+                                    if let err = err {
+                                        fail("\(err)")
+                                        done()
+                                        return
+                                    }
+                                    let persistedMessage = JSON(data: data!).array!.first!
+                                    expect(persistedMessage["data"]).to(equal(persistedMessage["data"]))
+                                    expect(persistedMessage["encoding"]).to(equal(fixtureMessage["encoding"]))
                                     done()
-                                    return
-                                }
-                                let persistedMessage = JSON(data: data!).array!.first!
-                                expect(persistedMessage["data"]).to(equal(persistedMessage["data"]))
-                                expect(persistedMessage["encoding"]).to(equal(fixtureMessage["encoding"]))
-                                done()
-                            })
+                                })
+                            }
                         }
                     }
                 }
