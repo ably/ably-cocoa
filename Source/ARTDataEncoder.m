@@ -90,6 +90,8 @@
             return [[ARTDataEncoderOutput alloc] initWithData:encoded encoding:encoding errorInfo:errorInfo];
         }
         encoding = [NSString artAddEncoding:[self cipherEncoding] toString:encoding];
+    } else if (jsonEncoded) {
+        encoded = [[NSString alloc] initWithData:jsonEncoded encoding:NSUTF8StringEncoding];
     }
 
     if (toBase64 != nil) {
