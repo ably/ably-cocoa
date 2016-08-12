@@ -6,6 +6,7 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
+import AblyRealtime
 import Nimble
 import Quick
 import Foundation

@@ -6,6 +6,7 @@
 //  Copyright © 2015 г. Ably. All rights reserved.
 //
 
+import AblyRealtime
 import Foundation
 import XCTest
 import Quick
