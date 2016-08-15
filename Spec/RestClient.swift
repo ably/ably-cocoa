@@ -30,6 +30,8 @@ class RestClient: QuickSpec {
                         expect(error).to(beNil())
                         let version = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["X-Ably-Version"]
                         expect(version).to(equal("0.8"))
+                        let libVersion = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["X-Ably-Lib"]
+                        expect(libVersion).to(equal("ios-0.8.3"))
                         done()
                     }
                 }
@@ -39,7 +41,7 @@ class RestClient: QuickSpec {
             context("initializer") {
                 it("should accept an API key") {
                     let options = AblyTests.commonAppSetup()
-                    
+
                     let client = ARTRest(key: options.key!)
                     client.prioritizedHost = options.restHost
 
@@ -153,10 +155,10 @@ class RestClient: QuickSpec {
                     let client = ARTRest(options: options)
 
                     client.logger.log("This is a warning", withLevel: .Warn)
-                    
+
                     expect(Log.interceptedLog.0).to(equal("This is a warning"))
                     expect(Log.interceptedLog.1).to(equal(ARTLogLevel.Warn))
-                    
+
                     expect(client.logger.logLevel).to(equal(customLogger.logLevel))
                 }
             }
@@ -168,41 +170,41 @@ class RestClient: QuickSpec {
                     options.environment = "fake"
                     let client = ARTRest(options: options)
                     client.httpExecutor = testHTTPExecutor
-                    
+
                     publishTestMessage(client, failOnError: false)
-                    
+
                     expect(testHTTPExecutor.requests.first?.URL?.host).toEventually(equal("fake-rest.ably.io"), timeout: testTimeout)
                 }
-                
+
                 it("should accept an options object with an environment set") {
                     let options = ARTClientOptions(key: "fake:key")
                     options.environment = "myEnvironment"
                     let client = ARTRest(options: options)
                     client.httpExecutor = testHTTPExecutor
-                    
+
                     publishTestMessage(client, failOnError: false)
-                    
+
                     expect(testHTTPExecutor.requests.first?.URL?.host).toEventually(equal("myEnvironment-rest.ably.io"), timeout: testTimeout)
                 }
-                
+
                 it("should default to https://rest.ably.io") {
                     let options = ARTClientOptions(key: "fake:key")
                     let client = ARTRest(options: options)
                     client.httpExecutor = testHTTPExecutor
-                    
+
                     publishTestMessage(client, failOnError: false)
-                    
+
                     expect(testHTTPExecutor.requests.first?.URL?.absoluteString).toEventually(beginWith("https://rest.ably.io"), timeout: testTimeout)
                 }
-                
+
                 it("should connect over plain http:// when tls is off") {
                     let options = AblyTests.clientOptions(requestToken: true)
                     options.tls = false
                     let client = ARTRest(options: options)
                     client.httpExecutor = testHTTPExecutor
-                    
+
                     publishTestMessage(client, failOnError: false)
-                    
+
                     expect(testHTTPExecutor.requests.first?.URL?.scheme).toEventually(equal("http"), timeout: testTimeout)
                 }
             }
@@ -279,7 +281,7 @@ class RestClient: QuickSpec {
             it("should provide access to the AuthOptions object passed in ClientOptions") {
                 let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                 let client = ARTRest(options: options)
-                
+
                 let authOptions = client.auth.options
 
                 expect(authOptions == options).to(beTrue())
@@ -301,19 +303,19 @@ class RestClient: QuickSpec {
                 }
                 expect(testHTTPExecutor.requests.first!.URL!.absoluteString).to(contain("//rest.ably.test"))
             }
-            
+
             // RSC16
             context("time") {
                 it("should return server time") {
                     let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                     let client = ARTRest(options: options)
-                    
+
                     var time: NSDate?
 
                     client.time({ date, error in
                         time = date
                     })
-                    
+
                     expect(time?.timeIntervalSince1970).toEventually(beCloseTo(NSDate().timeIntervalSince1970, within: 60), timeout: testTimeout)
                 }
             }

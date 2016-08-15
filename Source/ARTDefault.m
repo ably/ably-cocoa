@@ -13,6 +13,7 @@
 NSString *const ARTDefault_restHost = @"rest.ably.io";
 NSString *const ARTDefault_realtimeHost = @"realtime.ably.io";
 NSString *const ARTDefault_version = @"0.8";
+NSString *const ARTDefault_libVersion = @"0.8.3";
 
 
 static int _realtimeRequestTimeout = 10.0;
@@ -32,6 +33,10 @@ static int _connectionStateTtl = 60.0;
 
 + (NSString *)version {
     return ARTDefault_version;
+}
+
++ (NSString *)libVersion {
+    return [NSString stringWithFormat:@"ios-%@", ARTDefault_libVersion];
 }
 
 + (int)port {
