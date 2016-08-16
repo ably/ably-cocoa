@@ -13,6 +13,9 @@
 NSString *const ARTDefault_restHost = @"rest.ably.io";
 NSString *const ARTDefault_realtimeHost = @"realtime.ably.io";
 NSString *const ARTDefault_version = @"0.8";
+NSString *const ARTDefault_ablyBundleId = @"io.ably.Ably";
+NSString *const ARTDefault_bundleVersionKey = @"CFBundleShortVersionString";
+NSString *const ARTDefault_platform = @"ios-";
 
 
 static int _realtimeRequestTimeout = 10.0;
@@ -64,6 +67,13 @@ static int _connectionStateTtl = 60.0;
     @synchronized (self) {
         _connectionStateTtl = value;
     }
+}
+
++ (NSString *)libraryVersion {
+    NSBundle* ablyBundle = [NSBundle bundleWithIdentifier:ARTDefault_ablyBundleId];
+    NSDictionary* infoDictionary = [ablyBundle infoDictionary];
+    NSString* versionString = infoDictionary[ARTDefault_bundleVersionKey];
+    return [NSString stringWithFormat:@"%@%@", ARTDefault_platform, versionString];
 }
 
 @end
