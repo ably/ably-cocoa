@@ -154,7 +154,11 @@
         }
         if (retries < _options.httpMaxRetryCount && [self shouldRetryWithFallback:request response:response error:error]) {
             if (!blockFallbacks && [request.URL.host isEqualToString:(_prioritizedHost ? _prioritizedHost : [ARTDefault restHost])]) {
-                blockFallbacks = [[ARTFallback alloc] init];
+                if(self.options.fallbackHosts != nil) {
+                    blockFallbacks = [[ARTFallback alloc] initWithFallbackHosts:self.options.fallbackHosts];
+                } else {
+                    blockFallbacks = [[ARTFallback alloc] init];
+                }
             }
             if (blockFallbacks) {
                 NSString *host = [blockFallbacks popFallbackHost];

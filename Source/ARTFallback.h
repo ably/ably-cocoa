@@ -26,6 +26,11 @@ extern int (^ARTFallback_getRandomHostIndex)(int count);
  */
 -(NSString *) popFallbackHost;
 
+/**
+ Init with fallback hosts array.
+ */
+-(instancetype)initWithFallbackHosts:(NSArray *)fallbackHosts;
+
 @end
 
 ART_ASSUME_NONNULL_END

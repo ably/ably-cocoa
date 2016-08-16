@@ -38,6 +38,7 @@ NSString *ARTDefaultEnvironment = nil;
     _httpRequestTimeout = 15.0; //Seconds
     _httpMaxRetryDuration = 10.0; //Seconds
     _httpMaxRetryCount = 3;
+    _fallbackHosts = nil;
     return self;
 }
 
@@ -98,6 +99,7 @@ NSString *ARTDefaultEnvironment = nil;
     options.httpMaxRetryDuration = self.httpMaxRetryDuration;
     options.httpOpenTimeout = self.httpOpenTimeout;
     options.httpRequestTimeout = self.httpRequestTimeout;
+    options.fallbackHosts = self.fallbackHosts;
     
     return options;
 }
