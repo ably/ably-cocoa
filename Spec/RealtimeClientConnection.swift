@@ -170,6 +170,41 @@ class RealtimeClientConnection: QuickSpec {
                 }
                 client.close()
             }
+            
+            // RTN2g
+            it("Library and version param `lib` should include the `X-Ably-Lib` header value") {
+                let options = AblyTests.commonAppSetup()
+                options.autoConnect = false
+                
+                let client = ARTRealtime(options: options)
+                client.setTransportClass(TestProxyTransport.self)
+                client.connect()
+                
+                waitUntil(timeout: testTimeout) { done in
+                    client.connection.on { stateChange in
+                        let stateChange = stateChange!
+                        let state = stateChange.current
+                        let errorInfo = stateChange.reason
+                        switch state {
+                        case .Failed:
+                            AblyTests.checkError(errorInfo, withAlternative: "Failed state")
+                            done()
+                        case .Connected:
+                            if let transport = client.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
+                                expect(query).to(haveParam("lib", withValue: ARTDefault.libraryVersion()))
+                            }
+                            else {
+                                XCTFail("MockTransport isn't working")
+                            }
+                            done()
+                            break
+                        default:
+                            break
+                        }
+                    }
+                }
+                client.close()
+            }
 
             // RTN4
             context("event emitter") {
