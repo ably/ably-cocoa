@@ -21,7 +21,10 @@ extern int (^ARTFallback_getRandomHostIndex)(int count);
     
 }
 
-- (id)initWithFallbackHosts:(art_nullable NSArray<NSString*> *)fallbackHosts;
+/**
+ Init with fallback hosts array.
+ */
+- (instancetype)initWithFallbackHosts:(art_nullable __GENERIC(NSArray, NSString *) *)fallbackHosts;
 
 /**
  returns a random fallback host, returns null when all hosts have been popped.
