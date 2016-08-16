@@ -70,9 +70,9 @@ static int _connectionStateTtl = 60.0;
 }
 
 + (NSString *)libraryVersion {
-    NSBundle* ablyBundle = [NSBundle bundleWithIdentifier:ARTDefault_ablyBundleId];
-    NSDictionary* infoDictionary = [ablyBundle infoDictionary];
-    NSString* versionString = infoDictionary[ARTDefault_bundleVersionKey];
+    NSBundle *ablyBundle = [NSBundle bundleWithIdentifier:ARTDefault_ablyBundleId];
+    NSDictionary *infoDictionary = [ablyBundle infoDictionary];
+    NSString *versionString = infoDictionary[ARTDefault_bundleVersionKey];
     return [NSString stringWithFormat:@"%@%@", ARTDefault_platform, versionString];
 }
 
