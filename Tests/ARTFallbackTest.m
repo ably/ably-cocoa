@@ -48,7 +48,16 @@
                              @"test2.ably.com",
                              @"test3.ably.com",
                              @"test4.ably.com",
-                             @"test5.ably.com"];
+                             @"test5.ably.com",
+                             @"test6.ably.com",
+                             @"test7.ably.com",
+                             @"test8.ably.com",
+                             @"test9.ably.com",
+                             @"test10.ably.com",
+                             @"test11.ably.com",
+                             @"test12.ably.com",
+                             @"test13.ably.com",
+                             @"test14.ably.com"];
     ARTFallback *f = [[ARTFallback alloc] initWithFallbackHosts:customHosts];
     
     NSSet *customSet = [NSSet setWithArray:customHosts];
