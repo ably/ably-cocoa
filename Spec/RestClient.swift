@@ -844,6 +844,11 @@ class RestClient: QuickSpec {
                         let headerLibVersion = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["X-Ably-Lib"]
                         let ablyBundleLibVersion = ARTDefault.libraryVersion()
                         expect(headerLibVersion).to(equal(ablyBundleLibVersion))
+                        
+                        let patternToMatch = "ios-0.8."
+                        let match = headerLibVersion?.hasPrefix(patternToMatch)
+                        expect(match).to(beTrue())
+                        
                         done()
                     }
                 }
