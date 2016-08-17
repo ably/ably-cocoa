@@ -44,7 +44,11 @@
 }
 
 - (void)testCustomFallbackHosts {
-    NSArray *customHosts = @[@"test.ably.com", @"test2.ably.com", @"test3.ably.com"];
+    NSArray *customHosts = @[@"test.ably.com",
+                             @"test2.ably.com",
+                             @"test3.ably.com",
+                             @"test4.ably.com",
+                             @"test5.ably.com"];
     ARTFallback *f = [[ARTFallback alloc] initWithFallbackHosts:customHosts];
     
     NSSet *customSet = [NSSet setWithArray:customHosts];
