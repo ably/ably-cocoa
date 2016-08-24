@@ -32,6 +32,7 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: options)
                     client.setTransportClass(TestProxyTransport.self)
                     client.connect()
+                    defer { client.close() }
 
                     if let transport = client.transport as? TestProxyTransport, let url = transport.lastUrl {
                         expect(url.host).to(equal("realtime.ably.io"))
@@ -39,7 +40,6 @@ class RealtimeClientConnection: QuickSpec {
                     else {
                         XCTFail("MockTransport isn't working")
                     }
-                    client.close()
                 }
 
                 it("should connect with query string params") {
@@ -49,6 +49,7 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: options)
                     client.setTransportClass(TestProxyTransport.self)
                     client.connect()
+                    defer { client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.on { stateChange in
@@ -75,7 +76,6 @@ class RealtimeClientConnection: QuickSpec {
                             }
                         }
                     }
-                    client.close()
                 }
 
                 it("should connect with query string params including clientId") {
@@ -87,6 +87,7 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: options)
                     client.setTransportClass(TestProxyTransport.self)
                     client.connect()
+                    defer { client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.on { stateChange in
@@ -114,7 +115,6 @@ class RealtimeClientConnection: QuickSpec {
                             }
                         }
                     }
-                    client.close()
                 }
             }
 
@@ -126,8 +126,10 @@ class RealtimeClientConnection: QuickSpec {
                 // Default
                 expect(options.autoConnect).to(beTrue(), description: "autoConnect should be true by default")
 
+                let client = ARTRealtime(options: options)
+                defer { client.close() }
                 // The only way to control this functionality is with the options flag
-                ARTRealtime(options: options).connection.on { stateChange in
+                client.connection.on { stateChange in
                     let stateChange = stateChange!
                     let state = stateChange.current
                     let errorInfo = stateChange.reason
@@ -146,6 +148,7 @@ class RealtimeClientConnection: QuickSpec {
                 options.autoConnect = false
 
                 let client = ARTRealtime(options: options)
+                defer { client.close() }
                 var waiting = true
 
                 waitUntil(timeout: testTimeout) { done in
@@ -168,7 +171,6 @@ class RealtimeClientConnection: QuickSpec {
                         client.connect()
                     }
                 }
-                client.close()
             }
 
             // RTN4
@@ -181,6 +183,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.disconnectedRetryTimeout = 0.0
 
                     let client = ARTRealtime(options: options)
+                    defer { client.close() }
                     let connection = client.connection
                     var events: [ARTRealtimeConnectionState] = []
 
@@ -244,8 +247,6 @@ class RealtimeClientConnection: QuickSpec {
                     expect(events[5].rawValue).to(equal(ARTRealtimeConnectionState.Closed.rawValue), description: "Should be CLOSED state")
                     expect(events[6].rawValue).to(equal(ARTRealtimeConnectionState.Suspended.rawValue), description: "Should be SUSPENDED state")
                     expect(events[7].rawValue).to(equal(ARTRealtimeConnectionState.Failed.rawValue), description: "Should be FAILED state")
-
-                    client.close()
                 }
 
                 // RTN4b
@@ -254,6 +255,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.autoConnect = false
 
                     let client = ARTRealtime(options: options)
+                    defer { client.close() }
                     let connection = client.connection
                     var events: [ARTRealtimeConnectionState] = []
 
@@ -283,13 +285,13 @@ class RealtimeClientConnection: QuickSpec {
 
                     expect(events[0].rawValue).to(equal(ARTRealtimeConnectionState.Connecting.rawValue), description: "Should be CONNECTING state")
                     expect(events[1].rawValue).to(equal(ARTRealtimeConnectionState.Connected.rawValue), description: "Should be CONNECTED state")
-
-                    connection.close()
                 }
 
                 // RTN4c
                 it("should emit states when connection is closed") {
-                    let connection = ARTRealtime(options: AblyTests.commonAppSetup()).connection
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    let connection = client.connection
+                    defer { client.close() }
                     var events: [ARTRealtimeConnectionState] = []
 
                     waitUntil(timeout: testTimeout) { done in
@@ -319,8 +321,6 @@ class RealtimeClientConnection: QuickSpec {
 
                     expect(events[0].rawValue).to(equal(ARTRealtimeConnectionState.Closing.rawValue), description: "Should be CLOSING state")
                     expect(events[1].rawValue).to(equal(ARTRealtimeConnectionState.Closed.rawValue), description: "Should be CLOSED state")
-
-                    connection.close()
                 }
 
                 // RTN4d
@@ -328,6 +328,7 @@ class RealtimeClientConnection: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
+                    defer { client.close() }
                     let connection = client.connection
                     expect(connection.state.rawValue).to(equal(ARTRealtimeConnectionState.Initialized.rawValue), description: "Missing INITIALIZED state")
 
@@ -348,14 +349,13 @@ class RealtimeClientConnection: QuickSpec {
                         }
                         client.connect()
                     }
-
-                    connection.close()
                 }
 
                 // RTN4f
                 it("should have the reason which contains an ErrorInfo") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
+                    defer { client.close() }
                     let connection = client.connection
 
                     // TODO: ConnectionStateChange object
@@ -379,8 +379,6 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     expect(errorInfo).toNot(beNil())
-
-                    connection.close()
                 }
             }
 
@@ -848,6 +846,11 @@ class RealtimeClientConnection: QuickSpec {
                 it("should have unique IDs") {
                     let options = AblyTests.commonAppSetup()
                     var disposable = [ARTRealtime]()
+                    defer {
+                        for client in disposable {
+                            client.close()
+                        }
+                    }
                     var ids = [String]()
                     let max = 25
 
@@ -918,6 +921,11 @@ class RealtimeClientConnection: QuickSpec {
                 it("should have unique connection keys") {
                     let options = AblyTests.commonAppSetup()
                     var disposable = [ARTRealtime]()
+                    defer {
+                        for client in disposable {
+                            client.close()
+                        }
+                    }
                     var keys = [String]()
                     let max = 25
 
@@ -2618,6 +2626,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     client.connect()
+                    defer { client.close() }
 
                     expect(urlConnections).toEventually(haveCount(2), timeout: testTimeout)
 
