@@ -8,8 +8,10 @@ install:
   # Install Scan
   # Automatically switches to the travis formatter when running on Travis
   - gem install scan
+  # Remove old versions of CocoaPods
+  - gem uninstall cocoapods -aIx
   # Install CocoaPods
-  - gem install cocoapods -v '0.39.0' --no-rdoc --no-ri --no-document --quiet
+  - gem install cocoapods -v '1.0.1' --no-rdoc --no-ri --no-document --quiet
   - pod install
   # List of schemes
   - xcodebuild -workspace ./Ably.xcworkspace -list
