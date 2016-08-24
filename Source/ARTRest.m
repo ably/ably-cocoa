@@ -132,6 +132,7 @@
     NSString *accept = [[_encoders.allValues valueForKeyPath:@"mimeType"] componentsJoinedByString:@","];
     [request setValue:accept forHTTPHeaderField:@"Accept"];
     [request setValue:[ARTDefault version] forHTTPHeaderField:@"X-Ably-Version"];
+    [request setValue:[ARTDefault libraryVersion] forHTTPHeaderField:@"X-Ably-Lib"];
 
     [request setTimeoutInterval:_options.httpRequestTimeout];
 

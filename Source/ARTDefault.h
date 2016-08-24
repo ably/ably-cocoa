@@ -35,4 +35,6 @@
 
 + (NSString *)version;
 
++ (NSString *)libraryVersion;
+
 @end
