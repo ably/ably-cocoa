@@ -400,6 +400,11 @@ class RealtimeClientConnection: QuickSpec {
                 let channelName = "chat"
 
                 TotalReach.shared = 0
+                defer {
+                    for client in disposable {
+                        client.close()
+                    }
+                }
                 for _ in 1...max {
                     let client = ARTRealtime(options: options)
                     disposable.append(client)
