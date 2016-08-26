@@ -23,6 +23,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportErrorType) {
     ARTRealtimeTransportErrorTypeHostUnreachable,
     ARTRealtimeTransportErrorTypeTimeout,
     ARTRealtimeTransportErrorTypeBadResponse,
+    ARTRealtimeTransportErrorTypeNoInternet,
     ARTRealtimeTransportErrorTypeAuth,
     ARTRealtimeTransportErrorTypeOther
 };

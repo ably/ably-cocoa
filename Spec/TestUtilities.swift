@@ -548,7 +548,7 @@ class MockHTTP: ARTHttp {
         delay(0.0) { // Delay to simulate asynchronicity.
             switch self.network {
             case .NoInternet:
-                callback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1009, userInfo: [NSLocalizedDescriptionKey: "The Internet connection appears to be offline.."]))
+                callback?(nil, nil, NSError(domain: "NSPOSIXErrorDomain", code: 57, userInfo: [NSLocalizedDescriptionKey: "The Internet connection appears to be offline.."]))
             case .HostUnreachable:
                 callback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1003, userInfo: [NSLocalizedDescriptionKey: "A server with the specified hostname could not be found."]))
             case .RequestTimeout(let timeout):

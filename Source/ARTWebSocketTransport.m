@@ -317,6 +317,8 @@ enum {
                                                     badResponseCode:[(NSNumber *)status integerValue]
                                                                 url:self.websocketURL];
         }
+    } else if ([error.domain isEqualToString:@"NSPOSIXErrorDomain"] && error.code == 57) {
+        type = ARTRealtimeTransportErrorTypeNoInternet;
     }
 
     return [[ARTRealtimeTransportError alloc] initWithError:error type:type url:self.websocketURL];
