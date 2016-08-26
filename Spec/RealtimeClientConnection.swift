@@ -2526,6 +2526,27 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
+                it("should move to disconnected when there's no internet") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = AblyTests.newRealtime(options)
+                    defer {
+                        client.dispose()
+                        client.close()
+                    }
+                    client.setTransportClass(TestProxyTransport.self)
+
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+
+                    guard let wsTransport = client.transport as? ARTWebSocketTransport else {
+                        fail("expected WS transport")
+                        return
+                    }
+
+                    wsTransport.webSocket(wsTransport.websocket, didFailWithError:NSError(domain: "NSPOSIXErrorDomain", code: 57, userInfo: [NSLocalizedDescriptionKey: "Socket is not connected"]))
+
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Disconnected), timeout: testTimeout)
+                }
+
                 it("should not use an alternative host when the client receives a bad request") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.autoConnect = false
