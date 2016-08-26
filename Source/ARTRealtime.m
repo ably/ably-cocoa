@@ -766,6 +766,9 @@
         } else if (_fallbacks && [self reconnectWithFallback]) {
             return;
         }
+    } else if (error.type == ARTRealtimeTransportErrorTypeNoInternet) {
+       [self transition:ARTRealtimeDisconnected];
+        return;
     }
 
     [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithNSError:error.error]];
