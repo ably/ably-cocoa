@@ -304,6 +304,33 @@ channel.presence.history { presencePage, error in
 }];
 ```
 
+### Using the `authCallback`
+
+A callback to call to obtain a signed token request.
+Assume given auth `json` data, then `ARTClientOptions` and `ARTRealtime` objects can be instantiated as follow:
+
+**Swift**
+
+```swift
+let clientOptions = ARTClientOptions()
+clientOptions.authCallback = { params, callback in
+    let tokenParams = ARTTokenParams(clientId: json["clientId"] /*string*/)
+
+    let tokenRequest = ARTTokenRequest(tokenParams: tokenParams),
+                                           keyName: json["keyName"], /*string*/
+                                             nonce: json["nonce"], /*string*/
+                                               mac: json["mac"]) /*string*/
+    tokenRequest.clientId = json["clientId"] /*string*/
+    tokenRequest.ttl = json["ttl"] /*double*/
+    tokenRequest.capability = json["capability"] /*string*/
+    tokenRequest.timestamp = NSDate(timeIntervalSince1970: (json["timestamp"] /*double*/ / 1000))
+
+    callback(tokenRequest, nil)
+}
+
+let client = ARTRealtime(options: clientOptions)
+```
+
 ## Using the REST API
 
 ### Introduction
