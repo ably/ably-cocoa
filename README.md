@@ -306,26 +306,29 @@ channel.presence.history { presencePage, error in
 
 ### Using the `authCallback`
 
-A callback to call to obtain a signed token request.
-Assume given auth `json` data, then `ARTClientOptions` and `ARTRealtime` objects can be instantiated as follow:
+A callback to call to obtain a signed token request.  
+`ARTClientOptions` and `ARTRealtime` objects can be instantiated as follow:
 
 **Swift**
 
 ```swift
 let clientOptions = ARTClientOptions()
 clientOptions.authCallback = { params, callback in
-    let tokenParams = ARTTokenParams(clientId: json["clientId"] /*string*/)
+    getTokenRequestJSONFromYourServer(params) { json, error in
+        //handle error
+        let tokenParams = ARTTokenParams(clientId: json["clientId"])
 
-    let tokenRequest = ARTTokenRequest(tokenParams: tokenParams),
-                                           keyName: json["keyName"], /*string*/
-                                             nonce: json["nonce"], /*string*/
-                                               mac: json["mac"]) /*string*/
-    tokenRequest.clientId = json["clientId"] /*string*/
-    tokenRequest.ttl = json["ttl"] /*double*/
-    tokenRequest.capability = json["capability"] /*string*/
-    tokenRequest.timestamp = NSDate(timeIntervalSince1970: (json["timestamp"] /*double*/ / 1000))
+        let tokenRequest = ARTTokenRequest(tokenParams: tokenParams,
+                                               keyName: json["keyName"],
+                                                 nonce: json["nonce"],
+                                                   mac: json["mac"])
+        tokenRequest.clientId = json["clientId"]
+        tokenRequest.ttl = json["ttl"]
+        tokenRequest.capability = json["capability"]
+        tokenRequest.timestamp = NSDate(timeIntervalSince1970: (json["timestamp"] / 1000))
 
-    callback(tokenRequest, nil)
+        callback(tokenRequest, nil)
+    }
 }
 
 let client = ARTRealtime(options: clientOptions)
