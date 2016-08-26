@@ -177,8 +177,8 @@
 		EB8AC6431C6515ED002ABA92 /* ARTTokenParams+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB8AC6421C6515ED002ABA92 /* ARTTokenParams+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EB91213E1CA0AD6600BA0A40 /* ARTMsgPackEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = EB91213D1CA0AD6600BA0A40 /* ARTMsgPackEncoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EB9121401CA0AD8200BA0A40 /* ARTMsgPackEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB91213F1CA0AD8200BA0A40 /* ARTMsgPackEncoder.m */; };
-		EB9C530B1CD7BEB100C80457 /* ARTJsonLikeEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = EB9C530A1CD7BEB100C80457 /* ARTJsonLikeEncoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		EB9C530D1CD7BFF300C80457 /* ARTJsonLikeEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB9C530C1CD7BFF300C80457 /* ARTJsonLikeEncoder.m */; };
+		EB9C530B1CD7BEB100.8.557 /* ARTJsonLikeEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = EB9C530A1CD7BEB100.8.557 /* ARTJsonLikeEncoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		EB9C530D1CD7BFF300.8.557 /* ARTJsonLikeEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB9C530C1CD7BFF300.8.557 /* ARTJsonLikeEncoder.m */; };
 		EBAB9A6F1C69702800AF036B /* ReadmeExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBAB9A6E1C69702800AF036B /* ReadmeExamples.swift */; };
 		EBAB9A711C69719900AF036B /* ARTReadmeExamples.m in Sources */ = {isa = PBXBuildFile; fileRef = EBAB9A701C69719900AF036B /* ARTReadmeExamples.m */; };
 		EBFA366E1D58B05000B09AA7 /* ARTRestPresence+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB7617701CB6C18C00D0981E /* ARTRestPresence+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -411,8 +411,8 @@
 		EB8AC6421C6515ED002ABA92 /* ARTTokenParams+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTTokenParams+Private.h"; sourceTree = "<group>"; };
 		EB91213D1CA0AD6600BA0A40 /* ARTMsgPackEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTMsgPackEncoder.h; sourceTree = "<group>"; };
 		EB91213F1CA0AD8200BA0A40 /* ARTMsgPackEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTMsgPackEncoder.m; sourceTree = "<group>"; };
-		EB9C530A1CD7BEB100C80457 /* ARTJsonLikeEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTJsonLikeEncoder.h; sourceTree = "<group>"; };
-		EB9C530C1CD7BFF300C80457 /* ARTJsonLikeEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTJsonLikeEncoder.m; sourceTree = "<group>"; };
+		EB9C530A1CD7BEB100.8.557 /* ARTJsonLikeEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTJsonLikeEncoder.h; sourceTree = "<group>"; };
+		EB9C530C1CD7BFF300.8.557 /* ARTJsonLikeEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTJsonLikeEncoder.m; sourceTree = "<group>"; };
 		EBAB9A6E1C69702800AF036B /* ReadmeExamples.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReadmeExamples.swift; sourceTree = "<group>"; };
 		EBAB9A701C69719900AF036B /* ARTReadmeExamples.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTReadmeExamples.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -716,8 +716,8 @@
 				EB5E058C1C77027600A48B39 /* ARTCrypto+Private.h */,
 				960D07921A45F1D800ED8C8C /* ARTCrypto.m */,
 				96A507A71A37806A0077CDF8 /* ARTEncoder.h */,
-				EB9C530A1CD7BEB100C80457 /* ARTJsonLikeEncoder.h */,
-				EB9C530C1CD7BFF300C80457 /* ARTJsonLikeEncoder.m */,
+				EB9C530A1CD7BEB100.8.557 /* ARTJsonLikeEncoder.h */,
+				EB9C530C1CD7BFF300.8.557 /* ARTJsonLikeEncoder.m */,
 				96A507AB1A3780F60077CDF8 /* ARTJsonEncoder.h */,
 				96A507AC1A3780F60077CDF8 /* ARTJsonEncoder.m */,
 				EB91213D1CA0AD6600BA0A40 /* ARTMsgPackEncoder.h */,
@@ -804,7 +804,7 @@
 				D746AE381BBC3201003ECEF8 /* ARTMessage.h in Headers */,
 				D746AE471BBD6FE9003ECEF8 /* ARTQueuedMessage.h in Headers */,
 				1C2B0FFD1B136A6D00E3633C /* ARTPresenceMap.h in Headers */,
-				EB9C530B1CD7BEB100C80457 /* ARTJsonLikeEncoder.h in Headers */,
+				EB9C530B1CD7BEB100.8.557 /* ARTJsonLikeEncoder.h in Headers */,
 				D7CEF12D1C8D821D004FB242 /* ARTRealtimeChannels+Private.h in Headers */,
 				EB89D4011C61C10E007FA5B7 /* ARTChannels+Private.h in Headers */,
 				1CD8DC9F1B1C7315007EAF36 /* ARTDefault.h in Headers */,
@@ -1167,7 +1167,7 @@
 				1C578E201B3435CA00EF46EC /* ARTFallback.m in Sources */,
 				96A507B61A37881C0077CDF8 /* ARTNSDate+ARTUtil.m in Sources */,
 				850BFB4D1B79323C009D0ADD /* ARTPaginatedResult.m in Sources */,
-				EB9C530D1CD7BFF300C80457 /* ARTJsonLikeEncoder.m in Sources */,
+				EB9C530D1CD7BFF300.8.557 /* ARTJsonLikeEncoder.m in Sources */,
 				D746AE1F1BBB5207003ECEF8 /* ARTDataQuery.m in Sources */,
 				961343D91A42E0B7006DC822 /* ARTClientOptions.m in Sources */,
 				96BF615F1A35C1C8004CF2B3 /* ARTTypes.m in Sources */,
