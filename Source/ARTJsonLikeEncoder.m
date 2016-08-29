@@ -381,9 +381,9 @@
     error = nil;
     
     NSString *token = [input artString:@"token"];
-    NSNumber *expiresTimeInterval = [input artNumber:@"expires"];
+    NSNumber *expiresTimeInterval = [input objectForKey:@"expires"];
     NSDate *expires = expiresTimeInterval ? [NSDate dateWithTimeIntervalSince1970:expiresTimeInterval.longLongValue / 1000] : nil;
-    NSNumber *issuedInterval = [input artNumber:@"issued"];
+    NSNumber *issuedInterval = [input objectForKey:@"issued"];
     NSDate *issued = issuedInterval ? [NSDate dateWithTimeIntervalSince1970:issuedInterval.longLongValue / 1000] : nil;
     
     return [[ARTTokenDetails alloc] initWithToken:token

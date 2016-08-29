@@ -666,7 +666,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                pending("query will provide a TokenDetails") {
+                it("query will provide a TokenDetails") {
                     guard let testTokenDetails = getTestTokenDetails(clientId: "tester") else {
                         fail("TokenDetails is empty")
                         return
