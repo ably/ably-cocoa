@@ -334,6 +334,31 @@ clientOptions.authCallback = { params, callback in
 let client = ARTRealtime(options: clientOptions)
 ```
 
+**Objective-C**
+
+```objective-c
+ARTClientOptions *clientOptions = [[ARTClientOptions alloc] init];
+    clientOptions.authCallback = ^(ARTTokenParams *params, void(^callBack)(id<ARTTokenDetailsCompatible>, NSError*)) {
+        [self getTokenRequestJSONFromYourServer: params completion: ^(NSDictionary *json, NSError *error) {
+            //handle error
+            ARTTokenParams *tokenParams = [[ARTTokenParams alloc] initWithClientId: json[@"clientId"]];
+
+            ARTTokenRequest *tokenRequest = [[ARTTokenRequest alloc] initWithTokenParams: tokenParams
+                                                                                 keyName: json[@"keyName"]
+                                                                                   nonce: json[@"nonce"]
+                                                                                     mac: json[@"mac"]];
+            tokenRequest.clientId = json[@"clientId"];
+            tokenRequest.ttl = [json[@"ttl"] doubleValue];
+            tokenRequest.capability = json[@"capability"];
+            tokenRequest.timestamp = [NSDate dateWithTimeIntervalSince1970: [json[@"timestamp"] doubleValue] / 1000];
+
+            callBack(tokenRequest, nil);
+        }];
+    };
+
+    ARTRealtime *client = [[ARTRealtime alloc] initWithOptions: clientOptions];
+```
+
 ## Using the REST API
 
 ### Introduction
