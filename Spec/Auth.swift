@@ -637,9 +637,115 @@ class Auth : QuickSpec {
                 }
 
             }
-            
+
             // RSA8c
             context("authUrl") {
+
+                it("query will provide a token string") {
+                    let testToken = getTestToken()
+
+                    let options = ARTClientOptions()
+                    options.authUrl = NSURL(string: "http://echo.ably.io")
+                    expect(options.authUrl).toNot(beNil())
+                    // Plain text
+                    options.authParams = [NSURLQueryItem]()
+                    options.authParams!.append(NSURLQueryItem(name: "type", value: "text"))
+                    options.authParams!.append(NSURLQueryItem(name: "body", value: testToken))
+
+                    let rest = ARTRest(options: options)
+                    rest.httpExecutor = testHTTPExecutor
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.requestToken(nil, withOptions: nil, callback: { tokenDetails, error in
+                            expect(testHTTPExecutor.requests.last?.URL?.host).to(equal("echo.ably.io"))
+                            expect(error).to(beNil())
+                            expect(tokenDetails).toNot(beNil())
+                            expect(tokenDetails?.token).to(equal(testToken))
+                            done()
+                        })
+                    }
+                }
+
+                it("query will provide a TokenDetails") {
+                    guard let testTokenDetails = getTestTokenDetails() else {
+                        fail("TokenDetails is empty")
+                        return
+                    }
+
+                    let encoder = ARTJsonLikeEncoder()
+                    encoder.delegate = ARTJsonEncoder()
+                    guard let jsonTokenDetails = encoder.encodeTokenDetails(testTokenDetails) else {
+                        fail("Invalid TokenDetails")
+                        return
+                    }
+
+                    let options = ARTClientOptions()
+                    options.authUrl = NSURL(string: "http://echo.ably.io")
+                    expect(options.authUrl).toNot(beNil())
+                    // JSON with TokenDetails
+                    options.authParams = [NSURLQueryItem]()
+                    options.authParams?.append(NSURLQueryItem(name: "type", value: "json"))
+                    options.authParams?.append(NSURLQueryItem(name: "body", value: jsonTokenDetails.toUTF8String))
+
+                    let rest = ARTRest(options: options)
+                    rest.httpExecutor = testHTTPExecutor
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.requestToken(nil, withOptions: nil, callback: { tokenDetails, error in
+                            expect(testHTTPExecutor.requests.last?.URL?.host).to(equal("echo.ably.io"))
+                            expect(error).to(beNil())
+                            expect(tokenDetails).toNot(beNil())
+                            expect(tokenDetails).to(equal(testTokenDetails))
+                            done()
+                        })
+                    }
+                }
+
+                it("query will provide a TokenRequest") {
+                    var tokenRequest: ARTTokenRequest?
+                    waitUntil(timeout: testTimeout) { done in
+                        // Sandbox and valid TokenRequest
+                        ARTRest(options: AblyTests.commonAppSetup()).auth.createTokenRequest(nil, options: nil, callback: { newTokenRequest, error in
+                            expect(error).to(beNil())
+                            tokenRequest = newTokenRequest
+                            done()
+                        })
+                    }
+
+                    guard let testTokenRequest = tokenRequest else {
+                        fail("TokenRequest is empty")
+                        return
+                    }
+
+                    let encoder = ARTJsonLikeEncoder()
+                    encoder.delegate = ARTJsonEncoder()
+                    guard let jsonTokenRequest = encoder.encodeTokenRequest(testTokenRequest) else {
+                        fail("Invalid TokenRequest")
+                        return
+                    }
+
+                    let options = ARTClientOptions()
+                    options.authUrl = NSURL(string: "http://echo.ably.io")
+                    expect(options.authUrl).toNot(beNil())
+
+                    // JSON with TokenRequest
+                    options.authParams = [NSURLQueryItem]()
+                    options.authParams?.append(NSURLQueryItem(name: "type", value: "json"))
+                    options.authParams?.append(NSURLQueryItem(name: "body", value: jsonTokenRequest.toUTF8String))
+
+                    let rest = ARTRest(options: options)
+                    rest.httpExecutor = testHTTPExecutor
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.requestToken(nil, withOptions: nil, callback: { tokenDetails, error in
+                            expect(testHTTPExecutor.requests.last?.URL?.host).to(equal("echo.ably.io"))
+                            expect(error).to(beNil())
+                            expect(tokenDetails?.token).toNot(beNil())
+                            done()
+                        })
+                    }
+                }
+
                 context("parameters") {
                     // RSA8c1a
                     it("should be added to the URL when auth method is GET") {
