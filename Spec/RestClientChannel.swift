@@ -309,6 +309,59 @@ class RestClientChannel: QuickSpec {
 
         }
 
+        // RSL2
+        describe("history") {
+
+            // RSL2b
+            it("supports start, end, direction and limit params") {
+                let options = AblyTests.commonAppSetup()
+                let client = ARTRest(options: options)
+                let channel = client.channels.get("test")
+
+                let query = ARTDataQuery()
+                query.start = NSDate()
+
+                let messages = [
+                    ARTMessage(name: nil, data: "message1"),
+                    ARTMessage(name: nil, data: "message2")
+                ]
+                waitUntil(timeout: testTimeout) { done in
+                    channel.publish(messages) { _ in
+                        query.end = NSDate()
+                        done()
+                    }
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.publish(nil, data: "message3") { _ in
+                        done()
+                    }
+                }
+
+                query.limit = 1
+                query.direction = .Backwards
+
+                waitUntil(timeout: testTimeout) { done in
+                    try! channel.history(query) { result, error in
+                        expect(error).to(beNil())
+                        guard let result = result else {
+                            fail("PaginatedResult is empty"); done()
+                            return
+                        }
+                        expect(result.hasNext).to(beTrue())
+                        expect(result.isLast).to(beFalse())
+                        guard let items = result.items as? [ARTMessage] else {
+                            fail("PaginatedResult has no items"); done()
+                            return
+                        }
+                        expect(items[0].data as? String).to(equal("message2"))
+                        done()
+                    }
+                }
+            }
+
+        }
+
         // RSL3, RSP1
         describe("presence") {
             let presenceFixtures = appSetupJson["post_apps"]["channels"][0]["presence"]
