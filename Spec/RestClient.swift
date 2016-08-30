@@ -853,6 +853,24 @@ class RestClient: QuickSpec {
                     }
                 }
             }
+
+            // https://github.com/ably/ably-ios/issues/117
+            it("should indicate an error if there is no way to renew the token") {
+                let options = AblyTests.clientOptions()
+                options.token = getTestToken(ttl: 0.1)
+                let client = ARTRest(options: options)
+                waitUntil(timeout: testTimeout) { done in
+                    client.channels.get("test").publish(nil, data: "message") { error in
+                        guard let error = error else {
+                            fail("Error is empty"); done()
+                            return
+                        }
+                        expect(error.message).to(contain("no means to renew the token is provided"))
+                        done()
+                    }
+                }
+            }
+
         } //RestClient
     }
 }
