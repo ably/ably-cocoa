@@ -386,6 +386,28 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
+                // RTN4e
+                it("should have a ConnectionStateChange as first argument for every connection state change") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connected) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ConnectionStateChange is empty"); done()
+                                return
+                            }
+                            expect(stateChange).to(beAKindOf(ARTConnectionStateChange))
+                            expect(stateChange.current).to(equal(ARTRealtimeConnectionState.Connected))
+                            expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.Connecting))
+                            done()
+                        }
+                        client.connect()
+                    }
+                }
+
                 // RTN4f
                 it("should have the reason which contains an ErrorInfo") {
                     let options = AblyTests.commonAppSetup()
