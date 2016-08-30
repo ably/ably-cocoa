@@ -157,6 +157,11 @@
     ARTTokenParams *currentTokenParams = [self mergeParams:tokenParams];
     tokenParams.timestamp = [NSDate date];
 
+    if (mergedOptions.key == nil && mergedOptions.authCallback == nil && mergedOptions.authUrl == nil) {
+        callback(nil, [ARTErrorInfo createWithCode:ARTStateRequestTokenFailed message:@"no means to renew the token is provided (either an API key, authCallback or authUrl)"]);
+        return;
+    }
+
     void (^checkerCallback)(ARTTokenDetails *__art_nullable, NSError *__art_nullable) = ^(ARTTokenDetails *tokenDetails, NSError *error) {
         if (error) {
             callback(nil, error);

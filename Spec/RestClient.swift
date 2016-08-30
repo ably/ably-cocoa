@@ -865,6 +865,7 @@ class RestClient: QuickSpec {
                             fail("Error is empty"); done()
                             return
                         }
+                        expect(error.code).to(equal(Int(ARTState.RequestTokenFailed.rawValue)))
                         expect(error.message).to(contain("no means to renew the token is provided"))
                         done()
                     }
