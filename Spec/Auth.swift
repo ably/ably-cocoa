@@ -710,7 +710,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("query will provide a TokenRequest") {
+                pending("query will provide a TokenRequest") {
                     let tokenParams = ARTTokenParams()
                     tokenParams.capability = "{ \"test\":[\"subscribe\"] }"
 
@@ -750,7 +750,8 @@ class Auth : QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.requestToken(nil, withOptions: nil, callback: { tokenDetails, error in
-                            expect(testHTTPExecutor.requests.last?.URL?.host).to(equal("echo.ably.io"))
+                            expect(testHTTPExecutor.requests.first?.URL?.host).to(equal("echo.ably.io"))
+                            expect(testHTTPExecutor.requests.last?.URL?.host).toNot(equal("echo.ably.io"))
                             expect(error).to(beNil())
                             guard let tokenDetails = tokenDetails else {
                                 fail("TokenDetails is empty"); done()
