@@ -86,6 +86,10 @@
     return customOptions ? [self.options mergeWith:customOptions] : self.options;
 }
 
+- (ARTAuthOptions *)replaceOptions:(ARTAuthOptions *)customOptions {
+    return customOptions ? customOptions : self.options;
+}
+
 - (void)storeOptions:(ARTAuthOptions *)customOptions {
     self.options.key = customOptions.key;
     self.options.tokenDetails = [customOptions.tokenDetails copy];
@@ -152,8 +156,8 @@
 - (void)requestToken:(ARTTokenParams *)tokenParams withOptions:(ARTAuthOptions *)authOptions
             callback:(void (^)(ARTTokenDetails *, NSError *))callback {
     
-    // The values supersede matching client library configured params and options.
-    ARTAuthOptions *mergedOptions = [self mergeOptions:authOptions];
+    // The values replace all corresponding.
+    ARTAuthOptions *replacedOptions = [self replaceOptions:authOptions];
     ARTTokenParams *currentTokenParams = [self mergeParams:tokenParams];
     tokenParams.timestamp = [NSDate date];
 
@@ -169,8 +173,8 @@
         callback(tokenDetails, nil);
     };
 
-    if (mergedOptions.authUrl) {
-        NSMutableURLRequest *request = [self buildRequest:mergedOptions withParams:currentTokenParams];
+    if (replacedOptions.authUrl) {
+        NSMutableURLRequest *request = [self buildRequest:replacedOptions withParams:currentTokenParams];
         
         [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p using authUrl (%@ %@)", _rest, request.HTTPMethod, request.URL];
         
@@ -184,9 +188,9 @@
         }];
     } else {
         void (^tokenDetailsFactory)(ARTTokenParams *, void(^)(ARTTokenDetails *__art_nullable, NSError *__art_nullable));
-        if (mergedOptions.authCallback) {
+        if (replacedOptions.authCallback) {
             tokenDetailsFactory = ^(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *__art_nullable, NSError *__art_nullable)) {
-                mergedOptions.authCallback(tokenParams, ^(id<ARTTokenDetailsCompatible> tokenDetailsCompat, NSError *error) {
+                replacedOptions.authCallback(tokenParams, ^(id<ARTTokenDetailsCompatible> tokenDetailsCompat, NSError *error) {
                     [tokenDetailsCompat toTokenDetails:self callback:callback];
                 });
             };
@@ -194,7 +198,7 @@
         } else {
             tokenDetailsFactory = ^(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *__art_nullable, NSError *__art_nullable)) {
                 // Create a TokenRequest and execute it
-                [self createTokenRequest:currentTokenParams options:mergedOptions callback:^(ARTTokenRequest *tokenRequest, NSError *error) {
+                [self createTokenRequest:currentTokenParams options:replacedOptions callback:^(ARTTokenRequest *tokenRequest, NSError *error) {
                     if (error) {
                         callback(nil, error);
                     } else {

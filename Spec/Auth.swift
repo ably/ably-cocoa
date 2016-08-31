@@ -615,9 +615,10 @@ class Auth : QuickSpec {
         describe("requestToken") {
             context("arguments") {
                 // RSA8e
-                it("sould supersede matching client library configured params and options") {
+                it("should not merge with the configured params and options but instead replace all corresponding values, even when @null@") {
                     let clientOptions = ARTClientOptions()
                     clientOptions.authUrl = NSURL(string: "http://auth.ably.io")
+                    clientOptions.key = "aKey"
                     
                     let rest = ARTRest(options: clientOptions)
                     
@@ -626,16 +627,24 @@ class Auth : QuickSpec {
                     authOptions.authMethod = "POST"
                     let tokenParams = ARTTokenParams()
                     tokenParams.ttl = 30.0
+                    tokenParams.clientId = "anId"
                     
                     // AuthOptions
-                    let mergedOptions = rest.auth.mergeOptions(authOptions)
-                    expect(mergedOptions.authUrl) == NSURL(string: "http://test.ably.io")
-                    expect(mergedOptions.authMethod) == "POST"
+                    let replacedOptions = rest.auth.replaceOptions(authOptions)
+                    expect(replacedOptions.authUrl) == NSURL(string: "http://test.ably.io")
+                    expect(replacedOptions.authMethod) == "POST"
+                    expect(replacedOptions.key).to(beNil())
                     // TokenParams
                     let mergedParams = rest.auth.mergeParams(tokenParams)
                     expect(mergedParams.ttl) == 30.0
+                    
+                    let tokenParams2 = ARTTokenParams()
+                    tokenParams2.ttl = 25.0
+                    
+                    let mergedParams2 = rest.auth.mergeParams(tokenParams2)
+                    expect(mergedParams2.ttl) == 25.0
+                    expect(mergedParams2.clientId).to(beNil())
                 }
-
             }
             
             // RSA8c
