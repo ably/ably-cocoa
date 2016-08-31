@@ -313,51 +313,78 @@ class RestClientChannel: QuickSpec {
         describe("history") {
 
             // RSL2b
-            it("supports start, end, direction and limit params") {
-                let options = AblyTests.commonAppSetup()
-                let client = ARTRest(options: options)
-                let channel = client.channels.get("test")
+            context("query arguments") {
 
-                let query = ARTDataQuery()
-                query.start = NSDate()
+                // RSL2b1
+                it("start and end should filter messages between those two times") {
+                    let client = ARTRest(options: AblyTests.commonAppSetup())
+                    let channel = client.channels.get("test")
 
-                let messages = [
-                    ARTMessage(name: nil, data: "message1"),
-                    ARTMessage(name: nil, data: "message2")
-                ]
-                waitUntil(timeout: testTimeout) { done in
-                    channel.publish(messages) { _ in
-                        query.end = NSDate()
-                        done()
-                    }
-                }
+                    let query = ARTDataQuery()
+                    expect(query.direction) == ARTQueryDirection.Backwards
+                    expect(query.limit) == 100
 
-                waitUntil(timeout: testTimeout) { done in
-                    channel.publish(nil, data: "message3") { _ in
-                        done()
-                    }
-                }
+                    query.start = NSDate()
 
-                query.limit = 1
-                query.direction = .Backwards
-
-                waitUntil(timeout: testTimeout) { done in
-                    try! channel.history(query) { result, error in
-                        expect(error).to(beNil())
-                        guard let result = result else {
-                            fail("PaginatedResult is empty"); done()
-                            return
+                    let messages = [
+                        ARTMessage(name: nil, data: "message1"),
+                        ARTMessage(name: nil, data: "message2")
+                    ]
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(messages) { _ in
+                            query.end = NSDate()
+                            done()
                         }
-                        expect(result.hasNext).to(beTrue())
-                        expect(result.isLast).to(beFalse())
-                        guard let items = result.items as? [ARTMessage] else {
-                            fail("PaginatedResult has no items"); done()
-                            return
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "message3") { _ in
+                            done()
                         }
-                        expect(items[0].data as? String).to(equal("message2"))
-                        done()
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        try! channel.history(query) { result, error in
+                            expect(error).to(beNil())
+                            guard let result = result else {
+                                fail("PaginatedResult is empty"); done()
+                                return
+                            }
+                            expect(result.hasNext).to(beFalse())
+                            expect(result.isLast).to(beTrue())
+                            guard let items = result.items as? [ARTMessage] where result.items.count == 2 else {
+                                fail("PaginatedResult has no items"); done()
+                                return
+                            }
+                            let messageItems = items.flatMap({ $0.data as? String })
+                            expect(messageItems.first).to(equal("message2"))
+                            expect(messageItems.last).to(equal("message1"))
+                            done()
+                        }
                     }
                 }
+
+                // RSL2b1
+                it("start must be equal to or less than end and is unaffected by the request direction") {
+                    let client = ARTRest(options: AblyTests.commonAppSetup())
+                    let channel = client.channels.get("test")
+
+                    let query = ARTDataQuery()
+                    query.direction = .Backwards
+                    query.end = NSDate()
+                    query.start = query.end!.dateByAddingTimeInterval(10.0)
+
+                    expect { try channel.history(query) { _, _ in } }.to(throwError { (error: ErrorType) in
+                        expect(error._code).to(equal(ARTDataQueryError.TimestampRange.rawValue))
+                    })
+
+                    query.direction = .Forwards
+
+                    expect { try channel.history(query) { _, _ in } }.to(throwError { (error: ErrorType) in
+                        expect(error._code).to(equal(ARTDataQueryError.TimestampRange.rawValue))
+                    })
+                }
+
             }
 
         }
