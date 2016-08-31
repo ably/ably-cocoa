@@ -252,28 +252,30 @@
                 [_transport connect];
             }
 
-            [_reachability listenForHost:[_transport host] callback:^(BOOL reachable) {
-                if (reachable) {
-                    switch (_connection.state) {
-                        case ARTRealtimeDisconnected:
-                        case ARTRealtimeSuspended:
-                            [self transition:ARTRealtimeConnecting];
-                        default:
-                            break;
-                    }
-                } else {
-                    switch (_connection.state) {
-                        case ARTRealtimeConnecting:
-                        case ARTRealtimeConnected: {
-                            ARTErrorInfo *unreachable = [ARTErrorInfo createWithCode:-1003 message:@"unreachable host"];
-                            [self transition:ARTRealtimeDisconnected withErrorInfo:unreachable];
-                            break;
+            if (self.connection.state != ARTRealtimeFailed && self.connection.state != ARTRealtimeClosed) {
+                [_reachability listenForHost:[_transport host] callback:^(BOOL reachable) {
+                    if (reachable) {
+                        switch (_connection.state) {
+                            case ARTRealtimeDisconnected:
+                            case ARTRealtimeSuspended:
+                                [self transition:ARTRealtimeConnecting];
+                            default:
+                                break;
                         }
-                        default:
-                            break;
+                    } else {
+                        switch (_connection.state) {
+                            case ARTRealtimeConnecting:
+                            case ARTRealtimeConnected: {
+                                ARTErrorInfo *unreachable = [ARTErrorInfo createWithCode:-1003 message:@"unreachable host"];
+                                [self transition:ARTRealtimeDisconnected withErrorInfo:unreachable];
+                                break;
+                            }
+                            default:
+                                break;
+                        }
                     }
-                }
-            }];
+                }];
+            }
 
             break;
         }

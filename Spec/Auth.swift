@@ -478,15 +478,6 @@ class Auth : QuickSpec {
                         defer { realtime.close() }
                         expect(realtime.auth.clientId).to(beNil())
 
-                        let transport = realtime.transport as! TestProxyTransport
-                        transport.beforeProcessingReceivedMessage = { message in
-                            if message.action == .Connected {
-                                if let details = message.connectionDetails {
-                                    details.clientId = nil
-                                }
-                            }
-                        }
-
                         waitUntil(timeout: testTimeout) { done in
                             realtime.connection.once(.Connected) { stateChange in
                                 expect(stateChange!.reason).to(beNil())
@@ -494,6 +485,15 @@ class Auth : QuickSpec {
                                 done()
                             }
                             realtime.connect()
+                            
+                            let transport = realtime.transport as! TestProxyTransport
+                            transport.beforeProcessingReceivedMessage = { message in
+                                if message.action == .Connected {
+                                    if let details = message.connectionDetails {
+                                        details.clientId = nil
+                                    }
+                                }
+                            }
                         }
                     }
 
