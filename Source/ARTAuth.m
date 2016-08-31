@@ -86,6 +86,10 @@
     return customOptions ? [self.options mergeWith:customOptions] : self.options;
 }
 
+- (ARTAuthOptions *)replaceOptions:(ARTAuthOptions *)customOptions {
+    return customOptions ? customOptions : self.options;
+}
+
 - (void)storeOptions:(ARTAuthOptions *)customOptions {
     self.options.key = customOptions.key;
     self.options.tokenDetails = [customOptions.tokenDetails copy];
@@ -153,8 +157,8 @@
             callback:(void (^)(ARTTokenDetails *, NSError *))callback {
     
     // The values replace all corresponding.
-    ARTAuthOptions *replacedOptions = authOptions ? authOptions : self.options;
-    ARTTokenParams *currentTokenParams = tokenParams ? tokenParams : _tokenParams;
+    ARTAuthOptions *replacedOptions = [self replaceOptions:authOptions];
+    ARTTokenParams *currentTokenParams = [self mergeParams:tokenParams];
     tokenParams.timestamp = [NSDate date];
 
     if (replacedOptions.key == nil && replacedOptions.authCallback == nil && replacedOptions.authUrl == nil) {

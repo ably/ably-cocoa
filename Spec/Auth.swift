@@ -622,44 +622,34 @@ class Auth : QuickSpec {
             context("arguments") {
                 // RSA8e
                 it("should not merge with the configured params and options but instead replace all corresponding values, even when @null@") {
-                    let options = AblyTests.commonAppSetup()
-                    options.clientId = "сlientId"
-                    let rest = ARTRest(options: options)
-                    
-                    let tokenParams = ARTTokenParams()
-                    tokenParams.ttl = 2000
-                    tokenParams.capability = "{\"cansubscribe:*\":[\"subscribe\"]}"
-                    
-                    let precedenceOptions = AblyTests.commonAppSetup()
-                    
-                    waitUntil(timeout: testTimeout) { done in
-                        rest.auth.requestToken(tokenParams, withOptions: precedenceOptions) { tokenDetails, error in
-                            expect(error).to(beNil())
-                            expect(tokenDetails).toNot(beNil())
-                            expect(tokenDetails!.capability).to(equal("{\"cansubscribe:*\":[\"subscribe\"]}"))
-                            expect(tokenDetails!.clientId).to(beNil())
-                            expect(tokenDetails!.expires!.timeIntervalSince1970 - tokenDetails!.issued!.timeIntervalSince1970).to(equal(tokenParams.ttl))
-                            done()
-                        }
-                    }
-                    
-                    let options2 = AblyTests.commonAppSetup()
-                    options2.clientId = nil
-                    let rest2 = ARTRest(options: options2)
+                    let clientOptions = ARTClientOptions()
+                    clientOptions.authUrl = NSURL(string: "http://auth.ably.io")
+                    clientOptions.key = "aKey"
 
-                    let precedenceOptions2 = AblyTests.commonAppSetup()
-                    precedenceOptions2.clientId = nil
-                    
-                    waitUntil(timeout: testTimeout) { done in
-                        rest2.auth.requestToken(nil, withOptions: precedenceOptions2) { tokenDetails, error in
-                            expect(error).to(beNil())
-                            guard let aTokenDetails = tokenDetails else {
-                                XCTFail("tokenDetails is nil"); done(); return
-                            }
-                            expect(aTokenDetails.clientId).to(beNil())
-                            done()
-                        }
-                    }
+                    let rest = ARTRest(options: clientOptions)
+
+                    let authOptions = ARTAuthOptions()
+                    authOptions.authUrl = NSURL(string: "http://test.ably.io")
+                    authOptions.authMethod = "POST"
+                    let tokenParams = ARTTokenParams()
+                    tokenParams.ttl = 30.0
+                    tokenParams.clientId = "anId"
+
+                    // AuthOptions
+                    let replacedOptions = rest.auth.replaceOptions(authOptions)
+                    expect(replacedOptions.authUrl) == NSURL(string: "http://test.ably.io")
+                    expect(replacedOptions.authMethod) == "POST"
+                    expect(replacedOptions.key).to(beNil())
+                    // TokenParams
+                    let mergedParams = rest.auth.mergeParams(tokenParams)
+                    expect(mergedParams.ttl) == 30.0
+
+                    let tokenParams2 = ARTTokenParams()
+                    tokenParams2.ttl = 25.0
+
+                    let mergedParams2 = rest.auth.mergeParams(tokenParams2)
+                    expect(mergedParams2.ttl) == 25.0
+                    expect(mergedParams2.clientId).to(beNil())
                 }
             }
 

@@ -126,6 +126,10 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
     return merged;
 }
 
+- (ARTAuthOptions *)replaceWith:(ARTAuthOptions *)precedenceOptions {
+    return precedenceOptions;
+}
+
 - (BOOL)isMethodPOST {
     return [_authMethod isEqualToString:@"POST"];
 }
