@@ -711,10 +711,13 @@ class Auth : QuickSpec {
                 }
 
                 it("query will provide a TokenRequest") {
+                    let tokenParams = ARTTokenParams()
+                    tokenParams.capability = "{ \"test\":[\"subscribe\"] }"
+
                     var tokenRequest: ARTTokenRequest?
                     waitUntil(timeout: testTimeout) { done in
                         // Sandbox and valid TokenRequest
-                        ARTRest(options: AblyTests.commonAppSetup()).auth.createTokenRequest(nil, options: nil, callback: { newTokenRequest, error in
+                        ARTRest(options: AblyTests.commonAppSetup()).auth.createTokenRequest(tokenParams, options: nil, callback: { newTokenRequest, error in
                             expect(error).to(beNil())
                             tokenRequest = newTokenRequest
                             done()
@@ -749,7 +752,12 @@ class Auth : QuickSpec {
                         rest.auth.requestToken(nil, withOptions: nil, callback: { tokenDetails, error in
                             expect(testHTTPExecutor.requests.last?.URL?.host).to(equal("echo.ably.io"))
                             expect(error).to(beNil())
-                            expect(tokenDetails?.token).toNot(beNil())
+                            guard let tokenDetails = tokenDetails else {
+                                fail("TokenDetails is empty"); done()
+                                return
+                            }
+                            expect(tokenDetails.token).toNot(beNil())
+                            expect(tokenDetails.capability) == tokenParams.capability
                             done()
                         })
                     }
