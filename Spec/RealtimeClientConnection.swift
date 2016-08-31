@@ -172,6 +172,26 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
             }
+
+            // RTN2f
+            it("API version param must be included in all connections") {
+                let options = AblyTests.commonAppSetup()
+                options.autoConnect = false
+                let client = ARTRealtime(options: options)
+                defer { client.close() }
+                waitUntil(timeout: testTimeout) { done in
+                    client.connection.once(.Connecting) { _ in
+                        guard let webSocketTransport = client.transport as? ARTWebSocketTransport else {
+                            fail("Transport should be of type ARTWebSocketTransport"); done()
+                            return
+                        }
+                        expect(webSocketTransport.websocketURL).toNot(beNil())
+                        expect(webSocketTransport.websocketURL?.query).to(haveParam("v", withValue: ARTDefault.version()))
+                        done()
+                    }
+                    client.connect()
+                }
+            }
             
             // RTN2g
             it("Library and version param `lib` should include the `X-Ably-Lib` header value") {
