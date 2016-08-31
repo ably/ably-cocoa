@@ -832,6 +832,24 @@ class RestClient: QuickSpec {
                 let object = try! NSJSONSerialization.JSONObjectWithData(transport.rawDataSent.first!, options: NSJSONReadingOptions(rawValue: 0))
                 expect(NSJSONSerialization.isValidJSONObject(object)).to(beTrue())
             }
+
+            // RSC7a
+            it("X-Ably-Version must be included in all REST requests") {
+                let options = AblyTests.commonAppSetup()
+                let client = ARTRest(options: options)
+                client.httpExecutor = testHTTPExecutor
+                waitUntil(timeout: testTimeout) { done in
+                    client.channels.get("test").publish(nil, data: "message") { error in
+                        expect(error).to(beNil())
+                        guard let headerAblyVersion = testHTTPExecutor.requests.first?.allHTTPHeaderFields?["X-Ably-Version"] else {
+                            fail("X-Ably-Version header not found"); done()
+                            return
+                        }
+                        expect(headerAblyVersion) == ARTDefault.version()
+                        done()
+                    }
+                }
+            }
             
             // RSC7b
             it("X-Ably-Lib: [lib][.optional variant]?-[version] should be included in all REST requests") {
