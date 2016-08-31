@@ -425,6 +425,58 @@ class RestClientChannel: QuickSpec {
                     }
                 }
 
+                // RSL2b3
+                it("limit items result") {
+                    let client = ARTRest(options: AblyTests.commonAppSetup())
+                    let channel = client.channels.get("test")
+
+                    let query = ARTDataQuery()
+                    expect(query.limit) == 100
+                    query.limit = 2
+
+                    let messages = (1...10).flatMap{ ARTMessage(name: nil, data: "message\($0)") }
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(messages) { _ in
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        try! channel.history(query) { result, error in
+                            expect(error).to(beNil())
+                            guard let result = result else {
+                                fail("PaginatedResult is empty"); done()
+                                return
+                            }
+                            expect(result.hasNext).to(beTrue())
+                            expect(result.isLast).to(beFalse())
+                            guard let items = result.items as? [ARTMessage] where result.items.count == 2 else {
+                                fail("PaginatedResult has no items"); done()
+                                return
+                            }
+                            let messageItems = items.flatMap({ $0.data as? String })
+                            expect(messageItems.first).to(equal("message10"))
+                            expect(messageItems.last).to(equal("message9"))
+                            done()
+                        }
+                    }
+                }
+
+                // RSL2b3
+                it("limit supports up to 1000 items") {
+                    let client = ARTRest(options: AblyTests.commonAppSetup())
+                    let channel = client.channels.get("test")
+
+                    let query = ARTDataQuery()
+                    expect(query.limit) == 100
+
+                    query.limit = 1001
+                    expect{ try channel.history(query, callback: { _ in }) }.to(throwError())
+
+                    query.limit = 1000
+                    expect{ try channel.history(query, callback: { _ in }) }.toNot(throwError())
+                }
+
             }
 
         }
