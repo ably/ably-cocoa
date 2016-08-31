@@ -385,6 +385,46 @@ class RestClientChannel: QuickSpec {
                     })
                 }
 
+                // RSL2b2
+                it("direction backwards or forwards") {
+                    let client = ARTRest(options: AblyTests.commonAppSetup())
+                    let channel = client.channels.get("test")
+
+                    let query = ARTDataQuery()
+                    expect(query.direction) == ARTQueryDirection.Backwards
+                    query.direction = .Forwards
+
+                    let messages = [
+                        ARTMessage(name: nil, data: "message1"),
+                        ARTMessage(name: nil, data: "message2")
+                    ]
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(messages) { _ in
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        try! channel.history(query) { result, error in
+                            expect(error).to(beNil())
+                            guard let result = result else {
+                                fail("PaginatedResult is empty"); done()
+                                return
+                            }
+                            expect(result.hasNext).to(beFalse())
+                            expect(result.isLast).to(beTrue())
+                            guard let items = result.items as? [ARTMessage] where result.items.count == 2 else {
+                                fail("PaginatedResult has no items"); done()
+                                return
+                            }
+                            let messageItems = items.flatMap({ $0.data as? String })
+                            expect(messageItems.first).to(equal("message1"))
+                            expect(messageItems.last).to(equal("message2"))
+                            done()
+                        }
+                    }
+                }
+
             }
 
         }
