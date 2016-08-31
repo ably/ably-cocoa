@@ -710,14 +710,20 @@ class Auth : QuickSpec {
                     }
                 }
 
-                pending("query will provide a TokenRequest") {
+                it("query will provide a TokenRequest") {
                     let tokenParams = ARTTokenParams()
-                    tokenParams.capability = "{ \"test\":[\"subscribe\"] }"
+                    tokenParams.capability = "{\"test\":[\"subscribe\"]}"
+
+                    let options = AblyTests.commonAppSetup()
+                    options.authUrl = NSURL(string: "http://echo.ably.io")
+                    expect(options.authUrl).toNot(beNil())
+
+                    var rest = ARTRest(options: options)
 
                     var tokenRequest: ARTTokenRequest?
                     waitUntil(timeout: testTimeout) { done in
                         // Sandbox and valid TokenRequest
-                        ARTRest(options: AblyTests.commonAppSetup()).auth.createTokenRequest(tokenParams, options: nil, callback: { newTokenRequest, error in
+                        rest.auth.createTokenRequest(tokenParams, options: nil, callback: { newTokenRequest, error in
                             expect(error).to(beNil())
                             tokenRequest = newTokenRequest
                             done()
@@ -736,16 +742,12 @@ class Auth : QuickSpec {
                         return
                     }
 
-                    let options = ARTClientOptions()
-                    options.authUrl = NSURL(string: "http://echo.ably.io")
-                    expect(options.authUrl).toNot(beNil())
-
                     // JSON with TokenRequest
                     options.authParams = [NSURLQueryItem]()
                     options.authParams?.append(NSURLQueryItem(name: "type", value: "json"))
                     options.authParams?.append(NSURLQueryItem(name: "body", value: jsonTokenRequest.toUTF8String))
 
-                    let rest = ARTRest(options: options)
+                    rest = ARTRest(options: options)
                     rest.httpExecutor = testHTTPExecutor
 
                     waitUntil(timeout: testTimeout) { done in

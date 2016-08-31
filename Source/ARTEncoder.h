@@ -31,7 +31,8 @@ ART_ASSUME_NONNULL_BEGIN
 - (art_nullable NSData *)encodeTokenRequest:(ARTTokenRequest *)request;
 - (art_nullable NSData *)encodeTokenDetails:(ARTTokenDetails *)tokenDetails;
 
-- (art_nullable ARTTokenDetails *)decodeAccessToken:(NSData *)data error:(NSError * __autoreleasing *)error;
+- (art_nullable ARTTokenDetails *)decodeTokenDetails:(NSData *)data error:(NSError * __autoreleasing *)error;
+- (art_nullable ARTTokenRequest *)decodeTokenRequest:(NSData *)data error:(NSError * __autoreleasing *)error;
 - (art_nullable ARTMessage *)decodeMessage:(NSData *)data;
 - (art_nullable NSArray *)decodeMessages:(NSData *)data;
 - (art_nullable NSData *)encodeMessage:(ARTMessage *)message;

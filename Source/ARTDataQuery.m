@@ -34,10 +34,10 @@ static NSString *queryDirectionToString(ARTQueryDirection direction) {
     NSMutableArray *items = [NSMutableArray array];
 
     if (self.start) {
-        [items addObject:[NSURLQueryItem queryItemWithName:@"start" value:[NSString stringWithFormat:@"%llu", dateToMiliseconds(self.start)]]];
+        [items addObject:[NSURLQueryItem queryItemWithName:@"start" value:[NSString stringWithFormat:@"%llu", dateToMilliseconds(self.start)]]];
     }
     if (self.end) {
-        [items addObject:[NSURLQueryItem queryItemWithName:@"end" value:[NSString stringWithFormat:@"%llu", dateToMiliseconds(self.end)]]];
+        [items addObject:[NSURLQueryItem queryItemWithName:@"end" value:[NSString stringWithFormat:@"%llu", dateToMilliseconds(self.end)]]];
     }
 
     [items addObject:[NSURLQueryItem queryItemWithName:@"limit" value:[NSString stringWithFormat:@"%hu", self.limit]]];

@@ -212,9 +212,16 @@
     // The token retrieved is assumed by the library to be a token string if the response has Content-Type "text/plain", or taken to be a TokenRequest or TokenDetails object if the response has Content-Type "application/json"
     if ([response.MIMEType isEqualToString:@"application/json"]) {
         NSError *decodeError = nil;
-        ARTTokenDetails *tokenDetails = [_rest.encoders[@"application/json"] decodeAccessToken:data error:&decodeError];
+        ARTTokenDetails *tokenDetails = [_rest.encoders[@"application/json"] decodeTokenDetails:data error:&decodeError];
         if (decodeError) {
             callback(nil, decodeError);
+        } else if (tokenDetails.token == nil) {
+            ARTTokenRequest *tokenRequest = [_rest.encoders[@"application/json"] decodeTokenRequest:data error:&decodeError];
+            if (decodeError) {
+                callback(nil, decodeError);
+            } else {
+                [tokenRequest toTokenDetails:self callback:callback];
+            }
         } else {
             callback(tokenDetails, nil);
         }
@@ -251,7 +258,7 @@
             callback(nil, error);
         } else {
             NSError *decodeError = nil;
-            ARTTokenDetails *tokenDetails = [encoder decodeAccessToken:data error:&decodeError];
+            ARTTokenDetails *tokenDetails = [encoder decodeTokenDetails:data error:&decodeError];
             if (decodeError) {
                 callback(nil, decodeError);
             } else {
