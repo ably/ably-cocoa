@@ -1885,5 +1885,104 @@ class Auth : QuickSpec {
                 }
             }
         }
+        
+        describe("Reauth") {
+            it("should use authorise({force: true}) to reauth with a token with a different set of capabilities") {
+                // init ARTRest
+                let restOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                let rest = ARTRest(options: restOptions)
+                
+                // get first token
+                let tokenParams = ARTTokenParams()
+                tokenParams.capability = "{\"wrongchannel\": [\"*\"]}"
+                tokenParams.clientId = "testClientId"
+                
+                var firstToken = ""
+                
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.requestToken(tokenParams, withOptions: nil) { tokenDetails, error in
+                        expect(error).to(beNil())
+                        expect(tokenDetails).toNot(beNil())
+                        firstToken = tokenDetails!.token
+                        done()
+                    }
+                }
+                expect(firstToken).toNot(beNil())
+                expect(firstToken.characters.count > 0).to(beTrue())
+                
+                // init ARTRealtime
+                let realtimeOptions = AblyTests.commonAppSetup()
+                realtimeOptions.token = firstToken
+                realtimeOptions.clientId = "testClientId"
+                
+                let realtime = ARTRealtime(options:realtimeOptions)
+                defer { realtime.close() }
+                
+                // wait for connected state
+                waitUntil(timeout: testTimeout) { done in
+                    realtime.connection.once(.Connected) { stateChange in
+                        expect(stateChange!.reason).to(beNil())
+                        expect(stateChange?.current).to(equal(realtime.connection.state))
+                        done()
+                    }
+                    realtime.connect()
+                }
+                
+                // create a `rightchannel` channel and check can't attach to it
+                let channel = realtime.channels.get("rightchannel")
+                
+                waitUntil(timeout: testTimeout) { done in
+                    channel.attach() { error in
+                        expect(error).toNot(beNil())
+                        expect(error!.code).to(equal(40160))
+                        done()
+                    }
+                }
+                
+                // get second token
+                let secondTokenParams = ARTTokenParams()
+                secondTokenParams.capability = "{\"wrongchannel\": [\"*\"], \"rightchannel\": [\"*\"]}"
+                secondTokenParams.clientId = "testClientId"
+                
+                var secondToken = ""
+                var secondTokenDetails: ARTTokenDetails?
+                
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.requestToken(secondTokenParams, withOptions: nil) { tokenDetails, error in
+                        expect(error).to(beNil())
+                        expect(tokenDetails).toNot(beNil())
+                        
+                        secondToken = tokenDetails!.token
+                        secondTokenDetails = tokenDetails
+                        done()
+                    }
+                }
+                expect(secondToken).toNot(beNil())
+                expect(secondToken.characters.count > 0).to(beTrue())
+                expect(secondToken).toNot(equal(firstToken))
+                
+                // reauthorise
+                let reauthOptions = ARTAuthOptions();
+                reauthOptions.tokenDetails = secondTokenDetails
+                reauthOptions.force = true
+                
+                waitUntil(timeout: testTimeout) { done in
+                    realtime.auth.authorise(nil, options: reauthOptions) { reauthTokenDetails, error in
+                        expect(error).to(beNil())
+                        expect(reauthTokenDetails?.token).toNot(beNil())
+                        done()
+                    }
+                }
+                
+                // re-attach to the channel
+                waitUntil(timeout: testTimeout) { done in
+                    channel.attach() { error in
+                        expect(error).toNot(beNil())
+                        expect(error!.code).to(equal(40160))
+                        done()
+                    }
+                }
+            }
+        }
     }
 }
