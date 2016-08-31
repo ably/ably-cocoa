@@ -165,13 +165,13 @@ class RestClient: QuickSpec {
             context("endpoint") {
                 it("should accept an options object with a host set") {
                     let options = ARTClientOptions(key: "fake:key")
-                    options.environment = "fake"
+                    options.restHost = "fake.ably.io"
                     let client = ARTRest(options: options)
                     client.httpExecutor = testHTTPExecutor
                     
                     publishTestMessage(client, failOnError: false)
                     
-                    expect(testHTTPExecutor.requests.first?.URL?.host).toEventually(equal("fake-rest.ably.io"), timeout: testTimeout)
+                    expect(testHTTPExecutor.requests.first?.URL?.host).toEventually(equal("fake.ably.io"), timeout: testTimeout)
                 }
                 
                 it("should accept an options object with an environment set") {
