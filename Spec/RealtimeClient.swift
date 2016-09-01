@@ -333,6 +333,53 @@ class RealtimeClient: QuickSpec {
                     expect(secs).to(beLessThanOrEqualTo(UInt(options.suspendedRetryTimeout)))
                 }
             }
+
+            it("should never register any connection listeners for internal use with the public EventEmitter") {
+                let options = AblyTests.commonAppSetup()
+                options.autoConnect = false
+                let client = ARTRealtime(options: options)
+                defer { client.dispose(); client.close() }
+                expect(client.connection.eventEmitter.listeners.count) == 0
+                expect(client.connection.eventEmitter.anyListeners.count) == 0
+
+                client.connection.off()
+
+                waitUntil(timeout: testTimeout) { done in
+                    client.connection.once(.Connected) { stateChange in
+                        guard let stateChange = stateChange else {
+                            fail("ConnectionStageChange is empty"); done()
+                            return
+                        }
+                        expect(stateChange.reason).to(beNil())
+                        done()
+                    }
+                    expect(client.connection.eventEmitter.listeners.count) == 1
+                    expect(client.connection.eventEmitter.anyListeners.count) == 0
+                    client.connect()
+                }
+            }
+
+            it("should never register any message and channel listeners for internal use with the public EventEmitter") {
+                let options = AblyTests.commonAppSetup()
+                let client = ARTRealtime(options: options)
+                defer { client.dispose(); client.close() }
+
+                let channel = client.channels.get("test")
+                expect(channel.statesEventEmitter.listeners.count) == 0
+                expect(channel.statesEventEmitter.anyListeners.count) == 0
+
+                channel.off()
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.once(.Attached) { error in
+                        expect(error).to(beNil())
+                        done()
+                    }
+                    expect(channel.statesEventEmitter.listeners.count) == 1
+                    expect(channel.statesEventEmitter.anyListeners.count) == 0
+                    channel.attach()
+                }
+            }
         }
     }
 }
