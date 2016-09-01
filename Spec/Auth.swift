@@ -622,34 +622,46 @@ class Auth : QuickSpec {
             context("arguments") {
                 // RSA8e
                 it("should not merge with the configured params and options but instead replace all corresponding values, even when @null@") {
-                    let clientOptions = ARTClientOptions()
-                    clientOptions.authUrl = NSURL(string: "http://auth.ably.io")
-                    clientOptions.key = "aKey"
+                    let options = AblyTests.commonAppSetup()
+                    options.authMethod = "GET"
+                    options.authHeaders = ["X-Header-1": "foo", "X-Header-2": "bar"]
+                    options.queryTime = true
+                    let rest = ARTRest(options: options)
 
-                    let rest = ARTRest(options: clientOptions)
-
-                    let authOptions = ARTAuthOptions()
-                    authOptions.authUrl = NSURL(string: "http://test.ably.io")
-                    authOptions.authMethod = "POST"
                     let tokenParams = ARTTokenParams()
-                    tokenParams.ttl = 30.0
-                    tokenParams.clientId = "anId"
+                    tokenParams.clientId = "testClientId"
+                    let defaultCapability = tokenParams.capability
 
-                    // AuthOptions
-                    let replacedOptions = rest.auth.replaceOptions(authOptions)
-                    expect(replacedOptions.authUrl) == NSURL(string: "http://test.ably.io")
-                    expect(replacedOptions.authMethod) == "POST"
-                    expect(replacedOptions.key).to(beNil())
-                    // TokenParams
-                    let mergedParams = rest.auth.mergeParams(tokenParams)
-                    expect(mergedParams.ttl) == 30.0
+                    let precedenceOptions = AblyTests.commonAppSetup()
+                    precedenceOptions.authMethod = "POST"
+                    precedenceOptions.authHeaders = nil
 
-                    let tokenParams2 = ARTTokenParams()
-                    tokenParams2.ttl = 25.0
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.requestToken(nil, withOptions: precedenceOptions) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            expect(tokenDetails).toNot(beNil())
+                            expect(rest.auth.options.authMethod).to(equal("POST"))
+                            expect(rest.auth.options.authHeaders).to(beNil())
+                            expect(rest.auth.options.queryTime).toNot(beTrue())
+                            expect(tokenDetails!.capability).to(equal(defaultCapability))
+                            done()
+                        }
+                    }
 
-                    let mergedParams2 = rest.auth.mergeParams(tokenParams2)
-                    expect(mergedParams2.ttl) == 25.0
-                    expect(mergedParams2.clientId).to(beNil())
+                    tokenParams.capability = ExpectedTokenParams.capability
+                    tokenParams.clientId = nil
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.requestToken(tokenParams, withOptions: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            guard let aTokenDetails = tokenDetails else {
+                                XCTFail("tokenDetails is nil"); done(); return
+                            }
+                            expect(aTokenDetails.capability).to(equal(ExpectedTokenParams.capability))
+                            expect(aTokenDetails.clientId).to(beNil())
+                            done()
+                        }
+                    }
                 }
             }
 
@@ -2028,14 +2040,14 @@ class Auth : QuickSpec {
                 // init ARTRest
                 let restOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                 let rest = ARTRest(options: restOptions)
-                
+
                 // get first token
                 let tokenParams = ARTTokenParams()
                 tokenParams.capability = "{\"wrongchannel\": [\"*\"]}"
                 tokenParams.clientId = "testClientId"
-                
+
                 var firstToken = ""
-                
+
                 waitUntil(timeout: testTimeout) { done in
                     rest.auth.requestToken(tokenParams, withOptions: nil) { tokenDetails, error in
                         expect(error).to(beNil())
@@ -2046,15 +2058,15 @@ class Auth : QuickSpec {
                 }
                 expect(firstToken).toNot(beNil())
                 expect(firstToken.characters.count > 0).to(beTrue())
-                
+
                 // init ARTRealtime
                 let realtimeOptions = AblyTests.commonAppSetup()
                 realtimeOptions.token = firstToken
                 realtimeOptions.clientId = "testClientId"
-                
+
                 let realtime = ARTRealtime(options:realtimeOptions)
                 defer { realtime.dispose(); realtime.close() }
-                
+
                 // wait for connected state
                 waitUntil(timeout: testTimeout) { done in
                     realtime.connection.once(.Connected) { stateChange in
@@ -2064,10 +2076,10 @@ class Auth : QuickSpec {
                     }
                     realtime.connect()
                 }
-                
+
                 // create a `rightchannel` channel and check can't attach to it
                 let channel = realtime.channels.get("rightchannel")
-                
+
                 waitUntil(timeout: testTimeout) { done in
                     channel.attach() { error in
                         expect(error).toNot(beNil())
@@ -2075,20 +2087,20 @@ class Auth : QuickSpec {
                         done()
                     }
                 }
-                
+
                 // get second token
                 let secondTokenParams = ARTTokenParams()
                 secondTokenParams.capability = "{\"wrongchannel\": [\"*\"], \"rightchannel\": [\"*\"]}"
                 secondTokenParams.clientId = "testClientId"
-                
+
                 var secondToken = ""
                 var secondTokenDetails: ARTTokenDetails?
-                
+
                 waitUntil(timeout: testTimeout) { done in
                     rest.auth.requestToken(secondTokenParams, withOptions: nil) { tokenDetails, error in
                         expect(error).to(beNil())
                         expect(tokenDetails).toNot(beNil())
-                        
+
                         secondToken = tokenDetails!.token
                         secondTokenDetails = tokenDetails
                         done()
@@ -2097,12 +2109,12 @@ class Auth : QuickSpec {
                 expect(secondToken).toNot(beNil())
                 expect(secondToken.characters.count > 0).to(beTrue())
                 expect(secondToken).toNot(equal(firstToken))
-                
+
                 // reauthorise
                 let reauthOptions = ARTAuthOptions();
                 reauthOptions.tokenDetails = secondTokenDetails
                 reauthOptions.force = true
-                
+
                 waitUntil(timeout: testTimeout) { done in
                     realtime.auth.authorise(nil, options: reauthOptions) { reauthTokenDetails, error in
                         expect(error).to(beNil())
@@ -2110,110 +2122,11 @@ class Auth : QuickSpec {
                         done()
                     }
                 }
-                
+
                 // re-attach to the channel
                 waitUntil(timeout: testTimeout) { done in
                     channel.attach() { error in
                         expect(error).to(beNil())
-                        done()
-                    }
-                }
-            }
-        }
-        
-        describe("Reauth") {
-            pending("should use authorise({force: true}) to reauth with a token with a different set of capabilities") {
-                // init ARTRest
-                let restOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-                let rest = ARTRest(options: restOptions)
-                
-                // get first token
-                let tokenParams = ARTTokenParams()
-                tokenParams.capability = "{\"wrongchannel\": [\"*\"]}"
-                tokenParams.clientId = "testClientId"
-                
-                var firstToken = ""
-                
-                waitUntil(timeout: testTimeout) { done in
-                    rest.auth.requestToken(tokenParams, withOptions: nil) { tokenDetails, error in
-                        expect(error).to(beNil())
-                        expect(tokenDetails).toNot(beNil())
-                        firstToken = tokenDetails!.token
-                        done()
-                    }
-                }
-                expect(firstToken).toNot(beNil())
-                expect(firstToken.characters.count > 0).to(beTrue())
-                
-                // init ARTRealtime
-                let realtimeOptions = AblyTests.commonAppSetup()
-                realtimeOptions.token = firstToken
-                realtimeOptions.clientId = "testClientId"
-                
-                let realtime = ARTRealtime(options:realtimeOptions)
-                defer { realtime.close() }
-                
-                // wait for connected state
-                waitUntil(timeout: testTimeout) { done in
-                    realtime.connection.once(.Connected) { stateChange in
-                        expect(stateChange!.reason).to(beNil())
-                        expect(stateChange?.current).to(equal(realtime.connection.state))
-                        done()
-                    }
-                    realtime.connect()
-                }
-                
-                // create a `rightchannel` channel and check can't attach to it
-                let channel = realtime.channels.get("rightchannel")
-                
-                waitUntil(timeout: testTimeout) { done in
-                    channel.attach() { error in
-                        expect(error).toNot(beNil())
-                        expect(error!.code).to(equal(40160))
-                        done()
-                    }
-                }
-                
-                // get second token
-                let secondTokenParams = ARTTokenParams()
-                secondTokenParams.capability = "{\"wrongchannel\": [\"*\"], \"rightchannel\": [\"*\"]}"
-                secondTokenParams.clientId = "testClientId"
-                
-                var secondToken = ""
-                var secondTokenDetails: ARTTokenDetails?
-                
-                waitUntil(timeout: testTimeout) { done in
-                    rest.auth.requestToken(secondTokenParams, withOptions: nil) { tokenDetails, error in
-                        expect(error).to(beNil())
-                        expect(tokenDetails).toNot(beNil())
-                        
-                        secondToken = tokenDetails!.token
-                        secondTokenDetails = tokenDetails
-                        done()
-                    }
-                }
-                expect(secondToken).toNot(beNil())
-                expect(secondToken.characters.count > 0).to(beTrue())
-                expect(secondToken).toNot(equal(firstToken))
-                
-                // reauthorise
-                let reauthOptions = ARTAuthOptions();
-                reauthOptions.tokenDetails = secondTokenDetails
-                reauthOptions.force = true
-                
-                waitUntil(timeout: testTimeout) { done in
-                    realtime.auth.authorise(nil, options: reauthOptions) { reauthTokenDetails, error in
-                        expect(error).to(beNil())
-                        expect(reauthTokenDetails?.token).toNot(beNil())
-                        done()
-                    }
-                }
-                
-                // re-attach to the channel
-                waitUntil(timeout: testTimeout) { done in
-                    channel.attach() { error in
-                        expect(error).toNot(beNil())
-                        expect(error!.code).to(equal(40160))
                         done()
                     }
                 }
