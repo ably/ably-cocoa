@@ -158,6 +158,7 @@
     
     // The values replace all corresponding.
     ARTAuthOptions *replacedOptions = [self replaceOptions:authOptions];
+    [self storeOptions:replacedOptions];
     ARTTokenParams *currentTokenParams = [self mergeParams:tokenParams];
     tokenParams.timestamp = [NSDate date];
 

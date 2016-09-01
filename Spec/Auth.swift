@@ -14,6 +14,12 @@ import Aspects
 class Auth : QuickSpec {
     override func spec() {
         
+        struct ExpectedTokenParams {
+            static let clientId = "client_from_params"
+            static let ttl = 5.0
+            static let capability = "{\"cansubscribe:*\":[\"subscribe\"]}"
+        }
+        
         var testHTTPExecutor: TestProxyHTTPExecutor!
         
         beforeEach {
@@ -616,34 +622,46 @@ class Auth : QuickSpec {
             context("arguments") {
                 // RSA8e
                 it("should not merge with the configured params and options but instead replace all corresponding values, even when @null@") {
-                    let clientOptions = ARTClientOptions()
-                    clientOptions.authUrl = NSURL(string: "http://auth.ably.io")
-                    clientOptions.key = "aKey"
+                    let options = AblyTests.commonAppSetup()
+                    options.authMethod = "GET"
+                    options.authHeaders = ["X-Header-1": "foo", "X-Header-2": "bar"]
+                    options.queryTime = true
+                    let rest = ARTRest(options: options)
                     
-                    let rest = ARTRest(options: clientOptions)
-                    
-                    let authOptions = ARTAuthOptions()
-                    authOptions.authUrl = NSURL(string: "http://test.ably.io")
-                    authOptions.authMethod = "POST"
                     let tokenParams = ARTTokenParams()
-                    tokenParams.ttl = 30.0
-                    tokenParams.clientId = "anId"
+                    tokenParams.clientId = "testClientId"
+                    let defaultCapability = tokenParams.capability
                     
-                    // AuthOptions
-                    let replacedOptions = rest.auth.replaceOptions(authOptions)
-                    expect(replacedOptions.authUrl) == NSURL(string: "http://test.ably.io")
-                    expect(replacedOptions.authMethod) == "POST"
-                    expect(replacedOptions.key).to(beNil())
-                    // TokenParams
-                    let mergedParams = rest.auth.mergeParams(tokenParams)
-                    expect(mergedParams.ttl) == 30.0
+                    let precedenceOptions = AblyTests.commonAppSetup()
+                    precedenceOptions.authMethod = "POST"
+                    precedenceOptions.authHeaders = nil
                     
-                    let tokenParams2 = ARTTokenParams()
-                    tokenParams2.ttl = 25.0
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.requestToken(nil, withOptions: precedenceOptions) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            expect(tokenDetails).toNot(beNil())
+                            expect(rest.auth.options.authMethod).to(equal("POST"))
+                            expect(rest.auth.options.authHeaders).to(beNil())
+                            expect(rest.auth.options.queryTime).toNot(beTrue())
+                            expect(tokenDetails!.capability).to(equal(defaultCapability))
+                            done()
+                        }
+                    }
                     
-                    let mergedParams2 = rest.auth.mergeParams(tokenParams2)
-                    expect(mergedParams2.ttl) == 25.0
-                    expect(mergedParams2.clientId).to(beNil())
+                    tokenParams.capability = ExpectedTokenParams.capability
+                    tokenParams.clientId = nil
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.requestToken(tokenParams, withOptions: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            guard let aTokenDetails = tokenDetails else {
+                                XCTFail("tokenDetails is nil"); done(); return
+                            }
+                            expect(aTokenDetails.capability).to(equal(ExpectedTokenParams.capability))
+                            expect(aTokenDetails.clientId).to(beNil())
+                            done()
+                        }
+                    }
                 }
             }
             
@@ -1032,13 +1050,6 @@ class Auth : QuickSpec {
                 }
                 expect(rest.auth.clientId).to(beNil())
             }
-
-        }
-
-        struct ExpectedTokenParams {
-            static let clientId = "client_from_params"
-            static let ttl = 5.0
-            static let capability = "{\"cansubscribe:*\":[\"subscribe\"]}"
         }
 
         // RSA9
@@ -1896,6 +1907,7 @@ class Auth : QuickSpec {
         }
         
         describe("Reauth") {
+            // RTC8
             it("should use authorise({force: true}) to reauth with a token with a different set of capabilities") {
                 // init ARTRest
                 let restOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
@@ -1986,8 +1998,7 @@ class Auth : QuickSpec {
                 // re-attach to the channel
                 waitUntil(timeout: testTimeout) { done in
                     channel.attach() { error in
-                        expect(error).toNot(beNil())
-                        expect(error!.code).to(equal(40160))
+                        expect(error).to(beNil())
                         done()
                     }
                 }
