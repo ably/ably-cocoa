@@ -625,6 +625,7 @@
 				D746AE421BBC5CD0003ECEF8 /* ARTRealtimeChannel+Private.h */,
 				D746AE3B1BBC5AE1003ECEF8 /* ARTRealtimeChannel.m */,
 				D7D29B401BE3DD0600374295 /* ARTConnection.h */,
+				EB89D40E1C62303E007FA5B7 /* ARTConnection+Private.h */,
 				D7D29B411BE3DEB300374295 /* ARTConnection.m */,
 				D7B17EE11C07208B00A6958E /* ARTConnectionDetails.h */,
 				D7D5A69B1CA40C350071BD6D /* ARTConnectionDetails+Private.h */,
@@ -638,7 +639,6 @@
 				EB89D4081C61C5ED007FA5B7 /* ARTRealtimeChannels.h */,
 				D7CEF12C1C8D821D004FB242 /* ARTRealtimeChannels+Private.h */,
 				EB89D40A1C61C6EA007FA5B7 /* ARTRealtimeChannels.m */,
-				EB89D40E1C62303E007FA5B7 /* ARTConnection+Private.h */,
 			);
 			name = Realtime;
 			sourceTree = "<group>";

@@ -11,21 +11,16 @@
 #import "ARTRealtime+Private.h"
 #import "ARTEventEmitter.h"
 
-@interface ARTConnection () {
-    // FIXME: temporary
-    __weak ARTEventEmitter* _eventEmitter;
-}
+@interface ARTConnection ()
 
 @end
 
-@implementation ARTConnection {
-    __weak ARTRealtime *_realtime;
-}
+@implementation ARTConnection
 
 - (instancetype)initWithRealtime:(ARTRealtime *)realtime {
     if (self == [super init]) {
+        _eventEmitter = [[ARTEventEmitter alloc] init];
         _realtime = realtime;
-        _eventEmitter = realtime.eventEmitter;
         _serial = -1;
     }
     return self;

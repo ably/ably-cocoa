@@ -66,7 +66,6 @@
         NSAssert(options, @"ARTRealtime: No options provided");
         
         _rest = [[ARTRest alloc] initWithOptions:options];
-        _eventEmitter = [[ARTEventEmitter alloc] init];
         _internalEventEmitter = [[ARTEventEmitter alloc] init];
         _connectedEventEmitter = [[ARTEventEmitter alloc] init];
         _pingEventEmitter = [[ARTEventEmitter alloc] init];
@@ -201,10 +200,6 @@
 
 - (BOOL)stats:(ARTStatsQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
     return [self.rest stats:query callback:callback error:errorPtr];
-}
-
-- (void)resetEventEmitter {
-    _eventEmitter = [[ARTEventEmitter alloc] init];
 }
 
 - (void)transition:(ARTRealtimeConnectionState)state {

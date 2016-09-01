@@ -24,7 +24,6 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtime () <ARTRealtimeTransportDelegate>
 
-@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNumber *, ARTConnectionStateChange *) *eventEmitter;
 @property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNumber *, ARTConnectionStateChange *) *internalEventEmitter;
 @property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNull *, NSNull *) *connectedEventEmitter;
 
@@ -85,8 +84,6 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (void)setTransportClass:(Class)transportClass;
 - (void)setReachabilityClass:(Class __art_nullable)reachabilityClass;
-
-- (void)resetEventEmitter;
 
 // Message sending
 - (void)send:(ARTProtocolMessage *)msg callback:(art_nullable void (^)(ARTStatus *))cb;
