@@ -6,7 +6,7 @@
 //  Copyright © 2015 г. Ably. All rights reserved.
 //
 
-import AblyRealtime
+import Ably
 import Foundation
 import XCTest
 import Quick
@@ -15,7 +15,7 @@ import SwiftyJSON
 import SocketRocket
 import Aspects
 
-import AblyRealtime.Private
+import Ably.Private
 
 enum CryptoTest: String {
     case aes128 = "crypto-data-128"

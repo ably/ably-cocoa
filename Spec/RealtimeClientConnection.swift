@@ -6,7 +6,7 @@
 //  Copyright © 2015 Ably. All rights reserved.
 //
 
-import AblyRealtime
+import Ably
 import Quick
 import Nimble
 import SwiftyJSON

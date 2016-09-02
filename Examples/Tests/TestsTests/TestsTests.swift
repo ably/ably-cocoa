@@ -7,7 +7,7 @@
 //
 
 import XCTest
-import AblyRealtime
+import Ably
 @testable import Tests
 
 
