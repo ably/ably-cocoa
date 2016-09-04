@@ -17,7 +17,7 @@ ART_ASSUME_NONNULL_BEGIN
 /**
  Type that provided parameters of a token request.
  */
-@interface ARTTokenParams : NSObject
+@interface ARTTokenParams : NSObject<NSCopying>
 
 /**
  Represents time to live (expiry) of this token in seconds.
@@ -39,7 +39,7 @@ ART_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, strong, null_resettable, setter=setTimestamp:, getter=getTimestamp) NSDate *timestamp;
 
-@property (nonatomic, readonly, strong) NSString *nonce;
+@property (nonatomic, readwrite, strong) NSString *nonce;
 
 - (instancetype)init;
 - (instancetype)initWithClientId:(NSString *__art_nullable)clientId;
@@ -49,6 +49,8 @@ ART_ASSUME_NONNULL_BEGIN
 - (__GENERIC(NSMutableArray, NSURLQueryItem *) *)toArray;
 - (__GENERIC(NSArray, NSURLQueryItem *) *)toArrayWithUnion:(NSArray *)items;
 - (__GENERIC(NSDictionary, NSString *, NSString *) *)toDictionaryWithUnion:(__GENERIC(NSArray, NSURLQueryItem *) *)items;
+
+- (ARTTokenParams *)replaceWith:(ARTTokenParams *)params;
 
 @end
 

@@ -25,6 +25,7 @@
     ARTTokenParams *_tokenParams;
     // Dedicated to Protocol Message
     NSString *_protocolClientId;
+    ARTAuthOptions *_replacedAuthOptions;
 }
 
 - (instancetype)init:(ARTRest *)rest withOptions:(ARTClientOptions *)options {
@@ -87,7 +88,8 @@
 }
 
 - (ARTAuthOptions *)replaceOptions:(ARTAuthOptions *)customOptions {
-    return customOptions ? customOptions : self.options;
+    _replacedAuthOptions = [self.options replaceWith:customOptions];
+    return customOptions ? _replacedAuthOptions : self.options;
 }
 
 - (void)storeOptions:(ARTAuthOptions *)customOptions {
@@ -104,6 +106,11 @@
 
 - (ARTTokenParams *)mergeParams:(ARTTokenParams *)customParams {
     return customParams ? customParams : [[ARTTokenParams alloc] initWithOptions:self.options];
+}
+
+- (ARTTokenParams *)replaceParams:(ARTTokenParams *)customParams {
+    ARTTokenParams* tkp = [[ARTTokenParams alloc] initWithOptions: (ARTClientOptions*)_replacedAuthOptions];
+    return customParams ? [_tokenParams replaceWith:customParams] : tkp;
 }
 
 - (void)storeParams:(ARTTokenParams *)customOptions {
@@ -158,8 +165,7 @@
     
     // The values replace all corresponding.
     ARTAuthOptions *replacedOptions = [self replaceOptions:authOptions];
-    [self storeOptions:replacedOptions];
-    ARTTokenParams *currentTokenParams = [self mergeParams:tokenParams];
+    ARTTokenParams *currentTokenParams = [self replaceParams:tokenParams];
     tokenParams.timestamp = [NSDate date];
 
     if (replacedOptions.key == nil && replacedOptions.authCallback == nil && replacedOptions.authUrl == nil) {
@@ -333,8 +339,8 @@
 }
 
 - (void)createTokenRequest:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)options callback:(void (^)(ARTTokenRequest *, NSError *))callback {
-    ARTAuthOptions *mergedOptions = options ? : self.options;
-    ARTTokenParams *mergedTokenParams = tokenParams ? : _tokenParams;
+    ARTAuthOptions *mergedOptions = [self replaceOptions:options];
+    ARTTokenParams *mergedTokenParams = [self replaceParams:tokenParams];
 
     // Validate: Capability JSON text
     NSError *errorCapability;
