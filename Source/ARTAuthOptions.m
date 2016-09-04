@@ -134,4 +134,17 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
     return [_authMethod isEqualToString:@"GET"];
 }
 
+- (BOOL)isOnlyForceTrue {    
+    return self.key == nil &&
+           self.token == nil &&
+           self.tokenDetails == nil &&
+           self.authCallback == nil &&
+           self.authUrl == nil &&
+           self.authHeaders == nil &&
+           self.authParams == nil &&
+           self.queryTime == NO &&
+           self.useTokenAuth == NO &&
+           self.force == YES;
+}
+
 @end

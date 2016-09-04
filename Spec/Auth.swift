@@ -1689,7 +1689,10 @@ class Auth : QuickSpec {
 
             // RSA10d
             it("should issue a new token even if an existing token exists when AuthOption.force is true") {
-                let rest = ARTRest(options: AblyTests.commonAppSetup())
+                let defOptions = AblyTests.commonAppSetup()
+                defOptions.clientId = "defClientId"
+                
+                let rest = ARTRest(options: defOptions)
 
                 let authOptions = ARTAuthOptions()
                 authOptions.force = true
@@ -1707,6 +1710,7 @@ class Auth : QuickSpec {
                             guard let tokenDetails = tokenDetails else {
                                 XCTFail("TokenDetails is nil"); done(); return
                             }
+                            expect(tokenDetails.clientId).to(equal("defClientId"))
                             expect(tokenDetails.token).toNot(equal(currentToken))
                             done()
                         }

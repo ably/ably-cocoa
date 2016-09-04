@@ -95,6 +95,8 @@ ART_ASSUME_NONNULL_BEGIN
 - (BOOL)isMethodGET;
 - (BOOL)isMethodPOST;
 
+- (BOOL)isOnlyForceTrue;
+
 @end
 
 ART_ASSUME_NONNULL_END
