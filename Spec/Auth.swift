@@ -2095,7 +2095,7 @@ class Auth : QuickSpec {
             }
 
             // RSA10j
-            it("should supersede any configured params and options when TokenParams and AuthOptions were provided") {
+            it("should supersede any configured params and options when TokenParams and AuthOptions were provided even if arguments are empty") {
                 let options = AblyTests.commonAppSetup()
                 options.clientId = "client_string"
                 let rest = ARTRest(options: options)
@@ -2146,6 +2146,32 @@ class Auth : QuickSpec {
                         expect(tokenDetails.issued).to(beCloseTo(serverDate, within: 1.0)) //1 Second
                         expect(tokenDetails.issued!.dateByAddingTimeInterval(ExpectedTokenParams.ttl)).to(beCloseTo(tokenDetails.expires))
                         expect(tokenDetails.capability).to(equal(ExpectedTokenParams.capability))
+                        done()
+                    }
+                }
+                
+                tokenParams.clientId = "testId"
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.authorise(tokenParams, options: authOptions) { tokenDetails, error in
+                        expect(error).to(beNil())
+                        guard let tokenDetails = tokenDetails else {
+                            XCTFail("TokenDetails is nil"); done(); return
+                        }
+
+                        expect(tokenDetails.clientId).to(equal("testId"))
+                        done()
+                    }
+                }
+                
+                tokenParams.clientId = nil
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.authorise(tokenParams, options: authOptions) { tokenDetails, error in
+                        expect(error).to(beNil())
+                        guard let tokenDetails = tokenDetails else {
+                            XCTFail("TokenDetails is nil"); done(); return
+                        }
+                        
+                        expect(tokenDetails.clientId).to(beNil())
                         done()
                     }
                 }
