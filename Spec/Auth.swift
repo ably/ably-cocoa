@@ -623,41 +623,39 @@ class Auth : QuickSpec {
                 // RSA8e
                 it("should not merge with the configured params and options but instead replace all corresponding values, even when @null@") {
                     let options = AblyTests.commonAppSetup()
-                    options.authMethod = "GET"
-                    options.authHeaders = ["X-Header-1": "foo", "X-Header-2": "bar"]
-                    options.queryTime = true
+                    options.clientId = "сlientId"
                     let rest = ARTRest(options: options)
                     
                     let tokenParams = ARTTokenParams()
-                    tokenParams.clientId = "testClientId"
-                    let defaultCapability = tokenParams.capability
+                    tokenParams.ttl = 2000
+                    tokenParams.capability = "{\"cansubscribe:*\":[\"subscribe\"]}"
                     
                     let precedenceOptions = AblyTests.commonAppSetup()
-                    precedenceOptions.authMethod = "POST"
-                    precedenceOptions.authHeaders = nil
                     
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.requestToken(nil, withOptions: precedenceOptions) { tokenDetails, error in
+                        rest.auth.requestToken(tokenParams, withOptions: precedenceOptions) { tokenDetails, error in
                             expect(error).to(beNil())
                             expect(tokenDetails).toNot(beNil())
-                            expect(rest.auth.options.authMethod).to(equal("POST"))
-                            expect(rest.auth.options.authHeaders).to(beNil())
-                            expect(rest.auth.options.queryTime).toNot(beTrue())
-                            expect(tokenDetails!.capability).to(equal(defaultCapability))
+                            expect(tokenDetails!.capability).to(equal("{\"cansubscribe:*\":[\"subscribe\"]}"))
+                            expect(tokenDetails!.clientId).to(beNil())
+                            expect(tokenDetails!.expires!.timeIntervalSince1970 - tokenDetails!.issued!.timeIntervalSince1970).to(equal(tokenParams.ttl))
                             done()
                         }
                     }
                     
-                    tokenParams.capability = ExpectedTokenParams.capability
-                    tokenParams.clientId = nil
+                    let options2 = AblyTests.commonAppSetup()
+                    options2.clientId = nil
+                    let rest2 = ARTRest(options: options2)
+
+                    let precedenceOptions2 = AblyTests.commonAppSetup()
+                    precedenceOptions2.clientId = nil
                     
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.requestToken(tokenParams, withOptions: nil) { tokenDetails, error in
+                        rest2.auth.requestToken(nil, withOptions: precedenceOptions2) { tokenDetails, error in
                             expect(error).to(beNil())
                             guard let aTokenDetails = tokenDetails else {
                                 XCTFail("tokenDetails is nil"); done(); return
                             }
-                            expect(aTokenDetails.capability).to(equal(ExpectedTokenParams.capability))
                             expect(aTokenDetails.clientId).to(beNil())
                             done()
                         }
@@ -873,7 +871,6 @@ class Auth : QuickSpec {
                         })
                     }
                 }
-
             }
 
             // RSA8d
@@ -884,7 +881,7 @@ class Auth : QuickSpec {
                     let expectedTokenParams = ARTTokenParams()
 
                     options.authCallback = { tokenParams, completion in
-                        expect(tokenParams).to(beIdenticalTo(expectedTokenParams))
+                        expect(tokenParams.clientId).to(beNil())
                         completion("token_string", nil)
                     }
 
@@ -902,7 +899,7 @@ class Auth : QuickSpec {
 
                     let options = AblyTests.clientOptions()
                     options.authCallback = { tokenParams, completion in
-                        expect(tokenParams).to(beIdenticalTo(expectedTokenParams))
+                        expect(tokenParams.clientId).to(beNil())
                         completion(ARTTokenDetails(token: "token_from_details"), nil)
                     }
 
@@ -922,7 +919,7 @@ class Auth : QuickSpec {
                     var rest: ARTRest!
 
                     options.authCallback = { tokenParams, completion in
-                        expect(tokenParams).to(beIdenticalTo(expectedTokenParams))
+                        expect(tokenParams.clientId).to(beIdenticalTo(expectedTokenParams.clientId))
                         rest.auth.createTokenRequest(tokenParams, options: options) { tokenRequest, error in
                             completion(tokenRequest, error)
                         }
@@ -941,7 +938,6 @@ class Auth : QuickSpec {
                         }
                     }
                 }
-
             }
 
             // RSA8f1
