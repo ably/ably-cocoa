@@ -1177,7 +1177,7 @@ class Auth : QuickSpec {
         // RSA9
         describe("createTokenRequest") {
             // RSA9h
-            it("should supersede any configured params and options when TokenParams and AuthOptions were provided") {
+            it("should not merge with the configured params and options but instead replace all corresponding values, even when @null@") {
                 let options = AblyTests.commonAppSetup()
                 options.clientId = "client_string"
                 let rest = ARTRest(options: options)
@@ -1229,6 +1229,36 @@ class Auth : QuickSpec {
                         expect(tokenRequest.timestamp).to(beCloseTo(serverDate, within: 1.0)) //1 Second
                         expect(tokenRequest.ttl).to(equal(ExpectedTokenParams.ttl))
                         expect(tokenRequest.capability).to(equal(ExpectedTokenParams.capability))
+                        done()
+                    }
+                }
+                
+                tokenParams.clientId = "newClientId"
+                tokenParams.ttl = 2000
+                tokenParams.capability = "{ \"test:*\":[\"test\"] }"
+                
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.createTokenRequest(tokenParams, options: authOptions) { tokenRequest, error in
+                        expect(error).to(beNil())
+                        guard let tokenRequest = tokenRequest else {
+                            XCTFail("TokenDetails is nil"); done(); return
+                        }
+                        expect(tokenRequest.clientId).to(equal("newClientId"))
+                        expect(tokenRequest.ttl).to(equal(2000))
+                        expect(tokenRequest.capability).to(equal("{ \"test:*\":[\"test\"] }"))
+                        done()
+                    }
+                }
+                
+                tokenParams.clientId = nil
+                
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.createTokenRequest(tokenParams, options: authOptions) { tokenRequest, error in
+                        expect(error).to(beNil())
+                        guard let tokenRequest = tokenRequest else {
+                            XCTFail("TokenDetails is nil"); done(); return
+                        }
+                        expect(tokenRequest.clientId).to(beNil())
                         done()
                     }
                 }
