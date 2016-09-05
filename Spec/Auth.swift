@@ -1673,6 +1673,7 @@ class Auth : QuickSpec {
                     authOptions.authParams?.append(NSURLQueryItem(name: "body", value: token))
                     authOptions.authHeaders = ["X-Ably":"Test"]
                     authOptions.force = true
+                    authOptions.queryTime = true
 
                     waitUntil(timeout: testTimeout) { done in
                         auth.authorise(nil, options: authOptions) { tokenDetails, error in
@@ -1682,7 +1683,7 @@ class Auth : QuickSpec {
                                 XCTFail("TokenDetails is nil"); done(); return
                             }
                             expect(tokenDetails.token).to(equal(token))
-
+                            
                             auth.authorise(nil, options: nil) { tokenDetails, error in
                                 expect(error).to(beNil())
 
@@ -1694,6 +1695,7 @@ class Auth : QuickSpec {
                                 expect(auth.options.authUrl!.host).to(equal("echo.ably.io"))
                                 expect(auth.options.authHeaders!["X-Ably"]).to(equal("Test"))
                                 expect(tokenDetails.token).to(equal(token))
+                                expect(auth.options.queryTime).to(beFalse())
                                 done()
                             }
                         }
@@ -1724,7 +1726,39 @@ class Auth : QuickSpec {
                             auth.authorise(nil, options: options) { tokenDetails, error in
                                 expect(authCallbackHasBeenInvoked).to(beTrue())
                                 expect(auth.options.useTokenAuth).to(beTrue())
-                                expect(auth.options.queryTime).to(beTrue())
+                                expect(auth.options.queryTime).to(beFalse())
+                                done()
+                            }
+                        }
+                    }
+                }
+
+                it("should not store queryTime") {
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
+                    let authOptions = ARTAuthOptions()
+                    authOptions.queryTime = true
+
+                    var serverTimeRequestWasMade = false
+                    let hook = rest.testSuite_injectIntoMethodAfter(#selector(rest.time(_:))) {
+                        serverTimeRequestWasMade = true
+                    }
+                    defer { hook.remove() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        // First time
+                        rest.auth.authorise(nil, options: authOptions) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            expect(tokenDetails).toNot(beNil())
+                            expect(serverTimeRequestWasMade).to(beTrue())
+                            expect(rest.auth.options.queryTime).to(beFalse())
+                            serverTimeRequestWasMade = false
+
+                            // Second time
+                            rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                                expect(error).to(beNil())
+                                expect(tokenDetails).toNot(beNil())
+                                expect(serverTimeRequestWasMade).to(beFalse())
+                                expect(rest.auth.options.queryTime).to(beFalse())
                                 done()
                             }
                         }

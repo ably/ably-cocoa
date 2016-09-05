@@ -95,7 +95,6 @@
     self.options.authMethod = customOptions.authMethod;
     self.options.authParams = [customOptions.authParams copy];
     self.options.useTokenAuth = customOptions.useTokenAuth;
-    self.options.queryTime = customOptions.queryTime;
 }
 
 - (ARTTokenParams *)mergeParams:(ARTTokenParams *)customParams {
