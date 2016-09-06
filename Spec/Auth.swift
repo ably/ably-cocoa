@@ -2379,7 +2379,154 @@ class Auth : QuickSpec {
                 }
 
             }
-
+            
+            // RSA10k
+            context("should adhere to all requirements relating to") {
+                it("Should obtain server time once and persist the offset from the local clock") {
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
+                    
+                    var serverTimeRequestWasMade = false
+                    let block: @convention(block) (AspectInfo) -> Void = { _ in
+                        serverTimeRequestWasMade = true
+                    }
+                    
+                    let hook = ARTRest.aspect_hookSelector(rest)
+                    // Adds a block of code after `time` is triggered
+                    let _ = try? hook(#selector(ARTRest.time(_:)), withOptions: .PositionAfter, usingBlock:  unsafeBitCast(block, ARTRest.self))
+                    
+                    let authOptions = ARTAuthOptions()
+                    authOptions.queryTime = true
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
+                            expect(error).to(beNil())
+                            guard let tokenRequest = tokenRequest else {
+                                XCTFail("TokenRequest is nil"); return
+                            }
+                            expect(tokenRequest.timestamp).toNot(beNil())
+                            expect(serverTimeRequestWasMade).to(beTrue())
+                            expect(rest.auth.timeOffset).toNot(beNil())
+                            done()
+                        })
+                    }
+                    
+                    var serverTimeRequestWasMade2 = false
+                    let block2: @convention(block) (AspectInfo) -> Void = { _ in
+                        serverTimeRequestWasMade2 = true
+                    }
+                    
+                    let hook2 = ARTRest.aspect_hookSelector(rest)
+                    let _ = try? hook2(#selector(ARTRest.time(_:)), withOptions: .PositionAfter, usingBlock:  unsafeBitCast(block2, ARTRest.self))
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
+                            expect(error).to(beNil())
+                            guard let tokenRequest = tokenRequest else {
+                                XCTFail("TokenRequest is nil"); return
+                            }
+                            expect(tokenRequest.timestamp).toNot(beNil())
+                            expect(serverTimeRequestWasMade2).to(beFalse())
+                            done()
+                        })
+                    }
+                }
+                
+                it("should be possible by lib Client to discard the cached local clock offset") {
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
+                    
+                    let authOptions = ARTAuthOptions()
+                    authOptions.queryTime = true
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
+                            expect(error).to(beNil())
+                            guard let tokenRequest = tokenRequest else {
+                                XCTFail("tokenRequest is nil"); return
+                            }
+                            expect(rest.auth.timeOffset).toNot(beNil())
+                            rest.auth.discardTimeOffset()
+                            expect(rest.auth.timeOffset).to(beNil())
+                            done()
+                        })
+                    }
+                    
+                    var serverTimeRequestWasMade = false
+                    let block: @convention(block) (AspectInfo) -> Void = { _ in
+                        serverTimeRequestWasMade = true
+                    }
+                    
+                    let hook = ARTRest.aspect_hookSelector(rest)
+                    let _ = try? hook(#selector(ARTRest.time(_:)), withOptions: .PositionAfter, usingBlock:  unsafeBitCast(block, ARTRest.self))
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
+                            expect(error).to(beNil())
+                            guard let tokenRequest = tokenRequest else {
+                                XCTFail("tokenRequest is nil"); return
+                            }
+                            expect(serverTimeRequestWasMade).to(beTrue())
+                            done()
+                        })
+                    }
+                }
+                
+                it("should use the local clock offset to calculate the server time") {
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
+                    
+                    let authOptions = AblyTests.commonAppSetup()
+                    authOptions.queryTime = true
+                    
+                    var firstTokenRequestTimeStamp: NSDate?
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
+                            expect(error).to(beNil())
+                            guard let tokenRequest = tokenRequest else {
+                                XCTFail("tokenRequest is nil"); done(); return
+                            }
+                            firstTokenRequestTimeStamp = tokenRequest.timestamp
+                            done()
+                        })
+                    }
+                    expect(rest.auth.timeOffset).toNot(beNil())
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        let nowMillis = CLongLong((NSDate().timeIntervalSince1970 * 1000))
+                        let requestTimeMillis = CLongLong((rest.auth.timeOffset?.longLongValue)! + nowMillis)
+                        
+                        rest.auth.authorise(nil, options: authOptions) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            guard let tokenDetails = tokenDetails else {
+                                XCTFail("TokenDetails is nil"); done(); return
+                            }
+                            let issuedMillis = CLongLong((tokenDetails.issued?.timeIntervalSince1970)! * 1000)
+                            expect(issuedMillis >= (requestTimeMillis - 1000)).to(beTrue())
+                            expect(issuedMillis <= (requestTimeMillis + 1000)).to(beTrue())
+                            done()
+                        }
+                    }
+                    
+                    //set fake offset to check it affects token request `timestamp` property
+                    let fakeOffset = NSNumber(integer: 20000) //20 seconds
+                    rest.auth.timeOffset = fakeOffset
+                    
+                    var secondTokenRequestTimeStamp: NSDate?
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
+                            expect(error).to(beNil())
+                            guard let tokenRequest = tokenRequest else {
+                                XCTFail("tokenRequest is nil"); done(); return
+                            }
+                            secondTokenRequestTimeStamp = tokenRequest.timestamp
+                            
+                            let firstMillis = firstTokenRequestTimeStamp!.timeIntervalSince1970 * 1000
+                            let secondMillis = secondTokenRequestTimeStamp!.timeIntervalSince1970 * 1000
+                            let diff = secondMillis - firstMillis
+                            expect(CLongLong(diff) >= fakeOffset.longLongValue).to(beTrue())
+                            done()
+                        })
+                    }
+                }
+            }
         }
 
         describe("TokenParams") {
