@@ -17,6 +17,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, weak) ARTLog *logger;
 @property (art_nullable, nonatomic, readonly, strong) ARTTokenDetails *tokenDetails;
+@property (art_nullable, nonatomic, strong) NSNumber *timeOffset;
 
 @end
 

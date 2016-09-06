@@ -356,14 +356,25 @@
     }
 
     if (replacedOptions.queryTime) {
-        [_rest time:^(NSDate *time, NSError *error) {
-            if (error) {
-                callback(nil, error);
-            } else {
-                currentTokenParams.timestamp = [self handleServerTime:time];
-                callback([currentTokenParams sign:replacedOptions.key], nil);
-            }
-        }];
+        if (self.timeOffset == nil) {
+            [_rest time:^(NSDate *time, NSError *error) {
+                if (error) {
+                    callback(nil, error);
+                } else {
+                    NSDate *dateNow = [NSDate date];
+                    long long nowMillis = [dateNow timeIntervalSince1970]*1000;
+                    long long serverNowMillis = [time timeIntervalSince1970]*1000;
+                    self.timeOffset = [NSNumber numberWithLongLong:(serverNowMillis - nowMillis)];
+                    
+                    currentTokenParams.timestamp = [self timeStampDateWithDateNow:dateNow];
+                    callback([currentTokenParams sign:replacedOptions.key], nil);
+                }
+            }];
+        }
+        else {
+            currentTokenParams.timestamp = [self timeStampDateWithDateNow:[NSDate date]];
+            callback([currentTokenParams sign:replacedOptions.key], nil);
+        }
     } else {
         callback([currentTokenParams sign:replacedOptions.key], nil);
     }
@@ -392,8 +403,18 @@
     }
 }
 
-- (void)setTokenDetails:(ARTTokenDetails *)tokenDetails {
-    _tokenDetails = tokenDetails;
+- (void)discardTimeOffset {
+    self.timeOffset = nil;
+}
+
+#pragma mark - Helper
+
+- (NSDate*)timeStampDateWithDateNow:(NSDate*)nowDate {
+    long long appNow = [nowDate timeIntervalSince1970]*1000;
+    long long seconds = ([self.timeOffset longLongValue] + appNow)/1000;
+    NSDate *timestampDate = [NSDate dateWithTimeIntervalSince1970:seconds];
+    
+    return timestampDate;
 }
 
 @end
