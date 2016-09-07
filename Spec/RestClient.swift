@@ -376,42 +376,53 @@ class RestClient: QuickSpec {
             // RSC10
             it("should request another token after current one is no longer valid") {
                 let options = AblyTests.commonAppSetup()
+                options.token = getTestToken(ttl: 0.5)
                 let client = ARTRest(options: options)
+                client.httpExecutor = testHTTPExecutor
                 let auth = client.auth
 
-                let tokenParams = ARTTokenParams()
-                tokenParams.ttl = 3.0 //Seconds
+                waitUntil(timeout: testTimeout) { done in
+                    delay(1.0) {
+                        client.channels.get("test").history { result, error in
+                            expect(error).to(beNil())
+                            expect(result).toNot(beNil())
+
+                            guard let headerErrorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String else {
+                                fail("X-Ably-ErrorCode not found"); done();
+                                return
+                            }
+                            expect(Int(headerErrorCode)).to(equal(40142))
+
+                            // Different token
+                            expect(auth.tokenDetails!.token).toNot(equal(options.token))
+                            done()
+                        }
+                    }
+                }
+            }
+
+            // RSC10
+            it("should result in an error when user does not have sufficient permissions") {
+                let options = AblyTests.clientOptions()
+                options.token = getTestToken(capability: "{ \"main\":[\"subscribe\"] }")
+                let client = ARTRest(options: options)
+                client.httpExecutor = testHTTPExecutor
 
                 waitUntil(timeout: testTimeout) { done in
-                    auth.authorise(tokenParams, options: nil) { tokenDetailsA, error in
-                        if let e = error {
-                            XCTFail(e.description)
-                            done()
+                    client.channels.get("test").history { result, error in
+                        guard let errorCode = error?.code else {
+                            fail("Error is empty"); done();
                             return
                         }
-                        guard let tokenDetailsA = tokenDetailsA else {
-                            XCTFail("expected tokenDetails not to be nil when error is nil")
-                            done()
+                        expect(errorCode).to(equal(40160))
+                        expect(result).to(beNil())
+
+                        guard let headerErrorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String else {
+                            fail("X-Ably-ErrorCode not found"); done();
                             return
                         }
-                        // Delay for token expiration
-                        delay(tokenParams.ttl + 1.0) {
-                            auth.authorise(nil, options: nil) { tokenDetailsB, error in
-                                if let e = error {
-                                    XCTFail(e.description)
-                                    done()
-                                    return
-                                }
-                                guard let tokenDetailsB = tokenDetailsB else {
-                                    XCTFail("expected tokenDetails not to be nil when error is nil")
-                                    done()
-                                    return
-                                }
-                                // Different token
-                                expect(tokenDetailsA.token).toNot(equal(tokenDetailsB.token))
-                                done()
-                            }
-                        }
+                        expect(Int(headerErrorCode)).to(equal(40160))
+                        done()
                     }
                 }
             }
