@@ -25,6 +25,7 @@ typedef NS_ENUM(NSUInteger, ARTState) {
     ARTStateCryptoBadPadding,
     ARTStateNoClientId,
     ARTStateMismatchedClientId,
+    ARTStateRequestTokenFailed,
     ARTStateBadConnectionState,
     ARTStateError = 99999
 };
