@@ -1374,6 +1374,41 @@ class RealtimeClientPresence: QuickSpec {
 
             }
 
+            // RTP15d
+            it("callback can be provided that will be called upon success") {
+                let options = AblyTests.commonAppSetup()
+                let client = ARTRealtime(options: options)
+                defer { client.dispose(); client.close() }
+                let channel = client.channels.get("room")
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.presence.enterClient("Client 1", data: nil) { errorInfo in
+                        expect(errorInfo).to(beNil())
+                        done()
+                    }
+                }
+            }
+
+            // RTP15d
+            it("callback can be provided that will be called upon failure") {
+                let options = AblyTests.clientOptions()
+                options.token = getTestToken(capability: "{ \"room\":[\"subscribe\"] }")
+                let client = ARTRealtime(options: options)
+                defer { client.dispose(); client.close() }
+                let channel = client.channels.get("private-room")
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.presence.enterClient("Client 1", data: nil) { errorInfo in
+                        guard let errorInfo = errorInfo else {
+                            fail("ErrorInfo is empty"); done()
+                            return
+                        }
+                        expect(errorInfo.code).to(equal(40160))
+                        done()
+                    }
+                }
+            }
+
             // RTP15c
             it("should also ensure that using updateClient has no side effects on a client that has entered normally using Presence#enter") {
                 let options = AblyTests.commonAppSetup()
