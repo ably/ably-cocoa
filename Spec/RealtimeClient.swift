@@ -177,9 +177,10 @@ class RealtimeClient: QuickSpec {
 
             // RTC2
             it("should have access to the underlying Connection object") {
-                //ARTRealtime(options: AblyTests.commonAppSetup()).connection
-
-                // TODO: There is no connection manager.
+                let options = AblyTests.commonAppSetup()
+                options.autoConnect = false
+                let client = ARTRealtime(options: options)
+                expect(client.connection).to(beAKindOf(ARTConnection))
             }
 
             // RTC3
