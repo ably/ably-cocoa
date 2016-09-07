@@ -137,7 +137,24 @@ class RealtimeClient: QuickSpec {
 
                 //RTC1d
                 it("should modify the realtime endpoint host if realtimeHost is assigned") {
-                    // realtimeHost property is read-only
+                    let options = ARTClientOptions(key: "secret:key")
+                    options.realtimeHost = "fake.ably.io"
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connecting) { _ in
+                            guard let webSocketTransport = client.transport as? ARTWebSocketTransport else {
+                                fail("Transport should be of type ARTWebSocketTransport"); done()
+                                return
+                            }
+                            expect(webSocketTransport.websocketURL).toNot(beNil())
+                            expect(webSocketTransport.websocketURL?.host).to(equal("fake.ably.io"))
+                            done()
+                        }
+                        client.connect()
+                    }
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Disconnected), timeout: testTimeout)
                 }
                 
                 //RTC1e
