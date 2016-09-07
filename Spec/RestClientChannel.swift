@@ -571,6 +571,69 @@ class RestClientChannel: QuickSpec {
             }
         }
 
+        // RSL5
+        describe("message payload encryption") {
+
+            // RSL5b
+            context("should support AES encryption") {
+
+                for encryptionKeyLength: UInt in [128, 256] {
+                    it("\(encryptionKeyLength) CBC mode") {
+                        let options = AblyTests.commonAppSetup()
+                        let client = ARTRest(options: options)
+                        client.httpExecutor = testHTTPExecutor
+
+                        let params: ARTCipherParams = ARTCrypto.getDefaultParams([
+                            "key": ARTCrypto.generateRandomKey(encryptionKeyLength)
+                            ])
+                        expect(params.algorithm).to(equal("AES"))
+                        expect(params.keyLength).to(equal(encryptionKeyLength))
+                        expect(params.mode).to(equal("CBC"))
+
+                        let channelOptions = ARTChannelOptions(cipher: params)
+                        let channel = client.channels.get("test", options: channelOptions)
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish("test", data: "message1") { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        guard let httpBody = testHTTPExecutor.requests.last?.HTTPBody else {
+                            fail("HTTPBody is empty")
+                            return
+                        }
+                        let httpBodyAsJSON = AblyTests.msgpackToJSON(httpBody)
+                        expect(httpBodyAsJSON["encoding"].string).to(equal("utf-8/cipher+aes-\(encryptionKeyLength)-cbc/base64"))
+                        expect(httpBodyAsJSON["name"].string).to(equal("test"))
+                        expect(httpBodyAsJSON["data"].string).toNot(equal("message1"))
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.history { result, error in
+                                expect(error).to(beNil())
+                                guard let result = result else {
+                                    fail("PaginatedResult is empty"); done()
+                                    return
+                                }
+                                expect(result.hasNext).to(beFalse())
+                                expect(result.isLast).to(beTrue())
+                                guard let items = result.items as? [ARTMessage] where !result.items.isEmpty else {
+                                    fail("PaginatedResult has no items"); done()
+                                    return
+                                }
+                                expect(items[0].name).to(equal("test"))
+                                expect(items[0].data as? String).to(equal("message1"))
+                                done()
+                            }
+                        }
+                    }
+                }
+
+            }
+
+        }
+
         // RSL6
         describe("message decoding") {
 
