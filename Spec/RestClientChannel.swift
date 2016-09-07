@@ -309,6 +309,178 @@ class RestClientChannel: QuickSpec {
 
         }
 
+        // RSL2
+        describe("history") {
+
+            // RSL2b
+            context("query arguments") {
+
+                // RSL2b1
+                it("start and end should filter messages between those two times") {
+                    let client = ARTRest(options: AblyTests.commonAppSetup())
+                    let channel = client.channels.get("test")
+
+                    let query = ARTDataQuery()
+                    expect(query.direction) == ARTQueryDirection.Backwards
+                    expect(query.limit) == 100
+
+                    query.start = NSDate()
+
+                    let messages = [
+                        ARTMessage(name: nil, data: "message1"),
+                        ARTMessage(name: nil, data: "message2")
+                    ]
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(messages) { _ in
+                            query.end = NSDate()
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "message3") { _ in
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        try! channel.history(query) { result, error in
+                            expect(error).to(beNil())
+                            guard let result = result else {
+                                fail("PaginatedResult is empty"); done()
+                                return
+                            }
+                            expect(result.hasNext).to(beFalse())
+                            expect(result.isLast).to(beTrue())
+                            guard let items = result.items as? [ARTMessage] where result.items.count == 2 else {
+                                fail("PaginatedResult has no items"); done()
+                                return
+                            }
+                            let messageItems = items.flatMap({ $0.data as? String })
+                            expect(messageItems.first).to(equal("message2"))
+                            expect(messageItems.last).to(equal("message1"))
+                            done()
+                        }
+                    }
+                }
+
+                // RSL2b1
+                it("start must be equal to or less than end and is unaffected by the request direction") {
+                    let client = ARTRest(options: AblyTests.commonAppSetup())
+                    let channel = client.channels.get("test")
+
+                    let query = ARTDataQuery()
+                    query.direction = .Backwards
+                    query.end = NSDate()
+                    query.start = query.end!.dateByAddingTimeInterval(10.0)
+
+                    expect { try channel.history(query) { _, _ in } }.to(throwError { (error: ErrorType) in
+                        expect(error._code).to(equal(ARTDataQueryError.TimestampRange.rawValue))
+                    })
+
+                    query.direction = .Forwards
+
+                    expect { try channel.history(query) { _, _ in } }.to(throwError { (error: ErrorType) in
+                        expect(error._code).to(equal(ARTDataQueryError.TimestampRange.rawValue))
+                    })
+                }
+
+                // RSL2b2
+                it("direction backwards or forwards") {
+                    let client = ARTRest(options: AblyTests.commonAppSetup())
+                    let channel = client.channels.get("test")
+
+                    let query = ARTDataQuery()
+                    expect(query.direction) == ARTQueryDirection.Backwards
+                    query.direction = .Forwards
+
+                    let messages = [
+                        ARTMessage(name: nil, data: "message1"),
+                        ARTMessage(name: nil, data: "message2")
+                    ]
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(messages) { _ in
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        try! channel.history(query) { result, error in
+                            expect(error).to(beNil())
+                            guard let result = result else {
+                                fail("PaginatedResult is empty"); done()
+                                return
+                            }
+                            expect(result.hasNext).to(beFalse())
+                            expect(result.isLast).to(beTrue())
+                            guard let items = result.items as? [ARTMessage] where result.items.count == 2 else {
+                                fail("PaginatedResult has no items"); done()
+                                return
+                            }
+                            let messageItems = items.flatMap({ $0.data as? String })
+                            expect(messageItems.first).to(equal("message1"))
+                            expect(messageItems.last).to(equal("message2"))
+                            done()
+                        }
+                    }
+                }
+
+                // RSL2b3
+                it("limit items result") {
+                    let client = ARTRest(options: AblyTests.commonAppSetup())
+                    let channel = client.channels.get("test")
+
+                    let query = ARTDataQuery()
+                    expect(query.limit) == 100
+                    query.limit = 2
+
+                    let messages = (1...10).flatMap{ ARTMessage(name: nil, data: "message\($0)") }
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(messages) { _ in
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        try! channel.history(query) { result, error in
+                            expect(error).to(beNil())
+                            guard let result = result else {
+                                fail("PaginatedResult is empty"); done()
+                                return
+                            }
+                            expect(result.hasNext).to(beTrue())
+                            expect(result.isLast).to(beFalse())
+                            guard let items = result.items as? [ARTMessage] where result.items.count == 2 else {
+                                fail("PaginatedResult has no items"); done()
+                                return
+                            }
+                            let messageItems = items.flatMap({ $0.data as? String })
+                            expect(messageItems.first).to(equal("message10"))
+                            expect(messageItems.last).to(equal("message9"))
+                            done()
+                        }
+                    }
+                }
+
+                // RSL2b3
+                it("limit supports up to 1000 items") {
+                    let client = ARTRest(options: AblyTests.commonAppSetup())
+                    let channel = client.channels.get("test")
+
+                    let query = ARTDataQuery()
+                    expect(query.limit) == 100
+
+                    query.limit = 1001
+                    expect{ try channel.history(query, callback: { _ in }) }.to(throwError())
+
+                    query.limit = 1000
+                    expect{ try channel.history(query, callback: { _ in }) }.toNot(throwError())
+                }
+
+            }
+
+        }
+
         // RSL3, RSP1
         describe("presence") {
             let presenceFixtures = appSetupJson["post_apps"]["channels"][0]["presence"]
