@@ -174,7 +174,7 @@ class RestClient: QuickSpec {
                     expect(testHTTPExecutor.requests.first?.URL?.host).toEventually(equal("fake.ably.io"), timeout: testTimeout)
                 }
 
-                it("should ignore an environment when host is not in production") {
+                it("should ignore an environment when restHost is customized") {
                     let options = ARTClientOptions(key: "fake:key")
                     options.environment = "test"
                     options.restHost = "fake.ably.io"
@@ -186,7 +186,7 @@ class RestClient: QuickSpec {
                     expect(testHTTPExecutor.requests.first?.URL?.host).toEventually(equal("fake.ably.io"), timeout: testTimeout)
                 }
                 
-                it("should accept an environment in production") {
+                it("should accept an environment when restHost is left unchanged") {
                     let options = ARTClientOptions(key: "fake:key")
                     options.environment = "myEnvironment"
                     let client = ARTRest(options: options)
