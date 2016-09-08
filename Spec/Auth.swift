@@ -1223,7 +1223,7 @@ class Auth : QuickSpec {
                     rest.auth.createTokenRequest(tokenParams, options: authOptions) { tokenRequest, error in
                         expect(error).to(beNil())
                         guard let tokenRequest = tokenRequest else {
-                            XCTFail("TokenDetails is nil"); done(); return
+                            XCTFail("tokenRequest is nil"); done(); return
                         }
                         expect(tokenRequest.clientId).to(beNil())
                         expect(tokenRequest.timestamp).to(beCloseTo(serverDate, within: 1.0)) //1 Second
@@ -1241,7 +1241,7 @@ class Auth : QuickSpec {
                     rest.auth.createTokenRequest(tokenParams, options: authOptions) { tokenRequest, error in
                         expect(error).to(beNil())
                         guard let tokenRequest = tokenRequest else {
-                            XCTFail("TokenDetails is nil"); done(); return
+                            XCTFail("tokenRequest is nil"); done(); return
                         }
                         expect(tokenRequest.clientId).to(equal("newClientId"))
                         expect(tokenRequest.ttl).to(equal(2000))
@@ -1262,6 +1262,61 @@ class Auth : QuickSpec {
                         done()
                     }
                 }
+            }
+            
+            it("should override defaults if `AuthOptions` provided") {
+                var currentTokenRequest: ARTTokenRequest? = nil
+                var secondCallbackCalled = false
+                
+                let defaultOptions = AblyTests.commonAppSetup()
+                defaultOptions.authCallback = { tokenParams, completion in
+                    completion(currentTokenRequest!, nil)
+                }
+                
+                let rest = ARTRest(options: defaultOptions)
+                rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
+                    currentTokenRequest = tokenRequest
+                })
+                expect(currentTokenRequest).toEventuallyNot(beNil(), timeout: testTimeout)
+                
+                let options = ARTAuthOptions()
+                options.authCallback = { tokenParams, completion in
+                    secondCallbackCalled = true
+                    completion(currentTokenRequest!, nil)
+                }
+                
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.authorise(nil, options: options) { tokenDetails, error in
+                        expect(error).to(beNil())
+                        done()
+                    }
+                }
+                expect(secondCallbackCalled).to(beTrue())
+            }
+            
+            it("should use defaults if `nil` passed") {
+                var currentTokenRequest: ARTTokenRequest? = nil
+                var callbackCalled = false
+                
+                let defaultOptions = AblyTests.commonAppSetup()
+                defaultOptions.authCallback = { tokenParams, completion in
+                    callbackCalled = true
+                    completion(currentTokenRequest!, nil)
+                }
+                
+                let rest = ARTRest(options: defaultOptions)
+                rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
+                    currentTokenRequest = tokenRequest
+                })
+                expect(currentTokenRequest).toEventuallyNot(beNil(), timeout: testTimeout)
+                
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                        expect(error).to(beNil())
+                        done()
+                    }
+                }
+                expect(callbackCalled).to(beTrue())
             }
 
             // RSA9a
