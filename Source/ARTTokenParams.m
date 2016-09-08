@@ -47,18 +47,6 @@
     return self;
 }
 
-- (id)copyWithZone:(NSZone *)zone {
-    ARTTokenParams *tokenParams = [[[self class] allocWithZone:zone] init];
-    
-    tokenParams.ttl = self.ttl;
-    tokenParams.capability = self.capability;
-    tokenParams.clientId = self.clientId;
-    tokenParams.timestamp = self.timestamp;
-    tokenParams.nonce = self.nonce;
-    
-    return tokenParams;
-}
-
 - (NSString *)description {
     return [NSString stringWithFormat: @"ARTTokenParams: ttl=%f capability=%@ timestamp=%@",
             self.ttl, self.capability, self.timestamp];
@@ -175,22 +163,6 @@ static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
     NSString *mac = hmacForDataAndKey([signText dataUsingEncoding:NSUTF8StringEncoding], [keySecret dataUsingEncoding:NSUTF8StringEncoding]);
     
     return [[ARTTokenRequest alloc] initWithTokenParams:self keyName:keyName nonce:nonce mac:mac];
-}
-
-- (ARTTokenParams *)replaceWith:(ARTTokenParams *)params {
-    ARTTokenParams *replaced = [self copy];
-    
-    @synchronized (self) {
-        if (params != nil) {
-            replaced.ttl = params.ttl;
-            replaced.capability = params.capability;
-            replaced.clientId = params.clientId;
-            replaced.timestamp = params.timestamp;
-            replaced.nonce = params.nonce;
-        }
-    }
-    
-    return replaced;
 }
 
 @end

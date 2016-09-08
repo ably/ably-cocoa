@@ -91,7 +91,6 @@ ART_ASSUME_NONNULL_BEGIN
 - (NSString *)description;
 
 - (ARTAuthOptions *)mergeWith:(ARTAuthOptions *)precedenceOptions;
-- (ARTAuthOptions *)replaceWith:(ARTAuthOptions *)customOptions;
 
 - (BOOL)isMethodGET;
 - (BOOL)isMethodPOST;
