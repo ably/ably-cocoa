@@ -163,7 +163,7 @@ class RestClient: QuickSpec {
 
             // RSC11
             context("endpoint") {
-                it("should accept an options object with a host set") {
+                it("should accept a custom host and send requests to the specified host") {
                     let options = ARTClientOptions(key: "fake:key")
                     options.restHost = "fake.ably.io"
                     let client = ARTRest(options: options)
@@ -173,8 +173,20 @@ class RestClient: QuickSpec {
                     
                     expect(testHTTPExecutor.requests.first?.URL?.host).toEventually(equal("fake.ably.io"), timeout: testTimeout)
                 }
+
+                it("should ignore an environment when restHost is customized") {
+                    let options = ARTClientOptions(key: "fake:key")
+                    options.environment = "test"
+                    options.restHost = "fake.ably.io"
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = testHTTPExecutor
+
+                    publishTestMessage(client, failOnError: false)
+
+                    expect(testHTTPExecutor.requests.first?.URL?.host).toEventually(equal("fake.ably.io"), timeout: testTimeout)
+                }
                 
-                it("should accept an options object with an environment set") {
+                it("should accept an environment when restHost is left unchanged") {
                     let options = ARTClientOptions(key: "fake:key")
                     options.environment = "myEnvironment"
                     let client = ARTRest(options: options)
