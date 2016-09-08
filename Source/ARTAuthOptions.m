@@ -8,7 +8,6 @@
 
 #import "ARTAuthOptions+Private.h"
 #import "ARTTokenDetails.h"
-#import "ARTClientOptions.h"
 
 @implementation ARTAuthOptions
 
@@ -133,54 +132,6 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
 
 - (BOOL)isMethodGET {
     return [_authMethod isEqualToString:@"GET"];
-}
-
-- (ARTAuthOptions *)replaceWith:(ARTAuthOptions *)options {
-    ARTAuthOptions *replaced = [self copy];
-    
-    @synchronized (self) {
-        if (options != nil) {
-            if ([replaced isKindOfClass: [ARTClientOptions class]] && [options isKindOfClass: [ARTClientOptions class]]) {
-                ((ARTClientOptions*)replaced).restHost = ((ARTClientOptions *)options).restHost;
-                ((ARTClientOptions*)replaced).realtimeHost = ((ARTClientOptions *)options).realtimeHost;
-                ((ARTClientOptions*)replaced).port = ((ARTClientOptions *)options).port;
-                ((ARTClientOptions*)replaced).tlsPort = ((ARTClientOptions *)options).tlsPort;
-                ((ARTClientOptions*)replaced).environment = ((ARTClientOptions *)options).environment;
-                ((ARTClientOptions*)replaced).tls = ((ARTClientOptions *)options).tls;
-                ((ARTClientOptions*)replaced).logHandler = ((ARTClientOptions *)options).logHandler;
-                ((ARTClientOptions*)replaced).logLevel = ((ARTClientOptions *)options).logLevel;
-                ((ARTClientOptions*)replaced).queueMessages = ((ARTClientOptions *)options).queueMessages;
-                ((ARTClientOptions*)replaced).echoMessages = ((ARTClientOptions *)options).echoMessages;
-                ((ARTClientOptions*)replaced).useBinaryProtocol = ((ARTClientOptions *)options).useBinaryProtocol;
-                ((ARTClientOptions*)replaced).autoConnect = ((ARTClientOptions *)options).autoConnect;
-                ((ARTClientOptions*)replaced).recover = ((ARTClientOptions *)options).recover;
-                ((ARTClientOptions*)replaced).clientId = ((ARTClientOptions *)options).clientId;
-                ((ARTClientOptions*)replaced).defaultTokenParams = ((ARTClientOptions *)options).defaultTokenParams;
-                ((ARTClientOptions*)replaced).disconnectedRetryTimeout = ((ARTClientOptions *)options).disconnectedRetryTimeout;
-                ((ARTClientOptions*)replaced).suspendedRetryTimeout = ((ARTClientOptions *)options).suspendedRetryTimeout;
-                ((ARTClientOptions*)replaced).httpOpenTimeout = ((ARTClientOptions *)options).httpOpenTimeout;
-                ((ARTClientOptions*)replaced).httpRequestTimeout = ((ARTClientOptions *)options).httpRequestTimeout;
-                ((ARTClientOptions*)replaced).httpMaxRetryCount = ((ARTClientOptions *)options).httpMaxRetryCount;
-                ((ARTClientOptions*)replaced).httpMaxRetryDuration = ((ARTClientOptions *)options).httpMaxRetryDuration;
-            }
-            else {
-                replaced.key = options.key;
-                replaced.token = options.token;
-                replaced.tokenDetails = options.tokenDetails;
-                replaced.authCallback = options.authCallback;
-                replaced.authUrl = options.authUrl;
-                replaced.force = options.force;
-                replaced.authMethod = options.authMethod;
-                replaced.authHeaders = options.authHeaders;
-                replaced.authParams = options.authParams;
-                replaced.queryTime = options.queryTime;
-                replaced.useTokenAuth = options.useTokenAuth;
-                replaced.force = options.force;
-            }
-        }
-    }
-    
-    return replaced;
 }
 
 @end

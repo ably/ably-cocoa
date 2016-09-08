@@ -25,8 +25,6 @@ ART_ASSUME_NONNULL_BEGIN
 - (ARTAuthOptions *)mergeOptions:(ARTAuthOptions *)customOptions;
 - (ARTTokenParams *)mergeParams:(ARTTokenParams *)customParams;
 
-- (ARTAuthOptions *)replaceOptions:(ARTAuthOptions *)customOptions;
-
 - (NSURL *)buildURL:(ARTAuthOptions *)options withParams:(ARTTokenParams *)params;
 - (NSMutableURLRequest *)buildRequest:(ARTAuthOptions *)options withParams:(ARTTokenParams *)params;
 
