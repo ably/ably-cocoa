@@ -368,7 +368,7 @@ class RealtimeClientChannel: QuickSpec {
                     }
 
                     // RTL4g
-                    it("FAILED") {
+                    it("If the channel is in the FAILED state, the attach request sets its `errorReason` to null") {
                         let client = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { client.close() }
                         let channel = client.channels.get("test")
@@ -383,7 +383,8 @@ class RealtimeClientChannel: QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             channel.attach { error in
-                                expect(error).toNot(beNil())
+                                expect(channel.errorReason).to(beNil())
+                                expect(error).to(beNil())
                                 done()
                             }
                         }
