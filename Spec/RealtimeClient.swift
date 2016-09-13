@@ -339,24 +339,17 @@ class RealtimeClient: QuickSpec {
                 options.autoConnect = false
                 let client = ARTRealtime(options: options)
                 defer { client.dispose(); client.close() }
-                expect(client.connection.eventEmitter.listeners.count) == 0
-                expect(client.connection.eventEmitter.anyListeners.count) == 0
 
+                client.connect()
+                client.close() // Before it connects; this registers a listener on the internal event emitter.
+                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connecting))
                 client.connection.off()
-
-                waitUntil(timeout: testTimeout) { done in
-                    client.connection.once(.Connected) { stateChange in
-                        guard let stateChange = stateChange else {
-                            fail("ConnectionStageChange is empty"); done()
-                            return
-                        }
-                        expect(stateChange.reason).to(beNil())
-                        done()
-                    }
-                    expect(client.connection.eventEmitter.listeners.count) == 1
-                    expect(client.connection.eventEmitter.anyListeners.count) == 0
-                    client.connect()
-                }
+                // If we didn't have a separate internal event emitter, the line above would unregister
+                // the listener, and the next lines would fail, because we would never move to 
+                // CLOSED, because we do that on the internal event listener registered when
+                // we called close().
+                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connecting)) // Still connecting...
+                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Closed), timeout: testTimeout)
             }
 
             it("should never register any message and channel listeners for internal use with the public EventEmitter") {
@@ -365,19 +358,31 @@ class RealtimeClient: QuickSpec {
                 defer { client.dispose(); client.close() }
 
                 let channel = client.channels.get("test")
-                expect(channel.statesEventEmitter.listeners.count) == 0
-                expect(channel.statesEventEmitter.anyListeners.count) == 0
-
-                channel.off()
-
                 waitUntil(timeout: testTimeout) { done in
-                    channel.once(.Attached) { error in
-                        expect(error).to(beNil())
+                    channel.attach { _ in
                         done()
                     }
-                    expect(channel.statesEventEmitter.listeners.count) == 1
-                    expect(channel.statesEventEmitter.anyListeners.count) == 0
-                    channel.attach()
+                }
+                if channel.state != .Attached {
+                    return
+                }
+
+                client.onDisconnected()
+                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Disconnected))
+
+                // If we now send a message through the channel, it will be queued and the channel
+                // should register a listener in the connection's _internal_ event emitter.
+                // If we call client.connection.off(), reconnect, and never get the message ACK,
+                // we probably weren't using the internal event emitter but the public one.
+
+                client.connection.off()
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.publish("test", data: nil) { err in
+                        expect(err).to(beNil())
+                        done()
+                    }
+                    client.connect()
                 }
             }
         }
