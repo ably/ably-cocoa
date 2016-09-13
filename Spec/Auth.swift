@@ -14,6 +14,12 @@ import Aspects
 class Auth : QuickSpec {
     override func spec() {
         
+        struct ExpectedTokenParams {
+            static let clientId = "client_from_params"
+            static let ttl = 5.0
+            static let capability = "{\"cansubscribe:*\":[\"subscribe\"]}"
+        }
+        
         var testHTTPExecutor: TestProxyHTTPExecutor!
         
         beforeEach {
@@ -615,27 +621,46 @@ class Auth : QuickSpec {
         describe("requestToken") {
             context("arguments") {
                 // RSA8e
-                it("sould supersede matching client library configured params and options") {
-                    let clientOptions = ARTClientOptions()
-                    clientOptions.authUrl = NSURL(string: "http://auth.ably.io")
+                it("should not merge with the configured params and options but instead replace all corresponding values, even when @null@") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "сlientId"
+                    let rest = ARTRest(options: options)
                     
-                    let rest = ARTRest(options: clientOptions)
-                    
-                    let authOptions = ARTAuthOptions()
-                    authOptions.authUrl = NSURL(string: "http://test.ably.io")
-                    authOptions.authMethod = "POST"
                     let tokenParams = ARTTokenParams()
-                    tokenParams.ttl = 30.0
+                    tokenParams.ttl = 2000
+                    tokenParams.capability = "{\"cansubscribe:*\":[\"subscribe\"]}"
                     
-                    // AuthOptions
-                    let mergedOptions = rest.auth.mergeOptions(authOptions)
-                    expect(mergedOptions.authUrl) == NSURL(string: "http://test.ably.io")
-                    expect(mergedOptions.authMethod) == "POST"
-                    // TokenParams
-                    let mergedParams = rest.auth.mergeParams(tokenParams)
-                    expect(mergedParams.ttl) == 30.0
-                }
+                    let precedenceOptions = AblyTests.commonAppSetup()
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.requestToken(tokenParams, withOptions: precedenceOptions) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            expect(tokenDetails).toNot(beNil())
+                            expect(tokenDetails!.capability).to(equal("{\"cansubscribe:*\":[\"subscribe\"]}"))
+                            expect(tokenDetails!.clientId).to(beNil())
+                            expect(tokenDetails!.expires!.timeIntervalSince1970 - tokenDetails!.issued!.timeIntervalSince1970).to(equal(tokenParams.ttl))
+                            done()
+                        }
+                    }
+                    
+                    let options2 = AblyTests.commonAppSetup()
+                    options2.clientId = nil
+                    let rest2 = ARTRest(options: options2)
 
+                    let precedenceOptions2 = AblyTests.commonAppSetup()
+                    precedenceOptions2.clientId = nil
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        rest2.auth.requestToken(nil, withOptions: precedenceOptions2) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            guard let aTokenDetails = tokenDetails else {
+                                XCTFail("tokenDetails is nil"); done(); return
+                            }
+                            expect(aTokenDetails.clientId).to(beNil())
+                            done()
+                        }
+                    }
+                }
             }
             
             // RSA8c
@@ -846,7 +871,6 @@ class Auth : QuickSpec {
                         })
                     }
                 }
-
             }
 
             // RSA8d
@@ -857,7 +881,7 @@ class Auth : QuickSpec {
                     let expectedTokenParams = ARTTokenParams()
 
                     options.authCallback = { tokenParams, completion in
-                        expect(tokenParams).to(beIdenticalTo(expectedTokenParams))
+                        expect(tokenParams.clientId).to(beNil())
                         completion("token_string", nil)
                     }
 
@@ -875,7 +899,7 @@ class Auth : QuickSpec {
 
                     let options = AblyTests.clientOptions()
                     options.authCallback = { tokenParams, completion in
-                        expect(tokenParams).to(beIdenticalTo(expectedTokenParams))
+                        expect(tokenParams.clientId).to(beNil())
                         completion(ARTTokenDetails(token: "token_from_details"), nil)
                     }
 
@@ -895,7 +919,7 @@ class Auth : QuickSpec {
                     var rest: ARTRest!
 
                     options.authCallback = { tokenParams, completion in
-                        expect(tokenParams).to(beIdenticalTo(expectedTokenParams))
+                        expect(tokenParams.clientId).to(beIdenticalTo(expectedTokenParams.clientId))
                         rest.auth.createTokenRequest(tokenParams, options: options) { tokenRequest, error in
                             completion(tokenRequest, error)
                         }
@@ -914,7 +938,6 @@ class Auth : QuickSpec {
                         }
                     }
                 }
-
             }
 
             // RSA8f1
@@ -1023,13 +1046,6 @@ class Auth : QuickSpec {
                 }
                 expect(rest.auth.clientId).to(beNil())
             }
-
-        }
-
-        struct ExpectedTokenParams {
-            static let clientId = "client_from_params"
-            static let ttl = 5.0
-            static let capability = "{\"cansubscribe:*\":[\"subscribe\"]}"
         }
 
         // RSA9
@@ -1881,6 +1897,105 @@ class Auth : QuickSpec {
                                 done()
                             }
                         }
+                    }
+                }
+            }
+        }
+        
+        describe("Reauth") {
+            // RTC8
+            it("should use authorise({force: true}) to reauth with a token with a different set of capabilities") {
+                // init ARTRest
+                let restOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                let rest = ARTRest(options: restOptions)
+                
+                // get first token
+                let tokenParams = ARTTokenParams()
+                tokenParams.capability = "{\"wrongchannel\": [\"*\"]}"
+                tokenParams.clientId = "testClientId"
+                
+                var firstToken = ""
+                
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.requestToken(tokenParams, withOptions: nil) { tokenDetails, error in
+                        expect(error).to(beNil())
+                        expect(tokenDetails).toNot(beNil())
+                        firstToken = tokenDetails!.token
+                        done()
+                    }
+                }
+                expect(firstToken).toNot(beNil())
+                expect(firstToken.characters.count > 0).to(beTrue())
+                
+                // init ARTRealtime
+                let realtimeOptions = AblyTests.commonAppSetup()
+                realtimeOptions.token = firstToken
+                realtimeOptions.clientId = "testClientId"
+                
+                let realtime = ARTRealtime(options:realtimeOptions)
+                defer { realtime.close() }
+                
+                // wait for connected state
+                waitUntil(timeout: testTimeout) { done in
+                    realtime.connection.once(.Connected) { stateChange in
+                        expect(stateChange!.reason).to(beNil())
+                        expect(stateChange?.current).to(equal(realtime.connection.state))
+                        done()
+                    }
+                    realtime.connect()
+                }
+                
+                // create a `rightchannel` channel and check can't attach to it
+                let channel = realtime.channels.get("rightchannel")
+                
+                waitUntil(timeout: testTimeout) { done in
+                    channel.attach() { error in
+                        expect(error).toNot(beNil())
+                        expect(error!.code).to(equal(40160))
+                        done()
+                    }
+                }
+                
+                // get second token
+                let secondTokenParams = ARTTokenParams()
+                secondTokenParams.capability = "{\"wrongchannel\": [\"*\"], \"rightchannel\": [\"*\"]}"
+                secondTokenParams.clientId = "testClientId"
+                
+                var secondToken = ""
+                var secondTokenDetails: ARTTokenDetails?
+                
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.requestToken(secondTokenParams, withOptions: nil) { tokenDetails, error in
+                        expect(error).to(beNil())
+                        expect(tokenDetails).toNot(beNil())
+                        
+                        secondToken = tokenDetails!.token
+                        secondTokenDetails = tokenDetails
+                        done()
+                    }
+                }
+                expect(secondToken).toNot(beNil())
+                expect(secondToken.characters.count > 0).to(beTrue())
+                expect(secondToken).toNot(equal(firstToken))
+                
+                // reauthorise
+                let reauthOptions = ARTAuthOptions();
+                reauthOptions.tokenDetails = secondTokenDetails
+                reauthOptions.force = true
+                
+                waitUntil(timeout: testTimeout) { done in
+                    realtime.auth.authorise(nil, options: reauthOptions) { reauthTokenDetails, error in
+                        expect(error).to(beNil())
+                        expect(reauthTokenDetails?.token).toNot(beNil())
+                        done()
+                    }
+                }
+                
+                // re-attach to the channel
+                waitUntil(timeout: testTimeout) { done in
+                    channel.attach() { error in
+                        expect(error).to(beNil())
+                        done()
                     }
                 }
             }

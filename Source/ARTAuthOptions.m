@@ -7,7 +7,6 @@
 //
 
 #import "ARTAuthOptions+Private.h"
-
 #import "ARTTokenDetails.h"
 
 @implementation ARTAuthOptions
