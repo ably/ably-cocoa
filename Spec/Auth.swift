@@ -662,9 +662,135 @@ class Auth : QuickSpec {
                     }
                 }
             }
-            
+
             // RSA8c
             context("authUrl") {
+
+                it("query will provide a token string") {
+                    let testToken = getTestToken()
+
+                    let options = ARTClientOptions()
+                    options.authUrl = NSURL(string: "http://echo.ably.io")
+                    expect(options.authUrl).toNot(beNil())
+                    // Plain text
+                    options.authParams = [NSURLQueryItem]()
+                    options.authParams!.append(NSURLQueryItem(name: "type", value: "text"))
+                    options.authParams!.append(NSURLQueryItem(name: "body", value: testToken))
+
+                    let rest = ARTRest(options: options)
+                    rest.httpExecutor = testHTTPExecutor
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.requestToken(nil, withOptions: nil, callback: { tokenDetails, error in
+                            expect(testHTTPExecutor.requests.last?.URL?.host).to(equal("echo.ably.io"))
+                            expect(error).to(beNil())
+                            expect(tokenDetails).toNot(beNil())
+                            expect(tokenDetails?.token).to(equal(testToken))
+                            done()
+                        })
+                    }
+                }
+
+                it("query will provide a TokenDetails") {
+                    guard let testTokenDetails = getTestTokenDetails(clientId: "tester") else {
+                        fail("TokenDetails is empty")
+                        return
+                    }
+
+                    let encoder = ARTJsonLikeEncoder()
+                    encoder.delegate = ARTJsonEncoder()
+                    guard let jsonTokenDetails = encoder.encodeTokenDetails(testTokenDetails) else {
+                        fail("Invalid TokenDetails")
+                        return
+                    }
+
+                    let options = ARTClientOptions()
+                    options.authUrl = NSURL(string: "http://echo.ably.io")
+                    expect(options.authUrl).toNot(beNil())
+                    // JSON with TokenDetails
+                    options.authParams = [NSURLQueryItem]()
+                    options.authParams?.append(NSURLQueryItem(name: "type", value: "json"))
+                    options.authParams?.append(NSURLQueryItem(name: "body", value: jsonTokenDetails.toUTF8String))
+
+                    let rest = ARTRest(options: options)
+                    rest.httpExecutor = testHTTPExecutor
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.requestToken(nil, withOptions: nil, callback: { tokenDetails, error in
+                            expect(testHTTPExecutor.requests.last?.URL?.host).to(equal("echo.ably.io"))
+                            expect(error).to(beNil())
+                            expect(tokenDetails).toNot(beNil())
+                            expect(tokenDetails?.clientId) == testTokenDetails.clientId
+                            expect(tokenDetails?.capability) == testTokenDetails.capability
+                            expect(tokenDetails?.issued).toNot(beNil())
+                            expect(tokenDetails?.expires).toNot(beNil())
+                            if let issued = tokenDetails?.issued, let testIssued = testTokenDetails.issued {
+                                expect(issued.compare(testIssued)) == NSComparisonResult.OrderedSame
+                            }
+                            if let expires = tokenDetails?.expires, let testExpires = testTokenDetails.expires {
+                                expect(expires.compare(testExpires)) == NSComparisonResult.OrderedSame
+                            }
+                            done()
+                        })
+                    }
+                }
+
+                it("query will provide a TokenRequest") {
+                    let tokenParams = ARTTokenParams()
+                    tokenParams.capability = "{\"test\":[\"subscribe\"]}"
+
+                    let options = AblyTests.commonAppSetup()
+                    options.authUrl = NSURL(string: "http://echo.ably.io")
+                    expect(options.authUrl).toNot(beNil())
+
+                    var rest = ARTRest(options: options)
+
+                    var tokenRequest: ARTTokenRequest?
+                    waitUntil(timeout: testTimeout) { done in
+                        // Sandbox and valid TokenRequest
+                        rest.auth.createTokenRequest(tokenParams, options: nil, callback: { newTokenRequest, error in
+                            expect(error).to(beNil())
+                            tokenRequest = newTokenRequest
+                            done()
+                        })
+                    }
+
+                    guard let testTokenRequest = tokenRequest else {
+                        fail("TokenRequest is empty")
+                        return
+                    }
+
+                    let encoder = ARTJsonLikeEncoder()
+                    encoder.delegate = ARTJsonEncoder()
+                    guard let jsonTokenRequest = encoder.encodeTokenRequest(testTokenRequest) else {
+                        fail("Invalid TokenRequest")
+                        return
+                    }
+
+                    // JSON with TokenRequest
+                    options.authParams = [NSURLQueryItem]()
+                    options.authParams?.append(NSURLQueryItem(name: "type", value: "json"))
+                    options.authParams?.append(NSURLQueryItem(name: "body", value: jsonTokenRequest.toUTF8String))
+
+                    rest = ARTRest(options: options)
+                    rest.httpExecutor = testHTTPExecutor
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.requestToken(nil, withOptions: nil, callback: { tokenDetails, error in
+                            expect(testHTTPExecutor.requests.first?.URL?.host).to(equal("echo.ably.io"))
+                            expect(testHTTPExecutor.requests.last?.URL?.host).toNot(equal("echo.ably.io"))
+                            expect(error).to(beNil())
+                            guard let tokenDetails = tokenDetails else {
+                                fail("TokenDetails is empty"); done()
+                                return
+                            }
+                            expect(tokenDetails.token).toNot(beNil())
+                            expect(tokenDetails.capability) == tokenParams.capability
+                            done()
+                        })
+                    }
+                }
+
                 context("parameters") {
                     // RSA8c1a
                     it("should be added to the URL when auth method is GET") {

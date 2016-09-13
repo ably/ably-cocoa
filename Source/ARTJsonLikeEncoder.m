@@ -126,8 +126,12 @@
     return [self protocolMessageFromDictionary:[self decodeDictionary:data]];
 }
 
-- (ARTTokenDetails *)decodeAccessToken:(NSData *)data error:(NSError * __autoreleasing *)error {
+- (ARTTokenDetails *)decodeTokenDetails:(NSData *)data error:(NSError * __autoreleasing *)error {
     return [self tokenFromDictionary:[self decodeDictionary:data] error:error];
+}
+
+- (ARTTokenRequest *)decodeTokenRequest:(NSData *)data error:(NSError * __autoreleasing *)error {
+    return [self tokenRequestFromDictionary:[self decodeDictionary:data] error:error];
 }
 
 - (NSData *)encodeTokenRequest:(ARTTokenRequest *)request {
@@ -381,9 +385,9 @@
     error = nil;
     
     NSString *token = [input artString:@"token"];
-    NSNumber *expiresTimeInterval = [input artNumber:@"expires"];
+    NSNumber *expiresTimeInterval = [input objectForKey:@"expires"];
     NSDate *expires = expiresTimeInterval ? [NSDate dateWithTimeIntervalSince1970:expiresTimeInterval.longLongValue / 1000] : nil;
-    NSNumber *issuedInterval = [input artNumber:@"issued"];
+    NSNumber *issuedInterval = [input objectForKey:@"issued"];
     NSDate *issued = issuedInterval ? [NSDate dateWithTimeIntervalSince1970:issuedInterval.longLongValue / 1000] : nil;
     
     return [[ARTTokenDetails alloc] initWithToken:token
@@ -399,13 +403,13 @@
 
     NSNumber *timestamp;
     if (tokenRequest.timestamp)
-        timestamp = [NSNumber numberWithUnsignedLongLong:dateToMiliseconds(tokenRequest.timestamp)];
+        timestamp = [NSNumber numberWithUnsignedLongLong:dateToMilliseconds(tokenRequest.timestamp)];
     else
-        timestamp = [NSNumber numberWithUnsignedLongLong:dateToMiliseconds([NSDate date])];
+        timestamp = [NSNumber numberWithUnsignedLongLong:dateToMilliseconds([NSDate date])];
 
     NSMutableDictionary *dictionary = [@{
              @"keyName":tokenRequest.keyName ? tokenRequest.keyName : @"",
-             @"ttl":[NSNumber numberWithUnsignedLongLong: timeIntervalToMiliseconds(tokenRequest.ttl)],
+             @"ttl":[NSNumber numberWithUnsignedLongLong: timeIntervalToMilliseconds(tokenRequest.ttl)],
              @"capability":tokenRequest.capability ? tokenRequest.capability : @"",
              @"timestamp":timestamp,
              @"nonce":tokenRequest.nonce ? tokenRequest.nonce : @"",
@@ -419,17 +423,50 @@
     return dictionary;
 }
 
+- (ARTTokenRequest *)tokenRequestFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: tokenRequestFromDictionary %@", _rest, [_delegate formatAsString], input];
+
+    if (![input isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
+
+    NSDictionary *jsonError = [input artDictionary:@"error"];
+    if (jsonError) {
+        [_logger error:@"RS:%p ARTJsonLikeEncoder<%@>: tokenRequestFromDictionary error %@", _rest, [_delegate formatAsString], jsonError];
+        if (error) {
+            NSMutableDictionary* details = [NSMutableDictionary dictionary];
+            [details setValue:[jsonError artString:@"message"] forKey:NSLocalizedDescriptionKey];
+            *error = [NSError errorWithDomain:ARTAblyErrorDomain
+                                         code:[jsonError artNumber:@"code"].integerValue
+                                     userInfo:details];
+        }
+        return nil;
+    }
+    error = nil;
+
+    ARTTokenParams *params = [[ARTTokenParams alloc] initWithClientId:[input artString:@"clientId"]
+                                                                nonce:[input artString:@"nonce"]];
+    params.ttl = millisecondsToTimeInterval([input artInteger:@"ttl"]);
+    params.capability = [input artString:@"capability"];
+    params.timestamp = [input artDate:@"timestamp"];
+
+    return [[ARTTokenRequest alloc] initWithTokenParams:params
+                                                keyName:[input artString:@"keyName"]
+                                                  nonce:[input artString:@"nonce"]
+                                                    mac:[input artString:@"mac"]];
+}
+
 - (NSDictionary *)tokenDetailsToDictionary:(ARTTokenDetails *)tokenDetails {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
 
     dictionary[@"token"] = tokenDetails.token;
 
     if (tokenDetails.issued) {
-        dictionary[@"issued"] = [NSString stringWithFormat:@"%llu", dateToMiliseconds(tokenDetails.issued)];
+        dictionary[@"issued"] = [NSString stringWithFormat:@"%llu", dateToMilliseconds(tokenDetails.issued)];
     }
 
     if (tokenDetails.expires) {
-        dictionary[@"expires"] = [NSString stringWithFormat:@"%llu", dateToMiliseconds(tokenDetails.expires)];
+        dictionary[@"expires"] = [NSString stringWithFormat:@"%llu", dateToMilliseconds(tokenDetails.expires)];
     }
 
     if (tokenDetails.capability) {

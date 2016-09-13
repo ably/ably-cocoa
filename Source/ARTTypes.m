@@ -23,12 +23,16 @@ NSString *decodeBase64(NSString *base64) {
     return [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
 }
 
-uint64_t dateToMiliseconds(NSDate *date) {
+uint64_t dateToMilliseconds(NSDate *date) {
     return (uint64_t)(date.timeIntervalSince1970 * 1000);
 }
 
-uint64_t timeIntervalToMiliseconds(NSTimeInterval seconds) {
+uint64_t timeIntervalToMilliseconds(NSTimeInterval seconds) {
     return (uint64_t)(seconds * 1000);
+}
+
+NSTimeInterval millisecondsToTimeInterval(uint64_t msecs) {
+    return ((NSTimeInterval)msecs) / 1000;
 }
 
 NSString *generateNonce() {

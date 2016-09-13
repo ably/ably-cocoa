@@ -82,8 +82,9 @@ __GENERIC(NSArray, NSString *) *decomposeKey(NSString *key);
 NSString *encodeBase64(NSString *value);
 NSString *decodeBase64(NSString *base64);
 
-uint64_t dateToMiliseconds(NSDate *date);
-uint64_t timeIntervalToMiliseconds(NSTimeInterval seconds);
+uint64_t dateToMilliseconds(NSDate *date);
+uint64_t timeIntervalToMilliseconds(NSTimeInterval seconds);
+NSTimeInterval millisecondsToTimeInterval(uint64_t msecs);
 
 NSString *generateNonce();
 
