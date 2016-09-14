@@ -73,7 +73,7 @@ ART_ASSUME_NONNULL_BEGIN
 /**
  Optionally allows one or more fallback hosts to be used instead of the default fallback hosts.
  */
-@property (nonatomic, copy) NSArray<NSString *> *fallbackHosts;
+@property (art_nullable, nonatomic, copy) NSArray<NSString *> *fallbackHosts;
 
 - (BOOL)isBasicAuth;
 - (NSURL *)restUrl;
