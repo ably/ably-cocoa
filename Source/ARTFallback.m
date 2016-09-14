@@ -33,9 +33,9 @@ int (^ARTFallback_getRandomHostIndex)(int count) = ^int(int count) {
         }
         
         self.hosts = [NSMutableArray array];
-        NSMutableArray * hostArray =[[NSMutableArray alloc] initWithArray: fallbackHosts ? fallbackHosts : [ARTDefault fallbackHosts]];
+        NSMutableArray * hostArray = [[NSMutableArray alloc] initWithArray: (fallbackHosts.count > 0) ? fallbackHosts : [ARTDefault fallbackHosts]];
         size_t count = [hostArray count];
-        for(int i=0; i <count; i++ ) {
+        for (int i=0; i <count; i++) {
             int randomIndex = ARTFallback_getRandomHostIndex((int)[hostArray count]);
             [self.hosts addObject:[hostArray objectAtIndex:randomIndex]];
             [hostArray removeObjectAtIndex:randomIndex];
