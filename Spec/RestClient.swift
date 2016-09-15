@@ -745,6 +745,39 @@ class RestClient: QuickSpec {
                     expect(NSRegularExpression.match(testHTTPExecutor.requests[1].URL!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
                     expect(NSRegularExpression.match(testHTTPExecutor.requests[2].URL!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
                 }
+                
+                // RSC15e
+                it("every new HTTP request is first attempted to the primary host `rest.ably.io` unless overriden in ClientOptions#restHost") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.restHost = "fake.ably.io"
+                    options.httpMaxRetryCount = 1
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = testHTTPExecutor
+                    testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                    
+                    let channel = client.channels.get("test")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "nil") { _ in
+                            done()
+                        }
+                    }
+                    
+                    testHTTPExecutor.http = ARTHttp()
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "nil") { _ in
+                            done()
+                        }
+                    }
+                    
+                    expect(testHTTPExecutor.requests).to(haveCount(3))
+                    if testHTTPExecutor.requests.count != 3 {
+                        return
+                    }
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[0].URL!.absoluteString, pattern: "//fake.ably.io")).to(beTrue())
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[1].URL!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[2].URL!.absoluteString, pattern: "//fake.ably.io")).to(beTrue())
+                }
 
                 // RSC15a
                 context("retry hosts in random order") {
