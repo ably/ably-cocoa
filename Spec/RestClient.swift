@@ -648,7 +648,7 @@ class RestClient: QuickSpec {
                 }
                 
                 // RSC15b
-                it("won't apply custom fallback hosts if ClientOptions#fallbackHosts array is empty, use defaults instead") {
+                it("won't apply fallback hosts if ClientOptions#fallbackHosts array is empty") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.fallbackHosts = [] //to test TO3k6
                     let client = ARTRest(options: options)
@@ -659,11 +659,6 @@ class RestClient: QuickSpec {
                     var capturedURLs = [String]()
                     testHTTPExecutor.afterRequest = { request, callback in
                         capturedURLs.append(request.URL!.absoluteString)
-                        if testHTTPExecutor.requests.count == 2 {
-                            // Stop
-                            testHTTPExecutor.http = nil
-                            callback!(nil, nil, nil)
-                        }
                     }
                     
                     waitUntil(timeout: testTimeout) { done in
@@ -672,12 +667,8 @@ class RestClient: QuickSpec {
                         }
                     }
                     
-                    expect(testHTTPExecutor.requests).to(haveCount(2))
-                    if testHTTPExecutor.requests.count < 2 {
-                        return
-                    }
-                    
-                    expect(NSRegularExpression.match(capturedURLs[1], pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+                    expect(testHTTPExecutor.requests).to(haveCount(1))
+                    expect(NSRegularExpression.match(capturedURLs[0], pattern: "//rest.ably.io")).to(beTrue())
                 }
                 
                 // RSC15b
