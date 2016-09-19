@@ -7,6 +7,7 @@
 //
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
+#import "ARTRealtime+TestSuite.h"
 #import "ARTMessage.h"
 #import "ARTClientOptions.h"
 #import "ARTPresenceMessage.h"
@@ -45,6 +46,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testInitWithHost {
@@ -65,6 +67,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testInitWithKey {
@@ -76,6 +79,7 @@
         [expectation fulfill];
     }
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testInitAutoConnectDefault {
@@ -89,6 +93,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testInitAutoConnectFalse {
@@ -104,6 +109,7 @@
     }];
     [realtime connect];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 @end

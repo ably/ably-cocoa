@@ -128,6 +128,7 @@
 		D7588AF41BFF91B800BB8279 /* ARTURLSessionServerTrust.m in Sources */ = {isa = PBXBuildFile; fileRef = D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */; };
 		D77394031C6F6FFE00F5478F /* ARTProtocolMessage+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D77394021C6F6FFE00F5478F /* ARTProtocolMessage+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D780846E1C68B3E50083009D /* NSObject+TestSuite.m in Sources */ = {isa = PBXBuildFile; fileRef = D780846D1C68B3E50083009D /* NSObject+TestSuite.m */; };
+		D79FF2751D901CD50067FA6A /* ARTRealtime+TestSuite.m in Sources */ = {isa = PBXBuildFile; fileRef = D79FF2741D901CD50067FA6A /* ARTRealtime+TestSuite.m */; };
 		D7B17EE31C07208B00A6958E /* ARTConnectionDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B17EE11C07208B00A6958E /* ARTConnectionDetails.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7B17EE41C07208B00A6958E /* ARTConnectionDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = D7B17EE21C07208B00A6958E /* ARTConnectionDetails.m */; };
 		D7C1B8771BBEA81A0087B55F /* Auth.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C1B8761BBEA81A0087B55F /* Auth.swift */; };
@@ -361,6 +362,8 @@
 		D77394021C6F6FFE00F5478F /* ARTProtocolMessage+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTProtocolMessage+Private.h"; sourceTree = "<group>"; };
 		D780846C1C68B3E50083009D /* NSObject+TestSuite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+TestSuite.h"; sourceTree = "<group>"; };
 		D780846D1C68B3E50083009D /* NSObject+TestSuite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+TestSuite.m"; sourceTree = "<group>"; };
+		D79FF2731D901CD50067FA6A /* ARTRealtime+TestSuite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTRealtime+TestSuite.h"; sourceTree = "<group>"; };
+		D79FF2741D901CD50067FA6A /* ARTRealtime+TestSuite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ARTRealtime+TestSuite.m"; sourceTree = "<group>"; };
 		D7B17EE11C07208B00A6958E /* ARTConnectionDetails.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTConnectionDetails.h; sourceTree = "<group>"; };
 		D7B17EE21C07208B00A6958E /* ARTConnectionDetails.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTConnectionDetails.m; sourceTree = "<group>"; };
 		D7C1B8761BBEA81A0087B55F /* Auth.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Auth.swift; sourceTree = "<group>"; };
@@ -464,6 +467,8 @@
 		1C1E52E81AB32E6E004A690F /* Realtime */ = {
 			isa = PBXGroup;
 			children = (
+				D79FF2731D901CD50067FA6A /* ARTRealtime+TestSuite.h */,
+				D79FF2741D901CD50067FA6A /* ARTRealtime+TestSuite.m */,
 				96E408351A38595F00087F77 /* ARTRealtimeAttachTest.m */,
 				1CC3D94A1AB6FBB60005BEB0 /* ARTRealtimeChannelHistoryTest.m */,
 				1C1E53011AB373C5004A690F /* ARTRealtimeChannelTest.m */,
@@ -1221,6 +1226,7 @@
 				1C1E53021AB373C5004A690F /* ARTRealtimeChannelTest.m in Sources */,
 				1CC3D9571AB700EC0005BEB0 /* ARTRealtimeMessageTest.m in Sources */,
 				1C1E52F21AB32ED1004A690F /* ARTRestChannelPublishTest.m in Sources */,
+				D79FF2751D901CD50067FA6A /* ARTRealtime+TestSuite.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

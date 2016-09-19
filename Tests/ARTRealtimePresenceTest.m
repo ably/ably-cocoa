@@ -7,6 +7,7 @@
 //
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
+#import "ARTRealtime+TestSuite.h"
 #import "ARTMessage.h"
 #import "ARTClientOptions.h"
 #import "ARTPresenceMessage.h"
@@ -87,6 +88,8 @@
         [expectation3 fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
+    [realtime2 testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterSimple {
@@ -128,6 +131,7 @@
         XCTAssertNil(errorInfo);
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterAttachesTheChannel {
@@ -144,6 +148,7 @@
     }];
     [channel attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testSubscribeConnects {
@@ -162,6 +167,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testUpdateConnects {
@@ -180,6 +186,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterBeforeConnect {
@@ -211,6 +218,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterLeaveSimple {
@@ -249,6 +257,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterEnter {
@@ -286,6 +295,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterUpdateSimple {
@@ -323,6 +333,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testUpdateNull {
@@ -359,6 +370,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterLeaveWithoutData {
@@ -399,6 +411,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testUpdateNoEnter {
@@ -433,6 +446,7 @@
         
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterAndGet {
@@ -463,6 +477,8 @@
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
+    [realtime2 testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterNoClientId {
@@ -475,6 +491,7 @@
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterOnDetached {
@@ -496,6 +513,7 @@
     }];
     [channel attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterOnFailed {
@@ -517,6 +535,7 @@
     }];
     [channel attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testLeaveAndGet {
@@ -545,6 +564,7 @@
         XCTAssertNil(errorInfo);
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testLeaveNoData {
@@ -575,6 +595,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testLeaveNoMessage {
@@ -601,6 +622,7 @@
     }];
     [channel attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testLeaveWithMessage {
@@ -628,6 +650,7 @@
     }];
     [channel attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testLeaveOnDetached {
@@ -647,6 +670,7 @@
     }];
     [channel attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testLeaveOnFailed {
@@ -666,6 +690,7 @@
     }];
     [channel attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterFailsOnError {
@@ -688,6 +713,7 @@
     }];
     [channel attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testGetFailsOnDetachedOrFailed {
@@ -714,6 +740,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterClient {
@@ -739,6 +766,7 @@
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterClientIdFailsOnError {
@@ -759,6 +787,7 @@
     }];
     [channel attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testWithNoClientIdUpdateLeaveEnterAnotherClient {
@@ -797,6 +826,7 @@
         messageCount++;
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testPresenceMap {
@@ -833,6 +863,7 @@
     }];
     [channel2 attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testLeaveBeforeEnterThrows {
@@ -852,6 +883,7 @@
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testSubscribeToAction {
@@ -902,6 +934,7 @@
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testPresenceWithData {
@@ -923,6 +956,7 @@
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testPresenceWithDataOnLeave {
@@ -975,6 +1009,7 @@
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 @end
