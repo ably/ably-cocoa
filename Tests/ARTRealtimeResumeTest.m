@@ -9,6 +9,7 @@
 
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
+#import "ARTRealtime+TestSuite.h"
 #import "ARTMessage.h"
 #import "ARTClientOptions.h"
 #import "ARTPresenceMessage.h"
@@ -79,6 +80,8 @@
         [channel attach];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
+    [realtime2 testSuite_waitForConnectionToClose:self];
 }
 
 @end

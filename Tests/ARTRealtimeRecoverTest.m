@@ -7,6 +7,7 @@
 //
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
+#import "ARTRealtime+TestSuite.h"
 #import "ARTMessage.h"
 #import "ARTClientOptions.h"
 #import "ARTPresenceMessage.h"
@@ -74,6 +75,7 @@
         XCTAssertEqualObjects(realtimeRecovered.connection.id, firstConnectionId);
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testRecoverFails {
@@ -92,6 +94,7 @@
     }];
     [realtime connect];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 @end

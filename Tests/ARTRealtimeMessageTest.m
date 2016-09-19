@@ -7,6 +7,7 @@
 //
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
+#import "ARTRealtime+TestSuite.h"
 #import "ARTMessage.h"
 #import "ARTClientOptions.h"
 #import "ARTPresenceMessage.h"
@@ -73,6 +74,7 @@
         XCTAssertNil(errorInfo);
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testSingleSendEchoText {
@@ -122,6 +124,8 @@
         [expectation3 fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout]+5.0 handler:nil];
+    [realtime1 testSuite_waitForConnectionToClose:self];
+    [realtime2 testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testPublish_10_1000 {
@@ -163,6 +167,8 @@
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
+    [realtime2 testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEchoMessagesFalse {
@@ -190,6 +196,8 @@
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
+    [realtime2 testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testSubscribeAttaches {
@@ -206,6 +214,7 @@
         }   
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testMessageQueue {
@@ -253,8 +262,8 @@
     }];
     [realtime connect];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
-
 
 - (void)testConnectionIdsInMessage {
     ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
@@ -285,6 +294,8 @@
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
+    [realtime2 testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testPublishImmediate {
@@ -310,6 +321,7 @@
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testPublishArray {
@@ -338,6 +350,7 @@
         messageCount++;
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testPublishWithName {
@@ -354,8 +367,8 @@
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
-
 
 - (void)testSubscribeToName {
     ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
@@ -380,6 +393,7 @@
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 @end

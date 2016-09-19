@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
-
+#import "ARTRealtime+TestSuite.h"
 #import "ARTRealtime+Private.h"
 #import "ARTRealtimePresence.h"
 #import "ARTRealtimeChannel.h"
@@ -68,6 +68,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testAttachMultipleChannels {
@@ -90,6 +91,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testDetach {
@@ -112,6 +114,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testDetaching {
@@ -143,6 +146,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testSkipsFromAttachingToDetaching {
@@ -168,6 +172,7 @@
     }];
     [channel attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 -(void)testDetachingIgnoresDetach {
@@ -195,6 +200,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testAttachFailsOnFailedConnection {
@@ -232,6 +238,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testAttachRestricted {
@@ -255,6 +262,7 @@
     }];
     [channel attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testAttachingChannelFails {
@@ -273,6 +281,7 @@
     }];
     [channel1 attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testAttachedChannelFails {
@@ -291,6 +300,7 @@
     }];
     [channel1 attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testChannelClosesOnClose {
@@ -309,6 +319,7 @@
     }];
     [channel1 attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testPresenceEnterRestricted {
@@ -357,6 +368,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 @end
