@@ -24,7 +24,7 @@ class RealtimeClientChannels: QuickSpec {
             // RTS2
             it("should exist methods to check if a channel exists or iterate through the existing channels") {
                 let client = ARTRealtime(options: AblyTests.commonAppSetup())
-                defer { client.close() }
+                defer { client.dispose(); client.close() }
                 var disposable = [ARTRealtimeChannel]()
 
                 disposable.append(client.channels.get("test1"))
@@ -46,7 +46,7 @@ class RealtimeClientChannels: QuickSpec {
                 // RTS3a
                 it("should create a new Channel if none exists or return the existing one") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
 
                     expect(client.channels.collection).to(haveCount(0))
                     let channel = client.channels.get("test")
@@ -60,7 +60,7 @@ class RealtimeClientChannels: QuickSpec {
                 // RTS3b
                 it("should be possible to specify a ChannelOptions") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     let options = ARTChannelOptions()
                     let channel = client.channels.get("test", options: options)
                     expect(channel.options).to(beIdenticalTo(options))
@@ -69,7 +69,7 @@ class RealtimeClientChannels: QuickSpec {
                 // RTS3c
                 it("accessing an existing Channel with options should update the options and then return the object") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     expect(client.channels.get("test").options).toNot(beNil())
                     let options = ARTChannelOptions()
                     let channel = client.channels.get("test", options: options)
@@ -82,7 +82,7 @@ class RealtimeClientChannels: QuickSpec {
             context("release") {
                 it("should release a channel") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
 
                     let channel = client.channels.get("test")
                     channel.subscribe { _ in

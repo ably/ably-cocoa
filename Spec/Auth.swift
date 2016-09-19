@@ -160,7 +160,7 @@ class Auth : QuickSpec {
                     options.autoConnect = false
 
                     let client = ARTRealtime(options: options)
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     client.setTransportClass(TestProxyTransport.self)
                     client.connect()
 
@@ -2059,7 +2059,7 @@ class Auth : QuickSpec {
                 realtimeOptions.clientId = "testClientId"
                 
                 let realtime = ARTRealtime(options:realtimeOptions)
-                defer { realtime.close() }
+                defer { realtime.dispose(); realtime.close() }
                 
                 // wait for connected state
                 waitUntil(timeout: testTimeout) { done in
