@@ -58,7 +58,8 @@
             }];
         }
     }];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout]+delay handler:nil];
+    [self waitForExpectationsWithTimeout:50.0 handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testSingleSendText {
