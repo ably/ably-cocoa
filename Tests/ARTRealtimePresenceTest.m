@@ -230,16 +230,19 @@
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:channelName];
+    void(^partialExpectationFulfill)(void) = [ARTTestUtil splitFulfillFrom:self expectation:expectation in:2];
     [channel.presence subscribe:^(ARTPresenceMessage *message) {
         if(message.action == ARTPresenceEnter) {
             XCTAssertEqualObjects([message data], presenceEnter);
             [channel.presence leave:presenceLeave callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
+                // Should wait for the publishing acknowledgement
+                partialExpectationFulfill();
             }];
         }
         if(message.action == ARTPresenceLeave) {
             XCTAssertEqualObjects([message data], presenceLeave);
-            [expectation fulfill];
+            partialExpectationFulfill();
         }
     }];
     
@@ -269,16 +272,19 @@
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:channelName];
+    void(^partialExpectationFulfill)(void) = [ARTTestUtil splitFulfillFrom:self expectation:expectation in:2];
     [channel.presence subscribe:^(ARTPresenceMessage *message) {
         if(message.action == ARTPresenceEnter) {
             XCTAssertEqualObjects([message data], presenceEnter);
             [channel.presence enter:secondEnter callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
+                // Should wait for the publishing acknowledgement
+                partialExpectationFulfill();
             }];
         }
         else if(message.action == ARTPresenceUpdate) {
             XCTAssertEqualObjects([message data], secondEnter);
-            [expectation fulfill];
+            partialExpectationFulfill();
         }
     }];
     [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
@@ -307,16 +313,19 @@
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:channelName];
+    void(^partialExpectationFulfill)(void) = [ARTTestUtil splitFulfillFrom:self expectation:expectation in:2];
     [channel.presence subscribe:^(ARTPresenceMessage *message) {
         if(message.action == ARTPresenceEnter) {
             XCTAssertEqualObjects([message data], presenceEnter);
             [channel.presence update:update callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
+                // Should wait for the publishing acknowledgement
+                partialExpectationFulfill();
             }];
         }
         else if(message.action == ARTPresenceUpdate) {
             XCTAssertEqualObjects([message data], update);
-            [expectation fulfill];
+            partialExpectationFulfill();
         }
     }];
     [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
@@ -344,16 +353,19 @@
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:channelName];
+    void(^partialExpectationFulfill)(void) = [ARTTestUtil splitFulfillFrom:self expectation:expectation in:2];
     [channel.presence subscribe:^(ARTPresenceMessage *message) {
         if(message.action == ARTPresenceEnter) {
             XCTAssertEqualObjects([message data], presenceEnter);
             [channel.presence update:nil callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
+                // Should wait for the publishing acknowledgement
+                partialExpectationFulfill();
             }];
         }
         else if(message.action == ARTPresenceUpdate) {
             XCTAssertEqualObjects([message data], nil);
-            [expectation fulfill];
+            partialExpectationFulfill();
         }
     }];
     [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
@@ -383,16 +395,19 @@
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:channelName];
+    void(^partialExpectationFulfill)(void) = [ARTTestUtil splitFulfillFrom:self expectation:expectation in:2];
     [channel.presence subscribe:^(ARTPresenceMessage *message) {
         if (message.action == ARTPresenceEnter) {
             XCTAssertEqualObjects([message data], presenceEnter);
             [channel.presence leave:@"" callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
+                // Should wait for the publishing acknowledgement
+                partialExpectationFulfill();
             }];
         }
         if (message.action == ARTPresenceLeave) {
             XCTAssertEqualObjects([message data], presenceEnter);
-            [expectation fulfill];
+            partialExpectationFulfill();
         }
         
     }];
@@ -574,16 +589,19 @@
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:@"testEnterLeaveNoData"];
+    void(^partialExpectationFulfill)(void) = [ARTTestUtil splitFulfillFrom:self expectation:expectation in:2];
     [channel.presence subscribe:^(ARTPresenceMessage *message) {
         if(message.action == ARTPresenceEnter) {
             XCTAssertEqualObjects([message data], enter);
             [channel.presence leave:@"" callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
+                // Should wait for the publishing acknowledgement
+                partialExpectationFulfill();
             }];
         }
         else if(message.action == ARTPresenceLeave) {
             XCTAssertEqualObjects([message data], enter);
-            [expectation fulfill];
+            partialExpectationFulfill();
         }
     }];
     [channel attach];

@@ -316,4 +316,16 @@
     return options;
 }
 
++ (void(^)())splitFulfillFrom:(XCTestCase *)testCase expectation:(XCTestExpectation *)expectation in:(NSInteger)howMany {
+    __block NSInteger left = howMany;
+    return ^{
+        left--;
+        if (left == 0) {
+            [expectation fulfill];
+        } else if (left < 0) {
+            _XCTPrimitiveFail(testCase, @"%s called more than the expected %ld times", __FUNCTION__, (long)howMany);
+        }
+    };
+}
+
 @end

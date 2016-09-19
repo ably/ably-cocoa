@@ -73,6 +73,8 @@ typedef void (^ARTRealtimeConstructorCb)(ARTRealtime *realtime);
 + (void)waitForWithTimeout:(NSUInteger *_Nonnull)counter list:(NSArray *)list timeout:(NSTimeInterval)timeout;
 + (void)delay:(NSTimeInterval)timeout block:(dispatch_block_t)block;
 
++ (void(^)())splitFulfillFrom:(XCTestCase *)testCase expectation:(XCTestExpectation *)expectation in:(NSInteger)howMany;
+
 @end
 
 ART_ASSUME_NONNULL_END
