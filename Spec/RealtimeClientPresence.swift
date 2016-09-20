@@ -901,7 +901,7 @@ class RealtimeClientPresence: QuickSpec {
                 // RTP8h
                 it("should result in an error if the client does not have required presence permission") {
                     let options = AblyTests.commonAppSetup()
-                    options.token = getTestToken(capability: "{ \"cannotpresence:john\":[\"publish\"] }")
+                    options.token = getTestToken(clientId: "john", capability: "{ \"cannotpresence:john\":[\"publish\"] }")
                     options.clientId = "john"
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
@@ -977,7 +977,7 @@ class RealtimeClientPresence: QuickSpec {
                 // RTP9e
                 it("should result in an error if the client does not have required presence permission") {
                     let options = AblyTests.clientOptions()
-                    options.token = getTestToken(capability: "{ \"cannotpresence:john\":[\"publish\"] }")
+                    options.token = getTestToken(clientId: "john", capability: "{ \"cannotpresence:john\":[\"publish\"] }")
                     options.clientId = "john"
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
@@ -1218,7 +1218,7 @@ class RealtimeClientPresence: QuickSpec {
                 // RTP10e
                 it("should result in an error if the client does not have required presence permission") {
                     let options = AblyTests.clientOptions()
-                    options.token = getTestToken(capability: "{ \"cannotpresence:other\":[\"publish\"] }")
+                    options.token = getTestToken(clientId: "john", capability: "{ \"cannotpresence:other\":[\"publish\"] }")
                     options.clientId = "john"
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
