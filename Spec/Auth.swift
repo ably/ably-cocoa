@@ -1206,6 +1206,7 @@ class Auth : QuickSpec {
                 let authOptions = ARTAuthOptions()
                 authOptions.force = true
                 authOptions.queryTime = true
+                authOptions.key = options.key
 
                 var serverDate = NSDate()
                 waitUntil(timeout: testTimeout) { done in
@@ -1318,6 +1319,22 @@ class Auth : QuickSpec {
                 }
                 expect(callbackCalled).to(beTrue())
             }
+            
+            it("should replace defaults if `nil` option's field passed") {
+                let defaultOptions = AblyTests.commonAppSetup()
+                let rest = ARTRest(options: defaultOptions)
+                
+                let customOptions = ARTAuthOptions()
+            
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.createTokenRequest(nil, options: customOptions, callback: { tokenRequest, error in
+                        //ARTAuthOptions `key` property must not be nil, otherwise `createTokenRequest` API returns an error
+                        expect(error).toNot(beNil())
+                        expect(error?.domain).to(equal(ARTAblyErrorDomain))
+                        done()
+                    })
+                }
+            }
 
             // RSA9a
             it("should create and sign a TokenRequest") {
@@ -1411,6 +1428,7 @@ class Auth : QuickSpec {
 
                     let authOptions = ARTAuthOptions()
                     authOptions.queryTime = true
+                    authOptions.key = AblyTests.commonAppSetup().key
 
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
@@ -1561,6 +1579,7 @@ class Auth : QuickSpec {
 
                 let authOptions = ARTAuthOptions()
                 authOptions.queryTime = true
+                authOptions.key = AblyTests.commonAppSetup().key
 
                 var serverTime: NSDate?
                 waitUntil(timeout: testTimeout) { done in

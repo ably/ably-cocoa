@@ -328,30 +328,36 @@
 }
 
 - (void)createTokenRequest:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)options callback:(void (^)(ARTTokenRequest *, NSError *))callback {
-    ARTAuthOptions *mergedOptions = options ? : self.options;
-    ARTTokenParams *mergedTokenParams = tokenParams ? : _tokenParams;
+    ARTAuthOptions *replacedOptions = options ? : self.options;
+    ARTTokenParams *currentTokenParams = tokenParams ? : _tokenParams;
 
     // Validate: Capability JSON text
     NSError *errorCapability;
-    [NSJSONSerialization JSONObjectWithData:[mergedTokenParams.capability dataUsingEncoding:NSUTF8StringEncoding] options:0 error:&errorCapability];
+    [NSJSONSerialization JSONObjectWithData:[currentTokenParams.capability dataUsingEncoding:NSUTF8StringEncoding] options:0 error:&errorCapability];
 
     if (errorCapability) {
         NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Capability: %@", errorCapability.localizedDescription] };
         callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:errorCapability.code userInfo:userInfo]);
         return;
     }
+    
+    if (replacedOptions.key == nil) {
+        NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : @"ARTAuthOptions key property must be not `nil`" };
+        callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:userInfo]);
+        return;
+    }
 
-    if (mergedOptions.queryTime) {
+    if (replacedOptions.queryTime) {
         [_rest time:^(NSDate *time, NSError *error) {
             if (error) {
                 callback(nil, error);
             } else {
-                mergedTokenParams.timestamp = time;
-                callback([mergedTokenParams sign:mergedOptions.key], nil);
+                currentTokenParams.timestamp = time;
+                callback([currentTokenParams sign:replacedOptions.key], nil);
             }
         }];
     } else {
-        callback([mergedTokenParams sign:mergedOptions.key], nil);
+        callback([currentTokenParams sign:replacedOptions.key], nil);
     }
 }
 
