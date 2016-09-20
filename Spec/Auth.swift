@@ -2034,7 +2034,7 @@ class Auth : QuickSpec {
         
         describe("Reauth") {
             // RTC8
-            it("should use authorise({force: true}) to reauth with a token with a different set of capabilities") {
+            pending("should use authorise({force: true}) to reauth with a token with a different set of capabilities") {
                 // init ARTRest
                 let restOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                 let rest = ARTRest(options: restOptions)
