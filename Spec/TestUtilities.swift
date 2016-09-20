@@ -920,7 +920,7 @@ extension ARTRealtime {
         for name in names {
             self.channels.release(name)
         }
-        self.resetEventEmitter()
+        self.connection.off()
     }
 
 }

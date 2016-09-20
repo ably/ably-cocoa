@@ -351,6 +351,58 @@ class RealtimeClient: QuickSpec {
                     expect(secs).to(beLessThanOrEqualTo(UInt(options.suspendedRetryTimeout)))
                 }
             }
+
+            it("should never register any connection listeners for internal use with the public EventEmitter") {
+                let options = AblyTests.commonAppSetup()
+                options.autoConnect = false
+                let client = ARTRealtime(options: options)
+                defer { client.dispose(); client.close() }
+
+                client.connect()
+                client.close() // Before it connects; this registers a listener on the internal event emitter.
+                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connecting))
+                client.connection.off()
+                // If we didn't have a separate internal event emitter, the line above would unregister
+                // the listener, and the next lines would fail, because we would never move to 
+                // CLOSED, because we do that on the internal event listener registered when
+                // we called close().
+                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connecting)) // Still connecting...
+                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Closed), timeout: testTimeout)
+            }
+
+            it("should never register any message and channel listeners for internal use with the public EventEmitter") {
+                let options = AblyTests.commonAppSetup()
+                let client = ARTRealtime(options: options)
+                defer { client.dispose(); client.close() }
+
+                let channel = client.channels.get("test")
+                waitUntil(timeout: testTimeout) { done in
+                    channel.attach { _ in
+                        done()
+                    }
+                }
+                if channel.state != .Attached {
+                    return
+                }
+
+                client.onDisconnected()
+                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Disconnected))
+
+                // If we now send a message through the channel, it will be queued and the channel
+                // should register a listener in the connection's _internal_ event emitter.
+                // If we call client.connection.off(), reconnect, and never get the message ACK,
+                // we probably weren't using the internal event emitter but the public one.
+
+                client.connection.off()
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.publish("test", data: nil) { err in
+                        expect(err).to(beNil())
+                        done()
+                    }
+                    client.connect()
+                }
+            }
         }
     }
 }
