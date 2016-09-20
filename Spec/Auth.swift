@@ -1893,6 +1893,10 @@ class Auth : QuickSpec {
                     // Invalid TokenDetails
                     waitUntil(timeout: testTimeout) { done in
                         ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
+                            guard let error = error else {
+                                fail("Error is nil"); done(); return
+                            }
+                            expect(error.code).to(equal(Int(ARTState.AuthUrlIncompatibleContent.rawValue)))
                             expect(tokenDetails).to(beNil())
                             done()
                         }
