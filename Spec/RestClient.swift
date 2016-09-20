@@ -700,6 +700,37 @@ class RestClient: QuickSpec {
 
                         expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
                     }
+                    
+                    it("use custom fallback hosts if set") {
+                        let options = ARTClientOptions(key: "xxxx:xxxx")
+                        options.httpMaxRetryCount = 10
+                        let customFallbackHosts = ["j.ably-realtime.com",
+                                                   "i.ably-realtime.com",
+                                                   "h.ably-realtime.com",
+                                                   "g.ably-realtime.com",
+                                                   "f.ably-realtime.com"]
+                        options.fallbackHosts = customFallbackHosts
+                        let client = ARTRest(options: options)
+                        client.httpExecutor = testHTTPExecutor
+                        testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                        let channel = client.channels.get("test")
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: "nil") { _ in
+                                done()
+                            }
+                        }
+
+                        expect(testHTTPExecutor.requests).to(haveCount(customFallbackHosts.count + 1))
+                        
+                        let extractHostname = { (request: NSMutableURLRequest) in
+                            NSRegularExpression.extract(request.URL!.absoluteString, pattern: "[f-j].ably-realtime.com")
+                        }
+                        let resultFallbackHosts = testHTTPExecutor.requests.flatMap(extractHostname)
+                        let expectedFallbackHosts = expectedHostOrder.map { customFallbackHosts[$0] }
+                        
+                        expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+                    }
 
                     it("until all fallback hosts have been tried") {
                         let options = ARTClientOptions(key: "xxxx:xxxx")

@@ -26,10 +26,15 @@ int (^ARTFallback_getRandomHostIndex)(int count) = ^int(int count) {
 @implementation ARTFallback
 
 - (id)init {
+    self = [self initWithFallbackHosts:[ARTDefault fallbackHosts]];
+    return self;
+}
+
+-(instancetype)initWithFallbackHosts:(NSArray *)fallbackHosts {
     self = [super init];
     if(self) {
         self.hosts = [NSMutableArray array];
-        NSMutableArray * hostArray =[[NSMutableArray alloc] initWithArray: [ARTDefault fallbackHosts]];
+        NSMutableArray * hostArray = [[NSMutableArray alloc] initWithArray: [fallbackHosts copy]];
         size_t count = [hostArray count];
         for(int i=0; i <count; i++ ) {
             int randomIndex = ARTFallback_getRandomHostIndex((int)[hostArray count]);
