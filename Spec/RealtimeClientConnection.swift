@@ -2756,7 +2756,6 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     client.connect()
-                    defer { client.dispose(); client.close() }
 
                     expect(urlConnections).toEventually(haveCount(2), timeout: testTimeout)
 
