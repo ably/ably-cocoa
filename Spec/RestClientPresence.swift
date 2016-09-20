@@ -477,18 +477,13 @@ class RestClientPresence: QuickSpec {
                 let channel = client.channels.get("test")
 
                 let expectedData = ["test":1]
-                var decodeNumberOfCalls = 0
-                let hook = ARTBaseMessage.testSuite_injectIntoClassMethod(#selector(ARTBaseMessage.decodeWithEncoder(_:error:))) {
-                    decodeNumberOfCalls += 1
-                }
-                defer { hook?.remove() }
 
                 waitUntil(timeout: testTimeout) { done in
                     channel.publish(nil, data: expectedData) { _ in done() }
                 }
 
                 var realtime = ARTRealtime(options: options)
-                defer { realtime.close() }
+                defer { realtime.dispose(); realtime.close() }
                 waitUntil(timeout: testTimeout) { done in
                     realtime.channels.get("test").presence.enterClient("john", data: expectedData) { _ in done() }
                 }
@@ -502,6 +497,12 @@ class RestClientPresence: QuickSpec {
                         done()
                     }
                 }
+
+                var decodeNumberOfCalls = 0
+                let hook = ARTBaseMessage.testSuite_injectIntoClassMethod(#selector(ARTBaseMessage.decodeWithEncoder(_:error:))) {
+                    decodeNumberOfCalls += 1
+                }
+                defer { hook?.remove() }
 
                 waitUntil(timeout: testTimeout) { done in
                     channel.history(checkReceivedMessage(done))
