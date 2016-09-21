@@ -10,7 +10,6 @@ before_install:
   - gem install bundler -v 1.12.5 --no-rdoc --no-ri --no-document --quiet
 install:
   # https://github.com/fastlane/fastlane/issues/6066
-  - gem uninstall bundler -v1.13
   - gem install bundler -v 1.12
   # Install Scan
   # Automatically switches to the travis formatter when running on Travis
