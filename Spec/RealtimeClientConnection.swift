@@ -2926,6 +2926,9 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     client.connect()
+                    // Because we're faking the CONNECTED state, we can't client.close() or it
+                    // will actually try to use the connection believing it's ready and throw an
+                    // exception because it's really not.
 
                     expect(urlConnections).toEventually(haveCount(2), timeout: testTimeout)
 
