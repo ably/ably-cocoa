@@ -818,7 +818,7 @@ class RestClient: QuickSpec {
                     
                     it("until httpMaxRetryCount has been reached, if custom fallback hosts are provided in ClientOptions#fallbackHosts, then they will be used instead") {
                         let options = ARTClientOptions(key: "xxxx:xxxx")
-                        options.httpMaxRetryCount = 5
+                        options.httpMaxRetryCount = 4
                         options.fallbackHosts = _fallbackHosts
                         
                         let client = ARTRest(options: options)
@@ -839,6 +839,7 @@ class RestClient: QuickSpec {
                         }
                         
                         expect(testHTTPExecutor.requests).to(haveCount(Int(1 + options.httpMaxRetryCount)))
+                        expect((testHTTPExecutor.requests.count) < (_fallbackHosts.count + 1)).to(beTrue())
                         
                         let extractHostname = { (request: NSMutableURLRequest) in
                             NSRegularExpression.extract(request.URL!.absoluteString, pattern: "[f-j].ably-realtime.com")
