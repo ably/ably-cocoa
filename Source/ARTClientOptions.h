@@ -70,6 +70,11 @@ ART_ASSUME_NONNULL_BEGIN
  */
 @property (readwrite, assign, nonatomic) NSTimeInterval httpMaxRetryDuration;
 
+/**
+ Optionally allows one or more fallback hosts to be used instead of the default fallback hosts.
+ */
+@property (art_nullable, nonatomic, copy) NSArray<NSString *> *fallbackHosts;
+
 - (BOOL)isBasicAuth;
 - (NSURL *)restUrl;
 - (NSURL *)realtimeUrl;

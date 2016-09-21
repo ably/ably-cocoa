@@ -614,6 +614,96 @@ class RestClient: QuickSpec {
                     expect(NSRegularExpression.match(capturedURLs[0], pattern: "//rest.ably.io")).to(beTrue())
                     expect(NSRegularExpression.match(capturedURLs[1], pattern: "//[a-e].ably-realtime.com")).to(beTrue())
                 }
+                
+                // RSC15b
+                it("applies when ClientOptions#fallbackHosts is provided") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.fallbackHosts = ["f.ably-realtime.com", "g.ably-realtime.com", "h.ably-realtime.com", "i.ably-realtime.com", "j.ably-realtime.com"]
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = testHTTPExecutor
+                    testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                    let channel = client.channels.get("test")
+                    
+                    var capturedURLs = [String]()
+                    testHTTPExecutor.afterRequest = { request, callback in
+                        capturedURLs.append(request.URL!.absoluteString)
+                        if testHTTPExecutor.requests.count == 2 {
+                            // Stop
+                            testHTTPExecutor.http = nil
+                            callback!(nil, nil, nil)
+                        }
+                    }
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "nil") { _ in
+                            done()
+                        }
+                    }
+                    
+                    expect(testHTTPExecutor.requests).to(haveCount(2))
+                    if testHTTPExecutor.requests.count < 2 {
+                        return
+                    }
+
+                    expect(NSRegularExpression.match(capturedURLs[1], pattern: "//[f-j].ably-realtime.com")).to(beTrue())
+                }
+                
+                // RSC15b
+                it("won't apply fallback hosts if ClientOptions#fallbackHosts array is empty") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.fallbackHosts = [] //to test TO3k6
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = testHTTPExecutor
+                    testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                    let channel = client.channels.get("test")
+                    
+                    var capturedURLs = [String]()
+                    testHTTPExecutor.afterRequest = { request, callback in
+                        capturedURLs.append(request.URL!.absoluteString)
+                    }
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "nil") { _ in
+                            done()
+                        }
+                    }
+                    
+                    expect(testHTTPExecutor.requests).to(haveCount(1))
+                    expect(NSRegularExpression.match(capturedURLs[0], pattern: "//rest.ably.io")).to(beTrue())
+                }
+                
+                // RSC15b
+                it("won't apply custom fallback hosts if ClientOptions#fallbackHosts array is nil, use defaults instead") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.fallbackHosts = nil
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = testHTTPExecutor
+                    testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                    let channel = client.channels.get("test")
+                    
+                    var capturedURLs = [String]()
+                    testHTTPExecutor.afterRequest = { request, callback in
+                        capturedURLs.append(request.URL!.absoluteString)
+                        if testHTTPExecutor.requests.count == 2 {
+                            // Stop
+                            testHTTPExecutor.http = nil
+                            callback!(nil, nil, nil)
+                        }
+                    }
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "nil") { _ in
+                            done()
+                        }
+                    }
+                    
+                    expect(testHTTPExecutor.requests).to(haveCount(2))
+                    if testHTTPExecutor.requests.count < 2 {
+                        return
+                    }
+                    
+                    expect(NSRegularExpression.match(capturedURLs[1], pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+                }
 
                 // RSC15e
                 it("every new HTTP request is first attempted to the primary host rest.ably.io") {
