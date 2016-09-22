@@ -9,8 +9,6 @@ before_install:
   - gem uninstall bundler -v '>1.12.5' --force || echo "bundler >1.12.5 is not installed"
   - gem install bundler -v 1.12.5 --no-rdoc --no-ri --no-document --quiet
 install:
-  # https://github.com/fastlane/fastlane/issues/6066
-  - gem install bundler -v 1.12
   # Install Scan
   # Automatically switches to the travis formatter when running on Travis
   - gem install scan
@@ -18,6 +16,9 @@ install:
   - gem uninstall cocoapods -aIx
   # Install CocoaPods
   - gem install cocoapods -v '1.0.1' --no-rdoc --no-ri --no-document --quiet
+  # https://github.com/fastlane/fastlane/issues/6066
+  - gem uninstall bundler -aIx -v 1.13
+  - gem install bundler -v 1.12
   - pod install
   # List of schemes
   - xcodebuild -workspace ./Ably.xcworkspace -list
