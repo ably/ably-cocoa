@@ -270,7 +270,7 @@ class RealtimeClientPresence: QuickSpec {
                 it("all queued presence messages will be sent immediately and a presence SYNC will be initiated implicitly if a channel enters the ATTACHED state") {
                     let options = AblyTests.commonAppSetup()
                     let client1 = AblyTests.newRealtime(options)
-                    defer { client1.close() }
+                    defer { client1.dispose(); client1.close() }
                     let channel1 = client1.channels.get("room")
 
                     waitUntil(timeout: testTimeout) { done in
@@ -287,7 +287,7 @@ class RealtimeClientPresence: QuickSpec {
                     }
 
                     let client2 = AblyTests.newRealtime(options)
-                    defer { client2.close() }
+                    defer { client2.dispose(); client2.close() }
                     let channel2 = client2.channels.get(channel1.name)
 
                     channel2.presence.enterClient("Client 2", data: nil) { error in
