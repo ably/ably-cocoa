@@ -544,13 +544,15 @@
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p already attached", _realtime, self];
             if (callback) callback(nil);
             return;
-        case ARTRealtimeChannelDetaching:
-        case ARTRealtimeChannelFailed: {
-            NSString *msg = @"can't attach when in DETACHING or FAILED state";
+        case ARTRealtimeChannelDetaching: {
+            NSString *msg = @"can't attach when in DETACHING state";
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p %@", _realtime, self, msg];
             if (callback) callback([ARTErrorInfo createWithCode:90000 message:msg]);
             return;
         }
+        case ARTRealtimeChannelFailed:
+            _errorReason = nil;
+            break;
         default:
             break;
     }

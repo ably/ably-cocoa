@@ -380,13 +380,17 @@ class RealtimeClientChannel: QuickSpec {
                         errorMsg.channel = channel.name
                         client.onError(errorMsg)
                         expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
+                        expect(channel.errorReason).toNot(beNil())
 
                         waitUntil(timeout: testTimeout) { done in
                             channel.attach { error in
-                                expect(error).toNot(beNil())
+                                expect(error).to(beNil())
                                 done()
                             }
                         }
+
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+                        expect(channel.errorReason).to(beNil())
                     }
                 }
 
