@@ -16,9 +16,6 @@ install:
   - gem uninstall cocoapods -aIx
   # Install CocoaPods
   - gem install cocoapods -v '1.0.1' --no-rdoc --no-ri --no-document --quiet
-  # https://github.com/fastlane/fastlane/issues/6066
-  - gem uninstall bundler -aIx -v 1.13
-  - gem install bundler -v 1.12
   - pod install
   # List of schemes
   - xcodebuild -workspace ./Ably.xcworkspace -list
