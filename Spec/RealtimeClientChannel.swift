@@ -437,7 +437,7 @@ class RealtimeClientChannel: QuickSpec {
                     }
 
                     it("SUSPENDED") {
-                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
                         defer { client.close() }
 
                         let channel = client.channels.get("test")
