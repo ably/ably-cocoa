@@ -189,6 +189,9 @@ class RealtimeClientPresence: QuickSpec {
                     }
 
                     expect(receivedMembers).toEventually(haveCount(3), timeout: testTimeout)
+                    if receivedMembers.count != 3 {
+                        return
+                    }
 
                     expect(receivedMembers[0].action).to(equal(ARTPresenceAction.Enter))
                     expect(receivedMembers[0].data as? NSObject).to(equal("online"))
@@ -277,6 +280,12 @@ class RealtimeClientPresence: QuickSpec {
                         }
                     }
 
+                    waitUntil(timeout: testTimeout) { done in
+                        delay(0.5) {
+                            done()
+                        }
+                    }
+
                     let client2 = AblyTests.newRealtime(options)
                     defer { client2.close() }
                     let channel2 = client2.channels.get(channel1.name)
@@ -290,14 +299,13 @@ class RealtimeClientPresence: QuickSpec {
 
                     expect(channel2.presence.syncComplete).to(beFalse())
 
-                    expect(channel1.presenceMap.members).to(haveCount(1))
                     expect(channel2.presenceMap.members).to(haveCount(0))
 
                     expect(channel2.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
                     
                     expect(channel2.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
+                    expect(channel2.presenceMap.members).to(haveCount(2))
                 }
-
             }
 
             // RTP8

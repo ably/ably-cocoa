@@ -324,7 +324,12 @@ class RestClientChannel: QuickSpec {
                     expect(query.direction) == ARTQueryDirection.Backwards
                     expect(query.limit) == 100
 
-                    query.start = NSDate()
+                    waitUntil(timeout: testTimeout) { done in
+                        client.time { time, _ in
+                            query.start = time
+                            done()
+                        }
+                    }
 
                     let messages = [
                         ARTMessage(name: nil, data: "message1"),
@@ -332,14 +337,18 @@ class RestClientChannel: QuickSpec {
                     ]
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(messages) { _ in
-                            query.end = NSDate()
-                            done()
+                            client.time { time, _ in
+                                query.end = time
+                                done()
+                            }
                         }
                     }
 
-                    waitUntil(timeout: testTimeout) { done in
-                        channel.publish(nil, data: "message3") { _ in
-                            done()
+                    delay(0.2) {
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: "message3") { _ in
+                                done()
+                            }
                         }
                     }
 
