@@ -280,29 +280,37 @@ class RealtimeClientPresence: QuickSpec {
                         }
                     }
 
-                    waitUntil(timeout: testTimeout) { done in
-                        delay(0.5) {
-                            done()
-                        }
-                    }
-
                     let client2 = AblyTests.newRealtime(options)
                     defer { client2.dispose(); client2.close() }
                     let channel2 = client2.channels.get(channel1.name)
 
-                    channel2.presence.enterClient("Client 2", data: nil) { error in
-                        expect(error).to(beNil())
-                        expect(channel2.queuedMessages).to(haveCount(0))
-                        expect(channel2.state).to(equal(ARTRealtimeChannelState.Attached))
+                    waitUntil(timeout: testTimeout) { done in
+                        channel2.presence.enterClient("Client 2", data: nil) { error in
+                            expect(error).to(beNil())
+                            expect(channel2.queuedMessages).to(haveCount(0))
+                            expect(channel2.state).to(equal(ARTRealtimeChannelState.Attached))
+
+                            if channel2.presence.syncComplete {
+                                expect(channel2.presenceMap.members).to(haveCount(2))
+                            }
+                            else {
+                                expect(channel2.presenceMap.members).to(haveCount(1))
+                            }
+
+                            done()
+                        }
+
+                        expect(channel2.queuedMessages).to(haveCount(1))
+                        expect(channel2.presence.syncComplete).to(beFalse())
+                        expect(channel2.presenceMap.members).to(haveCount(0))
                     }
-                    expect(channel2.queuedMessages).to(haveCount(1))
 
-                    expect(channel2.presence.syncComplete).to(beFalse())
+                    guard let transport = client2.transport as? TestProxyTransport else {
+                        fail("Transport should be a test proxy"); return
+                    }
 
-                    expect(channel2.presenceMap.members).to(haveCount(0))
+                    expect(transport.protocolMessagesReceived.filter{ $0.action == .Sync }).to(haveCount(1))
 
-                    expect(channel2.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
-                    
                     expect(channel2.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
                     expect(channel2.presenceMap.members).to(haveCount(2))
                 }
