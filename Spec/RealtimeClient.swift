@@ -30,7 +30,7 @@ class RealtimeClient: QuickSpec {
             // G4
             it("All WebSocket connections should include the current API version") {
                 let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
-                defer { client.close() }
+                defer { client.dispose(); client.close() }
                 let channel = client.channels.get("test")
                 waitUntil(timeout: testTimeout) { done in
                     channel.publish(nil, data: "message") { error in

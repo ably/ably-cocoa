@@ -160,7 +160,7 @@ class Auth : QuickSpec {
                     options.autoConnect = false
 
                     let client = ARTRealtime(options: options)
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     client.setTransportClass(TestProxyTransport.self)
                     client.connect()
 
@@ -1893,6 +1893,10 @@ class Auth : QuickSpec {
                     // Invalid TokenDetails
                     waitUntil(timeout: testTimeout) { done in
                         ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
+                            guard let error = error else {
+                                fail("Error is nil"); done(); return
+                            }
+                            expect(error.code).to(equal(Int(ARTState.AuthUrlIncompatibleContent.rawValue)))
                             expect(tokenDetails).to(beNil())
                             done()
                         }
@@ -2030,7 +2034,7 @@ class Auth : QuickSpec {
         
         describe("Reauth") {
             // RTC8
-            it("should use authorise({force: true}) to reauth with a token with a different set of capabilities") {
+            pending("should use authorise({force: true}) to reauth with a token with a different set of capabilities") {
                 // init ARTRest
                 let restOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                 let rest = ARTRest(options: restOptions)
@@ -2059,7 +2063,7 @@ class Auth : QuickSpec {
                 realtimeOptions.clientId = "testClientId"
                 
                 let realtime = ARTRealtime(options:realtimeOptions)
-                defer { realtime.close() }
+                defer { realtime.dispose(); realtime.close() }
                 
                 // wait for connected state
                 waitUntil(timeout: testTimeout) { done in

@@ -344,8 +344,8 @@ class RestClientChannel: QuickSpec {
                         }
                     }
 
-                    delay(0.2) {
-                        waitUntil(timeout: testTimeout) { done in
+                    waitUntil(timeout: testTimeout) { done in
+                        delay(0.2) {
                             channel.publish(nil, data: "message3") { _ in
                                 done()
                             }

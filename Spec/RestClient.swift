@@ -991,14 +991,16 @@ class RestClient: QuickSpec {
                 options.token = getTestToken(ttl: 0.1)
                 let client = ARTRest(options: options)
                 waitUntil(timeout: testTimeout) { done in
-                    client.channels.get("test").publish(nil, data: "message") { error in
-                        guard let error = error else {
-                            fail("Error is empty"); done()
-                            return
+                    delay(0.1) {
+                        client.channels.get("test").publish(nil, data: "message") { error in
+                            guard let error = error else {
+                                fail("Error is empty"); done()
+                                return
+                            }
+                            expect(error.code).to(equal(Int(ARTState.RequestTokenFailed.rawValue)))
+                            expect(error.message).to(contain("no means to renew the token is provided"))
+                            done()
                         }
-                        expect(error.code).to(equal(Int(ARTState.RequestTokenFailed.rawValue)))
-                        expect(error.message).to(contain("no means to renew the token is provided"))
-                        done()
                     }
                 }
             }
