@@ -7,6 +7,7 @@
 //
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
+#import "ARTRealtime+TestSuite.h"
 #import "ARTMessage.h"
 #import "ARTClientOptions.h"
 #import "ARTPresenceMessage.h"
@@ -82,6 +83,7 @@
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testPresenceHistory {
@@ -109,6 +111,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testForward {
@@ -156,6 +159,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testSecondChannel {
@@ -209,6 +213,8 @@
     }];
     [channel attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime1 testSuite_waitForConnectionToClose:self];
+    [realtime2 testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testWaitTextBackward {
@@ -262,6 +268,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testLimitForward {
@@ -424,6 +431,7 @@
         [historyExpecation fulfill];
     } error:nil];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testTimeForward {
@@ -507,6 +515,8 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
+    [realtime2 testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testPresenceHistoryMultipleClients {
@@ -551,6 +561,9 @@
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
+    [realtime2 testSuite_waitForConnectionToClose:self];
+    [realtime3 testSuite_waitForConnectionToClose:self];
 }
 
 @end

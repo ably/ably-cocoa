@@ -32,7 +32,7 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: options)
                     client.setTransportClass(TestProxyTransport.self)
                     client.connect()
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
 
                     if let transport = client.transport as? TestProxyTransport, let url = transport.lastUrl {
                         expect(url.host).to(equal("realtime.ably.io"))
@@ -49,7 +49,7 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: options)
                     client.setTransportClass(TestProxyTransport.self)
                     client.connect()
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.on { stateChange in
@@ -87,7 +87,7 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: options)
                     client.setTransportClass(TestProxyTransport.self)
                     client.connect()
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.on { stateChange in
@@ -127,7 +127,7 @@ class RealtimeClientConnection: QuickSpec {
                 expect(options.autoConnect).to(beTrue(), description: "autoConnect should be true by default")
 
                 let client = ARTRealtime(options: options)
-                defer { client.close() }
+                defer { client.dispose(); client.close() }
                 // The only way to control this functionality is with the options flag
                 client.connection.on { stateChange in
                     let stateChange = stateChange!
@@ -148,7 +148,7 @@ class RealtimeClientConnection: QuickSpec {
                 options.autoConnect = false
 
                 let client = ARTRealtime(options: options)
-                defer { client.close() }
+                defer { client.dispose(); client.close() }
                 var waiting = true
 
                 waitUntil(timeout: testTimeout) { done in
@@ -178,7 +178,7 @@ class RealtimeClientConnection: QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 options.autoConnect = false
                 let client = ARTRealtime(options: options)
-                defer { client.close() }
+                defer { client.dispose(); client.close() }
                 waitUntil(timeout: testTimeout) { done in
                     client.connection.once(.Connecting) { _ in
                         guard let webSocketTransport = client.transport as? ARTWebSocketTransport else {
@@ -238,7 +238,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.disconnectedRetryTimeout = 0.0
 
                     let client = ARTRealtime(options: options)
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     let connection = client.connection
                     var events: [ARTRealtimeConnectionState] = []
 
@@ -310,7 +310,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.autoConnect = false
 
                     let client = ARTRealtime(options: options)
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     let connection = client.connection
                     var events: [ARTRealtimeConnectionState] = []
 
@@ -346,7 +346,7 @@ class RealtimeClientConnection: QuickSpec {
                 it("should emit states when connection is closed") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     let connection = client.connection
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     var events: [ARTRealtimeConnectionState] = []
 
                     waitUntil(timeout: testTimeout) { done in
@@ -383,7 +383,7 @@ class RealtimeClientConnection: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     let connection = client.connection
                     expect(connection.state.rawValue).to(equal(ARTRealtimeConnectionState.Initialized.rawValue), description: "Missing INITIALIZED state")
 
@@ -432,7 +432,7 @@ class RealtimeClientConnection: QuickSpec {
                 it("should have the reason which contains an ErrorInfo") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     let connection = client.connection
 
                     var errorInfo: ARTErrorInfo?
@@ -571,7 +571,7 @@ class RealtimeClientConnection: QuickSpec {
                         let client = ARTRealtime(options: options)
                         client.setTransportClass(TestProxyTransport.self)
                         client.connect()
-                        defer { client.close() }
+                        defer { client.dispose(); client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
                             publishFirstTestMessage(client, completion: { error in
@@ -600,7 +600,7 @@ class RealtimeClientConnection: QuickSpec {
                         let client = ARTRealtime(options: options)
                         client.setTransportClass(TestProxyTransport.self)
                         client.connect()
-                        defer { client.close() }
+                        defer { client.dispose(); client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.on { stateChange in
@@ -642,7 +642,7 @@ class RealtimeClientConnection: QuickSpec {
                         let client = ARTRealtime(options: options)
                         client.setTransportClass(TestProxyTransport.self)
                         client.connect()
-                        defer { client.close() }
+                        defer { client.dispose(); client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
                             publishFirstTestMessage(client, completion: { error in
@@ -671,7 +671,7 @@ class RealtimeClientConnection: QuickSpec {
                         let client = ARTRealtime(options: options)
                         client.setTransportClass(TestProxyTransport.self)
                         client.connect()
-                        defer { client.close() }
+                        defer { client.dispose(); client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.on { stateChange in
@@ -724,7 +724,7 @@ class RealtimeClientConnection: QuickSpec {
                         let client = ARTRealtime(options: options)
                         client.setTransportClass(TestProxyTransport.self)
                         client.connect()
-                        defer { client.close() }
+                        defer { client.dispose(); client.close() }
 
                         let channel = client.channels.get("channel")
                         channel.attach()
@@ -789,7 +789,7 @@ class RealtimeClientConnection: QuickSpec {
                         let client = ARTRealtime(options: options)
                         client.setTransportClass(TestProxyTransport.self)
                         client.connect()
-                        defer { client.close() }
+                        defer { client.dispose(); client.close() }
 
                         let channel = client.channels.get("channel")
                         let transport = client.transport as! TestProxyTransport
@@ -819,7 +819,7 @@ class RealtimeClientConnection: QuickSpec {
                         let client = ARTRealtime(options: options)
                         client.setTransportClass(TestProxyTransport.self)
                         client.connect()
-                        defer { client.close() }
+                        defer { client.dispose(); client.close() }
 
                         let channel = client.channels.get("channel")
                         let transport = client.transport as! TestProxyTransport
@@ -1412,7 +1412,7 @@ class RealtimeClientConnection: QuickSpec {
                 // RTN13a
                 it("should send a ProtocolMessage with action HEARTBEAT and expects a HEARTBEAT message in response") {
                     let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     waitUntil(timeout: testTimeout) { done in
                         client.ping() { error in
                             expect(error).to(beNil())
@@ -1427,7 +1427,7 @@ class RealtimeClientConnection: QuickSpec {
                 // RTN13c
                 it("should fail if a HEARTBEAT ProtocolMessage is not received within the default realtime request timeout") {
                     let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     waitUntil(timeout: testTimeout) { done in
                         let start = NSDate()
                         let transport = client.transport as! TestProxyTransport
@@ -1658,7 +1658,7 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(0.5)
 
                     let client = ARTRealtime(options: options)
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     var start, end: NSDate?
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.on(.Disconnected) { stateChange in
@@ -1743,7 +1743,7 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(0.1)
 
                     let client = ARTRealtime(options: options)
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.on(.Suspended) { stateChange in
@@ -1828,7 +1828,7 @@ class RealtimeClientConnection: QuickSpec {
                         let options = AblyTests.commonAppSetup()
                         options.disconnectedRetryTimeout = 0.1
                         let client = AblyTests.newRealtime(options)
-                        defer { client.close() }
+                        defer { client.dispose(); client.close() }
 
                         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
                         let expectedConnectionKey = client.connection.key!
@@ -1856,7 +1856,7 @@ class RealtimeClientConnection: QuickSpec {
                         let options = AblyTests.commonAppSetup()
                         options.disconnectedRetryTimeout = 1.0
                         let client = AblyTests.newRealtime(options)
-                        defer { client.close() }
+                        defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
 
                         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
@@ -1884,7 +1884,7 @@ class RealtimeClientConnection: QuickSpec {
                         let options = AblyTests.commonAppSetup()
                         options.disconnectedRetryTimeout = 1.0
                         let client = AblyTests.newRealtime(options)
-                        defer { client.close() }
+                        defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
 
                         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
@@ -1939,7 +1939,7 @@ class RealtimeClientConnection: QuickSpec {
                         let options = AblyTests.commonAppSetup()
                         options.disconnectedRetryTimeout = 1.0
                         let client = AblyTests.newRealtime(options)
-                        defer { client.close() }
+                        defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
 
                         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
@@ -1970,7 +1970,7 @@ class RealtimeClientConnection: QuickSpec {
                         let options = AblyTests.commonAppSetup()
                         options.disconnectedRetryTimeout = 1.0
                         let client = AblyTests.newRealtime(options)
-                        defer { client.close() }
+                        defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
 
                         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
@@ -2051,7 +2051,7 @@ class RealtimeClientConnection: QuickSpec {
                         let client = ARTRealtime(options: options)
                         client.setTransportClass(TestProxyTransport.self)
                         client.connect()
-                        defer { client.close() }
+                        defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
 
                         channel.attach()
@@ -2084,7 +2084,7 @@ class RealtimeClientConnection: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.disconnectedRetryTimeout = 0.5
                     let client = AblyTests.newRealtime(options)
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
                     var resumed = false
@@ -2122,7 +2122,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.disconnectedRetryTimeout = 1.0
 
                     let client = ARTRealtime(options: options)
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
                     waitUntil(timeout: testTimeout) { done in
@@ -2350,7 +2350,7 @@ class RealtimeClientConnection: QuickSpec {
                 it("Connection#recoveryKey should be composed with the connection key and latest serial received") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.Connected) { _ in
@@ -2407,7 +2407,7 @@ class RealtimeClientConnection: QuickSpec {
                 it("Connection#recoveryKey should become becomes null when a connection is explicitly CLOSED or CLOSED") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.Connected) { _ in
                             client.connection.once(.Closed) { _ in
@@ -2431,7 +2431,7 @@ class RealtimeClientConnection: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.recover = "99999!xxxxxx-xxxxxxxxx-xxxxxxxxx:-1"
                     let client = ARTRealtime(options: options)
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.Connected) { stateChange in
                             expect(stateChange!.reason!.message).to(contain("Unable to recover connection"))
@@ -2481,7 +2481,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     client.connect()
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: "message") { error in
@@ -2513,7 +2513,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     client.connect()
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: "message") { error in
@@ -2588,7 +2588,7 @@ class RealtimeClientConnection: QuickSpec {
                             }
 
                             client.connect()
-                            defer { client.close() }
+                            defer { client.dispose(); client.close() }
 
                             waitUntil(timeout: testTimeout) { done in
                                 channel.publish(nil, data: "message") { error in
@@ -2640,7 +2640,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     client.connect()
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: "message") { error in
@@ -2670,7 +2670,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     client.connect()
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: "message") { error in
@@ -2712,7 +2712,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     client.connect()
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: "message") { error in
@@ -2756,7 +2756,6 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     client.connect()
-                    defer { client.close() }
 
                     expect(urlConnections).toEventually(haveCount(2), timeout: testTimeout)
 
@@ -2945,7 +2944,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.logLevel = .Debug
                     options.disconnectedRetryTimeout = 0.1
                     let client = AblyTests.newRealtime(options)
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
                     let transport = client.transport as! TestProxyTransport
 
@@ -2977,7 +2976,7 @@ class RealtimeClientConnection: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.disconnectedRetryTimeout = 0.1
                     let client = AblyTests.newRealtime(options)
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
                     let transport = client.transport as! TestProxyTransport
 
@@ -3006,7 +3005,7 @@ class RealtimeClientConnection: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.disconnectedRetryTimeout = 0.1
                     let client = AblyTests.newRealtime(options)
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
                     let transport = client.transport as! TestProxyTransport
 
@@ -3051,6 +3050,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     afterEach {
+                        client.dispose()
                         client.close()
                     }
 
@@ -3119,7 +3119,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.autoConnect = false
                     client = ARTRealtime(options: options)
                     client.setReachabilityClass(TestReachability.self)
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.on { stateChange in
@@ -3200,7 +3200,7 @@ class RealtimeClientConnection: QuickSpec {
                 it("should encode and decode fixture messages as expected") {
                     let options = AblyTests.commonAppSetup()
                     let client = AblyTests.newRealtime(options)
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
                     channel.attach()
 

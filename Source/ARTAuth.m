@@ -224,8 +224,10 @@
             ARTTokenRequest *tokenRequest = [_rest.encoders[@"application/json"] decodeTokenRequest:data error:&decodeError];
             if (decodeError) {
                 callback(nil, decodeError);
-            } else {
+            } else if (tokenRequest) {
                 [tokenRequest toTokenDetails:self callback:callback];
+            } else {
+                callback(nil, [ARTErrorInfo createWithCode:ARTStateAuthUrlIncompatibleContent message:@"content response cannot be used for token request"]);
             }
         } else {
             callback(tokenDetails, nil);

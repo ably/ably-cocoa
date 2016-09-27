@@ -7,6 +7,7 @@
 //
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
+#import "ARTRealtime+TestSuite.h"
 #import "ARTMessage.h"
 #import "ARTClientOptions.h"
 #import "ARTPresenceMessage.h"
@@ -87,6 +88,8 @@
         [expectation3 fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
+    [realtime2 testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterSimple {
@@ -128,6 +131,7 @@
         XCTAssertNil(errorInfo);
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterAttachesTheChannel {
@@ -144,6 +148,7 @@
     }];
     [channel attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testSubscribeConnects {
@@ -162,6 +167,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testUpdateConnects {
@@ -180,6 +186,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterBeforeConnect {
@@ -211,6 +218,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterLeaveSimple {
@@ -222,16 +230,19 @@
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:channelName];
+    void(^partialExpectationFulfill)(void) = [ARTTestUtil splitFulfillFrom:self expectation:expectation in:2];
     [channel.presence subscribe:^(ARTPresenceMessage *message) {
         if(message.action == ARTPresenceEnter) {
             XCTAssertEqualObjects([message data], presenceEnter);
             [channel.presence leave:presenceLeave callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
+                // Should wait for the publishing acknowledgement
+                partialExpectationFulfill();
             }];
         }
         if(message.action == ARTPresenceLeave) {
             XCTAssertEqualObjects([message data], presenceLeave);
-            [expectation fulfill];
+            partialExpectationFulfill();
         }
     }];
     
@@ -249,6 +260,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterEnter {
@@ -260,16 +272,19 @@
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:channelName];
+    void(^partialExpectationFulfill)(void) = [ARTTestUtil splitFulfillFrom:self expectation:expectation in:2];
     [channel.presence subscribe:^(ARTPresenceMessage *message) {
         if(message.action == ARTPresenceEnter) {
             XCTAssertEqualObjects([message data], presenceEnter);
             [channel.presence enter:secondEnter callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
+                // Should wait for the publishing acknowledgement
+                partialExpectationFulfill();
             }];
         }
         else if(message.action == ARTPresenceUpdate) {
             XCTAssertEqualObjects([message data], secondEnter);
-            [expectation fulfill];
+            partialExpectationFulfill();
         }
     }];
     [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
@@ -286,6 +301,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterUpdateSimple {
@@ -297,16 +313,19 @@
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:channelName];
+    void(^partialExpectationFulfill)(void) = [ARTTestUtil splitFulfillFrom:self expectation:expectation in:2];
     [channel.presence subscribe:^(ARTPresenceMessage *message) {
         if(message.action == ARTPresenceEnter) {
             XCTAssertEqualObjects([message data], presenceEnter);
             [channel.presence update:update callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
+                // Should wait for the publishing acknowledgement
+                partialExpectationFulfill();
             }];
         }
         else if(message.action == ARTPresenceUpdate) {
             XCTAssertEqualObjects([message data], update);
-            [expectation fulfill];
+            partialExpectationFulfill();
         }
     }];
     [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
@@ -323,6 +342,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testUpdateNull {
@@ -333,16 +353,19 @@
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:channelName];
+    void(^partialExpectationFulfill)(void) = [ARTTestUtil splitFulfillFrom:self expectation:expectation in:2];
     [channel.presence subscribe:^(ARTPresenceMessage *message) {
         if(message.action == ARTPresenceEnter) {
             XCTAssertEqualObjects([message data], presenceEnter);
             [channel.presence update:nil callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
+                // Should wait for the publishing acknowledgement
+                partialExpectationFulfill();
             }];
         }
         else if(message.action == ARTPresenceUpdate) {
             XCTAssertEqualObjects([message data], nil);
-            [expectation fulfill];
+            partialExpectationFulfill();
         }
     }];
     [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
@@ -359,6 +382,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterLeaveWithoutData {
@@ -371,16 +395,19 @@
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:channelName];
+    void(^partialExpectationFulfill)(void) = [ARTTestUtil splitFulfillFrom:self expectation:expectation in:2];
     [channel.presence subscribe:^(ARTPresenceMessage *message) {
         if (message.action == ARTPresenceEnter) {
             XCTAssertEqualObjects([message data], presenceEnter);
             [channel.presence leave:@"" callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
+                // Should wait for the publishing acknowledgement
+                partialExpectationFulfill();
             }];
         }
         if (message.action == ARTPresenceLeave) {
             XCTAssertEqualObjects([message data], presenceEnter);
-            [expectation fulfill];
+            partialExpectationFulfill();
         }
         
     }];
@@ -399,6 +426,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testUpdateNoEnter {
@@ -433,6 +461,7 @@
         
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterAndGet {
@@ -463,6 +492,8 @@
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
+    [realtime2 testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterNoClientId {
@@ -475,6 +506,7 @@
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterOnDetached {
@@ -496,6 +528,7 @@
     }];
     [channel attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterOnFailed {
@@ -517,6 +550,7 @@
     }];
     [channel attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testLeaveAndGet {
@@ -545,6 +579,7 @@
         XCTAssertNil(errorInfo);
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testLeaveNoData {
@@ -554,16 +589,19 @@
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:@"testEnterLeaveNoData"];
+    void(^partialExpectationFulfill)(void) = [ARTTestUtil splitFulfillFrom:self expectation:expectation in:2];
     [channel.presence subscribe:^(ARTPresenceMessage *message) {
         if(message.action == ARTPresenceEnter) {
             XCTAssertEqualObjects([message data], enter);
             [channel.presence leave:@"" callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
+                // Should wait for the publishing acknowledgement
+                partialExpectationFulfill();
             }];
         }
         else if(message.action == ARTPresenceLeave) {
             XCTAssertEqualObjects([message data], enter);
-            [expectation fulfill];
+            partialExpectationFulfill();
         }
     }];
     [channel attach];
@@ -575,6 +613,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testLeaveNoMessage {
@@ -601,6 +640,7 @@
     }];
     [channel attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testLeaveWithMessage {
@@ -628,6 +668,7 @@
     }];
     [channel attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testLeaveOnDetached {
@@ -647,6 +688,7 @@
     }];
     [channel attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testLeaveOnFailed {
@@ -666,6 +708,7 @@
     }];
     [channel attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterFailsOnError {
@@ -688,6 +731,7 @@
     }];
     [channel attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testGetFailsOnDetachedOrFailed {
@@ -714,6 +758,7 @@
         }
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterClient {
@@ -739,6 +784,7 @@
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testEnterClientIdFailsOnError {
@@ -759,6 +805,7 @@
     }];
     [channel attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testWithNoClientIdUpdateLeaveEnterAnotherClient {
@@ -797,6 +844,7 @@
         messageCount++;
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testPresenceMap {
@@ -833,6 +881,7 @@
     }];
     [channel2 attach];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testLeaveBeforeEnterThrows {
@@ -852,6 +901,7 @@
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testSubscribeToAction {
@@ -902,6 +952,7 @@
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testPresenceWithData {
@@ -923,6 +974,7 @@
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 - (void)testPresenceWithDataOnLeave {
@@ -975,6 +1027,7 @@
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+    [realtime testSuite_waitForConnectionToClose:self];
 }
 
 @end
