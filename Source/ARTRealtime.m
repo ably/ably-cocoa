@@ -137,7 +137,8 @@
 
 - (void)connect {
     if(self.connection.state == ARTRealtimeClosing) {
-        return;
+        // New connection
+        _transport = nil;
     }
     [self transition:ARTRealtimeConnecting];
 }
@@ -701,8 +702,87 @@
     [self.logger verbose:@"R:%p ARTRealtime NACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
 }
 
+- (BOOL)reconnectWithFallback {
+    NSString *host = [_fallbacks popFallbackHost];
+    if (host != nil) {
+        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p host is down; retrying realtime connection at %@", self, host];
+        self.rest.prioritizedHost = host;
+        [self.transport setHost:host];
+        [self.transport connect];
+        return true;
+    } else {
+        _fallbacks = nil;
+        return false;
+    }
+}
+
+- (BOOL)shouldRetryWithFallback:(ARTRealtimeTransportError *)error {
+    if (
+        (error.type == ARTRealtimeTransportErrorTypeBadResponse && error.badResponseCode >= 500 && error.badResponseCode <= 504) ||
+        error.type == ARTRealtimeTransportErrorTypeHostUnreachable ||
+        error.type == ARTRealtimeTransportErrorTypeTimeout
+    ) {
+        return YES;
+    }
+    return NO;
+}
+
+- (void)setTransportClass:(Class)transportClass {
+    _transportClass = transportClass;
+}
+
+- (void)setReachabilityClass:(Class)reachabilityClass {
+    _reachabilityClass = reachabilityClass;
+}
+
++ (NSString *)protocolStr:(ARTProtocolMessageAction) action {
+    switch(action) {
+        case ARTProtocolMessageHeartbeat:
+            return @"Heartbeat"; //0
+        case ARTProtocolMessageAck:
+            return @"Ack"; //1
+        case ARTProtocolMessageNack:
+            return @"Nack"; //2
+        case ARTProtocolMessageConnect:
+            return @"Connect"; //3
+        case ARTProtocolMessageConnected:
+            return @"Connected"; //4
+        case ARTProtocolMessageDisconnect:
+            return @"Disconnect"; //5
+        case ARTProtocolMessageDisconnected:
+            return @"Disconnected"; //6
+        case ARTProtocolMessageClose:
+            return @"Close"; //7
+        case ARTProtocolMessageClosed:
+            return @"Closed"; //8
+        case ARTProtocolMessageError:
+            return @"Error"; //9
+        case ARTProtocolMessageAttach:
+            return @"Attach"; //10
+        case ARTProtocolMessageAttached:
+            return @"Attached"; //11
+        case ARTProtocolMessageDetach:
+            return @"Detach"; //12
+        case ARTProtocolMessageDetached:
+            return @"Detached"; //13
+        case ARTProtocolMessagePresence:
+            return @"Presence"; //14
+        case ARTProtocolMessageMessage:
+            return @"Message"; //15
+        case ARTProtocolMessageSync:
+            return @"Sync"; //16
+        default:
+            return [NSString stringWithFormat: @"unknown protocol state %d", (int)action];
+    }
+}
+
+#pragma mark - ARTRealtimeTransportDelegate implementation
+
 - (void)realtimeTransport:(id)transport didReceiveMessage:(ARTProtocolMessage *)message {
-    // TODO add in protocolListener
+    if (transport != self.transport) {
+        // Old connection
+        return;
+    }
 
     [self.logger verbose:@"R:%p ARTRealtime didReceive Protocol Message %@ ", self, [ARTRealtime protocolStr:message.action]];
 
@@ -754,15 +834,30 @@
 }
 
 - (void)realtimeTransportUnavailable:(id<ARTRealtimeTransport>)transport {
+    if (transport != self.transport) {
+        // Old connection
+        return;
+    }
+
     [self transition:ARTRealtimeDisconnected];
 }
 
 - (void)realtimeTransportClosed:(id<ARTRealtimeTransport>)transport {
+    if (transport != self.transport) {
+        // Old connection
+        return;
+    }
+
     // Close succeeded. Nothing more to do.
     [self transition:ARTRealtimeClosed];
 }
 
 - (void)realtimeTransportDisconnected:(id<ARTRealtimeTransport>)transport {
+    if (transport != self.transport) {
+        // Old connection
+        return;
+    }
+
     if (self.connection.state == ARTRealtimeClosing) {
         [self transition:ARTRealtimeClosed];
     } else {
@@ -771,6 +866,11 @@
 }
 
 - (void)realtimeTransportFailed:(id<ARTRealtimeTransport>)transport withError:(ARTRealtimeTransportError *)error {
+    if (transport != self.transport) {
+        // Old connection
+        return;
+    }
+
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p realtime transport failed: %@", self, error];
 
     if ([self shouldRetryWithFallback:error]) {
@@ -793,90 +893,31 @@
     }
 }
 
-- (BOOL)reconnectWithFallback {
-    NSString *host = [_fallbacks popFallbackHost];
-    if (host != nil) {
-        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p host is down; retrying realtime connection at %@", self, host];
-        self.rest.prioritizedHost = host;
-        [self.transport setHost:host];
-        [self.transport connect];
-        return true;
-    } else {
-        _fallbacks = nil;
-        return false;
-    }
-}
-
-- (BOOL)shouldRetryWithFallback:(ARTRealtimeTransportError *)error {
-    if (
-        (error.type == ARTRealtimeTransportErrorTypeBadResponse && error.badResponseCode >= 500 && error.badResponseCode <= 504) ||
-        error.type == ARTRealtimeTransportErrorTypeHostUnreachable ||
-        error.type == ARTRealtimeTransportErrorTypeTimeout
-    ) {
-        return YES;
-    }
-    return NO;
-}
-
 - (void)realtimeTransportNeverConnected:(id<ARTRealtimeTransport>)transport {
+    if (transport != self.transport) {
+        // Old connection
+        return;
+    }
+
     [self transition:ARTRealtimeFailed];
 }
 
 - (void)realtimeTransportRefused:(id<ARTRealtimeTransport>)transport {
+    if (transport != self.transport) {
+        // Old connection
+        return;
+    }
+
     [self transition:ARTRealtimeFailed];
 }
 
 - (void)realtimeTransportTooBig:(id<ARTRealtimeTransport>)transport {
-    [self transition:ARTRealtimeFailed];
-}
-
-- (void)setTransportClass:(Class)transportClass {
-    _transportClass = transportClass;
-}
-
-- (void)setReachabilityClass:(Class)reachabilityClass {
-    _reachabilityClass = reachabilityClass;
-}
-
-+ (NSString *)protocolStr:(ARTProtocolMessageAction) action {
-    switch(action) {
-        case ARTProtocolMessageHeartbeat:
-            return @"Heartbeat"; //0
-        case ARTProtocolMessageAck:
-            return @"Ack"; //1
-        case ARTProtocolMessageNack:
-            return @"Nack"; //2
-        case ARTProtocolMessageConnect:
-            return @"Connect"; //3
-        case ARTProtocolMessageConnected:
-            return @"Connected"; //4
-        case ARTProtocolMessageDisconnect:
-            return @"Disconnect"; //5
-        case ARTProtocolMessageDisconnected:
-            return @"Disconnected"; //6
-        case ARTProtocolMessageClose:
-            return @"Close"; //7
-        case ARTProtocolMessageClosed:
-            return @"Closed"; //8
-        case ARTProtocolMessageError:
-            return @"Error"; //9
-        case ARTProtocolMessageAttach:
-            return @"Attach"; //10
-        case ARTProtocolMessageAttached:
-            return @"Attached"; //11
-        case ARTProtocolMessageDetach:
-            return @"Detach"; //12
-        case ARTProtocolMessageDetached:
-            return @"Detached"; //13
-        case ARTProtocolMessagePresence:
-            return @"Presence"; //14
-        case ARTProtocolMessageMessage:
-            return @"Message"; //15
-        case ARTProtocolMessageSync:
-            return @"Sync"; //16
-        default:
-            return [NSString stringWithFormat: @"unknown protocol state %d", (int)action];
+    if (transport != self.transport) {
+        // Old connection
+        return;
     }
+
+    [self transition:ARTRealtimeFailed];
 }
 
 @end
