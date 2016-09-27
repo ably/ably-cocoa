@@ -1131,17 +1131,100 @@ class RealtimeClientConnection: QuickSpec {
             }
 
             // RTN11b
-            pending("should emit an error if the state is CLOSING as the connection must complete the close request before reconnecting") {
+            it("should make a new connection with a new transport instance if the state is CLOSING") {
                 let client = ARTRealtime(options: AblyTests.commonAppSetup())
-                defer { client.close() }
+                defer { client.dispose(); client.close() }
+
                 waitUntil(timeout: testTimeout) { done in
-                    client.connection.once(.Closing) { _ in
-                        client.connect()
-                        expect(client.connection.errorReason).toNot(beNil())
+                    client.connection.once(.Connected) { _ in
                         done()
                     }
+                }
+
+                weak var oldTransport: ARTRealtimeTransport?
+                weak var newTransport: ARTRealtimeTransport?
+
+                waitUntil(timeout: testTimeout) { done in
+                    let partialDone = AblyTests.splitDone(2, done: done)
+
+                    client.connection.once(.Closing) { _ in
+                        oldTransport = client.transport
+                        client.connect()
+                        newTransport = client.transport
+                        expect(newTransport).toNot(beIdenticalTo(oldTransport))
+                        partialDone()
+                    }
+
+                    client.connection.once(.Connected) { stateChange in
+                        guard let stateChange = stateChange else {
+                            fail("Missing ConnectionStateChange"); partialDone()
+                            return
+                        }
+                        expect(stateChange.reason).to(beNil())
+                        expect(client.connection.errorReason).to(beNil())
+                        partialDone()
+                    }
+
                     client.close()
                 }
+
+                expect(newTransport).toNot(beNil())
+                expect(oldTransport).to(beNil())
+            }
+
+            // RTN11b
+            it("it should make sure that, when the CLOSED ProtocolMessage arrives for the old connection, it doesn’t affect the new one") {
+                let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                defer { client.dispose(); client.close() }
+
+                waitUntil(timeout: testTimeout) { done in
+                    client.connection.once(.Connected) { _ in
+                        done()
+                    }
+                }
+
+                var oldTransport: ARTRealtimeTransport? //retain
+                weak var newTransport: ARTRealtimeTransport?
+
+                autoreleasepool {
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(3, done: done)
+
+                        client.connection.once(.Closing) { _ in
+                            oldTransport = client.transport
+                            // Old connection must complete the close request
+                            weak var oldTestProxyTransport = oldTransport as? TestProxyTransport
+                            oldTestProxyTransport?.beforeProcessingReceivedMessage = { protocolMessage in
+                                if protocolMessage.action == .Closed {
+                                    partialDone()
+                                }
+                            }
+
+                            client.connect()
+
+                            newTransport = client.transport
+                            expect(newTransport).toNot(beIdenticalTo(oldTransport))
+                            expect(newTransport).toNot(beNil())
+                            expect(oldTransport).toNot(beNil())
+                            partialDone()
+                        }
+
+                        client.connection.once(.Closed) { _ in
+                            fail("New connection should not receive the old connection event")
+                        }
+                        
+                        client.connection.once(.Connected) { _ in
+                            partialDone()
+                        }
+
+                        client.close()
+                    }
+
+                    oldTransport = nil
+                }
+
+                expect(newTransport).toNot(beNil())
+                expect(oldTransport).to(beNil())
             }
 
             // RTN12
