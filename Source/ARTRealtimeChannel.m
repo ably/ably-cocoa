@@ -315,6 +315,11 @@
         [_attachedEventEmitter emit:[NSNull null] with:status.errorInfo];
         [_detachedEventEmitter emit:[NSNull null] with:status.errorInfo];
     }
+    else if (state == ARTRealtimeChannelDetaching) {
+        NSString *msg = @"channel is being DETACHED";
+        [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p %@", _realtime, self, msg];
+        [_attachedEventEmitter emit:[NSNull null] with:[ARTErrorInfo createWithCode:90000 message:msg]];
+    }
 
     [self emit:(ARTChannelEvent)state with:status.errorInfo];
 }
