@@ -284,7 +284,6 @@ class RestClient: QuickSpec {
                         }
                     }
                 }
-
             }
 
             // RSC5
@@ -773,7 +772,6 @@ class RestClient: QuickSpec {
                         }
                         let channel = client.channels.get("test")
 
-
                         waitUntil(timeout: testTimeout) { done in
                             channel.publish(nil, data: "nil") { _ in
                                 done()
@@ -815,6 +813,95 @@ class RestClient: QuickSpec {
 
                         expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
                     }
+                    
+                    let _fallbackHosts = ["f.ably-realtime.com", "g.ably-realtime.com", "h.ably-realtime.com", "i.ably-realtime.com", "j.ably-realtime.com"]
+                    
+                    it("until httpMaxRetryCount has been reached, if custom fallback hosts are provided in ClientOptions#fallbackHosts, then they will be used instead") {
+                        let options = ARTClientOptions(key: "xxxx:xxxx")
+                        options.httpMaxRetryCount = 4
+                        options.fallbackHosts = _fallbackHosts
+                        
+                        let client = ARTRest(options: options)
+                        client.httpExecutor = testHTTPExecutor
+                        testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                        testHTTPExecutor.afterRequest = { _, _ in
+                            if testHTTPExecutor.requests.count > Int(1 + options.httpMaxRetryCount) {
+                                fail("Should not retry more than \(options.httpMaxRetryCount)")
+                                testHTTPExecutor.http = nil
+                            }
+                        }
+                        let channel = client.channels.get("test")
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: "nil") { _ in
+                                done()
+                            }
+                        }
+                        
+                        expect(testHTTPExecutor.requests).to(haveCount(Int(1 + options.httpMaxRetryCount)))
+                        expect((testHTTPExecutor.requests.count) < (_fallbackHosts.count + 1)).to(beTrue())
+                        
+                        let extractHostname = { (request: NSMutableURLRequest) in
+                            NSRegularExpression.extract(request.URL!.absoluteString, pattern: "[f-j].ably-realtime.com")
+                        }
+                        let resultFallbackHosts = testHTTPExecutor.requests.flatMap(extractHostname)
+                        let expectedFallbackHosts = Array(expectedHostOrder.map({ _fallbackHosts[$0] })[0..<Int(options.httpMaxRetryCount)])
+                        
+                        expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+                    }
+                    
+                    it("until all fallback hosts have been tried, if custom fallback hosts are provided in ClientOptions#fallbackHosts, then they will be used instead") {
+                        let options = ARTClientOptions(key: "xxxx:xxxx")
+                        options.httpMaxRetryCount = 10
+                        options.fallbackHosts = _fallbackHosts
+                        
+                        let client = ARTRest(options: options)
+                        client.httpExecutor = testHTTPExecutor
+                        testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                        let channel = client.channels.get("test")
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: "nil") { _ in
+                                done()
+                            }
+                        }
+                        
+                        expect(testHTTPExecutor.requests).to(haveCount(ARTDefault.fallbackHosts().count + 1))
+                        
+                        let extractHostname = { (request: NSMutableURLRequest) in
+                            NSRegularExpression.extract(request.URL!.absoluteString, pattern: "[f-j].ably-realtime.com")
+                        }
+                        let resultFallbackHosts = testHTTPExecutor.requests.flatMap(extractHostname)
+                        let expectedFallbackHosts = expectedHostOrder.map { _fallbackHosts[$0] }
+                        
+                        expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+                    }
+                    
+                    it("if an empty array of fallback hosts is provided, then fallback host functionality is disabled") {
+                        let options = ARTClientOptions(key: "xxxx:xxxx")
+                        options.httpMaxRetryCount = 5
+                        options.fallbackHosts = []
+                        
+                        let client = ARTRest(options: options)
+                        client.httpExecutor = testHTTPExecutor
+                        testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                        testHTTPExecutor.afterRequest = { _, _ in
+                            if testHTTPExecutor.requests.count > Int(1 + options.httpMaxRetryCount) {
+                                fail("Should not retry more than \(options.httpMaxRetryCount)")
+                                testHTTPExecutor.http = nil
+                            }
+                        }
+                        let channel = client.channels.get("test")
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: "nil") { _ in
+                                done()
+                            }
+                        }
+                        
+                        expect(testHTTPExecutor.requests).to(haveCount(1))
+                        expect(NSRegularExpression.match(testHTTPExecutor.requests[0].URL!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
+                    }
                 }
 
                 // RSC15d
@@ -852,7 +939,6 @@ class RestClient: QuickSpec {
                             expect(NSRegularExpression.match(testHTTPExecutor.requests[1].URL!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
                         }
                     }
-
                 }
 
                 // RSC15d
@@ -879,7 +965,6 @@ class RestClient: QuickSpec {
                     expect(testHTTPExecutor.requests).to(haveCount(1))
                     expect(NSRegularExpression.match(testHTTPExecutor.requests[0].URL!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
                 }
-
             }
 
             // RSC8a
