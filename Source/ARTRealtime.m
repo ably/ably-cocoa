@@ -878,7 +878,7 @@
         if (!_fallbacks && [error.url.host isEqualToString:[ARTDefault realtimeHost]]) {
             [self.rest internetIsUp:^void(BOOL isUp) {
                 _fallbacks = [[ARTFallback alloc] initWithFallbackHosts:[self getClientOptions].fallbackHosts];
-                [self reconnectWithFallback];
+                (_fallbacks != nil) ? [self reconnectWithFallback] : [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithNSError:error.error]];
             }];
             return;
         } else if (_fallbacks && [self reconnectWithFallback]) {

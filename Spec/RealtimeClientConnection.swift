@@ -2829,6 +2829,79 @@ class RealtimeClientConnection: QuickSpec {
                     expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
                 }
 
+                it("should retry custom fallback hosts in random order after checkin if an internet connection is available") {
+                    let fbHosts = ["f.ably-realtime.com", "g.ably-realtime.com", "h.ably-realtime.com", "i.ably-realtime.com", "j.ably-realtime.com"]
+                    
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.autoConnect = false
+                    options.fallbackHosts = fbHosts
+                    let client = ARTRealtime(options: options)
+                    let channel = client.channels.get("test")
+                    
+                    let testHttpExecutor = TestProxyHTTPExecutor()
+                    client.rest.httpExecutor = testHttpExecutor
+                    
+                    client.setTransportClass(TestProxyTransport.self)
+                    TestProxyTransport.network = .HostUnreachable
+                    defer { TestProxyTransport.network = nil }
+                    
+                    var urlConnections = [NSURL]()
+                    TestProxyTransport.networkConnectEvent = { url in
+                        urlConnections.append(url)
+                    }
+                    
+                    client.connect()
+                    defer { client.close() }
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "message") { error in
+                            done()
+                        }
+                    }
+
+                    expect(NSRegularExpression.match(testHttpExecutor.requests[0].URL!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
+                    expect(urlConnections).to(haveCount(6)) // default + 5 provided fallbacks
+                    
+                    let extractHostname = { (url: NSURL) in
+                        NSRegularExpression.extract(url.absoluteString, pattern: "[f-j].ably-realtime.com")
+                    }
+                    let resultFallbackHosts = urlConnections.flatMap(extractHostname)
+                    let expectedFallbackHosts = Array(expectedHostOrder.map({ fbHosts[$0] }))
+                    
+                    expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+                }
+
+                it("won't use fallback hosts feature if an empty array is provided") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.autoConnect = false
+                    options.fallbackHosts = []
+                    let client = ARTRealtime(options: options)
+                    let channel = client.channels.get("test")
+                    
+                    let testHttpExecutor = TestProxyHTTPExecutor()
+                    client.rest.httpExecutor = testHttpExecutor
+                    
+                    client.setTransportClass(TestProxyTransport.self)
+                    TestProxyTransport.network = .HostUnreachable
+                    defer { TestProxyTransport.network = nil }
+                    
+                    var urlConnections = [NSURL]()
+                    TestProxyTransport.networkConnectEvent = { url in
+                        urlConnections.append(url)
+                    }
+                    
+                    client.connect()
+                    defer { client.close() }
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "message") { error in
+                            done()
+                        }
+                    }
+                    
+                    expect(NSRegularExpression.match(testHttpExecutor.requests[0].URL!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
+                    expect(urlConnections).to(haveCount(1))
+                }
 
                 // RTN17e
                 it("client is connected to a fallback host endpoint should do HTTP requests to the same data centre") {
@@ -2853,6 +2926,9 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     client.connect()
+                    // Because we're faking the CONNECTED state, we can't client.close() or it
+                    // will actually try to use the connection believing it's ready and throw an
+                    // exception because it's really not.
 
                     expect(urlConnections).toEventually(haveCount(2), timeout: testTimeout)
 
