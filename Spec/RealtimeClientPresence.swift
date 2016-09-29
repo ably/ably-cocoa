@@ -1746,11 +1746,26 @@ class RealtimeClientPresence: QuickSpec {
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
-                    channel.onError(AblyTests.newErrorProtocolMessage())
+                    let pm = AblyTests.newErrorProtocolMessage()
+                    channel.onError(pm)
+
+                    guard let protocolError = pm.error else {
+                        fail("Protocol error is empty"); return
+                    }
+                    guard let channelError = channel.errorReason else {
+                        fail("Channel error is empty"); return
+                    }
+                    expect(channelError.message).to(equal(protocolError.message))
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.get() { members, error in
-                            expect(error!.message).to(contain("can't attach when in DETACHING or FAILED state"))
+                            guard let error = error else {
+                                fail("Error is empty"); done(); return
+                            }
+                            expect(error.message).to(equal("invalid channel state"))
+                            expect(channel.errorReason).to(equal(protocolError))
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
                             expect(members).to(beNil())
                             done()
                         }
@@ -1764,14 +1779,74 @@ class RealtimeClientPresence: QuickSpec {
                     let channel = client.channels.get("test")
 
                     waitUntil(timeout: testTimeout) { done in
-                        let protoError = AblyTests.newErrorProtocolMessage()
+                        let pm = AblyTests.newErrorProtocolMessage()
+                        guard let protocolError = pm.error else {
+                            fail("Protocol error is empty"); done(); return
+                        }
                         channel.presence.get() { members, error in
-                            expect(error).to(equal(protoError.error))
+                            guard let error = error else {
+                                fail("Error is empty"); done(); return
+                            }
+                            expect(error.message).to(equal(protocolError.message))
                             expect(members).to(beNil())
                             done()
                         }
-                        channel.onError(protoError)
+                        channel.onError(pm)
                     }
+
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
+                }
+
+                // RTP11b
+                it("should result in an error if the channel is in the DETACHED state") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach()
+                        channel.detach() { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.get() { members, error in
+                            guard let error = error else {
+                                fail("Error is empty"); done(); return
+                            }
+                            expect(error.message).to(equal("invalid channel state"))
+                            expect(members).to(beNil())
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
+                            done()
+                        }
+                    }
+                }
+
+                // RTP11b
+                it("should result in an error if the channel moves to the DETACHED state") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        channel.presence.get() { members, error in
+                            guard let error = error else {
+                                fail("Error is nil"); done(); return
+                            }
+                            expect(error.message).to(equal("channel is being DETACHED"))
+                            expect(members).to(beNil())
+                            partialDone()
+                        }
+                        channel.detach() { error in
+                            expect(error).to(beNil())
+                            partialDone()
+                        }
+                    }
+
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
                 }
 
                 // RTP11c

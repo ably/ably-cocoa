@@ -49,6 +49,16 @@
 
 - (void)get:(ARTRealtimePresenceQuery *)query callback:(void (^)(NSArray<ARTPresenceMessage *> *, ARTErrorInfo *))callback {
     [_channel throwOnDisconnectedOrFailed];
+
+    switch (_channel.state) {
+        case ARTRealtimeChannelFailed:
+        case ARTRealtimeChannelDetached:
+            if (callback) callback(nil, [ARTErrorInfo createWithCode:0 message:@"invalid channel state"]);
+            return;
+        default:
+            break;
+    }
+
     [_channel attach:^(ARTErrorInfo *error) {
         if (error) {
             callback(nil, error);
