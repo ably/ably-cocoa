@@ -360,13 +360,17 @@
             if (error) {
                 callback(nil, error);
             } else {
-                currentTokenParams.timestamp = time;
+                currentTokenParams.timestamp = [self handleServerTime:time];
                 callback([currentTokenParams sign:replacedOptions.key], nil);
             }
         }];
     } else {
         callback([currentTokenParams sign:replacedOptions.key], nil);
     }
+}
+
+- (NSDate *)handleServerTime:(NSDate *)time {
+    return time;
 }
 
 - (void)setProtocolClientId:(NSString *)clientId {
