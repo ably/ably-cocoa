@@ -1,7 +1,5 @@
 # [Ably](https://www.ably.io) iOS client library
 
-[![Build Status](https://travis-ci.org/ably/ably-ios.png)](https://travis-ci.org/ably/ably-ios)
-
 An iOS client library for [ably.io](https://www.ably.io), the realtime messaging service, written in Objective-C.
 
 ## Documentation
