@@ -342,7 +342,7 @@
     }
     
     if (replacedOptions.key == nil) {
-        NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : @"ARTAuthOptions key property must be not `nil`" };
+        NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : @"no key provided for signing token requests" };
         callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:userInfo]);
         return;
     }
