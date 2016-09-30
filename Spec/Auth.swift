@@ -2381,151 +2381,225 @@ class Auth : QuickSpec {
             }
             
             // RSA10k
-            context("should adhere to all requirements relating to") {
-                it("Should obtain server time once and persist the offset from the local clock") {
-                    let rest = ARTRest(options: AblyTests.commonAppSetup())
-                    
-                    var serverTimeRequestWasMade = false
-                    let block: @convention(block) (AspectInfo) -> Void = { _ in
-                        serverTimeRequestWasMade = true
-                    }
-                    
-                    let hook = ARTRest.aspect_hookSelector(rest)
-                    // Adds a block of code after `time` is triggered
-                    let _ = try? hook(#selector(ARTRest.time(_:)), withOptions: .PositionAfter, usingBlock:  unsafeBitCast(block, ARTRest.self))
-                    
-                    let authOptions = ARTAuthOptions()
-                    authOptions.queryTime = true
-                    
+            context("server time offset") {
+
+                it("should obtain server time once and persist the offset from the local clock") {
+                    let options = AblyTests.commonAppSetup()
+                    let rest = ARTRest(options: options)
+
+                    var serverDate: NSDate?
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
+                        rest.time { date, error in
                             expect(error).to(beNil())
-                            guard let tokenRequest = tokenRequest else {
-                                XCTFail("TokenRequest is nil"); return
-                            }
-                            expect(tokenRequest.timestamp).toNot(beNil())
-                            expect(serverTimeRequestWasMade).to(beTrue())
-                            expect(rest.auth.timeOffset).toNot(beNil())
-                            done()
-                        })
-                    }
-                    
-                    var serverTimeRequestWasMade2 = false
-                    let block2: @convention(block) (AspectInfo) -> Void = { _ in
-                        serverTimeRequestWasMade2 = true
-                    }
-                    
-                    let hook2 = ARTRest.aspect_hookSelector(rest)
-                    let _ = try? hook2(#selector(ARTRest.time(_:)), withOptions: .PositionAfter, usingBlock:  unsafeBitCast(block2, ARTRest.self))
-                    
-                    waitUntil(timeout: testTimeout) { done in
-                        rest.auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
-                            expect(error).to(beNil())
-                            guard let tokenRequest = tokenRequest else {
-                                XCTFail("TokenRequest is nil"); return
-                            }
-                            expect(tokenRequest.timestamp).toNot(beNil())
-                            expect(serverTimeRequestWasMade2).to(beFalse())
-                            done()
-                        })
-                    }
-                }
-                
-                it("should be possible by lib Client to discard the cached local clock offset") {
-                    let rest = ARTRest(options: AblyTests.commonAppSetup())
-                    
-                    let authOptions = ARTAuthOptions()
-                    authOptions.queryTime = true
-                    
-                    waitUntil(timeout: testTimeout) { done in
-                        rest.auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
-                            expect(error).to(beNil())
-                            guard let tokenRequest = tokenRequest else {
-                                XCTFail("tokenRequest is nil"); return
-                            }
-                            expect(rest.auth.timeOffset).toNot(beNil())
-                            rest.auth.discardTimeOffset()
-                            expect(rest.auth.timeOffset).to(beNil())
-                            done()
-                        })
-                    }
-                    
-                    var serverTimeRequestWasMade = false
-                    let block: @convention(block) (AspectInfo) -> Void = { _ in
-                        serverTimeRequestWasMade = true
-                    }
-                    
-                    let hook = ARTRest.aspect_hookSelector(rest)
-                    let _ = try? hook(#selector(ARTRest.time(_:)), withOptions: .PositionAfter, usingBlock:  unsafeBitCast(block, ARTRest.self))
-                    
-                    waitUntil(timeout: testTimeout) { done in
-                        rest.auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
-                            expect(error).to(beNil())
-                            guard let tokenRequest = tokenRequest else {
-                                XCTFail("tokenRequest is nil"); return
-                            }
-                            expect(serverTimeRequestWasMade).to(beTrue())
-                            done()
-                        })
-                    }
-                }
-                
-                it("should use the local clock offset to calculate the server time") {
-                    let rest = ARTRest(options: AblyTests.commonAppSetup())
-                    
-                    let authOptions = AblyTests.commonAppSetup()
-                    authOptions.queryTime = true
-                    
-                    var firstTokenRequestTimeStamp: NSDate?
-                    waitUntil(timeout: testTimeout) { done in
-                        rest.auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
-                            expect(error).to(beNil())
-                            guard let tokenRequest = tokenRequest else {
-                                XCTFail("tokenRequest is nil"); done(); return
-                            }
-                            firstTokenRequestTimeStamp = tokenRequest.timestamp
-                            done()
-                        })
-                    }
-                    expect(rest.auth.timeOffset).toNot(beNil())
-                    
-                    waitUntil(timeout: testTimeout) { done in
-                        let nowMillis = CLongLong((NSDate().timeIntervalSince1970 * 1000))
-                        let requestTimeMillis = CLongLong((rest.auth.timeOffset?.longLongValue)! + nowMillis)
-                        
-                        rest.auth.authorise(nil, options: authOptions) { tokenDetails, error in
-                            expect(error).to(beNil())
-                            guard let tokenDetails = tokenDetails else {
-                                XCTFail("TokenDetails is nil"); done(); return
-                            }
-                            let issuedMillis = CLongLong((tokenDetails.issued?.timeIntervalSince1970)! * 1000)
-                            expect(issuedMillis >= (requestTimeMillis - 1000)).to(beTrue())
-                            expect(issuedMillis <= (requestTimeMillis + 1000)).to(beTrue())
+                            serverDate = date
                             done()
                         }
                     }
-                    
-                    //set fake offset to check it affects token request `timestamp` property
-                    let fakeOffset = NSNumber(integer: 20000) //20 seconds
-                    rest.auth.timeOffset = fakeOffset
-                    
-                    var secondTokenRequestTimeStamp: NSDate?
+
+                    var serverTimeRequestCount = 0
+                    let hook = rest.testSuite_injectIntoMethodAfter(#selector(rest.time(_:))) {
+                        serverTimeRequestCount += 1
+                    }
+                    defer { hook.remove() }
+
+                    let authOptions = ARTAuthOptions()
+                    authOptions.key = options.key
+                    authOptions.queryTime = true
+
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
+                        rest.auth.authorise(nil, options: authOptions, callback: { tokenDetails, error in
                             expect(error).to(beNil())
-                            guard let tokenRequest = tokenRequest else {
-                                XCTFail("tokenRequest is nil"); done(); return
+                            guard let tokenDetails = tokenDetails else {
+                                fail("TokenDetails is nil"); done(); return
                             }
-                            secondTokenRequestTimeStamp = tokenRequest.timestamp
-                            
-                            let firstMillis = firstTokenRequestTimeStamp!.timeIntervalSince1970 * 1000
-                            let secondMillis = secondTokenRequestTimeStamp!.timeIntervalSince1970 * 1000
-                            let diff = secondMillis - firstMillis
-                            expect(CLongLong(diff) >= fakeOffset.longLongValue).to(beTrue())
+                            guard let serverDate = serverDate else {
+                                fail("ServerDate is nil"); done(); return
+                            }
+                            expect(rest.auth.timeOffset).toNot(beCloseTo(0))
+                            expect(tokenDetails.issued).to(beCloseTo(NSDate().dateByAddingTimeInterval(rest.auth.timeOffset), within: 1.0))
+                            expect(tokenDetails.issued).to(beCloseTo(serverDate, within: 1.0))
+                            expect(tokenDetails.expires).to(beCloseTo(serverDate.dateByAddingTimeInterval(ARTDefault.ttl()), within: 1.0))
+                            expect(serverTimeRequestCount) == 1
                             done()
                         })
                     }
+
+                    rest.auth.testSuite_forceTokenToExpire()
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            guard let tokenDetails = tokenDetails else {
+                                fail("TokenDetails is nil"); done(); return
+                            }
+                            expect(rest.auth.timeOffset).toNot(beCloseTo(0))
+                            expect(tokenDetails.issued).to(beCloseTo(NSDate().dateByAddingTimeInterval(rest.auth.timeOffset), within: 1.0))
+                            let assumedServerDate = NSDate().dateByAddingTimeInterval(rest.auth.timeOffset)
+                            expect(tokenDetails.expires).to(beCloseTo(assumedServerDate.dateByAddingTimeInterval(ARTDefault.ttl()), within: 1.0))
+                            expect(serverTimeRequestCount) == 2
+                            done()
+                        }
+                    }
                 }
+
+                it("should be consistent the timestamp request with the server time") {
+                    let options = AblyTests.commonAppSetup()
+                    let rest = ARTRest(options: options)
+
+                    var serverDate: NSDate?
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.time { date, error in
+                            expect(error).to(beNil())
+                            serverDate = date
+                            done()
+                        }
+                    }
+
+                    var serverTimeRequestCount = 0
+                    let hook = rest.testSuite_injectIntoMethodAfter(#selector(rest.time(_:))) {
+                        serverTimeRequestCount += 1
+                    }
+                    defer { hook.remove() }
+
+                    let authOptions = ARTAuthOptions()
+                    authOptions.key = options.key
+                    authOptions.queryTime = true
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.createTokenRequest(nil, options: authOptions) { tokenRequest, error in
+                            expect(error).to(beNil())
+                            guard let tokenRequest = tokenRequest else {
+                                fail("TokenRequest is nil"); done(); return
+                            }
+                            guard let serverDate = serverDate else {
+                                fail("ServerDate is nil"); done(); return
+                            }
+                            expect(rest.auth.timeOffset).toNot(beCloseTo(0))
+                            expect(tokenRequest.timestamp).to(beCloseTo(NSDate().dateByAddingTimeInterval(rest.auth.timeOffset), within: 0.1))
+                            expect(tokenRequest.timestamp).to(beCloseTo(serverDate, within: 0.5))
+                            expect(serverTimeRequestCount) == 1
+                            done()
+                        }
+                    }
+                }
+
+                it("should be possible by lib Client to discard the cached local clock offset") {
+                    let options = AblyTests.commonAppSetup()
+                    options.queryTime = true
+                    let rest = ARTRest(options: options)
+
+                    var serverTimeRequestCount = 0
+                    let hook = rest.testSuite_injectIntoMethodAfter(#selector(rest.time(_:))) {
+                        serverTimeRequestCount += 1
+                    }
+                    defer { hook.remove() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            guard let tokenDetails = tokenDetails else {
+                                fail("TokenDetails is nil"); done(); return
+                            }
+                            expect(rest.auth.timeOffset).toNot(beCloseTo(0))
+                            let assumedServerDate = NSDate().dateByAddingTimeInterval(rest.auth.timeOffset)
+                            expect(tokenDetails.expires).to(beCloseTo(assumedServerDate.dateByAddingTimeInterval(ARTDefault.ttl()), within: 1.0))
+                            expect(serverTimeRequestCount) == 1
+                            done()
+                        }
+                    }
+
+                    rest.auth.discardTimeOffset()
+                    expect(rest.auth.timeOffset) == 0
+
+                    rest.auth.testSuite_forceTokenToExpire()
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            guard let tokenDetails = tokenDetails else {
+                                fail("TokenDetails is nil"); done(); return
+                            }
+                            expect(rest.auth.timeOffset).toNot(beCloseTo(0))
+                            let assumedServerDate = NSDate().dateByAddingTimeInterval(rest.auth.timeOffset)
+                            expect(tokenDetails.expires).to(beCloseTo(assumedServerDate.dateByAddingTimeInterval(ARTDefault.ttl()), within: 1.0))
+                            expect(serverTimeRequestCount) == 2
+                            done()
+                        }
+                    }
+
+                    rest.auth.testSuite_forceTokenToExpire()
+
+                    let authOptions = ARTAuthOptions()
+                    authOptions.key = options.key
+                    authOptions.queryTime = false
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.authorise(nil, options: authOptions) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            guard let tokenDetails = tokenDetails else {
+                                fail("TokenDetails is nil"); done(); return
+                            }
+                            expect(rest.auth.timeOffset) == 0
+                            expect(tokenDetails.expires).to(beCloseTo(NSDate().dateByAddingTimeInterval(ARTDefault.ttl()), within: 1.0))
+                            expect(serverTimeRequestCount) == 2
+                            done()
+                        }
+                    }
+                }
+
+                it("should use the local clock offset to calculate the server time") {
+                    let options = AblyTests.commonAppSetup()
+                    let rest = ARTRest(options: options)
+
+                    let authOptions = ARTAuthOptions()
+                    authOptions.key = options.key
+                    authOptions.queryTime = false
+
+                    let fakeOffset: NSTimeInterval = 60 //1 minute
+                    rest.auth.setTimeOffset(fakeOffset)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.createTokenRequest(nil, options: authOptions) { tokenRequest, error in
+                            expect(error).to(beNil())
+                            guard let tokenRequest = tokenRequest else {
+                                fail("TokenRequest is nil"); done(); return
+                            }
+                            expect(rest.auth.timeOffset) == fakeOffset
+                            expect(tokenRequest.timestamp).to(beCloseTo(NSDate().dateByAddingTimeInterval(fakeOffset), within: 0.5))
+                            done()
+                        }
+                    }
+                }
+
+                it("should request server time when queryTime is true even if the time offset is assigned") {
+                    let options = AblyTests.commonAppSetup()
+                    let rest = ARTRest(options: options)
+
+                    var serverTimeRequestCount = 0
+                    let hook = rest.testSuite_injectIntoMethodAfter(#selector(rest.time)) {
+                        serverTimeRequestCount += 1
+                    }
+                    defer { hook.remove() }
+
+                    let fakeOffset: NSTimeInterval = 60 //1 minute
+                    rest.auth.setTimeOffset(fakeOffset)
+
+                    let authOptions = ARTAuthOptions()
+                    authOptions.key = options.key
+                    authOptions.queryTime = true
+
+                    waitUntil(timeout: testTimeout) { done in
+                        expect(rest.auth.timeOffset).to(equal(fakeOffset))
+                        rest.auth.authorise(nil, options: authOptions) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            expect(tokenDetails).toNot(beNil())
+                            expect(rest.auth.timeOffset).toNot(equal(fakeOffset))
+                            expect(serverTimeRequestCount) == 1
+                            done()
+                        }
+                    }
+                }
+
             }
         }
 

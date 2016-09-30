@@ -95,6 +95,8 @@
     self.options.authMethod = customOptions.authMethod;
     self.options.authParams = [customOptions.authParams copy];
     self.options.useTokenAuth = customOptions.useTokenAuth;
+    self.options.queryTime = false;
+    self.options.force = false;
 }
 
 - (ARTTokenParams *)mergeParams:(ARTTokenParams *)customParams {
@@ -154,7 +156,7 @@
     // The values replace all corresponding.
     ARTAuthOptions *replacedOptions = authOptions ? authOptions : self.options;
     ARTTokenParams *currentTokenParams = tokenParams ? tokenParams : _tokenParams;
-    tokenParams.timestamp = [NSDate date];
+    tokenParams.timestamp = [self currentDate];
 
     if (replacedOptions.key == nil && replacedOptions.authCallback == nil && replacedOptions.authUrl == nil) {
         callback(nil, [ARTErrorInfo createWithCode:ARTStateRequestTokenFailed message:@"no means to renew the token is provided (either an API key, authCallback or authUrl)"]);
@@ -279,11 +281,11 @@
 
     ARTAuthOptions *replacedOptions;
     if ([authOptions isOnlyForceTrue]) {
-        replacedOptions = self.options;
+        replacedOptions = [self.options copy];
         replacedOptions.force = YES;
     }
     else {
-        replacedOptions = authOptions ? : self.options;
+        replacedOptions = [authOptions copy] ? : [self.options copy];
     }
     [self storeOptions:replacedOptions];
 
@@ -296,7 +298,7 @@
             [self.logger verbose:@"RS:%p ARTAuth: reuse current token.", _rest];
             requestNewToken = NO;
         }
-        else if ([self.tokenDetails.expires timeIntervalSinceNow] > 0) {
+        else if ([self.tokenDetails.expires timeIntervalSinceDate:[self currentDate]] > 0) {
             [self.logger verbose:@"RS:%p ARTAuth: current token has not expired yet. Reusing token details.", _rest];
             requestNewToken = NO;
         }
@@ -355,28 +357,25 @@
         return;
     }
 
-    if (replacedOptions.queryTime) {
-        if (self.timeOffset == nil) {
+    if (_timeOffset && !replacedOptions.queryTime) {
+        currentTokenParams.timestamp = [self currentDate];
+        callback([currentTokenParams sign:replacedOptions.key], nil);
+    }
+    else {
+        if (replacedOptions.queryTime) {
             [_rest time:^(NSDate *time, NSError *error) {
                 if (error) {
                     callback(nil, error);
                 } else {
-                    NSDate *dateNow = [NSDate date];
-                    long long nowMillis = [dateNow timeIntervalSince1970]*1000;
-                    long long serverNowMillis = [time timeIntervalSince1970]*1000;
-                    self.timeOffset = [NSNumber numberWithLongLong:(serverNowMillis - nowMillis)];
-                    
-                    currentTokenParams.timestamp = [self timeStampDateWithDateNow:dateNow];
+                    NSDate *serverTime = [self handleServerTime:time];
+                    _timeOffset = [serverTime timeIntervalSinceNow];
+                    currentTokenParams.timestamp = serverTime;
                     callback([currentTokenParams sign:replacedOptions.key], nil);
                 }
             }];
-        }
-        else {
-            currentTokenParams.timestamp = [self timeStampDateWithDateNow:[NSDate date]];
+        } else {
             callback([currentTokenParams sign:replacedOptions.key], nil);
         }
-    } else {
-        callback([currentTokenParams sign:replacedOptions.key], nil);
     }
 }
 
@@ -403,18 +402,20 @@
     }
 }
 
-- (void)discardTimeOffset {
-    self.timeOffset = nil;
+- (NSDate*)currentDate {
+    return [[NSDate date] dateByAddingTimeInterval:_timeOffset];
 }
 
-#pragma mark - Helper
+- (void)discardTimeOffset {
+    _timeOffset = 0;
+}
 
-- (NSDate*)timeStampDateWithDateNow:(NSDate*)nowDate {
-    long long appNow = [nowDate timeIntervalSince1970]*1000;
-    long long seconds = ([self.timeOffset longLongValue] + appNow)/1000;
-    NSDate *timestampDate = [NSDate dateWithTimeIntervalSince1970:seconds];
-    
-    return timestampDate;
+- (void)setTokenDetails:(ARTTokenDetails *)tokenDetails {
+    _tokenDetails = tokenDetails;
+}
+
+- (void)setTimeOffset:(NSTimeInterval)offset {
+    _timeOffset = offset;
 }
 
 @end

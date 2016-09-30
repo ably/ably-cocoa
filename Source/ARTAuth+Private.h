@@ -17,7 +17,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, weak) ARTLog *logger;
 @property (art_nullable, nonatomic, readonly, strong) ARTTokenDetails *tokenDetails;
-@property (art_nullable, nonatomic, strong) NSNumber *timeOffset;
+@property (nonatomic, readonly, assign) NSTimeInterval timeOffset;
 
 @end
 
@@ -35,8 +35,14 @@ ART_ASSUME_NONNULL_BEGIN
 // CONNECTED ProtocolMessage may contain a clientId
 - (void)setProtocolClientId:(NSString *)clientId;
 
+// Discard the cached local clock offset
+- (void)discardTimeOffset;
+
 // Private TokenDetails setter for testing only
 - (void)setTokenDetails:(ARTTokenDetails *)tokenDetails;
+
+// Private TimeOffset setter for testing only
+- (void)setTimeOffset:(NSTimeInterval)offset;
 
 @end
 

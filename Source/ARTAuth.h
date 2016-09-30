@@ -49,8 +49,6 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)createTokenRequest:(art_nullable ARTTokenParams *)tokenParams options:(art_nullable ARTAuthOptions *)options
                   callback:(void (^)(ARTTokenRequest *__art_nullable tokenRequest, NSError *__art_nullable error))callback;
 
-- (void)discardTimeOffset;
-
 @end
 
 ART_ASSUME_NONNULL_END
