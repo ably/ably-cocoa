@@ -276,7 +276,16 @@
 
 - (void)authorise:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
     BOOL requestNewToken = NO;
-    ARTAuthOptions *mergedOptions = [self mergeOptions:authOptions];
+
+    ARTAuthOptions *mergedOptions;
+    if ([authOptions isOnlyForceTrue]) {
+        mergedOptions = self.options;
+        mergedOptions.force = YES;
+    }
+    else {
+        mergedOptions = [self mergeOptions:authOptions];
+    }
+
     [self storeOptions:mergedOptions];
     ARTTokenParams *currentTokenParams = [self mergeParams:tokenParams];
     [self storeParams:currentTokenParams];
