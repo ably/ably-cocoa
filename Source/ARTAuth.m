@@ -392,6 +392,10 @@
     }
 }
 
+- (void)setTokenDetails:(ARTTokenDetails *)tokenDetails {
+    _tokenDetails = tokenDetails;
+}
+
 @end
 
 @implementation NSString (ARTTokenDetailsCompatible)
