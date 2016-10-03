@@ -22,6 +22,9 @@ ART_ASSUME_NONNULL_BEGIN
 /// Get argument at index from the identified instance method.
 - (void)testSuite_getArgumentFrom:(SEL)selector atIndex:(NSInteger)index callback:(void (^)(id))callback;
 
+/// Change the returning value using a date from the identified instance method.
+- (id<AspectToken>)testSuite_returnValueFor:(SEL)selector withDate:(NSDate *)value;
+
 /// Inject a block of code after the identified instance method.
 - (id<AspectToken>)testSuite_injectIntoMethodAfter:(SEL)selector code:(void (^)(void))block;
 
