@@ -8,6 +8,10 @@
 
 #import "ARTAuth+Private.h"
 
+#ifdef TARGET_OS_IPHONE
+#import <UIKit/UIKit.h>
+#endif
+
 #import "ARTRest.h"
 #import "ARTRest+Private.h"
 #import "ARTHttp.h"
@@ -36,9 +40,38 @@
         _protocolClientId = nil;
         _tokenParams = options.defaultTokenParams ? : [[ARTTokenParams alloc] initWithOptions:self.options];
         [self validate:options];
+
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(didReceiveCurrentLocaleDidChangeNotification:)
+                                                     name:NSCurrentLocaleDidChangeNotification
+                                                   object:nil];
+
+        #ifdef TARGET_OS_IPHONE
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(didReceiveApplicationSignificantTimeChangeNotification:)
+                                                     name:UIApplicationSignificantTimeChangeNotification
+                                                   object:nil];
+        #endif
     }
     
     return self;
+}
+
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:NSCurrentLocaleDidChangeNotification object:nil];
+    #ifdef TARGET_OS_IPHONE
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationSignificantTimeChangeNotification object:nil];
+    #endif
+}
+
+- (void)didReceiveCurrentLocaleDidChangeNotification:(NSNotification *)notification {
+    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p NSCurrentLocaleDidChangeNotification received", _rest];
+    [self discardTimeOffset];
+}
+
+- (void)didReceiveApplicationSignificantTimeChangeNotification:(NSNotification *)notification {
+    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p UIApplicationSignificantTimeChangeNotification received", _rest];
+    [self discardTimeOffset];
 }
 
 - (void)validate:(ARTClientOptions *)options {

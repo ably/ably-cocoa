@@ -2600,6 +2600,26 @@ class Auth : QuickSpec {
                     }
                 }
 
+                it("should discard the time offset in situations in which it may have been invalidated") {
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
+
+                    var discardTimeOffsetCallCount = 0
+                    let hook = rest.auth.testSuite_injectIntoMethodAfter(#selector(rest.auth.discardTimeOffset)) {
+                        discardTimeOffsetCallCount += 1
+                    }
+                    defer { hook.remove() }
+
+                    // Force notification
+                    NSNotificationCenter.defaultCenter().postNotificationName(UIApplicationSignificantTimeChangeNotification, object: nil)
+
+                    expect(discardTimeOffsetCallCount).toEventually(equal(1), timeout: testTimeout)
+
+                    // Force notification
+                    NSNotificationCenter.defaultCenter().postNotificationName(NSCurrentLocaleDidChangeNotification, object: nil)
+
+                    expect(discardTimeOffsetCallCount).toEventually(equal(2), timeout: testTimeout)
+                }
+
             }
         }
 
