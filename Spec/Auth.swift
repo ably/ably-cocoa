@@ -1646,7 +1646,10 @@ class Auth : QuickSpec {
 
                 waitUntil(timeout: testTimeout) { done in
                     rest.auth.authorise(ARTTokenParams(), options: ARTAuthOptions(), callback: { tokenDetails, error in
-                        expect(error).to(beNil())
+                        guard let error = error else {
+                            fail("Error is nil"); done(); return
+                        }
+                        expect(error.description).to(contain("no means to renew the token is provided"))
                         done()
                     })
                 }
@@ -1689,12 +1692,12 @@ class Auth : QuickSpec {
 
             // RSA10d
             it("should issue a new token even if an existing token exists when AuthOption.force is true") {
-                let defOptions = AblyTests.commonAppSetup()
-                defOptions.clientId = "defClientId"
-                
-                let rest = ARTRest(options: defOptions)
+                let options = AblyTests.commonAppSetup()
+                options.clientId = "defClientId"
+                let rest = ARTRest(options: options)
 
                 let authOptions = ARTAuthOptions()
+                authOptions.key = options.key
                 authOptions.force = true
 
                 // Current token
@@ -1833,11 +1836,13 @@ class Auth : QuickSpec {
                             expect(authCallbackHasBeenInvoked).to(beTrue())
 
                             authCallbackHasBeenInvoked = false
-                            let options = ARTAuthOptions()
-                            options.force = true
-                            auth.authorise(nil, options: options) { tokenDetails, error in
-                                expect(authCallbackHasBeenInvoked).to(beTrue())
-                                expect(auth.options.useTokenAuth).to(beTrue())
+                            let authOptions2 = ARTAuthOptions()
+
+                            auth.testSuite_forceTokenToExpire()
+
+                            auth.authorise(nil, options: authOptions2) { tokenDetails, error in
+                                expect(authCallbackHasBeenInvoked).to(beFalse())
+                                expect(auth.options.useTokenAuth).to(beFalse())
                                 expect(auth.options.queryTime).to(beFalse())
                                 done()
                             }
@@ -1846,8 +1851,10 @@ class Auth : QuickSpec {
                 }
 
                 it("should not store queryTime") {
-                    let rest = ARTRest(options: AblyTests.commonAppSetup())
+                    let options = AblyTests.commonAppSetup()
+                    let rest = ARTRest(options: options)
                     let authOptions = ARTAuthOptions()
+                    authOptions.key = options.key
                     authOptions.queryTime = true
 
                     var serverTimeRequestWasMade = false
@@ -2105,7 +2112,7 @@ class Auth : QuickSpec {
                     let authOptions = ARTAuthOptions()
                     authOptions.key = AblyTests.commonAppSetup().key //valid key
                     let tokenParams = ARTTokenParams()
-                    tokenParams.ttl = 0.1
+                    tokenParams.ttl = 1.0
 
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.authorise(tokenParams, options: authOptions) { tokenDetails, error in
@@ -2116,8 +2123,8 @@ class Auth : QuickSpec {
                             guard let expires = tokenDetails?.expires else {
                                 fail("TokenDetails.expires is nil"); done(); return
                             }
-                            expect(issued).to(beCloseTo(expires, within: tokenParams.ttl))
-                            delay(tokenParams.ttl + 1.0) {
+                            expect(issued).to(beCloseTo(expires, within: tokenParams.ttl + 0.1))
+                            delay(tokenParams.ttl + 0.1) {
                                 done()
                             }
                         }
