@@ -15,9 +15,7 @@
 #import "ARTEncoder.h"
 #import "ARTTokenRequest.h"
 
-@implementation ARTTokenParams {
-    NSDate *_timestamp;
-}
+@implementation ARTTokenParams
 
 - (instancetype)init {
     return [self initWithClientId:nil nonce:nil];
@@ -47,20 +45,17 @@
     return self;
 }
 
+- (instancetype)initWithTokenParams:(ARTTokenParams *)tokenParams {
+    self = [self initWithClientId:tokenParams.clientId];
+    self.timestamp = nil;
+    self.ttl = tokenParams.ttl;
+    self.capability = tokenParams.capability;
+    return self;
+}
+
 - (NSString *)description {
     return [NSString stringWithFormat: @"ARTTokenParams: ttl=%f capability=%@ timestamp=%@",
             self.ttl, self.capability, self.timestamp];
-}
-
-- (void)setTimestamp:(NSDate *)timestamp {
-    _timestamp = timestamp;
-}
-
-- (NSDate *)getTimestamp {
-    if (_timestamp == nil) {
-        _timestamp = [NSDate date];
-    }
-    return _timestamp;
 }
 
 - (NSMutableArray *)toArray {

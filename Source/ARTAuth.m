@@ -158,6 +158,7 @@
 }
 
 - (NSMutableURLRequest *)buildRequest:(ARTAuthOptions *)options withParams:(ARTTokenParams *)params {
+    if (!params.timestamp) params.timestamp = [self currentDate];
     NSURL *url = [self buildURL:options withParams:params];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     request.HTTPMethod = options.authMethod;
@@ -189,7 +190,7 @@
     // The values replace all corresponding.
     ARTAuthOptions *replacedOptions = authOptions ? authOptions : self.options;
     ARTTokenParams *currentTokenParams = tokenParams ? tokenParams : _tokenParams;
-    tokenParams.timestamp = [self currentDate];
+    currentTokenParams.timestamp = [self currentDate];
 
     if (replacedOptions.key == nil && replacedOptions.authCallback == nil && replacedOptions.authUrl == nil) {
         callback(nil, [ARTErrorInfo createWithCode:ARTStateRequestTokenFailed message:@"no means to renew the token is provided (either an API key, authCallback or authUrl)"]);
@@ -373,6 +374,7 @@
 - (void)createTokenRequest:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)options callback:(void (^)(ARTTokenRequest *, NSError *))callback {
     ARTAuthOptions *replacedOptions = options ? : self.options;
     ARTTokenParams *currentTokenParams = tokenParams ? : _tokenParams;
+    currentTokenParams.timestamp = [self currentDate];
 
     // Validate: Capability JSON text
     NSError *errorCapability;

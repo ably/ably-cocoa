@@ -10,6 +10,7 @@
 #import "ARTAuthOptions+Private.h"
 
 #import "ARTDefault.h"
+#import "ARTTokenParams.h"
 
 NSString *ARTDefaultEnvironment = nil;
 
@@ -123,6 +124,10 @@ NSString *ARTDefaultEnvironment = nil;
 
 + (void)setDefaultEnvironment:(NSString *)environment {
     ARTDefaultEnvironment = environment;
+}
+
+- (void)setDefaultTokenParams:(ARTTokenParams *)value {
+    _defaultTokenParams = [[ARTTokenParams alloc] initWithTokenParams:value];
 }
 
 @end
