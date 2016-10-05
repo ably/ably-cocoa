@@ -1209,17 +1209,14 @@ class Auth : QuickSpec {
                 authOptions.queryTime = true
                 authOptions.key = options.key
 
-                var serverDate = NSDate()
-                waitUntil(timeout: testTimeout) { done in
-                    rest.time { date, error in
-                        expect(error).to(beNil())
-                        guard let date = date else {
-                            XCTFail("No server time"); done(); return
-                        }
-                        serverDate = date
-                        done()
-                    }
+                let mockServerDate = NSDate().dateByAddingTimeInterval(120)
+                rest.auth.testSuite_returnValueFor(NSSelectorFromString("handleServerTime:"), withDate: mockServerDate)
+
+                var serverTimeRequestCount = 0
+                let hook = rest.testSuite_injectIntoMethodAfter(#selector(rest.time(_:))) {
+                    serverTimeRequestCount += 1
                 }
+                defer { hook.remove() }
 
                 waitUntil(timeout: testTimeout) { done in
                     rest.auth.createTokenRequest(tokenParams, options: authOptions) { tokenRequest, error in
@@ -1228,7 +1225,8 @@ class Auth : QuickSpec {
                             XCTFail("tokenRequest is nil"); done(); return
                         }
                         expect(tokenRequest.clientId).to(beNil())
-                        expect(tokenRequest.timestamp).to(beCloseTo(serverDate, within: 1.0)) //1 Second
+                        expect(tokenRequest.timestamp).to(beCloseTo(mockServerDate))
+                        expect(serverTimeRequestCount) == 1
                         expect(tokenRequest.ttl).to(equal(ExpectedTokenParams.ttl))
                         expect(tokenRequest.capability).to(equal(ExpectedTokenParams.capability))
                         done()
@@ -2387,14 +2385,9 @@ class Auth : QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     let rest = ARTRest(options: options)
 
-                    var serverDate: NSDate?
-                    waitUntil(timeout: testTimeout) { done in
-                        rest.time { date, error in
-                            expect(error).to(beNil())
-                            serverDate = date
-                            done()
-                        }
-                    }
+                    let mockServerDate = NSDate().dateByAddingTimeInterval(120)
+                    rest.auth.testSuite_returnValueFor(NSSelectorFromString("handleServerTime:"), withDate: mockServerDate)
+                    let currentDate = NSDate()
 
                     var serverTimeRequestCount = 0
                     let hook = rest.testSuite_injectIntoMethodAfter(#selector(rest.time(_:))) {
@@ -2412,13 +2405,9 @@ class Auth : QuickSpec {
                             guard let tokenDetails = tokenDetails else {
                                 fail("TokenDetails is nil"); done(); return
                             }
-                            guard let serverDate = serverDate else {
-                                fail("ServerDate is nil"); done(); return
-                            }
-                            expect(rest.auth.timeOffset).toNot(beCloseTo(0))
-                            expect(tokenDetails.issued).to(beCloseTo(NSDate().dateByAddingTimeInterval(rest.auth.timeOffset), within: 1.0))
-                            expect(tokenDetails.issued).to(beCloseTo(serverDate, within: 1.0))
-                            expect(tokenDetails.expires).to(beCloseTo(serverDate.dateByAddingTimeInterval(ARTDefault.ttl()), within: 1.0))
+                            expect(rest.auth.timeOffset).toNot(equal(0))
+                            let calculatedServerDate = currentDate.dateByAddingTimeInterval(rest.auth.timeOffset)
+                            expect(calculatedServerDate).to(beCloseTo(mockServerDate, within: 0.5))
                             expect(serverTimeRequestCount) == 1
                             done()
                         })
@@ -2432,11 +2421,10 @@ class Auth : QuickSpec {
                             guard let tokenDetails = tokenDetails else {
                                 fail("TokenDetails is nil"); done(); return
                             }
-                            expect(rest.auth.timeOffset).toNot(beCloseTo(0))
-                            expect(tokenDetails.issued).to(beCloseTo(NSDate().dateByAddingTimeInterval(rest.auth.timeOffset), within: 1.0))
-                            let assumedServerDate = NSDate().dateByAddingTimeInterval(rest.auth.timeOffset)
-                            expect(tokenDetails.expires).to(beCloseTo(assumedServerDate.dateByAddingTimeInterval(ARTDefault.ttl()), within: 1.0))
-                            expect(serverTimeRequestCount) == 2
+                            expect(rest.auth.timeOffset).toNot(equal(0))
+                            let calculatedServerDate = currentDate.dateByAddingTimeInterval(rest.auth.timeOffset)
+                            expect(calculatedServerDate).to(beCloseTo(mockServerDate, within: 0.5))
+                            expect(serverTimeRequestCount) == 1
                             done()
                         }
                     }
@@ -2446,14 +2434,8 @@ class Auth : QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     let rest = ARTRest(options: options)
 
-                    var serverDate: NSDate?
-                    waitUntil(timeout: testTimeout) { done in
-                        rest.time { date, error in
-                            expect(error).to(beNil())
-                            serverDate = date
-                            done()
-                        }
-                    }
+                    let mockServerDate = NSDate().dateByAddingTimeInterval(120)
+                    rest.auth.testSuite_returnValueFor(NSSelectorFromString("handleServerTime:"), withDate: mockServerDate)
 
                     var serverTimeRequestCount = 0
                     let hook = rest.testSuite_injectIntoMethodAfter(#selector(rest.time(_:))) {
@@ -2471,12 +2453,9 @@ class Auth : QuickSpec {
                             guard let tokenRequest = tokenRequest else {
                                 fail("TokenRequest is nil"); done(); return
                             }
-                            guard let serverDate = serverDate else {
-                                fail("ServerDate is nil"); done(); return
-                            }
-                            expect(rest.auth.timeOffset).toNot(beCloseTo(0))
-                            expect(tokenRequest.timestamp).to(beCloseTo(NSDate().dateByAddingTimeInterval(rest.auth.timeOffset), within: 0.1))
-                            expect(tokenRequest.timestamp).to(beCloseTo(serverDate, within: 0.5))
+                            expect(rest.auth.timeOffset).toNot(equal(0))
+                            expect(mockServerDate.timeIntervalSinceNow).to(beCloseTo(rest.auth.timeOffset, within: 0.1))
+                            expect(tokenRequest.timestamp).to(beCloseTo(mockServerDate))
                             expect(serverTimeRequestCount) == 1
                             done()
                         }
@@ -2501,8 +2480,8 @@ class Auth : QuickSpec {
                                 fail("TokenDetails is nil"); done(); return
                             }
                             expect(rest.auth.timeOffset).toNot(beCloseTo(0))
-                            let assumedServerDate = NSDate().dateByAddingTimeInterval(rest.auth.timeOffset)
-                            expect(tokenDetails.expires).to(beCloseTo(assumedServerDate.dateByAddingTimeInterval(ARTDefault.ttl()), within: 1.0))
+                            let calculatedServerDate = NSDate().dateByAddingTimeInterval(rest.auth.timeOffset)
+                            expect(tokenDetails.expires).to(beCloseTo(calculatedServerDate.dateByAddingTimeInterval(ARTDefault.ttl()), within: 1.0))
                             expect(serverTimeRequestCount) == 1
                             done()
                         }
@@ -2519,29 +2498,8 @@ class Auth : QuickSpec {
                             guard let tokenDetails = tokenDetails else {
                                 fail("TokenDetails is nil"); done(); return
                             }
-                            expect(rest.auth.timeOffset).toNot(beCloseTo(0))
-                            let assumedServerDate = NSDate().dateByAddingTimeInterval(rest.auth.timeOffset)
-                            expect(tokenDetails.expires).to(beCloseTo(assumedServerDate.dateByAddingTimeInterval(ARTDefault.ttl()), within: 1.0))
-                            expect(serverTimeRequestCount) == 2
-                            done()
-                        }
-                    }
-
-                    rest.auth.testSuite_forceTokenToExpire()
-
-                    let authOptions = ARTAuthOptions()
-                    authOptions.key = options.key
-                    authOptions.queryTime = false
-
-                    waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(nil, options: authOptions) { tokenDetails, error in
-                            expect(error).to(beNil())
-                            guard let tokenDetails = tokenDetails else {
-                                fail("TokenDetails is nil"); done(); return
-                            }
                             expect(rest.auth.timeOffset) == 0
-                            expect(tokenDetails.expires).to(beCloseTo(NSDate().dateByAddingTimeInterval(ARTDefault.ttl()), within: 1.0))
-                            expect(serverTimeRequestCount) == 2
+                            expect(serverTimeRequestCount) == 1
                             done()
                         }
                     }
@@ -2565,7 +2523,8 @@ class Auth : QuickSpec {
                                 fail("TokenRequest is nil"); done(); return
                             }
                             expect(rest.auth.timeOffset) == fakeOffset
-                            expect(tokenRequest.timestamp).to(beCloseTo(NSDate().dateByAddingTimeInterval(fakeOffset), within: 0.5))
+                            let calculatedServerDate = NSDate().dateByAddingTimeInterval(rest.auth.timeOffset)
+                            expect(tokenRequest.timestamp).to(beCloseTo(calculatedServerDate, within: 0.5))
                             done()
                         }
                     }
