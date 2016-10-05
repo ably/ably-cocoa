@@ -277,21 +277,21 @@
 - (void)authorise:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
     BOOL requestNewToken = NO;
 
-    ARTAuthOptions *mergedOptions;
+    ARTAuthOptions *replacedOptions;
     if ([authOptions isOnlyForceTrue]) {
-        mergedOptions = self.options;
-        mergedOptions.force = YES;
+        replacedOptions = self.options;
+        replacedOptions.force = YES;
     }
     else {
-        mergedOptions = [self mergeOptions:authOptions];
+        replacedOptions = authOptions ? : self.options;
     }
+    [self storeOptions:replacedOptions];
 
-    [self storeOptions:mergedOptions];
     ARTTokenParams *currentTokenParams = [self mergeParams:tokenParams];
     [self storeParams:currentTokenParams];
 
     // Reuse or not reuse the current token
-    if (mergedOptions.force == NO && self.tokenDetails) {
+    if (replacedOptions.force == NO && self.tokenDetails) {
         if (self.tokenDetails.expires == nil) {
             [self.logger verbose:@"RS:%p ARTAuth: reuse current token.", _rest];
             requestNewToken = NO;
@@ -306,7 +306,7 @@
         }
     }
     else {
-        if (mergedOptions.force == YES)
+        if (replacedOptions.force == YES)
             [self.logger verbose:@"RS:%p ARTAuth: forced requesting new token.", _rest];
         else
             [self.logger verbose:@"RS:%p ARTAuth: requesting new token.", _rest];
@@ -314,7 +314,7 @@
     }
 
     if (requestNewToken) {
-        [self requestToken:currentTokenParams withOptions:mergedOptions callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+        [self requestToken:currentTokenParams withOptions:replacedOptions callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
             if (error) {
                 [self.logger verbose:@"RS:%p ARTAuth: token request failed: %@", _rest, error];
                 if (callback) {
@@ -360,13 +360,17 @@
             if (error) {
                 callback(nil, error);
             } else {
-                currentTokenParams.timestamp = time;
+                currentTokenParams.timestamp = [self handleServerTime:time];
                 callback([currentTokenParams sign:replacedOptions.key], nil);
             }
         }];
     } else {
         callback([currentTokenParams sign:replacedOptions.key], nil);
     }
+}
+
+- (NSDate *)handleServerTime:(NSDate *)time {
+    return time;
 }
 
 - (void)setProtocolClientId:(NSString *)clientId {
@@ -386,6 +390,10 @@
     else {
         return nil;
     }
+}
+
+- (void)setTokenDetails:(ARTTokenDetails *)tokenDetails {
+    _tokenDetails = tokenDetails;
 }
 
 @end

@@ -947,6 +947,25 @@ extension ARTWebSocketTransport {
     }
 }
 
+extension ARTAuth {
+
+    func testSuite_forceTokenToExpire(file: StaticString = #file, line: UInt = #line) {
+        guard let tokenDetails = self.tokenDetails else {
+            XCTFail("TokenDetails is nil", file: file, line: line)
+            return
+        }
+        self.setTokenDetails(ARTTokenDetails(
+            token: tokenDetails.token,
+            expires: NSDate().dateByAddingTimeInterval(-1.0),
+            issued: NSDate().dateByAddingTimeInterval(-1.0),
+            capability: tokenDetails.capability,
+            clientId: tokenDetails.clientId
+            )
+        )
+    }
+
+}
+
 extension ARTRealtimeConnectionState : CustomStringConvertible {
     public var description : String {
         return ARTRealtimeStateToStr(self)

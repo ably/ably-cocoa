@@ -34,6 +34,9 @@ ART_ASSUME_NONNULL_BEGIN
 // CONNECTED ProtocolMessage may contain a clientId
 - (void)setProtocolClientId:(NSString *)clientId;
 
+// Private TokenDetails setter for testing only
+- (void)setTokenDetails:(ARTTokenDetails *)tokenDetails;
+
 @end
 
 ART_ASSUME_NONNULL_END

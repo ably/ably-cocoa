@@ -27,6 +27,14 @@
     } error:nil];
 }
 
+- (id<AspectToken>)testSuite_returnValueFor:(SEL)selector withDate:(NSDate *)value {
+    return [self aspect_hookSelector:selector withOptions:AspectPositionAfter usingBlock:^(id<AspectInfo> info) {
+        NSDate *date = [value copy];
+        CFRetain(CFAutorelease((__bridge CFTypeRef)(date)));
+        [info.originalInvocation setReturnValue:&date];
+    } error:nil];
+}
+
 - (id<AspectToken>)testSuite_injectIntoMethodBefore:(SEL)selector code:(void (^)(void))block {
     return [self aspect_hookSelector:selector withOptions:AspectPositionBefore usingBlock:^(id<AspectInfo> info) {
         block();
