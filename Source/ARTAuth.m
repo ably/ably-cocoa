@@ -8,6 +8,10 @@
 
 #import "ARTAuth+Private.h"
 
+#ifdef TARGET_OS_IPHONE
+#import <UIKit/UIKit.h>
+#endif
+
 #import "ARTRest.h"
 #import "ARTRest+Private.h"
 #import "ARTHttp.h"
@@ -36,9 +40,38 @@
         _protocolClientId = nil;
         _tokenParams = options.defaultTokenParams ? : [[ARTTokenParams alloc] initWithOptions:self.options];
         [self validate:options];
+
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(didReceiveCurrentLocaleDidChangeNotification:)
+                                                     name:NSCurrentLocaleDidChangeNotification
+                                                   object:nil];
+
+        #ifdef TARGET_OS_IPHONE
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(didReceiveApplicationSignificantTimeChangeNotification:)
+                                                     name:UIApplicationSignificantTimeChangeNotification
+                                                   object:nil];
+        #endif
     }
     
     return self;
+}
+
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:NSCurrentLocaleDidChangeNotification object:nil];
+    #ifdef TARGET_OS_IPHONE
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationSignificantTimeChangeNotification object:nil];
+    #endif
+}
+
+- (void)didReceiveCurrentLocaleDidChangeNotification:(NSNotification *)notification {
+    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p NSCurrentLocaleDidChangeNotification received", _rest];
+    [self discardTimeOffset];
+}
+
+- (void)didReceiveApplicationSignificantTimeChangeNotification:(NSNotification *)notification {
+    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p UIApplicationSignificantTimeChangeNotification received", _rest];
+    [self discardTimeOffset];
 }
 
 - (void)validate:(ARTClientOptions *)options {
@@ -95,6 +128,8 @@
     self.options.authMethod = customOptions.authMethod;
     self.options.authParams = [customOptions.authParams copy];
     self.options.useTokenAuth = customOptions.useTokenAuth;
+    self.options.queryTime = false;
+    self.options.force = false;
 }
 
 - (ARTTokenParams *)mergeParams:(ARTTokenParams *)customParams {
@@ -154,7 +189,7 @@
     // The values replace all corresponding.
     ARTAuthOptions *replacedOptions = authOptions ? authOptions : self.options;
     ARTTokenParams *currentTokenParams = tokenParams ? tokenParams : _tokenParams;
-    tokenParams.timestamp = [NSDate date];
+    tokenParams.timestamp = [self currentDate];
 
     if (replacedOptions.key == nil && replacedOptions.authCallback == nil && replacedOptions.authUrl == nil) {
         callback(nil, [ARTErrorInfo createWithCode:ARTStateRequestTokenFailed message:@"no means to renew the token is provided (either an API key, authCallback or authUrl)"]);
@@ -279,11 +314,11 @@
 
     ARTAuthOptions *replacedOptions;
     if ([authOptions isOnlyForceTrue]) {
-        replacedOptions = self.options;
+        replacedOptions = [self.options copy];
         replacedOptions.force = YES;
     }
     else {
-        replacedOptions = authOptions ? : self.options;
+        replacedOptions = [authOptions copy] ? : [self.options copy];
     }
     [self storeOptions:replacedOptions];
 
@@ -296,7 +331,7 @@
             [self.logger verbose:@"RS:%p ARTAuth: reuse current token.", _rest];
             requestNewToken = NO;
         }
-        else if ([self.tokenDetails.expires timeIntervalSinceNow] > 0) {
+        else if ([self.tokenDetails.expires timeIntervalSinceDate:[self currentDate]] > 0) {
             [self.logger verbose:@"RS:%p ARTAuth: current token has not expired yet. Reusing token details.", _rest];
             requestNewToken = NO;
         }
@@ -355,17 +390,25 @@
         return;
     }
 
-    if (replacedOptions.queryTime) {
-        [_rest time:^(NSDate *time, NSError *error) {
-            if (error) {
-                callback(nil, error);
-            } else {
-                currentTokenParams.timestamp = [self handleServerTime:time];
-                callback([currentTokenParams sign:replacedOptions.key], nil);
-            }
-        }];
-    } else {
+    if (_timeOffset && !replacedOptions.queryTime) {
+        currentTokenParams.timestamp = [self currentDate];
         callback([currentTokenParams sign:replacedOptions.key], nil);
+    }
+    else {
+        if (replacedOptions.queryTime) {
+            [_rest time:^(NSDate *time, NSError *error) {
+                if (error) {
+                    callback(nil, error);
+                } else {
+                    NSDate *serverTime = [self handleServerTime:time];
+                    _timeOffset = [serverTime timeIntervalSinceNow];
+                    currentTokenParams.timestamp = serverTime;
+                    callback([currentTokenParams sign:replacedOptions.key], nil);
+                }
+            }];
+        } else {
+            callback([currentTokenParams sign:replacedOptions.key], nil);
+        }
     }
 }
 
@@ -392,8 +435,20 @@
     }
 }
 
+- (NSDate*)currentDate {
+    return [[NSDate date] dateByAddingTimeInterval:_timeOffset];
+}
+
+- (void)discardTimeOffset {
+    _timeOffset = 0;
+}
+
 - (void)setTokenDetails:(ARTTokenDetails *)tokenDetails {
     _tokenDetails = tokenDetails;
+}
+
+- (void)setTimeOffset:(NSTimeInterval)offset {
+    _timeOffset = offset;
 }
 
 @end

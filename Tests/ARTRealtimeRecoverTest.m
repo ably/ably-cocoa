@@ -86,9 +86,10 @@
     [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
         ARTRealtimeConnectionState cState = stateChange.current;
         ARTErrorInfo *errorInfo = stateChange.reason;
-        if (cState == ARTRealtimeFailed) {
-            // 80018 - Invalid connectionKey: bad_recovery_key
-            XCTAssertEqual(errorInfo.code, 80018);
+        // If you connect with an invalid connection Key, then it should connect and get an error saying it could not resume
+        if (cState == ARTRealtimeConnected) {
+            // 80008 - Unable to recover connection: not found (bad_recovery_key)
+            XCTAssertEqual(errorInfo.code, 80008);
             [expectation fulfill];
         }
     }];

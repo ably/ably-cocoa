@@ -1209,17 +1209,14 @@ class Auth : QuickSpec {
                 authOptions.queryTime = true
                 authOptions.key = options.key
 
-                var serverDate = NSDate()
-                waitUntil(timeout: testTimeout) { done in
-                    rest.time { date, error in
-                        expect(error).to(beNil())
-                        guard let date = date else {
-                            XCTFail("No server time"); done(); return
-                        }
-                        serverDate = date
-                        done()
-                    }
+                let mockServerDate = NSDate().dateByAddingTimeInterval(120)
+                rest.auth.testSuite_returnValueFor(NSSelectorFromString("handleServerTime:"), withDate: mockServerDate)
+
+                var serverTimeRequestCount = 0
+                let hook = rest.testSuite_injectIntoMethodAfter(#selector(rest.time(_:))) {
+                    serverTimeRequestCount += 1
                 }
+                defer { hook.remove() }
 
                 waitUntil(timeout: testTimeout) { done in
                     rest.auth.createTokenRequest(tokenParams, options: authOptions) { tokenRequest, error in
@@ -1228,7 +1225,8 @@ class Auth : QuickSpec {
                             XCTFail("tokenRequest is nil"); done(); return
                         }
                         expect(tokenRequest.clientId).to(beNil())
-                        expect(tokenRequest.timestamp).to(beCloseTo(serverDate, within: 1.0)) //1 Second
+                        expect(tokenRequest.timestamp).to(beCloseTo(mockServerDate))
+                        expect(serverTimeRequestCount) == 1
                         expect(tokenRequest.ttl).to(equal(ExpectedTokenParams.ttl))
                         expect(tokenRequest.capability).to(equal(ExpectedTokenParams.capability))
                         done()
@@ -2379,7 +2377,209 @@ class Auth : QuickSpec {
                 }
 
             }
+            
+            // RSA10k
+            context("server time offset") {
 
+                it("should obtain server time once and persist the offset from the local clock") {
+                    let options = AblyTests.commonAppSetup()
+                    let rest = ARTRest(options: options)
+
+                    let mockServerDate = NSDate().dateByAddingTimeInterval(120)
+                    rest.auth.testSuite_returnValueFor(NSSelectorFromString("handleServerTime:"), withDate: mockServerDate)
+                    let currentDate = NSDate()
+
+                    var serverTimeRequestCount = 0
+                    let hook = rest.testSuite_injectIntoMethodAfter(#selector(rest.time(_:))) {
+                        serverTimeRequestCount += 1
+                    }
+                    defer { hook.remove() }
+
+                    let authOptions = ARTAuthOptions()
+                    authOptions.key = options.key
+                    authOptions.queryTime = true
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.authorise(nil, options: authOptions, callback: { tokenDetails, error in
+                            expect(error).to(beNil())
+                            guard let tokenDetails = tokenDetails else {
+                                fail("TokenDetails is nil"); done(); return
+                            }
+                            expect(rest.auth.timeOffset).toNot(equal(0))
+                            let calculatedServerDate = currentDate.dateByAddingTimeInterval(rest.auth.timeOffset)
+                            expect(calculatedServerDate).to(beCloseTo(mockServerDate, within: 0.5))
+                            expect(serverTimeRequestCount) == 1
+                            done()
+                        })
+                    }
+
+                    rest.auth.testSuite_forceTokenToExpire()
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            guard let tokenDetails = tokenDetails else {
+                                fail("TokenDetails is nil"); done(); return
+                            }
+                            expect(rest.auth.timeOffset).toNot(equal(0))
+                            let calculatedServerDate = currentDate.dateByAddingTimeInterval(rest.auth.timeOffset)
+                            expect(calculatedServerDate).to(beCloseTo(mockServerDate, within: 0.5))
+                            expect(serverTimeRequestCount) == 1
+                            done()
+                        }
+                    }
+                }
+
+                it("should be consistent the timestamp request with the server time") {
+                    let options = AblyTests.commonAppSetup()
+                    let rest = ARTRest(options: options)
+
+                    let mockServerDate = NSDate().dateByAddingTimeInterval(120)
+                    rest.auth.testSuite_returnValueFor(NSSelectorFromString("handleServerTime:"), withDate: mockServerDate)
+
+                    var serverTimeRequestCount = 0
+                    let hook = rest.testSuite_injectIntoMethodAfter(#selector(rest.time(_:))) {
+                        serverTimeRequestCount += 1
+                    }
+                    defer { hook.remove() }
+
+                    let authOptions = ARTAuthOptions()
+                    authOptions.key = options.key
+                    authOptions.queryTime = true
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.createTokenRequest(nil, options: authOptions) { tokenRequest, error in
+                            expect(error).to(beNil())
+                            guard let tokenRequest = tokenRequest else {
+                                fail("TokenRequest is nil"); done(); return
+                            }
+                            expect(rest.auth.timeOffset).toNot(equal(0))
+                            expect(mockServerDate.timeIntervalSinceNow).to(beCloseTo(rest.auth.timeOffset, within: 0.1))
+                            expect(tokenRequest.timestamp).to(beCloseTo(mockServerDate))
+                            expect(serverTimeRequestCount) == 1
+                            done()
+                        }
+                    }
+                }
+
+                it("should be possible by lib Client to discard the cached local clock offset") {
+                    let options = AblyTests.commonAppSetup()
+                    options.queryTime = true
+                    let rest = ARTRest(options: options)
+
+                    var serverTimeRequestCount = 0
+                    let hook = rest.testSuite_injectIntoMethodAfter(#selector(rest.time(_:))) {
+                        serverTimeRequestCount += 1
+                    }
+                    defer { hook.remove() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            guard let tokenDetails = tokenDetails else {
+                                fail("TokenDetails is nil"); done(); return
+                            }
+                            expect(rest.auth.timeOffset).toNot(beCloseTo(0))
+                            let calculatedServerDate = NSDate().dateByAddingTimeInterval(rest.auth.timeOffset)
+                            expect(tokenDetails.expires).to(beCloseTo(calculatedServerDate.dateByAddingTimeInterval(ARTDefault.ttl()), within: 1.0))
+                            expect(serverTimeRequestCount) == 1
+                            done()
+                        }
+                    }
+
+                    rest.auth.discardTimeOffset()
+                    expect(rest.auth.timeOffset) == 0
+
+                    rest.auth.testSuite_forceTokenToExpire()
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            guard let tokenDetails = tokenDetails else {
+                                fail("TokenDetails is nil"); done(); return
+                            }
+                            expect(rest.auth.timeOffset) == 0
+                            expect(serverTimeRequestCount) == 1
+                            done()
+                        }
+                    }
+                }
+
+                it("should use the local clock offset to calculate the server time") {
+                    let options = AblyTests.commonAppSetup()
+                    let rest = ARTRest(options: options)
+
+                    let authOptions = ARTAuthOptions()
+                    authOptions.key = options.key
+                    authOptions.queryTime = false
+
+                    let fakeOffset: NSTimeInterval = 60 //1 minute
+                    rest.auth.setTimeOffset(fakeOffset)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.createTokenRequest(nil, options: authOptions) { tokenRequest, error in
+                            expect(error).to(beNil())
+                            guard let tokenRequest = tokenRequest else {
+                                fail("TokenRequest is nil"); done(); return
+                            }
+                            expect(rest.auth.timeOffset) == fakeOffset
+                            let calculatedServerDate = NSDate().dateByAddingTimeInterval(rest.auth.timeOffset)
+                            expect(tokenRequest.timestamp).to(beCloseTo(calculatedServerDate, within: 0.5))
+                            done()
+                        }
+                    }
+                }
+
+                it("should request server time when queryTime is true even if the time offset is assigned") {
+                    let options = AblyTests.commonAppSetup()
+                    let rest = ARTRest(options: options)
+
+                    var serverTimeRequestCount = 0
+                    let hook = rest.testSuite_injectIntoMethodAfter(#selector(rest.time)) {
+                        serverTimeRequestCount += 1
+                    }
+                    defer { hook.remove() }
+
+                    let fakeOffset: NSTimeInterval = 60 //1 minute
+                    rest.auth.setTimeOffset(fakeOffset)
+
+                    let authOptions = ARTAuthOptions()
+                    authOptions.key = options.key
+                    authOptions.queryTime = true
+
+                    waitUntil(timeout: testTimeout) { done in
+                        expect(rest.auth.timeOffset).to(equal(fakeOffset))
+                        rest.auth.authorise(nil, options: authOptions) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            expect(tokenDetails).toNot(beNil())
+                            expect(rest.auth.timeOffset).toNot(equal(fakeOffset))
+                            expect(serverTimeRequestCount) == 1
+                            done()
+                        }
+                    }
+                }
+
+                it("should discard the time offset in situations in which it may have been invalidated") {
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
+
+                    var discardTimeOffsetCallCount = 0
+                    let hook = rest.auth.testSuite_injectIntoMethodAfter(#selector(rest.auth.discardTimeOffset)) {
+                        discardTimeOffsetCallCount += 1
+                    }
+                    defer { hook.remove() }
+
+                    // Force notification
+                    NSNotificationCenter.defaultCenter().postNotificationName(UIApplicationSignificantTimeChangeNotification, object: nil)
+
+                    expect(discardTimeOffsetCallCount).toEventually(equal(1), timeout: testTimeout)
+
+                    // Force notification
+                    NSNotificationCenter.defaultCenter().postNotificationName(NSCurrentLocaleDidChangeNotification, object: nil)
+
+                    expect(discardTimeOffsetCallCount).toEventually(equal(2), timeout: testTimeout)
+                }
+
+            }
         }
 
         describe("TokenParams") {
