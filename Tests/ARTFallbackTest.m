@@ -43,4 +43,40 @@
     }    
 }
 
+- (void)testCustomFallbackHosts {
+    __weak int (^originalARTFallback_getRandomHostIndex)(int) = ARTFallback_getRandomHostIndex;
+    @try {
+        ARTFallback_getRandomHostIndex = ^() {
+            __block NSArray *hostIndexes = @[@1, @2, @0, @1, @0, @0];
+            __block int i = 0;
+            return ^int(int count) {
+                NSNumber *hostIndex = hostIndexes[i];
+                i++;
+                return hostIndex.intValue;
+            };
+        }();
+
+        NSArray *customHosts = @[@"testA.ably.com",
+                                 @"testB.ably.com",
+                                 @"testC.ably.com",
+                                 @"testD.ably.com",
+                                 @"testE.ably.com",
+                                 @"testF.ably.com"];
+
+        ARTFallback *f = [[ARTFallback alloc] initWithFallbackHosts:customHosts];
+
+        XCTAssertEqualObjects([f popFallbackHost], @"testF.ably.com");
+        XCTAssertEqualObjects([f popFallbackHost], @"testC.ably.com");
+        XCTAssertEqualObjects([f popFallbackHost], @"testE.ably.com");
+        XCTAssertEqualObjects([f popFallbackHost], @"testA.ably.com");
+        XCTAssertEqualObjects([f popFallbackHost], @"testD.ably.com");
+        XCTAssertEqualObjects([f popFallbackHost], @"testB.ably.com");
+
+        XCTAssertEqual([f popFallbackHost], nil);
+    }
+    @finally {
+        ARTFallback_getRandomHostIndex = originalARTFallback_getRandomHostIndex;
+    }
+}
+
 @end
