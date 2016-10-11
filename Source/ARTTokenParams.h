@@ -37,7 +37,7 @@ ART_ASSUME_NONNULL_BEGIN
 /**
  Timestamp (in millis since the epoch) of this request. Timestamps, in conjunction with the nonce, are used to prevent n requests from being replayed.
  */
-@property (nonatomic, strong, null_resettable, setter=setTimestamp:, getter=getTimestamp) NSDate *timestamp;
+@property (art_nullable, nonatomic, copy, readwrite) NSDate *timestamp;
 
 @property (nonatomic, readonly, strong) NSString *nonce;
 
@@ -45,6 +45,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithClientId:(NSString *__art_nullable)clientId;
 - (instancetype)initWithClientId:(NSString *__art_nullable)clientId nonce:(NSString *__art_nullable)nonce;
 - (instancetype)initWithOptions:(ARTClientOptions *)options;
+- (instancetype)initWithTokenParams:(ARTTokenParams *)tokenParams;
 
 - (__GENERIC(NSMutableArray, NSURLQueryItem *) *)toArray;
 - (__GENERIC(NSArray, NSURLQueryItem *) *)toArrayWithUnion:(NSArray *)items;

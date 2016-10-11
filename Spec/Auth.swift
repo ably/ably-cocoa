@@ -268,7 +268,9 @@ class Auth : QuickSpec {
                             }
                         }
 
-                        let transport = client.transport as! TestProxyTransport
+                        guard let transport = client.transport as? TestProxyTransport else {
+                            fail("Transport is nil"); return
+                        }
                         guard let connectedMessage = transport.protocolMessagesReceived.filter({ $0.action == .Connected }).last else {
                             XCTFail("No CONNECTED protocol action received"); return
                         }
@@ -1106,7 +1108,10 @@ class Auth : QuickSpec {
                 waitUntil(timeout: testTimeout) { done in
                     let message = ARTMessage(name: nil, data: "message with an explicit clientId", clientId: "john")
                     channel.publish([message]) { error in
-                        expect(error!.message).to(contain("mismatched clientId"))
+                        guard let error = error else {
+                            fail("Error is nil"); done(); return
+                        }
+                        expect(error.message).to(contain("mismatched clientId"))
                         done()
                     }
                 }
@@ -2590,20 +2595,28 @@ class Auth : QuickSpec {
                     expect(params.timestamp).to(equal(NSDate(timeIntervalSince1970: 123)))
                 }
 
-                it("if not explicitly set, should be generated at the getter and stick") {
+                it("if explicitly set, the value should stick") {
                     let params = ARTTokenParams()
+                    params.timestamp = NSDate()
 
                     waitUntil(timeout: testTimeout) { done in
+                        let now = NSDate().artToIntegerMs()
+                        guard let timestamp = params.timestamp else {
+                            fail("timestamp is nil"); done(); return
+                        }
+                        let firstParamsTimestamp = timestamp.artToIntegerMs()
+                        expect(firstParamsTimestamp).to(beCloseTo(now, within: 1.5))
                         delay(0.25) {
-                            let now = NSDate().artToIntegerMs()
-                            let firstParamsTimestamp = params.timestamp.artToIntegerMs()
-                            expect(firstParamsTimestamp).to(beCloseTo(now, within: 1.5))
-                            delay(0.25) {
-                                expect(params.timestamp.artToIntegerMs()).to(equal(firstParamsTimestamp))
-                                done()
-                            }
+                            expect(timestamp.artToIntegerMs()).to(equal(firstParamsTimestamp))
+                            done()
                         }
                     }
+                }
+
+                // https://github.com/ably/ably-ios/pull/508#discussion_r82577728
+                it("object has no timestamp value unless explicitly set") {
+                    let params = ARTTokenParams()
+                    expect(params.timestamp).to(beNil())
                 }
             }
         }
@@ -2701,6 +2714,36 @@ class Auth : QuickSpec {
                 waitUntil(timeout: testTimeout) { done in
                     channel.attach() { error in
                         expect(error).to(beNil())
+                        done()
+                    }
+                }
+            }
+        }
+
+        describe("TokenParams") {
+            // TK2d
+            it("timestamp should not be a member of any default token params") {
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.authorise(nil, options: nil) { _, error in
+                        expect(error).to(beNil())
+                        guard let defaultTokenParams = rest.auth.options.defaultTokenParams else {
+                            fail("DefaultTokenParams is nil"); done(); return
+                        }
+                        expect(defaultTokenParams.timestamp).to(beNil())
+
+                        var defaultTokenParamsCallCount = 0
+                        let hook = rest.auth.options.testSuite_injectIntoMethodAfter(NSSelectorFromString("defaultTokenParams")) {
+                            defaultTokenParamsCallCount += 1
+                        }
+                        defer { hook.remove() }
+
+                        let newTokenParams = ARTTokenParams(options: rest.auth.options)
+                        expect(defaultTokenParamsCallCount) > 0
+
+                        newTokenParams.timestamp = NSDate()
+                        expect(newTokenParams.timestamp).toNot(equal(defaultTokenParams.timestamp))
+                        expect(defaultTokenParams.timestamp).to(beNil()) //remain nil
                         done()
                     }
                 }
