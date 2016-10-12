@@ -39,6 +39,8 @@ NSString *ARTDefaultEnvironment = nil;
     _httpRequestTimeout = 15.0; //Seconds
     _httpMaxRetryDuration = 10.0; //Seconds
     _httpMaxRetryCount = 3;
+    _fallbackHosts = nil;
+    _fallbackHostsUseDefault = false;
     return self;
 }
 
@@ -99,7 +101,8 @@ NSString *ARTDefaultEnvironment = nil;
     options.httpMaxRetryDuration = self.httpMaxRetryDuration;
     options.httpOpenTimeout = self.httpOpenTimeout;
     options.httpRequestTimeout = self.httpRequestTimeout;
-    options.fallbackHosts = self.fallbackHosts;
+    options->_fallbackHosts = self.fallbackHosts; //ignore setter
+    options->_fallbackHostsUseDefault = self.fallbackHostsUseDefault; //ignore setter
     
     return options;
 }
@@ -120,6 +123,16 @@ NSString *ARTDefaultEnvironment = nil;
 
 - (BOOL)hasCustomRealtimeHost {
     return _realtimeHost != nil;
+}
+
+- (void)setFallbackHosts:(art_nullable __GENERIC(NSArray, NSString *) *)value {
+    _fallbackHosts = value;
+    _fallbackHostsUseDefault = false;
+}
+
+- (void)setFallbackHostsUseDefault:(BOOL)value {
+    _fallbackHosts = nil;
+    _fallbackHostsUseDefault = value;
 }
 
 + (void)setDefaultEnvironment:(NSString *)environment {
