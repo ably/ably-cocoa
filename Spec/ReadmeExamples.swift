@@ -6,7 +6,7 @@
 //
 //
 
-import AblyRealtime
+import Ably
 import Foundation
 import Quick
 import Nimble

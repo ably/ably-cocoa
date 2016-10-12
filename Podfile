@@ -1,6 +1,6 @@
 platform :ios, '8.0'
 use_frameworks!
-podspec :path => 'AblyRealtime.podspec'
+podspec :path => 'Ably.podspec'
 
 def project_pods
     pod 'SocketRocket', '0.5.1'

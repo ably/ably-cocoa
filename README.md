@@ -15,10 +15,7 @@ You can install Ably for iOS through CocoaPods, Carthage or manually.
 Add this line to your application's Podfile:
 
     # For Xcode 7.3 and newer
-    pod 'AblyRealtime', '~> 0.8'
-
-    # For Xcode 7.2 and older
-    pod 'AblyRealtime', :git => 'https://github.com/ably/ably-ios.git', :tag => '0.8-swift2.1'
+    pod 'Ably', '~> 0.8'
 
 And then install the dependency:
 
@@ -30,9 +27,6 @@ Add this line to your application's Cartfile:
 
     # For Xcode 7.3 and newer
     github "ably/ably-ios" ~> 0.8
-
-    # For Xcode 7.2 and older
-    github "ably/ably-ios" == "0.8-swift2.1"
 
 And then run `carthage update` to build the framework and drag the built Ably.framework into your Xcode project.
 

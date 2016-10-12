@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
-  s.name              = "AblyRealtime"
-  s.version           = "0.8.6"
+  s.name              = "Ably"
+  s.version           = "0.8.7"
   s.summary           = "iOS client for Ably"
   s.description       = <<-DESC
                         iOS client library for ably.io, the realtime messaging service, written in Objective-C and ready for Swift 2.0.
@@ -15,7 +15,7 @@ Pod::Spec.new do |s|
   s.platform          = :ios, '8.0'
   s.requires_arc      = true
   s.source_files      = 'Source/*.{h,m}'
-  s.module_map        = 'Source/AblyRealtime.modulemap'
+  s.module_map        = 'Source/Ably.modulemap'
   s.dependency 'SocketRocket', '0.5.1'
   s.dependency 'msgpack', '0.1.8'
 end

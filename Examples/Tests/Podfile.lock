@@ -1,22 +1,22 @@
 PODS:
-  - AblyRealtime (0.8.6):
+  - Ably (0.8.7):
     - msgpack (= 0.1.8)
     - SocketRocket (= 0.5.1)
   - msgpack (0.1.8)
   - SocketRocket (0.5.1)
 
 DEPENDENCIES:
-  - AblyRealtime (from `../..`)
+  - Ably (from `../..`)
 
 EXTERNAL SOURCES:
-  AblyRealtime:
+  Ably:
     :path: "../.."
 
 SPEC CHECKSUMS:
-  AblyRealtime: 1f512af9778d805f6d2700e8d19952a22128e4a3
+  Ably: faaabeef80b7023bb724829cfd35d658d016ec08
   msgpack: 97491d2ea799408f4694f2c7d7fd79baf77853dd
   SocketRocket: d57c7159b83c3c6655745cd15302aa24b6bae531
 
-PODFILE CHECKSUM: b1ac4836d4341cd6951b4de8c66d11495d7c97fb
+PODFILE CHECKSUM: 6af34bf7f91045b23539816c1d0cfe253bec5ea5
 
 COCOAPODS: 1.0.1

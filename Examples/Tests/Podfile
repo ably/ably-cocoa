@@ -1,6 +1,6 @@
 use_frameworks!
 
-pod 'AblyRealtime', :path => '../..'
+pod 'Ably', :path => '../..'
 
 target 'Tests' do
 
