@@ -217,6 +217,14 @@ class RestClient: QuickSpec {
                     
                     expect(testHTTPExecutor.requests.first?.URL?.scheme).toEventually(equal("http"), timeout: testTimeout)
                 }
+
+                it("should not prepend the environment if environment is configured as @production@") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.environment = "production"
+                    let client = ARTRest(options: options)
+                    expect(client.options.restHost).to(equal(ARTDefault.restHost()))
+                    expect(client.options.realtimeHost).to(equal(ARTDefault.realtimeHost()))
+                }
             }
 
             // RSC13
