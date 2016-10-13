@@ -619,14 +619,23 @@ class RestClient: QuickSpec {
                         expect(options.fallbackHosts).to(beNil())
                         expect(options.fallbackHostsUseDefault).to(beFalse())
 
-                        options.fallbackHostsUseDefault = true
-                        options.fallbackHosts = []
-                        expect(options.fallbackHosts).toNot(beNil())
-                        expect(options.fallbackHostsUseDefault).to(beFalse())
+                        expect{ options.fallbackHosts = [] }.toNot(raiseException())
 
-                        options.fallbackHostsUseDefault = true
-                        expect(options.fallbackHosts).to(beNil())
-                        expect(options.fallbackHostsUseDefault).to(beTrue())
+                        expect{ options.fallbackHostsUseDefault = true }.to(
+                            raiseException { exception in
+                                expect(exception.name).to(equal(ARTFallbackIncompatibleOptionsException))
+                            }
+                        )
+
+                        options.fallbackHosts = nil
+
+                        expect{ options.fallbackHostsUseDefault = true }.toNot(raiseException())
+
+                        expect { options.fallbackHosts = ["fake.ably.io"] }.to(
+                            raiseException { exception in
+                                expect(exception.name).to(equal(ARTFallbackIncompatibleOptionsException))
+                            }
+                        )
                     }
 
                 }
