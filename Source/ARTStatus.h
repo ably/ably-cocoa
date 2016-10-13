@@ -32,8 +32,6 @@ typedef NS_ENUM(NSUInteger, ARTState) {
 };
 
 /**
- ARTCodeErrors
-
  The list of all public error codes returned under the error domain ARTAblyErrorDomain
  */
 typedef CF_ENUM(NSUInteger, ARTCodeError) {
@@ -45,6 +43,14 @@ ART_ASSUME_NONNULL_BEGIN
 
 FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
 
+/**
+ Ably client exception names
+ */
+FOUNDATION_EXPORT NSString *const ARTFallbackIncompatibleOptionsException;
+
+/**
+ Ably client error class
+ */
 @interface ARTErrorInfo : NSError
 
 @property (readonly, getter=getMessage) NSString *message;
@@ -60,7 +66,9 @@ FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
 
 @end
 
-
+/**
+ Ably client status class
+ */
 @interface ARTStatus : NSObject
 
 @property (art_nullable, readonly, strong, nonatomic) ARTErrorInfo *errorInfo;

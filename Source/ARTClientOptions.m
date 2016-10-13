@@ -10,6 +10,7 @@
 #import "ARTAuthOptions+Private.h"
 
 #import "ARTDefault.h"
+#import "ARTStatus.h"
 #import "ARTTokenParams.h"
 
 NSString *ARTDefaultEnvironment = nil;
@@ -126,12 +127,16 @@ NSString *ARTDefaultEnvironment = nil;
 }
 
 - (void)setFallbackHosts:(art_nullable __GENERIC(NSArray, NSString *) *)value {
+    if (_fallbackHostsUseDefault) {
+        [NSException raise:ARTFallbackIncompatibleOptionsException format:@"Could not setup custom fallback hosts because it is currently configured to use default fallback hosts."];
+    }
     _fallbackHosts = value;
-    _fallbackHostsUseDefault = false;
 }
 
 - (void)setFallbackHostsUseDefault:(BOOL)value {
-    _fallbackHosts = nil;
+    if (_fallbackHosts) {
+        [NSException raise:ARTFallbackIncompatibleOptionsException format:@"Could not configure options to use default fallback hosts because a custom fallback host list is being used."];
+    }
     _fallbackHostsUseDefault = value;
 }
 
