@@ -571,7 +571,6 @@ class RestClient: QuickSpec {
                     it("allows the default fallback hosts to be used when @environment@ is not production") {
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         options.environment = "not-production"
-                        options.fallbackHosts = ["fakeA.ably.io", "fakeB.ably.io"]
                         options.fallbackHostsUseDefault = true
 
                         let client = ARTRest(options: options)
@@ -592,7 +591,6 @@ class RestClient: QuickSpec {
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         options.restHost = "fake1.ably.io"
                         options.realtimeHost = "fake2.ably.io"
-                        options.fallbackHosts = ["fakeA.ably.io", "fakeB.ably.io"]
                         options.fallbackHostsUseDefault = true
 
                         let client = ARTRest(options: options)
