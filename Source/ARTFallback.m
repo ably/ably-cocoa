@@ -44,6 +44,13 @@ int (^ARTFallback_getRandomHostIndex)(int count) = ^int(int count) {
     return self;
 }
 
+- (instancetype)initWithOptions:(ARTClientOptions *)options {
+    if (options.fallbackHostsUseDefault) {
+        return [self initWithFallbackHosts:nil]; //default
+    }
+    return [self initWithFallbackHosts:options.fallbackHosts];
+}
+
 - (instancetype)init {
     return [self initWithFallbackHosts:nil];
 }
