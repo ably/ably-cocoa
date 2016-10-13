@@ -31,5 +31,6 @@ framework module Ably {
         header "ARTLog+Private.h"
         header "ARTRealtimePresence+Private.h"
         header "ARTRestPresence+Private.h"
+        header "ARTFallback+Private.h"
     }
 }

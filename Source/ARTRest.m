@@ -32,7 +32,6 @@
 #import "ARTTokenParams.h"
 #import "ARTTokenDetails.h"
 #import "ARTDefault.h"
-#import "ARTFallback.h"
 
 @implementation ARTRest
 

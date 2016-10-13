@@ -14,8 +14,6 @@ ART_ASSUME_NONNULL_BEGIN
 @class ARTHttpResponse;
 @class ARTClientOptions;
 
-extern int (^ARTFallback_getRandomHostIndex)(int count);
-
 @interface ARTFallback : NSObject
 
 /**
