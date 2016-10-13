@@ -758,6 +758,14 @@ class RestClient: QuickSpec {
                         ARTFallback_getRandomHostIndex = originalARTFallback_getRandomHostIndex
                     }
 
+                    it("default fallback hosts should match @[a-e].ably-realtime.com@") {
+                        let defaultFallbackHosts = ARTDefault.fallbackHosts()
+                        defaultFallbackHosts.forEach { host in
+                            expect(host).to(match("[a-e].ably-realtime.com"))
+                        }
+                        expect(defaultFallbackHosts).to(haveCount(5))
+                    }
+
                     it("until httpMaxRetryCount has been reached") {
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         let client = ARTRest(options: options)
