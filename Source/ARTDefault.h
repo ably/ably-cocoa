@@ -7,10 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "CompatibilityMacros.h"
 
 @interface ARTDefault : NSObject
 
-+ (NSArray*)fallbackHosts;
++ (__GENERIC(NSArray, NSString *) *)fallbackHosts;
 + (NSString*)restHost;
 + (NSString*)realtimeHost;
 + (int)port;
