@@ -565,6 +565,72 @@ class RestClient: QuickSpec {
             // RSC15
             context("Host Fallback") {
 
+                // TO3k7
+                context("fallbackHostsUseDefault option") {
+
+                    it("allows the default fallback hosts to be used when @environment@ is not production") {
+                        let options = ARTClientOptions(key: "xxxx:xxxx")
+                        options.environment = "not-production"
+                        options.fallbackHosts = ["fakeA.ably.io", "fakeB.ably.io"]
+                        options.fallbackHostsUseDefault = true
+
+                        let client = ARTRest(options: options)
+                        expect(client.options.fallbackHostsUseDefault).to(beTrue())
+                        // Not production
+                        expect(client.options.environment).toNot(beNil())
+                        expect(client.options.environment).toNot(equal("production"))
+
+                        let fallback = ARTFallback(options: client.options)
+                        expect(fallback.hosts).to(haveCount(ARTDefault.fallbackHosts().count))
+
+                        ARTDefault.fallbackHosts().forEach() {
+                            expect(fallback.hosts).to(contain($0))
+                        }
+                    }
+
+                    it("allows the default fallback hosts to be used when a custom Realtime or REST host endpoint is being used") {
+                        let options = ARTClientOptions(key: "xxxx:xxxx")
+                        options.restHost = "fake1.ably.io"
+                        options.realtimeHost = "fake2.ably.io"
+                        options.fallbackHosts = ["fakeA.ably.io", "fakeB.ably.io"]
+                        options.fallbackHostsUseDefault = true
+
+                        let client = ARTRest(options: options)
+                        expect(client.options.fallbackHostsUseDefault).to(beTrue())
+                        // Custom
+                        expect(client.options.restHost).toNot(equal(ARTDefault.restHost()))
+                        expect(client.options.realtimeHost).toNot(equal(ARTDefault.realtimeHost()))
+
+                        let fallback = ARTFallback(options: client.options)
+                        expect(fallback.hosts).to(haveCount(ARTDefault.fallbackHosts().count))
+
+                        ARTDefault.fallbackHosts().forEach() {
+                            expect(fallback.hosts).to(contain($0))
+                        }
+                    }
+
+                    it("should be inactive by default") {
+                        let options = ARTClientOptions(key: "xxxx:xxxx")
+                        expect(options.fallbackHostsUseDefault).to(beFalse())
+                    }
+
+                    it("should never accept to configure @fallbackHost@ and set @fallbackHostsUseDefault@ to @true@") {
+                        let options = ARTClientOptions(key: "xxxx:xxxx")
+                        expect(options.fallbackHosts).to(beNil())
+                        expect(options.fallbackHostsUseDefault).to(beFalse())
+
+                        options.fallbackHostsUseDefault = true
+                        options.fallbackHosts = []
+                        expect(options.fallbackHosts).toNot(beNil())
+                        expect(options.fallbackHostsUseDefault).to(beFalse())
+
+                        options.fallbackHostsUseDefault = true
+                        expect(options.fallbackHosts).to(beNil())
+                        expect(options.fallbackHostsUseDefault).to(beTrue())
+                    }
+
+                }
+
                 // RSC15b
                 it("failing HTTP requests with custom endpoint should result in an error immediately") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
