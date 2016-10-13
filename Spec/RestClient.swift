@@ -786,7 +786,7 @@ class RestClient: QuickSpec {
                 }
 
                 // RSC15e
-                it("every new HTTP request is first attempted to the primary host rest.ably.io") {
+                it("every new HTTP request is first attempted to the default primary host rest.ably.io") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.httpMaxRetryCount = 1
                     let client = ARTRest(options: options)
@@ -812,9 +812,44 @@ class RestClient: QuickSpec {
                     if testHTTPExecutor.requests.count != 3 {
                         return
                     }
-                    expect(NSRegularExpression.match(testHTTPExecutor.requests[0].URL!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
+
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[0].URL!.absoluteString, pattern: "//\(ARTDefault.restHost())")).to(beTrue())
                     expect(NSRegularExpression.match(testHTTPExecutor.requests[1].URL!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-                    expect(NSRegularExpression.match(testHTTPExecutor.requests[2].URL!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[2].URL!.absoluteString, pattern: "//\(ARTDefault.restHost())")).to(beTrue())
+                }
+
+                // RSC15e
+                it("if ClientOptions#restHost is set then every new HTTP request should first attempt ClientOptions#restHost") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.httpMaxRetryCount = 1
+                    options.restHost = "fake.ably.io"
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = testHTTPExecutor
+                    testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "nil") { _ in
+                            done()
+                        }
+                    }
+
+                    testHTTPExecutor.http = ARTHttp()
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "nil") { _ in
+                            done()
+                        }
+                    }
+
+                    expect(testHTTPExecutor.requests).to(haveCount(3))
+                    if testHTTPExecutor.requests.count != 3 {
+                        return
+                    }
+
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[0].URL!.absoluteString, pattern: "//\(client.options.restHost)")).to(beTrue())
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[1].URL!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[2].URL!.absoluteString, pattern: "//\(client.options.restHost)")).to(beTrue())
                 }
 
                 // RSC15a
