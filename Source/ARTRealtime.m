@@ -460,11 +460,8 @@
 
 - (void)onDisconnected:(ARTProtocolMessage *)message {
     [self.logger info:@"R:%p ARTRealtime disconnected", self];
-    ARTErrorInfo *error;
-    if (message) {
-        error = message.error;
-    }
-    if (!_renewingToken && error && error.statusCode == 401 && error.code >= 40140 && error.code < 40150 && [self isTokenRenewable]) {
+    ARTErrorInfo *error = message.error;
+    if ([self shouldRenewToken:&error]) {
         [self connectWithRenewedToken];
         return;
     }
@@ -492,13 +489,24 @@
         [self onChannelMessage:message];
     } else {
         ARTErrorInfo *error = message.error;
-        if (!_renewingToken && error && error.statusCode == 401 && error.code >= 40140 && error.code < 40150 && [self isTokenRenewable]) {
+        if ([self shouldRenewToken:&error]) {
             [self connectWithRenewedToken];
             return;
         }
         [self.connection setId:nil];
-        [self transition:ARTRealtimeFailed withErrorInfo:message.error];
+        [self transition:ARTRealtimeFailed withErrorInfo:error];
     }
+}
+
+- (BOOL)shouldRenewToken:(ARTErrorInfo **)errorPtr {
+    if (!_renewingToken && errorPtr && *errorPtr &&
+        (*errorPtr).statusCode == 401 && (*errorPtr).code >= 40140 && (*errorPtr).code < 40150) {
+        if ([self isTokenRenewable]) {
+            return YES;
+        }
+        *errorPtr = [ARTErrorInfo createWithCode:ARTStateRequestTokenFailed message:@"no means to renew the token is provided (either an API key, authCallback or authUrl)"];
+    }
+    return NO;
 }
 
 - (BOOL)isTokenRenewable {
