@@ -245,6 +245,89 @@ class Auth : QuickSpec {
                         }
                     }
                 }
+
+                // RSA4b
+                it("in REST, if the token creation failed or the subsequent request with the new token failed due to a token error, then the request should result in an error") {
+                    let options = AblyTests.commonAppSetup()
+                    options.useTokenAuth = true
+
+                    let rest = ARTRest(options: options)
+                    rest.httpExecutor = testHTTPExecutor
+
+                    let channel = rest.channels.get("test")
+
+                    testHTTPExecutor.afterRequest = { _ in
+                        testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(40141, description: "token revoked")
+                    }
+
+                    testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(40141, description: "token revoked")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish("message", data: nil) { error in
+                            guard let error = error else {
+                                fail("Error is nil"); done(); return
+                            }
+                            expect(error.code).to(equal(40141))
+                            done()
+                        }
+                    }
+
+                    // First request and a second attempt
+                    expect(testHTTPExecutor.requests).to(haveCount(2))
+                }
+
+                // RSA4b
+                it("in Realtime, if the token creation failed then the connection should move to the DISCONNECTED state and reports the error") {
+                    let options = AblyTests.commonAppSetup()
+                    options.authCallback = { tokenParams, completion in
+                        completion(nil, NSError(domain: NSURLErrorDomain, code: -1003, userInfo: [NSLocalizedDescriptionKey: "A server with the specified hostname could not be found."]))
+                    }
+                    options.autoConnect = false
+
+                    let realtime = ARTRealtime(options: options)
+                    defer { realtime.dispose(); realtime.close() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        realtime.connection.once(.Failed) { _ in
+                            fail("Should not reach Failed state"); done(); return
+                        }
+                        realtime.connection.once(.Disconnected) { stateChange in
+                            guard let errorInfo = stateChange?.reason else {
+                                fail("ErrorInfo is nil"); done(); return
+                            }
+                            expect(errorInfo.message).to(contain("server with the specified hostname could not be found"))
+                            done()
+                        }
+                        realtime.connect()
+                    }
+                }
+
+                // RSA4b
+                it("in Realtime, if the connection fails to a token error, then the connection should move to the FAILED state and reports the error") {
+                    let options = AblyTests.commonAppSetup()
+                    options.authCallback = { tokenParams, completion in
+                        let token = getTestToken()
+                        let invalidToken = String(token.characters.reverse())
+                        completion(invalidToken, nil)
+                    }
+                    options.autoConnect = false
+
+                    let realtime = ARTRealtime(options: options)
+                    defer { realtime.dispose(); realtime.close() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        realtime.connection.once(.Failed) { stateChange in
+                            guard let errorInfo = stateChange?.reason else {
+                                fail("ErrorInfo is nil"); done(); return
+                            }
+                            expect(errorInfo.message).to(contain("No application found with id"))
+                            done()
+                        }
+                        realtime.connection.once(.Disconnected) { _ in
+                            fail("Should not reach Disconnected state"); done(); return
+                        }
+                        realtime.connect()
+                    }
+                }
             }
             
             // RSA14
