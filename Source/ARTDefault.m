@@ -17,7 +17,6 @@ NSString *const ARTDefault_ablyBundleId = @"io.ably.Ably";
 NSString *const ARTDefault_bundleVersionKey = @"CFBundleShortVersionString";
 NSString *const ARTDefault_platform = @"ios-";
 
-
 static int _realtimeRequestTimeout = 10.0;
 static int _connectionStateTtl = 60.0;
 

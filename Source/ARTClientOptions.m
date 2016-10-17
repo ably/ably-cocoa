@@ -13,6 +13,7 @@
 #import "ARTTokenParams.h"
 
 NSString *ARTDefaultEnvironment = nil;
+NSString *const ARTDefaultProduction = @"production";
 
 @interface ARTClientOptions ()
 
@@ -46,12 +47,18 @@ NSString *ARTDefaultEnvironment = nil;
     if (_restHost) {
         return _restHost;
     }
+    if ([_environment isEqualToString:ARTDefaultProduction]) {
+        return [ARTDefault restHost];
+    }
     return _environment ? [NSString stringWithFormat:@"%@-%@", _environment, [ARTDefault restHost]] : [ARTDefault restHost];
 }
 
 - (NSString*)getRealtimeHost {
     if (_realtimeHost) {
         return _realtimeHost;
+    }
+    if ([_environment isEqualToString:ARTDefaultProduction]) {
+        return [ARTDefault realtimeHost];
     }
     return _environment ? [NSString stringWithFormat:@"%@-%@", _environment, [ARTDefault realtimeHost]] : [ARTDefault realtimeHost];
 }
