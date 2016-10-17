@@ -574,9 +574,38 @@ class MockHTTP: ARTHttp {
 /// Records each request and response for test purpose.
 class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
 
+    struct ErrorSimulator {
+        let value: Int
+        let description: String
+        let serverId = "server-test-suite"
+
+        mutating func stubResponse(url: NSURL) -> NSHTTPURLResponse? {
+            return NSHTTPURLResponse(URL: url, statusCode: 401, HTTPVersion: "HTTP/1.1", headerFields: [
+                "Content-Length": String(stubData?.length ?? 0),
+                "Content-Type": "application/json",
+                "X-Ably-Errorcode": String(value),
+                "X-Ably-Errormessage": description,
+                "X-Ably-Serverid": serverId,
+                ]
+            )
+        }
+
+        lazy var stubData: NSData? = {
+            let jsonObject = ["error": [
+                    "statusCode": modf(Float(self.value)/100).0, //whole number part
+                    "code": self.value,
+                    "message": self.description,
+                    "serverId": self.serverId,
+                ]
+            ]
+            return try? NSJSONSerialization.dataWithJSONObject(jsonObject, options: NSJSONWritingOptions.init(rawValue: 0))
+        }()
+    }
+    private var errorSimulator: ErrorSimulator?
+
     var http: ARTHttp? = ARTHttp()
     var logger: ARTLog?
-    
+
     var requests: [NSMutableURLRequest] = []
     var responses: [NSHTTPURLResponse] = []
 
@@ -589,6 +618,13 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
             return
         }
         self.requests.append(request)
+
+        if var simulatedError = errorSimulator, requestURL = request.URL {
+            defer { errorSimulator = nil }
+            callback?(simulatedError.stubResponse(requestURL), simulatedError.stubData, nil)
+            return
+        }
+
         if let performEvent = beforeRequest {
             performEvent(request, callback)
         }
@@ -606,6 +642,10 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
         if let performEvent = afterRequest {
             performEvent(request, callback)
         }
+    }
+
+    func simulateIncomingServerErrorOnNextRequest(errorValue: Int, description: String) {
+        errorSimulator = ErrorSimulator(value: errorValue, description: description, stubData: nil)
     }
 
 }
