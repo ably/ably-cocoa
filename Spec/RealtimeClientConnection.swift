@@ -2865,7 +2865,7 @@ class RealtimeClientConnection: QuickSpec {
                         NSRegularExpression.extract(url.absoluteString, pattern: "[a-e].ably-realtime.com")
                     }
                     let resultFallbackHosts = urlConnections.flatMap(extractHostname)
-                    let expectedFallbackHosts = Array(expectedHostOrder.map({ ARTDefault.fallbackHosts()[$0] as! String }))
+                    let expectedFallbackHosts = Array(expectedHostOrder.map({ ARTDefault.fallbackHosts()[$0] }))
 
                     expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
                 }

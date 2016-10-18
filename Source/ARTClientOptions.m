@@ -10,6 +10,7 @@
 #import "ARTAuthOptions+Private.h"
 
 #import "ARTDefault.h"
+#import "ARTStatus.h"
 #import "ARTTokenParams.h"
 
 NSString *ARTDefaultEnvironment = nil;
@@ -40,6 +41,8 @@ NSString *const ARTDefaultProduction = @"production";
     _httpRequestTimeout = 15.0; //Seconds
     _httpMaxRetryDuration = 10.0; //Seconds
     _httpMaxRetryCount = 3;
+    _fallbackHosts = nil;
+    _fallbackHostsUseDefault = false;
     return self;
 }
 
@@ -106,7 +109,8 @@ NSString *const ARTDefaultProduction = @"production";
     options.httpMaxRetryDuration = self.httpMaxRetryDuration;
     options.httpOpenTimeout = self.httpOpenTimeout;
     options.httpRequestTimeout = self.httpRequestTimeout;
-    options.fallbackHosts = self.fallbackHosts;
+    options->_fallbackHosts = self.fallbackHosts; //ignore setter
+    options->_fallbackHostsUseDefault = self.fallbackHostsUseDefault; //ignore setter
     
     return options;
 }
@@ -127,6 +131,20 @@ NSString *const ARTDefaultProduction = @"production";
 
 - (BOOL)hasCustomRealtimeHost {
     return _realtimeHost != nil;
+}
+
+- (void)setFallbackHosts:(art_nullable __GENERIC(NSArray, NSString *) *)value {
+    if (_fallbackHostsUseDefault) {
+        [NSException raise:ARTFallbackIncompatibleOptionsException format:@"Could not setup custom fallback hosts because it is currently configured to use default fallback hosts."];
+    }
+    _fallbackHosts = value;
+}
+
+- (void)setFallbackHostsUseDefault:(BOOL)value {
+    if (_fallbackHosts) {
+        [NSException raise:ARTFallbackIncompatibleOptionsException format:@"Could not configure options to use default fallback hosts because a custom fallback host list is being used."];
+    }
+    _fallbackHostsUseDefault = value;
 }
 
 + (void)setDefaultEnvironment:(NSString *)environment {

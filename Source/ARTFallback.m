@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTFallback.h"
+#import "ARTFallback+Private.h"
 
 #import "ARTDefault.h"
 #import "ARTStatus.h"
@@ -19,8 +19,6 @@ int (^ARTFallback_getRandomHostIndex)(int count) = ^int(int count) {
 
 @interface ARTFallback ()
 
-@property (readwrite, strong, nonatomic) NSMutableArray * hosts;
-
 @end
 
 @implementation ARTFallback
@@ -31,7 +29,6 @@ int (^ARTFallback_getRandomHostIndex)(int count) = ^int(int count) {
         if (fallbackHosts != nil && fallbackHosts.count == 0) {
             return nil;
         }
-
         self.hosts = [NSMutableArray array];
         NSMutableArray * hostArray = [[NSMutableArray alloc] initWithArray: fallbackHosts ? fallbackHosts : [ARTDefault fallbackHosts]];
         size_t count = [hostArray count];
@@ -42,6 +39,13 @@ int (^ARTFallback_getRandomHostIndex)(int count) = ^int(int count) {
         }
     }
     return self;
+}
+
+- (instancetype)initWithOptions:(ARTClientOptions *)options {
+    if (options.fallbackHostsUseDefault) {
+        return [self initWithFallbackHosts:nil]; //default
+    }
+    return [self initWithFallbackHosts:options.fallbackHosts];
 }
 
 - (instancetype)init {

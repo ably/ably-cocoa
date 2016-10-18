@@ -13,6 +13,8 @@
 // Reverse-DNS style domain
 NSString *const ARTAblyErrorDomain = @"io.ably.cocoa";
 
+NSString *const ARTFallbackIncompatibleOptionsException = @"ARTFallbackIncompatibleOptionsException";
+
 NSInteger getStatusFromCode(NSInteger code) {
     return code / 100;
 }
