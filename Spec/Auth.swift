@@ -1850,7 +1850,6 @@ class Auth : QuickSpec {
                     authOptions.authParams?.append(NSURLQueryItem(name: "type", value: "text"))
                     authOptions.authParams?.append(NSURLQueryItem(name: "body", value: token))
                     authOptions.authHeaders = ["X-Ably":"Test"]
-                    authOptions.force = true
                     authOptions.queryTime = true
 
                     waitUntil(timeout: testTimeout) { done in
@@ -1869,7 +1868,6 @@ class Auth : QuickSpec {
                                     XCTFail("TokenDetails is nil"); done(); return
                                 }
                                 expect(testHTTPExecutor.requests.last?.URL?.host).to(equal("echo.ably.io"))
-                                expect(auth.options.force).to(beFalse())
                                 expect(auth.options.authUrl!.host).to(equal("echo.ably.io"))
                                 expect(auth.options.authHeaders!["X-Ably"]).to(equal("Test"))
                                 expect(tokenDetails.token).to(equal(token))
