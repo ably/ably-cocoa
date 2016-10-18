@@ -8,7 +8,9 @@
 
 #import <XCTest/XCTest.h>
 #import "ARTFallback.h"
+#import "ARTFallback+Private.h"
 #import "ARTDefault.h"
+
 @interface ARTFallbackTest : XCTestCase
 @end
 

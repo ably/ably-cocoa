@@ -877,7 +877,7 @@
         [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p host is down; can retry with fallback host", self];
         if (!_fallbacks && [error.url.host isEqualToString:[ARTDefault realtimeHost]]) {
             [self.rest internetIsUp:^void(BOOL isUp) {
-                _fallbacks = [[ARTFallback alloc] initWithFallbackHosts:[self getClientOptions].fallbackHosts];
+                _fallbacks = [[ARTFallback alloc] initWithOptions:[self getClientOptions]];
                 (_fallbacks != nil) ? [self reconnectWithFallback] : [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithNSError:error.error]];
             }];
             return;

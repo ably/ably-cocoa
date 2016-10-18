@@ -75,6 +75,11 @@ ART_ASSUME_NONNULL_BEGIN
  */
 @property (art_nullable, nonatomic, copy) __GENERIC(NSArray, NSString *) *fallbackHosts;
 
+/**
+ Optionally allows the default fallback hosts `[a-e].ably-realtime.com` to be used when `environment` is not production or a custom realtime or REST host endpoint is being used. It is never valid to configure `fallbackHost` and set `fallbackHostsUseDefault` to `true`.
+ */
+@property (assign, nonatomic) BOOL fallbackHostsUseDefault;
+
 - (BOOL)isBasicAuth;
 - (NSURL *)restUrl;
 - (NSURL *)realtimeUrl;
