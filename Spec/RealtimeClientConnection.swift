@@ -1725,7 +1725,7 @@ class RealtimeClientConnection: QuickSpec {
                                 guard let errorInfo = errorInfo else {
                                     fail("ErrorInfo is nil"); done(); return
                                 }
-                                expect(errorInfo.code).to(equal(40142)) //Token expired
+                                expect(UInt(errorInfo.code)).to(equal(ARTState.RequestTokenFailed.rawValue))
                                 done()
                             default:
                                 break
@@ -2377,7 +2377,7 @@ class RealtimeClientConnection: QuickSpec {
                                     guard let errorInfo = errorInfo else {
                                         fail("ErrorInfo is nil"); done(); return
                                     }
-                                    expect(errorInfo.code).to(equal(40142)) //Token expired
+                                    expect(UInt(errorInfo.code)).to(equal(ARTState.RequestTokenFailed.rawValue))
                                     done()
                                 default:
                                     break
