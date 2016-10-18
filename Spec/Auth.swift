@@ -185,6 +185,66 @@ class Auth : QuickSpec {
                         expect(client.auth.method).to(equal(ARTAuthMethod.Token))
                     }
                 }
+
+                // RSA4a
+                it("should indicate an error and not retry the request when the server responds with a token error and there is no way to renew the token") {
+                    let options = AblyTests.clientOptions()
+                    options.token = getTestToken()
+
+                    let rest = ARTRest(options: options)
+                    // No means to renew the token is provided
+                    expect(rest.options.key).to(beNil())
+                    expect(rest.options.authCallback).to(beNil())
+                    expect(rest.options.authUrl).to(beNil())
+                    rest.httpExecutor = testHTTPExecutor
+
+                    let channel = rest.channels.get("test")
+
+                    testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(40141, description: "token revoked")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish("message", data: nil) { error in
+                            guard let error = error else {
+                                fail("Error is nil"); done(); return
+                            }
+                            expect(UInt(error.code)).to(equal(ARTState.RequestTokenFailed.rawValue))
+                            done()
+                        }
+                    }
+                }
+
+                // RSA4a
+                it("should transition the connection to the FAILED state when the server responds with a token error and there is no way to renew the token") {
+                    let options = AblyTests.clientOptions()
+                    options.tokenDetails = getTestTokenDetails(ttl: 0.1)
+                    options.autoConnect = false
+
+                    // Token will expire, expecting 40142
+                    waitUntil(timeout: testTimeout) { done in
+                        delay(0.2) { done() }
+                    }
+
+                    let realtime = ARTRealtime(options: options)
+                    defer { realtime.dispose(); realtime.close() }
+                    // No means to renew the token is provided
+                    expect(realtime.options.key).to(beNil())
+                    expect(realtime.options.authCallback).to(beNil())
+                    expect(realtime.options.authUrl).to(beNil())
+                    realtime.setTransportClass(TestProxyTransport.self)
+
+                    let channel = realtime.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        realtime.connect()
+                        channel.publish("message", data: nil) { error in
+                            guard let error = error else {
+                                fail("Error is nil"); done(); return
+                            }
+                            expect(UInt(error.code)).to(equal(ARTState.RequestTokenFailed.rawValue))
+                            expect(realtime.connection.state).to(equal(ARTRealtimeConnectionState.Failed))
+                            done()
+                        }
+                    }
+                }
             }
             
             // RSA14
