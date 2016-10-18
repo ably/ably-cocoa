@@ -348,6 +348,327 @@ class Auth : QuickSpec {
                         expect{ ARTRest(options: options) }.to(raiseException())
                     }
                 }
+
+                // RSA4c
+                context("if an attempt by the realtime client library to authenticate is made using the authUrl or authCallback") {
+
+                    context("the request to authUrl fails") {
+
+                        // RSA4c1 & RSA4c2
+                        it("if the connection is CONNECTING, then the connection attempt should be treated as unsuccessful") {
+                            let options = AblyTests.clientOptions()
+                            options.autoConnect = false
+                            options.authUrl = NSURL(string: "http://echo.ably.io")!
+                            let realtime = ARTRealtime(options: options)
+                            defer { realtime.dispose(); realtime.close() }
+
+                            waitUntil(timeout: testTimeout) { done in
+                                realtime.connection.once(.Disconnected) { stateChange in
+                                    guard let stateChange = stateChange else {
+                                        fail("ConnectionStateChange is nil"); done(); return
+                                    }
+                                    expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.Connecting))
+                                    guard let errorInfo = stateChange.reason else {
+                                        fail("ErrorInfo is nil"); done(); return
+                                    }
+                                    expect(errorInfo.code) == 80019
+                                    done()
+                                }
+                                realtime.connect()
+                            }
+
+                            guard let errorInfo = realtime.connection.errorReason else {
+                                fail("ErrorInfo is empty"); return
+                            }
+                            expect(errorInfo.code) == 80019
+                            expect(errorInfo.message).to(contain("body param is required"))
+                        }
+
+                        // RSA4c3
+                        it("if the connection is CONNECTED, then the connection should remain CONNECTED") {
+                            let token = getTestToken()
+                            let options = AblyTests.clientOptions()
+                            options.authUrl = NSURL(string: "http://echo.ably.io")!
+                            options.authParams = [NSURLQueryItem]()
+                            options.authParams?.append(NSURLQueryItem(name: "type", value: "text"))
+                            options.authParams?.append(NSURLQueryItem(name: "body", value: token))
+
+                            let realtime = ARTRealtime(options: options)
+                            defer { realtime.dispose(); realtime.close() }
+
+                            waitUntil(timeout: testTimeout) { done in
+                                realtime.connection.once(.Connected) { stateChange in
+                                    expect(stateChange?.reason).to(beNil())
+                                    done()
+                                }
+                            }
+
+                            // Token reauth will fail
+                            realtime.options.authParams = [NSURLQueryItem]()
+
+                            // Inject AUTH
+                            let authMessage = ARTProtocolMessage()
+                            authMessage.action = ARTProtocolMessageAction.Auth
+                            realtime.transport.receive(authMessage)
+
+                            expect(realtime.connection.errorReason).toEventuallyNot(beNil(), timeout: testTimeout)
+                            guard let errorInfo = realtime.connection.errorReason else {
+                                fail("ErrorInfo is empty"); return
+                            }
+                            expect(errorInfo.code) == 80019
+                            expect(errorInfo.message).to(contain("body param is required"))
+
+                            expect(realtime.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+                        }
+                    }
+
+                    context("the request to authCallback fails") {
+
+                        // RSA4c1 & RSA4c2
+                        it("if the connection is CONNECTING, then the connection attempt should be treated as unsuccessful") {
+                            let options = AblyTests.clientOptions()
+                            options.autoConnect = false
+                            options.authCallback = { tokenParams, completion in
+                                completion(nil, NSError(domain: NSURLErrorDomain, code: -1003, userInfo: [NSLocalizedDescriptionKey: "A server with the specified hostname could not be found."]))
+                            }
+                            let realtime = ARTRealtime(options: options)
+                            defer { realtime.dispose(); realtime.close() }
+
+                            waitUntil(timeout: testTimeout) { done in
+                                realtime.connection.once(.Disconnected) { stateChange in
+                                    guard let stateChange = stateChange else {
+                                        fail("ConnectionStateChange is nil"); done(); return
+                                    }
+                                    expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.Connecting))
+                                    guard let errorInfo = stateChange.reason else {
+                                        fail("ErrorInfo is nil"); done(); return
+                                    }
+                                    expect(errorInfo.code) == 80019
+                                    done()
+                                }
+                                realtime.connect()
+                            }
+
+                            guard let errorInfo = realtime.connection.errorReason else {
+                                fail("ErrorInfo is empty"); return
+                            }
+                            expect(errorInfo.code) == 80019
+                            expect(errorInfo.message).to(contain("hostname could not be found"))
+
+                            expect(realtime.connection.state).toEventually(equal(ARTRealtimeConnectionState.Disconnected), timeout: testTimeout)
+                        }
+
+                        // RSA4c3
+                        it("if the connection is CONNECTED, then the connection should remain CONNECTED") {
+                            let options = AblyTests.clientOptions()
+                            options.authCallback = { tokenParams, completion in
+                                completion(getTestTokenDetails(), nil)
+                            }
+                            let realtime = ARTRealtime(options: options)
+                            defer { realtime.dispose(); realtime.close() }
+
+                            waitUntil(timeout: testTimeout) { done in
+                                realtime.connection.once(.Connected) { stateChange in
+                                    expect(stateChange?.reason).to(beNil())
+                                    done()
+                                }
+                            }
+
+                            // Token should renew and fail
+                            realtime.options.authCallback = { tokenParams, completion in
+                                completion(nil, NSError(domain: NSURLErrorDomain, code: -1003, userInfo: [NSLocalizedDescriptionKey: "A server with the specified hostname could not be found."]))
+                            }
+
+                            // Inject AUTH
+                            let authMessage = ARTProtocolMessage()
+                            authMessage.action = ARTProtocolMessageAction.Auth
+                            realtime.transport.receive(authMessage)
+
+                            expect(realtime.connection.errorReason).toEventuallyNot(beNil(), timeout: testTimeout)
+                            guard let errorInfo = realtime.connection.errorReason else {
+                                fail("ErrorInfo is empty"); return
+                            }
+                            expect(errorInfo.code) == 80019
+                            expect(errorInfo.message).to(contain("hostname could not be found"))
+
+                            expect(realtime.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+                        }
+                    }
+
+                    context("the provided token is in an invalid format") {
+
+                        // RSA4c1 & RSA4c2
+                        it("if the connection is CONNECTING, then the connection attempt should be treated as unsuccessful") {
+                            var options = AblyTests.clientOptions()
+                            options.autoConnect = false
+                            options.authUrl = NSURL(string: "http://echo.ably.io")!
+                            options.authParams = [NSURLQueryItem]()
+                            options.authParams?.append(NSURLQueryItem(name: "type", value: "json"))
+                            let invalidTokenFormat = "{secret_token:xxx}"
+                            options.authParams?.append(NSURLQueryItem(name: "body", value: invalidTokenFormat))
+
+                            let realtime = ARTRealtime(options: options)
+                            defer { realtime.dispose(); realtime.close() }
+
+                            waitUntil(timeout: testTimeout) { done in
+                                realtime.connection.once(.Disconnected) { stateChange in
+                                    guard let stateChange = stateChange else {
+                                        fail("ConnectionStateChange is nil"); done(); return
+                                    }
+                                    expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.Connecting))
+                                    guard let errorInfo = stateChange.reason else {
+                                        fail("ErrorInfo is nil"); done(); return
+                                    }
+                                    expect(errorInfo.code) == 80019
+                                    done()
+                                }
+                                realtime.connect()
+                            }
+
+                            guard let errorInfo = realtime.connection.errorReason else {
+                                fail("ErrorInfo is empty"); return
+                            }
+                            expect(errorInfo.code) == 80019
+                            expect(errorInfo.message).to(contain("content response cannot be used for token request"))
+
+                            expect(realtime.connection.state).toEventually(equal(ARTRealtimeConnectionState.Disconnected), timeout: testTimeout)
+                        }
+
+                        // RSA4c3
+                        it("if the connection is CONNECTED, then the connection should remain CONNECTED") {
+                            var options = AblyTests.clientOptions()
+                            options.authUrl = NSURL(string: "http://echo.ably.io")!
+                            options.authParams = [NSURLQueryItem]()
+                            options.authParams?.append(NSURLQueryItem(name: "type", value: "text"))
+
+                            let token = getTestToken()
+                            options.authParams?.append(NSURLQueryItem(name: "body", value: token))
+
+                            let realtime = ARTRealtime(options: options)
+                            defer { realtime.dispose(); realtime.close() }
+
+                            waitUntil(timeout: testTimeout) { done in
+                                realtime.connection.once(.Connected) { stateChange in
+                                    expect(stateChange?.reason).to(beNil())
+                                    done()
+                                }
+                            }
+
+                            // Token should renew and fail
+                            let invalidToken = String(token.characters.reverse())
+                            realtime.options.authParams = [NSURLQueryItem]()
+                            realtime.options.authParams?.append(NSURLQueryItem(name: "type", value: "json"))
+                            let invalidTokenFormat = "{secret_token:xxx}"
+                            realtime.options.authParams?.append(NSURLQueryItem(name: "body", value: invalidTokenFormat))
+
+                            realtime.connection.on() { stateChange in
+                                guard let stateChange = stateChange else {
+                                    fail("ConnectionStateChange should not be nil"); return
+                                }
+                                if stateChange.current != .Connected {
+                                    fail("Connection should remain connected")
+                                }
+                            }
+
+                            // Inject AUTH
+                            let authMessage = ARTProtocolMessage()
+                            authMessage.action = ARTProtocolMessageAction.Auth
+                            realtime.transport.receive(authMessage)
+
+                            expect(realtime.connection.errorReason).toEventuallyNot(beNil(), timeout: testTimeout)
+                            guard let errorInfo = realtime.connection.errorReason else {
+                                fail("ErrorInfo is empty"); return
+                            }
+                            expect(errorInfo.code) == 80019
+                            expect(errorInfo.message).to(contain("content response cannot be used for token request"))
+
+                            expect(realtime.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+                        }
+                    }
+
+                    context("the attempt times out after realtimeRequestTimeout") {
+                        // RSA4c1 & RSA4c2
+                        it("if the connection is CONNECTING, then the connection attempt should be treated as unsuccessful") {
+                            let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                            defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                            ARTDefault.setRealtimeRequestTimeout(0.5)
+
+                            let options = AblyTests.clientOptions()
+                            options.autoConnect = false
+                            options.authCallback = { tokenParams, completion in
+                                // Ignore `completion` closure to force a time out
+                            }
+
+                            let realtime = ARTRealtime(options: options)
+                            defer { realtime.dispose(); realtime.close() }
+
+                            waitUntil(timeout: testTimeout) { done in
+                                realtime.connection.once(.Disconnected) { stateChange in
+                                    guard let stateChange = stateChange else {
+                                        fail("ConnectionStateChange is nil"); done(); return
+                                    }
+                                    guard let errorInfo = stateChange.reason else {
+                                        fail("ErrorInfo is nil"); done(); return
+                                    }
+                                    expect(errorInfo.code) == 80019
+                                    done()
+                                }
+                                realtime.connect()
+                            }
+
+                            guard let errorInfo = realtime.connection.errorReason else {
+                                fail("ErrorInfo is empty"); return
+                            }
+                            expect(errorInfo.code) == 80019
+                            expect(errorInfo.message).to(contain("timed out"))
+
+                            expect(realtime.connection.state).toEventually(equal(ARTRealtimeConnectionState.Disconnected), timeout: testTimeout)
+                        }
+
+                        // RSA4c3
+                        it("if the connection is CONNECTED, then the connection should remain CONNECTED") {
+                            let options = AblyTests.clientOptions()
+                            options.autoConnect = false
+                            options.authCallback = { tokenParams, completion in
+                                completion(getTestTokenDetails(), nil)
+                            }
+
+                            let realtime = ARTRealtime(options: options)
+                            defer { realtime.dispose(); realtime.close() }
+
+                            waitUntil(timeout: testTimeout) { done in
+                                realtime.connection.once(.Connected) { stateChange in
+                                    expect(stateChange?.reason).to(beNil())
+                                    done()
+                                }
+                                realtime.connect()
+                            }
+
+                            let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                            defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                            ARTDefault.setRealtimeRequestTimeout(0.5)
+
+                            // Token should renew and fail
+                            realtime.options.authCallback = { tokenParams, completion in
+                                // Ignore `completion` closure to force a time out
+                            }
+
+                            // Inject AUTH
+                            let authMessage = ARTProtocolMessage()
+                            authMessage.action = ARTProtocolMessageAction.Auth
+                            realtime.transport.receive(authMessage)
+
+                            expect(realtime.connection.errorReason).toEventuallyNot(beNil(), timeout: testTimeout)
+                            guard let errorInfo = realtime.connection.errorReason else {
+                                fail("ErrorInfo is empty"); return
+                            }
+                            expect(errorInfo.code) == 80019
+                            expect(errorInfo.message).to(contain("timed out"))
+
+                            expect(realtime.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+                        }
+                    }
+                }
             }
 
             // RSA15
