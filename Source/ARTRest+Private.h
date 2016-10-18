@@ -21,6 +21,8 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) __GENERIC(id, ARTEncoder) defaultEncoder;
 @property (readonly, strong, nonatomic) NSString *defaultEncoding; //Content-Type
 @property (readonly, strong, nonatomic) NSDictionary *encoders;
+
+// Private prioritized host for testing only (overrides the current `restHost`)
 @property (readwrite, strong, nonatomic, art_nullable) NSString *prioritizedHost;
 
 @property (nonatomic, strong) id<ARTHTTPExecutor> httpExecutor;

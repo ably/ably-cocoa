@@ -153,7 +153,7 @@
             }
         }
         if (retries < _options.httpMaxRetryCount && [self shouldRetryWithFallback:request response:response error:error]) {
-            if (!blockFallbacks && [request.URL.host isEqualToString:(_prioritizedHost ? _prioritizedHost : [ARTDefault restHost])]) {
+            if (!blockFallbacks && [request.URL.host isEqualToString:[self currentHost]]) {
                 blockFallbacks = [[ARTFallback alloc] initWithOptions:_options];
             }
             if (blockFallbacks) {
@@ -187,6 +187,14 @@
         return YES;
     }
     return NO;
+}
+
+- (NSString *)currentHost {
+    if (_prioritizedHost) {
+        // Test purpose only
+        return _prioritizedHost;
+    }
+    return self.options.restHost;
 }
 
 - (void)prepareAuthorisationHeader:(ARTAuthMethod)method completion:(void (^)(NSString *authorization, NSError *error))callback {
