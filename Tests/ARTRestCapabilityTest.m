@@ -45,7 +45,7 @@
     ARTTokenParams *tokenParams = [[ARTTokenParams alloc] initWithClientId:options.clientId];
     tokenParams.capability = @"{\"canpublish:*\":[\"publish\"],\"canpublish:andpresence\":[\"presence\",\"publish\"],\"cansubscribe:*\":[\"subscribe\"]}";
 
-    [[[ARTRest alloc] initWithOptions:options].auth authorise:tokenParams options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+    [[[ARTRest alloc] initWithOptions:options].auth authorize:tokenParams options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
         options.token = tokenDetails.token;
         ARTRest *rest = [[ARTRest alloc] initWithOptions:options];
         ARTRestChannel *channel = [rest.channels get:@"canpublish:test"];

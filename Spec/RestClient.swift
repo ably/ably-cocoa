@@ -374,7 +374,7 @@ class RestClient: QuickSpec {
                 options.tokenDetails = getTestTokenDetails()
 
                 waitUntil(timeout: testTimeout) { done in
-                    ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
+                    ARTRest(options: options).auth.authorize(nil, options: nil) { tokenDetails, error in
                         if let e = error {
                             XCTFail(e.description)
                             done()
