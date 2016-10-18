@@ -2579,6 +2579,14 @@ class Auth : QuickSpec {
                 }
 
             }
+
+            // RSA10l
+            it("has an alias method @RestClient#authorise@ and should use @RealtimeClient#authorize@") {
+                let rest = ARTRest(key: "xxxx:xxxx")
+                expect(rest.auth.respondsToSelector(#selector(ARTAuth.authorise(_:options:callback:)))) == true
+                expect(rest.auth.respondsToSelector(#selector(ARTAuth.authorize(_:options:callback:)))) == true
+            }
+
         }
 
         describe("TokenParams") {
