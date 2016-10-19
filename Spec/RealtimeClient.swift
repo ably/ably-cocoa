@@ -464,6 +464,70 @@ class RealtimeClient: QuickSpec {
                     expect(client.auth.tokenDetails?.token).toNot(equal(testToken))
                 }
 
+                // RTC8a1 - part 2
+                it("performs an upgrade of capabilities without any loss of continuity or connectivity during the upgrade process") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    let testToken = getTestToken(capability: "{\"test\":[\"subscribe\"]}")
+                    options.token = testToken
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    client.setTransportClass(TestProxyTransport.self)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connected) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+                            done()
+                        }
+                        client.connect()
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+
+                        client.connection.once(.Connected) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ConnectionStateChange is nil"); partialDone(); return
+                            }
+                            expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.Connected))
+                            expect(stateChange.reason).toNot(beNil())
+                            partialDone()
+                        }
+
+                        client.connection.once(.Disconnected) { _ in
+                            fail("Lost connectivity")
+                        }
+                        client.connection.once(.Suspended) { _ in
+                            fail("Lost continuity")
+                        }
+                        client.connection.once(.Failed) { _ in
+                            fail("Should not receive any failure")
+                        }
+
+                        let tokenParams = ARTTokenParams()
+                        tokenParams.capability = "{\"*\":[\"*\"]}"
+
+                        client.auth.authorize(tokenParams, options: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            guard let tokenDetails = tokenDetails else {
+                                fail("TokenDetails is nil"); partialDone(); return
+                            }
+                            expect(tokenDetails.token).toNot(equal(testToken))
+                            expect(tokenDetails.capability).to(equal(tokenParams.capability))
+                            partialDone()
+                        }
+                    }
+
+                    expect(client.auth.tokenDetails?.token).toNot(equal(testToken))
+
+                    guard let transport = client.transport as? TestProxyTransport else {
+                        fail("TestProxyTransport is not set"); return
+                    }
+
+                    expect(transport.protocolMessagesReceived.filter{ $0.action == .Disconnected }).to(beEmpty())
+                    expect(transport.protocolMessagesReceived.filter{ $0.action == .Error }).to(beEmpty())
+                }
+
             }
 
             it("should never register any connection listeners for internal use with the public EventEmitter") {
