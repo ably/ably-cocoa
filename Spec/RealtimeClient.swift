@@ -666,6 +666,44 @@ class RealtimeClient: QuickSpec {
                     }
                 }
 
+                // RTC8b
+                it("when connection is CONNECTING, all current connection attempts should be halted, and after obtaining a new token the library should immediately initiate a connection attempt using the new token") {
+                    let options = AblyTests.clientOptions()
+                    options.autoConnect = false
+                    let testToken = getTestToken()
+                    options.token = testToken
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    client.setTransportClass(TestProxyTransport.self)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connecting) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+
+                            let authOptions = ARTAuthOptions()
+                            authOptions.key = AblyTests.commonAppSetup().key
+
+                            client.auth.authorize(nil, options: authOptions) { tokenDetails, error in
+                                expect(error).to(beNil())
+                                guard let tokenDetails = tokenDetails else {
+                                    fail("TokenDetails is nil"); done(); return
+                                }
+                                expect(tokenDetails.token).toNot(equal(testToken))
+
+                                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+
+                                guard let transport = client.transport as? TestProxyTransport else {
+                                    fail("TestProxyTransport is not set"); done(); return
+                                }
+                                expect(transport.protocolMessagesSent.filter({ $0.action == .Connect })).to(haveCount(2))
+                                expect(transport.protocolMessagesReceived.filter({ $0.action == .Connected })).to(haveCount(1))
+                                done()
+                            }
+                        }
+                        client.connect()
+                    }
+                }
+
             }
 
             it("should never register any connection listeners for internal use with the public EventEmitter") {
