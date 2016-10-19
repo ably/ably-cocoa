@@ -212,7 +212,7 @@
     }
     else {
         self.options.force = force;
-        [self.auth authorise:nil options:self.options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+        [self.auth authorize:nil options:self.options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
             if (error) {
                 if (callback) callback(nil, error);
                 return;

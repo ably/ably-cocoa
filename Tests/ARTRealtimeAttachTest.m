@@ -342,7 +342,7 @@
     ARTTokenParams *tokenParams = [[ARTTokenParams alloc] initWithClientId:options.clientId];
     tokenParams.capability = @"{\"canpublish:*\":[\"publish\"],\"canpublish:andpresence\":[\"presence\",\"publish\"],\"cansubscribe:*\":[\"subscribe\"]}";
 
-    [realtime.auth authorise:tokenParams options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+    [realtime.auth authorize:tokenParams options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
         options.token = tokenDetails.token;
         [realtime connect];
     }];

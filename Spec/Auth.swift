@@ -1184,7 +1184,7 @@ class Auth : QuickSpec {
                 let rest = ARTRest(options: options)
 
                 waitUntil(timeout: testTimeout) { done in
-                    rest.auth.authorise(ARTTokenParams(clientId: "*"), options: nil) { _, error in
+                    rest.auth.authorize(ARTTokenParams(clientId: "*"), options: nil) { _, error in
                         expect(error).to(beNil())
                         done()
                     }
@@ -1350,7 +1350,7 @@ class Auth : QuickSpec {
                 }
 
                 waitUntil(timeout: testTimeout) { done in
-                    rest.auth.authorise(nil, options: customOptions) { _, error in
+                    rest.auth.authorize(nil, options: customOptions) { _, error in
                         expect(error).to(beNil())
                         done()
                     }
@@ -1378,7 +1378,7 @@ class Auth : QuickSpec {
                 expect(currentTokenRequest).toEventuallyNot(beNil(), timeout: testTimeout)
 
                 waitUntil(timeout: testTimeout) { done in
-                    rest.auth.authorise(nil, options: nil) { _, error in
+                    rest.auth.authorize(nil, options: nil) { _, error in
                         expect(error).to(beNil())
                         done()
                     }
@@ -1687,7 +1687,7 @@ class Auth : QuickSpec {
                         expect(rest.auth.method).to(equal(ARTAuthMethod.Token))
 
                         // Reuse the valid token
-                        rest.auth.authorise(nil, options: nil, callback: { tokenDetails, error in
+                        rest.auth.authorize(nil, options: nil, callback: { tokenDetails, error in
                             expect(rest.auth.method).to(equal(ARTAuthMethod.Token))
                             guard let tokenDetails = tokenDetails else {
                                 XCTFail("TokenDetails is nil"); done(); return
@@ -1708,7 +1708,7 @@ class Auth : QuickSpec {
                 let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                 waitUntil(timeout: testTimeout) { done in
-                    rest.auth.authorise(ARTTokenParams(), options: ARTAuthOptions(), callback: { tokenDetails, error in
+                    rest.auth.authorize(ARTTokenParams(), options: ARTAuthOptions(), callback: { tokenDetails, error in
                         guard let error = error else {
                             fail("Error is nil"); done(); return
                         }
@@ -1734,7 +1734,7 @@ class Auth : QuickSpec {
                 expect(token).toNot(beNil())
 
                 waitUntil(timeout: testTimeout) { done in
-                    rest.auth.authorise(nil, options: nil, callback: { tokenDetails, error in
+                    rest.auth.authorize(nil, options: nil, callback: { tokenDetails, error in
                         expect(error).to(beNil())
                         guard let tokenDetails = tokenDetails else {
                             XCTFail("TokenDetails is nil"); done(); return
@@ -1754,7 +1754,7 @@ class Auth : QuickSpec {
                 let rest = ARTRest(options: options)
 
                 waitUntil(timeout: testTimeout) { done in
-                    rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                    rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                         expect(error).to(beNil())
                         guard let tokenDetails = tokenDetails else {
                             XCTFail("TokenDetails is nil"); done(); return
@@ -1788,7 +1788,7 @@ class Auth : QuickSpec {
                     authOptions.queryTime = true
 
                     waitUntil(timeout: testTimeout) { done in
-                        auth.authorise(nil, options: authOptions) { tokenDetails, error in
+                        auth.authorize(nil, options: authOptions) { tokenDetails, error in
                             expect(error).to(beNil())
 
                             guard let tokenDetails = tokenDetails else {
@@ -1796,7 +1796,7 @@ class Auth : QuickSpec {
                             }
                             expect(tokenDetails.token).to(equal(token))
                             
-                            auth.authorise(nil, options: nil) { tokenDetails, error in
+                            auth.authorize(nil, options: nil) { tokenDetails, error in
                                 expect(error).to(beNil())
 
                                 guard let tokenDetails = tokenDetails else {
@@ -1829,7 +1829,7 @@ class Auth : QuickSpec {
                     authOptions.queryTime = true
 
                     waitUntil(timeout: testTimeout) { done in
-                        auth.authorise(nil, options: authOptions) { tokenDetails, error in
+                        auth.authorize(nil, options: authOptions) { tokenDetails, error in
                             expect(authCallbackHasBeenInvoked).to(beTrue())
 
                             authCallbackHasBeenInvoked = false
@@ -1837,7 +1837,7 @@ class Auth : QuickSpec {
 
                             auth.testSuite_forceTokenToExpire()
 
-                            auth.authorise(nil, options: authOptions2) { tokenDetails, error in
+                            auth.authorize(nil, options: authOptions2) { tokenDetails, error in
                                 expect(authCallbackHasBeenInvoked).to(beFalse())
                                 expect(auth.options.useTokenAuth).to(beFalse())
                                 expect(auth.options.queryTime).to(beFalse())
@@ -1862,7 +1862,7 @@ class Auth : QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         // First time
-                        rest.auth.authorise(nil, options: authOptions) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: authOptions) { tokenDetails, error in
                             expect(error).to(beNil())
                             expect(tokenDetails).toNot(beNil())
                             expect(serverTimeRequestWasMade).to(beTrue())
@@ -1870,7 +1870,7 @@ class Auth : QuickSpec {
                             serverTimeRequestWasMade = false
 
                             // Second time
-                            rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                            rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                                 expect(error).to(beNil())
                                 expect(tokenDetails).toNot(beNil())
                                 expect(serverTimeRequestWasMade).to(beFalse())
@@ -1890,7 +1890,7 @@ class Auth : QuickSpec {
                     tokenParams.capability = ExpectedTokenParams.capability
 
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(tokenParams, options: nil) { tokenDetails, error in
+                        rest.auth.authorize(tokenParams, options: nil) { tokenDetails, error in
                             expect(error).to(beNil())
                             expect(tokenDetails).toNot(beNil())
                             done()
@@ -1899,7 +1899,7 @@ class Auth : QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         delay(tokenParams.ttl + 1.0) {
-                            rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                            rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                                 expect(error).to(beNil())
                                 guard let tokenDetails = tokenDetails else {
                                     XCTFail("TokenDetails is nil"); done(); return
@@ -1921,7 +1921,7 @@ class Auth : QuickSpec {
 
                 // ClientId null
                 waitUntil(timeout: testTimeout) { done in
-                    ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
+                    ARTRest(options: options).auth.authorize(nil, options: nil) { tokenDetails, error in
                         expect(error).to(beNil())
                         guard let tokenDetails = tokenDetails else {
                             XCTFail("TokenDetails is nil"); done(); return
@@ -1935,7 +1935,7 @@ class Auth : QuickSpec {
 
                 // ClientId not null
                 waitUntil(timeout: testTimeout) { done in
-                    ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
+                    ARTRest(options: options).auth.authorize(nil, options: nil) { tokenDetails, error in
                         expect(error).to(beNil())
                         guard let tokenDetails = tokenDetails else {
                             XCTFail("TokenDetails is nil"); done(); return
@@ -1960,7 +1960,7 @@ class Auth : QuickSpec {
                     tokenParams.capability = ExpectedTokenParams.capability
 
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(tokenParams, options: nil) { tokenDetails, error in
+                        rest.auth.authorize(tokenParams, options: nil) { tokenDetails, error in
                             expect(error).to(beNil())
                             guard let tokenDetails = tokenDetails else {
                                 XCTFail("TokenDetails is nil"); done(); return
@@ -1994,7 +1994,7 @@ class Auth : QuickSpec {
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
+                        ARTRest(options: options).auth.authorize(nil, options: nil) { tokenDetails, error in
                             expect(error).to(beNil())
                             guard let tokenDetails = tokenDetails else {
                                 XCTFail("TokenDetails is nil"); done(); return
@@ -2012,7 +2012,7 @@ class Auth : QuickSpec {
                     options.authUrl = NSURL(string: "http://echo.ably.io")!
 
                     waitUntil(timeout: testTimeout) { done in
-                        ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
+                        ARTRest(options: options).auth.authorize(nil, options: nil) { tokenDetails, error in
                             expect(error?.code).to(equal(400)) //Bad request
                             expect(tokenDetails).to(beNil())
                             done()
@@ -2042,7 +2042,7 @@ class Auth : QuickSpec {
 
                     // Invalid TokenDetails
                     waitUntil(timeout: testTimeout) { done in
-                        ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
+                        ARTRest(options: options).auth.authorize(nil, options: nil) { tokenDetails, error in
                             guard let error = error else {
                                 fail("Error is nil"); done(); return
                             }
@@ -2057,7 +2057,7 @@ class Auth : QuickSpec {
 
                     // Valid token
                     waitUntil(timeout: testTimeout) { done in
-                        ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
+                        ARTRest(options: options).auth.authorize(nil, options: nil) { tokenDetails, error in
                             expect(error).to(beNil())
                             expect(tokenDetails).toNot(beNil())
                             done()
@@ -2076,7 +2076,7 @@ class Auth : QuickSpec {
 
                     // Invalid token
                     waitUntil(timeout: testTimeout) { done in
-                        ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
+                        ARTRest(options: options).auth.authorize(nil, options: nil) { tokenDetails, error in
                             expect(error).toNot(beNil())
                             expect(tokenDetails).to(beNil())
                             done()
@@ -2088,7 +2088,7 @@ class Auth : QuickSpec {
 
                     // Valid token
                     waitUntil(timeout: testTimeout) { done in
-                        ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
+                        ARTRest(options: options).auth.authorize(nil, options: nil) { tokenDetails, error in
                             expect(error).to(beNil())
                             expect(tokenDetails).toNot(beNil())
                             done()
@@ -2112,7 +2112,7 @@ class Auth : QuickSpec {
                     tokenParams.ttl = 1.0
 
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(tokenParams, options: authOptions) { tokenDetails, error in
+                        rest.auth.authorize(tokenParams, options: authOptions) { tokenDetails, error in
                             expect(error).to(beNil())
                             guard let issued = tokenDetails?.issued else {
                                 fail("TokenDetails.issued is nil"); done(); return
@@ -2130,7 +2130,7 @@ class Auth : QuickSpec {
                     authOptions.key = nil
                     // First time
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(nil, options: authOptions) { _, error in
+                        rest.auth.authorize(nil, options: authOptions) { _, error in
                             guard let error = error else {
                                 fail("Error is nil"); done(); return
                             }
@@ -2141,7 +2141,7 @@ class Auth : QuickSpec {
 
                     // Second time
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(nil, options: nil) { _, error in
+                        rest.auth.authorize(nil, options: nil) { _, error in
                             guard let error = error else {
                                 fail("Error is nil"); done(); return
                             }
@@ -2170,7 +2170,7 @@ class Auth : QuickSpec {
                     authOptions.authHeaders = ["X-Ably":"Test"]
 
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(nil, options: authOptions) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: authOptions) { tokenDetails, error in
                             expect(error).to(beNil())
                             guard let tokenDetails = tokenDetails else {
                                 XCTFail("TokenDetails is nil"); done(); return
@@ -2188,7 +2188,7 @@ class Auth : QuickSpec {
                     authOptions.authParams = nil
                     authOptions.authHeaders = nil
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(nil, options: authOptions) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: authOptions) { tokenDetails, error in
                             guard let error = error else {
                                 fail("Error is nil"); done(); return
                             }
@@ -2202,7 +2202,7 @@ class Auth : QuickSpec {
 
                     // Repeat
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                             guard let error = error else {
                                 fail("Error is nil"); done(); return
                             }
@@ -2216,7 +2216,7 @@ class Auth : QuickSpec {
 
                     authOptions.authUrl = nil
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(nil, options: authOptions) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: authOptions) { tokenDetails, error in
                             guard let error = error else {
                                 fail("Error is nil"); done(); return
                             }
@@ -2231,7 +2231,7 @@ class Auth : QuickSpec {
 
                     // Repeat
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                             guard let error = error else {
                                 fail("Error is nil"); done(); return
                             }
@@ -2257,7 +2257,7 @@ class Auth : QuickSpec {
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(nil, options: authOptions) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: authOptions) { tokenDetails, error in
                             expect(error).to(beNil())
                             expect(tokenDetails?.token).to(equal("token"))
                             expect(authCallbackHasBeenInvoked).to(beTrue())
@@ -2268,7 +2268,7 @@ class Auth : QuickSpec {
                     authCallbackHasBeenInvoked = false
 
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                             expect(error).to(beNil())
                             expect(tokenDetails?.token).to(equal("token"))
                             expect(authCallbackHasBeenInvoked).to(beTrue())
@@ -2280,7 +2280,7 @@ class Auth : QuickSpec {
 
                     authOptions.authCallback = nil
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(nil, options: authOptions) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: authOptions) { tokenDetails, error in
                             guard let error = error else {
                                 fail("Error is nil"); done(); return
                             }
@@ -2293,7 +2293,7 @@ class Auth : QuickSpec {
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                             guard let error = error else {
                                 fail("Error is nil"); done(); return
                             }
@@ -2318,7 +2318,7 @@ class Auth : QuickSpec {
 
                     // Defaults
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                             guard let error = error else {
                                 fail("Error is nil"); done(); return
                             }
@@ -2344,7 +2344,7 @@ class Auth : QuickSpec {
                     defer { hook.remove() }
 
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(tokenParams, options: authOptions) { tokenDetails, error in
+                        rest.auth.authorize(tokenParams, options: authOptions) { tokenDetails, error in
                             expect(error).to(beNil())
                             guard let tokenDetails = tokenDetails else {
                                 XCTFail("TokenDetails is nil"); done(); return
@@ -2361,7 +2361,7 @@ class Auth : QuickSpec {
 
                     // Subsequent authorisations
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                             expect(error).to(beNil())
                             guard let tokenDetails = tokenDetails else {
                                 fail("TokenDetails is nil"); done(); return
@@ -2399,7 +2399,7 @@ class Auth : QuickSpec {
                     authOptions.queryTime = true
 
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(nil, options: authOptions, callback: { tokenDetails, error in
+                        rest.auth.authorize(nil, options: authOptions, callback: { tokenDetails, error in
                             expect(error).to(beNil())
                             guard let tokenDetails = tokenDetails else {
                                 fail("TokenDetails is nil"); done(); return
@@ -2415,7 +2415,7 @@ class Auth : QuickSpec {
                     rest.auth.testSuite_forceTokenToExpire()
 
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                             expect(error).to(beNil())
                             guard let tokenDetails = tokenDetails else {
                                 fail("TokenDetails is nil"); done(); return
@@ -2473,7 +2473,7 @@ class Auth : QuickSpec {
                     defer { hook.remove() }
 
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                             expect(error).to(beNil())
                             guard let tokenDetails = tokenDetails else {
                                 fail("TokenDetails is nil"); done(); return
@@ -2492,7 +2492,7 @@ class Auth : QuickSpec {
                     rest.auth.testSuite_forceTokenToExpire()
 
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                             expect(error).to(beNil())
                             guard let tokenDetails = tokenDetails else {
                                 fail("TokenDetails is nil"); done(); return
@@ -2548,7 +2548,7 @@ class Auth : QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         expect(rest.auth.timeOffset).to(equal(fakeOffset))
-                        rest.auth.authorise(nil, options: authOptions) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: authOptions) { tokenDetails, error in
                             expect(error).to(beNil())
                             expect(tokenDetails).toNot(beNil())
                             expect(rest.auth.timeOffset).toNot(equal(fakeOffset))
@@ -2579,6 +2579,14 @@ class Auth : QuickSpec {
                 }
 
             }
+
+            // RSA10l
+            it("has an alias method @RestClient#authorise@ and should use @RealtimeClient#authorize@") {
+                let rest = ARTRest(key: "xxxx:xxxx")
+                expect(rest.auth.respondsToSelector(#selector(ARTAuth.authorise(_:options:callback:)))) == true
+                expect(rest.auth.respondsToSelector(#selector(ARTAuth.authorize(_:options:callback:)))) == true
+            }
+
         }
 
         describe("TokenParams") {
@@ -2697,7 +2705,7 @@ class Auth : QuickSpec {
                 reauthOptions.force = true
 
                 waitUntil(timeout: testTimeout) { done in
-                    realtime.auth.authorise(nil, options: reauthOptions) { reauthTokenDetails, error in
+                    realtime.auth.authorize(nil, options: reauthOptions) { reauthTokenDetails, error in
                         expect(error).to(beNil())
                         expect(reauthTokenDetails?.token).toNot(beNil())
                         done()
@@ -2719,7 +2727,7 @@ class Auth : QuickSpec {
             it("timestamp should not be a member of any default token params") {
                 let rest = ARTRest(options: AblyTests.commonAppSetup())
                 waitUntil(timeout: testTimeout) { done in
-                    rest.auth.authorise(nil, options: nil) { _, error in
+                    rest.auth.authorize(nil, options: nil) { _, error in
                         expect(error).to(beNil())
                         guard let defaultTokenParams = rest.auth.options.defaultTokenParams else {
                             fail("DefaultTokenParams is nil"); done(); return
