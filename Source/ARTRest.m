@@ -94,10 +94,7 @@
             [self executeRequest:request completion:callback];
             break;
         case ARTAuthenticationOn:
-            [self executeRequestWithAuthentication:request withMethod:self.auth.method force:NO completion:callback];
-            break;
-        case ARTAuthenticationNewToken:
-            [self executeRequestWithAuthentication:request withMethod:self.auth.method force:YES completion:callback];
+            [self executeRequestWithAuthentication:request withMethod:self.auth.method completion:callback];
             break;
         case ARTAuthenticationUseBasic:
             [self executeRequestWithAuthentication:request withMethod:ARTAuthMethodBasic completion:callback];
@@ -106,11 +103,7 @@
 }
 
 - (void)executeRequestWithAuthentication:(NSMutableURLRequest *)request withMethod:(ARTAuthMethod)method completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
-    [self executeRequestWithAuthentication:request withMethod:method force:NO completion:callback];
-}
-
-- (void)executeRequestWithAuthentication:(NSMutableURLRequest *)request withMethod:(ARTAuthMethod)method force:(BOOL)force completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
-    [self prepareAuthorisationHeader:method force:force completion:^(NSString *authorization, NSError *error) {
+    [self prepareAuthorisationHeader:method completion:^(NSString *authorization, NSError *error) {
         if (error && callback) {
             callback(nil, nil, error);
         } else {
@@ -142,7 +135,7 @@
             if (dataError.code >= 40140 && dataError.code < 40150) {
                 // Send it again, requesting a new token (forward callback)
                 [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p requesting new token", self];
-                [self executeRequest:request withAuthOption:ARTAuthenticationNewToken completion:callback];
+                [self executeRequest:request withAuthOption:ARTAuthenticationOn completion:callback];
                 return;
             } else {
                 // Return error with HTTP StatusCode if ARTErrorStatusCode does not exist
@@ -198,10 +191,6 @@
 }
 
 - (void)prepareAuthorisationHeader:(ARTAuthMethod)method completion:(void (^)(NSString *authorization, NSError *error))callback {
-    [self prepareAuthorisationHeader:method force:NO completion:callback];
-}
-
-- (void)prepareAuthorisationHeader:(ARTAuthMethod)method force:(BOOL)force completion:(void (^)(NSString *authorization, NSError *error))callback {
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p calculating authorization %lu", self, (unsigned long)method];
     // FIXME: use encoder and should be managed on ARTAuth
     if (method == ARTAuthMethodBasic) {
@@ -211,7 +200,6 @@
         if (callback) callback([NSString stringWithFormat:@"Basic %@", keyBase64], nil);
     }
     else {
-        self.options.force = force;
         [self.auth authorize:nil options:self.options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
             if (error) {
                 if (callback) callback(nil, error);

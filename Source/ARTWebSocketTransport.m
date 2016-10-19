@@ -92,7 +92,6 @@ enum {
     ARTClientOptions *options = self.options;
     if (forceNewToken) {
         options = [options copy];
-        options.force = true;
     }
     if ([options isBasicAuth]) {
         // Basic

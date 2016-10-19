@@ -129,7 +129,6 @@
     self.options.authParams = [customOptions.authParams copy];
     self.options.useTokenAuth = customOptions.useTokenAuth;
     self.options.queryTime = false;
-    self.options.force = false;
 }
 
 - (ARTTokenParams *)mergeParams:(ARTTokenParams *)customParams {
@@ -317,21 +316,14 @@
 - (void)authorize:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
     BOOL requestNewToken = NO;
 
-    ARTAuthOptions *replacedOptions;
-    if ([authOptions isOnlyForceTrue]) {
-        replacedOptions = [self.options copy];
-        replacedOptions.force = YES;
-    }
-    else {
-        replacedOptions = [authOptions copy] ? : [self.options copy];
-    }
+    ARTAuthOptions *replacedOptions = [authOptions copy] ? : [self.options copy];
     [self storeOptions:replacedOptions];
 
     ARTTokenParams *currentTokenParams = [self mergeParams:tokenParams];
     [self storeParams:currentTokenParams];
 
     // Reuse or not reuse the current token
-    if (replacedOptions.force == NO && self.tokenDetails) {
+    if (self.tokenDetails) {
         if (self.tokenDetails.expires == nil) {
             [self.logger verbose:@"RS:%p ARTAuth: reuse current token.", _rest];
             requestNewToken = NO;
@@ -346,10 +338,7 @@
         }
     }
     else {
-        if (replacedOptions.force == YES)
-            [self.logger verbose:@"RS:%p ARTAuth: forced requesting new token.", _rest];
-        else
-            [self.logger verbose:@"RS:%p ARTAuth: requesting new token.", _rest];
+        [self.logger verbose:@"RS:%p ARTAuth: requesting new token.", _rest];
         requestNewToken = YES;
     }
 

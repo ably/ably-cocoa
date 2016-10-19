@@ -23,8 +23,7 @@
 typedef NS_ENUM(NSUInteger, ARTAuthentication) {
     ARTAuthenticationOff,
     ARTAuthenticationOn,
-    ARTAuthenticationUseBasic,
-    ARTAuthenticationNewToken
+    ARTAuthenticationUseBasic
 };
 
 typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
