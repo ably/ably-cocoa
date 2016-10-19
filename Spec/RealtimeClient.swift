@@ -704,6 +704,51 @@ class RealtimeClient: QuickSpec {
                     }
                 }
 
+                // RTC8b1
+                it("authorize call should complete with the new token once the connection has moved to the CONNECTED state, or with an error if the connection instead moves to the FAILED, SUSPENDED, or CLOSED states") {
+                    let options = AblyTests.clientOptions()
+                    options.autoConnect = false
+                    let testToken = getTestToken()
+                    options.token = testToken
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    client.setTransportClass(TestProxyTransport.self)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connecting) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+
+                            let tokenParams = ARTTokenParams()
+                            tokenParams.clientId = "john"
+
+                            let authOptions = ARTAuthOptions()
+                            authOptions.authCallback = { tokenParams, completion in
+                                completion(getTestToken(clientId: "tester"), nil)
+                            }
+
+                            client.auth.authorize(tokenParams, options: authOptions) { tokenDetails, error in
+                                guard let error = error else {
+                                    fail("ErrorInfo is nil"); done(); return
+                                }
+                                expect(error.code).to(equal(40102))
+                                expect(error.description).to(contain("incompatible credentials"))
+                                expect(tokenDetails).to(beNil())
+
+                                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Failed))
+
+                                guard let transport = client.transport as? TestProxyTransport else {
+                                    fail("TestProxyTransport is not set"); done(); return
+                                }
+                                expect(transport.protocolMessagesSent.filter({ $0.action == .Connect })).to(haveCount(2))
+                                expect(transport.protocolMessagesReceived.filter({ $0.action == .Connected })).to(haveCount(0))
+                                expect(transport.protocolMessagesReceived.filter({ $0.action == .Error })).to(haveCount(1))
+                                done()
+                            }
+                        }
+                        client.connect()
+                    }
+                }
+
             }
 
             it("should never register any connection listeners for internal use with the public EventEmitter") {
