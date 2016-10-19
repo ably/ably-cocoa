@@ -44,7 +44,9 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)requestToken:(art_nullable ARTTokenParams *)tokenParams withOptions:(art_nullable ARTAuthOptions *)authOptions
             callback:(void (^)(ARTTokenDetails *__art_nullable, NSError *__art_nullable))callback;
 
-- (void)authorise:(art_nullable ARTTokenParams *)tokenParams options:(art_nullable ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *__art_nullable, NSError *__art_nullable))callback;
+- (void)authorise:(art_nullable ARTTokenParams *)tokenParams options:(art_nullable ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *__art_nullable, NSError *__art_nullable))callback DEPRECATED_MSG_ATTRIBUTE("method will be removed in v1.0. Use authorize: method instead.");
+
+- (void)authorize:(art_nullable ARTTokenParams *)tokenParams options:(art_nullable ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *__art_nullable, NSError *__art_nullable))callback;
 
 - (void)createTokenRequest:(art_nullable ARTTokenParams *)tokenParams options:(art_nullable ARTAuthOptions *)options
                   callback:(void (^)(ARTTokenRequest *__art_nullable tokenRequest, NSError *__art_nullable error))callback;

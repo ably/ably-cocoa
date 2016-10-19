@@ -317,6 +317,10 @@
 }
 
 - (void)authorise:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
+    [self authorize:tokenParams options:authOptions callback:callback];
+}
+
+- (void)authorize:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
     BOOL requestNewToken = NO;
 
     ARTAuthOptions *replacedOptions;
