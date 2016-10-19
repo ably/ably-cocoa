@@ -632,6 +632,40 @@ class RealtimeClient: QuickSpec {
                     }
                 }
 
+                // RTC8a3
+                it("authorize call should be indicated as completed with the new token or error only once realtime has responded to the AUTH with either a CONNECTED or ERROR respectively") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    options.useTokenAuth = true
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    client.setTransportClass(TestProxyTransport.self)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connected) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+                            done()
+                        }
+                        client.connect()
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.auth.authorize(nil, options: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            expect(tokenDetails).toNot(beNil())
+
+                            guard let transport = client.transport as? TestProxyTransport else {
+                                fail("TestProxyTransport is not set"); done(); return
+                            }
+
+                            expect(transport.protocolMessagesSent.filter({ $0.action == .Auth })).to(haveCount(1))
+                            expect(transport.protocolMessagesReceived.filter({ $0.action == .Connected })).to(haveCount(2))
+                            expect(transport.protocolMessagesReceived.filter({ $0.action == .Error })).to(haveCount(0))
+                            done()
+                        }
+                    }
+                }
+
             }
 
             it("should never register any connection listeners for internal use with the public EventEmitter") {
