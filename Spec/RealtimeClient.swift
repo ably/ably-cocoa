@@ -528,6 +528,64 @@ class RealtimeClient: QuickSpec {
                     expect(transport.protocolMessagesReceived.filter{ $0.action == .Error }).to(beEmpty())
                 }
 
+                // RTC8a1 - part 3
+                it("when capabilities are downgraded, client should receive an ERROR ProtocolMessage with a channel property") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    let testToken = getTestToken()
+                    options.token = testToken
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    client.setTransportClass(TestProxyTransport.self)
+
+                    let channel = client.channels.get("test")
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connect()
+                        channel.attach() { _ in
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+
+                        channel.once(.Failed) { error in
+                            guard let error = error else {
+                                fail("ErrorInfo is nil"); partialDone(); return
+                            }
+                            expect(error).to(equal(channel.errorReason))
+
+                            guard let transport = client.transport as? TestProxyTransport else {
+                                fail("TestProxyTransport is not set"); partialDone(); return
+                            }
+
+                            let errorMessages = transport.protocolMessagesReceived.filter{ $0.action == .Error }
+                            expect(errorMessages).to(haveCount(1))
+
+                            guard let errorMessage = errorMessages.first else {
+                                fail("Missing ERROR protocol message"); partialDone(); return
+                            }
+                            expect(errorMessage.channel).to(equal("test"))
+                            partialDone()
+                        }
+
+                        let tokenParams = ARTTokenParams()
+                        tokenParams.capability = "{\"test\":[\"subscribe\"]}"
+
+                        client.auth.authorize(tokenParams, options: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            guard let tokenDetails = tokenDetails else {
+                                fail("TokenDetails is nil"); partialDone(); return
+                            }
+                            expect(tokenDetails.token).toNot(equal(testToken))
+                            expect(tokenDetails.capability).to(equal(tokenParams.capability))
+                            partialDone()
+                        }
+                    }
+
+                    expect(client.auth.tokenDetails?.token).toNot(equal(testToken))
+                }
+
             }
 
             it("should never register any connection listeners for internal use with the public EventEmitter") {
