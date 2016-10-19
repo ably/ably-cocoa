@@ -352,6 +352,64 @@ class RealtimeClient: QuickSpec {
                 }
             }
 
+            // RTC8
+            context("Auth#authorize should upgrade the connection with current token") {
+
+                // RTC8a
+                it("in the CONNECTED state and auth#authorize is called, the client must obtain a new token, send an AUTH ProtocolMessage with an auth attribute") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    options.useTokenAuth = true
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    client.setTransportClass(TestProxyTransport.self)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connected) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+                            done()
+                        }
+                        client.connect()
+                    }
+
+                    guard let firstToken = client.auth.tokenDetails?.token else {
+                        fail("Client has no token"); return
+                    }
+
+                    guard let transport = client.transport as? TestProxyTransport else {
+                        fail("TestProxyTransport is not set"); return
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.auth.authorize(nil, options: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            guard let tokenDetails = tokenDetails else {
+                                fail("TokenDetails is nil"); done(); return
+                            }
+
+                            let authMessages = transport.protocolMessagesSent.filter({ $0.action == .Auth })
+                            expect(authMessages).to(haveCount(1))
+
+                            guard let authMessage = authMessages.first else {
+                                fail("Missing AUTH protocol message"); done(); return
+                            }
+
+                            expect(authMessage.auth).toNot(beNil())
+
+                            guard let accessToken = authMessage.auth?.accessToken else {
+                                fail("Missing accessToken from AUTH ProtocolMessage auth attribute"); done(); return
+                            }
+
+                            expect(accessToken).toNot(equal(firstToken))
+                            expect(tokenDetails.token).toNot(equal(firstToken))
+                            expect(tokenDetails.token).to(equal(accessToken))
+                            done()
+                        }
+                    }
+                }
+
+            }
+
             it("should never register any connection listeners for internal use with the public EventEmitter") {
                 let options = AblyTests.commonAppSetup()
                 options.autoConnect = false
