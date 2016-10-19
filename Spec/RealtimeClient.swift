@@ -586,6 +586,52 @@ class RealtimeClient: QuickSpec {
                     expect(client.auth.tokenDetails?.token).toNot(equal(testToken))
                 }
 
+                // RTC8a2
+                it("when the authentication token change fails, client should receive an ERROR ProtocolMessage triggering the connection to transition to the FAILED state") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    options.clientId = "ios"
+                    options.useTokenAuth = true
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    client.setTransportClass(TestProxyTransport.self)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connected) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+                            done()
+                        }
+                        client.connect()
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+
+                        let tokenParams = ARTTokenParams()
+                        tokenParams.clientId = "android"
+
+                        client.connection.once(.Failed) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ConnectionStateChange is nil"); partialDone(); return
+                            }
+                            expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.Connected))
+                            expect(stateChange.reason?.code).to(equal(40102))
+                            expect(stateChange.reason?.description).to(contain("incompatible credentials"))
+                            partialDone()
+                        }
+
+                        client.auth.authorize(tokenParams, options: nil) { tokenDetails, error in
+                            guard let error = error else {
+                                fail("ErrorInfo is nil"); partialDone(); return
+                            }
+                            expect(error.code).to(equal(40102))
+                            expect(error.description).to(contain("incompatible credentials"))
+                            expect(tokenDetails).to(beNil())
+                            partialDone()
+                        }
+                    }
+                }
+
             }
 
             it("should never register any connection listeners for internal use with the public EventEmitter") {
