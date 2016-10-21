@@ -10,13 +10,13 @@
 
 @implementation NSDate (ARTUtil)
 
-+ (instancetype)artDateFromIntegerMs:(NSInteger)ms {
++ (instancetype)artDateFromIntegerMs:(long long)ms {
     NSTimeInterval intervalSince1970 = ms / 1000.0;
     return [NSDate dateWithTimeIntervalSince1970:intervalSince1970];
 }
 
 + (instancetype)artDateFromNumberMs:(NSNumber *)number {
-    return [self artDateFromIntegerMs:[number integerValue]];
+    return [self artDateFromIntegerMs:[number longLongValue]];
 }
 
 - (NSNumber *)artToNumberMs {
