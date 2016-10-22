@@ -11,7 +11,7 @@
 @interface NSDate (ARTUtil)
 
 + (instancetype)artDateFromNumberMs:(NSNumber *)number;
-+ (instancetype)artDateFromIntegerMs:(NSInteger)ms;
++ (instancetype)artDateFromIntegerMs:(long long)ms;
 
 - (NSNumber *)artToNumberMs;
 - (NSInteger)artToIntegerMs;
