@@ -15,6 +15,8 @@ NSString *const ARTAblyErrorDomain = @"io.ably.cocoa";
 
 NSString *const ARTFallbackIncompatibleOptionsException = @"ARTFallbackIncompatibleOptionsException";
 
+NSString *const ARTAblyMessageNoMeansToRenewToken = @"no means to renew the token is provided (either an API key, authCallback or authUrl)";
+
 NSInteger getStatusFromCode(NSInteger code) {
     return code / 100;
 }

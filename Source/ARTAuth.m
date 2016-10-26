@@ -183,6 +183,26 @@
     return request;
 }
 
+- (BOOL)tokenIsRenewable {
+    return [self canRenewTokenAutomatically:self.options];
+}
+
+- (BOOL)canRenewTokenAutomatically:(ARTAuthOptions *)options {
+    return options.authCallback || options.authUrl || options.key;
+}
+
+- (BOOL)tokenRemainsValid {
+    if (self.tokenDetails && self.tokenDetails.token) {
+        if (self.tokenDetails.expires == nil) {
+            return YES;
+        }
+        else if ([self.tokenDetails.expires timeIntervalSinceDate:[self currentDate]] > 0) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
 - (void)requestToken:(ARTTokenParams *)tokenParams withOptions:(ARTAuthOptions *)authOptions
             callback:(void (^)(ARTTokenDetails *, NSError *))callback {
     
@@ -191,8 +211,8 @@
     ARTTokenParams *currentTokenParams = tokenParams ? tokenParams : _tokenParams;
     currentTokenParams.timestamp = [self currentDate];
 
-    if (replacedOptions.key == nil && replacedOptions.authCallback == nil && replacedOptions.authUrl == nil) {
-        callback(nil, [ARTErrorInfo createWithCode:ARTStateRequestTokenFailed message:@"no means to renew the token is provided (either an API key, authCallback or authUrl)"]);
+    if (![self canRenewTokenAutomatically:replacedOptions]) {
+        callback(nil, [ARTErrorInfo createWithCode:ARTStateRequestTokenFailed message:ARTAblyMessageNoMeansToRenewToken]);
         return;
     }
 
@@ -314,7 +334,6 @@
 }
 
 - (void)authorize:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
-    BOOL requestNewToken = NO;
 
     ARTAuthOptions *replacedOptions = [authOptions copy] ? : [self.options copy];
     [self storeOptions:replacedOptions];
@@ -322,46 +341,22 @@
     ARTTokenParams *currentTokenParams = [self mergeParams:tokenParams];
     [self storeParams:currentTokenParams];
 
-    // Reuse or not reuse the current token
-    if (self.tokenDetails) {
-        if (self.tokenDetails.expires == nil) {
-            [self.logger verbose:@"RS:%p ARTAuth: reuse current token.", _rest];
-            requestNewToken = NO;
-        }
-        else if ([self.tokenDetails.expires timeIntervalSinceDate:[self currentDate]] > 0) {
-            [self.logger verbose:@"RS:%p ARTAuth: current token has not expired yet. Reusing token details.", _rest];
-            requestNewToken = NO;
-        }
-        else {
-            [self.logger verbose:@"RS:%p ARTAuth: current token has expired. Requesting new token.", _rest];
-            requestNewToken = YES;
-        }
-    }
-    else {
-        [self.logger verbose:@"RS:%p ARTAuth: requesting new token.", _rest];
-        requestNewToken = YES;
-    }
-
-    if (requestNewToken) {
-        [self requestToken:currentTokenParams withOptions:replacedOptions callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
-            if (error) {
-                [self.logger verbose:@"RS:%p ARTAuth: token request failed: %@", _rest, error];
-                if (callback) {
-                    callback(nil, error);
-                }
-            } else {
-                _tokenDetails = tokenDetails;
-                [self.logger verbose:@"RS:%p ARTAuth: token request succeeded: %@", _rest, tokenDetails];
-                if (callback) {
-                    callback(self.tokenDetails, nil);
-                }
+    // Request always a new token
+    [self.logger verbose:@"RS:%p ARTAuth: requesting new token.", _rest];
+    [self requestToken:currentTokenParams withOptions:replacedOptions callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+        if (error) {
+            [self.logger verbose:@"RS:%p ARTAuth: token request failed: %@", _rest, error];
+            if (callback) {
+                callback(nil, error);
             }
-        }];
-    } else {
-        if (callback) {
-            callback(self.tokenDetails, nil);
+        } else {
+            _tokenDetails = tokenDetails;
+            [self.logger verbose:@"RS:%p ARTAuth: token request succeeded: %@", _rest, tokenDetails];
+            if (callback) {
+                callback(self.tokenDetails, nil);
+            }
         }
-    }
+    }];
 }
 
 - (void)createTokenRequest:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)options callback:(void (^)(ARTTokenRequest *, NSError *))callback {

@@ -38,6 +38,15 @@ ART_ASSUME_NONNULL_BEGIN
 // Discard the cached local clock offset
 - (void)discardTimeOffset;
 
+// Configured options does have a means to renew the token automatically.
+- (BOOL)canRenewTokenAutomatically:(ARTAuthOptions *)options;
+
+/// Does the client have a means to renew the token automatically.
+- (BOOL)tokenIsRenewable;
+
+/// Does the client have a valid token (i.e. not expired).
+- (BOOL)tokenRemainsValid;
+
 // Private TokenDetails setter for testing only
 - (void)setTokenDetails:(ARTTokenDetails *)tokenDetails;
 

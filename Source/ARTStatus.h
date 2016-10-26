@@ -49,6 +49,11 @@ FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
 FOUNDATION_EXPORT NSString *const ARTFallbackIncompatibleOptionsException;
 
 /**
+ Ably client error messages
+ */
+FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
+
+/**
  Ably client error class
  */
 @interface ARTErrorInfo : NSError
