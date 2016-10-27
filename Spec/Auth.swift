@@ -1678,6 +1678,7 @@ class Auth : QuickSpec {
             // RSA10a
             it("should create a token if needed and use it") {
                 let options = AblyTests.clientOptions(requestToken: true)
+                options.key = AblyTests.commonAppSetup().key
                 waitUntil(timeout: testTimeout) { done in
                     // Client with Token
                     let rest = ARTRest(options: options)
@@ -1691,7 +1692,7 @@ class Auth : QuickSpec {
                             guard let tokenDetails = tokenDetails else {
                                 XCTFail("TokenDetails is nil"); done(); return
                             }
-                            expect(tokenDetails.token).to(equal(options.token))
+                            expect(tokenDetails.token).toNot(equal(options.token))
 
                             publishTestMessage(rest, completion: { error in
                                 expect(error).to(beNil())
