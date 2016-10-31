@@ -898,14 +898,14 @@ class RestClient: QuickSpec {
                         }
                     }
 
-                    expect(testHTTPExecutor.requests).to(haveCount(3))
-                    if testHTTPExecutor.requests.count != 3 {
+                    expect(testHTTPExecutor.requests).to(haveCount(2))
+                    if testHTTPExecutor.requests.count != 2 {
                         return
                     }
 
+                    expect(client.options.restHost).to(equal("fake.ably.io"))
                     expect(NSRegularExpression.match(testHTTPExecutor.requests[0].URL!.absoluteString, pattern: "//\(client.options.restHost)")).to(beTrue())
-                    expect(NSRegularExpression.match(testHTTPExecutor.requests[1].URL!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-                    expect(NSRegularExpression.match(testHTTPExecutor.requests[2].URL!.absoluteString, pattern: "//\(client.options.restHost)")).to(beTrue())
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[1].URL!.absoluteString, pattern: "//\(client.options.restHost)")).to(beTrue())
                 }
 
                 // RSC15a

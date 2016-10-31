@@ -92,8 +92,8 @@ NSString *const ARTDefaultProduction = @"production";
     options.clientId = self.clientId;
     options.port = self.port;
     options.tlsPort = self.tlsPort;
-    if (self.hasCustomRestHost) options.restHost = self.restHost;
-    if (self.hasCustomRealtimeHost) options.realtimeHost = self.realtimeHost;
+    if (self->_restHost) options.restHost = self.restHost;
+    if (self->_realtimeHost) options.realtimeHost = self.realtimeHost;
     options.queueMessages = self.queueMessages;
     options.echoMessages = self.echoMessages;
     options.recover = self.recover;
@@ -126,11 +126,19 @@ NSString *const ARTDefaultProduction = @"production";
 }
 
 - (BOOL)hasCustomRestHost {
-    return _restHost != nil;
+    return (_restHost && ![_restHost isEqualToString:[ARTDefault restHost]]) || _environment;
+}
+
+- (BOOL)hasDefaultRestHost {
+    return ![self hasCustomRestHost];
 }
 
 - (BOOL)hasCustomRealtimeHost {
-    return _realtimeHost != nil;
+    return (_realtimeHost && ![_realtimeHost isEqualToString:[ARTDefault realtimeHost]]) || _environment;
+}
+
+- (BOOL)hasDefaultRealtimeHost {
+    return ![self hasCustomRealtimeHost];
 }
 
 - (void)setFallbackHosts:(art_nullable __GENERIC(NSArray, NSString *) *)value {
