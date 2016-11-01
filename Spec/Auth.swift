@@ -274,7 +274,8 @@ class Auth : QuickSpec {
 
                     it("on rest") {
                         let expectedClientId = "client_string"
-                        let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                        let options = AblyTests.commonAppSetup()
+                        options.useTokenAuth = true
                         options.clientId = expectedClientId
 
                         let client = ARTRest(options: options)
@@ -282,11 +283,13 @@ class Auth : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             // Token
-                            client.prepareAuthorisationHeader(ARTAuthMethod.Token) { token, error in
-                                if let e = error {
-                                    XCTFail(e.description)
+                            client.auth.authorize(nil, options: nil) { tokenDetails, error in
+                                expect(error).to(beNil())
+                                expect(client.auth.method).to(equal(ARTAuthMethod.Token))
+                                guard let tokenDetails = tokenDetails else {
+                                    fail("TokenDetails is nil"); done(); return
                                 }
-                                expect(client.auth.clientId).to(equal(expectedClientId))
+                                expect(tokenDetails.clientId).to(equal(expectedClientId))
                                 done()
                             }
                         }
@@ -349,19 +352,17 @@ class Auth : QuickSpec {
                 
                 // RSA15b
                 it("should permit to be unauthenticated") {
-                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                    let options = AblyTests.commonAppSetup()
                     options.clientId = nil
                     
                     let clientBasic = ARTRest(options: options)
 
                     waitUntil(timeout: testTimeout) { done in
                         // Basic
-                        clientBasic.prepareAuthorisationHeader(ARTAuthMethod.Basic) { token, error in
-                            if let e = error {
-                                XCTFail(e.description)
-                            }
+                        clientBasic.auth.authorize(nil, options: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
                             expect(clientBasic.auth.clientId).to(beNil())
-                            options.tokenDetails = clientBasic.auth.tokenDetails
+                            options.tokenDetails = tokenDetails
                             done()
                         }
                     }
@@ -370,16 +371,12 @@ class Auth : QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         // Last TokenDetails
-                        clientToken.prepareAuthorisationHeader(ARTAuthMethod.Token) { token, error in
-                            if let e = error {
-                                XCTFail(e.description)
-                            }
+                        clientToken.auth.authorize(nil, options: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
                             expect(clientToken.auth.clientId).to(beNil())
                             done()
                         }
                     }
-
-                    // TODO: Realtime.connectionDetails
                 }
                 
                 // RSA15c
@@ -602,8 +599,9 @@ class Auth : QuickSpec {
                     
                     // RSA7b2
                     it("when tokenRequest or tokenDetails has clientId not null or wildcard string") {
-                        let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                        let options = AblyTests.commonAppSetup()
                         options.clientId = "client_string"
+                        options.useTokenAuth = true
                         
                         let client = ARTRest(options: options)
                         client.httpExecutor = testHTTPExecutor
@@ -611,10 +609,9 @@ class Auth : QuickSpec {
                         // TokenDetails
                         waitUntil(timeout: 10) { done in
                             // Token
-                            client.prepareAuthorisationHeader(ARTAuthMethod.Token) { token, error in
-                                if let e = error {
-                                    XCTFail(e.description)
-                                }
+                            client.auth.authorize(nil, options: nil) { token, error in
+                                expect(error).to(beNil())
+                                expect(client.auth.method).to(equal(ARTAuthMethod.Token))
                                 expect(client.auth.clientId).to(equal(options.clientId))
                                 done()
                             }
@@ -1270,7 +1267,6 @@ class Auth : QuickSpec {
                 tokenParams.clientId = nil
 
                 let authOptions = ARTAuthOptions()
-                authOptions.force = true
                 authOptions.queryTime = true
                 authOptions.key = options.key
 
@@ -1674,31 +1670,60 @@ class Auth : QuickSpec {
         }
 
         // RSA10
-        describe("authorise") {
+        describe("authorize") {
 
             // RSA10a
-            it("should create a token if needed and use it") {
-                let options = AblyTests.clientOptions(requestToken: true)
+            it("should always create a token") {
+                let options = AblyTests.commonAppSetup()
+                options.useTokenAuth = true
+                let rest = ARTRest(options: options)
+                let channel = rest.channels.get("test")
+
                 waitUntil(timeout: testTimeout) { done in
-                    // Client with Token
-                    let rest = ARTRest(options: options)
-                    publishTestMessage(rest, completion: { error in
+                    channel.publish(nil, data: "first check") { error in
                         expect(error).to(beNil())
-                        expect(rest.auth.method).to(equal(ARTAuthMethod.Token))
+                        done()
+                    }
+                }
 
-                        // Reuse the valid token
-                        rest.auth.authorize(nil, options: nil, callback: { tokenDetails, error in
-                            expect(rest.auth.method).to(equal(ARTAuthMethod.Token))
-                            guard let tokenDetails = tokenDetails else {
-                                XCTFail("TokenDetails is nil"); done(); return
+                // Check that token exists
+                expect(rest.auth.method).to(equal(ARTAuthMethod.Token))
+                guard let firstTokenDetails = rest.auth.tokenDetails else {
+                    fail("TokenDetails is nil"); return
+                }
+                expect(firstTokenDetails.token).toNot(beNil())
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.publish(nil, data: "second check") { error in
+                        expect(error).to(beNil())
+                        done()
+                    }
+                }
+
+                // Check that token has not changed
+                expect(rest.auth.method).to(equal(ARTAuthMethod.Token))
+                guard let secondTokenDetails = rest.auth.tokenDetails else {
+                    fail("TokenDetails is nil"); return
+                }
+                expect(firstTokenDetails).to(beIdenticalTo(secondTokenDetails))
+
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.authorize(nil, options: nil, callback: { tokenDetails, error in
+                        expect(error).to(beNil())
+                        guard let tokenDetails = tokenDetails else {
+                            XCTFail("TokenDetails is nil"); done(); return
+                        }
+                        // Check that token has changed
+                        expect(tokenDetails.token).toNot(equal(firstTokenDetails.token))
+
+                        channel.publish(nil, data: "third check") { error in
+                            expect(error).to(beNil())
+                            guard let thirdTokenDetails = rest.auth.tokenDetails else {
+                                fail("TokenDetails is nil"); return
                             }
-                            expect(tokenDetails.token).to(equal(options.token))
-
-                            publishTestMessage(rest, completion: { error in
-                                expect(error).to(beNil())
-                                done()
-                            })
-                        })
+                            expect(thirdTokenDetails.token).to(equal(tokenDetails.token))
+                            done()
+                        }
                     })
                 }
             }
@@ -1784,7 +1809,6 @@ class Auth : QuickSpec {
                     authOptions.authParams?.append(NSURLQueryItem(name: "type", value: "text"))
                     authOptions.authParams?.append(NSURLQueryItem(name: "body", value: token))
                     authOptions.authHeaders = ["X-Ably":"Test"]
-                    authOptions.force = true
                     authOptions.queryTime = true
 
                     waitUntil(timeout: testTimeout) { done in
@@ -1803,7 +1827,6 @@ class Auth : QuickSpec {
                                     XCTFail("TokenDetails is nil"); done(); return
                                 }
                                 expect(testHTTPExecutor.requests.last?.URL?.host).to(equal("echo.ably.io"))
-                                expect(auth.options.force).to(beFalse())
                                 expect(auth.options.authUrl!.host).to(equal("echo.ably.io"))
                                 expect(auth.options.authHeaders!["X-Ably"]).to(equal("Test"))
                                 expect(tokenDetails.token).to(equal(token))
@@ -2702,7 +2725,6 @@ class Auth : QuickSpec {
                 // reauthorise
                 let reauthOptions = ARTAuthOptions();
                 reauthOptions.tokenDetails = secondTokenDetails
-                reauthOptions.force = true
 
                 waitUntil(timeout: testTimeout) { done in
                     realtime.auth.authorize(nil, options: reauthOptions) { reauthTokenDetails, error in

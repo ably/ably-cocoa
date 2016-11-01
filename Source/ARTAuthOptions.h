@@ -78,11 +78,6 @@ ART_ASSUME_NONNULL_BEGIN
  */
 @property (readwrite, assign, nonatomic) BOOL useTokenAuth;
 
-/**
- Indicates that a new token should be requested.
- */
-@property (readwrite, assign, nonatomic) BOOL force;
-
 - (instancetype)init;
 - (instancetype)initWithKey:(NSString *)key;
 - (instancetype)initWithToken:(NSString *)token;
@@ -94,8 +89,6 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (BOOL)isMethodGET;
 - (BOOL)isMethodPOST;
-
-- (BOOL)isOnlyForceTrue;
 
 @end
 

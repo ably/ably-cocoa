@@ -14,6 +14,7 @@
 #import "ARTDefault.h"
 #import "ARTRest+Private.h"
 #import "ARTAuth+Private.h"
+#import "ARTTokenDetails.h"
 #import "ARTMessage.h"
 #import "ARTClientOptions.h"
 #import "ARTChannelOptions.h"
@@ -462,7 +463,7 @@
     [self.logger info:@"R:%p ARTRealtime disconnected", self];
     ARTErrorInfo *error = message.error;
     if ([self shouldRenewToken:&error]) {
-        [self connectWithRenewedToken];
+        [self transportReconnectWithRenewedToken];
         return;
     }
     [self transition:ARTRealtimeDisconnected withErrorInfo:error];
@@ -490,7 +491,7 @@
     } else {
         ARTErrorInfo *error = message.error;
         if ([self shouldRenewToken:&error]) {
-            [self connectWithRenewedToken];
+            [self transportReconnectWithRenewedToken];
             return;
         }
         [self.connection setId:nil];
@@ -501,19 +502,20 @@
 - (BOOL)shouldRenewToken:(ARTErrorInfo **)errorPtr {
     if (!_renewingToken && errorPtr && *errorPtr &&
         (*errorPtr).statusCode == 401 && (*errorPtr).code >= 40140 && (*errorPtr).code < 40150) {
-        if ([self isTokenRenewable]) {
+        if ([self.auth tokenIsRenewable]) {
             return YES;
         }
-        *errorPtr = [ARTErrorInfo createWithCode:ARTStateRequestTokenFailed message:@"no means to renew the token is provided (either an API key, authCallback or authUrl)"];
+        *errorPtr = [ARTErrorInfo createWithCode:ARTStateRequestTokenFailed message:ARTAblyMessageNoMeansToRenewToken];
     }
     return NO;
 }
 
-- (BOOL)isTokenRenewable {
-    return self.options.authCallback || self.options.authUrl || self.options.key;
+- (void)transportReconnectWithHost:(NSString *)host {
+    [self.transport setHost:host];
+    [self.transport connect];
 }
 
-- (void)connectWithRenewedToken {
+- (void)transportReconnectWithRenewedToken {
     _renewingToken = true;
     [_transport close];
     _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:_transport.resumeKey connectionSerial:_transport.connectionSerial];
@@ -715,8 +717,7 @@
     if (host != nil) {
         [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p host is down; retrying realtime connection at %@", self, host];
         self.rest.prioritizedHost = host;
-        [self.transport setHost:host];
-        [self.transport connect];
+        [self transportReconnectWithHost:host];
         return true;
     } else {
         _fallbacks = nil;

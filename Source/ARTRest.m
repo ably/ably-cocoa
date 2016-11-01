@@ -110,15 +110,37 @@
 }
 
 - (void)executeRequestWithAuthentication:(NSMutableURLRequest *)request withMethod:(ARTAuthMethod)method force:(BOOL)force completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
-    [self prepareAuthorisationHeader:method force:force completion:^(NSString *authorization, NSError *error) {
-        if (error && callback) {
-            callback(nil, nil, error);
-        } else {
-            // RFC7235
+    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p calculating authorization %lu", self, (unsigned long)method];
+    if (method == ARTAuthMethodBasic) {
+        // Basic
+        NSString *authorization = [self prepareBasicAuthorisationHeader:self.options.key];
+        [request setValue:authorization forHTTPHeaderField:@"Authorization"];
+        [self.logger verbose:@"RS:%p ARTRest: %@", self, authorization];
+        [self executeRequest:request completion:callback];
+    }
+    else {
+        if (!force && [self.auth tokenRemainsValid]) {
+            // Reuse token
+            NSString *authorization = [self prepareTokenAuthorisationHeader:self.auth.tokenDetails.token];
+            [self.logger verbose:@"RS:%p ARTRest reusing token: authorization bearer in Base64 %@", self, authorization];
             [request setValue:authorization forHTTPHeaderField:@"Authorization"];
             [self executeRequest:request completion:callback];
         }
-    }];
+        else {
+            // New Token
+            [self.auth authorize:nil options:self.options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+                if (error) {
+                    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p ARTRest reissuing token failed %@", self, error];
+                    if (callback) callback(nil, nil, error);
+                    return;
+                }
+                NSString *authorization = [self prepareTokenAuthorisationHeader:tokenDetails.token];
+                [self.logger verbose:@"RS:%p ARTRest reissuing token: authorization bearer in Base64 %@", self, authorization];
+                [request setValue:authorization forHTTPHeaderField:@"Authorization"];
+                [self executeRequest:request completion:callback];
+            }];
+        }
+    }
 }
 
 - (void)executeRequest:(NSMutableURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
@@ -139,9 +161,9 @@
     [self.httpExecutor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode >= 400) {
             NSError *dataError = [self->_encoders[response.MIMEType] decodeError:data];
-            if (dataError.code >= 40140 && dataError.code < 40150) {
-                // Send it again, requesting a new token (forward callback)
-                [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p requesting new token", self];
+            if ([self shouldRenewToken:&dataError]) {
+                [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p retry request %@", self, request];
+                // Make a single attempt to reissue the token and resend the request
                 [self executeRequest:request withAuthOption:ARTAuthenticationNewToken completion:callback];
                 return;
             } else {
@@ -176,6 +198,17 @@
     }];
 }
 
+- (BOOL)shouldRenewToken:(NSError **)errorPtr {
+    if (errorPtr && *errorPtr &&
+        (*errorPtr).code >= 40140 && (*errorPtr).code < 40150) {
+        if ([self.auth tokenIsRenewable]) {
+            return YES;
+        }
+        *errorPtr = (NSError *)[ARTErrorInfo createWithCode:ARTStateRequestTokenFailed message:ARTAblyMessageNoMeansToRenewToken];
+    }
+    return NO;
+}
+
 - (BOOL)shouldRetryWithFallback:(NSMutableURLRequest *)request response:(NSHTTPURLResponse *)response error:(NSError *)error {
     if (response.statusCode >= 500 && response.statusCode <= 504) {
         return YES;
@@ -197,32 +230,17 @@
     return self.options.restHost;
 }
 
-- (void)prepareAuthorisationHeader:(ARTAuthMethod)method completion:(void (^)(NSString *authorization, NSError *error))callback {
-    [self prepareAuthorisationHeader:method force:NO completion:callback];
+- (NSString *)prepareBasicAuthorisationHeader:(NSString *)key {
+    // Include key Base64 encoded in an Authorization header (RFC7235)
+    NSData *keyData = [key dataUsingEncoding:NSUTF8StringEncoding];
+    NSString *keyBase64 = [keyData base64EncodedStringWithOptions:0];
+    return [NSString stringWithFormat:@"Basic %@", keyBase64];
 }
 
-- (void)prepareAuthorisationHeader:(ARTAuthMethod)method force:(BOOL)force completion:(void (^)(NSString *authorization, NSError *error))callback {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p calculating authorization %lu", self, (unsigned long)method];
-    // FIXME: use encoder and should be managed on ARTAuth
-    if (method == ARTAuthMethodBasic) {
-        // Include key Base64 encoded in an Authorization header (RFC7235)
-        NSData *keyData = [self.options.key dataUsingEncoding:NSUTF8StringEncoding];
-        NSString *keyBase64 = [keyData base64EncodedStringWithOptions:0];
-        if (callback) callback([NSString stringWithFormat:@"Basic %@", keyBase64], nil);
-    }
-    else {
-        self.options.force = force;
-        [self.auth authorize:nil options:self.options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
-            if (error) {
-                if (callback) callback(nil, error);
-                return;
-            }
-            NSData *tokenData = [tokenDetails.token dataUsingEncoding:NSUTF8StringEncoding];
-            NSString *tokenBase64 = [tokenData base64EncodedStringWithOptions:0];
-            [self.logger verbose:@"RS:%p ARTRest: authorization bearer in Base64 %@", self, tokenBase64];
-            if (callback) callback([NSString stringWithFormat:@"Bearer %@", tokenBase64], nil);
-        }];
-    }
+- (NSString *)prepareTokenAuthorisationHeader:(NSString *)token {
+    NSData *tokenData = [token dataUsingEncoding:NSUTF8StringEncoding];
+    NSString *tokenBase64 = [tokenData base64EncodedStringWithOptions:0];
+    return [NSString stringWithFormat:@"Bearer %@", tokenBase64];
 }
 
 - (void)time:(void(^)(NSDate *time, NSError *error))callback {
