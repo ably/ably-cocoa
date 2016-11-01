@@ -1728,6 +1728,56 @@ class Auth : QuickSpec {
                 }
             }
 
+            // RSA10a
+            it("should create a new token if one already exist and ensure Token Auth is used for all future requests") {
+                let options = AblyTests.commonAppSetup()
+                let testToken = getTestToken()
+                options.token = testToken
+                let rest = ARTRest(options: options)
+
+                expect(rest.auth.tokenDetails?.token).toNot(beNil())
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.authorize(nil, options: nil, callback: { tokenDetails, error in
+                        guard let tokenDetails = tokenDetails else {
+                            XCTFail("TokenDetails is nil"); done(); return
+                        }
+                        expect(tokenDetails.token).toNot(equal(testToken))
+                        expect(rest.auth.method).to(equal(ARTAuthMethod.Token))
+
+                        publishTestMessage(rest, completion: { error in
+                            expect(error).to(beNil())
+                            expect(rest.auth.method).to(equal(ARTAuthMethod.Token))
+                            expect(rest.auth.tokenDetails?.token).to(equal(tokenDetails.token))
+                            done()
+                        })
+                    })
+                }
+            }
+
+            // RSA10a
+            it("should create a token immediately and ensures Token Auth is used for all future requests") {
+                let options = AblyTests.commonAppSetup()
+                let rest = ARTRest(options: options)
+
+                expect(rest.auth.tokenDetails?.token).to(beNil())
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.authorize(nil, options: nil, callback: { tokenDetails, error in
+                        guard let tokenDetails = tokenDetails else {
+                            XCTFail("TokenDetails is nil"); done(); return
+                        }
+                        expect(tokenDetails.token).toNot(beNil())
+                        expect(rest.auth.method).to(equal(ARTAuthMethod.Token))
+
+                        publishTestMessage(rest, completion: { error in
+                            expect(error).to(beNil())
+                            expect(rest.auth.method).to(equal(ARTAuthMethod.Token))
+                            expect(rest.auth.tokenDetails?.token).to(equal(tokenDetails.token))
+                            done()
+                        })
+                    })
+                }
+            }
+
             // RSA10b
             it("should supports all TokenParams and AuthOptions") {
                 let rest = ARTRest(options: AblyTests.commonAppSetup())

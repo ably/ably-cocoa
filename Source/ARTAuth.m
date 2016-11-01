@@ -340,7 +340,6 @@
 }
 
 - (void)authorize:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
-
     ARTAuthOptions *replacedOptions = [authOptions copy] ? : [self.options copy];
     [self storeOptions:replacedOptions];
 
@@ -357,6 +356,7 @@
             }
         } else {
             _tokenDetails = tokenDetails;
+            _method = ARTAuthMethodToken;
             [self.logger verbose:@"RS:%p ARTAuth: token request succeeded: %@", _rest, tokenDetails];
             if (callback) {
                 callback(self.tokenDetails, nil);
