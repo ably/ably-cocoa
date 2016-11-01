@@ -17,6 +17,9 @@ extern int (^ARTFallback_getRandomHostIndex)(int count);
 
 @property (readwrite, strong, nonatomic) __GENERIC(NSMutableArray, NSString *) *hosts;
 
++ (BOOL)restShouldFallback:(NSURL *)host withOptions:(ARTClientOptions *)options;
++ (BOOL)realtimeShouldFallback:(NSURL *)host withOptions:(ARTClientOptions *)options;
+
 @end
 
 ART_ASSUME_NONNULL_END

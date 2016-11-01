@@ -669,6 +669,8 @@ class RestClient: QuickSpec {
                             done()
                         }
                     }
+
+                    expect(testHTTPExecutor.requests).to(haveCount(1))
                 }
 
                 // RSC15b
@@ -734,6 +736,60 @@ class RestClient: QuickSpec {
                     }
 
                     expect(NSRegularExpression.match(capturedURLs[1], pattern: "//[f-j].ably-realtime.com")).to(beTrue())
+                }
+
+                // RSC15b
+                it("applies when ClientOptions#fallbackHostsUseDefault is true") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.environment = "rsc15b"
+                    options.fallbackHostsUseDefault = true
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = testHTTPExecutor
+                    testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                    let channel = client.channels.get("test")
+
+                    var capturedURLs = [String]()
+                    testHTTPExecutor.afterRequest = { request, callback in
+                        capturedURLs.append(request.URL!.absoluteString)
+                        if testHTTPExecutor.requests.count == 2 {
+                            // Stop
+                            testHTTPExecutor.http = nil
+                            callback!(nil, nil, nil)
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "nil") { _ in
+                            done()
+                        }
+                    }
+
+                    expect(testHTTPExecutor.requests).to(haveCount(2))
+                    if testHTTPExecutor.requests.count < 2 {
+                        return
+                    }
+
+                    expect(NSRegularExpression.match(capturedURLs[1], pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+                }
+
+                // RSC15b
+                it("do not apply when ClientOptions#fallbackHostsUseDefault is false") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.environment = "rsc15b"
+                    options.fallbackHostsUseDefault = false
+                    let client = ARTRest(options: options)
+                    client.httpExecutor = testHTTPExecutor
+                    testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "message") { error in
+                            expect(error!.message).to(contain("hostname could not be found"))
+                            done()
+                        }
+                    }
+
+                    expect(testHTTPExecutor.requests).to(haveCount(1))
                 }
                 
                 // RSC15b
@@ -850,14 +906,14 @@ class RestClient: QuickSpec {
                         }
                     }
 
-                    expect(testHTTPExecutor.requests).to(haveCount(3))
-                    if testHTTPExecutor.requests.count != 3 {
+                    expect(testHTTPExecutor.requests).to(haveCount(2))
+                    if testHTTPExecutor.requests.count != 2 {
                         return
                     }
 
+                    expect(client.options.restHost).to(equal("fake.ably.io"))
                     expect(NSRegularExpression.match(testHTTPExecutor.requests[0].URL!.absoluteString, pattern: "//\(client.options.restHost)")).to(beTrue())
-                    expect(NSRegularExpression.match(testHTTPExecutor.requests[1].URL!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-                    expect(NSRegularExpression.match(testHTTPExecutor.requests[2].URL!.absoluteString, pattern: "//\(client.options.restHost)")).to(beTrue())
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[1].URL!.absoluteString, pattern: "//\(client.options.restHost)")).to(beTrue())
                 }
 
                 // RSC15a

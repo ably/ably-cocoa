@@ -25,7 +25,7 @@
 #import "ARTClientOptions+Private.h"
 #import "ARTDefault.h"
 #import "ARTStats.h"
-#import "ARTFallback.h"
+#import "ARTFallback+Private.h"
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTRestChannel.h"
@@ -178,7 +178,7 @@
             }
         }
         if (retries < _options.httpMaxRetryCount && [self shouldRetryWithFallback:request response:response error:error]) {
-            if (!blockFallbacks && [request.URL.host isEqualToString:[self currentHost]]) {
+            if (!blockFallbacks && [ARTFallback restShouldFallback:request.URL withOptions:_options]) {
                 blockFallbacks = [[ARTFallback alloc] initWithOptions:_options];
             }
             if (blockFallbacks) {

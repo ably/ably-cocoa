@@ -84,7 +84,9 @@ ART_ASSUME_NONNULL_BEGIN
 - (NSURL *)restUrl;
 - (NSURL *)realtimeUrl;
 - (BOOL)hasCustomRestHost;
+- (BOOL)hasDefaultRestHost;
 - (BOOL)hasCustomRealtimeHost;
+- (BOOL)hasDefaultRealtimeHost;
 
 @end
 
