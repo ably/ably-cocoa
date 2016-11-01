@@ -1670,32 +1670,60 @@ class Auth : QuickSpec {
         }
 
         // RSA10
-        describe("authorise") {
+        describe("authorize") {
 
             // RSA10a
-            it("should create a token if needed and use it") {
-                let options = AblyTests.clientOptions(requestToken: true)
-                options.key = AblyTests.commonAppSetup().key
+            it("should always create a token") {
+                let options = AblyTests.commonAppSetup()
+                options.useTokenAuth = true
+                let rest = ARTRest(options: options)
+                let channel = rest.channels.get("test")
+
                 waitUntil(timeout: testTimeout) { done in
-                    // Client with Token
-                    let rest = ARTRest(options: options)
-                    publishTestMessage(rest, completion: { error in
+                    channel.publish(nil, data: "first check") { error in
                         expect(error).to(beNil())
-                        expect(rest.auth.method).to(equal(ARTAuthMethod.Token))
+                        done()
+                    }
+                }
 
-                        // Reuse the valid token
-                        rest.auth.authorize(nil, options: nil, callback: { tokenDetails, error in
-                            expect(rest.auth.method).to(equal(ARTAuthMethod.Token))
-                            guard let tokenDetails = tokenDetails else {
-                                XCTFail("TokenDetails is nil"); done(); return
+                // Check that token exists
+                expect(rest.auth.method).to(equal(ARTAuthMethod.Token))
+                guard let firstTokenDetails = rest.auth.tokenDetails else {
+                    fail("TokenDetails is nil"); return
+                }
+                expect(firstTokenDetails.token).toNot(beNil())
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.publish(nil, data: "second check") { error in
+                        expect(error).to(beNil())
+                        done()
+                    }
+                }
+
+                // Check that token has not changed
+                expect(rest.auth.method).to(equal(ARTAuthMethod.Token))
+                guard let secondTokenDetails = rest.auth.tokenDetails else {
+                    fail("TokenDetails is nil"); return
+                }
+                expect(firstTokenDetails).to(beIdenticalTo(secondTokenDetails))
+
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.authorize(nil, options: nil, callback: { tokenDetails, error in
+                        expect(error).to(beNil())
+                        guard let tokenDetails = tokenDetails else {
+                            XCTFail("TokenDetails is nil"); done(); return
+                        }
+                        // Check that token has changed
+                        expect(tokenDetails.token).toNot(equal(firstTokenDetails.token))
+
+                        channel.publish(nil, data: "third check") { error in
+                            expect(error).to(beNil())
+                            guard let thirdTokenDetails = rest.auth.tokenDetails else {
+                                fail("TokenDetails is nil"); return
                             }
-                            expect(tokenDetails.token).toNot(equal(options.token))
-
-                            publishTestMessage(rest, completion: { error in
-                                expect(error).to(beNil())
-                                done()
-                            })
-                        })
+                            expect(thirdTokenDetails.token).to(equal(tokenDetails.token))
+                            done()
+                        }
                     })
                 }
             }
