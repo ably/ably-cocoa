@@ -10,7 +10,7 @@
 
 #import "ARTRest.h"
 #import "ARTRest+Private.h"
-#import "ARTAuth.h"
+#import "ARTAuth+Private.h"
 #import "ARTProtocolMessage.h"
 #import "ARTClientOptions.h"
 #import "ARTTokenParams.h"
@@ -89,39 +89,55 @@ enum {
 
 - (void)connectForcingNewToken:(BOOL)forceNewToken {
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket connect", _delegate, self];
-    ARTClientOptions *options = self.options;
-    if (forceNewToken) {
-        options = [options copy];
-        options.force = true;
-    }
+    ARTClientOptions *options = [self.options copy];
+
     if ([options isBasicAuth]) {
         // Basic
-        NSURLQueryItem *keyParam = [NSURLQueryItem queryItemWithName:@"key" value:options.key];
-        [self setupWebSocket:@[keyParam] withOptions:options resumeKey:self.resumeKey connectionSerial:self.connectionSerial];
-        // Connect
-        [self.websocket open];
+        [self connectWithKey:options.key];
     }
     else {
+        // Token
         [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p connecting with token auth; authorising", _delegate, self];
         __weak ARTWebSocketTransport *selfWeak = self;
-        // Token
-        [self.auth authorize:nil options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
-            [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p authorised: %@ error: %@", _delegate, self, tokenDetails, error];
-            ARTWebSocketTransport *selfStrong = selfWeak;
-            if (!selfStrong) return;
 
-            if (error) {
-                [selfStrong.logger error:@"R:%p WS:%p ARTWebSocketTransport: token auth failed with %@", _delegate, self, error.description];
-                [selfStrong.delegate realtimeTransportFailed:selfStrong withError:[[ARTRealtimeTransportError alloc] initWithError:error type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
-                return;
-            }
+        if (!forceNewToken && [self.auth tokenRemainsValid]) {
+            // Reuse token
+            [self connectWithToken:self.auth.tokenDetails.token];
+        }
+        else {
+            // New Token
+            [self.auth authorize:nil options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+                ARTWebSocketTransport *selfStrong = selfWeak;
+                if (!selfStrong) return;
 
-            NSURLQueryItem *accessTokenParam = [NSURLQueryItem queryItemWithName:@"accessToken" value:(tokenDetails.token)];
-            [selfStrong setupWebSocket:@[accessTokenParam] withOptions:selfStrong.options resumeKey:self.resumeKey connectionSerial:self.connectionSerial];
-            // Connect
-            [selfStrong.websocket open];
-        }];
-    } 
+                [selfStrong.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p authorised: %@ error: %@", _delegate, self, tokenDetails, error];
+
+                if (error) {
+                    [selfStrong.logger error:@"R:%p WS:%p ARTWebSocketTransport: token auth failed with %@", _delegate, self, error.description];
+                    [selfStrong.delegate realtimeTransportFailed:selfStrong withError:[[ARTRealtimeTransportError alloc] initWithError:error type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
+                    return;
+                }
+
+                [selfStrong connectWithToken:tokenDetails.token];
+            }];
+        }
+    }
+}
+
+- (void)connectWithKey:(NSString *)key {
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket connect with key", _delegate, self];
+    NSURLQueryItem *keyParam = [NSURLQueryItem queryItemWithName:@"key" value:key];
+    [self setupWebSocket:@[keyParam] withOptions:self.options resumeKey:self.resumeKey connectionSerial:self.connectionSerial];
+    // Connect
+    [self.websocket open];
+}
+
+- (void)connectWithToken:(NSString *)token {
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket connect with token", _delegate, self];
+    NSURLQueryItem *accessTokenParam = [NSURLQueryItem queryItemWithName:@"accessToken" value:token];
+    [self setupWebSocket:@[accessTokenParam] withOptions:self.options resumeKey:self.resumeKey connectionSerial:self.connectionSerial];
+    // Connect
+    [self.websocket open];
 }
 
 - (BOOL)getIsConnected {

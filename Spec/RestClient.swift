@@ -371,22 +371,30 @@ class RestClient: QuickSpec {
             // RSC9
             it("should use Auth to manage authentication") {
                 let options = AblyTests.clientOptions()
-                options.tokenDetails = getTestTokenDetails()
+                guard let testTokenDetails = getTestTokenDetails() else {
+                    fail("No test token details"); return
+                }
+                options.tokenDetails = testTokenDetails
+                options.authCallback = { tokenParams, completion in
+                    completion(testTokenDetails, nil)
+                }
+
+                let client = ARTRest(options: options)
+                expect(client.auth).to(beAnInstanceOf(ARTAuth.self))
 
                 waitUntil(timeout: testTimeout) { done in
-                    ARTRest(options: options).auth.authorize(nil, options: nil) { tokenDetails, error in
+                    client.auth.authorize(nil, options: nil) { tokenDetails, error in
                         if let e = error {
                             XCTFail(e.description)
                             done()
                             return
                         }
                         guard let tokenDetails = tokenDetails else {
-                            XCTFail("expected tokenDetails not to be nil when error is nil")
+                            XCTFail("expected tokenDetails to not be nil when error is nil")
                             done()
                             return
                         }
-                        // Use the same token because it is valid
-                        expect(tokenDetails.token).to(equal(options.tokenDetails!.token))
+                        expect(tokenDetails.token).to(equal(testTokenDetails.token))
                         done()
                     }
                 }
