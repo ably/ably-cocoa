@@ -57,7 +57,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
 - (void)realtimeTransportUnavailable:(id<ARTRealtimeTransport>)transport;
 
 - (void)realtimeTransportClosed:(id<ARTRealtimeTransport>)transport;
-- (void)realtimeTransportDisconnected:(id<ARTRealtimeTransport>)transport;
+- (void)realtimeTransportDisconnected:(id<ARTRealtimeTransport>)transport withError:(art_nullable ARTRealtimeTransportError *)error;
 - (void)realtimeTransportNeverConnected:(id<ARTRealtimeTransport>)transport;
 - (void)realtimeTransportRefused:(id<ARTRealtimeTransport>)transport;
 - (void)realtimeTransportTooBig:(id<ARTRealtimeTransport>)transport;

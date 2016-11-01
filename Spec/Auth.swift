@@ -302,7 +302,7 @@ class Auth : QuickSpec {
                 }
 
                 // RSA4b
-                it("in Realtime, if the connection fails to a token error, then the connection should move to the FAILED state and reports the error") {
+                it("in Realtime, if the connection fails due to a terminal token error, then the connection should move to the FAILED state and reports the error") {
                     let options = AblyTests.commonAppSetup()
                     options.authCallback = { tokenParams, completion in
                         let token = getTestToken()

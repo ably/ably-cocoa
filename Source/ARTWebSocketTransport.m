@@ -117,7 +117,14 @@ enum {
 
                     if (error) {
                         [[weakSelf logger] error:@"R:%p WS:%p ARTWebSocketTransport: token auth failed with %@", _delegate, self, error.description];
-                        [[weakSelf delegate] realtimeTransportFailed:weakSelf withError:[[ARTRealtimeTransportError alloc] initWithError:error type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
+                        if (error.code == 40102 /*incompatible credentials*/) {
+                            // RSA15c
+                            [[weakSelf delegate] realtimeTransportFailed:weakSelf withError:[[ARTRealtimeTransportError alloc] initWithError:error type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
+                        }
+                        else {
+                            // RSA4b
+                            [[weakSelf delegate] realtimeTransportDisconnected:weakSelf withError:[[ARTRealtimeTransportError alloc] initWithError:error type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
+                        }
                         return;
                     }
 
@@ -301,7 +308,7 @@ enum {
             case ARTWsGoingAway:
             case ARTWsAbnormalClose:
                 // Connectivity issue
-                [s.delegate realtimeTransportDisconnected:s];
+                [s.delegate realtimeTransportDisconnected:s withError:nil];
                 break;
             case ARTWsRefuse:
             case ARTWsPolicyValidation:
