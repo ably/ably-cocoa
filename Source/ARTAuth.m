@@ -39,6 +39,7 @@
         _logger = rest.logger;
         _protocolClientId = nil;
         _tokenParams = options.defaultTokenParams ? : [[ARTTokenParams alloc] initWithOptions:self.options];
+        _authorizedEmitter = [[ARTEventEmitter alloc] init];
         [self validate:options];
 
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -53,7 +54,6 @@
                                                    object:nil];
         #endif
     }
-    
     return self;
 }
 
@@ -358,6 +358,7 @@
             _tokenDetails = tokenDetails;
             _method = ARTAuthMethodToken;
             [self.logger verbose:@"RS:%p ARTAuth: token request succeeded: %@", _rest, tokenDetails];
+            [_authorizedEmitter emit:[NSNull null] with:tokenDetails];
             if (callback) {
                 callback(self.tokenDetails, nil);
             }

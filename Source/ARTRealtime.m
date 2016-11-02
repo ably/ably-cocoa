@@ -32,6 +32,7 @@
 #import "ARTStats.h"
 #import "ARTRealtimeTransport.h"
 #import "ARTFallback.h"
+#import "ARTAuthDetails.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -219,7 +220,7 @@
     if (errorInfo != nil) {
         [self.connection setErrorReason:errorInfo];
     }
-    [self.connection emit:state with:stateChange];
+
     [_internalEventEmitter emit:[NSNumber numberWithInteger:state] with:stateChange];
 }
 
@@ -277,6 +278,7 @@
             break;
         }
         case ARTRealtimeClosing: {
+            [self.auth.authorizedEmitter off];
             [_reachability off];
             [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
                 [self transition:ARTRealtimeClosed];
@@ -285,6 +287,7 @@
             break;
         }
         case ARTRealtimeClosed:
+            [self.auth.authorizedEmitter off];
             [_reachability off];
             [self.transport close];
             self.transport.delegate = nil;
@@ -294,6 +297,7 @@
             self.rest.prioritizedHost = nil;
             break;
         case ARTRealtimeFailed:
+            [self.auth.authorizedEmitter off];
             status = [ARTStatus state:ARTStateConnectionFailed info:stateChange.reason];
             [self.transport abort:status];
             self.transport.delegate = nil;
@@ -301,6 +305,7 @@
             self.rest.prioritizedHost = nil;
             break;
         case ARTRealtimeDisconnected: {
+            [self.auth.authorizedEmitter off];
             if (!_startedReconnection) {
                 _startedReconnection = [NSDate date];
                 [_internalEventEmitter on:^(ARTConnectionStateChange *change) {
@@ -326,6 +331,7 @@
             break;
         }
         case ARTRealtimeSuspended: {
+            [self.auth.authorizedEmitter off];
             [self.transport close];
             self.transport.delegate = nil;
             _transport = nil;
@@ -347,6 +353,17 @@
                 }];
             }
             [_connectedEventEmitter emit:[NSNull null] with:nil];
+
+            [self.auth.authorizedEmitter off];
+            __weak typeof(self) weakSelf = self;
+            [self.auth.authorizedEmitter on:^(ARTTokenDetails *tokenDetails) {
+                ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
+                msg.action = ARTProtocolMessageAuth;
+                msg.auth = [[ARTAuthDetails alloc] initWithToken:tokenDetails.token];
+                [weakSelf send:msg callback:^(ARTStatus *status) {
+                    NSLog(@"%@", status);
+                }];
+            }];
             break;
         }
         case ARTRealtimeInitialized:
@@ -382,6 +399,8 @@
             }
         }
     }
+
+    [self.connection emit:stateChange.current with:stateChange];
 }
 
 - (void)unlessStateChangesBefore:(NSTimeInterval)deadline do:(void(^)())callback {
@@ -783,6 +802,8 @@
             return @"Message"; //15
         case ARTProtocolMessageSync:
             return @"Sync"; //16
+        case ARTProtocolMessageAuth:
+            return @"Auth"; //17
         default:
             return [NSString stringWithFormat: @"unknown protocol state %d", (int)action];
     }

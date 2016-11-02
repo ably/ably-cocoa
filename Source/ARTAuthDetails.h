@@ -16,6 +16,8 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, copy) NSString *accessToken;
 
+- (instancetype)initWithToken:(NSString *)token;
+
 @end
 
 ART_ASSUME_NONNULL_END

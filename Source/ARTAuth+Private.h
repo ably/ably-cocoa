@@ -7,6 +7,7 @@
 //
 
 #import "ARTAuth.h"
+#import "ARTEventEmitter.h"
 
 ART_ASSUME_NONNULL_BEGIN
 
@@ -18,6 +19,9 @@ ART_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) ARTLog *logger;
 @property (art_nullable, nonatomic, readonly, strong) ARTTokenDetails *tokenDetails;
 @property (nonatomic, readonly, assign) NSTimeInterval timeOffset;
+
+/// Internal emitter to notify about new authentications.
+@property (nonatomic, readonly) __GENERIC(ARTEventEmitter, NSNull *, ARTTokenDetails *) *authorizedEmitter;
 
 @end
 

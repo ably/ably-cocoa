@@ -10,6 +10,13 @@
 
 @implementation ARTAuthDetails
 
+- (instancetype)initWithToken:(NSString *)token {
+    if (self = [super init]) {
+        _accessToken = token;
+    }
+    return self;
+}
+
 - (NSString *)description {
     return [NSString stringWithFormat:@"%@ - \n\t accessToken: %@; \n", [super description], self.accessToken];
 }
