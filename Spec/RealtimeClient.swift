@@ -434,7 +434,7 @@ class RealtimeClient: QuickSpec {
                                 fail("ConnectionStateChange is nil"); partialDone(); return
                             }
                             expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.Connected))
-                            expect(stateChange.reason).toNot(beNil())
+                            expect(stateChange.reason).to(beNil())
 
                             guard let transport = client.transport as? TestProxyTransport else {
                                 fail("TestProxyTransport is not set"); partialDone(); return
@@ -446,7 +446,8 @@ class RealtimeClient: QuickSpec {
                                 fail("Missing CONNECTED protocol message after AUTH protocol message"); partialDone(); return
                             }
 
-                            expect(client.auth.clientId).to(equal(connectionDetailsAfterAuth.clientId))
+                            expect(client.auth.clientId).to(beNil())
+                            expect(connectionDetailsAfterAuth.clientId).to(beNil())
                             expect(client.connection.key).to(equal(connectionDetailsAfterAuth.connectionKey))
                             partialDone()
                         }
@@ -482,6 +483,18 @@ class RealtimeClient: QuickSpec {
                         client.connect()
                     }
 
+                    let channel = client.channels.get("foo")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.once(.Failed) { error in
+                            guard let error = error else {
+                                fail("Error is nil"); done(); return
+                            }
+                            expect(error.message).to(contain("Channel denied access based on given capability"))
+                            done()
+                        }
+                        channel.attach()
+                    }
+
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
 
@@ -490,7 +503,7 @@ class RealtimeClient: QuickSpec {
                                 fail("ConnectionStateChange is nil"); partialDone(); return
                             }
                             expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.Connected))
-                            expect(stateChange.reason).toNot(beNil())
+                            expect(stateChange.reason).to(beNil())
                             partialDone()
                         }
 
@@ -525,7 +538,20 @@ class RealtimeClient: QuickSpec {
                     }
 
                     expect(transport.protocolMessagesReceived.filter{ $0.action == .Disconnected }).to(beEmpty())
-                    expect(transport.protocolMessagesReceived.filter{ $0.action == .Error }).to(beEmpty())
+                    // Should have one error: Channel denied access
+                    expect(transport.protocolMessagesReceived.filter{ $0.action == .Error }).to(haveCount(1))
+
+                    // Retry Channel attach
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.once(.Failed) { error in
+                            fail("Should not reach Failed state"); done(); return
+                        }
+                        channel.once(.Attached) { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                        channel.attach()
+                    }
                 }
 
                 // RTC8a1 - part 3
@@ -538,10 +564,11 @@ class RealtimeClient: QuickSpec {
                     defer { client.dispose(); client.close() }
                     client.setTransportClass(TestProxyTransport.self)
 
-                    let channel = client.channels.get("test")
+                    let channel = client.channels.get("foo")
                     waitUntil(timeout: testTimeout) { done in
                         client.connect()
-                        channel.attach() { _ in
+                        channel.attach() { error in
+                            expect(error).to(beNil())
                             done()
                         }
                     }
@@ -553,7 +580,8 @@ class RealtimeClient: QuickSpec {
                             guard let error = error else {
                                 fail("ErrorInfo is nil"); partialDone(); return
                             }
-                            expect(error).to(equal(channel.errorReason))
+                            expect(error).to(beIdenticalTo(channel.errorReason))
+                            expect(error.code).to(equal(40160))
 
                             guard let transport = client.transport as? TestProxyTransport else {
                                 fail("TestProxyTransport is not set"); partialDone(); return
@@ -565,7 +593,8 @@ class RealtimeClient: QuickSpec {
                             guard let errorMessage = errorMessages.first else {
                                 fail("Missing ERROR protocol message"); partialDone(); return
                             }
-                            expect(errorMessage.channel).to(equal("test"))
+                            expect(errorMessage.channel).to(contain("test"))
+                            expect(errorMessage.error?.code).to(equal(error.code))
                             partialDone()
                         }
 
@@ -604,32 +633,81 @@ class RealtimeClient: QuickSpec {
                         client.connect()
                     }
 
+                    var connectionError: NSError?
+                    var authError: NSError?
+
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
-
-                        let tokenParams = ARTTokenParams()
-                        tokenParams.clientId = "android"
 
                         client.connection.once(.Failed) { stateChange in
                             guard let stateChange = stateChange else {
                                 fail("ConnectionStateChange is nil"); partialDone(); return
                             }
                             expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.Connected))
-                            expect(stateChange.reason?.code).to(equal(40102))
-                            expect(stateChange.reason?.description).to(contain("incompatible credentials"))
+                            expect(stateChange.reason).toNot(beNil())
+                            connectionError = stateChange.reason
                             partialDone()
                         }
 
-                        client.auth.authorize(tokenParams, options: nil) { tokenDetails, error in
+                        let authOptions = ARTAuthOptions()
+                        authOptions.authCallback = { tokenParams, completion in
+                            let invalidToken = "xxxxxxxxxxxx"
+                            completion(invalidToken, nil)
+                        }
+
+                        client.auth.authorize(nil, options: authOptions) { tokenDetails, error in
                             guard let error = error else {
                                 fail("ErrorInfo is nil"); partialDone(); return
+                            }
+                            expect(error.description).to(contain("Invalid accessToken"))
+                            expect(tokenDetails).to(beNil())
+                            authError = error
+                            partialDone()
+                        }
+                    }
+
+                    expect(authError).to(beIdenticalTo(connectionError))
+                }
+
+                it("authorize call should complete with an error if the request fails") {
+                    let options = AblyTests.clientOptions()
+                    options.autoConnect = false
+                    let testToken = getTestToken()
+                    options.token = testToken
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    client.setTransportClass(TestProxyTransport.self)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connected) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+                            done()
+                        }
+                        client.connect()
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let tokenParams = ARTTokenParams()
+                        tokenParams.clientId = "john"
+
+                        let authOptions = ARTAuthOptions()
+                        authOptions.authCallback = { tokenParams, completion in
+                            completion(getTestTokenDetails(clientId: "tester"), nil)
+                        }
+
+                        client.auth.authorize(tokenParams, options: authOptions) { tokenDetails, error in
+                            guard let error = error else {
+                                fail("ErrorInfo is nil"); done(); return
                             }
                             expect(error.code).to(equal(40102))
                             expect(error.description).to(contain("incompatible credentials"))
                             expect(tokenDetails).to(beNil())
-                            partialDone()
+                            done()
                         }
                     }
+
+                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+                    expect(client.auth.tokenDetails!.token).to(equal(testToken))
                 }
 
                 // RTC8a3
@@ -668,13 +746,24 @@ class RealtimeClient: QuickSpec {
 
                 // RTC8b
                 it("when connection is CONNECTING, all current connection attempts should be halted, and after obtaining a new token the library should immediately initiate a connection attempt using the new token") {
-                    let options = AblyTests.clientOptions()
+                    let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
-                    let testToken = getTestToken()
-                    options.token = testToken
+                    options.useTokenAuth = true
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
                     client.setTransportClass(TestProxyTransport.self)
+
+                    var connections = 0
+                    let hook1 = TestProxyTransport.testSuite_injectIntoClassMethod(#selector(TestProxyTransport.connectWithToken)) {
+                        connections += 1
+                    }
+                    defer { hook1?.remove() }
+
+                    var connectionsOpened = 0
+                    let hook2 = TestProxyTransport.testSuite_injectIntoClassMethod(#selector(TestProxyTransport.webSocketDidOpen)) {
+                        connectionsOpened += 1
+                    }
+                    defer { hook2?.remove() }
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.Connecting) { stateChange in
@@ -688,24 +777,27 @@ class RealtimeClient: QuickSpec {
                                 guard let tokenDetails = tokenDetails else {
                                     fail("TokenDetails is nil"); done(); return
                                 }
-                                expect(tokenDetails.token).toNot(equal(testToken))
-
+                                expect(tokenDetails.token).toNot(beNil())
                                 expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
 
                                 guard let transport = client.transport as? TestProxyTransport else {
                                     fail("TestProxyTransport is not set"); done(); return
                                 }
-                                expect(transport.protocolMessagesSent.filter({ $0.action == .Connect })).to(haveCount(2))
                                 expect(transport.protocolMessagesReceived.filter({ $0.action == .Connected })).to(haveCount(1))
                                 done()
                             }
                         }
                         client.connect()
                     }
+
+                    expect(connections) == 2
+                    expect(connectionsOpened) == 1
+
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
                 }
 
-                // RTC8b1
-                it("authorize call should complete with the new token once the connection has moved to the CONNECTED state, or with an error if the connection instead moves to the FAILED, SUSPENDED, or CLOSED states") {
+                // RTC8b1 - part 1
+                it("authorize call should complete with the new token once the connection has moved to the CONNECTED state") {
                     let options = AblyTests.clientOptions()
                     options.autoConnect = false
                     let testToken = getTestToken()
@@ -715,42 +807,157 @@ class RealtimeClient: QuickSpec {
                     client.setTransportClass(TestProxyTransport.self)
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.connection.once(.Connecting) { stateChange in
+                        let authOptions = ARTAuthOptions()
+                        authOptions.key = AblyTests.commonAppSetup().key
+
+                        client.auth.authorize(nil, options: authOptions) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            guard let tokenDetails = tokenDetails else {
+                                fail("TokenDetails is nil"); done(); return
+                            }
+                            expect(tokenDetails.token).toNot(equal(testToken))
+                            done()
+                        }
+                    }
+
+                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+                }
+
+                // RTC8b1 - part 2
+                it("authorize call should complete with an error if the connection moves to the FAILED state") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    options.useTokenAuth = true
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    client.setTransportClass(TestProxyTransport.self)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connected) { stateChange in
                             expect(stateChange?.reason).to(beNil())
-
-                            let tokenParams = ARTTokenParams()
-                            tokenParams.clientId = "john"
-
-                            let authOptions = ARTAuthOptions()
-                            authOptions.authCallback = { tokenParams, completion in
-                                completion(getTestToken(clientId: "tester"), nil)
-                            }
-
-                            client.auth.authorize(tokenParams, options: authOptions) { tokenDetails, error in
-                                guard let error = error else {
-                                    fail("ErrorInfo is nil"); done(); return
-                                }
-                                expect(error.code).to(equal(40102))
-                                expect(error.description).to(contain("incompatible credentials"))
-                                expect(tokenDetails).to(beNil())
-
-                                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Failed))
-
-                                guard let transport = client.transport as? TestProxyTransport else {
-                                    fail("TestProxyTransport is not set"); done(); return
-                                }
-                                expect(transport.protocolMessagesSent.filter({ $0.action == .Connect })).to(haveCount(2))
-                                expect(transport.protocolMessagesReceived.filter({ $0.action == .Connected })).to(haveCount(0))
-                                expect(transport.protocolMessagesReceived.filter({ $0.action == .Error })).to(haveCount(1))
-                                done()
-                            }
+                            done()
                         }
                         client.connect()
                     }
+
+                    let hook = client.auth.testSuite_injectIntoMethodAfter(#selector(client.auth.authorize(_:options:callback:))) {
+                        guard let transport = client.transport as? TestProxyTransport else {
+                            fail("TestProxyTransport is not set"); return
+                        }
+                        transport.simulateIncomingError()
+                    }
+                    defer { hook.remove() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+
+                        client.connection.once(.Failed) { stateChange in
+                            guard let error = stateChange?.reason else {
+                                fail("ErrorInfo is nil"); partialDone(); return
+                            }
+                            expect(error.message).to(contain("Fail test"))
+                            partialDone()
+                        }
+
+                        client.auth.authorize(nil, options: nil) { tokenDetails, error in
+                            guard let error = error else {
+                                fail("ErrorInfo is nil"); partialDone(); return
+                            }
+                            expect(error.description).to(contain("Fail test"))
+                            expect(tokenDetails).to(beNil())
+                            partialDone()
+                        }
+                    }
+
+                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Failed))
                 }
 
-                // RTC8c
-                it("when the connection is in the DISCONNECTED, SUSPENDED, FAILED, or CLOSED state when auth#authorize is called, after obtaining a token the library should move to the CONNECTING state and initiate a connection attempt using the new token") {
+                // RTC8b1 - part 3
+                it("authorize call should complete with an error if the connection moves to the SUSPENDED state") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    options.useTokenAuth = true
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    client.setTransportClass(TestProxyTransport.self)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connected) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+                            done()
+                        }
+                        client.connect()
+                    }
+
+                    let hook = client.auth.testSuite_injectIntoMethodAfter(#selector(client.auth.authorize(_:options:callback:))) {
+                        client.onSuspended()
+                    }
+                    defer { hook.remove() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+
+                        client.connection.once(.Suspended) { _ in
+                            partialDone()
+                        }
+
+                        client.auth.authorize(nil, options: nil) { tokenDetails, error in
+                            guard let error = error else {
+                                fail("ErrorInfo is nil"); partialDone(); return
+                            }
+                            expect(UInt(error.code)) == ARTState.AuthorizationFailed.rawValue
+                            expect(tokenDetails).to(beNil())
+                            partialDone()
+                        }
+                    }
+
+                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Suspended))
+                }
+
+                // RTC8b1 - part 4
+                it("authorize call should complete with an error if the connection moves to the CLOSED state") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    options.useTokenAuth = true
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    client.setTransportClass(TestProxyTransport.self)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connected) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+                            done()
+                        }
+                        client.connect()
+                    }
+
+                    let hook = client.auth.testSuite_injectIntoMethodAfter(#selector(client.auth.authorize(_:options:callback:))) {
+                        client.close()
+                    }
+                    defer { hook.remove() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+
+                        client.connection.once(.Closed) { _ in
+                            partialDone()
+                        }
+
+                        client.auth.authorize(nil, options: nil) { tokenDetails, error in
+                            guard let error = error else {
+                                fail("ErrorInfo is nil"); partialDone(); return
+                            }
+                            expect(UInt(error.code)) == ARTState.AuthorizationFailed.rawValue
+                            expect(tokenDetails).to(beNil())
+                            partialDone()
+                        }
+                    }
+
+                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Closed))
+                }
+
+                // RTC8c - part 1
+                it("when the connection is in the SUSPENDED state when auth#authorize is called, after obtaining a token the library should move to the CONNECTING state and initiate a connection attempt using the new token") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let testToken = getTestToken()
@@ -767,14 +974,26 @@ class RealtimeClient: QuickSpec {
                         client.connect()
                     }
 
+                    client.onSuspended()
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Suspended), timeout: testTimeout)
+
                     waitUntil(timeout: testTimeout) { done in
-                        let partialDone = AblyTests.splitDone(2, done: done)
+                        let partialDone = AblyTests.splitDone(3, done: done)
+
+                        client.connection.once(.Connecting) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ConnectionStateChange is nil"); partialDone(); return
+                            }
+                            expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.Suspended))
+                            expect(stateChange.reason).to(beNil())
+                            partialDone()
+                        }
 
                         client.connection.once(.Connected) { stateChange in
                             guard let stateChange = stateChange else {
                                 fail("ConnectionStateChange is nil"); partialDone(); return
                             }
-                            expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.Disconnected))
+                            expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.Connecting))
                             expect(stateChange.reason).to(beNil())
                             partialDone()
                         }
@@ -791,12 +1010,193 @@ class RealtimeClient: QuickSpec {
                             guard let transport = client.transport as? TestProxyTransport else {
                                 fail("TestProxyTransport is not set"); partialDone(); return
                             }
-                            expect(transport.protocolMessagesSent.filter({ $0.action == .Connect })).to(haveCount(2))
-                            expect(transport.protocolMessagesSent.filter({ $0.action == .Auth })).to(haveCount(1))
-                            expect(transport.protocolMessagesReceived.filter({ $0.action == .Connected })).to(haveCount(1))
+                            expect(transport.protocolMessagesSent.filter({ $0.action == .Auth })).to(haveCount(0))
+                            expect(transport.protocolMessagesReceived.filter({ $0.action == .Connected })).to(haveCount(1)) //New transport
                             partialDone()
                         }
-                        client.simulateLostConnectionAndState()
+                    }
+                }
+
+                // RTC8c - part 2
+                it("when the connection is in the CLOSED state when auth#authorize is called, after obtaining a token the library should move to the CONNECTING state and initiate a connection attempt using the new token") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    let testToken = getTestToken()
+                    options.token = testToken
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    client.setTransportClass(TestProxyTransport.self)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connected) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+                            done()
+                        }
+                        client.connect()
+                    }
+
+                    client.close()
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Closed), timeout: testTimeout)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(3, done: done)
+
+                        client.connection.once(.Connecting) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ConnectionStateChange is nil"); partialDone(); return
+                            }
+                            expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.Closed))
+                            expect(stateChange.reason).to(beNil())
+                            partialDone()
+                        }
+
+                        client.connection.once(.Connected) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ConnectionStateChange is nil"); partialDone(); return
+                            }
+                            expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.Connecting))
+                            expect(stateChange.reason).to(beNil())
+                            partialDone()
+                        }
+
+                        client.auth.authorize(nil, options: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            guard let tokenDetails = tokenDetails else {
+                                fail("TokenDetails is nil"); partialDone(); return
+                            }
+
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+                            expect(tokenDetails.token).toNot(equal(testToken))
+
+                            guard let transport = client.transport as? TestProxyTransport else {
+                                fail("TestProxyTransport is not set"); partialDone(); return
+                            }
+                            expect(transport.protocolMessagesSent.filter({ $0.action == .Auth })).to(haveCount(0))
+                            expect(transport.protocolMessagesReceived.filter({ $0.action == .Connected })).to(haveCount(1)) //New transport
+                            partialDone()
+                        }
+                    }
+                }
+
+                // RTC8c - part 3
+                it("when the connection is in the DISCONNECTED state when auth#authorize is called, after obtaining a token the library should move to the CONNECTING state and initiate a connection attempt using the new token") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    let testToken = getTestToken()
+                    options.token = testToken
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    client.setTransportClass(TestProxyTransport.self)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connected) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+                            done()
+                        }
+                        client.connect()
+                    }
+
+                    client.onDisconnected()
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Disconnected), timeout: testTimeout)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(3, done: done)
+
+                        client.connection.once(.Connecting) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ConnectionStateChange is nil"); partialDone(); return
+                            }
+                            expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.Disconnected))
+                            expect(stateChange.reason).to(beNil())
+                            partialDone()
+                        }
+
+                        client.connection.once(.Connected) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ConnectionStateChange is nil"); partialDone(); return
+                            }
+                            expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.Connecting))
+                            expect(stateChange.reason).to(beNil())
+                            partialDone()
+                        }
+
+                        client.auth.authorize(nil, options: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            guard let tokenDetails = tokenDetails else {
+                                fail("TokenDetails is nil"); partialDone(); return
+                            }
+
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+                            expect(tokenDetails.token).toNot(equal(testToken))
+
+                            guard let transport = client.transport as? TestProxyTransport else {
+                                fail("TestProxyTransport is not set"); partialDone(); return
+                            }
+                            expect(transport.protocolMessagesSent.filter({ $0.action == .Auth })).to(haveCount(0))
+                            expect(transport.protocolMessagesReceived.filter({ $0.action == .Connected })).to(haveCount(1)) //New transport
+                            partialDone()
+                        }
+                    }
+                }
+
+                // RTC8c - part 4
+                it("when the connection is in the FAILED state when auth#authorize is called, after obtaining a token the library should move to the CONNECTING state and initiate a connection attempt using the new token") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    let testToken = getTestToken()
+                    options.token = testToken
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    client.setTransportClass(TestProxyTransport.self)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connected) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+                            done()
+                        }
+                        client.connect()
+                    }
+
+                    client.onError(AblyTests.newErrorProtocolMessage())
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Failed), timeout: testTimeout)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(3, done: done)
+
+                        client.connection.once(.Connecting) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ConnectionStateChange is nil"); partialDone(); return
+                            }
+                            expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.Failed))
+                            expect(stateChange.reason).to(beNil())
+                            partialDone()
+                        }
+
+                        client.connection.once(.Connected) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ConnectionStateChange is nil"); partialDone(); return
+                            }
+                            expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.Connecting))
+                            expect(stateChange.reason).to(beNil())
+                            partialDone()
+                        }
+
+                        client.auth.authorize(nil, options: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            guard let tokenDetails = tokenDetails else {
+                                fail("TokenDetails is nil"); partialDone(); return
+                            }
+
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+                            expect(tokenDetails.token).toNot(equal(testToken))
+
+                            guard let transport = client.transport as? TestProxyTransport else {
+                                fail("TestProxyTransport is not set"); partialDone(); return
+                            }
+                            expect(transport.protocolMessagesSent.filter({ $0.action == .Auth })).to(haveCount(0))
+                            expect(transport.protocolMessagesReceived.filter({ $0.action == .Connected })).to(haveCount(1)) //New transport
+                            partialDone()
+                        }
                     }
                 }
 

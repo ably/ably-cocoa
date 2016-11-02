@@ -972,7 +972,7 @@ extension ARTWebSocketTransport {
 
     func simulateIncomingNormalClose() {
         let CLOSE_NORMAL = 1000
-        self.closing = true
+        self.setState(ARTRealtimeTransportState.Closing)
         let webSocketDelegate = self as SRWebSocketDelegate
         webSocketDelegate.webSocket!(nil, didCloseWithCode: CLOSE_NORMAL, reason: "", wasClean: true)
     }

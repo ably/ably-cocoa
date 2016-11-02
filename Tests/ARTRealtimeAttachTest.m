@@ -344,7 +344,6 @@
 
     [realtime.auth authorize:tokenParams options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
         options.token = tokenDetails.token;
-        [realtime connect];
     }];
 
     [realtime.connection on:^(ARTConnectionStateChange *stateChange) {

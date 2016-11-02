@@ -14,6 +14,7 @@
 #import "ARTReachability.h"
 
 #import "ARTRealtimeTransport.h"
+#import "ARTAuth+Private.h"
 
 @class ARTRest;
 @class ARTErrorInfo;
@@ -22,7 +23,7 @@
 
 ART_ASSUME_NONNULL_BEGIN
 
-@interface ARTRealtime () <ARTRealtimeTransportDelegate>
+@interface ARTRealtime () <ARTRealtimeTransportDelegate, ARTAuthDelegate>
 
 @property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNumber *, ARTConnectionStateChange *) *internalEventEmitter;
 @property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNull *, NSNull *) *connectedEventEmitter;

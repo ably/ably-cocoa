@@ -27,8 +27,6 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) ARTAuth *auth;
 @property (readonly, strong, nonatomic) ARTClientOptions *options;
 
-@property (readwrite, assign, nonatomic) BOOL closing;
-
 @property (readwrite, strong, nonatomic, art_nullable) SRWebSocket *websocket;
 @property (readwrite, strong, nonatomic, art_nullable) NSURL *websocketURL;
 
@@ -36,6 +34,8 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)receiveWithData:(NSData *)data;
 
 - (NSURL *)setupWebSocket:(__GENERIC(NSArray, NSURLQueryItem *) *)params withOptions:(ARTClientOptions *)options resumeKey:(NSString *__art_nullable)resumeKey connectionSerial:(NSNumber *__art_nullable)connectionSerial;
+
+- (void)setState:(ARTRealtimeTransportState)state;
 
 @end
 

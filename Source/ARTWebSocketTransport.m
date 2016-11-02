@@ -36,16 +36,16 @@ enum {
     ARTWsTlsError = 1015
 };
 
-@implementation ARTWebSocketTransport
+@implementation ARTWebSocketTransport {
+    ARTRealtimeTransportState _state;
+}
 
-// FIXME: Realtime sould be extending from RestClient
 - (instancetype)initWithRest:(ARTRest *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
     self = [super init];
     if (self) {
         _rl = CFRunLoopGetCurrent();
         _websocket = nil;
-        _closing = NO;
-
+        _state = ARTRealtimeTransportStateClosed;
         _encoder = rest.defaultEncoder;
         _logger = rest.logger;
         _auth = rest.auth;
@@ -71,7 +71,9 @@ enum {
 }
 
 - (void)sendWithData:(NSData *)data {
-    [self.websocket send:data];
+    if (self.websocket.readyState == SR_OPEN) {
+        [self.websocket send:data];
+    }
 }
 
 - (void)receive:(ARTProtocolMessage *)msg {
@@ -88,6 +90,7 @@ enum {
 }
 
 - (void)connectForcingNewToken:(BOOL)forceNewToken {
+    _state = ARTRealtimeTransportStateOpening;
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket connect", _delegate, self];
     ARTClientOptions *options = [self.options copy];
 
@@ -98,7 +101,6 @@ enum {
     else {
         // Token
         [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p connecting with token auth; authorising", _delegate, self];
-        __weak ARTWebSocketTransport *selfWeak = self;
 
         if (!forceNewToken && [self.auth tokenRemainsValid]) {
             // Reuse token
@@ -106,20 +108,25 @@ enum {
         }
         else {
             // New Token
-            [self.auth authorize:nil options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
-                ARTWebSocketTransport *selfStrong = selfWeak;
-                if (!selfStrong) return;
+            __weak __typeof(self) weakSelf = self;
+            id<ARTAuthDelegate> delegate = self.auth.delegate;
+            self.auth.delegate = nil;
+            @try {
+                [self.auth authorize:nil options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+                    [[weakSelf logger] debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p authorised: %@ error: %@", _delegate, self, tokenDetails, error];
 
-                [selfStrong.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p authorised: %@ error: %@", _delegate, self, tokenDetails, error];
+                    if (error) {
+                        [[weakSelf logger] error:@"R:%p WS:%p ARTWebSocketTransport: token auth failed with %@", _delegate, self, error.description];
+                        [[weakSelf delegate] realtimeTransportFailed:weakSelf withError:[[ARTRealtimeTransportError alloc] initWithError:error type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
+                        return;
+                    }
 
-                if (error) {
-                    [selfStrong.logger error:@"R:%p WS:%p ARTWebSocketTransport: token auth failed with %@", _delegate, self, error.description];
-                    [selfStrong.delegate realtimeTransportFailed:selfStrong withError:[[ARTRealtimeTransportError alloc] initWithError:error type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
-                    return;
-                }
-
-                [selfStrong connectWithToken:tokenDetails.token];
-            }];
+                    [weakSelf connectWithToken:tokenDetails.token];
+                }];
+            }
+            @finally {
+                self.auth.delegate = delegate;
+            }
         }
     }
 }
@@ -138,10 +145,6 @@ enum {
     [self setupWebSocket:@[accessTokenParam] withOptions:self.options resumeKey:self.resumeKey connectionSerial:self.connectionSerial];
     // Connect
     [self.websocket open];
-}
-
-- (BOOL)getIsConnected {
-    return self.websocket.readyState == SR_OPEN;
 }
 
 - (NSURL *)setupWebSocket:(__GENERIC(NSArray, NSURLQueryItem *) *)params withOptions:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
@@ -209,16 +212,16 @@ enum {
 }
 
 - (void)sendClose {
-    self.closing = YES;
+    _state = ARTRealtimeTransportStateClosing;
     ARTProtocolMessage *closeMessage = [[ARTProtocolMessage alloc] init];
     closeMessage.action = ARTProtocolMessageClose;
     [self send:closeMessage];
 }
 
 - (void)sendPing {
-    ARTProtocolMessage *closeMessage = [[ARTProtocolMessage alloc] init];
-    closeMessage.action = ARTProtocolMessageHeartbeat;
-    [self send:closeMessage];
+    ARTProtocolMessage *heartbeatMessage = [[ARTProtocolMessage alloc] init];
+    heartbeatMessage.action = ARTProtocolMessageHeartbeat;
+    [self send:heartbeatMessage];
 }
 
 - (void)close {
@@ -248,6 +251,17 @@ enum {
     return self.options.realtimeHost;
 }
 
+- (ARTRealtimeTransportState)state {
+    if (self.websocket.readyState == SR_OPEN) {
+        return ARTRealtimeTransportStateOpened;
+    }
+    return _state;
+}
+
+- (void)setState:(ARTRealtimeTransportState)state {
+    _state = state;
+}
+
 #pragma mark - SRWebSocketDelegate
 
 - (void)webSocketDidOpen:(SRWebSocket *)websocket {
@@ -275,7 +289,7 @@ enum {
 
         switch (code) {
             case ARTWsCloseNormal:
-                if (s.closing) {
+                if (_state == ARTRealtimeTransportStateClosing) {
                     // OK
                     [s.delegate realtimeTransportClosed:s];
                 }
@@ -310,6 +324,8 @@ enum {
                 NSAssert(true, @"WebSocket close: unknown code");
                 break;
         }
+
+        s.state = ARTRealtimeTransportStateClosed;
     });
     CFRunLoopWakeUp(self.rl);
 }
@@ -323,6 +339,7 @@ enum {
         if (s) {
             [s.delegate realtimeTransportFailed:s withError:[self classifyError:error]];
         }
+        s.state = ARTRealtimeTransportStateClosed;
     });
     CFRunLoopWakeUp(self.rl);
 }

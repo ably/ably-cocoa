@@ -25,8 +25,6 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) NSNumber *connectionSerial;
 @property (readwrite, weak, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
 
-@property (readonly, getter=getIsConnected) BOOL isConnected;
-
 @end
 
 ART_ASSUME_NONNULL_END

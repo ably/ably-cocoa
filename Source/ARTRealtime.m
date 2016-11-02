@@ -25,7 +25,7 @@
 #import "ARTPresenceMap.h"
 #import "ARTProtocolMessage.h"
 #import "ARTProtocolMessage+Private.h"
-#import "ARTEventEmitter.h"
+#import "ARTEventEmitter+Private.h"
 #import "ARTQueuedMessage.h"
 #import "ARTConnection+Private.h"
 #import "ARTConnectionDetails.h"
@@ -54,6 +54,8 @@
     ARTFallback *_fallbacks;
 }
 
+@synthesize authorizationEmitter = _authorizationEmitter;
+
 - (instancetype)initWithKey:(NSString *)key {
     return [self initWithOptions:[[ARTClientOptions alloc] initWithKey:key]];
 }
@@ -81,17 +83,57 @@
         _pendingMessageStartSerial = 0;
         _connection = [[ARTConnection alloc] initWithRealtime:self];
         _connectionStateTtl = [ARTDefault connectionStateTtl];
+        _authorizationEmitter = [[ARTEventEmitter alloc] init];
+        self.auth.delegate = self;
+
         [self.connection setState:ARTRealtimeInitialized];
 
         [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p initialized with RS:%p", self, _rest];
 
         self.rest.prioritizedHost = nil;
-        
+
         if (options.autoConnect) {
             [self connect];
         }
     }
     return self;
+}
+
+- (void)auth:(ARTAuth *)auth didAuthorize:(ARTTokenDetails *)tokenDetails {
+    switch (self.connection.state) {
+        case ARTRealtimeConnected: {
+                // Update (send AUTH message)
+                [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p AUTH message using %@", _rest, tokenDetails];
+                ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
+                msg.action = ARTProtocolMessageAuth;
+                msg.auth = [[ARTAuthDetails alloc] initWithToken:tokenDetails.token];
+                [self send:msg callback:nil];
+            }
+            break;
+        case ARTRealtimeConnecting: {
+                switch (_transport.state) {
+                    case ARTRealtimeTransportStateOpening:
+                    case ARTRealtimeTransportStateOpened: {
+                            // Halt the current connection and reconnect with the most recent token
+                            [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p halt current connection and reconnect with %@", _rest, tokenDetails];
+                            [_transport abort:[ARTStatus state:ARTStateOk]];
+                            [_transport connectWithToken:tokenDetails.token];
+                        }
+                        break;
+                    case ARTRealtimeTransportStateClosed:
+                    case ARTRealtimeTransportStateClosing:
+                        // Ignore
+                        [_authorizationEmitter off];
+                        break;
+                }
+            }
+            break;
+        default:
+            // Client state is NOT Connecting or Connected, so it should start a new connection
+            [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p start a connection using %@", _rest, tokenDetails];
+            [self transition:ARTRealtimeConnecting];
+            break;
+    }
 }
 
 - (id<ARTRealtimeTransport>)getTransport {
@@ -215,11 +257,11 @@
     ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:state previous:self.connection.state reason:errorInfo retryIn:0];
     [self.connection setState:state];
 
-    [self transitionSideEffects:stateChange];
-
     if (errorInfo != nil) {
         [self.connection setErrorReason:errorInfo];
     }
+
+    [self transitionSideEffects:stateChange];
 
     [_internalEventEmitter emit:[NSNumber numberWithInteger:state] with:stateChange];
 }
@@ -278,7 +320,6 @@
             break;
         }
         case ARTRealtimeClosing: {
-            [self.auth.authorizedEmitter off];
             [_reachability off];
             [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
                 [self transition:ARTRealtimeClosed];
@@ -287,7 +328,6 @@
             break;
         }
         case ARTRealtimeClosed:
-            [self.auth.authorizedEmitter off];
             [_reachability off];
             [self.transport close];
             self.transport.delegate = nil;
@@ -295,17 +335,17 @@
             _connection.id = nil;
             _transport = nil;
             self.rest.prioritizedHost = nil;
+            [_authorizationEmitter emit:[NSNumber numberWithInt:ARTAuthorizationFailed] with:[ARTErrorInfo createWithCode:ARTStateAuthorizationFailed message:@"Connection has been closed"]];
             break;
         case ARTRealtimeFailed:
-            [self.auth.authorizedEmitter off];
             status = [ARTStatus state:ARTStateConnectionFailed info:stateChange.reason];
             [self.transport abort:status];
             self.transport.delegate = nil;
             _transport = nil;
             self.rest.prioritizedHost = nil;
+            [_authorizationEmitter emit:[NSNumber numberWithInt:ARTAuthorizationFailed] with:stateChange.reason];
             break;
         case ARTRealtimeDisconnected: {
-            [self.auth.authorizedEmitter off];
             if (!_startedReconnection) {
                 _startedReconnection = [NSDate date];
                 [_internalEventEmitter on:^(ARTConnectionStateChange *change) {
@@ -331,7 +371,6 @@
             break;
         }
         case ARTRealtimeSuspended: {
-            [self.auth.authorizedEmitter off];
             [self.transport close];
             self.transport.delegate = nil;
             _transport = nil;
@@ -339,6 +378,7 @@
             [self unlessStateChangesBefore:stateChange.retryIn do:^{
                 [self transition:ARTRealtimeConnecting];
             }];
+            [_authorizationEmitter emit:[NSNumber numberWithInt:ARTAuthorizationFailed] with:[ARTErrorInfo createWithCode:ARTStateAuthorizationFailed message:@"Connection has been suspended"]];
             break;
         }
         case ARTRealtimeConnected: {
@@ -353,17 +393,7 @@
                 }];
             }
             [_connectedEventEmitter emit:[NSNull null] with:nil];
-
-            [self.auth.authorizedEmitter off];
-            __weak typeof(self) weakSelf = self;
-            [self.auth.authorizedEmitter on:^(ARTTokenDetails *tokenDetails) {
-                ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
-                msg.action = ARTProtocolMessageAuth;
-                msg.auth = [[ARTAuthDetails alloc] initWithToken:tokenDetails.token];
-                [weakSelf send:msg callback:^(ARTStatus *status) {
-                    NSLog(@"%@", status);
-                }];
-            }];
+            [_authorizationEmitter emit:[NSNumber numberWithInt:ARTAuthorizationSucceeded] with:nil];
             break;
         }
         case ARTRealtimeInitialized:
