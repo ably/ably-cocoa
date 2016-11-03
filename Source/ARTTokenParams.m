@@ -153,8 +153,9 @@ static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
     NSString *keyName = keyComponents[0];
     NSString *keySecret = keyComponents[1];
     NSString *clientId = self.clientId ? self.clientId : @"";
+    NSTimeInterval ttl = self.ttl ? self.ttl : [ARTDefault ttl];
     
-    NSString *signText = [NSString stringWithFormat:@"%@\n%lld\n%@\n%@\n%lld\n%@\n", keyName, timeIntervalToMilliseconds(self.ttl), self.capability, clientId, dateToMilliseconds(self.timestamp), nonce];
+    NSString *signText = [NSString stringWithFormat:@"%@\n%lld\n%@\n%@\n%lld\n%@\n", keyName, timeIntervalToMilliseconds(ttl), self.capability, clientId, dateToMilliseconds(self.timestamp), nonce];
     NSString *mac = hmacForDataAndKey([signText dataUsingEncoding:NSUTF8StringEncoding], [keySecret dataUsingEncoding:NSUTF8StringEncoding]);
     
     return [[ARTTokenRequest alloc] initWithTokenParams:self keyName:keyName nonce:nonce mac:mac];

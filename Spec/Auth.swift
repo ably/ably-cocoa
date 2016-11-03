@@ -2448,6 +2448,59 @@ class Auth : QuickSpec {
                     }
                 }
 
+                it("example: if a client is initialised with TokenParams#ttl configured with a custom value, and a TokenParams object is passed in as an argument to #authorize with a null value for ttl, then the ttl used for every subsequent authorization will be null") {
+                    let options = AblyTests.commonAppSetup()
+                    options.defaultTokenParams = {
+                        $0.ttl = 0.1;
+                        $0.clientId = "tester";
+                        return $0
+                    }(ARTTokenParams())
+
+                    let rest = ARTRest(options: options)
+
+                    let testTokenParams = ARTTokenParams()
+                    testTokenParams.ttl = 0
+                    testTokenParams.clientId = nil
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.authorise(testTokenParams, options: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            guard let tokenDetails = tokenDetails else {
+                                fail("TokenDetails is nil"); done(); return
+                            }
+                            guard let issued = tokenDetails.issued else {
+                                fail("TokenDetails.issued is nil"); done(); return
+                            }
+                            guard let expires = tokenDetails.expires else {
+                                fail("TokenDetails.expires is nil"); done(); return
+                            }
+                            expect(tokenDetails.clientId).to(beNil())
+                            // `ttl` when omitted, the default value is applied
+                            expect(issued.dateByAddingTimeInterval(ARTDefault.ttl())).to(equal(expires))
+                            done()
+                        }
+                    }
+
+                    // Subsequent authorization
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            guard let tokenDetails = tokenDetails else {
+                                fail("TokenDetails is nil"); done(); return
+                            }
+                            guard let issued = tokenDetails.issued else {
+                                fail("TokenDetails.issued is nil"); done(); return
+                            }
+                            guard let expires = tokenDetails.expires else {
+                                fail("TokenDetails.expires is nil"); done(); return
+                            }
+                            expect(tokenDetails.clientId).to(beNil())
+                            expect(issued.dateByAddingTimeInterval(ARTDefault.ttl())).to(equal(expires))
+                            done()
+                        }
+                    }
+                }
+
             }
             
             // RSA10k
