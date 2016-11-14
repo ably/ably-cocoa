@@ -94,3 +94,37 @@ NSString *ARTRealtimeStateToStr(ARTRealtimeConnectionState state) {
 }
 
 @end
+
+@implementation NSString (ARTJsonCompatible)
+
+- (NSDictionary *)toJSON:(NSError *__art_nullable *__art_nullable)error {
+    NSData *data = [self dataUsingEncoding:NSUTF8StringEncoding];
+    NSError *jsonError;
+    id json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonError];
+    if (jsonError) {
+        if (error) {
+            *error = jsonError;
+        }
+        return nil;
+    }
+    if (![json isKindOfClass:[NSDictionary class]]) {
+        if (error) {
+            *error = [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:@{NSLocalizedFailureReasonErrorKey: [NSString stringWithFormat:@"expected JSON object, got %@", [json class]]}];
+        }
+        return nil;
+    }
+    return (NSDictionary *)json;
+}
+
+@end
+
+@implementation NSDictionary (ARTJsonCompatible)
+
+- (NSDictionary *)toJSON:(NSError *__art_nullable *__art_nullable)error {
+    if (error) {
+        *error = nil;
+    }
+    return self;
+}
+
+@end

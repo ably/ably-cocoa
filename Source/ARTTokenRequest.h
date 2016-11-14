@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "ARTTypes.h"
 #import "ARTTokenParams.h"
 #import "ARTAuthOptions.h"
 
@@ -55,6 +56,8 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithTokenParams:(ARTTokenParams *)tokenParams keyName:(NSString *)keyName nonce:(NSString *)nonce mac:(NSString *)mac;
+
++ (ARTTokenRequest *__art_nullable)fromJSON:(id<ARTJsonCompatible>)json error:(NSError *__art_nullable *__art_nullable)error;
 
 @end
 

@@ -34,6 +34,30 @@
             self.keyName, self.clientId, self.nonce, self.mac, self.ttl, self.capability, self.timestamp];
 }
 
++ (ARTTokenRequest *__art_nullable)fromJSON:(id<ARTJsonCompatible>)json error:(NSError *__art_nullable *__art_nullable)error {
+    NSError *e;
+    NSDictionary *dict = [json toJSON:&e];
+    if (e) {
+        if (error) {
+            *error = e;
+        }
+        return nil;
+    }
+
+    ARTTokenParams *tokenParams = [[ARTTokenParams alloc] initWithClientId:dict[@"clientId"]];
+
+    ARTTokenRequest *tokenRequest = [[ARTTokenRequest alloc] initWithTokenParams:tokenParams
+                                                                         keyName:dict[@"keyName"]
+                                                                           nonce:dict[@"nonce"]
+                                                                             mac:dict[@"mac"]];
+    tokenRequest.clientId = dict[@"clientId"];
+    tokenRequest.ttl = millisecondsToTimeInterval([dict[@"ttl"] doubleValue]);
+    tokenRequest.capability = dict[@"capability"];
+    tokenRequest.timestamp = [NSDate dateWithTimeIntervalSince1970:[dict[@"timestamp"] doubleValue] / 1000];
+
+    return tokenRequest;
+}
+
 @end
 
 @implementation ARTTokenRequest (ARTTokenDetailsCompatible)

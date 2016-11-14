@@ -308,18 +308,11 @@ let clientOptions = ARTClientOptions()
 clientOptions.authCallback = { params, callback in
     getTokenRequestJSONFromYourServer(params) { json, error in
         //handle error
-        let tokenParams = ARTTokenParams(clientId:json["clientId"])
-
-        let tokenRequest = ARTTokenRequest(tokenParams:tokenParams,
-                                               keyName:json["keyName"],
-                                                 nonce:json["nonce"],
-                                                   mac:json["mac"])
-        tokenRequest.clientId = json["clientId"]
-        tokenRequest.ttl = json["ttl"]
-        tokenRequest.capability = json["capability"]
-        tokenRequest.timestamp = NSDate(timeIntervalSince1970:(json["timestamp"] / 1000))
-
-        callback(tokenRequest, nil)
+        do {
+            callback(try ARTTokenRequest.fromJSON(json), nil)
+        } catch let error as NSError {
+            callback(nil, error)
+        }
     }
 }
 
@@ -333,18 +326,8 @@ ARTClientOptions *clientOptions = [[ARTClientOptions alloc] init];
 clientOptions.authCallback = ^(ARTTokenParams *params, void(^callback)(id<ARTTokenDetailsCompatible>, NSError*)) {
     [self getTokenRequestJSONFromYourServer:params completion:^(NSDictionary *json, NSError *error) {
         //handle error
-        ARTTokenParams *tokenParams = [[ARTTokenParams alloc] initWithClientId:json[@"clientId"]];
-
-        ARTTokenRequest *tokenRequest = [[ARTTokenRequest alloc] initWithTokenParams:tokenParams
-                                                                             keyName:json[@"keyName"]
-                                                                               nonce:json[@"nonce"]
-                                                                                 mac:json[@"mac"]];
-        tokenRequest.clientId = json[@"clientId"];
-        tokenRequest.ttl = [json[@"ttl"] doubleValue];
-        tokenRequest.capability = json[@"capability"];
-        tokenRequest.timestamp = [NSDate dateWithTimeIntervalSince1970:[json[@"timestamp"] doubleValue] / 1000];
-
-        callback(tokenRequest, nil);
+        ARTTokenRequest *tokenRequest = [ARTTokenRequest fromJSON:json error:&error];
+        callback(tokenRequest, error);
     }];
 };
 
