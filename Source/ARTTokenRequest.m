@@ -34,7 +34,7 @@
             self.keyName, self.clientId, self.nonce, self.mac, self.ttl, self.capability, self.timestamp];
 }
 
-+ (ARTTokenRequest *__art_nullable)fromJSON:(id<ARTJsonCompatible>)json error:(NSError *__art_nullable *__art_nullable)error {
++ (ARTTokenRequest *__art_nullable)fromJson:(id<ARTJsonCompatible>)json error:(NSError *__art_nullable *__art_nullable)error {
     NSError *e;
     NSDictionary *dict = [json toJSON:&e];
     if (e) {

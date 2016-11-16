@@ -309,7 +309,7 @@ clientOptions.authCallback = { params, callback in
     getTokenRequestJSONFromYourServer(params) { json, error in
         //handle error
         do {
-            callback(try ARTTokenRequest.fromJSON(json), nil)
+            callback(try ARTTokenRequest.fromJson(json), nil)
         } catch let error as NSError {
             callback(nil, error)
         }
@@ -326,7 +326,7 @@ ARTClientOptions *clientOptions = [[ARTClientOptions alloc] init];
 clientOptions.authCallback = ^(ARTTokenParams *params, void(^callback)(id<ARTTokenDetailsCompatible>, NSError*)) {
     [self getTokenRequestJSONFromYourServer:params completion:^(NSDictionary *json, NSError *error) {
         //handle error
-        ARTTokenRequest *tokenRequest = [ARTTokenRequest fromJSON:json error:&error];
+        ARTTokenRequest *tokenRequest = [ARTTokenRequest fromJson:json error:&error];
         callback(tokenRequest, error);
     }];
 };
