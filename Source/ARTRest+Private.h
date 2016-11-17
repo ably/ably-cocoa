@@ -12,6 +12,8 @@
 @protocol ARTEncoder;
 @protocol ARTHTTPExecutor;
 
+extern NSString *const ARTRestMainQueueKey;
+
 ART_ASSUME_NONNULL_BEGIN
 
 /// ARTRest private methods that are used internally and for whitebox testing
