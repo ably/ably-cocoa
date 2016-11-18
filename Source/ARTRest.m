@@ -33,10 +33,7 @@
 #import "ARTTokenDetails.h"
 #import "ARTDefault.h"
 #import "ARTFallback.h"
-
-// Use `dispatch_queue_set_specific` and `dispatch_get_specific` to check if our code is running on the main queue over using NSThread.isMainThread()
-NSString *const ARTRestMainQueueKey = @"io.ably.cocoa.mainQueue";
-int ARTRestMainQueueValue = 1;
+#import "ARTGCD.h"
 
 @implementation ARTRest
 
@@ -44,7 +41,7 @@ int ARTRestMainQueueValue = 1;
     self = [super init];
     if (self) {
         NSAssert(options, @"ARTRest: No options provided");
-        dispatch_queue_set_specific(dispatch_get_main_queue(), (__bridge const void *)ARTRestMainQueueKey, &ARTRestMainQueueValue, nil);
+        artDispatchSpecifyMainQueue();
 
         _options = [options copy];
 
