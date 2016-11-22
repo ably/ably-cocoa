@@ -455,6 +455,43 @@ class RealtimeClientConnection: QuickSpec {
 
                     expect(errorInfo).toNot(beNil())
                 }
+
+                // RTN4g
+                it("an ERROR event can be emitted by the Connection that contains details of the error in an ErrorInfo object") {
+                    let options = AblyTests.commonAppSetup()
+                    options.token = getTestToken(ttl: 5.0)
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    let connection = client.connection
+
+                    var errors: [ARTErrorInfo] = []
+
+                    waitUntil(timeout: testTimeout) { done in
+                        connection.once(.Error) { error in
+                            guard let error = error else {
+                                fail("Error is nil"); done(); return
+                            }
+                            expect(error.code) == 40142
+                            errors.append(error)
+                            done()
+                        }
+                    }
+
+                    let stubError = AblyTests.newErrorProtocolMessage()
+                    waitUntil(timeout: testTimeout) { done in
+                        connection.once(.Error) { error in
+                            guard let error = error else {
+                                fail("Error is nil"); done(); return
+                            }
+                            expect(error.code) == stubError.code
+                            errors.append(error)
+                            done()
+                        }
+                        client.onError(stubError)
+                    }
+
+                    expect(errors).to(haveCount(2))
+                }
             }
 
             class TotalReach {
