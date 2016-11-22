@@ -126,6 +126,8 @@
 		D7534C321D79E5C20054C182 /* Ably.h in Headers */ = {isa = PBXBuildFile; fileRef = D7534C311D79E5C20054C182 /* Ably.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7588AF31BFF91B800BB8279 /* ARTURLSessionServerTrust.h in Headers */ = {isa = PBXBuildFile; fileRef = D7588AF11BFF91B800BB8279 /* ARTURLSessionServerTrust.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D7588AF41BFF91B800BB8279 /* ARTURLSessionServerTrust.m in Sources */ = {isa = PBXBuildFile; fileRef = D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */; };
+		D75A3F1B1DDE5B62002A4AAD /* ARTGCD.h in Headers */ = {isa = PBXBuildFile; fileRef = D75A3F191DDE5B62002A4AAD /* ARTGCD.h */; };
+		D75A3F1C1DDE5B62002A4AAD /* ARTGCD.m in Sources */ = {isa = PBXBuildFile; fileRef = D75A3F1A1DDE5B62002A4AAD /* ARTGCD.m */; };
 		D77394031C6F6FFE00F5478F /* ARTProtocolMessage+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D77394021C6F6FFE00F5478F /* ARTProtocolMessage+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D780846E1C68B3E50083009D /* NSObject+TestSuite.m in Sources */ = {isa = PBXBuildFile; fileRef = D780846D1C68B3E50083009D /* NSObject+TestSuite.m */; };
 		D79FF2751D901CD50067FA6A /* ARTRealtime+TestSuite.m in Sources */ = {isa = PBXBuildFile; fileRef = D79FF2741D901CD50067FA6A /* ARTRealtime+TestSuite.m */; };
@@ -359,6 +361,8 @@
 		D7534C311D79E5C20054C182 /* Ably.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Ably.h; sourceTree = "<group>"; };
 		D7588AF11BFF91B800BB8279 /* ARTURLSessionServerTrust.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTURLSessionServerTrust.h; sourceTree = "<group>"; };
 		D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTURLSessionServerTrust.m; sourceTree = "<group>"; };
+		D75A3F191DDE5B62002A4AAD /* ARTGCD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTGCD.h; sourceTree = "<group>"; };
+		D75A3F1A1DDE5B62002A4AAD /* ARTGCD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTGCD.m; sourceTree = "<group>"; };
 		D77394021C6F6FFE00F5478F /* ARTProtocolMessage+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTProtocolMessage+Private.h"; sourceTree = "<group>"; };
 		D780846C1C68B3E50083009D /* NSObject+TestSuite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+TestSuite.h"; sourceTree = "<group>"; };
 		D780846D1C68B3E50083009D /* NSObject+TestSuite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+TestSuite.m"; sourceTree = "<group>"; };
@@ -737,8 +741,10 @@
 				96A507A31A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.h */,
 				96A507A41A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.m */,
 				EB2D84F61CD75CCE00F23CDA /* ARTReachability.h */,
-				EB2D84FC1CD769B700F23CDA /* ARTOSReachability.m */,
 				EB2D85001CD769C800F23CDA /* ARTOSReachability.h */,
+				EB2D84FC1CD769B700F23CDA /* ARTOSReachability.m */,
+				D75A3F191DDE5B62002A4AAD /* ARTGCD.h */,
+				D75A3F1A1DDE5B62002A4AAD /* ARTGCD.m */,
 			);
 			name = Utilities;
 			sourceTree = "<group>";
@@ -801,6 +807,7 @@
 				D7C1B8791BBF5F810087B55F /* ARTAuth+Private.h in Headers */,
 				96A507A51A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.h in Headers */,
 				EB8AC6431C6515ED002ABA92 /* ARTTokenParams+Private.h in Headers */,
+				D75A3F1B1DDE5B62002A4AAD /* ARTGCD.h in Headers */,
 				D746AE1D1BBB5207003ECEF8 /* ARTDataQuery.h in Headers */,
 				EB89D40F1C62303E007FA5B7 /* ARTConnection+Private.h in Headers */,
 				D746AE281BBB61C9003ECEF8 /* ARTPresence.h in Headers */,
@@ -1163,6 +1170,7 @@
 				96BF61541A35B39C004CF2B3 /* ARTRest.m in Sources */,
 				D7D8F82C1BC2C706009718F2 /* ARTTokenRequest.m in Sources */,
 				D7D8F8261BC2C691009718F2 /* ARTTokenDetails.m in Sources */,
+				D75A3F1C1DDE5B62002A4AAD /* ARTGCD.m in Sources */,
 				1C2B0FFE1B136A6D00E3633C /* ARTPresenceMap.m in Sources */,
 				960D07941A45F1D800ED8C8C /* ARTCrypto.m in Sources */,
 				D7D8F8221BC2BE16009718F2 /* ARTAuthOptions.m in Sources */,

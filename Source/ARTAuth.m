@@ -12,7 +12,6 @@
 #import <UIKit/UIKit.h>
 #endif
 
-#import "ARTRest.h"
 #import "ARTRest+Private.h"
 #import "ARTHttp.h"
 #import "ARTClientOptions.h"
@@ -23,6 +22,7 @@
 #import "ARTEncoder.h"
 #import "ARTStatus.h"
 #import "ARTJsonEncoder.h"
+#import "ARTGCD.h"
 
 @implementation ARTAuth {
     __weak ARTRest *_rest;
@@ -227,7 +227,13 @@
         if (replacedOptions.authCallback) {
             tokenDetailsFactory = ^(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *__art_nullable, NSError *__art_nullable)) {
                 replacedOptions.authCallback(tokenParams, ^(id<ARTTokenDetailsCompatible> tokenDetailsCompat, NSError *error) {
-                    [tokenDetailsCompat toTokenDetails:self callback:callback];
+                    artDispatchMainQueue(^{
+                        if (error) {
+                            callback(nil, error);
+                        } else {
+                            [tokenDetailsCompat toTokenDetails:self callback:callback];
+                        }
+                    });
                 });
             };
             [self.logger debug:@"RS:%p ARTAuth: using authCallback", _rest];

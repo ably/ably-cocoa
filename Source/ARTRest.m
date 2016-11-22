@@ -33,6 +33,7 @@
 #import "ARTTokenDetails.h"
 #import "ARTDefault.h"
 #import "ARTFallback.h"
+#import "ARTGCD.h"
 
 @implementation ARTRest
 
@@ -40,6 +41,8 @@
     self = [super init];
     if (self) {
         NSAssert(options, @"ARTRest: No options provided");
+        artDispatchSpecifyMainQueue();
+
         _options = [options copy];
 
         if (options.logHandler) {
