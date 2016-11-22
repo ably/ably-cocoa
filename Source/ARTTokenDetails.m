@@ -43,6 +43,28 @@
     return tokenDetails;
 }
 
++ (ARTTokenDetails *__art_nullable)fromJson:(id<ARTJsonCompatible>)json error:(NSError *__art_nullable *__art_nullable)error {
+    NSError *e;
+    NSDictionary *dict = [json toJSON:&e];
+    if (e) {
+        if (error) {
+            *error = e;
+        }
+        return nil;
+    }
+
+    NSNumber *expiresInterval = [dict objectForKey:@"expires"];
+    NSDate *expires = expiresInterval ? [NSDate dateWithTimeIntervalSince1970:(expiresInterval.doubleValue) / 1000] : nil;
+    NSNumber *issuedInterval = [dict objectForKey:@"issued"];
+    NSDate *issued = issuedInterval ? [NSDate dateWithTimeIntervalSince1970:(issuedInterval.doubleValue) / 1000] : nil;
+
+    return [[ARTTokenDetails alloc] initWithToken:dict[@"token"]
+                                          expires:expires
+                                           issued:issued
+                                       capability:dict[@"capability"]
+                                         clientId:dict[@"clientId"]];
+}
+
 @end
 
 @class ARTAuth;

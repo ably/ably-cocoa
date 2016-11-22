@@ -148,8 +148,7 @@
     if (resp && resp.count == 1) {
         NSNumber *num = resp[0];
         if ([num isKindOfClass:[NSNumber class]]) {
-            long long msSince1970 = [num longLongValue];
-            return [NSDate dateWithTimeIntervalSince1970:(msSince1970 / 1000.0)];
+            return [NSDate dateWithTimeIntervalSince1970:([num doubleValue] / 1000.0)];
         }
     }
     return nil;
@@ -386,9 +385,9 @@
     
     NSString *token = [input artString:@"token"];
     NSNumber *expiresTimeInterval = [input objectForKey:@"expires"];
-    NSDate *expires = expiresTimeInterval ? [NSDate dateWithTimeIntervalSince1970:expiresTimeInterval.longLongValue / 1000] : nil;
+    NSDate *expires = expiresTimeInterval ? [NSDate dateWithTimeIntervalSince1970:expiresTimeInterval.doubleValue / 1000] : nil;
     NSNumber *issuedInterval = [input objectForKey:@"issued"];
-    NSDate *issued = issuedInterval ? [NSDate dateWithTimeIntervalSince1970:issuedInterval.longLongValue / 1000] : nil;
+    NSDate *issued = issuedInterval ? [NSDate dateWithTimeIntervalSince1970:issuedInterval.doubleValue / 1000] : nil;
     
     return [[ARTTokenDetails alloc] initWithToken:token
                                               expires:expires

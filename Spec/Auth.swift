@@ -2749,5 +2749,87 @@ class Auth : QuickSpec {
                 }
             }
         }
+
+        describe("TokenRequest") {
+            // TE6
+            describe("fromJson") {
+                let json = "{" +
+                "    \"clientId\":\"myClientId\"," +
+                "    \"mac\":\"4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4=\"," +
+                "    \"capability\":\"{\\\"test\\\":[\\\"publish\\\"]}\"," +
+                "    \"ttl\":42000," +
+                "    \"timestamp\":1479087321934," +
+                "    \"keyName\":\"xxxxxx.yyyyyy\"," +
+                "    \"nonce\":\"7830658976108826\"" +
+                "}"
+
+                func check(request: ARTTokenRequest) {
+                    expect(request.clientId).to(equal("myClientId"))
+                    expect(request.mac).to(equal("4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4="))
+                    expect(request.capability).to(equal("{\"test\":[\"publish\"]}"))
+                    expect(request.ttl).to(equal(NSTimeInterval(42)))
+                    expect(request.timestamp).to(equal(NSDate(timeIntervalSince1970: 1479087321.934)))
+                    expect(request.keyName).to(equal("xxxxxx.yyyyyy"))
+                    expect(request.nonce).to(equal("7830658976108826"))
+                }
+
+                it("accepts a string, which should be interpreted as JSON") {
+                    check(try! ARTTokenRequest.fromJson(json))
+                }
+
+                it("accepts a NSDictionary") {
+                    let data = json.dataUsingEncoding(NSUTF8StringEncoding)!
+                    let dict = try! NSJSONSerialization.JSONObjectWithData(data, options: .MutableLeaves) as! NSDictionary
+                    check(try! ARTTokenRequest.fromJson(dict))
+                }
+
+                it("rejects invalid JSON") {
+                    expect{try ARTTokenRequest.fromJson("not JSON")}.to(throwError())
+                }
+
+                it("rejects non-object JSON") {
+                    expect{try ARTTokenRequest.fromJson("[]")}.to(throwError())
+                }
+            }
+        }
+
+        describe("TokenDetails") {
+            // TD7
+            describe("fromJson") {
+                let json = "{" +
+                "    \"token\": \"xxxxxx.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\"," +
+                "    \"issued\": 1479087321934," +
+                "    \"expires\": 1479087363934," +
+                "    \"capability\": \"{\\\"test\\\":[\\\"publish\\\"]}\"," +
+                "    \"clientId\": \"myClientId\"" +
+                "}"
+
+                func check(details: ARTTokenDetails) {
+                    expect(details.token).to(equal("xxxxxx.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"))
+                    expect(details.issued).to(equal(NSDate(timeIntervalSince1970: 1479087321.934)))
+                    expect(details.expires).to(equal(NSDate(timeIntervalSince1970: 1479087363.934)))
+                    expect(details.capability).to(equal("{\"test\":[\"publish\"]}"))
+                    expect(details.clientId).to(equal("myClientId"))
+                }
+
+                it("accepts a string, which should be interpreted as JSON") {
+                    check(try! ARTTokenDetails.fromJson(json))
+                }
+
+                it("accepts a NSDictionary") {
+                    let data = json.dataUsingEncoding(NSUTF8StringEncoding)!
+                    let dict = try! NSJSONSerialization.JSONObjectWithData(data, options: .MutableLeaves) as! NSDictionary
+                    check(try! ARTTokenDetails.fromJson(dict))
+                }
+
+                it("rejects invalid JSON") {
+                    expect{try ARTTokenDetails.fromJson("not JSON")}.to(throwError())
+                }
+
+                it("rejects non-object JSON") {
+                    expect{try ARTTokenDetails.fromJson("[]")}.to(throwError())
+                }
+            }
+        }
     }
 }

@@ -46,6 +46,8 @@ ART_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithToken:(NSString *)token;
 - (instancetype)initWithToken:(NSString *)token expires:(art_nullable NSDate *)expires issued:(art_nullable  NSDate *)issued capability:(art_nullable  NSString *)capability clientId:(art_nullable NSString *)clientId;
 
++ (ARTTokenDetails *__art_nullable)fromJson:(id<ARTJsonCompatible>)json error:(NSError *__art_nullable *__art_nullable)error;
+
 @end
 
 @interface ARTTokenDetails (ARTTokenDetailsCompatible) <ARTTokenDetailsCompatible>

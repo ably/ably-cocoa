@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "CompatibilityMacros.h"
+#import "ARTStatus.h"
 
 @class ARTStatus;
 @class ARTHttpResponse;
@@ -111,6 +112,16 @@ NSString *generateNonce();
 @property (readonly, nonatomic, art_nullable) ARTErrorInfo *reason;
 @property (readonly, nonatomic) NSTimeInterval retryIn;
 
+@end
+
+@protocol ARTJsonCompatible <NSObject>
+- (NSDictionary *__art_nullable)toJSON:(NSError *__art_nullable *__art_nullable)error;
+@end
+
+@interface NSString (ARTJsonCompatible) <ARTJsonCompatible>
+@end
+
+@interface NSDictionary (ARTJsonCompatible) <ARTJsonCompatible>
 @end
 
 ART_ASSUME_NONNULL_END
