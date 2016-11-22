@@ -13,7 +13,7 @@
 NSString *const ARTDefault_restHost = @"rest.ably.io";
 NSString *const ARTDefault_realtimeHost = @"realtime.ably.io";
 NSString *const ARTDefault_version = @"0.8";
-NSString *const ARTDefault_libraryVersion = @"0.8.7";
+NSString *const ARTDefault_libraryVersion = @"0.8.8";
 NSString *const ARTDefault_platform = @"ios-";
 
 static int _realtimeRequestTimeout = 10.0;
