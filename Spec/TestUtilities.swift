@@ -211,14 +211,14 @@ class AblyTests {
         return [client]
     }
 
-    class func splitDone(howMany: Int, done: () -> ()) -> (() -> ()) {
+    class func splitDone(howMany: Int, file: StaticString = #file, line: UInt = #line, done: () -> Void) -> (() -> Void) {
         var left = howMany
         return {
             left -= 1
             if left == 0 {
                 done()
             } else if left < 0 {
-                fail("splitDone called more than the expected \(howMany) times")
+                XCTFail("splitDone called more than the expected \(howMany) times", file: file, line: line)
             }
         }
     }
