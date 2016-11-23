@@ -467,7 +467,6 @@
     }
     if (!_renewingToken && error && error.statusCode == 401 && error.code >= 40140 && error.code < 40150 && [self isTokenRenewable]) {
         [self connectWithRenewedToken];
-        return;
     }
     [self transition:ARTRealtimeDisconnected withErrorInfo:error];
 }
