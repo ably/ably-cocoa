@@ -412,7 +412,7 @@
 
     // Resuming
     if (_resuming) {
-        if (message.error && ![message.connectionId isEqualToString:self.connection.id]) {
+        if (![message.connectionId isEqualToString:self.connection.id]) {
             [self.logger warn:@"R:%p ARTRealtime: connection has reconnected, but resume failed. Detaching all channels", self];
             // Fatal error, detach all channels
             for (ARTRealtimeChannel *channel in self.channels) {
