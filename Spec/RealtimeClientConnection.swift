@@ -2093,10 +2093,10 @@ class RealtimeClientConnection: QuickSpec {
                         expect(channel.errorReason).to(beIdenticalTo(protocolError.error))
                     }
 
-                    it("should detach all channels if the connectionId has changed") {
+                    it("should resume the connection after an auth renewal") {
                         let options = AblyTests.commonAppSetup()
                         options.disconnectedRetryTimeout = 1.0
-                        options.tokenDetails = getTestTokenDetails(ttl: 2.0)
+                        options.tokenDetails = getTestTokenDetails(ttl: 5.0)
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
 
@@ -2114,33 +2114,41 @@ class RealtimeClientConnection: QuickSpec {
                             fail("TestProxyTransport is not set"); return
                         }
 
-                        // Wait for token to expire
+                        channel.once(.Detached) { _ in
+                            fail("Should not detach channels")
+                        }
+                        defer { channel.off() }
+
                         waitUntil(timeout: testTimeout) { done in
-                            let partialDone = AblyTests.splitDone(2, done: done)
-                            channel.once(.Detached) { error in
-                                expect(error).to(beNil())
-                                partialDone()
+                            // Wait for token to expire
+                            client.connection.once(.Disconnected) { stateChange in
+                                guard let error = stateChange?.reason else {
+                                    fail("Error is nil"); done(); return
+                                }
+                                expect(error.code) == 40142
+                                done()
                             }
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
                             // Wait for connection resume
                             client.connection.once(.Connected) { stateChange in
                                 expect(stateChange?.reason).to(beNil())
-                                partialDone()
+                                done()
                             }
                         }
 
-                        expect(firstTransport.protocolMessagesReceived.filter{ $0.action == .Disconnected }).to(haveCount(1))
-
-                        guard let secondsTransport = client.transport as? TestProxyTransport else {
+                        guard let secondTransport = client.transport as? TestProxyTransport else {
                             fail("TestProxyTransport is not set"); return
                         }
 
-                        let connectedMessages = secondsTransport.protocolMessagesReceived.filter{ $0.action == .Connected }
+                        let connectedMessages = secondTransport.protocolMessagesReceived.filter{ $0.action == .Connected }
                         expect(connectedMessages).to(haveCount(1)) //New transport connected
                         guard let receivedConnectionId = connectedMessages.first?.connectionId else {
                             fail("ConnectionID is nil"); return
                         }
                         expect(client.connection.id).to(equal(receivedConnectionId))
-                        expect(client.connection.id).toNot(equal(initialConnectionId))
+                        expect(client.connection.id).to(equal(initialConnectionId))
 
                         waitUntil(timeout: testTimeout) { done in
                             let partialDone = AblyTests.splitDone(2, done: done)
@@ -2159,6 +2167,7 @@ class RealtimeClientConnection: QuickSpec {
                             }
                         }
                     }
+
                 }
 
                 // RTN15d
