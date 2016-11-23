@@ -1949,7 +1949,7 @@ class RealtimeClientConnection: QuickSpec {
                 context("System's response to a resume request") {
 
                     // RTN15c1
-                    pending("CONNECTED ProtocolMessage with the same connectionId as the current client, and no error") {
+                    it("CONNECTED ProtocolMessage with the same connectionId as the current client, and no error") {
                         let options = AblyTests.commonAppSetup()
                         options.disconnectedRetryTimeout = 1.0
                         let client = AblyTests.newRealtime(options)
@@ -1972,12 +1972,12 @@ class RealtimeClientConnection: QuickSpec {
                                 done()
                             }
                         }
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
                         expect(client.queuedMessages).toEventually(haveCount(0), timeout: testTimeout)
                     }
 
                     // RTN15c2
-                    pending("CONNECTED ProtocolMessage with the same connectionId as the current client and an non-fatal error") {
+                    it("CONNECTED ProtocolMessage with the same connectionId as the current client and an non-fatal error") {
                         let options = AblyTests.commonAppSetup()
                         options.disconnectedRetryTimeout = 1.0
                         let client = AblyTests.newRealtime(options)
@@ -2013,26 +2013,31 @@ class RealtimeClientConnection: QuickSpec {
                             }
                         }
 
-                        channel.once(.Attaching) { _ in
-                            let transport = client.transport as! TestProxyTransport
-                            transport.beforeProcessingReceivedMessage = { protocolMessage in
-                                if protocolMessage.action == .Attached {
-                                    protocolMessage.error = ARTErrorInfo.createWithCode(0, message: "Channel injected error")
-                                }
+                        guard let transport = client.transport as? TestProxyTransport else {
+                            fail("TestProxyTransport is not set"); return
+                        }
+                        transport.beforeProcessingReceivedMessage = { protocolMessage in
+                            if protocolMessage.action == .Attached {
+                                protocolMessage.error = ARTErrorInfo.createWithCode(0, message: "Channel injected error")
                             }
                         }
 
-                        channel.once(.Attached) { error in
-                            expect(error!.message).to(equal("Channel injected error"))
-                            expect(channel.errorReason).to(beIdenticalTo(error))
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.once(.Attached) { error in
+                                guard let error = error else {
+                                    fail("Error is nil"); done(); return
+                                }
+                                expect(error.message).to(equal("Channel injected error"))
+                                expect(channel.errorReason).to(beIdenticalTo(error))
+                                done()
+                            }
                         }
 
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
                         expect(client.queuedMessages).toEventually(haveCount(0), timeout: testTimeout)
                     }
 
                     // RTN15c3
-                    pending("CONNECTED ProtocolMessage with a new connectionId and an error") {
+                    it("CONNECTED ProtocolMessage with a new connectionId and an error") {
                         let options = AblyTests.commonAppSetup()
                         options.disconnectedRetryTimeout = 1.0
                         let client = AblyTests.newRealtime(options)
@@ -2046,8 +2051,11 @@ class RealtimeClientConnection: QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.Connected) { stateChange in
-                                expect(stateChange!.reason!.code).to(equal(80008))
-                                expect(stateChange!.reason!.message).to(contain("Unable to recover connection"))
+                                guard let error = stateChange?.reason else {
+                                    fail("Connection resume failed and error should be propagated to the channel"); done(); return
+                                }
+                                expect(error.code).to(equal(80008))
+                                expect(error.message).to(contain("Unable to recover connection"))
                                 expect(client.connection.errorReason).to(beIdenticalTo(stateChange!.reason))
                                 let transport = client.transport as! TestProxyTransport
                                 let connectedPM = transport.protocolMessagesReceived.filter{ $0.action == .Connected }[0]
@@ -2057,13 +2065,16 @@ class RealtimeClientConnection: QuickSpec {
                             }
                         }
                         expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
-                        expect(channel.errorReason!.code).to(equal(80008))
-                        expect(channel.errorReason!.message).to(contain("Unable to recover connection"))
+                        guard let channelError = channel.errorReason else {
+                            fail("Channel error is nil"); return
+                        }
+                        expect(channelError.code).to(equal(80008))
+                        expect(channelError.message).to(contain("Unable to recover connection"))
                         expect(client.msgSerial).to(equal(0))
                     }
 
                     // RTN15c4
-                    pending("ERROR ProtocolMessage indicating a fatal error in the connection") {
+                    it("ERROR ProtocolMessage indicating a fatal error in the connection") {
                         let options = AblyTests.commonAppSetup()
                         options.disconnectedRetryTimeout = 1.0
                         let client = AblyTests.newRealtime(options)
@@ -2077,7 +2088,9 @@ class RealtimeClientConnection: QuickSpec {
                         let protocolError = AblyTests.newErrorProtocolMessage()
                         client.connection.once(.Connecting) { _ in
                             // Resuming
-                            let transport = client.transport as! TestProxyTransport
+                            guard let transport = client.transport as? TestProxyTransport else {
+                                fail("TestProxyTransport is not set"); return
+                            }
                             transport.actionsIgnored += [.Connected]
                             client.onError(protocolError)
                         }
