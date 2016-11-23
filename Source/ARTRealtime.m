@@ -449,6 +449,7 @@
         case ARTRealtimeConnected:
             // Renewing token.
             [self transitionSideEffects:[[ARTConnectionStateChange alloc] initWithCurrent:ARTRealtimeConnected previous:ARTRealtimeConnected reason:nil]];
+            [self transition:ARTRealtimeConnected withErrorInfo:message.error];
         default:
             break;
     }
