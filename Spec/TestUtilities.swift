@@ -134,7 +134,7 @@ class AblyTests {
         return AblyTests.setupOptions(AblyTests.jsonRestOptions, debug: debug)
     }
 
-    class func clientOptions(debug debug: Bool = false, requestToken: Bool = false) -> ARTClientOptions {
+    class func clientOptions(debug debug: Bool = false, key: String? = nil, requestToken: Bool = false) -> ARTClientOptions {
         let options = ARTClientOptions()
         options.environment = "sandbox"
         if debug {
@@ -142,6 +142,9 @@ class AblyTests {
         }
         else {
             options.logLevel = .Info
+        }
+        if let key = key {
+            options.key = key
         }
         if requestToken {
             options.token = getTestToken()

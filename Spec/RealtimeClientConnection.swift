@@ -2093,6 +2093,72 @@ class RealtimeClientConnection: QuickSpec {
                         expect(channel.errorReason).to(beIdenticalTo(protocolError.error))
                     }
 
+                    it("should detach all channels if the connectionId has changed") {
+                        let options = AblyTests.commonAppSetup()
+                        options.disconnectedRetryTimeout = 1.0
+                        options.tokenDetails = getTestTokenDetails(ttl: 2.0)
+                        let client = AblyTests.newRealtime(options)
+                        defer { client.dispose(); client.close() }
+
+                        let channel = client.channels.get("test")
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.attach() { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        let initialConnectionId = client.connection.id
+
+                        guard let firstTransport = client.transport as? TestProxyTransport else {
+                            fail("TestProxyTransport is not set"); return
+                        }
+
+                        // Wait for token to expire
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
+                            channel.once(.Detached) { error in
+                                expect(error).to(beNil())
+                                partialDone()
+                            }
+                            // Wait for connection resume
+                            client.connection.once(.Connected) { stateChange in
+                                expect(stateChange?.reason).to(beNil())
+                                partialDone()
+                            }
+                        }
+
+                        expect(firstTransport.protocolMessagesReceived.filter{ $0.action == .Disconnected }).to(haveCount(1))
+
+                        guard let secondsTransport = client.transport as? TestProxyTransport else {
+                            fail("TestProxyTransport is not set"); return
+                        }
+
+                        let connectedMessages = secondsTransport.protocolMessagesReceived.filter{ $0.action == .Connected }
+                        expect(connectedMessages).to(haveCount(1)) //New transport connected
+                        guard let receivedConnectionId = connectedMessages.first?.connectionId else {
+                            fail("ConnectionID is nil"); return
+                        }
+                        expect(client.connection.id).to(equal(receivedConnectionId))
+                        expect(client.connection.id).toNot(equal(initialConnectionId))
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
+                            let expectedMessage = ARTMessage(name: "ios", data: "message1")
+
+                            channel.subscribe() { message in
+                                expect(message.name).to(equal(expectedMessage.name))
+                                expect(message.data as? String).to(equal(expectedMessage.data as? String))
+                                partialDone()
+                            }
+
+                            let rest = ARTRest(options: AblyTests.clientOptions(key: options.key!))
+                            rest.channels.get("test").publish([expectedMessage]) { error in
+                                expect(error).to(beNil())
+                                partialDone()
+                            }
+                        }
+                    }
                 }
 
                 // RTN15d
