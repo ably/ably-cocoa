@@ -2328,11 +2328,12 @@ class RealtimeClientConnection: QuickSpec {
 
                     it("if the token is renewable then error should not be emitted") {
                         let options = AblyTests.commonAppSetup()
+                        options.disconnectedRetryTimeout = 1.0
                         options.autoConnect = false
                         options.authCallback = { tokenParams, callback in
                             callback(getTestTokenDetails(key: options.key, capability: tokenParams.capability, ttl: tokenParams.ttl), nil)
                         }
-                        let tokenTtl = 10.0
+                        let tokenTtl = 5.0
                         options.token = getTestToken(key: options.key, ttl: tokenTtl)
 
                         let client = ARTRealtime(options: options)
@@ -2344,20 +2345,31 @@ class RealtimeClientConnection: QuickSpec {
 
                         client.connect()
                         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
-                        let firstTransport = client.transport as! TestProxyTransport
+                        weak var firstTransport = client.transport as? TestProxyTransport
 
-                        client.connection.on { stateChange in
-                            fail("Should not be called, was called with \(stateChange)")
+                        waitUntil(timeout: testTimeout) { done in
+                            // Wait for token to expire
+                            client.connection.once(.Disconnected) { stateChange in
+                                guard let error = stateChange?.reason else {
+                                    fail("Error is nil"); done(); return
+                                }
+                                expect(error.code) == 40142
+                                done()
+                            }
                         }
 
-                        let protocolMessage = ARTProtocolMessage()
-                        protocolMessage.action = .Disconnected
-                        protocolMessage.error = ARTErrorInfo.createWithCode(40142, status: 401, message: "test error")
-                        client.realtimeTransport(firstTransport, didReceiveMessage: protocolMessage)
-
-                        expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+                        waitUntil(timeout: testTimeout) { done in
+                            // Wait for token to expire
+                            client.connection.once(.Connected) { stateChange in
+                                expect(stateChange?.reason).to(beNil())
+                                done()
+                            }
+                        }
                         expect(client.connection.errorReason).to(beNil())
-                        expect(client.transport).toNot(beIdenticalTo(firstTransport))
+
+                        // New connection
+                        expect(firstTransport).to(beNil())
+                        expect(client.transport).toNot(beNil())
 
                         waitUntil(timeout: testTimeout) { done in 
                             client.ping { error in
@@ -2368,10 +2380,11 @@ class RealtimeClientConnection: QuickSpec {
                         }                        
                     }
 
-                    it("should transition to Failed when the token renewal fails") {
+                    it("should transition to Failed when the token renewal fails and the error should be emitted") {
                         let options = AblyTests.commonAppSetup()
+                        options.disconnectedRetryTimeout = 1.0
                         options.autoConnect = false
-                        let tokenTtl = 1.0
+                        let tokenTtl = 5.0
                         let tokenDetails = getTestTokenDetails(key: options.key, capability: nil, ttl: tokenTtl)!
                         options.token = tokenDetails.token
                         options.authCallback = { tokenParams, callback in
@@ -2390,94 +2403,34 @@ class RealtimeClientConnection: QuickSpec {
 
                         client.connect()
                         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
-                        let firstTransport = client.transport as! TestProxyTransport
-                        var newTransport: TestProxyTransport!
+                        weak var firstTransport = client.transport as? TestProxyTransport
 
                         waitUntil(timeout: testTimeout) { done in
-                            client.connection.on { stateChange in
-                                let stateChange = stateChange!
-                                let state = stateChange.current
-                                let errorInfo = stateChange.reason
-                                switch state {
-                                case .Connected:
-                                    fail("Should not be connected")
-                                    done()
-                                case .Failed, .Disconnected, .Suspended:
-                                    guard let errorInfo = errorInfo else {
-                                        fail("ErrorInfo is nil"); done(); return
-                                    }
-                                    expect(errorInfo.code).to(equal(40142)) //Token expired
-                                    done()
-                                default:
-                                    break
+                            // Wait for token to expire
+                            client.connection.once(.Disconnected) { stateChange in
+                                guard let error = stateChange?.reason else {
+                                    fail("Error is nil"); done(); return
                                 }
+                                expect(error.code) == 40142
+                                done()
                             }
-
-                            let protocolMessage = ARTProtocolMessage()
-                            protocolMessage.action = .Disconnected
-                            protocolMessage.error = ARTErrorInfo.createWithCode(40142, status: 401, message: "test error")
-                            client.realtimeTransport(firstTransport, didReceiveMessage: protocolMessage)
-
-                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
-                            expect(client.connection.errorReason).to(beNil())
-                            expect(client.transport).toNot(beIdenticalTo(firstTransport))
-                            newTransport = client.transport as! TestProxyTransport
                         }
-
-                        let failures = newTransport.protocolMessagesReceived.filter({ $0.action == .Error })
-
-                        if failures.count != 1 {
-                            fail("Should have one connection request fail")
-                            return
-                        }
-
-                        expect(failures[0].error!.code).to(equal(40142))
-                    }
-
-                    it("if the token is not renewable or token creation fails then error should be emitted") {
-                        let options = AblyTests.commonAppSetup()
-                        options.autoConnect = false
-                        options.key = nil
-                        let tokenTtl = 10.0
-                        let tokenDetails = getTestTokenDetails(key: options.key, capability: nil, ttl: tokenTtl)!
-                        options.token = tokenDetails.token
-
-                        let client = ARTRealtime(options: options)
-                        client.setTransportClass(TestProxyTransport.self)
-                        defer {
-                            client.dispose()
-                            client.close()
-                        }
-
-                        client.connect()
-                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
 
                         waitUntil(timeout: testTimeout) { done in
-                            client.connection.on { stateChange in
-                                let stateChange = stateChange!
-                                let state = stateChange.current
-                                let errorInfo = stateChange.reason
-                                switch state {
-                                case .Connected:
-                                    fail("Should not be connected")
-                                    done()
-                                case .Failed, .Disconnected, .Suspended:
-                                    guard let errorInfo = errorInfo else {
-                                        fail("ErrorInfo is nil"); done(); return
-                                    }
-                                    expect(errorInfo.code).to(equal(40142)) //Token expired
-                                    done()
-                                default:
-                                    break
+                            // Renewal will fail
+                            client.connection.once(.Failed) { stateChange in
+                                guard let error = stateChange?.reason else {
+                                    fail("Error is nil"); done(); return
                                 }
+                                expect(error.code) == 40142
+                                expect(client.connection.errorReason).to(beIdenticalTo(error))
+                                done()
                             }
-
-                            let protocolMessage = ARTProtocolMessage()
-                            protocolMessage.action = .Disconnected
-                            protocolMessage.error = ARTErrorInfo.createWithCode(40142, status: 401, message: "test error")
-                            client.realtimeTransport(client.transport, didReceiveMessage: protocolMessage)
                         }
+
+                        expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Failed))
                     }
+
                 }
 
             }
