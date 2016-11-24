@@ -412,7 +412,7 @@
 
     // Resuming
     if (_resuming) {
-        if (message.error && ![message.connectionId isEqualToString:self.connection.id]) {
+        if (![message.connectionId isEqualToString:self.connection.id]) {
             [self.logger warn:@"R:%p ARTRealtime: connection has reconnected, but resume failed. Detaching all channels", self];
             // Fatal error, detach all channels
             for (ARTRealtimeChannel *channel in self.channels) {
@@ -449,6 +449,7 @@
         case ARTRealtimeConnected:
             // Renewing token.
             [self transitionSideEffects:[[ARTConnectionStateChange alloc] initWithCurrent:ARTRealtimeConnected previous:ARTRealtimeConnected reason:nil]];
+            [self transition:ARTRealtimeConnected withErrorInfo:message.error];
         default:
             break;
     }
@@ -466,6 +467,8 @@
     }
     if (!_renewingToken && error && error.statusCode == 401 && error.code >= 40140 && error.code < 40150 && [self isTokenRenewable]) {
         [self connectWithRenewedToken];
+        [self transition:ARTRealtimeDisconnected withErrorInfo:error];
+        [self.connection setErrorReason:nil];
         return;
     }
     [self transition:ARTRealtimeDisconnected withErrorInfo:error];

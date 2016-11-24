@@ -409,7 +409,13 @@
 
     [self sendQueuedMessages];
 
-    [self transition:ARTRealtimeChannelAttached status:[ARTStatus state:ARTStateOk]];
+    if (message.error) {
+        _errorReason = message.error;
+        [self transition:ARTRealtimeChannelAttached status:[ARTStatus state:ARTStateError info:message.error]];
+    }
+    else {
+        [self transition:ARTRealtimeChannelAttached status:[ARTStatus state:ARTStateOk]];
+    }
     [_attachedEventEmitter emit:[NSNull null] with:nil];
 }
 
