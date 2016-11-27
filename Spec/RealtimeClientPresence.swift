@@ -847,7 +847,7 @@ class RealtimeClientPresence: QuickSpec {
             }
 
             // RTP2
-            pending("should be used a PresenceMap to maintain a list of members") {
+            it("should be used a PresenceMap to maintain a list of members") {
                 let options = AblyTests.commonAppSetup()
                 var clientSecondary: ARTRealtime!
                 defer { clientSecondary.close() }
