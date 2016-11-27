@@ -1279,37 +1279,42 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP6c
-                pending("should result in an error if the channel is in the FAILED state") {
+                it("should result in an error if the channel is in the FAILED state") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
-                    channel.onError(AblyTests.newErrorProtocolMessage())
+                    let protocolError = AblyTests.newErrorProtocolMessage()
+                    channel.onError(protocolError)
 
                     waitUntil(timeout: testTimeout) { done in
-                        channel.presence.subscribe { member in
-                            // TODO: missing error
+                        channel.presence.subscribeWithAttachCallback({ error in
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
+                            expect(error).toNot(beNil())
                             done()
-                        }
+                        }, callback: { member in
+                            fail("Should not be called")
+                        })
                     }
-                    expect(channel.presenceEventEmitter.anyListeners).to(haveCount(0))
                 }
 
                 // RTP6c
-                pending("should result in an error if the channel moves to the FAILED state") {
+                it("should result in an error if the channel moves to the FAILED state") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
                     waitUntil(timeout: testTimeout) { done in
                         let error = AblyTests.newErrorProtocolMessage()
-                        channel.presence.subscribe { _ in
-                            // TODO: missing error
+                        channel.presence.subscribeWithAttachCallback({ error in
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
+                            expect(error).toNot(beNil())
                             done()
-                        }
+                        }, callback: { member in
+                            fail("Should not be called")
+                        })
                         channel.onError(error)
                     }
-                    expect(channel.presenceEventEmitter.anyListeners).to(haveCount(0))
                 }
 
             }
