@@ -158,7 +158,7 @@ NSString *ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event) {
 @end
 
 NSString *ARTRealtimeChannelStateToStr(ARTRealtimeChannelState state) {
-    switch(state) {
+    switch (state) {
         case ARTRealtimeChannelInitialized:
             return @"Initialized"; //0
         case ARTRealtimeChannelAttaching:
@@ -169,13 +169,15 @@ NSString *ARTRealtimeChannelStateToStr(ARTRealtimeChannelState state) {
             return @"Detaching"; //3
         case ARTRealtimeChannelDetached:
             return @"Detached"; //4
+        case ARTRealtimeChannelSuspended:
+            return @"Suspended"; //5
         case ARTRealtimeChannelFailed:
-            return @"Failed"; //5
+            return @"Failed"; //6
     }
 }
 
 NSString *ARTChannelEventToStr(ARTChannelEvent event) {
-    switch(event) {
+    switch (event) {
         case ARTChannelEventInitialized:
             return @"Initialized"; //0
         case ARTChannelEventAttaching:
@@ -186,9 +188,11 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
             return @"Detaching"; //3
         case ARTChannelEventDetached:
             return @"Detached"; //4
+        case ARTChannelEventSuspended:
+            return @"Suspended"; //5
         case ARTChannelEventFailed:
-            return @"Failed"; //5
+            return @"Failed"; //6
         case ARTChannelEventUpdate:
-            return @"Update"; //6
+            return @"Update"; //7
     }
 }

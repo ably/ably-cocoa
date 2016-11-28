@@ -76,6 +76,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
     ARTRealtimeChannelAttached,
     ARTRealtimeChannelDetaching,
     ARTRealtimeChannelDetached,
+    ARTRealtimeChannelSuspended,
     ARTRealtimeChannelFailed
 };
 
@@ -90,11 +91,13 @@ typedef NS_ENUM(NSUInteger, ARTChannelEvent) {
     ARTChannelEventAttached,
     ARTChannelEventDetaching,
     ARTChannelEventDetached,
+    ARTChannelEventSuspended,
     ARTChannelEventFailed,
     ARTChannelEventUpdate
 };
 
 NSString *__art_nonnull ARTChannelEventToStr(ARTChannelEvent event);
+
 
 typedef NS_ENUM(NSInteger, ARTDataQueryError) {
     ARTDataQueryErrorLimit = 1,
