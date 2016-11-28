@@ -939,6 +939,48 @@ class RealtimeClientChannel: QuickSpec {
                         }
                     }
                 }
+
+                // RTL4i
+                it("if the connection state is INITIALIZED do the operation once the connection state is CONNECTED") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+                }
+
+                // RTL4i
+                it("if the connection state is CONNECTING do the operation once the connection state is CONNECTED") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+                }
+
+                // RTL4i
+                it("if the connection state is DISCONNECTED do the operation once the connection state is CONNECTED") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+                    client.onDisconnected()
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+                }
             }
 
             describe("detach") {
