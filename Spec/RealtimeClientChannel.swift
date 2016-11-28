@@ -411,6 +411,34 @@ class RealtimeClientChannel: QuickSpec {
                     }
                 }
 
+                // RTL3e
+                it("if the connection state enters the DISCONNECTED state, it will have no effect on the channel states") {
+                    let options = AblyTests.commonAppSetup()
+                    options.token = getTestToken(ttl: 5.0)
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+
+                    let channel = client.channels.get("test")
+
+                    channel.once(.Detached) { stateChange in
+                        fail("Should not reach the DETACHED state")
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Disconnected) { _ in
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+                            done()
+                        }
+                    }
+                }
+
             }
 
             // RTL4
