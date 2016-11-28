@@ -2314,11 +2314,13 @@ class RealtimeClientChannel: QuickSpec {
 
                         channel.once(.Error) { error in
                             expect(error).to(beIdenticalTo(attachedMessageWithError.error))
-                            expect(channel.errorReason).to(beIdenticalTo(error))
+                            expect(channel.errorReason).to(beNil())
                             done()
                         }
 
-                        let transport = client.transport as! TestProxyTransport
+                        guard let transport = client.transport as? TestProxyTransport else {
+                            fail("TestProxyTransport is not set"); done(); return
+                        }
                         // Inject additional ATTACHED action with an error
                         transport.receive(attachedMessageWithError)
                     }
