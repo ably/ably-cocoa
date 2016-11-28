@@ -2325,6 +2325,39 @@ class RealtimeClientChannel: QuickSpec {
                     expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
                 }
 
+                // RTL14
+                it("If an ERROR ProtocolMessage is received for this channel then the channel should immediately transition to the FAILED state, the errorReason should be set and an error should be emitted on the channel") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let errorProtocolMessage = AblyTests.newErrorProtocolMessage()
+                        errorProtocolMessage.action = .Error
+                        errorProtocolMessage.channel = "foo"
+
+                        let partialDone = AblyTests.splitDone(2, done: done)
+
+                        channel.once(.Failed) { stateChange in
+                            guard let error = stateChange?.reason else {
+                                fail("Reason error is nil"); partialDone(); return
+                            }
+                            expect(error).to(beIdenticalTo(errorProtocolMessage.error))
+                            expect(channel.errorReason).to(beIdenticalTo(error))
+                            partialDone()
+                        }
+
+                        client.transport.receive(errorProtocolMessage)
+                    }
+
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
+                }
             }
 
             context("crypto") {
