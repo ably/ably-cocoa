@@ -193,19 +193,32 @@ class RealtimeClientChannel: QuickSpec {
                         expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
 
                         waitUntil(timeout: testTimeout) { done in
-                            let error = AblyTests.newErrorProtocolMessage()
-                            channel.on { errorInfo in
-                                if channel.state == .Failed {
-                                    guard let errorInfo = errorInfo else {
-                                        fail("errorInfo is nil"); done(); return
-                                    }
-                                    expect(errorInfo).to(equal(error.error))
-                                    expect(channel.errorReason).to(equal(errorInfo))
-                                    done()
+                            let pmError = AblyTests.newErrorProtocolMessage()
+
+                            channel.on { stateChange in
+                                let partialDone = AblyTests.splitDone(2, done: done)
+
+                                guard let stateChange = stateChange else {
+                                    fail("ChannelStateChange is nil"); partialDone(); return
+                                }
+                                guard let error = stateChange.reason else {
+                                    fail("Reason error is nil"); partialDone(); return
+                                }
+
+                                if stateChange.current == .Failed {
+                                    expect(error).to(equal(pmError.error))
+                                    expect(channel.errorReason).to(beIdenticalTo(error))
+                                    partialDone()
+                                }
+                                else if stateChange.current == .Error {
+                                    expect(error).to(equal(pmError.error))
+                                    partialDone()
                                 }
                             }
-                            client.onError(error)
+
+                            client.onError(pmError)
                         }
+
                         expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
                     }
 
@@ -218,19 +231,32 @@ class RealtimeClientChannel: QuickSpec {
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
 
                         waitUntil(timeout: testTimeout) { done in
-                            let error = AblyTests.newErrorProtocolMessage()
-                            channel.on { errorInfo in
-                                if channel.state == .Failed {
-                                    guard let errorInfo = errorInfo else {
-                                        fail("errorInfo is nil"); done(); return
-                                    }
-                                    expect(errorInfo).to(equal(error.error))
-                                    expect(channel.errorReason).to(equal(errorInfo))
-                                    done()
+                            let pmError = AblyTests.newErrorProtocolMessage()
+
+                            channel.on { stateChange in
+                                let partialDone = AblyTests.splitDone(2, done: done)
+
+                                guard let stateChange = stateChange else {
+                                    fail("ChannelStateChange is nil"); partialDone(); return
+                                }
+                                guard let error = stateChange.reason else {
+                                    fail("Reason error is nil"); partialDone(); return
+                                }
+
+                                if stateChange.current == .Failed {
+                                    expect(error).to(equal(pmError.error))
+                                    expect(channel.errorReason).to(beIdenticalTo(error))
+                                    partialDone()
+                                }
+                                else if stateChange.current == .Error {
+                                    expect(error).to(equal(pmError.error))
+                                    partialDone()
                                 }
                             }
-                            client.onError(error)
+
+                            client.onError(pmError)
                         }
+
                         expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
                     }
 
