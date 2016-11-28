@@ -848,34 +848,47 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 // RTL4f
-                it("should transition the channel state to FAILED if ATTACHED ProtocolMessage is not received") {
-                    let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
-                    defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
-                    ARTDefault.setRealtimeRequestTimeout(3.0)
+                it("should transition the channel state to SUSPENDED if ATTACHED ProtocolMessage is not received") {
                     let options = AblyTests.commonAppSetup()
-                    options.autoConnect = false
-                    let client = ARTRealtime(options: options)
-                    client.setTransportClass(TestProxyTransport.self)
-                    client.connect()
+                    options.channelRetryTimeout = 1.0
+                    let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
 
                     expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
-                    let transport = client.transport as! TestProxyTransport
+
+                    let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                    defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                    ARTDefault.setRealtimeRequestTimeout(1.0)
+
+                    guard let transport = client.transport as? TestProxyTransport else {
+                        fail("TestProxyTransport is not set"); return
+                    }
                     transport.actionsIgnored += [.Attached]
 
-                    var callbackCalled = false
                     let channel = client.channels.get("test")
-                    channel.attach { errorInfo in
-                        expect(errorInfo).toNot(beNil())
-                        expect(errorInfo).to(equal(channel.errorReason))
-                        callbackCalled = true
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach { errorInfo in
+                            expect(errorInfo).toNot(beNil())
+                            expect(errorInfo).to(equal(channel.errorReason))
+                            done()
+                        }
                     }
-                    let start = NSDate()
-                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Failed), timeout: testTimeout)
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Suspended), timeout: testTimeout)
                     expect(channel.errorReason).toNot(beNil())
-                    expect(callbackCalled).to(beTrue())
-                    let end = NSDate()
-                    expect(start.dateByAddingTimeInterval(3.0)).to(beCloseTo(end, within: 0.5))
+
+                    transport.actionsIgnored = []
+                    // Automatically re-attached
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        channel.once(.Attaching) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+                            partialDone()
+                        }
+                        channel.once(.Attached) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+                            partialDone()
+                        }
+                    }
                 }
 
                 it("if called with a callback should call it once attached") {
