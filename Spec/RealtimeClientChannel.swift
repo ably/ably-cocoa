@@ -1575,6 +1575,7 @@ class RealtimeClientChannel: QuickSpec {
                     // RTL6c2
                     context("the message should be queued and delivered as soon as the connection state returns to CONNECTED if the connection is") {
                         let options = AblyTests.commonAppSetup()
+                        options.useTokenAuth = true
                         options.disconnectedRetryTimeout = 0.3
                         options.autoConnect = false
                         var client: ARTRealtime!
@@ -1632,6 +1633,39 @@ class RealtimeClientChannel: QuickSpec {
                             waitUntil(timeout: testTimeout) { done in
                                 channel.attach()
                                 expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
+                                publish(done)
+                                expect(channel.queuedMessages).to(haveCount(1))
+                            }
+                        }
+
+                        it("ATTACHED") {
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.attach() { error in
+                                    expect(error).to(beNil())
+                                    done()
+                                }
+                                client.connect()
+                            }
+
+                            waitUntil(timeout: testTimeout) { done in
+                                let tokenParams = ARTTokenParams()
+                                tokenParams.ttl = 5.0
+                                client.auth.authorize(tokenParams, options: nil) { tokenDetails, error in
+                                    expect(error).to(beNil())
+                                    expect(tokenDetails).toNot(beNil())
+                                    done()
+                                }
+                            }
+
+                            waitUntil(timeout: testTimeout) { done in
+                                client.connection.once(.Disconnected) { _ in
+                                    done()
+                                }
+                            }
+
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+
+                            waitUntil(timeout: testTimeout) { done in
                                 publish(done)
                                 expect(channel.queuedMessages).to(haveCount(1))
                             }
