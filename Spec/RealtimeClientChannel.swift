@@ -339,6 +339,78 @@ class RealtimeClientChannel: QuickSpec {
 
                 }
 
+                // RTL3d
+                it("if the connection state enters the @CONNECTED@ state, then a @SUSPENDED@ channel will initiate an attach operation") {
+                    let options = AblyTests.commonAppSetup()
+                    options.suspendedRetryTimeout = 1.0
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+
+                    let channel = client.channels.get("foo")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.once(.Suspended) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+                            done()
+                        }
+                        client.simulateSuspended()
+                    }
+
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+                }
+
+                // RTL3d
+                it("if the attach operation for the channel times out and the channel returns to the SUSPENDED state, then an ERROR event with Ably error code 91200 should be emitted") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    options.suspendedRetryTimeout = 1.0
+                    let client = ARTRealtime(options: options)
+                    client.setTransportClass(TestProxyTransport.self)
+                    client.connect()
+                    defer { client.dispose(); client.close() }
+
+                    let channel = client.channels.get("test")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    defer {
+                        TestProxyTransport.network = nil
+                    }
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        channel.on { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ChannelStateChange is nil"); partialDone(); return
+                            }
+                            switch stateChange.current {
+                            case .Suspended:
+                                expect(stateChange.reason).to(beNil())
+                                partialDone()
+                            case .Error:
+                                guard let error = stateChange.reason else {
+                                    fail("Error is nil"); partialDone(); return
+                                }
+                                expect(error.code) == 91200
+                                partialDone()
+                            }
+                        }
+                        client.simulateSuspended()
+                        // Force connection to timeout
+                        TestProxyTransport.network = .RequestTimeout(timeout: options.suspendedRetryTimeout + 1)
+                    }
+                }
+
             }
 
             // RTL4
