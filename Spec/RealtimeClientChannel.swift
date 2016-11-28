@@ -263,42 +263,6 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 // RTL3b
-                context("changes to SUSPENDED") {
-
-                    it("ATTACHING channel should transition to DETACHED") {
-                        let options = AblyTests.commonAppSetup()
-                        options.autoConnect = false
-                        let client = ARTRealtime(options: options)
-                        client.setTransportClass(TestProxyTransport.self)
-                        client.connect()
-                        defer { client.dispose(); client.close() }
-
-                        let channel = client.channels.get("test")
-                        channel.attach()
-                        let transport = client.transport as! TestProxyTransport
-                        transport.actionsIgnored += [.Attached]
-
-                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
-                        client.onSuspended()
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
-                    }
-
-                    it("ATTACHED channel should transition to DETACHED") {
-                        let options = AblyTests.commonAppSetup()
-                        let client = ARTRealtime(options: options)
-                        defer { client.dispose(); client.close() }
-
-                        let channel = client.channels.get("test")
-                        channel.attach()
-                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
-                        client.onSuspended()
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
-                    }
-
-                }
-
-                // RTL3b
                 context("changes to CLOSED") {
 
                     it("ATTACHING channel should transition to DETACHED") {
@@ -335,6 +299,42 @@ class RealtimeClientChannel: QuickSpec {
                         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Closing))
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
                         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Closed))
+                    }
+
+                }
+
+                // RTL3c
+                context("changes to SUSPENDED") {
+
+                    it("ATTACHING channel should transition to SUSPENDED") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        client.setTransportClass(TestProxyTransport.self)
+                        client.connect()
+                        defer { client.dispose(); client.close() }
+
+                        let channel = client.channels.get("test")
+                        channel.attach()
+                        let transport = client.transport as! TestProxyTransport
+                        transport.actionsIgnored += [.Attached]
+
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
+                        client.onSuspended()
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Suspended))
+                    }
+
+                    it("ATTACHED channel should transition to SUSPENDED") {
+                        let options = AblyTests.commonAppSetup()
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+
+                        let channel = client.channels.get("test")
+                        channel.attach()
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+                        client.onSuspended()
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Suspended))
                     }
 
                 }
