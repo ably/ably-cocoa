@@ -45,8 +45,8 @@
         ARTRealtimeConnectionState state = stateChange.current;
         if (state == ARTRealtimeConnected) {
             ARTRealtimeChannel *channel = [realtime.channels get:@"attach"];
-            [channel on:^(ARTErrorInfo *errorInfo) {
-                if (channel.state == ARTRealtimeChannelAttached) {
+            [channel on:^(ARTChannelStateChange *stateChange) {
+                if (stateChange.current == ARTRealtimeChannelAttached) {
                     [expectation fulfill];
                 }
             }];
@@ -62,8 +62,8 @@
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:@"attach_before_connect"];
     [channel attach];
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if (channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             [expectation fulfill];
         }
     }];
@@ -78,12 +78,12 @@
     [channel attach];
     
     __block BOOL attached = NO;
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if (channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             attached = YES;
             [channel detach];
         }
-        if (attached && channel.state == ARTRealtimeChannelDetached) {
+        if (attached && stateChange.current == ARTRealtimeChannelDetached) {
             [expectation fulfill];
         }
     }];
@@ -98,8 +98,8 @@
     [channel attach];
     __block BOOL attached = false;
     __block int attachCount = 0;
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if (channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             attachCount++;
             attached = true;
             if (attachCount == 1) {
@@ -109,7 +109,7 @@
                 [expectation fulfill];
             }
         }
-        if (attached && channel.state == ARTRealtimeChannelDetached) {
+        if (attached && stateChange.current == ARTRealtimeChannelDetached) {
             [channel attach];
         }
     }];
@@ -155,11 +155,11 @@
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:@"channel"];
     __block bool gotCb=false;
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if(channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             [realtime onSuspended];
         }
-        else if(channel.state == ARTRealtimeChannelDetached) {
+        else if (stateChange.current == ARTRealtimeChannelDetached) {
             if(!gotCb) {
                 [channel publish:nil data:@"will_fail" callback:^(ARTErrorInfo *errorInfo) {
                     XCTAssertNotNil(errorInfo);
@@ -180,11 +180,11 @@
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:@"channel"];
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if(channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
         }
-        else if(channel.state == ARTRealtimeChannelFailed) {
+        else if (stateChange.current == ARTRealtimeChannelFailed) {
             [channel publish:nil data:@"will_fail" callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNotNil(errorInfo);
                 [expectation fulfill];
@@ -272,8 +272,8 @@
     [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
         ARTRealtimeConnectionState state = stateChange.current;
         if (state == ARTRealtimeConnected) {
-            [channel on:^(ARTErrorInfo *errorInfo) {
-                if (channel.state == ARTRealtimeChannelAttached) {
+            [channel on:^(ARTChannelStateChange *stateChange) {
+                if (stateChange.current == ARTRealtimeChannelAttached) {
                     [realtime onError:[ARTTestUtil newErrorProtocolMessage]];
                 }
             }];
@@ -311,15 +311,15 @@
 
     __block NSUInteger attached = 0;
     // Channel 1
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if (channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             attached++;
         }
     }];
 
     // Channel 2
-    [channel2 on:^(ARTErrorInfo *errorInfo) {
-        if (channel2.state == ARTRealtimeChannelAttached) {
+    [channel2 on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             attached++;
         }
     }];

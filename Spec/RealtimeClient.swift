@@ -491,8 +491,8 @@ class RealtimeClient: QuickSpec {
 
                     let channel = client.channels.get("foo")
                     waitUntil(timeout: testTimeout) { done in
-                        channel.once(.Failed) { error in
-                            guard let error = error else {
+                        channel.once(.Failed) { stateChange in
+                            guard let error = stateChange?.reason else {
                                 fail("Error is nil"); done(); return
                             }
                             expect(error.message).to(contain("Channel denied access based on given capability"))
@@ -587,8 +587,8 @@ class RealtimeClient: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
 
-                        channel.once(.Failed) { error in
-                            guard let error = error else {
+                        channel.once(.Failed) { stateChange in
+                            guard let error = stateChange?.reason else {
                                 fail("ErrorInfo is nil"); partialDone(); return
                             }
                             expect(error).to(beIdenticalTo(channel.errorReason))

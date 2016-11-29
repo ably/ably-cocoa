@@ -61,7 +61,7 @@
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:[self channelName]];
     [channel attach];
-    [channel once:ARTChannelEventAttached callback:^(ARTErrorInfo *errorInfo) {
+    [channel once:ARTChannelEventAttached callback:^(ARTChannelStateChange *stateChange) {
         [channel.presence enter:[self enter1Str] callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
             //second enter gets treated as an update.
@@ -94,8 +94,8 @@
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:@"testSimpleText"];
     [channel attach];
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if(channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             [channel.presence enter:presenceEnter callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
 
@@ -124,8 +124,8 @@
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:@"persisted:testSimpleText"];
     [channel attach];
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if(channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             [channel.presence enter:presenceEnter1 callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
                 [channel.presence enter:presenceEnter2 callback:^(ARTErrorInfo *errorInfo) {
@@ -174,8 +174,8 @@
     ARTRealtime *realtime2 = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime1.channels get:channelName];
 
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if(channel.state == ARTRealtimeChannelAttached)
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached)
         {
             ARTRealtimeChannel *channel2 = [realtime2.channels get:channelName];
             [channel2.presence enter:presenceEnter1 callback:^(ARTErrorInfo *errorInfo) {
@@ -232,8 +232,8 @@
             [channel attach];
         }
     }];
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if(channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             [channel.presence enter:presenceEnter1 callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
 
@@ -359,8 +359,8 @@
     int secondBatchTotal = [self secondBatchSize];
     int thirdBatchTotal = [self thirdBatchSize];
 
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if(channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             [channel.presence enter:[self enter1Str] callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
 
@@ -475,8 +475,8 @@
     ARTRealtime *realtime2 = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:[self channelName]];
     [channel attach];
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if(channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             [channel.presence enter:[self enter1Str] callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
                 [channel.presence enter:[self enter2Str] callback:^(ARTErrorInfo *errorInfo) {
@@ -484,8 +484,8 @@
                     [channel.presence update:[self updateStr] callback:^(ARTErrorInfo *errorInfo2) {
                         XCTAssertNil(errorInfo2);
                         ARTRealtimeChannel *channel2 = [realtime2.channels get:[self channelName]];
-                        [channel2 on:^(ARTErrorInfo *errorInfo) {
-                            if(channel2.state == ARTRealtimeChannelAttached) {
+                        [channel2 on:^(ARTChannelStateChange *stateChange) {
+                            if (stateChange.current == ARTRealtimeChannelAttached) {
                                 ARTRealtimeHistoryQuery *query = [[ARTRealtimeHistoryQuery alloc] init];
                                 query.direction = ARTQueryDirectionForwards;
                                 [channel2.presence history:query callback:^(ARTPaginatedResult *c2Result, ARTErrorInfo *error2) {
