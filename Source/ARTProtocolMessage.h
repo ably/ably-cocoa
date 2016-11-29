@@ -38,6 +38,8 @@ typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
     ARTProtocolMessageAuth = 17,
 };
 
+NSString *__art_nonnull ARTProtocolMessageActionToStr(ARTProtocolMessageAction action);
+
 ART_ASSUME_NONNULL_BEGIN
 
 /**

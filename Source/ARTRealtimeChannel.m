@@ -272,19 +272,19 @@
     [self.messagesEventEmitter off:name listener:listener];
 }
 
-- (__GENERIC(ARTEventListener, ARTErrorInfo *) *)on:(ARTChannelEvent)event callback:(void (^)(ARTErrorInfo *))cb {
+- (__GENERIC(ARTEventListener, ARTChannelStateChange *) *)on:(ARTChannelEvent)event callback:(void (^)(ARTChannelStateChange *))cb {
     return [self.statesEventEmitter on:[NSNumber numberWithInt:event] callback:cb];
 }
 
-- (__GENERIC(ARTEventListener, ARTErrorInfo *) *)on:(void (^)(ARTErrorInfo *))cb {
+- (__GENERIC(ARTEventListener, ARTChannelStateChange *) *)on:(void (^)(ARTChannelStateChange *))cb {
     return [self.statesEventEmitter on:cb];
 }
 
-- (__GENERIC(ARTEventListener, ARTErrorInfo *) *)once:(ARTChannelEvent)event callback:(void (^)(ARTErrorInfo *))cb {
+- (__GENERIC(ARTEventListener, ARTChannelStateChange *) *)once:(ARTChannelEvent)event callback:(void (^)(ARTChannelStateChange *))cb {
     return [self.statesEventEmitter once:[NSNumber numberWithInt:event] callback:cb];
 }
 
-- (__GENERIC(ARTEventListener, ARTErrorInfo *) *)once:(void (^)(ARTErrorInfo *))cb {
+- (__GENERIC(ARTEventListener, ARTChannelStateChange *) *)once:(void (^)(ARTChannelStateChange *))cb {
     return [self.statesEventEmitter once:cb];
 }
 
@@ -295,11 +295,11 @@
     [self.statesEventEmitter off:[NSNumber numberWithInt:event] listener:listener];
 }
 
-- (void)off:(__GENERIC(ARTEventListener, ARTErrorInfo *) *)listener {
+- (void)off:(__GENERIC(ARTEventListener, ARTChannelStateChange *) *)listener {
     [self.statesEventEmitter off:listener];
 }
 
-- (void)emit:(ARTChannelEvent)event with:(ARTErrorInfo *)data {
+- (void)emit:(ARTChannelEvent)event with:(ARTChannelStateChange *)data {
     [self.statesEventEmitter emit:[NSNumber numberWithInt:event] with:data];
 }
 
@@ -308,6 +308,7 @@
 }
 
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status {
+    ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:self.state reason:status.errorInfo];
     self.state = state;
     _errorReason = status.errorInfo;
 
@@ -321,7 +322,7 @@
         [_attachedEventEmitter emit:[NSNull null] with:[ARTErrorInfo createWithCode:90000 message:msg]];
     }
 
-    [self emit:(ARTChannelEvent)state with:status.errorInfo];
+    [self emit:(ARTChannelEvent)stateChange.current with:stateChange];
 }
 
 - (void)dealloc {
@@ -339,7 +340,8 @@
             // Already changed; do nothing.
             return;
         }
-        [self timed:[self once:^(ARTErrorInfo *errorInfo) {
+        // FIXME: should not use the global listener for internal purpose
+        [self timed:[self once:^(ARTChannelStateChange *stateChange) {
             // Any state change cancels the timeout.
         }] deadline:deadline onTimeout:callback];
     });
@@ -397,8 +399,8 @@
     if (self.state == ARTRealtimeChannelAttached) {
         if (message.error != nil) {
             _errorReason = message.error;
-            [self emit:ARTChannelEventUpdate with:message.error];
         }
+        [self emit:ARTChannelEventUpdate with:[[ARTChannelStateChange alloc] initWithCurrent:self.state previous:self.state reason:message.error]];
         return;
     }
 
@@ -463,7 +465,7 @@
                 ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:(ARTErrorInfo *)error.userInfo[NSLocalizedFailureReasonErrorKey] prepend:@"Failed to decode data: "];
                 [self.logger error:@"R:%p C:%p %@", _realtime, self, errorInfo.message];
                 _errorReason = errorInfo;
-                [self emit:ARTChannelEventUpdate with:errorInfo];
+                [self emit:ARTChannelEventUpdate with:[[ARTChannelStateChange alloc] initWithCurrent:self.state previous:self.state reason:errorInfo]];
             }
         }
         
