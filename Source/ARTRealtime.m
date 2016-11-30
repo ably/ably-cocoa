@@ -942,49 +942,6 @@
     _reachabilityClass = reachabilityClass;
 }
 
-+ (NSString *)protocolStr:(ARTProtocolMessageAction) action {
-    switch(action) {
-        case ARTProtocolMessageHeartbeat:
-            return @"Heartbeat"; //0
-        case ARTProtocolMessageAck:
-            return @"Ack"; //1
-        case ARTProtocolMessageNack:
-            return @"Nack"; //2
-        case ARTProtocolMessageConnect:
-            return @"Connect"; //3
-        case ARTProtocolMessageConnected:
-            return @"Connected"; //4
-        case ARTProtocolMessageDisconnect:
-            return @"Disconnect"; //5
-        case ARTProtocolMessageDisconnected:
-            return @"Disconnected"; //6
-        case ARTProtocolMessageClose:
-            return @"Close"; //7
-        case ARTProtocolMessageClosed:
-            return @"Closed"; //8
-        case ARTProtocolMessageError:
-            return @"Error"; //9
-        case ARTProtocolMessageAttach:
-            return @"Attach"; //10
-        case ARTProtocolMessageAttached:
-            return @"Attached"; //11
-        case ARTProtocolMessageDetach:
-            return @"Detach"; //12
-        case ARTProtocolMessageDetached:
-            return @"Detached"; //13
-        case ARTProtocolMessagePresence:
-            return @"Presence"; //14
-        case ARTProtocolMessageMessage:
-            return @"Message"; //15
-        case ARTProtocolMessageSync:
-            return @"Sync"; //16
-        case ARTProtocolMessageAuth:
-            return @"Auth"; //17
-        default:
-            return [NSString stringWithFormat: @"unknown protocol state %d", (int)action];
-    }
-}
-
 #pragma mark - ARTRealtimeTransportDelegate implementation
 
 - (void)realtimeTransport:(id)transport didReceiveMessage:(ARTProtocolMessage *)message {
@@ -993,7 +950,7 @@
         return;
     }
 
-    [self.logger verbose:@"R:%p ARTRealtime didReceive Protocol Message %@ ", self, [ARTRealtime protocolStr:message.action]];
+    [self.logger verbose:@"R:%p ARTRealtime didReceive Protocol Message %@ ", self, ARTProtocolMessageActionToStr(message.action)];
 
     if (message.error) {
         [self.logger verbose:@"R:%p ARTRealtime Protocol Message with error %@ ", self, message.error];

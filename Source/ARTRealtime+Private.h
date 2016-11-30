@@ -28,8 +28,6 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNumber *, ARTConnectionStateChange *) *internalEventEmitter;
 @property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNull *, NSNull *) *connectedEventEmitter;
 
-+ (NSString *)protocolStr:(ARTProtocolMessageAction)action;
-
 // State properties
 - (BOOL)shouldSendEvents;
 - (BOOL)shouldQueueEvents;

@@ -1067,7 +1067,7 @@ extension ARTRealtimeConnectionEvent : CustomStringConvertible {
 
 extension ARTProtocolMessageAction : CustomStringConvertible {
     public var description : String {
-        return ARTRealtime.protocolStr(self)
+        return ARTProtocolMessageActionToStr(self)
     }
 }
 
