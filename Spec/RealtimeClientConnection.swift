@@ -2422,7 +2422,7 @@ class RealtimeClientConnection: QuickSpec {
                                 guard let error = stateChange?.reason else {
                                     fail("Error is nil"); done(); return
                                 }
-                                expect(UInt(error.code)).to(equal(ARTState.RequestTokenFailed.rawValue))
+                                expect(error.code) == 40142
                                 expect(client.connection.errorReason).to(beIdenticalTo(error))
                                 done()
                             }
