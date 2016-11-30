@@ -450,6 +450,9 @@
 - (void)setSuspended:(ARTStatus *)error {
     [self failQueuedMessages:error];
     [self transition:ARTRealtimeChannelSuspended status:error];
+    [self unlessStateChangesBefore:self.realtime.options.channelRetryTimeout do:^{
+        [self attach];
+    }];
 }
 
 - (void)onMessage:(ARTProtocolMessage *)message {
