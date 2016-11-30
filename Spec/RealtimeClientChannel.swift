@@ -272,7 +272,7 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 // RTL2f
-                it("ChannelStateChange will contain a resumed boolean attribute with value @true@ if the bit flag RESUMED was included") {
+                pending("ChannelStateChange will contain a resumed boolean attribute with value @true@ if the bit flag RESUMED was included") {
                     let options = AblyTests.commonAppSetup()
                     options.disconnectedRetryTimeout = 1.0
                     options.tokenDetails = getTestTokenDetails(ttl: 5.0)
