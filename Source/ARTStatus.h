@@ -26,6 +26,7 @@ typedef NS_ENUM(NSUInteger, ARTState) {
     ARTStateNoClientId,
     ARTStateMismatchedClientId,
     ARTStateRequestTokenFailed,
+    ARTStateAuthorizationFailed,
     ARTStateAuthUrlIncompatibleContent,
     ARTStateBadConnectionState,
     ARTStateError = 99999
@@ -63,7 +64,6 @@ FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
 
 + (ARTErrorInfo *)createWithCode:(NSInteger)code message:(NSString *)message;
 + (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message;
-// FIXME: base NSError
 + (ARTErrorInfo *)createWithNSError:(NSError *)error;
 + (ARTErrorInfo *)wrap:(ARTErrorInfo *)error prepend:(NSString *)prepend;
 

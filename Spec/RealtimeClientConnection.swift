@@ -543,7 +543,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 if let webSocketTransport = client.transport as? ARTWebSocketTransport {
-                    expect(webSocketTransport.isConnected).to(beTrue())
+                    expect(webSocketTransport.state).to(equal(ARTRealtimeTransportState.Opened))
                 }
                 else {
                     XCTFail("WebSocket is not the default transport")

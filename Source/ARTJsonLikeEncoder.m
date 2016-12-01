@@ -23,6 +23,7 @@
 #import "ARTStatus.h"
 #import "ARTTokenDetails.h"
 #import "ARTTokenRequest.h"
+#import "ARTAuthDetails.h"
 #import "ARTConnectionDetails.h"
 #import "ARTRest+Private.h"
 
@@ -44,6 +45,8 @@
 - (ARTProtocolMessage *)protocolMessageFromDictionary:(NSDictionary *)input;
 
 - (NSDictionary *)tokenRequestToDictionary:(ARTTokenRequest *)tokenRequest;
+
+- (NSDictionary *)authDetailsToDictionary:(ARTAuthDetails *)authDetails;
 
 - (NSArray *)statsFromArray:(NSArray *)input;
 - (ARTStats *)statsFromDictionary:(NSDictionary *)input;
@@ -291,6 +294,15 @@
     return output;
 }
 
+- (NSDictionary *)authDetailsToDictionary:(ARTAuthDetails *)authDetails {
+    NSMutableDictionary *output = [NSMutableDictionary dictionary];
+
+    [output setObject:authDetails.accessToken forKey:@"accessToken"];
+
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: authDetailsToDictionary %@", _rest, [_delegate formatAsString], output];
+    return output;
+}
+
 - (NSArray *)messagesToArray:(NSArray *)messages {
     NSMutableArray *output = [NSMutableArray array];
     
@@ -358,6 +370,11 @@
     if (message.presence) {
         output[@"presence"] = [self presenceMessagesToArray:message.presence];
     }
+
+    if (message.auth) {
+        output[@"auth"] = [self authDetailsToDictionary:message.auth];
+    }
+
     [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: protocolMessageToDictionary %@", _rest, [_delegate formatAsString], output];
     return output;
 }

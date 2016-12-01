@@ -23,6 +23,7 @@
 #import "ARTStatus.h"
 #import "ARTJsonEncoder.h"
 #import "ARTGCD.h"
+#import "ARTEventEmitter+Private.h"
 
 @implementation ARTAuth {
     __weak ARTRest *_rest;
@@ -53,7 +54,6 @@
                                                    object:nil];
         #endif
     }
-    
     return self;
 }
 
@@ -346,21 +346,55 @@
     ARTTokenParams *currentTokenParams = [self mergeParams:tokenParams];
     [self storeParams:currentTokenParams];
 
+    // Success
+    void (^successBlock)(ARTTokenDetails *) = ^(ARTTokenDetails *tokenDetails) {
+        [self.logger verbose:@"RS:%p ARTAuth: token request succeeded: %@", _rest, tokenDetails];
+        if (callback) {
+            callback(self.tokenDetails, nil);
+        }
+    };
+
+    // Failure
+    void (^failureBlock)(NSError *) = ^(NSError *error) {
+        [self.logger verbose:@"RS:%p ARTAuth: token request failed: %@", _rest, error];
+        if (callback) {
+            callback(nil, error);
+        }
+    };
+
+    __weak id<ARTAuthDelegate> lastDelegate = self.delegate;
+    if (lastDelegate) {
+        // Only the last request should remain
+        [lastDelegate.authorizationEmitter off];
+        [lastDelegate.authorizationEmitter once:[NSNumber numberWithInt:ARTAuthorizationSucceeded] callback:^(id null) {
+            successBlock(_tokenDetails);
+            [lastDelegate.authorizationEmitter off];
+        }];
+        [lastDelegate.authorizationEmitter once:[NSNumber numberWithInt:ARTAuthorizationFailed] callback:^(NSError *error) {
+            failureBlock(error);
+            [lastDelegate.authorizationEmitter off];
+        }];
+    }
+
     // Request always a new token
     [self.logger verbose:@"RS:%p ARTAuth: requesting new token.", _rest];
     [self requestToken:currentTokenParams withOptions:replacedOptions callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
         if (error) {
-            [self.logger verbose:@"RS:%p ARTAuth: token request failed: %@", _rest, error];
-            if (callback) {
-                callback(nil, error);
+            failureBlock(error);
+            if (lastDelegate) {
+                [lastDelegate.authorizationEmitter off];
             }
-        } else {
-            _tokenDetails = tokenDetails;
-            _method = ARTAuthMethodToken;
-            [self.logger verbose:@"RS:%p ARTAuth: token request succeeded: %@", _rest, tokenDetails];
-            if (callback) {
-                callback(self.tokenDetails, nil);
-            }
+            return;
+        }
+
+        _tokenDetails = tokenDetails;
+        _method = ARTAuthMethodToken;
+
+        if (lastDelegate) {
+            [lastDelegate auth:self didAuthorize:tokenDetails];
+        }
+        else {
+            successBlock(tokenDetails);
         }
     }];
 }
