@@ -34,6 +34,12 @@
 #import "ARTDefault.h"
 #import "ARTGCD.h"
 
+@interface ARTRest () {
+    __block NSUInteger _tokenErrorRetries;
+}
+
+@end
+
 @implementation ARTRest
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options {
@@ -68,6 +74,7 @@
         };
         _defaultEncoding = (_options.useBinaryProtocol ? [msgPackEncoder mimeType] : [jsonEncoder mimeType]);
         _fallbackCount = 0;
+        _tokenErrorRetries = 0;
 
         _auth = [[ARTAuth alloc] init:self withOptions:_options];
         _channels = [[ARTRestChannels alloc] initWithRest:self];
@@ -97,9 +104,15 @@
             [self executeRequest:request completion:callback];
             break;
         case ARTAuthenticationOn:
+            _tokenErrorRetries = 0;
             [self executeRequestWithAuthentication:request withMethod:self.auth.method force:NO completion:callback];
             break;
         case ARTAuthenticationNewToken:
+            _tokenErrorRetries = 0;
+            [self executeRequestWithAuthentication:request withMethod:self.auth.method force:YES completion:callback];
+            break;
+        case ARTAuthenticationTokenRetry:
+            _tokenErrorRetries = _tokenErrorRetries + 1;
             [self executeRequestWithAuthentication:request withMethod:self.auth.method force:YES completion:callback];
             break;
         case ARTAuthenticationUseBasic:
@@ -167,8 +180,11 @@
             if ([self shouldRenewToken:&dataError]) {
                 [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p retry request %@", self, request];
                 // Make a single attempt to reissue the token and resend the request
-                [self executeRequest:request withAuthOption:ARTAuthenticationNewToken completion:callback];
-                return;
+                if (_tokenErrorRetries < 1) {
+                    [self executeRequest:request withAuthOption:ARTAuthenticationTokenRetry completion:callback];
+                    return;
+                }
+                error = dataError;
             } else {
                 // Return error with HTTP StatusCode if ARTErrorStatusCode does not exist
                 if (!dataError) {

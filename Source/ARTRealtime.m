@@ -292,7 +292,7 @@
                 [_transport connect];
             }
 
-            if (self.connection.state != ARTRealtimeFailed && self.connection.state != ARTRealtimeClosed) {
+            if (self.connection.state != ARTRealtimeFailed && self.connection.state != ARTRealtimeClosed && self.connection.state != ARTRealtimeDisconnected) {
                 [_reachability listenForHost:[_transport host] callback:^(BOOL reachable) {
                     if (reachable) {
                         switch (_connection.state) {
@@ -915,7 +915,7 @@
     [self transition:ARTRealtimeClosed];
 }
 
-- (void)realtimeTransportDisconnected:(id<ARTRealtimeTransport>)transport {
+- (void)realtimeTransportDisconnected:(id<ARTRealtimeTransport>)transport withError:(ARTRealtimeTransportError *)error {
     if (transport != self.transport) {
         // Old connection
         return;
@@ -924,7 +924,7 @@
     if (self.connection.state == ARTRealtimeClosing) {
         [self transition:ARTRealtimeClosed];
     } else {
-        [self transition:ARTRealtimeDisconnected];
+        [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createWithNSError:error.error]];
     }
 }
 
