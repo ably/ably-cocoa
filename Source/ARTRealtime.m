@@ -536,6 +536,19 @@
     }
 }
 
+- (void)onAuth {
+    [self.logger info:@"R:%p server has requested an authorise", self];
+    switch (self.connection.state) {
+        case ARTRealtimeConnecting:
+        case ARTRealtimeConnected:
+            [self transportReconnectWithRenewedToken];
+            break;
+        default:
+            NSAssert(false, @"Invalid Realtime state: expected Connecting or Connected");
+            break;
+    }
+}
+
 - (void)onError:(ARTProtocolMessage *)message {
     // TODO work out which states this can be received in
     if (message.channel) {
@@ -543,6 +556,7 @@
     } else {
         ARTErrorInfo *error = message.error;
         if ([self shouldRenewToken:&error]) {
+            [self.transport close];
             [self transportReconnectWithRenewedToken];
             return;
         }
@@ -584,7 +598,9 @@
 }
 
 - (void)onChannelMessage:(ARTProtocolMessage *)message {
-    // TODO work out which states this can be received in / error info?
+    if (message.channel == nil) {
+        return;
+    }
     ARTRealtimeChannel *channel = [self.channels get:message.channel];
     [channel onChannelMessage:message];
 }
@@ -885,6 +901,9 @@
             break;
         case ARTProtocolMessageClosed:
             [self onClosed];
+            break;
+        case ARTProtocolMessageAuth:
+            [self onAuth];
             break;
         default:
             [self onChannelMessage:message];
