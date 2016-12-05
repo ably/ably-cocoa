@@ -121,6 +121,10 @@ enum {
                             // RSA15c
                             [[weakSelf delegate] realtimeTransportFailed:weakSelf withError:[[ARTRealtimeTransportError alloc] initWithError:error type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
                         }
+                        else if (options.authUrl || options.authCallback) {
+                            // RSA4c
+                            [[weakSelf delegate] realtimeTransportDisconnected:weakSelf withError:[[ARTRealtimeTransportError alloc] initWithError:[ARTErrorInfo createWithCode:ARTCodeErrorAuthUrlOrCallbackFailure message:error.localizedDescription] type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
+                        }
                         else {
                             // RSA4b
                             [[weakSelf delegate] realtimeTransportDisconnected:weakSelf withError:[[ARTRealtimeTransportError alloc] initWithError:error type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
