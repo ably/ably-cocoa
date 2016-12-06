@@ -581,12 +581,30 @@
     [self.transport connect];
 }
 
-- (void)transportReconnectWithRenewedToken {
-    _renewingToken = true;
+- (void)transportReconnectWithTokenDetails:(ARTTokenDetails *)tokenDetails error:(NSError *)error {
+    if (error && (self.options.authUrl || self.options.authCallback)) {
+        [self.connection setErrorReason:[ARTErrorInfo createWithCode:ARTCodeErrorAuthConfiguredProviderFailure message:error.localizedDescription]];
+        return;
+    }
     [_transport close];
     _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:_transport.resumeKey connectionSerial:_transport.connectionSerial];
     _transport.delegate = self;
-    [_transport connectForcingNewToken:true];
+    [_transport connectWithToken:tokenDetails.token error:error];
+}
+
+- (void)transportReconnectWithRenewedToken {
+    self.auth.delegate = nil;
+    @try {
+        _renewingToken = true;
+        __weak __typeof(self) weakSelf = self;
+        [self.auth authorize:nil options:self.options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+            [[weakSelf getLogger] debug:__FILE__ line:__LINE__ message:@"R:%p authorised: %@ error: %@", weakSelf, tokenDetails, error];
+            [weakSelf transportReconnectWithTokenDetails:tokenDetails error:error];
+        }];
+    }
+    @finally {
+        self.auth.delegate = self;
+    }
 }
 
 - (void)onAck:(ARTProtocolMessage *)message {

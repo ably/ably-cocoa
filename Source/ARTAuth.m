@@ -352,6 +352,7 @@
         if (callback) {
             callback(self.tokenDetails, nil);
         }
+        _authorizing = false;
     };
 
     // Failure
@@ -360,6 +361,7 @@
         if (callback) {
             callback(nil, error);
         }
+        _authorizing = false;
     };
 
     __weak id<ARTAuthDelegate> lastDelegate = self.delegate;
@@ -378,6 +380,7 @@
 
     // Request always a new token
     [self.logger verbose:@"RS:%p ARTAuth: requesting new token.", _rest];
+    _authorizing = true;
     [self requestToken:currentTokenParams withOptions:replacedOptions callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
         if (error) {
             failureBlock(error);

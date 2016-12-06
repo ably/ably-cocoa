@@ -32,6 +32,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, assign) NSTimeInterval timeOffset;
 
 @property (art_nullable, weak) id<ARTAuthDelegate> delegate;
+@property (readonly, assign) BOOL authorizing;
 
 @end
 

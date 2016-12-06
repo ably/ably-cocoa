@@ -754,7 +754,7 @@ class RealtimeClient: QuickSpec {
                     client.setTransportClass(TestProxyTransport.self)
 
                     var connections = 0
-                    let hook1 = TestProxyTransport.testSuite_injectIntoClassMethod(#selector(TestProxyTransport.connectWithToken)) {
+                    let hook1 = TestProxyTransport.testSuite_injectIntoClassMethod(#selector(TestProxyTransport.connectWithToken(_:))) {
                         connections += 1
                     }
                     defer { hook1?.remove() }

@@ -108,30 +108,16 @@ enum {
         }
         else {
             // New Token
-            __weak __typeof(self) weakSelf = self;
             id<ARTAuthDelegate> delegate = self.auth.delegate;
             self.auth.delegate = nil;
             @try {
+                __weak __typeof(self) weakSelf = self;
                 [self.auth authorize:nil options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
                     [[weakSelf logger] debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p authorised: %@ error: %@", _delegate, self, tokenDetails, error];
-
                     if (error) {
-                        [[weakSelf logger] error:@"R:%p WS:%p ARTWebSocketTransport: token auth failed with %@", _delegate, self, error.description];
-                        if (error.code == 40102 /*incompatible credentials*/) {
-                            // RSA15c
-                            [[weakSelf delegate] realtimeTransportFailed:weakSelf withError:[[ARTRealtimeTransportError alloc] initWithError:error type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
-                        }
-                        else if (options.authUrl || options.authCallback) {
-                            // RSA4c
-                            [[weakSelf delegate] realtimeTransportDisconnected:weakSelf withError:[[ARTRealtimeTransportError alloc] initWithError:[ARTErrorInfo createWithCode:ARTCodeErrorAuthUrlOrCallbackFailure message:error.localizedDescription] type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
-                        }
-                        else {
-                            // RSA4b
-                            [[weakSelf delegate] realtimeTransportDisconnected:weakSelf withError:[[ARTRealtimeTransportError alloc] initWithError:error type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
-                        }
+                        [weakSelf handleAuthTokenError:error];
                         return;
                     }
-
                     [weakSelf connectWithToken:tokenDetails.token];
                 }];
             }
@@ -139,6 +125,22 @@ enum {
                 self.auth.delegate = delegate;
             }
         }
+    }
+}
+
+- (void)handleAuthTokenError:(NSError *)error {
+    [self.logger error:@"R:%p WS:%p ARTWebSocketTransport: token auth failed with %@", self.delegate, self, error.description];
+    if (error.code == 40102 /*incompatible credentials*/) {
+        // RSA15c
+        [self.delegate realtimeTransportFailed:self withError:[[ARTRealtimeTransportError alloc] initWithError:error type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
+    }
+    else if (self.options.authUrl || self.options.authCallback) {
+        // RSA4c
+        [self.delegate realtimeTransportDisconnected:self withError:[[ARTRealtimeTransportError alloc] initWithError:[ARTErrorInfo createWithCode:ARTCodeErrorAuthConfiguredProviderFailure message:error.localizedDescription] type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
+    }
+    else {
+        // RSA4b
+        [self.delegate realtimeTransportDisconnected:self withError:[[ARTRealtimeTransportError alloc] initWithError:error type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
     }
 }
 
@@ -151,6 +153,14 @@ enum {
 }
 
 - (void)connectWithToken:(NSString *)token {
+    [self connectWithToken:token error:nil];
+}
+
+- (void)connectWithToken:(NSString *)token error:(NSError *)error {
+    if (error) {
+        [self handleAuthTokenError:error];
+        return;
+    }
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket connect with token", _delegate, self];
     NSURLQueryItem *accessTokenParam = [NSURLQueryItem queryItemWithName:@"accessToken" value:token];
     [self setupWebSocket:@[accessTokenParam] withOptions:self.options resumeKey:self.resumeKey connectionSerial:self.connectionSerial];
