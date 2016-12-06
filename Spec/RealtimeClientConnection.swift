@@ -3583,6 +3583,51 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
             }
+
+            it("should abort reconnection with new token if the server has requested it to authorise and after it the connection has been closed") {
+                let options = AblyTests.commonAppSetup()
+                let client = ARTRealtime(options: options)
+                defer { client.dispose(); client.close() }
+
+                waitUntil(timeout: testTimeout) { done in
+                    client.connection.once(.Connected) { stateChange in
+                        expect(stateChange?.reason).to(beNil())
+                        done()
+                    }
+                }
+
+                client.auth.options.authCallback = { tokenParams, completion in
+                    getTestTokenDetails(ttl: 0.1) { tokenDetails, error in
+                        expect(error).to(beNil())
+                        guard let tokenDetails = tokenDetails else {
+                            fail("TokenDetails is nil"); return
+                        }
+                        // Let the token expire
+                        delay(0.1) {
+                            completion(tokenDetails.token, nil)
+                        }
+                    }
+                }
+
+                let authMessage = ARTProtocolMessage()
+                authMessage.action = .Auth
+                client.transport.receive(authMessage)
+
+                client.close()
+
+                waitUntil(timeout: testTimeout) { done in
+                    client.connection.once(.Failed) { _ in
+                        fail("Should not receive error 40142")
+                    }
+                    client.connection.once(.Connected) { _ in
+                        fail("Should not connect")
+                    }
+                    client.connection.once(.Closed) { _ in
+                        done()
+                    }
+                }
+            }
+
         }
     }
 }

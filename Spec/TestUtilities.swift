@@ -408,7 +408,7 @@ func getTestToken(key key: String? = nil, clientId: String? = nil, capability: S
 }
 
 /// Access TokenDetails
-func getTestTokenDetails(key key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: NSTimeInterval? = nil) -> ARTTokenDetails? {
+func getTestTokenDetails(key key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: NSTimeInterval? = nil, completion: (ARTTokenDetails?, NSError?) -> Void) {
     let options: ARTClientOptions
     if let key = key {
         options = AblyTests.clientOptions()
@@ -419,9 +419,6 @@ func getTestTokenDetails(key key: String? = nil, clientId: String? = nil, capabi
     }
 
     let client = ARTRest(options: options)
-
-    var tokenDetails: ARTTokenDetails?
-    var error: NSError?
 
     var tokenParams: ARTTokenParams? = nil
     if let capability = capability {
@@ -437,7 +434,14 @@ func getTestTokenDetails(key key: String? = nil, clientId: String? = nil, capabi
         tokenParams!.clientId = clientId
     }
 
-    client.auth.requestToken(tokenParams, withOptions: nil) { _tokenDetails, _error in
+    client.auth.requestToken(tokenParams, withOptions: nil, callback: completion)
+}
+
+func getTestTokenDetails(key key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: NSTimeInterval? = nil) -> ARTTokenDetails? {
+    var tokenDetails: ARTTokenDetails?
+    var error: NSError?
+
+    getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl) { _tokenDetails, _error in
         tokenDetails = _tokenDetails
         error = _error
     }
