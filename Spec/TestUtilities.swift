@@ -679,7 +679,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     var ignoreSends = false
 
     static var network: NetworkAnswer? = nil
-    static var networkConnectEvent: Optional<(NSURL)->()> = nil
+    static var networkConnectEvent: Optional<(ARTRealtimeTransport, NSURL)->()> = nil
 
     override func connect() {
         if let network = TestProxyTransport.network {
@@ -712,7 +712,7 @@ class TestProxyTransport: ARTWebSocketTransport {
         if let performNetworkConnect = TestProxyTransport.networkConnectEvent {
             func perform() {
                 if let lastUrl = self.lastUrl {
-                    performNetworkConnect(lastUrl)
+                    performNetworkConnect(self, lastUrl)
                 } else {
                     delay(0.1) { perform() }
                 }

@@ -944,7 +944,7 @@ class Auth : QuickSpec {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
                         let realtime = AblyTests.newRealtime(options)
-                        defer { realtime.close() }
+                        defer { realtime.dispose(); realtime.close() }
                         expect(realtime.auth.clientId).to(beNil())
 
                         waitUntil(timeout: testTimeout) { done in
@@ -972,7 +972,7 @@ class Auth : QuickSpec {
                         options.autoConnect = false
                         options.token = getTestToken(clientId: "tester")
                         let realtime = ARTRealtime(options: options)
-                        defer { realtime.close() }
+                        defer { realtime.dispose(); realtime.close() }
                         expect(realtime.auth.clientId).to(beNil())
 
                         waitUntil(timeout: testTimeout) { done in
@@ -1038,7 +1038,7 @@ class Auth : QuickSpec {
                         expect(options.clientId).to(beNil())
                         options.autoConnect = false
                         let realtime = AblyTests.newRealtime(options)
-                        defer { realtime.close() }
+                        defer { realtime.dispose(); realtime.close() }
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.connection.once(.Connected) { stateChange in
@@ -1059,7 +1059,7 @@ class Auth : QuickSpec {
                         let options = AblyTests.clientOptions()
                         options.token = getTestToken(clientId: "*")
                         let realtime = ARTRealtime(options: options)
-                        defer { realtime.close() }
+                        defer { realtime.dispose(); realtime.close() }
                         waitUntil(timeout: testTimeout) { done in
                             realtime.connection.on(.Connected) { _ in
                                 expect(realtime.auth.clientId).to(equal("*"))

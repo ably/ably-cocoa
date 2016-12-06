@@ -2614,9 +2614,13 @@ class RealtimeClientConnection: QuickSpec {
                     defer { TestProxyTransport.network = nil }
 
                     var urlConnections = [NSURL]()
-                    TestProxyTransport.networkConnectEvent = { url in
+                    TestProxyTransport.networkConnectEvent = { transport, url in
+                        if client.transport !== transport {
+                            return
+                        }
                         urlConnections.append(url)
                     }
+                    defer { TestProxyTransport.networkConnectEvent = nil }
 
                     client.connect()
                     defer { client.dispose(); client.close() }
@@ -2643,12 +2647,16 @@ class RealtimeClientConnection: QuickSpec {
                     defer { TestProxyTransport.network = nil }
 
                     var urlConnections = [NSURL]()
-                    TestProxyTransport.networkConnectEvent = { url in
+                    TestProxyTransport.networkConnectEvent = { transport, url in
+                        if client.transport !== transport {
+                            return
+                        }
                         urlConnections.append(url)
                         if urlConnections.count == 1 {
                             TestProxyTransport.network = nil
                         }
                     }
+                    defer { TestProxyTransport.networkConnectEvent = nil }
 
                     client.connect()
                     defer { client.dispose(); client.close() }
@@ -2679,15 +2687,19 @@ class RealtimeClientConnection: QuickSpec {
                     defer { TestProxyTransport.network = nil }
                     
                     var urlConnections = [NSURL]()
-                    TestProxyTransport.networkConnectEvent = { url in
+                    TestProxyTransport.networkConnectEvent = { transport, url in
+                        if client.transport !== transport {
+                            return
+                        }
                         urlConnections.append(url)
                         if urlConnections.count == 1 {
                             TestProxyTransport.network = nil
                         }
                     }
+                    defer { TestProxyTransport.networkConnectEvent = nil }
                     
                     client.connect()
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: "message") { error in
@@ -2718,12 +2730,16 @@ class RealtimeClientConnection: QuickSpec {
                             defer { TestProxyTransport.network = nil }
 
                             var urlConnections = [NSURL]()
-                            TestProxyTransport.networkConnectEvent = { url in
+                            TestProxyTransport.networkConnectEvent = { transport, url in
+                                if client.transport !== transport {
+                                    return
+                                }
                                 urlConnections.append(url)
                                 if urlConnections.count == 1 {
                                     TestProxyTransport.network = nil
                                 }
                             }
+                            defer { TestProxyTransport.networkConnectEvent = nil }
 
                             client.connect()
                             defer { client.dispose(); client.close() }
@@ -2773,9 +2789,13 @@ class RealtimeClientConnection: QuickSpec {
                     defer { TestProxyTransport.network = nil }
 
                     var urlConnections = [NSURL]()
-                    TestProxyTransport.networkConnectEvent = { url in
+                    TestProxyTransport.networkConnectEvent = { transport, url in
+                        if client.transport !== transport {
+                            return
+                        }
                         urlConnections.append(url)
                     }
+                    defer { TestProxyTransport.networkConnectEvent = nil }
 
                     client.connect()
                     defer { client.dispose(); client.close() }
@@ -2802,10 +2822,14 @@ class RealtimeClientConnection: QuickSpec {
                     defer { TestProxyTransport.network = nil }
 
                     var urlConnections = [NSURL]()
-                    TestProxyTransport.networkConnectEvent = { url in
+                    TestProxyTransport.networkConnectEvent = { transport, url in
+                        if client.transport !== transport {
+                            return
+                        }
                         urlConnections.append(url)
                         TestProxyTransport.network = nil
                     }
+                    defer { TestProxyTransport.networkConnectEvent = nil }
 
                     client.connect()
                     defer { client.dispose(); client.close() }
@@ -2845,9 +2869,13 @@ class RealtimeClientConnection: QuickSpec {
                     defer { TestProxyTransport.network = nil }
 
                     var urlConnections = [NSURL]()
-                    TestProxyTransport.networkConnectEvent = { url in
+                    TestProxyTransport.networkConnectEvent = { transport, url in
+                        if client.transport !== transport {
+                            return
+                        }
                         urlConnections.append(url)
                     }
+                    defer { TestProxyTransport.networkConnectEvent = nil }
 
                     client.connect()
                     defer { client.dispose(); client.close() }
@@ -2887,12 +2915,16 @@ class RealtimeClientConnection: QuickSpec {
                     defer { TestProxyTransport.network = nil }
                     
                     var urlConnections = [NSURL]()
-                    TestProxyTransport.networkConnectEvent = { url in
+                    TestProxyTransport.networkConnectEvent = { transport, url in
+                        if client.transport !== transport {
+                            return
+                        }
                         urlConnections.append(url)
                     }
+                    defer { TestProxyTransport.networkConnectEvent = nil }
                     
                     client.connect()
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: "message") { error in
@@ -2927,12 +2959,16 @@ class RealtimeClientConnection: QuickSpec {
                     defer { TestProxyTransport.network = nil }
                     
                     var urlConnections = [NSURL]()
-                    TestProxyTransport.networkConnectEvent = { url in
+                    TestProxyTransport.networkConnectEvent = { transport, url in
+                        if client.transport !== transport {
+                            return
+                        }
                         urlConnections.append(url)
                     }
+                    defer { TestProxyTransport.networkConnectEvent = nil }
                     
                     client.connect()
-                    defer { client.close() }
+                    defer { client.dispose(); client.close() }
                     
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: "message") { error in
@@ -2958,13 +2994,17 @@ class RealtimeClientConnection: QuickSpec {
                     defer { TestProxyTransport.network = nil }
 
                     var urlConnections = [NSURL]()
-                    TestProxyTransport.networkConnectEvent = { url in
+                    TestProxyTransport.networkConnectEvent = { transport, url in
+                        if client.transport !== transport {
+                            return
+                        }
                         urlConnections.append(url)
                         if urlConnections.count == 2 {
                             TestProxyTransport.network = nil
                             (client.transport as! TestProxyTransport).simulateTransportSuccess()
                         }
                     }
+                    defer { TestProxyTransport.networkConnectEvent = nil }
 
                     client.connect()
                     // Because we're faking the CONNECTED state, we can't client.close() or it
