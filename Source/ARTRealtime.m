@@ -154,7 +154,20 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"Realtime: %@", self.clientId];
+    NSString *info;
+    if (self.options.token) {
+        info = [NSString stringWithFormat:@"token: %@", self.options.token];
+    }
+    else if (self.options.authUrl) {
+        info = [NSString stringWithFormat:@"authUrl: %@", self.options.authUrl];
+    }
+    else if (self.options.authCallback) {
+        info = [NSString stringWithFormat:@"authCallback: %@", self.options.authCallback];
+    }
+    else {
+        info = [NSString stringWithFormat:@"key: %@", self.options.key];
+    }
+    return [NSString stringWithFormat:@"%@ - \n\t %@;", [super description], info];
 }
 
 - (ARTAuth *)getAuth {
