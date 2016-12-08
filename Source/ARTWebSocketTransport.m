@@ -19,6 +19,7 @@
 #import "ARTEncoder.h"
 #import "ARTDefault.h"
 #import "ARTRealtimeTransport.h"
+#import "ARTGCD.h"
 
 enum {
     ARTWsNeverConnected = -1,
@@ -108,11 +109,25 @@ enum {
         }
         else {
             // New Token
+            // Transport instance couldn't exist anymore when `authorize` completes or reaches time out.
+            __weak __typeof(self) weakSelf = self;
+
+            dispatch_block_t work = artDispatchScheduled([ARTDefault realtimeRequestTimeout], ^{
+                [weakSelf timeOut];
+            });
+
+            // Deactivate use of `ARTAuthDelegate`: `authorize` should complete without waiting for a CONNECTED state.
             id<ARTAuthDelegate> delegate = self.auth.delegate;
             self.auth.delegate = nil;
             @try {
-                __weak __typeof(self) weakSelf = self;
                 [self.auth authorize:nil options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+                    // Cancel scheduled work
+                    artDispatchCancel(work);
+                    // It's still valid?
+                    if (_state != ARTRealtimeTransportStateOpening &&
+                        _state != ARTRealtimeTransportStateOpened) {
+                        return;
+                    }
                     [[weakSelf logger] debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p authorised: %@ error: %@", _delegate, self, tokenDetails, error];
                     if (error) {
                         [weakSelf handleAuthTokenError:error];
@@ -125,6 +140,22 @@ enum {
                 self.auth.delegate = delegate;
             }
         }
+    }
+}
+
+- (void)timeOut {
+    ARTErrorInfo *error;
+    if (self.auth.authorizing && (self.options.authUrl || self.options.authCallback)) {
+        error = [ARTErrorInfo createWithCode:ARTCodeErrorAuthConfiguredProviderFailure status:ARTStateConnectionFailed message:@"timed out"];
+    }
+    else {
+        error = [ARTErrorInfo createWithCode:ARTCodeErrorConnectionTimedOut status:ARTStateConnectionFailed message:@"timed out"];
+    }
+    if (_state == ARTRealtimeTransportStateOpened) {
+        [self.delegate realtimeTransportFailed:self withError:[[ARTRealtimeTransportError alloc] initWithError:error type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
+    }
+    else {
+        [self.delegate realtimeTransportFailed:self withError:[[ARTRealtimeTransportError alloc] initWithError:error type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
     }
 }
 

@@ -289,7 +289,7 @@
     switch (stateChange.current) {
         case ARTRealtimeConnecting: {
             [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
-                [weakSelf onConnectionTimeOut];
+                [[weakSelf getTransport] timeOut];
             }];
 
             if (!_reachability) {
@@ -450,24 +450,6 @@
     [self.connection emit:stateChange.current with:stateChange];
 }
 
-- (void)onConnectionTimeOut {
-    NSInteger errorCode;
-    if (self.auth.authorizing && (self.options.authUrl || self.options.authCallback)) {
-        errorCode = ARTCodeErrorAuthConfiguredProviderFailure;
-    }
-    else {
-        errorCode = ARTCodeErrorConnectionTimedOut;
-    }
-    switch (self.connection.state) {
-        case ARTRealtimeConnected:
-            [self transition:ARTRealtimeConnected withErrorInfo:[ARTErrorInfo createWithCode:errorCode status:ARTStateConnectionFailed message:@"timed out"]];
-            break;
-        default:
-            [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createWithCode:errorCode status:ARTStateConnectionFailed message:@"timed out"]];
-            break;
-    }
-}
-
 - (void)unlessStateChangesBefore:(NSTimeInterval)deadline do:(void(^)())callback {
     // Defer until next event loop execution so that any event emitted in the current
     // one doesn't cancel the timeout.
@@ -615,43 +597,12 @@
     [self.transport connect];
 }
 
-- (void)transportReconnectWithTokenDetails:(ARTTokenDetails *)tokenDetails error:(NSError *)error {
-    if (error && (self.options.authUrl || self.options.authCallback)) {
-        [self.connection setErrorReason:[ARTErrorInfo createWithCode:ARTCodeErrorAuthConfiguredProviderFailure message:error.localizedDescription]];
-        return;
-    }
+- (void)transportReconnectWithRenewedToken {
+    _renewingToken = true;
     [_transport close];
     _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:_transport.resumeKey connectionSerial:_transport.connectionSerial];
     _transport.delegate = self;
-    [_transport connectWithToken:tokenDetails.token error:error];
-}
-
-- (void)transportReconnectWithRenewedToken {
-    self.auth.delegate = nil;
-    @try {
-        _renewingToken = true;
-        __weak __typeof(self) weakSelf = self;
-        dispatch_block_t work = artDispatchScheduled([ARTDefault realtimeRequestTimeout], ^{
-            [weakSelf onConnectionTimeOut];
-        });
-        [self.auth authorize:nil options:self.options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
-            // Cancel scheduled work
-            artDispatchCancel(work);
-            // It's still valid?
-            switch ([[weakSelf connection] state]) {
-            case ARTRealtimeClosing:
-            case ARTRealtimeClosed:
-                return;
-            default:
-                break;
-            }
-            [[weakSelf getLogger] debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p authorised: %@ error: %@", weakSelf, [weakSelf getTransport], tokenDetails, error];
-            [weakSelf transportReconnectWithTokenDetails:tokenDetails error:error];
-        }];
-    }
-    @finally {
-        self.auth.delegate = self;
-    }
+    [_transport connectForcingNewToken:true];
 }
 
 - (void)onAck:(ARTProtocolMessage *)message {
