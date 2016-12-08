@@ -49,8 +49,6 @@
         return @"Timeout";
     case ARTRealtimeTransportErrorTypeBadResponse:
         return @"BadResponse";
-    case ARTRealtimeTransportErrorTypeAuth:
-        return @"Auth";
     case ARTRealtimeTransportErrorTypeOther:
         return @"Other";
     }

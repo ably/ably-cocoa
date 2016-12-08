@@ -24,7 +24,6 @@ ART_ASSUME_NONNULL_BEGIN
 // From RestClient
 @property (readwrite, strong, nonatomic) id<ARTEncoder> encoder;
 @property (readonly, strong, nonatomic) ARTLog *logger;
-@property (readonly, strong, nonatomic) ARTAuth *auth;
 @property (readonly, strong, nonatomic) ARTClientOptions *options;
 
 @property (readwrite, strong, nonatomic, art_nullable) SRWebSocket *websocket;

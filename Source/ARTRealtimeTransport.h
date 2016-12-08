@@ -24,7 +24,6 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportErrorType) {
     ARTRealtimeTransportErrorTypeNoInternet,
     ARTRealtimeTransportErrorTypeTimeout,
     ARTRealtimeTransportErrorTypeBadResponse,
-    ARTRealtimeTransportErrorTypeAuth,
     ARTRealtimeTransportErrorTypeOther
 };
 
@@ -76,10 +75,8 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
 
 - (void)send:(ARTProtocolMessage *)msg;
 - (void)receive:(ARTProtocolMessage *)msg;
-- (void)connect;
+- (void)connectWithKey:(NSString *)key;
 - (void)connectWithToken:(NSString *)token;
-- (void)connectForcingNewToken:(BOOL)forceNewToken;
-- (void)timeOut;
 - (void)sendClose;
 - (void)sendPing;
 - (void)close;

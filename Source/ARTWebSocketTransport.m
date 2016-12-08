@@ -10,7 +10,6 @@
 
 #import "ARTRest.h"
 #import "ARTRest+Private.h"
-#import "ARTAuth+Private.h"
 #import "ARTProtocolMessage.h"
 #import "ARTClientOptions.h"
 #import "ARTTokenParams.h"
@@ -49,7 +48,6 @@ enum {
         _state = ARTRealtimeTransportStateClosed;
         _encoder = rest.defaultEncoder;
         _logger = rest.logger;
-        _auth = rest.auth;
         _options = [options copy];
         _resumeKey = resumeKey;
         _connectionSerial = connectionSerial;
@@ -86,96 +84,8 @@ enum {
     [self receive:pm];
 }
 
-- (void)connect {
-    [self connectForcingNewToken:false];
-}
-
-- (void)connectForcingNewToken:(BOOL)forceNewToken {
-    _state = ARTRealtimeTransportStateOpening;
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket connect", _delegate, self];
-    ARTClientOptions *options = [self.options copy];
-
-    if ([options isBasicAuth]) {
-        // Basic
-        [self connectWithKey:options.key];
-    }
-    else {
-        // Token
-        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p connecting with token auth; authorising", _delegate, self];
-
-        if (!forceNewToken && [self.auth tokenRemainsValid]) {
-            // Reuse token
-            [self connectWithToken:self.auth.tokenDetails.token];
-        }
-        else {
-            // New Token
-            // Transport instance couldn't exist anymore when `authorize` completes or reaches time out.
-            __weak __typeof(self) weakSelf = self;
-
-            dispatch_block_t work = artDispatchScheduled([ARTDefault realtimeRequestTimeout], ^{
-                [weakSelf timeOut];
-            });
-
-            // Deactivate use of `ARTAuthDelegate`: `authorize` should complete without waiting for a CONNECTED state.
-            id<ARTAuthDelegate> delegate = self.auth.delegate;
-            self.auth.delegate = nil;
-            @try {
-                [self.auth authorize:nil options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
-                    // Cancel scheduled work
-                    artDispatchCancel(work);
-                    // It's still valid?
-                    if (_state != ARTRealtimeTransportStateOpening &&
-                        _state != ARTRealtimeTransportStateOpened) {
-                        return;
-                    }
-                    [[weakSelf logger] debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p authorised: %@ error: %@", _delegate, self, tokenDetails, error];
-                    if (error) {
-                        [weakSelf handleAuthTokenError:error];
-                        return;
-                    }
-                    [weakSelf connectWithToken:tokenDetails.token];
-                }];
-            }
-            @finally {
-                self.auth.delegate = delegate;
-            }
-        }
-    }
-}
-
-- (void)timeOut {
-    ARTErrorInfo *error;
-    if (self.auth.authorizing && (self.options.authUrl || self.options.authCallback)) {
-        error = [ARTErrorInfo createWithCode:ARTCodeErrorAuthConfiguredProviderFailure status:ARTStateConnectionFailed message:@"timed out"];
-    }
-    else {
-        error = [ARTErrorInfo createWithCode:ARTCodeErrorConnectionTimedOut status:ARTStateConnectionFailed message:@"timed out"];
-    }
-    if (_state == ARTRealtimeTransportStateOpened) {
-        [self.delegate realtimeTransportFailed:self withError:[[ARTRealtimeTransportError alloc] initWithError:error type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
-    }
-    else {
-        [self.delegate realtimeTransportFailed:self withError:[[ARTRealtimeTransportError alloc] initWithError:error type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
-    }
-}
-
-- (void)handleAuthTokenError:(NSError *)error {
-    [self.logger error:@"R:%p WS:%p ARTWebSocketTransport: token auth failed with %@", self.delegate, self, error.description];
-    if (error.code == 40102 /*incompatible credentials*/) {
-        // RSA15c
-        [self.delegate realtimeTransportFailed:self withError:[[ARTRealtimeTransportError alloc] initWithError:error type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
-    }
-    else if (self.options.authUrl || self.options.authCallback) {
-        // RSA4c
-        [self.delegate realtimeTransportDisconnected:self withError:[[ARTRealtimeTransportError alloc] initWithError:[ARTErrorInfo createWithCode:ARTCodeErrorAuthConfiguredProviderFailure message:error.localizedDescription] type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
-    }
-    else {
-        // RSA4b
-        [self.delegate realtimeTransportDisconnected:self withError:[[ARTRealtimeTransportError alloc] initWithError:error type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
-    }
-}
-
 - (void)connectWithKey:(NSString *)key {
+    _state = ARTRealtimeTransportStateOpening;
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket connect with key", _delegate, self];
     NSURLQueryItem *keyParam = [NSURLQueryItem queryItemWithName:@"key" value:key];
     [self setupWebSocket:@[keyParam] withOptions:self.options resumeKey:self.resumeKey connectionSerial:self.connectionSerial];
@@ -184,14 +94,7 @@ enum {
 }
 
 - (void)connectWithToken:(NSString *)token {
-    [self connectWithToken:token error:nil];
-}
-
-- (void)connectWithToken:(NSString *)token error:(NSError *)error {
-    if (error) {
-        [self handleAuthTokenError:error];
-        return;
-    }
+    _state = ARTRealtimeTransportStateOpening;
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket connect with token", _delegate, self];
     NSURLQueryItem *accessTokenParam = [NSURLQueryItem queryItemWithName:@"accessToken" value:token];
     [self setupWebSocket:@[accessTokenParam] withOptions:self.options resumeKey:self.resumeKey connectionSerial:self.connectionSerial];
