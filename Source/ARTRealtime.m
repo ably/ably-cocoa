@@ -306,7 +306,7 @@
                 }
                 _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:resumeKey connectionSerial:connectionSerial];
                 _transport.delegate = self;
-                [self connectForcingNewToken:false];
+                [self transportConnect];
             }
 
             if (self.connection.state != ARTRealtimeFailed && self.connection.state != ARTRealtimeClosed && self.connection.state != ARTRealtimeDisconnected) {
@@ -612,18 +612,19 @@
 
 - (void)transportReconnectWithHost:(NSString *)host {
     [self.transport setHost:host];
-    [self connectForcingNewToken:false];
+    [self transportConnect];
 }
 
 - (void)transportReconnectWithRenewedToken {
     _renewingToken = true;
-    [_transport close];
-    _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:_transport.resumeKey connectionSerial:_transport.connectionSerial];
-    _transport.delegate = self;
-    [self connectForcingNewToken:true];
+    [self transportConnectForcingNewToken:true];
 }
 
-- (void)connectForcingNewToken:(BOOL)forceNewToken {
+- (void)transportConnect {
+    [self transportConnectForcingNewToken:false];
+}
+
+- (void)transportConnectForcingNewToken:(BOOL)forceNewToken {
     ARTClientOptions *options = [self.options copy];
     if ([options isBasicAuth]) {
         // Basic
@@ -661,10 +662,17 @@
                         default:
                             break;
                     }
+
                     [[weakSelf getLogger] debug:__FILE__ line:__LINE__ message:@"R:%p authorised: %@ error: %@", weakSelf, tokenDetails, error];
                     if (error) {
                         [weakSelf handleTokenAuthError:error];
                         return;
+                    }
+
+                    if (forceNewToken) {
+                        [_transport close];
+                        _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:_transport.resumeKey connectionSerial:_transport.connectionSerial];
+                        _transport.delegate = self;
                     }
                     [[weakSelf getTransport] connectWithToken:tokenDetails.token];
                 }];
@@ -683,8 +691,17 @@
         [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error]];
     }
     else if (self.options.authUrl || self.options.authCallback) {
-        // RSA4c
-        [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createWithCode:ARTCodeErrorAuthConfiguredProviderFailure status:ARTStateConnectionFailed message:error.description]];
+        ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTCodeErrorAuthConfiguredProviderFailure status:ARTStateConnectionFailed message:error.description];
+        switch (self.connection.state) {
+            case ARTRealtimeConnected:
+                // RSA4c3
+                [self.connection setErrorReason:errorInfo];
+                break;
+            default:
+                // RSA4c
+                [self transition:ARTRealtimeDisconnected withErrorInfo:errorInfo];
+                break;
+        }
     }
     else {
         // RSA4b

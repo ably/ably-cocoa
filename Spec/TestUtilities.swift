@@ -681,7 +681,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     static var network: NetworkAnswer? = nil
     static var networkConnectEvent: Optional<(ARTRealtimeTransport, NSURL)->()> = nil
 
-    override func connect() {
+    override func connectWithKey(key: String) {
         if let network = TestProxyTransport.network {
             var hook: AspectToken?
             hook = SRWebSocket.testSuite_replaceClassMethod(#selector(SRWebSocket.open)) {
@@ -707,7 +707,47 @@ class TestProxyTransport: ARTWebSocketTransport {
                 }
             }
         }
-        super.connect()
+        super.connectWithKey(key)
+
+        if let performNetworkConnect = TestProxyTransport.networkConnectEvent {
+            func perform() {
+                if let lastUrl = self.lastUrl {
+                    performNetworkConnect(self, lastUrl)
+                } else {
+                    delay(0.1) { perform() }
+                }
+            }
+            perform()
+        }
+    }
+
+    override func connectWithToken(token: String) {
+        if let network = TestProxyTransport.network {
+            var hook: AspectToken?
+            hook = SRWebSocket.testSuite_replaceClassMethod(#selector(SRWebSocket.open)) {
+                if TestProxyTransport.network == nil {
+                    return
+                }
+                func performConnectError(secondsForDelay: NSTimeInterval, error: ARTRealtimeTransportError) {
+                    delay(secondsForDelay) {
+                        self.delegate?.realtimeTransportFailed(self, withError: error)
+                        hook?.remove()
+                    }
+                }
+                let error = NSError.init(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "TestProxyTransport error"])
+                switch network {
+                case .NoInternet, .HostUnreachable:
+                    performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, type: .HostUnreachable, url: self.lastUrl!))
+                case .RequestTimeout(let timeout):
+                    performConnectError(0.1 + timeout, error: ARTRealtimeTransportError.init(error: error, type: .Timeout, url: self.lastUrl!))
+                case .HostInternalError(let code):
+                    performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, badResponseCode: code, url: self.lastUrl!))
+                case .Host400BadRequest:
+                    performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, badResponseCode: 400, url: self.lastUrl!))
+                }
+            }
+        }
+        super.connectWithToken(token)
 
         if let performNetworkConnect = TestProxyTransport.networkConnectEvent {
             func perform() {
