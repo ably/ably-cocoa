@@ -579,7 +579,7 @@
             [self transportReconnectWithRenewedToken];
             break;
         default:
-            NSAssert(false, @"Invalid Realtime state: expected Connecting or Connected");
+            [self.logger error:@"Invalid Realtime state: expected Connecting or Connected"];
             break;
     }
 }
