@@ -282,6 +282,8 @@
 
 - (void)transitionSideEffects:(ARTConnectionStateChange *)stateChange {
     ARTStatus *status = nil;
+    // Do not increase the reference count (avoid retain cycles):
+    // i.e. the `unlessStateChangesBefore` is setting a timer and if the `ARTRealtime` instance is released before that timer, then it could create a leak.
     __weak __typeof(self) weakSelf = self;
 
     switch (stateChange.current) {
