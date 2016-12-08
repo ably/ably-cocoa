@@ -132,7 +132,7 @@
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p post message %@", _rest, [[NSString alloc] initWithData:encodedMessage encoding:NSUTF8StringEncoding]];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (callback) {
-            ARTErrorInfo *errorInfo = error ? [ARTErrorInfo createWithNSError:error] : nil;
+            ARTErrorInfo *errorInfo = error ? [ARTErrorInfo createFromNSError:error] : nil;
             callback(errorInfo);
         }
     }];

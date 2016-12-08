@@ -959,7 +959,7 @@
     if (self.connection.state == ARTRealtimeClosing) {
         [self transition:ARTRealtimeClosed];
     } else {
-        [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createWithNSError:error.error]];
+        [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
     }
 }
 
@@ -976,7 +976,7 @@
         if (!_fallbacks && [error.url.host isEqualToString:[ARTDefault realtimeHost]]) {
             [self.rest internetIsUp:^void(BOOL isUp) {
                 _fallbacks = [[ARTFallback alloc] initWithOptions:[self getClientOptions]];
-                (_fallbacks != nil) ? [self reconnectWithFallback] : [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithNSError:error.error]];
+                (_fallbacks != nil) ? [self reconnectWithFallback] : [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
             }];
             return;
         } else if (_fallbacks && [self reconnectWithFallback]) {
@@ -987,7 +987,7 @@
     if (error.type == ARTRealtimeTransportErrorTypeNoInternet) {
         [self transition:ARTRealtimeDisconnected];
     } else {
-        [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithNSError:error.error]];
+        [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
     }
 }
 

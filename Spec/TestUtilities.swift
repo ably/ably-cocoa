@@ -324,7 +324,7 @@ func ==(lhs: ARTAuthOptions, rhs: ARTAuthOptions) -> Bool {
 class PublishTestMessage {
 
     var completion: Optional<(ARTErrorInfo?)->()>
-    var error: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
+    var error: ARTErrorInfo? = ARTErrorInfo.createFromNSError(NSError(domain: "", code: -1, userInfo: nil))
 
     init(client: ARTRest, failOnError: Bool = true, completion: Optional<(ARTErrorInfo?)->()> = nil) {
         client.channels.get("test").publish(nil, data: "message") { error in
