@@ -75,8 +75,7 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat: @"%@: key=%@ token=%@ authUrl=%@ authMethod=%@ hasAuthCallback=%d",
-            NSStringFromClass([self class]), self.key, self.token, self.authUrl, self.authMethod, self.authCallback != nil];
+    return [NSString stringWithFormat:@"%@ - \n\t key: %@; \n\t token: %@; \n\t authUrl: %@; \n\t authMethod: %@; \n\t hasAuthCallback: %d;", [super description], self.key, self.token, self.authUrl, self.authMethod, self.authCallback != nil];
 }
 
 - (NSString *)token {

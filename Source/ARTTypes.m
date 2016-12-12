@@ -128,3 +128,11 @@ NSString *ARTRealtimeStateToStr(ARTRealtimeConnectionState state) {
 }
 
 @end
+
+@implementation NSURL (ARTLog)
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"%@", self.absoluteString];
+}
+
+@end

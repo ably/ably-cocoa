@@ -96,6 +96,23 @@
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p dealloc", self];
 }
 
+- (NSString *)description {
+    NSString *info;
+    if (self.options.token) {
+        info = [NSString stringWithFormat:@"token: %@", self.options.token];
+    }
+    else if (self.options.authUrl) {
+        info = [NSString stringWithFormat:@"authUrl: %@", self.options.authUrl];
+    }
+    else if (self.options.authCallback) {
+        info = [NSString stringWithFormat:@"authCallback: %@", self.options.authCallback];
+    }
+    else {
+        info = [NSString stringWithFormat:@"key: %@", self.options.key];
+    }
+    return [NSString stringWithFormat:@"%@ - \n\t %@;", [super description], info];
+}
+
 - (void)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
     request.URL = [NSURL URLWithString:request.URL.relativeString relativeToURL:self.baseUrl];
     

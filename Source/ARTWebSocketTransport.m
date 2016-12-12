@@ -10,7 +10,6 @@
 
 #import "ARTRest.h"
 #import "ARTRest+Private.h"
-#import "ARTAuth+Private.h"
 #import "ARTProtocolMessage.h"
 #import "ARTClientOptions.h"
 #import "ARTTokenParams.h"
@@ -19,6 +18,7 @@
 #import "ARTEncoder.h"
 #import "ARTDefault.h"
 #import "ARTRealtimeTransport.h"
+#import "ARTGCD.h"
 
 enum {
     ARTWsNeverConnected = -1,
@@ -48,7 +48,6 @@ enum {
         _state = ARTRealtimeTransportStateClosed;
         _encoder = rest.defaultEncoder;
         _logger = rest.logger;
-        _auth = rest.auth;
         _options = [options copy];
         _resumeKey = resumeKey;
         _connectionSerial = connectionSerial;
@@ -85,60 +84,8 @@ enum {
     [self receive:pm];
 }
 
-- (void)connect {
-    [self connectForcingNewToken:false];
-}
-
-- (void)connectForcingNewToken:(BOOL)forceNewToken {
-    _state = ARTRealtimeTransportStateOpening;
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket connect", _delegate, self];
-    ARTClientOptions *options = [self.options copy];
-
-    if ([options isBasicAuth]) {
-        // Basic
-        [self connectWithKey:options.key];
-    }
-    else {
-        // Token
-        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p connecting with token auth; authorising", _delegate, self];
-
-        if (!forceNewToken && [self.auth tokenRemainsValid]) {
-            // Reuse token
-            [self connectWithToken:self.auth.tokenDetails.token];
-        }
-        else {
-            // New Token
-            __weak __typeof(self) weakSelf = self;
-            id<ARTAuthDelegate> delegate = self.auth.delegate;
-            self.auth.delegate = nil;
-            @try {
-                [self.auth authorize:nil options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
-                    [[weakSelf logger] debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p authorised: %@ error: %@", _delegate, self, tokenDetails, error];
-
-                    if (error) {
-                        [[weakSelf logger] error:@"R:%p WS:%p ARTWebSocketTransport: token auth failed with %@", _delegate, self, error.description];
-                        if (error.code == 40102 /*incompatible credentials*/) {
-                            // RSA15c
-                            [[weakSelf delegate] realtimeTransportFailed:weakSelf withError:[[ARTRealtimeTransportError alloc] initWithError:error type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
-                        }
-                        else {
-                            // RSA4b
-                            [[weakSelf delegate] realtimeTransportDisconnected:weakSelf withError:[[ARTRealtimeTransportError alloc] initWithError:error type:ARTRealtimeTransportErrorTypeAuth url:self.websocketURL]];
-                        }
-                        return;
-                    }
-
-                    [weakSelf connectWithToken:tokenDetails.token];
-                }];
-            }
-            @finally {
-                self.auth.delegate = delegate;
-            }
-        }
-    }
-}
-
 - (void)connectWithKey:(NSString *)key {
+    _state = ARTRealtimeTransportStateOpening;
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket connect with key", _delegate, self];
     NSURLQueryItem *keyParam = [NSURLQueryItem queryItemWithName:@"key" value:key];
     [self setupWebSocket:@[keyParam] withOptions:self.options resumeKey:self.resumeKey connectionSerial:self.connectionSerial];
@@ -147,6 +94,7 @@ enum {
 }
 
 - (void)connectWithToken:(NSString *)token {
+    _state = ARTRealtimeTransportStateOpening;
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket connect with token", _delegate, self];
     NSURLQueryItem *accessTokenParam = [NSURLQueryItem queryItemWithName:@"accessToken" value:token];
     [self setupWebSocket:@[accessTokenParam] withOptions:self.options resumeKey:self.resumeKey connectionSerial:self.connectionSerial];

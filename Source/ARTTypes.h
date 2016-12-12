@@ -125,4 +125,7 @@ NSString *generateNonce();
 @interface NSDictionary (ARTJsonCompatible) <ARTJsonCompatible>
 @end
 
+@interface NSURL (ARTLog)
+@end
+
 ART_ASSUME_NONNULL_END

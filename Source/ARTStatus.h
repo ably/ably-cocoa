@@ -37,7 +37,9 @@ typedef NS_ENUM(NSUInteger, ARTState) {
  */
 typedef CF_ENUM(NSUInteger, ARTCodeError) {
     // FIXME: check hard coded errors
-    ARTCodeErrorAPIKeyMissing = 80001
+    ARTCodeErrorAPIKeyMissing = 80001,
+    ARTCodeErrorConnectionTimedOut = 80014,
+    ARTCodeErrorAuthConfiguredProviderFailure = 80019
 };
 
 ART_ASSUME_NONNULL_BEGIN
@@ -64,7 +66,7 @@ FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
 
 + (ARTErrorInfo *)createWithCode:(NSInteger)code message:(NSString *)message;
 + (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message;
-+ (ARTErrorInfo *)createWithNSError:(NSError *)error;
++ (ARTErrorInfo *)createFromNSError:(NSError *)error;
 + (ARTErrorInfo *)wrap:(ARTErrorInfo *)error prepend:(NSString *)prepend;
 
 - (NSString *)description;

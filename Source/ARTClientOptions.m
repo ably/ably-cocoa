@@ -46,6 +46,10 @@ NSString *const ARTDefaultProduction = @"production";
     return self;
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat:@"%@\n\t clientId: %@;", [super description], self.clientId];
+}
+
 - (NSString*)getRestHost {
     if (_restHost) {
         return _restHost;

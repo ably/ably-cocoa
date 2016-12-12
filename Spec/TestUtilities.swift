@@ -324,7 +324,7 @@ func ==(lhs: ARTAuthOptions, rhs: ARTAuthOptions) -> Bool {
 class PublishTestMessage {
 
     var completion: Optional<(ARTErrorInfo?)->()>
-    var error: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
+    var error: ARTErrorInfo? = ARTErrorInfo.createFromNSError(NSError(domain: "", code: -1, userInfo: nil))
 
     init(client: ARTRest, failOnError: Bool = true, completion: Optional<(ARTErrorInfo?)->()> = nil) {
         client.channels.get("test").publish(nil, data: "message") { error in
@@ -408,7 +408,7 @@ func getTestToken(key key: String? = nil, clientId: String? = nil, capability: S
 }
 
 /// Access TokenDetails
-func getTestTokenDetails(key key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: NSTimeInterval? = nil) -> ARTTokenDetails? {
+func getTestTokenDetails(key key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: NSTimeInterval? = nil, completion: (ARTTokenDetails?, NSError?) -> Void) {
     let options: ARTClientOptions
     if let key = key {
         options = AblyTests.clientOptions()
@@ -419,9 +419,6 @@ func getTestTokenDetails(key key: String? = nil, clientId: String? = nil, capabi
     }
 
     let client = ARTRest(options: options)
-
-    var tokenDetails: ARTTokenDetails?
-    var error: NSError?
 
     var tokenParams: ARTTokenParams? = nil
     if let capability = capability {
@@ -437,7 +434,14 @@ func getTestTokenDetails(key key: String? = nil, clientId: String? = nil, capabi
         tokenParams!.clientId = clientId
     }
 
-    client.auth.requestToken(tokenParams, withOptions: nil) { _tokenDetails, _error in
+    client.auth.requestToken(tokenParams, withOptions: nil, callback: completion)
+}
+
+func getTestTokenDetails(key key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: NSTimeInterval? = nil) -> ARTTokenDetails? {
+    var tokenDetails: ARTTokenDetails?
+    var error: NSError?
+
+    getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl) { _tokenDetails, _error in
         tokenDetails = _tokenDetails
         error = _error
     }
@@ -675,9 +679,9 @@ class TestProxyTransport: ARTWebSocketTransport {
     var ignoreSends = false
 
     static var network: NetworkAnswer? = nil
-    static var networkConnectEvent: Optional<(NSURL)->()> = nil
+    static var networkConnectEvent: Optional<(ARTRealtimeTransport, NSURL)->()> = nil
 
-    override func connect() {
+    override func connectWithKey(key: String) {
         if let network = TestProxyTransport.network {
             var hook: AspectToken?
             hook = SRWebSocket.testSuite_replaceClassMethod(#selector(SRWebSocket.open)) {
@@ -703,12 +707,52 @@ class TestProxyTransport: ARTWebSocketTransport {
                 }
             }
         }
-        super.connect()
+        super.connectWithKey(key)
 
         if let performNetworkConnect = TestProxyTransport.networkConnectEvent {
             func perform() {
                 if let lastUrl = self.lastUrl {
-                    performNetworkConnect(lastUrl)
+                    performNetworkConnect(self, lastUrl)
+                } else {
+                    delay(0.1) { perform() }
+                }
+            }
+            perform()
+        }
+    }
+
+    override func connectWithToken(token: String) {
+        if let network = TestProxyTransport.network {
+            var hook: AspectToken?
+            hook = SRWebSocket.testSuite_replaceClassMethod(#selector(SRWebSocket.open)) {
+                if TestProxyTransport.network == nil {
+                    return
+                }
+                func performConnectError(secondsForDelay: NSTimeInterval, error: ARTRealtimeTransportError) {
+                    delay(secondsForDelay) {
+                        self.delegate?.realtimeTransportFailed(self, withError: error)
+                        hook?.remove()
+                    }
+                }
+                let error = NSError.init(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "TestProxyTransport error"])
+                switch network {
+                case .NoInternet, .HostUnreachable:
+                    performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, type: .HostUnreachable, url: self.lastUrl!))
+                case .RequestTimeout(let timeout):
+                    performConnectError(0.1 + timeout, error: ARTRealtimeTransportError.init(error: error, type: .Timeout, url: self.lastUrl!))
+                case .HostInternalError(let code):
+                    performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, badResponseCode: code, url: self.lastUrl!))
+                case .Host400BadRequest:
+                    performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, badResponseCode: 400, url: self.lastUrl!))
+                }
+            }
+        }
+        super.connectWithToken(token)
+
+        if let performNetworkConnect = TestProxyTransport.networkConnectEvent {
+            func perform() {
+                if let lastUrl = self.lastUrl {
+                    performNetworkConnect(self, lastUrl)
                 } else {
                     delay(0.1) { perform() }
                 }

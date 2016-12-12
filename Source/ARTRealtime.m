@@ -33,6 +33,7 @@
 #import "ARTRealtimeTransport.h"
 #import "ARTFallback.h"
 #import "ARTAuthDetails.h"
+#import "ARTGCD.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -153,7 +154,20 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"Realtime: %@", self.clientId];
+    NSString *info;
+    if (self.options.token) {
+        info = [NSString stringWithFormat:@"token: %@", self.options.token];
+    }
+    else if (self.options.authUrl) {
+        info = [NSString stringWithFormat:@"authUrl: %@", self.options.authUrl];
+    }
+    else if (self.options.authCallback) {
+        info = [NSString stringWithFormat:@"authCallback: %@", self.options.authCallback];
+    }
+    else {
+        info = [NSString stringWithFormat:@"key: %@", self.options.key];
+    }
+    return [NSString stringWithFormat:@"%@ - \n\t %@;", [super description], info];
 }
 
 - (ARTAuth *)getAuth {
@@ -233,7 +247,7 @@
             return;
         }
         [_pingEventEmitter timed:[_pingEventEmitter once:cb] deadline:[ARTDefault realtimeRequestTimeout] onTimeout:^{
-            cb([ARTErrorInfo createWithCode:0 status:ARTStateConnectionFailed message:@"timed out"]);
+            cb([ARTErrorInfo createWithCode:ARTCodeErrorConnectionTimedOut status:ARTStateConnectionFailed message:@"timed out"]);
         }];
         [self.transport sendPing];
     }
@@ -268,11 +282,14 @@
 
 - (void)transitionSideEffects:(ARTConnectionStateChange *)stateChange {
     ARTStatus *status = nil;
+    // Do not increase the reference count (avoid retain cycles):
+    // i.e. the `unlessStateChangesBefore` is setting a timer and if the `ARTRealtime` instance is released before that timer, then it could create a leak.
+    __weak __typeof(self) weakSelf = self;
 
     switch (stateChange.current) {
         case ARTRealtimeConnecting: {
             [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
-                [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createWithCode:0 status:ARTStateConnectionFailed message:@"timed out"]];
+                [weakSelf onConnectionTimeOut];
             }];
 
             if (!_reachability) {
@@ -289,25 +306,25 @@
                 }
                 _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:resumeKey connectionSerial:connectionSerial];
                 _transport.delegate = self;
-                [_transport connect];
+                [self transportConnect];
             }
 
             if (self.connection.state != ARTRealtimeFailed && self.connection.state != ARTRealtimeClosed && self.connection.state != ARTRealtimeDisconnected) {
                 [_reachability listenForHost:[_transport host] callback:^(BOOL reachable) {
                     if (reachable) {
-                        switch (_connection.state) {
+                        switch ([[weakSelf connection] state]) {
                             case ARTRealtimeDisconnected:
                             case ARTRealtimeSuspended:
-                                [self transition:ARTRealtimeConnecting];
+                                [weakSelf transition:ARTRealtimeConnecting];
                             default:
                                 break;
                         }
                     } else {
-                        switch (_connection.state) {
+                        switch ([[weakSelf connection] state]) {
                             case ARTRealtimeConnecting:
                             case ARTRealtimeConnected: {
                                 ARTErrorInfo *unreachable = [ARTErrorInfo createWithCode:-1003 message:@"unreachable host"];
-                                [self transition:ARTRealtimeDisconnected withErrorInfo:unreachable];
+                                [weakSelf transition:ARTRealtimeDisconnected withErrorInfo:unreachable];
                                 break;
                             }
                             default:
@@ -322,7 +339,7 @@
         case ARTRealtimeClosing: {
             [_reachability off];
             [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
-                [self transition:ARTRealtimeClosed];
+                [weakSelf transition:ARTRealtimeClosed];
             }];
             [self.transport sendClose];
             break;
@@ -365,7 +382,7 @@
             [stateChange setRetryIn:self.options.disconnectedRetryTimeout];
 
             [self unlessStateChangesBefore:stateChange.retryIn do:^{
-                [self transition:ARTRealtimeConnecting];
+                [weakSelf transition:ARTRealtimeConnecting];
             }];
 
             break;
@@ -376,7 +393,7 @@
             _transport = nil;
             [stateChange setRetryIn:self.options.suspendedRetryTimeout];
             [self unlessStateChangesBefore:stateChange.retryIn do:^{
-                [self transition:ARTRealtimeConnecting];
+                [weakSelf transition:ARTRealtimeConnecting];
             }];
             [_authorizationEmitter emit:[NSNumber numberWithInt:ARTAuthorizationFailed] with:[ARTErrorInfo createWithCode:ARTStateAuthorizationFailed message:@"Connection has been suspended"]];
             break;
@@ -536,18 +553,49 @@
     }
 }
 
+- (void)onAuth {
+    [self.logger info:@"R:%p server has requested an authorise", self];
+    switch (self.connection.state) {
+        case ARTRealtimeConnecting:
+        case ARTRealtimeConnected:
+            [self transportReconnectWithRenewedToken];
+            break;
+        default:
+            [self.logger error:@"Invalid Realtime state: expected Connecting or Connected"];
+            break;
+    }
+}
+
 - (void)onError:(ARTProtocolMessage *)message {
-    // TODO work out which states this can be received in
     if (message.channel) {
         [self onChannelMessage:message];
     } else {
         ARTErrorInfo *error = message.error;
         if ([self shouldRenewToken:&error]) {
+            [self.transport close];
             [self transportReconnectWithRenewedToken];
             return;
         }
         [self.connection setId:nil];
         [self transition:ARTRealtimeFailed withErrorInfo:error];
+    }
+}
+
+- (void)onConnectionTimeOut {
+    ARTErrorInfo *error;
+    if (self.auth.authorizing && (self.options.authUrl || self.options.authCallback)) {
+        error = [ARTErrorInfo createWithCode:ARTCodeErrorAuthConfiguredProviderFailure status:ARTStateConnectionFailed message:@"timed out"];
+    }
+    else {
+        error = [ARTErrorInfo createWithCode:ARTCodeErrorConnectionTimedOut status:ARTStateConnectionFailed message:@"timed out"];
+    }
+    switch (self.connection.state) {
+        case ARTRealtimeConnected:
+            [self transition:ARTRealtimeConnected withErrorInfo:error];
+            break;
+        default:
+            [self transition:ARTRealtimeDisconnected withErrorInfo:error];
+            break;
     }
 }
 
@@ -564,15 +612,101 @@
 
 - (void)transportReconnectWithHost:(NSString *)host {
     [self.transport setHost:host];
-    [self.transport connect];
+    [self transportConnect];
 }
 
 - (void)transportReconnectWithRenewedToken {
     _renewingToken = true;
-    [_transport close];
-    _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:_transport.resumeKey connectionSerial:_transport.connectionSerial];
-    _transport.delegate = self;
-    [_transport connectForcingNewToken:true];
+    [self transportConnectForcingNewToken:true];
+}
+
+- (void)transportConnect {
+    [self transportConnectForcingNewToken:false];
+}
+
+- (void)transportConnectForcingNewToken:(BOOL)forceNewToken {
+    ARTClientOptions *options = [self.options copy];
+    if ([options isBasicAuth]) {
+        // Basic
+        [self.transport connectWithKey:options.key];
+    }
+    else {
+        // Token
+        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p connecting with token auth; authorising", self];
+
+        if (!forceNewToken && [self.auth tokenRemainsValid]) {
+            // Reuse token
+            [self.transport connectWithToken:self.auth.tokenDetails.token];
+        }
+        else {
+            // New Token
+            // Transport instance couldn't exist anymore when `authorize` completes or reaches time out.
+            __weak __typeof(self) weakSelf = self;
+
+            dispatch_block_t work = artDispatchScheduled([ARTDefault realtimeRequestTimeout], ^{
+                [weakSelf onConnectionTimeOut];
+            });
+
+            // Deactivate use of `ARTAuthDelegate`: `authorize` should complete without waiting for a CONNECTED state.
+            id<ARTAuthDelegate> delegate = self.auth.delegate;
+            self.auth.delegate = nil;
+            @try {
+                [self.auth authorize:nil options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+                    // Cancel scheduled work
+                    artDispatchCancel(work);
+                    // It's still valid?
+                    switch ([[weakSelf connection] state]) {
+                        case ARTRealtimeClosing:
+                        case ARTRealtimeClosed:
+                            return;
+                        default:
+                            break;
+                    }
+
+                    [[weakSelf getLogger] debug:__FILE__ line:__LINE__ message:@"R:%p authorised: %@ error: %@", weakSelf, tokenDetails, error];
+                    if (error) {
+                        [weakSelf handleTokenAuthError:error];
+                        return;
+                    }
+
+                    if (forceNewToken) {
+                        [_transport close];
+                        _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:_transport.resumeKey connectionSerial:_transport.connectionSerial];
+                        _transport.delegate = self;
+                    }
+                    [[weakSelf getTransport] connectWithToken:tokenDetails.token];
+                }];
+            }
+            @finally {
+                self.auth.delegate = delegate;
+            }
+        }
+    }
+}
+
+- (void)handleTokenAuthError:(NSError *)error {
+    [self.logger error:@"R:%p token auth failed with %@", self, error.description];
+    if (error.code == 40102 /*incompatible credentials*/) {
+        // RSA15c
+        [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error]];
+    }
+    else if (self.options.authUrl || self.options.authCallback) {
+        ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTCodeErrorAuthConfiguredProviderFailure status:ARTStateConnectionFailed message:error.description];
+        switch (self.connection.state) {
+            case ARTRealtimeConnected:
+                // RSA4c3
+                [self.connection setErrorReason:errorInfo];
+                break;
+            default:
+                // RSA4c
+                [self transition:ARTRealtimeDisconnected withErrorInfo:errorInfo];
+                break;
+        }
+    }
+    else {
+        // RSA4b
+        [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createFromNSError:error]];
+    }
 }
 
 - (void)onAck:(ARTProtocolMessage *)message {
@@ -584,7 +718,9 @@
 }
 
 - (void)onChannelMessage:(ARTProtocolMessage *)message {
-    // TODO work out which states this can be received in / error info?
+    if (message.channel == nil) {
+        return;
+    }
     ARTRealtimeChannel *channel = [self.channels get:message.channel];
     [channel onChannelMessage:message];
 }
@@ -886,6 +1022,9 @@
         case ARTProtocolMessageClosed:
             [self onClosed];
             break;
+        case ARTProtocolMessageAuth:
+            [self onAuth];
+            break;
         default:
             [self onChannelMessage:message];
             break;
@@ -924,7 +1063,7 @@
     if (self.connection.state == ARTRealtimeClosing) {
         [self transition:ARTRealtimeClosed];
     } else {
-        [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createWithNSError:error.error]];
+        [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
     }
 }
 
@@ -941,7 +1080,7 @@
         if (!_fallbacks && [error.url.host isEqualToString:[ARTDefault realtimeHost]]) {
             [self.rest internetIsUp:^void(BOOL isUp) {
                 _fallbacks = [[ARTFallback alloc] initWithOptions:[self getClientOptions]];
-                (_fallbacks != nil) ? [self reconnectWithFallback] : [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithNSError:error.error]];
+                (_fallbacks != nil) ? [self reconnectWithFallback] : [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
             }];
             return;
         } else if (_fallbacks && [self reconnectWithFallback]) {
@@ -952,7 +1091,7 @@
     if (error.type == ARTRealtimeTransportErrorTypeNoInternet) {
         [self transition:ARTRealtimeDisconnected];
     } else {
-        [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithNSError:error.error]];
+        [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
     }
 }
 
