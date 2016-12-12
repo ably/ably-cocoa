@@ -2430,8 +2430,7 @@ class RealtimeClientChannel: QuickSpec {
                 protoMsg.action = .Detach
                 protoMsg.error = ARTErrorInfo.createWithCode(123, message: "test error")
                 protoMsg.channel = "test"
-
-                client.realtimeTransport(client.transport, didReceiveMessage: protoMsg)
+                client.transport?.receive(protoMsg)
 
                 expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
                 expect(channel.errorReason).to(equal(protoMsg.error))

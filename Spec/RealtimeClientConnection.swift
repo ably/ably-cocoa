@@ -3547,8 +3547,7 @@ class RealtimeClientConnection: QuickSpec {
                 let protoMsg = ARTProtocolMessage()
                 protoMsg.action = .Disconnect
                 protoMsg.error = ARTErrorInfo.createWithCode(123, message: "test error")
-
-                client.realtimeTransport(client.transport, didReceiveMessage: protoMsg)
+                client.transport?.receive(protoMsg)
 
                 expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Disconnected))
                 expect(client.connection.errorReason).to(equal(protoMsg.error))
@@ -3781,7 +3780,7 @@ class RealtimeClientConnection: QuickSpec {
 
                 let authMessage = ARTProtocolMessage()
                 authMessage.action = .Auth
-                client.transport.receive(authMessage)
+                client.transport?.receive(authMessage)
 
                 client.close()
 
