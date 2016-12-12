@@ -714,9 +714,7 @@ class Auth : QuickSpec {
                         options.autoConnect = false
 
                         let client = ARTRealtime(options: options)
-                        defer {
-                            client.close()
-                        }
+                        defer { client.dispose(); client.close() }
                         client.setTransportClass(TestProxyTransport.self)
                         client.connect()
 

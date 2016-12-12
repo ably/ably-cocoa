@@ -306,7 +306,7 @@
                 }
                 _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:resumeKey connectionSerial:connectionSerial];
                 _transport.delegate = self;
-                [self transportConnect];
+                [self transportConnectForcingNewToken:_renewingToken];
             }
 
             if (self.connection.state != ARTRealtimeFailed && self.connection.state != ARTRealtimeClosed && self.connection.state != ARTRealtimeDisconnected) {
@@ -530,9 +530,10 @@
     [self.logger info:@"R:%p ARTRealtime disconnected", self];
     ARTErrorInfo *error = message.error;
     if ([self shouldRenewToken:&error]) {
-        [self transportReconnectWithRenewedToken];
         [self transition:ARTRealtimeDisconnected withErrorInfo:error];
         [self.connection setErrorReason:nil];
+        _renewingToken = true;
+        [self transition:ARTRealtimeConnecting withErrorInfo:nil];
         return;
     }
     [self transition:ARTRealtimeDisconnected withErrorInfo:error];
@@ -558,6 +559,7 @@
     switch (self.connection.state) {
         case ARTRealtimeConnecting:
         case ARTRealtimeConnected:
+            _resuming = true;
             [self transportReconnectWithRenewedToken];
             break;
         default:
@@ -612,16 +614,12 @@
 
 - (void)transportReconnectWithHost:(NSString *)host {
     [self.transport setHost:host];
-    [self transportConnect];
+    [self transportConnectForcingNewToken:false];
 }
 
 - (void)transportReconnectWithRenewedToken {
     _renewingToken = true;
     [self transportConnectForcingNewToken:true];
-}
-
-- (void)transportConnect {
-    [self transportConnectForcingNewToken:false];
 }
 
 - (void)transportConnectForcingNewToken:(BOOL)forceNewToken {
