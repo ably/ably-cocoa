@@ -7,17 +7,9 @@ env:
 before_install:
 install:
   # Install Scan
-  # Automatically switches to the travis formatter when running on Travis
-  - gem install scan -v 0.11.3
-  - gem uninstall xcpretty -aIx
-  - gem install xcpretty -v 0.2.2
-  # Remove old versions of CocoaPods
-  - gem uninstall cocoapods -aIx
-  # Install CocoaPods
-  - gem install cocoapods -v '1.0.1' --no-rdoc --no-ri --no-document --quiet
+  - gem install scan -v 0.14.2
+  # CocoaPods
   - pod install
-  # List of schemes
-  - xcodebuild -workspace ./Ably.xcworkspace -list
 script:
   # Run tests
   # Use `travis_wait` when a long running command or compile step regularly takes longer than 10 minutes without producing any output.
