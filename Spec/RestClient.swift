@@ -600,7 +600,7 @@ class RestClient: QuickSpec {
 
                     var capturedURLs = [String]()
                     testHTTPExecutor.afterRequest = { request, callback in
-                        capturedURLs.append(request.URL!.absoluteString)
+                        capturedURLs.append(request.URL!.absoluteString!)
                         if testHTTPExecutor.requests.count == 2 {
                             // Stop
                             testHTTPExecutor.http = nil
@@ -633,7 +633,7 @@ class RestClient: QuickSpec {
                     
                     var capturedURLs = [String]()
                     testHTTPExecutor.afterRequest = { request, callback in
-                        capturedURLs.append(request.URL!.absoluteString)
+                        capturedURLs.append(request.URL!.absoluteString!)
                         if testHTTPExecutor.requests.count == 2 {
                             // Stop
                             testHTTPExecutor.http = nil
@@ -666,7 +666,7 @@ class RestClient: QuickSpec {
                     
                     var capturedURLs = [String]()
                     testHTTPExecutor.afterRequest = { request, callback in
-                        capturedURLs.append(request.URL!.absoluteString)
+                        capturedURLs.append(request.URL!.absoluteString!)
                     }
                     
                     waitUntil(timeout: testTimeout) { done in
@@ -690,7 +690,7 @@ class RestClient: QuickSpec {
                     
                     var capturedURLs = [String]()
                     testHTTPExecutor.afterRequest = { request, callback in
-                        capturedURLs.append(request.URL!.absoluteString)
+                        capturedURLs.append(request.URL!.absoluteString!)
                         if testHTTPExecutor.requests.count == 2 {
                             // Stop
                             testHTTPExecutor.http = nil
