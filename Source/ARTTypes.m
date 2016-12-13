@@ -115,6 +115,33 @@ NSString *ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event) {
     }
 }
 
+#pragma mark - ARTChannelStateChange
+
+@implementation ARTChannelStateChange
+
+- (instancetype)initWithCurrent:(ARTRealtimeChannelState)current previous:(ARTRealtimeChannelState)previous reason:(ARTErrorInfo *)reason {
+    return [self initWithCurrent:current previous:previous reason:reason resumed:NO];
+}
+
+- (instancetype)initWithCurrent:(ARTRealtimeChannelState)current previous:(ARTRealtimeChannelState)previous reason:(ARTErrorInfo *)reason resumed:(BOOL)resumed {
+    self = [self init];
+    if (self) {
+        _current = current;
+        _previous = previous;
+        _reason = reason;
+        _resumed = resumed;
+    }
+    return self;
+}
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"%@ - \n\t current: %@; \n\t previous: %@; \n\t reason: %@; \n\t resumed: %d; \n", [super description], ARTRealtimeChannelStateToStr(_current), ARTRealtimeChannelStateToStr(_previous), _reason, _resumed];
+}
+
+@end
+
+#pragma mark - ARTJsonCompatible
+
 @implementation NSString (ARTJsonCompatible)
 
 - (NSDictionary *)toJSON:(NSError *__art_nullable *__art_nullable)error {

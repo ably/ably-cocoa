@@ -147,6 +147,28 @@ NSString *generateNonce();
 
 @end
 
+#pragma mark - ARTChannelStateChange
+
+@interface ARTChannelStateChange : NSObject
+
+- (instancetype)initWithCurrent:(ARTRealtimeChannelState)current
+                       previous:(ARTRealtimeChannelState)previous
+                         reason:(ARTErrorInfo *__art_nullable)reason;
+
+- (instancetype)initWithCurrent:(ARTRealtimeChannelState)current
+                       previous:(ARTRealtimeChannelState)previous
+                         reason:(ARTErrorInfo *__art_nullable)reason
+                        resumed:(BOOL)resumed;
+
+@property (readonly, nonatomic) ARTRealtimeChannelState current;
+@property (readonly, nonatomic) ARTRealtimeChannelState previous;
+@property (readonly, nonatomic, art_nullable) ARTErrorInfo *reason;
+@property (readonly, nonatomic) BOOL resumed;
+
+@end
+
+#pragma mark - ARTJsonCompatible
+
 @protocol ARTJsonCompatible <NSObject>
 - (NSDictionary *__art_nullable)toJSON:(NSError *__art_nullable *__art_nullable)error;
 @end
