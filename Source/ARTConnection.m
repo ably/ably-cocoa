@@ -75,7 +75,7 @@
     }
 }
 
-- (__GENERIC(ARTEventListener, ARTConnectionStateChange *) *)on:(ARTRealtimeConnectionState)event callback:(void (^)(ARTConnectionStateChange *))cb {
+- (__GENERIC(ARTEventListener, ARTConnectionStateChange *) *)on:(ARTRealtimeConnectionEvent)event callback:(void (^)(ARTConnectionStateChange *))cb {
     return [_eventEmitter on:[NSNumber numberWithInt:event] callback:cb];
 }
 
@@ -83,7 +83,7 @@
     return [_eventEmitter on:cb];
 }
 
-- (__GENERIC(ARTEventListener, ARTConnectionStateChange *) *)once:(ARTRealtimeConnectionState)event callback:(void (^)(ARTConnectionStateChange *))cb {
+- (__GENERIC(ARTEventListener, ARTConnectionStateChange *) *)once:(ARTRealtimeConnectionEvent)event callback:(void (^)(ARTConnectionStateChange *))cb {
     return [_eventEmitter once:[NSNumber numberWithInt:event] callback:cb];
 }
 
@@ -94,7 +94,7 @@
 - (void)off {
     [_eventEmitter off];
 }
-- (void)off:(ARTRealtimeConnectionState)event listener:listener {
+- (void)off:(ARTRealtimeConnectionEvent)event listener:listener {
     [_eventEmitter off:[NSNumber numberWithInt:event] listener:listener];
 }
 
@@ -102,7 +102,7 @@
     [_eventEmitter off:listener];
 }
 
-- (void)emit:(ARTRealtimeConnectionState)event with:(ARTConnectionStateChange *)data {
+- (void)emit:(ARTRealtimeConnectionEvent)event with:(ARTConnectionStateChange *)data {
     [_eventEmitter emit:[NSNumber numberWithInt:event] with:data];
 }
 
