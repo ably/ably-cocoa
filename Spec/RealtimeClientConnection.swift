@@ -490,6 +490,43 @@ class RealtimeClientConnection: QuickSpec {
 
                     expect(errorInfo).toNot(beNil())
                 }
+
+                // RTN4f
+                it("any state change triggered by a ProtocolMessage that contains an Error member should populate the Reason property") {
+                    let options = AblyTests.commonAppSetup()
+                    options.useTokenAuth = true
+                    let client = AblyTests.newRealtime(options)
+                    defer { client.dispose(); client.close() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connected) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+                            done()
+                        }
+                    }
+
+                    guard let transport = client.transport as? TestProxyTransport else {
+                        fail("TestProxyTransport is not set"); return
+                    }
+                    guard let originalConnectedMessage = transport.protocolMessagesReceived.filter({ $0.action == .Connected }).first else {
+                        fail("First CONNECTED message not received"); return
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Update) { stateChange in
+                            guard let error = stateChange?.reason else {
+                                fail("Reason error is nil"); done(); return
+                            }
+                            expect(error.code) == 1234
+                            expect(error.message) == "fabricated error"
+                            done()
+                        }
+
+                        let connectedMessageWithError = originalConnectedMessage
+                        connectedMessageWithError.error = ARTErrorInfo.createWithCode(1234, message: "fabricated error")
+                        client.transport.receive(connectedMessageWithError)
+                    }
+                }
             }
 
             class TotalReach {
