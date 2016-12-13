@@ -1055,7 +1055,13 @@ extension ARTAuth {
 
 extension ARTRealtimeConnectionState : CustomStringConvertible {
     public var description : String {
-        return ARTRealtimeStateToStr(self)
+        return ARTRealtimeConnectionStateToStr(self)
+    }
+}
+
+extension ARTRealtimeConnectionEvent : CustomStringConvertible {
+    public var description : String {
+        return ARTRealtimeConnectionEventToStr(self)
     }
 }
 
@@ -1067,20 +1073,13 @@ extension ARTProtocolMessageAction : CustomStringConvertible {
 
 extension ARTRealtimeChannelState : CustomStringConvertible {
     public var description : String {
-        switch self {
-        case .Initialized:
-            return "Initialized"
-        case .Attaching:
-            return "Attaching"
-        case .Attached:
-            return "Attached"
-        case .Detaching:
-            return "Detaching"
-        case .Detached:
-            return "Detached"
-        case .Failed:
-            return "Failed"
-        }
+        return ARTRealtimeChannelStateToStr(self)
+    }
+}
+
+extension ARTChannelEvent : CustomStringConvertible {
+    public var description : String {
+        return ARTChannelEventToStr(self)
     }
 }
 

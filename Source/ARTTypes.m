@@ -62,12 +62,17 @@ NSString *generateNonce() {
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%@ - \n\t current: %@; \n\t previous: %@; \n\t reason: %@; \n\t retryIn: %f; \n", [super description], ARTRealtimeStateToStr(_current), ARTRealtimeStateToStr(_previous), _reason, _retryIn];
+    return [NSString stringWithFormat:@"%@ - \n\t current: %@; \n\t previous: %@; \n\t reason: %@; \n\t retryIn: %f; \n", [super description], ARTRealtimeConnectionStateToStr(_current), ARTRealtimeConnectionStateToStr(_previous), _reason, _retryIn];
 }
 
-NSString *ARTRealtimeStateToStr(ARTRealtimeConnectionState state) {
-    switch(state)
-    {
+- (void)setRetryIn:(NSTimeInterval)retryIn {
+    _retryIn = retryIn;
+}
+
+@end
+
+NSString *ARTRealtimeConnectionStateToStr(ARTRealtimeConnectionState state) {
+    switch(state) {
         case ARTRealtimeInitialized:
             return @"Initialized"; //0
         case ARTRealtimeConnecting:
@@ -84,16 +89,31 @@ NSString *ARTRealtimeStateToStr(ARTRealtimeConnectionState state) {
             return @"Closed"; //6
         case ARTRealtimeFailed:
             return @"Failed"; //7
-        default:
-            return [NSString stringWithFormat: @"unknown connection state %d", (int)state];
     }
 }
 
-- (void)setRetryIn:(NSTimeInterval)retryIn {
-    _retryIn = retryIn;
+NSString *ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event) {
+    switch(event) {
+        case ARTRealtimeConnectionEventInitialized:
+            return @"Initialized"; //0
+        case ARTRealtimeConnectionEventConnecting:
+            return @"Connecting"; //1
+        case ARTRealtimeConnectionEventConnected:
+            return @"Connected"; //2
+        case ARTRealtimeConnectionEventDisconnected:
+            return @"Disconnected"; //3
+        case ARTRealtimeConnectionEventSuspended:
+            return @"Suspended"; //4
+        case ARTRealtimeConnectionEventClosing:
+            return @"Closing"; //5
+        case ARTRealtimeConnectionEventClosed:
+            return @"Closed"; //6
+        case ARTRealtimeConnectionEventFailed:
+            return @"Failed"; //7
+        case ARTRealtimeConnectionEventUpdate:
+            return @"Update"; //8
+    }
 }
-
-@end
 
 @implementation NSString (ARTJsonCompatible)
 
@@ -136,3 +156,39 @@ NSString *ARTRealtimeStateToStr(ARTRealtimeConnectionState state) {
 }
 
 @end
+
+NSString *ARTRealtimeChannelStateToStr(ARTRealtimeChannelState state) {
+    switch(state) {
+        case ARTRealtimeChannelInitialized:
+            return @"Initialized"; //0
+        case ARTRealtimeChannelAttaching:
+            return @"Attaching"; //1
+        case ARTRealtimeChannelAttached:
+            return @"Attached"; //2
+        case ARTRealtimeChannelDetaching:
+            return @"Detaching"; //3
+        case ARTRealtimeChannelDetached:
+            return @"Detached"; //4
+        case ARTRealtimeChannelFailed:
+            return @"Failed"; //5
+    }
+}
+
+NSString *ARTChannelEventToStr(ARTChannelEvent event) {
+    switch(event) {
+        case ARTChannelEventInitialized:
+            return @"Initialized"; //0
+        case ARTChannelEventAttaching:
+            return @"Attaching"; //1
+        case ARTChannelEventAttached:
+            return @"Attached"; //2
+        case ARTChannelEventDetaching:
+            return @"Detaching"; //3
+        case ARTChannelEventDetached:
+            return @"Detached"; //4
+        case ARTChannelEventFailed:
+            return @"Failed"; //5
+        case ARTChannelEventUpdate:
+            return @"Update"; //6
+    }
+}

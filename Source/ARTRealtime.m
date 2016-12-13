@@ -235,7 +235,7 @@
     case ARTRealtimeClosing:
     case ARTRealtimeClosed:
     case ARTRealtimeFailed:
-        cb([ARTErrorInfo createWithCode:0 status:ARTStateConnectionFailed message:[NSString stringWithFormat:@"Can't ping a %@ connection", ARTRealtimeStateToStr(self.connection.state)]]);
+        cb([ARTErrorInfo createWithCode:0 status:ARTStateConnectionFailed message:[NSString stringWithFormat:@"Can't ping a %@ connection", ARTRealtimeConnectionStateToStr(self.connection.state)]]);
         return;
     case ARTRealtimeConnecting:
     case ARTRealtimeDisconnected:
@@ -266,7 +266,7 @@
 }
 
 - (void)transition:(ARTRealtimeConnectionState)state withErrorInfo:(ARTErrorInfo *)errorInfo {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p transition to %@ requested", self, ARTRealtimeStateToStr(state)];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p transition to %@ requested", self, ARTRealtimeConnectionStateToStr(state)];
 
     ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:state previous:self.connection.state reason:errorInfo retryIn:0];
     [self.connection setState:state];
@@ -468,7 +468,7 @@
 - (void)onHeartbeat {
     [self.logger verbose:@"R:%p ARTRealtime heartbeat received", self];
     if(self.connection.state != ARTRealtimeConnected) {
-        NSString *msg = [NSString stringWithFormat:@"ARTRealtime received a ping when in state %@", ARTRealtimeStateToStr(self.connection.state)];
+        NSString *msg = [NSString stringWithFormat:@"ARTRealtime received a ping when in state %@", ARTRealtimeConnectionStateToStr(self.connection.state)];
         [self.logger warn:@"R:%p %@", self, msg];
     }
     [_pingEventEmitter emit:[NSNull null] with:nil];
