@@ -304,6 +304,41 @@ class RealtimeClientConnection: QuickSpec {
                     expect(events[7].rawValue).to(equal(ARTRealtimeConnectionState.Failed.rawValue), description: "Should be FAILED state")
                 }
 
+                // RTN4h
+                it("should never emit a ConnectionState event for a state equal to the previous state") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connected) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+                            done()
+                        }
+                    }
+
+                    client.connection.once(.Connected) { stateChange in
+                        fail("Should not emit a Connected state")
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Update) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ConnectionStateChange is nil"); done(); return
+                            }
+                            expect(stateChange.reason).to(beNil())
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+                            expect(stateChange.current).to(equal(ARTRealtimeConnectionState.Connected))
+                            expect(stateChange.current).to(equal(stateChange.previous))
+                            done()
+                        }
+
+                        let authMessage = ARTProtocolMessage()
+                        authMessage.action = .Auth
+                        client.transport.receive(authMessage)
+                    }
+                }
+
                 // RTN4b
                 it("should emit states on a new connection") {
                     let options = AblyTests.commonAppSetup()
