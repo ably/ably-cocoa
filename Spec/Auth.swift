@@ -409,7 +409,7 @@ class Auth : QuickSpec {
                             // Inject AUTH
                             let authMessage = ARTProtocolMessage()
                             authMessage.action = ARTProtocolMessageAction.Auth
-                            realtime.transport.receive(authMessage)
+                            realtime.transport?.receive(authMessage)
 
                             expect(realtime.connection.errorReason).toEventuallyNot(beNil(), timeout: testTimeout)
                             guard let errorInfo = realtime.connection.errorReason else {
@@ -482,7 +482,7 @@ class Auth : QuickSpec {
                             // Inject AUTH
                             let authMessage = ARTProtocolMessage()
                             authMessage.action = ARTProtocolMessageAction.Auth
-                            realtime.transport.receive(authMessage)
+                            realtime.transport?.receive(authMessage)
 
                             expect(realtime.connection.errorReason).toEventuallyNot(beNil(), timeout: testTimeout)
                             guard let errorInfo = realtime.connection.errorReason else {
@@ -573,7 +573,7 @@ class Auth : QuickSpec {
                             // Inject AUTH
                             let authMessage = ARTProtocolMessage()
                             authMessage.action = ARTProtocolMessageAction.Auth
-                            realtime.transport.receive(authMessage)
+                            realtime.transport?.receive(authMessage)
 
                             expect(realtime.connection.errorReason).toEventuallyNot(beNil(), timeout: testTimeout)
                             guard let errorInfo = realtime.connection.errorReason else {
@@ -656,7 +656,7 @@ class Auth : QuickSpec {
                             // Inject AUTH
                             let authMessage = ARTProtocolMessage()
                             authMessage.action = ARTProtocolMessageAction.Auth
-                            realtime.transport.receive(authMessage)
+                            realtime.transport?.receive(authMessage)
 
                             expect(realtime.connection.errorReason).toEventuallyNot(beNil(), timeout: testTimeout)
                             guard let errorInfo = realtime.connection.errorReason else {
@@ -714,9 +714,7 @@ class Auth : QuickSpec {
                         options.autoConnect = false
 
                         let client = ARTRealtime(options: options)
-                        defer {
-                            client.close()
-                        }
+                        defer { client.dispose(); client.close() }
                         client.setTransportClass(TestProxyTransport.self)
                         client.connect()
 

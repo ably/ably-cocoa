@@ -45,7 +45,7 @@ ART_ASSUME_NONNULL_BEGIN
 @interface ARTRealtime ()
 
 @property (readwrite, strong, nonatomic) ARTRest *rest;
-@property (readonly, getter=getTransport) id<ARTRealtimeTransport> transport;
+@property (readonly, getter=getTransport, art_nullable) id<ARTRealtimeTransport> transport;
 @property (readonly, strong, nonatomic, art_nonnull) id<ARTReachability> reachability;
 @property (readonly, getter=getLogger) ARTLog *logger;
 
