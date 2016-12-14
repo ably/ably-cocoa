@@ -1695,6 +1695,31 @@ class RealtimeClientChannel: QuickSpec {
                         }
                     }
 
+                    // RTL6c3
+                    it("implicitly attaches the channel; if the channel is in or moves to the DETACHED state before the operation succeeds, it should result in an error") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("test")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.Initialized))
+                            channel.once(.Attaching) { stateChange in
+                                expect(stateChange?.reason).to(beNil())
+                                channel.detach()
+                                partialDone()
+                            }
+                            channel.publish(nil, data: "message") { error in
+                                guard let error = error else {
+                                    fail("Error is nil"); done(); return
+                                }
+                                expect(error.message).to(contain("channel has detached"))
+                                expect(channel.state).to(equal(ARTRealtimeChannelState.Detaching))
+                                partialDone()
+                            }
+                        }
+                    }
+
                     // RTL6c4
                     context("will result in an error if the") {
                         let options = AblyTests.commonAppSetup()
