@@ -1820,6 +1820,18 @@ class RealtimeClientChannel: QuickSpec {
                                 publish(done)
                             }
                         }
+
+                        it("channel is FAILED") {
+                            client.connect()
+                            channel.attach()
+                            expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+                            let protocolError = AblyTests.newErrorProtocolMessage()
+                            channel.onError(protocolError)
+                            expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Failed), timeout: testTimeout)
+                            waitUntil(timeout: testTimeout) { done in
+                                publish(done)
+                            }
+                        }
                     }
                 }
 
