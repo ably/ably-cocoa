@@ -613,53 +613,58 @@ class RealtimeClientChannel: QuickSpec {
                     }
                 }
 
-                context("results in an error if the channel state is") {
-                    // RTL4e
-                    it("DETACHING") {
-                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
-                        defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("test")
+                // RTL4e
+                it("if the user does not have sufficient permissions to attach, then the channel will transition to FAILED and set the errorReason") {
+                    let options = AblyTests.commonAppSetup()
+                    options.token = getTestToken(key: options.key!, capability: "{\"restricted\":[\"*\"]}")
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("test")
 
-                        channel.attach()
-                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
-                        channel.detach()
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.Detaching))
-
-                        waitUntil(timeout: testTimeout) { done in
-                            channel.attach { error in
-                                expect(error).toNot(beNil())
-                                done()
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        channel.once(.Failed) { stateChange in
+                            expect(stateChange?.reason?.code) == 40160
+                            partialDone()
+                        }
+                        channel.attach { error in
+                            guard let error = error else {
+                                fail("Error is nil"); partialDone(); return
                             }
+                            expect(error.code) == 40160
+                            partialDone()
                         }
                     }
 
-                    // RTL4g
-                    it("FAILED") {
-                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
-                        defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("test")
-
-                        channel.attach()
-                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
-
-                        let errorMsg = AblyTests.newErrorProtocolMessage()
-                        errorMsg.channel = channel.name
-                        client.onError(errorMsg)
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
-                        expect(channel.errorReason).toNot(beNil())
-
-                        waitUntil(timeout: testTimeout) { done in
-                            channel.attach { error in
-                                expect(error).to(beNil())
-                                done()
-                            }
-                        }
-
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
-                        expect(channel.errorReason).to(beNil())
-                    }
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
+                    expect(channel.errorReason?.code) == 40160
                 }
 
+                // RTL4g
+                it("if the channel is in the FAILED state, the attach request sets its errorReason to null, and proceeds with a channel attach") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("test")
+
+                    channel.attach()
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+
+                    let errorMsg = AblyTests.newErrorProtocolMessage()
+                    errorMsg.channel = channel.name
+                    client.onError(errorMsg)
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
+                    expect(channel.errorReason).toNot(beNil())
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+                    expect(channel.errorReason).to(beNil())
+                }
 
                 // RTL4b
                 context("results in an error if the connection state is") {
@@ -844,6 +849,7 @@ class RealtimeClientChannel: QuickSpec {
                         }
                     }
 
+                    expect(channel.errorReason!.code).to(equal(40160))
                     expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
                 }
 
