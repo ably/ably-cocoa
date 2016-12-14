@@ -1085,7 +1085,7 @@ class RealtimeClientChannel: QuickSpec {
 
             describe("detach") {
                 // RTL5a
-                it("if state is INITIALISED, DETACHED or DETACHING nothing is done") {
+                it("if state is INITIALIZED or DETACHED nothing is done") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
@@ -1105,13 +1105,6 @@ class RealtimeClientChannel: QuickSpec {
                         expect(errorInfo).to(beNil())
                         expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
                     }
-
-                    expect(channel.state).to(equal(ARTRealtimeChannelState.Detaching))
-                    channel.detach { errorInfo in
-                        expect(errorInfo).to(beNil())
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
-                    }
-                    expect(channel.state).to(equal(ARTRealtimeChannelState.Detaching))
 
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
 
