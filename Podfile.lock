@@ -1,27 +1,27 @@
 PODS:
   - Aspects (1.4.1)
   - msgpack (0.1.8)
-  - Nimble (4.0.0)
-  - Quick (0.9.1)
+  - Nimble (4.1.0)
+  - Quick (0.9.3)
   - SocketRocket (0.5.1)
-  - SwiftyJSON (2.3.1)
+  - SwiftyJSON (2.4.0)
 
 DEPENDENCIES:
   - Aspects
   - msgpack (= 0.1.8)
-  - Nimble (= 4.0.0)
-  - Quick (= 0.9.1)
+  - Nimble (= 4.1.0)
+  - Quick (= 0.9.3)
   - SocketRocket (= 0.5.1)
-  - SwiftyJSON (= 2.3.1)
+  - SwiftyJSON (= 2.4.0)
 
 SPEC CHECKSUMS:
   Aspects: 7595ba96a6727a58ebcbfc954497fc5d2fdde546
   msgpack: 97491d2ea799408f4694f2c7d7fd79baf77853dd
-  Nimble: 72bcc3e2f02242e6bfaaf8d9412ca7bfe3d8b417
-  Quick: a5221fc21788b6aeda934805e68b061839bc3165
+  Nimble: 97a0a4cae5124c117115634b2d055d8c97d0af19
+  Quick: 13a2a2b19a5d8e3ed4fd0c36ee46597fd77ebf71
   SocketRocket: d57c7159b83c3c6655745cd15302aa24b6bae531
-  SwiftyJSON: 592b53bee5ef3dd9b3bebc6b9cb7ee35426ae8c3
+  SwiftyJSON: 96918c1bf505efa50c4f72957018dd3452090c9c
 
-PODFILE CHECKSUM: b074dd946a798533a598a73f0cec811fafa201d9
+PODFILE CHECKSUM: c59fef6e348f90fbaa529d13373c2958f7b9b642
 
-COCOAPODS: 1.0.1
+COCOAPODS: 1.1.1
