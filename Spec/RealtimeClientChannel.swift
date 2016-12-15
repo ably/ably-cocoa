@@ -2593,15 +2593,13 @@ class RealtimeClientChannel: QuickSpec {
                         errorProtocolMessage.action = .Error
                         errorProtocolMessage.channel = "foo"
 
-                        let partialDone = AblyTests.splitDone(2, done: done)
-
                         channel.once(.Failed) { stateChange in
                             guard let error = stateChange?.reason else {
-                                fail("Reason error is nil"); partialDone(); return
+                                fail("Reason error is nil"); done(); return
                             }
                             expect(error).to(beIdenticalTo(errorProtocolMessage.error))
                             expect(channel.errorReason).to(beIdenticalTo(error))
-                            partialDone()
+                            done()
                         }
 
                         client.transport?.receive(errorProtocolMessage)
