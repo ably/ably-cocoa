@@ -430,6 +430,10 @@ class RealtimeClient: QuickSpec {
                         let partialDone = AblyTests.splitDone(2, done: done)
 
                         client.connection.once(.Connected) { stateChange in
+                            fail("Should not receive a CONNECTED event because the connection is already connected"); partialDone(); return
+                        }
+
+                        client.connection.once(.Update) { stateChange in
                             guard let stateChange = stateChange else {
                                 fail("ConnectionStateChange is nil"); partialDone(); return
                             }
@@ -460,6 +464,8 @@ class RealtimeClient: QuickSpec {
                             expect(tokenDetails.token).toNot(equal(testToken))
                             partialDone()
                         }
+
+                        expect(client.connection.errorReason).to(beNil())
                     }
 
                     expect(client.auth.tokenDetails?.token).toNot(equal(testToken))
@@ -498,7 +504,7 @@ class RealtimeClient: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
 
-                        client.connection.once(.Connected) { stateChange in
+                        client.connection.once(.Update) { stateChange in
                             guard let stateChange = stateChange else {
                                 fail("ConnectionStateChange is nil"); partialDone(); return
                             }
@@ -507,6 +513,9 @@ class RealtimeClient: QuickSpec {
                             partialDone()
                         }
 
+                        client.connection.once(.Connected) { _ in
+                            fail("Already connected")
+                        }
                         client.connection.once(.Disconnected) { _ in
                             fail("Lost connectivity")
                         }
@@ -552,6 +561,8 @@ class RealtimeClient: QuickSpec {
                         }
                         channel.attach()
                     }
+
+                    expect(client.auth.tokenDetails?.token).toNot(equal(testToken))
                 }
 
                 // RTC8a1 - part 3

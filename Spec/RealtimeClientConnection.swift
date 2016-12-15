@@ -304,6 +304,41 @@ class RealtimeClientConnection: QuickSpec {
                     expect(events[7].rawValue).to(equal(ARTRealtimeConnectionState.Failed.rawValue), description: "Should be FAILED state")
                 }
 
+                // RTN4h
+                it("should never emit a ConnectionState event for a state equal to the previous state") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connected) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+                            done()
+                        }
+                    }
+
+                    client.connection.once(.Connected) { stateChange in
+                        fail("Should not emit a Connected state")
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Update) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ConnectionStateChange is nil"); done(); return
+                            }
+                            expect(stateChange.reason).to(beNil())
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+                            expect(stateChange.current).to(equal(ARTRealtimeConnectionState.Connected))
+                            expect(stateChange.current).to(equal(stateChange.previous))
+                            done()
+                        }
+
+                        let authMessage = ARTProtocolMessage()
+                        authMessage.action = .Auth
+                        client.transport.receive(authMessage)
+                    }
+                }
+
                 // RTN4b
                 it("should emit states on a new connection") {
                     let options = AblyTests.commonAppSetup()
@@ -454,6 +489,43 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     expect(errorInfo).toNot(beNil())
+                }
+
+                // RTN4f
+                it("any state change triggered by a ProtocolMessage that contains an Error member should populate the Reason property") {
+                    let options = AblyTests.commonAppSetup()
+                    options.useTokenAuth = true
+                    let client = AblyTests.newRealtime(options)
+                    defer { client.dispose(); client.close() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connected) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+                            done()
+                        }
+                    }
+
+                    guard let transport = client.transport as? TestProxyTransport else {
+                        fail("TestProxyTransport is not set"); return
+                    }
+                    guard let originalConnectedMessage = transport.protocolMessagesReceived.filter({ $0.action == .Connected }).first else {
+                        fail("First CONNECTED message not received"); return
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Update) { stateChange in
+                            guard let error = stateChange?.reason else {
+                                fail("Reason error is nil"); done(); return
+                            }
+                            expect(error.code) == 1234
+                            expect(error.message) == "fabricated error"
+                            done()
+                        }
+
+                        let connectedMessageWithError = originalConnectedMessage
+                        connectedMessageWithError.error = ARTErrorInfo.createWithCode(1234, message: "fabricated error")
+                        client.transport.receive(connectedMessageWithError)
+                    }
                 }
             }
 
@@ -3531,6 +3603,96 @@ class RealtimeClientConnection: QuickSpec {
                     channel.off()
                 }
 
+            }
+
+            // RTN24
+            it("the client may receive a CONNECTED ProtocolMessage from Ably at any point and should emit an UPDATE event") {
+                let options = AblyTests.commonAppSetup()
+                options.authCallback = { _, completion in
+                    completion(getTestToken(key: options.key!, ttl: 35), nil)
+                }
+                let client = ARTRealtime(options: options)
+                defer { client.dispose(); client.close() }
+
+                waitUntil(timeout: testTimeout) { done in
+                    client.connection.once(.Connected) { stateChange in
+                        expect(stateChange?.reason).to(beNil())
+                        done()
+                    }
+                }
+
+                expect(client.auth.clientId).to(beNil())
+
+                client.options.authCallback = { _, completion in
+                    completion(getTestToken(key: options.key!, ttl: 5, clientId: "tester"), nil)
+                }
+
+                client.connection.once(.Connected) { stateChange in
+                    fail("Should not emit a Connected state")
+                }
+
+                waitUntil(timeout: 40) { done in
+                    client.connection.once(.Update) { stateChange in
+                        guard let stateChange = stateChange else {
+                            fail("ConnectionStateChange is nil"); done(); return
+                        }
+                        expect(stateChange.reason).to(beNil())
+                        expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+                        expect(stateChange.current).to(equal(ARTRealtimeConnectionState.Connected))
+                        expect(stateChange.current).to(equal(stateChange.previous))
+                        done()
+                    }
+                }
+
+                expect(client.auth.clientId).to(equal("tester"))
+            }
+
+            // RTN24
+            it("should set the Connection reason attribute based on the Error member of the CONNECTED ProtocolMessage") {
+                let options = AblyTests.commonAppSetup()
+                options.useTokenAuth = true
+                let client = AblyTests.newRealtime(options)
+                defer { client.dispose(); client.close() }
+
+                waitUntil(timeout: testTimeout) { done in
+                    client.connection.once(.Connected) { stateChange in
+                        expect(stateChange?.reason).to(beNil())
+                        done()
+                    }
+                }
+
+                guard let transport = client.transport as? TestProxyTransport else {
+                    fail("TestProxyTransport is not set"); return
+                }
+                guard let originalConnectedMessage = transport.protocolMessagesReceived.filter({ $0.action == .Connected }).first else {
+                    fail("First CONNECTED message not received"); return
+                }
+
+                client.connection.once(.Connected) { stateChange in
+                    fail("Should not emit a Connected state")
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    client.connection.once(.Update) { stateChange in
+                        guard let stateChange = stateChange else {
+                            fail("ConnectionStateChange is nil"); done(); return
+                        }
+                        guard let error = stateChange.reason else {
+                            fail("Reason error is nil"); done(); return
+                        }
+                        expect(error.code) == 1234
+                        expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
+                        expect(stateChange.current).to(equal(ARTRealtimeConnectionState.Connected))
+                        expect(stateChange.current).to(equal(stateChange.previous))
+                        done()
+                    }
+
+                    let connectedMessageWithError = originalConnectedMessage
+                    connectedMessageWithError.error = ARTErrorInfo.createWithCode(1234, message: "fabricated error")
+                    client.transport.receive(connectedMessageWithError)
+                }
+
+                expect(client.connection.errorReason).to(beNil())
             }
 
             // https://github.com/ably/ably-ios/issues/454

@@ -23,7 +23,7 @@
         }];
         [self.connection off];
 
-        [self.connection once:ARTRealtimeClosed callback:^(ARTConnectionStateChange *stateChange) {
+        [self.connection once:ARTRealtimeConnectionEventClosed callback:^(ARTConnectionStateChange *stateChange) {
             [expectation fulfill];
         }];
 

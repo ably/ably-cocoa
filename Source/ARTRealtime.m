@@ -235,7 +235,7 @@
     case ARTRealtimeClosing:
     case ARTRealtimeClosed:
     case ARTRealtimeFailed:
-        cb([ARTErrorInfo createWithCode:0 status:ARTStateConnectionFailed message:[NSString stringWithFormat:@"Can't ping a %@ connection", ARTRealtimeStateToStr(self.connection.state)]]);
+        cb([ARTErrorInfo createWithCode:0 status:ARTStateConnectionFailed message:[NSString stringWithFormat:@"Can't ping a %@ connection", ARTRealtimeConnectionStateToStr(self.connection.state)]]);
         return;
     case ARTRealtimeConnecting:
     case ARTRealtimeDisconnected:
@@ -266,7 +266,7 @@
 }
 
 - (void)transition:(ARTRealtimeConnectionState)state withErrorInfo:(ARTErrorInfo *)errorInfo {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p transition to %@ requested", self, ARTRealtimeStateToStr(state)];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p transition to %@ requested", self, ARTRealtimeConnectionStateToStr(state)];
 
     ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:state previous:self.connection.state reason:errorInfo retryIn:0];
     [self.connection setState:state];
@@ -275,12 +275,25 @@
         [self.connection setErrorReason:errorInfo];
     }
 
-    [self transitionSideEffects:stateChange];
+    [self transitionSideEffects:stateChange usingEvent:(ARTRealtimeConnectionEvent)stateChange.current];
 
     [_internalEventEmitter emit:[NSNumber numberWithInteger:state] with:stateChange];
 }
 
-- (void)transitionSideEffects:(ARTConnectionStateChange *)stateChange {
+- (void)updateWithErrorInfo:(art_nullable ARTErrorInfo *)errorInfo {
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p update requested", self];
+
+    if (self.connection.state != ARTRealtimeConnected) {
+        [self.logger warn:@"R:%p update ignored because connection is not connected", self];
+        return;
+    }
+
+    ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:self.connection.state previous:self.connection.state reason:errorInfo retryIn:0];
+
+    [self transitionSideEffects:stateChange usingEvent:ARTRealtimeConnectionEventUpdate];
+}
+
+- (void)transitionSideEffects:(ARTConnectionStateChange *)stateChange usingEvent:(ARTRealtimeConnectionEvent)event {
     ARTStatus *status = nil;
     // Do not increase the reference count (avoid retain cycles):
     // i.e. the `unlessStateChangesBefore` is setting a timer and if the `ARTRealtime` instance is released before that timer, then it could create a leak.
@@ -447,7 +460,7 @@
         }
     }
 
-    [self.connection emit:stateChange.current with:stateChange];
+    [self.connection emit:event with:stateChange];
 }
 
 - (void)unlessStateChangesBefore:(NSTimeInterval)deadline do:(void(^)())callback {
@@ -468,7 +481,7 @@
 - (void)onHeartbeat {
     [self.logger verbose:@"R:%p ARTRealtime heartbeat received", self];
     if(self.connection.state != ARTRealtimeConnected) {
-        NSString *msg = [NSString stringWithFormat:@"ARTRealtime received a ping when in state %@", ARTRealtimeStateToStr(self.connection.state)];
+        NSString *msg = [NSString stringWithFormat:@"ARTRealtime received a ping when in state %@", ARTRealtimeConnectionStateToStr(self.connection.state)];
         [self.logger warn:@"R:%p %@", self, msg];
     }
     [_pingEventEmitter emit:[NSNull null] with:nil];
@@ -515,8 +528,7 @@
             break;
         case ARTRealtimeConnected:
             // Renewing token.
-            [self transitionSideEffects:[[ARTConnectionStateChange alloc] initWithCurrent:ARTRealtimeConnected previous:ARTRealtimeConnected reason:nil]];
-            [self transition:ARTRealtimeConnected withErrorInfo:message.error];
+            [self updateWithErrorInfo:message.error];
         default:
             break;
     }

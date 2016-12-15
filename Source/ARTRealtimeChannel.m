@@ -397,7 +397,7 @@
     if (self.state == ARTRealtimeChannelAttached) {
         if (message.error != nil) {
             _errorReason = message.error;
-            [self emit:ARTChannelEventError with:message.error];
+            [self emit:ARTChannelEventUpdate with:message.error];
         }
         return;
     }
@@ -463,7 +463,7 @@
                 ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:(ARTErrorInfo *)error.userInfo[NSLocalizedFailureReasonErrorKey] prepend:@"Failed to decode data: "];
                 [self.logger error:@"R:%p C:%p %@", _realtime, self, errorInfo.message];
                 _errorReason = errorInfo;
-                [self emit:ARTChannelEventError with:errorInfo];
+                [self emit:ARTChannelEventUpdate with:errorInfo];
             }
         }
         

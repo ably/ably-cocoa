@@ -34,6 +34,9 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
     ARTAuthMethodToken
 };
 
+
+#pragma mark - ARTRealtimeConnectionState
+
 typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
     ARTRealtimeInitialized,
     ARTRealtimeConnecting,
@@ -45,8 +48,27 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
     ARTRealtimeFailed
 };
 
+NSString *__art_nonnull ARTRealtimeConnectionStateToStr(ARTRealtimeConnectionState state);
 
-NSString *__art_nonnull ARTRealtimeStateToStr(ARTRealtimeConnectionState state);
+
+#pragma mark - ARTRealtimeConnectionEvent
+
+typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionEvent) {
+    ARTRealtimeConnectionEventInitialized,
+    ARTRealtimeConnectionEventConnecting,
+    ARTRealtimeConnectionEventConnected,
+    ARTRealtimeConnectionEventDisconnected,
+    ARTRealtimeConnectionEventSuspended,
+    ARTRealtimeConnectionEventClosing,
+    ARTRealtimeConnectionEventClosed,
+    ARTRealtimeConnectionEventFailed,
+    ARTRealtimeConnectionEventUpdate
+};
+
+NSString *__art_nonnull ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event);
+
+
+#pragma mark - ARTRealtimeChannelState
 
 typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
     ARTRealtimeChannelInitialized,
@@ -57,6 +79,11 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
     ARTRealtimeChannelFailed
 };
 
+NSString *__art_nonnull ARTRealtimeChannelStateToStr(ARTRealtimeChannelState state);
+
+
+#pragma mark - ARTChannelEvent
+
 typedef NS_ENUM(NSUInteger, ARTChannelEvent) {
     ARTChannelEventInitialized,
     ARTChannelEventAttaching,
@@ -64,8 +91,10 @@ typedef NS_ENUM(NSUInteger, ARTChannelEvent) {
     ARTChannelEventDetaching,
     ARTChannelEventDetached,
     ARTChannelEventFailed,
-    ARTChannelEventError
+    ARTChannelEventUpdate
 };
+
+NSString *__art_nonnull ARTChannelEventToStr(ARTChannelEvent event);
 
 typedef NS_ENUM(NSInteger, ARTDataQueryError) {
     ARTDataQueryErrorLimit = 1,

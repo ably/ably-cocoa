@@ -2000,7 +2000,7 @@ class RealtimeClientChannel: QuickSpec {
                                     partlyDone()
                                 }
 
-                                channel.on(.Error) { errorInfo in
+                                channel.on(.Update) { errorInfo in
                                     guard let errorInfo = errorInfo else {
                                         return
                                     }
@@ -2438,7 +2438,7 @@ class RealtimeClientChannel: QuickSpec {
                         attachedMessageWithError.action = .Attached
                         attachedMessageWithError.channel = "test"
 
-                        channel.once(.Error) { error in
+                        channel.once(.Update) { error in
                             expect(error).to(beIdenticalTo(attachedMessageWithError.error))
                             expect(channel.errorReason).to(beIdenticalTo(error))
                             done()
