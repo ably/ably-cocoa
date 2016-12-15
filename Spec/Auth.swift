@@ -2865,7 +2865,7 @@ class Auth : QuickSpec {
                     testTokenParams.clientId = nil
 
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(testTokenParams, options: nil) { tokenDetails, error in
+                        rest.auth.authorize(testTokenParams, options: nil) { tokenDetails, error in
                             expect(error).to(beNil())
                             guard let tokenDetails = tokenDetails else {
                                 fail("TokenDetails is nil"); done(); return
@@ -2885,7 +2885,7 @@ class Auth : QuickSpec {
 
                     // Subsequent authorization
                     waitUntil(timeout: testTimeout) { done in
-                        rest.auth.authorise(nil, options: nil) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                             expect(error).to(beNil())
                             guard let tokenDetails = tokenDetails else {
                                 fail("TokenDetails is nil"); done(); return
@@ -3150,103 +3150,90 @@ class Auth : QuickSpec {
                 }
             }
         }
-        
+
         describe("Reauth") {
+
             // RTC8
-            pending("should use authorise({force: true}) to reauth with a token with a different set of capabilities") {
-                // init ARTRest
-                let restOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-                let rest = ARTRest(options: restOptions)
-
-                // get first token
-                let tokenParams = ARTTokenParams()
-                tokenParams.capability = "{\"wrongchannel\": [\"*\"]}"
-                tokenParams.clientId = "testClientId"
-
-                var firstToken = ""
-
-                waitUntil(timeout: testTimeout) { done in
-                    rest.auth.requestToken(tokenParams, withOptions: nil) { tokenDetails, error in
-                        expect(error).to(beNil())
-                        expect(tokenDetails).toNot(beNil())
-                        firstToken = tokenDetails!.token
-                        done()
-                    }
-                }
-                expect(firstToken).toNot(beNil())
-                expect(firstToken.characters.count > 0).to(beTrue())
-
-                // init ARTRealtime
-                let realtimeOptions = AblyTests.commonAppSetup()
-                realtimeOptions.token = firstToken
-                realtimeOptions.clientId = "testClientId"
-
-                let realtime = ARTRealtime(options:realtimeOptions)
+            it("should use authorise({force: true}) to reauth with a token with a different set of capabilities") {
+                let options = AblyTests.commonAppSetup()
+                let initialToken = getTestToken(capability: "{\"restricted\":[\"*\"]}", clientId: "tester")
+                options.token = initialToken
+                let realtime = ARTRealtime(options: options)
                 defer { realtime.dispose(); realtime.close() }
-
-                // wait for connected state
-                waitUntil(timeout: testTimeout) { done in
-                    realtime.connection.once(.Connected) { stateChange in
-                        expect(stateChange!.reason).to(beNil())
-                        expect(stateChange?.current).to(equal(realtime.connection.state))
-                        done()
-                    }
-                    realtime.connect()
-                }
-
-                // create a `rightchannel` channel and check can't attach to it
-                let channel = realtime.channels.get("rightchannel")
+                let channel = realtime.channels.get("foo")
 
                 waitUntil(timeout: testTimeout) { done in
-                    channel.attach() { error in
-                        expect(error).toNot(beNil())
-                        expect(error!.code).to(equal(40160))
+                    channel.attach { error in
+                        guard let error = error else {
+                            fail("Error is nil"); done(); return
+                        }
+                        expect(error.code) == 40160
                         done()
                     }
                 }
 
-                // get second token
-                let secondTokenParams = ARTTokenParams()
-                secondTokenParams.capability = "{\"wrongchannel\": [\"*\"], \"rightchannel\": [\"*\"]}"
-                secondTokenParams.clientId = "testClientId"
-
-                var secondToken = ""
-                var secondTokenDetails: ARTTokenDetails?
+                let tokenParams = ARTTokenParams()
+                tokenParams.capability = "{\"\(channel.name)\":[\"*\"]}"
+                tokenParams.clientId = "tester"
 
                 waitUntil(timeout: testTimeout) { done in
-                    rest.auth.requestToken(secondTokenParams, withOptions: nil) { tokenDetails, error in
+                    realtime.auth.authorize(tokenParams, options: nil) { tokenDetails, error in
                         expect(error).to(beNil())
                         expect(tokenDetails).toNot(beNil())
-
-                        secondToken = tokenDetails!.token
-                        secondTokenDetails = tokenDetails
-                        done()
-                    }
-                }
-                expect(secondToken).toNot(beNil())
-                expect(secondToken.characters.count > 0).to(beTrue())
-                expect(secondToken).toNot(equal(firstToken))
-
-                // reauthorise
-                let reauthOptions = ARTAuthOptions();
-                reauthOptions.tokenDetails = secondTokenDetails
-
-                waitUntil(timeout: testTimeout) { done in
-                    realtime.auth.authorize(nil, options: reauthOptions) { reauthTokenDetails, error in
-                        expect(error).to(beNil())
-                        expect(reauthTokenDetails?.token).toNot(beNil())
                         done()
                     }
                 }
 
-                // re-attach to the channel
+                expect(realtime.auth.tokenDetails?.token).toNot(equal(initialToken))
+                expect(realtime.auth.tokenDetails?.capability).to(equal(tokenParams.capability))
+
                 waitUntil(timeout: testTimeout) { done in
-                    channel.attach() { error in
+                    channel.attach { error in
                         expect(error).to(beNil())
                         done()
                     }
                 }
             }
+
+            // RTC8
+            it("for a token change that fails due to an incompatible token, which should result in the connection entering the FAILED state") {
+                let options = AblyTests.commonAppSetup()
+                options.clientId = "tester"
+                options.useTokenAuth = true
+                let realtime = ARTRealtime(options: options)
+                defer { realtime.dispose(); realtime.close() }
+
+                waitUntil(timeout: testTimeout) { done in
+                    realtime.connection.on(.Connected) { stateChange in
+                        expect(stateChange?.reason).to(beNil())
+                        done()
+                    }
+                }
+
+                guard let initialToken = realtime.auth.tokenDetails?.token else {
+                    fail("TokenDetails is nil"); return
+                }
+
+                let tokenParams = ARTTokenParams()
+                tokenParams.capability = "{\"restricted\":[\"*\"]}"
+                tokenParams.clientId = "secret"
+
+                waitUntil(timeout: testTimeout) { done in
+                    realtime.auth.authorize(tokenParams, options: nil) { tokenDetails, error in
+                        guard let error = error else {
+                            fail("Error is nil"); done(); return
+                        }
+                        expect(error.code) == 40102
+                        expect(tokenDetails).to(beNil())
+                        done()
+                    }
+                }
+
+                expect(realtime.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                expect(realtime.auth.tokenDetails?.token).to(equal(initialToken))
+                expect(realtime.auth.tokenDetails?.capability).toNot(equal(tokenParams.capability))
+            }
+
         }
 
         describe("TokenParams") {
