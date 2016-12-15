@@ -450,7 +450,7 @@
 
 - (void)setSuspended:(ARTStatus *)error {
     [self failQueuedMessages:error];
-    [self transition:ARTRealtimeChannelDetached status:error];
+    [self transition:ARTRealtimeChannelSuspended status:error];
 }
 
 - (void)onMessage:(ARTProtocolMessage *)message {
