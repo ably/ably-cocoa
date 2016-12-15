@@ -264,7 +264,7 @@ class RestClientChannel: QuickSpec {
                 }
 
                 // RSL1g4
-                pending("when publishing a Message with an explicit clientId that is incompatible with the identified client’s clientId") {
+                it("when publishing a Message with an explicit clientId that is incompatible with the identified client’s clientId") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
                     let client = ARTRest(options: options)
