@@ -570,6 +570,9 @@ class RealtimeClientChannel: QuickSpec {
                     channel.once(.Detached) { stateChange in
                         fail("Should not reach the DETACHED state")
                     }
+                    defer {
+                        channel.off()
+                    }
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.attach() { error in
