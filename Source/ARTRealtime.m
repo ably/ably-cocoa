@@ -48,7 +48,6 @@
     BOOL _renewingToken;
     __GENERIC(ARTEventEmitter, NSNull *, ARTErrorInfo *) *_pingEventEmitter;
     NSDate *_startedReconnection;
-    NSTimeInterval _connectionStateTtl;
     Class _transportClass;
     Class _reachabilityClass;
     id<ARTRealtimeTransport> _transport;
@@ -441,14 +440,14 @@
         // For every Channel
         for (ARTRealtimeChannel* channel in self.channels) {
             if (channel.state == ARTRealtimeChannelInitialized || channel.state == ARTRealtimeChannelAttaching || channel.state == ARTRealtimeChannelAttached || channel.state == ARTRealtimeChannelFailed) {
-                if(stateChange.current == ARTRealtimeClosing) {
+                if (stateChange.current == ARTRealtimeClosing) {
                     //do nothing. Closed state is coming.
                 }
-                else if(stateChange.current == ARTRealtimeClosed) {
+                else if (stateChange.current == ARTRealtimeClosed) {
                     [channel detachChannel:[ARTStatus state:ARTStateOk]];
                 }
-                else if(stateChange.current == ARTRealtimeSuspended) {
-                    [channel detachChannel:channelStatus];
+                else if (stateChange.current == ARTRealtimeSuspended) {
+                    [channel setSuspended:channelStatus];
                 }
                 else {
                     [channel setFailed:channelStatus];

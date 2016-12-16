@@ -46,6 +46,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, getter=getTransport, art_nullable) id<ARTRealtimeTransport> transport;
 @property (readonly, strong, nonatomic, art_nonnull) id<ARTReachability> reachability;
 @property (readonly, getter=getLogger) ARTLog *logger;
+@property (nonatomic) NSTimeInterval connectionStateTtl;
 
 /// Current protocol `msgSerial`. Starts at zero.
 @property (readwrite, assign, nonatomic) int64_t msgSerial;
