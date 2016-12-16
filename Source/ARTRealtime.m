@@ -431,6 +431,12 @@
 
     if ([self shouldSendEvents]) {
         [self sendQueuedMessages];
+        // For every Channel
+        for (ARTRealtimeChannel* channel in self.channels) {
+            if (channel.state == ARTRealtimeChannelSuspended) {
+                [channel attach];
+            }
+        }
     } else if (![self shouldQueueEvents]) {
         [self failQueuedMessages:status];
         ARTStatus *channelStatus = status;
@@ -439,22 +445,27 @@
         }
         // For every Channel
         for (ARTRealtimeChannel* channel in self.channels) {
-            if (channel.state == ARTRealtimeChannelInitialized || channel.state == ARTRealtimeChannelAttaching || channel.state == ARTRealtimeChannelAttached || channel.state == ARTRealtimeChannelFailed) {
-                if (stateChange.current == ARTRealtimeClosing) {
-                    //do nothing. Closed state is coming.
-                }
-                else if (stateChange.current == ARTRealtimeClosed) {
-                    [channel detachChannel:[ARTStatus state:ARTStateOk]];
-                }
-                else if (stateChange.current == ARTRealtimeSuspended) {
+            switch (channel.state) {
+                case ARTRealtimeChannelInitialized:
+                case ARTRealtimeChannelAttaching:
+                case ARTRealtimeChannelAttached:
+                case ARTRealtimeChannelFailed:
+                    if (stateChange.current == ARTRealtimeClosing) {
+                        //do nothing. Closed state is coming.
+                    }
+                    else if (stateChange.current == ARTRealtimeClosed) {
+                        [channel detachChannel:[ARTStatus state:ARTStateOk]];
+                    }
+                    else if (stateChange.current == ARTRealtimeSuspended) {
+                        [channel setSuspended:channelStatus];
+                    }
+                    else {
+                        [channel setFailed:channelStatus];
+                    }
+                    break;
+                default:
                     [channel setSuspended:channelStatus];
-                }
-                else {
-                    [channel setFailed:channelStatus];
-                }
-            }
-            else {
-                [channel setSuspended:channelStatus];
+                    break;
             }
         }
     }
