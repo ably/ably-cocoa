@@ -311,7 +311,7 @@
             if (!_transport) {
                 NSString *resumeKey = nil;
                 NSNumber *connectionSerial = nil;
-                if (stateChange.previous == ARTRealtimeFailed || stateChange.previous == ARTRealtimeDisconnected) {
+                if (stateChange.previous == ARTRealtimeFailed || stateChange.previous == ARTRealtimeDisconnected || stateChange.previous == ARTRealtimeSuspended) {
                     resumeKey = self.connection.key;
                     connectionSerial = [NSNumber numberWithLongLong:self.connection.serial];
                     _resuming = true;
