@@ -205,6 +205,45 @@ class RealtimeClientChannel: QuickSpec {
                     })
                 }
 
+                // RTL2g
+                it("can emit an UPDATE event") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    channel.on(.Attached) { _ in
+                        fail("Should not emit Attached again")
+                    }
+                    defer {
+                        channel.off()
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.on(.Update) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ChannelStateChange is nil"); done(); return
+                            }
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+                            expect(stateChange.previous).to(equal(channel.state))
+                            expect(stateChange.current).to(equal(channel.state))
+                            expect(stateChange.resumed).to(beFalse())
+                            expect(stateChange.reason).to(beNil())
+                            done()
+                        }
+
+                        let attachedMessage = ARTProtocolMessage()
+                        attachedMessage.action = .Attached
+                        attachedMessage.channel = "foo"
+                        client.transport?.receive(attachedMessage)
+                    }
+                }
+
                 // RTL2b
                 it("state attribute should be the current state of the channel") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
