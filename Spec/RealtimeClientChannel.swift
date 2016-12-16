@@ -499,7 +499,7 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 // RTL3d
-                it("if the connection state enters the @CONNECTED@ state, then a @SUSPENDED@ channel will initiate an attach operation") {
+                it("if the connection state enters the CONNECTED state, then a SUSPENDED channel will initiate an attach operation") {
                     let options = AblyTests.commonAppSetup()
                     options.suspendedRetryTimeout = 1.0
                     let client = ARTRealtime(options: options)
@@ -513,13 +513,12 @@ class RealtimeClientChannel: QuickSpec {
                         }
                     }
 
-                    waitUntil(timeout: testTimeout) { done in
+                    client.simulateSuspended(beforeSuspension: { done in
                         channel.once(.Suspended) { stateChange in
                             expect(stateChange?.reason).to(beNil())
                             done()
                         }
-                        client.simulateSuspended()
-                    }
+                    })
 
                     expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
@@ -546,7 +545,7 @@ class RealtimeClientChannel: QuickSpec {
                     defer {
                         TestProxyTransport.network = nil
                     }
-                    client.simulateSuspended() { done in
+                    client.simulateSuspended(beforeSuspension: { done in
                         channel.once(.Suspended) { stateChange in
                             guard let stateChange = stateChange else {
                                 fail("ChannelStateChange is nil"); done(); return
@@ -556,7 +555,7 @@ class RealtimeClientChannel: QuickSpec {
                         }
                         // Force connection to timeout
                         TestProxyTransport.network = .RequestTimeout(timeout: options.suspendedRetryTimeout + 1)
-                    }
+                    })
                 }
 
                 // RTL3e
