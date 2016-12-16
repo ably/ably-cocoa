@@ -552,11 +552,11 @@ class RealtimeClient: QuickSpec {
 
                     // Retry Channel attach
                     waitUntil(timeout: testTimeout) { done in
-                        channel.once(.Failed) { error in
+                        channel.once(.Failed) { _ in
                             fail("Should not reach Failed state"); done(); return
                         }
-                        channel.once(.Attached) { error in
-                            expect(error).to(beNil())
+                        channel.once(.Attached) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
                             done()
                         }
                         channel.attach()
