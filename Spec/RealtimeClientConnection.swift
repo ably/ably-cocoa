@@ -3357,7 +3357,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.connection.once(.Connected) { stateChange in
+                        client.connection.once(.Update) { stateChange in
                             expect(stateChange?.reason).to(beNil())
                             expect(initialToken).toNot(equal(client.auth.tokenDetails?.token))
                             done()
