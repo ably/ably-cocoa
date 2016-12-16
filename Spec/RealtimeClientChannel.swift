@@ -2578,6 +2578,9 @@ class RealtimeClientChannel: QuickSpec {
                     channel.on(.Attached) { _ in
                         fail("Should not be called")
                     }
+                    defer {
+                        channel.off()
+                    }
 
                     var hook: AspectToken?
                     waitUntil(timeout: testTimeout) { done in
@@ -2589,9 +2592,8 @@ class RealtimeClientChannel: QuickSpec {
                             done()
                         }
 
-                        let transport = client.transport as! TestProxyTransport
                         // Inject additional ATTACHED action without an error
-                        transport.receive(attachedMessage)
+                        client.transport?.receive(attachedMessage)
                     }
                     hook!.remove()
                     expect(channel.errorReason).to(beNil())
@@ -2602,15 +2604,17 @@ class RealtimeClientChannel: QuickSpec {
                         attachedMessageWithError.action = .Attached
                         attachedMessageWithError.channel = "test"
 
-                        channel.once(.Update) { error in
-                            expect(error).to(beIdenticalTo(attachedMessageWithError.error))
-                            expect(channel.errorReason).to(beIdenticalTo(error))
+                        channel.once(.Update) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ChannelStateChange is nil"); done(); return
+                            }
+                            expect(stateChange.reason).to(beIdenticalTo(attachedMessageWithError.error))
+                            expect(channel.errorReason).to(beIdenticalTo(stateChange.reason))
                             done()
                         }
 
-                        let transport = client.transport as! TestProxyTransport
                         // Inject additional ATTACHED action with an error
-                        transport.receive(attachedMessageWithError)
+                        client.transport?.receive(attachedMessageWithError)
                     }
                     expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
                 }
