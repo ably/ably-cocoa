@@ -526,12 +526,7 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL3d
                 it("if the attach operation for the channel times out and the channel returns to the SUSPENDED state") {
-                    let options = AblyTests.commonAppSetup()
-                    options.autoConnect = false
-                    options.suspendedRetryTimeout = 1.0
-                    let client = ARTRealtime(options: options)
-                    client.setTransportClass(TestProxyTransport.self)
-                    client.connect()
+                    let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
                     let channel = client.channels.get("test")
@@ -542,9 +537,6 @@ class RealtimeClientChannel: QuickSpec {
                         }
                     }
 
-                    defer {
-                        TestProxyTransport.network = nil
-                    }
                     client.simulateSuspended(beforeSuspension: { done in
                         channel.once(.Suspended) { stateChange in
                             guard let stateChange = stateChange else {
@@ -553,8 +545,6 @@ class RealtimeClientChannel: QuickSpec {
                             expect(stateChange.reason).to(beNil())
                             done()
                         }
-                        // Force connection to timeout
-                        TestProxyTransport.network = .RequestTimeout(timeout: options.suspendedRetryTimeout + 1)
                     })
                 }
 
