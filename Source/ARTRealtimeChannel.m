@@ -157,6 +157,7 @@
             [self addToQueue:pm callback:cb];
             break;
         }
+        case ARTRealtimeChannelSuspended:
         case ARTRealtimeChannelDetaching:
         case ARTRealtimeChannelDetached:
         case ARTRealtimeChannelFailed:
@@ -180,8 +181,6 @@
             }
             break;
         }
-        default:
-            NSAssert(NO, @"Invalid State");
     }
 }
 
