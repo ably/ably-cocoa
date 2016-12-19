@@ -149,32 +149,6 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 }
 
-- (void)testSuspendingDetachesChannel {
-    ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
-    __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
-    ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
-    ARTRealtimeChannel *channel = [realtime.channels get:@"channel"];
-    __block bool gotCb=false;
-    [channel on:^(ARTChannelStateChange *stateChange) {
-        if (stateChange.current == ARTRealtimeChannelAttached) {
-            [realtime onSuspended];
-        }
-        else if (stateChange.current == ARTRealtimeChannelDetached) {
-            if(!gotCb) {
-                [channel publish:nil data:@"will_fail" callback:^(ARTErrorInfo *errorInfo) {
-                    XCTAssertNotNil(errorInfo);
-                    XCTAssertEqual(90001, errorInfo.code);
-                    gotCb = true;
-                    [realtime close];
-                    [expectation fulfill];
-                }];
-            }
-        }
-    }];
-    [channel attach];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-}
-
 - (void)testFailingFailsChannel {
     ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
