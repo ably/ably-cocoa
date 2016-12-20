@@ -1220,10 +1220,7 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 // RTL5f
-                it("should transition the channel state to FAILED if DETACHED ProtocolMessage is not received") {
-                    let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
-                    defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
-                    ARTDefault.setRealtimeRequestTimeout(3.0)
+                it("if a DETACHEDis not received within the default realtime request timeout, the detach request should be treated as though it has failed and the channel will return to its previous state") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
@@ -1235,22 +1232,29 @@ class RealtimeClientChannel: QuickSpec {
                     let transport = client.transport as! TestProxyTransport
                     transport.actionsIgnored += [.Detached]
 
+                    let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                    defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                    ARTDefault.setRealtimeRequestTimeout(1.0)
+
                     let channel = client.channels.get("test")
                     channel.attach()
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
 
                     var callbackCalled = false
-                    channel.detach { errorInfo in
-                        expect(errorInfo).toNot(beNil())
-                        expect(errorInfo).to(equal(channel.errorReason))
+                    channel.detach { error in
+                        guard let error = error else {
+                            fail("Error is nil"); return
+                        }
+                        expect(error.message).to(contain("timed out"))
+                        expect(error).to(equal(channel.errorReason))
                         callbackCalled = true
                     }
                     let start = NSDate()
-                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Failed), timeout: testTimeout)
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
                     expect(channel.errorReason).toNot(beNil())
                     expect(callbackCalled).to(beTrue())
                     let end = NSDate()
-                    expect(start.dateByAddingTimeInterval(3.0)).to(beCloseTo(end, within: 0.5))
+                    expect(start.dateByAddingTimeInterval(1.0)).to(beCloseTo(end, within: 0.5))
                 }
 
                 // RTL5g
