@@ -610,7 +610,7 @@
         timeouted = true;
         ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTStateAttachTimedOut message:@"attach timed out"];
         ARTStatus *status = [ARTStatus state:ARTStateAttachTimedOut info:errorInfo];
-        [self transition:ARTRealtimeChannelFailed status:status];
+        [self setSuspended:status];
         [_attachedEventEmitter emit:[NSNull null] with:errorInfo];
     }];
 
