@@ -314,7 +314,10 @@
         _errorReason = status.errorInfo;
     }
 
-    if (state == ARTRealtimeChannelFailed) {
+    if (state == ARTRealtimeChannelSuspended) {
+        [_attachedEventEmitter emit:[NSNull null] with:status.errorInfo];
+    }
+    else if (state == ARTRealtimeChannelFailed) {
         [_attachedEventEmitter emit:[NSNull null] with:status.errorInfo];
         [_detachedEventEmitter emit:[NSNull null] with:status.errorInfo];
     }
@@ -640,7 +643,6 @@
         ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTStateAttachTimedOut message:@"attach timed out"];
         ARTStatus *status = [ARTStatus state:ARTStateAttachTimedOut info:errorInfo];
         [self setSuspended:status];
-        [_attachedEventEmitter emit:[NSNull null] with:errorInfo];
     }];
 
     if (![self.realtime shouldQueueEvents]) {
