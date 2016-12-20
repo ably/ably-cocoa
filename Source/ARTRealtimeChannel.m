@@ -705,7 +705,7 @@
         timeouted = true;
         ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTStateDetachTimedOut message:@"detach timed out"];
         ARTStatus *status = [ARTStatus state:ARTStateDetachTimedOut info:errorInfo];
-        [self transition:ARTRealtimeChannelFailed status:status];
+        [self transition:ARTRealtimeChannelAttached status:status];
         [_detachedEventEmitter emit:[NSNull null] with:errorInfo];
     }];
 
