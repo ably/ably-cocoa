@@ -603,9 +603,10 @@
 - (void)internalAttach:(void (^)(ARTErrorInfo *))callback withReason:(ARTErrorInfo *)reason {
     switch (self.state) {
         case ARTRealtimeChannelDetaching: {
-            NSString *msg = @"can't attach when in DETACHING state";
-            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p %@", _realtime, self, msg];
-            if (callback) callback([ARTErrorInfo createWithCode:90000 message:msg]);
+            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p %@", _realtime, self, @"attach after the completion of Detaching"];
+            [_detachedEventEmitter once:^(ARTErrorInfo *error) {
+                [self attach:callback];
+            }];
             return;
         }
         default:
