@@ -28,8 +28,6 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNumber *, ARTConnectionStateChange *) *internalEventEmitter;
 @property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNull *, NSNull *) *connectedEventEmitter;
 
-+ (NSString *)protocolStr:(ARTProtocolMessageAction)action;
-
 // State properties
 - (BOOL)shouldSendEvents;
 - (BOOL)shouldQueueEvents;
@@ -48,6 +46,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, getter=getTransport, art_nullable) id<ARTRealtimeTransport> transport;
 @property (readonly, strong, nonatomic, art_nonnull) id<ARTReachability> reachability;
 @property (readonly, getter=getLogger) ARTLog *logger;
+@property (nonatomic) NSTimeInterval connectionStateTtl;
 
 /// Current protocol `msgSerial`. Starts at zero.
 @property (readwrite, assign, nonatomic) int64_t msgSerial;

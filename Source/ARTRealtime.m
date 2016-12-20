@@ -48,7 +48,6 @@
     BOOL _renewingToken;
     __GENERIC(ARTEventEmitter, NSNull *, ARTErrorInfo *) *_pingEventEmitter;
     NSDate *_startedReconnection;
-    NSTimeInterval _connectionStateTtl;
     Class _transportClass;
     Class _reachabilityClass;
     id<ARTRealtimeTransport> _transport;
@@ -312,7 +311,7 @@
             if (!_transport) {
                 NSString *resumeKey = nil;
                 NSNumber *connectionSerial = nil;
-                if (stateChange.previous == ARTRealtimeFailed || stateChange.previous == ARTRealtimeDisconnected) {
+                if (stateChange.previous == ARTRealtimeFailed || stateChange.previous == ARTRealtimeDisconnected || stateChange.previous == ARTRealtimeSuspended) {
                     resumeKey = self.connection.key;
                     connectionSerial = [NSNumber numberWithLongLong:self.connection.serial];
                     _resuming = true;
@@ -432,6 +431,12 @@
 
     if ([self shouldSendEvents]) {
         [self sendQueuedMessages];
+        // For every Channel
+        for (ARTRealtimeChannel* channel in self.channels) {
+            if (channel.state == ARTRealtimeChannelSuspended) {
+                [channel attach];
+            }
+        }
     } else if (![self shouldQueueEvents]) {
         [self failQueuedMessages:status];
         ARTStatus *channelStatus = status;
@@ -440,22 +445,27 @@
         }
         // For every Channel
         for (ARTRealtimeChannel* channel in self.channels) {
-            if (channel.state == ARTRealtimeChannelInitialized || channel.state == ARTRealtimeChannelAttaching || channel.state == ARTRealtimeChannelAttached || channel.state == ARTRealtimeChannelFailed) {
-                if(stateChange.current == ARTRealtimeClosing) {
-                    //do nothing. Closed state is coming.
-                }
-                else if(stateChange.current == ARTRealtimeClosed) {
-                    [channel detachChannel:[ARTStatus state:ARTStateOk]];
-                }
-                else if(stateChange.current == ARTRealtimeSuspended) {
-                    [channel detachChannel:channelStatus];
-                }
-                else {
-                    [channel setFailed:channelStatus];
-                }
-            }
-            else {
-                [channel setSuspended:channelStatus];
+            switch (channel.state) {
+                case ARTRealtimeChannelInitialized:
+                case ARTRealtimeChannelAttaching:
+                case ARTRealtimeChannelAttached:
+                case ARTRealtimeChannelFailed:
+                    if (stateChange.current == ARTRealtimeClosing) {
+                        //do nothing. Closed state is coming.
+                    }
+                    else if (stateChange.current == ARTRealtimeClosed) {
+                        [channel detachChannel:[ARTStatus state:ARTStateOk]];
+                    }
+                    else if (stateChange.current == ARTRealtimeSuspended) {
+                        [channel setSuspended:channelStatus];
+                    }
+                    else {
+                        [channel setFailed:channelStatus];
+                    }
+                    break;
+                default:
+                    [channel setSuspended:channelStatus];
+                    break;
             }
         }
     }
@@ -942,49 +952,6 @@
     _reachabilityClass = reachabilityClass;
 }
 
-+ (NSString *)protocolStr:(ARTProtocolMessageAction) action {
-    switch(action) {
-        case ARTProtocolMessageHeartbeat:
-            return @"Heartbeat"; //0
-        case ARTProtocolMessageAck:
-            return @"Ack"; //1
-        case ARTProtocolMessageNack:
-            return @"Nack"; //2
-        case ARTProtocolMessageConnect:
-            return @"Connect"; //3
-        case ARTProtocolMessageConnected:
-            return @"Connected"; //4
-        case ARTProtocolMessageDisconnect:
-            return @"Disconnect"; //5
-        case ARTProtocolMessageDisconnected:
-            return @"Disconnected"; //6
-        case ARTProtocolMessageClose:
-            return @"Close"; //7
-        case ARTProtocolMessageClosed:
-            return @"Closed"; //8
-        case ARTProtocolMessageError:
-            return @"Error"; //9
-        case ARTProtocolMessageAttach:
-            return @"Attach"; //10
-        case ARTProtocolMessageAttached:
-            return @"Attached"; //11
-        case ARTProtocolMessageDetach:
-            return @"Detach"; //12
-        case ARTProtocolMessageDetached:
-            return @"Detached"; //13
-        case ARTProtocolMessagePresence:
-            return @"Presence"; //14
-        case ARTProtocolMessageMessage:
-            return @"Message"; //15
-        case ARTProtocolMessageSync:
-            return @"Sync"; //16
-        case ARTProtocolMessageAuth:
-            return @"Auth"; //17
-        default:
-            return [NSString stringWithFormat: @"unknown protocol state %d", (int)action];
-    }
-}
-
 #pragma mark - ARTRealtimeTransportDelegate implementation
 
 - (void)realtimeTransport:(id)transport didReceiveMessage:(ARTProtocolMessage *)message {
@@ -993,7 +960,7 @@
         return;
     }
 
-    [self.logger verbose:@"R:%p ARTRealtime didReceive Protocol Message %@ ", self, [ARTRealtime protocolStr:message.action]];
+    [self.logger verbose:@"R:%p ARTRealtime didReceive Protocol Message %@ ", self, ARTProtocolMessageActionToStr(message.action)];
 
     if (message.error) {
         [self.logger verbose:@"R:%p ARTRealtime Protocol Message with error %@ ", self, message.error];

@@ -77,7 +77,7 @@ class RealtimeClientChannel: QuickSpec {
             }
 
             // RTL2
-            context("EventEmitter and states") {
+            context("EventEmitter, channel states and events") {
 
                 // RTL2a
                 it("should implement the EventEmitter and emit events for state changes") {
@@ -103,16 +103,25 @@ class RealtimeClientChannel: QuickSpec {
                         emitCounter += 1
                     }
 
-                    var states = [ARTRealtimeChannelState]()
+                    var states = [channel.state]
                     waitUntil(timeout: testTimeout) { done in
-                        channel.on { errorInfo in
-                            states += [channel.state]
-                            switch channel.state {
+                        channel.on { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ChannelStateChange is nil"); done(); return
+                            }
+                            expect(stateChange.previous).to(equal(states.last))
+                            expect(channel.state).to(equal(stateChange.current))
+                            states += [stateChange.current]
+
+                            switch stateChange.current {
                             case .Attached:
+                                expect(stateChange.reason).to(beNil())
                                 channel.detach()
                             case .Detached:
-                                channel.onError(AblyTests.newErrorProtocolMessage())
-                            case .Failed:
+                                guard let error = stateChange.reason else {
+                                    fail("Detach state change reason is nil"); done(); return
+                                }
+                                expect(error.message).to(contain("channel has detached"))
                                 done()
                             default:
                                 break
@@ -120,22 +129,119 @@ class RealtimeClientChannel: QuickSpec {
                         }
                         channel.attach()
                     }
-                    channel.off()
 
                     expect(channelOnMethodCalled).to(beTrue())
                     expect(statesEventEmitterOnMethodCalled).to(beTrue())
-                    expect(emitCounter).to(equal(5))
+                    expect(emitCounter).to(equal(4))
 
                     if states.count != 5 {
                         fail("Expecting 5 states; got \(states)")
                         return
                     }
 
-                    expect(states[0].rawValue).to(equal(ARTRealtimeChannelState.Attaching.rawValue), description: "Should be ATTACHING state")
-                    expect(states[1].rawValue).to(equal(ARTRealtimeChannelState.Attached.rawValue), description: "Should be ATTACHED state")
-                    expect(states[2].rawValue).to(equal(ARTRealtimeChannelState.Detaching.rawValue), description: "Should be DETACHING state")
-                    expect(states[3].rawValue).to(equal(ARTRealtimeChannelState.Detached.rawValue), description: "Should be DETACHED state")
-                    expect(states[4].rawValue).to(equal(ARTRealtimeChannelState.Failed.rawValue), description: "Should be FAILED state")
+                    expect(states[0].rawValue).to(equal(ARTRealtimeChannelState.Initialized.rawValue), description: "Should be INITIALIZED state")
+                    expect(states[1].rawValue).to(equal(ARTRealtimeChannelState.Attaching.rawValue), description: "Should be ATTACHING state")
+                    expect(states[2].rawValue).to(equal(ARTRealtimeChannelState.Attached.rawValue), description: "Should be ATTACHED state")
+                    expect(states[3].rawValue).to(equal(ARTRealtimeChannelState.Detaching.rawValue), description: "Should be DETACHING state")
+                    expect(states[4].rawValue).to(equal(ARTRealtimeChannelState.Detached.rawValue), description: "Should be DETACHED state")
+                }
+
+                // RTL2a
+                it("should implement the EventEmitter and emit events for FAILED state changes") {
+                    let options = AblyTests.clientOptions()
+                    options.token = getTestToken(capability: "{\"secret\":[\"subscribe\"]}")
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.on { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ChannelStateChange is nil"); done(); return
+                            }
+                            expect(channel.state).to(equal(stateChange.current))
+                            switch stateChange.current {
+                            case .Attaching:
+                                expect(stateChange.reason).to(beNil())
+                                expect(stateChange.previous).to(equal(ARTRealtimeChannelState.Initialized))
+                            case .Failed:
+                                guard let reason = stateChange.reason else {
+                                    fail("Reason is nil"); done(); return
+                                }
+                                expect(reason.code) == 40160
+                                expect(stateChange.previous).to(equal(ARTRealtimeChannelState.Attaching))
+                                done()
+                            default:
+                                break
+                            }
+                        }
+                        channel.attach()
+                    }
+                }
+
+                // RTL2a
+                it("should implement the EventEmitter and emit events for SUSPENDED state changes") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    client.simulateSuspended(beforeSuspension: { done in
+                        channel.once(.Suspended) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ChannelStageChange is nil"); done(); return
+                            }
+                            expect(stateChange.reason).to(beNil())
+                            expect(stateChange.previous).to(equal(ARTRealtimeChannelState.Attached))
+                            expect(channel.state).to(equal(stateChange.current))
+                            done()
+                        }
+                    })
+                }
+
+                // RTL2g
+                it("can emit an UPDATE event") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    channel.on(.Attached) { _ in
+                        fail("Should not emit Attached again")
+                    }
+                    defer {
+                        channel.off()
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.on(.Update) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ChannelStateChange is nil"); done(); return
+                            }
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+                            expect(stateChange.previous).to(equal(channel.state))
+                            expect(stateChange.current).to(equal(channel.state))
+                            expect(stateChange.resumed).to(beFalse())
+                            expect(stateChange.reason).to(beNil())
+                            done()
+                        }
+
+                        let attachedMessage = ARTProtocolMessage()
+                        attachedMessage.action = .Attached
+                        attachedMessage.channel = "foo"
+                        client.transport?.receive(attachedMessage)
+                    }
                 }
 
                 // RTL2b
@@ -157,15 +263,96 @@ class RealtimeClientChannel: QuickSpec {
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
-                    let error = AblyTests.newErrorProtocolMessage()
-
+                    let pmError = AblyTests.newErrorProtocolMessage()
                     waitUntil(timeout: testTimeout) { done in
-                        channel.on(.Failed) { errorInfo in
-                            expect(errorInfo).to(equal(error.error))
-                            expect(channel.errorReason).to(equal(error.error))
+                        channel.on(.Failed) { stateChange in
+                            guard let error = stateChange?.reason else {
+                                fail("Error is nil"); done(); return
+                            }
+                            expect(error).to(equal(pmError.error))
+                            expect(channel.errorReason).to(equal(pmError.error))
                             done()
                         }
-                        channel.onError(error)
+                        channel.onError(pmError)
+                    }
+                }
+
+                // RTL2d
+                it("a ChannelStateChange is emitted as the first argument for every channel state change") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("test")
+
+                    channel.on { stateChange in
+                        guard let stateChange = stateChange else {
+                            fail("ChannelStageChange is nil"); return
+                        }
+                        expect(stateChange.reason).to(beNil())
+                        expect(stateChange.current.rawValue).to(equal(channel.state.rawValue))
+                        expect(stateChange.previous.rawValue).toNot(equal(channel.state.rawValue))
+                    }
+
+                    channel.attach()
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+                    channel.off()
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.once(.Failed) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ChannelStageChange is nil"); done(); return
+                            }
+                            expect(stateChange.reason).toNot(beNil())
+                            expect(stateChange.current).to(equal(ARTRealtimeChannelState.Failed))
+                            expect(stateChange.previous).to(equal(ARTRealtimeChannelState.Attached))
+                            done()
+                        }
+                        channel.onError(AblyTests.newErrorProtocolMessage())
+                    }
+                }
+
+                // RTL2f
+                pending("ChannelStateChange will contain a resumed boolean attribute with value @true@ if the bit flag RESUMED was included") {
+                    let options = AblyTests.commonAppSetup()
+                    options.disconnectedRetryTimeout = 1.0
+                    options.tokenDetails = getTestTokenDetails(ttl: 5.0)
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.on { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ChannelStageChange is nil"); done(); return
+                            }
+                            switch stateChange.current {
+                            case .Attached:
+                                expect(stateChange.resumed).to(beFalse())
+                            default:
+                                expect(stateChange.resumed).to(beFalse())
+                            }
+                        }
+                        client.connection.once(.Disconnected) { stateChange in
+                            channel.off()
+                            guard let error = stateChange?.reason else {
+                                fail("Error is nil"); done(); return
+                            }
+                            expect(error.code) == 40142
+                            done()
+                        }
+                        channel.attach()
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.once(.Attached) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ChannelStageChange is nil"); done(); return
+                            }
+                            expect(stateChange.resumed).to(beTrue())
+                            expect(stateChange.reason).to(beNil())
+                            expect(stateChange.current).to(equal(ARTRealtimeChannelState.Attached))
+                            expect(stateChange.previous).to(equal(ARTRealtimeChannelState.Attached))
+                            done()
+                        }
                     }
                 }
 
@@ -194,28 +381,14 @@ class RealtimeClientChannel: QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             let pmError = AblyTests.newErrorProtocolMessage()
-
-                            channel.on { stateChange in
-                                let partialDone = AblyTests.splitDone(2, done: done)
-
-                                guard let stateChange = stateChange else {
-                                    fail("ChannelStateChange is nil"); partialDone(); return
+                            channel.once(.Failed) { stateChange in
+                                guard let error = stateChange?.reason else {
+                                    fail("Reason error is nil"); done(); return
                                 }
-                                guard let error = stateChange.reason else {
-                                    fail("Reason error is nil"); partialDone(); return
-                                }
-
-                                if stateChange.current == .Failed {
-                                    expect(error).to(equal(pmError.error))
-                                    expect(channel.errorReason).to(beIdenticalTo(error))
-                                    partialDone()
-                                }
-                                else if stateChange.current == .Error {
-                                    expect(error).to(equal(pmError.error))
-                                    partialDone()
-                                }
+                                expect(error).to(equal(pmError.error))
+                                expect(channel.errorReason).to(beIdenticalTo(error))
+                                done()
                             }
-
                             client.onError(pmError)
                         }
 
@@ -232,28 +405,14 @@ class RealtimeClientChannel: QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             let pmError = AblyTests.newErrorProtocolMessage()
-
-                            channel.on { stateChange in
-                                let partialDone = AblyTests.splitDone(2, done: done)
-
-                                guard let stateChange = stateChange else {
-                                    fail("ChannelStateChange is nil"); partialDone(); return
+                            channel.once(.Failed) { stateChange in
+                                guard let error = stateChange?.reason else {
+                                    fail("Reason error is nil"); done(); return
                                 }
-                                guard let error = stateChange.reason else {
-                                    fail("Reason error is nil"); partialDone(); return
-                                }
-
-                                if stateChange.current == .Failed {
-                                    expect(error).to(equal(pmError.error))
-                                    expect(channel.errorReason).to(beIdenticalTo(error))
-                                    partialDone()
-                                }
-                                else if stateChange.current == .Error {
-                                    expect(error).to(equal(pmError.error))
-                                    partialDone()
-                                }
+                                expect(error).to(equal(pmError.error))
+                                expect(channel.errorReason).to(equal(error))
+                                done()
                             }
-
                             client.onError(pmError)
                         }
 
@@ -340,7 +499,7 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 // RTL3d
-                it("if the connection state enters the @CONNECTED@ state, then a @SUSPENDED@ channel will initiate an attach operation") {
+                it("if the connection state enters the CONNECTED state, then a SUSPENDED channel will initiate an attach operation") {
                     let options = AblyTests.commonAppSetup()
                     options.suspendedRetryTimeout = 1.0
                     let client = ARTRealtime(options: options)
@@ -354,26 +513,20 @@ class RealtimeClientChannel: QuickSpec {
                         }
                     }
 
-                    waitUntil(timeout: testTimeout) { done in
+                    client.simulateSuspended(beforeSuspension: { done in
                         channel.once(.Suspended) { stateChange in
                             expect(stateChange?.reason).to(beNil())
                             done()
                         }
-                        client.simulateSuspended()
-                    }
+                    })
 
                     expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
                 }
 
                 // RTL3d
-                it("if the attach operation for the channel times out and the channel returns to the SUSPENDED state, then an ERROR event with Ably error code 91200 should be emitted") {
-                    let options = AblyTests.commonAppSetup()
-                    options.autoConnect = false
-                    options.suspendedRetryTimeout = 1.0
-                    let client = ARTRealtime(options: options)
-                    client.setTransportClass(TestProxyTransport.self)
-                    client.connect()
+                it("if the attach operation for the channel times out and the channel returns to the SUSPENDED state") {
+                    let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
                     let channel = client.channels.get("test")
@@ -384,31 +537,15 @@ class RealtimeClientChannel: QuickSpec {
                         }
                     }
 
-                    defer {
-                        TestProxyTransport.network = nil
-                    }
-                    waitUntil(timeout: testTimeout) { done in
-                        let partialDone = AblyTests.splitDone(2, done: done)
-                        channel.on { stateChange in
+                    client.simulateSuspended(beforeSuspension: { done in
+                        channel.once(.Suspended) { stateChange in
                             guard let stateChange = stateChange else {
-                                fail("ChannelStateChange is nil"); partialDone(); return
+                                fail("ChannelStateChange is nil"); done(); return
                             }
-                            switch stateChange.current {
-                            case .Suspended:
-                                expect(stateChange.reason).to(beNil())
-                                partialDone()
-                            case .Error:
-                                guard let error = stateChange.reason else {
-                                    fail("Error is nil"); partialDone(); return
-                                }
-                                expect(error.code) == 91200
-                                partialDone()
-                            }
+                            expect(stateChange.reason).to(beNil())
+                            done()
                         }
-                        client.simulateSuspended()
-                        // Force connection to timeout
-                        TestProxyTransport.network = .RequestTimeout(timeout: options.suspendedRetryTimeout + 1)
-                    }
+                    })
                 }
 
                 // RTL3e
@@ -422,6 +559,9 @@ class RealtimeClientChannel: QuickSpec {
 
                     channel.once(.Detached) { stateChange in
                         fail("Should not reach the DETACHED state")
+                    }
+                    defer {
+                        channel.off()
                     }
 
                     waitUntil(timeout: testTimeout) { done in
@@ -694,13 +834,17 @@ class RealtimeClientChannel: QuickSpec {
                     let channel = client.channels.get("test")
                     channel.attach()
 
-                    channel.on { errorInfo in
-                        if channel.state == .Failed {
-                            expect(errorInfo!.code).to(equal(40160))
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.once(.Failed) { stateChange in
+                            guard let error = stateChange?.reason else {
+                                fail("Reason error is nil"); done(); return
+                            }
+                            expect(error.code).to(equal(40160))
+                            done()
                         }
                     }
 
-                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Failed), timeout: testTimeout)
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
                 }
 
                 // RTL4f
@@ -1143,8 +1287,11 @@ class RealtimeClientChannel: QuickSpec {
                                 let error = stateChange.reason
                                 if state == .Connected {
                                     let channel = client.channels.get("test")
-                                    channel.on { errorInfo in
-                                        if channel.state == .Attached {
+                                    channel.on { stateChange in
+                                        guard let stateChange = stateChange else {
+                                            fail("ChannelStageChange is nil"); done(); return
+                                        }
+                                        if stateChange.current == .Attached {
                                             channel.publish(nil, data: "message") { errorInfo in
                                                 expect(errorInfo).to(beNil())
                                                 done()
@@ -1170,8 +1317,11 @@ class RealtimeClientChannel: QuickSpec {
                                 let error = stateChange.reason
                                 if state == .Connected {
                                     let channel = client.channels.get("test")
-                                    channel.on { errorInfo in
-                                        if channel.state == .Attached {
+                                    channel.on { stateChange in
+                                        guard let stateChange = stateChange else {
+                                            fail("ChannelStageChange is nil"); done(); return
+                                        }
+                                        if stateChange.current == .Attached {
                                             channel.publish(nil, data: "message") { errorInfo in
                                                 expect(errorInfo).toNot(beNil())
                                                 guard let errorInfo = errorInfo else {
@@ -1206,8 +1356,11 @@ class RealtimeClientChannel: QuickSpec {
                         TotalMessages.failed = 0
 
                         let channelToSucceed = client.channels.get("channelToSucceed")
-                        channelToSucceed.on { errorInfo in
-                            if channelToSucceed.state == .Attached {
+                        channelToSucceed.on { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ChannelStageChange is nil"); return
+                            }
+                            if stateChange.current == .Attached {
                                 for index in 1...TotalMessages.expected {
                                     channelToSucceed.publish(nil, data: "message\(index)") { errorInfo in
                                         if errorInfo == nil {
@@ -1221,8 +1374,11 @@ class RealtimeClientChannel: QuickSpec {
                         channelToSucceed.attach()
 
                         let channelToFail = client.channels.get("channelToFail")
-                        channelToFail.on { errorInfo in
-                            if channelToFail.state == .Attached {
+                        channelToFail.on { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ChannelStageChange is nil"); return
+                            }
+                            if stateChange.current == .Attached {
                                 for index in 1...TotalMessages.expected {
                                     channelToFail.publish(nil, data: "message\(index)") { errorInfo in
                                         if errorInfo != nil {
@@ -1989,6 +2145,7 @@ class RealtimeClientChannel: QuickSpec {
 
                             waitUntil(timeout: testTimeout) { done in
                                 let partlyDone = AblyTests.splitDone(2, done: done)
+
                                 channel.subscribe(testMessage.encoded.name) { message in
                                     expect(message.data as? NSObject).to(equal(AblyTests.base64ToData(testMessage.encrypted.data)))
 
@@ -2000,13 +2157,12 @@ class RealtimeClientChannel: QuickSpec {
                                     partlyDone()
                                 }
 
-                                channel.on(.Update) { errorInfo in
-                                    guard let errorInfo = errorInfo else {
+                                channel.on(.Update) { stateChange in
+                                    guard let error = stateChange?.reason else {
                                         return
                                     }
-                                    expect(errorInfo.message).to(contain("Failed to decode data: unknown encoding: 'bad_encoding_type'"))
-                                    expect(errorInfo).to(beIdenticalTo(channel.errorReason))
-
+                                    expect(error.message).to(contain("Failed to decode data: unknown encoding: 'bad_encoding_type'"))
+                                    expect(error).to(beIdenticalTo(channel.errorReason))
                                     partlyDone()
                                 }
 
@@ -2414,6 +2570,9 @@ class RealtimeClientChannel: QuickSpec {
                     channel.on(.Attached) { _ in
                         fail("Should not be called")
                     }
+                    defer {
+                        channel.off()
+                    }
 
                     var hook: AspectToken?
                     waitUntil(timeout: testTimeout) { done in
@@ -2425,9 +2584,8 @@ class RealtimeClientChannel: QuickSpec {
                             done()
                         }
 
-                        let transport = client.transport as! TestProxyTransport
                         // Inject additional ATTACHED action without an error
-                        transport.receive(attachedMessage)
+                        client.transport?.receive(attachedMessage)
                     }
                     hook!.remove()
                     expect(channel.errorReason).to(beNil())
@@ -2438,15 +2596,17 @@ class RealtimeClientChannel: QuickSpec {
                         attachedMessageWithError.action = .Attached
                         attachedMessageWithError.channel = "test"
 
-                        channel.once(.Update) { error in
-                            expect(error).to(beIdenticalTo(attachedMessageWithError.error))
-                            expect(channel.errorReason).to(beIdenticalTo(error))
+                        channel.once(.Update) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ChannelStateChange is nil"); done(); return
+                            }
+                            expect(stateChange.reason).to(beIdenticalTo(attachedMessageWithError.error))
+                            expect(channel.errorReason).to(beIdenticalTo(stateChange.reason))
                             done()
                         }
 
-                        let transport = client.transport as! TestProxyTransport
                         // Inject additional ATTACHED action with an error
-                        transport.receive(attachedMessageWithError)
+                        client.transport?.receive(attachedMessageWithError)
                     }
                     expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
                 }
@@ -2468,18 +2628,16 @@ class RealtimeClientChannel: QuickSpec {
                         errorProtocolMessage.action = .Error
                         errorProtocolMessage.channel = "foo"
 
-                        let partialDone = AblyTests.splitDone(2, done: done)
-
                         channel.once(.Failed) { stateChange in
                             guard let error = stateChange?.reason else {
-                                fail("Reason error is nil"); partialDone(); return
+                                fail("Reason error is nil"); done(); return
                             }
                             expect(error).to(beIdenticalTo(errorProtocolMessage.error))
                             expect(channel.errorReason).to(beIdenticalTo(error))
-                            partialDone()
+                            done()
                         }
 
-                        client.transport.receive(errorProtocolMessage)
+                        client.transport?.receive(errorProtocolMessage)
                     }
 
                     expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))

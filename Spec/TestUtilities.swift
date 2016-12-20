@@ -356,14 +356,14 @@ class PublishTestMessage {
             let state = stateChange.current
             if state == .Connected {
                 let channel = client.channels.get("test")
-                channel.on { errorInfo in
-                    switch channel.state {
+                channel.on { stateChange in
+                    switch stateChange!.current {
                     case .Attached:
                         channel.publish(nil, data: "message") { errorInfo in
                             complete(errorInfo)
                         }
                     case .Failed:
-                        complete(errorInfo)
+                        complete(stateChange!.reason)
                     default:
                         break
                     }
@@ -992,13 +992,13 @@ extension ARTRealtime {
         self.onDisconnected()
     }
 
-    func simulateSuspended() {
+    func simulateSuspended(beforeSuspension beforeSuspensionCallback: (done: () -> ()) -> Void) {
         waitUntil(timeout: testTimeout) { done in
-            self.connection.on(.Closed) { _ in
+            self.connection.once(.Disconnected) { _ in
+                beforeSuspensionCallback(done: done)
                 self.onSuspended()
-                done()
             }
-            self.close()
+            self.onDisconnected()
         }
     }
 
@@ -1067,7 +1067,7 @@ extension ARTRealtimeConnectionEvent : CustomStringConvertible {
 
 extension ARTProtocolMessageAction : CustomStringConvertible {
     public var description : String {
-        return ARTRealtime.protocolStr(self)
+        return ARTProtocolMessageActionToStr(self)
     }
 }
 
