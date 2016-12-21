@@ -449,14 +449,14 @@
     [_detachedEventEmitter emit:[NSNull null] with:nil];
 }
 
-- (void)detachChannel:(ARTStatus *)error {
-    [self failQueuedMessages:error];
-    [self transition:ARTRealtimeChannelDetached status:error];
+- (void)detachChannel:(ARTStatus *)status {
+    [self failQueuedMessages:status];
+    [self transition:ARTRealtimeChannelDetached status:status];
 }
 
-- (void)setFailed:(ARTStatus *)error {
-    [self failQueuedMessages:error];
-    [self transition:ARTRealtimeChannelFailed status:error];
+- (void)setFailed:(ARTStatus *)status {
+    [self failQueuedMessages:status];
+    [self transition:ARTRealtimeChannelFailed status:status];
 }
 
 - (void)setSuspended:(ARTStatus *)status {

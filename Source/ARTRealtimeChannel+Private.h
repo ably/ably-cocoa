@@ -56,12 +56,12 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)failQueuedMessages:(ARTStatus *)status;
 - (void)sendMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb;
 
-- (void)setSuspended:(ARTStatus *)error;
-- (void)setFailed:(ARTStatus *)error;
+- (void)setSuspended:(ARTStatus *)status;
+- (void)setFailed:(ARTStatus *)status;
 - (void)throwOnDisconnectedOrFailed;
 
 - (void)broadcastPresence:(ARTPresenceMessage *)pm;
-- (void)detachChannel:(ARTStatus *) error;
+- (void)detachChannel:(ARTStatus *)status;
 
 - (void)requestContinueSync;
 
