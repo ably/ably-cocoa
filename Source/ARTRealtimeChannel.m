@@ -314,7 +314,10 @@
         _errorReason = status.errorInfo;
     }
 
-    if (state == ARTRealtimeChannelFailed) {
+    if (state == ARTRealtimeChannelSuspended) {
+        [_attachedEventEmitter emit:[NSNull null] with:status.errorInfo];
+    }
+    else if (state == ARTRealtimeChannelFailed) {
         [_attachedEventEmitter emit:[NSNull null] with:status.errorInfo];
         [_detachedEventEmitter emit:[NSNull null] with:status.errorInfo];
     }
@@ -600,9 +603,10 @@
 - (void)internalAttach:(void (^)(ARTErrorInfo *))callback withReason:(ARTErrorInfo *)reason {
     switch (self.state) {
         case ARTRealtimeChannelDetaching: {
-            NSString *msg = @"can't attach when in DETACHING state";
-            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p %@", _realtime, self, msg];
-            if (callback) callback([ARTErrorInfo createWithCode:90000 message:msg]);
+            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p %@", _realtime, self, @"attach after the completion of Detaching"];
+            [_detachedEventEmitter once:^(ARTErrorInfo *error) {
+                [self attach:callback];
+            }];
             return;
         }
         default:
@@ -640,7 +644,6 @@
         ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTStateAttachTimedOut message:@"attach timed out"];
         ARTStatus *status = [ARTStatus state:ARTStateAttachTimedOut info:errorInfo];
         [self setSuspended:status];
-        [_attachedEventEmitter emit:[NSNull null] with:errorInfo];
     }];
 
     if (![self.realtime shouldQueueEvents]) {
@@ -702,7 +705,7 @@
         timeouted = true;
         ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTStateDetachTimedOut message:@"detach timed out"];
         ARTStatus *status = [ARTStatus state:ARTStateDetachTimedOut info:errorInfo];
-        [self transition:ARTRealtimeChannelFailed status:status];
+        [self transition:ARTRealtimeChannelAttached status:status];
         [_detachedEventEmitter emit:[NSNull null] with:errorInfo];
     }];
 
