@@ -51,6 +51,12 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) NSTimeInterval suspendedRetryTimeout;
 
 /**
+ Represents the timeout (in seconds) to re-attach the channel automatically.
+ When a channel becomes SUSPENDED following a server initiated DETACHED, after this delay in milliseconds, if the channel is still SUSPENDED and the connection is CONNECTED, the client library will attempt to re-attach.
+ */
+@property (readwrite, assign, nonatomic) NSTimeInterval channelRetryTimeout;
+
+/**
  Timeout for opening the connection, available in the client library if supported by the transport.
  */
 @property (readwrite, assign, nonatomic) NSTimeInterval httpOpenTimeout;
