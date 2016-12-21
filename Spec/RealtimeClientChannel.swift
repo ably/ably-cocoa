@@ -2988,30 +2988,6 @@ class RealtimeClientChannel: QuickSpec {
                 }
             }
 
-            // https://github.com/ably/ably-ios/issues/454
-            it("should not move to FAILED if received DETACH with an error") {
-                let options = AblyTests.commonAppSetup()
-                let client = ARTRealtime(options: options)
-                defer {
-                    client.dispose()
-                    client.close()
-                }
-                let channel = client.channels.get("test")
-                channel.attach()
-
-                expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
-
-                let protoMsg = ARTProtocolMessage()
-                protoMsg.action = .Detach
-                protoMsg.error = ARTErrorInfo.createWithCode(123, message: "test error")
-                protoMsg.channel = "test"
-                client.transport?.receive(protoMsg)
-
-                expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
-                expect(channel.errorReason).to(equal(protoMsg.error))
-                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
-                expect(client.connection.errorReason).to(beNil())
-            }
         }
     }
 }
