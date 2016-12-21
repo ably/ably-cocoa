@@ -413,35 +413,37 @@
 
     [self sendQueuedMessages];
 
-    if (message.error) {
-        [self transition:ARTRealtimeChannelAttached status:[ARTStatus state:ARTStateError info:message.error]];
-    }
-    else {
-        [self transition:ARTRealtimeChannelAttached status:[ARTStatus state:ARTStateOk]];
-    }
+    ARTStatus *status = message.error ? [ARTStatus state:ARTStateError info:message.error] : [ARTStatus state:ARTStateOk];
+    [self transition:ARTRealtimeChannelAttached status:status];
     [_attachedEventEmitter emit:[NSNull null] with:nil];
 }
 
 - (void)setDetached:(ARTProtocolMessage *)message {
-    if (self.state == ARTRealtimeChannelFailed) {
-        return;
+    switch (self.state) {
+        case ARTRealtimeChannelAttached:
+        case ARTRealtimeChannelSuspended:
+            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p reattach initiated by DETACHED message", _realtime, self];
+            [self reattach:nil withReason:message.error];
+            return;
+        case ARTRealtimeChannelAttaching: {
+            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p reattach initiated by DETACHED message but it is currently attaching", _realtime, self];
+            ARTStatus *status = message.error ? [ARTStatus state:ARTStateError info:message.error] : [ARTStatus state:ARTStateOk];
+            status.storeErrorInfo = false;
+            [self setSuspended:status retryIn:0];
+            return;
+        }
+        case ARTRealtimeChannelFailed:
+            return;
+        default:
+            break;
     }
-    ARTRealtimeChannelState previousState = self.state;
+
     self.attachSerial = nil;
     
-    ARTErrorInfo *errorInfo;
-    if (message.error) {
-        errorInfo = message.error;
-    } else {
-        errorInfo = [ARTErrorInfo createWithCode:0 message:@"channel has detached"];
-    }
+    ARTErrorInfo *errorInfo = message.error ? message.error : [ARTErrorInfo createWithCode:0 message:@"channel has detached"];
     ARTStatus *reason = [ARTStatus state:ARTStateNotAttached info:errorInfo];
     [self detachChannel:reason];
     [_detachedEventEmitter emit:[NSNull null] with:nil];
-
-    if (previousState == ARTRealtimeChannelAttached || previousState == ARTRealtimeChannelSuspended) {
-        [self attach:nil withReason:errorInfo];
-    }
 }
 
 - (void)detachChannel:(ARTStatus *)error {
@@ -454,11 +456,18 @@
     [self transition:ARTRealtimeChannelFailed status:error];
 }
 
-- (void)setSuspended:(ARTStatus *)error {
-    [self failQueuedMessages:error];
-    [self transition:ARTRealtimeChannelSuspended status:error];
-    [self unlessStateChangesBefore:self.realtime.options.channelRetryTimeout do:^{
-        [self attach];
+- (void)setSuspended:(ARTStatus *)status {
+    [self setSuspended:status retryIn:self.realtime.options.channelRetryTimeout];
+}
+
+- (void)setSuspended:(ARTStatus *)status retryIn:(NSTimeInterval)retryTimeout {
+    [self failQueuedMessages:status];
+    [self transition:ARTRealtimeChannelSuspended status:status];
+    __weak __typeof(self) weakSelf = self;
+    [self unlessStateChangesBefore:retryTimeout do:^{
+        [weakSelf reattach:^(ARTErrorInfo *errorInfo) {
+            [weakSelf setSuspended:[ARTStatus state:ARTStateError info:errorInfo]];
+        } withReason:nil];
     }];
 }
 
@@ -557,10 +566,6 @@
 }
 
 - (void)attach:(void (^)(ARTErrorInfo *))callback {
-    [self attach:callback withReason:nil];
-}
-
-- (void)attach:(void (^)(ARTErrorInfo *))callback withReason:(ARTErrorInfo *)reason {
     switch (self.state) {
         case ARTRealtimeChannelAttaching:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p already attaching", _realtime, self];
@@ -570,6 +575,30 @@
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p already attached", _realtime, self];
             if (callback) callback(nil);
             return;
+        default:
+            break;
+    }
+    [self internalAttach:callback withReason:nil];
+}
+
+- (void)reattach:(void (^)(ARTErrorInfo *))callback withReason:(ARTErrorInfo *)reason {
+    switch (self.state) {
+        case ARTRealtimeChannelAttached:
+        case ARTRealtimeChannelSuspended:
+            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p attached or suspended and will reattach", _realtime, self];
+            break;
+        case ARTRealtimeChannelAttaching:
+            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p already attaching", _realtime, self];
+            if (callback) [_attachedEventEmitter once:callback];
+            return;
+        default:
+            break;
+    }
+    [self internalAttach:callback withReason:reason];
+}
+
+- (void)internalAttach:(void (^)(ARTErrorInfo *))callback withReason:(ARTErrorInfo *)reason {
+    switch (self.state) {
         case ARTRealtimeChannelDetaching: {
             NSString *msg = @"can't attach when in DETACHING state";
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p %@", _realtime, self, msg];
