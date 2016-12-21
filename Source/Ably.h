@@ -18,6 +18,7 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import "ARTTypes.h"
 
 #import "ARTAuth.h"
+#import "ARTAuthDetails.h"
 #import "ARTConnection.h"
 #import "ARTConnectionDetails.h"
 #import "ARTHttp.h"

@@ -30,7 +30,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)setState:(ARTRealtimeConnectionState)state;
 - (void)setErrorReason:(ARTErrorInfo *__art_nullable)errorReason;
 
-- (void)emit:(ARTRealtimeConnectionState)event with:(ARTConnectionStateChange *)data;
+- (void)emit:(ARTRealtimeConnectionEvent)event with:(ARTConnectionStateChange *)data;
 
 @end
 

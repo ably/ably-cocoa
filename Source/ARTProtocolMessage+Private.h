@@ -6,6 +6,8 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
+NSString *__art_nonnull ARTProtocolMessageActionToStr(ARTProtocolMessageAction action);
+
 ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTProtocolMessage ()

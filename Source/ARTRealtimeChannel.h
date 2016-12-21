@@ -42,7 +42,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (BOOL)history:(ARTRealtimeHistoryQuery *__art_nullable)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
 
-ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTErrorInfo *)
+ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 
 @end
 

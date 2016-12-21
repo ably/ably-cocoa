@@ -37,6 +37,7 @@ NSString *const ARTDefaultProduction = @"production";
     _logLevel = ARTLogLevelNone;
     _disconnectedRetryTimeout = 15.0; //Seconds
     _suspendedRetryTimeout = 30.0; //Seconds
+    _channelRetryTimeout = 15.0; //Seconds
     _httpOpenTimeout = 4.0; //Seconds
     _httpRequestTimeout = 15.0; //Seconds
     _httpMaxRetryDuration = 10.0; //Seconds
@@ -44,6 +45,10 @@ NSString *const ARTDefaultProduction = @"production";
     _fallbackHosts = nil;
     _fallbackHostsUseDefault = false;
     return self;
+}
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"%@\n\t clientId: %@;", [super description], self.clientId];
 }
 
 - (NSString*)getRestHost {
@@ -105,6 +110,7 @@ NSString *const ARTDefaultProduction = @"production";
     options.logHandler = self.logHandler;
     options.suspendedRetryTimeout = self.suspendedRetryTimeout;
     options.disconnectedRetryTimeout = self.disconnectedRetryTimeout;
+    options.channelRetryTimeout = self.channelRetryTimeout;
     options.httpMaxRetryCount = self.httpMaxRetryCount;
     options.httpMaxRetryDuration = self.httpMaxRetryDuration;
     options.httpOpenTimeout = self.httpOpenTimeout;

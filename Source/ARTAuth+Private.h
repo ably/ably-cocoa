@@ -7,8 +7,20 @@
 //
 
 #import "ARTAuth.h"
+#import "ARTEventEmitter.h"
+
+typedef NS_ENUM(NSUInteger, ARTAuthorizationState) {
+    ARTAuthorizationSucceeded, //ItemType: nil
+    ARTAuthorizationFailed //ItemType: NSError
+};
 
 ART_ASSUME_NONNULL_BEGIN
+
+/// Messages related to the ARTAuth
+@protocol ARTAuthDelegate <NSObject>
+@property (nonatomic, readonly) __GENERIC(ARTEventEmitter, NSNumber * /*ARTAuthorizationState*/, id) *authorizationEmitter;
+- (void)auth:(ARTAuth *)auth didAuthorize:(ARTTokenDetails *)tokenDetails;
+@end
 
 @interface ARTAuth ()
 
@@ -18,6 +30,9 @@ ART_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) ARTLog *logger;
 @property (art_nullable, nonatomic, readonly, strong) ARTTokenDetails *tokenDetails;
 @property (nonatomic, readonly, assign) NSTimeInterval timeOffset;
+
+@property (art_nullable, weak) id<ARTAuthDelegate> delegate;
+@property (readonly, assign) BOOL authorizing;
 
 @end
 

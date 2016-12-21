@@ -22,8 +22,20 @@ void artDispatchMainQueue(dispatch_block_t block) {
         block();
     }
     else {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            block();
-        });
+        dispatch_async(dispatch_get_main_queue(), block);
     }
+}
+
+void artDispatchGlobalQueue(dispatch_block_t block) {
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), block);
+}
+
+dispatch_block_t artDispatchScheduled(NSTimeInterval seconds, dispatch_block_t block) {
+    dispatch_block_t work = dispatch_block_create(0, block);
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(NSEC_PER_SEC * seconds)), dispatch_get_main_queue(), work);
+    return work;
+}
+
+void artDispatchCancel(dispatch_block_t block) {
+    dispatch_block_cancel(block);
 }

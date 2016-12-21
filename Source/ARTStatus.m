@@ -31,7 +31,7 @@ NSInteger getStatusFromCode(NSInteger code) {
     return [[super alloc] initWithDomain:ARTAblyErrorDomain code:code userInfo:@{@"status": [NSNumber numberWithInteger:status], NSLocalizedDescriptionKey:message}];
 }
 
-+ (ARTErrorInfo *)createWithNSError:(NSError *)error {
++ (ARTErrorInfo *)createFromNSError:(NSError *)error {
     if ([error isKindOfClass:[ARTErrorInfo class]]) {
         return (ARTErrorInfo *)error;
     }
@@ -63,6 +63,7 @@ NSInteger getStatusFromCode(NSInteger code) {
     if (self) {
         _state = ARTStateOk;
         _errorInfo = nil;
+        _storeErrorInfo = false;
    }
     return self;
 }
@@ -76,6 +77,7 @@ NSInteger getStatusFromCode(NSInteger code) {
 + (ARTStatus *)state:(ARTState)state info:(ARTErrorInfo *)info {
     ARTStatus * s = [ARTStatus state:state];
     s.errorInfo = info;
+    s.storeErrorInfo = true;
     return s;
 }
 

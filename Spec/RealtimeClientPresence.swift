@@ -244,7 +244,6 @@ class RealtimeClientPresence: QuickSpec {
                     }
                 }
 
-
                 // RTP5a
                 it("all queued presence messages should fail immediately if the channel enters the DETACHED state") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
@@ -252,11 +251,13 @@ class RealtimeClientPresence: QuickSpec {
                     let channel = client.channels.get("test")
 
                     waitUntil(timeout: testTimeout) { done in
+                        channel.once(.Attaching) { _ in
+                            channel.detach()
+                        }
                         channel.presence.enterClient("user", data: nil) { error in
                             expect(error).toNot(beNil())
                             done()
                         }
-                        channel.detach()
                     }
                 }
 

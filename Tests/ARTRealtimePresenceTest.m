@@ -59,14 +59,14 @@
 
     __block NSUInteger attached = 0;
     // Channel 1
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if (channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             attached++;
         }
     }];
     // Channel 2
-    [channel2 on:^(ARTErrorInfo *errorInfo) {
-        if (channel.state == ARTRealtimeChannelAttached) {
+    [channel2 on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             attached++;
         }
     }];
@@ -115,8 +115,8 @@
     [channel attach];
     
     __weak XCTestExpectation *expectChannel2Connected = [self expectationWithDescription:@"presence message"];
-    [channel2 on:^(ARTErrorInfo *errorInfo) {
-        if(channel2.state == ARTRealtimeChannelAttached) {
+    [channel2 on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             [expectChannel2Connected fulfill];
         }
     }];
@@ -161,8 +161,8 @@
     [channel.presence subscribe:^(ARTPresenceMessage *message) {
     }];
     
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if(channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             [expectation fulfill];
         }
     }];
@@ -180,8 +180,8 @@
     [channel.presence update:@"update"  callback:^(ARTErrorInfo *errorInfo) {
         XCTAssertNil(errorInfo);
     }];
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if(channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             [expectation fulfill];
         }
     }];
@@ -209,9 +209,8 @@
             [channel attach];
         }
     }];
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if(channel.state == ARTRealtimeChannelAttached)
-        {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             [channel.presence enter:presenceEnter callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
             }];
@@ -252,8 +251,8 @@
             [channel attach];
         }
     }];
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if(channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             [channel.presence enter:presenceEnter callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
             }];
@@ -293,8 +292,8 @@
             [channel attach];
         }
     }];
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if(channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             [channel.presence enter:presenceEnter callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
             }];
@@ -334,8 +333,8 @@
             [channel attach];
         }
     }];
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if(channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             [channel.presence enter:presenceEnter callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
             }];
@@ -374,8 +373,8 @@
             [channel attach];
         }
     }];
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if(channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             [channel.presence enter:presenceEnter callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
             }];
@@ -418,8 +417,8 @@
             [channel attach];
         }
     }];
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if (channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             [channel.presence enter:presenceEnter callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
             }];
@@ -452,8 +451,8 @@
         }
     }];
     
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if(channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             [channel.presence update:update callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
             }];
@@ -515,8 +514,8 @@
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:@"testEnterNoClientId"];
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if(channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             [channel detach];
         }
         else if(channel.state == ARTRealtimeChannelDetached) {
@@ -537,11 +536,11 @@
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:@"testEnterNoClientId"];
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if(channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             [channel setFailed:[ARTStatus state:ARTStateError]];
         }
-        else if(channel.state == ARTRealtimeChannelFailed) {
+        else if (stateChange.current == ARTRealtimeChannelFailed) {
             [channel.presence enter:@"thisWillFail" callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNotNil(errorInfo);
                 [expectation fulfill];
@@ -605,8 +604,8 @@
         }
     }];
     [channel attach];
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if (channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             [channel.presence update:enter callback:^(ARTErrorInfo *errorInfo) {
                 XCTAssertNil(errorInfo);
             }];
@@ -677,11 +676,11 @@
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:@"testEnterNoClientId"];
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if(channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             [channel detach];
         }
-        else if(channel.state == ARTRealtimeChannelDetached) {
+        else if (stateChange.current == ARTRealtimeChannelDetached) {
             XCTAssertThrows([channel.presence leave:@"thisWillFail" callback:^(ARTErrorInfo *errorInfo) {}]);
             [expectation fulfill];
         }
@@ -697,11 +696,11 @@
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:@"testEnterNoClientId"];
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if(channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             [channel setFailed:[ARTStatus state:ARTStateError]];
         }
-        else if(channel.state == ARTRealtimeChannelFailed) {
+        else if (stateChange.current == ARTRealtimeChannelFailed) {
             XCTAssertThrows([channel.presence leave:@"thisWillFail" callback:^(ARTErrorInfo *errorInfo) {}]);
             [expectation fulfill];
         }
@@ -1000,15 +999,15 @@
 
     __block NSUInteger attached = 0;
     // Channel 1
-    [channel on:^(ARTErrorInfo *errorInfo) {
-        if (channel.state == ARTRealtimeChannelAttached) {
+    [channel on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             attached++;
         }
     }];
 
     // Channel 2
-    [channel2 on:^(ARTErrorInfo *errorInfo) {
-        if (channel2.state == ARTRealtimeChannelAttached) {
+    [channel2 on:^(ARTChannelStateChange *stateChange) {
+        if (stateChange.current == ARTRealtimeChannelAttached) {
             attached++;
         }
     }];
