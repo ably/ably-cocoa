@@ -449,7 +449,7 @@ class RealtimeClientConnection: QuickSpec {
                     defer { client.dispose(); client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.connection.once(.Connected) { stateChange in
+                        client.connection.once(ARTRealtimeConnectionEvent.Connected) { stateChange in
                             guard let stateChange = stateChange else {
                                 fail("ConnectionStateChange is empty"); done()
                                 return
