@@ -133,15 +133,18 @@ NSString *generateNonce();
 
 - (instancetype)initWithCurrent:(ARTRealtimeConnectionState)current
                        previous:(ARTRealtimeConnectionState)previous
+                          event:(ARTRealtimeConnectionEvent)event
                          reason:(ARTErrorInfo *__art_nullable)reason;
 
 - (instancetype)initWithCurrent:(ARTRealtimeConnectionState)current
                        previous:(ARTRealtimeConnectionState)previous
+                          event:(ARTRealtimeConnectionEvent)event
                          reason:(ARTErrorInfo *__art_nullable)reason
                         retryIn:(NSTimeInterval)retryIn;
 
 @property (readonly, nonatomic) ARTRealtimeConnectionState current;
 @property (readonly, nonatomic) ARTRealtimeConnectionState previous;
+@property (readonly, nonatomic) ARTRealtimeConnectionEvent event;
 @property (readonly, nonatomic, art_nullable) ARTErrorInfo *reason;
 @property (readonly, nonatomic) NSTimeInterval retryIn;
 
