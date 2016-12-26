@@ -115,9 +115,11 @@ class RealtimeClientChannel: QuickSpec {
 
                             switch stateChange.current {
                             case .Attached:
+                                expect(stateChange.event).to(equal(ARTChannelEvent.Attached))
                                 expect(stateChange.reason).to(beNil())
                                 channel.detach()
                             case .Detached:
+                                expect(stateChange.event).to(equal(ARTChannelEvent.Detached))
                                 guard let error = stateChange.reason else {
                                     fail("Detach state change reason is nil"); done(); return
                                 }
@@ -162,12 +164,14 @@ class RealtimeClientChannel: QuickSpec {
                             expect(channel.state).to(equal(stateChange.current))
                             switch stateChange.current {
                             case .Attaching:
+                                expect(stateChange.event).to(equal(ARTChannelEvent.Attaching))
                                 expect(stateChange.reason).to(beNil())
                                 expect(stateChange.previous).to(equal(ARTRealtimeChannelState.Initialized))
                             case .Failed:
                                 guard let reason = stateChange.reason else {
                                     fail("Reason is nil"); done(); return
                                 }
+                                expect(stateChange.event).to(equal(ARTChannelEvent.Failed))
                                 expect(reason.code) == 40160
                                 expect(stateChange.previous).to(equal(ARTRealtimeChannelState.Attaching))
                                 done()
@@ -199,6 +203,7 @@ class RealtimeClientChannel: QuickSpec {
                             }
                             expect(stateChange.reason).to(beNil())
                             expect(stateChange.previous).to(equal(ARTRealtimeChannelState.Attached))
+                            expect(stateChange.event).to(equal(ARTChannelEvent.Suspended))
                             expect(channel.state).to(equal(stateChange.current))
                             done()
                         }
@@ -232,6 +237,7 @@ class RealtimeClientChannel: QuickSpec {
                             expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
                             expect(stateChange.previous).to(equal(channel.state))
                             expect(stateChange.current).to(equal(channel.state))
+                            expect(stateChange.event).to(equal(ARTChannelEvent.Update))
                             expect(stateChange.resumed).to(beFalse())
                             expect(stateChange.reason).to(beNil())
                             done()
@@ -2835,6 +2841,7 @@ class RealtimeClientChannel: QuickSpec {
                             guard let stateChange = stateChange else {
                                 fail("ChannelStateChange is nil"); done(); return
                             }
+                            expect(stateChange.event).to(equal(ARTChannelEvent.Update))
                             expect(stateChange.reason).to(beIdenticalTo(attachedMessageWithError.error))
                             expect(channel.errorReason).to(beIdenticalTo(stateChange.reason))
                             done()
