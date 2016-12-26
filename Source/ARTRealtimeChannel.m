@@ -424,7 +424,7 @@
         return;
     }
 
-    if ([message isSyncEnabled]) {
+    if (message.hasPresence) {
         [self.presenceMap startSync];
         [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p PresenceMap Sync started", _realtime, self];
     }
