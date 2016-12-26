@@ -473,13 +473,17 @@ class RealtimeClientConnection: QuickSpec {
                     var errorInfo: ARTErrorInfo?
                     waitUntil(timeout: testTimeout) { done in
                         connection.on { stateChange in
-                            let stateChange = stateChange!
+                            guard let stateChange = stateChange else {
+                                fail("ConnectionStateChange is nil"); done(); return
+                            }
                             let state = stateChange.current
                             let reason = stateChange.reason
                             switch state {
                             case .Connected:
+                                expect(stateChange.event).to(equal(ARTRealtimeConnectionEvent.Connected))
                                 client.onError(AblyTests.newErrorProtocolMessage())
                             case .Failed:
+                                expect(stateChange.event).to(equal(ARTRealtimeConnectionEvent.Failed))
                                 errorInfo = reason
                                 done()
                             default:
@@ -514,11 +518,15 @@ class RealtimeClientConnection: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.Update) { stateChange in
-                            guard let error = stateChange?.reason else {
+                            guard let stateChange = stateChange else {
+                                fail("ConnectionStateChange is nil"); done(); return
+                            }
+                            guard let error = stateChange.reason else {
                                 fail("Reason error is nil"); done(); return
                             }
                             expect(error.code) == 1234
                             expect(error.message) == "fabricated error"
+                            expect(stateChange.event).to(equal(ARTRealtimeConnectionEvent.Update))
                             done()
                         }
 
