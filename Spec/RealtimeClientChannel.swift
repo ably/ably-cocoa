@@ -362,6 +362,45 @@ class RealtimeClientChannel: QuickSpec {
                     }
                 }
 
+                // RTL2f, TR4i
+                it("bit flag RESUMED was included") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.once(.Attached) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ChannelStageChange is nil"); done(); return
+                            }
+                            expect(stateChange.resumed).to(beFalse())
+                            expect(stateChange.reason).to(beNil())
+                            done()
+                        }
+                        channel.attach()
+                    }
+
+                    let attachedMessage = ARTProtocolMessage()
+                    attachedMessage.action = .Attached
+                    attachedMessage.channel = "test"
+                    attachedMessage.flags = 4 //Resumed
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.once(.Update) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ChannelStageChange is nil"); done(); return
+                            }
+                            expect(stateChange.resumed).to(beTrue())
+                            expect(stateChange.reason).to(beNil())
+                            expect(stateChange.current).to(equal(ARTRealtimeChannelState.Attached))
+                            expect(stateChange.previous).to(equal(ARTRealtimeChannelState.Attached))
+                            done()
+                        }
+                        client.transport?.receive(attachedMessage)
+                    }
+                }
+
             }
 
             // RTL3
