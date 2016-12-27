@@ -870,7 +870,7 @@ class RealtimeClientPresence: QuickSpec {
             it("should be used a PresenceMap to maintain a list of members") {
                 let options = AblyTests.commonAppSetup()
                 var clientSecondary: ARTRealtime!
-                defer { clientSecondary.close() }
+                defer { clientSecondary.dispose(); clientSecondary.close() }
 
                 waitUntil(timeout: testTimeout) { done in
                     clientSecondary = AblyTests.addMembersSequentiallyToChannel("test", members: 100, options: options) {
