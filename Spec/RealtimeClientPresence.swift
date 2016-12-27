@@ -930,6 +930,54 @@ class RealtimeClientPresence: QuickSpec {
                 expect(user50LeaveTimestamp).to(beGreaterThan(user50PresentTimestamp))
             }
 
+            // RTP2
+            context("PresenceMap") {
+
+                // RTP2a
+                it("all incoming presence messages must be compared for newness with the matching member already in the PresenceMap") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enterClient("tester", data: nil) { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    guard let intialPresenceMessage = channel.presenceMap.members["tester"] else {
+                        fail("Missing Presence message"); return
+                    }
+
+                    expect(intialPresenceMessage.memberKey()).to(equal("\(client.connection.id):tester"))
+
+                    var compareForNewnessMethodCalls = 0
+                    let hook = channel.presenceMap.testSuite_injectIntoMethodAfter(NSSelectorFromString("compareForNewness")) {
+                        compareForNewnessMethodCalls += 1
+                    }
+                    defer { hook.remove() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enterClient("tester", data: nil) { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    guard let updatedPresenceMessage = channel.presenceMap.members["tester"] else {
+                        fail("Missing Presence message"); return
+                    }
+
+                    expect(intialPresenceMessage.memberKey()).to(equal(updatedPresenceMessage.memberKey()))
+                    expect(intialPresenceMessage.timestamp).toNot(equal(updatedPresenceMessage.timestamp))
+
+                    expect(compareForNewnessMethodCalls) == 1
+                }
+
+            }
+
             // RTP8
             context("enter") {
                 // RTP8h
