@@ -976,6 +976,94 @@ class RealtimeClientPresence: QuickSpec {
                     expect(compareForNewnessMethodCalls) == 1
                 }
 
+                // RTP2b
+                context("compare for newness") {
+
+                    // RTP2b1
+                    it("presence message has a connectionId which is not an initial substring of its id") {
+                        let options = AblyTests.commonAppSetup()
+
+                        let clientSubscribed = ARTRealtime(options: options)
+                        defer { clientSubscribed.dispose(); clientSubscribed.close() }
+                        let channelSubscribed = clientSubscribed.channels.get("foo")
+                        channelSubscribed.attach()
+
+                        let clientPresentMember = ARTRealtime(options: options)
+                        defer { clientPresentMember.dispose(); clientPresentMember.close() }
+                        let channelPresentMember = clientPresentMember.channels.get("foo")
+
+                        var hasInconsistentConnectionIdMethodCalls = 0
+                        let hook = channelSubscribed.presenceMap.testSuite_injectIntoMethodAfter(NSSelectorFromString("hasInconsistentConnectionId")) {
+                            hasInconsistentConnectionIdMethodCalls += 1
+                        }
+                        defer { hook.remove() }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channelPresentMember.presence.enterClient("tester", data: nil) { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channelSubscribed.presence.get { presences, error in
+                                expect(error).to(beNil())
+                                expect(presences).to(haveCount(1))
+                                done()
+                            }
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channelSubscribed.presence.subscribe(.Leave) { presence in
+                                // Check `synthesized leave` event
+                                expect(presence.id).toNot(equal("\(presence.connectionId):0:0"))
+                                done()
+                            }
+                            clientPresentMember.close()
+                        }
+
+                        expect(channelSubscribed.presenceMap.members).to(beEmpty())
+                        expect(hasInconsistentConnectionIdMethodCalls) == 1
+                    }
+
+                    // RTP2b2
+                    it("split the id of both presence messages") {
+                        let options = AblyTests.commonAppSetup()
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("foo")
+
+                        var compareByMsgSerialAndOrIndexMethodCalls = 0
+                        let hook = channel.presenceMap.testSuite_injectIntoMethodAfter(NSSelectorFromString("compareByMsgSerialAndOrIndex")) {
+                            compareByMsgSerialAndOrIndexMethodCalls += 1
+                        }
+                        defer { hook.remove() }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
+                            channel.presence.enterClient("tester", data: nil) { error in
+                                expect(error).to(beNil())
+                                partialDone()
+                            }
+                            channel.presence.subscribe(.Enter) { presence in
+                                expect(NSRegularExpression.extract(presence.id, pattern: ":\\d*:\\d*")) == ":0:0"
+                                partialDone()
+                            }
+                            channel.presence.subscribe(.Leave) { presence in
+                                expect(NSRegularExpression.extract(presence.id, pattern: ":\\d*:\\d*")) == ":0:1"
+                                partialDone()
+                            }
+                            channel.presence.leaveClient("tester", data: nil) { error in
+                                expect(error).to(beNil())
+                                partialDone()
+                            }
+                        }
+
+                        expect(compareByMsgSerialAndOrIndexMethodCalls) == 1
+                    }
+
+                }
+
             }
 
             // RTP8
