@@ -1299,6 +1299,53 @@ class RealtimeClientPresence: QuickSpec {
                     expect(channel.presenceMap.members.filter{ _, presence in presence.memberKey() == user11MemberKey }).to(beEmpty())
                 }
 
+                // RTP2f
+                it("if a SYNC is in progress, then when a presence message with an action of LEAVE arrives, it should be stored in the presence map with the action set to ABSENT") {
+                    let options = AblyTests.commonAppSetup()
+
+                    var clientMembers: ARTRealtime?
+                    defer { clientMembers?.dispose(); clientMembers?.close() }
+                    waitUntil(timeout: testTimeout) { done in
+                        clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 20, options: options) {
+                            done()
+                            }.first
+                    }
+
+                    let client = AblyTests.newRealtime(options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+                    channel.attach()
+
+                    guard let transport = client.transport as? TestProxyTransport else {
+                        fail("TestProxyTransport is not set"); return
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(3, done: done)
+                        channel.presenceMap.testSuite_injectIntoMethodAfter(#selector(ARTPresenceMap.startSync)) {
+                            expect(channel.presenceMap.syncInProgress).to(beTrue())
+                            clientMembers?.channels.get("foo").presence.leaveClient("user11", data: nil) { _ in
+                                partialDone()
+                            }
+                            transport.afterProcessingReceivedMessage = { protocolMessage in
+                                if protocolMessage.action == .Presence && protocolMessage.presence?[0].action == .Some(.Leave) {
+                                    expect(protocolMessage.presence).to(haveCount(1))
+                                    partialDone()
+                                }
+                            }
+                        }
+                        channel.presenceMap.testSuite_injectIntoMethodAfter(#selector(ARTPresenceMap.endSync)) {
+                            expect(channel.presenceMap.syncInProgress).to(beFalse())
+                            expect(channel.presenceMap.members.filter{ _, presence in presence.action == .Absent }).to(beEmpty())
+                            partialDone()
+                        }
+                    }
+
+                    expect(channel.presenceMap.members.filter{ _, presence in presence.action == .Absent }).to(haveCount(1))
+
+                    expect(channel.presenceMap.members).to(haveCount(19))
+                }
+
             }
 
             // RTP8
