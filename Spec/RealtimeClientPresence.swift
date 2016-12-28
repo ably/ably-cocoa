@@ -1254,6 +1254,51 @@ class RealtimeClientPresence: QuickSpec {
                     expect(channel.presenceMap.members.filter{ _, presence in presence.action == .Present }).to(haveCount(1))
                 }
 
+                // RTP2e
+                it("if a SYNC is not in progress, then when a presence message with an action of LEAVE arrives, that memberKey should be deleted from the presence map, if present") {
+                    let options = AblyTests.commonAppSetup()
+
+                    var clientMembers: ARTRealtime?
+                    defer { clientMembers?.dispose(); clientMembers?.close() }
+                    waitUntil(timeout: testTimeout) { done in
+                        clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 20, options: options) {
+                            done()
+                            }.first
+                    }
+
+                    let client = AblyTests.newRealtime(options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+                    channel.attach()
+
+                    guard let transport = client.transport as? TestProxyTransport else {
+                        fail("TestProxyTransport is not set"); return
+                    }
+                    waitUntil(timeout: testTimeout) { done in
+                        transport.afterProcessingReceivedMessage = { protocolMessage in
+                            if protocolMessage.action == .Sync {
+                                done()
+                            }
+                        }
+                    }
+
+                    expect(channel.presenceMap.syncInProgress).toEventually(beFalse(), timeout: testTimeout)
+
+                    guard let user11MemberKey = channel.presenceMap.members["user11"]?.memberKey() else {
+                        fail("user11 memberKey is not present"); return
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.subscribe(.Leave) { presence in
+                            expect(presence.clientId).to(equal("user11"))
+                            done()
+                        }
+                        clientMembers?.channels.get("foo").presence.leaveClient("user11", data: nil)
+                    }
+
+                    expect(channel.presenceMap.members.filter{ _, presence in presence.memberKey() == user11MemberKey }).to(beEmpty())
+                }
+
             }
 
             // RTP8
