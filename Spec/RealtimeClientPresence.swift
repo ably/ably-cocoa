@@ -1177,6 +1177,83 @@ class RealtimeClientPresence: QuickSpec {
 
                 }
 
+                // RTP2d
+                it("if action of ENTER arrives, it should be added to the presence map with the action set to PRESENT") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        channel.presence.subscribe(.Enter) { _ in
+                            partialDone()
+                        }
+                        channel.presence.enterClient("tester", data: nil) { error in
+                            expect(error).to(beNil())
+                            partialDone()
+                        }
+                    }
+
+                    expect(channel.presenceMap.members.filter{ _, presence in presence.action == .Present }).to(haveCount(1))
+                    expect(channel.presenceMap.members.filter{ _, presence in presence.action == .Enter }).to(beEmpty())
+                }
+
+                // RTP2d
+                it("if action of UPDATE arrives, it should be added to the presence map with the action set to PRESENT") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(3, done: done)
+                        channel.presence.subscribe(.Update) { _ in
+                            partialDone()
+                        }
+                        channel.presence.enterClient("tester", data: nil) { error in
+                            expect(error).to(beNil())
+                            partialDone()
+                        }
+                    }
+
+                    expect(channel.presenceMap.members).to(haveCount(1))
+                    expect(channel.presenceMap.members.filter{ _, presence in presence.action == .Present }).to(haveCount(1))
+                    expect(channel.presenceMap.members.filter{ _, presence in presence.action == .Update }).to(beEmpty())
+                }
+
+                // RTP2d
+                it("if action of PRESENT arrives, it should be added to the presence map with the action set to PRESENT") {
+                    let options = AblyTests.commonAppSetup()
+
+                    var clientMembers: ARTRealtime!
+                    defer { clientMembers.dispose(); clientMembers.close() }
+                    waitUntil(timeout: testTimeout) { done in
+                        clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 1, options: options) {
+                            done()
+                            }.first
+                    }
+
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        channel.presenceMap.testSuite_injectIntoMethodAfter(#selector(ARTPresenceMap.endSync)) {
+                            expect(channel.presenceMap.syncInProgress).to(beFalse())
+                            partialDone()
+                        }
+                        channel.attach() { error in
+                            expect(error).to(beNil())
+                            partialDone()
+                        }
+                    }
+
+                    expect(channel.presenceMap.members).to(haveCount(1))
+                    expect(channel.presenceMap.members.filter{ _, presence in presence.action == .Present }).to(haveCount(1))
+                }
+
             }
 
             // RTP8
