@@ -12,6 +12,12 @@ import Nimble
 import Foundation
 
 class RealtimeClientPresence: QuickSpec {
+
+    override func setUp() {
+        super.setUp()
+        AsyncDefaults.Timeout = testTimeout
+    }
+
     override func spec() {
         describe("Presence") {
 
