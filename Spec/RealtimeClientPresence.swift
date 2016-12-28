@@ -1346,6 +1346,28 @@ class RealtimeClientPresence: QuickSpec {
                     expect(channel.presenceMap.members).to(haveCount(19))
                 }
 
+                // RTP2g
+                it("any incoming presence message that passes the newness check should be emitted on the Presence object, with an event name set to its original action") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        channel.presence.enterClient("tester", data: nil) { error in
+                            expect(error).to(beNil())
+                            partialDone()
+                        }
+                        channel.presence.subscribe(.Enter) { _ in
+                            partialDone()
+                        }
+                    }
+
+                    expect(channel.presenceMap.members.filter{ _, presence in presence.action == .Present }).to(haveCount(1))
+                    expect(channel.presenceMap.members.filter{ _, presence in presence.action == .Enter }).to(beEmpty())
+                }
+
             }
 
             // RTP8
