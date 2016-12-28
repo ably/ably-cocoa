@@ -1064,6 +1064,119 @@ class RealtimeClientPresence: QuickSpec {
 
                 }
 
+                // RTP2c
+                context("all presence messages from a SYNC must also be compared for newness in the same way as they would from a PRESENCE") {
+
+                    it("discard members where messages have arrived before the SYNC") {
+                        let options = AblyTests.commonAppSetup()
+                        let timeBeforeSync = NSDate()
+
+                        var clientMembers: ARTRealtime?
+                        defer { clientMembers?.dispose(); clientMembers?.close() }
+                        waitUntil(timeout: testTimeout) { done in
+                            clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 120, options: options) {
+                                done()
+                            }.first
+                        }
+                        guard let membersConnectionId = clientMembers?.connection.id else {
+                            fail("Members client isn't connected"); return
+                        }
+
+                        let client = AblyTests.newRealtime(options)
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("foo")
+
+                        guard let transport = client.transport as? TestProxyTransport else {
+                            fail("TestProxyTransport is not set"); return
+                        }
+
+                        channel.presence.subscribe(.Leave) { leave in
+                            expect(leave.clientId).to(equal("user110"))
+                            fail("Should not fire Leave event for member `user110` because it's out of date")
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(3, done: done)
+                            transport.beforeProcessingReceivedMessage = { protocolMessage in
+                                if protocolMessage.action == .Sync {
+                                    let injectLeave = ARTPresenceMessage()
+                                    injectLeave.action = .Leave
+                                    injectLeave.connectionId = membersConnectionId
+                                    injectLeave.clientId = "user110"
+                                    injectLeave.timestamp = timeBeforeSync
+                                    protocolMessage.presence?.append(injectLeave)
+                                    transport.beforeProcessingReceivedMessage = nil
+                                    partialDone()
+                                }
+                            }
+                            channel.presenceMap.testSuite_injectIntoMethodAfter(#selector(ARTPresenceMap.endSync)) {
+                                expect(channel.presenceMap.syncInProgress).to(beFalse())
+                                expect(channel.presenceMap.members).to(haveCount(120))
+                                expect(channel.presenceMap.members.filter{ _, presence in presence.clientId == "user110" && presence.action == .Present }).to(haveCount(1))
+                                partialDone()
+                            }
+                            channel.attach() { error in
+                                expect(error).to(beNil())
+                                partialDone()
+                            }
+                        }
+                    }
+
+                    it("accept members where message have arrived after the SYNC") {
+                        let options = AblyTests.commonAppSetup()
+
+                        var clientMembers: ARTRealtime?
+                        defer { clientMembers?.dispose(); clientMembers?.close() }
+                        waitUntil(timeout: testTimeout) { done in
+                            clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 120, options: options) {
+                                done()
+                            }.first
+                        }
+                        guard let membersConnectionId = clientMembers?.connection.id else {
+                            fail("Members client isn't connected"); return
+                        }
+
+                        let client = AblyTests.newRealtime(options)
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("foo")
+
+                        guard let transport = client.transport as? TestProxyTransport else {
+                            fail("TestProxyTransport is not set"); return
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(4, done: done)
+                            channel.presence.subscribe(.Leave) { leave in
+                                expect(leave.clientId).to(equal("user110"))
+                                partialDone()
+                            }
+                            transport.beforeProcessingReceivedMessage = { protocolMessage in
+                                if protocolMessage.action == .Sync {
+                                    let injectLeave = ARTPresenceMessage()
+                                    injectLeave.action = .Leave
+                                    injectLeave.connectionId = membersConnectionId
+                                    injectLeave.clientId = "user110"
+                                    injectLeave.timestamp = NSDate() + 1
+                                    protocolMessage.presence?.append(injectLeave)
+                                    transport.beforeProcessingReceivedMessage = nil
+                                    partialDone()
+                                }
+                            }
+                            channel.presenceMap.testSuite_injectIntoMethodAfter(#selector(ARTPresenceMap.endSync)) {
+                                expect(channel.presenceMap.syncInProgress).to(beFalse())
+                                expect(channel.presenceMap.members).to(haveCount(119))
+                                expect(channel.presenceMap.members.filter{ _, presence in presence.clientId == "user110" }).to(beEmpty())
+                                partialDone()
+                            }
+                            channel.attach() { error in
+                                expect(error).to(beNil())
+                                partialDone()
+                            }
+                        }
+                    }
+
+                }
+
             }
 
             // RTP8
