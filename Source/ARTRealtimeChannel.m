@@ -673,6 +673,11 @@
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p already detached", _realtime, self];
             if (callback) callback(nil);
             return;
+        case ARTRealtimeChannelSuspended:
+            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p transitions immediately to the detached", _realtime, self];
+            [self transition:ARTRealtimeChannelDetached status:[ARTStatus state:ARTStateOk]];
+            if (callback) callback(nil);
+            return;
         case ARTRealtimeChannelFailed:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p can't detach when in a failed state", _realtime, self];
             if (callback) callback([ARTErrorInfo createWithCode:90000 message:@"can't detach when in a failed state"]);
