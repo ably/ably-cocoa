@@ -267,14 +267,14 @@
 - (void)transition:(ARTRealtimeConnectionState)state withErrorInfo:(ARTErrorInfo *)errorInfo {
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p transition to %@ requested", self, ARTRealtimeConnectionStateToStr(state)];
 
-    ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:state previous:self.connection.state reason:errorInfo retryIn:0];
+    ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:state previous:self.connection.state event:(ARTRealtimeConnectionEvent)state reason:errorInfo retryIn:0];
     [self.connection setState:state];
 
     if (errorInfo != nil) {
         [self.connection setErrorReason:errorInfo];
     }
 
-    [self transitionSideEffects:stateChange usingEvent:(ARTRealtimeConnectionEvent)stateChange.current];
+    [self transitionSideEffects:stateChange];
 
     [_internalEventEmitter emit:[NSNumber numberWithInteger:state] with:stateChange];
 }
@@ -287,12 +287,12 @@
         return;
     }
 
-    ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:self.connection.state previous:self.connection.state reason:errorInfo retryIn:0];
+    ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:self.connection.state previous:self.connection.state event:ARTRealtimeConnectionEventUpdate reason:errorInfo retryIn:0];
 
-    [self transitionSideEffects:stateChange usingEvent:ARTRealtimeConnectionEventUpdate];
+    [self transitionSideEffects:stateChange];
 }
 
-- (void)transitionSideEffects:(ARTConnectionStateChange *)stateChange usingEvent:(ARTRealtimeConnectionEvent)event {
+- (void)transitionSideEffects:(ARTConnectionStateChange *)stateChange {
     ARTStatus *status = nil;
     // Do not increase the reference count (avoid retain cycles):
     // i.e. the `unlessStateChangesBefore` is setting a timer and if the `ARTRealtime` instance is released before that timer, then it could create a leak.
@@ -470,7 +470,7 @@
         }
     }
 
-    [self.connection emit:event with:stateChange];
+    [self.connection emit:stateChange.event with:stateChange];
 }
 
 - (void)unlessStateChangesBefore:(NSTimeInterval)deadline do:(void(^)())callback {
