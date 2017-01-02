@@ -663,8 +663,18 @@
     switch (self.state) {
         case ARTRealtimeChannelInitialized:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p can't detach when not attached", _realtime, self];
-            if (callback) [_detachedEventEmitter once:callback];
+            if (callback) callback(nil);
             return;
+        case ARTRealtimeChannelAttaching: {
+            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p waiting for the completion of the attaching operation", _realtime, self];
+            [_attachedEventEmitter once:^(ARTErrorInfo *errorInfo) {
+                if (callback && errorInfo) {
+                    callback(errorInfo);
+                }
+                [self detach:callback];
+            }];
+            return;
+        }
         case ARTRealtimeChannelDetaching:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p already detaching", _realtime, self];
             if (callback) [_detachedEventEmitter once:callback];
