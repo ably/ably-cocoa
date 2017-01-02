@@ -153,15 +153,18 @@ NSString *generateNonce();
 
 - (instancetype)initWithCurrent:(ARTRealtimeChannelState)current
                        previous:(ARTRealtimeChannelState)previous
+                          event:(ARTChannelEvent)event
                          reason:(ARTErrorInfo *__art_nullable)reason;
 
 - (instancetype)initWithCurrent:(ARTRealtimeChannelState)current
                        previous:(ARTRealtimeChannelState)previous
+                          event:(ARTChannelEvent)event
                          reason:(ARTErrorInfo *__art_nullable)reason
                         resumed:(BOOL)resumed;
 
 @property (readonly, nonatomic) ARTRealtimeChannelState current;
 @property (readonly, nonatomic) ARTRealtimeChannelState previous;
+@property (readonly, nonatomic) ARTChannelEvent event;
 @property (readonly, nonatomic, art_nullable) ARTErrorInfo *reason;
 @property (readonly, nonatomic) BOOL resumed;
 

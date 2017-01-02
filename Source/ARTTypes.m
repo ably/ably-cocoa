@@ -119,15 +119,16 @@ NSString *ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event) {
 
 @implementation ARTChannelStateChange
 
-- (instancetype)initWithCurrent:(ARTRealtimeChannelState)current previous:(ARTRealtimeChannelState)previous reason:(ARTErrorInfo *)reason {
-    return [self initWithCurrent:current previous:previous reason:reason resumed:NO];
+- (instancetype)initWithCurrent:(ARTRealtimeChannelState)current previous:(ARTRealtimeChannelState)previous event:(ARTChannelEvent)event reason:(ARTErrorInfo *)reason {
+    return [self initWithCurrent:current previous:previous event:event reason:reason resumed:NO];
 }
 
-- (instancetype)initWithCurrent:(ARTRealtimeChannelState)current previous:(ARTRealtimeChannelState)previous reason:(ARTErrorInfo *)reason resumed:(BOOL)resumed {
+- (instancetype)initWithCurrent:(ARTRealtimeChannelState)current previous:(ARTRealtimeChannelState)previous event:(ARTChannelEvent)event reason:(ARTErrorInfo *)reason resumed:(BOOL)resumed {
     self = [self init];
     if (self) {
         _current = current;
         _previous = previous;
+        _event = event;
         _reason = reason;
         _resumed = resumed;
     }

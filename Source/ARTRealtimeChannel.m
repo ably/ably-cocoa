@@ -307,7 +307,7 @@
 }
 
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status {
-    ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:self.state reason:status.errorInfo];
+    ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:self.state event:(ARTChannelEvent)state reason:status.errorInfo];
     self.state = state;
 
     if (status.storeErrorInfo) {
@@ -327,7 +327,7 @@
         [_attachedEventEmitter emit:[NSNull null] with:[ARTErrorInfo createWithCode:90000 message:msg]];
     }
 
-    [self emit:(ARTChannelEvent)stateChange.current with:stateChange];
+    [self emit:stateChange.event with:stateChange];
 }
 
 - (void)dealloc {
@@ -405,7 +405,8 @@
         if (message.error != nil) {
             _errorReason = message.error;
         }
-        [self emit:ARTChannelEventUpdate with:[[ARTChannelStateChange alloc] initWithCurrent:self.state previous:self.state reason:message.error]];
+        ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self.state previous:self.state event:ARTChannelEventUpdate reason:message.error];
+        [self emit:stateChange.event with:stateChange];
         return;
     }
 
@@ -486,7 +487,8 @@
                 ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:(ARTErrorInfo *)error.userInfo[NSLocalizedFailureReasonErrorKey] prepend:@"Failed to decode data: "];
                 [self.logger error:@"R:%p C:%p %@", _realtime, self, errorInfo.message];
                 _errorReason = errorInfo;
-                [self emit:ARTChannelEventUpdate with:[[ARTChannelStateChange alloc] initWithCurrent:self.state previous:self.state reason:errorInfo]];
+                ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self.state previous:self.state event:ARTChannelEventUpdate reason:errorInfo];
+                [self emit:stateChange.event with:stateChange];
             }
         }
         
