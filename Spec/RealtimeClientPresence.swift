@@ -1066,37 +1066,83 @@ class RealtimeClientPresence: QuickSpec {
                     // RTP2b2
                     it("split the id of both presence messages") {
                         let options = AblyTests.commonAppSetup()
-                        let client = ARTRealtime(options: options)
-                        defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("foo")
+                        let now = NSDate()
 
-                        var compareByMsgSerialAndOrIndexMethodCalls = 0
-                        let hook = channel.presenceMap.testSuite_injectIntoMethodAfter(NSSelectorFromString("compareByMsgSerialAndOrIndex")) {
-                            compareByMsgSerialAndOrIndexMethodCalls += 1
+                        var clientMembers: ARTRealtime?
+                        defer { clientMembers?.dispose(); clientMembers?.close() }
+                        waitUntil(timeout: testTimeout) { done in
+                            clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 100, options: options) {
+                                done()
+                            }.first
                         }
-                        defer { hook.remove() }
+
+                        let clientSubscribed = AblyTests.newRealtime(options)
+                        defer { clientSubscribed.dispose(); clientSubscribed.close() }
+                        let channelSubscribed = clientSubscribed.channels.get("foo")
+
+                        let presenceData: [ARTPresenceMessage] = [
+                            ARTPresenceMessage(clientId: "a", action: .Enter, connectionId: "one", id: "one:0:0", timestamp: now),
+                            ARTPresenceMessage(clientId: "a", action: .Leave, connectionId: "one", id: "one:1:0", timestamp: now - 1),
+                            ARTPresenceMessage(clientId: "b", action: .Enter, connectionId: "one", id: "one:2:2", timestamp: now),
+                            ARTPresenceMessage(clientId: "b", action: .Leave, connectionId: "one", id: "one:2:1", timestamp: now + 1),
+                            ARTPresenceMessage(clientId: "c", action: .Enter, connectionId: "one", id: "one:4:4", timestamp: now),
+                            ARTPresenceMessage(clientId: "c", action: .Leave, connectionId: "one", id: "one:3:5", timestamp: now + 1),
+                        ]
+
+                        guard let transport = clientSubscribed.transport as? TestProxyTransport else {
+                            fail("TestProxyTransport is not set"); return
+                        }
 
                         waitUntil(timeout: testTimeout) { done in
-                            let partialDone = AblyTests.splitDone(2, done: done)
-                            channel.presence.enterClient("tester", data: nil) { error in
-                                expect(error).to(beNil())
-                                partialDone()
+                            transport.afterProcessingReceivedMessage = { protocolMessage in
+                                // Receive the first Sync message from Ably service
+                                if protocolMessage.action == .Sync {
+
+                                    // Inject a fabricated Presence message
+                                    let presenceMessage = ARTProtocolMessage()
+                                    presenceMessage.action = .Presence
+                                    presenceMessage.channel = protocolMessage.channel
+                                    presenceMessage.connectionSerial = protocolMessage.connectionSerial + 1
+                                    presenceMessage.timestamp = NSDate()
+                                    presenceMessage.presence = presenceData
+
+                                    transport.receive(presenceMessage)
+
+                                    // Simulate an end to the sync
+                                    let endSyncMessage = ARTProtocolMessage()
+                                    endSyncMessage.action = .Sync
+                                    endSyncMessage.channel = protocolMessage.channel
+                                    endSyncMessage.channelSerial = "validserialprefix:" //with no part after the `:` this indicates the end to the SYNC
+                                    endSyncMessage.connectionSerial = protocolMessage.connectionSerial + 2
+                                    endSyncMessage.timestamp = NSDate()
+
+                                    transport.afterProcessingReceivedMessage = nil
+                                    transport.receive(endSyncMessage)
+
+                                    // Stop the next sync message from Ably service because we already injected the end of the sync
+                                    transport.actionsIgnored = [.Sync]
+
+                                    done()
+                                }
                             }
-                            channel.presence.subscribe(.Enter) { presence in
-                                expect(NSRegularExpression.extract(presence.id, pattern: ":\\d*:\\d*")) == ":0:0"
-                                partialDone()
-                            }
-                            channel.presence.subscribe(.Leave) { presence in
-                                expect(NSRegularExpression.extract(presence.id, pattern: ":\\d*:\\d*")) == ":0:1"
-                                partialDone()
-                            }
-                            channel.presence.leaveClient("tester", data: nil) { error in
-                                expect(error).to(beNil())
-                                partialDone()
-                            }
+                            channelSubscribed.attach()
                         }
 
-                        expect(compareByMsgSerialAndOrIndexMethodCalls) == 1
+                        waitUntil(timeout: testTimeout) { done in
+                            channelSubscribed.presence.get { members, error in
+                                expect(error).to(beNil())
+                                guard let members = members else {
+                                    fail("Members is nil"); done(); return
+                                }
+                                expect(members).to(haveCount(102)) //100 initial members + "b" + "c", client "a" is discarded
+                                expect(members.filter{ $0.clientId == "a" }).to(beEmpty())
+                                expect(members.filter{ $0.clientId == "b" }).to(haveCount(1))
+                                expect(members.filter{ $0.clientId == "b" }.first?.timestamp).to(equal(now))
+                                expect(members.filter{ $0.clientId == "c" }).to(haveCount(1))
+                                expect(members.filter{ $0.clientId == "c" }.first?.timestamp).to(equal(now))
+                                done()
+                            }
+                        }
                     }
 
                 }
