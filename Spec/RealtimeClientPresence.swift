@@ -979,51 +979,88 @@ class RealtimeClientPresence: QuickSpec {
                 // RTP2b
                 context("compare for newness") {
 
-                    // RTP2b1
-                    it("presence message has a connectionId which is not an initial substring of its id") {
-                        let options = AblyTests.commonAppSetup()
+                    context("presence message has a connectionId which is not an initial substring of its id") {
+                        // RTP2b1
+                        it("compares them by timestamp numerically") {
+                            let options = AblyTests.commonAppSetup()
+                            let now = NSDate()
 
-                        let clientSubscribed = ARTRealtime(options: options)
-                        defer { clientSubscribed.dispose(); clientSubscribed.close() }
-                        let channelSubscribed = clientSubscribed.channels.get("foo")
-                        channelSubscribed.attach()
+                            var clientMembers: ARTRealtime?
+                            defer { clientMembers?.dispose(); clientMembers?.close() }
+                            waitUntil(timeout: testTimeout) { done in
+                                clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 100, options: options) {
+                                    done()
+                                }.first
+                            }
 
-                        let clientPresentMember = ARTRealtime(options: options)
-                        defer { clientPresentMember.dispose(); clientPresentMember.close() }
-                        let channelPresentMember = clientPresentMember.channels.get("foo")
+                            let clientSubscribed = AblyTests.newRealtime(options)
+                            defer { clientSubscribed.dispose(); clientSubscribed.close() }
+                            let channelSubscribed = clientSubscribed.channels.get("foo")
 
-                        var hasInconsistentConnectionIdMethodCalls = 0
-                        let hook = channelSubscribed.presenceMap.testSuite_injectIntoMethodAfter(NSSelectorFromString("hasInconsistentConnectionId")) {
-                            hasInconsistentConnectionIdMethodCalls += 1
-                        }
-                        defer { hook.remove() }
+                            let presenceData: [ARTPresenceMessage] = [
+                                ARTPresenceMessage(clientId: "a", action: .Enter, connectionId: "one", id: "one:0:0", timestamp: now),
+                                ARTPresenceMessage(clientId: "a", action: .Leave, connectionId: "one", id: "fabricated:0:1", timestamp: now + 1),
+                                ARTPresenceMessage(clientId: "b", action: .Enter, connectionId: "one", id: "one:0:2", timestamp: now),
+                                ARTPresenceMessage(clientId: "b", action: .Leave, connectionId: "one", id: "fabricated:0:3", timestamp: now - 1),
+                                ARTPresenceMessage(clientId: "c", action: .Enter, connectionId: "one", id: "fabricated:0:4", timestamp: now),
+                                ARTPresenceMessage(clientId: "c", action: .Leave, connectionId: "one", id: "fabricated:0:5", timestamp: now - 1),
+                            ]
 
-                        waitUntil(timeout: testTimeout) { done in
-                            channelPresentMember.presence.enterClient("tester", data: nil) { error in
-                                expect(error).to(beNil())
-                                done()
+                            guard let transport = clientSubscribed.transport as? TestProxyTransport else {
+                                fail("TestProxyTransport is not set"); return
+                            }
+
+                            waitUntil(timeout: testTimeout) { done in
+                                transport.afterProcessingReceivedMessage = { protocolMessage in
+                                    // Receive the first Sync message from Ably service
+                                    if protocolMessage.action == .Sync {
+
+                                        // Inject a fabricated Presence message
+                                        let presenceMessage = ARTProtocolMessage()
+                                        presenceMessage.action = .Presence
+                                        presenceMessage.channel = protocolMessage.channel
+                                        presenceMessage.connectionSerial = protocolMessage.connectionSerial + 1
+                                        presenceMessage.timestamp = NSDate()
+                                        presenceMessage.presence = presenceData
+
+                                        transport.receive(presenceMessage)
+
+                                        // Simulate an end to the sync
+                                        let endSyncMessage = ARTProtocolMessage()
+                                        endSyncMessage.action = .Sync
+                                        endSyncMessage.channel = protocolMessage.channel
+                                        endSyncMessage.channelSerial = "validserialprefix:" //with no part after the `:` this indicates the end to the SYNC
+                                        endSyncMessage.connectionSerial = protocolMessage.connectionSerial + 2
+                                        endSyncMessage.timestamp = NSDate()
+
+                                        transport.afterProcessingReceivedMessage = nil
+                                        transport.receive(endSyncMessage)
+
+                                        // Stop the next sync message from Ably service because we already injected the end of the sync
+                                        transport.actionsIgnored = [.Sync]
+
+                                        done()
+                                    }
+                                }
+                                channelSubscribed.attach()
+                            }
+
+                            waitUntil(timeout: testTimeout) { done in
+                                channelSubscribed.presence.get { members, error in
+                                    expect(error).to(beNil())
+                                    guard let members = members else {
+                                        fail("Members is nil"); done(); return
+                                    }
+                                    expect(members).to(haveCount(102)) //100 initial members + "b" + "c", client "a" is discarded
+                                    expect(members.filter{ $0.clientId == "a" }).to(beEmpty())
+                                    expect(members.filter{ $0.clientId == "b" }).to(haveCount(1))
+                                    expect(members.filter{ $0.clientId == "b" }.first?.timestamp).to(equal(now))
+                                    expect(members.filter{ $0.clientId == "c" }).to(haveCount(1))
+                                    expect(members.filter{ $0.clientId == "c" }.first?.timestamp).to(equal(now))
+                                    done()
+                                }
                             }
                         }
-
-                        waitUntil(timeout: testTimeout) { done in
-                            channelSubscribed.presence.get { presences, error in
-                                expect(error).to(beNil())
-                                expect(presences).to(haveCount(1))
-                                done()
-                            }
-                        }
-
-                        waitUntil(timeout: testTimeout) { done in
-                            channelSubscribed.presence.subscribe(.Leave) { presence in
-                                // Check `synthesized leave` event
-                                expect(presence.id).toNot(equal("\(presence.connectionId):0:0"))
-                                done()
-                            }
-                            clientPresentMember.close()
-                        }
-
-                        expect(channelSubscribed.presenceMap.members).to(beEmpty())
-                        expect(hasInconsistentConnectionIdMethodCalls) == 1
                     }
 
                     // RTP2b2
