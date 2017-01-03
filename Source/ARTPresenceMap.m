@@ -10,9 +10,15 @@
 #import "ARTPresenceMessage.h"
 #import "ARTEventEmitter.h"
 
+typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
+    ARTPresenceSyncStarted, //ItemType: nil
+    ARTPresenceSyncEnded, //ItemType: NSArray<ARTPresenceMessage *>*
+    ARTPresenceSyncFailed //ItemType: ARTErrorInfo*
+};
+
 @interface ARTPresenceMap () {
     BOOL _syncStarted;
-    __GENERIC(ARTEventEmitter, NSNull *, __GENERIC(NSArray, ARTPresenceMessage *) *) *_syncEndedEventEmitter;
+    ARTEventEmitter<NSNumber * /*ARTSyncState*/, id> *_syncEventEmitter;
 }
 
 @property (readwrite, strong, atomic) __GENERIC(NSMutableDictionary, NSString *, ARTPresenceMessage *) *recentMembers;
@@ -27,7 +33,7 @@
         _recentMembers = [NSMutableDictionary dictionary];
         _syncStarted = false;
         _syncComplete = false;
-        _syncEndedEventEmitter = [[ARTEventEmitter alloc] init];
+        _syncEventEmitter = [[ARTEventEmitter alloc] init];
     }
     return self;
 }
@@ -56,21 +62,37 @@
     _recentMembers = [NSMutableDictionary dictionary];
     _syncStarted = true;
     _syncComplete = false;
+    [_syncEventEmitter emit:[NSNumber numberWithInt:ARTPresenceSyncStarted] with:nil];
 }
 
 - (void)endSync {
     [self clean];
     _syncStarted = false;
     _syncComplete = true;
-    [_syncEndedEventEmitter emit:[NSNull null] with:[self.recentMembers allValues]];
+    [_syncEventEmitter emit:[NSNumber numberWithInt:ARTPresenceSyncEnded] with:[self.recentMembers allValues]];
+    [_syncEventEmitter off];
+}
+
+- (void)failsSync:(ARTErrorInfo *)error {
+    [self clean];
+    _syncStarted = false;
+    _syncComplete = true;
+    [_syncEventEmitter emit:[NSNumber numberWithInt:ARTPresenceSyncFailed] with:error];
+    [_syncEventEmitter off];
 }
 
 - (void)onceSyncEnds:(void (^)(NSArray<ARTPresenceMessage *> *))callback {
     if (self.syncInProgress) {
-        [_syncEndedEventEmitter once:callback];
+        [_syncEventEmitter once:[NSNumber numberWithInt:ARTPresenceSyncEnded] callback:callback];
     }
     else {
         callback([self.recentMembers allValues]);
+    }
+}
+
+- (void)onceSyncFails:(void (^)(ARTErrorInfo *))callback {
+    if (self.syncInProgress) {
+        [_syncEventEmitter once:[NSNumber numberWithInt:ARTPresenceSyncFailed] callback:callback];
     }
 }
 

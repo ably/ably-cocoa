@@ -321,11 +321,6 @@
         [_attachedEventEmitter emit:[NSNull null] with:status.errorInfo];
         [_detachedEventEmitter emit:[NSNull null] with:status.errorInfo];
     }
-    else if (state == ARTRealtimeChannelDetaching) {
-        NSString *msg = @"channel is being DETACHED";
-        [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p %@", _realtime, self, msg];
-        [_attachedEventEmitter emit:[NSNull null] with:[ARTErrorInfo createWithCode:90000 message:msg]];
-    }
 
     [self emit:stateChange.event with:stateChange];
 }
@@ -443,7 +438,7 @@
     }
 
     self.attachSerial = nil;
-    
+
     ARTErrorInfo *errorInfo = message.error ? message.error : [ARTErrorInfo createWithCode:0 message:@"channel has detached"];
     ARTStatus *reason = [ARTStatus state:ARTStateNotAttached info:errorInfo];
     [self detachChannel:reason];
@@ -734,6 +729,10 @@
         [_detachedEventEmitter once:^(ARTErrorInfo *err) {
             [self.realtime.connectedEventEmitter off:reconnectedListener];
         }];
+    }
+
+    if (self.presenceMap.syncInProgress) {
+        [self.presenceMap failsSync:[ARTErrorInfo createWithCode:90000 message:@"channel is being DETACHED"]];
     }
 }
 
