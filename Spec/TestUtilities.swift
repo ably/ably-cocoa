@@ -1054,6 +1054,19 @@ extension ARTAuth {
 
 }
 
+extension ARTPresenceMessage {
+
+    convenience init(clientId: String, action: ARTPresenceAction, connectionId: String, id: String, timestamp: NSDate = NSDate()) {
+        self.init()
+        self.action = action
+        self.clientId = clientId
+        self.connectionId = connectionId
+        self.id = id
+        self.timestamp = timestamp
+    }
+
+}
+
 extension ARTRealtimeConnectionState : CustomStringConvertible {
     public var description : String {
         return ARTRealtimeConnectionStateToStr(self)
