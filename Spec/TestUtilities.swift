@@ -947,6 +947,14 @@ public func >=(lhs: NSDate, rhs: NSDate) -> Bool {
     return (lhs > rhs || lhs == rhs)
 }
 
+public func -(lhs: NSDate, rhs: NSTimeInterval) -> NSDate {
+	return lhs.dateByAddingTimeInterval(-rhs)
+}
+
+public func +(lhs: NSDate, rhs: NSTimeInterval) -> NSDate {
+    return lhs.dateByAddingTimeInterval(rhs)
+}
+
 extension NSRegularExpression {
 
     class func match(value: String?, pattern: String) -> Bool {
