@@ -1827,9 +1827,19 @@ class RealtimeClientPresence: QuickSpec {
 
                 // RTP11b
                 it("should result in an error if the channel moves to the DETACHED state") {
-                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    let options = AblyTests.commonAppSetup()
+
+                    let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
+
+                    var clientMembers: ARTRealtime?
+                    defer { clientMembers?.dispose(); clientMembers?.close() }
+                    waitUntil(timeout: testTimeout) { done in
+                        clientMembers = AblyTests.addMembersSequentiallyToChannel("test", members: 120, options: options) {
+                            done()
+                        }.first
+                    }
 
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
@@ -1847,7 +1857,7 @@ class RealtimeClientPresence: QuickSpec {
                         }
                     }
 
-                    expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
                 }
 
                 // RTP11c
