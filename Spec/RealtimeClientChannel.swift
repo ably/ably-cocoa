@@ -1837,7 +1837,7 @@ class RealtimeClientChannel: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             let partialDone = AblyTests.splitDone(2, done: done)
                             expect(channel.state).to(equal(ARTRealtimeChannelState.Initialized))
-                            channel.once(.Attaching) { stateChange in
+                            channel.once(.Attached) { stateChange in
                                 expect(stateChange?.reason).to(beNil())
                                 channel.detach()
                                 partialDone()
@@ -1846,7 +1846,7 @@ class RealtimeClientChannel: QuickSpec {
                                 guard let error = error else {
                                     fail("Error is nil"); done(); return
                                 }
-                                expect(error.message).to(contain("channel has detached"))
+                                expect(error.message).to(contain("invalid channel state"))
                                 expect(channel.state).to(equal(ARTRealtimeChannelState.Detaching))
                                 partialDone()
                             }
