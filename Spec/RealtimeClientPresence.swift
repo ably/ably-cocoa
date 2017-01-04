@@ -125,7 +125,74 @@ class RealtimeClientPresence: QuickSpec {
             // RTP18
             context("realtime system reserves the right to initiate a sync of the presence members at any point once a channel is attached") {
 
+                // RTP18a
+                it("should do a new sync whenever a SYNC ProtocolMessage is received with a channel attribute and a new sync sequence identifier in the channelSerial attribute") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = AblyTests.newRealtime(options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
 
+                    guard let transport = client.transport as? TestProxyTransport else {
+                        fail("TestProxyTransport is not set"); return
+                    }
+
+                    expect(channel.presenceMap.syncInProgress).to(beFalse())
+                    expect(channel.presenceMap.members).to(beEmpty())
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        channel.presence.subscribe(.Present) { error in
+                            expect(channel.presence.syncComplete).to(beFalse())
+                            partialDone()
+                        }
+
+                        guard let lastConnectionSerial = transport.protocolMessagesReceived.last?.connectionSerial else {
+                            fail("No protocol message has been received yet"); done(); return
+                        }
+
+                        // Inject a SYNC Presence message (first page)
+                        let sync1Message = ARTProtocolMessage()
+                        sync1Message.action = .Sync
+                        sync1Message.channel = channel.name
+                        sync1Message.channelSerial = "sequenceid:cursor"
+                        sync1Message.connectionSerial = lastConnectionSerial + 1
+                        sync1Message.timestamp = NSDate()
+                        sync1Message.presence = [
+                            ARTPresenceMessage(clientId: "a", action: .Present, connectionId: "another", id: "another:0:0"),
+                            ARTPresenceMessage(clientId: "b", action: .Present, connectionId: "another", id: "another:0:1"),
+                        ]
+                        transport.receive(sync1Message)
+
+                        // Inject a SYNC Presence message (last page)
+                        let sync2Message = ARTProtocolMessage()
+                        sync2Message.action = .Sync
+                        sync2Message.channel = channel.name
+                        sync2Message.channelSerial = "sequenceid:" //indicates SYNC is complete
+                        sync2Message.connectionSerial = lastConnectionSerial + 2
+                        sync2Message.timestamp = NSDate()
+                        sync2Message.presence = [
+                            ARTPresenceMessage(clientId: "a", action: .Leave, connectionId: "another", id: "another:1:0"),
+                        ]
+                        transport.receive(sync2Message)
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.get { members, error in
+                            expect(error).to(beNil())
+                            guard let members = members where members.count == 1 else {
+                                fail("Should at least have 1 member"); done(); return
+                            }
+                            expect(members[0].clientId).to(equal("b"))
+                            done()
+                        }
+                    }
+                }
 
             }
 
