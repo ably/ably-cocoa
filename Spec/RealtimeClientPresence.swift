@@ -122,6 +122,13 @@ class RealtimeClientPresence: QuickSpec {
                 expect(transport.protocolMessagesReceived.filter{ $0.action == .Sync }).toEventually(haveCount(2), timeout: testTimeout)
             }
 
+            // RTP18
+            context("realtime system reserves the right to initiate a sync of the presence members at any point once a channel is attached") {
+
+
+
+            }
+
             // RTP4
             it("should receive all 250 members") {
                 let options = AblyTests.commonAppSetup()
