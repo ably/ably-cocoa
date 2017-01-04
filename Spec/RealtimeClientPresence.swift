@@ -956,10 +956,14 @@ class RealtimeClientPresence: QuickSpec {
 
                     channel.attach()
                     channel.detach()
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.update(nil) { error in
-                            expect(error!.message).to(contain("invalid channel state"))
+                            guard let error = error else {
+                                fail("Error is nil"); done(); return
+                            }
+                            expect(error.message).to(contain("invalid channel state"))
                             done()
                         }
                     }
@@ -977,7 +981,10 @@ class RealtimeClientPresence: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.update(nil) { error in
-                            expect(error!.message).to(contain("invalid channel state"))
+                            guard let error = error else {
+                                fail("Error is nil"); done(); return
+                            }
+                            expect(error.message).to(contain("invalid channel state"))
                             done()
                         }
                     }
@@ -994,7 +1001,10 @@ class RealtimeClientPresence: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.update(nil) { error in
-                            expect(error!.message).to(contain("Channel denied access based on given capability"))
+                            guard let error = error else {
+                                fail("Error is nil"); done(); return
+                            }
+                            expect(error.message).to(contain("Channel denied access based on given capability"))
                             done()
                         }
                     }
@@ -1008,7 +1018,10 @@ class RealtimeClientPresence: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.update(nil) { error in
-                            expect(error!.message).to(contain("presence message without clientId"))
+                            guard let error = error else {
+                                fail("Error is nil"); done(); return
+                            }
+                            expect(error.message).to(contain("presence message without clientId"))
                             done()
                         }
                     }
