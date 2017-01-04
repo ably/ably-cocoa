@@ -282,6 +282,77 @@ class RealtimeClientPresence: QuickSpec {
 
             }
 
+            // RTP19
+            context("PresenceMap has existing members when a SYNC is started") {
+
+                it("should ensure that members no longer present on the channel are removed from the local PresenceMap once the sync is complete") {
+                    let options = AblyTests.commonAppSetup()
+
+                    var clientMembers: ARTRealtime?
+                    defer { clientMembers?.dispose(); clientMembers?.close() }
+                    waitUntil(timeout: testTimeout) { done in
+                        clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 2, options: options) {
+                            done()
+                        }
+                    }
+
+                    let client = AblyTests.newRealtime(options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.get { members, error in
+                            expect(error).to(beNil())
+                            expect(members).to(haveCount(2)) //synced
+                            done()
+                        }
+                    }
+
+                    expect(channel.presenceMap.members).to(haveCount(2))
+                    // Inject a local member
+                    let localMember = ARTPresenceMessage(clientId: NSUUID().UUIDString, action: .Enter, connectionId: "another", id: "another:0:0")
+                    channel.presenceMap.add(localMember)
+                    expect(channel.presenceMap.members).to(haveCount(3))
+                    expect(channel.presenceMap.members.filter{ clientId, _ in clientId == localMember.clientId }).to(haveCount(1))
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.get { members, error in
+                            expect(error).to(beNil())
+                            guard let members = members where members.count == 3 else {
+                                fail("Should at least have 3 members"); done(); return
+                            }
+                            expect(members.filter{ $0.clientId == localMember.clientId }).to(haveCount(1))
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.subscribe(.Leave) { leave in
+                            expect(channel.presence.syncComplete).to(beFalse())
+                            expect(leave.clientId).to(equal(localMember.clientId))
+                            done()
+                        }
+
+                        // Request a sync
+                        let syncMessage = ARTProtocolMessage()
+                        syncMessage.action = .Sync
+                        syncMessage.channel = channel.name
+                        client.transport?.send(syncMessage)
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.get { members, error in
+                            expect(error).to(beNil())
+                            guard let members = members where members.count == 2 else {
+                                fail("Should at least have 2 members"); done(); return
+                            }
+                            expect(members.filter{ $0.clientId == localMember.clientId }).to(beEmpty())
+                            done()
+                        }
+                    }
+                }
+
+            }
+
             // RTP4
             it("should receive all 250 members") {
                 let options = AblyTests.commonAppSetup()
