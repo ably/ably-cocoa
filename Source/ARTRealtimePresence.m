@@ -62,9 +62,15 @@
     [_channel attach:^(ARTErrorInfo *error) {
         if (error) {
             callback(nil, error);
-        } else if (query.waitForSync) {
+            return;
+        }
+
+        if (query.waitForSync) {
             [_channel.presenceMap onceSyncEnds:^(NSArray<ARTPresenceMessage *> *members) {
                 callback(members, nil);
+            }];
+            [_channel.presenceMap onceSyncFails:^(ARTErrorInfo *error) {
+                callback(nil, error);
             }];
         } else {
             callback(_channel.presenceMap.members.allValues, nil);

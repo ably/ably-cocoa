@@ -136,25 +136,45 @@
 }
 
 - (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb {
+    __weak __typeof(self) weakSelf = self;
+    ARTStatus *statusInvalidChannel = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:@"channel operation failed (invalid channel state)"]];
+
     switch (_realtime.connection.state) {
         case ARTRealtimeClosing:
         case ARTRealtimeClosed: {
             if (cb) {
-                ARTStatus *status = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:@"channel operation failed (invalid channel state)"]];
-                cb(status);
+                cb(statusInvalidChannel);
             }
             return;
         }
         default:
             break;
     }
+
+    void (^queuedCallback)(ARTStatus *) = ^(ARTStatus *status) {
+        switch ([weakSelf state]) {
+            case ARTRealtimeChannelDetaching:
+            case ARTRealtimeChannelDetached:
+            case ARTRealtimeChannelFailed:
+                if (cb) {
+                    cb(status.state == ARTStateOk ? statusInvalidChannel : status);
+                }
+                return;
+            default:
+                break;
+        }
+        if (cb) {
+            cb(status);
+        }
+    };
+
     switch (self.state) {
         case ARTRealtimeChannelInitialized:
             [self attach];
             // intentional fall-through
         case ARTRealtimeChannelAttaching:
         {
-            [self addToQueue:pm callback:cb];
+            [self addToQueue:pm callback:queuedCallback];
             break;
         }
         case ARTRealtimeChannelSuspended:
@@ -163,8 +183,7 @@
         case ARTRealtimeChannelFailed:
         {
             if (cb) {
-                ARTStatus *status = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:@"channel operation failed (invalid channel state)"]];
-                cb(status);
+                cb(statusInvalidChannel);
             }
             break;
         }
@@ -173,10 +192,10 @@
             if (_realtime.connection.state == ARTRealtimeConnected) {
                 [self sendMessage:pm callback:cb];
             } else {
-                [self addToQueue:pm callback:cb];
+                [self addToQueue:pm callback:queuedCallback];
 
                 [self.realtime.internalEventEmitter once:[NSNumber numberWithInteger:ARTRealtimeConnected] callback:^(ARTConnectionStateChange *__art_nullable change) {
-                    [self sendQueuedMessages];
+                    [weakSelf sendQueuedMessages];
                 }];
             }
             break;
@@ -321,11 +340,6 @@
         [_attachedEventEmitter emit:[NSNull null] with:status.errorInfo];
         [_detachedEventEmitter emit:[NSNull null] with:status.errorInfo];
     }
-    else if (state == ARTRealtimeChannelDetaching) {
-        NSString *msg = @"channel is being DETACHED";
-        [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p %@", _realtime, self, msg];
-        [_attachedEventEmitter emit:[NSNull null] with:[ARTErrorInfo createWithCode:90000 message:msg]];
-    }
 
     [self emit:stateChange.event with:stateChange];
 }
@@ -443,7 +457,7 @@
     }
 
     self.attachSerial = nil;
-    
+
     ARTErrorInfo *errorInfo = message.error ? message.error : [ARTErrorInfo createWithCode:0 message:@"channel has detached"];
     ARTStatus *reason = [ARTStatus state:ARTStateNotAttached info:errorInfo];
     [self detachChannel:reason];
@@ -663,14 +677,29 @@
     switch (self.state) {
         case ARTRealtimeChannelInitialized:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p can't detach when not attached", _realtime, self];
-            if (callback) [_detachedEventEmitter once:callback];
+            if (callback) callback(nil);
             return;
+        case ARTRealtimeChannelAttaching: {
+            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p waiting for the completion of the attaching operation", _realtime, self];
+            [_attachedEventEmitter once:^(ARTErrorInfo *errorInfo) {
+                if (callback && errorInfo) {
+                    callback(errorInfo);
+                }
+                [self detach:callback];
+            }];
+            return;
+        }
         case ARTRealtimeChannelDetaching:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p already detaching", _realtime, self];
             if (callback) [_detachedEventEmitter once:callback];
             return;
         case ARTRealtimeChannelDetached:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p already detached", _realtime, self];
+            if (callback) callback(nil);
+            return;
+        case ARTRealtimeChannelSuspended:
+            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p transitions immediately to the detached", _realtime, self];
+            [self transition:ARTRealtimeChannelDetached status:[ARTStatus state:ARTStateOk]];
             if (callback) callback(nil);
             return;
         case ARTRealtimeChannelFailed:
@@ -719,6 +748,10 @@
         [_detachedEventEmitter once:^(ARTErrorInfo *err) {
             [self.realtime.connectedEventEmitter off:reconnectedListener];
         }];
+    }
+
+    if (self.presenceMap.syncInProgress) {
+        [self.presenceMap failsSync:[ARTErrorInfo createWithCode:90000 message:@"channel is being DETACHED"]];
     }
 }
 

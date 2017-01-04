@@ -10,6 +10,7 @@
 #import "CompatibilityMacros.h"
 
 @class ARTPresenceMessage;
+@class ARTErrorInfo;
 
 ART_ASSUME_NONNULL_BEGIN
 
@@ -30,8 +31,10 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (void)startSync;
 - (void)endSync;
+- (void)failsSync:(ARTErrorInfo *)error;
 
 - (void)onceSyncEnds:(void (^)(__GENERIC(NSArray, ARTPresenceMessage *) *))callback;
+- (void)onceSyncFails:(void (^)(ARTErrorInfo *))callback;
 
 @end
 

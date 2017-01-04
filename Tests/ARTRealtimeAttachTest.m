@@ -149,32 +149,6 @@
     [realtime testSuite_waitForConnectionToClose:self];
 }
 
-- (void)testSkipsFromAttachingToDetaching {
-    ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
-    __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
-    ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
-    ARTRealtimeChannel *channel = [realtime.channels get:@"attaching_to_detaching"];
-    [channel on:^(ARTChannelStateChange *stateChange) {
-        if (stateChange.current == ARTRealtimeChannelAttached) {
-            XCTFail(@"Should not have made it to attached");
-        }
-        else if (stateChange.current == ARTRealtimeChannelAttaching) {
-            [channel detach];
-        }
-        else if (stateChange.current == ARTRealtimeChannelDetaching) {
-            [channel off];
-            [expectation fulfill];
-        }
-        else if (stateChange.current == ARTRealtimeChannelDetached) {
-            XCTFail(@"Should not have made it to detached");
-            
-        }
-    }];
-    [channel attach];
-    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
-    [realtime testSuite_waitForConnectionToClose:self];
-}
-
 -(void)testDetachingIgnoresDetach {
     ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];

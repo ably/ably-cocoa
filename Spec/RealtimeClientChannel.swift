@@ -1085,7 +1085,7 @@ class RealtimeClientChannel: QuickSpec {
 
             describe("detach") {
                 // RTL5a
-                it("if state is INITIALISED, DETACHED or DETACHING nothing is done") {
+                it("if state is INITIALIZED or DETACHED nothing is done") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
@@ -1106,13 +1106,6 @@ class RealtimeClientChannel: QuickSpec {
                         expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
                     }
 
-                    expect(channel.state).to(equal(ARTRealtimeChannelState.Detaching))
-                    channel.detach { errorInfo in
-                        expect(errorInfo).to(beNil())
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
-                    }
-                    expect(channel.state).to(equal(ARTRealtimeChannelState.Detaching))
-
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
 
                     waitUntil(timeout: testTimeout) { done in
@@ -1121,6 +1114,104 @@ class RealtimeClientChannel: QuickSpec {
                             expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
                             done()
                         }
+                    }
+                }
+
+                // RTL5i
+                it("if the channel is in a pending state DETACHING, do the detach operation after the completion of the pending request") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    var detachedCount = 0
+                    channel.on(.Detached) { _ in
+                        detachedCount += 1
+                    }
+
+                    var detachingCount = 0
+                    channel.on(.Detaching) { _ in
+                        detachingCount += 1
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        channel.once(.Detaching) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ChannelStateChange is nil"); done(); return
+                            }
+                            expect(stateChange.reason).to(beNil())
+                            expect(stateChange.current).to(equal(ARTRealtimeChannelState.Detaching))
+                            expect(stateChange.previous).to(equal(ARTRealtimeChannelState.Attached))
+                            channel.detach()
+                            partialDone()
+                        }
+                        channel.once(.Detached) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ChannelStateChange is nil"); done(); return
+                            }
+                            expect(stateChange.current).to(equal(ARTRealtimeChannelState.Detached))
+                            expect(stateChange.previous).to(equal(ARTRealtimeChannelState.Detaching))
+                            partialDone()
+                        }
+                        channel.detach()
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        delay(1.0) {
+                            expect(detachedCount) == 1
+                            expect(detachingCount) == 1
+                            done()
+                        }
+                    }
+
+                    channel.off()
+                }
+
+                // RTL5i
+                it("if the channel is in a pending state ATTACHING, do the detach operation after the completion of the pending request") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(3, done: done)
+                        channel.once(.Attaching) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ChannelStateChange is nil"); partialDone(); return
+                            }
+                            expect(stateChange.reason).to(beNil())
+                            expect(stateChange.current).to(equal(ARTRealtimeChannelState.Attaching))
+                            expect(stateChange.previous).to(equal(ARTRealtimeChannelState.Initialized))
+                            channel.detach()
+                            partialDone()
+                        }
+                        channel.once(.Attached) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ChannelStateChange is nil"); partialDone(); return
+                            }
+                            expect(stateChange.reason).to(beNil())
+                            expect(stateChange.current).to(equal(ARTRealtimeChannelState.Attached))
+                            expect(stateChange.previous).to(equal(ARTRealtimeChannelState.Attaching))
+                            partialDone()
+                        }
+                        channel.once(.Detaching) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ChannelStateChange is nil"); partialDone(); return
+                            }
+                            expect(stateChange.reason).to(beNil())
+                            expect(stateChange.current).to(equal(ARTRealtimeChannelState.Detaching))
+                            expect(stateChange.previous).to(equal(ARTRealtimeChannelState.Attached))
+                            partialDone()
+                        }
+                        channel.attach()
                     }
                 }
 
@@ -1380,6 +1471,42 @@ class RealtimeClientChannel: QuickSpec {
                             }
                         }
                     }
+                }
+
+                // RTL5j
+                it("if the channel state is SUSPENDED, the @detach@ request transitions the channel immediately to the DETACHED state") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    channel.setSuspended(ARTStatus.state(.Ok))
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Suspended))
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        channel.once(.Detached) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ChannelStateChange is nil"); partialDone(); return
+                            }
+                            expect(stateChange.reason).to(beNil())
+                            expect(stateChange.current).to(equal(ARTRealtimeChannelState.Detached))
+                            expect(stateChange.previous).to(equal(ARTRealtimeChannelState.Suspended))
+                            partialDone()
+                        }
+                        channel.detach() { error in
+                            expect(error).to(beNil())
+                            partialDone()
+                        }
+                    }
+
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
                 }
 
             }
@@ -1710,7 +1837,7 @@ class RealtimeClientChannel: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             let partialDone = AblyTests.splitDone(2, done: done)
                             expect(channel.state).to(equal(ARTRealtimeChannelState.Initialized))
-                            channel.once(.Attaching) { stateChange in
+                            channel.once(.Attached) { stateChange in
                                 expect(stateChange?.reason).to(beNil())
                                 channel.detach()
                                 partialDone()
@@ -1719,7 +1846,7 @@ class RealtimeClientChannel: QuickSpec {
                                 guard let error = error else {
                                     fail("Error is nil"); done(); return
                                 }
-                                expect(error.message).to(contain("channel has detached"))
+                                expect(error.message).to(contain("invalid channel state"))
                                 expect(channel.state).to(equal(ARTRealtimeChannelState.Detaching))
                                 partialDone()
                             }
