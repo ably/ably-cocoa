@@ -226,7 +226,7 @@ class RealtimeClientPresence: QuickSpec {
             }
 
             // RTP5
-            context("Channel state change side effects") {
+            pending("Channel state change side effects") {
 
                 // RTP5a
                 it("all queued presence messages should fail immediately if the channel enters the FAILED state") {
