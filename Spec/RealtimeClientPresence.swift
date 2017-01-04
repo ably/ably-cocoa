@@ -85,7 +85,7 @@ class RealtimeClientPresence: QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 options.disconnectedRetryTimeout = 1.0
                 var clientSecondary: ARTRealtime!
-                defer { clientSecondary.close() }
+                defer { clientSecondary.dispose(); clientSecondary.close() }
 
                 waitUntil(timeout: testTimeout) { done in
                     clientSecondary = AblyTests.addMembersSequentiallyToChannel("test", members: 150, options: options) {
@@ -100,7 +100,9 @@ class RealtimeClientPresence: QuickSpec {
                 var lastSyncSerial: String?
                 waitUntil(timeout: testTimeout) { done in
                     channel.attach() { _ in
-                        let transport = client.transport as! TestProxyTransport
+                        guard let transport = client.transport as? TestProxyTransport else {
+                            fail("TestProxyTransport is not set"); return
+                        }
                         transport.afterProcessingReceivedMessage = { protocolMessage in
                             if protocolMessage.action == .Sync {
                                 lastSyncSerial = protocolMessage.channelSerial
@@ -111,15 +113,33 @@ class RealtimeClientPresence: QuickSpec {
                     }
                 }
 
+                expect(channel.presenceMap.members).toNot(haveCount(150))
                 expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connecting), timeout: options.disconnectedRetryTimeout + 1.0)
                 expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
 
-                //Client library requests a SYNC resume by sending a SYNC ProtocolMessage with the last received sync serial number
-                let transport = client.transport as! TestProxyTransport
-                expect(transport.protocolMessagesSent.filter{ $0.action == .Sync }).toEventually(haveCount(1), timeout: testTimeout)
-                expect(transport.protocolMessagesSent.filter{ $0.action == .Sync }.first!.channelSerial).to(equal(lastSyncSerial))
+                // Client library requests a SYNC resume by sending a SYNC ProtocolMessage with the last received sync serial number
+                guard let transport = client.transport as? TestProxyTransport else {
+                    fail("TestProxyTransport is not set"); return
+                }
+
+                let syncSentProtocolMessages = transport.protocolMessagesSent.filter({ $0.action == .Sync })
+                guard let syncSentMessage = syncSentProtocolMessages.last where syncSentProtocolMessages.count == 1 else {
+                    fail("Should send one SYNC protocol message"); return
+                }
+                expect(syncSentMessage.channelSerial).to(equal(lastSyncSerial))
 
                 expect(transport.protocolMessagesReceived.filter{ $0.action == .Sync }).toEventually(haveCount(2), timeout: testTimeout)
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.presence.get { members, error in
+                        expect(error).to(beNil())
+                        guard let members = members else {
+                            fail("No present members"); done(); return
+                        }
+                        expect(members).to(haveCount(150))
+                        done()
+                    }
+                }
             }
 
             // RTP4
