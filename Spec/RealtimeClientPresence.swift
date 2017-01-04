@@ -195,6 +195,64 @@ class RealtimeClientPresence: QuickSpec {
                     }
                 }
 
+                // RTP18c, RTP18b
+                it("when a SYNC is sent with no channelSerial attribute then the sync data is entirely contained within that ProtocolMessage") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = AblyTests.newRealtime(options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    guard let transport = client.transport as? TestProxyTransport else {
+                        fail("TestProxyTransport is not set"); return
+                    }
+
+                    expect(channel.presenceMap.syncInProgress).to(beFalse())
+                    expect(channel.presenceMap.members).to(beEmpty())
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        channel.presence.subscribe(.Present) { error in
+                            expect(channel.presence.syncComplete).to(beFalse())
+                            partialDone()
+                        }
+
+                        guard let lastConnectionSerial = transport.protocolMessagesReceived.last?.connectionSerial else {
+                            fail("No protocol message has been received yet"); done(); return
+                        }
+
+                        // Inject a SYNC Presence message (entirely contained)
+                        let syncMessage = ARTProtocolMessage()
+                        syncMessage.action = .Sync
+                        syncMessage.channel = channel.name
+                        syncMessage.connectionSerial = lastConnectionSerial + 1
+                        syncMessage.timestamp = NSDate()
+                        syncMessage.presence = [
+                            ARTPresenceMessage(clientId: "a", action: .Present, connectionId: "another", id: "another:0:0"),
+                            ARTPresenceMessage(clientId: "b", action: .Present, connectionId: "another", id: "another:0:1"),
+                            ARTPresenceMessage(clientId: "a", action: .Leave, connectionId: "another", id: "another:1:0"),
+                        ]
+                        transport.receive(syncMessage)
+                    }
+
+                    expect(channel.presence.syncComplete).to(beTrue())
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.get { members, error in
+                            expect(error).to(beNil())
+                            guard let members = members where members.count == 1 else {
+                                fail("Should at least have 1 member"); done(); return
+                            }
+                            expect(members[0].clientId).to(equal("b"))
+                            done()
+                        }
+                    }
+                }
+
             }
 
             // RTP4
