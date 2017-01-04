@@ -136,25 +136,45 @@
 }
 
 - (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb {
+    __weak __typeof(self) weakSelf = self;
+    ARTStatus *statusInvalidChannel = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:@"channel operation failed (invalid channel state)"]];
+
     switch (_realtime.connection.state) {
         case ARTRealtimeClosing:
         case ARTRealtimeClosed: {
             if (cb) {
-                ARTStatus *status = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:@"channel operation failed (invalid channel state)"]];
-                cb(status);
+                cb(statusInvalidChannel);
             }
             return;
         }
         default:
             break;
     }
+
+    void (^queuedCallback)(ARTStatus *) = ^(ARTStatus *status) {
+        switch ([weakSelf state]) {
+            case ARTRealtimeChannelDetaching:
+            case ARTRealtimeChannelDetached:
+            case ARTRealtimeChannelFailed:
+                if (cb) {
+                    cb(status.state == ARTStateOk ? statusInvalidChannel : status);
+                }
+                return;
+            default:
+                break;
+        }
+        if (cb) {
+            cb(status);
+        }
+    };
+
     switch (self.state) {
         case ARTRealtimeChannelInitialized:
             [self attach];
             // intentional fall-through
         case ARTRealtimeChannelAttaching:
         {
-            [self addToQueue:pm callback:cb];
+            [self addToQueue:pm callback:queuedCallback];
             break;
         }
         case ARTRealtimeChannelSuspended:
@@ -163,8 +183,7 @@
         case ARTRealtimeChannelFailed:
         {
             if (cb) {
-                ARTStatus *status = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:@"channel operation failed (invalid channel state)"]];
-                cb(status);
+                cb(statusInvalidChannel);
             }
             break;
         }
@@ -173,10 +192,10 @@
             if (_realtime.connection.state == ARTRealtimeConnected) {
                 [self sendMessage:pm callback:cb];
             } else {
-                [self addToQueue:pm callback:cb];
+                [self addToQueue:pm callback:queuedCallback];
 
                 [self.realtime.internalEventEmitter once:[NSNumber numberWithInteger:ARTRealtimeConnected] callback:^(ARTConnectionStateChange *__art_nullable change) {
-                    [self sendQueuedMessages];
+                    [weakSelf sendQueuedMessages];
                 }];
             }
             break;
