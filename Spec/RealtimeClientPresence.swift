@@ -125,7 +125,7 @@ class RealtimeClientPresence: QuickSpec {
             // RTP18
             context("realtime system reserves the right to initiate a sync of the presence members at any point once a channel is attached") {
 
-                // RTP18a
+                // RTP18a, RTP18b
                 it("should do a new sync whenever a SYNC ProtocolMessage is received with a channel attribute and a new sync sequence identifier in the channelSerial attribute") {
                     let options = AblyTests.commonAppSetup()
                     let client = AblyTests.newRealtime(options)
@@ -182,6 +182,7 @@ class RealtimeClientPresence: QuickSpec {
                         transport.receive(sync2Message)
                     }
 
+                    expect(channel.presence.syncComplete).to(beTrue())
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.get { members, error in
                             expect(error).to(beNil())
