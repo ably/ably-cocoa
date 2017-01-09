@@ -189,7 +189,7 @@ class AblyTests {
         return NSProcessInfo.processInfo().globallyUniqueString
     }
 
-    class func addMembersSequentiallyToChannel(channelName: String, members: Int = 1, startFrom: Int = 1, data: AnyObject? = nil, options: ARTClientOptions, done: ()->()) -> [ARTRealtime] {
+    class func addMembersSequentiallyToChannel(channelName: String, members: Int = 1, startFrom: Int = 1, data: AnyObject? = nil, options: ARTClientOptions, done: ()->()) -> ARTRealtime {
         let client = ARTRealtime(options: options)
         let channel = client.channels.get(channelName)
 
@@ -208,7 +208,8 @@ class AblyTests {
                 }
             }
         }
-        return [client]
+
+        return client
     }
 
     class func splitDone(howMany: Int, file: StaticString = #file, line: UInt = #line, done: () -> Void) -> (() -> Void) {
