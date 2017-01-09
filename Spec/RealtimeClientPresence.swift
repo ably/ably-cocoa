@@ -389,36 +389,106 @@ class RealtimeClientPresence: QuickSpec {
             context("Channel state change side effects") {
 
                 // RTP5a
-                it("all queued presence messages should fail immediately if the channel enters the FAILED state") {
-                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
-                    defer { client.dispose(); client.close() }
-                    let channel = client.channels.get("test")
+                context("if the channel enters the FAILED state") {
 
-                    waitUntil(timeout: testTimeout) { done in
-                        let protocolError = AblyTests.newErrorProtocolMessage()
-                        channel.presence.enterClient("user", data: nil) { error in
-                            expect(error).to(beIdenticalTo(protocolError.error))
-                            done()
+                    it("all queued presence messages should fail immediately") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("test")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let protocolError = AblyTests.newErrorProtocolMessage()
+                            channel.presence.enterClient("user", data: nil) { error in
+                                expect(error).to(beIdenticalTo(protocolError.error))
+                                expect(channel.queuedMessages).to(haveCount(0))
+                                done()
+                            }
+                            expect(channel.queuedMessages).to(haveCount(1))
+                            channel.onError(protocolError)
                         }
-                        channel.onError(protocolError)
                     }
+
+                    it("should clear the PresenceMap including local members and does not emit any presence events") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("test")
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.presence.enterClient("user", data: nil) { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        expect(channel.presenceMap.members).to(haveCount(1))
+                        expect(channel.presenceMap.localMembers).to(haveCount(1))
+
+                        channel.subscribe() { _ in
+                            fail("Shouldn't receive any presence event")
+                        }
+                        defer { channel.off() }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.once(.Failed) { _ in
+                                expect(channel.presenceMap.members).to(beEmpty())
+                                expect(channel.presenceMap.localMembers).to(beEmpty())
+                                done()
+                            }
+                            channel.onError(AblyTests.newErrorProtocolMessage())
+                        }
+                    }
+
                 }
 
                 // RTP5a
-                it("all queued presence messages should fail immediately if the channel enters the DETACHED state") {
-                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
-                    defer { client.dispose(); client.close() }
-                    let channel = client.channels.get("test")
+                context("if the channel enters the DETACHED state") {
 
-                    waitUntil(timeout: testTimeout) { done in
-                        channel.once(.Attaching) { _ in
-                            channel.detach()
-                        }
-                        channel.presence.enterClient("user", data: nil) { error in
-                            expect(error).toNot(beNil())
-                            done()
+                    it("all queued presence messages should fail immediately") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("test")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.once(.Attaching) { _ in
+                                channel.detach()
+                            }
+                            channel.presence.enterClient("user", data: nil) { error in
+                                expect(error).toNot(beNil())
+                                expect(channel.queuedMessages).to(haveCount(0))
+                                done()
+                            }
+                            expect(channel.queuedMessages).to(haveCount(1))
                         }
                     }
+
+                    it("should clear the PresenceMap including local members and does not emit any presence events") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("test")
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.presence.enterClient("user", data: nil) { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        expect(channel.presenceMap.members).to(haveCount(1))
+                        expect(channel.presenceMap.localMembers).to(haveCount(1))
+
+                        channel.subscribe() { _ in
+                            fail("Shouldn't receive any presence event")
+                        }
+                        defer { channel.off() }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.once(.Detached) { _ in
+                                expect(channel.presenceMap.members).to(beEmpty())
+                                expect(channel.presenceMap.localMembers).to(beEmpty())
+                                done()
+                            }
+                            channel.detach()
+                        }
+                    }
+
                 }
 
                 // RTP5b
