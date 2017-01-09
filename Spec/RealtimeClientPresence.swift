@@ -492,7 +492,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP5b
-                it("all queued presence messages will be sent immediately and a presence SYNC will be initiated implicitly if a channel enters the ATTACHED state") {
+                it("if a channel enters the ATTACHED state then all queued presence messages will be sent immediately and a presence SYNC may be initiated") {
                     let options = AblyTests.commonAppSetup()
                     let client1 = AblyTests.newRealtime(options)
                     defer { client1.dispose(); client1.close() }
