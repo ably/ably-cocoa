@@ -777,11 +777,9 @@ class RealtimeClientPresence: QuickSpec {
                     expect(sent.action).to(equal(ARTPresenceAction.Update))
                     expect(sent.clientId).to(beNil())
 
-                    let received = transport.protocolMessagesReceived
-                        .filter({ $0.action == .Presence })
-                        .map({ $0.presence! })
-                        .reduce([], combine: +)
-                        .filter({ $0.action == .Update })[0]
+                    let receivedPresenceProtocolMessages = transport.protocolMessagesReceived.filter({ $0.action == .Presence })
+                    let receivedPresenceMessages = receivedPresenceProtocolMessages.flatMap({ $0.presence! })
+                    let received = receivedPresenceMessages.filter({ $0.action == .Update })[0]
                     expect(received.action).to(equal(ARTPresenceAction.Update))
                     expect(received.clientId).to(equal("john"))
                 }
@@ -1114,11 +1112,9 @@ class RealtimeClientPresence: QuickSpec {
                     expect(sent.action).to(equal(ARTPresenceAction.Leave))
                     expect(sent.clientId).to(beNil())
 
-                    let received = transport.protocolMessagesReceived
-                        .filter({ $0.action == .Presence })
-                        .map({ $0.presence! })
-                        .reduce([], combine: +)
-                        .filter({ $0.action == .Leave })[0]
+                    let receivedPresenceProtocolMessages = transport.protocolMessagesReceived.filter({ $0.action == .Presence })
+                    let receivedPresenceMessages = receivedPresenceProtocolMessages.flatMap({ $0.presence! })
+                    let received = receivedPresenceMessages.filter({ $0.action == .Leave })[0]
                     expect(received.action).to(equal(ARTPresenceAction.Leave))
                     expect(received.clientId).to(equal("john"))
                 }
