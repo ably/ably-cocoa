@@ -45,14 +45,15 @@ class RealtimeClientPresence: QuickSpec {
                     var disposable = [ARTRealtime]()
                     defer {
                         for clientItem in disposable {
+                            clientItem.dispose()
                             clientItem.close()
                         }
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 250, options: options) {
+                        disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 250, options: options) {
                             done()
-                        }
+                        }]
                     }
 
                     options.autoConnect = false
@@ -85,12 +86,12 @@ class RealtimeClientPresence: QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 options.disconnectedRetryTimeout = 1.0
                 var clientSecondary: ARTRealtime!
-                defer { clientSecondary.close() }
+                defer { clientSecondary.dispose(); clientSecondary.close() }
 
                 waitUntil(timeout: testTimeout) { done in
                     clientSecondary = AblyTests.addMembersSequentiallyToChannel("test", members: 150, options: options) {
                         done()
-                    }.first
+                    }
                 }
 
                 let client = AblyTests.newRealtime(options)
@@ -126,12 +127,12 @@ class RealtimeClientPresence: QuickSpec {
             it("should receive all 250 members") {
                 let options = AblyTests.commonAppSetup()
                 var clientSource: ARTRealtime!
-                defer { clientSource.close() }
+                defer { clientSource.dispose(); clientSource.close() }
 
                 waitUntil(timeout: testTimeout) { done in
                     clientSource = AblyTests.addMembersSequentiallyToChannel("test", members: 250, options: options) {
                         done()
-                    }.first
+                    }
                 }
 
                 let clientTarget = ARTRealtime(options: options)
@@ -777,11 +778,9 @@ class RealtimeClientPresence: QuickSpec {
                     expect(sent.action).to(equal(ARTPresenceAction.Update))
                     expect(sent.clientId).to(beNil())
 
-                    let received = transport.protocolMessagesReceived
-                        .filter({ $0.action == .Presence })
-                        .map({ $0.presence! })
-                        .reduce([], combine: +)
-                        .filter({ $0.action == .Update })[0]
+                    let receivedPresenceProtocolMessages = transport.protocolMessagesReceived.filter({ $0.action == .Presence })
+                    let receivedPresenceMessages = receivedPresenceProtocolMessages.flatMap({ $0.presence! })
+                    let received = receivedPresenceMessages.filter({ $0.action == .Update })[0]
                     expect(received.action).to(equal(ARTPresenceAction.Update))
                     expect(received.clientId).to(equal("john"))
                 }
@@ -856,7 +855,7 @@ class RealtimeClientPresence: QuickSpec {
                 waitUntil(timeout: testTimeout) { done in
                     clientSecondary = AblyTests.addMembersSequentiallyToChannel("test", members: 100, options: options) {
                         done()
-                    }.first
+                    }
                 }
 
                 let client = AblyTests.newRealtime(options)
@@ -1114,11 +1113,9 @@ class RealtimeClientPresence: QuickSpec {
                     expect(sent.action).to(equal(ARTPresenceAction.Leave))
                     expect(sent.clientId).to(beNil())
 
-                    let received = transport.protocolMessagesReceived
-                        .filter({ $0.action == .Presence })
-                        .map({ $0.presence! })
-                        .reduce([], combine: +)
-                        .filter({ $0.action == .Leave })[0]
+                    let receivedPresenceProtocolMessages = transport.protocolMessagesReceived.filter({ $0.action == .Presence })
+                    let receivedPresenceMessages = receivedPresenceProtocolMessages.flatMap({ $0.presence! })
+                    let received = receivedPresenceMessages.filter({ $0.action == .Leave })[0]
                     expect(received.action).to(equal(ARTPresenceAction.Leave))
                     expect(received.clientId).to(equal("john"))
                 }
@@ -1699,15 +1696,16 @@ class RealtimeClientPresence: QuickSpec {
                     var disposable = [ARTRealtime]()
                     defer {
                         for clientItem in disposable {
+                            clientItem.dispose()
                             clientItem.close()
                         }
                     }
 
                     let expectedData = "online"
                     waitUntil(timeout: testTimeout) { done in
-                        disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 150, data:expectedData, options: options) {
+                        disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 150, data:expectedData, options: options) {
                             done()
-                        }
+                        }]
                     }
 
                     let client = ARTRealtime(options: options)
@@ -1851,7 +1849,7 @@ class RealtimeClientPresence: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         clientMembers = AblyTests.addMembersSequentiallyToChannel("test", members: 120, options: options) {
                             done()
-                        }.first
+                        }
                     }
 
                     waitUntil(timeout: testTimeout) { done in
@@ -1880,12 +1878,12 @@ class RealtimeClientPresence: QuickSpec {
                     it("waitForSync is true, should wait until SYNC is complete before returning a list of members") {
                         let options = AblyTests.commonAppSetup()
                         var clientSecondary: ARTRealtime!
-                        defer { clientSecondary.close() }
+                        defer { clientSecondary.dispose(); clientSecondary.close() }
 
                         waitUntil(timeout: testTimeout) { done in
                             clientSecondary = AblyTests.addMembersSequentiallyToChannel("test", members: 150, options: options) {
                                 done()
-                            }.first
+                            }
                         }
 
                         let client = AblyTests.newRealtime(options)
@@ -1918,12 +1916,12 @@ class RealtimeClientPresence: QuickSpec {
                     it("waitForSync is false, should return immediately the known set of presence members") {
                         let options = AblyTests.commonAppSetup()
                         var clientSecondary: ARTRealtime!
-                        defer { clientSecondary.close() }
+                        defer { clientSecondary.dispose(); clientSecondary.close() }
 
                         waitUntil(timeout: testTimeout) { done in
                             clientSecondary = AblyTests.addMembersSequentiallyToChannel("test", members: 150, options: options) {
                                 done()
-                            }.first
+                            }
                         }
 
                         let client = AblyTests.newRealtime(options)
@@ -2009,14 +2007,14 @@ class RealtimeClientPresence: QuickSpec {
                     let options = AblyTests.commonAppSetup()
 
                     var clientSecondary: ARTRealtime!
-                    defer { clientSecondary.close() }
+                    defer { clientSecondary.dispose(); clientSecondary.close() }
 
                     let expectedData = ["x", "y"]
                     let expectedPattern = "^user(\\d+)$"
                     waitUntil(timeout: testTimeout) { done in
                         clientSecondary = AblyTests.addMembersSequentiallyToChannel("test", members: 150, data: expectedData, options: options) {
                             done()
-                        }.first
+                        }
                     }
 
                     let client = ARTRealtime(options: options)
@@ -2138,14 +2136,15 @@ class RealtimeClientPresence: QuickSpec {
                         var disposable = [ARTRealtime]()
                         defer {
                             for clientItem in disposable {
+                                clientItem.dispose()
                                 clientItem.close()
                             }
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 25, options: options) {
+                            disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 25, options: options) {
                                 done()
-                            }
+                            }]
                         }
 
                         let client = ARTRealtime(options: options)
@@ -2158,9 +2157,9 @@ class RealtimeClientPresence: QuickSpec {
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            disposable += AblyTests.addMembersSequentiallyToChannel("test", startFrom: 26, members: 35, options: options) {
+                            disposable += [AblyTests.addMembersSequentiallyToChannel("test", startFrom: 26, members: 35, options: options) {
                                 done()
-                            }
+                            }]
                         }
 
                         let query = ARTRealtimeHistoryQuery()
@@ -2188,14 +2187,15 @@ class RealtimeClientPresence: QuickSpec {
                 var disposable = [ARTRealtime]()
                 defer {
                     for clientItem in disposable {
+                        clientItem.dispose()
                         clientItem.close()
                     }
                 }
 
                 waitUntil(timeout: testTimeout) { done in
-                    disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 250, options: options) {
+                    disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 250, options: options) {
                         done()
-                    }
+                    }]
                 }
 
                 let client = AblyTests.newRealtime(options)
