@@ -386,7 +386,7 @@ class RealtimeClientPresence: QuickSpec {
             }
 
             // RTP5
-            pending("Channel state change side effects") {
+            context("Channel state change side effects") {
 
                 // RTP5a
                 it("all queued presence messages should fail immediately if the channel enters the FAILED state") {
@@ -420,12 +420,6 @@ class RealtimeClientPresence: QuickSpec {
                         }
                     }
                 }
-
-            }
-
-
-            // RTP5
-            context("Channel state change side effects") {
 
                 // RTP5b
                 it("all queued presence messages will be sent immediately and a presence SYNC will be initiated implicitly if a channel enters the ATTACHED state") {
@@ -475,6 +469,7 @@ class RealtimeClientPresence: QuickSpec {
                     expect(channel2.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
                     expect(channel2.presenceMap.members).to(haveCount(2))
                 }
+
             }
 
             // RTP8
