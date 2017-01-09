@@ -351,6 +351,51 @@ class RealtimeClientPresence: QuickSpec {
                     }
                 }
 
+                // RTP19a
+                it("should emit a LEAVE event for each existing member if the PresenceMap has existing members when an ATTACHED message is received without a HAS_PRESENCE flag") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = AblyTests.newRealtime(options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+
+                    // Inject local members
+                    channel.presenceMap.add(ARTPresenceMessage(clientId: "tester1", action: .Enter, connectionId: "another", id: "another:0:0"))
+                    channel.presenceMap.add(ARTPresenceMessage(clientId: "tester2", action: .Enter, connectionId: "another", id: "another:0:1"))
+
+                    guard let transport = client.transport as? TestProxyTransport else {
+                        fail("TestProxyTransport is not set"); return
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(4, done: done)
+                        transport.afterProcessingReceivedMessage = { protocolMessage in
+                            if protocolMessage.action == .Attached {
+                                expect(protocolMessage.hasPresence).to(beFalse())
+                                partialDone()
+                            }
+                        }
+                        channel.presence.subscribe(.Leave) { leave in
+                            expect(leave.clientId?.hasPrefix("tester")).to(beTrue())
+                            expect(leave.action).to(equal(ARTPresenceAction.Leave))
+                            expect(leave.timestamp).to(beCloseTo(NSDate(), within: 0.5))
+                            expect(leave.id).to(beNil())
+                            partialDone() //2 times
+                        }
+                        channel.attach { error in
+                            expect(error).to(beNil())
+                            partialDone()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.get { members, error in
+                            expect(error).to(beNil())
+                            expect(members).to(beEmpty())
+                            done()
+                        }
+                    }
+                }
+
             }
 
             // RTP4
