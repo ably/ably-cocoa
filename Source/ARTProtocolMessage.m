@@ -107,8 +107,16 @@
     return self.action == ARTProtocolMessageMessage || self.action == ARTProtocolMessagePresence;
 }
 
-- (BOOL)isSyncEnabled {
-    return self.flags & 0x1;
+- (BOOL)hasPresence {
+    return self.flags & ARTProtocolMessageFlagHasPresence;
+}
+
+- (BOOL)hasBacklog {
+    return self.flags & ARTProtocolMessageFlagHasBacklog;
+}
+
+- (BOOL)resumed {
+    return self.flags & ARTProtocolMessageFlagResumed;
 }
 
 - (ARTConnectionDetails *)getConnectionDetails {

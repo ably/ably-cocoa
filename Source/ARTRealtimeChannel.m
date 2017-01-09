@@ -419,12 +419,12 @@
         if (message.error != nil) {
             _errorReason = message.error;
         }
-        ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self.state previous:self.state event:ARTChannelEventUpdate reason:message.error];
+        ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self.state previous:self.state event:ARTChannelEventUpdate reason:message.error resumed:message.resumed];
         [self emit:stateChange.event with:stateChange];
         return;
     }
 
-    if ([message isSyncEnabled]) {
+    if (message.hasPresence) {
         [self.presenceMap startSync];
         [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p PresenceMap Sync started", _realtime, self];
     }

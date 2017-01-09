@@ -34,7 +34,7 @@ class RealtimeClientPresence: QuickSpec {
                     let attached = transport.protocolMessagesReceived.filter({ $0.action == .Attached })[0]
 
                     expect(attached.flags & 0x1).to(equal(0))
-                    expect(attached.isSyncEnabled()).to(beFalse())
+                    expect(attached.hasPresence).to(beFalse())
                     expect(channel.presence.syncComplete).to(beFalse())
                     expect(channel.presenceMap.syncComplete).to(beFalse())
                 }
@@ -71,7 +71,7 @@ class RealtimeClientPresence: QuickSpec {
 
                     // There are members present on the channel
                     expect(attached.flags & 0x1).to(equal(1))
-                    expect(attached.isSyncEnabled()).to(beTrue())
+                    expect(attached.hasPresence).to(beTrue())
                     
                     expect(channel.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
 
