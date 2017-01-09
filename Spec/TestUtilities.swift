@@ -28,8 +28,8 @@ enum CryptoTest: String {
 
 class Configuration : QuickConfiguration {
     override class func configure(configuration: Quick.Configuration!) {
-        configuration.beforeEach {
-
+        configuration.beforeSuite {
+            AsyncDefaults.Timeout = testTimeout
         }
     }
 }
