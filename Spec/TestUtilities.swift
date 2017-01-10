@@ -810,9 +810,9 @@ class TestProxyTransport: ARTWebSocketTransport {
         super.receiveWithData(data)
     }
 
-    func replaceAcksWithNacks(error: ARTErrorInfo, block: (() -> ()) -> ()) {
+    func replaceAcksWithNacks(error: ARTErrorInfo, block: (doneReplacing: () -> Void) -> Void) {
         replacingAcksWithNacks = error
-        block({ self.replacingAcksWithNacks = nil })
+        block(doneReplacing: { self.replacingAcksWithNacks = nil })
     }
 
     func simulateTransportSuccess() {
