@@ -540,6 +540,337 @@ class RealtimeClientPresence: QuickSpec {
                     expect(channel2.presenceMap.members).to(haveCount(2))
                 }
 
+                // RTP5c
+                context("when a channel becomes ATTACHED") {
+
+                    // RTP5c1
+                    it("if the resumed flag is true and no SYNC is initiated as part of the attach then do nothing, PresenceMap is not affected and no members need to be re-entered") {
+                        let options = AblyTests.commonAppSetup()
+
+                        var clientMembers: ARTRealtime?
+                        waitUntil(timeout: testTimeout) { done in
+                            clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 3, options: options) {
+                                done()
+                            }
+                        }
+                        defer { clientMembers?.dispose(); clientMembers?.close() }
+
+                        options.disconnectedRetryTimeout = 1.0
+                        options.tokenDetails = getTestTokenDetails(key: options.key!, ttl: 5.0)
+                        let client = AblyTests.newRealtime(options)
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("foo")
+
+                        var originalMembers: [ARTPresenceMessage]?
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.presence.get { members, error in
+                                expect(error).to(beNil())
+                                expect(members).to(haveCount(3))
+                                originalMembers = members
+                                done()
+                            }
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(3, done: done)
+                            client.connection.once(.Disconnected) { stateChange in
+                                // Token expired
+                                partialDone()
+                            }
+                            client.connection.once(.Connected) { stateChange in
+                                guard let transport = client.transport as? TestProxyTransport else {
+                                    fail("TestProxyTransport is not set"); return
+                                }
+                                // TODO: use sandbox to reproduce this
+                                let attached = ARTProtocolMessage()
+                                attached.action = .Attached
+                                attached.channel = channel.name
+                                attached.flags = Int64(ARTProtocolMessageFlag.Resumed.rawValue)
+                                client.transport?.receive(attached)
+                                partialDone()
+                            }
+                            channel.once(.Update) { stateChange in
+                                guard let stateChange = stateChange else {
+                                    fail("ChannelStageChange is nil"); done(); return
+                                }
+                                // No loss of continuity
+                                expect(stateChange.resumed).to(beTrue())
+                                expect(stateChange.reason).to(beNil())
+                                expect(stateChange.current).to(equal(ARTRealtimeChannelState.Attached))
+                                expect(stateChange.previous).to(equal(ARTRealtimeChannelState.Attached))
+                                partialDone()
+                            }
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.presence.get { members, error in
+                                expect(error).to(beNil())
+                                expect(members).to(equal(originalMembers))
+                                done()
+                            }
+                        }
+                    }
+
+                    // RTP5c2
+                    context("all members not present in the PresenceMap but present in the internal PresenceMap must be re-entered automatically") {
+
+                        it("when SYNC is initiated as part of the attach and the SYNC is complete") {
+                            let options = AblyTests.commonAppSetup()
+
+                            var clientMembers: ARTRealtime?
+                            waitUntil(timeout: testTimeout) { done in
+                                clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 3, options: options) {
+                                    done()
+                                }
+                            }
+                            defer { clientMembers?.dispose(); clientMembers?.close() }
+
+                            let client = AblyTests.newRealtime(options)
+                            defer { client.dispose(); client.close() }
+                            let channel = client.channels.get("foo")
+                            waitUntil(timeout: testTimeout) { done in
+                                client.connection.once(.Connected) { stateChange in
+                                    expect(stateChange?.reason).to(beNil())
+                                    done()
+                                }
+                            }
+
+                            guard let connectionId = client.connection.id else {
+                                fail("Should have a connection ID"); return
+                            }
+                            guard let transport = client.transport as? TestProxyTransport else {
+                                fail("TestProxyTransport is not set"); return
+                            }
+
+                            waitUntil(timeout: testTimeout) { done in
+                                let partialDone = AblyTests.splitDone(4, done: done)
+                                let localMember = ARTPresenceMessage(clientId: "local1", action: .Enter, connectionId: connectionId, id: "\(connectionId):1:1", timestamp: NSDate())
+
+                                channel.once(.Attaching) { stateChange in
+                                    // Local member
+                                    channel.presenceMap.add(localMember)
+                                    partialDone()
+                                }
+                                channel.attach() { error in
+                                    expect(error).to(beNil())
+                                    partialDone()
+                                }
+
+                                transport.beforeProcessingReceivedMessage = { protocolMessage in
+                                    if protocolMessage.action == .Attached {
+                                        // Expect a Sync
+                                        expect(protocolMessage.hasPresence).to(beTrue())
+                                        expect(protocolMessage.resumed).to(beFalse())
+                                    }
+                                    else if protocolMessage.action == .Sync {
+                                        transport.beforeProcessingReceivedMessage = nil
+                                        partialDone()
+                                    }
+                                }
+
+                                // Before the sync ends
+                                channel.presenceMap.testSuite_injectIntoMethodBefore(#selector(ARTPresenceMap.endSync)) {
+                                    expect(channel.presenceMap.members).to(haveCount(4))
+                                    expect(channel.presenceMap.localMembers).to(haveCount(1))
+
+                                    transport.beforeProcessingSentMessage = { protocolMessage in
+                                        if protocolMessage.action == .Presence && protocolMessage.presence?.first?.action == .Enter {
+                                            expect(channel.presenceMap.localMembers).to(beEmpty())
+                                            transport.beforeProcessingSentMessage = nil
+                                        }
+                                    }
+                                    // Re-entered automatically
+                                    channel.presence.subscribe(.Enter) { enter in
+                                        // The members re-entered automatically must be removed from the internal PresenceMap,
+                                        //so it must be a different object
+                                        expect(enter).toNot(beIdenticalTo(localMember))
+                                        expect(enter.clientId) == localMember.clientId
+                                        expect(enter.connectionId) == localMember.connectionId
+                                        partialDone()
+                                    }
+                                }
+                            }
+
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.presence.get { members, error in
+                                    expect(error).to(beNil())
+                                    expect(members).to(haveCount(4))
+                                    done()
+                                }
+                            }
+                        }
+
+                        it("when resumed flag is false and a SYNC is not expected") {
+                            let options = AblyTests.commonAppSetup()
+
+                            var clientMembers: ARTRealtime?
+                            waitUntil(timeout: testTimeout) { done in
+                                clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 3, options: options) {
+                                    done()
+                                }
+                            }
+                            defer { clientMembers?.dispose(); clientMembers?.close() }
+
+                            options.clientId = "local1"
+                            let client = AblyTests.newRealtime(options)
+                            defer { client.dispose(); client.close() }
+                            let channel = client.channels.get("foo")
+
+                            waitUntil(timeout: testTimeout) { done in
+                                let partialDone = AblyTests.splitDone(2, done: done)
+                                channel.presence.get { members, error in
+                                    expect(error).to(beNil())
+                                    expect(members).to(haveCount(3))
+                                    partialDone()
+                                }
+                                channel.presence.enter(nil) { error in
+                                    expect(error).to(beNil())
+                                    partialDone()
+                                }
+                            }
+
+                            expect(channel.presenceMap.members).to(haveCount(4))
+                            expect(channel.presenceMap.localMembers).to(haveCount(1))
+
+                            waitUntil(timeout: testTimeout) { done in
+                                let partialDone = AblyTests.splitDone(3, done: done)
+
+                                guard let transport = client.transport as? TestProxyTransport else {
+                                    fail("TestProxyTransport is not set"); return
+                                }
+                                transport.beforeProcessingReceivedMessage = { protocolMessage in
+                                    if protocolMessage.action == .Attached {
+                                        expect(protocolMessage.hasPresence).to(beFalse())
+                                        expect(protocolMessage.resumed).to(beFalse())
+                                        transport.beforeProcessingReceivedMessage = nil
+                                        partialDone()
+                                    }
+                                }
+                                transport.beforeProcessingSentMessage = { protocolMessage in
+                                    if protocolMessage.action == .Presence && protocolMessage.presence?.first?.action == .Enter {
+                                        expect(protocolMessage.presence?.first?.clientId).to(equal("local1"))
+                                        expect(channel.presenceMap.localMembers).to(beEmpty())
+                                        transport.beforeProcessingSentMessage = nil
+                                        partialDone()
+                                    }
+                                }
+
+                                channel.presence.subscribe(.Leave) { leave in
+                                    // Members will leave the PresenceMap due to the ATTACHED without Presence
+                                    expect(leave.clientId).to(satisfyAnyOf(equal("local1"), equal("user1"), equal("user2"), equal("user3")))
+                                }
+
+                                // Re-entered automatically
+                                channel.presence.subscribe(.Update) { update in
+                                    expect(update.clientId) == "local1"
+                                    partialDone()
+                                }
+
+                                channel.presence.subscribe(.Enter) { enter in
+                                    fail("Members already being present so the client should receive UPDATE events"); done(); return
+                                }
+
+                                // Inject ATTACHED message
+                                let attached = ARTProtocolMessage()
+                                attached.action = .Attached
+                                attached.channel = channel.name
+                                attached.flags = 0 //no presence, no resume
+                                transport.receive(attached)
+                            }
+
+                            channel.presence.unsubscribe()
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.presence.get { members, error in
+                                    expect(error).to(beNil())
+                                    expect(members).to(haveCount(4))
+                                    done()
+                                }
+                            }
+                        }
+                    }
+
+                    // RTP5c3
+                    it("if any of the automatic ENTER presence messages published fail then an UPDATE event should be emitted on the channel") {
+                        let options = AblyTests.commonAppSetup()
+
+                        var clientMembers: ARTRealtime?
+                        waitUntil(timeout: testTimeout) { done in
+                            clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 3, options: options) {
+                                done()
+                            }
+                        }
+                        defer { clientMembers?.dispose(); clientMembers?.close() }
+
+                        let client = AblyTests.newRealtime(options)
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("foo")
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.Connected) { stateChange in
+                                expect(stateChange?.reason).to(beNil())
+                                done()
+                            }
+                        }
+
+                        guard let connectionId = client.connection.id else {
+                            fail("Should have a connection ID"); return
+                        }
+                        guard let transport = client.transport as? TestProxyTransport else {
+                            fail("TestProxyTransport is not set"); return
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(3, done: done)
+                            let localMember = ARTPresenceMessage(clientId: "local1", action: .Enter, connectionId: connectionId, id: "\(connectionId):1:1", timestamp: NSDate())
+
+                            channel.once(.Attaching) { stateChange in
+                                // Local member
+                                channel.presenceMap.add(localMember)
+                                partialDone()
+                            }
+                            channel.attach()
+
+                            // Before the sync ends
+                            channel.presenceMap.testSuite_injectIntoMethodBefore(#selector(ARTPresenceMap.endSync)) {
+                                expect(channel.presenceMap.members).to(haveCount(4))
+                                expect(channel.presenceMap.localMembers).to(haveCount(1))
+
+                                // Time out
+                                let reEnterError = ARTErrorInfo.createWithCode(50003, message: "timed out")
+                                transport.replaceAcksWithNacks(reEnterError) { _ in }
+
+                                // Re-entered automatically should fail
+                                channel.presence.subscribe(.Enter) { enter in
+                                    fail("Should not Enter the local member")
+                                }
+                                partialDone()
+                            }
+
+                            channel.once(.Update) { stateChange in
+                                guard let stateChange = stateChange else {
+                                    fail("ChannelStateChange is nil"); partialDone(); return
+                                }
+                                guard let reason = stateChange.reason else {
+                                    fail("Reason from ChannelStateChange is nil"); partialDone(); return
+                                }
+                                expect(reason.code) == 91004
+                                expect(reason.message).to(contain(localMember.clientId!))
+                                expect(reason.message).to(contain("timed out"))
+                                expect(stateChange.resumed).to(beTrue())
+                                partialDone()
+                            }
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.presence.get { members, error in
+                                expect(error).to(beNil())
+                                expect(members).to(haveCount(3))
+                                done()
+                            }
+                        }
+                    }
+
+                }
+
             }
 
             // RTP8
