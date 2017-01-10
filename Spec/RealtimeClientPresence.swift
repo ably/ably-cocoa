@@ -871,6 +871,109 @@ class RealtimeClientPresence: QuickSpec {
 
                 }
 
+                // RTP5f
+                context("channel enters the SUSPENDED state") {
+
+                    it("all queued presence messages should fail immediately") {
+                        let options = AblyTests.commonAppSetup()
+                        let client = AblyTests.newRealtime(options)
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("foo")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(3, done: done)
+                            channel.once(.Attaching) { stateChange in
+                                expect(stateChange?.reason).to(beNil())
+                                expect(channel.queuedMessages.count) == 1
+                                channel.setSuspended(ARTStatus.state(.Error, info: ARTErrorInfo.createWithCode(1234, message: "unknown error")))
+                                partialDone()
+                            }
+                            channel.once(.Suspended) { stateChange in
+                                // All queued presence messages will fail immediately
+                                expect(channel.queuedMessages.count) == 0
+                                partialDone()
+                            }
+                            channel.presence.enterClient("tester", data: nil) { error in
+                                guard let error = error else {
+                                    fail("Error is nil"); partialDone(); return
+                                }
+                                expect(error.code) == 1234
+                                expect(error.message).to(contain("unknown error"))
+                                partialDone()
+                            }
+                        }
+                    }
+
+                    it("should maintain the PresenceMap and any members present before and after the sync should not emit presence events") {
+                        let options = AblyTests.commonAppSetup()
+
+                        var clientMembers: ARTRealtime?
+                        waitUntil(timeout: testTimeout) { done in
+                            clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 3, options: options) {
+                                done()
+                            }
+                        }
+                        defer { clientMembers?.dispose(); clientMembers?.close() }
+
+                        options.clientId = "tester"
+                        options.tokenDetails = getTestTokenDetails(key: options.key!, ttl: 5.0, clientId: options.clientId)
+                        let client = AblyTests.newRealtime(options)
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("foo")
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
+                            channel.presence.enter(nil) { error in
+                                expect(error).to(beNil())
+                                partialDone()
+                            }
+                            channel.presence.get { members, error in
+                                expect(error).to(beNil())
+                                expect(members).to(haveCount(3))
+                                partialDone()
+                            }
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(4, done: done)
+                            channel.presence.subscribe { presence in
+                                expect(presence.action).to(equal(ARTPresenceAction.Leave))
+                                expect(presence.clientId).to(equal("tester"))
+                                partialDone()
+                            }
+                            channel.once(.Suspended) { stateChange in
+                                expect(channel.presenceMap.members).to(haveCount(4))
+                                expect(channel.presenceMap.localMembers).to(haveCount(1))
+                                partialDone()
+                            }
+                            channel.once(.Attaching) { stateChange in
+                                expect(stateChange?.reason).to(beNil())
+                                channel.presence.leave(nil) { error in
+                                    expect(error).to(beNil())
+                                    partialDone()
+                                }
+                                expect(channel.queuedMessages.count) == 1
+                            }
+                            channel.once(.Attached) { stateChange in
+                                expect(stateChange?.reason).to(beNil())
+                                partialDone()
+                            }
+                            channel.setSuspended(ARTStatus.state(.Ok))
+                        }
+
+                        channel.presence.unsubscribe()
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.presence.get { members, error in
+                                expect(error).to(beNil())
+                                expect(members).to(haveCount(3))
+                                expect(channel.presenceMap.members).to(haveCount(3))
+                                expect(channel.presenceMap.localMembers).to(beEmpty())
+                                done()
+                            }
+                        }
+                    }
+
+                }
+
             }
 
             // RTP8
