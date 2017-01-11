@@ -1122,6 +1122,66 @@ class Auth : QuickSpec {
                         }
                     }
                 }
+
+                // RSA8e
+                it("should use configured defaults if the object arguments are omitted") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "tester"
+                    let rest = ARTRest(options: options)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.requestToken(nil, withOptions: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            expect(tokenDetails).toNot(beNil())
+                            expect(tokenDetails!.capability).to(equal("{\"*\":[\"*\"]}"))
+                            expect(tokenDetails!.clientId).to(equal("tester"))
+                            done()
+                        }
+                    }
+
+                    let tokenParams = ARTTokenParams()
+                    tokenParams.ttl = 2000
+                    tokenParams.capability = "{\"cansubscribe:*\":[\"subscribe\"]}"
+                    tokenParams.clientId = nil
+
+                    let authOptions = ARTAuthOptions()
+                    authOptions.key = options.key
+
+                    // Provide TokenParams and Options
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.requestToken(tokenParams, withOptions: authOptions) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            expect(tokenDetails).toNot(beNil())
+                            expect(tokenDetails!.capability).to(equal("{\"cansubscribe:*\":[\"subscribe\"]}"))
+                            expect(tokenDetails!.clientId).to(beNil())
+                            expect(tokenDetails!.expires!.timeIntervalSince1970 - tokenDetails!.issued!.timeIntervalSince1970).to(equal(tokenParams.ttl))
+                            done()
+                        }
+                    }
+
+                    // Provide TokenParams as null
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.requestToken(nil, withOptions: authOptions) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            expect(tokenDetails).toNot(beNil())
+                            expect(tokenDetails!.capability).to(equal("{\"*\":[\"*\"]}"))
+                            expect(tokenDetails!.clientId).to(equal("tester"))
+                            expect(tokenDetails!.expires!.timeIntervalSince1970 - tokenDetails!.issued!.timeIntervalSince1970).to(equal(ARTDefault.ttl()))
+                            done()
+                        }
+                    }
+
+                    // Omit arguments
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.requestToken { tokenDetails, error in
+                            expect(error).to(beNil())
+                            expect(tokenDetails).toNot(beNil())
+                            expect(tokenDetails!.capability).to(equal("{\"*\":[\"*\"]}"))
+                            expect(tokenDetails!.clientId).to(equal("tester"))
+                            done()
+                        }
+                    }
+                }
             }
 
             // RSA8c
