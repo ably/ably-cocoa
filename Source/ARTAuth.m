@@ -203,6 +203,11 @@
     return NO;
 }
 
+- (void)requestToken:(void (^)(ARTTokenDetails *, NSError *))callback {
+    // If the object arguments are omitted, the client library configured defaults are used
+    [self requestToken:_tokenParams withOptions:_options callback:callback];
+}
+
 - (void)requestToken:(ARTTokenParams *)tokenParams withOptions:(ARTAuthOptions *)authOptions
             callback:(void (^)(ARTTokenDetails *, NSError *))callback {
     
@@ -339,6 +344,10 @@
     [self authorize:tokenParams options:authOptions callback:callback];
 }
 
+- (void)authorize:(void (^)(ARTTokenDetails *, NSError *))callback {
+    [self authorize:_tokenParams options:_options callback:callback];
+}
+
 - (void)authorize:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
     ARTAuthOptions *replacedOptions = [authOptions copy] ? : [self.options copy];
     [self storeOptions:replacedOptions];
@@ -400,6 +409,10 @@
             successBlock(tokenDetails);
         }
     }];
+}
+
+- (void)createTokenRequest:(void (^)(ARTTokenRequest *, NSError *))callback {
+    [self createTokenRequest:_tokenParams options:_options callback:callback];
 }
 
 - (void)createTokenRequest:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)options callback:(void (^)(ARTTokenRequest *, NSError *))callback {
