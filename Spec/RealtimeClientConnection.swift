@@ -3426,7 +3426,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     var authorizeMethodCallCount = 0
-                    let hook = client.auth.testSuite_injectIntoMethodAfter(#selector(client.auth.authorize)) {
+                    let hook = client.auth.testSuite_injectIntoMethodAfter(#selector(client.auth.authorize(_:options:callback:))) {
                         authorizeMethodCallCount += 1
                     }
                     defer { hook.remove() }
