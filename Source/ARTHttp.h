@@ -54,9 +54,6 @@ ART_ASSUME_NONNULL_BEGIN
 @end
 
 @interface ARTHttp : NSObject<ARTHTTPExecutor>
-{
-    
-}
 
 @property (nonatomic, weak) ARTLog *logger;
 

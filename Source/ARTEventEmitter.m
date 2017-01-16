@@ -37,7 +37,7 @@
 
 @implementation ARTEventListener {
     void (^_block)(id __art_nonnull);
-    CFRunLoopTimerRef _timer;
+    dispatch_block_t _timerBlock;
 }
 
 - (instancetype)initWithBlock:(void (^)(id __art_nonnull))block {
@@ -55,19 +55,14 @@
 
 - (void)setTimerWithDeadline:(NSTimeInterval)deadline onTimeout:(void (^)())onTimeout {
     [self cancelTimer];
-    CFAbsoluteTime timeoutDate = CFAbsoluteTimeGetCurrent() + deadline;
-
-    CFRunLoopRef rl = CFRunLoopGetCurrent();
-    _timer = CFRunLoopTimerCreateWithHandler(kCFAllocatorDefault, timeoutDate, 0, 0, 0, onTimeout);
-    CFRunLoopAddTimer(rl, _timer, kCFRunLoopDefaultMode);
+    _timerBlock = dispatch_block_create(0, onTimeout);
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, deadline * NSEC_PER_SEC), dispatch_get_main_queue(), _timerBlock);
 }
 
 - (void)cancelTimer {
-    if (_timer) {
-        CFRunLoopTimerInvalidate(_timer);
-        CFRunLoopRemoveTimer(CFRunLoopGetCurrent(), _timer, kCFRunLoopDefaultMode);
-        CFRelease(_timer);
-        _timer = nil;
+    if (_timerBlock) {
+        dispatch_block_cancel(_timerBlock);
+        _timerBlock = nil;
     }
 }
 
@@ -182,7 +177,6 @@
             if (entry.once) {
                 [toRemoveFromListeners addObject:entry];
             }
-            
             [toCall addObject:entry];
         }
         

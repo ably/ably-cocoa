@@ -39,7 +39,6 @@ enum {
 @implementation ARTWebSocketTransport {
     /**
       A dispatch queue for firing the events.
-      If `nil`, the socket uses the main queue for performing all delegate method calls.
      */
     _Nonnull dispatch_queue_t _workQueue;
 }

@@ -149,11 +149,14 @@
 
 #pragma mark - ARTHttp
 
-@implementation ARTHttp
+@implementation ARTHttp {
+    _Nullable dispatch_queue_t _queue;
+}
 
 - (instancetype)init {
     self = [super init];
     if (self) {
+        _queue = dispatch_queue_create("com.ably.rest.http", DISPATCH_QUEUE_SERIAL);
         _urlSession = [[ARTURLSessionServerTrust alloc] init];
         _baseUrl = nil;
     }
@@ -172,12 +175,10 @@
     [self.logger debug:@"%@ %@", request.HTTPMethod, request.URL.absoluteString];
     [self.logger verbose:@"Headers %@", request.allHTTPHeaderFields];
 
-    CFRunLoopRef currentRunloop = CFRunLoopGetCurrent();
-
     [_urlSession get:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-        
-        CFRunLoopPerformBlock(currentRunloop, kCFRunLoopCommonModes, ^{
+
+        dispatch_async(_queue, ^{
             if (error) {
                 [self.logger error:@"%@ %@: error %@", request.HTTPMethod, request.URL.absoluteString, error];
             } else {
@@ -190,7 +191,6 @@
             }
             callback(httpResponse, data, error);
         });
-        CFRunLoopWakeUp(currentRunloop);
     }];
 }
 
@@ -216,12 +216,10 @@
     request.HTTPBody = artRequest.body;
     [self.logger debug:@"ARTHttp: makeRequest %@", [request allHTTPHeaderFields]];
 
-    __block CFRunLoopRef rl = CFRunLoopGetCurrent();
-
     [self.urlSession get:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
         [self.logger verbose:@"ARTHttp: Got response %@, err %@", response, error];
-        
+
         if(error) {
             [self.logger error:@"ARTHttp receieved error: %@", error];
             cb([ARTHttpResponse responseWithStatus:500 headers:nil body:nil]);
@@ -231,17 +229,16 @@
                 int status = (int)httpResponse.statusCode;
                 [self.logger debug:@"ARTHttp response status is %d", status];
                 [self.logger verbose:@"ARTHttp received response %@",[NSJSONSerialization JSONObjectWithData:data options:0 error:nil]];
-                
-                CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
+
+                dispatch_async(_queue, ^{
                     cb([ARTHttpResponse responseWithStatus:status headers:httpResponse.allHeaderFields body:data]);
                 });
             } else {
-                CFRunLoopPerformBlock(rl, kCFRunLoopDefaultMode, ^{
+                dispatch_async(_queue, ^{
                     cb([ARTHttpResponse response]);
                 });
             }
         }
-        CFRunLoopWakeUp(rl);
     }];
     return nil;
 }
