@@ -47,7 +47,7 @@ enum {
 - (instancetype)initWithRest:(ARTRest *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
     self = [super init];
     if (self) {
-        _workQueue = dispatch_queue_create("com.ably.transport.websocket", DISPATCH_QUEUE_SERIAL);
+        _workQueue = dispatch_queue_create("io.ably.transport.websocket", DISPATCH_QUEUE_SERIAL);
         _websocket = nil;
         _closing = NO;
         _encoder = rest.defaultEncoder;

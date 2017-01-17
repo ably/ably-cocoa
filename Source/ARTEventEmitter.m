@@ -29,7 +29,7 @@
 
 @interface ARTEventListener ()
 
-- (instancetype)initWithBlock:(void (^)(id __art_nonnull))block;
+- (instancetype)initWithBlock:(void (^)(id __art_nonnull))block queue:(dispatch_queue_t)queue;
 - (void)setTimerWithDeadline:(NSTimeInterval)deadline onTimeout:(void (^)())onTimeout;
 - (void)off;
 
@@ -37,13 +37,15 @@
 
 @implementation ARTEventListener {
     void (^_block)(id __art_nonnull);
-    dispatch_block_t _timerBlock;
+    _Nonnull dispatch_queue_t _queue;
+    _Nullable dispatch_block_t _timerBlock;
 }
 
-- (instancetype)initWithBlock:(void (^)(id __art_nonnull))block {
+- (instancetype)initWithBlock:(void (^)(id __art_nonnull))block queue:(dispatch_queue_t)queue {
     self = [self init];
     if (self) {
         _block = block;
+        _queue = queue;
     }
     return self;
 }
@@ -55,14 +57,15 @@
 
 - (void)setTimerWithDeadline:(NSTimeInterval)deadline onTimeout:(void (^)())onTimeout {
     [self cancelTimer];
-    _timerBlock = dispatch_block_create(0, onTimeout);
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, deadline * NSEC_PER_SEC), dispatch_get_main_queue(), _timerBlock);
+    _timerBlock = dispatch_block_create(0, ^{
+        onTimeout();
+    });
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, deadline * NSEC_PER_SEC), _queue, _timerBlock);
 }
 
 - (void)cancelTimer {
     if (_timerBlock) {
         dispatch_block_cancel(_timerBlock);
-        _timerBlock = nil;
     }
 }
 
@@ -74,7 +77,7 @@
 
 @implementation ARTEventEmitterEntry
 
--(instancetype)initWithListener:(ARTEventListener *)listener once:(BOOL)once {
+- (instancetype)initWithListener:(ARTEventListener *)listener once:(BOOL)once {
     self = [self init];
     if (self) {
         _listener = listener;
@@ -92,23 +95,31 @@
 
 @end
 
-@implementation ARTEventEmitter
+@implementation ARTEventEmitter {
+    _Nonnull dispatch_queue_t _queue;
+}
+
 - (instancetype)init {
+    return [self initWithQueue:dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0)];
+}
+
+- (instancetype)initWithQueue:(dispatch_queue_t)queue {
     self = [super init];
     if (self) {
+        _queue = queue;
         [self resetListeners];
     }
     return self;
 }
 
 - (ARTEventListener *)on:(id)event callback:(void (^)(id __art_nonnull))cb {
-    ARTEventListener *listener = [[ARTEventListener alloc] initWithBlock:cb];
+    ARTEventListener *listener = [[ARTEventListener alloc] initWithBlock:cb queue:_queue];
     [self addOnEntry:[[ARTEventEmitterEntry alloc] initWithListener:listener once:false] event:event];
     return listener;
 }
 
 - (ARTEventListener *)once:(id)event callback:(void (^)(id __art_nonnull))cb {
-    ARTEventListener *listener = [[ARTEventListener alloc] initWithBlock:cb];
+    ARTEventListener *listener = [[ARTEventListener alloc] initWithBlock:cb queue:_queue];
     [self addOnEntry:[[ARTEventEmitterEntry alloc] initWithListener:listener once:true] event:event];
     return listener;
 }
@@ -118,13 +129,13 @@
 }
 
 - (ARTEventListener *)on:(void (^)(id __art_nonnull))cb {
-    ARTEventListener *listener = [[ARTEventListener alloc] initWithBlock:cb];
+    ARTEventListener *listener = [[ARTEventListener alloc] initWithBlock:cb queue:_queue];
     [self addOnAllEntry:[[ARTEventEmitterEntry alloc] initWithListener:listener once:false]];
     return listener;
 }
 
 - (ARTEventListener *)once:(void (^)(id __art_nonnull))cb {
-    ARTEventListener *listener = [[ARTEventListener alloc] initWithBlock:cb];
+    ARTEventListener *listener = [[ARTEventListener alloc] initWithBlock:cb queue:_queue];
     [self addOnAllEntry:[[ARTEventEmitterEntry alloc] initWithListener:listener once:true]];
     return listener;
 }

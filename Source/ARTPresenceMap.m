@@ -21,13 +21,13 @@
 
 @implementation ARTPresenceMap
 
-- (id)init {
+- (instancetype)initWithQueue:(_Nonnull dispatch_queue_t)queue {
     self = [super init];
     if(self) {
         _recentMembers = [NSMutableDictionary dictionary];
         _syncStarted = false;
         _syncComplete = false;
-        _syncEndedEventEmitter = [[ARTEventEmitter alloc] init];
+        _syncEndedEventEmitter = [[ARTEventEmitter alloc] initWithQueue:queue];
     }
     return self;
 }

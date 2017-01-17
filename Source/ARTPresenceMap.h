@@ -25,6 +25,9 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, assign) BOOL syncComplete;
 @property (readonly, nonatomic, getter=getSyncInProgress) BOOL syncInProgress;
 
+- (instancetype)init UNAVAILABLE_ATTRIBUTE;
+- (instancetype)initWithQueue:(_Nonnull dispatch_queue_t)queue;
+
 - (void)put:(ARTPresenceMessage *)message;
 - (void)clean;
 

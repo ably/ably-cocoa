@@ -50,6 +50,7 @@
     Class _reachabilityClass;
     id<ARTRealtimeTransport> _transport;
     ARTFallback *_fallbacks;
+    _Nonnull dispatch_queue_t _eventQueue;
 }
 
 - (instancetype)initWithKey:(NSString *)key {
@@ -66,9 +67,10 @@
         NSAssert(options, @"ARTRealtime: No options provided");
         
         _rest = [[ARTRest alloc] initWithOptions:options];
-        _internalEventEmitter = [[ARTEventEmitter alloc] init];
-        _connectedEventEmitter = [[ARTEventEmitter alloc] init];
-        _pingEventEmitter = [[ARTEventEmitter alloc] init];
+        _eventQueue = dispatch_queue_create("io.ably.realtime.events", DISPATCH_QUEUE_SERIAL);
+        _internalEventEmitter = [[ARTEventEmitter alloc] initWithQueue:_eventQueue];
+        _connectedEventEmitter = [[ARTEventEmitter alloc] initWithQueue:_eventQueue];
+        _pingEventEmitter = [[ARTEventEmitter alloc] initWithQueue:_eventQueue];
         _channels = [[ARTRealtimeChannels alloc] initWithRealtime:self];
         _transport = nil;
         _transportClass = [ARTWebSocketTransport class];
@@ -387,7 +389,7 @@
     // Defer until next event loop execution so that any event emitted in the current
     // one doesn't cancel the timeout.
     ARTRealtimeConnectionState state = self.connection.state;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), _eventQueue, ^{
         if (state != self.connection.state) {
             // Already changed; do nothing.
             return;
