@@ -503,12 +503,11 @@
             presence.id = [NSString stringWithFormat:@"%@:%d", message.id, i];
         }
 
-        [self.presenceMap onceSyncEnds:^(__GENERIC(NSArray, ARTPresenceMessage *) *msgs) {
-            [self.presenceMap put:presence];
+        [self.presenceMap put:presence];
+        if (!self.presenceMap.syncInProgress) {
             [self.presenceMap clean];
-
-            [self broadcastPresence:presence];
-        }];
+        }
+        [self broadcastPresence:presence];
 
         ++i;
     }
