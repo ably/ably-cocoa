@@ -923,6 +923,7 @@ class RealtimeClientConnection: QuickSpec {
                     var disposable = [ARTRealtime]()
                     defer {
                         for client in disposable {
+                            client.dispose()
                             client.close()
                         }
                     }
@@ -946,11 +947,12 @@ class RealtimeClientConnection: QuickSpec {
                                     expect(ids).toNot(contain(connectionId))
                                     ids.append(connectionId)
 
-                                    currentConnection.close()
-
                                     if ids.count == max {
                                         done()
                                     }
+
+                                    currentConnection.off()
+                                    currentConnection.close()
                                 }
                             }
                         }
@@ -998,6 +1000,7 @@ class RealtimeClientConnection: QuickSpec {
                     var disposable = [ARTRealtime]()
                     defer {
                         for client in disposable {
+                            client.dispose()
                             client.close()
                         }
                     }
@@ -1021,11 +1024,12 @@ class RealtimeClientConnection: QuickSpec {
                                     expect(keys).toNot(contain(connectionKey))
                                     keys.append(connectionKey)
 
-                                    currentConnection.close()
-
                                     if keys.count == max {
                                         done()
                                     }
+
+                                    currentConnection.off()
+                                    currentConnection.close()
                                 }
                             }
                         }
@@ -1767,7 +1771,12 @@ class RealtimeClientConnection: QuickSpec {
                         client.connect()
                         start = NSDate()
                     }
-                    expect(end!.timeIntervalSinceDate(start!)).to(beCloseTo(ARTDefault.realtimeRequestTimeout(), within: 1.5))
+                    if let start = start, let end = end {
+                        expect(end.timeIntervalSinceDate(start)).to(beCloseTo(ARTDefault.realtimeRequestTimeout(), within: 1.5))
+                    }
+                    else {
+                        fail("Start date or end date are empty")
+                    }
                 }
 
                 // RTN14d
@@ -1795,15 +1804,16 @@ class RealtimeClientConnection: QuickSpec {
                     var totalRetry = 0
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
+                        var start: NSDate?
 
                         client.connection.once(.Disconnected) { stateChange in
                             expect(stateChange!.reason!.message).to(contain("timed out"))
                             expect(stateChange!.previous).to(equal(ARTRealtimeConnectionState.Connecting))
                             expect(stateChange!.retryIn).to(beCloseTo(options.disconnectedRetryTimeout))
                             partialDone()
+                            start = NSDate()
                         }
 
-                        var start: NSDate?
                         client.connection.on(.Suspended) { stateChange in
                             let end = NSDate()
                             expect(end.timeIntervalSinceDate(start!)).to(beCloseTo(expectedTime, within: 0.5))
@@ -1811,7 +1821,6 @@ class RealtimeClientConnection: QuickSpec {
                         }
 
                         client.connect()
-                        start = NSDate()
 
                         client.connection.on(.Connecting) { stateChange in
                             expect(stateChange!.previous).to(equal(ARTRealtimeConnectionState.Disconnected))
@@ -2320,7 +2329,7 @@ class RealtimeClientConnection: QuickSpec {
                     client.simulateLostConnectionAndState()
 
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
-                    expect(channel.errorReason!.message).to(contain("Unable to recover connection"))
+                    expect(channel.errorReason?.message).to(contain("Unable to recover connection"))
                 }
 
                 // RTN15h
@@ -3172,7 +3181,9 @@ class RealtimeClientConnection: QuickSpec {
                         transport.ignoreSends = true
                         channel.publish(nil, data: "message") { error in
                             expect(error).to(beNil())
-                            let newTransport = client.transport as! TestProxyTransport
+                            guard let newTransport = client.transport as? TestProxyTransport else {
+                                fail("Transport is nil"); done(); return
+                            }
                             expect(transport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
                             expect(newTransport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
                             expect(transport.protocolMessagesSent.filter{ $0.action == .Message }).to(haveCount(0))
@@ -3200,7 +3211,9 @@ class RealtimeClientConnection: QuickSpec {
                         transport.ignoreSends = true
                         channel.attach() { error in
                             expect(error).to(beNil())
-                            let newTransport = client.transport as! TestProxyTransport
+                            guard let newTransport = client.transport as? TestProxyTransport else {
+                                fail("Transport is nil"); done(); return
+                            }
                             expect(transport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
                             expect(newTransport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
                             expect(transport.protocolMessagesSent.filter{ $0.action == .Attach }).to(haveCount(0))
@@ -3229,11 +3242,13 @@ class RealtimeClientConnection: QuickSpec {
                         channel.attach() { _ in done() }
                     }
 
-                    waitUntil(timeout: testTimeout * 1000) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         transport.ignoreSends = true
                         channel.detach() { error in
                             expect(error).to(beNil())
-                            let newTransport = client.transport as! TestProxyTransport
+                            guard let newTransport = client.transport as? TestProxyTransport else {
+                                fail("Transport is nil"); done(); return
+                            }
                             expect(transport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
                             expect(newTransport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
                             expect(transport.protocolMessagesSent.filter{ $0.action == .Detach }).to(haveCount(0))

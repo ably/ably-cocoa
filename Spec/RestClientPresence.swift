@@ -26,6 +26,7 @@ class RestClientPresence: QuickSpec {
                     var disposable = [ARTRealtime]()
                     defer {
                         for clientItem in disposable {
+                            clientItem.dispose()
                             clientItem.close()
                         }
                     }
@@ -131,6 +132,7 @@ class RestClientPresence: QuickSpec {
                     var disposable = [ARTRealtime]()
                     defer {
                         for clientItem in disposable {
+                            clientItem.dispose()
                             clientItem.close()
                         }
                     }
@@ -180,7 +182,7 @@ class RestClientPresence: QuickSpec {
                     let channel = client.channels.get("test")
 
                     var realtime: ARTRealtime!
-                    defer { realtime.close() }
+                    defer { realtime.dispose(); realtime.close() }
 
                     let expectedData = "online"
                     let expectedPattern = "^user(\\d+)$"
@@ -244,6 +246,7 @@ class RestClientPresence: QuickSpec {
                         var disposable = [ARTRealtime]()
                         defer {
                             for clientItem in disposable {
+                                clientItem.dispose()
                                 clientItem.close()
                             }
                         }
@@ -299,7 +302,7 @@ class RestClientPresence: QuickSpec {
                         let channel = client.channels.get("test")
 
                         var realtime: ARTRealtime!
-                        defer { realtime.close() }
+                        defer { realtime.dispose(); realtime.close() }
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime = AblyTests.addMembersSequentiallyToChannel("test", members: 1, options: options) {
@@ -338,6 +341,7 @@ class RestClientPresence: QuickSpec {
                     var disposable = [ARTRealtime]()
                     defer {
                         for clientItem in disposable {
+                            clientItem.dispose()
                             clientItem.close()
                         }
                     }
@@ -392,6 +396,7 @@ class RestClientPresence: QuickSpec {
                         var disposable = [ARTRealtime]()
                         defer {
                             for clientItem in disposable {
+                                clientItem.dispose()
                                 clientItem.close()
                             }
                         }
