@@ -220,8 +220,8 @@
     if (errorInfo != nil) {
         [self.connection setErrorReason:errorInfo];
     }
-    [self.connection emit:state with:stateChange];
     [_internalEventEmitter emit:[NSNumber numberWithInteger:state] with:stateChange];
+    [self.connection emit:state with:stateChange];
 }
 
 - (void)transitionSideEffects:(ARTConnectionStateChange *)stateChange {
