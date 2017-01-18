@@ -819,7 +819,7 @@ class RealtimeClientPresence: QuickSpec {
                         channel.presence.leave("offline")
                     }
 
-                    expect(channel.presenceMap.members).toEventually(haveCount(0), timeout: testTimeout)
+                    expect(channel.presenceMap.members).toEventually(beEmpty(), timeout: testTimeout)
                 }
 
                 // RTP10a

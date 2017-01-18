@@ -475,6 +475,7 @@ class RealtimeClientConnection: QuickSpec {
                 TotalReach.shared = 0
                 defer {
                     for client in disposable {
+                        client.dispose()
                         client.close()
                     }
                 }
@@ -1251,7 +1252,7 @@ class RealtimeClientConnection: QuickSpec {
 
 
                     expect(lastStateChange).toEventuallyNot(beNil(), timeout: testTimeout)
-                    expect(lastStateChange!.current).toEventually(equal(ARTRealtimeConnectionState.Closing), timeout: testTimeout)
+                    expect(lastStateChange!.current).toEventually(equal(ARTRealtimeConnectionState.Closed), timeout: testTimeout)
                 }
 
                 // RTN12a
@@ -1816,7 +1817,7 @@ class RealtimeClientConnection: QuickSpec {
 
                         client.connection.on(.Suspended) { stateChange in
                             let end = NSDate()
-                            expect(end.timeIntervalSinceDate(start!)).to(beCloseTo(expectedTime, within: 0.5))
+                            expect(end.timeIntervalSinceDate(start!)).to(beCloseTo(expectedTime, within: 0.9))
                             partialDone()
                         }
 
