@@ -389,15 +389,18 @@
     // Defer until next event loop execution so that any event emitted in the current
     // one doesn't cancel the timeout.
     ARTRealtimeConnectionState state = self.connection.state;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), _eventQueue, ^{
+    CFRunLoopObserverRef observer = CFRunLoopObserverCreateWithHandler(NULL, kCFRunLoopExit, YES, 0, ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
+        ARTEventListener *listener = [_internalEventEmitter once:^(ARTConnectionStateChange *change) {
+            // Any state change cancels the timeout.
+        }];
         if (state != self.connection.state) {
-            // Already changed; do nothing.
+            // Already changed; Cancels the timeout.
+            [_internalEventEmitter off:listener];
             return;
         }
-        [_internalEventEmitter timed:[_internalEventEmitter once:^(ARTConnectionStateChange *change) {
-            // Any state change cancels the timeout.
-        }] deadline:deadline onTimeout:callback];
+        [_internalEventEmitter timed:listener deadline:deadline onTimeout:callback];
     });
+    CFRunLoopAddObserver(CFRunLoopGetCurrent(), observer, kCFRunLoopCommonModes);
 }
 
 - (void)onHeartbeat {
