@@ -471,50 +471,52 @@ class RealtimeClientConnection: QuickSpec {
                 var disposable = [ARTRealtime]()
                 let max = 50
                 let channelName = "chat"
+                let sync = NSLock()
 
-                TotalReach.shared = 0
                 defer {
                     for client in disposable {
                         client.dispose()
                         client.close()
                     }
                 }
-                for _ in 1...max {
-                    let client = ARTRealtime(options: options)
-                    disposable.append(client)
-                    let channel = client.channels.get(channelName)
-
-                    channel.on { errorInfo in
-                        if channel.state == .Attached {
-                            TotalReach.shared += 1
+                waitUntil(timeout: testTimeout) { done in
+                    let partialDone = AblyTests.splitDone(max, done: done)
+                    for _ in 1...max {
+                        let client = ARTRealtime(options: options)
+                        disposable.append(client)
+                        let channel = client.channels.get(channelName)
+                        channel.attach() { error in
+                            if let error = error {
+                                fail(error.message); done()
+                            }
+                            sync.lock()
+                            partialDone()
+                            sync.unlock()
                         }
                     }
-
-                    channel.attach()
                 }
-                // All channels attached
-                expect(TotalReach.shared).toEventually(equal(max), timeout: testTimeout, description: "Channels not attached")
 
-                TotalReach.shared = 0
-                for client in disposable {
-                    let channel = client.channels.get(channelName)
-                    expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+                waitUntil(timeout: testTimeout) { done in
+                    // Sends 50 messages from different clients to the same channel
+                    // 50 messages for 50 clients = 50*50 total messages
+                    // echo is off, so we need to subtract one message per client
+                    let partialDone = AblyTests.splitDone(max*max - max, done: done)
+                    for client in disposable {
+                        let channel = client.channels.get(channelName)
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
 
-                    channel.subscribe { message in
-                        expect(message.data as? String).to(equal("message_string"))
-                        TotalReach.shared += 1
+                        channel.subscribe { message in
+                            expect(message.data as? String).to(equal("message_string"))
+                            sync.lock()
+                            partialDone()
+                            sync.unlock()
+                        }
+
+                        channel.publish(nil, data: "message_string", callback: nil)
                     }
-
-                    channel.publish(nil, data: "message_string", callback: nil)
                 }
-
-                // Sends 50 messages from different clients to the same channel
-                // 50 messages for 50 clients = 50*50 total messages
-                // echo is off, so we need to subtract one message per client
-                expect(TotalReach.shared).toEventually(equal(max*max - max), timeout: testTimeout)
 
                 expect(disposable.count).to(equal(max))
-
                 expect(countChannels(disposable.first!.channels)).to(equal(1))
                 expect(countChannels(disposable.last!.channels)).to(equal(1))
             }
