@@ -24,4 +24,6 @@ typedef NS_ENUM(NSUInteger, ARTPresenceAction) {
 
 - (NSString *)memberKey;
 
+- (BOOL)isEqualToPresenceMessage:(ARTPresenceMessage *)presence;
+
 @end

@@ -11,6 +11,7 @@
 
 @class ARTPresenceMessage;
 @class ARTErrorInfo;
+@class ARTLog;
 
 ART_ASSUME_NONNULL_BEGIN
 
@@ -26,7 +27,10 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, assign) BOOL syncComplete;
 @property (readonly, nonatomic, getter=getSyncInProgress) BOOL syncInProgress;
 
-- (void)put:(ARTPresenceMessage *)message;
+- (instancetype)init UNAVAILABLE_ATTRIBUTE;
+- (instancetype)initWithLogger:(ARTLog *)logger;
+
+- (BOOL)add:(ARTPresenceMessage *)message;
 - (void)clean;
 
 - (void)startSync;

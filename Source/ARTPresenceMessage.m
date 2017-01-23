@@ -38,4 +38,33 @@
     return [NSString stringWithFormat:@"%@:%@", self.connectionId, self.clientId];
 }
 
+- (BOOL)isEqualToPresenceMessage:(ARTPresenceMessage *)presence {
+    if (!presence) {
+        return NO;
+    }
+
+    BOOL haveEqualConnectionId = (!self.connectionId && !presence.connectionId) || [self.connectionId isEqualToString:presence.connectionId];
+    BOOL haveEqualCliendId = (!self.clientId && !presence.clientId) || [self.clientId isEqualToString:presence.clientId];
+
+    return haveEqualConnectionId && haveEqualCliendId;
+}
+
+#pragma mark - NSObject
+
+- (BOOL)isEqual:(id)object {
+    if (self == object) {
+        return YES;
+    }
+
+    if (![object isKindOfClass:[ARTPresenceMessage class]]) {
+        return NO;
+    }
+
+    return [self isEqualToPresenceMessage:(ARTPresenceMessage *)object];
+}
+
+- (NSUInteger)hash {
+    return [self.connectionId hash] ^ [self.clientId hash];
+}
+
 @end

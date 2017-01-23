@@ -9,6 +9,7 @@
 #import "ARTPresenceMap.h"
 #import "ARTPresenceMessage.h"
 #import "ARTEventEmitter.h"
+#import "ARTLog.h"
 
 typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
     ARTPresenceSyncStarted, //ItemType: nil
@@ -25,11 +26,14 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
 
 @end
 
-@implementation ARTPresenceMap
+@implementation ARTPresenceMap {
+    __weak ARTLog *_logger;
+}
 
-- (id)init {
+- (instancetype)initWithLogger:(ARTLog *)logger {
     self = [super init];
     if(self) {
+        _logger = logger;
         _recentMembers = [NSMutableDictionary dictionary];
         _syncStarted = false;
         _syncComplete = false;
@@ -42,11 +46,65 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
     return self.recentMembers;
 }
 
-- (void)put:(ARTPresenceMessage *)message {
+- (BOOL)add:(ARTPresenceMessage *)message {
     ARTPresenceMessage *latest = [self.recentMembers objectForKey:message.clientId];
-    if (!latest || !message.timestamp || [latest.timestamp timeIntervalSince1970] <= [message.timestamp timeIntervalSince1970]) {
-        [self.recentMembers setObject:message forKey:message.clientId];
+    if ([self isNewestPresence:message comparingWith:latest]) {
+        ARTPresenceMessage *messageCopy = [message copy];
+        switch (message.action) {
+            case ARTPresenceEnter:
+            case ARTPresenceUpdate:
+                messageCopy.action = ARTPresencePresent;
+                break;
+            case ARTPresenceLeave:
+                if (self.syncInProgress) {
+                    messageCopy.action = ARTPresenceAbsent;
+                }
+                break;
+            default:
+                break;
+        }
+        [self.recentMembers setObject:messageCopy forKey:message.clientId];
+        return YES;
     }
+    return NO;
+}
+
+- (BOOL)isNewestPresence:(nonnull ARTPresenceMessage *)received comparingWith:(ARTPresenceMessage *)latest  __attribute__((warn_unused_result)) {
+    if (latest == nil) {
+        return YES;
+    }
+
+    NSArray<NSString *> *receivedMessageIdParts = [received.id componentsSeparatedByCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@":"]];
+    if (receivedMessageIdParts.count != 3) {
+        [_logger error:@"Received presence message id is invalid %@", received.id];
+        return !received.timestamp ||
+            [latest.timestamp timeIntervalSince1970] <= [received.timestamp timeIntervalSince1970];
+    }
+    NSString *receivedConnectionId = [receivedMessageIdParts objectAtIndex:0];
+    NSInteger receivedMsgSerial = [[receivedMessageIdParts objectAtIndex:1] integerValue];
+    NSInteger receivedIndex = [[receivedMessageIdParts objectAtIndex:2] integerValue];
+
+    if ([receivedConnectionId isEqualToString:received.connectionId]) {
+        NSArray<NSString *> *latestRegisteredIdParts = [latest.id componentsSeparatedByCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@":"]];
+        if (latestRegisteredIdParts.count != 3) {
+            [_logger error:@"Latest registered presence message id is invalid %@", latest.id];
+            return !received.timestamp ||
+                [latest.timestamp timeIntervalSince1970] <= [received.timestamp timeIntervalSince1970];
+        }
+        NSInteger latestRegisteredMsgSerial = [[latestRegisteredIdParts objectAtIndex:1] integerValue];
+        NSInteger latestRegisteredIndex = [[latestRegisteredIdParts objectAtIndex:2] integerValue];
+
+        if (receivedMsgSerial > latestRegisteredMsgSerial) {
+            return YES;
+        }
+        else if (receivedMsgSerial == latestRegisteredMsgSerial && receivedIndex > latestRegisteredIndex) {
+            return YES;
+        }
+        return NO;
+    }
+
+    return !received.timestamp ||
+        [latest.timestamp timeIntervalSince1970] <= [received.timestamp timeIntervalSince1970];
 }
 
 - (void)clean {
