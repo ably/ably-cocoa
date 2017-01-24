@@ -1185,6 +1185,36 @@ class RealtimeClientPresence: QuickSpec {
                     expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
                 }
 
+                // RTP8d
+                it("should result in an error if the channel is in the DETACHED state") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        channel.attach { error in
+                            expect(error).to(beNil())
+                            partialDone()
+                        }
+                        channel.detach { error in
+                            expect(error).to(beNil())
+                            partialDone()
+                        }
+                    }
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enter("online") { error in
+                            expect(error!.message).to(contain("invalid channel state"))
+                            done()
+                        }
+                    }
+                }
+
             }
 
             // RTP10
