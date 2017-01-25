@@ -338,12 +338,20 @@
         _errorReason = status.errorInfo;
     }
 
-    if (state == ARTRealtimeChannelSuspended) {
-        [_attachedEventEmitter emit:[NSNull null] with:status.errorInfo];
-    }
-    else if (state == ARTRealtimeChannelFailed) {
-        [_attachedEventEmitter emit:[NSNull null] with:status.errorInfo];
-        [_detachedEventEmitter emit:[NSNull null] with:status.errorInfo];
+    switch (state) {
+        case ARTRealtimeChannelSuspended:
+            [_attachedEventEmitter emit:[NSNull null] with:status.errorInfo];
+            break;
+        case ARTRealtimeChannelDetached:
+            [self.presenceMap failsSync:status.errorInfo];
+            break;
+        case ARTRealtimeChannelFailed:
+            [_attachedEventEmitter emit:[NSNull null] with:status.errorInfo];
+            [_detachedEventEmitter emit:[NSNull null] with:status.errorInfo];
+            [self.presenceMap failsSync:status.errorInfo];
+            break;
+        default:
+            break;
     }
 
     [self emit:stateChange.event with:stateChange];
@@ -420,6 +428,16 @@
     }
     self.attachSerial = message.channelSerial;
 
+    if (message.hasPresence) {
+        [self.presenceMap startSync];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p PresenceMap Sync started", _realtime, self];
+    }
+    else if ([self.presenceMap.members count] > 0 || [self.presenceMap.localMembers count] > 0) {
+        // When an ATTACHED message is received without a HAS_PRESENCE flag and PresenceMap has existing members
+        [self.presenceMap startSync];
+        [self.presenceMap endSync];
+    }
+
     if (self.state == ARTRealtimeChannelAttached) {
         if (message.error != nil) {
             _errorReason = message.error;
@@ -429,22 +447,11 @@
         return;
     }
 
-    if (message.hasPresence) {
-        [self.presenceMap startSync];
-        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p PresenceMap Sync started", _realtime, self];
-    }
-
     [self sendQueuedMessages];
 
     ARTStatus *status = message.error ? [ARTStatus state:ARTStateError info:message.error] : [ARTStatus state:ARTStateOk];
     [self transition:ARTRealtimeChannelAttached status:status];
     [_attachedEventEmitter emit:[NSNull null] with:nil];
-
-    if (!message.hasPresence && [self.presenceMap.members count] > 0) {
-        // If the PresenceMap has existing members when an ATTACHED message is received without a HAS_PRESENCE flag
-        [self.presenceMap startSync];
-        [self.presenceMap endSync];
-    }
 }
 
 - (void)setDetached:(ARTProtocolMessage *)message {
@@ -555,9 +562,6 @@
         if ([self.presenceMap add:presence]) {
             [self broadcastPresence:presence];
         }
-        if (!self.presenceMap.syncInProgress) {
-            [self.presenceMap clean];
-        }
 
         ++i;
     }
@@ -566,9 +570,6 @@
 - (void)onSync:(ARTProtocolMessage *)message {
     self.presenceMap.syncMsgSerial = message.msgSerial;
     self.presenceMap.syncChannelSerial = message.channelSerial;
-
-    if (message.action == ARTProtocolMessageSync)
-        [self.logger info:@"R:%p C:%p ARTRealtime Sync message received", _realtime, self];
 
     if (!self.presenceMap.syncInProgress) {
         [self.presenceMap startSync];
@@ -814,11 +815,26 @@
 
 #pragma mark - ARTPresenceMapDelegate
 
-- (void)map:(ARTPresenceMap *)map didRemoveMemberNoLongerPresent:(ARTPresenceMessage *)presence {
+- (NSString *)connectionId {
+    return _realtime.connection.id;
+}
+
+- (void)map:(ARTPresenceMap *)map didRemovedMemberNoLongerPresent:(ARTPresenceMessage *)presence {
     presence.action = ARTPresenceLeave;
     presence.id = nil;
     presence.timestamp = [NSDate date];
     [self broadcastPresence:presence];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"Member \"%@\" no longer present", presence.memberKey];
+}
+
+- (void)map:(ARTPresenceMap *)map shouldReenterLocalMember:(ARTPresenceMessage *)presence {
+    [self.presence enterClient:presence.clientId data:presence.data callback:^(ARTErrorInfo *error) {
+        NSString *message = [NSString stringWithFormat:@"Re-entering member \"%@\" as failed with code %ld (%@)", presence.clientId, (long)error.code, error.message];
+        ARTErrorInfo *reenterError = [ARTErrorInfo createWithCode:91004 message:message];
+        ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self.state previous:self.state event:ARTChannelEventUpdate reason:reenterError resumed:true];
+        [self emit:stateChange.event with:stateChange];
+    }];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"Re-entering local member \"%@\"", presence.memberKey];
 }
 
 @end
