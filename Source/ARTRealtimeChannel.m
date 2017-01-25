@@ -48,6 +48,7 @@
         _queuedMessages = [NSMutableArray array];
         _attachSerial = nil;
         _presenceMap = [[ARTPresenceMap alloc] initWithLogger:self.logger];
+        _presenceMap.delegate = self;
         _lastPresenceAction = ARTPresenceAbsent;
         
         _statesEventEmitter = [[ARTEventEmitter alloc] init];
@@ -438,6 +439,12 @@
     ARTStatus *status = message.error ? [ARTStatus state:ARTStateError info:message.error] : [ARTStatus state:ARTStateOk];
     [self transition:ARTRealtimeChannelAttached status:status];
     [_attachedEventEmitter emit:[NSNull null] with:nil];
+
+    if (!message.hasPresence && [self.presenceMap.members count] > 0) {
+        // If the PresenceMap has existing members when an ATTACHED message is received without a HAS_PRESENCE flag
+        [self.presenceMap startSync];
+        [self.presenceMap endSync];
+    }
 }
 
 - (void)setDetached:(ARTProtocolMessage *)message {
@@ -562,6 +569,10 @@
 
     if (message.action == ARTProtocolMessageSync)
         [self.logger info:@"R:%p C:%p ARTRealtime Sync message received", _realtime, self];
+
+    if (!self.presenceMap.syncInProgress) {
+        [self.presenceMap startSync];
+    }
 
     for (int i=0; i<[message.presence count]; i++) {
         ARTPresenceMessage *presence = [message.presence objectAtIndex:i];
@@ -799,6 +810,15 @@
         }
         return NO;
     }
+}
+
+#pragma mark - ARTPresenceMapDelegate
+
+- (void)map:(ARTPresenceMap *)map didRemoveMemberNoLongerPresent:(ARTPresenceMessage *)presence {
+    presence.action = ARTPresenceLeave;
+    presence.id = nil;
+    presence.timestamp = [NSDate date];
+    [self broadcastPresence:presence];
 }
 
 @end

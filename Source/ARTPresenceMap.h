@@ -9,11 +9,17 @@
 #import <Foundation/Foundation.h>
 #import "CompatibilityMacros.h"
 
+@class ARTPresenceMap;
 @class ARTPresenceMessage;
 @class ARTErrorInfo;
 @class ARTLog;
 
 ART_ASSUME_NONNULL_BEGIN
+
+/// ARTPresenceMapDelegate
+@protocol ARTPresenceMapDelegate <NSObject>
+- (void)map:(ARTPresenceMap *)map didRemoveMemberNoLongerPresent:(ARTPresenceMessage *)presence;
+@end
 
 /// Used to maintain a list of members present on a channel
 @interface ARTPresenceMap : NSObject
@@ -25,6 +31,8 @@ ART_ASSUME_NONNULL_BEGIN
 /// List of internal members.
 /// The key is the clientId and the value is the latest relevant ARTPresenceMessage for that clientId.
 @property (readonly, atomic) NSDictionary<NSString *, ARTPresenceMessage *> *localMembers;
+
+@property (nullable, weak) id<ARTPresenceMapDelegate> delegate;
 
 @property (readwrite, nonatomic, assign) int64_t syncMsgSerial;
 @property (readwrite, nonatomic, nullable) NSString *syncChannelSerial;

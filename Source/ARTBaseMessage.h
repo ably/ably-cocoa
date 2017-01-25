@@ -14,7 +14,7 @@ ART_ASSUME_NONNULL_BEGIN
 @interface ARTBaseMessage : NSObject<NSCopying>
 
 /// A unique id for this message
-@property (strong, nonatomic) NSString *id;
+@property (nullable, strong, nonatomic) NSString *id;
 
 /// The timestamp for this message
 @property (strong, nonatomic, art_nullable) NSDate *timestamp;

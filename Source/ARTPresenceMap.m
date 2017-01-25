@@ -20,6 +20,7 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
 @interface ARTPresenceMap () {
     BOOL _syncStarted;
     ARTEventEmitter<NSNumber * /*ARTSyncState*/, id> *_syncEventEmitter;
+    NSMutableArray<ARTPresenceMessage *> *_remainingMembers;
 }
 
 @property (readwrite, strong, atomic) __GENERIC(NSMutableDictionary, NSString *, ARTPresenceMessage *) *recentMembers;
@@ -48,25 +49,30 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
 
 - (BOOL)add:(ARTPresenceMessage *)message {
     ARTPresenceMessage *latest = [self.recentMembers objectForKey:message.clientId];
-    if ([self isNewestPresence:message comparingWith:latest]) {
-        ARTPresenceMessage *messageCopy = [message copy];
-        switch (message.action) {
-            case ARTPresenceEnter:
-            case ARTPresenceUpdate:
-                messageCopy.action = ARTPresencePresent;
-                break;
-            case ARTPresenceLeave:
-                if (self.syncInProgress) {
-                    messageCopy.action = ARTPresenceAbsent;
-                }
-                break;
-            default:
-                break;
+    @try {
+        if ([self isNewestPresence:message comparingWith:latest]) {
+            ARTPresenceMessage *messageCopy = [message copy];
+            switch (message.action) {
+                case ARTPresenceEnter:
+                case ARTPresenceUpdate:
+                    messageCopy.action = ARTPresencePresent;
+                    break;
+                case ARTPresenceLeave:
+                    if (self.syncInProgress) {
+                        messageCopy.action = ARTPresenceAbsent;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            [self.recentMembers setObject:messageCopy forKey:message.clientId];
+            return YES;
         }
-        [self.recentMembers setObject:messageCopy forKey:message.clientId];
-        return YES;
+        return NO;
     }
-    return NO;
+    @finally {
+        [_remainingMembers removeObject:message];
+    }
 }
 
 - (BOOL)isNewestPresence:(nonnull ARTPresenceMessage *)received comparingWith:(ARTPresenceMessage *)latest  __attribute__((warn_unused_result)) {
@@ -117,6 +123,9 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
 }
 
 - (void)startSync {
+    if ([_recentMembers count] > 0) {
+        _remainingMembers = [[_recentMembers allValues] mutableCopy];
+    }
     _recentMembers = [NSMutableDictionary dictionary];
     _syncStarted = true;
     _syncComplete = false;
@@ -124,6 +133,12 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
 }
 
 - (void)endSync {
+    for (id member in [_remainingMembers reverseObjectEnumerator]) {
+        // Handle members that have not been added or updated in the PresenceMap during the sync process
+        ARTPresenceMessage *leave = [member copy];
+        [_remainingMembers removeObject:member];
+        [self.delegate map:self didRemoveMemberNoLongerPresent:leave];
+    }
     [self clean];
     _syncStarted = false;
     _syncComplete = true;
