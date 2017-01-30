@@ -175,13 +175,12 @@
 
     switch (self.state) {
         case ARTRealtimeChannelInitialized:
+            [self addToQueue:pm callback:queuedCallback];
             [self attach];
-            // intentional fall-through
+            break;
         case ARTRealtimeChannelAttaching:
-        {
             [self addToQueue:pm callback:queuedCallback];
             break;
-        }
         case ARTRealtimeChannelSuspended:
         case ARTRealtimeChannelDetaching:
         case ARTRealtimeChannelDetached:
