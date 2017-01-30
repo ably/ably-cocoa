@@ -786,7 +786,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     }
 
     override func receive(msg: ARTProtocolMessage) {
-        if msg.action == .Ack {
+        if msg.action == .Ack || msg.action == .Presence {
             if let error = replacingAcksWithNacks {
                 msg.action = .Nack
                 msg.error = error
