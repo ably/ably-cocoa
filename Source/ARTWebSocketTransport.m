@@ -52,19 +52,19 @@ enum {
         _resumeKey = resumeKey;
         _connectionSerial = connectionSerial;
 
-        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p alloc", _delegate, self];
+        [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p WS:%p alloc", _delegate, self];
     }
     return self;
 }
 
 - (void)dealloc {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p dealloc", _delegate, self];
+    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p WS:%p dealloc", _delegate, self];
     self.websocket.delegate = nil;
     self.websocket = nil;
 }
 
 - (void)send:(ARTProtocolMessage *)msg {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p sending action %lu with %@", _delegate, self, (unsigned long)msg.action, msg.messages];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket sending action %tu - %@", _delegate, self, msg.action, ARTProtocolMessageActionToStr(msg.action)];
     NSData *data = [self.encoder encodeProtocolMessage:msg];
     [self sendWithData:data];
 }

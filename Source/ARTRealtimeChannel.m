@@ -330,6 +330,7 @@
 }
 
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status {
+    [self.logger debug:__FILE__ line:__LINE__ message:@"channel state transitions to %tu - %@", state, ARTRealtimeChannelStateToStr(state)];
     ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:self.state event:(ARTChannelEvent)state reason:status.errorInfo];
     self.state = state;
 
@@ -391,6 +392,7 @@
 }
 
 - (void)onChannelMessage:(ARTProtocolMessage *)message {
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p received channel message %tu - %@", _realtime, self, message.action, ARTProtocolMessageActionToStr(message.action)];
     switch (message.action) {
         case ARTProtocolMessageAttached:
             [self setAttached:message];
@@ -537,6 +539,7 @@
 }
 
 - (void)onPresence:(ARTProtocolMessage *)message {
+    [self.logger debug:__FILE__ line:__LINE__ message:@"handle PRESENCE message"];
     int i = 0;
     ARTDataEncoder *dataEncoder = self.dataEncoder;
     for (ARTPresenceMessage *p in message.presence) {
@@ -567,6 +570,7 @@
 }
 
 - (void)onSync:(ARTProtocolMessage *)message {
+    [self.logger debug:__FILE__ line:__LINE__ message:@"handle SYNC message"];
     self.presenceMap.syncMsgSerial = message.msgSerial;
     self.presenceMap.syncChannelSerial = message.channelSerial;
 
@@ -603,11 +607,11 @@
 - (void)attach:(void (^)(ARTErrorInfo *))callback {
     switch (self.state) {
         case ARTRealtimeChannelAttaching:
-            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p already attaching", _realtime, self];
+            [self.realtime.logger verbose:__FILE__ line:__LINE__ message:@"R:%p C:%p already attaching", _realtime, self];
             if (callback) [_attachedEventEmitter once:callback];
             return;
         case ARTRealtimeChannelAttached:
-            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p already attached", _realtime, self];
+            [self.realtime.logger verbose:__FILE__ line:__LINE__ message:@"R:%p C:%p already attached", _realtime, self];
             if (callback) callback(nil);
             return;
         default:

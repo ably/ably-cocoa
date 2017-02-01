@@ -696,7 +696,7 @@
 
 - (id)decode:(NSData *)data {
     id decoded = [_delegate decode:data];
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@> decoding '%@'; got: %@", _rest, [_delegate formatAsString], data, decoded];
+    [_logger debug:@"RS:%p ARTJsonLikeEncoder<%@> decoding '%@'; got: %@", _rest, [_delegate formatAsString], data, decoded];
     return decoded;
 }
 
@@ -718,7 +718,7 @@
 
 - (NSData *)encode:(id)obj {
     NSData *encoded = [_delegate encode:obj]; 
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@> encoding '%@'; got: %@", _rest, [_delegate formatAsString], obj, encoded];
+    [_logger debug:@"RS:%p ARTJsonLikeEncoder<%@> encoding '%@'; got: %@", _rest, [_delegate formatAsString], obj, encoded];
     return encoded;
 }
 
