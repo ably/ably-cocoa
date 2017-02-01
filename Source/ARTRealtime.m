@@ -508,12 +508,12 @@
             for (ARTRealtimeChannel *channel in self.channels) {
                 [channel detachChannel:[ARTStatus state:ARTStateConnectionDisconnected info:message.error]];
             }
+            _resuming = false;
         }
         else if (message.error) {
             [self.logger warn:@"R:%p ARTRealtime: connection has resumed with non-fatal error %@", self, message.error.message];
             // The error will be emitted on `transition`
         }
-        _resuming = false;
 
         [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, self.connection.id];
 
@@ -545,6 +545,8 @@
         default:
             break;
     }
+
+    _resuming = false;
 }
 
 - (void)onDisconnected {
