@@ -39,3 +39,18 @@
 }
 
 @end
+
+NSString *ARTPresenceActionToStr(ARTPresenceAction action) {
+    switch (action) {
+        case ARTPresenceAbsent:
+            return @"Absent"; //0
+        case ARTPresencePresent:
+            return @"Present"; //1
+        case ARTPresenceEnter:
+            return @"Enter"; //2
+        case ARTPresenceLeave:
+            return @"Leave"; //3
+        case ARTPresenceUpdate:
+            return @"Update"; //4
+    }
+}

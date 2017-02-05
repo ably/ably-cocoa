@@ -17,6 +17,8 @@ typedef NS_ENUM(NSUInteger, ARTPresenceAction) {
     ARTPresenceUpdate
 };
 
+NSString *__art_nonnull ARTPresenceActionToStr(ARTPresenceAction action);
+
 /// List of members present on a channel
 @interface ARTPresenceMessage : ARTBaseMessage
 

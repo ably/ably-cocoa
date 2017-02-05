@@ -1456,6 +1456,164 @@ class RealtimeClientPresence: QuickSpec {
 
             }
 
+            // RTP17
+            pending("private and internal PresenceMap containing only members that match the current connectionId") {
+
+                it("any ENTER, PRESENT, UPDATE or LEAVE event that matches the current connectionId should be applied to this object") {
+                    let options = AblyTests.commonAppSetup()
+
+                    options.clientId = "a"
+                    let clientA = ARTRealtime(options: options)
+                    defer { clientA.dispose(); clientA.close() }
+                    let channelA = clientA.channels.get("foo")
+
+                    options.clientId = "b"
+                    let clientB = ARTRealtime(options: options)
+                    defer { clientB.dispose(); clientB.close() }
+                    let channelB = clientB.channels.get("foo")
+
+                    // ENTER
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        channelA.presence.subscribe { presence in
+                            guard let currentConnectionId = clientA.connection.id else {
+                                fail("ClientA should be connected"); partialDone(); return
+                            }
+                            expect(presence.action).to(equal(ARTPresenceAction.Enter))
+                            expect(presence.connectionId).to(equal(currentConnectionId))
+                            expect(channelA.presenceMap.members).to(haveCount(1))
+                            expect(channelA.presenceMap.localMembers).to(haveCount(1))
+                            channelA.presence.unsubscribe()
+                            partialDone()
+                        }
+                        channelB.presence.subscribe { presence in
+                            guard let currentConnectionId = clientB.connection.id else {
+                                fail("ClientB should be connected"); partialDone(); return
+                            }
+                            expect(presence.action).to(equal(ARTPresenceAction.Enter))
+                            expect(presence.connectionId).toNot(equal(currentConnectionId))
+                            expect(channelB.presenceMap.members).to(haveCount(1))
+                            expect(channelB.presenceMap.localMembers).to(haveCount(0))
+                            channelB.presence.unsubscribe()
+                            partialDone()
+                        }
+                        channelA.presence.enter(nil)
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        channelA.presence.subscribe { presence in
+                            guard let currentConnectionId = clientA.connection.id else {
+                                fail("ClientA should be connected"); partialDone(); return
+                            }
+                            expect(presence.action).to(equal(ARTPresenceAction.Enter))
+                            expect(presence.connectionId).toNot(equal(currentConnectionId))
+                            expect(channelA.presenceMap.members).to(haveCount(2))
+                            expect(channelA.presenceMap.localMembers).to(haveCount(1))
+                            channelA.presence.unsubscribe()
+                            partialDone()
+                        }
+                        channelB.presence.subscribe { presence in
+                            guard let currentConnectionId = clientB.connection.id else {
+                                fail("ClientB should be connected"); partialDone(); return
+                            }
+                            expect(presence.action).to(equal(ARTPresenceAction.Enter))
+                            expect(presence.connectionId).to(equal(currentConnectionId))
+                            expect(channelB.presenceMap.members).to(haveCount(2))
+                            expect(channelB.presenceMap.localMembers).to(haveCount(1))
+                            channelB.presence.unsubscribe()
+                            partialDone()
+                        }
+                        channelB.presence.enter(nil)
+                    }
+
+                    // UPDATE
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        channelA.presence.subscribe { presence in
+                            guard let currentConnectionId = clientA.connection.id else {
+                                fail("ClientA should be connected"); partialDone(); return
+                            }
+                            expect(presence.action).to(equal(ARTPresenceAction.Update))
+                            expect(presence.data as? String).to(equal("hello"))
+                            expect(presence.connectionId).toNot(equal(currentConnectionId))
+                            expect(channelA.presenceMap.members).to(haveCount(2))
+                            expect(channelA.presenceMap.localMembers).to(haveCount(1))
+                            channelA.presence.unsubscribe()
+                            partialDone()
+                        }
+                        channelB.presence.subscribe { presence in
+                            guard let currentConnectionId = clientB.connection.id else {
+                                fail("ClientB should be connected"); partialDone(); return
+                            }
+                            expect(presence.action).to(equal(ARTPresenceAction.Update))
+                            expect(presence.data as? String).to(equal("hello"))
+                            expect(presence.connectionId).to(equal(currentConnectionId))
+                            expect(channelB.presenceMap.members).to(haveCount(2))
+                            expect(channelB.presenceMap.localMembers).to(haveCount(1))
+                            channelB.presence.unsubscribe()
+                            partialDone()
+                        }
+                        channelB.presence.update("hello")
+                    }
+
+                    // LEAVE
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        channelA.presence.subscribe { presence in
+                            guard let currentConnectionId = clientA.connection.id else {
+                                fail("ClientA should be connected"); partialDone(); return
+                            }
+                            expect(presence.action).to(equal(ARTPresenceAction.Leave))
+                            expect(presence.data as? String).to(equal("bye"))
+                            expect(presence.connectionId).toNot(equal(currentConnectionId))
+                            expect(channelA.presenceMap.members).to(haveCount(1))
+                            expect(channelA.presenceMap.localMembers).to(haveCount(1))
+                            channelA.presence.unsubscribe()
+                            partialDone()
+                        }
+                        channelB.presence.subscribe { presence in
+                            guard let currentConnectionId = clientB.connection.id else {
+                                fail("ClientB should be connected"); partialDone(); return
+                            }
+                            expect(presence.action).to(equal(ARTPresenceAction.Leave))
+                            expect(presence.data as? String).to(equal("bye"))
+                            expect(presence.connectionId).to(equal(currentConnectionId))
+                            expect(channelB.presenceMap.members).to(haveCount(1))
+                            expect(channelB.presenceMap.localMembers).to(haveCount(0))
+                            channelB.presence.unsubscribe()
+                            partialDone()
+                        }
+                        channelB.presence.leave("bye")
+                    }
+                }
+
+                // RTP17a
+                it("all members belonging to the current connection are published as a PresenceMessage on the Channel by the server irrespective of whether the client has permission to subscribe or the Channel is configured to publish presence events") {
+                    let options = AblyTests.commonAppSetup()
+                    options.tokenDetails = getTestTokenDetails(capability: "{\"foo\":[\"presence\",\"publish\"]}")
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enterClient("tester", data: nil) { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.get { members, error in
+                            expect(error).to(beNil())
+                            expect(members).to(haveCount(1))
+                            expect(channel.presenceMap.members).to(haveCount(1))
+                            expect(channel.presenceMap.localMembers).to(haveCount(1))
+                            done()
+                        }
+                    }
+                }
+
+            }
+
             // RTP15d
             it("callback can be provided that will be called upon success") {
                 let options = AblyTests.commonAppSetup()

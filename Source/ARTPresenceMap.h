@@ -21,6 +21,10 @@ ART_ASSUME_NONNULL_BEGIN
 /// The key is the clientId and the value is the latest relevant ARTPresenceMessage for that clientId.
 @property (readonly, atomic, getter=getMembers) __GENERIC(NSDictionary, NSString *, ARTPresenceMessage *) *members;
 
+/// List of internal members.
+/// The key is the clientId and the value is the latest relevant ARTPresenceMessage for that clientId.
+@property (readonly, atomic) NSDictionary<NSString *, ARTPresenceMessage *> *localMembers;
+
 @property (readwrite, nonatomic, assign) int64_t syncMsgSerial;
 @property (readwrite, nonatomic, nullable) NSString *syncChannelSerial;
 @property (readonly, nonatomic, assign) BOOL syncComplete;
