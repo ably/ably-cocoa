@@ -1402,7 +1402,7 @@ class RealtimeClientPresence: QuickSpec {
             }
 
             // RTP17
-            context("private and internal PresenceMap containing only members that match the current connectionId") {
+            pending("private and internal PresenceMap containing only members that match the current connectionId") {
 
                 it("any ENTER, PRESENT, UPDATE or LEAVE event that matches the current connectionId should be applied to this object") {
                     let options = AblyTests.commonAppSetup()
