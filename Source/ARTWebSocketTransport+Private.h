@@ -19,8 +19,6 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTWebSocketTransport () <SRWebSocketDelegate>
 
-@property (readonly, assign, nonatomic) CFRunLoopRef rl;
-
 // From RestClient
 @property (readwrite, strong, nonatomic) id<ARTEncoder> encoder;
 @property (readonly, strong, nonatomic) ARTLog *logger;

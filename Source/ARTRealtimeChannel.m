@@ -37,25 +37,26 @@
 
 @end
 
-@implementation ARTRealtimeChannel
+@implementation ARTRealtimeChannel {
+    _Nonnull dispatch_queue_t _eventQueue;
+}
 
 - (instancetype)initWithRealtime:(ARTRealtime *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options {
     self = [super initWithName:name andOptions:options andLogger:realtime.options.logHandler];
     if (self) {
+        _eventQueue = dispatch_queue_create("io.ably.realtime.channel", DISPATCH_QUEUE_SERIAL);
         _realtime = realtime;
         _restChannel = [_realtime.rest.channels get:self.name options:options];
         _state = ARTRealtimeChannelInitialized;
         _queuedMessages = [NSMutableArray array];
         _attachSerial = nil;
-        _presenceMap = [[ARTPresenceMap alloc] init];
+        _presenceMap = [[ARTPresenceMap alloc] initWithQueue:_eventQueue];
         _lastPresenceAction = ARTPresenceAbsent;
-        
-        _statesEventEmitter = [[ARTEventEmitter alloc] init];
-        _messagesEventEmitter = [[ARTEventEmitter alloc] init];
-        _presenceEventEmitter = [[ARTEventEmitter alloc] init];
-
-        _attachedEventEmitter = [[ARTEventEmitter alloc] init];
-        _detachedEventEmitter = [[ARTEventEmitter alloc] init];
+        _statesEventEmitter = [[ARTEventEmitter alloc] initWithQueue:_eventQueue];
+        _messagesEventEmitter = [[ARTEventEmitter alloc] initWithQueue:_eventQueue];
+        _presenceEventEmitter = [[ARTEventEmitter alloc] initWithQueue:_eventQueue];
+        _attachedEventEmitter = [[ARTEventEmitter alloc] initWithQueue:_eventQueue];
+        _detachedEventEmitter = [[ARTEventEmitter alloc] initWithQueue:_eventQueue];
     }
     return self;
 }
@@ -334,7 +335,7 @@
     // Defer until next event loop execution so that any event emitted in the current
     // one doesn't cancel the timeout.
     ARTRealtimeChannelState state = self.state;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), _eventQueue, ^{
         if (state != self.state) {
             // Already changed; do nothing.
             return;
@@ -502,12 +503,11 @@
             presence.id = [NSString stringWithFormat:@"%@:%d", message.id, i];
         }
 
-        [self.presenceMap onceSyncEnds:^(__GENERIC(NSArray, ARTPresenceMessage *) *msgs) {
-            [self.presenceMap put:presence];
+        [self.presenceMap put:presence];
+        if (!self.presenceMap.syncInProgress) {
             [self.presenceMap clean];
-
-            [self broadcastPresence:presence];
-        }];
+        }
+        [self broadcastPresence:presence];
 
         ++i;
     }

@@ -605,7 +605,7 @@ class RealtimeClientChannel: QuickSpec {
                     expect(channel.errorReason).toNot(beNil())
                     expect(callbackCalled).to(beTrue())
                     let end = NSDate()
-                    expect(start.dateByAddingTimeInterval(3.0)).to(beCloseTo(end, within: 0.5))
+                    expect(start.dateByAddingTimeInterval(3.0)).to(beCloseTo(end, within: 0.9))
                 }
 
                 it("if called with a callback should call it once attached") {

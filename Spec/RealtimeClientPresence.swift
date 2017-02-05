@@ -45,6 +45,7 @@ class RealtimeClientPresence: QuickSpec {
                     var disposable = [ARTRealtime]()
                     defer {
                         for clientItem in disposable {
+                            clientItem.dispose()
                             clientItem.close()
                         }
                     }
@@ -85,7 +86,7 @@ class RealtimeClientPresence: QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 options.disconnectedRetryTimeout = 1.0
                 var clientSecondary: ARTRealtime!
-                defer { clientSecondary.close() }
+                defer { clientSecondary.dispose(); clientSecondary.close() }
 
                 waitUntil(timeout: testTimeout) { done in
                     clientSecondary = AblyTests.addMembersSequentiallyToChannel("test", members: 150, options: options) {
@@ -114,8 +115,10 @@ class RealtimeClientPresence: QuickSpec {
                 expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connecting), timeout: options.disconnectedRetryTimeout + 1.0)
                 expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
 
-                //Client library requests a SYNC resume by sending a SYNC ProtocolMessage with the last received sync serial number
-                let transport = client.transport as! TestProxyTransport
+                // Client library requests a SYNC resume by sending a SYNC ProtocolMessage with the last received sync serial number
+                guard let transport = client.transport as? TestProxyTransport else {
+                    fail("Transport is nil"); return
+                }
                 expect(transport.protocolMessagesSent.filter{ $0.action == .Sync }).toEventually(haveCount(1), timeout: testTimeout)
                 expect(transport.protocolMessagesSent.filter{ $0.action == .Sync }.first!.channelSerial).to(equal(lastSyncSerial))
 
@@ -126,7 +129,7 @@ class RealtimeClientPresence: QuickSpec {
             it("should receive all 250 members") {
                 let options = AblyTests.commonAppSetup()
                 var clientSource: ARTRealtime!
-                defer { clientSource.close() }
+                defer { clientSource.dispose(); clientSource.close() }
 
                 waitUntil(timeout: testTimeout) { done in
                     clientSource = AblyTests.addMembersSequentiallyToChannel("test", members: 250, options: options) {
@@ -816,7 +819,7 @@ class RealtimeClientPresence: QuickSpec {
                         channel.presence.leave("offline")
                     }
 
-                    expect(channel.presenceMap.members).toEventually(haveCount(0), timeout: testTimeout)
+                    expect(channel.presenceMap.members).toEventually(beEmpty(), timeout: testTimeout)
                 }
 
                 // RTP10a
@@ -850,7 +853,7 @@ class RealtimeClientPresence: QuickSpec {
             it("should be used a PresenceMap to maintain a list of members") {
                 let options = AblyTests.commonAppSetup()
                 var clientSecondary: ARTRealtime!
-                defer { clientSecondary.close() }
+                defer { clientSecondary.dispose(); clientSecondary.close() }
 
                 waitUntil(timeout: testTimeout) { done in
                     clientSecondary = AblyTests.addMembersSequentiallyToChannel("test", members: 100, options: options) {
@@ -1690,6 +1693,7 @@ class RealtimeClientPresence: QuickSpec {
                     var disposable = [ARTRealtime]()
                     defer {
                         for clientItem in disposable {
+                            clientItem.dispose()
                             clientItem.close()
                         }
                     }
@@ -1861,7 +1865,7 @@ class RealtimeClientPresence: QuickSpec {
                     it("waitForSync is true, should wait until SYNC is complete before returning a list of members") {
                         let options = AblyTests.commonAppSetup()
                         var clientSecondary: ARTRealtime!
-                        defer { clientSecondary.close() }
+                        defer { clientSecondary.dispose(); clientSecondary.close() }
 
                         waitUntil(timeout: testTimeout) { done in
                             clientSecondary = AblyTests.addMembersSequentiallyToChannel("test", members: 150, options: options) {
@@ -1899,7 +1903,7 @@ class RealtimeClientPresence: QuickSpec {
                     it("waitForSync is false, should return immediately the known set of presence members") {
                         let options = AblyTests.commonAppSetup()
                         var clientSecondary: ARTRealtime!
-                        defer { clientSecondary.close() }
+                        defer { clientSecondary.dispose(); clientSecondary.close() }
 
                         waitUntil(timeout: testTimeout) { done in
                             clientSecondary = AblyTests.addMembersSequentiallyToChannel("test", members: 150, options: options) {
@@ -1990,7 +1994,7 @@ class RealtimeClientPresence: QuickSpec {
                     let options = AblyTests.commonAppSetup()
 
                     var clientSecondary: ARTRealtime!
-                    defer { clientSecondary.close() }
+                    defer { clientSecondary.dispose(); clientSecondary.close() }
 
                     let expectedData = ["x", "y"]
                     let expectedPattern = "^user(\\d+)$"
@@ -2119,6 +2123,7 @@ class RealtimeClientPresence: QuickSpec {
                         var disposable = [ARTRealtime]()
                         defer {
                             for clientItem in disposable {
+                                clientItem.dispose()
                                 clientItem.close()
                             }
                         }
@@ -2169,6 +2174,7 @@ class RealtimeClientPresence: QuickSpec {
                 var disposable = [ARTRealtime]()
                 defer {
                     for clientItem in disposable {
+                        clientItem.dispose()
                         clientItem.close()
                     }
                 }

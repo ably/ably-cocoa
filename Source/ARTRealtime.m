@@ -50,6 +50,7 @@
     Class _reachabilityClass;
     id<ARTRealtimeTransport> _transport;
     ARTFallback *_fallbacks;
+    _Nonnull dispatch_queue_t _eventQueue;
 }
 
 - (instancetype)initWithKey:(NSString *)key {
@@ -66,9 +67,10 @@
         NSAssert(options, @"ARTRealtime: No options provided");
         
         _rest = [[ARTRest alloc] initWithOptions:options];
-        _internalEventEmitter = [[ARTEventEmitter alloc] init];
-        _connectedEventEmitter = [[ARTEventEmitter alloc] init];
-        _pingEventEmitter = [[ARTEventEmitter alloc] init];
+        _eventQueue = dispatch_queue_create("io.ably.realtime.events", DISPATCH_QUEUE_SERIAL);
+        _internalEventEmitter = [[ARTEventEmitter alloc] initWithQueue:_eventQueue];
+        _connectedEventEmitter = [[ARTEventEmitter alloc] initWithQueue:_eventQueue];
+        _pingEventEmitter = [[ARTEventEmitter alloc] initWithQueue:_eventQueue];
         _channels = [[ARTRealtimeChannels alloc] initWithRealtime:self];
         _transport = nil;
         _transportClass = [ARTWebSocketTransport class];
@@ -213,21 +215,28 @@
     ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:state previous:self.connection.state reason:errorInfo retryIn:0];
     [self.connection setState:state];
 
-    [self transitionSideEffects:stateChange];
-
     if (errorInfo != nil) {
         [self.connection setErrorReason:errorInfo];
     }
-    [self.connection emit:state with:stateChange];
+
+    dispatch_semaphore_t waitingForCurrentEventSemaphore = [self transitionSideEffects:stateChange];
+
     [_internalEventEmitter emit:[NSNumber numberWithInteger:state] with:stateChange];
+    [self.connection emit:state with:stateChange];
+
+    if (waitingForCurrentEventSemaphore) {
+        // Current event is handled. Start running timeouts.
+        dispatch_semaphore_signal(waitingForCurrentEventSemaphore);
+    }
 }
 
-- (void)transitionSideEffects:(ARTConnectionStateChange *)stateChange {
+- (_Nullable dispatch_semaphore_t)transitionSideEffects:(ARTConnectionStateChange *)stateChange {
     ARTStatus *status = nil;
+    dispatch_semaphore_t waitingForCurrentEventSemaphore = nil;
 
     switch (stateChange.current) {
         case ARTRealtimeConnecting: {
-            [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
+            waitingForCurrentEventSemaphore = [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
                 [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createWithCode:0 status:ARTStateConnectionFailed message:@"timed out"]];
             }];
 
@@ -277,7 +286,7 @@
         }
         case ARTRealtimeClosing: {
             [_reachability off];
-            [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
+            waitingForCurrentEventSemaphore = [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
                 [self transition:ARTRealtimeClosed];
             }];
             [self.transport sendClose];
@@ -310,18 +319,16 @@
             }
             if ([[NSDate date] timeIntervalSinceDate:_startedReconnection] >= _connectionStateTtl) {
                 [self transition:ARTRealtimeSuspended withErrorInfo:stateChange.reason];
-                return;
+                return nil;
             }
 
             [self.transport close];
             self.transport.delegate = nil;
             _transport = nil;
             [stateChange setRetryIn:self.options.disconnectedRetryTimeout];
-
-            [self unlessStateChangesBefore:stateChange.retryIn do:^{
+            waitingForCurrentEventSemaphore = [self unlessStateChangesBefore:stateChange.retryIn do:^{
                 [self transition:ARTRealtimeConnecting];
             }];
-
             break;
         }
         case ARTRealtimeSuspended: {
@@ -329,7 +336,7 @@
             self.transport.delegate = nil;
             _transport = nil;
             [stateChange setRetryIn:self.options.suspendedRetryTimeout];
-            [self unlessStateChangesBefore:stateChange.retryIn do:^{
+            waitingForCurrentEventSemaphore = [self unlessStateChangesBefore:stateChange.retryIn do:^{
                 [self transition:ARTRealtimeConnecting];
             }];
             break;
@@ -381,21 +388,27 @@
             }
         }
     }
+
+    return waitingForCurrentEventSemaphore;
 }
 
-- (void)unlessStateChangesBefore:(NSTimeInterval)deadline do:(void(^)())callback {
-    // Defer until next event loop execution so that any event emitted in the current
-    // one doesn't cancel the timeout.
+- (_Nonnull dispatch_semaphore_t)unlessStateChangesBefore:(NSTimeInterval)deadline do:(void(^)())callback __attribute__((warn_unused_result)) {
+    // Defer until next event loop execution so that any event emitted in the current one doesn't cancel the timeout.
     ARTRealtimeConnectionState state = self.connection.state;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), dispatch_get_main_queue(), ^{
+    // Timeout should be dispatched after current event.
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), _eventQueue, ^{
+        // Wait until the current event is done.
+        dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
         if (state != self.connection.state) {
-            // Already changed; do nothing.
+            // Already changed; Ignore the timer.
             return;
         }
         [_internalEventEmitter timed:[_internalEventEmitter once:^(ARTConnectionStateChange *change) {
             // Any state change cancels the timeout.
         }] deadline:deadline onTimeout:callback];
     });
+    return semaphore;
 }
 
 - (void)onHeartbeat {
@@ -446,10 +459,14 @@
             }
             [self transition:ARTRealtimeConnected withErrorInfo:message.error];
             break;
-        case ARTRealtimeConnected:
+        case ARTRealtimeConnected: {
             // Renewing token.
-            [self transitionSideEffects:[[ARTConnectionStateChange alloc] initWithCurrent:ARTRealtimeConnected previous:ARTRealtimeConnected reason:nil]];
+            dispatch_semaphore_t semaphore = [self transitionSideEffects:[[ARTConnectionStateChange alloc] initWithCurrent:ARTRealtimeConnected previous:ARTRealtimeConnected reason:nil]];
             [self transition:ARTRealtimeConnected withErrorInfo:message.error];
+            if (semaphore) {
+                dispatch_semaphore_signal(semaphore);
+            }
+        }
         default:
             break;
     }

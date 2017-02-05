@@ -352,6 +352,20 @@ class RealtimeClient: QuickSpec {
                 }
             }
 
+            // https://github.com/ably/ably-ios/issues/577
+            it("background behaviour") {
+                let options = AblyTests.commonAppSetup()
+                waitUntil(timeout: testTimeout) { done in
+                    NSURLSession.sharedSession().dataTaskWithURL(NSURL(string:"https://ably.io")!) { _ in
+                        let realtime = ARTRealtime(options: options)
+                        realtime.channels.get("foo").attach { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }.resume()
+                }
+            }
+
             it("should never register any connection listeners for internal use with the public EventEmitter") {
                 let options = AblyTests.commonAppSetup()
                 options.autoConnect = false
