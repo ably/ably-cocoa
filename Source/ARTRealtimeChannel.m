@@ -47,7 +47,7 @@
         _state = ARTRealtimeChannelInitialized;
         _queuedMessages = [NSMutableArray array];
         _attachSerial = nil;
-        _presenceMap = [[ARTPresenceMap alloc] init];
+        _presenceMap = [[ARTPresenceMap alloc] initWithLogger:self.logger];
         _lastPresenceAction = ARTPresenceAbsent;
         
         _statesEventEmitter = [[ARTEventEmitter alloc] init];
@@ -62,6 +62,10 @@
 
 + (instancetype)channelWithRealtime:(ARTRealtime *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options {
     return [[ARTRealtimeChannel alloc] initWithRealtime:realtime andName:name withOptions:options];
+}
+
+- (ARTLog *)getLogger {
+    return _realtime.logger;
 }
 
 - (ARTRealtimePresence *)getPresence {
@@ -85,8 +89,8 @@
 }
 
 - (void)requestContinueSync {
-    [self.logger info:@"R:%p C:%p ARTRealtime requesting to continue sync operation after reconnect", _realtime, self];
-    
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p ARTRealtime requesting to continue sync operation after reconnect", _realtime, self];
+
     ARTProtocolMessage * msg = [[ARTProtocolMessage alloc] init];
     msg.action = ARTProtocolMessageSync;
     msg.msgSerial = self.presenceMap.syncMsgSerial;
@@ -541,12 +545,12 @@
             presence.id = [NSString stringWithFormat:@"%@:%d", message.id, i];
         }
 
-        [self.presenceMap onceSyncEnds:^(__GENERIC(NSArray, ARTPresenceMessage *) *msgs) {
-            [self.presenceMap put:presence];
-            [self.presenceMap clean];
-
+        if ([self.presenceMap add:presence]) {
             [self broadcastPresence:presence];
-        }];
+        }
+        if (!self.presenceMap.syncInProgress) {
+            [self.presenceMap clean];
+        }
 
         ++i;
     }
@@ -561,8 +565,9 @@
 
     for (int i=0; i<[message.presence count]; i++) {
         ARTPresenceMessage *presence = [message.presence objectAtIndex:i];
-        [self.presenceMap put:presence];
-        [self broadcastPresence:presence];
+        if ([self.presenceMap add:presence]) {
+            [self broadcastPresence:presence];
+        }
     }
 
     if ([self isLastChannelSerial:message.channelSerial]) {

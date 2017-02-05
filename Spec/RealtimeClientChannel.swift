@@ -19,7 +19,7 @@ class RealtimeClientChannel: QuickSpec {
             it("should process all incoming messages and presence messages as soon as a Channel becomes attached") {
                 let options = AblyTests.commonAppSetup()
                 let client1 = AblyTests.newRealtime(options)
-                defer { client1.close() }
+                defer { client1.dispose(); client1.close() }
                 let channel1 = client1.channels.get("room")
 
                 waitUntil(timeout: testTimeout) { done in
@@ -31,7 +31,7 @@ class RealtimeClientChannel: QuickSpec {
 
                 options.clientId = "Client 2"
                 let client2 = AblyTests.newRealtime(options)
-                defer { client2.close() }
+                defer { client2.dispose(); client2.close() }
                 let channel2 = client2.channels.get(channel1.name)
 
                 channel2.subscribe("Client 1") { message in
@@ -68,12 +68,12 @@ class RealtimeClientChannel: QuickSpec {
 
                 expect(channel1.presenceMap.members).toEventually(haveCount(2), timeout: testTimeout)
                 expect(channel1.presenceMap.members).to(allKeysPass({ $0.hasPrefix("Client") }))
-                expect(channel1.presenceMap.members).to(allValuesPass({ $0.action == .Enter }))
+                expect(channel1.presenceMap.members).to(allValuesPass({ $0.action == .Present }))
 
                 expect(channel2.presenceMap.members).toEventually(haveCount(2), timeout: testTimeout)
                 expect(channel2.presenceMap.members).to(allKeysPass({ $0.hasPrefix("Client") }))
                 expect(channel2.presenceMap.members["Client 1"]!.action).to(equal(ARTPresenceAction.Present))
-                expect(channel2.presenceMap.members["Client 2"]!.action).to(equal(ARTPresenceAction.Enter))
+                expect(channel2.presenceMap.members["Client 2"]!.action).to(equal(ARTPresenceAction.Present))
             }
 
             // RTL2

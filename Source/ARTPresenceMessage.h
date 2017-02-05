@@ -26,4 +26,6 @@ NSString *__art_nonnull ARTPresenceActionToStr(ARTPresenceAction action);
 
 - (NSString *)memberKey;
 
+- (BOOL)isEqualToPresenceMessage:(ARTPresenceMessage *)presence;
+
 @end
