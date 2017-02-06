@@ -8,21 +8,23 @@
 
 #import "ARTPresenceMap.h"
 #import "ARTPresenceMessage.h"
+#import "ARTPresenceMessage+Private.h"
 #import "ARTEventEmitter.h"
 #import "ARTLog.h"
 
 typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
+    ARTPresenceSyncInitialized,
     ARTPresenceSyncStarted, //ItemType: nil
     ARTPresenceSyncEnded, //ItemType: NSArray<ARTPresenceMessage *>*
     ARTPresenceSyncFailed //ItemType: ARTErrorInfo*
 };
 
 @interface ARTPresenceMap () {
-    BOOL _syncStarted;
+    ARTPresenceSyncState _syncState;
     ARTEventEmitter<NSNumber * /*ARTSyncState*/, id> *_syncEventEmitter;
+    NSMutableDictionary<NSString *, ARTPresenceMessage *> *_members;
+    NSMutableSet<ARTPresenceMessage *> *_localMembers;
 }
-
-@property (readwrite, strong, atomic) __GENERIC(NSMutableDictionary, NSString *, ARTPresenceMessage *) *recentMembers;
 
 @end
 
@@ -34,39 +36,74 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
     self = [super init];
     if(self) {
         _logger = logger;
-        _recentMembers = [NSMutableDictionary dictionary];
-        _syncStarted = false;
-        _syncComplete = false;
+        [self reset];
+        _syncSessionId = 0;
+        _syncState = ARTPresenceSyncInitialized;
         _syncEventEmitter = [[ARTEventEmitter alloc] init];
     }
     return self;
 }
 
-- (__GENERIC(NSDictionary, NSString *, ARTPresenceMessage *) *)getMembers {
-    return self.recentMembers;
+- (NSDictionary<NSString *, ARTPresenceMessage *> *)members {
+    return _members;
+}
+
+- (NSMutableSet<ARTPresenceMessage *> *)localMembers {
+    return _localMembers;
 }
 
 - (BOOL)add:(ARTPresenceMessage *)message {
-    ARTPresenceMessage *latest = [self.recentMembers objectForKey:message.clientId];
+    ARTPresenceMessage *latest = [_members objectForKey:message.clientId];
     if ([self isNewestPresence:message comparingWith:latest]) {
         ARTPresenceMessage *messageCopy = [message copy];
         switch (message.action) {
             case ARTPresenceEnter:
             case ARTPresenceUpdate:
                 messageCopy.action = ARTPresencePresent;
+                // intentional fallthrough
+            case ARTPresencePresent:
+                [self internalAdd:messageCopy];
                 break;
             case ARTPresenceLeave:
-                if (self.syncInProgress) {
-                    messageCopy.action = ARTPresenceAbsent;
-                }
+                [self internalRemove:messageCopy];
                 break;
             default:
                 break;
         }
-        [self.recentMembers setObject:messageCopy forKey:message.clientId];
         return YES;
     }
+    latest.syncSessionId = _syncSessionId;
     return NO;
+}
+
+- (void)internalAdd:(ARTPresenceMessage *)message {
+    [self internalAdd:message withSessionId:_syncSessionId];
+}
+
+- (void)internalAdd:(ARTPresenceMessage *)message withSessionId:(NSUInteger)sessionId {
+    message.syncSessionId = sessionId;
+    [_members setObject:message forKey:message.clientId];
+    // Local member
+    if ([message.connectionId isEqualToString:[self.delegate connectionId]]) {
+        [_localMembers addObject:message];
+        [_logger debug:__FILE__ line:__LINE__ message:@"local member %@ added", message.memberKey];
+    }
+}
+
+- (void)internalRemove:(ARTPresenceMessage *)message {
+    [self internalRemove:message force:false];
+}
+
+- (void)internalRemove:(ARTPresenceMessage *)message force:(BOOL)force {
+    if (!force && self.syncInProgress) {
+        message.action = ARTPresenceAbsent;
+        // Should be removed after Sync ends
+        [self internalAdd:message withSessionId:message.syncSessionId];
+    }
+    else {
+        [_members removeObjectForKey:message.clientId];
+        [_localMembers removeObject:message];
+    }
 }
 
 - (BOOL)isNewestPresence:(nonnull ARTPresenceMessage *)received comparingWith:(ARTPresenceMessage *)latest  __attribute__((warn_unused_result)) {
@@ -100,6 +137,8 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
         else if (receivedMsgSerial == latestRegisteredMsgSerial && receivedIndex > latestRegisteredIndex) {
             return YES;
         }
+
+        [_logger debug:__FILE__ line:__LINE__ message:@"Presence member \"%@\" with action %@ has been ignored", received.memberKey, ARTPresenceActionToStr(received.action)];
         return NO;
     }
 
@@ -107,34 +146,58 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
         [latest.timestamp timeIntervalSince1970] <= [received.timestamp timeIntervalSince1970];
 }
 
-- (void)clean {
-    for (NSString *key in [self.recentMembers allKeys]) {
-        ARTPresenceMessage *message = [self.recentMembers objectForKey:key];
-        if (message.action == ARTPresenceAbsent || message.action == ARTPresenceLeave) {
-            [self.recentMembers removeObjectForKey:key];
+- (void)cleanUpAbsentMembers {
+    NSSet<NSString *> *filteredMembers = [_members keysOfEntriesPassingTest:^BOOL(NSString *key, ARTPresenceMessage *message, BOOL *stop) {
+        return message.action == ARTPresenceAbsent;
+    }];
+    for (NSString *key in filteredMembers) {
+        [self internalRemove:[_members objectForKey:key] force:true];
+    }
+}
+
+- (void)leaveMembersNotPresentInSync {
+    for (ARTPresenceMessage *member in [_members allValues]) {
+        if (member.syncSessionId != _syncSessionId) {
+            // Handle members that have not been added or updated in the PresenceMap during the sync process
+            ARTPresenceMessage *leave = [member copy];
+            [self internalRemove:member];
+            [self.delegate map:self didRemovedMemberNoLongerPresent:leave];
         }
     }
 }
 
+- (void)reenterLocalMembersMissingFromSync {
+    NSSet *filteredLocalMembers = [_localMembers filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"syncSessionId != %lu", (unsigned long)_syncSessionId]];
+    for (ARTPresenceMessage *localMember in filteredLocalMembers) {
+        ARTPresenceMessage *reenter = [localMember copy];
+        [self internalRemove:localMember];
+        [self.delegate map:self shouldReenterLocalMember:reenter];
+    }
+}
+
+- (void)reset {
+    _members = [NSMutableDictionary dictionary];
+    _localMembers = [NSMutableSet set];
+}
+
 - (void)startSync {
-    _recentMembers = [NSMutableDictionary dictionary];
-    _syncStarted = true;
-    _syncComplete = false;
+    _syncSessionId++;
+    _syncState = ARTPresenceSyncStarted;
     [_syncEventEmitter emit:[NSNumber numberWithInt:ARTPresenceSyncStarted] with:nil];
 }
 
 - (void)endSync {
-    [self clean];
-    _syncStarted = false;
-    _syncComplete = true;
-    [_syncEventEmitter emit:[NSNumber numberWithInt:ARTPresenceSyncEnded] with:[self.recentMembers allValues]];
+    [self cleanUpAbsentMembers];
+    [self leaveMembersNotPresentInSync];
+    _syncState = ARTPresenceSyncEnded;
+    [self reenterLocalMembersMissingFromSync];
+    [_syncEventEmitter emit:[NSNumber numberWithInt:ARTPresenceSyncEnded] with:[_members allValues]];
     [_syncEventEmitter off];
 }
 
 - (void)failsSync:(ARTErrorInfo *)error {
-    [self clean];
-    _syncStarted = false;
-    _syncComplete = true;
+    [self reset];
+    _syncState = ARTPresenceSyncFailed;
     [_syncEventEmitter emit:[NSNumber numberWithInt:ARTPresenceSyncFailed] with:error];
     [_syncEventEmitter off];
 }
@@ -144,7 +207,7 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
         [_syncEventEmitter once:[NSNumber numberWithInt:ARTPresenceSyncEnded] callback:callback];
     }
     else {
-        callback([self.recentMembers allValues]);
+        callback([_members allValues]);
     }
 }
 
@@ -154,8 +217,12 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
     }
 }
 
-- (BOOL)getSyncInProgress {
-    return _syncStarted && !_syncComplete;
+- (BOOL)syncComplete {
+    return !(_syncState == ARTPresenceSyncInitialized || _syncState == ARTPresenceSyncStarted);
+}
+
+- (BOOL)syncInProgress {
+    return _syncState == ARTPresenceSyncStarted;
 }
 
 #pragma mark private

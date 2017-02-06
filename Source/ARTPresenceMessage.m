@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "ARTPresenceMessage.h"
+#import "ARTPresenceMessage+Private.h"
 
 @implementation ARTPresenceMessage
 
@@ -15,6 +15,7 @@
     if (self) {
         // Default
         _action = ARTPresenceEnter;
+        _syncSessionId = 0;
     }
     return self;
 }
@@ -22,6 +23,7 @@
 - (id)copyWithZone:(NSZone *)zone {
     ARTPresenceMessage *message = [super copyWithZone:zone];
     message->_action = self.action;
+    message->_syncSessionId = self.syncSessionId;
     return message;
 }
 
@@ -30,6 +32,7 @@
     [description deleteCharactersInRange:NSMakeRange(description.length - (description.length>2 ? 2:0), 2)];
     [description appendFormat:@",\n"];
     [description appendFormat:@" action: %lu\n", (unsigned long)self.action];
+    [description appendFormat:@" syncSessionId: %lu\n", (unsigned long)self.syncSessionId];
     [description appendFormat:@"}"];
     return description;
 }

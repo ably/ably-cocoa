@@ -9,33 +9,44 @@
 #import <Foundation/Foundation.h>
 #import "CompatibilityMacros.h"
 
+@class ARTPresenceMap;
 @class ARTPresenceMessage;
 @class ARTErrorInfo;
 @class ARTLog;
 
 ART_ASSUME_NONNULL_BEGIN
 
+/// ARTPresenceMapDelegate
+@protocol ARTPresenceMapDelegate <NSObject>
+@property (nonatomic, readonly) NSString *connectionId;
+- (void)map:(ARTPresenceMap *)map didRemovedMemberNoLongerPresent:(ARTPresenceMessage *)presence;
+- (void)map:(ARTPresenceMap *)map shouldReenterLocalMember:(ARTPresenceMessage *)presence;
+@end
+
 /// Used to maintain a list of members present on a channel
 @interface ARTPresenceMap : NSObject
 
 /// List of members.
 /// The key is the clientId and the value is the latest relevant ARTPresenceMessage for that clientId.
-@property (readonly, atomic, getter=getMembers) __GENERIC(NSDictionary, NSString *, ARTPresenceMessage *) *members;
+@property (readonly, atomic) NSDictionary<NSString *, ARTPresenceMessage *> *members;
 
 /// List of internal members.
 /// The key is the clientId and the value is the latest relevant ARTPresenceMessage for that clientId.
-@property (readonly, atomic) NSDictionary<NSString *, ARTPresenceMessage *> *localMembers;
+@property (readonly, atomic) NSMutableSet<ARTPresenceMessage *> *localMembers;
+
+@property (nullable, weak) id<ARTPresenceMapDelegate> delegate;
 
 @property (readwrite, nonatomic, assign) int64_t syncMsgSerial;
 @property (readwrite, nonatomic, nullable) NSString *syncChannelSerial;
-@property (readonly, nonatomic, assign) BOOL syncComplete;
-@property (readonly, nonatomic, getter=getSyncInProgress) BOOL syncInProgress;
+@property (readonly, nonatomic, assign) NSUInteger syncSessionId;
+@property (readonly, nonatomic, getter=syncComplete) BOOL syncComplete;
+@property (readonly, nonatomic, getter=syncInProgress) BOOL syncInProgress;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithLogger:(ARTLog *)logger;
 
 - (BOOL)add:(ARTPresenceMessage *)message;
-- (void)clean;
+- (void)reset;
 
 - (void)startSync;
 - (void)endSync;

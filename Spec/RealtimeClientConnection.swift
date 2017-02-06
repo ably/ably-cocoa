@@ -856,6 +856,182 @@ class RealtimeClientConnection: QuickSpec {
                         expect(nacks[0].msgSerial).to(equal(6))
                         expect(nacks[0].count).to(equal(1))
                     }
+
+                    it("should continue incrementing msgSerial serially if the connection resumes successfully") {
+                        let options = AblyTests.commonAppSetup()
+                        options.clientId = "tester"
+                        options.tokenDetails = getTestTokenDetails(key: options.key!, ttl: 5.0, clientId: options.clientId)
+                        let client = AblyTests.newRealtime(options)
+                        defer { client.dispose(); client.close() }
+
+                        let channel = client.channels.get("foo")
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: "message") { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        guard let initialConnectionId = client.connection.id else {
+                            fail("Connection ID is empty"); return
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(4, done: done)
+                            (1...3).forEach { index in
+                                channel.publish(nil, data: "message\(index)") { error in
+                                    if error == nil {
+                                        partialDone()
+                                    }
+                                }
+                            }
+                            channel.presence.enterClient("invalid", data: nil) { error in
+                                expect(error).toNot(beNil())
+                                partialDone()
+                            }
+
+                        }
+
+                        expect(client.msgSerial) == 5
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.Disconnected) { stateChange in
+                                expect(stateChange?.reason).toNot(beNil())
+                                // Token expired
+                                done()
+                            }
+                        }
+
+                        // Reconnected and resumed
+                        expect(client.connection.id).to(equal(initialConnectionId))
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(4, done: done)
+                            (1...3).forEach { index in
+                                channel.publish(nil, data: "message\(index)") { error in
+                                    if error == nil {
+                                        partialDone()
+                                    }
+                                }
+                            }
+                            channel.presence.enterClient("invalid", data: nil) { error in
+                                expect(error).toNot(beNil())
+                                partialDone()
+                            }
+                        }
+
+                        guard let reconnectedTransport = client.transport as? TestProxyTransport else {
+                            fail("TestProxyTransport is not set"); return
+                        }
+                        let acks = reconnectedTransport.protocolMessagesReceived.filter({ $0.action == .Ack })
+                        let nacks = reconnectedTransport.protocolMessagesReceived.filter({ $0.action == .Nack })
+
+                        if acks.count != 1 {
+                            fail("Received invalid number of ACK responses: \(acks.count)")
+                            return
+                        }
+                        // Messages covered in a single ACK response
+                        expect(acks[0].msgSerial) == 5 // [0] 1st publish + [1,2,3] publish + [4] enter with invalid client + [5] queued messages
+                        expect(acks[0].count) == 1
+
+                        if nacks.count != 1 {
+                            fail("Received invalid number of NACK responses: \(nacks.count)")
+                            return
+                        }
+                        expect(nacks[0].msgSerial) == 6
+                        expect(nacks[0].count) == 1
+
+                        expect(client.msgSerial) == 7
+                    }
+
+                    it("should reset msgSerial serially if the connection does not resume") {
+                        let options = AblyTests.commonAppSetup()
+                        options.disconnectedRetryTimeout = 1.0
+                        options.clientId = "tester"
+                        let client = AblyTests.newRealtime(options)
+                        defer { client.dispose(); client.close() }
+
+                        let channel = client.channels.get("foo")
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: "message") { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        guard let initialConnectionId = client.connection.id else {
+                            fail("Connection ID is empty"); return
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(4, done: done)
+                            (1...3).forEach { index in
+                                channel.publish(nil, data: "message\(index)") { error in
+                                    if error == nil {
+                                        partialDone()
+                                    }
+                                }
+                            }
+                            channel.presence.enterClient("invalid", data: nil) { error in
+                                expect(error).toNot(beNil())
+                                partialDone()
+                            }
+
+                        }
+
+                        expect(client.msgSerial) == 5
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
+                            client.connection.once(.Disconnected) { _ in
+                                partialDone()
+                            }
+                            client.connection.once(.Connected) { _ in
+                                channel.attach()
+                                partialDone()
+                            }
+                            client.simulateLostConnectionAndState()
+                        }
+
+                        // Reconnected but not resumed
+                        expect(client.connection.id).toNot(equal(initialConnectionId))
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(4, done: done)
+                            (1...3).forEach { index in
+                                channel.publish(nil, data: "message\(index)") { error in
+                                    if error == nil {
+                                        partialDone()
+                                    }
+                                }
+                            }
+                            channel.presence.enterClient("invalid", data: nil) { error in
+                                expect(error).toNot(beNil())
+                                partialDone()
+                            }
+                        }
+
+                        guard let reconnectedTransport = client.transport as? TestProxyTransport else {
+                            fail("TestProxyTransport is not set"); return
+                        }
+                        let acks = reconnectedTransport.protocolMessagesReceived.filter({ $0.action == .Ack })
+                        let nacks = reconnectedTransport.protocolMessagesReceived.filter({ $0.action == .Nack })
+
+                        if acks.count != 1 {
+                            fail("Received invalid number of ACK responses: \(acks.count)")
+                            return
+                        }
+                        // Messages covered in a single ACK response
+                        expect(acks[0].msgSerial) == 0
+                        expect(acks[0].count) == 1
+
+                        if nacks.count != 1 {
+                            fail("Received invalid number of NACK responses: \(nacks.count)")
+                            return
+                        }
+                        expect(nacks[0].msgSerial) == 1
+                        expect(nacks[0].count) == 1
+                        
+                        expect(client.msgSerial) == 2
+                    }
                 }
 
                 // RTN7c

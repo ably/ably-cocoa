@@ -64,8 +64,7 @@
             callback(nil, error);
             return;
         }
-
-        if (query.waitForSync) {
+        if (_channel.presenceMap.syncInProgress && query.waitForSync) {
             [_channel.presenceMap onceSyncEnds:^(NSArray<ARTPresenceMessage *> *members) {
                 callback(members, nil);
             }];

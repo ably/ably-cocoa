@@ -62,7 +62,7 @@
         }
 
         _http = [[ARTHttp alloc] init];
-        [_logger debug:__FILE__ line:__LINE__ message:@"RS:%p %p alloc HTTP", self, _http];
+        [_logger verbose:__FILE__ line:__LINE__ message:@"RS:%p %p alloc HTTP", self, _http];
         _httpExecutor = _http;
         _httpExecutor.logger = _logger;
 
@@ -79,7 +79,7 @@
         _auth = [[ARTAuth alloc] init:self withOptions:_options];
         _channels = [[ARTRestChannels alloc] initWithRest:self];
 
-        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p initialized", self];
+        [self.logger verbose:__FILE__ line:__LINE__ message:@"RS:%p initialized", self];
     }
     return self;
 }
@@ -93,7 +93,7 @@
 }
 
 - (void)dealloc {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p dealloc", self];
+    [self.logger verbose:__FILE__ line:__LINE__ message:@"RS:%p dealloc", self];
 }
 
 - (NSString *)description {

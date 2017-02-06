@@ -88,7 +88,7 @@
 
         [self.connection setState:ARTRealtimeInitialized];
 
-        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p initialized with RS:%p", self, _rest];
+        [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p initialized with RS:%p", self, _rest];
 
         self.rest.prioritizedHost = nil;
 
@@ -174,7 +174,7 @@
 }
 
 - (void)dealloc {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p dealloc", self];
+    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p dealloc", self];
 
     if (_connection) {
         [_connection off];
@@ -265,7 +265,7 @@
 }
 
 - (void)transition:(ARTRealtimeConnectionState)state withErrorInfo:(ARTErrorInfo *)errorInfo {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p transition to %@ requested", self, ARTRealtimeConnectionStateToStr(state)];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p realtime state transitions to %tu - %@", self, state, ARTRealtimeConnectionStateToStr(state)];
 
     ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:state previous:self.connection.state event:(ARTRealtimeConnectionEvent)state reason:errorInfo retryIn:0];
     [self.connection setState:state];
@@ -508,12 +508,14 @@
             for (ARTRealtimeChannel *channel in self.channels) {
                 [channel detachChannel:[ARTStatus state:ARTStateConnectionDisconnected info:message.error]];
             }
+            _resuming = false;
         }
         else if (message.error) {
             [self.logger warn:@"R:%p ARTRealtime: connection has resumed with non-fatal error %@", self, message.error.message];
             // The error will be emitted on `transition`
         }
-        _resuming = false;
+
+        [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, self.connection.id];
 
         for (ARTRealtimeChannel *channel in self.channels) {
             if (channel.presenceMap.syncInProgress) {
@@ -528,6 +530,7 @@
             [self.connection setKey:message.connectionKey];
             if (!_resuming) {
                 [self.connection setSerial:message.connectionSerial];
+                [self.logger debug:@"RT:%p msgSerial of connection \"%@\" has been reset", self, self.connection.id];
                 self.msgSerial = 0;
                 self.pendingMessageStartSerial = 0;
             }
@@ -542,6 +545,8 @@
         default:
             break;
     }
+
+    _resuming = false;
 }
 
 - (void)onDisconnected {

@@ -9,14 +9,14 @@
 
 #import "ARTRestChannel.h"
 #import "ARTRealtimeChannel.h"
+#import "ARTPresenceMap.h"
 #import "ARTEventEmitter.h"
 
-@class ARTPresenceMap;
 @class ARTProtocolMessage;
 
 ART_ASSUME_NONNULL_BEGIN
 
-@interface ARTRealtimeChannel ()
+@interface ARTRealtimeChannel () <ARTPresenceMapDelegate>
 
 @property (readonly, weak, nonatomic) ARTRealtime *realtime;
 @property (readonly, strong, nonatomic) ARTRestChannel *restChannel;

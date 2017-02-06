@@ -17,15 +17,19 @@ typedef NS_ENUM(NSUInteger, ARTPresenceAction) {
     ARTPresenceUpdate
 };
 
-NSString *__art_nonnull ARTPresenceActionToStr(ARTPresenceAction action);
+NSString *_Nonnull ARTPresenceActionToStr(ARTPresenceAction action);
+
+ART_ASSUME_NONNULL_BEGIN
 
 /// List of members present on a channel
 @interface ARTPresenceMessage : ARTBaseMessage
 
 @property (readwrite, assign, nonatomic) ARTPresenceAction action;
 
-- (NSString *)memberKey;
+- (nonnull NSString *)memberKey;
 
-- (BOOL)isEqualToPresenceMessage:(ARTPresenceMessage *)presence;
+- (BOOL)isEqualToPresenceMessage:(nonnull ARTPresenceMessage *)presence;
 
 @end
+
+ART_ASSUME_NONNULL_END

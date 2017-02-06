@@ -234,17 +234,17 @@ class RestClient: QuickSpec {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.restHost = "10.255.255.1" //non-routable IP address
                     expect(options.httpRequestTimeout).to(equal(15.0)) //Seconds
-                    options.httpRequestTimeout = 0.5
+                    options.httpRequestTimeout = 1.0
                     let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
                     waitUntil(timeout: testTimeout) { done in
                         let start = NSDate()
                         channel.publish(nil, data: "message") { error in
                             let end = NSDate()
-                            expect(end.timeIntervalSinceDate(start)).to(beCloseTo(options.httpRequestTimeout, within: 0.1))
+                            expect(end.timeIntervalSinceDate(start)).to(beCloseTo(options.httpRequestTimeout, within: 0.5))
                             expect(error).toNot(beNil())
                             if let error = error {
-                                expect(error.code).to(equal(-1001))
+                                expect(error.code).to(satisfyAnyOf(equal(-1001 /*Timed Out*/), equal(-1004 /*Cannot Connect To Host*/)))
                             }
                             done()
                         }
@@ -278,7 +278,7 @@ class RestClient: QuickSpec {
                 it("max elapsed time in which fallback host retries for HTTP requests will be attempted") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     expect(options.httpMaxRetryDuration).to(equal(10.0)) //Seconds
-                    options.httpMaxRetryDuration = 0.2
+                    options.httpMaxRetryDuration = 1.0
                     let client = ARTRest(options: options)
                     client.httpExecutor = testHTTPExecutor
                     testHTTPExecutor.http = MockHTTP(network: .RequestTimeout(timeout: 0.1))
@@ -287,7 +287,7 @@ class RestClient: QuickSpec {
                         let start = NSDate()
                         channel.publish(nil, data: "nil") { _ in
                             let end = NSDate()
-                            expect(end.timeIntervalSinceDate(start)).to(beCloseTo(options.httpMaxRetryDuration, within: 0.5))
+                            expect(end.timeIntervalSinceDate(start)).to(beCloseTo(options.httpMaxRetryDuration, within: 0.9))
                             done()
                         }
                     }
