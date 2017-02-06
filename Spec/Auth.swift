@@ -2497,6 +2497,44 @@ class Auth : QuickSpec {
                     }
                 }
 
+                it("should use configured defaults if the object arguments are omitted") {
+                    let options = AblyTests.commonAppSetup()
+                    let rest = ARTRest(options: options)
+
+                    let tokenParams = ARTTokenParams()
+                    tokenParams.clientId = ExpectedTokenParams.clientId
+                    tokenParams.ttl = ExpectedTokenParams.ttl
+                    tokenParams.capability = ExpectedTokenParams.capability
+
+                    let authOptions = ARTAuthOptions()
+                    var authCallbackCalled = 0
+                    authOptions.authCallback = { tokenParams, completion in
+                        expect(tokenParams.clientId) == ExpectedTokenParams.clientId
+                        expect(tokenParams.ttl) == ExpectedTokenParams.ttl
+                        expect(tokenParams.capability) == ExpectedTokenParams.capability
+                        authCallbackCalled += 1
+                        completion(getTestTokenDetails(key: options.key), nil)
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.authorize(tokenParams, options: authOptions) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            expect(tokenDetails).toNot(beNil())
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.authorize { tokenDetails, error in
+                            expect(error).to(beNil())
+                            expect(tokenDetails).toNot(beNil())
+                            done()
+                        }
+                    }
+
+                    expect(authCallbackCalled) == 2
+                }
+
             }
 
             // RSA10h
