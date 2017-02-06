@@ -1111,12 +1111,6 @@ extension ARTPresenceAction : CustomStringConvertible {
     }
 }
 
-extension ARTPresenceAction: CustomStringConvertible {
-    public var description : String {
-        return ARTPresenceActionToStr(self)
-    }
-}
-
 // MARK: - Custom Nimble Matchers
 
 /// A Nimble matcher that succeeds when two dates are quite the same.
