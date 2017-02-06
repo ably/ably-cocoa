@@ -345,7 +345,7 @@
 }
 
 - (void)authorize:(void (^)(ARTTokenDetails *, NSError *))callback {
-    [self authorize:_tokenParams options:_options callback:callback];
+    [self authorize:_options.defaultTokenParams options:_options callback:callback];
 }
 
 - (void)authorize:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
