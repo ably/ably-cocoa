@@ -1801,6 +1801,55 @@ class Auth : QuickSpec {
                 }
             }
 
+            // RSA9h
+            it("should use configured defaults if the object arguments are omitted") {
+                let options = AblyTests.commonAppSetup()
+                let rest = ARTRest(options: options)
+
+                let tokenParams = ARTTokenParams()
+                tokenParams.clientId = "tester"
+                tokenParams.ttl = 2000
+                tokenParams.capability = "{\"foo:*\":[\"publish\"]}"
+
+                let authOptions = ARTAuthOptions()
+                authOptions.queryTime = true
+                authOptions.key = options.key
+
+                var serverTimeRequestCount = 0
+                let hook = rest.testSuite_injectIntoMethodAfter(#selector(rest.time(_:))) {
+                    serverTimeRequestCount += 1
+                }
+                defer { hook.remove() }
+
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.createTokenRequest(tokenParams, options: authOptions) { tokenRequest, error in
+                        expect(error).to(beNil())
+                        guard let tokenRequest = tokenRequest else {
+                            XCTFail("TokenRequest is nil"); done(); return
+                        }
+                        expect(tokenRequest.clientId) == tokenParams.clientId
+                        expect(tokenRequest.ttl) == tokenParams.ttl
+                        expect(tokenRequest.capability) == tokenParams.capability
+                        done()
+                    }
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.createTokenRequest { tokenRequest, error in
+                        expect(error).to(beNil())
+                        guard let tokenRequest = tokenRequest else {
+                            XCTFail("TokenRequest is nil"); done(); return
+                        }
+                        expect(tokenRequest.clientId).to(beNil())
+                        expect(tokenRequest.ttl) == ARTDefault.ttl()
+                        expect(tokenRequest.capability) == "{\"*\":[\"*\"]}"
+                        done()
+                    }
+                }
+
+                expect(serverTimeRequestCount) == 1
+            }
+
             // RSA9a
             it("should create and sign a TokenRequest") {
                 let rest = ARTRest(options: AblyTests.commonAppSetup())
