@@ -947,6 +947,14 @@ public func >=(lhs: NSDate, rhs: NSDate) -> Bool {
     return (lhs > rhs || lhs == rhs)
 }
 
+public func -(lhs: NSDate, rhs: NSTimeInterval) -> NSDate {
+	return lhs.dateByAddingTimeInterval(-rhs)
+}
+
+public func +(lhs: NSDate, rhs: NSTimeInterval) -> NSDate {
+    return lhs.dateByAddingTimeInterval(rhs)
+}
+
 extension NSRegularExpression {
 
     class func match(value: String?, pattern: String) -> Bool {
@@ -1054,6 +1062,19 @@ extension ARTAuth {
 
 }
 
+extension ARTPresenceMessage {
+
+    convenience init(clientId: String, action: ARTPresenceAction, connectionId: String, id: String, timestamp: NSDate = NSDate()) {
+        self.init()
+        self.action = action
+        self.clientId = clientId
+        self.connectionId = connectionId
+        self.id = id
+        self.timestamp = timestamp
+    }
+
+}
+
 extension ARTRealtimeConnectionState : CustomStringConvertible {
     public var description : String {
         return ARTRealtimeConnectionStateToStr(self)
@@ -1081,6 +1102,12 @@ extension ARTRealtimeChannelState : CustomStringConvertible {
 extension ARTChannelEvent : CustomStringConvertible {
     public var description : String {
         return ARTChannelEventToStr(self)
+    }
+}
+
+extension ARTPresenceAction : CustomStringConvertible {
+    public var description : String {
+        return ARTPresenceActionToStr(self)
     }
 }
 

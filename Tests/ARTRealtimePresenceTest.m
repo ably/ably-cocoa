@@ -483,7 +483,7 @@
                 XCTAssert(!error);
                 XCTAssertEqual(2, members.count);
                 XCTAssertEqual(members[0].action, ARTPresencePresent);
-                XCTAssertEqual(members[1].action, ARTPresenceEnter);
+                XCTAssertEqual(members[1].action, ARTPresencePresent);
                 XCTAssertEqualObjects([members[0] data], enterData);
                 XCTAssertEqualObjects([members[1] data], enterData);
                 [expectation fulfill];
@@ -966,7 +966,7 @@
         [channel.presence get:^(NSArray<ARTPresenceMessage *> *members, ARTErrorInfo *error) {
             XCTAssert(!error);
             XCTAssertEqual(1, members.count);
-            XCTAssertEqual(members[0].action, ARTPresenceEnter);
+            XCTAssertEqual(members[0].action, ARTPresencePresent);
             XCTAssertEqualObjects(members[0].clientId, [self getClientId]);
             XCTAssertEqualObjects([members[0] data], @"someDataPayload");
             [expectation fulfill];

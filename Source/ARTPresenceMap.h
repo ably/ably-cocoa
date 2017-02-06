@@ -11,6 +11,7 @@
 
 @class ARTPresenceMessage;
 @class ARTErrorInfo;
+@class ARTLog;
 
 ART_ASSUME_NONNULL_BEGIN
 
@@ -21,12 +22,19 @@ ART_ASSUME_NONNULL_BEGIN
 /// The key is the clientId and the value is the latest relevant ARTPresenceMessage for that clientId.
 @property (readonly, atomic, getter=getMembers) __GENERIC(NSDictionary, NSString *, ARTPresenceMessage *) *members;
 
+/// List of internal members.
+/// The key is the clientId and the value is the latest relevant ARTPresenceMessage for that clientId.
+@property (readonly, atomic) NSDictionary<NSString *, ARTPresenceMessage *> *localMembers;
+
 @property (readwrite, nonatomic, assign) int64_t syncMsgSerial;
 @property (readwrite, nonatomic, nullable) NSString *syncChannelSerial;
 @property (readonly, nonatomic, assign) BOOL syncComplete;
 @property (readonly, nonatomic, getter=getSyncInProgress) BOOL syncInProgress;
 
-- (void)put:(ARTPresenceMessage *)message;
+- (instancetype)init UNAVAILABLE_ATTRIBUTE;
+- (instancetype)initWithLogger:(ARTLog *)logger;
+
+- (BOOL)add:(ARTPresenceMessage *)message;
 - (void)clean;
 
 - (void)startSync;
