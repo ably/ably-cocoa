@@ -57,6 +57,9 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import "ARTReachability.h"
 #import "ARTOSReachability.h"
 #import "ARTGCD.h"
+#import "ARTPush.h"
+#import "ARTPushChannel.h"
+#import "ARTDeviceDetails.h"
 
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
 #import "ARTNSDate+ARTUtil.h"
