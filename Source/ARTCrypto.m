@@ -21,7 +21,6 @@
 @interface ARTCrypto ()
 
 @property (nonatomic, weak) ARTLog * logger;
-@property (readonly, strong, nonatomic) ARTCipherParams *params;
 
 @end
 

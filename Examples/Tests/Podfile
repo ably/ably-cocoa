@@ -1,6 +1,6 @@
 use_frameworks!
 
-pod 'Ably', :path => '../..'
+pod 'Ably', '1.0.4'
 
 target 'Tests' do
 

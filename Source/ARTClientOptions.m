@@ -35,6 +35,7 @@ NSString *const ARTDefaultProduction = @"production";
     _autoConnect = true;
     _tls = YES;
     _logLevel = ARTLogLevelNone;
+    _logHandler = [[ARTLog alloc] init];
     _disconnectedRetryTimeout = 15.0; //Seconds
     _suspendedRetryTimeout = 30.0; //Seconds
     _channelRetryTimeout = 15.0; //Seconds

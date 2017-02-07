@@ -20,12 +20,14 @@
 #import "ARTAuth+Private.h"
 #import "ARTTokenDetails.h"
 #import "ARTNSArray+ARTFunctional.h"
+#import "ARTPushChannel.h"
 
 @implementation ARTRestChannel {
 @private
-    ARTRestPresence *_restPresence;
     dispatch_queue_t _queue;
     dispatch_queue_t _userQueue;
+    ARTRestPresence *_presence;
+    ARTPushChannel *_pushChannel;
 @public
     NSString *_basePath;
 }
@@ -55,12 +57,21 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (ARTRestPresence *)getPresence {
+- (ARTRestPresence *)presence {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
-    if (!_restPresence) {
-        _restPresence = [[ARTRestPresence alloc] initWithChannel:self];
+    if (!_presence) {
+        _presence = [[ARTRestPresence alloc] initWithChannel:self];
     }
-    return _restPresence;
+    return _presence;
+} ART_TRY_OR_REPORT_CRASH_END
+}
+
+- (ARTPushChannel *)push {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
+    if (!_pushChannel) {
+        _pushChannel = [[ARTPushChannel alloc] init:self.rest withChannel:self];
+    }
+    return _pushChannel;
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
@@ -201,5 +212,11 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 } ART_TRY_OR_REPORT_CRASH_END
 });
 }
+
+#ifdef TARGET_OS_IOS
+- (ARTLocalDevice *)device {
+    return _rest.device;
+}
+#endif
 
 @end

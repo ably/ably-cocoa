@@ -6,6 +6,10 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
+#ifndef ARTJsonLikeEncoder_h
+#define ARTJsonLikeEncoder_h
+
+#import "CompatibilityMacros.h"
 #import <Ably/ARTRest.h>
 #import <Ably/ARTEncoder.h>
 #import <Ably/ARTTokenDetails.h>
@@ -28,10 +32,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTJsonLikeEncoder : NSObject <ARTEncoder>
 
-@property (nonatomic, weak) ARTRest *rest;
 @property (nonatomic, strong, nullable) id<ARTJsonLikeEncoderDelegate> delegate;
 
-- (instancetype)initWithRest:(ARTRest *)rest delegate:(id<ARTJsonLikeEncoderDelegate> _Nullable)delegate;
+- (instancetype)initWithDelegate:(id<ARTJsonLikeEncoderDelegate>)delegate;
+- (instancetype)initWithLogger:(ARTLog *)logger delegate:(nullable id<ARTJsonLikeEncoderDelegate>)delegate;
+- (instancetype)initWithRest:(ARTRest *)rest delegate:(nullable id<ARTJsonLikeEncoderDelegate>)delegate;
 
 @end
 
@@ -73,4 +78,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-NS_ASSUME_NONNULL_END
+ART_ASSUME_NONNULL_END
+
+#endif /* ARTJsonLikeEncoder_h */

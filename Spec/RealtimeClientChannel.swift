@@ -2814,11 +2814,12 @@ class RealtimeClientChannel: QuickSpec {
 
                     for caseItem in cases {
                         it("where value is \(caseItem.untilAttach), should pass the querystring param fromSerial with the serial number assigned to the channel") {
-                            let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                            let options = AblyTests.commonAppSetup()
+                            let client = ARTRealtime(options: options)
                             defer { client.dispose(); client.close() }
                             let channel = client.channels.get("test")
 
-                            let testHTTPExecutor = TestProxyHTTPExecutor()
+                            let testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                             client.rest.httpExecutor = testHTTPExecutor
 
                             let query = ARTRealtimeHistoryQuery()
