@@ -173,6 +173,7 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
         [self internalRemove:localMember];
         [self.delegate map:self shouldReenterLocalMember:reenter];
     }
+    [self cleanUpAbsentMembers];
 }
 
 - (void)reset {

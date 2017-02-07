@@ -434,9 +434,11 @@
         [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p PresenceMap Sync started", _realtime, self];
     }
     else if ([self.presenceMap.members count] > 0 || [self.presenceMap.localMembers count] > 0) {
-        // When an ATTACHED message is received without a HAS_PRESENCE flag and PresenceMap has existing members
-        [self.presenceMap startSync];
-        [self.presenceMap endSync];
+        if (!message.resumed) {
+            // When an ATTACHED message is received without a HAS_PRESENCE flag and PresenceMap has existing members
+            [self.presenceMap startSync];
+            [self.presenceMap endSync];
+        }
     }
 
     if (self.state == ARTRealtimeChannelAttached) {
