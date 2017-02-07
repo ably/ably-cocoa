@@ -3443,7 +3443,7 @@ class RealtimeClientConnection: QuickSpec {
                     defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
                     ARTDefault.setRealtimeRequestTimeout(1.0)
 
-                    let testHttpExecutor = TestProxyHTTPExecutor()
+                    let testHttpExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.rest.httpExecutor = testHttpExecutor
 
                     client.setTransport(TestProxyTransport.self)
@@ -3497,7 +3497,7 @@ class RealtimeClientConnection: QuickSpec {
                     defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
                     ARTDefault.setRealtimeRequestTimeout(1.0)
 
-                    let testHttpExecutor = TestProxyHTTPExecutor()
+                    let testHttpExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.rest.httpExecutor = testHttpExecutor
                     
                     client.setTransport(TestProxyTransport.self)
@@ -3544,7 +3544,7 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: options)
                     let channel = client.channels.get("test")
                     
-                    let testHttpExecutor = TestProxyHTTPExecutor()
+                    let testHttpExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.rest.httpExecutor = testHttpExecutor
                     
                     client.setTransport(TestProxyTransport.self)
@@ -3579,7 +3579,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
 
-                    let testHttpExecutor = TestProxyHTTPExecutor()
+                    let testHttpExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.rest.httpExecutor = testHttpExecutor
 
                     client.setTransport(TestProxyTransport.self)
@@ -4254,7 +4254,7 @@ class RealtimeClientConnection: QuickSpec {
                                 "Accept" : "application/json",
                                 "Content-Type" : "application/json"
                             ]
-                            client.rest.execute(request as URLRequest, withAuthOption: .on, completion: { _, _, err in
+                            client.rest.execute(request, withAuthOption: .on, completion: { _, _, err in
                                 if let err = err {
                                     fail("\(err)")
                                 }
@@ -4278,7 +4278,7 @@ class RealtimeClientConnection: QuickSpec {
                                 let request = NSMutableURLRequest(url: NSURL(string: "/channels/\(channel.name)/messages?limit=1")! as URL)
                                 request.httpMethod = "GET"
                                 request.allHTTPHeaderFields = ["Accept" : "application/json"]
-                                client.rest.execute(request as URLRequest, withAuthOption: .on, completion: { _, data, err in
+                                client.rest.execute(request, withAuthOption: .on, completion: { _, data, err in
                                     if let err = err {
                                         fail("\(err)")
                                         done()
@@ -4340,7 +4340,7 @@ class RealtimeClientConnection: QuickSpec {
                                 "Accept" : "application/json",
                                 "Content-Type" : "application/json"
                             ]
-                            restPublishClient.execute(request as URLRequest, withAuthOption: .on, completion: { _, _, err in
+                            restPublishClient.execute(request, withAuthOption: .on, completion: { _, _, err in
                                 if let err = err {
                                     fail("\(err)")
                                 }
@@ -4381,7 +4381,7 @@ class RealtimeClientConnection: QuickSpec {
                                 let request = NSMutableURLRequest(url: NSURL(string: "/channels/\(restPublishChannel.name)/messages?limit=1")! as URL)
                                 request.httpMethod = "GET"
                                 request.allHTTPHeaderFields = ["Accept" : "application/json"]
-                                restRetrieveClient.execute(request as URLRequest, withAuthOption: .on, completion: { _, data, err in
+                                restRetrieveClient.execute(request, withAuthOption: .on, completion: { _, data, err in
                                     if let err = err {
                                         fail("\(err)")
                                         done()

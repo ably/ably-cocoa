@@ -19,9 +19,10 @@ class RestClientChannel: QuickSpec {
         var testHTTPExecutor: TestProxyHTTPExecutor!
 
         beforeEach {
-            client = ARTRest(options: AblyTests.setupOptions(AblyTests.jsonRestOptions))
+            let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+            client = ARTRest(options: options)
             channel = client.channels.get(ProcessInfo.processInfo.globallyUniqueString)
-            testHTTPExecutor = TestProxyHTTPExecutor()
+            testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
         }
 
         // RSL1
@@ -267,7 +268,7 @@ class RestClientChannel: QuickSpec {
                     }
 
                     hook.remove()
-                    testHTTPExecutor.http = ARTHttp(AblyTests.queue)
+                    testHTTPExecutor.http = ARTHttp(AblyTests.queue, logger: options.logHandler)
 
                     // Remains available
                     waitUntil(timeout: testTimeout) { done in
@@ -296,7 +297,7 @@ class RestClientChannel: QuickSpec {
                         channel.publish([message]) { error in
                             expect(error!.code).to(equal(Int(ARTState.mismatchedClientId.rawValue)))
 
-                            testHTTPExecutor.http = ARTHttp(AblyTests.queue)
+                            testHTTPExecutor.http = ARTHttp(AblyTests.queue, logger: options.logHandler)
                             channel.history { page, error in
                                 expect(error).to(beNil())
                                 guard let page = page else {

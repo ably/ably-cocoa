@@ -20,11 +20,42 @@
 #import "ARTLog.h"
 #import "ARTHttp.h"
 #import "ARTStatus.h"
+#import "ARTTokenDetails.h"
+#import "ARTTokenRequest.h"
+#import "ARTAuthDetails.h"
+#import "ARTPush.h"
+#import "ARTDeviceDetails.h"
+#import "ARTDevicePushDetails.h"
 #import "ARTConnectionDetails.h"
 #import "ARTRest+Private.h"
+#import "ARTJsonEncoder.h"
+#import "ARTPushChannelSubscription.h"
 
 @implementation ARTJsonLikeEncoder {
-    ARTLog *_logger;
+    __weak ARTRest *_rest;
+    __weak ARTLog *_logger;
+}
+
+- (instancetype)init {
+    return [self initWithDelegate:[[ARTJsonEncoder alloc] init]];
+}
+
+- (instancetype)initWithDelegate:(id<ARTJsonLikeEncoderDelegate>)delegate {
+    if (self = [super init]) {
+        _rest = nil;
+        _logger = nil;
+        _delegate = delegate;
+    }
+    return self;
+}
+
+- (instancetype)initWithLogger:(ARTLog *)logger delegate:(id<ARTJsonLikeEncoderDelegate>)delegate {
+    if (self = [super init]) {
+        _rest = nil;
+        _logger = logger;
+        _delegate = delegate;
+    }
+    return self;
 }
 
 - (instancetype)initWithRest:(ARTRest *)rest delegate:(id<ARTJsonLikeEncoderDelegate>)delegate {
@@ -102,6 +133,114 @@
 
 - (NSData *)encodeTokenDetails:(ARTTokenDetails *)tokenDetails error:(NSError **)error {
     return [self encode:[self tokenDetailsToDictionary:tokenDetails] error:error];
+}
+
+- (NSData *)encodeDeviceDetails:(ARTDeviceDetails *)deviceDetails error:(NSError **)error {
+    return [self encode:[self deviceDetailsToDictionary:deviceDetails] error:error];
+}
+
+- (ARTDeviceDetails *)decodeDeviceDetails:(NSData *)data error:(NSError **)error {
+    return [self deviceDetailsFromDictionary:[self decodeDictionary:data error:nil] error:error];
+}
+
+- (NSArray<ARTDeviceDetails *> *)decodeDevicesDetails:(NSData *)data error:(NSError * __autoreleasing *)error {
+    return [self devicesDetailsFromArray:[self decodeArray:data error:nil] error:error];
+}
+
+- (NSArray<ARTDeviceDetails *> *)devicesDetailsFromArray:(NSArray *)input error:(NSError * __autoreleasing *)error {
+    NSMutableArray<ARTDeviceDetails *> *output = [NSMutableArray array];
+    for (NSDictionary *item in input) {
+        ARTDeviceDetails *deviceDetails = [self deviceDetailsFromDictionary:item error:error];
+        if (!deviceDetails) {
+            return nil;
+        }
+        [output addObject:deviceDetails];
+    }
+    return output;
+}
+
+- (NSData *)encodeDevicePushDetails:(ARTDevicePushDetails *)devicePushDetails error:(NSError **)error {
+    return [self encode:[self devicePushDetailsToDictionary:devicePushDetails] error:error];
+}
+
+- (ARTDevicePushDetails *)decodeDevicePushDetails:(NSData *)data error:(NSError * __autoreleasing *)error {
+    return [self devicePushDetailsFromDictionary:[self decode:data error:nil] error:error];
+}
+
+- (NSData *)encodePushChannelSubscription:(ARTPushChannelSubscription *)channelSubscription error:(NSError * __autoreleasing *)error {
+    return [self encode:[self pushChannelSubscriptionToDictionary:channelSubscription] error:error];
+}
+
+- (ARTPushChannelSubscription *)decodePushChannelSubscription:(NSData *)data error:(NSError * __autoreleasing *)error {
+    return [self pushChannelSubscriptionFromDictionary:[self decodeDictionary:data error:nil] error:error];
+}
+
+- (NSArray<ARTPushChannelSubscription *> *)decodePushChannelSubscriptions:(NSData *)data error:(NSError * __autoreleasing *)error {
+    return [self pushChannelSubscriptionsFromArray:[self decodeArray:data error:nil] error:error];
+}
+
+- (NSArray<ARTPushChannelSubscription *> *)pushChannelSubscriptionsFromArray:(NSArray *)input error:(NSError * __autoreleasing *)error {
+    NSMutableArray<ARTPushChannelSubscription *> *output = [NSMutableArray array];
+    for (NSDictionary *item in input) {
+        ARTPushChannelSubscription *subscription = [self pushChannelSubscriptionFromDictionary:item error:error];
+        if (!subscription) {
+            return nil;
+        }
+        [output addObject:subscription];
+    }
+    return output;
+}
+
+- (NSDictionary *)pushChannelSubscriptionToDictionary:(ARTPushChannelSubscription *)channelSubscription {
+    NSMutableDictionary *output = [NSMutableDictionary dictionary];
+
+    if (channelSubscription.channel) {
+        [output setObject:channelSubscription.channel forKey:@"channel"];
+    }
+
+    if (channelSubscription.clientId) {
+        [output setObject:channelSubscription.clientId forKey:@"clientId"];
+    }
+
+    if (channelSubscription.deviceId) {
+        [output setObject:channelSubscription.deviceId forKey:@"deviceId"];
+    }
+
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: pushChannelSubscriptionToDictionary %@", _rest, [_delegate formatAsString], output];
+    return output;
+}
+
+- (ARTPushChannelSubscription *)pushChannelSubscriptionFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: pushChannelSubscriptionFromDictionary %@", _rest, [_delegate formatAsString], input];
+
+    if (![input isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
+
+    NSString *clientId = [input artString:@"clientId"];
+    NSString *deviceId = [input artString:@"deviceId"];
+
+    if ((clientId && deviceId) || (!clientId && !deviceId)) {
+        [_logger error:@"ARTJsonLikeEncoder<%@>: clientId and deviceId are both present or both nil", [_delegate formatAsString]];
+        if (error) {
+            *error = [NSError errorWithDomain:ARTAblyErrorDomain
+                                         code:ARTCodeErrorAPIInconsistency
+                                     userInfo:@{ NSLocalizedDescriptionKey: @"clientId and deviceId are both present or both nil"}];
+        }
+        return nil;
+    }
+
+    NSString *channelName = [input artString:@"channel"];
+
+    ARTPushChannelSubscription *channelSubscription;
+    if (clientId) {
+        channelSubscription = [[ARTPushChannelSubscription alloc] initWithClientId:clientId channel:channelName];
+    }
+    else {
+        channelSubscription = [[ARTPushChannelSubscription alloc] initWithDeviceId:deviceId channel:channelName];
+    }
+
+    return channelSubscription;
 }
 
 - (NSDate *)decodeTime:(NSData *)data error:(NSError **)error {
@@ -475,6 +614,66 @@
     }
     
     return dictionary;
+}
+
+- (NSDictionary *)deviceDetailsToDictionary:(ARTDeviceDetails *)deviceDetails {
+    NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+
+    dictionary[@"id"] = deviceDetails.id;
+    dictionary[@"platform"] = deviceDetails.platform;
+    dictionary[@"formFactor"] = deviceDetails.formFactor;
+
+    if (deviceDetails.clientId) {
+        dictionary[@"cliendId"] = deviceDetails.clientId;
+    }
+
+    dictionary[@"push"] = [self devicePushDetailsToDictionary:deviceDetails.push];
+
+    return dictionary;
+}
+
+- (ARTDeviceDetails *)deviceDetailsFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: deviceDetailsFromDictionary %@", _rest, [_delegate formatAsString], input];
+
+    if (![input isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
+
+    ARTDeviceDetails *deviceDetails = [[ARTDeviceDetails alloc] initWithId:[input artString:@"id"]];
+    deviceDetails.clientId = [input artString:@"clientId"];
+    deviceDetails.platform = [input artString:@"platform"];
+    deviceDetails.formFactor = [input artString:@"formFactor"];
+    deviceDetails.metadata = [input valueForKey:@"metadata"];
+    deviceDetails.push = [self devicePushDetailsFromDictionary:input[@"push"] error:error];
+    deviceDetails.updateToken = [input artString:@"updateToken"];
+
+    return deviceDetails;
+}
+
+- (NSDictionary *)devicePushDetailsToDictionary:(ARTDevicePushDetails *)devicePushDetails {
+    NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+
+    dictionary[@"recipient"] = devicePushDetails.recipient;
+
+    return dictionary;
+}
+
+- (ARTDevicePushDetails *)devicePushDetailsFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: devicePushDetailsFromDictionary %@", _rest, [_delegate formatAsString], input];
+
+    if (![input isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
+
+    ARTDevicePushDetails *devicePushDetails = [[ARTDevicePushDetails alloc] init];
+    devicePushDetails.state = [input artString:@"state"];
+    NSDictionary *errorReason = [input valueForKey:@"errorReason"];
+    if (errorReason) {
+        devicePushDetails.errorReason = [ARTErrorInfo createWithCode:[[errorReason artNumber:@"code"] intValue] status:[[errorReason artNumber:@"statusCode"] intValue] message:[errorReason artString:@"message"]];
+    }
+    devicePushDetails.recipient = [input valueForKey:@"recipient"];
+
+    return devicePushDetails;
 }
 
 - (ARTProtocolMessage *)protocolMessageFromDictionary:(NSDictionary *)input {

@@ -140,4 +140,11 @@
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 
+#ifdef TARGET_OS_IOS
+- (ARTLocalDevice *)device {
+    NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
+    return nil;
+}
+#endif
+
 @end

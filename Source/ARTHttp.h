@@ -12,14 +12,27 @@
 #import <Ably/ARTLog.h>
 
 @class ARTErrorInfo;
+@class ARTClientOptions;
+
+@protocol ARTEncoder;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTHTTPExecutor
 
 @property (nonatomic, weak) ARTLog *logger;
-
+- (ARTLog *)logger;
 - (void)executeRequest:(NSURLRequest *)request completion:(nullable void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback;
+
+@end
+
+@protocol ARTHTTPAuthenticatedExecutor <ARTHTTPExecutor>
+
+- (ARTClientOptions *)options;
+
+- (id<ARTEncoder>)defaultEncoder;
+
+- (void)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData * _Nullable, NSError * _Nullable))callback;
 
 @end
 
@@ -28,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) ARTLog *logger;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)init:(dispatch_queue_t)queue;
+- (instancetype)init:(dispatch_queue_t)queue logger:(ARTLog *)logger;
 
 @end
 

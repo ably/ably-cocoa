@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "CompatibilityMacros.h"
 
 #import <Ably/ARTStatus.h>
 #import <Ably/ARTEventEmitter.h>
@@ -21,6 +22,8 @@
 @class ARTTokenDetails;
 @class ARTPaginatedResult<ItemType>;
 @class ARTStats;
+
+typedef NSDictionary<NSString *, id> ARTJsonObject;
 
 typedef NS_ENUM(NSUInteger, ARTAuthentication) {
     ARTAuthenticationOff,
@@ -190,6 +193,16 @@ NSString *generateNonce(void);
 @end
 
 @interface NSURL (ARTLog)
+@end
+
+@interface NSDictionary (URLQueryItemAdditions)
+@property (nonatomic, readonly) NSArray<NSURLQueryItem *> *asURLQueryItems;
+@end
+
+@interface NSMutableArray (QueueAdditions)
+- (void)enqueue:(id)object;
+- (id)dequeue;
+- (id)peek;
 @end
 
 NS_ASSUME_NONNULL_END
