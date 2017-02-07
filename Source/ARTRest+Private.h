@@ -17,7 +17,7 @@
 ART_ASSUME_NONNULL_BEGIN
 
 /// ARTRest private methods that are used internally and for whitebox testing
-@interface ARTRest ()
+@interface ARTRest () <ARTHTTPAuthenticatedExecutor>
 
 @property (nonatomic, strong, readonly) ARTClientOptions *options;
 @property (nonatomic, weak, nullable) ARTRealtime *realtime;
@@ -44,14 +44,6 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options realtime:(ARTRealtime *_Nullable)realtime;
 - (void)_time:(void (^)(NSDate *__art_nullable, NSError *__art_nullable))callback;
-
-// MARK: ARTHTTPExecutor
-
-- (void)executeRequest:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback;
-
-// MARK: Internal
-
-- (void)executeRequest:(NSURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback;
 
 - (nullable id<ARTCancellable>)internetIsUp:(void (^)(BOOL isUp))cb;
 

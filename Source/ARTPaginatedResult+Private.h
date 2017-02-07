@@ -10,6 +10,8 @@
 
 @class ARTRest;
 
+@protocol ARTHTTPAuthenticatedExecutor;
+
 ART_ASSUME_NONNULL_BEGIN
 
 @interface __GENERIC(ARTPaginatedResult, ItemType) ()

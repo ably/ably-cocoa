@@ -587,9 +587,9 @@ class MockHTTP: ARTHttp {
 
     let network: NetworkAnswer
 
-    init(network: NetworkAnswer) {
+    init(network: NetworkAnswer, logger: ARTLog) {
         self.network = network
-        super.init(AblyTests.queue)
+        super.init(AblyTests.queue, logger: logger)
     }
 
     override public func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) {
@@ -645,8 +645,17 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
     }
     fileprivate var errorSimulator: ErrorSimulator?
 
-    var http: ARTHttp? = ARTHttp(AblyTests.queue)
-    var logger: ARTLog?
+    var http: ARTHttp!
+    var _logger: ARTLog!
+    
+    init(_ logger: ARTLog) {
+        self._logger = logger
+        self.http = ARTHttp(AblyTests.queue, logger: _logger)
+    }
+    
+    func logger() -> ARTLog {
+        return self._logger
+    }
 
     var requests: [URLRequest] = []
     var responses: [HTTPURLResponse] = []

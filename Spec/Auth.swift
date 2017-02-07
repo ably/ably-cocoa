@@ -21,10 +21,6 @@ class Auth : QuickSpec {
         }
         
         var testHTTPExecutor: TestProxyHTTPExecutor!
-        
-        beforeEach {
-            testHTTPExecutor = TestProxyHTTPExecutor()
-        }
 
         describe("Basic") {
 
@@ -38,7 +34,9 @@ class Auth : QuickSpec {
 
             // RSA11
             it("should send the API key in the Authorization header") {
-                let client = ARTRest(options: AblyTests.setupOptions(AblyTests.jsonRestOptions))
+                let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                let client = ARTRest(options: options)
+                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 client.httpExecutor = testHTTPExecutor
                 
                 waitUntil(timeout: testTimeout) { done in
@@ -80,6 +78,7 @@ class Auth : QuickSpec {
                     let options = AblyTests.clientOptions(requestToken: true)
                     options.tls = false
                     let clientHTTP = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     clientHTTP.httpExecutor = testHTTPExecutor
                     
                     waitUntil(timeout: testTimeout) { done in
@@ -103,6 +102,7 @@ class Auth : QuickSpec {
                     let options = AblyTests.clientOptions(requestToken: true)
                     options.tls = true
                     let clientHTTPS = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     clientHTTPS.httpExecutor = testHTTPExecutor
                     
                     waitUntil(timeout: testTimeout) { done in
@@ -128,6 +128,7 @@ class Auth : QuickSpec {
                     options.token = getTestToken()
 
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
                     
                     waitUntil(timeout: testTimeout) { done in
@@ -196,6 +197,7 @@ class Auth : QuickSpec {
                     expect(rest.options.key).to(beNil())
                     expect(rest.options.authCallback).to(beNil())
                     expect(rest.options.authUrl).to(beNil())
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     rest.httpExecutor = testHTTPExecutor
 
                     let channel = rest.channels.get("test")
@@ -252,6 +254,7 @@ class Auth : QuickSpec {
                     options.useTokenAuth = true
 
                     let rest = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     rest.httpExecutor = testHTTPExecutor
 
                     let channel = rest.channels.get("test")
@@ -690,6 +693,7 @@ class Auth : QuickSpec {
                         options.clientId = expectedClientId
 
                         let client = ARTRest(options: options)
+                        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                         client.httpExecutor = testHTTPExecutor
 
                         waitUntil(timeout: testTimeout) { done in
@@ -867,6 +871,7 @@ class Auth : QuickSpec {
                     options.clientId = expectedClientId
 
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
                     
                     waitUntil(timeout: testTimeout) { done in
@@ -895,6 +900,7 @@ class Auth : QuickSpec {
                     options.clientId = "client_string"
                     
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
                     
                     waitUntil(timeout: testTimeout) { done in
@@ -1018,6 +1024,7 @@ class Auth : QuickSpec {
                         options.useTokenAuth = true
                         
                         let client = ARTRest(options: options)
+                        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                         client.httpExecutor = testHTTPExecutor
                         
                         // TokenDetails
@@ -1211,6 +1218,7 @@ class Auth : QuickSpec {
                     options.authParams!.append(NSURLQueryItem(name: "body", value: testToken) as URLQueryItem)
 
                     let rest = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     rest.httpExecutor = testHTTPExecutor
 
                     waitUntil(timeout: testTimeout) { done in
@@ -1246,6 +1254,7 @@ class Auth : QuickSpec {
                     options.authParams?.append(NSURLQueryItem(name: "body", value: jsonTokenDetails.toUTF8String) as URLQueryItem)
 
                     let rest = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     rest.httpExecutor = testHTTPExecutor
 
                     waitUntil(timeout: testTimeout) { done in
@@ -1306,6 +1315,7 @@ class Auth : QuickSpec {
                     options.authParams?.append(NSURLQueryItem(name: "body", value: jsonTokenRequest.toUTF8String) as URLQueryItem)
 
                     rest = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     rest.httpExecutor = testHTTPExecutor
 
                     waitUntil(timeout: testTimeout) { done in
@@ -1426,6 +1436,7 @@ class Auth : QuickSpec {
                     tokenParams.clientId = "tester"
 
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
 
                     waitUntil(timeout: testTimeout) { done in
@@ -1602,6 +1613,7 @@ class Auth : QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 options.token = getTestToken(clientId: nil)
                 let rest = ARTRest(options: options)
+                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 rest.httpExecutor = testHTTPExecutor
                 let channel = rest.channels.get("test")
 
@@ -1659,6 +1671,7 @@ class Auth : QuickSpec {
                     }
                 }
 
+                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 rest.httpExecutor = testHTTPExecutor
                 let channel = rest.channels.get("test")
 
@@ -2398,7 +2411,9 @@ class Auth : QuickSpec {
             context("on subsequent authorisations") {
 
                 it("should store the AuthOptions with authUrl") {
-                    let rest = ARTRest(options: AblyTests.commonAppSetup())
+                    let options = AblyTests.commonAppSetup()
+                    let rest = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     rest.httpExecutor = testHTTPExecutor
                     let auth = rest.auth
 

@@ -38,6 +38,7 @@
 #import "ARTLog+Private.h"
 #import "ARTSentry.h"
 #import "ARTRealtimeChannels+Private.h"
+#import "ARTPush+Private.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -65,14 +66,6 @@
 }
 
 @synthesize authorizationEmitter = _authorizationEmitter;
-
-- (instancetype)initWithKey:(NSString *)key {
-    return [self initWithOptions:[[ARTClientOptions alloc] initWithKey:key]];
-}
-
-- (instancetype)initWithToken:(NSString *)token {
-    return [self initWithOptions:[[ARTClientOptions alloc] initWithToken:token]];
-}
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options {
     self = [super init];
@@ -154,6 +147,26 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
+- (instancetype)initWithKey:(NSString *)key {
+    return [self initWithOptions:[[ARTClientOptions alloc] initWithKey:key]];
+}
+
+- (instancetype)initWithToken:(NSString *)token {
+    return [self initWithOptions:[[ARTClientOptions alloc] initWithToken:token]];
+}
+
++ (instancetype)createWithOptions:(ARTClientOptions *)options {
+    return [[ARTRealtime alloc] initWithOptions:options];
+}
+
++ (instancetype)createWithKey:(NSString *)key {
+    return [[ARTRealtime alloc] initWithKey:key];
+}
+
++ (instancetype)createWithToken:(NSString *)tokenId {
+    return [[ARTRealtime alloc] initWithToken:tokenId];
+}
+
 - (id<ARTRealtimeTransport>)transport {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     return _transport;
@@ -198,9 +211,15 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (ARTAuth *)getAuth {
+- (ARTAuth *)auth {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     return self.rest.auth;
+} ART_TRY_OR_MOVE_TO_FAILED_END
+}
+
+- (ARTPush *)push {
+ART_TRY_OR_MOVE_TO_FAILED_START(self) {
+    return self.rest.push;
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
@@ -1327,6 +1346,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     }
     [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSException:e]];
     [_rest reportUncaughtException:e];
+}
+
+- (ARTLocalDevice *)device {
+    return _rest.device;
 }
 
 @end

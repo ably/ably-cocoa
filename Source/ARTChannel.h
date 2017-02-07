@@ -16,6 +16,7 @@
 @class ARTMessage;
 @class __GENERIC(ARTPaginatedResult, ItemType);
 @class ARTDataQuery;
+@class ARTLocalDevice;
 
 ART_ASSUME_NONNULL_BEGIN
 
@@ -41,6 +42,10 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;
 
 - (void)history:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback;
+
+#ifdef TARGET_OS_IOS
+- (ARTLocalDevice *)device;
+#endif
 
 @end
 

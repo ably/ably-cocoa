@@ -77,6 +77,8 @@ ART_ASSUME_NONNULL_BEGIN
 // Private TimeOffset setter for testing only
 - (void)setTimeOffset:(NSTimeInterval)offset;
 
+- (NSString *_Nullable)getClientId;
+
 - (NSString *_Nullable)appId;
 
 @end

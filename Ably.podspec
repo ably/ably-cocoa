@@ -19,4 +19,5 @@ Pod::Spec.new do |s|
   s.dependency 'SocketRocket', '0.5.1'
   s.dependency 'msgpack', '0.1.8'
   s.dependency 'KSCrashAblyFork', '1.15.8-ably-1'
+  s.dependency 'ULID', '1.0.2'
 end

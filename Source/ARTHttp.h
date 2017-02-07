@@ -11,23 +11,33 @@
 #import "ARTLog.h"
 
 @class ARTErrorInfo;
+@class ARTClientOptions;
+
+@protocol ARTEncoder;
 
 ART_ASSUME_NONNULL_BEGIN
 
 @protocol ARTHTTPExecutor
 
-@property (nonatomic, weak) ARTLog *logger;
-
+- (ARTLog *)logger;
 - (void)executeRequest:(NSURLRequest *)request completion:(art_nullable void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback;
+
+@end
+
+@protocol ARTHTTPAuthenticatedExecutor <ARTHTTPExecutor>
+
+- (ARTClientOptions *)options;
+
+- (id<ARTEncoder>)defaultEncoder;
+
+- (void)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback;
 
 @end
 
 @interface ARTHttp : NSObject<ARTHTTPExecutor>
 
-@property (nonatomic, weak) ARTLog *logger;
-
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)init:(dispatch_queue_t)queue;
+- (instancetype)init:(dispatch_queue_t)queue logger:(ARTLog *)logger;
 
 @end
 

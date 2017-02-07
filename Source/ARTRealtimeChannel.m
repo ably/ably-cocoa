@@ -24,15 +24,21 @@
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTStatus.h"
 #import "ARTDefault.h"
-#import "ARTRest.h"
+#import "ARTRest+Private.h"
 #import "ARTClientOptions.h"
 #import "ARTTypes.h"
 #import "ARTGCD.h"
 #import "ARTConnection+Private.h"
 #import "ARTRestChannels+Private.h"
+#ifdef TARGET_OS_IPHONE
+#import "ARTPushChannel.h"
+#endif
 
 @interface ARTRealtimeChannel () {
     ARTRealtimePresence *_realtimePresence;
+    #ifdef TARGET_OS_IPHONE
+    ARTPushChannel *_pushChannel;
+    #endif
     CFRunLoopTimerRef _attachTimer;
     CFRunLoopTimerRef _detachTimer;
     __GENERIC(ARTEventEmitter, ARTEvent *, ARTErrorInfo *) *_attachedEventEmitter;
@@ -108,7 +114,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (ARTRealtimePresence *)getPresence {
+- (ARTRealtimePresence *)presence {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     if (!_realtimePresence) {
         _realtimePresence = [[ARTRealtimePresence alloc] initWithChannel:self];
@@ -116,6 +122,23 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return _realtimePresence;
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
+
+#ifdef TARGET_OS_IPHONE
+
+- (ARTPushChannel *)push {
+    if (!_pushChannel) {
+        _pushChannel = [[ARTPushChannel alloc] init:self.realtime.rest withChannel:self];
+    }
+    return _pushChannel;
+}
+
+#endif
+
+#ifdef TARGET_OS_IOS
+- (ARTLocalDevice *)device {
+    return _realtime.device;
+}
+#endif
 
 - (void)internalPostMessages:(id)data callback:(void (^)(ARTErrorInfo *__art_nullable error))callback {
     if (callback) {

@@ -32,10 +32,11 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTJsonLikeEncoder : NSObject <ARTEncoder>
 
-@property (nonatomic, weak) ARTRest *rest;
 @property (nonatomic, strong, art_nullable) id<ARTJsonLikeEncoderDelegate> delegate;
 
-- (instancetype)initWithRest:(ARTRest *)rest delegate:(id<ARTJsonLikeEncoderDelegate> __art_nullable)delegate;
+- (instancetype)initWithDelegate:(id<ARTJsonLikeEncoderDelegate>)delegate;
+- (instancetype)initWithLogger:(ARTLog *)logger delegate:(nullable id<ARTJsonLikeEncoderDelegate>)delegate;
+- (instancetype)initWithRest:(ARTRest *)rest delegate:(nullable id<ARTJsonLikeEncoderDelegate>)delegate;
 
 @end
 

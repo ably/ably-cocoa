@@ -15,14 +15,12 @@ class RestClient: QuickSpec {
 
         var testHTTPExecutor: TestProxyHTTPExecutor!
 
-        beforeEach {
-            testHTTPExecutor = TestProxyHTTPExecutor()
-        }
-
         describe("RestClient") {
             // G4
             it("All REST requests should include the current API version") {
-                let client = ARTRest(options: AblyTests.commonAppSetup())
+                let options = AblyTests.commonAppSetup()
+                let client = ARTRest(options: options)
+                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 client.httpExecutor = testHTTPExecutor
                 let channel = client.channels.get("test")
                 waitUntil(timeout: testTimeout) { done in
@@ -167,6 +165,7 @@ class RestClient: QuickSpec {
                     let options = ARTClientOptions(key: "fake:key")
                     options.restHost = "fake.ably.io"
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
                     
                     publishTestMessage(client, failOnError: false)
@@ -179,6 +178,7 @@ class RestClient: QuickSpec {
                     options.environment = "test"
                     options.restHost = "fake.ably.io"
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
 
                     publishTestMessage(client, failOnError: false)
@@ -190,6 +190,7 @@ class RestClient: QuickSpec {
                     let options = ARTClientOptions(key: "fake:key")
                     options.environment = "myEnvironment"
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
                     
                     publishTestMessage(client, failOnError: false)
@@ -200,6 +201,7 @@ class RestClient: QuickSpec {
                 it("should default to https://rest.ably.io") {
                     let options = ARTClientOptions(key: "fake:key")
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
                     
                     publishTestMessage(client, failOnError: false)
@@ -211,6 +213,7 @@ class RestClient: QuickSpec {
                     let options = AblyTests.clientOptions(requestToken: true)
                     options.tls = false
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
                     
                     publishTestMessage(client, failOnError: false)
@@ -256,8 +259,9 @@ class RestClient: QuickSpec {
                     expect(options.httpMaxRetryCount).to(equal(3))
                     options.httpMaxRetryCount = 1
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
-                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable)
+                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
 
                     var totalRetry: UInt = 0
                     testHTTPExecutor.afterRequest = { request, _ in
@@ -280,8 +284,9 @@ class RestClient: QuickSpec {
                     expect(options.httpMaxRetryDuration).to(equal(15.0)) //Seconds
                     options.httpMaxRetryDuration = 1.0
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
-                    testHTTPExecutor.http = MockHTTP(network: .requestTimeout(timeout: 0.1))
+                    testHTTPExecutor.http = MockHTTP(network: .requestTimeout(timeout: 0.1), logger: options.logHandler)
                     let channel = client.channels.get("test")
                     waitUntil(timeout: testTimeout) { done in
                         let start = NSDate()
@@ -311,6 +316,7 @@ class RestClient: QuickSpec {
                 options.restHost = "rest.ably.test"
                 expect(options.restHost).to(equal("rest.ably.test"))
                 let client = ARTRest(options: options)
+                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 client.httpExecutor = testHTTPExecutor
                 waitUntil(timeout: testTimeout) { done in
                     client.channels.get("test").publish(nil, data: "message") { error in
@@ -342,11 +348,13 @@ class RestClient: QuickSpec {
                 let options = AblyTests.commonAppSetup()
 
                 let clientHttps = ARTRest(options: options)
+                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 clientHttps.httpExecutor = testHTTPExecutor
 
                 options.clientId = "client_http"
                 options.tls = false
                 let clientHttp = ARTRest(options: options)
+                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 clientHttp.httpExecutor = testHTTPExecutor
 
                 waitUntil(timeout: testTimeout) { done in
@@ -405,6 +413,7 @@ class RestClient: QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 options.token = getTestToken(ttl: 0.5)
                 let client = ARTRest(options: options)
+                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 client.httpExecutor = testHTTPExecutor
                 let auth = client.auth
 
@@ -433,6 +442,7 @@ class RestClient: QuickSpec {
                 let options = AblyTests.clientOptions()
                 options.token = getTestToken(capability: "{ \"main\":[\"subscribe\"] }")
                 let client = ARTRest(options: options)
+                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 client.httpExecutor = testHTTPExecutor
 
                 waitUntil(timeout: testTimeout) { done in
@@ -531,6 +541,7 @@ class RestClient: QuickSpec {
                     }
 
                     let rest = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     rest.httpExecutor = testHTTPExecutor
 
                     waitUntil(timeout: testTimeout) { done in
@@ -580,6 +591,7 @@ class RestClient: QuickSpec {
                             options.tokenDetails = ARTTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires!.addingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
 
                             let rest = ARTRest(options: options)
+                            testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                             rest.httpExecutor = testHTTPExecutor
 
                             // Delay for token expiration
@@ -675,8 +687,9 @@ class RestClient: QuickSpec {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.environment = "test"
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
-                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable)
+                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
 
                     waitUntil(timeout: testTimeout) { done in
@@ -693,8 +706,9 @@ class RestClient: QuickSpec {
                 it("applies when the default rest.ably.io endpoint is being used") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
-                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable)
+                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
 
                     testHTTPExecutor.afterRequest = { request, callback in
@@ -725,8 +739,9 @@ class RestClient: QuickSpec {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.fallbackHosts = ["f.ably-realtime.com", "g.ably-realtime.com", "h.ably-realtime.com", "i.ably-realtime.com", "j.ably-realtime.com"]
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
-                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable)
+                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
                     
                     testHTTPExecutor.afterRequest = { request, callback in
@@ -758,8 +773,9 @@ class RestClient: QuickSpec {
                     options.environment = "rsc15b"
                     options.fallbackHostsUseDefault = true
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
-                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable)
+                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
 
                     testHTTPExecutor.afterRequest = { request, callback in
@@ -791,8 +807,9 @@ class RestClient: QuickSpec {
                     options.environment = "rsc15b"
                     options.fallbackHostsUseDefault = false
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
-                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable)
+                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
 
                     waitUntil(timeout: testTimeout) { done in
@@ -810,8 +827,9 @@ class RestClient: QuickSpec {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.fallbackHosts = [] //to test TO3k6
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
-                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable)
+                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
                     
                     waitUntil(timeout: testTimeout) { done in
@@ -830,8 +848,9 @@ class RestClient: QuickSpec {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.fallbackHosts = nil
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
-                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable)
+                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
                     
                     testHTTPExecutor.afterRequest = { request, callback in
@@ -862,8 +881,9 @@ class RestClient: QuickSpec {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.httpMaxRetryCount = 1
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
-                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable)
+                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
 
                     waitUntil(timeout: testTimeout) { done in
@@ -872,7 +892,7 @@ class RestClient: QuickSpec {
                         }
                     }
 
-                    testHTTPExecutor.http = ARTHttp(AblyTests.queue)
+                    testHTTPExecutor.http = ARTHttp(AblyTests.queue, logger: options.logHandler)
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: "nil") { _ in
@@ -896,8 +916,9 @@ class RestClient: QuickSpec {
                     options.httpMaxRetryCount = 1
                     options.restHost = "fake.ably.io"
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
-                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable)
+                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
 
                     waitUntil(timeout: testTimeout) { done in
@@ -906,7 +927,7 @@ class RestClient: QuickSpec {
                         }
                     }
 
-                    testHTTPExecutor.http = ARTHttp(AblyTests.queue)
+                    testHTTPExecutor.http = ARTHttp(AblyTests.queue, logger: options.logHandler)
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: "nil") { _ in
@@ -958,8 +979,9 @@ class RestClient: QuickSpec {
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         let client = ARTRest(options: options)
                         options.httpMaxRetryCount = 3
+                        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                         client.httpExecutor = testHTTPExecutor
-                        testHTTPExecutor.http = MockHTTP(network: .hostUnreachable)
+                        testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                         testHTTPExecutor.afterRequest = { _, _ in
                             if testHTTPExecutor.requests.count > Int(1 + options.httpMaxRetryCount) {
                                 fail("Should not retry more than \(options.httpMaxRetryCount)")
@@ -995,8 +1017,9 @@ class RestClient: QuickSpec {
                                                    "f.ably-realtime.com"]
                         options.fallbackHosts = customFallbackHosts
                         let client = ARTRest(options: options)
+                        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                         client.httpExecutor = testHTTPExecutor
-                        testHTTPExecutor.http = MockHTTP(network: .hostUnreachable)
+                        testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                         let channel = client.channels.get("test")
                         
                         waitUntil(timeout: testTimeout) { done in
@@ -1020,8 +1043,9 @@ class RestClient: QuickSpec {
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         options.httpMaxRetryCount = 10
                         let client = ARTRest(options: options)
+                        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                         client.httpExecutor = testHTTPExecutor
-                        testHTTPExecutor.http = MockHTTP(network: .hostUnreachable)
+                        testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                         let channel = client.channels.get("test")
 
                         waitUntil(timeout: testTimeout) { done in
@@ -1049,8 +1073,9 @@ class RestClient: QuickSpec {
                         options.fallbackHosts = _fallbackHosts
                         
                         let client = ARTRest(options: options)
+                        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                         client.httpExecutor = testHTTPExecutor
-                        testHTTPExecutor.http = MockHTTP(network: .hostUnreachable)
+                        testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                         testHTTPExecutor.afterRequest = { _, _ in
                             if testHTTPExecutor.requests.count > Int(1 + options.httpMaxRetryCount) {
                                 fail("Should not retry more than \(options.httpMaxRetryCount)")
@@ -1083,8 +1108,9 @@ class RestClient: QuickSpec {
                         options.fallbackHosts = _fallbackHosts
                         
                         let client = ARTRest(options: options)
+                        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                         client.httpExecutor = testHTTPExecutor
-                        testHTTPExecutor.http = MockHTTP(network: .hostUnreachable)
+                        testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                         let channel = client.channels.get("test")
                         
                         waitUntil(timeout: testTimeout) { done in
@@ -1110,8 +1136,9 @@ class RestClient: QuickSpec {
                         options.fallbackHosts = []
                         
                         let client = ARTRest(options: options)
+                        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                         client.httpExecutor = testHTTPExecutor
-                        testHTTPExecutor.http = MockHTTP(network: .hostUnreachable)
+                        testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                         testHTTPExecutor.afterRequest = { _, _ in
                             if testHTTPExecutor.requests.count > Int(1 + options.httpMaxRetryCount) {
                                 fail("Should not retry more than \(options.httpMaxRetryCount)")
@@ -1140,8 +1167,9 @@ class RestClient: QuickSpec {
                         it("\(caseTest)") {
                             let options = ARTClientOptions(key: "xxxx:xxxx")
                             let client = ARTRest(options: options)
+                            testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                             client.httpExecutor = testHTTPExecutor
-                            testHTTPExecutor.http = MockHTTP(network: caseTest)
+                            testHTTPExecutor.http = MockHTTP(network: caseTest, logger: options.logHandler)
                             let channel = client.channels.get("test")
 
                             testHTTPExecutor.afterRequest = { _, callback in
@@ -1172,8 +1200,9 @@ class RestClient: QuickSpec {
                 it("should not use an alternative host when the client receives an bad request") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
-                    testHTTPExecutor.http = MockHTTP(network: .host400BadRequest)
+                    testHTTPExecutor.http = MockHTTP(network: .host400BadRequest, logger: options.logHandler)
                     let channel = client.channels.get("test")
 
                     testHTTPExecutor.afterRequest = { _ in
@@ -1200,6 +1229,7 @@ class RestClient: QuickSpec {
                 expect(options.useBinaryProtocol).to(beTrue())
 
                 let rest = ARTRest(options: options)
+                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 rest.httpExecutor = testHTTPExecutor
                 waitUntil(timeout: testTimeout) { done in
                     rest.channels.get("test").publish(nil, data: "message") { error in
@@ -1232,6 +1262,7 @@ class RestClient: QuickSpec {
                 options.useBinaryProtocol = false
 
                 let rest = ARTRest(options: options)
+                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 rest.httpExecutor = testHTTPExecutor
                 waitUntil(timeout: testTimeout) { done in
                     rest.channels.get("test").publish(nil, data: "message") { error in
@@ -1262,6 +1293,7 @@ class RestClient: QuickSpec {
             it("X-Ably-Version must be included in all REST requests") {
                 let options = AblyTests.commonAppSetup()
                 let client = ARTRest(options: options)
+                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 client.httpExecutor = testHTTPExecutor
                 waitUntil(timeout: testTimeout) { done in
                     client.channels.get("test").publish(nil, data: "message") { error in
@@ -1278,7 +1310,9 @@ class RestClient: QuickSpec {
             
             // RSC7b
             it("X-Ably-Lib: [lib][.optional variant]?-[version] should be included in all REST requests") {
-                let client = ARTRest(options: AblyTests.commonAppSetup())
+                let options = AblyTests.commonAppSetup()
+                let client = ARTRest(options: options)
+                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 client.httpExecutor = testHTTPExecutor
                 let channel = client.channels.get("test")
                 waitUntil(timeout: testTimeout) { done in

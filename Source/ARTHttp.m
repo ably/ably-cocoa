@@ -15,14 +15,24 @@
 
 @end
 
-@implementation ARTHttp
+#pragma mark - ARTHttp
 
-- (instancetype)init:(dispatch_queue_t)queue {
+@implementation ARTHttp {
+    ARTLog *_logger;
+    _Nullable dispatch_queue_t _queue;
+}
+
+- (instancetype)init:(dispatch_queue_t)queue logger:(ARTLog *)logger {
     self = [super init];
     if (self) {
         _urlSession = [[ARTURLSessionServerTrust alloc] init:queue];
+        _logger = logger;
     }
     return self;
+}
+
+- (ARTLog *)logger {
+    return _logger;
 }
 
 - (void)dealloc {
