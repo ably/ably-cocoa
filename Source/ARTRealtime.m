@@ -31,6 +31,7 @@
 #import "ARTStats.h"
 #import "ARTRealtimeTransport.h"
 #import "ARTFallback.h"
+#import "ARTPush.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -51,14 +52,6 @@
     id<ARTRealtimeTransport> _transport;
     ARTFallback *_fallbacks;
     _Nonnull dispatch_queue_t _eventQueue;
-}
-
-- (instancetype)initWithKey:(NSString *)key {
-    return [self initWithOptions:[[ARTClientOptions alloc] initWithKey:key]];
-}
-
-- (instancetype)initWithToken:(NSString *)token {
-    return [self initWithOptions:[[ARTClientOptions alloc] initWithToken:token]];
 }
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options {
@@ -94,6 +87,26 @@
     return self;
 }
 
+- (instancetype)initWithKey:(NSString *)key {
+    return [self initWithOptions:[[ARTClientOptions alloc] initWithKey:key]];
+}
+
+- (instancetype)initWithToken:(NSString *)token {
+    return [self initWithOptions:[[ARTClientOptions alloc] initWithToken:token]];
+}
+
++ (instancetype)createWithOptions:(ARTClientOptions *)options {
+    return [[ARTRealtime alloc] initWithOptions:options];
+}
+
++ (instancetype)createWithKey:(NSString *)key {
+    return [[ARTRealtime alloc] initWithKey:key];
+}
+
++ (instancetype)createWithToken:(NSString *)tokenId {
+    return [[ARTRealtime alloc] initWithToken:tokenId];
+}
+
 - (id<ARTRealtimeTransport>)getTransport {
     return _transport;
 }
@@ -114,8 +127,12 @@
     return [NSString stringWithFormat:@"Realtime: %@", self.clientId];
 }
 
-- (ARTAuth *)getAuth {
+- (ARTAuth *)auth {
     return self.rest.auth;
+}
+
+- (ARTPush *)push {
+    return self.rest.push;
 }
 
 - (void)dealloc {
