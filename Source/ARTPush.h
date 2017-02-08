@@ -16,9 +16,26 @@
 @interface ARTDeviceId : NSString
 @end
 
+
+#pragma mark ARTPushNotifications interface
+
+#ifdef TARGET_OS_IPHONE
+@protocol ARTPushNotifications<NSObject>
+- (void)didRegisterForRemoteNotificationsWithDeviceToken:(nonnull NSData *)deviceToken;
+- (void)didFailToRegisterForRemoteNotificationsWithError:(nonnull NSError *)error;
+@end
+#endif
+
+
+#pragma mark ARTPush type
+
 NS_ASSUME_NONNULL_BEGIN
 
+#ifdef TARGET_OS_IPHONE
+@interface ARTPush : NSObject <ARTPushNotifications>
+#else
 @interface ARTPush : NSObject
+#endif
 
 /// Publish a push notification.
 - (void)publish:(NSDictionary<NSString *,NSString *> *)params jsonObject:(ARTJsonObject *)jsonObject;

@@ -10,6 +10,16 @@
 
 @implementation ARTPush
 
+#ifdef TARGET_OS_IPHONE
+- (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+    NSLog(@"ARTPush %p %s: %@", self, __FUNCTION__, deviceToken);
+}
+
+- (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
+    NSLog(@"ARTPush %p %s: %@", self, __FUNCTION__, error);
+}
+#endif
+
 - (void)publish:(NSDictionary<NSString *,NSString *> *)params jsonObject:(ARTJsonObject *)jsonObject {
 
 }
