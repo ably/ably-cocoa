@@ -34,6 +34,7 @@
 #import "ARTDefault.h"
 #import "ARTFallback.h"
 #import "ARTGCD.h"
+#import "ARTPush.h"
 
 @implementation ARTRest
 
@@ -71,6 +72,7 @@
         _fallbackCount = 0;
 
         _auth = [[ARTAuth alloc] init:self withOptions:_options];
+        _push = [[ARTPush alloc] init];
         _channels = [[ARTRestChannels alloc] initWithRest:self];
 
         [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p initialized", self];
@@ -84,6 +86,18 @@
 
 - (instancetype)initWithToken:(NSString *)token {
     return [self initWithOptions:[[ARTClientOptions alloc] initWithToken:token]];
+}
+
++ (instancetype)createWithOptions:(ARTClientOptions *)options {
+    return [[ARTRest alloc] initWithOptions:options];
+}
+
++ (instancetype)createWithKey:(NSString *)key {
+    return [[ARTRest alloc] initWithKey:key];
+}
+
++ (instancetype)createWithToken:(NSString *)tokenId {
+    return [[ARTRest alloc] initWithToken:tokenId];
 }
 
 - (void)dealloc {
