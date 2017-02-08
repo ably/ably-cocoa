@@ -24,7 +24,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTRest : NSObject
 
-- (instancetype)init UNAVAILABLE_ATTRIBUTE;
+- (instancetype)init NS_UNAVAILABLE;
 
 /**
  Instance the Ably library with the given options.

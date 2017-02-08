@@ -72,7 +72,7 @@
         _fallbackCount = 0;
 
         _auth = [[ARTAuth alloc] init:self withOptions:_options];
-        _push = [[ARTPush alloc] init];
+        _push = [[ARTPush alloc] init:self];
         _channels = [[ARTRestChannels alloc] initWithRest:self];
 
         [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p initialized", self];

@@ -23,46 +23,41 @@
 #import "ARTStatus.h"
 #import "ARTTokenDetails.h"
 #import "ARTTokenRequest.h"
+#import "ARTDeviceDetails.h"
+#import "ARTDevicePushDetails.h"
 #import "ARTConnectionDetails.h"
 #import "ARTRest+Private.h"
+#import "ARTJsonEncoder.h"
 
 @interface ARTJsonLikeEncoder ()
-
-- (ARTMessage *)messageFromDictionary:(NSDictionary *)input;
-- (NSArray *)messagesFromArray:(NSArray *)input;
-
-- (ARTPresenceMessage *)presenceMessageFromDictionary:(NSDictionary *)input;
-- (NSArray *)presenceMessagesFromArray:(NSArray *)input;
-
-- (NSDictionary *)messageToDictionary:(ARTMessage *)message;
-- (NSArray *)messagesToArray:(NSArray *)messages;
-
-- (NSDictionary *)presenceMessageToDictionary:(ARTPresenceMessage *)message;
-- (NSArray *)presenceMessagesToArray:(NSArray *)messages;
-
-- (NSDictionary *)protocolMessageToDictionary:(ARTProtocolMessage *)message;
-- (ARTProtocolMessage *)protocolMessageFromDictionary:(NSDictionary *)input;
-
-- (NSDictionary *)tokenRequestToDictionary:(ARTTokenRequest *)tokenRequest;
-
-- (NSArray *)statsFromArray:(NSArray *)input;
-- (ARTStats *)statsFromDictionary:(NSDictionary *)input;
-- (ARTStatsMessageTypes *)statsMessageTypesFromDictionary:(NSDictionary *)input;
-- (ARTStatsMessageCount *)statsMessageCountFromDictionary:(NSDictionary *)input;
-- (ARTStatsMessageTraffic *)statsMessageTrafficFromDictionary:(NSDictionary *)input;
-- (ARTStatsConnectionTypes *)statsConnectionTypesFromDictionary:(NSDictionary *)input;
-- (ARTStatsResourceCount *)statsResourceCountFromDictionary:(NSDictionary *)input;
-- (ARTStatsRequestCount *)statsRequestCountFromDictionary:(NSDictionary *)input;
-
-- (void)writeData:(id)data encoding:(NSString *)encoding toDictionary:(NSMutableDictionary *)output;
-
-- (NSDictionary *)decodeDictionary:(NSData *)data;
-- (NSArray *)decodeArray:(NSData *)data;
 
 @end
 
 @implementation ARTJsonLikeEncoder {
-    ARTLog *_logger;
+    __weak ARTRest *_rest;
+    __weak ARTLog *_logger;
+}
+
+- (instancetype)init {
+    return [self initWithDelegate:[[ARTJsonEncoder alloc] init]];
+}
+
+- (instancetype)initWithDelegate:(id<ARTJsonLikeEncoderDelegate>)delegate {
+    if (self = [super init]) {
+        _rest = nil;
+        _logger = nil;
+        _delegate = delegate;
+    }
+    return self;
+}
+
+- (instancetype)initWithLogger:(ARTLog *)logger delegate:(id<ARTJsonLikeEncoderDelegate>)delegate {
+    if (self = [super init]) {
+        _rest = nil;
+        _logger = logger;
+        _delegate = delegate;
+    }
+    return self;
 }
 
 - (instancetype)initWithRest:(ARTRest *)rest delegate:(id<ARTJsonLikeEncoderDelegate>)delegate {
@@ -140,6 +135,14 @@
 
 - (NSData *)encodeTokenDetails:(ARTTokenDetails *)tokenDetails {
     return [self encode:[self tokenDetailsToDictionary:tokenDetails]];
+}
+
+- (NSData *)encodeDeviceDetails:(ARTDeviceDetails *)deviceDetails {
+    return [self encode:[self deviceDetailsToDictionary:deviceDetails]];
+}
+
+- (NSData *)encodeDevicePushDetails:(ARTDevicePushDetails *)devicePushDetails {
+    return [self encode:[self devicePushDetailsToDictionary:devicePushDetails]];
 }
 
 - (NSDate *)decodeTime:(NSData *)data {
@@ -476,6 +479,32 @@
         dictionary[@"clientId"] = tokenDetails.clientId;
     }
     
+    return dictionary;
+}
+
+- (NSDictionary *)deviceDetailsToDictionary:(ARTDeviceDetails *)deviceDetails {
+    NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+
+    dictionary[@"id"] = deviceDetails.id;
+    dictionary[@"platform"] = deviceDetails.platform;
+    dictionary[@"formFactor"] = ARTDeviceFormFactorToStr(deviceDetails.formFactor);
+
+    if (deviceDetails.clientId) {
+        dictionary[@"cliendId"] = deviceDetails.clientId;
+    }
+
+    dictionary[@"push"] = [self devicePushDetailsToDictionary:deviceDetails.push];
+
+    return dictionary;
+}
+
+- (NSDictionary *)devicePushDetailsToDictionary:(ARTDevicePushDetails *)devicePushDetails {
+    NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+
+    dictionary[@"transportType"] = devicePushDetails.transportType;
+
+    dictionary[@"metadata"] = @{ @"deviceToken": devicePushDetails.deviceToken, };
+
     return dictionary;
 }
 

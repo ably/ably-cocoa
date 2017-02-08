@@ -10,6 +10,8 @@
 #import "ARTDeviceDetails.h"
 #import "ARTTypes.h"
 
+@class ARTRest;
+
 @interface ARTJsonObject : NSDictionary
 @end
 
@@ -36,6 +38,9 @@ NS_ASSUME_NONNULL_BEGIN
 #else
 @interface ARTPush : NSObject
 #endif
+
+- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)init:(ARTRest *)rest;
 
 /// Publish a push notification.
 - (void)publish:(NSDictionary<NSString *,NSString *> *)params jsonObject:(ARTJsonObject *)jsonObject;

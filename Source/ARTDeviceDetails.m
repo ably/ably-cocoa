@@ -7,9 +7,9 @@
 //
 
 #import "ARTDeviceDetails.h"
+#import "ARTDevicePushDetails.h"
 
 NSString *const ARTDevicePlatform = @"ios";
-NSString *const ARTDevicePushTransportType = @"apns";
 
 NSString *ARTDeviceFormFactorToStr(ARTDeviceFormFactor formFactor) {
     switch (formFactor) {
@@ -25,5 +25,23 @@ NSString *ARTDeviceFormFactorToStr(ARTDeviceFormFactor formFactor) {
 }
 
 @implementation ARTDeviceDetails
+
++ (instancetype)fromLocalDevice:(NSString *)deviceToken {
+    return [[ARTDeviceDetails alloc] initWithToken:deviceToken];
+}
+
+- (instancetype)initWithToken:(NSString *)deviceToken {
+    if (self = [super init]) {
+        _id = [[NSUUID new] UUIDString];
+        _formFactor = ARTDeviceFormFactorMobile;
+        _push = [[ARTDevicePushDetails alloc] init];
+        _push.deviceToken = deviceToken;
+    }
+    return self;
+}
+
+- (NSString *)platform {
+    return ARTDevicePlatform;
+}
 
 @end

@@ -44,7 +44,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly) ARTPush *push;
 @property (readonly, art_nullable, getter=getClientId) NSString *clientId;
 
-- (instancetype)init UNAVAILABLE_ATTRIBUTE;
+- (instancetype)init NS_UNAVAILABLE;
 
 /**
  Instance the Ably library with the given options.

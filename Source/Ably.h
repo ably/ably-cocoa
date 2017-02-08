@@ -60,6 +60,7 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import "ARTPush.h"
 #import "ARTPushChannel.h"
 #import "ARTDeviceDetails.h"
+#import "ARTDevicePushDetails.h"
 
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
 #import "ARTNSDate+ARTUtil.h"
