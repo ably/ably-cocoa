@@ -26,16 +26,19 @@ NSString *ARTDeviceFormFactorToStr(ARTDeviceFormFactor formFactor) {
 
 @implementation ARTDeviceDetails
 
-+ (instancetype)fromLocalDevice:(NSString *)deviceToken {
-    return [[ARTDeviceDetails alloc] initWithToken:deviceToken];
++ (instancetype)fromLocalDevice {
+    return [[ARTDeviceDetails alloc] init];
 }
 
-- (instancetype)initWithToken:(NSString *)deviceToken {
+- (instancetype)init {
+    return [self initWithId:[[NSUUID new] UUIDString]];
+}
+
+- (instancetype)initWithId:(NSString *)id {
     if (self = [super init]) {
-        _id = [[NSUUID new] UUIDString];
+        _id = id;
         _formFactor = ARTDeviceFormFactorMobile;
         _push = [[ARTDevicePushDetails alloc] init];
-        _push.deviceToken = deviceToken;
     }
     return self;
 }

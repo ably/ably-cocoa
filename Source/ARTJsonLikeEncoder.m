@@ -141,6 +141,10 @@
     return [self encode:[self deviceDetailsToDictionary:deviceDetails]];
 }
 
+- (ARTDeviceDetails *)decodeDeviceDetails:(NSData *)data {
+    return [self deviceDetailsFromDictionary:[self decodeDictionary:data] error:nil];
+}
+
 - (NSData *)encodeDevicePushDetails:(ARTDevicePushDetails *)devicePushDetails {
     return [self encode:[self devicePushDetailsToDictionary:devicePushDetails]];
 }
@@ -498,12 +502,30 @@
     return dictionary;
 }
 
+- (ARTDeviceDetails *)deviceDetailsFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: deviceDetailsFromDictionary %@", _rest, [_delegate formatAsString], input];
+
+    if (![input isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
+
+    ARTDeviceDetails *deviceDetails = [[ARTDeviceDetails alloc] initWithId:[input artString:@"id"]];
+    deviceDetails.updateToken = (ARTUpdateToken *)[input artString:@"updateToken"];
+    deviceDetails.push.state = ARTDevicePushStateFromStr([input artString:@"state"]);
+
+    return deviceDetails;
+}
+
 - (NSDictionary *)devicePushDetailsToDictionary:(ARTDevicePushDetails *)devicePushDetails {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
 
     dictionary[@"transportType"] = devicePushDetails.transportType;
 
-    dictionary[@"metadata"] = @{ @"deviceToken": devicePushDetails.deviceToken, };
+    if (devicePushDetails.deviceToken) {
+        // Normalizing token by removing symbols and spaces
+        NSString *token = [[[devicePushDetails.deviceToken description] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]] stringByReplacingOccurrencesOfString:@" " withString:@""];
+        dictionary[@"metadata"] = @{ @"deviceToken": token, };
+    }
 
     return dictionary;
 }

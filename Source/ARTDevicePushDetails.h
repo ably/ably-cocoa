@@ -21,10 +21,12 @@ typedef NS_ENUM(NSUInteger, ARTDevicePushState) {
     ARTDevicePushStateFailed
 };
 
+ARTDevicePushState ARTDevicePushStateFromStr(NSString *value);
+
 @interface ARTDevicePushDetails : NSObject
 
 @property (nonatomic, readonly) NSString *transportType;
-@property (nonatomic) NSString *deviceToken;
+@property (nonatomic) NSData *deviceToken;
 @property (nonatomic, assign) ARTDevicePushState state;
 @property (nullable, nonatomic) ARTErrorInfo *errorReason;
 

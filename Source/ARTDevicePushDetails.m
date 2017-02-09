@@ -10,6 +10,18 @@
 
 NSString *const ARTDevicePushTransportType = @"apns";
 
+ARTDevicePushState ARTDevicePushStateFromStr(NSString *value) {
+    if ([[value lowercaseString] isEqualToString:@"active"]) {
+        return ARTDevicePushStateActive;
+    }
+    else if ([[value lowercaseString] isEqualToString:@"failing"]) {
+        return ARTDevicePushStateFailing;
+    }
+    else {
+        return ARTDevicePushStateFailed;
+    }
+}
+
 @implementation ARTDevicePushDetails
 
 - (NSString *)transportType {

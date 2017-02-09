@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "ARTPush.h"
 
 @class ARTDevicePushDetails;
 
@@ -31,10 +32,11 @@ NSString *ARTDeviceFormFactorToStr(ARTDeviceFormFactor formFactor);
 @property (nonatomic, readonly) ARTDeviceFormFactor formFactor;
 @property (nullable, nonatomic) NSDictionary<NSString *, NSString *> *metadata;
 @property (nonatomic, readonly) ARTDevicePushDetails *push;
+@property (nullable, nonatomic) ARTUpdateToken *updateToken;
 
-- (instancetype)init NS_UNAVAILABLE;
-- (instancetype)initWithToken:(NSString *)deviceToken;
-+ (instancetype)fromLocalDevice:(NSString *)deviceToken;
+- (instancetype)initWithId:(NSString *)id;
+
++ (instancetype)fromLocalDevice;
 
 @end
 

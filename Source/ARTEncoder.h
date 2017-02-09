@@ -60,6 +60,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 // DeviceDetails
 - (art_nullable NSData *)encodeDeviceDetails:(ARTDeviceDetails *)deviceDetails;
+- (art_nullable ARTDeviceDetails *)decodeDeviceDetails:(NSData *)data;
 
 // DevicePushDetails
 - (art_nullable NSData *)encodeDevicePushDetails:(ARTDevicePushDetails *)devicePushDetails;
