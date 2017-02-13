@@ -128,7 +128,7 @@
 		D7588AF41BFF91B800BB8279 /* ARTURLSessionServerTrust.m in Sources */ = {isa = PBXBuildFile; fileRef = D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */; };
 		D75A3F1B1DDE5B62002A4AAD /* ARTGCD.h in Headers */ = {isa = PBXBuildFile; fileRef = D75A3F191DDE5B62002A4AAD /* ARTGCD.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D75A3F1C1DDE5B62002A4AAD /* ARTGCD.m in Sources */ = {isa = PBXBuildFile; fileRef = D75A3F1A1DDE5B62002A4AAD /* ARTGCD.m */; };
-		D7684CFA1E51D20100F3B07F /* ARTPushRecipient.h in Headers */ = {isa = PBXBuildFile; fileRef = D7684CF81E51D20100F3B07F /* ARTPushRecipient.h */; };
+		D7684CFA1E51D20100F3B07F /* ARTPushRecipient.h in Headers */ = {isa = PBXBuildFile; fileRef = D7684CF81E51D20100F3B07F /* ARTPushRecipient.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7684CFB1E51D20100F3B07F /* ARTPushRecipient.m in Sources */ = {isa = PBXBuildFile; fileRef = D7684CF91E51D20100F3B07F /* ARTPushRecipient.m */; };
 		D768C6AC1E4B5B0200436011 /* ARTDevicePushDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = D768C6AA1E4B5B0200436011 /* ARTDevicePushDetails.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D768C6AD1E4B5B0200436011 /* ARTDevicePushDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = D768C6AB1E4B5B0200436011 /* ARTDevicePushDetails.m */; };

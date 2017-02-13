@@ -12,6 +12,8 @@
 @class ARTRest;
 @class ARTDeviceDetails;
 
+@protocol ARTPushRecipient;
+
 @interface ARTJsonObject : NSDictionary
 @end
 
