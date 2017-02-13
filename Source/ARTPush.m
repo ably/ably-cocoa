@@ -57,8 +57,24 @@ typedef NS_ENUM(NSUInteger, ARTPushState) {
     [_logger error:@"ARTPush: device token not received (%@)", [error localizedDescription]];
 }
 
-- (void)publish:(NSDictionary<NSString *,NSString *> *)params jsonObject:(ARTJsonObject *)jsonObject {
+- (void)publish:(id<ARTPushRecipient>)recipient jsonObject:(ARTJsonObject *)jsonObject {
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/publish"]];
+    request.HTTPMethod = @"POST";
+    request.HTTPBody = [_jsonEncoder encodePushRecipient:recipient withJsonObject:jsonObject];
+    [request setValue:[_jsonEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
 
+    [_logger debug:__FILE__ line:__LINE__ message:@"ARTPush: push notification to a single device %@", request];
+    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        if (response.statusCode == 200 /*OK*/) {
+            return;
+        }
+        if (error) {
+            [_logger error:@"ARTPush: push notification to a single device failed (%@)", error.localizedDescription];
+        }
+        else {
+            [_logger error:@"ARTPush: push notification to a single device failed with unknown error"];
+        }
+    }];
 }
 
 - (void)activate {
@@ -101,7 +117,7 @@ typedef NS_ENUM(NSUInteger, ARTPushState) {
 }
 
 - (void)deactivate:(ARTDeviceId *)deviceId deregisterCallback:(void (^)(ARTDeviceId * _Nullable, ARTErrorInfo * _Nullable))deregisterCallback {
-
+    // TODO
 }
 
 - (void)newDevice:(ARTDeviceDetails *)deviceDetails {

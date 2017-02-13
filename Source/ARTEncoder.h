@@ -16,6 +16,9 @@
 @class ARTTokenRequest;
 @class ARTDeviceDetails;
 @class ARTDevicePushDetails;
+@class ARTJsonObject;
+
+@protocol ARTPushRecipient;
 
 typedef NS_ENUM(NSUInteger, ARTEncoderFormat) {
     ARTEncoderFormatJson,
@@ -64,6 +67,9 @@ ART_ASSUME_NONNULL_BEGIN
 
 // DevicePushDetails
 - (art_nullable NSData *)encodeDevicePushDetails:(ARTDevicePushDetails *)devicePushDetails;
+
+// PushRecipient
+- (art_nullable NSData *)encodePushRecipient:(id<ARTPushRecipient>)recipient withJsonObject:(ARTJsonObject *)jsonObject;
 
 // Others
 - (art_nullable NSDate *)decodeTime:(NSData *)data;

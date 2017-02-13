@@ -24,6 +24,7 @@
 @interface ARTUpdateToken : NSString
 @end
 
+
 #pragma mark ARTPushNotifications interface
 
 #ifdef TARGET_OS_IPHONE
@@ -50,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init:(ARTRest *)rest;
 
 /// Publish a push notification.
-- (void)publish:(NSDictionary<NSString *,NSString *> *)params jsonObject:(ARTJsonObject *)jsonObject;
+- (void)publish:(id<ARTPushRecipient>)recipient jsonObject:(ARTJsonObject *)jsonObject;
 
 #ifdef TARGET_OS_IPHONE
 /// Register a device, including the information necessary to deliver push notifications to it.
