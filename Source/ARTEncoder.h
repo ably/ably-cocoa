@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "CompatibilityMacros.h"
+#import "ARTTypes.h"
 
 @class ARTMessage;
 @class ARTPresenceMessage;
@@ -16,7 +17,6 @@
 @class ARTTokenRequest;
 @class ARTDeviceDetails;
 @class ARTDevicePushDetails;
-@class ARTJsonObject;
 
 @protocol ARTPushRecipient;
 
@@ -32,6 +32,10 @@ ART_ASSUME_NONNULL_BEGIN
 - (NSString *)mimeType;
 - (ARTEncoderFormat)format;
 - (NSString *)formatAsString;
+
+- (id)decode:(NSData *)data;
+- (NSData *)encode:(id)obj;
+
 
 // TokenRequest
 - (art_nullable NSData *)encodeTokenRequest:(ARTTokenRequest *)request;

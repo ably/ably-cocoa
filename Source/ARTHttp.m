@@ -16,6 +16,9 @@
 
 @end
 
+
+#pragma mark - ARTHttpRequestHandle
+
 @interface ARTHttpRequestHandle : NSObject <ARTCancellable>
 
 @property (readonly, nonatomic, strong) NSURLSessionDataTask *dataTask;
@@ -150,8 +153,11 @@
 #pragma mark - ARTHttp
 
 @implementation ARTHttp {
+    ARTLog *_logger;
     _Nullable dispatch_queue_t _queue;
 }
+
+@synthesize logger = _logger;
 
 - (instancetype)init {
     self = [super init];
@@ -192,66 +198,6 @@
             callback(httpResponse, data, error);
         });
     }];
-}
-
-- (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method url:(NSURL *)url headers:(NSDictionary *)headers body:(NSData *)body callback:(void (^)(ARTHttpResponse *))cb {
-    return [self makeRequest:[[ARTHttpRequest alloc] initWithMethod:method url:url headers:headers body:body] callback:cb];
-}
-
-- (id<ARTCancellable>)makeRequest:(ARTHttpRequest *)artRequest callback:(void (^)(ARTHttpResponse *))cb {
-
-    if(![artRequest.method isEqualToString:@"GET"] && ![artRequest.method isEqualToString:@"POST"]){
-        [NSException raise:@"Http method must be GET or POST" format:@""];
-    }
-
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:artRequest.url];
-    request.HTTPMethod = artRequest.method;
-    [self.logger verbose:@"ARTHttp request URL is %@", artRequest.url];
-
-    for (NSString *headerName in artRequest.headers) {
-        NSString *headerValue = [artRequest.headers objectForKey:headerName];
-        [request setValue:headerValue forHTTPHeaderField:headerName];
-    }
-
-    request.HTTPBody = artRequest.body;
-    [self.logger debug:@"ARTHttp: makeRequest %@", [request allHTTPHeaderFields]];
-
-    [self.urlSession get:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
-        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-        [self.logger verbose:@"ARTHttp: Got response %@, err %@", response, error];
-
-        if(error) {
-            [self.logger error:@"ARTHttp receieved error: %@", error];
-            cb([ARTHttpResponse responseWithStatus:500 headers:nil body:nil]);
-        }
-        else {
-            if (httpResponse) {
-                int status = (int)httpResponse.statusCode;
-                [self.logger debug:@"ARTHttp response status is %d", status];
-                [self.logger verbose:@"ARTHttp received response %@",[NSJSONSerialization JSONObjectWithData:data options:0 error:nil]];
-
-                dispatch_async(_queue, ^{
-                    cb([ARTHttpResponse responseWithStatus:status headers:httpResponse.allHeaderFields body:data]);
-                });
-            } else {
-                dispatch_async(_queue, ^{
-                    cb([ARTHttpResponse response]);
-                });
-            }
-        }
-    }];
-    return nil;
-}
-
-+ (NSDictionary *)getErrorDictionary {
-    NSString * path =[[[[NSBundle bundleForClass: [self class]] resourcePath] stringByAppendingString:@"/"] stringByAppendingString:@"ably-common/protocol/errors.json"];
-    NSString * errorsString =[NSString stringWithContentsOfFile:path
-                                      encoding:NSUTF8StringEncoding
-                                         error:NULL];
-    NSData *data = [errorsString dataUsingEncoding:NSUTF8StringEncoding];
-    NSError * error;
-    NSDictionary * topLevel =[NSJSONSerialization JSONObjectWithData:data  options:NSJSONReadingMutableContainers error:&error];
-    return  topLevel;
 }
 
 @end

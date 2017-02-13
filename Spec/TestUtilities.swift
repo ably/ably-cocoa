@@ -578,7 +578,7 @@ class MockHTTP: ARTHttp {
 class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
 
     var http: ARTHttp? = ARTHttp()
-    var logger: ARTLog?
+    var logger: ARTLog!
     
     var requests: [NSMutableURLRequest] = []
     var responses: [NSHTTPURLResponse] = []

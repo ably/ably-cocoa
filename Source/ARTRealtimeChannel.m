@@ -26,9 +26,11 @@
 #import "ARTDefault.h"
 #import "ARTRest.h"
 #import "ARTClientOptions.h"
+#import "ARTPushChannel.h"
 
 @interface ARTRealtimeChannel () {
     ARTRealtimePresence *_realtimePresence;
+    ARTPushChannel *_pushChannel;
     CFRunLoopTimerRef _attachTimer;
     CFRunLoopTimerRef _detachTimer;
     __GENERIC(ARTEventEmitter, NSNull *, ARTErrorInfo *) *_attachedEventEmitter;
@@ -65,11 +67,18 @@
     return [[ARTRealtimeChannel alloc] initWithRealtime:realtime andName:name withOptions:options];
 }
 
-- (ARTRealtimePresence *)getPresence {
+- (ARTRealtimePresence *)presence {
     if (!_realtimePresence) {
         _realtimePresence = [[ARTRealtimePresence alloc] initWithChannel:self];
     }
     return _realtimePresence;
+}
+
+- (ARTPushChannel *)push {
+    if (!_pushChannel) {
+        _pushChannel = [[ARTPushChannel alloc] init:self.realtime.rest withChannel:self];
+    }
+    return _pushChannel;
 }
 
 - (void)internalPostMessages:(id)data callback:(void (^)(ARTErrorInfo *__art_nullable error))callback {

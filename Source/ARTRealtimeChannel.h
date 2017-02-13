@@ -18,12 +18,15 @@
 ART_ASSUME_NONNULL_BEGIN
 
 @class ARTRealtimePresence;
+@class ARTPushChannel;
 
 @interface ARTRealtimeChannel : ARTChannel
 
 @property (readwrite, assign, nonatomic) ARTRealtimeChannelState state;
 @property (readonly, strong, nonatomic, art_nullable) ARTErrorInfo *errorReason;
-@property (readonly, getter=getPresence) ARTRealtimePresence *presence;
+
+@property (readonly) ARTRealtimePresence *presence;
+@property (readonly) ARTPushChannel *push;
 
 - (void)attach;
 - (void)attach:(art_nullable void (^)(ARTErrorInfo *__art_nullable))callback;

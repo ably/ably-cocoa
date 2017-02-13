@@ -12,19 +12,13 @@
 @class ARTRest;
 @class ARTDeviceDetails;
 
+@protocol ARTHTTPAuthenticatedExecutor;
 @protocol ARTPushRecipient;
 
-@interface ARTJsonObject : NSDictionary
-@end
-
-@interface ARTDeviceId : NSString
-@end
-
-@interface ARTDeviceToken : NSData
-@end
-
-@interface ARTUpdateToken : NSString
-@end
+// More context
+typedef NSString ARTDeviceId;
+typedef NSData ARTDeviceToken;
+typedef NSString ARTUpdateToken;
 
 
 #pragma mark ARTPushNotifications interface
@@ -50,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) ARTDeviceDetails *device;
 
 - (instancetype)init NS_UNAVAILABLE;
-- (instancetype)init:(ARTRest *)rest;
+- (instancetype)init:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor;
 
 /// Publish a push notification.
 - (void)publish:(id<ARTPushRecipient>)recipient jsonObject:(ARTJsonObject *)jsonObject;

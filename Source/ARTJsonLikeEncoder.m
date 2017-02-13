@@ -520,7 +520,7 @@
     }
 
     ARTDeviceDetails *deviceDetails = [[ARTDeviceDetails alloc] initWithId:[input artString:@"id"]];
-    deviceDetails.updateToken = (ARTUpdateToken *)[input artString:@"updateToken"];
+    deviceDetails.updateToken = [input artString:@"updateToken"];
     deviceDetails.push.state = ARTDevicePushStateFromStr([input artString:@"state"]);
 
     return deviceDetails;

@@ -21,6 +21,8 @@
 @class __GENERIC(ARTPaginatedResult, ItemType);
 @class ARTStats;
 
+typedef NSDictionary<NSString *, id> ARTJsonObject;
+
 typedef NS_ENUM(NSUInteger, ARTAuthentication) {
     ARTAuthenticationOff,
     ARTAuthenticationOn,

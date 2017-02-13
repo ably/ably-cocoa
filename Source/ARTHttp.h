@@ -16,11 +16,18 @@ ART_ASSUME_NONNULL_BEGIN
 
 @protocol ARTHTTPExecutor
 
-@property (nonatomic, weak) ARTLog *logger;
+@property (nonatomic) ARTLog *logger;
 
 - (void)executeRequest:(NSMutableURLRequest *)request completion:(art_nullable void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback;
 
 @end
+
+@protocol ARTHTTPAuthenticatedExecutor <ARTHTTPExecutor>
+
+- (void)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback;
+
+@end
+
 
 @interface ARTHttpRequest : NSObject
 
@@ -54,13 +61,6 @@ ART_ASSUME_NONNULL_BEGIN
 @end
 
 @interface ARTHttp : NSObject<ARTHTTPExecutor>
-
-@property (nonatomic, weak) ARTLog *logger;
-
-- (instancetype)init;
-
-- (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method url:(NSURL *)url headers:(art_nullable NSDictionary *)headers body:(art_nullable NSData *)body callback:(void (^)(ARTHttpResponse *))cb;
-
 
 @end
 

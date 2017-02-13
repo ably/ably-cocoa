@@ -20,10 +20,12 @@
 #import "ARTAuth.h"
 #import "ARTTokenDetails.h"
 #import "ARTNSArray+ARTFunctional.h"
+#import "ARTPushChannel.h"
 
 @implementation ARTRestChannel {
 @private
-    ARTRestPresence *_restPresence;
+    ARTRestPresence *_presence;
+    ARTPushChannel *_pushChannel;
 @public
     NSString *_basePath;
 }
@@ -45,11 +47,18 @@
     return _basePath;
 }
 
-- (ARTRestPresence *)getPresence {
-    if (!_restPresence) {
-        _restPresence = [[ARTRestPresence alloc] initWithChannel:self];
+- (ARTRestPresence *)presence {
+    if (!_presence) {
+        _presence = [[ARTRestPresence alloc] initWithChannel:self];
     }
-    return _restPresence;
+    return _presence;
+}
+
+- (ARTPushChannel *)push {
+    if (!_pushChannel) {
+        _pushChannel = [[ARTPushChannel alloc] init:self.rest withChannel:self];
+    }
+    return _pushChannel;
 }
 
 - (void)history:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, ARTErrorInfo *))callback {

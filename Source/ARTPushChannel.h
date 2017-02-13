@@ -7,13 +7,25 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "ARTPush.h"
+
+@class ARTChannel;
+
+@protocol ARTHTTPAuthenticatedExecutor;
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPushChannel : NSObject
 
-- (void)subscribeForDevice:(NSString *)device;
+- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)init:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor withChannel:(ARTChannel *)channel;
+
+- (void)subscribeForDevice:(ARTDeviceId *)deviceId;
 - (void)subscribeForClientId:(NSString *)clientId;
 
-- (void)unsubscribeForDevice:(NSString *)device;
+- (void)unsubscribeForDevice:(ARTDeviceId *)deviceId;
 - (void)unsubscribeForClientId:(NSString *)clientId;
 
 @end
+
+NS_ASSUME_NONNULL_END

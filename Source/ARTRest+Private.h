@@ -15,7 +15,7 @@
 ART_ASSUME_NONNULL_BEGIN
 
 /// ARTRest private methods that are used internally and for whitebox testing
-@interface ARTRest ()
+@interface ARTRest () <ARTHTTPAuthenticatedExecutor>
 
 @property (nonatomic, strong, readonly) ARTClientOptions *options;
 @property (readonly, strong, nonatomic) __GENERIC(id, ARTEncoder) defaultEncoder;
@@ -27,20 +27,11 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly, getter=getBaseUrl) NSURL *baseUrl;
 
-@property (nonatomic, strong, readonly) ARTLog *logger;
-
-// MARK: Not accessible by tests
 @property (readonly, strong, nonatomic) ARTHttp *http;
 @property (strong, nonatomic) ARTAuth *auth;
 @property (readwrite, assign, nonatomic) int fallbackCount;
 
-// MARK: ARTHTTPExecutor
-
-- (void)executeRequest:(NSMutableURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback;
-
 // MARK: Internal
-
-- (void)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback;
 
 - (void)prepareAuthorisationHeader:(ARTAuthMethod)method completion:(void (^)(NSString *__art_nonnull authorization, NSError *__art_nullable error))callback;
 

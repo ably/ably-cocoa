@@ -28,16 +28,16 @@ typedef NS_ENUM(NSUInteger, ARTPushState) {
 @end
 
 @implementation ARTPush {
-    __weak ARTRest *_rest;
+    id<ARTHTTPAuthenticatedExecutor> _httpExecutor;
     __weak ARTLog *_logger;
     id<ARTEncoder> _jsonEncoder;
     ARTEventEmitter<NSNull *, ARTDeviceToken *> *_deviceTokenEmitter;
 }
 
-- (instancetype)init:(ARTRest *)rest {
+- (instancetype)init:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor {
     if (self = [super init]) {
-        _rest = rest;
-        _logger = rest.logger;
+        _httpExecutor = httpExecutor;
+        _logger = [httpExecutor logger];
         _device = [ARTDeviceDetails fromLocalDevice];
         _state = ARTPushStateDeactivated;
         _deviceTokenEmitter = [[ARTEventEmitter alloc] init];
@@ -50,7 +50,7 @@ typedef NS_ENUM(NSUInteger, ARTPushState) {
     [_logger info:@"ARTPush: device token received and stored"];
     [[NSUserDefaults standardUserDefaults] setObject:deviceToken forKey:ARTDeviceTokenKey];
     [[NSUserDefaults standardUserDefaults] synchronize];
-    [_deviceTokenEmitter emit:[NSNull null] with:(ARTDeviceToken *)deviceToken];
+    [_deviceTokenEmitter emit:[NSNull null] with:deviceToken];
 }
 
 - (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
@@ -63,16 +63,16 @@ typedef NS_ENUM(NSUInteger, ARTPushState) {
     request.HTTPBody = [_jsonEncoder encodePushRecipient:recipient withJsonObject:jsonObject];
     [request setValue:[_jsonEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
 
-    [_logger debug:__FILE__ line:__LINE__ message:@"ARTPush: push notification to a single device %@", request];
-    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [_logger debug:__FILE__ line:__LINE__ message:@"push notification to a single device %@", request];
+    [_httpExecutor executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*OK*/) {
             return;
         }
         if (error) {
-            [_logger error:@"ARTPush: push notification to a single device failed (%@)", error.localizedDescription];
+            [_logger error:@"%@: push notification to a single device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
         }
         else {
-            [_logger error:@"ARTPush: push notification to a single device failed with unknown error"];
+            [_logger error:@"%@: push notification to a single device failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
         }
     }];
 }
@@ -126,17 +126,17 @@ typedef NS_ENUM(NSUInteger, ARTPushState) {
     request.HTTPBody = [_jsonEncoder encodeDeviceDetails:deviceDetails];
     [request setValue:[_jsonEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
 
-    [_logger debug:__FILE__ line:__LINE__ message:@"ARTPush: device registration with request %@", request];
-    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [_logger debug:__FILE__ line:__LINE__ message:@"device registration with request %@", request];
+    [_httpExecutor executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 201 /*Created*/) {
             ARTDeviceDetails *deviceDetails = [_jsonEncoder decodeDeviceDetails:data];
             self.device.updateToken = deviceDetails.updateToken;
         }
         else if (error) {
-            [_logger error:@"ARTPush: device registration failed (%@)", error.localizedDescription];
+            [_logger error:@"%@: device registration failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
         }
         else {
-            [_logger error:@"ARTPush: device registration failed with unknown error"];
+            [_logger error:@"%@: device registration failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
         }
     }];
 }

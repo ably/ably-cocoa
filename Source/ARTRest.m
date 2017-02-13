@@ -36,7 +36,11 @@
 #import "ARTGCD.h"
 #import "ARTPush.h"
 
-@implementation ARTRest
+@implementation ARTRest {
+    ARTLog *_logger;
+}
+
+@synthesize logger = _logger;
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options {
     self = [super init];
