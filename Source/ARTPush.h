@@ -13,12 +13,12 @@
 @class ARTDeviceDetails;
 
 @protocol ARTHTTPAuthenticatedExecutor;
-@protocol ARTPushRecipient;
 
 // More context
 typedef NSString ARTDeviceId;
 typedef NSData ARTDeviceToken;
 typedef NSString ARTUpdateToken;
+typedef ARTJsonObject ARTPushRecipient;
 
 
 #pragma mark ARTPushNotifications interface
@@ -47,7 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor;
 
 /// Publish a push notification.
-- (void)publish:(id<ARTPushRecipient>)recipient jsonObject:(ARTJsonObject *)jsonObject;
+- (void)publish:(ARTPushRecipient *)recipient jsonObject:(ARTJsonObject *)jsonObject;
 
 #ifdef TARGET_OS_IPHONE
 /// Register a device, including the information necessary to deliver push notifications to it.

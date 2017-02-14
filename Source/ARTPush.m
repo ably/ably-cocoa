@@ -55,10 +55,13 @@ typedef NS_ENUM(NSUInteger, ARTPushState) {
     [_logger error:@"ARTPush: device token not received (%@)", [error localizedDescription]];
 }
 
-- (void)publish:(id<ARTPushRecipient>)recipient jsonObject:(ARTJsonObject *)jsonObject {
+- (void)publish:(ARTPushRecipient *)recipient jsonObject:(ARTJsonObject *)jsonObject {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/publish"]];
     request.HTTPMethod = @"POST";
-    request.HTTPBody = [[_httpExecutor defaultEncoder] encodePushRecipient:recipient withJsonObject:jsonObject];
+    request.HTTPBody = [[_httpExecutor defaultEncoder] encode:@{
+        @"recipient": recipient,
+        @"push": jsonObject,
+    }];
     [request setValue:[[_httpExecutor defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"push notification to a single device %@", request];

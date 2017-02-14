@@ -24,7 +24,6 @@
 #import "ARTTokenDetails.h"
 #import "ARTTokenRequest.h"
 #import "ARTPush.h"
-#import "ARTPushRecipient.h"
 #import "ARTDeviceDetails.h"
 #import "ARTDevicePushDetails.h"
 #import "ARTConnectionDetails.h"
@@ -149,14 +148,6 @@
 
 - (NSData *)encodeDevicePushDetails:(ARTDevicePushDetails *)devicePushDetails {
     return [self encode:[self devicePushDetailsToDictionary:devicePushDetails]];
-}
-
-- (NSData *)encodePushRecipient:(id<ARTPushRecipient>)pushRecipient withJsonObject:(ARTJsonObject *)jsonObject {
-    NSDictionary *object = @{
-        @"recipient": pushRecipient.recipient,
-        @"push": jsonObject,
-    };
-    return [self encode:object];
 }
 
 - (NSDate *)decodeTime:(NSData *)data {
