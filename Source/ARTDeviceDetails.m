@@ -10,19 +10,7 @@
 #import "ARTDevicePushDetails.h"
 
 NSString *const ARTDevicePlatform = @"ios";
-
-NSString *ARTDeviceFormFactorToStr(ARTDeviceFormFactor formFactor) {
-    switch (formFactor) {
-        case ARTDeviceFormFactorMobile:
-            return @"mobile"; //0
-        case ARTDeviceFormFactorTablet:
-            return @"tablet"; //1
-        case ARTDeviceFormFactorDesktop:
-            return @"desktop"; //2
-        case ARTDeviceFormFactorEmbedded:
-            return @"embedded"; //3
-    }
-}
+NSString *const ARTDeviceFormFactor = @"mobile";
 
 @implementation ARTDeviceDetails
 
@@ -37,7 +25,6 @@ NSString *ARTDeviceFormFactorToStr(ARTDeviceFormFactor formFactor) {
 - (instancetype)initWithId:(NSString *)id {
     if (self = [super init]) {
         _id = id;
-        _formFactor = ARTDeviceFormFactorMobile;
         _push = [[ARTDevicePushDetails alloc] init];
     }
     return self;
@@ -45,6 +32,10 @@ NSString *ARTDeviceFormFactorToStr(ARTDeviceFormFactor formFactor) {
 
 - (NSString *)platform {
     return ARTDevicePlatform;
+}
+
+- (NSString *)formFactor {
+    return ARTDeviceFormFactor;
 }
 
 @end

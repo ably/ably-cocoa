@@ -14,22 +14,14 @@
 NS_ASSUME_NONNULL_BEGIN
 
 extern NSString *const ARTDevicePlatform;
-
-typedef NS_ENUM(NSUInteger, ARTDeviceFormFactor) {
-    ARTDeviceFormFactorMobile,
-    ARTDeviceFormFactorTablet,
-    ARTDeviceFormFactorDesktop,
-    ARTDeviceFormFactorEmbedded
-};
-
-NSString *ARTDeviceFormFactorToStr(ARTDeviceFormFactor formFactor);
+extern NSString *const ARTDeviceFormFactor;
 
 @interface ARTDeviceDetails : NSObject
 
 @property (nonatomic, readonly) NSString *id;
 @property (nullable, nonatomic) NSString *clientId;
 @property (nonatomic, readonly) NSString *platform;
-@property (nonatomic, readonly) ARTDeviceFormFactor formFactor;
+@property (nonatomic, readonly) NSString *formFactor;
 @property (nullable, nonatomic) NSDictionary<NSString *, NSString *> *metadata;
 @property (nonatomic, readonly) ARTDevicePushDetails *push;
 @property (nullable, nonatomic) ARTUpdateToken *updateToken;

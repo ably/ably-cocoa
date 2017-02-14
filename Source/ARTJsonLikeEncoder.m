@@ -501,7 +501,7 @@
 
     dictionary[@"id"] = deviceDetails.id;
     dictionary[@"platform"] = deviceDetails.platform;
-    dictionary[@"formFactor"] = ARTDeviceFormFactorToStr(deviceDetails.formFactor);
+    dictionary[@"formFactor"] = deviceDetails.formFactor;
 
     if (deviceDetails.clientId) {
         dictionary[@"cliendId"] = deviceDetails.clientId;
