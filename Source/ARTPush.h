@@ -52,8 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 #ifdef TARGET_OS_IPHONE
 /// Register a device, including the information necessary to deliver push notifications to it.
 - (void)activate;
-- (void)activate:(ARTDeviceDetails *)deviceDetails;
-- (void)activate:(ARTDeviceDetails *)deviceDetails registerCallback:(nullable ARTUpdateToken* (^)(ARTDeviceDetails * _Nullable, ARTErrorInfo * _Nullable))registerCallback;
+- (void)activateWithRegisterCallback:(void (^)(ARTDeviceDetails * _Nullable, ARTErrorInfo * _Nullable,  void (^ _Nullable)(ARTUpdateToken * _Nullable, ARTErrorInfo * _Nullable)))registerCallback;
 /// Unregister a device.
 - (void)deactivate:(ARTDeviceId *)deviceId;
 - (void)deactivate:(ARTDeviceId *)deviceId deregisterCallback:(nullable void (^)(ARTDeviceId * _Nullable, ARTErrorInfo * _Nullable))deregisterCallback;

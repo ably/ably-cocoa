@@ -81,11 +81,11 @@ typedef NS_ENUM(NSUInteger, ARTPushState) {
     [self activate:self.device registerCallback:nil];
 }
 
-- (void)activate:(ARTDeviceDetails *)deviceDetails {
-    [self activate:deviceDetails registerCallback:nil];
+- (void)activateWithRegisterCallback:(void (^)(ARTDeviceDetails *, ARTErrorInfo *, void (^)(ARTUpdateToken *, ARTErrorInfo *)))registerCallback {
+    [self activate:self.device registerCallback:registerCallback];
 }
 
-- (void)activate:(ARTDeviceDetails *)deviceDetails registerCallback:(ARTUpdateToken* (^)(ARTDeviceDetails * _Nullable, ARTErrorInfo * _Nullable))registerCallback {
+- (void)activate:(ARTDeviceDetails *)deviceDetails registerCallback:(void (^)(ARTDeviceDetails *, ARTErrorInfo *, void (^)(ARTUpdateToken *, ARTErrorInfo *)))registerCallback {
     if (self.state == ARTPushStateActivated) {
         return;
     }
@@ -100,7 +100,14 @@ typedef NS_ENUM(NSUInteger, ARTPushState) {
     }
 
     if (registerCallback) {
-        self.device.updateToken = registerCallback(deviceDetails, nil);
+        registerCallback(deviceDetails, nil, ^(ARTUpdateToken *updateToken, ARTErrorInfo *error) {
+            if (updateToken) {
+                self.device.updateToken = updateToken;
+            }
+            if (error) {
+                [_logger error:@"%@: device registration using a `registerCallback` failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            }
+        });
         return;
     }
 
