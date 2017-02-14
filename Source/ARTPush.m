@@ -30,7 +30,6 @@ typedef NS_ENUM(NSUInteger, ARTPushState) {
 @implementation ARTPush {
     id<ARTHTTPAuthenticatedExecutor> _httpExecutor;
     __weak ARTLog *_logger;
-    id<ARTEncoder> _jsonEncoder;
     ARTEventEmitter<NSNull *, ARTDeviceToken *> *_deviceTokenEmitter;
 }
 
@@ -41,7 +40,6 @@ typedef NS_ENUM(NSUInteger, ARTPushState) {
         _device = [ARTDeviceDetails fromLocalDevice];
         _state = ARTPushStateDeactivated;
         _deviceTokenEmitter = [[ARTEventEmitter alloc] init];
-        _jsonEncoder = [[ARTJsonLikeEncoder alloc] init];
     }
     return self;
 }
@@ -60,8 +58,8 @@ typedef NS_ENUM(NSUInteger, ARTPushState) {
 - (void)publish:(id<ARTPushRecipient>)recipient jsonObject:(ARTJsonObject *)jsonObject {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/publish"]];
     request.HTTPMethod = @"POST";
-    request.HTTPBody = [_jsonEncoder encodePushRecipient:recipient withJsonObject:jsonObject];
-    [request setValue:[_jsonEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
+    request.HTTPBody = [[_httpExecutor defaultEncoder] encodePushRecipient:recipient withJsonObject:jsonObject];
+    [request setValue:[[_httpExecutor defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"push notification to a single device %@", request];
     [_httpExecutor executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -130,13 +128,13 @@ typedef NS_ENUM(NSUInteger, ARTPushState) {
 - (void)newDevice:(ARTDeviceDetails *)deviceDetails {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"]];
     request.HTTPMethod = @"POST";
-    request.HTTPBody = [_jsonEncoder encodeDeviceDetails:deviceDetails];
-    [request setValue:[_jsonEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
+    request.HTTPBody = [[_httpExecutor defaultEncoder] encodeDeviceDetails:deviceDetails];
+    [request setValue:[[_httpExecutor defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"device registration with request %@", request];
     [_httpExecutor executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 201 /*Created*/) {
-            ARTDeviceDetails *deviceDetails = [_jsonEncoder decodeDeviceDetails:data];
+            ARTDeviceDetails *deviceDetails = [[_httpExecutor defaultEncoder] decodeDeviceDetails:data];
             self.device.updateToken = deviceDetails.updateToken;
         }
         else if (error) {

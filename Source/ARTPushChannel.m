@@ -16,7 +16,6 @@
     id<ARTHTTPAuthenticatedExecutor> _httpExecutor;
     __weak ARTLog *_logger;
     __weak ARTChannel *_channel;
-    id<ARTEncoder> _jsonEncoder;
 }
 
 - (instancetype)init:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor withChannel:(ARTChannel *)channel {
@@ -24,7 +23,6 @@
         _httpExecutor = httpExecutor;
         _logger = [httpExecutor logger];
         _channel = channel;
-        _jsonEncoder = [[ARTJsonLikeEncoder alloc] init];
     }
     return self;
 }
@@ -32,11 +30,11 @@
 - (void)subscribeForDevice:(ARTDeviceId *)deviceId {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"]];
     request.HTTPMethod = @"POST";
-    request.HTTPBody = [_jsonEncoder encode:@{
+    request.HTTPBody = [[_httpExecutor defaultEncoder] encode:@{
         @"deviceId": deviceId,
         @"channel": _channel.name,
     }];
-    [request setValue:[_jsonEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
+    [request setValue:[[_httpExecutor defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"subscribe notifications for device %@ in channel %@", deviceId, _channel.name];
     [_httpExecutor executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -55,11 +53,11 @@
 - (void)subscribeForClientId:(NSString *)clientId {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"]];
     request.HTTPMethod = @"POST";
-    request.HTTPBody = [_jsonEncoder encode:@{
+    request.HTTPBody = [[_httpExecutor defaultEncoder] encode:@{
         @"clientId": clientId,
         @"channel": _channel.name,
     }];
-    [request setValue:[_jsonEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
+    [request setValue:[[_httpExecutor defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"subscribe notifications for clientId %@ in channel %@", clientId, _channel.name];
     [_httpExecutor executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -78,11 +76,11 @@
 - (void)unsubscribeForDevice:(NSString *)deviceId {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"]];
     request.HTTPMethod = @"DELETE";
-    request.HTTPBody = [_jsonEncoder encode:@{
+    request.HTTPBody = [[_httpExecutor defaultEncoder] encode:@{
         @"deviceId": deviceId,
         @"channel": _channel.name,
     }];
-    [request setValue:[_jsonEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
+    [request setValue:[[_httpExecutor defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"unsubscribe notifications for device %@ in channel %@", deviceId, _channel.name];
     [_httpExecutor executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -101,11 +99,11 @@
 - (void)unsubscribeForClientId:(NSString *)clientId {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"]];
     request.HTTPMethod = @"DELETE";
-    request.HTTPBody = [_jsonEncoder encode:@{
+    request.HTTPBody = [[_httpExecutor defaultEncoder] encode:@{
         @"clientId": clientId,
         @"channel": _channel.name,
     }];
-    [request setValue:[_jsonEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
+    [request setValue:[[_httpExecutor defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"unsubscribe notifications for clientId %@ in channel %@", clientId, _channel.name];
     [_httpExecutor executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {

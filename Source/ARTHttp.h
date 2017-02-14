@@ -12,6 +12,8 @@
 
 @class ARTErrorInfo;
 
+@protocol ARTEncoder;
+
 ART_ASSUME_NONNULL_BEGIN
 
 @protocol ARTHTTPExecutor
@@ -23,6 +25,8 @@ ART_ASSUME_NONNULL_BEGIN
 @end
 
 @protocol ARTHTTPAuthenticatedExecutor <ARTHTTPExecutor>
+
+- (id<ARTEncoder>)defaultEncoder;
 
 - (void)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback;
 
