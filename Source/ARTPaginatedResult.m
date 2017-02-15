@@ -13,7 +13,7 @@
 #import "ARTRest+Private.h"
 
 @implementation ARTPaginatedResult {
-    __weak ARTRest *_rest;
+    id<ARTHTTPAuthenticatedExecutor> _httpExecutor;
     NSMutableURLRequest *_relFirst;
     NSMutableURLRequest *_relCurrent;
     NSMutableURLRequest *_relNext;
@@ -21,7 +21,7 @@
 }
 
 - (instancetype)initWithItems:(NSArray *)items
-                     rest:(ARTRest *)rest
+                     httpExecutor:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor
                      relFirst:(NSMutableURLRequest *)relFirst
                    relCurrent:(NSMutableURLRequest *)relCurrent
                       relNext:(NSMutableURLRequest *)relNext
@@ -37,7 +37,7 @@
         _hasNext = !!relNext;
         _isLast = !_hasNext;
         
-        _rest = rest;
+        _httpExecutor = httpExecutor;
         _responseProcessor = responseProcessor;
     }
     
@@ -45,7 +45,7 @@
 }
 
 - (void)first:(void (^)(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback {
-    [self.class executePaginated:_rest withRequest:_relFirst andResponseProcessor:_responseProcessor callback:callback];
+    [self.class executePaginated:_httpExecutor withRequest:_relFirst andResponseProcessor:_responseProcessor callback:callback];
 }
 
 - (void)next:(void (^)(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback {
@@ -56,7 +56,7 @@
         callback(nil, nil);
         return;
     }
-    [self.class executePaginated:_rest withRequest:_relNext andResponseProcessor:_responseProcessor callback:callback];
+    [self.class executePaginated:_httpExecutor withRequest:_relNext andResponseProcessor:_responseProcessor callback:callback];
 }
 
 static NSDictionary *extractLinks(NSHTTPURLResponse *response) {
@@ -99,15 +99,15 @@ static NSMutableURLRequest *requestRelativeTo(NSMutableURLRequest *request, NSSt
     return [NSMutableURLRequest requestWithURL:url];
 }
 
-+ (void)executePaginated:(ARTRest *)rest withRequest:(NSMutableURLRequest *)request andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor callback:(void (^)(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback {
-    [rest.logger debug:__FILE__ line:__LINE__ message:@"Paginated request: %@", request];
++ (void)executePaginated:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor withRequest:(NSMutableURLRequest *)request andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor callback:(void (^)(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback {
+    [[httpExecutor logger] debug:__FILE__ line:__LINE__ message:@"Paginated request: %@", request];
 
-    [rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [httpExecutor executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             callback(nil, [ARTErrorInfo createWithNSError:error]);
         } else {
-            [rest.logger debug:__FILE__ line:__LINE__ message:@"Paginated response: %@", response];
-            [rest.logger debug:__FILE__ line:__LINE__ message:@"Paginated response data: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
+            [[httpExecutor logger] debug:__FILE__ line:__LINE__ message:@"Paginated response: %@", response];
+            [[httpExecutor logger] debug:__FILE__ line:__LINE__ message:@"Paginated response data: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
 
             NSArray *items = responseProcessor(response, data);
 
@@ -118,7 +118,7 @@ static NSMutableURLRequest *requestRelativeTo(NSMutableURLRequest *request, NSSt
             NSMutableURLRequest *nextRel = requestRelativeTo(request, links[@"next"]);;
 
             ARTPaginatedResult *result = [[ARTPaginatedResult alloc] initWithItems:items
-                                                                          rest:rest
+                                                                      httpExecutor:httpExecutor
                                                                           relFirst:firstRel
                                                                         relCurrent:currentRel
                                                                            relNext:nextRel

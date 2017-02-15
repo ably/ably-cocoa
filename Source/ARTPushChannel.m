@@ -11,6 +11,11 @@
 #import "ARTLog.h"
 #import "ARTChannel.h"
 #import "ARTJsonLikeEncoder.h"
+#import "ARTClientOptions.h"
+#import "ARTPaginatedResult+Private.h"
+#import "ARTPushChannelSubscription.h"
+
+const NSUInteger ARTDefaultLimit = 100;
 
 @implementation ARTPushChannel {
     id<ARTHTTPAuthenticatedExecutor> _httpExecutor;
@@ -27,7 +32,15 @@
     return self;
 }
 
-- (void)subscribeForDevice:(ARTDeviceId *)deviceId {
+- (NSString *)clientId {
+    return [self clientId];
+}
+
+- (void)subscribe {
+    [self subscribeClient:[self clientId]];
+}
+
+- (void)subscribeDevice:(ARTDeviceId *)deviceId {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"]];
     request.HTTPMethod = @"POST";
     request.HTTPBody = [[_httpExecutor defaultEncoder] encode:@{
@@ -50,7 +63,7 @@
     }];
 }
 
-- (void)subscribeForClientId:(NSString *)clientId {
+- (void)subscribeClient:(NSString *)clientId {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"]];
     request.HTTPMethod = @"POST";
     request.HTTPBody = [[_httpExecutor defaultEncoder] encode:@{
@@ -73,7 +86,11 @@
     }];
 }
 
-- (void)unsubscribeForDevice:(NSString *)deviceId {
+- (void)unsubscribe {
+    [self unsubscribeClient:[self clientId]];
+}
+
+- (void)unsubscribeDevice:(NSString *)deviceId {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
     components.queryItems = @[
         [NSURLQueryItem queryItemWithName:@"deviceId" value:deviceId],
@@ -97,7 +114,7 @@
     }];
 }
 
-- (void)unsubscribeForClientId:(NSString *)clientId {
+- (void)unsubscribeClient:(NSString *)clientId {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
     components.queryItems = @[
         [NSURLQueryItem queryItemWithName:@"clientId" value:clientId],
@@ -119,6 +136,38 @@
             [_logger error:@"%@: unsubscribe notifications for clientId %@ in channel %@ failed with status code %ld", NSStringFromClass(self.class), clientId, _channel.name, (long)response.statusCode];
         }
     }];
+}
+
+- (void)subscriptions:(void(^)(ARTPaginatedResult<ARTPushChannelSubscription *> *result, ARTErrorInfo *error))callback {
+    [self subscriptionsClient:[self clientId] limit:ARTDefaultLimit callback:callback error:nil];
+}
+
+- (BOOL)subscriptionsClient:(NSString *)clientId limit:(NSUInteger)limit callback:(void(^)(ARTPaginatedResult<ARTPushChannelSubscription *> *result, ARTErrorInfo *error))callback error:(NSError **)errorPtr {
+    if (limit > 1000) {
+        if (errorPtr) {
+            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                            code:ARTDataQueryErrorLimit
+                                        userInfo:@{NSLocalizedDescriptionKey:@"Limit supports up to 1000 results only"}];
+        }
+        return NO;
+    }
+
+    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
+    components.queryItems = @[
+        [NSURLQueryItem queryItemWithName:@"clientId" value:clientId],
+        [NSURLQueryItem queryItemWithName:@"limit" value:[[NSNumber numberWithUnsignedInteger:limit] stringValue]],
+    ];
+
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
+    request.HTTPMethod = @"GET";
+
+    ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data) {
+        ARTErrorInfo *error;
+        return [[_httpExecutor defaultEncoder] decodePushChannelSubscriptions:data error:&error];
+    };
+
+    [ARTPaginatedResult executePaginated:_httpExecutor withRequest:request andResponseProcessor:responseProcessor callback:callback];
+    return YES;
 }
 
 @end

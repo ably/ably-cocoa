@@ -11,6 +11,7 @@
 #import "ARTLog.h"
 
 @class ARTErrorInfo;
+@class ARTClientOptions;
 
 @protocol ARTEncoder;
 
@@ -25,6 +26,8 @@ ART_ASSUME_NONNULL_BEGIN
 @end
 
 @protocol ARTHTTPAuthenticatedExecutor <ARTHTTPExecutor>
+
+- (ARTClientOptions *)options;
 
 - (id<ARTEncoder>)defaultEncoder;
 

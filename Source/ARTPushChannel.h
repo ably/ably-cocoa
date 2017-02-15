@@ -10,6 +10,8 @@
 #import "ARTPush.h"
 
 @class ARTChannel;
+@class ARTPushChannelSubscription;
+@class ARTPaginatedResult;
 
 @protocol ARTHTTPAuthenticatedExecutor;
 
@@ -20,11 +22,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)init:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor withChannel:(ARTChannel *)channel;
 
-- (void)subscribeForDevice:(ARTDeviceId *)deviceId;
-- (void)subscribeForClientId:(NSString *)clientId;
+- (void)subscribe;
+- (void)subscribeDevice:(ARTDeviceId *)deviceId;
+- (void)subscribeClient:(NSString *)clientId;
 
-- (void)unsubscribeForDevice:(ARTDeviceId *)deviceId;
-- (void)unsubscribeForClientId:(NSString *)clientId;
+- (void)unsubscribe;
+- (void)unsubscribeDevice:(ARTDeviceId *)deviceId;
+- (void)unsubscribeClient:(NSString *)clientId;
+
+- (void)subscriptions:(void(^)(ARTPaginatedResult<ARTPushChannelSubscription *> *_Nullable, ARTErrorInfo *_Nullable))callback;
 
 @end
 

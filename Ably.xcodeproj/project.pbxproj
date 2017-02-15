@@ -132,6 +132,8 @@
 		D768C6AD1E4B5B0200436011 /* ARTDevicePushDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = D768C6AB1E4B5B0200436011 /* ARTDevicePushDetails.m */; };
 		D77394031C6F6FFE00F5478F /* ARTProtocolMessage+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D77394021C6F6FFE00F5478F /* ARTProtocolMessage+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D780846E1C68B3E50083009D /* NSObject+TestSuite.m in Sources */ = {isa = PBXBuildFile; fileRef = D780846D1C68B3E50083009D /* NSObject+TestSuite.m */; };
+		D785C4291E549E33008FEC05 /* ARTPushChannelSubscription.h in Headers */ = {isa = PBXBuildFile; fileRef = D785C4271E549E33008FEC05 /* ARTPushChannelSubscription.h */; };
+		D785C42A1E549E33008FEC05 /* ARTPushChannelSubscription.m in Sources */ = {isa = PBXBuildFile; fileRef = D785C4281E549E33008FEC05 /* ARTPushChannelSubscription.m */; };
 		D79FF2751D901CD50067FA6A /* ARTRealtime+TestSuite.m in Sources */ = {isa = PBXBuildFile; fileRef = D79FF2741D901CD50067FA6A /* ARTRealtime+TestSuite.m */; };
 		D7B17EE31C07208B00A6958E /* ARTConnectionDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B17EE11C07208B00A6958E /* ARTConnectionDetails.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7B17EE41C07208B00A6958E /* ARTConnectionDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = D7B17EE21C07208B00A6958E /* ARTConnectionDetails.m */; };
@@ -376,6 +378,8 @@
 		D77394021C6F6FFE00F5478F /* ARTProtocolMessage+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTProtocolMessage+Private.h"; sourceTree = "<group>"; };
 		D780846C1C68B3E50083009D /* NSObject+TestSuite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+TestSuite.h"; sourceTree = "<group>"; };
 		D780846D1C68B3E50083009D /* NSObject+TestSuite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+TestSuite.m"; sourceTree = "<group>"; };
+		D785C4271E549E33008FEC05 /* ARTPushChannelSubscription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPushChannelSubscription.h; sourceTree = "<group>"; };
+		D785C4281E549E33008FEC05 /* ARTPushChannelSubscription.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPushChannelSubscription.m; sourceTree = "<group>"; };
 		D79FF2731D901CD50067FA6A /* ARTRealtime+TestSuite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTRealtime+TestSuite.h"; sourceTree = "<group>"; };
 		D79FF2741D901CD50067FA6A /* ARTRealtime+TestSuite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ARTRealtime+TestSuite.m"; sourceTree = "<group>"; };
 		D7B17EE11C07208B00A6958E /* ARTConnectionDetails.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTConnectionDetails.h; sourceTree = "<group>"; };
@@ -792,6 +796,8 @@
 				D7B6218F1E4A6E0200684474 /* ARTPush.m */,
 				D7B621961E4A762A00684474 /* ARTPushChannel.h */,
 				D7B621971E4A762A00684474 /* ARTPushChannel.m */,
+				D785C4271E549E33008FEC05 /* ARTPushChannelSubscription.h */,
+				D785C4281E549E33008FEC05 /* ARTPushChannelSubscription.m */,
 				D7B621921E4A6FE600684474 /* ARTDeviceDetails.h */,
 				D7B621931E4A6FE600684474 /* ARTDeviceDetails.m */,
 				D768C6AA1E4B5B0200436011 /* ARTDevicePushDetails.h */,
@@ -882,6 +888,7 @@
 				D746AE2F1BBBE7D7003ECEF8 /* ARTPaginatedResult+Private.h in Headers */,
 				D746AE431BBC5CD0003ECEF8 /* ARTRealtimeChannel+Private.h in Headers */,
 				D746AE251BBB611C003ECEF8 /* ARTChannel+Private.h in Headers */,
+				D785C4291E549E33008FEC05 /* ARTPushChannelSubscription.h in Headers */,
 				D7F1D3731BF4DE07001A4B5E /* ARTRestPresence.h in Headers */,
 				D7B17EE31C07208B00A6958E /* ARTConnectionDetails.h in Headers */,
 				EBFA366E1D58B05000B09AA7 /* ARTRestPresence+Private.h in Headers */,
@@ -1212,6 +1219,7 @@
 				960D07941A45F1D800ED8C8C /* ARTCrypto.m in Sources */,
 				D7D8F8221BC2BE16009718F2 /* ARTAuthOptions.m in Sources */,
 				1C55427D1B148306003068DB /* ARTStatus.m in Sources */,
+				D785C42A1E549E33008FEC05 /* ARTPushChannelSubscription.m in Sources */,
 				D7B17EE41C07208B00A6958E /* ARTConnectionDetails.m in Sources */,
 				96BF61591A35B52C004CF2B3 /* ARTHttp.m in Sources */,
 				1C578E201B3435CA00EF46EC /* ARTFallback.m in Sources */,

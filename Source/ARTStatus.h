@@ -38,7 +38,8 @@ typedef NS_ENUM(NSUInteger, ARTState) {
  */
 typedef CF_ENUM(NSUInteger, ARTCodeError) {
     // FIXME: check hard coded errors
-    ARTCodeErrorAPIKeyMissing = 80001
+    ARTCodeErrorAPIKeyMissing = 80001,
+    ARTCodeErrorAPIInconsistency = 80002
 };
 
 ART_ASSUME_NONNULL_BEGIN

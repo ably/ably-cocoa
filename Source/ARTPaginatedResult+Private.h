@@ -10,13 +10,15 @@
 
 @class ARTRest;
 
+@protocol ARTHTTPAuthenticatedExecutor;
+
 ART_ASSUME_NONNULL_BEGIN
 
 @interface __GENERIC(ARTPaginatedResult, ItemType) ()
 
 typedef __GENERIC(NSArray, ItemType) *__art_nullable(^ARTPaginatedResultResponseProcessor)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable);
 
-+ (void)executePaginated:(ARTRest *)rest withRequest:(NSMutableURLRequest *)request
++ (void)executePaginated:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor withRequest:(NSMutableURLRequest *)request
               andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
                        callback:(void (^)(__GENERIC(ARTPaginatedResult, ItemType) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback;
 

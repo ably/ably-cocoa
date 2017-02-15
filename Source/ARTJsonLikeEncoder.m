@@ -29,6 +29,7 @@
 #import "ARTConnectionDetails.h"
 #import "ARTRest+Private.h"
 #import "ARTJsonEncoder.h"
+#import "ARTPushChannelSubscription.h"
 
 @interface ARTJsonLikeEncoder ()
 
@@ -148,6 +149,55 @@
 
 - (NSData *)encodeDevicePushDetails:(ARTDevicePushDetails *)devicePushDetails {
     return [self encode:[self devicePushDetailsToDictionary:devicePushDetails]];
+}
+
+- (NSArray<ARTPushChannelSubscription *> *)decodePushChannelSubscriptions:(NSData *)data error:(NSError * __autoreleasing *)error {
+    return [self pushChannelSubscriptionsFromArray:[self decodeArray:data] error:error];
+}
+
+- (NSArray<ARTPushChannelSubscription *> *)pushChannelSubscriptionsFromArray:(NSArray *)input error:(NSError * __autoreleasing *)error {
+    NSMutableArray<ARTPushChannelSubscription *> *output = [NSMutableArray array];
+    for (NSDictionary *item in input) {
+        ARTPushChannelSubscription *subscription = [self pushChannelSubscriptionFromDictionary:item error:error];
+        if (!subscription) {
+            return nil;
+        }
+        [output addObject:subscription];
+    }
+    return output;
+}
+
+- (ARTPushChannelSubscription *)pushChannelSubscriptionFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: pushChannelSubscriptionFromDictionary %@", _rest, [_delegate formatAsString], input];
+
+    if (![input isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
+
+    NSString *clientId = [input artString:@"clientId"];
+    NSString *deviceId = [input artString:@"deviceId"];
+
+    if ((clientId && deviceId) || (!clientId && !deviceId)) {
+        [_logger error:@"ARTJsonLikeEncoder<%@>: clientId and deviceId are both present or both nil", [_delegate formatAsString]];
+        if (error) {
+            *error = [NSError errorWithDomain:ARTAblyErrorDomain
+                                         code:ARTCodeErrorAPIInconsistency
+                                     userInfo:@{ NSLocalizedDescriptionKey: @"clientId and deviceId are both present or both nil"}];
+        }
+        return nil;
+    }
+
+    NSString *channelName = [input artString:@"channel"];
+
+    ARTPushChannelSubscription *channelSubscription;
+    if (clientId) {
+        channelSubscription = [[ARTPushChannelSubscription alloc] initWithClientId:clientId andChannel:channelName];
+    }
+    else {
+        channelSubscription = [[ARTPushChannelSubscription alloc] initWithDeviceId:deviceId andChannel:channelName];
+    }
+
+    return channelSubscription;
 }
 
 - (NSDate *)decodeTime:(NSData *)data {

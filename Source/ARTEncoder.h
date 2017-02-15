@@ -17,6 +17,7 @@
 @class ARTTokenRequest;
 @class ARTDeviceDetails;
 @class ARTDevicePushDetails;
+@class ARTPushChannelSubscription;
 
 @protocol ARTPushRecipient;
 
@@ -51,7 +52,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 // Message list
 - (art_nullable NSData *)encodeMessages:(NSArray *)messages;
-- (art_nullable NSArray *)decodeMessages:(NSData *)data;
+- (art_nullable NSArray<ARTMessage *> *)decodeMessages:(NSData *)data;
 
 // PresenceMessage
 - (art_nullable NSData *)encodePresenceMessage:(ARTPresenceMessage *)message;
@@ -59,7 +60,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 // PresenceMessage list
 - (art_nullable NSData *)encodePresenceMessages:(NSArray *)messages;
-- (art_nullable NSArray *)decodePresenceMessages:(NSData *)data;
+- (art_nullable NSArray<ARTPresenceMessage *> *)decodePresenceMessages:(NSData *)data;
 
 // ProtocolMessage
 - (art_nullable NSData *)encodeProtocolMessage:(ARTProtocolMessage *)message;
@@ -71,6 +72,9 @@ ART_ASSUME_NONNULL_BEGIN
 
 // DevicePushDetails
 - (art_nullable NSData *)encodeDevicePushDetails:(ARTDevicePushDetails *)devicePushDetails;
+
+// Push Channel Subscriptions
+- (art_nullable NSArray<ARTPushChannelSubscription *> *)decodePushChannelSubscriptions:(NSData *)data error:(NSError * __autoreleasing *)error;
 
 // Others
 - (art_nullable NSDate *)decodeTime:(NSData *)data;
