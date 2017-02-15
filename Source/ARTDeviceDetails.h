@@ -18,7 +18,7 @@ extern NSString *const ARTDeviceFormFactor;
 
 @interface ARTDeviceDetails : NSObject
 
-@property (nonatomic, readonly) NSString *id;
+@property (nonatomic, readonly) ARTDeviceId *id;
 @property (nullable, nonatomic) NSString *clientId;
 @property (nonatomic, readonly) NSString *platform;
 @property (nonatomic, readonly) NSString *formFactor;
@@ -26,7 +26,7 @@ extern NSString *const ARTDeviceFormFactor;
 @property (nonatomic, readonly) ARTDevicePushDetails *push;
 @property (nullable, nonatomic) ARTUpdateToken *updateToken;
 
-- (instancetype)initWithId:(NSString *)id;
+- (instancetype)initWithId:(ARTDeviceId *)deviceId;
 
 + (instancetype)fromLocalDevice;
 

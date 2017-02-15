@@ -8,6 +8,7 @@
 
 #import "ARTDeviceDetails.h"
 #import "ARTDevicePushDetails.h"
+#import <ULID/ULID.h>
 
 NSString *const ARTDevicePlatform = @"ios";
 NSString *const ARTDeviceFormFactor = @"mobile";
@@ -16,15 +17,16 @@ NSString *const ARTDeviceFormFactor = @"mobile";
 
 + (instancetype)fromLocalDevice {
     return [[ARTDeviceDetails alloc] init];
+    // TODO
 }
 
 - (instancetype)init {
-    return [self initWithId:[[NSUUID new] UUIDString]];
+    return [self initWithId:[[WSULID ulid] ULIDString]];
 }
 
-- (instancetype)initWithId:(NSString *)id {
+- (instancetype)initWithId:(ARTDeviceId *)deviceId {
     if (self = [super init]) {
-        _id = id;
+        _id = deviceId;
         _push = [[ARTDevicePushDetails alloc] init];
     }
     return self;
