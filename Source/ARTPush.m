@@ -120,12 +120,47 @@ typedef NS_ENUM(NSUInteger, ARTPushState) {
     }
 }
 
-- (void)deactivate:(ARTDeviceId *)deviceId {
+- (void)deactivate {
+    ARTDeviceId *deviceId = @""; // TODO
     [self deactivate:deviceId deregisterCallback:nil];
 }
 
-- (void)deactivate:(ARTDeviceId *)deviceId deregisterCallback:(void (^)(ARTDeviceId * _Nullable, ARTErrorInfo * _Nullable))deregisterCallback {
-    // TODO
+- (void)deactivateWithDeregisterCallback:(void (^)(ARTDeviceId *, ARTErrorInfo *, void (^)(ARTErrorInfo *)))deregisterCallback {
+    ARTDeviceId *deviceId = @""; // TODO
+    [self deactivate:deviceId deregisterCallback:deregisterCallback];
+}
+
+- (void)deactivate:(ARTDeviceId *)deviceId deregisterCallback:(void (^)(ARTDeviceId *, ARTErrorInfo *, void (^)(ARTErrorInfo *)))deregisterCallback {
+    if (deregisterCallback) {
+        deregisterCallback(deviceId, nil, ^(ARTErrorInfo *error) {
+            if (error) {
+                [_logger error:@"%@: device deregistration using a `deregisterCallback` failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            }
+        });
+        return;
+    }
+
+    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"] resolvingAgainstBaseURL:NO];
+    components.queryItems = @[
+        [NSURLQueryItem queryItemWithName:@"deviceId" value:deviceId],
+    ];
+
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
+    request.HTTPMethod = @"DELETE";
+
+    [_logger debug:__FILE__ line:__LINE__ message:@"device deregistration with request %@", request];
+    [_httpExecutor executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        if (response.statusCode == 200 /*OK*/) {
+            [_logger debug:__FILE__ line:__LINE__ message:@"successfully deactivate device"];
+            self.device.updateToken = nil;
+        }
+        else if (error) {
+            [_logger error:@"%@: device deregistration failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+        }
+        else {
+            [_logger error:@"%@: device deregistration failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
+        }
+    }];
 }
 
 - (void)newDevice:(ARTDeviceDetails *)deviceDetails {
