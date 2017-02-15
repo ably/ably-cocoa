@@ -8,13 +8,12 @@
 
 #import "ARTPush.h"
 #import "ARTDeviceDetails.h"
+#import "ARTDevicePushDetails.h"
 #import "ARTRest+Private.h"
 #import "ARTLog.h"
 #import "ARTJsonEncoder.h"
 #import "ARTJsonLikeEncoder.h"
 #import "ARTEventEmitter.h"
-
-NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
 typedef NS_ENUM(NSUInteger, ARTPushState) {
     ARTPushStateDeactivated,
@@ -183,7 +182,37 @@ typedef NS_ENUM(NSUInteger, ARTPushState) {
 }
 
 - (void)updateDevice:(ARTDeviceDetails *)deviceDetails {
+    if (!deviceDetails.updateToken) {
+        [_logger error:@"%@: update token is missing", NSStringFromClass(self.class)];
+        return;
+    }
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceDetails.id]];
+    NSData *tokenData = [deviceDetails.updateToken dataUsingEncoding:NSUTF8StringEncoding];
+    NSString *tokenBase64 = [tokenData base64EncodedStringWithOptions:0];
+    [request setValue:[NSString stringWithFormat:@"Bearer %@", tokenBase64] forHTTPHeaderField:@"Authorization"];
+    request.HTTPMethod = @"PUT";
+    request.HTTPBody = [[_httpExecutor defaultEncoder] encode:@{
+        @"push": @{
+            @"metadata": @{
+                @"deviceToken": deviceDetails.push.deviceToken,
+            }
+        }
+    }];
+    [request setValue:[[_httpExecutor defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
+    [_logger debug:__FILE__ line:__LINE__ message:@"update device with request %@", request];
+    [_httpExecutor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        if (response.statusCode == 200 /*OK*/) {
+            ARTDeviceDetails *deviceDetails = [[_httpExecutor defaultEncoder] decodeDeviceDetails:data];
+            self.device.updateToken = deviceDetails.updateToken;
+        }
+        else if (error) {
+            [_logger error:@"%@: update device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+        }
+        else {
+            [_logger error:@"%@: update device failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
+        }
+    }];
 }
 
 @end
