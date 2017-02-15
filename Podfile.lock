@@ -5,6 +5,7 @@ PODS:
   - Quick (0.9.3)
   - SocketRocket (0.5.1)
   - SwiftyJSON (2.4.0)
+  - ULID (0.1.0)
 
 DEPENDENCIES:
   - Aspects
@@ -13,6 +14,17 @@ DEPENDENCIES:
   - Quick (= 0.9.3)
   - SocketRocket (= 0.5.1)
   - SwiftyJSON (= 2.4.0)
+  - ULID (from `https://github.com/Whitesmith/ulid.git`, branch `master`)
+
+EXTERNAL SOURCES:
+  ULID:
+    :branch: master
+    :git: https://github.com/Whitesmith/ulid.git
+
+CHECKOUT OPTIONS:
+  ULID:
+    :commit: c7b4dfec8bc98c2978787bd9ed32a44fcb1c5dbb
+    :git: https://github.com/Whitesmith/ulid.git
 
 SPEC CHECKSUMS:
   Aspects: 7595ba96a6727a58ebcbfc954497fc5d2fdde546
@@ -21,7 +33,8 @@ SPEC CHECKSUMS:
   Quick: 13a2a2b19a5d8e3ed4fd0c36ee46597fd77ebf71
   SocketRocket: d57c7159b83c3c6655745cd15302aa24b6bae531
   SwiftyJSON: 96918c1bf505efa50c4f72957018dd3452090c9c
+  ULID: ea870a817f38f3d61355fe77850dba580af87b62
 
-PODFILE CHECKSUM: c59fef6e348f90fbaa529d13373c2958f7b9b642
+PODFILE CHECKSUM: d202fb38800e6408aace2b44dd5d42ef9c8b1a8e
 
 COCOAPODS: 1.1.1
