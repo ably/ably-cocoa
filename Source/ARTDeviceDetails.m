@@ -13,15 +13,18 @@
 NSString *const ARTDevicePlatform = @"ios";
 NSString *const ARTDeviceFormFactor = @"mobile";
 
+NSString *const ARTDeviceIdKey = @"ARTDeviceId";
+
 @implementation ARTDeviceDetails
 
 + (instancetype)fromLocalDevice {
-    return [[ARTDeviceDetails alloc] init];
-    // TODO
-}
-
-- (instancetype)init {
-    return [self initWithId:[[WSULID ulid] ULIDString]];
+    NSString *deviceId = [[NSUserDefaults standardUserDefaults] stringForKey:ARTDeviceIdKey];
+    if (!deviceId) {
+        deviceId = [[WSULID ulid] ULIDString];
+        [[NSUserDefaults standardUserDefaults] setObject:deviceId forKey:ARTDeviceIdKey];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }
+    return [[ARTDeviceDetails alloc] initWithId:deviceId];
 }
 
 - (instancetype)initWithId:(ARTDeviceId *)deviceId {

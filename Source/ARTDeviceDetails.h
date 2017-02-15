@@ -26,6 +26,7 @@ extern NSString *const ARTDeviceFormFactor;
 @property (nonatomic, readonly) ARTDevicePushDetails *push;
 @property (nullable, nonatomic) ARTUpdateToken *updateToken;
 
+- (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithId:(ARTDeviceId *)deviceId;
 
 + (instancetype)fromLocalDevice;

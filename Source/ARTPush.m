@@ -14,7 +14,7 @@
 #import "ARTJsonLikeEncoder.h"
 #import "ARTEventEmitter.h"
 
-NSString *const ARTDeviceTokenKey = @"DeviceToken";
+NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
 typedef NS_ENUM(NSUInteger, ARTPushState) {
     ARTPushStateDeactivated,
@@ -121,13 +121,11 @@ typedef NS_ENUM(NSUInteger, ARTPushState) {
 }
 
 - (void)deactivate {
-    ARTDeviceId *deviceId = @""; // TODO
-    [self deactivate:deviceId deregisterCallback:nil];
+    [self deactivate:self.device.id deregisterCallback:nil];
 }
 
 - (void)deactivateWithDeregisterCallback:(void (^)(ARTDeviceId *, ARTErrorInfo *, void (^)(ARTErrorInfo *)))deregisterCallback {
-    ARTDeviceId *deviceId = @""; // TODO
-    [self deactivate:deviceId deregisterCallback:deregisterCallback];
+    [self deactivate:self.device.id deregisterCallback:deregisterCallback];
 }
 
 - (void)deactivate:(ARTDeviceId *)deviceId deregisterCallback:(void (^)(ARTDeviceId *, ARTErrorInfo *, void (^)(ARTErrorInfo *)))deregisterCallback {
