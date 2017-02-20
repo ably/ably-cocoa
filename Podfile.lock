@@ -5,7 +5,7 @@ PODS:
   - Quick (0.9.3)
   - SocketRocket (0.5.1)
   - SwiftyJSON (2.4.0)
-  - ULID (1.0.1)
+  - ULID (1.0.2)
 
 DEPENDENCIES:
   - Aspects
@@ -14,7 +14,7 @@ DEPENDENCIES:
   - Quick (= 0.9.3)
   - SocketRocket (= 0.5.1)
   - SwiftyJSON (= 2.4.0)
-  - ULID (= 1.0.1)
+  - ULID (= 1.0.2)
 
 SPEC CHECKSUMS:
   Aspects: 7595ba96a6727a58ebcbfc954497fc5d2fdde546
@@ -23,8 +23,8 @@ SPEC CHECKSUMS:
   Quick: 13a2a2b19a5d8e3ed4fd0c36ee46597fd77ebf71
   SocketRocket: d57c7159b83c3c6655745cd15302aa24b6bae531
   SwiftyJSON: 96918c1bf505efa50c4f72957018dd3452090c9c
-  ULID: 3caaee729fb720b436bd0bff552db76efd7878b9
+  ULID: fcabaa95746b670beb80c029beb3372da2f729bd
 
-PODFILE CHECKSUM: 419141b5bf70d2352bf50b46b3d0b9b2cc9e7ccc
+PODFILE CHECKSUM: 411dc0283578f56e1dca99bdd9846aa278632d93
 
 COCOAPODS: 1.1.1
