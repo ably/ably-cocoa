@@ -18,4 +18,5 @@ Pod::Spec.new do |s|
   s.module_map        = 'Source/Ably.modulemap'
   s.dependency 'SocketRocket', '0.5.1'
   s.dependency 'msgpack', '0.1.8'
+  s.dependency 'ULID', '1.0.1'
 end

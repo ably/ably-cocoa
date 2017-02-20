@@ -5,7 +5,7 @@ podspec :path => 'Ably.podspec'
 def project_pods
     pod 'SocketRocket', '0.5.1'
     pod 'msgpack', '0.1.8'
-    pod 'ULID', :git => 'https://github.com/Whitesmith/ulid.git', :branch => 'master'
+    pod 'ULID', '1.0.1'
 end
 
 def test_pods

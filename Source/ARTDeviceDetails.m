@@ -20,7 +20,7 @@ NSString *const ARTDeviceIdKey = @"ARTDeviceId";
 + (instancetype)fromLocalDevice {
     NSString *deviceId = [[NSUserDefaults standardUserDefaults] stringForKey:ARTDeviceIdKey];
     if (!deviceId) {
-        deviceId = [[WSULID ulid] ULIDString];
+        deviceId = [[ULID new] ulidString];
         [[NSUserDefaults standardUserDefaults] setObject:deviceId forKey:ARTDeviceIdKey];
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
