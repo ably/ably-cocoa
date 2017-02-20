@@ -126,4 +126,8 @@ NSString *generateNonce();
 @interface NSDictionary (ARTJsonCompatible) <ARTJsonCompatible>
 @end
 
+@interface NSDictionary (NSURLQueryItem)
+@property (nonatomic, readonly) NSArray<NSURLQueryItem *> *asURLQueryItems;
+@end
+
 ART_ASSUME_NONNULL_END

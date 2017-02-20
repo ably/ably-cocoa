@@ -169,7 +169,7 @@ typedef NS_ENUM(NSUInteger, ARTPushState) {
     [_logger debug:__FILE__ line:__LINE__ message:@"device registration with request %@", request];
     [_httpExecutor executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 201 /*Created*/) {
-            ARTDeviceDetails *deviceDetails = [[_httpExecutor defaultEncoder] decodeDeviceDetails:data];
+            ARTDeviceDetails *deviceDetails = [[_httpExecutor defaultEncoder] decodeDeviceDetails:data error:nil];
             self.device.updateToken = deviceDetails.updateToken;
         }
         else if (error) {
@@ -203,7 +203,7 @@ typedef NS_ENUM(NSUInteger, ARTPushState) {
     [_logger debug:__FILE__ line:__LINE__ message:@"update device with request %@", request];
     [_httpExecutor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*OK*/) {
-            ARTDeviceDetails *deviceDetails = [[_httpExecutor defaultEncoder] decodeDeviceDetails:data];
+            ARTDeviceDetails *deviceDetails = [[_httpExecutor defaultEncoder] decodeDeviceDetails:data error:nil];
             self.device.updateToken = deviceDetails.updateToken;
         }
         else if (error) {

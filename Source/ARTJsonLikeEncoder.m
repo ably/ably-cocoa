@@ -143,12 +143,40 @@
     return [self encode:[self deviceDetailsToDictionary:deviceDetails]];
 }
 
-- (ARTDeviceDetails *)decodeDeviceDetails:(NSData *)data {
-    return [self deviceDetailsFromDictionary:[self decodeDictionary:data] error:nil];
+- (ARTDeviceDetails *)decodeDeviceDetails:(NSData *)data error:(NSError * __autoreleasing *)error {
+    return [self deviceDetailsFromDictionary:[self decodeDictionary:data] error:error];
+}
+
+- (NSArray<ARTDeviceDetails *> *)decodeDevicesDetails:(NSData *)data error:(NSError * __autoreleasing *)error {
+    return [self devicesDetailsFromArray:[self decodeArray:data] error:error];
+}
+
+- (NSArray<ARTDeviceDetails *> *)devicesDetailsFromArray:(NSArray *)input error:(NSError * __autoreleasing *)error {
+    NSMutableArray<ARTDeviceDetails *> *output = [NSMutableArray array];
+    for (NSDictionary *item in input) {
+        ARTDeviceDetails *deviceDetails = [self deviceDetailsFromDictionary:item error:error];
+        if (!deviceDetails) {
+            return nil;
+        }
+        [output addObject:deviceDetails];
+    }
+    return output;
 }
 
 - (NSData *)encodeDevicePushDetails:(ARTDevicePushDetails *)devicePushDetails {
     return [self encode:[self devicePushDetailsToDictionary:devicePushDetails]];
+}
+
+- (ARTDevicePushDetails *)decodeDevicePushDetails:(NSData *)data error:(NSError * __autoreleasing *)error {
+    return [self devicePushDetailsFromDictionary:[self decode:data] error:error];
+}
+
+- (NSData *)encodePushChannelSubscription:(ARTPushChannelSubscription *)channelSubscription {
+    return [self encode:[self pushChannelSubscriptionToDictionary:channelSubscription]];
+}
+
+- (ARTPushChannelSubscription *)decodePushChannelSubscription:(NSData *)data error:(NSError * __autoreleasing *)error {
+    return [self pushChannelSubscriptionFromDictionary:[self decodeDictionary:data] error:error];
 }
 
 - (NSArray<ARTPushChannelSubscription *> *)decodePushChannelSubscriptions:(NSData *)data error:(NSError * __autoreleasing *)error {
@@ -164,6 +192,25 @@
         }
         [output addObject:subscription];
     }
+    return output;
+}
+
+- (NSDictionary *)pushChannelSubscriptionToDictionary:(ARTPushChannelSubscription *)channelSubscription {
+    NSMutableDictionary *output = [NSMutableDictionary dictionary];
+
+    if (channelSubscription.channelName) {
+        [output setObject:channelSubscription.channelName forKey:@"channel"];
+    }
+
+    if (channelSubscription.clientId) {
+        [output setObject:channelSubscription.clientId forKey:@"clientId"];
+    }
+
+    if (channelSubscription.deviceId) {
+        [output setObject:channelSubscription.deviceId forKey:@"deviceId"];
+    }
+
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: pushChannelSubscriptionToDictionary %@", _rest, [_delegate formatAsString], output];
     return output;
 }
 
@@ -579,6 +626,19 @@
     }
 
     return dictionary;
+}
+
+- (ARTDevicePushDetails *)devicePushDetailsFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: devicePushDetailsFromDictionary %@", _rest, [_delegate formatAsString], input];
+
+    if (![input isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
+
+    ARTDevicePushDetails *devicePushDetails = [[ARTDevicePushDetails alloc] init];
+    devicePushDetails.state = ARTDevicePushStateFromStr([input artString:@"state"]);
+
+    return devicePushDetails;
 }
 
 - (ARTProtocolMessage *)protocolMessageFromDictionary:(NSDictionary *)input {

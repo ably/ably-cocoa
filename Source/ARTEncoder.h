@@ -68,12 +68,16 @@ ART_ASSUME_NONNULL_BEGIN
 
 // DeviceDetails
 - (art_nullable NSData *)encodeDeviceDetails:(ARTDeviceDetails *)deviceDetails;
-- (art_nullable ARTDeviceDetails *)decodeDeviceDetails:(NSData *)data;
+- (art_nullable ARTDeviceDetails *)decodeDeviceDetails:(NSData *)data error:(NSError * __autoreleasing *)error;
+- (art_nullable NSArray<ARTDeviceDetails *> *)decodeDevicesDetails:(NSData *)data error:(NSError * __autoreleasing *)error;
 
 // DevicePushDetails
 - (art_nullable NSData *)encodeDevicePushDetails:(ARTDevicePushDetails *)devicePushDetails;
+- (art_nullable ARTDevicePushDetails *)decodeDevicePushDetails:(NSData *)data error:(NSError * __autoreleasing *)error;
 
-// Push Channel Subscriptions
+// Push Channel Subscription
+- (art_nullable NSData *)encodePushChannelSubscription:(ARTPushChannelSubscription *)channelSubscription;
+- (art_nullable ARTPushChannelSubscription *)decodePushChannelSubscription:(NSData *)data error:(NSError * __autoreleasing *)error;
 - (art_nullable NSArray<ARTPushChannelSubscription *> *)decodePushChannelSubscriptions:(NSData *)data error:(NSError * __autoreleasing *)error;
 
 // Others

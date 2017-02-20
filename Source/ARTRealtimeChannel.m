@@ -24,7 +24,7 @@
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTStatus.h"
 #import "ARTDefault.h"
-#import "ARTRest.h"
+#import "ARTRest+Private.h"
 #import "ARTClientOptions.h"
 #import "ARTPushChannel.h"
 

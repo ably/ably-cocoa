@@ -128,3 +128,18 @@ NSString *ARTRealtimeStateToStr(ARTRealtimeConnectionState state) {
 }
 
 @end
+
+@implementation NSDictionary (NSURLQueryItem)
+
+- (NSArray<NSURLQueryItem *> *)asURLQueryItems {
+    NSMutableArray<NSURLQueryItem *> *items = [NSMutableArray new];
+    for (id key in [self allKeys]) {
+        id value = [self valueForKey:key];
+        if ([key isKindOfClass:[NSString class]] && [value isKindOfClass:[NSString class]]) {
+            [items addObject:[NSURLQueryItem queryItemWithName:key value:value]];
+        }
+    }
+    return items;
+}
+
+@end
