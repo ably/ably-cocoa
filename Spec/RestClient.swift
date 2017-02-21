@@ -683,7 +683,7 @@ class RestClient: QuickSpec {
 
                     var capturedURLs = [String]()
                     testHTTPExecutor.afterRequest = { request, callback in
-                        capturedURLs.append(request.URL!.absoluteString)
+                        capturedURLs.append(request.URL!.absoluteString!)
                         if testHTTPExecutor.requests.count == 2 {
                             // Stop
                             testHTTPExecutor.http = nil
@@ -716,7 +716,7 @@ class RestClient: QuickSpec {
                     
                     var capturedURLs = [String]()
                     testHTTPExecutor.afterRequest = { request, callback in
-                        capturedURLs.append(request.URL!.absoluteString)
+                        capturedURLs.append(request.URL!.absoluteString!)
                         if testHTTPExecutor.requests.count == 2 {
                             // Stop
                             testHTTPExecutor.http = nil
@@ -750,7 +750,7 @@ class RestClient: QuickSpec {
 
                     var capturedURLs = [String]()
                     testHTTPExecutor.afterRequest = { request, callback in
-                        capturedURLs.append(request.URL!.absoluteString)
+                        capturedURLs.append(request.URL!.absoluteString!)
                         if testHTTPExecutor.requests.count == 2 {
                             // Stop
                             testHTTPExecutor.http = nil
@@ -803,7 +803,7 @@ class RestClient: QuickSpec {
                     
                     var capturedURLs = [String]()
                     testHTTPExecutor.afterRequest = { request, callback in
-                        capturedURLs.append(request.URL!.absoluteString)
+                        capturedURLs.append(request.URL!.absoluteString!)
                     }
                     
                     waitUntil(timeout: testTimeout) { done in
@@ -827,7 +827,7 @@ class RestClient: QuickSpec {
                     
                     var capturedURLs = [String]()
                     testHTTPExecutor.afterRequest = { request, callback in
-                        capturedURLs.append(request.URL!.absoluteString)
+                        capturedURLs.append(request.URL!.absoluteString!)
                         if testHTTPExecutor.requests.count == 2 {
                             // Stop
                             testHTTPExecutor.http = nil
@@ -1306,6 +1306,19 @@ class RestClient: QuickSpec {
                             done()
                         }
                     }
+                }
+            }
+
+            // https://github.com/ably/ably-ios/issues/577
+            it("background behaviour") {
+                let options = AblyTests.commonAppSetup()
+                waitUntil(timeout: testTimeout) { done in
+                    NSURLSession.sharedSession().dataTaskWithURL(NSURL(string:"https://ably.io")!) { _ in
+                        let rest = ARTRest(options: options)
+                        rest.channels.get("foo").history { _ in
+                            done()
+                        }
+                    }.resume()
                 }
             }
 

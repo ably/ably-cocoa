@@ -15,11 +15,14 @@
 
 @end
 
-@implementation ARTConnection
+@implementation ARTConnection {
+    _Nonnull dispatch_queue_t _queue;
+}
 
 - (instancetype)initWithRealtime:(ARTRealtime *)realtime {
     if (self == [super init]) {
-        _eventEmitter = [[ARTEventEmitter alloc] init];
+        _queue = dispatch_queue_create("io.ably.realtime.connection", DISPATCH_QUEUE_SERIAL);
+        _eventEmitter = [[ARTEventEmitter alloc] initWithQueue:_queue];
         _realtime = realtime;
         _serial = -1;
     }

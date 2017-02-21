@@ -38,12 +38,16 @@ enum {
 
 @implementation ARTWebSocketTransport {
     ARTRealtimeTransportState _state;
+    /**
+      A dispatch queue for firing the events.
+     */
+    _Nonnull dispatch_queue_t _workQueue;
 }
 
 - (instancetype)initWithRest:(ARTRest *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
     self = [super init];
     if (self) {
-        _rl = CFRunLoopGetCurrent();
+        _workQueue = dispatch_queue_create("io.ably.transport.websocket", DISPATCH_QUEUE_SERIAL);
         _websocket = nil;
         _state = ARTRealtimeTransportStateClosed;
         _encoder = rest.defaultEncoder;
@@ -161,6 +165,7 @@ enum {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
 
     self.websocket = [[SRWebSocket alloc] initWithURLRequest:request];
+    [self.websocket setDelegateDispatchQueue:_workQueue];
     self.websocket.delegate = self;
     self.websocketURL = url;
     return url;
@@ -223,20 +228,19 @@ enum {
     ARTWebSocketTransport * __weak weakSelf = self;
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did open", _delegate, self];
 
-    CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
+    dispatch_async(_workQueue, ^{
         ARTWebSocketTransport *s = weakSelf;
         if (s) {
             [s.delegate realtimeTransportAvailable:s];
         }
     });
-    CFRunLoopWakeUp(self.rl);
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
     ARTWebSocketTransport * __weak weakSelf = self;
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did disconnect (code %ld) %@", _delegate, self, (long)code, reason];
 
-    CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
+    dispatch_async(_workQueue, ^{
         ARTWebSocketTransport *s = weakSelf;
         if (!s) {
             return;
@@ -282,21 +286,19 @@ enum {
 
         s.state = ARTRealtimeTransportStateClosed;
     });
-    CFRunLoopWakeUp(self.rl);
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
     ARTWebSocketTransport * __weak weakSelf = self;
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did receive error %@", _delegate, self, error];
 
-    CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
+    dispatch_async(_workQueue, ^{
         ARTWebSocketTransport *s = weakSelf;
         if (s) {
             [s.delegate realtimeTransportFailed:s withError:[self classifyError:error]];
         }
         s.state = ARTRealtimeTransportStateClosed;
     });
-    CFRunLoopWakeUp(self.rl);
 }
 
 - (ARTRealtimeTransportError *)classifyError:(NSError *)error {
@@ -332,7 +334,7 @@ enum {
     ARTWebSocketTransport * __weak weakSelf = self;
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did receive message %@", _delegate, self, text];
 
-    CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
+    dispatch_async(_workQueue, ^{
         NSData *data = nil;
         data = [((NSString *)text) dataUsingEncoding:NSUTF8StringEncoding];
 
@@ -341,20 +343,18 @@ enum {
             [s receiveWithData:data];
         }
     });
-    CFRunLoopWakeUp(self.rl);
 }
 
 - (void)webSocketMessageData:(NSData *)data {
     ARTWebSocketTransport * __weak weakSelf = self;
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did receive data %@", _delegate, self, data];
 
-    CFRunLoopPerformBlock(self.rl, kCFRunLoopDefaultMode, ^{
+    dispatch_async(_workQueue, ^{
         ARTWebSocketTransport *s = weakSelf;
         if (s) {
             [s receiveWithData:data];
         }
     });
-    CFRunLoopWakeUp(self.rl);
 }
 
 @end

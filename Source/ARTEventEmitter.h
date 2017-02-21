@@ -21,6 +21,9 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface __GENERIC(ARTEventEmitter, EventType, ItemType) : NSObject
 
+- (instancetype)init;
+- (instancetype)initWithQueue:(dispatch_queue_t)queue;
+
 - (__GENERIC(ARTEventListener, ItemType) *)on:(EventType)event callback:(void (^)(ItemType __art_nullable))cb;
 - (__GENERIC(ARTEventListener, ItemType) *)on:(void (^)(ItemType __art_nullable))cb;
 

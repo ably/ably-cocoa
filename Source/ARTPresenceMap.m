@@ -32,14 +32,14 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
     __weak ARTLog *_logger;
 }
 
-- (instancetype)initWithLogger:(ARTLog *)logger {
+- (instancetype)initWithQueue:(_Nonnull dispatch_queue_t)queue logger:(ARTLog *)logger { 
     self = [super init];
     if(self) {
         _logger = logger;
         [self reset];
         _syncSessionId = 0;
         _syncState = ARTPresenceSyncInitialized;
-        _syncEventEmitter = [[ARTEventEmitter alloc] init];
+        _syncEventEmitter = [[ARTEventEmitter alloc] initWithQueue:queue];
     }
     return self;
 }

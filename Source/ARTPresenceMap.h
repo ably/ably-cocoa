@@ -43,7 +43,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, getter=syncInProgress) BOOL syncInProgress;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithLogger:(ARTLog *)logger;
+- (instancetype)initWithQueue:(_Nonnull dispatch_queue_t)queue logger:(ARTLog *)logger;
 
 - (BOOL)add:(ARTPresenceMessage *)message;
 - (void)reset;

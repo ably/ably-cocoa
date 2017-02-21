@@ -2117,7 +2117,6 @@ class RealtimeClientPresence: QuickSpec {
                     }
 
                     expect(channel.presenceMap.members).to(haveCount(1))
-                    expect(channel.presenceMap.members.filter{ _, presence in presence.action == .Present }).to(haveCount(1))
                 }
 
                 // RTP2e

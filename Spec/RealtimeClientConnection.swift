@@ -551,52 +551,53 @@ class RealtimeClientConnection: QuickSpec {
                 var disposable = [ARTRealtime]()
                 let max = 50
                 let channelName = "chat"
+                let sync = NSLock()
 
-                TotalReach.shared = 0
                 defer {
                     for client in disposable {
+                        client.dispose()
                         client.close()
                     }
                 }
-                for _ in 1...max {
-                    let client = ARTRealtime(options: options)
-                    disposable.append(client)
-                    let channel = client.channels.get(channelName)
 
-                    channel.on { stateChange in
-                        guard let stateChange = stateChange else {
-                            fail("ChannelStageChange is nil"); return
-                        }
-                        if stateChange.current == .Attached {
-                            TotalReach.shared += 1
+                waitUntil(timeout: testTimeout) { done in
+                    let partialDone = AblyTests.splitDone(max, done: done)
+                    for _ in 1...max {
+                        let client = ARTRealtime(options: options)
+                        disposable.append(client)
+                        let channel = client.channels.get(channelName)
+                        channel.attach() { error in
+                            if let error = error {
+                                fail(error.message); done()
+                            }
+                            sync.lock()
+                            partialDone()
+                            sync.unlock()
                         }
                     }
-
-                    channel.attach()
                 }
-                // All channels attached
-                expect(TotalReach.shared).toEventually(equal(max), timeout: testTimeout, description: "Channels not attached")
 
-                TotalReach.shared = 0
-                for client in disposable {
-                    let channel = client.channels.get(channelName)
-                    expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+                waitUntil(timeout: testTimeout) { done in
+                    // Sends 50 messages from different clients to the same channel
+                    // 50 messages for 50 clients = 50*50 total messages
+                    // echo is off, so we need to subtract one message per client
+                    let partialDone = AblyTests.splitDone(max*max - max, done: done)
+                    for client in disposable {
+                        let channel = client.channels.get(channelName)
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
 
-                    channel.subscribe { message in
-                        expect(message.data as? String).to(equal("message_string"))
-                        TotalReach.shared += 1
+                        channel.subscribe { message in
+                            expect(message.data as? String).to(equal("message_string"))
+                            sync.lock()
+                            partialDone()
+                            sync.unlock()
+                        }
+
+                        channel.publish(nil, data: "message_string", callback: nil)
                     }
-
-                    channel.publish(nil, data: "message_string", callback: nil)
                 }
-
-                // Sends 50 messages from different clients to the same channel
-                // 50 messages for 50 clients = 50*50 total messages
-                // echo is off, so we need to subtract one message per client
-                expect(TotalReach.shared).toEventually(equal(max*max - max), timeout: testTimeout)
 
                 expect(disposable.count).to(equal(max))
-
                 expect(countChannels(disposable.first!.channels)).to(equal(1))
                 expect(countChannels(disposable.last!.channels)).to(equal(1))
             }
@@ -1174,6 +1175,7 @@ class RealtimeClientConnection: QuickSpec {
                     var disposable = [ARTRealtime]()
                     defer {
                         for client in disposable {
+                            client.dispose()
                             client.close()
                         }
                     }
@@ -1197,11 +1199,12 @@ class RealtimeClientConnection: QuickSpec {
                                     expect(ids).toNot(contain(connectionId))
                                     ids.append(connectionId)
 
-                                    currentConnection.close()
-
                                     if ids.count == max {
                                         done()
                                     }
+
+                                    currentConnection.off()
+                                    currentConnection.close()
                                 }
                             }
                         }
@@ -1249,6 +1252,7 @@ class RealtimeClientConnection: QuickSpec {
                     var disposable = [ARTRealtime]()
                     defer {
                         for client in disposable {
+                            client.dispose()
                             client.close()
                         }
                     }
@@ -1272,11 +1276,12 @@ class RealtimeClientConnection: QuickSpec {
                                     expect(keys).toNot(contain(connectionKey))
                                     keys.append(connectionKey)
 
-                                    currentConnection.close()
-
                                     if keys.count == max {
                                         done()
                                     }
+
+                                    currentConnection.off()
+                                    currentConnection.close()
                                 }
                             }
                         }
@@ -1498,7 +1503,7 @@ class RealtimeClientConnection: QuickSpec {
 
 
                     expect(lastStateChange).toEventuallyNot(beNil(), timeout: testTimeout)
-                    expect(lastStateChange!.current).toEventually(equal(ARTRealtimeConnectionState.Closing), timeout: testTimeout)
+                    expect(lastStateChange!.current).toEventually(equal(ARTRealtimeConnectionState.Closed), timeout: testTimeout)
                 }
 
                 // RTN12a
@@ -2018,7 +2023,12 @@ class RealtimeClientConnection: QuickSpec {
                         client.connect()
                         start = NSDate()
                     }
-                    expect(end!.timeIntervalSinceDate(start!)).to(beCloseTo(ARTDefault.realtimeRequestTimeout(), within: 1.5))
+                    if let start = start, let end = end {
+                        expect(end.timeIntervalSinceDate(start)).to(beCloseTo(ARTDefault.realtimeRequestTimeout(), within: 1.5))
+                    }
+                    else {
+                        fail("Start date or end date are empty")
+                    }
                 }
 
                 // RTN14d
@@ -2046,23 +2056,23 @@ class RealtimeClientConnection: QuickSpec {
                     var totalRetry = 0
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
+                        var start: NSDate?
 
                         client.connection.once(.Disconnected) { stateChange in
                             expect(stateChange!.reason!.message).to(contain("timed out"))
                             expect(stateChange!.previous).to(equal(ARTRealtimeConnectionState.Connecting))
                             expect(stateChange!.retryIn).to(beCloseTo(options.disconnectedRetryTimeout))
                             partialDone()
+                            start = NSDate()
                         }
 
-                        var start: NSDate?
                         client.connection.on(.Suspended) { stateChange in
                             let end = NSDate()
-                            expect(end.timeIntervalSinceDate(start!)).to(beCloseTo(expectedTime, within: 0.5))
+                            expect(end.timeIntervalSinceDate(start!)).to(beCloseTo(expectedTime, within: 0.9))
                             partialDone()
                         }
 
                         client.connect()
-                        start = NSDate()
 
                         client.connection.on(.Connecting) { stateChange in
                             expect(stateChange!.previous).to(equal(ARTRealtimeConnectionState.Disconnected))
@@ -2571,7 +2581,7 @@ class RealtimeClientConnection: QuickSpec {
                     client.simulateLostConnectionAndState()
 
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
-                    expect(channel.errorReason!.message).to(contain("Unable to recover connection"))
+                    expect(channel.errorReason?.message).to(contain("Unable to recover connection"))
                 }
 
                 // RTN15h
@@ -3328,7 +3338,9 @@ class RealtimeClientConnection: QuickSpec {
                         transport.ignoreSends = true
                         channel.publish(nil, data: "message") { error in
                             expect(error).to(beNil())
-                            let newTransport = client.transport as! TestProxyTransport
+                            guard let newTransport = client.transport as? TestProxyTransport else {
+                                fail("Transport is nil"); done(); return
+                            }
                             expect(transport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
                             expect(newTransport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
                             expect(transport.protocolMessagesSent.filter{ $0.action == .Message }).to(haveCount(0))
@@ -3356,7 +3368,9 @@ class RealtimeClientConnection: QuickSpec {
                         transport.ignoreSends = true
                         channel.attach() { error in
                             expect(error).to(beNil())
-                            let newTransport = client.transport as! TestProxyTransport
+                            guard let newTransport = client.transport as? TestProxyTransport else {
+                                fail("Transport is nil"); done(); return
+                            }
                             expect(transport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
                             expect(newTransport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
                             expect(transport.protocolMessagesSent.filter{ $0.action == .Attach }).to(haveCount(0))
@@ -3385,11 +3399,13 @@ class RealtimeClientConnection: QuickSpec {
                         channel.attach() { _ in done() }
                     }
 
-                    waitUntil(timeout: testTimeout * 1000) { done in
+                    waitUntil(timeout: testTimeout) { done in
                         transport.ignoreSends = true
                         channel.detach() { error in
                             expect(error).to(beNil())
-                            let newTransport = client.transport as! TestProxyTransport
+                            guard let newTransport = client.transport as? TestProxyTransport else {
+                                fail("Transport is nil"); done(); return
+                            }
                             expect(transport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
                             expect(newTransport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
                             expect(transport.protocolMessagesSent.filter{ $0.action == .Detach }).to(haveCount(0))
