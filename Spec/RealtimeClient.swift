@@ -1215,9 +1215,11 @@ class RealtimeClient: QuickSpec {
             // https://github.com/ably/ably-ios/issues/577
             it("background behaviour") {
                 let options = AblyTests.commonAppSetup()
+                options.autoConnect = false
+                let realtime = ARTRealtime(options: options)
                 waitUntil(timeout: testTimeout) { done in
                     NSURLSession.sharedSession().dataTaskWithURL(NSURL(string:"https://ably.io")!) { _ in
-                        let realtime = ARTRealtime(options: options)
+                        realtime.connect()
                         realtime.channels.get("foo").attach { error in
                             expect(error).to(beNil())
                             done()
