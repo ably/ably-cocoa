@@ -95,6 +95,12 @@
 		D70EAAEE1BC3376200CD8B9E /* ARTRestChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = D70EAAEC1BC3376200CD8B9E /* ARTRestChannel.m */; };
 		D714A63E1C74D4B2002F2CA0 /* NSObject+TestSuite.swift in Sources */ = {isa = PBXBuildFile; fileRef = D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */; };
 		D714A6401C75F0C5002F2CA0 /* ARTWebSocketTransport+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D714A63F1C75F0C5002F2CA0 /* ARTWebSocketTransport+Private.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D71966E41E5DF360000974DD /* ARTPushActivationStateMachine.h in Headers */ = {isa = PBXBuildFile; fileRef = D71966E21E5DF360000974DD /* ARTPushActivationStateMachine.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D71966E51E5DF360000974DD /* ARTPushActivationStateMachine.m in Sources */ = {isa = PBXBuildFile; fileRef = D71966E31E5DF360000974DD /* ARTPushActivationStateMachine.m */; };
+		D71966EA1E5E006E000974DD /* ARTPushActivationState.h in Headers */ = {isa = PBXBuildFile; fileRef = D71966E81E5E006E000974DD /* ARTPushActivationState.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D71966EB1E5E006E000974DD /* ARTPushActivationState.m in Sources */ = {isa = PBXBuildFile; fileRef = D71966E91E5E006E000974DD /* ARTPushActivationState.m */; };
+		D71966EE1E5E0081000974DD /* ARTPushActivationEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = D71966EC1E5E0081000974DD /* ARTPushActivationEvent.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D71966EF1E5E0081000974DD /* ARTPushActivationEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = D71966ED1E5E0081000974DD /* ARTPushActivationEvent.m */; };
 		D71D30041C5F7B2F002115B0 /* RealtimeClientChannels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71D30031C5F7B2F002115B0 /* RealtimeClientChannels.swift */; };
 		D72304701BB72CED00F1ABDA /* RealtimeClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D723046F1BB72CED00F1ABDA /* RealtimeClient.swift */; };
 		D72768211C9C19040022F8B2 /* RestClientPresence.swift in Sources */ = {isa = PBXBuildFile; fileRef = D72768201C9C19040022F8B2 /* RestClientPresence.swift */; };
@@ -345,6 +351,12 @@
 		D70EAAEC1BC3376200CD8B9E /* ARTRestChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestChannel.m; sourceTree = "<group>"; };
 		D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSObject+TestSuite.swift"; sourceTree = "<group>"; };
 		D714A63F1C75F0C5002F2CA0 /* ARTWebSocketTransport+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTWebSocketTransport+Private.h"; sourceTree = "<group>"; };
+		D71966E21E5DF360000974DD /* ARTPushActivationStateMachine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPushActivationStateMachine.h; sourceTree = "<group>"; };
+		D71966E31E5DF360000974DD /* ARTPushActivationStateMachine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPushActivationStateMachine.m; sourceTree = "<group>"; };
+		D71966E81E5E006E000974DD /* ARTPushActivationState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPushActivationState.h; sourceTree = "<group>"; };
+		D71966E91E5E006E000974DD /* ARTPushActivationState.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPushActivationState.m; sourceTree = "<group>"; };
+		D71966EC1E5E0081000974DD /* ARTPushActivationEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPushActivationEvent.h; sourceTree = "<group>"; };
+		D71966ED1E5E0081000974DD /* ARTPushActivationEvent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPushActivationEvent.m; sourceTree = "<group>"; };
 		D71D30031C5F7B2F002115B0 /* RealtimeClientChannels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClientChannels.swift; sourceTree = "<group>"; };
 		D723046F1BB72CED00F1ABDA /* RealtimeClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClient.swift; sourceTree = "<group>"; };
 		D72768201C9C19040022F8B2 /* RestClientPresence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClientPresence.swift; sourceTree = "<group>"; };
@@ -636,6 +648,32 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		D71966E61E5DFFB2000974DD /* Admin */ = {
+			isa = PBXGroup;
+			children = (
+				D7AE18C71E5B40C900478D82 /* ARTPushAdmin.h */,
+				D7AE18C81E5B40C900478D82 /* ARTPushAdmin.m */,
+				D7AE18CC1E5B40FE00478D82 /* ARTPushDeviceRegistrations.h */,
+				D7AE18CD1E5B40FE00478D82 /* ARTPushDeviceRegistrations.m */,
+				D7AE18D01E5B410F00478D82 /* ARTPushChannelSubscriptions.h */,
+				D7AE18D11E5B410F00478D82 /* ARTPushChannelSubscriptions.m */,
+			);
+			name = Admin;
+			sourceTree = "<group>";
+		};
+		D71966E71E5DFFC6000974DD /* Activation State Machine */ = {
+			isa = PBXGroup;
+			children = (
+				D71966E21E5DF360000974DD /* ARTPushActivationStateMachine.h */,
+				D71966E31E5DF360000974DD /* ARTPushActivationStateMachine.m */,
+				D71966E81E5E006E000974DD /* ARTPushActivationState.h */,
+				D71966E91E5E006E000974DD /* ARTPushActivationState.m */,
+				D71966EC1E5E0081000974DD /* ARTPushActivationEvent.h */,
+				D71966ED1E5E0081000974DD /* ARTPushActivationEvent.m */,
+			);
+			name = "Activation State Machine";
+			sourceTree = "<group>";
+		};
 		D746AE301BBC299D003ECEF8 /* Rest */ = {
 			isa = PBXGroup;
 			children = (
@@ -812,14 +850,10 @@
 				D785C4281E549E33008FEC05 /* ARTPushChannelSubscription.m */,
 				D7B621921E4A6FE600684474 /* ARTDeviceDetails.h */,
 				D7B621931E4A6FE600684474 /* ARTDeviceDetails.m */,
-				D7AE18C71E5B40C900478D82 /* ARTPushAdmin.h */,
-				D7AE18C81E5B40C900478D82 /* ARTPushAdmin.m */,
-				D7AE18CC1E5B40FE00478D82 /* ARTPushDeviceRegistrations.h */,
-				D7AE18CD1E5B40FE00478D82 /* ARTPushDeviceRegistrations.m */,
-				D7AE18D01E5B410F00478D82 /* ARTPushChannelSubscriptions.h */,
-				D7AE18D11E5B410F00478D82 /* ARTPushChannelSubscriptions.m */,
 				D768C6AA1E4B5B0200436011 /* ARTDevicePushDetails.h */,
 				D768C6AB1E4B5B0200436011 /* ARTDevicePushDetails.m */,
+				D71966E71E5DFFC6000974DD /* Activation State Machine */,
+				D71966E61E5DFFB2000974DD /* Admin */,
 			);
 			name = Push;
 			sourceTree = "<group>";
@@ -865,6 +899,8 @@
 				EB8AC6431C6515ED002ABA92 /* ARTTokenParams+Private.h in Headers */,
 				D75A3F1B1DDE5B62002A4AAD /* ARTGCD.h in Headers */,
 				D746AE1D1BBB5207003ECEF8 /* ARTDataQuery.h in Headers */,
+				D71966E41E5DF360000974DD /* ARTPushActivationStateMachine.h in Headers */,
+				D71966EA1E5E006E000974DD /* ARTPushActivationState.h in Headers */,
 				EB89D40F1C62303E007FA5B7 /* ARTConnection+Private.h in Headers */,
 				D746AE281BBB61C9003ECEF8 /* ARTPresence.h in Headers */,
 				EB89D4091C61C5ED007FA5B7 /* ARTRealtimeChannels.h in Headers */,
@@ -901,6 +937,7 @@
 				96BF61701A35FB7C004CF2B3 /* ARTAuth.h in Headers */,
 				96A507A11A377AA50077CDF8 /* ARTPresenceMessage.h in Headers */,
 				850BFB4C1B79323C009D0ADD /* ARTPaginatedResult.h in Headers */,
+				D71966EE1E5E0081000974DD /* ARTPushActivationEvent.h in Headers */,
 				D746AE1E1BBB5207003ECEF8 /* ARTDataQuery+Private.h in Headers */,
 				D7AE18C91E5B40C900478D82 /* ARTPushAdmin.h in Headers */,
 				D77394031C6F6FFE00F5478F /* ARTProtocolMessage+Private.h in Headers */,
@@ -1244,6 +1281,7 @@
 				D785C42A1E549E33008FEC05 /* ARTPushChannelSubscription.m in Sources */,
 				D7B17EE41C07208B00A6958E /* ARTConnectionDetails.m in Sources */,
 				96BF61591A35B52C004CF2B3 /* ARTHttp.m in Sources */,
+				D71966EB1E5E006E000974DD /* ARTPushActivationState.m in Sources */,
 				1C578E201B3435CA00EF46EC /* ARTFallback.m in Sources */,
 				96A507B61A37881C0077CDF8 /* ARTNSDate+ARTUtil.m in Sources */,
 				850BFB4D1B79323C009D0ADD /* ARTPaginatedResult.m in Sources */,
@@ -1259,6 +1297,7 @@
 				D7D29B421BE3DEB300374295 /* ARTConnection.m in Sources */,
 				96BF61711A35FB7C004CF2B3 /* ARTAuth.m in Sources */,
 				96E408441A38939E00087F77 /* ARTProtocolMessage.m in Sources */,
+				D71966E51E5DF360000974DD /* ARTPushActivationStateMachine.m in Sources */,
 				EB9121401CA0AD8200BA0A40 /* ARTMsgPackEncoder.m in Sources */,
 				96BF61651A35CDE1004CF2B3 /* ARTBaseMessage.m in Sources */,
 				D7F1D3781BF4DE72001A4B5E /* ARTRealtimePresence.m in Sources */,
@@ -1276,6 +1315,7 @@
 				D746AE291BBB61C9003ECEF8 /* ARTPresence.m in Sources */,
 				96A507BE1A3791490077CDF8 /* ARTRealtime.m in Sources */,
 				967A43221A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.m in Sources */,
+				D71966EF1E5E0081000974DD /* ARTPushActivationEvent.m in Sources */,
 				96A507A61A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

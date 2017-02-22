@@ -129,7 +129,7 @@ NSString *ARTRealtimeStateToStr(ARTRealtimeConnectionState state) {
 
 @end
 
-@implementation NSDictionary (NSURLQueryItem)
+@implementation NSDictionary (URLQueryItemAdditions)
 
 - (NSArray<NSURLQueryItem *> *)asURLQueryItems {
     NSMutableArray<NSURLQueryItem *> *items = [NSMutableArray new];
@@ -140,6 +140,25 @@ NSString *ARTRealtimeStateToStr(ARTRealtimeConnectionState state) {
         }
     }
     return items;
+}
+
+@end
+
+@implementation NSMutableArray (QueueAdditions)
+
+- (void)enqueue:(id)object {
+    [self addObject:object];
+}
+
+- (id)dequeue {
+    id item = [self firstObject];
+    if (item) [self removeObjectAtIndex:0];
+    return item;
+
+}
+
+- (id)peek {
+    return [self firstObject];
 }
 
 @end

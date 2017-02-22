@@ -14,6 +14,7 @@
 #import "ARTJsonEncoder.h"
 #import "ARTJsonLikeEncoder.h"
 #import "ARTEventEmitter.h"
+#import "ARTPushActivationStateMachine.h"
 
 typedef NS_ENUM(NSUInteger, ARTPushState) {
     ARTPushStateDeactivated,
@@ -52,6 +53,16 @@ typedef NS_ENUM(NSUInteger, ARTPushState) {
 
 - (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
     [_logger error:@"ARTPush: device token not received (%@)", [error localizedDescription]];
+}
+
++ (ARTPushActivationStateMachine *)activationMachine {
+    static dispatch_once_t once;
+    static id activationMachineInstance;
+    dispatch_once(&once, ^{
+        // Error: ARTPush.m:62:81: Instance variable '_httpExecutor' accessed in class method
+        //activationMachineInstance = [[ARTPushActivationStateMachine alloc] init:_httpExecutor];
+    });
+    return activationMachineInstance;
 }
 
 - (void)publish:(ARTPushRecipient *)recipient jsonObject:(ARTJsonObject *)jsonObject {
