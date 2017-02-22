@@ -11,7 +11,21 @@
 #import <ULID/ULID.h>
 
 NSString *const ARTDevicePlatform = @"ios";
-NSString *const ARTDeviceFormFactor = @"mobile";
+
+#if TARGET_OS_IOS
+#import <UIKit/UIKit.h>
+NSString *const ARTDeviceFormFactor = @"phone";
+#elif TARGET_OS_TV
+NSString *const ARTDeviceFormFactor = @"tv";
+#elif TARGET_OS_WATCH
+NSString *const ARTDeviceFormFactor = @"watch";
+#elif TARGET_OS_SIMULATOR
+NSString *const ARTDeviceFormFactor = @"simulator";
+#elif TARGET_OS_MAC
+NSString *const ARTDeviceFormFactor = @"desktop";
+#else
+NSString *const ARTDeviceFormFactor = @"embedded";
+#endif
 
 NSString *const ARTDeviceIdKey = @"ARTDeviceId";
 
@@ -40,7 +54,14 @@ NSString *const ARTDeviceIdKey = @"ARTDeviceId";
 }
 
 - (NSString *)formFactor {
-    return ARTDeviceFormFactor;
+    switch (UI_USER_INTERFACE_IDIOM()) {
+        case UIUserInterfaceIdiomPad:
+            return @"tablet";
+        case UIUserInterfaceIdiomCarPlay:
+            return @"car";
+        default:
+            return ARTDeviceFormFactor;
+    }
 }
 
 @end

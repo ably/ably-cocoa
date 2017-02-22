@@ -23,7 +23,7 @@ typedef ARTJsonObject ARTPushRecipient;
 
 #pragma mark ARTPushNotifications interface
 
-#ifdef TARGET_OS_IPHONE //iOS system
+#ifdef TARGET_OS_IOS
 @protocol ARTPushNotifications<NSObject>
 - (void)didRegisterForRemoteNotificationsWithDeviceToken:(nonnull NSData *)deviceToken;
 - (void)didFailToRegisterForRemoteNotificationsWithError:(nonnull NSError *)error;
@@ -35,7 +35,7 @@ typedef ARTJsonObject ARTPushRecipient;
 
 NS_ASSUME_NONNULL_BEGIN
 
-#ifdef TARGET_OS_IPHONE //iOS system
+#ifdef TARGET_OS_IOS
 @interface ARTPush : NSObject <ARTPushNotifications>
 #else
 @interface ARTPush : NSObject
@@ -49,7 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// Publish a push notification.
 - (void)publish:(ARTPushRecipient *)recipient jsonObject:(ARTJsonObject *)jsonObject;
 
-#ifdef TARGET_OS_IPHONE //iOS system
+#ifdef TARGET_OS_IOS
 /// Register a device, including the information necessary to deliver push notifications to it.
 - (void)activate;
 - (void)activateWithRegisterCallback:(void (^)(ARTDeviceDetails * _Nullable, ARTErrorInfo * _Nullable,  void (^ _Nullable)(ARTUpdateToken * _Nullable, ARTErrorInfo * _Nullable)))registerCallback;
