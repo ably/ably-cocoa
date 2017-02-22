@@ -620,8 +620,11 @@
     dictionary[@"transportType"] = devicePushDetails.transportType;
 
     if (devicePushDetails.deviceToken) {
+        // HEX string, i.e.: <12ce7dda 8032c423 8f8bd40f 3484e5bb f4698da5 8b7fdf8d 5c55e0a2 XXXXXXXX>
+        // Normalizing token by removing symbols and spaces, i.e.: 12ce7dda8032c4238f8bd40f3484e5bbf4698da58b7fdf8d5c55e0a2XXXXXXXX
+        NSString *token = [[[devicePushDetails.deviceToken description] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]] stringByReplacingOccurrencesOfString:@" " withString:@""];
         dictionary[@"metadata"] = @{
-            @"deviceToken": [devicePushDetails.deviceToken description], // HEX string
+            @"deviceToken": token,
         };
     }
 
