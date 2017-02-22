@@ -57,10 +57,10 @@ typedef NS_ENUM(NSUInteger, ARTPushState) {
 - (void)publish:(ARTPushRecipient *)recipient jsonObject:(ARTJsonObject *)jsonObject {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/publish"]];
     request.HTTPMethod = @"POST";
-    request.HTTPBody = [[_httpExecutor defaultEncoder] encode:@{
-        @"recipient": recipient,
-        @"push": jsonObject,
-    }];
+    NSMutableDictionary *body = [NSMutableDictionary dictionary];
+    [body setObject:recipient forKey:@"recipient"];
+    [body addEntriesFromDictionary:jsonObject];
+    request.HTTPBody = [[_httpExecutor defaultEncoder] encode:body];
     [request setValue:[[_httpExecutor defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"push notification to a single device %@", request];
