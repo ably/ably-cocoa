@@ -233,7 +233,7 @@ class RestClient: QuickSpec {
                 it("timeout for any single HTTP request and response") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.restHost = "10.255.255.1" //non-routable IP address
-                    expect(options.httpRequestTimeout).to(equal(15.0)) //Seconds
+                    expect(options.httpRequestTimeout).to(equal(10.0)) //Seconds
                     options.httpRequestTimeout = 1.0
                     let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
@@ -277,7 +277,7 @@ class RestClient: QuickSpec {
 
                 it("max elapsed time in which fallback host retries for HTTP requests will be attempted") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
-                    expect(options.httpMaxRetryDuration).to(equal(10.0)) //Seconds
+                    expect(options.httpMaxRetryDuration).to(equal(15.0)) //Seconds
                     options.httpMaxRetryDuration = 1.0
                     let client = ARTRest(options: options)
                     client.httpExecutor = testHTTPExecutor
