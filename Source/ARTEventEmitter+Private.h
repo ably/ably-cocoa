@@ -22,8 +22,8 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface __GENERIC(ARTEventEmitter, EventType, ItemType) ()
 
-@property (readwrite, nonatomic) __GENERIC(NSMutableDictionary, EventType, __GENERIC(NSMutableArray, __GENERIC(ARTEventEmitterEntry, ItemType) *) *) *listeners;
-@property (readwrite, nonatomic) __GENERIC(NSMutableArray, __GENERIC(ARTEventEmitterEntry, ItemType) *) *anyListeners;
+@property (readwrite, atomic) __GENERIC(NSMutableDictionary, EventType, __GENERIC(NSMutableArray, __GENERIC(ARTEventEmitterEntry, ItemType) *) *) *listeners;
+@property (readwrite, atomic) __GENERIC(NSMutableArray, __GENERIC(ARTEventEmitterEntry, ItemType) *) *anyListeners;
 
 @end
 

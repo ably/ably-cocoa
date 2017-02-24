@@ -204,7 +204,9 @@
             [entry.listener off];
         }
         for (ARTEventEmitterEntry *entry in toRemoveFromTotalListeners) {
-            [self.anyListeners removeObject:entry];
+            @synchronized(self.anyListeners) {
+                [self.anyListeners removeObject:entry];
+            }
             [entry.listener off];
         }
         for (ARTEventEmitterEntry *entry in toCall) {
@@ -227,9 +229,13 @@
     if (array == nil) {
         return;
     }
-    [array removeObject:obj];
+    @synchronized(array) {
+        [array removeObject:obj];
+    }
     if ([array count] == 0) {
-        [dict removeObjectForKey:key];
+        @synchronized(dict) {
+            [dict removeObjectForKey:key];
+        }
     }
 }
 
@@ -238,9 +244,13 @@
     if (array == nil) {
         return;
     }
-    [array artRemoveWhere:cond];
+    @synchronized(array) {
+        [array artRemoveWhere:cond];
+    }
     if ([array count] == 0) {
-        [dict removeObjectForKey:key];
+        @synchronized(dict) {
+            [dict removeObjectForKey:key];
+        }
     }
 }
 
