@@ -90,7 +90,7 @@
     
     ARTProtocolMessage * msg = [[ARTProtocolMessage alloc] init];
     msg.action = ARTProtocolMessageSync;
-    msg.msgSerial = self.presenceMap.syncMsgSerial;
+    msg.msgSerial = [NSNumber numberWithLongLong:self.presenceMap.syncMsgSerial];
     msg.channelSerial = self.presenceMap.syncChannelSerial;
     msg.channel = self.name;
 
@@ -514,7 +514,7 @@
 }
 
 - (void)onSync:(ARTProtocolMessage *)message {
-    self.presenceMap.syncMsgSerial = message.msgSerial;
+    self.presenceMap.syncMsgSerial = [message.msgSerial longLongValue];
     self.presenceMap.syncChannelSerial = message.channelSerial;
 
     if (message.action == ARTProtocolMessageSync)
