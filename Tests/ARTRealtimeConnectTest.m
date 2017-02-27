@@ -129,7 +129,6 @@
                 }];
             }];
             [c publish:nil data:@"message" callback:^(ARTErrorInfo *errorInfo) {
-                XCTAssertEqual(realtime.connection.serial, -1);
                 [c publish:nil data:@"message2" callback:^(ARTErrorInfo *errorInfo) {
                     [expectation fulfill];
                 }];

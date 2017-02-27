@@ -292,14 +292,15 @@ class RealtimeClientPresence: QuickSpec {
                             expect(error).to(beNil())
                             expect(channel2.queuedMessages).to(haveCount(0))
                             expect(channel2.state).to(equal(ARTRealtimeChannelState.Attached))
-
+                        }
+                        channel2.presence.subscribe(.Enter) { _ in
                             if channel2.presence.syncComplete {
                                 expect(channel2.presenceMap.members).to(haveCount(2))
                             }
                             else {
                                 expect(channel2.presenceMap.members).to(haveCount(1))
                             }
-
+                            channel2.presence.unsubscribe()
                             done()
                         }
 

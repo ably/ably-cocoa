@@ -490,7 +490,15 @@ class RestClientPresence: QuickSpec {
                 var realtime = ARTRealtime(options: options)
                 defer { realtime.dispose(); realtime.close() }
                 waitUntil(timeout: testTimeout) { done in
-                    realtime.channels.get("test").presence.enterClient("john", data: expectedData) { _ in done() }
+                    let partialDone = AblyTests.splitDone(2, done: done)
+                    let channel = realtime.channels.get("test")
+                    channel.presence.enterClient("john", data: expectedData) { _ in
+                        partialDone()
+                    }
+                    channel.presence.subscribe { _ in
+                        channel.presence.unsubscribe()
+                        partialDone()
+                    }
                 }
 
                 typealias Done = () -> Void
