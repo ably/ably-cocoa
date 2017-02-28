@@ -8,21 +8,24 @@
 
 #import <Foundation/Foundation.h>
 
-@class ARTLog;
+@class ARTErrorInfo;
+@class ARTPushActivationEvent;
 
 @protocol ARTHTTPAuthenticatedExecutor;
 
 NS_ASSUME_NONNULL_BEGIN
 
-// TODO: this should not be available to user's
 @interface ARTPushActivationStateMachine : NSObject
 
-@property (nonatomic, readonly) id<ARTHTTPAuthenticatedExecutor> httpExecutor;
-@property (nonatomic, readonly) ARTLog *logger;
+- (instancetype)init;
 
-- (instancetype)init NS_UNAVAILABLE;
-- (instancetype)init:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor;
+- (void)sendEvent:(ARTPushActivationEvent *)event;
 
+@end
+
+@interface ARTPushActivationStateMachine (Protected)
+- (void)deviceRegistration:(nullable ARTErrorInfo *)error;
+- (void)callDeactivatedCallback:(nullable ARTErrorInfo *)error;
 @end
 
 NS_ASSUME_NONNULL_END

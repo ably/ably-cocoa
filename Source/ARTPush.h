@@ -9,7 +9,6 @@
 #import <Foundation/Foundation.h>
 #import "ARTTypes.h"
 
-@class ARTRest;
 @class ARTDeviceDetails;
 
 @protocol ARTHTTPAuthenticatedExecutor;
@@ -21,25 +20,37 @@ typedef NSString ARTUpdateToken;
 typedef ARTJsonObject ARTPushRecipient;
 
 
-#pragma mark ARTPushNotifications interface
+#pragma mark ARTPushRegisterer interface
 
-#ifdef TARGET_OS_IOS
-@protocol ARTPushNotifications<NSObject>
-- (void)didRegisterForRemoteNotificationsWithDeviceToken:(nonnull NSData *)deviceToken;
-- (void)didFailToRegisterForRemoteNotificationsWithError:(nonnull NSError *)error;
+@protocol ARTPushRegistererDelegate
+
+- (void)ablyPushRegisterCallback:(nullable ARTErrorInfo *)error;
+- (void)ablyPushDeregisterCallback:(nullable ARTErrorInfo *)error;
+
+@optional
+
+// Key with push-subscribe capability
+- (nonnull NSString *)ablyPushAuthKey;
+
+// Token with push-subscribe capability (when registering with a client ID, the token must be associated with it)
+- (nonnull NSString *)ablyPushAuthToken;
+- (nullable NSString *)ablyPushClientId;
+
+- (void)ablyPushCustomRegister:(nullable ARTErrorInfo *)error deviceDetails:(nullable ARTDeviceDetails *)deviceDetails callback:(void (^ _Nonnull)(ARTUpdateToken * _Nonnull, ARTErrorInfo * _Nullable))callback;
+- (void)ablyPushCustomDeregister:(nullable ARTErrorInfo *)error deviceId:(nullable ARTDeviceId *)deviceId callback:(void (^ _Nullable)(ARTErrorInfo * _Nullable))callback;
+
 @end
-#endif
 
 
 #pragma mark ARTPush type
 
 NS_ASSUME_NONNULL_BEGIN
 
-#ifdef TARGET_OS_IOS
-@interface ARTPush : NSObject <ARTPushNotifications>
-#else
+extern NSString *const ARTDeviceIdKey;
+extern NSString *const ARTDeviceUpdateTokenKey;
+extern NSString *const ARTDeviceTokenKey;
+
 @interface ARTPush : NSObject
-#endif
 
 @property (nonatomic, readonly) ARTDeviceDetails *device;
 
@@ -50,12 +61,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)publish:(ARTPushRecipient *)recipient jsonObject:(ARTJsonObject *)jsonObject;
 
 #ifdef TARGET_OS_IOS
+/// Push Registration token
++ (void)didRegisterForRemoteNotificationsWithDeviceToken:(nonnull NSData *)deviceToken;
++ (void)didFailToRegisterForRemoteNotificationsWithError:(nonnull NSError *)error;
+
 /// Register a device, including the information necessary to deliver push notifications to it.
 - (void)activate;
-- (void)activateWithRegisterCallback:(void (^)(ARTDeviceDetails * _Nullable, ARTErrorInfo * _Nullable,  void (^ _Nullable)(ARTUpdateToken * _Nullable, ARTErrorInfo * _Nullable)))registerCallback;
+
 /// Unregister a device.
 - (void)deactivate;
-- (void)deactivateWithDeregisterCallback:(void (^)(ARTDeviceId * _Nullable, ARTErrorInfo * _Nullable, void (^ _Nullable)(ARTErrorInfo * _Nullable)))deregisterCallback;
 #endif
 
 @end

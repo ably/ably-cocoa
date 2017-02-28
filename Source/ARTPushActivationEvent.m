@@ -7,6 +7,7 @@
 //
 
 #import "ARTPushActivationEvent.h"
+#import "ARTTypes.h"
 
 @implementation ARTPushActivationEvent
 
@@ -28,29 +29,45 @@
 
 @end
 
-@implementation ARTPushActivationCalledActivateEvent
+
+@implementation ARTPushActivationErrorEvent
+
+- (instancetype)initWithError:(ARTErrorInfo *)error {
+    if (self = [super init]) {
+        _error = error;
+    }
+    return self;
+}
+
++ (instancetype)newWithError:(ARTErrorInfo *)error {
+    return [[self alloc] initWithError:error];
+}
+
 @end
 
-@implementation ARTPushActivationCalledDeactivateEvent
+@implementation ARTPushActivationEventCalledActivate
 @end
 
-@implementation ARTPushActivationGotPushDeviceDetailsEvent
+@implementation ARTPushActivationEventCalledDeactivate
 @end
 
-@implementation ARTPushActivationGotUpdateTokenEvent
+@implementation ARTPushActivationEventGotPushDeviceDetails
 @end
 
-@implementation ARTPushActivationGettingUpdateTokenFailedEvent
+@implementation ARTPushActivationEventGotUpdateToken
 @end
 
-@implementation ARTPushActivationRegistrationUpdatedEvent
+@implementation ARTPushActivationEventGettingUpdateTokenFailed
 @end
 
-@implementation ARTPushActivationUpdatingRegistrationFailedEvent
+@implementation ARTPushActivationEventRegistrationUpdated
 @end
 
-@implementation ARTPushActivationDeregisteredEvent
+@implementation ARTPushActivationEventUpdatingRegistrationFailed
 @end
 
-@implementation ARTPushActivationDeregistrationFailedEvent
+@implementation ARTPushActivationEventDeregistered
+@end
+
+@implementation ARTPushActivationEventDeregistrationFailed
 @end

@@ -17,33 +17,40 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine;
++ (instancetype)new NS_UNAVAILABLE;
++ (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine;
 
 - (nullable ARTPushActivationState *)transition:(ARTPushActivationEvent *)event;
 
 @end
 
-@interface ARTPushActivationNotActivatedState : ARTPushActivationState
+@interface ARTPushActivationPersistentState : ARTPushActivationState
 @end
 
-@interface ARTPushActivationCalledActivateState : ARTPushActivationState
+#pragma mark - States
+
+@interface ARTPushActivationStateNotActivated : ARTPushActivationPersistentState
 @end
 
-@interface ARTPushActivationWaitingForUpdateTokenState : ARTPushActivationState
+@interface ARTPushActivationStateCalledActivate : ARTPushActivationState
 @end
 
-@interface ARTPushActivationWaitingForPushDeviceDetailsState : ARTPushActivationState
+@interface ARTPushActivationStateWaitingForUpdateToken : ARTPushActivationState
 @end
 
-@interface ARTPushActivationWaitingForNewPushDeviceDetailsState : ARTPushActivationState
+@interface ARTPushActivationStateWaitingForPushDeviceDetails : ARTPushActivationPersistentState
 @end
 
-@interface ARTPushActivationWaitingForRegistrationUpdateState : ARTPushActivationState
+@interface ARTPushActivationStateWaitingForNewPushDeviceDetails : ARTPushActivationPersistentState
 @end
 
-@interface ARTPushActivationWaitingForDeregistrationState : ARTPushActivationState
+@interface ARTPushActivationStateWaitingForRegistrationUpdate : ARTPushActivationState
 @end
 
-@interface ARTPushActivationAfterRegistrationUpdateFailedState : ARTPushActivationState
+@interface ARTPushActivationStateWaitingForDeregistration : ARTPushActivationState
+@end
+
+@interface ARTPushActivationStateAfterRegistrationUpdateFailed : ARTPushActivationPersistentState
 @end
 
 NS_ASSUME_NONNULL_END

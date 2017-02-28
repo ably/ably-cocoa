@@ -9,8 +9,6 @@
 #import "ARTDevicePushDetails.h"
 #import "ARTPush.h"
 
-NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
-
 NSString *const ARTDevicePushTransportType = @"apns";
 
 ARTDevicePushState ARTDevicePushStateFromStr(NSString *value) {

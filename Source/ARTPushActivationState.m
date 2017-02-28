@@ -9,6 +9,8 @@
 #import "ARTPushActivationState.h"
 #import "ARTPushActivationStateMachine.h"
 #import "ARTPushActivationEvent.h"
+#import "ARTLocalDevice.h"
+#import "ARTDevicePushDetails.h"
 #import "ARTLog.h"
 
 @interface ARTPushActivationState ()
@@ -26,13 +28,17 @@
     return self;
 }
 
++ (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine {
+    return [[ARTPushActivationState alloc] initWithMachine:machine];
+}
+
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
     NSAssert(false, @"-[%s:%d %s] should always be overriden.", __FILE__, __LINE__, __FUNCTION__);
     return nil;
 }
 
 - (void)logEventTransition:(ARTPushActivationEvent *)event file:(const char *)file line:(NSUInteger)line {
-    [[self.machine logger] debug:__FILE__ line:__LINE__ message:@"%@ state: transitioning to %@ event", NSStringFromClass(self.class), NSStringFromClass(event.class)];
+    NSLog(@"%@ state: transitioning to %@ event", NSStringFromClass(self.class), NSStringFromClass(event.class));
 }
 
 - (id)copyWithZone:(NSZone *)zone {
@@ -53,26 +59,42 @@
 
 @end
 
+#pragma mark - Persistent State
+
+@implementation ARTPushActivationPersistentState
+@end
 
 #pragma mark - Activation States
 
-@implementation ARTPushActivationNotActivatedState
+@implementation ARTPushActivationStateNotActivated
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
-    if ([event isKindOfClass:[ARTPushActivationCalledDeactivateEvent class]]) {
+    if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
         [self logEventTransition:event file:__FILE__ line:__LINE__];
-        // TODO
+        [self.machine callDeactivatedCallback:nil];
+        return self;
     }
-    else if ([event isKindOfClass:[ARTPushActivationCalledActivateEvent class]]) {
+    else if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
         [self logEventTransition:event file:__FILE__ line:__LINE__];
-        // TODO
+        ARTLocalDevice *local = [ARTLocalDevice local];
+
+        if (local.updateToken != nil) {
+            // Already registered.
+            return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
+        }
+
+        if (local.registrationToken == nil) {
+            [self.machine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
+        }
+
+        return [ARTPushActivationStateWaitingForPushDeviceDetails newWithMachine:self.machine];
     }
     return nil;
 }
 
 @end
 
-@implementation ARTPushActivationCalledActivateState
+@implementation ARTPushActivationStateCalledActivate
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
     // TODO
@@ -81,7 +103,7 @@
 
 @end
 
-@implementation ARTPushActivationWaitingForUpdateTokenState
+@implementation ARTPushActivationStateWaitingForUpdateToken
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
     // TODO
@@ -90,7 +112,26 @@
 
 @end
 
-@implementation ARTPushActivationWaitingForPushDeviceDetailsState
+@implementation ARTPushActivationStateWaitingForPushDeviceDetails
+
+- (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
+    if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
+        return [ARTPushActivationStateCalledActivate newWithMachine:self.machine];
+    }
+    else if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
+        [self.machine callDeactivatedCallback:nil];
+        return [ARTPushActivationStateNotActivated newWithMachine:self.machine];
+    }
+    else if ([event isKindOfClass:[ARTPushActivationEventGotPushDeviceDetails class]]) {
+        [self.machine deviceRegistration:nil];
+        return [ARTPushActivationStateWaitingForUpdateToken newWithMachine:self.machine];
+    }
+    return nil;
+}
+
+@end
+
+@implementation ARTPushActivationStateWaitingForNewPushDeviceDetails
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
     // TODO
@@ -99,7 +140,7 @@
 
 @end
 
-@implementation ARTPushActivationWaitingForNewPushDeviceDetailsState
+@implementation ARTPushActivationStateWaitingForRegistrationUpdate
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
     // TODO
@@ -108,7 +149,7 @@
 
 @end
 
-@implementation ARTPushActivationWaitingForRegistrationUpdateState
+@implementation ARTPushActivationStateWaitingForDeregistration
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
     // TODO
@@ -117,16 +158,7 @@
 
 @end
 
-@implementation ARTPushActivationWaitingForDeregistrationState
-
-- (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
-    // TODO
-    return nil;
-}
-
-@end
-
-@implementation ARTPushActivationAfterRegistrationUpdateFailedState
+@implementation ARTPushActivationStateAfterRegistrationUpdateFailed
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
     // TODO

@@ -8,7 +8,6 @@
 
 #import "ARTDeviceDetails.h"
 #import "ARTDevicePushDetails.h"
-#import <ULID/ULID.h>
 
 NSString *const ARTDevicePlatform = @"ios";
 
@@ -27,19 +26,7 @@ NSString *const ARTDeviceFormFactor = @"desktop";
 NSString *const ARTDeviceFormFactor = @"embedded";
 #endif
 
-NSString *const ARTDeviceIdKey = @"ARTDeviceId";
-
 @implementation ARTDeviceDetails
-
-+ (instancetype)fromLocalDevice {
-    NSString *deviceId = [[NSUserDefaults standardUserDefaults] stringForKey:ARTDeviceIdKey];
-    if (!deviceId) {
-        deviceId = [[ULID new] ulidString];
-        [[NSUserDefaults standardUserDefaults] setObject:deviceId forKey:ARTDeviceIdKey];
-        [[NSUserDefaults standardUserDefaults] synchronize];
-    }
-    return [[ARTDeviceDetails alloc] initWithId:deviceId];
-}
 
 - (instancetype)initWithId:(ARTDeviceId *)deviceId {
     if (self = [super init]) {

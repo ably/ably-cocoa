@@ -12,8 +12,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern NSString *const ARTDeviceTokenKey;
-
 extern NSString *const ARTDevicePushTransportType;
 
 typedef NS_ENUM(NSUInteger, ARTDevicePushState) {

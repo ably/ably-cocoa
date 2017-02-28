@@ -8,33 +8,46 @@
 
 #import <Foundation/Foundation.h>
 
-@interface ARTPushActivationEvent : NSObject
+@class ARTErrorInfo;
+
+@interface ARTPushActivationEvent : NSObject <NSCoding>
 
 @end
 
-@interface ARTPushActivationCalledActivateEvent : ARTPushActivationEvent
+@interface ARTPushActivationErrorEvent : ARTPushActivationEvent
+
+@property (nonatomic, readonly) ARTErrorInfo *error;
+
+- (instancetype)initWithError:(ARTErrorInfo *)error;
++ (instancetype)newWithError:(ARTErrorInfo *)error;
+
 @end
 
-@interface ARTPushActivationCalledDeactivateEvent : ARTPushActivationEvent
+#pragma mark - Events
+
+@interface ARTPushActivationEventCalledActivate : ARTPushActivationEvent
 @end
 
-@interface ARTPushActivationGotPushDeviceDetailsEvent : ARTPushActivationEvent
+@interface ARTPushActivationEventCalledDeactivate : ARTPushActivationEvent
 @end
 
-@interface ARTPushActivationGotUpdateTokenEvent : ARTPushActivationEvent
+@interface ARTPushActivationEventGotPushDeviceDetails : ARTPushActivationEvent
 @end
 
-@interface ARTPushActivationGettingUpdateTokenFailedEvent : ARTPushActivationEvent
+@interface ARTPushActivationEventGotUpdateToken : ARTPushActivationEvent
 @end
 
-@interface ARTPushActivationRegistrationUpdatedEvent : ARTPushActivationEvent
+@interface ARTPushActivationEventGettingUpdateTokenFailed : ARTPushActivationErrorEvent
 @end
 
-@interface ARTPushActivationUpdatingRegistrationFailedEvent : ARTPushActivationEvent
+@interface ARTPushActivationEventRegistrationUpdated : ARTPushActivationEvent
 @end
 
-@interface ARTPushActivationDeregisteredEvent : ARTPushActivationEvent
+@interface ARTPushActivationEventUpdatingRegistrationFailed : ARTPushActivationErrorEvent
 @end
 
-@interface ARTPushActivationDeregistrationFailedEvent : ARTPushActivationEvent
+@interface ARTPushActivationEventDeregistered : ARTPushActivationEvent
+@end
+
+@interface ARTPushActivationEventDeregistrationFailed : ARTPushActivationErrorEvent
 @end

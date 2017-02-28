@@ -29,8 +29,6 @@ extern NSString *const ARTDeviceFormFactor;
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithId:(ARTDeviceId *)deviceId;
 
-+ (instancetype)fromLocalDevice;
-
 @end
 
 NS_ASSUME_NONNULL_END

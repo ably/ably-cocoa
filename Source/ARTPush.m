@@ -15,54 +15,44 @@
 #import "ARTJsonLikeEncoder.h"
 #import "ARTEventEmitter.h"
 #import "ARTPushActivationStateMachine.h"
+#import "ARTPushActivationEvent.h"
 
-typedef NS_ENUM(NSUInteger, ARTPushState) {
-    ARTPushStateDeactivated,
-    ARTPushStateActivated,
-};
-
-@interface ARTPush ()
-
-@property (nonatomic, readonly) ARTPushState state;
-
-@end
+NSString *const ARTDeviceIdKey = @"ARTDeviceId";
+NSString *const ARTDeviceUpdateTokenKey = @"ARTDeviceUpdateToken";
+NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
 @implementation ARTPush {
     id<ARTHTTPAuthenticatedExecutor> _httpExecutor;
     __weak ARTLog *_logger;
-    ARTEventEmitter<NSNull *, ARTDeviceToken *> *_deviceTokenEmitter;
 }
 
 - (instancetype)init:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor {
     if (self = [super init]) {
         _httpExecutor = httpExecutor;
         _logger = [httpExecutor logger];
-        _device = [ARTDeviceDetails fromLocalDevice];
-        _state = ARTPushStateDeactivated;
-        _deviceTokenEmitter = [[ARTEventEmitter alloc] init];
     }
     return self;
-}
-
-- (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
-    [_logger info:@"ARTPush: device token received and stored"];
-    [[NSUserDefaults standardUserDefaults] setObject:deviceToken forKey:ARTDeviceTokenKey];
-    [[NSUserDefaults standardUserDefaults] synchronize];
-    [_deviceTokenEmitter emit:[NSNull null] with:deviceToken];
-}
-
-- (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
-    [_logger error:@"ARTPush: device token not received (%@)", [error localizedDescription]];
 }
 
 + (ARTPushActivationStateMachine *)activationMachine {
     static dispatch_once_t once;
     static id activationMachineInstance;
     dispatch_once(&once, ^{
-        // Error: ARTPush.m:62:81: Instance variable '_httpExecutor' accessed in class method
-        //activationMachineInstance = [[ARTPushActivationStateMachine alloc] init:_httpExecutor];
+        activationMachineInstance = [[ARTPushActivationStateMachine alloc] init];
     });
     return activationMachineInstance;
+}
+
++ (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+    NSLog(@"ARTPush: device token received and stored");
+    [[NSUserDefaults standardUserDefaults] setObject:deviceToken forKey:ARTDeviceTokenKey];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    [[ARTPush activationMachine] sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
+}
+
++ (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
+    NSLog(@"ARTPush: device token not received (%@)", [error localizedDescription]);
+    [[ARTPush activationMachine] sendEvent:[ARTPushActivationEventGettingUpdateTokenFailed newWithError:[ARTErrorInfo createWithNSError:error]]];
 }
 
 - (void)publish:(ARTPushRecipient *)recipient jsonObject:(ARTJsonObject *)jsonObject {
@@ -89,141 +79,11 @@ typedef NS_ENUM(NSUInteger, ARTPushState) {
 }
 
 - (void)activate {
-    [self activate:self.device registerCallback:nil];
-}
-
-- (void)activateWithRegisterCallback:(void (^)(ARTDeviceDetails *, ARTErrorInfo *, void (^)(ARTUpdateToken *, ARTErrorInfo *)))registerCallback {
-    [self activate:self.device registerCallback:registerCallback];
-}
-
-- (void)activate:(ARTDeviceDetails *)deviceDetails registerCallback:(void (^)(ARTDeviceDetails *, ARTErrorInfo *, void (^)(ARTUpdateToken *, ARTErrorInfo *)))registerCallback {
-    if (self.state == ARTPushStateActivated) {
-        return;
-    }
-
-    NSData *deviceToken = [[NSUserDefaults standardUserDefaults] dataForKey:ARTDeviceTokenKey];
-    if (!deviceToken) {
-        // Waiting for device token
-        [_deviceTokenEmitter once:^(ARTDeviceToken *deviceToken) {
-            [self activate:deviceDetails registerCallback:registerCallback];
-        }];
-        return;
-    }
-
-    if (registerCallback) {
-        registerCallback(deviceDetails, nil, ^(ARTUpdateToken *updateToken, ARTErrorInfo *error) {
-            if (updateToken) {
-                self.device.updateToken = updateToken;
-            }
-            if (error) {
-                [_logger error:@"%@: device registration using a `registerCallback` failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
-            }
-        });
-        return;
-    }
-
-    if (self.device.updateToken) {
-        [self updateDevice:deviceDetails];
-    }
-    else {
-        [self newDevice:deviceDetails];
-    }
+    [[ARTPush activationMachine] sendEvent:[ARTPushActivationEventCalledActivate new]];
 }
 
 - (void)deactivate {
-    [self deactivate:self.device.id deregisterCallback:nil];
-}
-
-- (void)deactivateWithDeregisterCallback:(void (^)(ARTDeviceId *, ARTErrorInfo *, void (^)(ARTErrorInfo *)))deregisterCallback {
-    [self deactivate:self.device.id deregisterCallback:deregisterCallback];
-}
-
-- (void)deactivate:(ARTDeviceId *)deviceId deregisterCallback:(void (^)(ARTDeviceId *, ARTErrorInfo *, void (^)(ARTErrorInfo *)))deregisterCallback {
-    if (deregisterCallback) {
-        deregisterCallback(deviceId, nil, ^(ARTErrorInfo *error) {
-            if (error) {
-                [_logger error:@"%@: device deregistration using a `deregisterCallback` failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
-            }
-        });
-        return;
-    }
-
-    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"] resolvingAgainstBaseURL:NO];
-    components.queryItems = @[
-        [NSURLQueryItem queryItemWithName:@"deviceId" value:deviceId],
-    ];
-
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
-    request.HTTPMethod = @"DELETE";
-
-    [_logger debug:__FILE__ line:__LINE__ message:@"device deregistration with request %@", request];
-    [_httpExecutor executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
-        if (response.statusCode == 200 /*OK*/) {
-            [_logger debug:__FILE__ line:__LINE__ message:@"successfully deactivate device"];
-            self.device.updateToken = nil;
-        }
-        else if (error) {
-            [_logger error:@"%@: device deregistration failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
-        }
-        else {
-            [_logger error:@"%@: device deregistration failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
-        }
-    }];
-}
-
-- (void)newDevice:(ARTDeviceDetails *)deviceDetails {
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"]];
-    request.HTTPMethod = @"POST";
-    request.HTTPBody = [[_httpExecutor defaultEncoder] encodeDeviceDetails:deviceDetails];
-    [request setValue:[[_httpExecutor defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
-
-    [_logger debug:__FILE__ line:__LINE__ message:@"device registration with request %@", request];
-    [_httpExecutor executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
-        if (response.statusCode == 201 /*Created*/) {
-            ARTDeviceDetails *deviceDetails = [[_httpExecutor defaultEncoder] decodeDeviceDetails:data error:nil];
-            self.device.updateToken = deviceDetails.updateToken;
-        }
-        else if (error) {
-            [_logger error:@"%@: device registration failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
-        }
-        else {
-            [_logger error:@"%@: device registration failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
-        }
-    }];
-}
-
-- (void)updateDevice:(ARTDeviceDetails *)deviceDetails {
-    if (!deviceDetails.updateToken) {
-        [_logger error:@"%@: update token is missing", NSStringFromClass(self.class)];
-        return;
-    }
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceDetails.id]];
-    NSData *tokenData = [deviceDetails.updateToken dataUsingEncoding:NSUTF8StringEncoding];
-    NSString *tokenBase64 = [tokenData base64EncodedStringWithOptions:0];
-    [request setValue:[NSString stringWithFormat:@"Bearer %@", tokenBase64] forHTTPHeaderField:@"Authorization"];
-    request.HTTPMethod = @"PUT";
-    request.HTTPBody = [[_httpExecutor defaultEncoder] encode:@{
-        @"push": @{
-            @"metadata": @{
-                @"deviceToken": deviceDetails.push.deviceToken,
-            }
-        }
-    }];
-    [request setValue:[[_httpExecutor defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
-
-    [_logger debug:__FILE__ line:__LINE__ message:@"update device with request %@", request];
-    [_httpExecutor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
-        if (response.statusCode == 200 /*OK*/) {
-            ARTDeviceDetails *deviceDetails = [[_httpExecutor defaultEncoder] decodeDeviceDetails:data error:nil];
-            self.device.updateToken = deviceDetails.updateToken;
-        }
-        else if (error) {
-            [_logger error:@"%@: update device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
-        }
-        else {
-            [_logger error:@"%@: update device failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
-        }
-    }];
+    [[ARTPush activationMachine] sendEvent:[ARTPushActivationEventCalledDeactivate new]];
 }
 
 @end
