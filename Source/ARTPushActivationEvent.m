@@ -29,6 +29,7 @@
 
 @end
 
+#pragma mark - Event with Error info
 
 @implementation ARTPushActivationErrorEvent
 
@@ -43,7 +44,67 @@
     return [[self alloc] initWithError:error];
 }
 
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if (self = [super initWithCoder:aDecoder]) {
+        _error = [aDecoder decodeObjectForKey:@"error"];
+    }
+    return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)aCoder {
+    [super encodeWithCoder:aCoder];
+    [aCoder encodeObject:self.error forKey:@"error"];
+}
+
 @end
+
+#pragma mark - Event with Auth credentials
+
+@implementation ARTPushActivationAuthEvent
+
+- (instancetype)initWithKey:(NSString *)key clientId:(NSString *)clientId {
+    if (self = [super init]) {
+        _key = key;
+        _clientId = clientId;
+    }
+    return self;
+}
+
++ (instancetype)newWithKey:(NSString *)key clientId:(NSString *)clientId {
+    return [[self alloc] initWithKey:key clientId:clientId];
+}
+
+- (instancetype)initWithToken:(NSString *)token clientId:(NSString *)clientId {
+    if (self = [super init]) {
+        _token = token;
+        _clientId = clientId;
+    }
+    return self;
+}
+
++ (instancetype)newWithToken:(NSString *)token clientId:(NSString *)clientId {
+    return [[self alloc] initWithToken:token clientId:clientId];
+}
+
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if (self = [super initWithCoder:aDecoder]) {
+        _key = [aDecoder decodeObjectForKey:@"key"];
+        _token = [aDecoder decodeObjectForKey:@"token"];
+        _clientId = [aDecoder decodeObjectForKey:@"clientId"];
+    }
+    return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)aCoder {
+    [super encodeWithCoder:aCoder];
+    [aCoder encodeObject:self.key forKey:@"key"];
+    [aCoder encodeObject:self.token forKey:@"token"];
+    [aCoder encodeObject:self.clientId forKey:@"clientId"];
+}
+
+@end
+
+#pragma mark - Activation Events
 
 @implementation ARTPushActivationEventCalledActivate
 @end

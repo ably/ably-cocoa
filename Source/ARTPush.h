@@ -29,13 +29,6 @@ typedef ARTJsonObject ARTPushRecipient;
 
 @optional
 
-// Key with push-subscribe capability
-- (nonnull NSString *)ablyPushAuthKey;
-
-// Token with push-subscribe capability (when registering with a client ID, the token must be associated with it)
-- (nonnull NSString *)ablyPushAuthToken;
-- (nullable NSString *)ablyPushClientId;
-
 - (void)ablyPushCustomRegister:(nullable ARTErrorInfo *)error deviceDetails:(nullable ARTDeviceDetails *)deviceDetails callback:(void (^ _Nonnull)(ARTUpdateToken * _Nonnull, ARTErrorInfo * _Nullable))callback;
 - (void)ablyPushCustomDeregister:(nullable ARTErrorInfo *)error deviceId:(nullable ARTDeviceId *)deviceId callback:(void (^ _Nullable)(ARTErrorInfo * _Nullable))callback;
 

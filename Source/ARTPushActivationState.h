@@ -11,6 +11,8 @@
 @class ARTPushActivationStateMachine;
 @class ARTPushActivationEvent;
 
+@protocol ARTHTTPAuthenticatedExecutor;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPushActivationState : NSObject <NSCoding>
@@ -24,7 +26,25 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/// Persistent State
 @interface ARTPushActivationPersistentState : ARTPushActivationState
+@end
+
+/// Persistent State with Auth credentials
+@interface ARTPushActivationAuthState : ARTPushActivationPersistentState
+
+@property (nonatomic, readonly) NSString *key;
+@property (nonatomic, readonly) NSString *token;
+@property (nonatomic, readonly) NSString *clientId;
+
+- (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine NS_UNAVAILABLE;
++ (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine NS_UNAVAILABLE;
+
+- (instancetype)initWithKey:(NSString *)key machine:(ARTPushActivationStateMachine *)machine clientId:(nullable NSString *)clientId;
++ (instancetype)newWithKey:(NSString *)key machine:(ARTPushActivationStateMachine *)machine clientId:(nullable NSString *)clientId;
+- (instancetype)initWithToken:(NSString *)token machine:(ARTPushActivationStateMachine *)machine clientId:(nullable NSString *)clientId;
++ (instancetype)newWithToken:(NSString *)token machine:(ARTPushActivationStateMachine *)machine clientId:(nullable NSString *)clientId;
+
 @end
 
 #pragma mark - States
@@ -38,10 +58,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTPushActivationStateWaitingForUpdateToken : ARTPushActivationState
 @end
 
-@interface ARTPushActivationStateWaitingForPushDeviceDetails : ARTPushActivationPersistentState
+@interface ARTPushActivationStateWaitingForPushDeviceDetails : ARTPushActivationAuthState
 @end
 
-@interface ARTPushActivationStateWaitingForNewPushDeviceDetails : ARTPushActivationPersistentState
+@interface ARTPushActivationStateWaitingForNewPushDeviceDetails : ARTPushActivationAuthState
 @end
 
 @interface ARTPushActivationStateWaitingForRegistrationUpdate : ARTPushActivationState

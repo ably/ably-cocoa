@@ -83,7 +83,7 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
     [[NSUserDefaults standardUserDefaults] setObject:[NSKeyedArchiver archivedDataWithRootObject:_pendingEvents] forKey:ARTPushActivationPendingEventsKey];
 }
 
-- (void)deviceRegistration:(ARTErrorInfo *)error {
+- (void)deviceRegistration:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor error:(ARTErrorInfo *)error {
     #ifdef TARGET_OS_IOS
     ARTLocalDevice *local = [ARTLocalDevice local];
 
@@ -122,20 +122,6 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
     }
 
     // Asynchronous HTTP request
-    id<ARTHTTPAuthenticatedExecutor> httpExecutor;
-
-    if ([delegate respondsToSelector:@selector(ablyPushAuthKey)]) {
-        NSString *key = [delegate ablyPushAuthKey];
-        httpExecutor = [ARTRest createWithKey:key];
-    }
-    else if ([delegate respondsToSelector:@selector(ablyPushAuthToken)]) {
-        NSString *token = [delegate ablyPushAuthToken];
-        httpExecutor = [ARTRest createWithToken:token];
-    }
-    else {
-        [NSException raise:@"ARTPushRegistererDelegate: must have a key or token for authentication" format:@""];
-    }
-
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"]];
     request.HTTPMethod = @"POST";
     request.HTTPBody = [[httpExecutor defaultEncoder] encodeDeviceDetails:local];
@@ -161,7 +147,7 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
     #endif
 }
 
-- (void)deviceUnregistration:(ARTErrorInfo *)error {
+- (void)deviceUnregistration:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor error:(ARTErrorInfo *)error {
     #ifdef TARGET_OS_IOS
     ARTLocalDevice *local = [ARTLocalDevice local];
 
@@ -194,20 +180,6 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
     }
 
     // Asynchronous HTTP request
-    id<ARTHTTPAuthenticatedExecutor> httpExecutor;
-
-    if ([delegate respondsToSelector:@selector(ablyPushAuthKey)]) {
-        NSString *key = [delegate ablyPushAuthKey];
-        httpExecutor = [ARTRest createWithKey:key];
-    }
-    else if ([delegate respondsToSelector:@selector(ablyPushAuthToken)]) {
-        NSString *token = [delegate ablyPushAuthToken];
-        httpExecutor = [ARTRest createWithToken:token];
-    }
-    else {
-        [NSException raise:@"ARTPushRegistererDelegate: must have a key or token for authentication" format:@""];
-    }
-
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"] resolvingAgainstBaseURL:NO];
     components.queryItems = @[
         [NSURLQueryItem queryItemWithName:@"deviceId" value:local.id],

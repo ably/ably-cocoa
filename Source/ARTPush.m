@@ -16,6 +16,7 @@
 #import "ARTEventEmitter.h"
 #import "ARTPushActivationStateMachine.h"
 #import "ARTPushActivationEvent.h"
+#import "ARTClientOptions+Private.h"
 
 NSString *const ARTDeviceIdKey = @"ARTDeviceId";
 NSString *const ARTDeviceUpdateTokenKey = @"ARTDeviceUpdateToken";
@@ -79,11 +80,21 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 }
 
 - (void)activate {
-    [[ARTPush activationMachine] sendEvent:[ARTPushActivationEventCalledActivate new]];
+    if ([[_httpExecutor options] key]) {
+        [[ARTPush activationMachine] sendEvent:[ARTPushActivationEventCalledActivate newWithKey:[_httpExecutor options].key clientId:[_httpExecutor options].clientId]];
+    }
+    else if ([[_httpExecutor options] token]) {
+        [[ARTPush activationMachine] sendEvent:[ARTPushActivationEventCalledActivate newWithToken:[_httpExecutor options].token clientId:[_httpExecutor options].clientId]];
+    }
 }
 
 - (void)deactivate {
-    [[ARTPush activationMachine] sendEvent:[ARTPushActivationEventCalledDeactivate new]];
+    if ([[_httpExecutor options] key]) {
+        [[ARTPush activationMachine] sendEvent:[ARTPushActivationEventCalledDeactivate newWithKey:[_httpExecutor options].key clientId:[_httpExecutor options].clientId]];
+    }
+    else if ([[_httpExecutor options] token]) {
+        [[ARTPush activationMachine] sendEvent:[ARTPushActivationEventCalledDeactivate newWithToken:[_httpExecutor options].token clientId:[_httpExecutor options].clientId]];
+    }
 }
 
 @end

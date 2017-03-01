@@ -24,7 +24,8 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface ARTPushActivationStateMachine (Protected)
-- (void)deviceRegistration:(nullable ARTErrorInfo *)error;
+- (void)deviceRegistration:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor error:(nullable ARTErrorInfo *)error;
+- (void)deviceUnregistration:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor error:(nullable ARTErrorInfo *)error;
 - (void)callDeactivatedCallback:(nullable ARTErrorInfo *)error;
 @end
 

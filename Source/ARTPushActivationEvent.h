@@ -10,10 +10,13 @@
 
 @class ARTErrorInfo;
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ARTPushActivationEvent : NSObject <NSCoding>
 
 @end
 
+/// Event with Error info
 @interface ARTPushActivationErrorEvent : ARTPushActivationEvent
 
 @property (nonatomic, readonly) ARTErrorInfo *error;
@@ -23,12 +26,28 @@
 
 @end
 
-#pragma mark - Events
+/// Event with Auth credentials
+@interface ARTPushActivationAuthEvent : ARTPushActivationEvent
 
-@interface ARTPushActivationEventCalledActivate : ARTPushActivationEvent
+@property (nonatomic, readonly) NSString *key;
+@property (nonatomic, readonly) NSString *token;
+@property (nonatomic, readonly) NSString *clientId;
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
+- (instancetype)initWithKey:(NSString *)key clientId:(nullable NSString *)clientId;
++ (instancetype)newWithKey:(NSString *)key clientId:(nullable NSString *)clientId;
+- (instancetype)initWithToken:(NSString *)token clientId:(nullable NSString *)clientId;
++ (instancetype)newWithToken:(NSString *)token clientId:(nullable NSString *)clientId;
+
 @end
 
-@interface ARTPushActivationEventCalledDeactivate : ARTPushActivationEvent
+#pragma mark - Events
+
+@interface ARTPushActivationEventCalledActivate : ARTPushActivationAuthEvent
+@end
+
+@interface ARTPushActivationEventCalledDeactivate : ARTPushActivationAuthEvent
 @end
 
 @interface ARTPushActivationEventGotPushDeviceDetails : ARTPushActivationEvent
@@ -51,3 +70,5 @@
 
 @interface ARTPushActivationEventDeregistrationFailed : ARTPushActivationErrorEvent
 @end
+
+NS_ASSUME_NONNULL_END
