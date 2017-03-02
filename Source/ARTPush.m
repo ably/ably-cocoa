@@ -35,25 +35,31 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
     return self;
 }
 
-+ (ARTPushActivationStateMachine *)activationMachine {
+- (ARTPushActivationStateMachine *)activationMachine {
     static dispatch_once_t once;
     static id activationMachineInstance;
     dispatch_once(&once, ^{
-        activationMachineInstance = [[ARTPushActivationStateMachine alloc] init];
+        activationMachineInstance = [[ARTPushActivationStateMachine alloc] init:_httpExecutor];
     });
     return activationMachineInstance;
 }
 
-+ (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
-    NSLog(@"ARTPush: device token received and stored");
++ (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken rest:(ARTRest *)rest {
+    NSLog(@"ARTPush: device token received %@", deviceToken);
+    NSData *currentDeviceToken = [[NSUserDefaults standardUserDefaults] dataForKey:ARTDeviceTokenKey];
+    if ([currentDeviceToken isEqualToData:deviceToken]) {
+        // Already stored.
+        return;
+    }
     [[NSUserDefaults standardUserDefaults] setObject:deviceToken forKey:ARTDeviceTokenKey];
     [[NSUserDefaults standardUserDefaults] synchronize];
-    [[ARTPush activationMachine] sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
+    NSLog(@"ARTPush: device token stored");
+    [[rest.push activationMachine] sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
 }
 
-+ (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
++ (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error rest:(ARTRest *)rest {
     NSLog(@"ARTPush: device token not received (%@)", [error localizedDescription]);
-    [[ARTPush activationMachine] sendEvent:[ARTPushActivationEventGettingUpdateTokenFailed newWithError:[ARTErrorInfo createWithNSError:error]]];
+    [[rest.push activationMachine] sendEvent:[ARTPushActivationEventGettingUpdateTokenFailed newWithError:[ARTErrorInfo createWithNSError:error]]];
 }
 
 - (void)publish:(ARTPushRecipient *)recipient jsonObject:(ARTJsonObject *)jsonObject {
@@ -80,21 +86,11 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 }
 
 - (void)activate {
-    if ([[_httpExecutor options] key]) {
-        [[ARTPush activationMachine] sendEvent:[ARTPushActivationEventCalledActivate newWithKey:[_httpExecutor options].key clientId:[_httpExecutor options].clientId]];
-    }
-    else if ([[_httpExecutor options] token]) {
-        [[ARTPush activationMachine] sendEvent:[ARTPushActivationEventCalledActivate newWithToken:[_httpExecutor options].token clientId:[_httpExecutor options].clientId]];
-    }
+    [[self activationMachine] sendEvent:[ARTPushActivationEventCalledActivate new]];
 }
 
 - (void)deactivate {
-    if ([[_httpExecutor options] key]) {
-        [[ARTPush activationMachine] sendEvent:[ARTPushActivationEventCalledDeactivate newWithKey:[_httpExecutor options].key clientId:[_httpExecutor options].clientId]];
-    }
-    else if ([[_httpExecutor options] token]) {
-        [[ARTPush activationMachine] sendEvent:[ARTPushActivationEventCalledDeactivate newWithToken:[_httpExecutor options].token clientId:[_httpExecutor options].clientId]];
-    }
+    [[self activationMachine] sendEvent:[ARTPushActivationEventCalledDeactivate new]];
 }
 
 @end

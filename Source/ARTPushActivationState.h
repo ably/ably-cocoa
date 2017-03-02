@@ -30,23 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTPushActivationPersistentState : ARTPushActivationState
 @end
 
-/// Persistent State with Auth credentials
-@interface ARTPushActivationAuthState : ARTPushActivationPersistentState
-
-@property (nonatomic, readonly) NSString *key;
-@property (nonatomic, readonly) NSString *token;
-@property (nonatomic, readonly) NSString *clientId;
-
-- (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine NS_UNAVAILABLE;
-+ (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine NS_UNAVAILABLE;
-
-- (instancetype)initWithKey:(NSString *)key machine:(ARTPushActivationStateMachine *)machine clientId:(nullable NSString *)clientId;
-+ (instancetype)newWithKey:(NSString *)key machine:(ARTPushActivationStateMachine *)machine clientId:(nullable NSString *)clientId;
-- (instancetype)initWithToken:(NSString *)token machine:(ARTPushActivationStateMachine *)machine clientId:(nullable NSString *)clientId;
-+ (instancetype)newWithToken:(NSString *)token machine:(ARTPushActivationStateMachine *)machine clientId:(nullable NSString *)clientId;
-
-@end
-
 #pragma mark - States
 
 @interface ARTPushActivationStateNotActivated : ARTPushActivationPersistentState
@@ -58,19 +41,19 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTPushActivationStateWaitingForUpdateToken : ARTPushActivationState
 @end
 
-@interface ARTPushActivationStateWaitingForPushDeviceDetails : ARTPushActivationAuthState
+@interface ARTPushActivationStateWaitingForPushDeviceDetails : ARTPushActivationPersistentState
 @end
 
-@interface ARTPushActivationStateWaitingForNewPushDeviceDetails : ARTPushActivationAuthState
+@interface ARTPushActivationStateWaitingForNewPushDeviceDetails : ARTPushActivationPersistentState
 @end
 
 @interface ARTPushActivationStateWaitingForRegistrationUpdate : ARTPushActivationState
 @end
 
-@interface ARTPushActivationStateWaitingForDeregistration : ARTPushActivationState
+@interface ARTPushActivationStateAfterRegistrationUpdateFailed : ARTPushActivationPersistentState
 @end
 
-@interface ARTPushActivationStateAfterRegistrationUpdateFailed : ARTPushActivationPersistentState
+@interface ARTPushActivationStateWaitingForDeregistration : ARTPushActivationState
 @end
 
 NS_ASSUME_NONNULL_END

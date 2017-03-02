@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "ARTTypes.h"
 
+@class ARTRest;
 @class ARTDeviceDetails;
 
 @protocol ARTHTTPAuthenticatedExecutor;
@@ -24,10 +25,12 @@ typedef ARTJsonObject ARTPushRecipient;
 
 @protocol ARTPushRegistererDelegate
 
-- (void)ablyPushRegisterCallback:(nullable ARTErrorInfo *)error;
-- (void)ablyPushDeregisterCallback:(nullable ARTErrorInfo *)error;
+- (void)ablyPushActivateCallback:(nullable ARTErrorInfo *)error;
+- (void)ablyPushDeactivateCallback:(nullable ARTErrorInfo *)error;
 
 @optional
+
+- (void)ablyPushUpdateFailedCallback:(nullable ARTErrorInfo *)error;
 
 - (void)ablyPushCustomRegister:(nullable ARTErrorInfo *)error deviceDetails:(nullable ARTDeviceDetails *)deviceDetails callback:(void (^ _Nonnull)(ARTUpdateToken * _Nonnull, ARTErrorInfo * _Nullable))callback;
 - (void)ablyPushCustomDeregister:(nullable ARTErrorInfo *)error deviceId:(nullable ARTDeviceId *)deviceId callback:(void (^ _Nullable)(ARTErrorInfo * _Nullable))callback;
@@ -55,8 +58,8 @@ extern NSString *const ARTDeviceTokenKey;
 
 #ifdef TARGET_OS_IOS
 /// Push Registration token
-+ (void)didRegisterForRemoteNotificationsWithDeviceToken:(nonnull NSData *)deviceToken;
-+ (void)didFailToRegisterForRemoteNotificationsWithError:(nonnull NSError *)error;
++ (void)didRegisterForRemoteNotificationsWithDeviceToken:(nonnull NSData *)deviceToken rest:(ARTRest *)rest;
++ (void)didFailToRegisterForRemoteNotificationsWithError:(nonnull NSError *)error rest:(ARTRest *)rest;
 
 /// Register a device, including the information necessary to deliver push notifications to it.
 - (void)activate;

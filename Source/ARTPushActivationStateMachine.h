@@ -17,16 +17,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPushActivationStateMachine : NSObject
 
-- (instancetype)init;
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
+- (instancetype)init:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor;
 
 - (void)sendEvent:(ARTPushActivationEvent *)event;
 
 @end
 
 @interface ARTPushActivationStateMachine (Protected)
-- (void)deviceRegistration:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor error:(nullable ARTErrorInfo *)error;
-- (void)deviceUnregistration:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor error:(nullable ARTErrorInfo *)error;
+- (void)deviceRegistration:(nullable ARTErrorInfo *)error;
+- (void)deviceUpdateRegistration:(nullable ARTErrorInfo *)error;
+- (void)deviceUnregistration:(nullable ARTErrorInfo *)error;
+- (void)callActivatedCallback:(nullable ARTErrorInfo *)error;
 - (void)callDeactivatedCallback:(nullable ARTErrorInfo *)error;
+- (void)callUpdateFailedCallback:(nullable ARTErrorInfo *)error;
 @end
 
 NS_ASSUME_NONNULL_END
