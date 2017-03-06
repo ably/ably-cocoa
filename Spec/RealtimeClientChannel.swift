@@ -595,12 +595,15 @@ class RealtimeClientChannel: QuickSpec {
 
                     var callbackCalled = false
                     let channel = client.channels.get("test")
-                    channel.attach { errorInfo in
-                        expect(errorInfo).toNot(beNil())
-                        expect(errorInfo).to(equal(channel.errorReason))
-                        callbackCalled = true
-                    }
                     let start = NSDate()
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach { errorInfo in
+                            expect(errorInfo).toNot(beNil())
+                            expect(errorInfo).to(equal(channel.errorReason))
+                            callbackCalled = true
+                            done()
+                        }
+                    }
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Failed), timeout: testTimeout)
                     expect(channel.errorReason).toNot(beNil())
                     expect(callbackCalled).to(beTrue())
@@ -804,7 +807,7 @@ class RealtimeClientChannel: QuickSpec {
                 it("should transition the channel state to FAILED if DETACHED ProtocolMessage is not received") {
                     let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
                     defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
-                    ARTDefault.setRealtimeRequestTimeout(3.0)
+                    ARTDefault.setRealtimeRequestTimeout(1.5)
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
@@ -831,7 +834,7 @@ class RealtimeClientChannel: QuickSpec {
                     expect(channel.errorReason).toNot(beNil())
                     expect(callbackCalled).to(beTrue())
                     let end = NSDate()
-                    expect(start.dateByAddingTimeInterval(3.0)).to(beCloseTo(end, within: 0.5))
+                    expect(start.dateByAddingTimeInterval(1.5)).to(beCloseTo(end, within: 0.5))
                 }
 
                 // RTL5g
