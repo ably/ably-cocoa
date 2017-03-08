@@ -52,7 +52,7 @@
     [description appendFormat:@" connectionId: %@,\n", self.connectionId];
     [description appendFormat:@" connectionKey: %@,\n", self.connectionKey];
     [description appendFormat:@" connectionSerial: %lld,\n", self.connectionSerial];
-    [description appendFormat:@" msgSerial: %lld,\n", self.msgSerial];
+    [description appendFormat:@" msgSerial: %lld,\n", [self.msgSerial longLongValue]];
     [description appendFormat:@" timestamp: %@,\n", self.timestamp];
     [description appendFormat:@" flags: %lld,\n", self.flags];
     [description appendFormat:@" messages: %@\n", self.messages];

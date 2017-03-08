@@ -36,13 +36,18 @@
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     __block NSString *firstConnectionId = nil;
+    void (^splitDone)() = [ARTTestUtil splitFulfillFrom:self expectation:expectation in:2];
     [realtime.connection once:ARTRealtimeConnected callback:^(ARTConnectionStateChange *stateChange) {
         firstConnectionId = realtime.connection.id;
         ARTRealtimeChannel *channel = [realtime.channels get:channelName];
         // Sending a message
         [channel publish:nil data:c1Message callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
-            [expectation fulfill];
+            splitDone();
+        }];
+        [channel subscribe:^(ARTMessage *message) {
+            [channel unsubscribe];
+            splitDone();
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];

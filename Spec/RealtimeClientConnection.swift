@@ -1081,12 +1081,17 @@ class RealtimeClientConnection: QuickSpec {
 
                     for index in 0...3 {
                         waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
                             channel.publish(nil, data: "message", callback: { errorInfo in
                                 expect(errorInfo).to(beNil())
+                                partialDone()
+                            })
+                            channel.subscribe() { _ in
                                 // Updated
                                 expect(client.connection.serial).to(equal(Int64(index)))
-                                done()
-                            })
+                                channel.unsubscribe()
+                                partialDone()
+                            }
                             // Not updated
                             expect(client.connection.serial).to(equal(Int64(index - 1)))
                         }
@@ -1107,13 +1112,17 @@ class RealtimeClientConnection: QuickSpec {
                     channel.attach()
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
 
-                    waitUntil(timeout: testTimeout) { done in
-                        let partialDone = AblyTests.splitDone((1...5).count, done: done)
-                        for _ in 1...5 {
+                    for _ in 1...5 {
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
                             channel.publish(nil, data: "message", callback: { errorInfo in
                                 expect(errorInfo).to(beNil())
                                 partialDone()
                             })
+                            channel.subscribe() { _ in
+                                channel.unsubscribe()
+                                partialDone()
+                            }
                         }
                     }
                     let lastSerial = client.connection.serial
@@ -1127,11 +1136,15 @@ class RealtimeClientConnection: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         expect(recoveredClient.connection.serial).to(equal(lastSerial))
-                        recoveredClient.channels.get("test").publish(nil, data: "message", callback: { errorInfo in
+                        let recoveredChannel = recoveredClient.channels.get("test")
+                        recoveredChannel.publish(nil, data: "message", callback: { errorInfo in
                             expect(errorInfo).to(beNil())
-                            expect(recoveredClient.connection.serial).to(equal(lastSerial + 1))
-                            done()
                         })
+                        recoveredChannel.subscribe() { _ in
+                            expect(recoveredClient.connection.serial).to(equal(lastSerial + 1))
+                            recoveredChannel.unsubscribe()
+                            done()
+                        }
                     }
                 }
 
@@ -2509,7 +2522,11 @@ class RealtimeClientConnection: QuickSpec {
                         }
                         channel.publish(nil, data: "message") { error in
                             expect(error).to(beNil())
+                        }
+                        channel.subscribe { message in
+                            expect(message.data as? String).to(equal("message"))
                             expect(client.connection.serial).to(equal(0))
+                            channel.unsubscribe()
                             done()
                         }
                     }

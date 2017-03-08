@@ -586,7 +586,7 @@
 
 - (void)sendImpl:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb {
     if (msg.ackRequired) {
-        msg.msgSerial = self.msgSerial++;
+        msg.msgSerial = [NSNumber numberWithLongLong:self.msgSerial++];
         ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg callback:cb];
         [self.pendingMessages addObject:qm];
     }
@@ -636,7 +636,7 @@
 }
 
 - (void)ack:(ARTProtocolMessage *)message {
-    int64_t serial = message.msgSerial;
+    int64_t serial = [message.msgSerial longLongValue];
     int count = message.count;
     NSArray *nackMessages = nil;
     NSArray *ackMessages = nil;
@@ -688,7 +688,7 @@
 }
 
 - (void)nack:(ARTProtocolMessage *)message {
-    int64_t serial = message.msgSerial;
+    int64_t serial = [message.msgSerial longLongValue];
     int count = message.count;
     [self.logger verbose:@"R:%p ARTRealtime NACK: msgSerial=%lld, count=%d", self, serial, count];
     [self.logger verbose:@"R:%p ARTRealtime NACK (before processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];

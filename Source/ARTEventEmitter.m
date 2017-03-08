@@ -18,7 +18,9 @@
     NSUInteger l = [self count];
     for (NSInteger i = 0; i < l; i++) {
         if (cond([self objectAtIndex:i])) {
-            [self removeObjectAtIndex:i];
+            @synchronized(self) {
+                [self removeObjectAtIndex:i];
+            }
             i--;
             l--;
         }
@@ -204,7 +206,9 @@
             [entry.listener off];
         }
         for (ARTEventEmitterEntry *entry in toRemoveFromTotalListeners) {
-            [self.anyListeners removeObject:entry];
+            @synchronized(self.anyListeners) {
+                [self.anyListeners removeObject:entry];
+            }
             [entry.listener off];
         }
         for (ARTEventEmitterEntry *entry in toCall) {
@@ -227,9 +231,13 @@
     if (array == nil) {
         return;
     }
-    [array removeObject:obj];
+    @synchronized(array) {
+        [array removeObject:obj];
+    }
     if ([array count] == 0) {
-        [dict removeObjectForKey:key];
+        @synchronized(dict) {
+            [dict removeObjectForKey:key];
+        }
     }
 }
 
@@ -240,7 +248,9 @@
     }
     [array artRemoveWhere:cond];
     if ([array count] == 0) {
-        [dict removeObjectForKey:key];
+        @synchronized(dict) {
+            [dict removeObjectForKey:key];
+        }
     }
 }
 

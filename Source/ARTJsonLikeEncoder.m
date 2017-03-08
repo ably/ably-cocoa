@@ -346,11 +346,15 @@
 - (NSDictionary *)protocolMessageToDictionary:(ARTProtocolMessage *)message {
     NSMutableDictionary *output = [NSMutableDictionary dictionary];
     output[@"action"] = [NSNumber numberWithInt:message.action];
-    if(message.channel) {
+
+    if (message.channel) {
         output[@"channel"] = message.channel;
     }
-    output[@"msgSerial"] = [NSNumber numberWithLongLong:message.msgSerial];
-    
+
+    if (message.msgSerial) {
+        output[@"msgSerial"] = message.msgSerial;
+    }
+
     if (message.messages) {
         output[@"messages"] = [self messagesToArray:message.messages];
     }
@@ -358,6 +362,7 @@
     if (message.presence) {
         output[@"presence"] = [self presenceMessagesToArray:message.presence];
     }
+
     [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: protocolMessageToDictionary %@", _rest, [_delegate formatAsString], output];
     return output;
 }
@@ -496,7 +501,7 @@
         message.connectionSerial = [serial longLongValue];
     }
     message.id = [input artString:@"id"];
-    message.msgSerial = [[input artNumber:@"msgSerial"] longLongValue];
+    message.msgSerial = [input artNumber:@"msgSerial"];
     message.timestamp = [input artDate:@"timestamp"];
     message.messages = [self messagesFromArray:[input objectForKey:@"messages"]];
     message.presence = [self presenceMessagesFromArray:[input objectForKey:@"presence"]];
