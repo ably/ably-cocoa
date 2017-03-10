@@ -11,6 +11,7 @@
 #import "ARTRealtime.h"
 #import "ARTRealtime+Private.h"
 #import "ARTRealtimeChannel.h"
+#import "ARTGCD.h"
 
 @implementation NSMutableArray (AsSet)
 
@@ -29,77 +30,112 @@
 
 @end
 
+#pragma mark - ARTEvent
+
+@implementation ARTEvent {
+    NSString *_value;
+}
+
+- (instancetype)initWithString:(NSString *)value {
+    if (self == [super init]) {
+        _value = value;
+    }
+    return self;
+}
+
++ (instancetype)newWithString:(NSString *)value {
+    return [[self alloc] initWithString:value];
+}
+
+- (NSString *)identification {
+    return _value;
+}
+
+@end
+
+#pragma mark - ARTEventListener
+
 @interface ARTEventListener ()
-
-- (instancetype)initWithBlock:(void (^)(id __art_nonnull))block queue:(dispatch_queue_t)queue;
-- (void)setTimerWithDeadline:(NSTimeInterval)deadline onTimeout:(void (^)())onTimeout;
-- (void)off;
-
+@property (readonly) BOOL timerIsRunning;
+@property (readonly) BOOL hasTimer;
 @end
 
 @implementation ARTEventListener {
-    void (^_block)(id __art_nonnull);
-    _Nonnull dispatch_queue_t _queue;
-    _Nullable dispatch_block_t _timerBlock;
+    __weak NSNotificationCenter *_center;
+    __weak ARTEventEmitter *_eventHandler;
+    NSTimeInterval _timeoutDeadline;
+    void (^_timeoutBlock)();
+    dispatch_block_t _work;
 }
 
-- (instancetype)initWithBlock:(void (^)(id __art_nonnull))block queue:(dispatch_queue_t)queue {
-    self = [self init];
-    if (self) {
-        _block = block;
-        _queue = queue;
+- (instancetype)initWithId:(NSString *)eventId token:(id<NSObject>)token handler:(ARTEventEmitter *)eventHandler center:(NSNotificationCenter *)center {
+    if (self = [super init]) {
+        _eventId = eventId;
+        _token = token;
+        _center = center;
+        _eventHandler = eventHandler;
+        _timeoutDeadline = 0;
+        _timeoutBlock = nil;
+        _timerIsRunning = false;
     }
     return self;
 }
 
-- (void)call:(id)argument {
-    [self cancelTimer];
-    _block(argument);
+- (void)dealloc {
+    [self removeObserver];
 }
 
-- (void)setTimerWithDeadline:(NSTimeInterval)deadline onTimeout:(void (^)())onTimeout {
-    [self cancelTimer];
-    _timerBlock = dispatch_block_create(0, ^{
-        onTimeout();
+- (void)removeObserver {
+    [self stopTimer];
+    [_center removeObserver:_token];
+}
+
+- (BOOL)handled {
+    return _count++ > 0;
+}
+
+- (ARTEventListener *)setTimer:(NSTimeInterval)timeoutDeadline onTimeout:(void (^)())timeoutBlock {
+    if (_timeoutBlock) {
+        NSAssert(false, @"timer is already set");
+    }
+    _timeoutBlock = timeoutBlock;
+    _timeoutDeadline = timeoutDeadline;
+    return self;
+}
+
+- (void)timeout {
+    [_eventHandler off:self];
+    if (_timeoutBlock) {
+        _timeoutBlock();
+    }
+}
+
+- (BOOL)hasTimer {
+    return _timeoutBlock != nil;
+}
+
+- (void)startTimer {
+    if (_timerIsRunning) {
+        NSAssert(false, @"timer is already running");
+    }
+    _timerIsRunning = true;
+    __weak typeof(self) weakSelf = self;
+    _work = artDispatchScheduled(_timeoutDeadline, [_eventHandler queue], ^{
+        [weakSelf timeout];
     });
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, deadline * NSEC_PER_SEC), _queue, _timerBlock);
 }
 
-- (void)cancelTimer {
-    if (_timerBlock) {
-        dispatch_block_cancel(_timerBlock);
-    }
-}
-
-- (void)off {
-    [self cancelTimer];
+- (void)stopTimer {
+    artDispatchCancel(nil);
+    artDispatchCancel(_work);
+    _timerIsRunning = false;
 }
 
 @end
 
-@implementation ARTEventEmitterEntry
+#pragma mark - ARTEventEmitter
 
-- (instancetype)initWithListener:(ARTEventListener *)listener once:(BOOL)once {
-    self = [self init];
-    if (self) {
-        _listener = listener;
-        _once = once;
-    }
-    return self;
-}
-
-- (BOOL)isEqual:(id)object {
-    if ([object isKindOfClass:[self class]]) {
-        return self == object || self.listener == ((ARTEventEmitterEntry *)object).listener;
-    }
-    return self.listener == object;
-}
-
-@end
-
-@implementation ARTEventEmitter {
-    _Nonnull dispatch_queue_t _queue;
-}
+@implementation ARTEventEmitter
 
 - (instancetype)init {
     return [self initWithQueue:dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0)];
@@ -108,59 +144,98 @@
 - (instancetype)initWithQueue:(dispatch_queue_t)queue {
     self = [super init];
     if (self) {
+        _notificationCenter = [[NSNotificationCenter alloc] init];
         _queue = queue;
         [self resetListeners];
     }
     return self;
 }
 
-- (ARTEventListener *)on:(id)event callback:(void (^)(id __art_nonnull))cb {
-    ARTEventListener *listener = [[ARTEventListener alloc] initWithBlock:cb queue:_queue];
-    [self addOnEntry:[[ARTEventEmitterEntry alloc] initWithListener:listener once:false] event:event];
-    return listener;
+- (ARTEventListener *)on:(id<ARTEventIdentification>)event callback:(void (^)(id __art_nonnull))cb {
+    NSString *eventId = [NSString stringWithFormat:@"%p-%@", self, [event identification]];
+    __weak __block ARTEventListener *weakListener;
+    id<NSObject> observerToken = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+        if (weakListener == nil) return;
+        if ([weakListener hasTimer] && ![weakListener timerIsRunning]) return;
+        [weakListener stopTimer];
+        cb(note.object);
+    }];
+    ARTEventListener *eventToken = [[ARTEventListener alloc] initWithId:eventId token:observerToken handler:self center:_notificationCenter];
+    weakListener = eventToken;
+    [self addObject:eventToken toArrayWithKey:eventToken.eventId inDictionary:self.listeners];
+    return eventToken;
 }
 
-- (ARTEventListener *)once:(id)event callback:(void (^)(id __art_nonnull))cb {
-    ARTEventListener *listener = [[ARTEventListener alloc] initWithBlock:cb queue:_queue];
-    [self addOnEntry:[[ARTEventEmitterEntry alloc] initWithListener:listener once:true] event:event];
-    return listener;
-}
-
-- (void)addOnEntry:(ARTEventEmitterEntry *)entry event:(id)event {
-    [self addObject:entry toArrayWithKey:event inDictionary:self.listeners];
+- (ARTEventListener *)once:(id<ARTEventIdentification>)event callback:(void (^)(id __art_nonnull))cb {
+    NSString *eventId = [NSString stringWithFormat:@"%p-%@", self, [event identification]];
+    __weak __block ARTEventListener *weakListener;
+    __weak typeof(self) weakSelf = self;
+    id<NSObject> observerToken = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+        if (weakListener == nil) return;
+        if ([weakListener hasTimer] && ![weakListener timerIsRunning]) return;
+        if ([weakListener handled]) return;
+        [weakListener removeObserver];
+        [weakSelf removeObject:weakListener fromArrayWithKey:[weakListener eventId] inDictionary:[weakSelf listeners]];
+        cb(note.object);
+    }];
+    ARTEventListener *eventToken = [[ARTEventListener alloc] initWithId:eventId token:observerToken handler:self center:_notificationCenter];
+    weakListener = eventToken;
+    [self addObject:eventToken toArrayWithKey:eventToken.eventId inDictionary:self.listeners];
+    return eventToken;
 }
 
 - (ARTEventListener *)on:(void (^)(id __art_nonnull))cb {
-    ARTEventListener *listener = [[ARTEventListener alloc] initWithBlock:cb queue:_queue];
-    [self addOnAllEntry:[[ARTEventEmitterEntry alloc] initWithListener:listener once:false]];
-    return listener;
+    NSString *eventId = [NSString stringWithFormat:@"%p", self];
+    __weak __block ARTEventListener *weakListener;
+    id<NSObject> observerToken = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+        if (weakListener == nil) return;
+        if ([weakListener hasTimer] && ![weakListener timerIsRunning]) return;
+        [weakListener stopTimer];
+        cb(note.object);
+    }];
+    ARTEventListener *eventToken = [[ARTEventListener alloc] initWithId:eventId token:observerToken handler:self center:_notificationCenter];
+    weakListener = eventToken;
+    [self.anyListeners addObject:eventToken];
+    return eventToken;
 }
 
 - (ARTEventListener *)once:(void (^)(id __art_nonnull))cb {
-    ARTEventListener *listener = [[ARTEventListener alloc] initWithBlock:cb queue:_queue];
-    [self addOnAllEntry:[[ARTEventEmitterEntry alloc] initWithListener:listener once:true]];
-    return listener;
-}
-
-- (void)addOnAllEntry:(ARTEventEmitterEntry *)entry {
-    [self.anyListeners addObject:entry];
-}
-
-- (void)off:(id)event listener:(ARTEventListener *)listener {
-    [listener off];
-    [self removeObject:listener fromArrayWithKey:event inDictionary:self.listeners where:^BOOL(id entry) {
-        return ((ARTEventEmitterEntry *)entry).listener == listener;
+    NSString *eventId = [NSString stringWithFormat:@"%p", self];
+    __weak __block ARTEventListener *weakListener;
+    __weak typeof(self) weakSelf = self;
+    id<NSObject> observerToken = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+        if (weakListener == nil) return;
+        if ([weakListener hasTimer] && ![weakListener timerIsRunning]) return;
+        if ([weakListener handled]) return;
+        [weakListener removeObserver];
+        [[weakSelf anyListeners] removeObject:weakListener];
+        cb(note.object);
     }];
+    ARTEventListener *eventToken = [[ARTEventListener alloc] initWithId:eventId token:observerToken handler:self center:_notificationCenter];
+    weakListener = eventToken;
+    [self.anyListeners addObject:eventToken];
+    return eventToken;
+}
+
+- (void)off:(id<ARTEventIdentification>)event listener:(ARTEventListener *)listener {
+    NSString *eventId = [NSString stringWithFormat:@"%p-%@", self, [event identification]];
+    if (![eventId isEqualToString:listener.eventId]) return;
+    [listener removeObserver];
+    @synchronized (_listeners) {
+        [self.listeners[listener.eventId] removeObject:listener];
+        if ([self.listeners[listener.eventId] firstObject] == nil) {
+            [self.listeners removeObjectForKey:listener.eventId];
+        }
+    }
 }
 
 - (void)off:(ARTEventListener *)listener {
-    [listener off];
-    BOOL (^cond)(id) = ^BOOL(id entry) {
-        return ((ARTEventEmitterEntry *)entry).listener == listener;
-    };
-    [self.anyListeners artRemoveWhere:cond];
-    for (id event in [self.listeners allKeys]) {
-        [self removeObject:listener fromArrayWithKey:event inDictionary:self.listeners where:cond];
+    [listener removeObserver];
+    @synchronized (_listeners) {
+        [self.listeners[listener.eventId] removeObject:listener];
+    }
+    @synchronized (_anyListeners) {
+        [self.anyListeners removeObject:listener];
     }
 }
 
@@ -169,101 +244,75 @@
 }
 
 - (void)resetListeners {
-    for (NSArray *entries in [_listeners allValues]) {
-        for (ARTEventEmitterEntry *entry in entries) {
-            [entry.listener off];
+    @synchronized (_listeners) {
+        for (NSArray<ARTEventListener *> *items in [_listeners allValues]) {
+            for (ARTEventListener *item in items) {
+                [item removeObserver];
+            }
         }
-    }
-    for (ARTEventEmitterEntry *entry in _anyListeners) {
-        [entry.listener off];
+        [_listeners removeAllObjects];
     }
     _listeners = [[NSMutableDictionary alloc] init];
+
+    @synchronized (_anyListeners) {
+        for (ARTEventListener *item in _anyListeners) {
+            [item removeObserver];
+        }
+        [_anyListeners removeAllObjects];
+    }
     _anyListeners = [[NSMutableArray alloc] init];
 }
 
-- (void)emit:(id)event with:(id)data {
-    NSMutableArray *toCall = [[NSMutableArray alloc] init];
-    NSMutableArray *toRemoveFromListeners = [[NSMutableArray alloc] init];
-    NSMutableArray *toRemoveFromTotalListeners = [[NSMutableArray alloc] init];
-    @try {
-        for (ARTEventEmitterEntry *entry in [self.listeners objectForKey:event]) {
-            if (entry.once) {
-                [toRemoveFromListeners addObject:entry];
-            }
-            [toCall addObject:entry];
-        }
-        
-        for (ARTEventEmitterEntry *entry in self.anyListeners) {
-            if (entry.once) {
-                [toRemoveFromTotalListeners addObject:entry];
-            }
-            [toCall addObject:entry];
-        }
+- (void)emit:(id<ARTEventIdentification>)event with:(id)data {
+    NSString *eventId;
+    if (event) {
+        eventId = [NSString stringWithFormat:@"%p-%@", self, [event identification]];
+        [self.notificationCenter postNotificationName:eventId object:data];
+        [self.notificationCenter postNotificationName:[NSString stringWithFormat:@"%p", self] object:data];
     }
-    @finally {
-        for (ARTEventEmitterEntry *entry in toRemoveFromListeners) {
-            [self removeObject:entry fromArrayWithKey:event inDictionary:self.listeners];
-            [entry.listener off];
-        }
-        for (ARTEventEmitterEntry *entry in toRemoveFromTotalListeners) {
-            @synchronized(self.anyListeners) {
-                [self.anyListeners removeObject:entry];
-            }
-            [entry.listener off];
-        }
-        for (ARTEventEmitterEntry *entry in toCall) {
-            [entry.listener call:data];
-        }
+    else {
+        eventId = [NSString stringWithFormat:@"%p", self];
+        [self.notificationCenter postNotificationName:eventId object:data];
     }
 }
 
 - (void)addObject:(id)obj toArrayWithKey:(id)key inDictionary:(NSMutableDictionary *)dict {
-    NSMutableArray *array = [dict objectForKey:key];
-    if (array == nil) {
-        array = [[NSMutableArray alloc] init];
-        [dict setObject:array forKey:key];
+    @synchronized (dict) {
+        NSMutableArray *array = [dict objectForKey:key];
+        if (array == nil) {
+            array = [[NSMutableArray alloc] init];
+            [dict setObject:array forKey:key];
+        }
+        if ([array indexOfObject:obj] == NSNotFound) {
+            [array addObject:obj];
+        }
     }
-    [array addObject:obj];
 }
 
 - (void)removeObject:(id)obj fromArrayWithKey:(id)key inDictionary:(NSMutableDictionary *)dict {
-    NSMutableArray *array = [dict objectForKey:key];
-    if (array == nil) {
-        return;
-    }
-    @synchronized(array) {
+    @synchronized (dict) {
+        NSMutableArray *array = [dict objectForKey:key];
+        if (array == nil) {
+            return;
+        }
         [array removeObject:obj];
-    }
-    if ([array count] == 0) {
-        @synchronized(dict) {
+        if ([array count] == 0) {
             [dict removeObjectForKey:key];
         }
     }
 }
 
 - (void)removeObject:(id)obj fromArrayWithKey:(id)key inDictionary:(NSMutableDictionary *)dict where:(BOOL(^)(id))cond {
-    NSMutableArray *array = [dict objectForKey:key];
-    if (array == nil) {
-        return;
-    }
-    @synchronized(array) {
+    @synchronized (dict) {
+        NSMutableArray *array = [dict objectForKey:key];
+        if (array == nil) {
+            return;
+        }
         [array artRemoveWhere:cond];
-    }
-    if ([array count] == 0) {
-        @synchronized(dict) {
+        if ([array count] == 0) {
             [dict removeObjectForKey:key];
         }
     }
-}
-
-- (ARTEventListener *)timed:(ARTEventListener *)listener deadline:(NSTimeInterval)deadline onTimeout:(void (^)())onTimeout {
-    __weak ARTEventEmitter *s = self;
-    __weak ARTEventListener *weakListener = listener;
-    [listener setTimerWithDeadline:deadline onTimeout:^void() {
-        [s off:weakListener];
-        if (onTimeout) onTimeout();
-    }];
-    return listener;
 }
 
 @end

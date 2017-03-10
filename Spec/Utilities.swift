@@ -22,8 +22,8 @@ class Utilities: QuickSpec {
                 var receivedBarOnce: Int?
                 var receivedAll: Int?
                 var receivedAllOnce: Int?
-                var listenerFoo1: ARTEventListener?
-                var listenerAll: ARTEventListener?
+                weak var listenerFoo1: ARTEventListener?
+                weak var listenerAll: ARTEventListener?
                 
                 beforeEach {
                     eventEmitter = ARTEventEmitter()
@@ -57,7 +57,7 @@ class Utilities: QuickSpec {
                     
                     eventEmitter.emit("qux", with:789)
                     
-                    expect(receivedAll).to(equal(789))
+                    expect(receivedAll).toEventually(equal(789), timeout: testTimeout)
                 }
                 
                 it("should only call once listeners once for its event") {
@@ -98,9 +98,9 @@ class Utilities: QuickSpec {
                     }
 
                     it("should remove the timeout") {
-                        eventEmitter.timed(listenerFoo1!, deadline: 0.1, onTimeout: {
+                        listenerFoo1!.setTimer(0.1, onTimeout: {
                             fail("onTimeout callback shouldn't have been called")
-                        })
+                        }).startTimer()
                         eventEmitter.off(listenerFoo1!)
                         waitUntil(timeout: 0.3) { done in
                             delay(0.15) {
@@ -118,7 +118,7 @@ class Utilities: QuickSpec {
                         expect(receivedFoo1).to(equal(111))
                         expect(receivedAll).to(equal(111))
                     }
-                
+
                     it("should stop receive events if off matches the listener's criteria") {
                         eventEmitter.off("foo", listener: listenerFoo1!)
                         eventEmitter.emit("foo", with: 111)
@@ -152,12 +152,12 @@ class Utilities: QuickSpec {
                     }
 
                     it("should remove all timeouts") {
-                        eventEmitter.timed(listenerFoo1!, deadline: 0.1, onTimeout: {
+                        listenerFoo1!.setTimer(0.1, onTimeout: {
                             fail("onTimeout callback shouldn't have been called")
-                        })
-                        eventEmitter.timed(listenerAll!, deadline: 0.1, onTimeout: {
+                        }).startTimer()
+                        listenerAll!.setTimer(0.1, onTimeout: {
                             fail("onTimeout callback shouldn't have been called")
-                        })
+                        }).startTimer()
                         eventEmitter.off()
                         waitUntil(timeout: 0.3) { done in
                             delay(0.15) {
@@ -169,7 +169,7 @@ class Utilities: QuickSpec {
 
                 context("the timed method") {
                     it("should not call onTimeout if the deadline isn't reached") {
-                        eventEmitter.timed(listenerFoo1!, deadline: 0.2, onTimeout: {
+                        weak var timer = listenerFoo1!.setTimer(0.2, onTimeout: {
                             fail("onTimeout callback shouldn't have been called")
                         })
                         waitUntil(timeout: 0.4) { done in
@@ -180,16 +180,17 @@ class Utilities: QuickSpec {
                                     done()
                                 }
                             }
+                            timer?.startTimer()
                         }
                     }
 
                     it("should call onTimeout and off the listener if the deadline is reached") {
                         var calledOnTimeout = false
                         let beforeEmitting = NSDate()
-                        eventEmitter.timed(listenerFoo1!, deadline: 0.3, onTimeout: {
+                        listenerFoo1!.setTimer(0.3, onTimeout: {
                             calledOnTimeout = true
                             expect(NSDate()).to(beCloseTo(beforeEmitting.dateByAddingTimeInterval(0.3), within: 0.2))
-                        })
+                        }).startTimer()
                         waitUntil(timeout: 0.5) { done in
                             delay(0.35) {
                                 expect(calledOnTimeout).to(beTrue())
