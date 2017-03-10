@@ -225,16 +225,27 @@
 }
 
 - (void)sendMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb {
-    __block BOOL gotFailure = false;
     NSString *oldConnectionId = self.realtime.connection.id;
+    ARTProtocolMessage *pmSent = (ARTProtocolMessage *)[pm copy];
+
+    __block BOOL connectionStateHasChanged = false;
     __block ARTEventListener *listener = [self.realtime.internalEventEmitter on:^(ARTConnectionStateChange *stateChange) {
-        if (!(stateChange.current == ARTRealtimeClosed || stateChange.current == ARTRealtimeFailed
-              || (stateChange.current == ARTRealtimeConnected && ![oldConnectionId isEqual:self.realtime.connection.id] /* connection state lost */))) {
+        if (!(stateChange.current == ARTRealtimeClosed ||
+              stateChange.current == ARTRealtimeFailed ||
+              (stateChange.current == ARTRealtimeConnected && ![oldConnectionId isEqual:self.realtime.connection.id] /* connection state lost */))) {
+            // Ok
             return;
         }
-        gotFailure = true;
+        connectionStateHasChanged = true;
         [self.realtime.internalEventEmitter off:listener];
         if (!cb) return;
+
+        if (stateChange.current == ARTRealtimeClosed && stateChange.reason == nil && pmSent.action == ARTProtocolMessageClose) {
+            // No ack/nack is expected.
+            cb([ARTStatus state:ARTStateOk]);
+            return;
+        }
+
         ARTErrorInfo *reason = stateChange.reason ? stateChange.reason : [ARTErrorInfo createWithCode:0 message:@"connection broken before receiving publishing acknowledgement."];
         cb([ARTStatus state:ARTStateError info:reason]);
     }];
@@ -244,8 +255,9 @@
     }
 
     [self.realtime send:pm callback:^(ARTStatus *status) {
+        // New state change can occur before receiving publishing acknowledgement.
         [self.realtime.internalEventEmitter off:listener];
-        if (cb && !gotFailure) cb(status);
+        if (cb && !connectionStateHasChanged) cb(status);
     }];
 }
 
