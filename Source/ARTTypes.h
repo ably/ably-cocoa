@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "CompatibilityMacros.h"
 #import "ARTStatus.h"
+#import "ARTEventEmitter.h"
 
 @class ARTStatus;
 @class ARTHttpResponse;
@@ -177,6 +178,9 @@ NSString *generateNonce();
 
 @protocol ARTJsonCompatible <NSObject>
 - (NSDictionary *__art_nullable)toJSON:(NSError *__art_nullable *__art_nullable)error;
+@end
+
+@interface NSString (ARTEventIdentification) <ARTEventIdentification>
 @end
 
 @interface NSString (ARTJsonCompatible) <ARTJsonCompatible>

@@ -17,7 +17,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTConnection ()
 
-@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNumber *, ARTConnectionStateChange *) *eventEmitter;
+@property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTConnectionStateChange *> *eventEmitter;
 @property(weak, nonatomic) ARTRealtime* realtime;
 
 @end

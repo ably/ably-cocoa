@@ -19,9 +19,33 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
     ARTPresenceSyncFailed //ItemType: ARTErrorInfo*
 };
 
+NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
+    switch (state) {
+        case ARTPresenceSyncInitialized:
+            return @"Initialized"; //0
+        case ARTPresenceSyncStarted:
+            return @"Started"; //1
+        case ARTPresenceSyncEnded:
+            return @"Ended"; //2
+        case ARTPresenceSyncFailed:
+            return @"Failed"; //3
+    }
+}
+
+#pragma mark - ARTEvent
+
+@interface ARTEvent (PresenceSyncState)
+
+- (instancetype)initWithPresenceSyncState:(ARTPresenceSyncState)value;
++ (instancetype)newWithPresenceSyncState:(ARTPresenceSyncState)value;
+
+@end
+
+#pragma mark - ARTPresenceMap
+
 @interface ARTPresenceMap () {
     ARTPresenceSyncState _syncState;
-    ARTEventEmitter<NSNumber * /*ARTSyncState*/, id> *_syncEventEmitter;
+    ARTEventEmitter<ARTEvent * /*ARTSyncState*/, id> *_syncEventEmitter;
     NSMutableDictionary<NSString *, ARTPresenceMessage *> *_members;
     NSMutableSet<ARTPresenceMessage *> *_localMembers;
 }
@@ -184,7 +208,7 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
 - (void)startSync {
     _syncSessionId++;
     _syncState = ARTPresenceSyncStarted;
-    [_syncEventEmitter emit:[NSNumber numberWithInt:ARTPresenceSyncStarted] with:nil];
+    [_syncEventEmitter emit:[ARTEvent newWithPresenceSyncState:_syncState] with:nil];
 }
 
 - (void)endSync {
@@ -192,20 +216,20 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
     [self leaveMembersNotPresentInSync];
     _syncState = ARTPresenceSyncEnded;
     [self reenterLocalMembersMissingFromSync];
-    [_syncEventEmitter emit:[NSNumber numberWithInt:ARTPresenceSyncEnded] with:[_members allValues]];
+    [_syncEventEmitter emit:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncEnded] with:[_members allValues]];
     [_syncEventEmitter off];
 }
 
 - (void)failsSync:(ARTErrorInfo *)error {
     [self reset];
     _syncState = ARTPresenceSyncFailed;
-    [_syncEventEmitter emit:[NSNumber numberWithInt:ARTPresenceSyncFailed] with:error];
+    [_syncEventEmitter emit:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncFailed] with:error];
     [_syncEventEmitter off];
 }
 
 - (void)onceSyncEnds:(void (^)(NSArray<ARTPresenceMessage *> *))callback {
     if (self.syncInProgress) {
-        [_syncEventEmitter once:[NSNumber numberWithInt:ARTPresenceSyncEnded] callback:callback];
+        [_syncEventEmitter once:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncEnded] callback:callback];
     }
     else {
         callback([_members allValues]);
@@ -214,7 +238,7 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
 
 - (void)onceSyncFails:(void (^)(ARTErrorInfo *))callback {
     if (self.syncInProgress) {
-        [_syncEventEmitter once:[NSNumber numberWithInt:ARTPresenceSyncFailed] callback:callback];
+        [_syncEventEmitter once:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncFailed] callback:callback];
     }
 }
 
@@ -230,6 +254,20 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
 
 - (NSString *)memberKey:(ARTPresenceMessage *) message {
     return [NSString stringWithFormat:@"%@:%@", message.connectionId, message.clientId];
+}
+
+@end
+
+#pragma mark - ARTEvent
+
+@implementation ARTEvent (PresenceSyncState)
+
+- (instancetype)initWithPresenceSyncState:(ARTPresenceSyncState)value {
+    return [self initWithString:[NSString stringWithFormat:@"ARTPresenceSyncState%@", ARTPresenceSyncStateToStr(value)]];
+}
+
++ (instancetype)newWithPresenceSyncState:(ARTPresenceSyncState)value {
+    return [[self alloc] initWithPresenceSyncState:value];
 }
 
 @end

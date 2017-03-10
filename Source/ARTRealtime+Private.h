@@ -25,8 +25,8 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtime () <ARTRealtimeTransportDelegate, ARTAuthDelegate>
 
-@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNumber *, ARTConnectionStateChange *) *internalEventEmitter;
-@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNull *, NSNull *) *connectedEventEmitter;
+@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, ARTEvent *, ARTConnectionStateChange *) *internalEventEmitter;
+@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, ARTEvent *, NSNull *) *connectedEventEmitter;
 
 // State properties
 - (BOOL)shouldSendEvents;

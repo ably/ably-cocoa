@@ -46,13 +46,15 @@
 @implementation ARTRealtime {
     BOOL _resuming;
     BOOL _renewingToken;
-    __GENERIC(ARTEventEmitter, NSNull *, ARTErrorInfo *) *_pingEventEmitter;
+    __GENERIC(ARTEventEmitter, ARTEvent *, ARTErrorInfo *) *_pingEventEmitter;
     NSDate *_startedReconnection;
     Class _transportClass;
     Class _reachabilityClass;
     id<ARTRealtimeTransport> _transport;
     ARTFallback *_fallbacks;
     _Nonnull dispatch_queue_t _eventQueue;
+    __weak ARTEventListener *_connectingTimeoutListener;
+    dispatch_block_t _authenitcatingTimeoutWork;
 }
 
 @synthesize authorizationEmitter = _authorizationEmitter;
@@ -247,9 +249,9 @@
             }];
             return;
         }
-        [_pingEventEmitter timed:[_pingEventEmitter once:cb] deadline:[ARTDefault realtimeRequestTimeout] onTimeout:^{
+        [[[_pingEventEmitter once:cb] setTimer:[ARTDefault realtimeRequestTimeout] onTimeout:^{
             cb([ARTErrorInfo createWithCode:ARTCodeErrorConnectionTimedOut status:ARTStateConnectionFailed message:@"timed out"]);
-        }];
+        }] startTimer];
         [self.transport sendPing];
     }
 }
@@ -276,14 +278,11 @@
         [self.connection setErrorReason:errorInfo];
     }
 
-    dispatch_semaphore_t waitingForCurrentEventSemaphore = [self transitionSideEffects:stateChange];
+    ARTEventListener *stateChangeEventListener = [self transitionSideEffects:stateChange];
 
-    [_internalEventEmitter emit:[NSNumber numberWithInteger:state] with:stateChange];
+    [_internalEventEmitter emit:[ARTEvent newWithConnectionEvent:(ARTRealtimeConnectionEvent)state] with:stateChange];
 
-    if (waitingForCurrentEventSemaphore) {
-        // Current event is handled. Start running timeouts.
-        dispatch_semaphore_signal(waitingForCurrentEventSemaphore);
-    }
+    [stateChangeEventListener startTimer];
 }
 
 - (void)updateWithErrorInfo:(art_nullable ARTErrorInfo *)errorInfo {
@@ -296,25 +295,24 @@
 
     ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:self.connection.state previous:self.connection.state event:ARTRealtimeConnectionEventUpdate reason:errorInfo retryIn:0];
 
-    dispatch_semaphore_t semaphore = [self transitionSideEffects:stateChange];
+    ARTEventListener *stateChangeEventListener = [self transitionSideEffects:stateChange];
 
-    if (semaphore) {
-        dispatch_semaphore_signal(semaphore);
-    }
+    [stateChangeEventListener startTimer];
 }
 
-- (_Nullable dispatch_semaphore_t)transitionSideEffects:(ARTConnectionStateChange *)stateChange {
+- (ARTEventListener *)transitionSideEffects:(ARTConnectionStateChange *)stateChange {
     ARTStatus *status = nil;
-    dispatch_semaphore_t waitingForCurrentEventSemaphore = nil;
+    ARTEventListener *stateChangeEventListener = nil;
     // Do not increase the reference count (avoid retain cycles):
     // i.e. the `unlessStateChangesBefore` is setting a timer and if the `ARTRealtime` instance is released before that timer, then it could create a leak.
     __weak __typeof(self) weakSelf = self;
 
     switch (stateChange.current) {
         case ARTRealtimeConnecting: {
-            waitingForCurrentEventSemaphore = [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
+            stateChangeEventListener = [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
                 [weakSelf onConnectionTimeOut];
             }];
+            _connectingTimeoutListener = stateChangeEventListener;
 
             if (!_reachability) {
                 _reachability = [[_reachabilityClass alloc] initWithLogger:self.logger];
@@ -362,7 +360,7 @@
         }
         case ARTRealtimeClosing: {
             [_reachability off];
-            waitingForCurrentEventSemaphore = [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
+            stateChangeEventListener = [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
                 [weakSelf transition:ARTRealtimeClosed];
             }];
             [self.transport sendClose];
@@ -376,7 +374,7 @@
             _connection.id = nil;
             _transport = nil;
             self.rest.prioritizedHost = nil;
-            [_authorizationEmitter emit:[NSNumber numberWithInt:ARTAuthorizationFailed] with:[ARTErrorInfo createWithCode:ARTStateAuthorizationFailed message:@"Connection has been closed"]];
+            [_authorizationEmitter emit:[ARTEvent newWithAuthorizationState:ARTAuthorizationFailed] with:[ARTErrorInfo createWithCode:ARTStateAuthorizationFailed message:@"Connection has been closed"]];
             break;
         case ARTRealtimeFailed:
             status = [ARTStatus state:ARTStateConnectionFailed info:stateChange.reason];
@@ -384,7 +382,7 @@
             self.transport.delegate = nil;
             _transport = nil;
             self.rest.prioritizedHost = nil;
-            [_authorizationEmitter emit:[NSNumber numberWithInt:ARTAuthorizationFailed] with:stateChange.reason];
+            [_authorizationEmitter emit:[ARTEvent newWithAuthorizationState:ARTAuthorizationFailed] with:stateChange.reason];
             break;
         case ARTRealtimeDisconnected: {
             if (!_startedReconnection) {
@@ -396,7 +394,9 @@
                 }];
             }
             if ([[NSDate date] timeIntervalSinceDate:_startedReconnection] >= _connectionStateTtl) {
-                [self transition:ARTRealtimeSuspended withErrorInfo:stateChange.reason];
+                artDispatchScheduled(0, _eventQueue, ^{
+                    [self transition:ARTRealtimeSuspended withErrorInfo:stateChange.reason];
+                });
                 return nil;
             }
 
@@ -404,7 +404,7 @@
             self.transport.delegate = nil;
             _transport = nil;
             [stateChange setRetryIn:self.options.disconnectedRetryTimeout];
-            waitingForCurrentEventSemaphore = [self unlessStateChangesBefore:stateChange.retryIn do:^{
+            stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
                 [weakSelf transition:ARTRealtimeConnecting];
             }];
             break;
@@ -414,10 +414,10 @@
             self.transport.delegate = nil;
             _transport = nil;
             [stateChange setRetryIn:self.options.suspendedRetryTimeout];
-            waitingForCurrentEventSemaphore = [self unlessStateChangesBefore:stateChange.retryIn do:^{
+            stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
                 [weakSelf transition:ARTRealtimeConnecting];
             }];
-            [_authorizationEmitter emit:[NSNumber numberWithInt:ARTAuthorizationFailed] with:[ARTErrorInfo createWithCode:ARTStateAuthorizationFailed message:@"Connection has been suspended"]];
+            [_authorizationEmitter emit:[ARTEvent newWithAuthorizationState:ARTAuthorizationFailed] with:[ARTErrorInfo createWithCode:ARTStateAuthorizationFailed message:@"Connection has been suspended"]];
             break;
         }
         case ARTRealtimeConnected: {
@@ -431,8 +431,8 @@
                     }
                 }];
             }
-            [_connectedEventEmitter emit:[NSNull null] with:nil];
-            [_authorizationEmitter emit:[NSNumber numberWithInt:ARTAuthorizationSucceeded] with:nil];
+            [_connectedEventEmitter emit:nil with:nil];
+            [_authorizationEmitter emit:[ARTEvent newWithAuthorizationState:ARTAuthorizationSucceeded] with:nil];
             break;
         }
         case ARTRealtimeInitialized:
@@ -481,26 +481,17 @@
     }
 
     [self.connection emit:stateChange.event with:stateChange];
-    return waitingForCurrentEventSemaphore;
+    return stateChangeEventListener;
 }
 
-- (_Nonnull dispatch_semaphore_t)unlessStateChangesBefore:(NSTimeInterval)deadline do:(void(^)())callback __attribute__((warn_unused_result)) {
-    // Defer until next event loop execution so that any event emitted in the current one doesn't cancel the timeout.
-    ARTRealtimeConnectionState state = self.connection.state;
-    // Timeout should be dispatched after current event.
-    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), _eventQueue, ^{
-        // Wait until the current event is done.
-        dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
-        if (state != self.connection.state) {
-            // Already changed; Ignore the timer.
-            return;
+- (ARTEventListener *)unlessStateChangesBefore:(NSTimeInterval)deadline do:(void(^)())callback __attribute__((warn_unused_result)) {
+    return [[_internalEventEmitter once:^(ARTConnectionStateChange *change) {
+        // Any state change cancels the timeout.
+    }] setTimer:deadline onTimeout:^{
+        if (callback) {
+            callback();
         }
-        [_internalEventEmitter timed:[_internalEventEmitter once:^(ARTConnectionStateChange *change) {
-            // Any state change cancels the timeout.
-        }] deadline:deadline onTimeout:callback];
-    });
-    return semaphore;
+    }];
 }
 
 - (void)onHeartbeat {
@@ -509,7 +500,7 @@
         NSString *msg = [NSString stringWithFormat:@"ARTRealtime received a ping when in state %@", ARTRealtimeConnectionStateToStr(self.connection.state)];
         [self.logger warn:@"R:%p %@", self, msg];
     }
-    [_pingEventEmitter emit:[NSNull null] with:nil];
+    [_pingEventEmitter emit:nil with:nil];
 }
 
 - (void)onConnected:(ARTProtocolMessage *)message {
@@ -684,8 +675,10 @@
             // Transport instance couldn't exist anymore when `authorize` completes or reaches time out.
             __weak __typeof(self) weakSelf = self;
 
-            dispatch_block_t work = artDispatchScheduled([ARTDefault realtimeRequestTimeout], ^{
+            // Schedule timeout handler
+            _authenitcatingTimeoutWork = artDispatchScheduled([ARTDefault realtimeRequestTimeout], _eventQueue, ^{
                 [weakSelf onConnectionTimeOut];
+                // FIXME: should cancel the auth request as well.
             });
 
             // Deactivate use of `ARTAuthDelegate`: `authorize` should complete without waiting for a CONNECTED state.
@@ -694,7 +687,9 @@
             @try {
                 [self.auth authorize:nil options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
                     // Cancel scheduled work
-                    artDispatchCancel(work);
+                    artDispatchCancel(_authenitcatingTimeoutWork);
+                    _authenitcatingTimeoutWork = nil;
+
                     // It's still valid?
                     switch ([[weakSelf connection] state]) {
                         case ARTRealtimeClosing:

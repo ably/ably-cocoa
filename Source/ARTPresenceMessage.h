@@ -7,6 +7,7 @@
 //
 
 #import "ARTBaseMessage.h"
+#import "ARTEventEmitter.h"
 
 /// Presence action type
 typedef NS_ENUM(NSUInteger, ARTPresenceAction) {
@@ -30,6 +31,13 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (BOOL)isEqualToPresenceMessage:(nonnull ARTPresenceMessage *)presence;
 
+@end
+
+#pragma mark - ARTEvent
+
+@interface ARTEvent (PresenceAction)
+- (instancetype)initWithPresenceAction:(ARTPresenceAction)value;
++ (instancetype)newWithPresenceAction:(ARTPresenceAction)value;
 @end
 
 ART_ASSUME_NONNULL_END

@@ -35,4 +35,11 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTRealtimeConnectionEvent, ARTConnectionState
 
 @end
 
+#pragma mark - ARTEvent
+
+@interface ARTEvent (ConnectionEvent)
+- (instancetype)initWithConnectionEvent:(ARTRealtimeConnectionEvent)value;
++ (instancetype)newWithConnectionEvent:(ARTRealtimeConnectionEvent)value;
+@end
+
 ART_ASSUME_NONNULL_END

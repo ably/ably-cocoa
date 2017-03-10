@@ -23,9 +23,10 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readwrite, strong, nonatomic) NSMutableArray *queuedMessages;
 @property (readwrite, strong, nonatomic, art_nullable) NSString *attachSerial;
 @property (readonly, getter=getClientId) NSString *clientId;
-@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNumber *, ARTChannelStateChange *) *statesEventEmitter;
-@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSString *, ARTMessage *) *messagesEventEmitter;
-@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNumber *, ARTPresenceMessage *) *presenceEventEmitter;
+@property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTChannelStateChange *> *internalEventEmitter;
+@property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTChannelStateChange *> *statesEventEmitter;
+@property (readonly, strong, nonatomic) ARTEventEmitter<id<ARTEventIdentification>, ARTMessage *> *messagesEventEmitter;
+@property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTPresenceMessage *> *presenceEventEmitter;
 @property (readwrite, strong, nonatomic) ARTPresenceMap *presenceMap;
 @property (readwrite, assign, nonatomic) ARTPresenceAction lastPresenceAction;
 

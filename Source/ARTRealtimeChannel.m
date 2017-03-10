@@ -26,13 +26,14 @@
 #import "ARTDefault.h"
 #import "ARTRest.h"
 #import "ARTClientOptions.h"
+#import "ARTTypes.h"
 
 @interface ARTRealtimeChannel () {
     ARTRealtimePresence *_realtimePresence;
     CFRunLoopTimerRef _attachTimer;
     CFRunLoopTimerRef _detachTimer;
-    __GENERIC(ARTEventEmitter, NSNull *, ARTErrorInfo *) *_attachedEventEmitter;
-    __GENERIC(ARTEventEmitter, NSNull *, ARTErrorInfo *) *_detachedEventEmitter;
+    __GENERIC(ARTEventEmitter, ARTEvent *, ARTErrorInfo *) *_attachedEventEmitter;
+    __GENERIC(ARTEventEmitter, ARTEvent *, ARTErrorInfo *) *_detachedEventEmitter;
 }
 
 @end
@@ -58,6 +59,7 @@
         _presenceEventEmitter = [[ARTEventEmitter alloc] initWithQueue:_eventQueue];
         _attachedEventEmitter = [[ARTEventEmitter alloc] initWithQueue:_eventQueue];
         _detachedEventEmitter = [[ARTEventEmitter alloc] initWithQueue:_eventQueue];
+        _internalEventEmitter = [[ARTEventEmitter alloc] initWithQueue:_eventQueue];
     }
     return self;
 }
@@ -199,7 +201,7 @@
             } else {
                 [self addToQueue:pm callback:queuedCallback];
 
-                [self.realtime.internalEventEmitter once:[NSNumber numberWithInteger:ARTRealtimeConnected] callback:^(ARTConnectionStateChange *__art_nullable change) {
+                [self.realtime.internalEventEmitter once:[ARTEvent newWithConnectionEvent:ARTRealtimeConnectionEventConnected] callback:^(ARTConnectionStateChange *__art_nullable change) {
                     [weakSelf sendQueuedMessages];
                 }];
             }
@@ -257,11 +259,11 @@
     }
 }
 
-- (ARTEventListener<ARTMessage *> *)subscribe:(void (^)(ARTMessage * _Nonnull))callback {
+- (ARTEventListener *)subscribe:(void (^)(ARTMessage * _Nonnull))callback {
     return [self subscribeWithAttachCallback:nil callback:callback];
 }
 
-- (ARTEventListener<ARTMessage *> *)subscribeWithAttachCallback:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTMessage * _Nonnull))cb {
+- (ARTEventListener *)subscribeWithAttachCallback:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTMessage * _Nonnull))cb {
     if (self.state == ARTRealtimeChannelFailed) {
         if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
         return nil;
@@ -270,11 +272,11 @@
     return [self.messagesEventEmitter on:cb];
 }
 
-- (ARTEventListener<ARTMessage *> *)subscribe:(NSString *)name callback:(void (^)(ARTMessage * _Nonnull))cb {
+- (ARTEventListener *)subscribe:(NSString *)name callback:(void (^)(ARTMessage * _Nonnull))cb {
     return [self subscribe:name onAttach:nil callback:cb];
 }
 
-- (ARTEventListener<ARTMessage *> *)subscribe:(NSString *)name onAttach:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTMessage * _Nonnull))cb {
+- (ARTEventListener *)subscribe:(NSString *)name onAttach:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTMessage * _Nonnull))cb {
     if (self.state == ARTRealtimeChannelFailed) {
         if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
         return nil;
@@ -287,47 +289,45 @@
     [self.messagesEventEmitter off];
 }
 
-- (void)unsubscribe:(ARTEventListener<ARTMessage *> *)listener {
+- (void)unsubscribe:(ARTEventListener *)listener {
     [self.messagesEventEmitter off:listener];
 }
 
-- (void)unsubscribe:(NSString *)name listener:(ARTEventListener<ARTMessage *> *)listener {
+- (void)unsubscribe:(NSString *)name listener:(ARTEventListener *)listener {
     [self.messagesEventEmitter off:name listener:listener];
 }
 
-- (__GENERIC(ARTEventListener, ARTChannelStateChange *) *)on:(ARTChannelEvent)event callback:(void (^)(ARTChannelStateChange *))cb {
-    return [self.statesEventEmitter on:[NSNumber numberWithInt:event] callback:cb];
+- (ARTEventListener *)on:(ARTChannelEvent)event callback:(void (^)(ARTChannelStateChange *))cb {
+    return [self.statesEventEmitter on:[ARTEvent newWithChannelEvent:event] callback:cb];
 }
 
-- (__GENERIC(ARTEventListener, ARTChannelStateChange *) *)on:(void (^)(ARTChannelStateChange *))cb {
+- (ARTEventListener *)on:(void (^)(ARTChannelStateChange *))cb {
     return [self.statesEventEmitter on:cb];
 }
 
-- (__GENERIC(ARTEventListener, ARTChannelStateChange *) *)once:(ARTChannelEvent)event callback:(void (^)(ARTChannelStateChange *))cb {
-    return [self.statesEventEmitter once:[NSNumber numberWithInt:event] callback:cb];
+- (ARTEventListener *)once:(ARTChannelEvent)event callback:(void (^)(ARTChannelStateChange *))cb {
+    return [self.statesEventEmitter once:[ARTEvent newWithChannelEvent:event] callback:cb];
 }
 
-- (__GENERIC(ARTEventListener, ARTChannelStateChange *) *)once:(void (^)(ARTChannelStateChange *))cb {
+- (ARTEventListener *)once:(void (^)(ARTChannelStateChange *))cb {
     return [self.statesEventEmitter once:cb];
 }
 
 - (void)off {
     [self.statesEventEmitter off];
 }
+
 - (void)off:(ARTChannelEvent)event listener:listener {
-    [self.statesEventEmitter off:[NSNumber numberWithInt:event] listener:listener];
+    [self.statesEventEmitter off:[ARTEvent newWithChannelEvent:event] listener:listener];
 }
 
-- (void)off:(__GENERIC(ARTEventListener, ARTChannelStateChange *) *)listener {
+- (void)off:(ARTEventListener *)listener {
     [self.statesEventEmitter off:listener];
 }
 
 - (void)emit:(ARTChannelEvent)event with:(ARTChannelStateChange *)data {
-    [self.statesEventEmitter emit:[NSNumber numberWithInt:event] with:data];
-}
-
-- (ARTEventListener *)timed:(ARTEventListener *)listener deadline:(NSTimeInterval)deadline onTimeout:(void (^)())onTimeout {
-    return [self.statesEventEmitter timed:listener deadline:deadline onTimeout:onTimeout];
+    [self.statesEventEmitter emit:[ARTEvent newWithChannelEvent:event] with:data];
+    [self.internalEventEmitter emit:[ARTEvent newWithChannelEvent:event] with:data];
 }
 
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status {
@@ -341,14 +341,14 @@
 
     switch (state) {
         case ARTRealtimeChannelSuspended:
-            [_attachedEventEmitter emit:[NSNull null] with:status.errorInfo];
+            [_attachedEventEmitter emit:nil with:status.errorInfo];
             break;
         case ARTRealtimeChannelDetached:
             [self.presenceMap failsSync:status.errorInfo];
             break;
         case ARTRealtimeChannelFailed:
-            [_attachedEventEmitter emit:[NSNull null] with:status.errorInfo];
-            [_detachedEventEmitter emit:[NSNull null] with:status.errorInfo];
+            [_attachedEventEmitter emit:nil with:status.errorInfo];
+            [_detachedEventEmitter emit:nil with:status.errorInfo];
             [self.presenceMap failsSync:status.errorInfo];
             break;
         default:
@@ -359,25 +359,18 @@
 }
 
 - (void)dealloc {
-    if (self.statesEventEmitter) {
-        [self.statesEventEmitter off];
-    }
+    [_statesEventEmitter off];
+    [_internalEventEmitter off];
 }
 
-- (void)unlessStateChangesBefore:(NSTimeInterval)deadline do:(void(^)())callback {
-    // Defer until next event loop execution so that any event emitted in the current
-    // one doesn't cancel the timeout.
-    ARTRealtimeChannelState state = self.state;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), _eventQueue, ^{
-        if (state != self.state) {
-            // Already changed; do nothing.
-            return;
+- (ARTEventListener *)unlessStateChangesBefore:(NSTimeInterval)deadline do:(void(^)())callback {
+    return [[self.internalEventEmitter once:^(ARTChannelStateChange *stateChange) {
+        // Any state change cancels the timeout.
+    }] setTimer:deadline onTimeout:^{
+        if (callback) {
+            callback();
         }
-        // FIXME: should not use the global listener for internal purpose
-        [self timed:[self once:^(ARTChannelStateChange *stateChange) {
-            // Any state change cancels the timeout.
-        }] deadline:deadline onTimeout:callback];
-    });
+    }];
 }
 
 /**
@@ -425,9 +418,15 @@
 }
 
 - (void)setAttached:(ARTProtocolMessage *)message {
-    if (self.state == ARTRealtimeChannelFailed) {
-        return;
+    switch (self.state) {
+        case ARTRealtimeChannelDetaching:
+        case ARTRealtimeChannelFailed:
+            // Ignore
+            return;
+        default:
+            break;
     }
+
     self.attachSerial = message.channelSerial;
 
     if (message.hasPresence) {
@@ -455,7 +454,7 @@
 
     ARTStatus *status = message.error ? [ARTStatus state:ARTStateError info:message.error] : [ARTStatus state:ARTStateOk];
     [self transition:ARTRealtimeChannelAttached status:status];
-    [_attachedEventEmitter emit:[NSNull null] with:nil];
+    [_attachedEventEmitter emit:nil with:nil];
 }
 
 - (void)setDetached:(ARTProtocolMessage *)message {
@@ -483,7 +482,7 @@
     ARTErrorInfo *errorInfo = message.error ? message.error : [ARTErrorInfo createWithCode:0 message:@"channel has detached"];
     ARTStatus *reason = [ARTStatus state:ARTStateNotAttached info:errorInfo];
     [self detachChannel:reason];
-    [_detachedEventEmitter emit:[NSNull null] with:nil];
+    [_detachedEventEmitter emit:nil with:nil];
 }
 
 - (void)detachChannel:(ARTStatus *)status {
@@ -504,11 +503,12 @@
     [self failQueuedMessages:status];
     [self transition:ARTRealtimeChannelSuspended status:status];
     __weak __typeof(self) weakSelf = self;
-    [self unlessStateChangesBefore:retryTimeout do:^{
+    [[self unlessStateChangesBefore:retryTimeout do:^{
         [weakSelf reattach:^(ARTErrorInfo *errorInfo) {
-            [weakSelf setSuspended:[ARTStatus state:ARTStateError info:errorInfo]];
+            ARTStatus *status = [ARTStatus state:ARTStateError info:errorInfo];
+            [weakSelf setSuspended:status];
         } withReason:nil];
-    }];
+    }] startTimer];
 }
 
 - (void)onMessage:(ARTProtocolMessage *)message {
@@ -594,7 +594,7 @@
 }
 
 - (void)broadcastPresence:(ARTPresenceMessage *)pm {
-    [self.presenceEventEmitter emit:[NSNumber numberWithUnsignedInteger:pm.action] with:pm];
+    [self.presenceEventEmitter emit:[ARTEvent newWithPresenceAction:pm.action] with:pm];
 }
 
 - (void)onError:(ARTProtocolMessage *)msg {
@@ -673,16 +673,14 @@
     attachMessage.action = ARTProtocolMessageAttach;
     attachMessage.channel = self.name;
 
-    __block BOOL timeouted = false;
-
     [self.realtime send:attachMessage callback:nil];
 
-    [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
-        timeouted = true;
+    [[self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
+        // Timeout
         ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTStateAttachTimedOut message:@"attach timed out"];
         ARTStatus *status = [ARTStatus state:ARTStateAttachTimedOut info:errorInfo];
         [self setSuspended:status];
-    }];
+    }] startTimer];
 
     if (![self.realtime shouldQueueEvents]) {
         ARTEventListener *reconnectedListener = [self.realtime.connectedEventEmitter once:^(NSNull *n) {
@@ -750,21 +748,19 @@
     detachMessage.action = ARTProtocolMessageDetach;
     detachMessage.channel = self.name;
 
-    __block BOOL timeouted = false;
-
     [self.realtime send:detachMessage callback:nil];
 
-    [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
-        timeouted = true;
+    [[self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
+        // Timeout
         ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTStateDetachTimedOut message:@"detach timed out"];
         ARTStatus *status = [ARTStatus state:ARTStateDetachTimedOut info:errorInfo];
         [self transition:ARTRealtimeChannelAttached status:status];
-        [_detachedEventEmitter emit:[NSNull null] with:errorInfo];
-    }];
+        [_detachedEventEmitter emit:nil with:errorInfo];
+    }] startTimer];
 
     if (![self.realtime shouldQueueEvents]) {
         ARTEventListener *reconnectedListener = [self.realtime.connectedEventEmitter once:^(NSNull *n) {
-            // Disconnected and connected while attaching, re-detach.
+            // Disconnected and connected while detaching, re-detach.
             [self detachAfterChecks:callback];
         }];
         [_detachedEventEmitter once:^(ARTErrorInfo *err) {
@@ -840,6 +836,20 @@
         [self emit:stateChange.event with:stateChange];
     }];
     [self.logger debug:__FILE__ line:__LINE__ message:@"Re-entering local member \"%@\"", presence.memberKey];
+}
+
+@end
+
+#pragma mark - ARTEvent
+
+@implementation ARTEvent (ChannelEvent)
+
+- (instancetype)initWithChannelEvent:(ARTChannelEvent)value {
+    return [self initWithString:[NSString stringWithFormat:@"ARTChannelEvent%@",ARTChannelEventToStr(value)]];
+}
+
++ (instancetype)newWithChannelEvent:(ARTChannelEvent)value {
+    return [[self alloc] initWithChannelEvent:value];
 }
 
 @end

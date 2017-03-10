@@ -142,6 +142,16 @@ NSString *ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event) {
 
 @end
 
+#pragma mark - ARTEventIdentification
+
+@implementation NSString (ARTEventIdentification)
+
+- (NSString *)identification {
+    return self;
+}
+
+@end
+
 #pragma mark - ARTJsonCompatible
 
 @implementation NSString (ARTJsonCompatible)
