@@ -53,9 +53,10 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 
     __weak XCTestExpectation *expectation2 = [self expectationWithDescription:[NSString stringWithFormat:@"%s-2", __FUNCTION__]];
+    __block ARTRealtime *realtimeNonRecovered;
     [realtime.connection once:ARTRealtimeConnectionEventDisconnected callback:^(ARTConnectionStateChange *stateChange) {
         options.recover = nil;
-        ARTRealtime *realtimeNonRecovered = [[ARTRealtime alloc] initWithOptions:options];
+        realtimeNonRecovered = [[ARTRealtime alloc] initWithOptions:options];
         ARTRealtimeChannel *c2 = [realtimeNonRecovered.channels get:channelName];
         // Sending other message to the same channel to check if the recovered connection receives it
         [c2 publish:nil data:c2Message callback:^(ARTErrorInfo *errorInfo) {
