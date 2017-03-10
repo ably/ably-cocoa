@@ -1356,7 +1356,7 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 // RTL5f
-                it("if a DETACHEDis not received within the default realtime request timeout, the detach request should be treated as though it has failed and the channel will return to its previous state") {
+                it("if a DETACHED is not received within the default realtime request timeout, the detach request should be treated as though it has failed and the channel will return to its previous state") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)

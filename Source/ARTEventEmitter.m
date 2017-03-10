@@ -18,7 +18,9 @@
     NSUInteger l = [self count];
     for (NSInteger i = 0; i < l; i++) {
         if (cond([self objectAtIndex:i])) {
-            [self removeObjectAtIndex:i];
+            @synchronized(self) {
+                [self removeObjectAtIndex:i];
+            }
             i--;
             l--;
         }

@@ -481,11 +481,9 @@
             XCTAssertNil(errorInfo);
             [channel2.presence get:^(NSArray<ARTPresenceMessage *> *members, ARTErrorInfo *error) {
                 XCTAssert(!error);
-                XCTAssertEqual(2, members.count);
                 XCTAssertEqual(members[0].action, ARTPresencePresent);
-                XCTAssertEqual(members[1].action, ARTPresencePresent);
+                XCTAssertEqualObjects(members[0].clientId, [self getClientId]);
                 XCTAssertEqualObjects([members[0] data], enterData);
-                XCTAssertEqualObjects([members[1] data], enterData);
                 [expectation fulfill];
             }];
         }];
@@ -963,6 +961,8 @@
     ARTRealtimeChannel *channel = [realtime.channels get:channelName];
     [channel.presence enter:@"someDataPayload" callback:^(ARTErrorInfo *errorInfo) {
          XCTAssertNil(errorInfo);
+    }];
+    [channel.presence subscribe:^(ARTPresenceMessage *message) {
         [channel.presence get:^(NSArray<ARTPresenceMessage *> *members, ARTErrorInfo *error) {
             XCTAssert(!error);
             XCTAssertEqual(1, members.count);
