@@ -2077,15 +2077,20 @@ class RealtimeClientChannel: QuickSpec {
                         let channel = client.channels.get("test")
 
                         var resultClientId: String?
-                        channel.subscribe() { message in
-                            resultClientId = message.clientId
-                        }
 
                         let message = ARTMessage(name: nil, data: "message")
                         message.clientId = "client_string"
 
-                        channel.publish([message]) { errorInfo in
-                            expect(errorInfo).to(beNil())
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
+                            channel.subscribe() { message in
+                                resultClientId = message.clientId
+                                partialDone()
+                            }
+                            channel.publish([message]) { errorInfo in
+                                expect(errorInfo).to(beNil())
+                                partialDone()
+                            }
                         }
 
                         expect(resultClientId).toEventually(equal(message.clientId), timeout: testTimeout)
@@ -2305,12 +2310,17 @@ class RealtimeClientChannel: QuickSpec {
 
                         let message = ARTMessage(name: nil, data: "message", clientId: options.clientId!)
                         var resultClientId: String?
-                        channel.subscribe() { message in
-                            resultClientId = message.clientId
-                        }
 
-                        channel.publish([message]) { error in
-                            expect(error).to(beNil())
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
+                            channel.subscribe() { message in
+                                resultClientId = message.clientId
+                                partialDone()
+                            }
+                            channel.publish([message]) { error in
+                                expect(error).to(beNil())
+                                partialDone()
+                            }
                         }
 
                         expect(resultClientId).toEventually(equal(message.clientId), timeout: testTimeout)
@@ -2350,12 +2360,14 @@ class RealtimeClientChannel: QuickSpec {
                         let channel = client.channels.get("test")
                         let message = ARTMessage(name: nil, data: "message", clientId: "john")
                         waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
                             channel.subscribe() { received in
                                 expect(received.clientId).to(equal(message.clientId))
-                                done()
+                                partialDone()
                             }
                             channel.publish([message]) { error in
                                 expect(error).to(beNil())
+                                partialDone()
                             }
                         }
                     }
@@ -2388,15 +2400,16 @@ class RealtimeClientChannel: QuickSpec {
                     let channel = client.channels.get("test")
 
                     waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
                         channel.subscribe { message in
                             expect(message.name).to(equal("event"))
                             expect(message.data as? NSObject).to(equal("data"))
                             expect(message.clientId).to(equal("foo"))
-                            done()
+                            partialDone()
                         }
-
                         channel.publish("event", data: "data", clientId: "foo") { errorInfo in
                             expect(errorInfo).to(beNil())
+                            partialDone()
                         }
                     }
                 }

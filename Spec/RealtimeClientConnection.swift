@@ -541,13 +541,6 @@ class RealtimeClientConnection: QuickSpec {
                 }
             }
 
-            class TotalReach {
-                // Easy way to create an atomic var
-                static var shared = 0
-                // This prevents others from using the default '()' initializer
-                private init() {}
-            }
-
             // RTN5
             it("basic operations should work simultaneously") {
                 let options = AblyTests.commonAppSetup()
@@ -1062,8 +1055,11 @@ class RealtimeClientConnection: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             channel.attach() { error in
                                 expect(error).to(beNil())
-                                channel.publish(nil, data: "message", callback: { errorInfo in
-                                    expect(errorInfo).toNot(beNil())
+                                channel.publish(nil, data: "message", callback: { error in
+                                    guard let error = error else {
+                                        fail("Error is nil"); done(); return
+                                    }
+                                    expect(error.message).to(contain("connection broken before receiving publishing acknowledgement"))
                                     done()
                                 })
                                 // Wait until the message is pushed to Ably first
@@ -2198,22 +2194,20 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
                         client1.connection.once(.Connecting) { _ in
                             expect(client1.resuming).to(beTrue())
-                            done()
+                            partialDone()
                         }
-                    }
-
-                    waitUntil(timeout: testTimeout) { done in
                         client1.connection.once(.Connected) { _ in
                             expect(client1.resuming).to(beFalse())
                             expect(client1.connection.id).toNot(equal(firstConnection.id))
                             expect(client1.connection.key).toNot(equal(firstConnection.key))
-                            done()
+                            partialDone()
                         }
                     }
-                    
-                    expect(states).to(equal([.Connecting, .Connected, .Disconnected, .Connecting, .Connected]))
+
+                    expect(states).toEventually(equal([.Connecting, .Connected, .Disconnected, .Connecting, .Connected]), timeout: testTimeout)
                 }
 
                 // RTN15b
@@ -2566,7 +2560,7 @@ class RealtimeClientConnection: QuickSpec {
                 // RTN15f
                 it("ACK and NACK responses for published messages can only ever be received on the transport connection on which those messages were sent") {
                     let options = AblyTests.commonAppSetup()
-                    options.disconnectedRetryTimeout = 0.5
+                    options.disconnectedRetryTimeout = 1.5
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
@@ -3431,7 +3425,7 @@ class RealtimeClientConnection: QuickSpec {
                 // RTN19b
                 it("should resent the DETACH message if there are any pending channels") {
                     let options = AblyTests.commonAppSetup()
-                    options.disconnectedRetryTimeout = 0.1
+                    options.disconnectedRetryTimeout = 1.0
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
