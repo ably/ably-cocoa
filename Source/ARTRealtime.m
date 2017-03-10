@@ -583,7 +583,7 @@
             [self transition:ARTRealtimeClosed];
             break;
         default:
-            NSAssert(false, @"Invalid Realtime state transitioning to Closed: expected Closing or Closed");
+            NSAssert(false, @"Invalid Realtime state transitioning to Closed: expected Closing or Closed, has %@", ARTRealtimeConnectionStateToStr(self.connection.state));
             break;
     }
 }
@@ -597,7 +597,7 @@
             [self transportReconnectWithRenewedToken];
             break;
         default:
-            [self.logger error:@"Invalid Realtime state: expected Connecting or Connected"];
+            [self.logger error:@"Invalid Realtime state: expected Connecting or Connected, has %@", ARTRealtimeConnectionStateToStr(self.connection.state)];
             break;
     }
 }
@@ -618,6 +618,13 @@
 }
 
 - (void)onConnectionTimeOut {
+    // Cancel connecting scheduled work
+    [_connectingTimeoutListener stopTimer];
+    _connectingTimeoutListener = nil;
+    // Cancel auth scheduled work
+    artDispatchCancel(_authenitcatingTimeoutWork);
+    _authenitcatingTimeoutWork = nil;
+
     ARTErrorInfo *error;
     if (self.auth.authorizing && (self.options.authUrl || self.options.authCallback)) {
         error = [ARTErrorInfo createWithCode:ARTCodeErrorAuthConfiguredProviderFailure status:ARTStateConnectionFailed message:@"timed out"];
