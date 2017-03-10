@@ -257,12 +257,16 @@ class RealtimeClientConnection: QuickSpec {
                                 }
                             case .Connected:
                                 if alreadyClosed {
-                                    client.onSuspended()
+                                    delay(0) {
+                                        client.onSuspended()
+                                    }
                                 } else if alreadyDisconnected {
                                     client.close()
                                 } else {
                                     events += [state]
-                                    client.onDisconnected()
+                                    delay(0) {
+                                        client.onDisconnected()
+                                    }
                                 }
                             case .Disconnected:
                                 events += [state]
@@ -577,11 +581,12 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
+                var i = 0
                 waitUntil(timeout: testTimeout) { done in
                     // Sends 50 messages from different clients to the same channel
                     // 50 messages for 50 clients = 50*50 total messages
                     // echo is off, so we need to subtract one message per client
-                    let partialDone = AblyTests.splitDone(max*max - max, done: done)
+                    let total = max*max - max
                     for client in disposable {
                         let channel = client.channels.get(channelName)
                         expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
@@ -589,7 +594,10 @@ class RealtimeClientConnection: QuickSpec {
                         channel.subscribe { message in
                             expect(message.data as? String).to(equal("message_string"))
                             sync.lock()
-                            partialDone()
+                            i += 1
+                            if i == total {
+                                done()
+                            }
                             sync.unlock()
                         }
 
@@ -1064,6 +1072,13 @@ class RealtimeClientConnection: QuickSpec {
                                 }
                             }
                         }
+
+                        // This verifies that the pending message as been released and the publish callback is called only once!
+                        waitUntil(timeout: testTimeout) { done in
+                            delay(1.0) {
+                                done()
+                            }
+                        }
                     }
 
                     it("connection state enters FAILED") {
@@ -1181,6 +1196,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
                     var ids = [String]()
                     let max = 25
+                    let sync = NSLock()
 
                     waitUntil(timeout: testTimeout) { done in
                         for _ in 1...max {
@@ -1197,11 +1213,13 @@ class RealtimeClientConnection: QuickSpec {
                                         return
                                     }
                                     expect(ids).toNot(contain(connectionId))
-                                    ids.append(connectionId)
 
+                                    sync.lock()
+                                    ids.append(connectionId)
                                     if ids.count == max {
                                         done()
                                     }
+                                    sync.unlock()
 
                                     currentConnection.off()
                                     currentConnection.close()
@@ -2052,6 +2070,10 @@ class RealtimeClientConnection: QuickSpec {
                     options.autoConnect = false
                     let expectedTime = 3.0
 
+                    options.authCallback = { tokenParams, completion in
+                        // Ignore `completion` closure to force a time out
+                    }
+
                     let previousConnectionStateTtl = ARTDefault.connectionStateTtl()
                     defer { ARTDefault.setConnectionStateTtl(previousConnectionStateTtl) }
                     ARTDefault.setConnectionStateTtl(expectedTime)
@@ -2099,11 +2121,14 @@ class RealtimeClientConnection: QuickSpec {
                 // RTN14e
                 it("connection state has been in the DISCONNECTED state for more than the default connectionStateTtl should change the state to SUSPENDED") {
                     let options = AblyTests.commonAppSetup()
-                    options.realtimeHost = "10.255.255.1" //non-routable IP address
                     options.disconnectedRetryTimeout = 0.1
                     options.suspendedRetryTimeout = 0.5
                     options.autoConnect = false
-                    let expectedTime = 1.0
+                    let expectedTime: NSTimeInterval = 1.0
+
+                    options.authCallback = { _ in
+                        // Force a timeout
+                    }
 
                     let previousConnectionStateTtl = ARTDefault.connectionStateTtl()
                     defer { ARTDefault.setConnectionStateTtl(previousConnectionStateTtl) }
@@ -2562,7 +2587,9 @@ class RealtimeClientConnection: QuickSpec {
                                     fail("Shouldn't be called")
                                 }
                             }
-                            client.onDisconnected()
+                            delay(0) {
+                                client.onDisconnected()
+                            }
                             client.connection.once(.Connected) { _ in
                                 resumed = true
                                 channel.testSuite_injectIntoMethodBefore(#selector(channel.sendQueuedMessages)) {

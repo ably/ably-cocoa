@@ -558,12 +558,15 @@ class RealtimeClientChannel: QuickSpec {
                         }
                     }
 
-                    client.simulateSuspended(beforeSuspension: { done in
+                    waitUntil(timeout: testTimeout) { done in
                         channel.once(.Suspended) { stateChange in
                             expect(stateChange?.reason).to(beNil())
                             done()
                         }
-                    })
+                        delay(0) {
+                            client.onSuspended()
+                        }
+                    }
 
                     expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)

@@ -336,7 +336,9 @@ class RealtimeClient: QuickSpec {
 
                             if start == nil {
                                 // Force
-                                client.onSuspended()
+                                delay(0) {
+                                    client.onSuspended()
+                                }
                             }
                         case .Suspended:
                             start = NSDate()
