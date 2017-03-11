@@ -535,6 +535,17 @@ You can also view the [community reported Github issues](https://github.com/ably
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
 
+## Release notes
+
+This library uses [semantic versioning](http://semver.org/). For each release, the following needs to be done:
+
+* Replace all references of the current version number with the new version number (check this file [README.md](./README.md), [Ably.podspec](./Ably.podspec), [Source/Info.plist](./Source/Info.plist), [Source/ARTDefault.m](Source/ARTDefault.m)) and commit the changes. (example: [Bump commit](https://github.com/ably/ably-ios/commit/f73d2662ae0c06f0aff105adb57a52f073277ea8)).
+* Run [`github_changelog_generator`](https://github.com/skywinder/Github-Changelog-Generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). Once the CHANGELOG has completed, manually change the `Unreleased` heading and link with the current version number such as `v1.0.0`. Also ensure that the `Full Changelog` link points to the new version tag instead of the `HEAD`. Commit this change.
+* Add a tag and push to origin such as `git tag v1.0.0 && git push origin v1.0.0`
+* Visit [releases page](https://github.com/ably/ably-ios/releases) and `Add release notes`.
+* Remember to release an update for the [CocoaPods](https://guides.cocoapods.org/making/making-a-cocoapod.html#release).
+* Remember to generate and attach the prebuilt framework for [Carthage](https://github.com/Carthage/Carthage#archive-prebuilt-frameworks-into-one-zip-file).
+
 ## License
 
 Copyright (c) 2015 Ably Real-time Ltd, Licensed under the Apache License, Version 2.0.  Refer to [LICENSE](LICENSE) for the license terms.
