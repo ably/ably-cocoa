@@ -626,10 +626,12 @@ class RealtimeClientPresence: QuickSpec {
                     let channel2 = client2.channels.get(channel1.name)
 
                     waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
                         channel2.presence.enterClient("Client 2", data: nil) { error in
                             expect(error).to(beNil())
                             expect(channel2.queuedMessages).to(haveCount(0))
                             expect(channel2.state).to(equal(ARTRealtimeChannelState.Attached))
+                            partialDone()
                         }
                         channel2.presence.subscribe(.Enter) { _ in
                             if channel2.presence.syncComplete {
@@ -639,7 +641,7 @@ class RealtimeClientPresence: QuickSpec {
                                 expect(channel2.presenceMap.members).to(haveCount(1))
                             }
                             channel2.presence.unsubscribe()
-                            done()
+                            partialDone()
                         }
 
                         expect(channel2.queuedMessages).to(haveCount(1))

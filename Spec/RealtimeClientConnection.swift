@@ -2785,18 +2785,20 @@ class RealtimeClientConnection: QuickSpec {
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
                     waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
                         client.connection.once(.Connected) { _ in
                             expect(client.connection.serial).to(equal(-1))
                             expect(client.connection.recoveryKey).to(equal("\(client.connection.key!):\(client.connection.serial)"))
                         }
                         channel.publish(nil, data: "message") { error in
                             expect(error).to(beNil())
+                            partialDone()
                         }
                         channel.subscribe { message in
                             expect(message.data as? String).to(equal("message"))
                             expect(client.connection.serial).to(equal(0))
                             channel.unsubscribe()
-                            done()
+                            partialDone()
                         }
                     }
                 }
