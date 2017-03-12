@@ -402,7 +402,10 @@
         _tokenDetails = tokenDetails;
         _method = ARTAuthMethodToken;
 
-        if (lastDelegate) {
+        if (!tokenDetails) {
+            failureBlock([ARTErrorInfo createWithCode:0 message:@"Token details are empty"]);
+        }
+        else if (lastDelegate) {
             [lastDelegate auth:self didAuthorize:tokenDetails];
         }
         else {

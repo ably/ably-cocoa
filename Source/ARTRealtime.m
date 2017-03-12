@@ -448,11 +448,11 @@
             }
         }
     } else if (![self shouldQueueEvents]) {
-        [self failQueuedMessages:status];
         ARTStatus *channelStatus = status;
         if (!channelStatus) {
             channelStatus = [self defaultError];
         }
+        [self failQueuedMessages:channelStatus];
         // For every Channel
         for (ARTRealtimeChannel* channel in self.channels) {
             switch (channel.state) {
@@ -919,7 +919,6 @@
         // we can handle it gracefully by only processing the
         // relevant portion of the response
         count -= (int)(self.pendingMessageStartSerial - serial);
-        serial = self.pendingMessageStartSerial;
     }
 
     NSRange nackRange;

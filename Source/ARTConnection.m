@@ -20,7 +20,7 @@
 }
 
 - (instancetype)initWithRealtime:(ARTRealtime *)realtime {
-    if (self == [super init]) {
+    if (self = [super init]) {
         _queue = dispatch_queue_create("io.ably.realtime.connection", DISPATCH_QUEUE_SERIAL);
         _eventEmitter = [[ARTEventEmitter alloc] initWithQueue:_queue];
         _realtime = realtime;

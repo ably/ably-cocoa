@@ -53,10 +53,10 @@ int (^ARTFallback_getRandomHostIndex)(int count) = ^int(int count) {
 }
 
 - (NSString *)popFallbackHost {
-    if([self.hosts count] ==0) {
+    if ([self.hosts count] ==0) {
         return nil;
     }
-    NSString *host= [self.hosts lastObject];
+    NSString *host = [self.hosts lastObject];
     [self.hosts removeLastObject];
     return host;
 }

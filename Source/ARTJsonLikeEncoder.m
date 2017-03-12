@@ -668,6 +668,9 @@
 
 - (NSError *)decodeError:(NSData *)error {
     NSDictionary *decodedError = [[self decodeDictionary:error] valueForKey:@"error"];
+    if (!decodedError) {
+        return nil;
+    }
     NSDictionary *userInfo = @{
                                NSLocalizedDescriptionKey: @"",
                                NSLocalizedFailureReasonErrorKey: decodedError[@"message"],

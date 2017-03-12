@@ -37,7 +37,7 @@
 }
 
 - (instancetype)initWithString:(NSString *)value {
-    if (self == [super init]) {
+    if (self = [super init]) {
         _value = value;
     }
     return self;

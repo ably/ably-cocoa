@@ -42,7 +42,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (ARTTokenParams *)mergeParams:(ARTTokenParams *)customParams;
 
 - (NSURL *)buildURL:(ARTAuthOptions *)options withParams:(ARTTokenParams *)params;
-- (NSMutableURLRequest *)buildRequest:(ARTAuthOptions *)options withParams:(ARTTokenParams *)params;
+- (NSMutableURLRequest *)buildRequest:(nullable ARTAuthOptions *)options withParams:(nullable ARTTokenParams *)params;
 
 // Execute the received ARTTokenRequest
 - (void)executeTokenRequest:(ARTTokenRequest *)tokenRequest callback:(void (^)(ARTTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error))callback;

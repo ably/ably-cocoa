@@ -17,7 +17,7 @@ extern NSString* (^__art_nullable ARTChannels_getChannelNamePrefix)();
 
 @protocol ARTChannelsDelegate <NSObject>
 
-- (id)makeChannel:(NSString *)channel options:(ARTChannelOptions *)options;
+- (id)makeChannel:(NSString *)channel options:(nullable ARTChannelOptions *)options;
 
 @end
 
