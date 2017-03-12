@@ -25,7 +25,7 @@ ART_ASSUME_NONNULL_BEGIN
 // Private prioritized host for testing only (overrides the current `restHost`)
 @property (readwrite, strong, nonatomic, art_nullable) NSString *prioritizedHost;
 
-@property (nonatomic, strong) id<ARTHTTPExecutor> httpExecutor;
+@property (nonatomic, weak) id<ARTHTTPExecutor> httpExecutor;
 
 @property (nonatomic, readonly, getter=getBaseUrl) NSURL *baseUrl;
 
