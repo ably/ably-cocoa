@@ -55,7 +55,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readwrite, strong, nonatomic) __GENERIC(NSMutableArray, ARTQueuedMessage*) *queuedMessages;
 
 /// List of pending messages waiting for ACK/NACK action to confirm the success receipt and acceptance.
-@property (readonly, strong, nonatomic) __GENERIC(NSMutableArray, ARTQueuedMessage*) *pendingMessages;
+@property (readwrite, strong, nonatomic) __GENERIC(NSMutableArray, ARTQueuedMessage*) *pendingMessages;
 
 /// First `msgSerial` pending message.
 @property (readwrite, assign, nonatomic) int64_t pendingMessageStartSerial;

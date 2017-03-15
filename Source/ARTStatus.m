@@ -51,7 +51,7 @@ NSInteger getStatusFromCode(NSInteger code) {
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"ARTErrorInfo with code %ld, message: %@", (long)self.statusCode, self.message];
+    return [NSString stringWithFormat:@"ARTErrorInfo with code %ld, message: %@", (long)self.code, self.message];
 }
 
 @end

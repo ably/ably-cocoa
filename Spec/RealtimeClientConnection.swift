@@ -891,7 +891,6 @@ class RealtimeClientConnection: QuickSpec {
                                 expect(error).toNot(beNil())
                                 partialDone()
                             }
-
                         }
 
                         expect(client.msgSerial) == 5
@@ -1122,26 +1121,38 @@ class RealtimeClientConnection: QuickSpec {
                         let transport = client.transport as! TestProxyTransport
                         transport.actionsIgnored += [.Ack, .Nack]
 
-                        channel.attach()
-                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
-
-                        var gotPublishedCallback = false
-                        channel.publish(nil, data: "message", callback: { errorInfo in
-                            expect(errorInfo).toNot(beNil())
-                            gotPublishedCallback = true
-                        })
-
-                        let oldConnectionId = client.connection.id!
-                        // Wait until the message is pushed to Ably first
                         waitUntil(timeout: testTimeout) { done in
-                            delay(1.0) { done() }
+                            channel.attach() { _ in
+                                done()
+                            }
                         }
 
-                        client.simulateLostConnectionAndState()
-                        expect(gotPublishedCallback).to(beFalse())
-                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
-                        expect(client.connection.id).toNot(equal(oldConnectionId))
-                        expect(gotPublishedCallback).to(beTrue())
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(3, done: done)
+
+                            channel.publish(nil, data: "message") { error in
+                                guard let error = error else {
+                                    fail("Error is nil"); return
+                                }
+                                expect(error.code) == 80008
+                                expect(error.message).to(contain("Unable to recover connection"))
+                                partialDone()
+                            }
+
+                            let oldConnectionId = client.connection.id!
+
+                            // Wait until the message is pushed to Ably first
+                            delay(1.0) {
+                                client.connection.once(.Disconnected) { _ in
+                                    partialDone()
+                                }
+                                client.connection.once(.Connected) { stateChange in
+                                    expect(client.connection.id).toNot(equal(oldConnectionId))
+                                    partialDone()
+                                }
+                                client.simulateLostConnectionAndState()
+                            }
+                        }
                     }
 
                 }

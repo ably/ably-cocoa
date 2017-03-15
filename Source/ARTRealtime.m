@@ -355,7 +355,6 @@
                     }
                 }];
             }
-
             break;
         }
         case ARTRealtimeClosing: {
@@ -422,14 +421,12 @@
         }
         case ARTRealtimeConnected: {
             _fallbacks = nil;
-            __GENERIC(NSArray, ARTQueuedMessage *) *pending = self.pendingMessages;
-            _pendingMessages = [[NSMutableArray alloc] init];
-            for (ARTQueuedMessage *queued in pending) {
-                [self send:queued.msg callback:^(ARTStatus *__art_nonnull status) {
-                    for (id cb in queued.cbs) {
-                        ((void(^)(ARTStatus *__art_nonnull))cb)(status);
-                    }
-                }];
+            if (stateChange.reason) {
+                ARTStatus *status = [ARTStatus state:ARTStateError info:[stateChange.reason copy]];
+                [self failPendingMessages:status];
+            }
+            else {
+                [self resendPendingMessages];
             }
             [_connectedEventEmitter emit:nil with:nil];
             [_authorizationEmitter emit:[ARTEvent newWithAuthorizationState:ARTAuthorizationSucceeded] with:nil];
@@ -454,28 +451,18 @@
         }
         [self failQueuedMessages:channelStatus];
         // For every Channel
-        for (ARTRealtimeChannel* channel in self.channels) {
-            switch (channel.state) {
-                case ARTRealtimeChannelInitialized:
-                case ARTRealtimeChannelAttaching:
-                case ARTRealtimeChannelAttached:
-                case ARTRealtimeChannelFailed:
-                    if (stateChange.current == ARTRealtimeClosing) {
-                        //do nothing. Closed state is coming.
-                    }
-                    else if (stateChange.current == ARTRealtimeClosed) {
-                        [channel detachChannel:[ARTStatus state:ARTStateOk]];
-                    }
-                    else if (stateChange.current == ARTRealtimeSuspended) {
-                        [channel setSuspended:channelStatus];
-                    }
-                    else {
-                        [channel setFailed:channelStatus];
-                    }
-                    break;
-                default:
-                    [channel setSuspended:channelStatus];
-                    break;
+        for (ARTRealtimeChannel *channel in self.channels) {
+            if (stateChange.current == ARTRealtimeClosing) {
+                //do nothing. Closed state is coming.
+            }
+            else if (stateChange.current == ARTRealtimeClosed) {
+                [channel detachChannel:[ARTStatus state:ARTStateOk]];
+            }
+            else if (stateChange.current == ARTRealtimeSuspended) {
+                [channel setSuspended:channelStatus];
+            }
+            else {
+                [channel setFailed:channelStatus];
             }
         }
     }
@@ -839,6 +826,24 @@
     }
 }
 
+- (void)resendPendingMessages {
+    NSArray<ARTQueuedMessage *> *pms = self.pendingMessages;
+    self.pendingMessages = [NSMutableArray array];
+    for (ARTQueuedMessage *pendingMessage in pms) {
+        [self send:pendingMessage.msg callback:^(ARTStatus *status) {
+            pendingMessage.cb(status);
+        }];
+    }
+}
+
+- (void)failPendingMessages:(ARTStatus *)status {
+    NSArray<ARTQueuedMessage *> *pms = self.pendingMessages;
+    self.pendingMessages = [NSMutableArray array];
+    for (ARTQueuedMessage *pendingMessage in pms) {
+        pendingMessage.cb(status);
+    }
+}
+
 - (void)sendQueuedMessages {
     NSArray *qms = self.queuedMessages;
     self.queuedMessages = [NSMutableArray array];
@@ -848,11 +853,11 @@
     }
 }
 
-- (void)failQueuedMessages:(ARTStatus *)error {
+- (void)failQueuedMessages:(ARTStatus *)status {
     NSArray *qms = self.queuedMessages;
     self.queuedMessages = [NSMutableArray array];
     for (ARTQueuedMessage *message in qms) {
-        message.cb(error);
+        message.cb(status);
     }
 }
 
