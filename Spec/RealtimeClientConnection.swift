@@ -3368,27 +3368,23 @@ class RealtimeClientConnection: QuickSpec {
                     let channel = client.channels.get("test")
                     let transport = client.transport as! TestProxyTransport
 
-                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
-
                     waitUntil(timeout: testTimeout) { done in
                         channel.attach { _ in done() }
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        transport.ignoreSends = true
                         channel.publish(nil, data: "message") { error in
                             expect(error).to(beNil())
                             guard let newTransport = client.transport as? TestProxyTransport else {
                                 fail("Transport is nil"); done(); return
                             }
+                            expect(newTransport).toNot(beIdenticalTo(transport))
                             expect(transport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
                             expect(newTransport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
-                            expect(transport.protocolMessagesSent.filter{ $0.action == .Message }).to(haveCount(0))
-                            expect(transport.protocolMessagesSentIgnored.filter{ $0.action == .Message }).to(haveCount(1))
+                            expect(transport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
                             expect(newTransport.protocolMessagesSent.filter{ $0.action == .Message }).to(haveCount(1))
                             done()
                         }
-                        transport.ignoreSends = false
                         client.onDisconnected()
                     }
                 }
