@@ -767,15 +767,20 @@
     ARTRealtimeChannel *channel = [realtime.channels get:@"channelName"];
     [channel.presence enterClient:clientId data:nil callback:^(ARTErrorInfo *errorInfo) {
         XCTAssertNil(errorInfo);
-        [channel.presence  enterClient:clientId2 data:nil callback:^(ARTErrorInfo *errorInfo) {
+        [channel.presence enterClient:clientId2 data:nil callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
             [channel.presence get:^(NSArray *members, ARTErrorInfo *error) {
                 XCTAssert(!error);
                 XCTAssertEqual(2, members.count);
                 ARTPresenceMessage *m0 = [members objectAtIndex:0];
-                XCTAssertEqualObjects(m0.clientId, clientId2);
+                // cannot guarantee the order
+                if (![m0.clientId isEqualToString:clientId2] && ![m0.clientId isEqualToString:clientId]) {
+                    XCTFail(@"clientId1 is different from what's expected");
+                }
                 ARTPresenceMessage *m1 = [members objectAtIndex:1];
-                XCTAssertEqualObjects(m1.clientId, clientId);
+                if (![m1.clientId isEqualToString:clientId] && ![m1.clientId isEqualToString:clientId]) {
+                    XCTFail(@"clientId2 is different from what's expected");
+                }
                 [expectation fulfill];
             }];
         }];
