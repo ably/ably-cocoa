@@ -1870,9 +1870,11 @@ class RealtimeClientConnection: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     options.authCallback = { tokenParams, callback in
-                        callback(getTestTokenDetails(key: options.key, capability: tokenParams.capability, ttl: tokenParams.ttl), nil)
+                        delay(0) {
+                            callback(getTestTokenDetails(key: options.key, capability: tokenParams.capability, ttl: tokenParams.ttl), nil)
+                        }
                     }
-                    let tokenTtl = 1.0
+                    let tokenTtl = 3.0
                     options.token = getTestToken(key: options.key, ttl: tokenTtl)
 
                     let client = ARTRealtime(options: options)
@@ -1882,61 +1884,45 @@ class RealtimeClientConnection: QuickSpec {
                         client.close()
                     }
 
-                    // Let the token expire
                     waitUntil(timeout: testTimeout) { done in
-                        delay(tokenTtl) {
-                            done()
-                        }
-                    }
+                        // Let the token expire
+                        client.connection.once(.Disconnected) { stateChange in
+                            guard let reason = stateChange?.reason else {
+                                fail("Token error is missing"); done(); return
+                            }
+                            reason.code == 40142
 
-                    var transport: TestProxyTransport!
-
-                    waitUntil(timeout: testTimeout) { done in
-                        client.connection.on { stateChange in
-                            let stateChange = stateChange!
-                            let state = stateChange.current
-                            let errorInfo = stateChange.reason
-                            switch state {
-                            case .Connected:
-                                expect(errorInfo).to(beNil())
-                                // New token
-                                expect(client.auth.tokenDetails!.token).toNot(equal(options.token))
-                                done()
-                            case .Failed, .Disconnected, .Suspended:
-                                fail("Should not emit error (\(errorInfo))")
-                                done()
-                            default:
-                                break
+                            client.connection.on { stateChange in
+                                let stateChange = stateChange!
+                                let state = stateChange.current
+                                let errorInfo = stateChange.reason
+                                switch state {
+                                case .Connected:
+                                    expect(errorInfo).to(beNil())
+                                    // New token
+                                    expect(client.auth.tokenDetails!.token).toNot(equal(options.token))
+                                    done()
+                                case .Failed, .Suspended:
+                                    fail("Should not emit error (\(errorInfo))")
+                                    done()
+                                default:
+                                    break
+                                }
                             }
                         }
                         client.connect()
-                        transport = client.transport as! TestProxyTransport
                     }
-
-                    let failures = transport.protocolMessagesReceived.filter({ $0.action == .Error })
-
-                    if failures.count != 1 {
-                        fail("Should have only one connection request fail")
-                        return
-                    }
-
-                    expect(failures[0].error!.code).to(equal(40142)) //Token expired
                 }
 
                 it("should transition to Failed when the token renewal fails") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
-                    let tokenTtl = 1.0
+                    let tokenTtl = 3.0
                     let tokenDetails = getTestTokenDetails(key: options.key, capability: nil, ttl: tokenTtl)!
                     options.token = tokenDetails.token
                     options.authCallback = { tokenParams, callback in
-                        callback(tokenDetails, nil) // Return the same expired token again.
-                    }
-
-                    // Let the token expire
-                    waitUntil(timeout: testTimeout) { done in
-                        delay(tokenTtl) {
-                            done()
+                        delay(0) {
+                            callback(tokenDetails, nil) // Return the same expired token again.
                         }
                     }
 
@@ -1947,41 +1933,28 @@ class RealtimeClientConnection: QuickSpec {
                         client.close()
                     }
 
-                    client.connect()
-                    let firstTransport = client.transport as! TestProxyTransport
-                    expect(client.transport).toEventuallyNot(beIdenticalTo(firstTransport), timeout: testTimeout)
-                    let newTransport = client.transport as! TestProxyTransport
-
                     waitUntil(timeout: testTimeout) { done in
-                        client.connection.on { stateChange in
-                            let stateChange = stateChange!
-                            let state = stateChange.current
-                            let errorInfo = stateChange.reason
-                            switch state {
-                            case .Connected:
-                                fail("Should not be connected")
-                                done()
-                            case .Failed, .Disconnected, .Suspended:
-                                guard let errorInfo = errorInfo else {
-                                    fail("ErrorInfo is nil"); done(); return
-                                }
-                                expect(errorInfo.code).to(equal(40142)) //Token expired
-                                done()
-                            default:
-                                break
-                            }
+                        let partialDone = AblyTests.splitDone(3, done: done)
+                        client.connection.once(.Connected) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+                            partialDone()
                         }
+                        client.connection.once(.Disconnected) { stateChange in
+                            guard let reason = stateChange?.reason else {
+                                fail("Reason is nil"); done(); return;
+                            }
+                            expect(reason.code) == 40142
+                            partialDone()
+                        }
+                        client.connection.once(.Failed) { stateChange in
+                            guard let reason = stateChange?.reason else {
+                                fail("Reason is nil"); done(); return;
+                            }
+                            expect(reason.code) == 40142
+                            partialDone()
+                        }
+                        client.connect()
                     }
-
-                    let failures = firstTransport.protocolMessagesReceived.filter({ $0.action == .Error }) + newTransport.protocolMessagesReceived.filter({ $0.action == .Error })
-
-                    if failures.count != 2 {
-                        fail("Should have two connection request fail")
-                        return
-                    }
-
-                    expect(failures[0].error!.code).to(equal(40142))
-                    expect(failures[1].error!.code).to(equal(40142))
                 }
 
                 it("should transition to Failed state because the token is invalid and not renewable") {
