@@ -121,6 +121,8 @@
                             // Halt the current connection and reconnect with the most recent token
                             [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p halt current connection and reconnect with %@", _rest, tokenDetails];
                             [_transport abort:[ARTStatus state:ARTStateOk]];
+                            _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:_transport.resumeKey connectionSerial:_transport.connectionSerial];
+                            _transport.delegate = self;
                             [_transport connectWithToken:tokenDetails.token];
                         }
                         break;
@@ -188,11 +190,6 @@
         [_internalEventEmitter off];
     }
 
-    if (_transport) {
-        _transport.delegate = nil;
-        [_transport close];
-    }
-    _transport = nil;
     self.rest.prioritizedHost = nil;
 }
 
@@ -368,7 +365,6 @@
         case ARTRealtimeClosed:
             [_reachability off];
             [self.transport close];
-            self.transport.delegate = nil;
             _connection.key = nil;
             _connection.id = nil;
             _transport = nil;
@@ -378,7 +374,6 @@
         case ARTRealtimeFailed:
             status = [ARTStatus state:ARTStateConnectionFailed info:stateChange.reason];
             [self.transport abort:status];
-            self.transport.delegate = nil;
             _transport = nil;
             self.rest.prioritizedHost = nil;
             [_authorizationEmitter emit:[ARTEvent newWithAuthorizationState:ARTAuthorizationFailed] with:stateChange.reason];
@@ -400,7 +395,6 @@
             }
 
             [self.transport close];
-            self.transport.delegate = nil;
             _transport = nil;
             [stateChange setRetryIn:self.options.disconnectedRetryTimeout];
             stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
@@ -410,7 +404,6 @@
         }
         case ARTRealtimeSuspended: {
             [self.transport close];
-            self.transport.delegate = nil;
             _transport = nil;
             [stateChange setRetryIn:self.options.suspendedRetryTimeout];
             stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{

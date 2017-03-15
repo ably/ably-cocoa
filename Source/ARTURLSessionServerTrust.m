@@ -23,8 +23,8 @@
     return self;
 }
 
-- (void)invalidateAndCancel {
-    [_session invalidateAndCancel];
+- (void)finishTasksAndInvalidate {
+    [_session finishTasksAndInvalidate];
 }
 
 - (void)get:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {

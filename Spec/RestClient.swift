@@ -1312,9 +1312,9 @@ class RestClient: QuickSpec {
             // https://github.com/ably/ably-ios/issues/577
             it("background behaviour") {
                 let options = AblyTests.commonAppSetup()
-                let rest = ARTRest(options: options)
                 waitUntil(timeout: testTimeout) { done in
                     NSURLSession.sharedSession().dataTaskWithURL(NSURL(string:"https://ably.io")!) { _ in
+                        let rest = ARTRest(options: options)
                         rest.channels.get("foo").history { _ in
                             done()
                         }

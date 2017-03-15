@@ -37,12 +37,15 @@ enum {
 };
 
 @implementation ARTWebSocketTransport {
+    id<ARTRealtimeTransportDelegate> _delegate;
     ARTRealtimeTransportState _state;
     /**
       A dispatch queue for firing the events.
      */
     _Nonnull dispatch_queue_t _workQueue;
 }
+
+@synthesize delegate = _delegate;
 
 - (instancetype)initWithRest:(ARTRest *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
     self = [super init];
@@ -65,6 +68,7 @@ enum {
     [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p WS:%p dealloc", _delegate, self];
     self.websocket.delegate = nil;
     self.websocket = nil;
+    self.delegate = nil;
 }
 
 - (void)send:(ARTProtocolMessage *)msg {
@@ -189,6 +193,7 @@ enum {
     self.websocket.delegate = nil;
     [self.websocket closeWithCode:ARTWsCloseNormal reason:@"Normal Closure"];
     self.websocket = nil;
+    self.delegate = nil;
 }
 
 - (void)abort:(ARTStatus *)reason {
@@ -201,6 +206,7 @@ enum {
         [self.websocket closeWithCode:ARTWsAbnormalClose reason:@"Abnormal Closure"];
     }
     self.websocket = nil;
+    self.delegate = nil;
 }
 
 - (void)setHost:(NSString *)host {

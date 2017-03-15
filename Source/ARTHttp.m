@@ -164,7 +164,7 @@
 }
 
 - (void)dealloc {
-    [_urlSession invalidateAndCancel];
+    [_urlSession finishTasksAndInvalidate];
 }
 
 - (instancetype)initWithBaseUrl:(NSURL *)baseUrl {
@@ -179,19 +179,18 @@
     [self.logger debug:@"%@ %@", request.HTTPMethod, request.URL.absoluteString];
     [self.logger verbose:@"Headers %@", request.allHTTPHeaderFields];
 
-    __weak typeof(self) weakSelf = self;
     [_urlSession get:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
 
         dispatch_async(_queue, ^{
             if (error) {
-                [[weakSelf logger] error:@"%@ %@: error %@", request.HTTPMethod, request.URL.absoluteString, error];
+                [self.logger error:@"%@ %@: error %@", request.HTTPMethod, request.URL.absoluteString, error];
             } else {
-                [[weakSelf logger] debug:@"%@ %@: statusCode %ld", request.HTTPMethod, request.URL.absoluteString, (long)httpResponse.statusCode];
-                [[weakSelf logger] verbose:@"Headers %@", httpResponse.allHeaderFields];
+                [self.logger debug:@"%@ %@: statusCode %ld", request.HTTPMethod, request.URL.absoluteString, (long)httpResponse.statusCode];
+                [self.logger verbose:@"Headers %@", httpResponse.allHeaderFields];
                 NSString *headerErrorMessage = httpResponse.allHeaderFields[@"X-Ably-ErrorMessage"];
                 if (headerErrorMessage && ![headerErrorMessage isEqualToString:@""]) {
-                    [[weakSelf logger] warn:@"%@", headerErrorMessage];
+                    [self.logger warn:@"%@", headerErrorMessage];
                 }
             }
             callback(httpResponse, data, error);
@@ -221,20 +220,19 @@
     request.HTTPBody = artRequest.body;
     [self.logger debug:@"ARTHttp: makeRequest %@", [request allHTTPHeaderFields]];
 
-    __weak typeof(self) weakSelf = self;
     [_urlSession get:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-        [[weakSelf logger] verbose:@"ARTHttp: Got response %@, err %@", response, error];
+        [self.logger verbose:@"ARTHttp: Got response %@, err %@", response, error];
 
         if(error) {
-            [[weakSelf logger] error:@"ARTHttp receieved error: %@", error];
+            [self.logger error:@"ARTHttp receieved error: %@", error];
             cb([ARTHttpResponse responseWithStatus:500 headers:nil body:nil]);
         }
         else {
             if (httpResponse) {
                 int status = (int)httpResponse.statusCode;
-                [[weakSelf logger] debug:@"ARTHttp response status is %d", status];
-                [[weakSelf logger] verbose:@"ARTHttp received response %@",[NSJSONSerialization JSONObjectWithData:data options:0 error:nil]];
+                [self.logger debug:@"ARTHttp response status is %d", status];
+                [self.logger verbose:@"ARTHttp received response %@",[NSJSONSerialization JSONObjectWithData:data options:0 error:nil]];
 
                 dispatch_async(_queue, ^{
                     cb([ARTHttpResponse responseWithStatus:status headers:httpResponse.allHeaderFields body:data]);

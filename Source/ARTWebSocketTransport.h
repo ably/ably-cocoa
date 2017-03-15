@@ -23,7 +23,6 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (readonly, strong, nonatomic) NSString *resumeKey;
 @property (readonly, strong, nonatomic) NSNumber *connectionSerial;
-@property (readwrite, weak, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
 
 @end
 
