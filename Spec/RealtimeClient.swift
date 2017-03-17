@@ -945,7 +945,9 @@ class RealtimeClient: QuickSpec {
                     }
 
                     let hook = client.auth.testSuite_injectIntoMethodAfter(#selector(client.auth.authorize(_:options:callback:))) {
-                        client.close()
+                        delay(0) {
+                            client.close()
+                        }
                     }
                     defer { hook.remove() }
 
