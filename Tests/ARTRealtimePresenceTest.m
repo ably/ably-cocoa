@@ -789,7 +789,7 @@
             XCTFail(@"clientId1 is different from what's expected");
         }
         ARTPresenceMessage *m1 = [members objectAtIndex:1];
-        if (![m1.clientId isEqualToString:clientId] && ![m1.clientId isEqualToString:clientId]) {
+        if (![m1.clientId isEqualToString:clientId] && ![m1.clientId isEqualToString:clientId2]) {
             XCTFail(@"clientId2 is different from what's expected");
         }
         [expectationPresenceGet fulfill];
