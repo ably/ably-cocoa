@@ -189,14 +189,15 @@ enum {
 }
 
 - (void)close {
+    self.delegate = nil;
     if (!_websocket) return;
     self.websocket.delegate = nil;
     [self.websocket closeWithCode:ARTWsCloseNormal reason:@"Normal Closure"];
     self.websocket = nil;
-    self.delegate = nil;
 }
 
 - (void)abort:(ARTStatus *)reason {
+    self.delegate = nil;
     if (!_websocket) return;
     self.websocket.delegate = nil;
     if (reason.errorInfo) {
@@ -206,7 +207,6 @@ enum {
         [self.websocket closeWithCode:ARTWsAbnormalClose reason:@"Abnormal Closure"];
     }
     self.websocket = nil;
-    self.delegate = nil;
 }
 
 - (void)setHost:(NSString *)host {

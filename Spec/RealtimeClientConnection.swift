@@ -2136,6 +2136,55 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
+                it("on CLOSE the connection should stop connection retries") {
+                    let options = AblyTests.commonAppSetup()
+                    options.disconnectedRetryTimeout = 0.1
+                    options.suspendedRetryTimeout = 0.5
+                    options.autoConnect = false
+                    let expectedTime: NSTimeInterval = 1.0
+
+                    options.authCallback = { _ in
+                        // Force a timeout
+                    }
+
+                    let previousConnectionStateTtl = ARTDefault.connectionStateTtl()
+                    defer { ARTDefault.setConnectionStateTtl(previousConnectionStateTtl) }
+                    ARTDefault.setConnectionStateTtl(expectedTime)
+
+                    let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                    defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                    ARTDefault.setRealtimeRequestTimeout(0.1)
+
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.on(.Suspended) { stateChange in
+                            expect(client.connection.errorReason!.message).to(contain("timed out"))
+
+                            let start = NSDate()
+                            client.connection.once(.Connecting) { stateChange in
+                                let end = NSDate()
+                                expect(end.timeIntervalSinceDate(start)).to(beCloseTo(options.suspendedRetryTimeout, within: 0.5))
+                                done()
+                            }
+                        }
+                        client.connect()
+                    }
+
+                    client.close()
+
+                    // Check if the connection gets closed
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.Connecting) { stateChange in
+                            fail("Should be closing the connection"); done(); return
+                        }
+                        delay(2.0) {
+                            done()
+                        }
+                    }
+                }
+
             }
 
             // RTN15

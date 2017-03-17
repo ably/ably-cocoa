@@ -53,6 +53,8 @@
     id<ARTRealtimeTransport> _transport;
     ARTFallback *_fallbacks;
     _Nonnull dispatch_queue_t _eventQueue;
+    __weak ARTEventListener *_connectionRetryFromSuspendedListener;
+    __weak ARTEventListener *_connectionRetryFromDisconnectedListener;
     __weak ARTEventListener *_connectingTimeoutListener;
     dispatch_block_t _authenitcatingTimeoutWork;
 }
@@ -202,6 +204,8 @@
 }
 
 - (void)close {
+    [self cancelTimers];
+
     switch (self.connection.state) {
     case ARTRealtimeInitialized:
     case ARTRealtimeClosing:
@@ -399,7 +403,9 @@
             [stateChange setRetryIn:self.options.disconnectedRetryTimeout];
             stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
                 [weakSelf transition:ARTRealtimeConnecting];
+                _connectionRetryFromDisconnectedListener = nil;
             }];
+            _connectionRetryFromDisconnectedListener = stateChangeEventListener;
             break;
         }
         case ARTRealtimeSuspended: {
@@ -408,7 +414,9 @@
             [stateChange setRetryIn:self.options.suspendedRetryTimeout];
             stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
                 [weakSelf transition:ARTRealtimeConnecting];
+                _connectionRetryFromSuspendedListener = nil;
             }];
+            _connectionRetryFromSuspendedListener = stateChangeEventListener;
             [_authorizationEmitter emit:[ARTEvent newWithAuthorizationState:ARTAuthorizationFailed] with:[ARTErrorInfo createWithCode:ARTStateAuthorizationFailed message:@"Connection has been suspended"]];
             break;
         }
@@ -595,6 +603,20 @@
         [self.connection setId:nil];
         [self transition:ARTRealtimeFailed withErrorInfo:error];
     }
+}
+
+- (void)cancelTimers {
+    [_connectionRetryFromSuspendedListener stopTimer];
+    _connectionRetryFromSuspendedListener = nil;
+    NSLog(@"%p", _connectionRetryFromDisconnectedListener);
+    [_connectionRetryFromDisconnectedListener stopTimer];
+    _connectionRetryFromDisconnectedListener = nil;
+    // Cancel connecting scheduled work
+    [_connectingTimeoutListener stopTimer];
+    _connectingTimeoutListener = nil;
+    // Cancel auth scheduled work
+    artDispatchCancel(_authenitcatingTimeoutWork);
+    _authenitcatingTimeoutWork = nil;
 }
 
 - (void)onConnectionTimeOut {
