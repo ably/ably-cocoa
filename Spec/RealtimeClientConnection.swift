@@ -1890,7 +1890,7 @@ class RealtimeClientConnection: QuickSpec {
                             guard let reason = stateChange?.reason else {
                                 fail("Token error is missing"); done(); return
                             }
-                            reason.code == 40142
+                            expect(reason.code) == 40142
 
                             client.connection.on { stateChange in
                                 let stateChange = stateChange!
