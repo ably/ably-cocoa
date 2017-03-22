@@ -144,7 +144,7 @@
     }
 }
 
-- (id<ARTRealtimeTransport>)getTransport {
+- (id<ARTRealtimeTransport>)transport {
     return _transport;
 }
 
@@ -204,6 +204,7 @@
 }
 
 - (void)close {
+    [_reachability off];
     [self cancelTimers];
 
     switch (self.connection.state) {
@@ -608,7 +609,6 @@
 - (void)cancelTimers {
     [_connectionRetryFromSuspendedListener stopTimer];
     _connectionRetryFromSuspendedListener = nil;
-    NSLog(@"%p", _connectionRetryFromDisconnectedListener);
     [_connectionRetryFromDisconnectedListener stopTimer];
     _connectionRetryFromDisconnectedListener = nil;
     // Cancel connecting scheduled work
@@ -719,7 +719,7 @@
                         _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:_transport.resumeKey connectionSerial:_transport.connectionSerial];
                         _transport.delegate = self;
                     }
-                    [[weakSelf getTransport] connectWithToken:tokenDetails.token];
+                    [[weakSelf transport] connectWithToken:tokenDetails.token];
                 }];
             }
             @finally {
