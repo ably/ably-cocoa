@@ -145,19 +145,21 @@
     NSString *message2 = @"message2";
 
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
+    void(^partialDone)() = [ARTTestUtil splitFulfillFrom:self expectation:expectation in:3];
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtime *realtime2 = [[ARTRealtime alloc] initWithOptions:options];
 
     ARTRealtimeChannel *channel = [realtime.channels get:channelName];
     __block bool gotMessage1 = false;
     [channel subscribe:^(ARTMessage *message) {
-        if([[message data] isEqualToString:message1]) {
+        if ([[message data] isEqualToString:message1]) {
             gotMessage1 = true;
+            partialDone();
         }
         else {
             XCTAssertTrue(gotMessage1);
             XCTAssertEqualObjects([message data], message2);
-            [expectation fulfill];
+            partialDone();
         }
     }];
     [channel publish:nil data:message1 callback:^(ARTErrorInfo *errorInfo) {
@@ -165,6 +167,7 @@
         ARTRealtimeChannel *channel2 = [realtime2.channels get:channelName];
         [channel2 publish:nil data:message2 callback:^(ARTErrorInfo *errorInfo) {
             XCTAssertNil(errorInfo);
+            partialDone();
         }];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
