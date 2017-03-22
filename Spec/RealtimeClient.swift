@@ -143,7 +143,8 @@ class RealtimeClient: QuickSpec {
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
 
-                    waitUntil(timeout: testTimeout) { done in
+                    waitUntil(timeout: testTimeout * 2) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
                         client.connection.once(.Connecting) { _ in
                             guard let webSocketTransport = client.transport as? ARTWebSocketTransport else {
                                 fail("Transport should be of type ARTWebSocketTransport"); done()
@@ -151,11 +152,18 @@ class RealtimeClient: QuickSpec {
                             }
                             expect(webSocketTransport.websocketURL).toNot(beNil())
                             expect(webSocketTransport.websocketURL?.host).to(equal("fake.ably.io"))
-                            done()
+                            partialDone()
+                        }
+                        client.connection.once(.Failed) { stateChange in
+                            guard let reason = stateChange?.reason else {
+                                fail("Reason is nil"); done(); return
+                            }
+                            expect(reason.code) == Int(CFNetworkErrors.CFHostErrorUnknown.rawValue)
+                            expect(reason.message).to(contain("kCFErrorDomainCFNetwork"))
+                            partialDone()
                         }
                         client.connect()
                     }
-                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Disconnected), timeout: testTimeout)
                 }
                 
                 //RTC1e
