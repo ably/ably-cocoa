@@ -36,7 +36,7 @@ class RealtimeClient: QuickSpec {
                     channel.publish(nil, data: "message") { error in
                         expect(error).to(beNil())
                         let transport = client.transport as! TestProxyTransport
-                        expect(transport.lastUrl!.query).to(haveParam("v", withValue: "0.9"))
+                        expect(transport.lastUrl!.query).to(haveParam("v", withValue: "1.0"))
                         done()
                     }
                 }

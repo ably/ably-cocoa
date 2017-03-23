@@ -29,7 +29,7 @@ class RestClient: QuickSpec {
                     channel.publish(nil, data: "message") { error in
                         expect(error).to(beNil())
                         let version = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["X-Ably-Version"]
-                        expect(version).to(equal("0.9"))
+                        expect(version).to(equal("1.0"))
                         done()
                     }
                 }
@@ -1280,7 +1280,7 @@ class RestClient: QuickSpec {
                         let ablyBundleLibVersion = ARTDefault.libraryVersion()
                         expect(headerLibVersion).to(equal(ablyBundleLibVersion))
                         
-                        let patternToMatch = "ios-0.9."
+                        let patternToMatch = "ios-1.0."
                         let match = headerLibVersion?.hasPrefix(patternToMatch)
                         expect(match).to(beTrue())
                         
