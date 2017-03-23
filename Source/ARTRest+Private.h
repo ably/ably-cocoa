@@ -25,7 +25,7 @@ ART_ASSUME_NONNULL_BEGIN
 // Private prioritized host for testing only (overrides the current `restHost`)
 @property (readwrite, strong, nonatomic, art_nullable) NSString *prioritizedHost;
 
-@property (nonatomic, strong) id<ARTHTTPExecutor> httpExecutor;
+@property (nonatomic, weak) id<ARTHTTPExecutor> httpExecutor;
 
 @property (nonatomic, readonly, getter=getBaseUrl) NSURL *baseUrl;
 
@@ -44,7 +44,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (void)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback;
 
-- (id<ARTCancellable>)internetIsUp:(void (^)(BOOL isUp))cb;
+- (nullable id<ARTCancellable>)internetIsUp:(void (^)(BOOL isUp))cb;
 
 @end
 

@@ -111,8 +111,7 @@ class AblyTests {
             let (responseData, responseError, _) = NSURLSessionServerTrustSync().get(request)
 
             if let error = responseError {
-                XCTFail(error.localizedDescription)
-                return options
+                fatalError(error.localizedDescription)
             }
 
             testApplication = JSON(data: responseData!)
@@ -278,6 +277,9 @@ class NSURLSessionServerTrustSync: NSObject, NSURLSessionDelegate, NSURLSessionT
                 responseData = data
                 responseError = error
                 httpResponse = response
+            }
+            else if let error = error {
+                responseError = error
             }
             requestCompleted = true
         }

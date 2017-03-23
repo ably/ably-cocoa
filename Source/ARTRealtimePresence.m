@@ -196,11 +196,11 @@
     return _channel.presenceMap.syncComplete;
 }
 
-- (ARTEventListener<ARTPresenceMessage *> *)subscribe:(void (^)(ARTPresenceMessage * _Nonnull))callback {
+- (ARTEventListener *)subscribe:(void (^)(ARTPresenceMessage * _Nonnull))callback {
     return [self subscribeWithAttachCallback:nil callback:callback];
 }
 
-- (ARTEventListener<ARTPresenceMessage *> *)subscribeWithAttachCallback:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTPresenceMessage * _Nonnull))cb {
+- (ARTEventListener *)subscribeWithAttachCallback:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTPresenceMessage * _Nonnull))cb {
     if (_channel.state == ARTRealtimeChannelFailed) {
         if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
         return nil;
@@ -209,29 +209,29 @@
     return [_channel.presenceEventEmitter on:cb];
 }
 
-- (ARTEventListener<ARTPresenceMessage *> *)subscribe:(ARTPresenceAction)action callback:(void (^)(ARTPresenceMessage * _Nonnull))cb {
+- (ARTEventListener *)subscribe:(ARTPresenceAction)action callback:(void (^)(ARTPresenceMessage * _Nonnull))cb {
     return [self subscribe:action onAttach:nil callback:cb];
 }
 
-- (ARTEventListener<ARTPresenceMessage *> *)subscribe:(ARTPresenceAction)action onAttach:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTPresenceMessage * _Nonnull))cb {
+- (ARTEventListener *)subscribe:(ARTPresenceAction)action onAttach:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTPresenceMessage * _Nonnull))cb {
     if (_channel.state == ARTRealtimeChannelFailed) {
         if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
         return nil;
     }
     [_channel attach:onAttach];
-    return [_channel.presenceEventEmitter on:[NSNumber numberWithUnsignedInteger:action] callback:cb];
+    return [_channel.presenceEventEmitter on:[ARTEvent newWithPresenceAction:action] callback:cb];
 }
 
 - (void)unsubscribe {
     [_channel.presenceEventEmitter off];
 }
 
-- (void)unsubscribe:(ARTEventListener<ARTPresenceMessage *> *)listener {
+- (void)unsubscribe:(ARTEventListener *)listener {
     [_channel.presenceEventEmitter off:listener];
 }
 
-- (void)unsubscribe:(ARTPresenceAction)action listener:(ARTEventListener<ARTPresenceMessage *> *)listener {
-    [_channel.presenceEventEmitter off:[NSNumber numberWithUnsignedInteger:action] listener:listener];
+- (void)unsubscribe:(ARTPresenceAction)action listener:(ARTEventListener *)listener {
+    [_channel.presenceEventEmitter off:[ARTEvent newWithPresenceAction:action] listener:listener];
 }
 
 @end

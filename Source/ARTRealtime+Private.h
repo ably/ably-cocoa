@@ -25,8 +25,8 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtime () <ARTRealtimeTransportDelegate, ARTAuthDelegate>
 
-@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNumber *, ARTConnectionStateChange *) *internalEventEmitter;
-@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNull *, NSNull *) *connectedEventEmitter;
+@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, ARTEvent *, ARTConnectionStateChange *) *internalEventEmitter;
+@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, ARTEvent *, NSNull *) *connectedEventEmitter;
 
 // State properties
 - (BOOL)shouldSendEvents;
@@ -43,7 +43,7 @@ ART_ASSUME_NONNULL_BEGIN
 @interface ARTRealtime ()
 
 @property (readwrite, strong, nonatomic) ARTRest *rest;
-@property (readonly, getter=getTransport, art_nullable) id<ARTRealtimeTransport> transport;
+@property (readonly, nullable) id<ARTRealtimeTransport> transport;
 @property (readonly, strong, nonatomic, art_nonnull) id<ARTReachability> reachability;
 @property (readonly, getter=getLogger) ARTLog *logger;
 @property (nonatomic) NSTimeInterval connectionStateTtl;
@@ -55,7 +55,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readwrite, strong, nonatomic) __GENERIC(NSMutableArray, ARTQueuedMessage*) *queuedMessages;
 
 /// List of pending messages waiting for ACK/NACK action to confirm the success receipt and acceptance.
-@property (readonly, strong, nonatomic) __GENERIC(NSMutableArray, ARTQueuedMessage*) *pendingMessages;
+@property (readwrite, strong, nonatomic) __GENERIC(NSMutableArray, ARTQueuedMessage*) *pendingMessages;
 
 /// First `msgSerial` pending message.
 @property (readwrite, assign, nonatomic) int64_t pendingMessageStartSerial;

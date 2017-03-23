@@ -64,8 +64,9 @@ class TestsTests: XCTestCase {
         self.waitForExpectationsWithTimeout(10, handler: nil)
 
         let backgroundRealtimeExpectation = self.expectationWithDescription("Realtime in a Background Queue")
+        var realtime: ARTRealtime! //strong reference
         NSURLSession.sharedSession().dataTaskWithURL(NSURL(string:"https://ably.io")!) { _ in
-            let realtime = ARTRealtime(key: key as String)
+            realtime = ARTRealtime(key: key as String)
             realtime.channels.get("foo").attach { _ in
                 defer { backgroundRealtimeExpectation.fulfill() }
             }
@@ -73,8 +74,9 @@ class TestsTests: XCTestCase {
         self.waitForExpectationsWithTimeout(10, handler: nil)
 
         let backgroundRestExpectation = self.expectationWithDescription("Rest in a Background Queue")
+        var rest: ARTRest! //strong reference
         NSURLSession.sharedSession().dataTaskWithURL(NSURL(string:"https://ably.io")!) { _ in
-            let rest = ARTRest(key: key as String)
+            rest = ARTRest(key: key as String)
             rest.channels.get("foo").history { _ in
                 defer { backgroundRestExpectation.fulfill() }
             }

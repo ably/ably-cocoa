@@ -763,22 +763,36 @@
     NSString *clientId = @"otherClientId";
     NSString *clientId2 = @"yetAnotherClientId";
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
+    void(^partialFulfill)() = [ARTTestUtil splitFulfillFrom:self expectation:expectation in:4];
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     ARTRealtimeChannel *channel = [realtime.channels get:@"channelName"];
     [channel.presence enterClient:clientId data:nil callback:^(ARTErrorInfo *errorInfo) {
         XCTAssertNil(errorInfo);
-        [channel.presence  enterClient:clientId2 data:nil callback:^(ARTErrorInfo *errorInfo) {
-            XCTAssertNil(errorInfo);
-            [channel.presence get:^(NSArray *members, ARTErrorInfo *error) {
-                XCTAssert(!error);
-                XCTAssertEqual(2, members.count);
-                ARTPresenceMessage *m0 = [members objectAtIndex:0];
-                XCTAssertEqualObjects(m0.clientId, clientId2);
-                ARTPresenceMessage *m1 = [members objectAtIndex:1];
-                XCTAssertEqualObjects(m1.clientId, clientId);
-                [expectation fulfill];
-            }];
-        }];
+        partialFulfill();
+    }];
+    [channel.presence enterClient:clientId2 data:nil callback:^(ARTErrorInfo *errorInfo) {
+        XCTAssertNil(errorInfo);
+        partialFulfill();
+    }];
+    [channel.presence subscribe:^(ARTPresenceMessage *message) {
+        partialFulfill();
+    }];
+    [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
+
+    __weak XCTestExpectation *expectationPresenceGet = [self expectationWithDescription:[NSString stringWithFormat:@"%s-PresenceGet", __FUNCTION__]];
+    [channel.presence get:^(NSArray *members, ARTErrorInfo *error) {
+        XCTAssert(!error);
+        XCTAssertEqual(2, members.count);
+        ARTPresenceMessage *m0 = [members objectAtIndex:0];
+        // cannot guarantee the order
+        if (![m0.clientId isEqualToString:clientId2] && ![m0.clientId isEqualToString:clientId]) {
+            XCTFail(@"clientId1 is different from what's expected");
+        }
+        ARTPresenceMessage *m1 = [members objectAtIndex:1];
+        if (![m1.clientId isEqualToString:clientId] && ![m1.clientId isEqualToString:clientId2]) {
+            XCTFail(@"clientId2 is different from what's expected");
+        }
+        [expectationPresenceGet fulfill];
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
     [realtime testSuite_waitForConnectionToClose:self];

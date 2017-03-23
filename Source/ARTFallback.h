@@ -29,7 +29,7 @@ ART_ASSUME_NONNULL_BEGIN
 /**
  returns a random fallback host, returns null when all hosts have been popped.
  */
--(NSString *) popFallbackHost;
+- (nullable NSString *)popFallbackHost;
 
 @end
 

@@ -25,6 +25,10 @@
     return self;
 }
 
+- (NSString *)description {
+    return [self.msg description];
+}
+
 - (BOOL)mergeFrom:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb {
     if ([self.msg mergeFrom:msg]) {
         if (cb) {

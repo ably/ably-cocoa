@@ -49,6 +49,7 @@ class RealtimeClient: QuickSpec {
                     options.clientId = "client_string"
 
                     let client = ARTRealtime(options: options)
+                    defer { client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.on { stateChange in
@@ -68,7 +69,6 @@ class RealtimeClient: QuickSpec {
                             }
                         }
                     }
-                    client.close()
                 }
                 
                 //RTC1a
@@ -90,6 +90,7 @@ class RealtimeClient: QuickSpec {
 
                     // First connection
                     let client = ARTRealtime(options: options)
+                    defer { client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.on { stateChange in
@@ -113,6 +114,7 @@ class RealtimeClient: QuickSpec {
 
                     // New connection
                     let newClient = ARTRealtime(options: options)
+                    defer { newClient.close() }
 
                     waitUntil(timeout: testTimeout) { done in
                         newClient.connection.on { stateChange in
@@ -131,8 +133,6 @@ class RealtimeClient: QuickSpec {
                             }
                         }
                     }
-                    newClient.close()
-                    client.close()
                 }
 
                 //RTC1d
@@ -141,8 +141,10 @@ class RealtimeClient: QuickSpec {
                     options.realtimeHost = "fake.ably.io"
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
 
-                    waitUntil(timeout: testTimeout) { done in
+                    waitUntil(timeout: testTimeout * 2) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
                         client.connection.once(.Connecting) { _ in
                             guard let webSocketTransport = client.transport as? ARTWebSocketTransport else {
                                 fail("Transport should be of type ARTWebSocketTransport"); done()
@@ -150,11 +152,18 @@ class RealtimeClient: QuickSpec {
                             }
                             expect(webSocketTransport.websocketURL).toNot(beNil())
                             expect(webSocketTransport.websocketURL?.host).to(equal("fake.ably.io"))
-                            done()
+                            partialDone()
+                        }
+                        client.connection.once(.Failed) { stateChange in
+                            guard let reason = stateChange?.reason else {
+                                fail("Reason is nil"); done(); return
+                            }
+                            expect(reason.code) == Int(CFNetworkErrors.CFHostErrorUnknown.rawValue)
+                            expect(reason.message).to(contain("kCFErrorDomainCFNetwork"))
+                            partialDone()
                         }
                         client.connect()
                     }
-                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Disconnected), timeout: testTimeout)
                 }
                 
                 //RTC1e
@@ -195,7 +204,6 @@ class RealtimeClient: QuickSpec {
                 })
 
                 expect(client.channels.get("test")).toNot(beNil())
-                client.close()
             }
 
             context("Auth object") {
@@ -204,9 +212,8 @@ class RealtimeClient: QuickSpec {
                 it("should provide access to the Auth object") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
-
+                    defer { client.close() }
                     expect(client.auth.options.key).to(equal(options.key))
-                    client.close()
                 }
 
                 // RTC4a
@@ -214,6 +221,7 @@ class RealtimeClient: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "client_string"
                     let client = ARTRealtime(options: options)
+                    defer { client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.on { stateChange in
@@ -233,7 +241,6 @@ class RealtimeClient: QuickSpec {
                             }
                         }
                     }
-                    client.close()
                 }
             }
 
@@ -244,6 +251,7 @@ class RealtimeClient: QuickSpec {
                 // RTC5a
                 it("should present an async interface") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
                     // Async
                     waitUntil(timeout: testTimeout) { done in
                         // Proxy from `client.rest.stats`
@@ -252,12 +260,12 @@ class RealtimeClient: QuickSpec {
                             done()
                         })
                     }
-                    client.close()
                 }
 
                 // RTC5b
                 it("should accept all the same params as RestClient") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
                     var paginatedResult: ARTPaginatedResult?
 
                     // Realtime
@@ -287,7 +295,6 @@ class RealtimeClient: QuickSpec {
                             expect(paginated.items.count).to(equal(paginatedResult!.items.count))
                         })
                     }
-                    client.close()
                 }
             }
 
@@ -295,6 +302,7 @@ class RealtimeClient: QuickSpec {
                 // RTC6a
                 it("should present an async interface") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.close() }
                     // Async
                     waitUntil(timeout: testTimeout) { done in
                         // Proxy from `client.rest.time`
@@ -303,7 +311,6 @@ class RealtimeClient: QuickSpec {
                             done()
                         })
                     }
-                    client.close()
                 }
             }
 
@@ -313,6 +320,7 @@ class RealtimeClient: QuickSpec {
                 options.suspendedRetryTimeout = 6.0
 
                 let client = ARTRealtime(options: options)
+                defer { client.close() }
 
                 var start: NSDate?
                 var endInterval: UInt?
@@ -336,7 +344,9 @@ class RealtimeClient: QuickSpec {
 
                             if start == nil {
                                 // Force
-                                client.onSuspended()
+                                delay(0) {
+                                    client.onSuspended()
+                                }
                             }
                         case .Suspended:
                             start = NSDate()
@@ -345,7 +355,6 @@ class RealtimeClient: QuickSpec {
                         }
                     }
                 }
-                client.close()
 
                 if let secs = endInterval {
                     expect(secs).to(beLessThanOrEqualTo(UInt(options.suspendedRetryTimeout)))
@@ -943,7 +952,9 @@ class RealtimeClient: QuickSpec {
                     }
 
                     let hook = client.auth.testSuite_injectIntoMethodAfter(#selector(client.auth.authorize(_:options:callback:))) {
-                        client.close()
+                        delay(0) {
+                            client.close()
+                        }
                     }
                     defer { hook.remove() }
 
@@ -1214,14 +1225,12 @@ class RealtimeClient: QuickSpec {
 
             // https://github.com/ably/ably-ios/issues/577
             it("background behaviour") {
-                let options = AblyTests.commonAppSetup()
-                options.autoConnect = false
-                let realtime = ARTRealtime(options: options)
                 waitUntil(timeout: testTimeout) { done in
                     NSURLSession.sharedSession().dataTaskWithURL(NSURL(string:"https://ably.io")!) { _ in
-                        realtime.connect()
+                        let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                         realtime.channels.get("foo").attach { error in
                             expect(error).to(beNil())
+                            realtime.close()
                             done()
                         }
                     }.resume()

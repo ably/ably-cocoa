@@ -20,7 +20,7 @@
 }
 
 - (instancetype)initWithRealtime:(ARTRealtime *)realtime {
-    if (self == [super init]) {
+    if (self = [super init]) {
         _queue = dispatch_queue_create("io.ably.realtime.connection", DISPATCH_QUEUE_SERIAL);
         _eventEmitter = [[ARTEventEmitter alloc] initWithQueue:_queue];
         _realtime = realtime;
@@ -78,39 +78,49 @@
     }
 }
 
-- (__GENERIC(ARTEventListener, ARTConnectionStateChange *) *)on:(ARTRealtimeConnectionEvent)event callback:(void (^)(ARTConnectionStateChange *))cb {
-    return [_eventEmitter on:[NSNumber numberWithInt:event] callback:cb];
+- (ARTEventListener *)on:(ARTRealtimeConnectionEvent)event callback:(void (^)(ARTConnectionStateChange *))cb {
+    return [_eventEmitter on:[ARTEvent newWithConnectionEvent:event] callback:cb];
 }
 
-- (__GENERIC(ARTEventListener, ARTConnectionStateChange *) *)on:(void (^)(ARTConnectionStateChange *))cb {
+- (ARTEventListener *)on:(void (^)(ARTConnectionStateChange *))cb {
     return [_eventEmitter on:cb];
 }
 
-- (__GENERIC(ARTEventListener, ARTConnectionStateChange *) *)once:(ARTRealtimeConnectionEvent)event callback:(void (^)(ARTConnectionStateChange *))cb {
-    return [_eventEmitter once:[NSNumber numberWithInt:event] callback:cb];
+- (ARTEventListener *)once:(ARTRealtimeConnectionEvent)event callback:(void (^)(ARTConnectionStateChange *))cb {
+    return [_eventEmitter once:[ARTEvent newWithConnectionEvent:event] callback:cb];
 }
 
-- (__GENERIC(ARTEventListener, ARTConnectionStateChange *) *)once:(void (^)(ARTConnectionStateChange *))cb {
+- (ARTEventListener *)once:(void (^)(ARTConnectionStateChange *))cb {
     return [_eventEmitter once:cb];
 }
 
 - (void)off {
     [_eventEmitter off];
 }
-- (void)off:(ARTRealtimeConnectionEvent)event listener:listener {
-    [_eventEmitter off:[NSNumber numberWithInt:event] listener:listener];
+- (void)off:(ARTRealtimeConnectionEvent)event listener:(ARTEventListener *)listener {
+    [_eventEmitter off:[ARTEvent newWithConnectionEvent:event] listener:listener];
 }
 
-- (void)off:(__GENERIC(ARTEventListener, ARTConnectionStateChange *) *)listener {
+- (void)off:(ARTEventListener *)listener {
     [_eventEmitter off:listener];
 }
 
 - (void)emit:(ARTRealtimeConnectionEvent)event with:(ARTConnectionStateChange *)data {
-    [_eventEmitter emit:[NSNumber numberWithInt:event] with:data];
+    [_eventEmitter emit:[ARTEvent newWithConnectionEvent:event] with:data];
 }
 
-- (ARTEventListener *)timed:(ARTEventListener *)listener deadline:(NSTimeInterval)deadline onTimeout:(void (^)())onTimeout {
-    return [_eventEmitter timed:listener deadline:deadline onTimeout:onTimeout];
+@end
+
+#pragma mark - ARTEvent
+
+@implementation ARTEvent (ConnectionEvent)
+
+- (instancetype)initWithConnectionEvent:(ARTRealtimeConnectionEvent)value {
+    return [self initWithString:[NSString stringWithFormat:@"ARTRealtimeConnectionEvent%@", ARTRealtimeConnectionEventToStr(value)]];
+}
+
++ (instancetype)newWithConnectionEvent:(ARTRealtimeConnectionEvent)value {
+    return [[self alloc] initWithConnectionEvent:value];
 }
 
 @end

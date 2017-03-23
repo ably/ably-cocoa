@@ -18,7 +18,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 /// Messages related to the ARTAuth
 @protocol ARTAuthDelegate <NSObject>
-@property (nonatomic, readonly) __GENERIC(ARTEventEmitter, NSNumber * /*ARTAuthorizationState*/, id) *authorizationEmitter;
+@property (nonatomic, readonly) ARTEventEmitter<ARTEvent *, id> *authorizationEmitter;
 - (void)auth:(ARTAuth *)auth didAuthorize:(ARTTokenDetails *)tokenDetails;
 @end
 
@@ -42,7 +42,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (ARTTokenParams *)mergeParams:(ARTTokenParams *)customParams;
 
 - (NSURL *)buildURL:(ARTAuthOptions *)options withParams:(ARTTokenParams *)params;
-- (NSMutableURLRequest *)buildRequest:(ARTAuthOptions *)options withParams:(ARTTokenParams *)params;
+- (NSMutableURLRequest *)buildRequest:(nullable ARTAuthOptions *)options withParams:(nullable ARTTokenParams *)params;
 
 // Execute the received ARTTokenRequest
 - (void)executeTokenRequest:(ARTTokenRequest *)tokenRequest callback:(void (^)(ARTTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error))callback;
@@ -68,6 +68,13 @@ ART_ASSUME_NONNULL_BEGIN
 // Private TimeOffset setter for testing only
 - (void)setTimeOffset:(NSTimeInterval)offset;
 
+@end
+
+#pragma mark - ARTEvent
+
+@interface ARTEvent (AuthorizationState)
+- (instancetype)initWithAuthorizationState:(ARTAuthorizationState)value;
++ (instancetype)newWithAuthorizationState:(ARTAuthorizationState)value;
 @end
 
 ART_ASSUME_NONNULL_END

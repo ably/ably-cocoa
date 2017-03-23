@@ -14,7 +14,9 @@
 void artDispatchSpecifyMainQueue();
 void artDispatchMainQueue(dispatch_block_t block);
 void artDispatchGlobalQueue(dispatch_block_t block);
-dispatch_block_t artDispatchScheduled(NSTimeInterval seconds, dispatch_block_t block);
+dispatch_block_t artDispatchScheduledOnMainQueue(NSTimeInterval seconds, dispatch_block_t block);
+dispatch_block_t artDispatchScheduledOnGlobalQueue(NSTimeInterval seconds, dispatch_block_t block);
+dispatch_block_t artDispatchScheduled(NSTimeInterval seconds, dispatch_queue_t queue, dispatch_block_t block);
 void artDispatchCancel(dispatch_block_t block);
 
 #endif /* ARTGCD_h */

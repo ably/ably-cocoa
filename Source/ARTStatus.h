@@ -39,7 +39,7 @@ typedef CF_ENUM(NSUInteger, ARTCodeError) {
     // FIXME: check hard coded errors
     ARTCodeErrorAPIKeyMissing = 80001,
     ARTCodeErrorConnectionTimedOut = 80014,
-    ARTCodeErrorAuthConfiguredProviderFailure = 80019
+    ARTCodeErrorAuthConfiguredProviderFailure = 80019,
 };
 
 ART_ASSUME_NONNULL_BEGIN

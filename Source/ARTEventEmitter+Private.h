@@ -7,24 +7,18 @@
 //
 
 #include "ARTEventEmitter.h"
-#include "CompatibilityMacros.h"
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
-@interface __GENERIC(ARTEventEmitterEntry, ItemType) : NSObject
+@interface ARTEventEmitter<EventType, ItemType> ()
 
-@property (readwrite, strong, nonatomic) __GENERIC(ARTEventListener, ItemType) *listener;
-@property (readwrite, nonatomic) BOOL once;
+@property (nonatomic, readonly) NSNotificationCenter *notificationCenter;
+@property (nonatomic, readonly) dispatch_queue_t queue;
 
-- (instancetype)initWithListener:(__GENERIC(ARTEventListener, ItemType) *)listener once:(BOOL)once;
-
-@end
-
-@interface __GENERIC(ARTEventEmitter, EventType, ItemType) ()
-
-@property (readwrite, atomic) __GENERIC(NSMutableDictionary, EventType, __GENERIC(NSMutableArray, __GENERIC(ARTEventEmitterEntry, ItemType) *) *) *listeners;
-@property (readwrite, atomic) __GENERIC(NSMutableArray, __GENERIC(ARTEventEmitterEntry, ItemType) *) *anyListeners;
+@property (readonly, atomic) NSMutableDictionary<NSString *, NSMutableArray<ARTEventListener *> *> *listeners;
+@property (readonly, atomic) NSMutableArray<ARTEventListener *> *anyListeners;
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END
+

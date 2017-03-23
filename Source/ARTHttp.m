@@ -163,6 +163,10 @@
     return self;
 }
 
+- (void)dealloc {
+    [_urlSession finishTasksAndInvalidate];
+}
+
 - (instancetype)initWithBaseUrl:(NSURL *)baseUrl {
     self = [self init];
     if (self) {
@@ -216,7 +220,7 @@
     request.HTTPBody = artRequest.body;
     [self.logger debug:@"ARTHttp: makeRequest %@", [request allHTTPHeaderFields]];
 
-    [self.urlSession get:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [_urlSession get:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
         [self.logger verbose:@"ARTHttp: Got response %@, err %@", response, error];
 

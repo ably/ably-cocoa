@@ -86,3 +86,17 @@ NSString *ARTPresenceActionToStr(ARTPresenceAction action) {
             return @"Update"; //4
     }
 }
+
+#pragma mark - ARTEvent
+
+@implementation ARTEvent (PresenceAction)
+
+- (instancetype)initWithPresenceAction:(ARTPresenceAction)value {
+    return [self initWithString:[NSString stringWithFormat:@"ARTPresenceAction%@", ARTPresenceActionToStr(value)]];
+}
+
++ (instancetype)newWithPresenceAction:(ARTPresenceAction)value {
+    return [[self alloc] initWithPresenceAction:value];
+}
+
+@end

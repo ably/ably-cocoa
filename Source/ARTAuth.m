@@ -377,11 +377,11 @@
     if (lastDelegate) {
         // Only the last request should remain
         [lastDelegate.authorizationEmitter off];
-        [lastDelegate.authorizationEmitter once:[NSNumber numberWithInt:ARTAuthorizationSucceeded] callback:^(id null) {
+        [lastDelegate.authorizationEmitter once:[ARTEvent newWithAuthorizationState:ARTAuthorizationSucceeded] callback:^(id null) {
             successBlock(_tokenDetails);
             [lastDelegate.authorizationEmitter off];
         }];
-        [lastDelegate.authorizationEmitter once:[NSNumber numberWithInt:ARTAuthorizationFailed] callback:^(NSError *error) {
+        [lastDelegate.authorizationEmitter once:[ARTEvent newWithAuthorizationState:ARTAuthorizationFailed] callback:^(NSError *error) {
             failureBlock(error);
             [lastDelegate.authorizationEmitter off];
         }];
@@ -402,7 +402,10 @@
         _tokenDetails = tokenDetails;
         _method = ARTAuthMethodToken;
 
-        if (lastDelegate) {
+        if (!tokenDetails) {
+            failureBlock([ARTErrorInfo createWithCode:0 message:@"Token details are empty"]);
+        }
+        else if (lastDelegate) {
             [lastDelegate auth:self didAuthorize:tokenDetails];
         }
         else {
@@ -503,6 +506,29 @@
 
 - (void)toTokenDetails:(ARTAuth *)auth callback:(void (^)(ARTTokenDetails * _Nullable, NSError * _Nullable))callback {
     callback([[ARTTokenDetails alloc] initWithToken:self], nil);
+}
+
+@end
+
+NSString *ARTAuthorizationStateToStr(ARTAuthorizationState state) {
+    switch (state) {
+        case ARTAuthorizationSucceeded:
+            return @"Succeeded"; //0
+        case ARTAuthorizationFailed:
+            return @"Failed"; //1
+    }
+}
+
+#pragma mark - ARTEvent
+
+@implementation ARTEvent (AuthorizationState)
+
+- (instancetype)initWithAuthorizationState:(ARTAuthorizationState)value {
+    return [self initWithString:[NSString stringWithFormat:@"ARTAuthorizationState%@", ARTAuthorizationStateToStr(value)]];
+}
+
++ (instancetype)newWithAuthorizationState:(ARTAuthorizationState)value {
+    return [[self alloc] initWithAuthorizationState:value];
 }
 
 @end
