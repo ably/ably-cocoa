@@ -23,6 +23,7 @@
 #import "ARTStatus.h"
 #import "ARTJsonEncoder.h"
 #import "ARTGCD.h"
+#import "ARTEventEmitter+Private.h"
 
 @implementation ARTAuth {
     __weak ARTRest *_rest;
@@ -53,7 +54,6 @@
                                                    object:nil];
         #endif
     }
-    
     return self;
 }
 
@@ -129,7 +129,6 @@
     self.options.authParams = [customOptions.authParams copy];
     self.options.useTokenAuth = customOptions.useTokenAuth;
     self.options.queryTime = false;
-    self.options.force = false;
 }
 
 - (ARTTokenParams *)mergeParams:(ARTTokenParams *)customParams {
@@ -184,16 +183,41 @@
     return request;
 }
 
+- (BOOL)tokenIsRenewable {
+    return [self canRenewTokenAutomatically:self.options];
+}
+
+- (BOOL)canRenewTokenAutomatically:(ARTAuthOptions *)options {
+    return options.authCallback || options.authUrl || options.key;
+}
+
+- (BOOL)tokenRemainsValid {
+    if (self.tokenDetails && self.tokenDetails.token) {
+        if (self.tokenDetails.expires == nil) {
+            return YES;
+        }
+        else if ([self.tokenDetails.expires timeIntervalSinceDate:[self currentDate]] > 0) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
+- (void)requestToken:(void (^)(ARTTokenDetails *, NSError *))callback {
+    // If the object arguments are omitted, the client library configured defaults are used
+    [self requestToken:_tokenParams withOptions:_options callback:callback];
+}
+
 - (void)requestToken:(ARTTokenParams *)tokenParams withOptions:(ARTAuthOptions *)authOptions
             callback:(void (^)(ARTTokenDetails *, NSError *))callback {
     
-    // The values replace all corresponding.
+    // If options, params passed in, they're used instead of stored, don't merge them
     ARTAuthOptions *replacedOptions = authOptions ? authOptions : self.options;
     ARTTokenParams *currentTokenParams = tokenParams ? tokenParams : _tokenParams;
     currentTokenParams.timestamp = [self currentDate];
 
-    if (replacedOptions.key == nil && replacedOptions.authCallback == nil && replacedOptions.authUrl == nil) {
-        callback(nil, [ARTErrorInfo createWithCode:ARTStateRequestTokenFailed message:@"no means to renew the token is provided (either an API key, authCallback or authUrl)"]);
+    if (![self canRenewTokenAutomatically:replacedOptions]) {
+        callback(nil, [ARTErrorInfo createWithCode:ARTStateRequestTokenFailed message:ARTAblyMessageNoMeansToRenewToken]);
         return;
     }
 
@@ -317,64 +341,81 @@
 }
 
 - (void)authorise:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
-    BOOL requestNewToken = NO;
+    [self authorize:tokenParams options:authOptions callback:callback];
+}
 
-    ARTAuthOptions *replacedOptions;
-    if ([authOptions isOnlyForceTrue]) {
-        replacedOptions = [self.options copy];
-        replacedOptions.force = YES;
-    }
-    else {
-        replacedOptions = [authOptions copy] ? : [self.options copy];
-    }
+- (void)authorize:(void (^)(ARTTokenDetails *, NSError *))callback {
+    [self authorize:_options.defaultTokenParams options:_options callback:callback];
+}
+
+- (void)authorize:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
+    ARTAuthOptions *replacedOptions = [authOptions copy] ? : [self.options copy];
     [self storeOptions:replacedOptions];
 
     ARTTokenParams *currentTokenParams = [self mergeParams:tokenParams];
     [self storeParams:currentTokenParams];
 
-    // Reuse or not reuse the current token
-    if (replacedOptions.force == NO && self.tokenDetails) {
-        if (self.tokenDetails.expires == nil) {
-            [self.logger verbose:@"RS:%p ARTAuth: reuse current token.", _rest];
-            requestNewToken = NO;
-        }
-        else if ([self.tokenDetails.expires timeIntervalSinceDate:[self currentDate]] > 0) {
-            [self.logger verbose:@"RS:%p ARTAuth: current token has not expired yet. Reusing token details.", _rest];
-            requestNewToken = NO;
-        }
-        else {
-            [self.logger verbose:@"RS:%p ARTAuth: current token has expired. Requesting new token.", _rest];
-            requestNewToken = YES;
-        }
-    }
-    else {
-        if (replacedOptions.force == YES)
-            [self.logger verbose:@"RS:%p ARTAuth: forced requesting new token.", _rest];
-        else
-            [self.logger verbose:@"RS:%p ARTAuth: requesting new token.", _rest];
-        requestNewToken = YES;
-    }
-
-    if (requestNewToken) {
-        [self requestToken:currentTokenParams withOptions:replacedOptions callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
-            if (error) {
-                [self.logger verbose:@"RS:%p ARTAuth: token request failed: %@", _rest, error];
-                if (callback) {
-                    callback(nil, error);
-                }
-            } else {
-                _tokenDetails = tokenDetails;
-                [self.logger verbose:@"RS:%p ARTAuth: token request succeeded: %@", _rest, tokenDetails];
-                if (callback) {
-                    callback(self.tokenDetails, nil);
-                }
-            }
-        }];
-    } else {
+    // Success
+    void (^successBlock)(ARTTokenDetails *) = ^(ARTTokenDetails *tokenDetails) {
+        [self.logger verbose:@"RS:%p ARTAuth: token request succeeded: %@", _rest, tokenDetails];
         if (callback) {
             callback(self.tokenDetails, nil);
         }
+        _authorizing = false;
+    };
+
+    // Failure
+    void (^failureBlock)(NSError *) = ^(NSError *error) {
+        [self.logger verbose:@"RS:%p ARTAuth: token request failed: %@", _rest, error];
+        if (callback) {
+            callback(nil, error);
+        }
+        _authorizing = false;
+    };
+
+    __weak id<ARTAuthDelegate> lastDelegate = self.delegate;
+    if (lastDelegate) {
+        // Only the last request should remain
+        [lastDelegate.authorizationEmitter off];
+        [lastDelegate.authorizationEmitter once:[ARTEvent newWithAuthorizationState:ARTAuthorizationSucceeded] callback:^(id null) {
+            successBlock(_tokenDetails);
+            [lastDelegate.authorizationEmitter off];
+        }];
+        [lastDelegate.authorizationEmitter once:[ARTEvent newWithAuthorizationState:ARTAuthorizationFailed] callback:^(NSError *error) {
+            failureBlock(error);
+            [lastDelegate.authorizationEmitter off];
+        }];
     }
+
+    // Request always a new token
+    [self.logger verbose:@"RS:%p ARTAuth: requesting new token.", _rest];
+    _authorizing = true;
+    [self requestToken:currentTokenParams withOptions:replacedOptions callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+        if (error) {
+            failureBlock(error);
+            if (lastDelegate) {
+                [lastDelegate.authorizationEmitter off];
+            }
+            return;
+        }
+
+        _tokenDetails = tokenDetails;
+        _method = ARTAuthMethodToken;
+
+        if (!tokenDetails) {
+            failureBlock([ARTErrorInfo createWithCode:0 message:@"Token details are empty"]);
+        }
+        else if (lastDelegate) {
+            [lastDelegate auth:self didAuthorize:tokenDetails];
+        }
+        else {
+            successBlock(tokenDetails);
+        }
+    }];
+}
+
+- (void)createTokenRequest:(void (^)(ARTTokenRequest *, NSError *))callback {
+    [self createTokenRequest:_tokenParams options:_options callback:callback];
 }
 
 - (void)createTokenRequest:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)options callback:(void (^)(ARTTokenRequest *, NSError *))callback {
@@ -465,6 +506,29 @@
 
 - (void)toTokenDetails:(ARTAuth *)auth callback:(void (^)(ARTTokenDetails * _Nullable, NSError * _Nullable))callback {
     callback([[ARTTokenDetails alloc] initWithToken:self], nil);
+}
+
+@end
+
+NSString *ARTAuthorizationStateToStr(ARTAuthorizationState state) {
+    switch (state) {
+        case ARTAuthorizationSucceeded:
+            return @"Succeeded"; //0
+        case ARTAuthorizationFailed:
+            return @"Failed"; //1
+    }
+}
+
+#pragma mark - ARTEvent
+
+@implementation ARTEvent (AuthorizationState)
+
+- (instancetype)initWithAuthorizationState:(ARTAuthorizationState)value {
+    return [self initWithString:[NSString stringWithFormat:@"ARTAuthorizationState%@", ARTAuthorizationStateToStr(value)]];
+}
+
++ (instancetype)newWithAuthorizationState:(ARTAuthorizationState)value {
+    return [[self alloc] initWithAuthorizationState:value];
 }
 
 @end

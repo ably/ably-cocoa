@@ -35,9 +35,9 @@ class RestClientPresence: QuickSpec {
                     let expectedPattern = "^user(\\d+)$"
                     waitUntil(timeout: testTimeout) { done in
                         // Load 150 members (2 pages)
-                        disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 150, data:expectedData, options: options) {
+                        disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 150, data:expectedData, options: options) {
                             done()
-                        }
+                        }]
                     }
 
                     waitUntil(timeout: testTimeout) { done in
@@ -139,16 +139,16 @@ class RestClientPresence: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         // One connection
-                        disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 6, options: options) {
+                        disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 6, options: options) {
                             done()
-                        }
+                        }]
                     }
 
                     waitUntil(timeout: testTimeout) { done in
                         // Another connection
-                        disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 3, startFrom: 7, options: options) {
+                        disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 3, startFrom: 7, options: options) {
                             done()
-                        }
+                        }]
                     }
 
                     let query = ARTRealtimePresenceQuery()
@@ -189,7 +189,7 @@ class RestClientPresence: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         realtime = AblyTests.addMembersSequentiallyToChannel("test", members: 150, data: expectedData, options: options) {
                             done()
-                        }.first
+                        }
                     }
 
                     waitUntil(timeout: testTimeout) { done in
@@ -252,9 +252,9 @@ class RestClientPresence: QuickSpec {
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 10, data:nil, options: options) {
+                            disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 10, data:nil, options: options) {
                                 done()
-                            }
+                            }]
                         }
 
                         let query = ARTDataQuery()
@@ -307,7 +307,7 @@ class RestClientPresence: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             realtime = AblyTests.addMembersSequentiallyToChannel("test", members: 1, options: options) {
                                 done()
-                            }.first
+                            }
                         }
 
                         let query = ARTDataQuery()
@@ -348,16 +348,16 @@ class RestClientPresence: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         // One connection
-                        disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 6, options: options) {
+                        disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 6, options: options) {
                             done()
-                        }
+                        }]
                     }
 
                     waitUntil(timeout: testTimeout) { done in
                         // Another connection
-                        disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 3, startFrom: 7, options: options) {
+                        disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 3, startFrom: 7, options: options) {
                             done()
-                        }
+                        }]
                     }
 
                     let query = ARTRealtimePresenceQuery()
@@ -404,9 +404,9 @@ class RestClientPresence: QuickSpec {
                         let query = ARTDataQuery()
 
                         waitUntil(timeout: testTimeout) { done in
-                            disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 25, options: options) {
+                            disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 25, options: options) {
                                 done()
-                            }
+                            }]
                         }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -422,9 +422,9 @@ class RestClientPresence: QuickSpec {
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 3, options: options) {
+                            disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 3, options: options) {
                                 done()
-                            }
+                            }]
                         }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -436,9 +436,9 @@ class RestClientPresence: QuickSpec {
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 10, options: options) {
+                            disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 10, options: options) {
                                 done()
-                            }
+                            }]
                         }
 
                         waitUntil(timeout: testTimeout) { done in

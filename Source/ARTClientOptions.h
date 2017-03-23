@@ -51,6 +51,12 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) NSTimeInterval suspendedRetryTimeout;
 
 /**
+ Represents the timeout (in seconds) to re-attach the channel automatically.
+ When a channel becomes SUSPENDED following a server initiated DETACHED, after this delay in milliseconds, if the channel is still SUSPENDED and the connection is CONNECTED, the client library will attempt to re-attach.
+ */
+@property (readwrite, assign, nonatomic) NSTimeInterval channelRetryTimeout;
+
+/**
  Timeout for opening the connection, available in the client library if supported by the transport.
  */
 @property (readwrite, assign, nonatomic) NSTimeInterval httpOpenTimeout;
@@ -75,11 +81,18 @@ ART_ASSUME_NONNULL_BEGIN
  */
 @property (art_nullable, nonatomic, copy) __GENERIC(NSArray, NSString *) *fallbackHosts;
 
+/**
+ Optionally allows the default fallback hosts `[a-e].ably-realtime.com` to be used when `environment` is not production or a custom realtime or REST host endpoint is being used. It is never valid to configure `fallbackHost` and set `fallbackHostsUseDefault` to `true`.
+ */
+@property (assign, nonatomic) BOOL fallbackHostsUseDefault;
+
 - (BOOL)isBasicAuth;
 - (NSURL *)restUrl;
 - (NSURL *)realtimeUrl;
 - (BOOL)hasCustomRestHost;
+- (BOOL)hasDefaultRestHost;
 - (BOOL)hasCustomRealtimeHost;
+- (BOOL)hasDefaultRealtimeHost;
 
 @end
 

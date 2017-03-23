@@ -12,6 +12,7 @@
 #import "ARTPresenceMessage.h"
 
 @class ARTConnectionDetails;
+@class ARTAuthDetails;
 @class ARTErrorInfo;
 @class ARTMessage;
 @class ARTPresenceMessage;
@@ -34,7 +35,10 @@ typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
     ARTProtocolMessagePresence = 14,
     ARTProtocolMessageMessage = 15,
     ARTProtocolMessageSync = 16,
+    ARTProtocolMessageAuth = 17,
 };
+
+NSString *__art_nonnull ARTProtocolMessageActionToStr(ARTProtocolMessageAction action);
 
 ART_ASSUME_NONNULL_BEGIN
 
@@ -47,19 +51,20 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (readwrite, assign, nonatomic) ARTProtocolMessageAction action;
 @property (readwrite, assign, nonatomic) int count;
-@property (art_nullable, readwrite, strong, nonatomic) ARTErrorInfo *error;
-@property (art_nullable, readwrite, strong, nonatomic) NSString *id;
-@property (art_nullable, readwrite, strong, nonatomic) NSString *channel;
-@property (art_nullable, readwrite, strong, nonatomic) NSString *channelSerial;
-@property (art_nullable, readwrite, strong, nonatomic) NSString *connectionId;
-@property (art_nullable, readwrite, strong, nonatomic, getter=getConnectionKey) NSString *connectionKey;
+@property (nullable, readwrite, strong, nonatomic) ARTErrorInfo *error;
+@property (nullable, readwrite, strong, nonatomic) NSString *id;
+@property (nullable, readwrite, strong, nonatomic) NSString *channel;
+@property (nullable, readwrite, strong, nonatomic) NSString *channelSerial;
+@property (nullable, readwrite, strong, nonatomic) NSString *connectionId;
+@property (nullable, readwrite, strong, nonatomic, getter=getConnectionKey) NSString *connectionKey;
 @property (readwrite, assign, nonatomic) int64_t connectionSerial;
-@property (art_nullable, readwrite, assign, nonatomic) NSNumber *msgSerial;
-@property (art_nullable, readwrite, strong, nonatomic) NSDate *timestamp;
-@property (art_nullable, readwrite, strong, nonatomic) __GENERIC(NSArray, ARTMessage *) *messages;
-@property (art_nullable, readwrite, strong, nonatomic) __GENERIC(NSArray, ARTPresenceMessage *) *presence;
+@property (nullable, readwrite, assign, nonatomic) NSNumber *msgSerial;
+@property (nullable, readwrite, strong, nonatomic) NSDate *timestamp;
+@property (nullable, readwrite, strong, nonatomic) __GENERIC(NSArray, ARTMessage *) *messages;
+@property (nullable, readwrite, strong, nonatomic) __GENERIC(NSArray, ARTPresenceMessage *) *presence;
 @property (readwrite, assign, nonatomic) int64_t flags;
-@property (art_nullable, readwrite, nonatomic) ARTConnectionDetails *connectionDetails;
+@property (nullable, readwrite, nonatomic) ARTConnectionDetails *connectionDetails;
+@property (nullable, nonatomic) ARTAuthDetails *auth;
 
 @end
 

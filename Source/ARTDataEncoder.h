@@ -37,7 +37,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 + (NSString *)artAddEncoding:(NSString *)encoding toString:(NSString *__art_nullable)s;
 - (NSString *)artLastEncoding;
-- (NSString *)artRemoveLastEncoding;
+- (nullable NSString *)artRemoveLastEncoding;
 
 @end
 

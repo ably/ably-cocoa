@@ -15,7 +15,7 @@ You can install Ably for iOS through CocoaPods, Carthage or manually.
 Add this line to your application's Podfile:
 
     # For Xcode 7.3 and newer
-    pod 'Ably', '~> 0.8'
+    pod 'Ably', '~> 0.9'
 
 And then install the dependency:
 
@@ -26,13 +26,13 @@ And then install the dependency:
 Add this line to your application's Cartfile:
 
     # For Xcode 7.3 and newer
-    github "ably/ably-ios" ~> 0.8
+    github "ably/ably-ios" ~> 0.9
 
 And then run `carthage update` to build the framework and drag the built Ably.framework into your Xcode project.
 
 ### Manual installation 
 
-1. Get the code from GitHub [from the release page](https://github.com/ably/ably-ios/releases/tag/0.8.0), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-ios.git` 
+1. Get the code from GitHub [from the release page](https://github.com/ably/ably-ios/releases/tag/0.9.0), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-ios.git` 
 2. Drag the directory `ably-ios/ably-ios` into your project as a group.
 3. Ably depends on [SocketRocket](https://github.com/facebook/SocketRocket) 0.5.1; get it [from the releases page](https://github.com/facebook/SocketRocket/releases/tag/0.5.1) and follow [its manual installation instructions](https://github.com/facebook/SocketRocket#installing-ios).
 4. Ably also depends on [msgpack](https://github.com/rvi/msgpack-objective-C) 0.1.8; get it [from the releases page](https://github.com/rvi/msgpack-objective-C/releases/tag/0.1.8) and link it into your project.

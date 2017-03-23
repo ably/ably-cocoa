@@ -32,7 +32,7 @@ class RestClientChannel: QuickSpec {
             // RSL1b
             context("with name and data arguments") {
                 it("publishes the message and invokes callback with success") {
-                    var publishError: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
+                    var publishError: ARTErrorInfo? = ARTErrorInfo.createFromNSError(NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
 
                     channel.publish(name, data: data) { error in
@@ -51,7 +51,7 @@ class RestClientChannel: QuickSpec {
             // RSL1b, RSL1e
             context("with name only") {
                 it("publishes the message and invokes callback with success") {
-                    var publishError: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
+                    var publishError: ARTErrorInfo? = ARTErrorInfo.createFromNSError(NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
 
                     channel.publish(name, data: nil) { error in
@@ -70,7 +70,7 @@ class RestClientChannel: QuickSpec {
             // RSL1b, RSL1e
             context("with data only") {
                 it("publishes the message and invokes callback with success") {
-                    var publishError: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
+                    var publishError: ARTErrorInfo? = ARTErrorInfo.createFromNSError(NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
 
                     channel.publish(nil, data: data) { error in
@@ -89,7 +89,7 @@ class RestClientChannel: QuickSpec {
             // RSL1b, RSL1e
             context("with neither name nor data") {
                 it("publishes the message and invokes callback with success") {
-                    var publishError: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
+                    var publishError: ARTErrorInfo? = ARTErrorInfo.createFromNSError(NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
 
                     channel.publish(nil, data: nil) { error in
@@ -107,7 +107,7 @@ class RestClientChannel: QuickSpec {
 
             context("with a Message object") {
                 it("publishes the message and invokes callback with success") {
-                    var publishError: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
+                    var publishError: ARTErrorInfo? = ARTErrorInfo.createFromNSError(NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
 
                     channel.publish([ARTMessage(name: name, data: data)]) { error in
@@ -130,7 +130,7 @@ class RestClientChannel: QuickSpec {
                     defer { client.httpExecutor = oldExecutor}
                     client.httpExecutor = testHTTPExecutor
 
-                    var publishError: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
+                    var publishError: ARTErrorInfo? = ARTErrorInfo.createFromNSError(NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessages: [ARTMessage] = []
 
                     let messages = [

@@ -17,8 +17,8 @@ ART_ASSUME_NONNULL_BEGIN
 @interface ARTPresenceQuery : NSObject
 
 @property (nonatomic, readwrite) NSUInteger limit;
-@property (nonatomic, strong, readwrite) NSString *clientId;
-@property (nonatomic, strong, readwrite) NSString *connectionId;
+@property (nullable, nonatomic, strong, readwrite) NSString *clientId;
+@property (nullable, nonatomic, strong, readwrite) NSString *connectionId;
 
 - (instancetype)init;
 - (instancetype)initWithClientId:(NSString *__art_nullable)clientId connectionId:(NSString *__art_nullable)connectionId;

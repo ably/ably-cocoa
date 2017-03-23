@@ -31,8 +31,15 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)close;
 - (void)ping:(void (^)(ARTErrorInfo *__art_nullable))cb;
 
-ART_EMBED_INTERFACE_EVENT_EMITTER(ARTRealtimeConnectionState, ARTConnectionStateChange *)
+ART_EMBED_INTERFACE_EVENT_EMITTER(ARTRealtimeConnectionEvent, ARTConnectionStateChange *)
 
+@end
+
+#pragma mark - ARTEvent
+
+@interface ARTEvent (ConnectionEvent)
+- (instancetype)initWithConnectionEvent:(ARTRealtimeConnectionEvent)value;
++ (instancetype)newWithConnectionEvent:(ARTRealtimeConnectionEvent)value;
 @end
 
 ART_ASSUME_NONNULL_END

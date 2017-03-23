@@ -26,25 +26,39 @@ typedef NS_ENUM(NSUInteger, ARTState) {
     ARTStateNoClientId,
     ARTStateMismatchedClientId,
     ARTStateRequestTokenFailed,
+    ARTStateAuthorizationFailed,
     ARTStateAuthUrlIncompatibleContent,
     ARTStateBadConnectionState,
     ARTStateError = 99999
 };
 
 /**
- ARTCodeErrors
-
  The list of all public error codes returned under the error domain ARTAblyErrorDomain
  */
 typedef CF_ENUM(NSUInteger, ARTCodeError) {
     // FIXME: check hard coded errors
-    ARTCodeErrorAPIKeyMissing = 80001
+    ARTCodeErrorAPIKeyMissing = 80001,
+    ARTCodeErrorConnectionTimedOut = 80014,
+    ARTCodeErrorAuthConfiguredProviderFailure = 80019,
 };
 
 ART_ASSUME_NONNULL_BEGIN
 
 FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
 
+/**
+ Ably client exception names
+ */
+FOUNDATION_EXPORT NSString *const ARTFallbackIncompatibleOptionsException;
+
+/**
+ Ably client error messages
+ */
+FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
+
+/**
+ Ably client error class
+ */
 @interface ARTErrorInfo : NSError
 
 @property (readonly, getter=getMessage) NSString *message;
@@ -52,18 +66,20 @@ FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
 
 + (ARTErrorInfo *)createWithCode:(NSInteger)code message:(NSString *)message;
 + (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message;
-// FIXME: base NSError
-+ (ARTErrorInfo *)createWithNSError:(NSError *)error;
++ (ARTErrorInfo *)createFromNSError:(NSError *)error;
 + (ARTErrorInfo *)wrap:(ARTErrorInfo *)error prepend:(NSString *)prepend;
 
 - (NSString *)description;
 
 @end
 
-
+/**
+ Ably client status class
+ */
 @interface ARTStatus : NSObject
 
 @property (art_nullable, readonly, strong, nonatomic) ARTErrorInfo *errorInfo;
+@property (nonatomic, assign) BOOL storeErrorInfo;
 @property (nonatomic, assign) ARTState state;
 
 + (ARTStatus *)state:(ARTState) state;

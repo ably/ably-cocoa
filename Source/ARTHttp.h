@@ -38,9 +38,9 @@ ART_ASSUME_NONNULL_BEGIN
 @interface ARTHttpResponse : NSObject
 
 @property (readonly, assign, nonatomic) int status;
-@property (readwrite, strong, nonatomic) ARTErrorInfo *error;
-@property (art_nullable, readonly, strong, nonatomic) NSDictionary *headers;
-@property (art_nullable, readonly, strong, nonatomic) NSData *body;
+@property (nullable, readwrite, nonatomic) ARTErrorInfo *error;
+@property (nullable, readonly, nonatomic) NSDictionary *headers;
+@property (nullable, readonly, nonatomic) NSData *body;
 
 - (instancetype)init;
 - (instancetype)initWithStatus:(int)status headers:(art_nullable NSDictionary *)headers body:(art_nullable NSData *)body;

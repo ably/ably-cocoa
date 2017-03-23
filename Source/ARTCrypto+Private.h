@@ -50,7 +50,7 @@ ART_ASSUME_NONNULL_BEGIN
 + (int)defaultKeyLength;
 + (int)defaultBlockLength;
 
-+ (NSData *)generateSecureRandomData:(size_t)length;
++ (nullable NSData *)generateSecureRandomData:(size_t)length;
 
 + (id<ARTChannelCipher>)cipherWithParams:(ARTCipherParams *)params;
 

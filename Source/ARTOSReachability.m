@@ -25,8 +25,7 @@
 }
 
 - (instancetype)initWithLogger:(ARTLog *)logger {
-    self = [super self];
-    if (self) {
+    if (self = [super init]) {
         _logger = logger;
         if (ARTOSReachability_instances == nil) {
             _instances = [[NSMutableDictionary alloc] init];

@@ -6,6 +6,13 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
+/// ARTProtocolMessageFlag bitmask
+typedef NS_OPTIONS(NSUInteger, ARTProtocolMessageFlag) {
+    ARTProtocolMessageFlagHasPresence = (1UL << 0), //1
+    ARTProtocolMessageFlagHasBacklog = (1UL << 1), //2
+    ARTProtocolMessageFlagResumed = (1UL << 2) //4
+};
+
 ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTProtocolMessage ()
@@ -13,7 +20,9 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) BOOL hasConnectionSerial;
 @property (readonly, assign, nonatomic) BOOL ackRequired;
 
-- (BOOL)isSyncEnabled;
+@property (readonly, assign, nonatomic) BOOL hasPresence;
+@property (readonly, assign, nonatomic) BOOL hasBacklog;
+@property (readonly, assign, nonatomic) BOOL resumed;
 
 - (BOOL)mergeFrom:(ARTProtocolMessage *)msg;
 

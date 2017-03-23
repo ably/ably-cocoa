@@ -17,7 +17,7 @@
                   maxInboundRate:(NSInteger)maxInboundRate
               connectionStateTtl:(NSTimeInterval)connectionStateTtl
                         serverId:(NSString *)serverId {
-    if (self == [super init]) {
+    if (self = [super init]) {
         _clientId = clientId;
         _connectionKey = connectionKey;
         _maxMessageSize = maxMessageSize;

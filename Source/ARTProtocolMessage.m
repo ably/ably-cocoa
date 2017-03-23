@@ -107,8 +107,16 @@
     return self.action == ARTProtocolMessageMessage || self.action == ARTProtocolMessagePresence;
 }
 
-- (BOOL)isSyncEnabled {
-    return self.flags & 0x1;
+- (BOOL)hasPresence {
+    return self.flags & ARTProtocolMessageFlagHasPresence;
+}
+
+- (BOOL)hasBacklog {
+    return self.flags & ARTProtocolMessageFlagHasBacklog;
+}
+
+- (BOOL)resumed {
+    return self.flags & ARTProtocolMessageFlagResumed;
 }
 
 - (ARTConnectionDetails *)getConnectionDetails {
@@ -116,3 +124,44 @@
 }
 
 @end
+
+NSString* ARTProtocolMessageActionToStr(ARTProtocolMessageAction action) {
+    switch(action) {
+        case ARTProtocolMessageHeartbeat:
+            return @"Heartbeat"; //0
+        case ARTProtocolMessageAck:
+            return @"Ack"; //1
+        case ARTProtocolMessageNack:
+            return @"Nack"; //2
+        case ARTProtocolMessageConnect:
+            return @"Connect"; //3
+        case ARTProtocolMessageConnected:
+            return @"Connected"; //4
+        case ARTProtocolMessageDisconnect:
+            return @"Disconnect"; //5
+        case ARTProtocolMessageDisconnected:
+            return @"Disconnected"; //6
+        case ARTProtocolMessageClose:
+            return @"Close"; //7
+        case ARTProtocolMessageClosed:
+            return @"Closed"; //8
+        case ARTProtocolMessageError:
+            return @"Error"; //9
+        case ARTProtocolMessageAttach:
+            return @"Attach"; //10
+        case ARTProtocolMessageAttached:
+            return @"Attached"; //11
+        case ARTProtocolMessageDetach:
+            return @"Detach"; //12
+        case ARTProtocolMessageDetached:
+            return @"Detached"; //13
+        case ARTProtocolMessagePresence:
+            return @"Presence"; //14
+        case ARTProtocolMessageMessage:
+            return @"Message"; //15
+        case ARTProtocolMessageSync:
+            return @"Sync"; //16
+        case ARTProtocolMessageAuth:
+            return @"Auth"; //17
+    }
+}

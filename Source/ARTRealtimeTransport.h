@@ -24,8 +24,14 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportErrorType) {
     ARTRealtimeTransportErrorTypeNoInternet,
     ARTRealtimeTransportErrorTypeTimeout,
     ARTRealtimeTransportErrorTypeBadResponse,
-    ARTRealtimeTransportErrorTypeAuth,
     ARTRealtimeTransportErrorTypeOther
+};
+
+typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
+    ARTRealtimeTransportStateOpening,
+    ARTRealtimeTransportStateOpened,
+    ARTRealtimeTransportStateClosing,
+    ARTRealtimeTransportStateClosed,
 };
 
 @interface ARTRealtimeTransportError : NSObject
@@ -50,7 +56,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportErrorType) {
 - (void)realtimeTransportUnavailable:(id<ARTRealtimeTransport>)transport;
 
 - (void)realtimeTransportClosed:(id<ARTRealtimeTransport>)transport;
-- (void)realtimeTransportDisconnected:(id<ARTRealtimeTransport>)transport;
+- (void)realtimeTransportDisconnected:(id<ARTRealtimeTransport>)transport withError:(art_nullable ARTRealtimeTransportError *)error;
 - (void)realtimeTransportNeverConnected:(id<ARTRealtimeTransport>)transport;
 - (void)realtimeTransportRefused:(id<ARTRealtimeTransport>)transport;
 - (void)realtimeTransportTooBig:(id<ARTRealtimeTransport>)transport;
@@ -60,22 +66,24 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportErrorType) {
 
 @protocol ARTRealtimeTransport
 
-- (instancetype)initWithRest:(ARTRest *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial;
+- (instancetype)initWithRest:(ARTRest *)rest options:(ARTClientOptions *)options resumeKey:(nullable NSString *)resumeKey connectionSerial:(nullable NSNumber *)connectionSerial;
 
 @property (readonly, strong, nonatomic) NSString *resumeKey;
 @property (readonly, strong, nonatomic) NSNumber *connectionSerial;
+@property (readonly, assign, nonatomic) ARTRealtimeTransportState state;
+@property (nullable, readwrite, strong, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
 
-@property (readwrite, weak, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
 - (void)send:(ARTProtocolMessage *)msg;
 - (void)receive:(ARTProtocolMessage *)msg;
-- (void)connect;
-- (void)connectForcingNewToken:(BOOL)forceNewToken;
+- (void)connectWithKey:(NSString *)key;
+- (void)connectWithToken:(NSString *)token;
 - (void)sendClose;
 - (void)sendPing;
 - (void)close;
 - (void)abort:(ARTStatus *)reason;
 - (NSString *)host;
 - (void)setHost:(NSString *)host;
+- (ARTRealtimeTransportState)state;
 
 @end
 

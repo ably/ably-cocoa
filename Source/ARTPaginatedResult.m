@@ -104,7 +104,7 @@ static NSMutableURLRequest *requestRelativeTo(NSMutableURLRequest *request, NSSt
 
     [rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
-            callback(nil, [ARTErrorInfo createWithNSError:error]);
+            callback(nil, [ARTErrorInfo createFromNSError:error]);
         } else {
             [rest.logger debug:__FILE__ line:__LINE__ message:@"Paginated response: %@", response];
             [rest.logger debug:__FILE__ line:__LINE__ message:@"Paginated response data: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];

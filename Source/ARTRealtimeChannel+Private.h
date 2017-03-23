@@ -9,23 +9,24 @@
 
 #import "ARTRestChannel.h"
 #import "ARTRealtimeChannel.h"
+#import "ARTPresenceMap.h"
 #import "ARTEventEmitter.h"
 
-@class ARTPresenceMap;
 @class ARTProtocolMessage;
 
 ART_ASSUME_NONNULL_BEGIN
 
-@interface ARTRealtimeChannel ()
+@interface ARTRealtimeChannel () <ARTPresenceMapDelegate>
 
 @property (readonly, weak, nonatomic) ARTRealtime *realtime;
 @property (readonly, strong, nonatomic) ARTRestChannel *restChannel;
 @property (readwrite, strong, nonatomic) NSMutableArray *queuedMessages;
 @property (readwrite, strong, nonatomic, art_nullable) NSString *attachSerial;
 @property (readonly, getter=getClientId) NSString *clientId;
-@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNumber *, ARTErrorInfo *) *statesEventEmitter;
-@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSString *, ARTMessage *) *messagesEventEmitter;
-@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNumber *, ARTPresenceMessage *) *presenceEventEmitter;
+@property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTChannelStateChange *> *internalEventEmitter;
+@property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTChannelStateChange *> *statesEventEmitter;
+@property (readonly, strong, nonatomic) ARTEventEmitter<id<ARTEventIdentification>, ARTMessage *> *messagesEventEmitter;
+@property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTPresenceMessage *> *presenceEventEmitter;
 @property (readwrite, strong, nonatomic) ARTPresenceMap *presenceMap;
 @property (readwrite, assign, nonatomic) ARTPresenceAction lastPresenceAction;
 
@@ -56,12 +57,12 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)failQueuedMessages:(ARTStatus *)status;
 - (void)sendMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb;
 
-- (void)setSuspended:(ARTStatus *)error;
-- (void)setFailed:(ARTStatus *)error;
+- (void)setSuspended:(ARTStatus *)status;
+- (void)setFailed:(ARTStatus *)status;
 - (void)throwOnDisconnectedOrFailed;
 
 - (void)broadcastPresence:(ARTPresenceMessage *)pm;
-- (void)detachChannel:(ARTStatus *) error;
+- (void)detachChannel:(ARTStatus *)status;
 
 - (void)requestContinueSync;
 

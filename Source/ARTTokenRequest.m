@@ -9,12 +9,13 @@
 #import "ARTTokenRequest.h"
 #import "ARTTokenParams.h"
 #import "ARTAuth+Private.h"
+#import "ARTDefault.h"
 
 @implementation ARTTokenRequest
 
 - (instancetype)initWithTokenParams:(ARTTokenParams *)tokenParams keyName:(NSString *)keyName nonce:(NSString *)nonce mac:(NSString *)mac {
     if (self = [super init]) {
-        self.ttl = tokenParams.ttl;
+        self.ttl = tokenParams.ttl ? tokenParams.ttl : [ARTDefault ttl];
         self.capability = tokenParams.capability;
         self.clientId = tokenParams.clientId;
         self.timestamp = tokenParams.timestamp;

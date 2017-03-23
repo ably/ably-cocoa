@@ -22,6 +22,7 @@ framework module Ably {
         header "ARTRestChannel+Private.h"
         header "ARTPaginatedResult+Private.h"
         header "ARTPresence+Private.h"
+        header "ARTPresenceMessage+Private.h"
         header "ARTProtocolMessage+Private.h"
         header "ARTTokenParams+Private.h"
         header "ARTURLSessionServerTrust.h"
@@ -31,5 +32,6 @@ framework module Ably {
         header "ARTLog+Private.h"
         header "ARTRealtimePresence+Private.h"
         header "ARTRestPresence+Private.h"
+        header "ARTFallback+Private.h"
     }
 }

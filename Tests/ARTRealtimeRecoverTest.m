@@ -37,7 +37,7 @@
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     __block NSString *firstConnectionId = nil;
     void (^splitDone)() = [ARTTestUtil splitFulfillFrom:self expectation:expectation in:2];
-    [realtime.connection once:ARTRealtimeConnected callback:^(ARTConnectionStateChange *stateChange) {
+    [realtime.connection once:ARTRealtimeConnectionEventConnected callback:^(ARTConnectionStateChange *stateChange) {
         firstConnectionId = realtime.connection.id;
         ARTRealtimeChannel *channel = [realtime.channels get:channelName];
         // Sending a message
@@ -53,9 +53,10 @@
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
 
     __weak XCTestExpectation *expectation2 = [self expectationWithDescription:[NSString stringWithFormat:@"%s-2", __FUNCTION__]];
-    [realtime.connection once:ARTRealtimeDisconnected callback:^(ARTConnectionStateChange *stateChange) {
+    __block ARTRealtime *realtimeNonRecovered;
+    [realtime.connection once:ARTRealtimeConnectionEventDisconnected callback:^(ARTConnectionStateChange *stateChange) {
         options.recover = nil;
-        ARTRealtime *realtimeNonRecovered = [[ARTRealtime alloc] initWithOptions:options];
+        realtimeNonRecovered = [[ARTRealtime alloc] initWithOptions:options];
         ARTRealtimeChannel *c2 = [realtimeNonRecovered.channels get:channelName];
         // Sending other message to the same channel to check if the recovered connection receives it
         [c2 publish:nil data:c2Message callback:^(ARTErrorInfo *errorInfo) {
@@ -76,7 +77,7 @@
         XCTAssertEqualObjects(c2Message, [message data]);
         [expectation3 fulfill];
     }];
-    [realtimeRecovered.connection once:ARTRealtimeConnected callback:^(ARTConnectionStateChange *stateChange) {
+    [realtimeRecovered.connection once:ARTRealtimeConnectionEventConnected callback:^(ARTConnectionStateChange *stateChange) {
         XCTAssertEqualObjects(realtimeRecovered.connection.id, firstConnectionId);
     }];
     [self waitForExpectationsWithTimeout:[ARTTestUtil timeout] handler:nil];
