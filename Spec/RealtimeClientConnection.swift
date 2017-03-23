@@ -3394,7 +3394,6 @@ class RealtimeClientConnection: QuickSpec {
                 // RTN19a
                 it("should resend any ProtocolMessage that is awaiting a ACK/NACK") {
                     let options = AblyTests.commonAppSetup()
-                    options.logLevel = .Debug
                     options.disconnectedRetryTimeout = 0.1
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
@@ -3412,6 +3411,7 @@ class RealtimeClientConnection: QuickSpec {
                                 fail("Transport is nil"); done(); return
                             }
                             expect(newTransport).toNot(beIdenticalTo(transport))
+                            expect(transport.protocolMessagesSent.filter{ $0.action == .Message }).to(haveCount(1))
                             expect(transport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
                             expect(newTransport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
                             expect(transport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
