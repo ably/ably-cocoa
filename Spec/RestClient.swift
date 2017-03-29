@@ -1322,6 +1322,25 @@ class RestClient: QuickSpec {
                 }
             }
 
+            // https://github.com/ably/ably-ios/issues/589
+            it("client should handle error messages in plaintext and HTML format") {
+                let request = NSURLRequest(URL: NSURL(string: "https://www.ably.io")!)
+                waitUntil(timeout: testTimeout) { done in
+                    ARTRest(key: "xxxx:xxxx").executeRequest(request, completion: { response, data, error in
+                        guard let contentType = response?.allHeaderFields["Content-Type"] as? String else {
+                            fail("Response should have a Content-Type"); done(); return
+                        }
+                        expect(contentType).to(contain("text/html"))
+                        guard let error = error as? ARTErrorInfo else {
+                            fail("Error is nil"); done(); return
+                        }
+                        expect(error.statusCode) == 200
+                        expect(error.message.lengthOfBytesUsingEncoding(NSUTF8StringEncoding)) == 1000
+                        done()
+                    })
+                }
+            }
+
         } //RestClient
     }
 }
