@@ -194,8 +194,8 @@
 
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p executing request %@", self, request];
     [self.httpExecutor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
-        // Error messages in plaintext and HTML format (only if the URL request is different than `options.authUrl`)
-        if (![request.URL.host isEqualToString:[self.options.authUrl host]]) {
+        // Error messages in plaintext and HTML format (only if the URL request is different than `options.authUrl` and we don't have an error already)
+        if (error == nil && ![request.URL.host isEqualToString:[self.options.authUrl host]]) {
             NSString *contentType = [response.allHeaderFields objectForKey:@"Content-Type"];
 
             BOOL validContentType = NO;
