@@ -195,8 +195,8 @@
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p executing request %@", self, request];
     [self.httpExecutor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         // Error messages in plaintext and HTML format (only if the URL request is different than `options.authUrl` and we don't have an error already)
-        NSString *contentType = [response.allHeaderFields objectForKey:@"Content-Type"];
-        if (contentType && error == nil && ![request.URL.host isEqualToString:[self.options.authUrl host]]) {
+        if (error == nil && data != nil && ![request.URL.host isEqualToString:[self.options.authUrl host]]) {
+            NSString *contentType = [response.allHeaderFields objectForKey:@"Content-Type"];
 
             BOOL validContentType = NO;
             for (NSString *mimeType in [_encoders.allValues valueForKeyPath:@"mimeType"]) {
@@ -213,31 +213,30 @@
                 stringRange = [plain rangeOfComposedCharacterSequencesForRange:stringRange];
                 NSString *shortPlain = [plain substringWithRange:stringRange];
                 // Construct artificial error
-                ARTErrorInfo *error = [ARTErrorInfo createWithCode:response.statusCode * 100 status:response.statusCode message:shortPlain];
+                error = [ARTErrorInfo createWithCode:response.statusCode * 100 status:response.statusCode message:shortPlain];
+                data = nil; // Discard data; format is unreliable.
                 [self.logger error:@"Request %@ failed with %@", request, error];
-                if (callback) {
-                    callback(response, data, error);
-                }
-                return;
             }
         }
 
         if (response.statusCode >= 400) {
-            NSError *dataError = [self->_encoders[response.MIMEType] decodeError:data];
-            if ([self shouldRenewToken:&dataError]) {
-                [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p retry request %@", self, request];
-                // Make a single attempt to reissue the token and resend the request
-                if (_tokenErrorRetries < 1) {
-                    [self executeRequest:request withAuthOption:ARTAuthenticationTokenRetry completion:callback];
-                    return;
+            if (data) {
+                NSError *dataError = [self->_encoders[response.MIMEType] decodeError:data];
+                if ([self shouldRenewToken:&dataError]) {
+                    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p retry request %@", self, request];
+                    // Make a single attempt to reissue the token and resend the request
+                    if (_tokenErrorRetries < 1) {
+                        [self executeRequest:request withAuthOption:ARTAuthenticationTokenRetry completion:callback];
+                        return;
+                    }
                 }
-                error = dataError;
-            } else {
+                if (dataError) {
+                    error = dataError;
+                }
+            }
+            if (!error) {
                 // Return error with HTTP StatusCode if ARTErrorStatusCode does not exist
-                if (!dataError) {
-                    dataError = [NSError errorWithDomain:ARTAblyErrorDomain code:response.statusCode userInfo:@{NSLocalizedDescriptionKey:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]}];
-                }
-                error = dataError;
+                error = [NSError errorWithDomain:ARTAblyErrorDomain code:response.statusCode userInfo:@{NSLocalizedDescriptionKey:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]}];
             }
         }
         if (retries < _options.httpMaxRetryCount && [self shouldRetryWithFallback:request response:response error:error]) {
