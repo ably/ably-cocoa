@@ -24,7 +24,10 @@ NSInteger getStatusFromCode(NSInteger code) {
 }
 
 + (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message {
-    return [[super alloc] initWithDomain:ARTAblyErrorDomain code:code userInfo:@{@"status": [NSNumber numberWithInteger:status], NSLocalizedDescriptionKey:message}];
+    if (message) {
+        return [[super alloc] initWithDomain:ARTAblyErrorDomain code:code userInfo:@{@"status": [NSNumber numberWithInteger:status], NSLocalizedDescriptionKey:message}];
+    }
+    return [[super alloc] initWithDomain:ARTAblyErrorDomain code:code userInfo:@{@"status": [NSNumber numberWithInteger:status]}];
 }
 
 + (ARTErrorInfo *)createWithNSError:(NSError *)error {

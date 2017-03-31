@@ -14,6 +14,33 @@ import Foundation
 class Utilities: QuickSpec {
     override func spec() {
         describe("Utilities") {
+
+            context("JSON Encoder") {
+                var jsonEncoder: ARTJsonLikeEncoder!
+                beforeEach {
+                    jsonEncoder = ARTJsonLikeEncoder()
+                    jsonEncoder.delegate = ARTJsonEncoder()
+                }
+
+                it("should decode a protocol message that has an error without a message") {
+                    let jsonObject: NSDictionary = [
+                        "action": 9,
+                        "error": [
+                            "code": 40142,
+                            "statusCode": "401",
+                        ]
+                    ]
+                    let data = try! NSJSONSerialization.dataWithJSONObject(jsonObject, options: [])
+                    guard let protocolMessage = jsonEncoder.decodeProtocolMessage(data) else {
+                        fail("Decoder has failed"); return
+                    }
+                    guard let error = protocolMessage.error else {
+                        fail("Error is empty"); return
+                    }
+                    expect(error.message).to(equal(""))
+                }
+            }
+
             context("EventEmitter") {
                 var eventEmitter = ARTEventEmitter()
                 var receivedFoo1: Int?

@@ -481,7 +481,7 @@ enum Result<T> {
     }
 }
 
-func extractURL(request: NSMutableURLRequest?) -> Result<NSURL> {
+func extractURL(request: NSURLRequest?) -> Result<NSURL> {
     guard let request = request
         else { return Result(error: "No request found") }
     
@@ -491,7 +491,7 @@ func extractURL(request: NSMutableURLRequest?) -> Result<NSURL> {
     return Result.Success(Box(url))
 }
 
-func extractBodyAsJSON(request: NSMutableURLRequest?) -> Result<NSDictionary> {
+func extractBodyAsJSON(request: NSURLRequest?) -> Result<NSDictionary> {
     guard let request = request
         else { return Result(error: "No request found") }
     
@@ -507,7 +507,7 @@ func extractBodyAsJSON(request: NSMutableURLRequest?) -> Result<NSDictionary> {
     return Result.Success(Box(httpBody))
 }
 
-func extractBodyAsMsgPack(request: NSMutableURLRequest?) -> Result<NSDictionary> {
+func extractBodyAsMsgPack(request: NSURLRequest?) -> Result<NSDictionary> {
     guard let request = request
         else { return Result(error: "No request found") }
 
@@ -522,7 +522,7 @@ func extractBodyAsMsgPack(request: NSMutableURLRequest?) -> Result<NSDictionary>
     return Result.Success(Box(httpBody))
 }
 
-func extractBodyAsMessages(request: NSMutableURLRequest?) -> Result<[NSDictionary]> {
+func extractBodyAsMessages(request: NSURLRequest?) -> Result<[NSDictionary]> {
     guard let request = request
         else { return Result(error: "No request found") }
 
@@ -553,7 +553,7 @@ class MockHTTP: ARTHttp {
         self.network = network
     }
 
-    override func executeRequest(request: NSMutableURLRequest, completion callback: ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?) {
+    override func executeRequest(request: NSURLRequest, completion callback: ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?) {
         delay(0.0) { // Delay to simulate asynchronicity.
             switch self.network {
             case .NoInternet:
@@ -579,15 +579,15 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
 
     var http: ARTHttp? = ARTHttp()
     var logger: ARTLog?
-    
-    var requests: [NSMutableURLRequest] = []
+
+    var requests: [NSURLRequest] = []
     var responses: [NSHTTPURLResponse] = []
 
-    var beforeRequest: Optional<(NSMutableURLRequest, ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?)->()> = nil
-    var afterRequest: Optional<(NSMutableURLRequest, ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?)->()> = nil
+    var beforeRequest: Optional<(NSURLRequest, ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?)->()> = nil
+    var afterRequest: Optional<(NSURLRequest, ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?)->()> = nil
     var beforeProcessingDataResponse: Optional<(NSData?)->(NSData)> = nil
 
-    func executeRequest(request: NSMutableURLRequest, completion callback: ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?) {
+    func executeRequest(request: NSURLRequest, completion callback: ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?) {
         guard let http = self.http else {
             return
         }

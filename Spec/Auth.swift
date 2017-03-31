@@ -2019,7 +2019,10 @@ class Auth : QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
-                            expect(error?.code).to(equal(400)) //Bad request
+                            guard let error = error as? ARTErrorInfo else {
+                                fail("Error is nil"); done(); return
+                            }
+                            expect(error.statusCode).to(equal(400)) //Bad request
                             expect(tokenDetails).to(beNil())
                             done()
                         }
@@ -2195,10 +2198,10 @@ class Auth : QuickSpec {
                     authOptions.authHeaders = nil
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.authorise(nil, options: authOptions) { tokenDetails, error in
-                            guard let error = error else {
+                            guard let error = error as? ARTErrorInfo else {
                                 fail("Error is nil"); done(); return
                             }
-                            expect(error.code).to(equal(400))
+                            expect(error.statusCode).to(equal(400))
                             expect(tokenDetails).to(beNil())
                             expect(rest.auth.options.authParams).to(beNil())
                             expect(rest.auth.options.authHeaders).to(beNil())
@@ -2209,10 +2212,10 @@ class Auth : QuickSpec {
                     // Repeat
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.authorise(nil, options: nil) { tokenDetails, error in
-                            guard let error = error else {
+                            guard let error = error as? ARTErrorInfo else {
                                 fail("Error is nil"); done(); return
                             }
-                            expect(error.code).to(equal(400))
+                            expect(error.statusCode).to(equal(400))
                             expect(tokenDetails).to(beNil())
                             expect(rest.auth.options.authParams).to(beNil())
                             expect(rest.auth.options.authHeaders).to(beNil())
