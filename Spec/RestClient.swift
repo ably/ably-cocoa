@@ -968,7 +968,7 @@ class RestClient: QuickSpec {
 
                         expect(testHTTPExecutor.requests).to(haveCount(Int(1 + options.httpMaxRetryCount)))
 
-                        let extractHostname = { (request: NSMutableURLRequest) in
+                        let extractHostname = { (request: NSURLRequest) in
                             NSRegularExpression.extract(request.URL!.absoluteString, pattern: "[a-e].ably-realtime.com")
                         }
                         let resultFallbackHosts = testHTTPExecutor.requests.flatMap(extractHostname)
@@ -999,7 +999,7 @@ class RestClient: QuickSpec {
 
                         expect(testHTTPExecutor.requests).to(haveCount(customFallbackHosts.count + 1))
                         
-                        let extractHostname = { (request: NSMutableURLRequest) in
+                        let extractHostname = { (request: NSURLRequest) in
                             NSRegularExpression.extract(request.URL!.absoluteString, pattern: "[f-j].ably-realtime.com")
                         }
                         let resultFallbackHosts = testHTTPExecutor.requests.flatMap(extractHostname)
@@ -1024,7 +1024,7 @@ class RestClient: QuickSpec {
 
                         expect(testHTTPExecutor.requests).to(haveCount(ARTDefault.fallbackHosts().count + 1))
 
-                        let extractHostname = { (request: NSMutableURLRequest) in
+                        let extractHostname = { (request: NSURLRequest) in
                             NSRegularExpression.extract(request.URL!.absoluteString, pattern: "[a-e].ably-realtime.com")
                         }
                         let resultFallbackHosts = testHTTPExecutor.requests.flatMap(extractHostname)
@@ -1060,7 +1060,7 @@ class RestClient: QuickSpec {
                         expect(testHTTPExecutor.requests).to(haveCount(Int(1 + options.httpMaxRetryCount)))
                         expect((testHTTPExecutor.requests.count) < (_fallbackHosts.count + 1)).to(beTrue())
                         
-                        let extractHostname = { (request: NSMutableURLRequest) in
+                        let extractHostname = { (request: NSURLRequest) in
                             NSRegularExpression.extract(request.URL!.absoluteString, pattern: "[f-j].ably-realtime.com")
                         }
                         let resultFallbackHosts = testHTTPExecutor.requests.flatMap(extractHostname)
@@ -1087,7 +1087,7 @@ class RestClient: QuickSpec {
                         
                         expect(testHTTPExecutor.requests).to(haveCount(ARTDefault.fallbackHosts().count + 1))
                         
-                        let extractHostname = { (request: NSMutableURLRequest) in
+                        let extractHostname = { (request: NSURLRequest) in
                             NSRegularExpression.extract(request.URL!.absoluteString, pattern: "[f-j].ably-realtime.com")
                         }
                         let resultFallbackHosts = testHTTPExecutor.requests.flatMap(extractHostname)
@@ -1319,6 +1319,25 @@ class RestClient: QuickSpec {
                             done()
                         }
                     }.resume()
+                }
+            }
+
+            // https://github.com/ably/ably-ios/issues/589
+            it("client should handle error messages in plaintext and HTML format") {
+                let request = NSURLRequest(URL: NSURL(string: "https://www.ably.io")!)
+                waitUntil(timeout: testTimeout) { done in
+                    ARTRest(key: "xxxx:xxxx").executeRequest(request, completion: { response, data, error in
+                        guard let contentType = response?.allHeaderFields["Content-Type"] as? String else {
+                            fail("Response should have a Content-Type"); done(); return
+                        }
+                        expect(contentType).to(contain("text/html"))
+                        guard let error = error as? ARTErrorInfo else {
+                            fail("Error is nil"); done(); return
+                        }
+                        expect(error.statusCode) == 200
+                        expect(error.message.lengthOfBytesUsingEncoding(NSUTF8StringEncoding)) == 1000
+                        done()
+                    })
                 }
             }
 

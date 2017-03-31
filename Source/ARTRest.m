@@ -176,38 +176,67 @@
     }
 }
 
-- (void)executeRequest:(NSMutableURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
+- (void)executeRequest:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
     return [self executeRequest:request completion:callback fallbacks:nil retries:0];
 }
 
-- (void)executeRequest:(NSMutableURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback fallbacks:(ARTFallback *)fallbacks retries:(NSUInteger)retries {
+- (void)executeRequest:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback fallbacks:(ARTFallback *)fallbacks retries:(NSUInteger)retries {
     __block ARTFallback *blockFallbacks = fallbacks;
 
-    NSString *accept = [[_encoders.allValues valueForKeyPath:@"mimeType"] componentsJoinedByString:@","];
-    [request setValue:accept forHTTPHeaderField:@"Accept"];
-    [request setValue:[ARTDefault version] forHTTPHeaderField:@"X-Ably-Version"];
-    [request setValue:[ARTDefault libraryVersion] forHTTPHeaderField:@"X-Ably-Lib"];
-
-    [request setTimeoutInterval:_options.httpRequestTimeout];
+    if ([request isKindOfClass:[NSMutableURLRequest class]]) {
+        NSMutableURLRequest *mutableRequest = (NSMutableURLRequest *)request;
+        NSString *accept = [[_encoders.allValues valueForKeyPath:@"mimeType"] componentsJoinedByString:@","];
+        [mutableRequest setValue:accept forHTTPHeaderField:@"Accept"];
+        [mutableRequest setValue:[ARTDefault version] forHTTPHeaderField:@"X-Ably-Version"];
+        [mutableRequest setValue:[ARTDefault libraryVersion] forHTTPHeaderField:@"X-Ably-Lib"];
+        [mutableRequest setTimeoutInterval:_options.httpRequestTimeout];
+    }
 
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p executing request %@", self, request];
     [self.httpExecutor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        // Error messages in plaintext and HTML format (only if the URL request is different than `options.authUrl` and we don't have an error already)
+        if (error == nil && data != nil && ![request.URL.host isEqualToString:[self.options.authUrl host]]) {
+            NSString *contentType = [response.allHeaderFields objectForKey:@"Content-Type"];
+
+            BOOL validContentType = NO;
+            for (NSString *mimeType in [_encoders.allValues valueForKeyPath:@"mimeType"]) {
+                if ([contentType containsString:mimeType]) {
+                    validContentType = YES;
+                    break;
+                }
+            }
+
+            if (!validContentType) {
+                NSString *plain = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+                // Short response data
+                NSRange stringRange = {0, MIN([plain length], 1000)}; //1KB
+                stringRange = [plain rangeOfComposedCharacterSequencesForRange:stringRange];
+                NSString *shortPlain = [plain substringWithRange:stringRange];
+                // Construct artificial error
+                error = [ARTErrorInfo createWithCode:response.statusCode * 100 status:response.statusCode message:shortPlain];
+                data = nil; // Discard data; format is unreliable.
+                [self.logger error:@"Request %@ failed with %@", request, error];
+            }
+        }
+
         if (response.statusCode >= 400) {
-            NSError *dataError = [self->_encoders[response.MIMEType] decodeError:data];
-            if ([self shouldRenewToken:&dataError]) {
-                [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p retry request %@", self, request];
-                // Make a single attempt to reissue the token and resend the request
-                if (_tokenErrorRetries < 1) {
-                    [self executeRequest:request withAuthOption:ARTAuthenticationTokenRetry completion:callback];
-                    return;
+            if (data) {
+                NSError *dataError = [self->_encoders[response.MIMEType] decodeError:data];
+                if ([self shouldRenewToken:&dataError]) {
+                    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p retry request %@", self, request];
+                    // Make a single attempt to reissue the token and resend the request
+                    if (_tokenErrorRetries < 1) {
+                        [self executeRequest:request withAuthOption:ARTAuthenticationTokenRetry completion:callback];
+                        return;
+                    }
                 }
-                error = dataError;
-            } else {
+                if (dataError) {
+                    error = dataError;
+                }
+            }
+            if (!error) {
                 // Return error with HTTP StatusCode if ARTErrorStatusCode does not exist
-                if (!dataError) {
-                    dataError = [NSError errorWithDomain:ARTAblyErrorDomain code:response.statusCode userInfo:@{NSLocalizedDescriptionKey:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]}];
-                }
-                error = dataError;
+                error = [ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
             }
         }
         if (retries < _options.httpMaxRetryCount && [self shouldRetryWithFallback:request response:response error:error]) {
@@ -245,7 +274,7 @@
     return NO;
 }
 
-- (BOOL)shouldRetryWithFallback:(NSMutableURLRequest *)request response:(NSHTTPURLResponse *)response error:(NSError *)error {
+- (BOOL)shouldRetryWithFallback:(NSURLRequest *)request response:(NSHTTPURLResponse *)response error:(NSError *)error {
     if (response.statusCode >= 500 && response.statusCode <= 504) {
         return YES;
     }
