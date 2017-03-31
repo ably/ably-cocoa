@@ -236,7 +236,7 @@
             }
             if (!error) {
                 // Return error with HTTP StatusCode if ARTErrorStatusCode does not exist
-                error = [NSError errorWithDomain:ARTAblyErrorDomain code:response.statusCode userInfo:@{NSLocalizedDescriptionKey:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]}];
+                error = [ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
             }
         }
         if (retries < _options.httpMaxRetryCount && [self shouldRetryWithFallback:request response:response error:error]) {
