@@ -1,10 +1,10 @@
 # Change Log
 
 ## [1.0.1](https://github.com/ably/ably-ios/tree/1.0.1) (2017-03-31)
-[Full Changelog](https://github.com/ably/ably-ios/compare/0.8.11...1.0.1)
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.0...1.0.1)
 
 ## [0.8.11](https://github.com/ably/ably-ios/tree/0.8.11) (2017-03-31)
-[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.0...0.8.11)
+[Full Changelog](https://github.com/ably/ably-ios/compare/0.8.10...0.8.11)
 
 **Fixed bugs:**
 
