@@ -73,7 +73,7 @@ enum {
 
 - (void)send:(ARTProtocolMessage *)msg {
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket sending action %tu - %@", _delegate, self, msg.action, ARTProtocolMessageActionToStr(msg.action)];
-    NSData *data = [self.encoder encodeProtocolMessage:msg];
+    NSData *data = [self.encoder encodeProtocolMessage:msg error:nil];
     [self sendWithData:data];
 }
 
@@ -88,7 +88,7 @@ enum {
 }
 
 - (void)receiveWithData:(NSData *)data {
-    ARTProtocolMessage *pm = [self.encoder decodeProtocolMessage:data];
+    ARTProtocolMessage *pm = [self.encoder decodeProtocolMessage:data error:nil];
     [self receive:pm];
 }
 

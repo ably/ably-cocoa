@@ -21,8 +21,8 @@ ART_ASSUME_NONNULL_BEGIN
 - (ARTEncoderFormat)format;
 - (NSString *)formatAsString;
 
-- (id)decode:(NSData *)data;
-- (NSData *)encode:(id)obj;
+- (nullable id)decode:(NSData *)data error:(NSError * _Nullable __autoreleasing * _Nullable)error;
+- (nullable NSData *)encode:(id)obj error:(NSError * _Nullable __autoreleasing * _Nullable)error;
 
 @end
 

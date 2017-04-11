@@ -38,23 +38,27 @@ NSInteger getStatusFromCode(NSInteger code) {
     if ([error isKindOfClass:[ARTErrorInfo class]]) {
         return (ARTErrorInfo *)error;
     }
-    return [ARTErrorInfo createWithCode:error.code message:error.description];
+    return [[super alloc] initWithDomain:ARTAblyErrorDomain code:error.code userInfo:error.userInfo];
 }
 
 + (ARTErrorInfo *)wrap:(ARTErrorInfo *)error prepend:(NSString *)prepend {
     return [ARTErrorInfo createWithCode:error.code status:error.statusCode message:[NSString stringWithFormat:@"%@%@", prepend, error.message]];
 }
 
-- (NSString *)getMessage {
+- (NSString *)message {
     return (NSString *)self.userInfo[NSLocalizedDescriptionKey];
 }
 
-- (NSInteger)getStatus {
+- (NSString *)reason {
+    return (NSString *)self.userInfo[NSLocalizedFailureReasonErrorKey];
+}
+
+- (NSInteger)status {
     return [(NSNumber *)self.userInfo[@"status"] integerValue];
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"ARTErrorInfo with code %ld, message: %@", (long)self.code, self.message];
+    return [NSString stringWithFormat:@"ARTErrorInfo with code %ld, message: %@, reason: %@", (long)self.code, self.message, self.reason];
 }
 
 @end

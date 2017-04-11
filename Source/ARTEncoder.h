@@ -43,8 +43,8 @@ ART_ASSUME_NONNULL_BEGIN
 - (art_nullable NSData *)encodePresenceMessage:(ARTPresenceMessage *)message;
 - (art_nullable NSData *)encodePresenceMessages:(NSArray *)messages;
 
-- (art_nullable NSData *)encodeProtocolMessage:(ARTProtocolMessage *)message;
-- (art_nullable ARTProtocolMessage *)decodeProtocolMessage:(NSData *)data;
+- (art_nullable NSData *)encodeProtocolMessage:(ARTProtocolMessage *)message error:(NSError * __autoreleasing *)error;
+- (art_nullable ARTProtocolMessage *)decodeProtocolMessage:(NSData *)data error:(NSError * __autoreleasing *)error;
 
 - (art_nullable NSDate *)decodeTime:(NSData *)data;
 - (art_nullable NSError *)decodeError:(NSData *)error;

@@ -74,7 +74,9 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
 @property (nullable, readwrite, strong, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
 
 - (void)send:(ARTProtocolMessage *)msg;
+- (void)sendWithData:(NSData *)data;
 - (void)receive:(ARTProtocolMessage *)msg;
+- (void)receiveWithData:(NSData *)data;
 - (void)connectWithKey:(NSString *)key;
 - (void)connectWithToken:(NSString *)token;
 - (void)sendClose;
