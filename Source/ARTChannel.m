@@ -89,9 +89,13 @@
     if (!self.dataEncoder) {
         return message;
     }
-    message = [message encodeWithEncoder:self.dataEncoder error:error];
+    NSError *e = nil;
+    message = [message encodeWithEncoder:self.dataEncoder error:&e];
+    if (e) {
+        [self.logger error:@"ARTChannel: error encoding data: %@", e];
+    }
     if (error) {
-        [self.logger error:@"ARTChannel: error encoding data: %@", *error];
+        *error = e;
     }
     return message;
 }

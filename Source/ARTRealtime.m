@@ -810,7 +810,7 @@
 
 - (void)sendImpl:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb {
     if (msg.ackRequired) {
-        msg.msgSerial = [NSNumber numberWithLongLong:self.msgSerial++];
+        msg.msgSerial = [NSNumber numberWithLongLong:self.msgSerial + 1];
     }
 
     NSError *error;
@@ -826,6 +826,7 @@
     }
 
     if (msg.ackRequired) {
+        self.msgSerial++;
         ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg callback:cb];
         [self.pendingMessages addObject:qm];
     }
