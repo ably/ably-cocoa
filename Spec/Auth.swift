@@ -2060,7 +2060,7 @@ class Auth : QuickSpec {
                         // Check if the encoder changes the TTL to milliseconds
                         let encoder = rest.defaultEncoder as! ARTJsonLikeEncoder
                         let data = encoder.encodeTokenRequest(tokenRequest)
-                        let jsonObject = encoder.delegate!.decode(data!) as! NSDictionary
+                        let jsonObject = (try! encoder.delegate!.decode(data!)) as! NSDictionary
                         let ttl = jsonObject["ttl"] as! NSNumber
                         expect(ttl).to(equal(60 * 60 * 1000))
                     })

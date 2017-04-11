@@ -52,7 +52,9 @@ class AblyTests {
     }
 
     class func msgpackToJSON(data: NSData) -> JSON {
-        return JSON(data: ARTJsonEncoder().encode(ARTMsgPackEncoder().decode(data)))
+        let decoded = try! ARTMsgPackEncoder().decode(data)
+        let encoded = try! ARTJsonEncoder().encode(decoded)
+        return JSON(data: encoded)
     }
 
     class func checkError(errorInfo: ARTErrorInfo?, withAlternative message: String) {
@@ -521,7 +523,7 @@ func extractBodyAsMsgPack(request: NSURLRequest?) -> Result<NSDictionary> {
     guard let bodyData = request.HTTPBody
         else { return Result(error: "No HTTPBody") }
 
-    let json = ARTMsgPackEncoder().decode(bodyData)
+    let json = try! ARTMsgPackEncoder().decode(bodyData)
 
     guard let httpBody = json as? NSDictionary
         else { return Result(error: "expected dictionary, got \(json.dynamicType): \(json)") }
@@ -536,7 +538,7 @@ func extractBodyAsMessages(request: NSURLRequest?) -> Result<[NSDictionary]> {
     guard let bodyData = request.HTTPBody
         else { return Result(error: "No HTTPBody") }
 
-    let json = ARTMsgPackEncoder().decode(bodyData)
+    let json = try! ARTMsgPackEncoder().decode(bodyData)
 
     guard let httpBody = json as? NSArray
         else { return Result(error: "expected array, got \(json.dynamicType): \(json)") }
@@ -859,7 +861,8 @@ class TestProxyTransport: ARTWebSocketTransport {
 extension SequenceType where Generator.Element: NSData {
 
     var toMsgPackArray: [AnyObject] {
-        return map({ ARTMsgPackEncoder().decode($0) })
+        let msgPackEncoder = ARTMsgPackEncoder()
+        return map({ try! msgPackEncoder.decode($0) })
     }
     
 }
