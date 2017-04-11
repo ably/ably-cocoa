@@ -39,6 +39,14 @@ class Utilities: QuickSpec {
                     }
                     expect(error.message).to(equal(""))
                 }
+
+                it("should encode a protocol message that has invalid data") {
+                    let pm = ARTProtocolMessage()
+                    pm.action = .Message
+                    pm.channel = "foo"
+                    pm.messages = [ARTMessage(name: "status", data: NSDate(), clientId: "user")]
+                    jsonEncoder.encodeProtocolMessage(pm) //Raises an NSInvalidArgumentException because of NSDate is not accepted.
+                }
             }
 
             context("EventEmitter") {
