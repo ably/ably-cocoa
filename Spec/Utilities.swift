@@ -51,6 +51,17 @@ class Utilities: QuickSpec {
                         expect(e.domain).to(equal(ARTAblyErrorDomain))
                         expect(e.code).to(equal(Int(ARTClientCodeError.InvalidType.rawValue)))
                         expect(e.localizedDescription).to(contain("Invalid type in JSON write"))
+                        })
+                    expect(result).to(beNil())
+                }
+
+                it("should decode data with malformed JSON") {
+                    let malformedJSON = "{...}"
+                    let data = malformedJSON.dataUsingEncoding(NSUTF8StringEncoding)!
+                    var result: AnyObject?
+                    expect{ result = try ARTJsonEncoder().decode(data) }.to(throwError { error in
+                        let e = error as NSError
+                        expect(e.localizedDescription).to(contain("data couldn’t be read"))
                     })
                     expect(result).to(beNil())
                 }
