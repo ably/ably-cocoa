@@ -31,7 +31,7 @@ class Utilities: QuickSpec {
                         ]
                     ]
                     let data = try! NSJSONSerialization.dataWithJSONObject(jsonObject, options: [])
-                    guard let protocolMessage = jsonEncoder.decodeProtocolMessage(data) else {
+                    guard let protocolMessage = try? jsonEncoder.decodeProtocolMessage(data) else {
                         fail("Decoder has failed"); return
                     }
                     guard let error = protocolMessage.error else {
@@ -45,7 +45,66 @@ class Utilities: QuickSpec {
                     pm.action = .Message
                     pm.channel = "foo"
                     pm.messages = [ARTMessage(name: "status", data: NSDate(), clientId: "user")]
-                    jsonEncoder.encodeProtocolMessage(pm) //Raises an NSInvalidArgumentException because of NSDate is not accepted.
+                    var result: NSData?
+                    expect{ result = try jsonEncoder.encodeProtocolMessage(pm) }.to(throwError { error in
+                        let e = error as NSError
+                        expect(e.domain).to(equal(ARTAblyErrorDomain))
+                        expect(e.code).to(equal(Int(ARTClientCodeError.InvalidType.rawValue)))
+                        expect(e.localizedDescription).to(contain("Invalid type in JSON write"))
+                    })
+                    expect(result).to(beNil())
+                }
+
+                it("on Realtime, should handle and emit the invalid data error") {
+                    let options = AblyTests.commonAppSetup()
+                    let realtime = ARTRealtime(options: options)
+                    let channel = realtime.channels.get("foo")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish("test", data: NSDate()) { error in
+                            guard let error = error else {
+                                fail("Error shouldn't be nil"); done(); return
+                            }
+                            expect(error.message).to(contain("encoding failed"))
+                            expect(error.reason).to(contain("must be NSString, NSData, NSArray or NSDictionary"))
+                            done()
+                        }
+                    }
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish([ARTMessage(name: nil, data: NSDate()), ARTMessage(name: nil, data: NSDate())]) { error in
+                            guard let error = error else {
+                                fail("Error shouldn't be nil"); done(); return
+                            }
+                            expect(error.message).to(contain("encoding failed"))
+                            expect(error.reason).to(contain("must be NSString, NSData, NSArray or NSDictionary"))
+                            done()
+                        }
+                    }
+                }
+
+                it("on Rest, should handle and emit the invalid data error") {
+                    let options = AblyTests.commonAppSetup()
+                    let rest = ARTRest(options: options)
+                    let channel = rest.channels.get("foo")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish("test", data: NSDate()) { error in
+                            guard let error = error else {
+                                fail("Error shouldn't be nil"); done(); return
+                            }
+                            expect(error.message).to(contain("encoding failed"))
+                            expect(error.reason).to(contain("must be NSString, NSData, NSArray or NSDictionary"))
+                            done()
+                        }
+                    }
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish([ARTMessage(name: nil, data: NSDate()), ARTMessage(name: nil, data: NSDate())]) { error in
+                            guard let error = error else {
+                                fail("Error shouldn't be nil"); done(); return
+                            }
+                            expect(error.message).to(contain("encoding failed"))
+                            expect(error.reason).to(contain("must be NSString, NSData, NSArray or NSDictionary"))
+                            done()
+                        }
+                    }
                 }
             }
 
