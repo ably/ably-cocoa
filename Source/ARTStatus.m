@@ -57,7 +57,7 @@ NSInteger getStatusFromCode(NSInteger code) {
     return reason;
 }
 
-- (NSInteger)status {
+- (NSInteger)statusCode {
     return [(NSNumber *)self.userInfo[@"status"] integerValue];
 }
 

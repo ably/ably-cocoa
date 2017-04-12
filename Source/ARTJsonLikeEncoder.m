@@ -672,7 +672,7 @@
         return nil;
     }
     NSDictionary *userInfo = @{
-                               NSLocalizedDescriptionKey: @"",
+                               NSLocalizedDescriptionKey: decodedError[@"message"],
                                NSLocalizedFailureReasonErrorKey: decodedError[@"message"],
                                @"ARTErrorStatusCode": decodedError[@"statusCode"]
                                };
