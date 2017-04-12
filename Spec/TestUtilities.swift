@@ -590,9 +590,10 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
         let value: Int
         let description: String
         let serverId = "server-test-suite"
+        var statusCode: Int = 401
 
         mutating func stubResponse(url: NSURL) -> NSHTTPURLResponse? {
-            return NSHTTPURLResponse(URL: url, statusCode: 401, HTTPVersion: "HTTP/1.1", headerFields: [
+            return NSHTTPURLResponse(URL: url, statusCode: statusCode, HTTPVersion: "HTTP/1.1", headerFields: [
                 "Content-Length": String(stubData?.length ?? 0),
                 "Content-Type": "application/json",
                 "X-Ably-Errorcode": String(value),
@@ -657,7 +658,11 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
     }
 
     func simulateIncomingServerErrorOnNextRequest(errorValue: Int, description: String) {
-        errorSimulator = ErrorSimulator(value: errorValue, description: description, stubData: nil)
+        errorSimulator = ErrorSimulator(value: errorValue, description: description, statusCode: 401, stubData: nil)
+    }
+
+    func simulateIncomingPayloadOnNextRequest(data: NSData) {
+        errorSimulator = ErrorSimulator(value: 0, description: "", statusCode: 200, stubData: data)
     }
 
 }
@@ -809,9 +814,9 @@ class TestProxyTransport: ARTWebSocketTransport {
         }
     }
 
-    override func receiveWithData(data: NSData) {
+    override func receiveWithData(data: NSData) -> ARTProtocolMessage? {
         rawDataReceived.append(data)
-        super.receiveWithData(data)
+        return super.receiveWithData(data)
     }
 
     func replaceAcksWithNacks(error: ARTErrorInfo, block: (doneReplacing: () -> Void) -> Void) {

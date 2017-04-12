@@ -75,54 +75,124 @@ class Utilities: QuickSpec {
                     expect(result).to(beNil())
                 }
 
-                it("on Realtime, should handle and emit the invalid data error") {
-                    let options = AblyTests.commonAppSetup()
-                    let realtime = ARTRealtime(options: options)
-                    let channel = realtime.channels.get("foo")
-                    waitUntil(timeout: testTimeout) { done in
-                        channel.publish("test", data: NSDate()) { error in
-                            guard let error = error else {
-                                fail("Error shouldn't be nil"); done(); return
+                context("in Realtime") {
+                    it("should handle and emit the invalid data error") {
+                        let options = AblyTests.commonAppSetup()
+                        let realtime = ARTRealtime(options: options)
+                        let channel = realtime.channels.get("foo")
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish("test", data: NSDate()) { error in
+                                guard let error = error else {
+                                    fail("Error shouldn't be nil"); done(); return
+                                }
+                                expect(error.message).to(contain("encoding failed"))
+                                expect(error.reason).to(contain("must be NSString, NSData, NSArray or NSDictionary"))
+                                done()
                             }
-                            expect(error.message).to(contain("encoding failed"))
-                            expect(error.reason).to(contain("must be NSString, NSData, NSArray or NSDictionary"))
-                            done()
+                        }
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish([ARTMessage(name: nil, data: NSDate()), ARTMessage(name: nil, data: NSDate())]) { error in
+                                guard let error = error else {
+                                    fail("Error shouldn't be nil"); done(); return
+                                }
+                                expect(error.message).to(contain("encoding failed"))
+                                expect(error.reason).to(contain("must be NSString, NSData, NSArray or NSDictionary"))
+                                done()
+                            }
                         }
                     }
-                    waitUntil(timeout: testTimeout) { done in
-                        channel.publish([ARTMessage(name: nil, data: NSDate()), ARTMessage(name: nil, data: NSDate())]) { error in
-                            guard let error = error else {
-                                fail("Error shouldn't be nil"); done(); return
+
+                    it("should ignore invalid transport message") {
+                        let options = AblyTests.commonAppSetup()
+                        let realtime = ARTRealtime(options: options)
+                        let channel = realtime.channels.get("foo")
+
+                        // Garbage values (whatever is on the heap)
+                        let bytes = UnsafeMutablePointer<Int>.alloc(1)
+                        defer { bytes.dealloc(1) }
+                        let data = NSData(bytes: bytes, length: sizeof(Int))
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.attach { error in
+                                expect(error).to(beNil())
+                                realtime.connection.once { _ in
+                                    fail("Should not receive any connection change state")
+                                }
+                                channel.once { _ in
+                                    fail("Should not receive any channel change state")
+                                }
+                                channel.subscribe { _ in
+                                    fail("Should not receive any message")
+                                }
+                                var result: AnyObject?
+                                expect{ result = realtime.transport?.receiveWithData(data) }.toNot(raiseException())
+                                expect(result).to(beNil())
+                                done()
                             }
-                            expect(error.message).to(contain("encoding failed"))
-                            expect(error.reason).to(contain("must be NSString, NSData, NSArray or NSDictionary"))
-                            done()
                         }
+
+                        realtime.connection.off()
+                        channel.off()
+                        channel.unsubscribe()
                     }
                 }
 
-                it("on Rest, should handle and emit the invalid data error") {
-                    let options = AblyTests.commonAppSetup()
-                    let rest = ARTRest(options: options)
-                    let channel = rest.channels.get("foo")
-                    waitUntil(timeout: testTimeout) { done in
-                        channel.publish("test", data: NSDate()) { error in
-                            guard let error = error else {
-                                fail("Error shouldn't be nil"); done(); return
+                context("in Rest") {
+                    it("should handle and emit the invalid data error") {
+                        let options = AblyTests.commonAppSetup()
+                        let rest = ARTRest(options: options)
+                        let channel = rest.channels.get("foo")
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish("test", data: NSDate()) { error in
+                                guard let error = error else {
+                                    fail("Error shouldn't be nil"); done(); return
+                                }
+                                expect(error.message).to(contain("encoding failed"))
+                                expect(error.reason).to(contain("must be NSString, NSData, NSArray or NSDictionary"))
+                                done()
                             }
-                            expect(error.message).to(contain("encoding failed"))
-                            expect(error.reason).to(contain("must be NSString, NSData, NSArray or NSDictionary"))
-                            done()
+                        }
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish([ARTMessage(name: nil, data: NSDate()), ARTMessage(name: nil, data: NSDate())]) { error in
+                                guard let error = error else {
+                                    fail("Error shouldn't be nil"); done(); return
+                                }
+                                expect(error.message).to(contain("encoding failed"))
+                                expect(error.reason).to(contain("must be NSString, NSData, NSArray or NSDictionary"))
+                                done()
+                            }
                         }
                     }
-                    waitUntil(timeout: testTimeout) { done in
-                        channel.publish([ARTMessage(name: nil, data: NSDate()), ARTMessage(name: nil, data: NSDate())]) { error in
-                            guard let error = error else {
-                                fail("Error shouldn't be nil"); done(); return
+
+                    it("should ignore invalid response payload") {
+                        let options = AblyTests.commonAppSetup()
+                        let rest = ARTRest(options: options)
+                        let testHTTPExecutor = TestProxyHTTPExecutor()
+                        rest.httpExecutor = testHTTPExecutor
+                        let channel = rest.channels.get("foo")
+
+                        // Garbage values (whatever is on the heap)
+                        let bytes = UnsafeMutablePointer<Int>.alloc(1)
+                        defer { bytes.dealloc(1) }
+                        let data = NSData(bytes: bytes, length: sizeof(Int))
+
+                        testHTTPExecutor.simulateIncomingPayloadOnNextRequest(data)
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: nil) { error in
+                                expect(error).to(beNil()) //ignored
+                                done()
                             }
-                            expect(error.message).to(contain("encoding failed"))
-                            expect(error.reason).to(contain("must be NSString, NSData, NSArray or NSDictionary"))
-                            done()
+                        }
+
+                        testHTTPExecutor.simulateIncomingPayloadOnNextRequest(data)
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.history { result, error in
+                                guard let error = error else {
+                                    fail("Error is nil"); done(); return
+                                }
+                                expect(error.reason).to(contain("JSON text did not start with array or object and option to allow fragments not set"))
+                                done()
+                            }
                         }
                     }
                 }
