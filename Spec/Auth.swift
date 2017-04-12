@@ -1220,7 +1220,7 @@ class Auth : QuickSpec {
 
                     let encoder = ARTJsonLikeEncoder()
                     encoder.delegate = ARTJsonEncoder()
-                    guard let jsonTokenDetails = encoder.encodeTokenDetails(testTokenDetails) else {
+                    guard let jsonTokenDetails = try? encoder.encodeTokenDetails(testTokenDetails) else {
                         fail("Invalid TokenDetails")
                         return
                     }
@@ -1283,7 +1283,7 @@ class Auth : QuickSpec {
 
                     let encoder = ARTJsonLikeEncoder()
                     encoder.delegate = ARTJsonEncoder()
-                    guard let jsonTokenRequest = encoder.encodeTokenRequest(testTokenRequest) else {
+                    guard let jsonTokenRequest = try? encoder.encodeTokenRequest(testTokenRequest) else {
                         fail("Invalid TokenRequest")
                         return
                     }
@@ -2059,8 +2059,8 @@ class Auth : QuickSpec {
                         expect(tokenRequest.ttl).to(equal(ARTDefault.ttl()))
                         // Check if the encoder changes the TTL to milliseconds
                         let encoder = rest.defaultEncoder as! ARTJsonLikeEncoder
-                        let data = encoder.encodeTokenRequest(tokenRequest)
-                        let jsonObject = (try! encoder.delegate!.decode(data!)) as! NSDictionary
+                        let data = try! encoder.encodeTokenRequest(tokenRequest)
+                        let jsonObject = (try! encoder.delegate!.decode(data)) as! NSDictionary
                         let ttl = jsonObject["ttl"] as! NSNumber
                         expect(ttl).to(equal(60 * 60 * 1000))
                     })
@@ -2653,7 +2653,7 @@ class Auth : QuickSpec {
 
                     let encoder = ARTJsonLikeEncoder()
                     encoder.delegate = ARTJsonEncoder()
-                    guard let tokenDetailsJSON = NSString(data: encoder.encodeTokenDetails(tokenDetails) ?? NSData(), encoding: NSUTF8StringEncoding) else {
+                    guard let tokenDetailsJSON = NSString(data: try! encoder.encodeTokenDetails(tokenDetails), encoding: NSUTF8StringEncoding) else {
                         XCTFail("JSON TokenDetails is empty")
                         return
                     }
@@ -2782,7 +2782,7 @@ class Auth : QuickSpec {
                     let testTokenDetails = getTestTokenDetails(ttl: 0.1)
                     let encoder = ARTJsonLikeEncoder()
                     encoder.delegate = ARTJsonEncoder()
-                    guard let currentTokenDetails = testTokenDetails, jsonTokenDetails = encoder.encodeTokenDetails(currentTokenDetails) else {
+                    guard let currentTokenDetails = testTokenDetails, jsonTokenDetails = try? encoder.encodeTokenDetails(currentTokenDetails) else {
                         fail("Invalid TokenDetails")
                         return
                     }
