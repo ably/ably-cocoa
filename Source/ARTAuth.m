@@ -320,8 +320,13 @@
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
     request.HTTPMethod = @"POST";
-    
-    request.HTTPBody = [encoder encodeTokenRequest:tokenRequest];
+
+    NSError *encodeError = nil;
+    request.HTTPBody = [encoder encodeTokenRequest:tokenRequest error:&encodeError];
+    if (encodeError) {
+        callback(nil, encodeError);
+        return;
+    }
     [request setValue:[encoder mimeType] forHTTPHeaderField:@"Accept"];
     [request setValue:[encoder mimeType] forHTTPHeaderField:@"Content-Type"];
     

@@ -79,9 +79,9 @@
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:componentsUrl.URL];
 
-    ARTPaginatedResultResponseProcessor responseProcessor = ^NSArray *(NSHTTPURLResponse *response, NSData *data) {
+    ARTPaginatedResultResponseProcessor responseProcessor = ^NSArray<ARTMessage *> *(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
         id<ARTEncoder> encoder = [_rest.encoders objectForKey:response.MIMEType];
-        return [[encoder decodeMessages:data] artMap:^(ARTMessage *message) {
+        return [[encoder decodeMessages:data error:errorPtr] artMap:^(ARTMessage *message) {
             NSError *error;
             message = [message decodeWithEncoder:self.dataEncoder error:&error];
             if (error != nil) {
@@ -109,7 +109,12 @@
         else {
             message.clientId = self.rest.auth.clientId;
         }
-        encodedMessage = [self.rest.defaultEncoder encodeMessage:message];
+        NSError *encodeError = nil;
+        encodedMessage = [self.rest.defaultEncoder encodeMessage:message error:&encodeError];
+        if (encodeError) {
+            callback([ARTErrorInfo createFromNSError:encodeError]);
+            return;
+        }
     } else if ([data isKindOfClass:[NSArray class]]) {
         __GENERIC(NSArray, ARTMessage *) *messages = (NSArray *)data;
         for (ARTMessage *message in messages) {
@@ -118,7 +123,12 @@
                 return;
             }
         }
-        encodedMessage = [self.rest.defaultEncoder encodeMessages:data];
+        NSError *encodeError = nil;
+        encodedMessage = [self.rest.defaultEncoder encodeMessages:data error:&encodeError];
+        if (encodeError) {
+            callback([ARTErrorInfo createFromNSError:encodeError]);
+            return;
+        }
     }
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:[_basePath stringByAppendingPathComponent:@"messages"]]];

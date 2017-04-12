@@ -50,7 +50,11 @@ NSInteger getStatusFromCode(NSInteger code) {
 }
 
 - (NSString *)reason {
-    return (NSString *)self.userInfo[NSLocalizedFailureReasonErrorKey];
+    NSString *reason = (NSString *)self.userInfo[NSLocalizedFailureReasonErrorKey];
+    if (!reason) {
+        reason = (NSString *)self.userInfo[@"NSDebugDescription"];
+    }
+    return reason;
 }
 
 - (NSInteger)status {

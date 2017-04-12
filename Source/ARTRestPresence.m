@@ -91,9 +91,9 @@
     requestUrl.queryItems = [query asQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl.URL];
 
-    ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data) {
+    ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
         id<ARTEncoder> encoder = [_channel.rest.encoders objectForKey:response.MIMEType];
-        return [[encoder decodePresenceMessages:data] artMap:^(ARTPresenceMessage *message) {
+        return [[encoder decodePresenceMessages:data error:errorPtr] artMap:^(ARTPresenceMessage *message) {
             // FIXME: This should be refactored to be done by ART{Json,...}Encoder.
             // The ART{Json,...}Encoder should take a ARTDataEncoder and use it every
             // time it is enc/decoding a message. This also applies for REST and Realtime
@@ -133,9 +133,9 @@
     requestUrl.queryItems = [query asQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl.URL];
 
-    ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data) {
+    ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
         id<ARTEncoder> encoder = [_channel.rest.encoders objectForKey:response.MIMEType];
-        return [[encoder decodePresenceMessages:data] artMap:^(ARTPresenceMessage *message) {
+        return [[encoder decodePresenceMessages:data error:errorPtr] artMap:^(ARTPresenceMessage *message) {
             NSError *error;
             message = [message decodeWithEncoder:_channel.dataEncoder error:&error];
             if (error != nil) {

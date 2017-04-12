@@ -14,7 +14,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface __GENERIC(ARTPaginatedResult, ItemType) ()
 
-typedef __GENERIC(NSArray, ItemType) *__art_nullable(^ARTPaginatedResultResponseProcessor)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable);
+typedef __GENERIC(NSArray, ItemType) *__art_nullable(^ARTPaginatedResultResponseProcessor)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable *_Nullable);
 
 + (void)executePaginated:(ARTRest *)rest withRequest:(NSMutableURLRequest *)request
               andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor

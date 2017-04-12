@@ -87,9 +87,10 @@ enum {
     [self.delegate realtimeTransport:self didReceiveMessage:msg];
 }
 
-- (void)receiveWithData:(NSData *)data {
+- (ARTProtocolMessage *)receiveWithData:(NSData *)data {
     ARTProtocolMessage *pm = [self.encoder decodeProtocolMessage:data error:nil];
     [self receive:pm];
+    return pm;
 }
 
 - (void)connectWithKey:(NSString *)key {

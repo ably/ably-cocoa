@@ -76,7 +76,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
 - (void)send:(ARTProtocolMessage *)msg;
 - (void)sendWithData:(NSData *)data;
 - (void)receive:(ARTProtocolMessage *)msg;
-- (void)receiveWithData:(NSData *)data;
+- (nullable ARTProtocolMessage *)receiveWithData:(NSData *)data;
 - (void)connectWithKey:(NSString *)key;
 - (void)connectWithToken:(NSString *)token;
 - (void)sendClose;

@@ -1015,6 +1015,11 @@
 #pragma mark - ARTRealtimeTransportDelegate implementation
 
 - (void)realtimeTransport:(id)transport didReceiveMessage:(ARTProtocolMessage *)message {
+    if (!message) {
+        // Invalid data
+        return;
+    }
+
     if (transport != self.transport) {
         // Old connection
         return;
