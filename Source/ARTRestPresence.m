@@ -139,7 +139,7 @@
             NSError *error;
             message = [message decodeWithEncoder:_channel.dataEncoder error:&error];
             if (error != nil) {
-                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:(ARTErrorInfo *)error.userInfo[NSLocalizedFailureReasonErrorKey] prepend:@"Failed to decode data: "];
+                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createFromNSError:error] prepend:@"Failed to decode data: "];
                 [_channel.logger error:@"RS:%p %@", _channel.rest, errorInfo.message];
             }
             return message;
