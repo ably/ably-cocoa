@@ -47,6 +47,7 @@
 - (NSDictionary *)tokenRequestToDictionary:(ARTTokenRequest *)tokenRequest;
 
 - (NSDictionary *)authDetailsToDictionary:(ARTAuthDetails *)authDetails;
+- (ARTAuthDetails *)authDetailsFromDictionary:(NSDictionary *)input;
 
 - (NSArray *)statsFromArray:(NSArray *)input;
 - (ARTStats *)statsFromDictionary:(NSDictionary *)input;
@@ -303,6 +304,13 @@
     return output;
 }
 
+- (ARTAuthDetails *)authDetailsFromDictionary:(NSDictionary *)input {
+    if (!input) {
+        return nil;
+    }
+    return [[ARTAuthDetails alloc] initWithToken:[input artString:@"accessToken"]];
+}
+
 - (NSArray *)messagesToArray:(NSArray *)messages {
     NSMutableArray *output = [NSMutableArray array];
     
@@ -524,6 +532,7 @@
     message.connectionKey = [input artString:@"connectionKey"];
     message.flags = [[input artNumber:@"flags"] longLongValue];
     message.connectionDetails = [self connectionDetailsFromDictionary:[input valueForKey:@"connectionDetails"]];
+    message.auth = [self authDetailsFromDictionary:[input valueForKey:@"auth"]];
 
     NSDictionary *error = [input valueForKey:@"error"];
     if (error) {
