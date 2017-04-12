@@ -810,7 +810,7 @@
 
 - (void)sendImpl:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb {
     if (msg.ackRequired) {
-        msg.msgSerial = [NSNumber numberWithLongLong:self.msgSerial + 1];
+        msg.msgSerial = [NSNumber numberWithLongLong:self.msgSerial];
     }
 
     NSError *error;
