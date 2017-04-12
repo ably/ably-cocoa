@@ -790,6 +790,16 @@ class TestProxyTransport: ARTWebSocketTransport {
     }
 
     override func sendWithData(data: NSData) {
+        if let msg = try? encoder.decodeProtocolMessage(data) {
+            if ignoreSends {
+                protocolMessagesSentIgnored.append(msg)
+                return
+            }
+            protocolMessagesSent.append(msg)
+            if let performEvent = beforeProcessingSentMessage {
+                performEvent(msg)
+            }
+        }
         rawDataSent.append(data)
         super.sendWithData(data)
     }
