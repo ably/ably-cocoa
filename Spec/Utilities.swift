@@ -66,6 +66,15 @@ class Utilities: QuickSpec {
                     expect(result).to(beNil())
                 }
 
+                it("should decode data with malformed MsgPack") {
+                    let data = NSData()
+                    var result: AnyObject?
+                    expect{ result = try ARTMsgPackEncoder().decode(data) }.to(throwError { error in
+                        expect(error).toNot(beNil())
+                    })
+                    expect(result).to(beNil())
+                }
+
                 it("on Realtime, should handle and emit the invalid data error") {
                     let options = AblyTests.commonAppSetup()
                     let realtime = ARTRealtime(options: options)
