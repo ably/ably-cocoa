@@ -109,7 +109,13 @@ static NSMutableURLRequest *requestRelativeTo(NSMutableURLRequest *request, NSSt
             [rest.logger debug:__FILE__ line:__LINE__ message:@"Paginated response: %@", response];
             [rest.logger debug:__FILE__ line:__LINE__ message:@"Paginated response data: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
 
-            NSArray *items = responseProcessor(response, data);
+            NSError *decodeError = nil;
+            NSArray *items = responseProcessor(response, data, &decodeError);
+
+            if (decodeError) {
+                callback(nil, [ARTErrorInfo createWithNSError:decodeError]);
+                return;
+            }
 
             NSDictionary *links = extractLinks(response);
 

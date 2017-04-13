@@ -28,27 +28,27 @@ ART_ASSUME_NONNULL_BEGIN
 - (ARTEncoderFormat)format;
 - (NSString *)formatAsString;
 
-- (art_nullable NSData *)encodeTokenRequest:(ARTTokenRequest *)request;
-- (art_nullable NSData *)encodeTokenDetails:(ARTTokenDetails *)tokenDetails;
+- (nullable NSData *)encodeTokenRequest:(ARTTokenRequest *)request error:(NSError *_Nullable *_Nullable)error;
+- (nullable NSData *)encodeTokenDetails:(ARTTokenDetails *)tokenDetails error:(NSError *_Nullable *_Nullable)error;
 
-- (art_nullable ARTTokenDetails *)decodeTokenDetails:(NSData *)data error:(NSError * __autoreleasing *)error;
-- (art_nullable ARTTokenRequest *)decodeTokenRequest:(NSData *)data error:(NSError * __autoreleasing *)error;
-- (art_nullable ARTMessage *)decodeMessage:(NSData *)data;
-- (art_nullable NSArray *)decodeMessages:(NSData *)data;
-- (art_nullable NSData *)encodeMessage:(ARTMessage *)message;
-- (art_nullable NSData *)encodeMessages:(NSArray *)messages;
+- (nullable ARTTokenDetails *)decodeTokenDetails:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+- (nullable ARTTokenRequest *)decodeTokenRequest:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+- (nullable ARTMessage *)decodeMessage:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+- (nullable NSArray *)decodeMessages:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+- (nullable NSData *)encodeMessage:(ARTMessage *)message error:(NSError *_Nullable *_Nullable)error;
+- (nullable NSData *)encodeMessages:(NSArray *)messages error:(NSError *_Nullable *_Nullable)error;
 
-- (art_nullable ARTPresenceMessage *)decodePresenceMessage:(NSData *)data;
-- (art_nullable NSArray *)decodePresenceMessages:(NSData *)data;
-- (art_nullable NSData *)encodePresenceMessage:(ARTPresenceMessage *)message;
-- (art_nullable NSData *)encodePresenceMessages:(NSArray *)messages;
+- (nullable ARTPresenceMessage *)decodePresenceMessage:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+- (nullable NSArray *)decodePresenceMessages:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+- (nullable NSData *)encodePresenceMessage:(ARTPresenceMessage *)message error:(NSError *_Nullable *_Nullable)error;
+- (nullable NSData *)encodePresenceMessages:(NSArray *)messages error:(NSError *_Nullable *_Nullable)error;
 
-- (art_nullable NSData *)encodeProtocolMessage:(ARTProtocolMessage *)message;
-- (art_nullable ARTProtocolMessage *)decodeProtocolMessage:(NSData *)data;
+- (nullable NSData *)encodeProtocolMessage:(ARTProtocolMessage *)message error:(NSError *_Nullable *_Nullable)error;
+- (nullable ARTProtocolMessage *)decodeProtocolMessage:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
 
-- (art_nullable NSDate *)decodeTime:(NSData *)data;
-- (art_nullable NSError *)decodeError:(NSData *)error;
-- (art_nullable NSArray *)decodeStats:(NSData *)data;
+- (nullable NSDate *)decodeTime:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+- (nullable NSError *)decodeError:(NSData *)error error:(NSError *_Nullable *_Nullable)error;
+- (nullable NSArray *)decodeStats:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
 
 @end
 

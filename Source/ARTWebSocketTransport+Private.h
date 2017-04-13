@@ -28,9 +28,6 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readwrite, strong, nonatomic, art_nullable) SRWebSocket *websocket;
 @property (readwrite, strong, nonatomic, art_nullable) NSURL *websocketURL;
 
-- (void)sendWithData:(NSData *)data;
-- (void)receiveWithData:(NSData *)data;
-
 @end
 
 ART_ASSUME_NONNULL_END

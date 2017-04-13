@@ -969,7 +969,7 @@ class RealtimeClientChannel: QuickSpec {
                     let restChannel = rest.channels.get("test")
 
                     var restEncodedMessage: ARTMessage?
-                    restChannel.testSuite_getReturnValueFrom(#selector(ARTChannel.encodeMessageIfNeeded(_:))) { value in
+                    restChannel.testSuite_getReturnValueFrom(NSSelectorFromString("encodeMessageIfNeeded:error:")) { value in
                         restEncodedMessage = value as? ARTMessage
                     }
 
@@ -987,7 +987,7 @@ class RealtimeClientChannel: QuickSpec {
                     expect(realtimeChannel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
 
                     var realtimeEncodedMessage: ARTMessage?
-                    realtimeChannel.testSuite_getReturnValueFrom(#selector(ARTChannel.encodeMessageIfNeeded(_:))) { value in
+                    realtimeChannel.testSuite_getReturnValueFrom(NSSelectorFromString("encodeMessageIfNeeded:error:")) { value in
                         realtimeEncodedMessage = value as? ARTMessage
                     }
 

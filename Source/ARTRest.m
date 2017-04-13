@@ -170,7 +170,8 @@
 
         if (response.statusCode >= 400) {
             if (data) {
-                NSError *dataError = [self->_encoders[response.MIMEType] decodeError:data];
+                NSError *decodeError;
+                NSError *dataError = [self->_encoders[response.MIMEType] decodeError:data error:&decodeError];
                 if (dataError.code >= 40140 && dataError.code < 40150) {
                     // Send it again, requesting a new token (forward callback)
                     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p requesting new token", self];
@@ -179,6 +180,9 @@
                 }
                 if (dataError) {
                     error = dataError;
+                }
+                else if (decodeError) {
+                    error = decodeError;
                 }
             }
             if (!error) {
@@ -259,10 +263,13 @@
     [request setValue:accept forHTTPHeaderField:@"Accept"];
     
     [self executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        NSError *decodeError = nil;
         if (response.statusCode >= 400) {
-            callback(nil, [self->_encoders[response.MIMEType] decodeError:data]);
+            NSError *dataError = [self->_encoders[response.MIMEType] decodeError:data error:&decodeError];
+            callback(nil, dataError ? dataError : decodeError);
         } else {
-            callback([self->_encoders[response.MIMEType] decodeTime:data], nil);
+            NSDate *time = [self->_encoders[response.MIMEType] decodeTime:data error:&decodeError];
+            callback(time, decodeError);
         }
     }];
 }
@@ -309,9 +316,9 @@
     requestUrl.queryItems = [query asQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[requestUrl URLRelativeToURL:self.baseUrl]];
     
-    ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data) {
+    ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
         id<ARTEncoder> encoder = [self.encoders objectForKey:response.MIMEType];
-        return [encoder decodeStats:data];
+        return [encoder decodeStats:data error:errorPtr];
     };
     
     [ARTPaginatedResult executePaginated:self withRequest:request andResponseProcessor:responseProcessor callback:callback];

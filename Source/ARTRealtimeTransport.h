@@ -66,8 +66,9 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportErrorType) {
 @property (readonly, strong, nonatomic) NSNumber *connectionSerial;
 
 @property (readwrite, weak, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
-- (void)send:(ARTProtocolMessage *)msg;
+- (void)send:(NSData *)data withSource:(nullable id)decodedObject;
 - (void)receive:(ARTProtocolMessage *)msg;
+- (nullable ARTProtocolMessage *)receiveWithData:(NSData *)data;
 - (void)connect;
 - (void)connectForcingNewToken:(BOOL)forceNewToken;
 - (void)sendClose;

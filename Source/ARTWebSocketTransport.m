@@ -68,23 +68,26 @@ enum {
     self.websocket = nil;
 }
 
-- (void)send:(ARTProtocolMessage *)msg {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p sending action %lu with %@", _delegate, self, (unsigned long)msg.action, msg.messages];
-    NSData *data = [self.encoder encodeProtocolMessage:msg];
-    [self sendWithData:data];
+- (void)send:(NSData *)data withSource:(id)decodedObject {
+    if (self.websocket.readyState == SR_OPEN) {
+        [self.websocket send:data];
+    }
 }
 
-- (void)sendWithData:(NSData *)data {
-    [self.websocket send:data];
+- (void)internalSend:(ARTProtocolMessage *)msg {
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket sending action %tu", _delegate, self, msg.action];
+    NSData *data = [self.encoder encodeProtocolMessage:msg error:nil];
+    [self send:data withSource:msg];
 }
 
 - (void)receive:(ARTProtocolMessage *)msg {
     [self.delegate realtimeTransport:self didReceiveMessage:msg];
 }
 
-- (void)receiveWithData:(NSData *)data {
-    ARTProtocolMessage *pm = [self.encoder decodeProtocolMessage:data];
+- (ARTProtocolMessage *)receiveWithData:(NSData *)data {
+    ARTProtocolMessage *pm = [self.encoder decodeProtocolMessage:data error:nil];
     [self receive:pm];
+    return pm;
 }
 
 - (void)connect {
@@ -201,13 +204,13 @@ enum {
     self.closing = YES;
     ARTProtocolMessage *closeMessage = [[ARTProtocolMessage alloc] init];
     closeMessage.action = ARTProtocolMessageClose;
-    [self send:closeMessage];
+    [self internalSend:closeMessage];
 }
 
 - (void)sendPing {
-    ARTProtocolMessage *closeMessage = [[ARTProtocolMessage alloc] init];
-    closeMessage.action = ARTProtocolMessageHeartbeat;
-    [self send:closeMessage];
+    ARTProtocolMessage *heartbeatMessage = [[ARTProtocolMessage alloc] init];
+    heartbeatMessage.action = ARTProtocolMessageHeartbeat;
+    [self internalSend:heartbeatMessage];
 }
 
 - (void)close {

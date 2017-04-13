@@ -461,7 +461,7 @@
             NSError *error = nil;
             msg = [msg decodeWithEncoder:dataEncoder error:&error];
             if (error != nil) {
-                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:(ARTErrorInfo *)error.userInfo[NSLocalizedFailureReasonErrorKey] prepend:@"Failed to decode data: "];
+                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithNSError:error] prepend:@"Failed to decode data: "];
                 [self.logger error:@"R:%p C:%p %@", _realtime, self, errorInfo.message];
                 _errorReason = errorInfo;
                 [self emit:ARTChannelEventError with:errorInfo];
@@ -490,7 +490,7 @@
             NSError *error = nil;
             presence = [p decodeWithEncoder:dataEncoder error:&error];
             if (error != nil) {
-                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:(ARTErrorInfo *)error.userInfo[NSLocalizedFailureReasonErrorKey] prepend:@"Failed to decode data: "];
+                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithNSError:error] prepend:@"Failed to decode data: "];
                 [self.logger error:@"R:%p C:%p %@", _realtime, self, errorInfo.message];
             }
         }
