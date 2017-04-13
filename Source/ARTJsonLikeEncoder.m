@@ -371,6 +371,10 @@
         output[@"channel"] = message.channel;
     }
 
+    if (message.channelSerial) {
+        output[@"channelSerial"] = message.channelSerial;
+    }
+
     if (message.msgSerial) {
         output[@"msgSerial"] = message.msgSerial;
     }
