@@ -336,7 +336,10 @@ class RealtimeClientPresence: QuickSpec {
                         let syncMessage = ARTProtocolMessage()
                         syncMessage.action = .Sync
                         syncMessage.channel = channel.name
-                        client.transport?.send(syncMessage)
+                        guard let transport = client.transport as? TestProxyTransport else {
+                            fail("TestProxyTransport is not set"); done(); return
+                        }
+                        transport.send(syncMessage)
                     }
 
                     waitUntil(timeout: testTimeout) { done in

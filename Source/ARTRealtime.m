@@ -833,7 +833,7 @@
 
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p ARTRealtime sending action %tu - %@", self, msg.action, ARTProtocolMessageActionToStr(msg.action)];
     // Callback is called with ACK/NACK action
-    [self.transport sendWithData:data];
+    [self.transport send:data withSource:msg];
 }
 
 - (void)send:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb {
