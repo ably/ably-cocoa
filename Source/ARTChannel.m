@@ -47,7 +47,7 @@
 - (void)publish:(art_nullable NSString *)name data:(art_nullable id)data callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
     NSError *error;
     ARTMessage *messagesWithDataEncoded = [self encodeMessageIfNeeded:[[ARTMessage alloc] initWithName:name data:data] error:&error];
-    if (error) {
+    if (callback && error) {
         callback([ARTErrorInfo createFromNSError:error]);
         return;
     }
