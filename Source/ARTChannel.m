@@ -47,8 +47,8 @@
 - (void)publish:(art_nullable NSString *)name data:(art_nullable id)data callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
     NSError *error;
     ARTMessage *messagesWithDataEncoded = [self encodeMessageIfNeeded:[[ARTMessage alloc] initWithName:name data:data] error:&error];
-    if (callback && error) {
-        callback([ARTErrorInfo createFromNSError:error]);
+    if (error) {
+        if (callback) callback([ARTErrorInfo createFromNSError:error]);
         return;
     }
     [self internalPostMessages:messagesWithDataEncoded callback:callback];
@@ -62,7 +62,7 @@
     NSError *error;
     ARTMessage *messagesWithDataEncoded = [self encodeMessageIfNeeded:[[ARTMessage alloc] initWithName:name data:data clientId:clientId] error:&error];
     if (error) {
-        callback([ARTErrorInfo createFromNSError:error]);
+        if (callback) callback([ARTErrorInfo createFromNSError:error]);
         return;
     }
     [self internalPostMessages:messagesWithDataEncoded callback:callback];
