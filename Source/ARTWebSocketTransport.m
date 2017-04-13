@@ -71,25 +71,26 @@ enum {
     self.delegate = nil;
 }
 
-- (void)send:(ARTProtocolMessage *)msg {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket sending action %tu - %@", _delegate, self, msg.action, ARTProtocolMessageActionToStr(msg.action)];
-    NSData *data = [self.encoder encodeProtocolMessage:msg];
-    [self sendWithData:data];
-}
-
-- (void)sendWithData:(NSData *)data {
+- (void)send:(NSData *)data withSource:(id)decodedObject {
     if (self.websocket.readyState == SR_OPEN) {
         [self.websocket send:data];
     }
+}
+
+- (void)internalSend:(ARTProtocolMessage *)msg {
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket sending action %tu - %@", _delegate, self, msg.action, ARTProtocolMessageActionToStr(msg.action)];
+    NSData *data = [self.encoder encodeProtocolMessage:msg error:nil];
+    [self send:data withSource:msg];
 }
 
 - (void)receive:(ARTProtocolMessage *)msg {
     [self.delegate realtimeTransport:self didReceiveMessage:msg];
 }
 
-- (void)receiveWithData:(NSData *)data {
-    ARTProtocolMessage *pm = [self.encoder decodeProtocolMessage:data];
+- (ARTProtocolMessage *)receiveWithData:(NSData *)data {
+    ARTProtocolMessage *pm = [self.encoder decodeProtocolMessage:data error:nil];
     [self receive:pm];
+    return pm;
 }
 
 - (void)connectWithKey:(NSString *)key {
@@ -179,13 +180,13 @@ enum {
     _state = ARTRealtimeTransportStateClosing;
     ARTProtocolMessage *closeMessage = [[ARTProtocolMessage alloc] init];
     closeMessage.action = ARTProtocolMessageClose;
-    [self send:closeMessage];
+    [self internalSend:closeMessage];
 }
 
 - (void)sendPing {
     ARTProtocolMessage *heartbeatMessage = [[ARTProtocolMessage alloc] init];
     heartbeatMessage.action = ARTProtocolMessageHeartbeat;
-    [self send:heartbeatMessage];
+    [self internalSend:heartbeatMessage];
 }
 
 - (void)close {

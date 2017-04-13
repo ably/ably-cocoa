@@ -34,6 +34,7 @@
 #import "ARTFallback.h"
 #import "ARTAuthDetails.h"
 #import "ARTGCD.h"
+#import "ARTEncoder.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -809,13 +810,30 @@
 
 - (void)sendImpl:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb {
     if (msg.ackRequired) {
-        msg.msgSerial = [NSNumber numberWithLongLong:self.msgSerial++];
+        msg.msgSerial = [NSNumber numberWithLongLong:self.msgSerial];
+    }
+
+    NSError *error;
+    NSData *data = [self.rest.defaultEncoder encodeProtocolMessage:msg error:&error];
+
+    if (error) {
+        cb([ARTStatus state:ARTStateError info:[ARTErrorInfo createFromNSError:error]]);
+        return;
+    }
+    else if (!data) {
+        cb([ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:ARTClientCodeErrorInvalidType message:@"Encoder as failed without error."]]);
+        return;
+    }
+
+    if (msg.ackRequired) {
+        self.msgSerial++;
         ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg callback:cb];
         [self.pendingMessages addObject:qm];
     }
 
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p ARTRealtime sending action %tu - %@", self, msg.action, ARTProtocolMessageActionToStr(msg.action)];
     // Callback is called with ACK/NACK action
-    [self.transport send:msg];
+    [self.transport send:data withSource:msg];
 }
 
 - (void)send:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb {
@@ -997,6 +1015,11 @@
 #pragma mark - ARTRealtimeTransportDelegate implementation
 
 - (void)realtimeTransport:(id)transport didReceiveMessage:(ARTProtocolMessage *)message {
+    if (!message) {
+        // Invalid data
+        return;
+    }
+
     if (transport != self.transport) {
         // Old connection
         return;

@@ -42,6 +42,13 @@ typedef CF_ENUM(NSUInteger, ARTCodeError) {
     ARTCodeErrorAuthConfiguredProviderFailure = 80019,
 };
 
+/**
+ The list of all client error codes returned under the error domain ARTAblyErrorDomain
+ */
+typedef CF_ENUM(NSUInteger, ARTClientCodeError) {
+    ARTClientCodeErrorInvalidType,
+};
+
 ART_ASSUME_NONNULL_BEGIN
 
 FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
@@ -61,8 +68,9 @@ FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
  */
 @interface ARTErrorInfo : NSError
 
-@property (readonly, getter=getMessage) NSString *message;
-@property (readonly, getter=getStatus) NSInteger statusCode;
+@property (readonly) NSString *message;
+@property (readonly) NSString *reason;
+@property (readonly) NSInteger statusCode;
 
 + (ARTErrorInfo *)createWithCode:(NSInteger)code message:(NSString *)message;
 + (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message;
