@@ -42,16 +42,20 @@ NSInteger getStatusFromCode(NSInteger code) {
 }
 
 + (ARTErrorInfo *)wrap:(ARTErrorInfo *)error prepend:(NSString *)prepend {
-    return [ARTErrorInfo createWithCode:error.code status:error.statusCode message:[NSString stringWithFormat:@"%@%@", prepend, error.message]];
+    return [ARTErrorInfo createWithCode:error.code status:error.statusCode message:[NSString stringWithFormat:@"%@%@", prepend, error.reason]];
 }
 
 - (NSString *)message {
-    return (NSString *)self.userInfo[NSLocalizedDescriptionKey];
+    NSString *description = (NSString *)self.userInfo[NSLocalizedDescriptionKey];
+    if (!description || [description isEqualToString:@""]) {
+        description = [self reason];
+    }
+    return description;
 }
 
 - (NSString *)reason {
     NSString *reason = (NSString *)self.userInfo[NSLocalizedFailureReasonErrorKey];
-    if (!reason) {
+    if (!reason || [reason isEqualToString:@""]) {
         reason = (NSString *)self.userInfo[@"NSDebugDescription"];
     }
     return reason;
