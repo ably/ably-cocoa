@@ -29,16 +29,18 @@ NSInteger getStatusFromCode(NSInteger code) {
 
 + (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message {
     if (message) {
-        return [[super alloc] initWithDomain:ARTAblyErrorDomain code:code userInfo:@{@"status": [NSNumber numberWithInteger:status], NSLocalizedDescriptionKey:message}];
+        return [[super alloc] initWithDomain:ARTAblyErrorDomain code:code userInfo:@{@"ARTErrorInfoStatusCode": [NSNumber numberWithInteger:status], NSLocalizedDescriptionKey:message}];
     }
-    return [[super alloc] initWithDomain:ARTAblyErrorDomain code:code userInfo:@{@"status": [NSNumber numberWithInteger:status]}];
+    return [[super alloc] initWithDomain:ARTAblyErrorDomain code:code userInfo:@{@"ARTErrorInfoStatusCode": [NSNumber numberWithInteger:status]}];
 }
 
 + (ARTErrorInfo *)createFromNSError:(NSError *)error {
     if ([error isKindOfClass:[ARTErrorInfo class]]) {
         return (ARTErrorInfo *)error;
     }
-    return [[super alloc] initWithDomain:ARTAblyErrorDomain code:error.code userInfo:error.userInfo];
+    NSMutableDictionary *userInfo = [error.userInfo mutableCopy];
+    [userInfo setValue:error.domain forKey:@"ARTErrorInfoOriginalDomain"];
+    return [[super alloc] initWithDomain:ARTAblyErrorDomain code:error.code userInfo:userInfo];
 }
 
 + (ARTErrorInfo *)wrap:(ARTErrorInfo *)error prepend:(NSString *)prepend {
@@ -58,11 +60,14 @@ NSInteger getStatusFromCode(NSInteger code) {
     if (!reason || [reason isEqualToString:@""]) {
         reason = (NSString *)self.userInfo[@"NSDebugDescription"];
     }
+    if (!reason || [reason isEqualToString:@""]) {
+        reason = (NSString *)self.userInfo[@"ARTErrorInfoOriginalDomain"];
+    }
     return reason;
 }
 
 - (NSInteger)statusCode {
-    return [(NSNumber *)self.userInfo[@"status"] integerValue];
+    return [(NSNumber *)self.userInfo[@"ARTErrorInfoStatusCode"] integerValue];
 }
 
 - (NSString *)description {
