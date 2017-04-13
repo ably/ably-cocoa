@@ -1,5 +1,24 @@
 # Change Log
 
+## [1.0.2](https://github.com/ably/ably-ios/tree/1.0.2) (2017-04-13)
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.1...1.0.2)
+
+## [0.8.12](https://github.com/ably/ably-ios/tree/0.8.12) (2017-04-13)
+[Full Changelog](https://github.com/ably/ably-ios/compare/0.8.11...0.8.12)
+
+**Fixed bugs:**
+
+- JSON encoding exception - handle encoding failures [\#591](https://github.com/ably/ably-ios/issues/591)
+
+**Closed issues:**
+
+- Crash in ARTJsonLikeEncoder [\#589](https://github.com/ably/ably-ios/issues/589)
+- Release 1.0.0 [\#585](https://github.com/ably/ably-ios/issues/585)
+
+**Merged pull requests:**
+
+- Encoder: handle invalid types gracefully [\#592](https://github.com/ably/ably-ios/pull/592) ([ricardopereira](https://github.com/ricardopereira))
+
 ## [1.0.1](https://github.com/ably/ably-ios/tree/1.0.1) (2017-03-31)
 [Full Changelog](https://github.com/ably/ably-ios/compare/1.0.0...1.0.1)
 
