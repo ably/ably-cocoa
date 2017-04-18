@@ -21,26 +21,27 @@
     NSString *_host;
     void (^_callback)(BOOL);
     SCNetworkReachabilityRef _reachabilityRef;
-    NSMutableDictionary *_instances;
 }
 
 - (instancetype)initWithLogger:(ARTLog *)logger {
     if (self = [super init]) {
         _logger = logger;
         if (ARTOSReachability_instances == nil) {
-            _instances = [[NSMutableDictionary alloc] init];
-            ARTOSReachability_instances = _instances;
-        } else {
-            _instances = ARTOSReachability_instances;
+            ARTOSReachability_instances = [[NSMutableDictionary alloc] init];
         }
     }
     return self;
 }
 
-__weak NSMutableDictionary *ARTOSReachability_instances;
+NSMutableDictionary *ARTOSReachability_instances;
 
 static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void* info) {
-    [(ARTOSReachability *)ARTOSReachability_instances[[NSValue valueWithPointer:target]] internalCallback:flags & kSCNetworkReachabilityFlagsReachable];
+    id instance = ARTOSReachability_instances[[NSValue valueWithPointer:target]];
+    if (instance == nil) {
+        NSLog(@"ARTOSReachability: instance not found for target %@", [NSValue valueWithPointer:target]);
+        return;
+    }
+    [(ARTOSReachability *)instance internalCallback:flags & kSCNetworkReachabilityFlagsReachable];
 }
 
 - (void)listenForHost:(NSString *)host callback:(void (^)(BOOL))callback {
@@ -51,13 +52,15 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
     _reachabilityRef = SCNetworkReachabilityCreateWithName(NULL, [host UTF8String]);
     SCNetworkReachabilityContext context = {0, (__bridge void *)(self), NULL, NULL, NULL};
 
+    [ARTOSReachability_instances setObject:self forKey:[NSValue valueWithPointer:_reachabilityRef]];
     if (SCNetworkReachabilitySetCallback(_reachabilityRef, ARTOSReachability_Callback, &context)) {
-        [ARTOSReachability_instances setObject:self forKey:[NSValue valueWithPointer:_reachabilityRef]];
         if (SCNetworkReachabilityScheduleWithRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)) {
             [_logger info:@"Reachability: started listening for host %@", _host];
         } else {
             [_logger warn:@"Reachability: failed starting listener for host %@", _host];
         }
+    } else {
+        [ARTOSReachability_instances removeObjectForKey:[NSValue valueWithPointer:_reachabilityRef]];
     }
 }
 
