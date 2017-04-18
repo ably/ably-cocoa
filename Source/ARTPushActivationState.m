@@ -15,12 +15,6 @@
 #import "ARTRest+Private.h"
 #import "ARTHttp.h"
 
-@interface ARTPushActivationState ()
-
-@property (atomic, readonly) ARTPushActivationStateMachine *machine;
-
-@end
-
 @implementation ARTPushActivationState
 
 - (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine {

@@ -17,6 +17,7 @@
 #import "ARTTypes.h"
 #import "ARTLocalDevice+Private.h"
 #import "ARTDevicePushDetails.h"
+#import "ARTLocalDeviceStorage.h"
 
 #ifdef TARGET_OS_IOS
 #import <UIKit/UIKit.h>
@@ -25,20 +26,28 @@ NSString *const ARTPushActivationCurrentStateKey = @"ARTPushActivationCurrentSta
 NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEvents";
 
 @implementation ARTPushActivationStateMachine {
-    ARTPushActivationState *_current;
     NSMutableArray<ARTPushActivationEvent *> *_pendingEvents;
+    id<ARTDeviceStorage> _storage;
 }
 
 - (instancetype)init:(ARTRest *)rest {
+    return [self init:rest storage:[ARTLocalDeviceStorage new]];
+}
+
+- (instancetype)init:(ARTRest *)rest storage:(id<ARTDeviceStorage>)storage {
     if (self = [super init]) {
         _rest = rest;
+        _storage = storage;
         // Unarquiving
-        NSData *stateData = [[NSUserDefaults standardUserDefaults] objectForKey:ARTPushActivationCurrentStateKey];
+        NSData *stateData = [_storage readKey:ARTPushActivationCurrentStateKey];
         _current = [NSKeyedUnarchiver unarchiveObjectWithData:stateData];
         if (!_current) {
             _current = [ARTPushActivationStateNotActivated newWithMachine:self];
         }
-        NSData *pendingEventsData = [[NSUserDefaults standardUserDefaults] objectForKey:ARTPushActivationPendingEventsKey];
+        else {
+            _current.machine = self;
+        }
+        NSData *pendingEventsData = [_storage readKey:ARTPushActivationPendingEventsKey];
         _pendingEvents = [NSKeyedUnarchiver unarchiveObjectWithData:pendingEventsData];
         if (!_pendingEvents) {
             _pendingEvents = [NSMutableArray array];
@@ -81,9 +90,9 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
 - (void)persist {
     // Archiving
     if ([_current isKindOfClass:[ARTPushActivationPersistentState class]]) {
-        [[NSUserDefaults standardUserDefaults] setObject:[NSKeyedArchiver archivedDataWithRootObject:_current] forKey:ARTPushActivationCurrentStateKey];
+        [_storage writeKey:ARTPushActivationCurrentStateKey withValue:[NSKeyedArchiver archivedDataWithRootObject:_current]];
     }
-    [[NSUserDefaults standardUserDefaults] setObject:[NSKeyedArchiver archivedDataWithRootObject:_pendingEvents] forKey:ARTPushActivationPendingEventsKey];
+    [_storage writeKey:ARTPushActivationPendingEventsKey withValue:[NSKeyedArchiver archivedDataWithRootObject:_pendingEvents]];
 }
 
 - (void)deviceRegistration:(ARTErrorInfo *)error {
