@@ -574,6 +574,59 @@ class MockHTTP: ARTHttp {
 
 }
 
+class MockDeviceStorage: NSObject, ARTDeviceStorage {
+
+    var keysRead: [String] = []
+    var keysWrite: [String] = []
+
+    private var simulateData: NSData?
+
+    func readKey(key: String) -> NSData? {
+        keysRead.append(key)
+        if var data = simulateData {
+            defer { simulateData = nil }
+            return data
+        }
+        return nil
+    }
+
+    func writeKey(key: String, withValue value: NSData?) {
+        keysWrite.append(key)
+    }
+
+    func simulateOnNextRead(data: NSData) {
+        simulateData = data
+    }
+
+}
+
+class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
+
+    var logger = ARTLog()
+    var clientOptions = ARTClientOptions()
+    var encoder = ARTJsonLikeEncoder()
+    var requests: [NSMutableURLRequest] = []
+
+    func options() -> ARTClientOptions {
+        return self.clientOptions
+    }
+
+    func defaultEncoder() -> ARTEncoder {
+        return self.encoder
+    }
+
+    func executeRequest(request: NSMutableURLRequest, withAuthOption authOption: ARTAuthentication, completion callback: (NSHTTPURLResponse?, NSData?, NSError?) -> Void) {
+        self.requests.append(request)
+        callback(nil, nil, nil)
+    }
+
+    func executeRequest(request: NSMutableURLRequest, completion callback: ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?) {
+        self.requests.append(request)
+        callback?(nil, nil, nil)
+    }
+
+}
+
 /// Records each request and response for test purpose.
 class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
 
