@@ -6,6 +6,8 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
+#ifdef TARGET_OS_IOS
+
 #import <Foundation/Foundation.h>
 
 @class ARTErrorInfo;
@@ -19,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
-- (instancetype)init:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor;
+- (instancetype)init:(ARTRest *)rest;
 
 - (void)sendEvent:(ARTPushActivationEvent *)event;
 
@@ -35,3 +37,5 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
+
+#endif

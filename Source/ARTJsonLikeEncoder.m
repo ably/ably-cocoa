@@ -608,8 +608,12 @@
     }
 
     ARTDeviceDetails *deviceDetails = [[ARTDeviceDetails alloc] initWithId:[input artString:@"id"]];
+    deviceDetails.clientId = [input artString:@"clientId"];
+    deviceDetails.platform = [input artString:@"platform"];
+    deviceDetails.formFactor = [input artString:@"formFactor"];
+    deviceDetails.metadata = [input valueForKey:@"metadata"];
+    deviceDetails.push = [self devicePushDetailsFromDictionary:input[@"push"] error:error];
     deviceDetails.updateToken = [input artString:@"updateToken"];
-    deviceDetails.push.state = ARTDevicePushStateFromStr([input artString:@"state"]);
 
     return deviceDetails;
 }
@@ -618,15 +622,7 @@
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
 
     dictionary[@"transportType"] = devicePushDetails.transportType;
-
-    if (devicePushDetails.deviceToken) {
-        // HEX string, i.e.: <12ce7dda 8032c423 8f8bd40f 3484e5bb f4698da5 8b7fdf8d 5c55e0a2 XXXXXXXX>
-        // Normalizing token by removing symbols and spaces, i.e.: 12ce7dda8032c4238f8bd40f3484e5bbf4698da58b7fdf8d5c55e0a2XXXXXXXX
-        NSString *token = [[[devicePushDetails.deviceToken description] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]] stringByReplacingOccurrencesOfString:@" " withString:@""];
-        dictionary[@"metadata"] = @{
-            @"deviceToken": token,
-        };
-    }
+    dictionary[@"metadata"] = devicePushDetails.metadata;
 
     return dictionary;
 }
@@ -639,7 +635,13 @@
     }
 
     ARTDevicePushDetails *devicePushDetails = [[ARTDevicePushDetails alloc] init];
-    devicePushDetails.state = ARTDevicePushStateFromStr([input artString:@"state"]);
+    devicePushDetails.transportType = [input artString:@"transportType"];
+    devicePushDetails.state = [input artString:@"state"];
+    NSDictionary *error = [input valueForKey:@"errorReason"];
+    if (error) {
+        devicePushDetails.state.errorReason = [ARTErrorInfo createWithCode:[[error artNumber:@"code"] intValue] status:[[error artNumber:@"statusCode"] intValue] message:[error artString:@"message"]];
+    }
+    devicePushDetails.metadata = [input valueForKey:@"metadata"];
 
     return devicePushDetails;
 }

@@ -13,24 +13,28 @@
 @class ARTPushChannelSubscription;
 @class ARTPaginatedResult;
 
-@protocol ARTHTTPAuthenticatedExecutor;
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPushChannel : NSObject
 
 - (instancetype)init NS_UNAVAILABLE;
-- (instancetype)init:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor withChannel:(ARTChannel *)channel;
+- (instancetype)init:(ARTRestChannel *)channel;
 
-- (void)subscribe;
-- (void)subscribeDevice:(ARTDeviceId *)deviceId;
+#ifdef TARGET_OS_IOS
+- (void)subscribeDevice;
+- (void)subscribeDevice:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback;
+#endif
 - (void)subscribeClient:(NSString *)clientId;
+- (void)subscribeClient:(NSString *)clientId callback:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback;
 
-- (void)unsubscribe;
-- (void)unsubscribeDevice:(ARTDeviceId *)deviceId;
+#ifdef TARGET_OS_IOS
+- (void)unsubscribeDevice;
+- (void)unsubscribeDevice:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback;
+#endif
 - (void)unsubscribeClient:(NSString *)clientId;
+- (void)unsubscribeClient:(NSString *)clientId callback:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback;
 
-- (void)subscriptions:(void(^)(ARTPaginatedResult<ARTPushChannelSubscription *> *_Nullable, ARTErrorInfo *_Nullable))callback;
+- (void)getSubscriptions:(void(^)(ARTPaginatedResult<ARTPushChannelSubscription *> *_Nullable, ARTErrorInfo *_Nullable))callback;
 
 @end
 

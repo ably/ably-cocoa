@@ -42,6 +42,9 @@ ART_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) ARTRealtimeChannels *channels;
 @property (readonly) ARTAuth *auth;
 @property (readonly) ARTPush *push;
+#ifdef TARGET_OS_IOS
+@property (nonnull, nonatomic, readonly, getter=getDevice) ARTLocalDevice *device;
+#endif
 @property (readonly, art_nullable, getter=getClientId) NSString *clientId;
 
 - (instancetype)init NS_UNAVAILABLE;

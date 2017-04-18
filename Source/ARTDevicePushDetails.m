@@ -9,28 +9,13 @@
 #import "ARTDevicePushDetails.h"
 #import "ARTPush.h"
 
-NSString *const ARTDevicePushTransportType = @"apns";
-
-ARTDevicePushState ARTDevicePushStateFromStr(NSString *value) {
-    if ([[value lowercaseString] isEqualToString:@"active"]) {
-        return ARTDevicePushStateActive;
-    }
-    else if ([[value lowercaseString] isEqualToString:@"failing"]) {
-        return ARTDevicePushStateFailing;
-    }
-    else {
-        return ARTDevicePushStateFailed;
-    }
-}
-
 @implementation ARTDevicePushDetails
 
-- (NSString *)transportType {
-    return ARTDevicePushTransportType;
-}
-
-- (NSData *)deviceToken {
-    return [[NSUserDefaults standardUserDefaults] dataForKey:ARTDeviceTokenKey];
+- (instancetype)init {
+    if (self = [super init]) {
+        _metadata = [[NSDictionary alloc] init];
+    }
+    return self;
 }
 
 @end

@@ -31,7 +31,7 @@
 #import "ARTStats.h"
 #import "ARTRealtimeTransport.h"
 #import "ARTFallback.h"
-#import "ARTPush.h"
+#import "ARTPush+Private.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -60,6 +60,7 @@
         NSAssert(options, @"ARTRealtime: No options provided");
         
         _rest = [[ARTRest alloc] initWithOptions:options];
+        _push = _rest.push;
         _eventQueue = dispatch_queue_create("io.ably.realtime.events", DISPATCH_QUEUE_SERIAL);
         _internalEventEmitter = [[ARTEventEmitter alloc] initWithQueue:_eventQueue];
         _connectedEventEmitter = [[ARTEventEmitter alloc] initWithQueue:_eventQueue];
@@ -955,6 +956,10 @@
     }
 
     [self transition:ARTRealtimeFailed];
+}
+
+- (ARTLocalDevice *)device {
+    return _rest.device;
 }
 
 @end

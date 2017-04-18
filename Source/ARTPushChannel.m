@@ -18,7 +18,6 @@
 const NSUInteger ARTDefaultLimit = 100;
 
 @implementation ARTPushChannel {
-    id<ARTHTTPAuthenticatedExecutor> _httpExecutor;
     __weak ARTLog *_logger;
     __weak ARTChannel *_channel;
 }

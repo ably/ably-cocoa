@@ -35,9 +35,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTPushActivationStateNotActivated : ARTPushActivationPersistentState
 @end
 
-@interface ARTPushActivationStateCalledActivate : ARTPushActivationState
-@end
-
 @interface ARTPushActivationStateWaitingForUpdateToken : ARTPushActivationState
 @end
 

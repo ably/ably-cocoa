@@ -14,35 +14,62 @@
 #import "ARTJsonEncoder.h"
 #import "ARTJsonLikeEncoder.h"
 #import "ARTEventEmitter.h"
+#ifdef TARGET_OS_IOS
 #import "ARTPushActivationStateMachine.h"
+#endif
 #import "ARTPushActivationEvent.h"
 #import "ARTClientOptions+Private.h"
+#import "ARTPushAdmin+Private.h"
 
 NSString *const ARTDeviceIdKey = @"ARTDeviceId";
 NSString *const ARTDeviceUpdateTokenKey = @"ARTDeviceUpdateToken";
 NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
 @implementation ARTPush {
-    id<ARTHTTPAuthenticatedExecutor> _httpExecutor;
+    ARTRest *_rest;
     __weak ARTLog *_logger;
 }
 
-- (instancetype)init:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor {
+- (instancetype)init:(ARTRest *)rest {
     if (self = [super init]) {
-        _httpExecutor = httpExecutor;
+        _rest = rest;
         _logger = [httpExecutor logger];
+        _admin = [[ARTPushAdmin alloc] init:httpExecutor];
     }
     return self;
 }
+
+- (void)publish:(ARTPushRecipient *)recipient notification:(ARTJsonObject *)notification callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/publish"]];
+    request.HTTPMethod = @"POST";
+    NSMutableDictionary *body = [NSMutableDictionary dictionary];
+    [body setObject:recipient forKey:@"recipient"];
+    [body addEntriesFromDictionary:notification];
+    request.HTTPBody = [[_rest defaultEncoder] encode:body];
+    [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
+
+    [_logger debug:__FILE__ line:__LINE__ message:@"push notification to a single device %@", request];
+    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        if (error) {
+            [_logger error:@"%@: push notification to a single device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            if (callback) callback([ARTErrorInfo createWithNSError:error]);
+            return;
+        }
+        if (callback) callback(nil);
+    }];
+}
+
+#ifdef TARGET_OS_IOS
 
 - (ARTPushActivationStateMachine *)activationMachine {
     static dispatch_once_t once;
     static id activationMachineInstance;
     dispatch_once(&once, ^{
-        activationMachineInstance = [[ARTPushActivationStateMachine alloc] init:_httpExecutor];
+        activationMachineInstance = [[ARTPushActivationStateMachine alloc] init:_rest];
     });
     return activationMachineInstance;
 }
+
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken rest:(ARTRest *)rest {
     NSLog(@"ARTPush: device token received %@", deviceToken);
@@ -62,29 +89,6 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
     [[rest.push activationMachine] sendEvent:[ARTPushActivationEventGettingUpdateTokenFailed newWithError:[ARTErrorInfo createWithNSError:error]]];
 }
 
-- (void)publish:(ARTPushRecipient *)recipient jsonObject:(ARTJsonObject *)jsonObject {
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/publish"]];
-    request.HTTPMethod = @"POST";
-    NSMutableDictionary *body = [NSMutableDictionary dictionary];
-    [body setObject:recipient forKey:@"recipient"];
-    [body addEntriesFromDictionary:jsonObject];
-    request.HTTPBody = [[_httpExecutor defaultEncoder] encode:body];
-    [request setValue:[[_httpExecutor defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
-
-    [_logger debug:__FILE__ line:__LINE__ message:@"push notification to a single device %@", request];
-    [_httpExecutor executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
-        if (response.statusCode == 200 /*OK*/) {
-            return;
-        }
-        if (error) {
-            [_logger error:@"%@: push notification to a single device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
-        }
-        else {
-            [_logger error:@"%@: push notification to a single device failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
-        }
-    }];
-}
-
 - (void)activate {
     [[self activationMachine] sendEvent:[ARTPushActivationEventCalledActivate new]];
 }
@@ -92,5 +96,7 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 - (void)deactivate {
     [[self activationMachine] sendEvent:[ARTPushActivationEventCalledDeactivate new]];
 }
+
+#endif
 
 @end

@@ -13,17 +13,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern NSString *const ARTDevicePlatform;
-extern NSString *const ARTDeviceFormFactor;
-
 @interface ARTDeviceDetails : NSObject
 
-@property (nonatomic, readonly) ARTDeviceId *id;
+@property (nonatomic) ARTDeviceId *id;
 @property (nullable, nonatomic) NSString *clientId;
-@property (nonatomic, readonly) NSString *platform;
-@property (nonatomic, readonly) NSString *formFactor;
-@property (nullable, nonatomic) NSDictionary<NSString *, NSString *> *metadata;
-@property (nonatomic, readonly) ARTDevicePushDetails *push;
+@property (nonatomic) NSString *platform;
+@property (nonatomic) NSString *formFactor;
+@property (nonatomic) NSDictionary<NSString *, NSString *> *metadata;
+@property (nonatomic) ARTDevicePushDetails *push;
 @property (nullable, nonatomic) ARTUpdateToken *updateToken;
 
 - (instancetype)init NS_UNAVAILABLE;

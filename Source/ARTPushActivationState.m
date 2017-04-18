@@ -95,15 +95,6 @@
 
 @end
 
-@implementation ARTPushActivationStateCalledActivate
-
-- (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
-    // TODO
-    return nil;
-}
-
-@end
-
 @implementation ARTPushActivationStateWaitingForUpdateToken
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
@@ -130,7 +121,7 @@
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
     [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
-        return [ARTPushActivationStateCalledActivate newWithMachine:self.machine];
+        return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
         [self.machine callDeactivatedCallback:nil];

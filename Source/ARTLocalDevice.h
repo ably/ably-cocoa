@@ -13,13 +13,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTLocalDevice : ARTDeviceDetails
 
-@property (nonatomic, readonly) ARTDeviceToken *registrationToken;
-
-- (instancetype)init;
-+ (ARTLocalDevice *)local;
+- (instancetype)init NS_UNAVAILABLE;
 
 - (void)resetId;
-- (void)resetUpdateToken:(void (^)(ARTErrorInfo * _Nullable))callback;
+- (void)resetUpdateToken:(void (^_Nullable)(ARTErrorInfo * _Nullable))callback;
 
 @end
 

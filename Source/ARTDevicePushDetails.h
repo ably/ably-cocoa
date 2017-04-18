@@ -12,23 +12,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern NSString *const ARTDevicePushTransportType;
-
-typedef NS_ENUM(NSUInteger, ARTDevicePushState) {
-    ARTDevicePushStateInitialized,
-    ARTDevicePushStateActive,
-    ARTDevicePushStateFailing,
-    ARTDevicePushStateFailed
-};
-
-ARTDevicePushState ARTDevicePushStateFromStr(NSString *value);
-
 @interface ARTDevicePushDetails : NSObject
 
-@property (nonatomic, readonly) NSString *transportType;
-@property (nonatomic, readonly) NSData *deviceToken;
-@property (nonatomic, assign) ARTDevicePushState state;
+@property (nullable, nonatomic) NSString *transportType;
+@property (nullable, nonatomic) NSString *state;
 @property (nullable, nonatomic) ARTErrorInfo *errorReason;
+@property (nonatomic) NSDictionary<NSString *, NSString *> *metadata;
+
+- (instancetype)init;
 
 @end
 

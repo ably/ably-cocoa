@@ -10,6 +10,7 @@
 #import "ARTTypes.h"
 #import "ARTLog.h"
 #import "ARTRestChannels.h"
+#import "ARTLocalDevice.h"
 
 @protocol ARTHTTPExecutor;
 
@@ -51,6 +52,9 @@ ART_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) ARTRestChannels *channels;
 @property (nonatomic, strong, readonly) ARTAuth *auth;
 @property (nonatomic, strong, readonly) ARTPush *push;
+#ifdef TARGET_OS_IOS
+@property (nonnull, nonatomic, readonly, getter=getDevice) ARTLocalDevice *device;
+#endif
 
 @end
 

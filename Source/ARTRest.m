@@ -34,7 +34,7 @@
 #import "ARTDefault.h"
 #import "ARTFallback.h"
 #import "ARTGCD.h"
-#import "ARTPush.h"
+#import "ARTPush+Private.h"
 
 @implementation ARTRest {
     ARTLog *_logger;
@@ -316,6 +316,15 @@
         components.host = _prioritizedHost;
     }
     return components.URL;
+}
+
+- (ARTLocalDevice *)device {
+    static dispatch_once_t once;
+    static id device;
+    dispatch_once(&once, ^{
+        device = [ARTLocalDevice load:self];
+    });
+    return device;
 }
 
 @end

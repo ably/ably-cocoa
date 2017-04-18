@@ -13,7 +13,7 @@
 - (instancetype)initWithDeviceId:(NSString *)deviceId andChannel:(NSString *)channelName {
     if (self = [super init]) {
         _deviceId = deviceId;
-        _channelName = channelName;
+        _channel = channelName;
     }
     return self;
 }
@@ -21,7 +21,7 @@
 - (instancetype)initWithClientId:(NSString *)clientId andChannel:(NSString *)channelName {
     if (self = [super init]) {
         _clientId = clientId;
-        _channelName = channelName;
+        _channel = channelName;
     }
     return self;
 }

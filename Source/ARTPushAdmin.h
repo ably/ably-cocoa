@@ -18,7 +18,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTPushAdmin : NSObject
 
 - (instancetype)init NS_UNAVAILABLE;
-- (instancetype)init:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor;
 
 @property (nonatomic, readonly) ARTPushDeviceRegistrations* deviceRegistrations;
 @property (nonatomic, readonly) ARTPushChannelSubscriptions* channelSubscriptions;
