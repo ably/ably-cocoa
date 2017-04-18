@@ -25,7 +25,7 @@
 }
 
 + (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine {
-    return [[ARTPushActivationState alloc] initWithMachine:machine];
+    return [[self alloc] initWithMachine:machine];
 }
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
