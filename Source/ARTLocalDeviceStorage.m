@@ -15,7 +15,8 @@
 }
 
 - (void)writeKey:(NSString *)key withValue:(id)value {
-    return [[NSUserDefaults standardUserDefaults] setObject:value forKey:key];
+    [[NSUserDefaults standardUserDefaults] setObject:value forKey:key];
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 @end
