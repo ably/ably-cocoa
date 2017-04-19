@@ -579,12 +579,12 @@ class MockDeviceStorage: NSObject, ARTDeviceStorage {
     var keysRead: [String] = []
     var keysWrite: [String] = []
 
-    private var simulateData: NSData?
+    private var simulateData: [String: NSData] = [:]
 
     func readKey(key: String) -> NSData? {
         keysRead.append(key)
-        if var data = simulateData {
-            defer { simulateData = nil }
+        if var data = simulateData[key] {
+            defer { simulateData.removeValueForKey(key) }
             return data
         }
         return nil
@@ -594,8 +594,8 @@ class MockDeviceStorage: NSObject, ARTDeviceStorage {
         keysWrite.append(key)
     }
 
-    func simulateOnNextRead(data: NSData) {
-        simulateData = data
+    func simulateOnNextRead(data: NSData, `for` key: String) {
+        simulateData[key] = data
     }
 
 }
