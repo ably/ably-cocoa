@@ -17,6 +17,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+extern NSString *const ARTPushActivationCurrentStateKey;
+extern NSString *const ARTPushActivationPendingEventsKey;
+
 @interface ARTPushActivationStateMachine : NSObject
 
 @property (nonatomic, strong) ARTRest *rest;

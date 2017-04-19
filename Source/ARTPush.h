@@ -19,6 +19,13 @@ typedef NSData ARTDeviceToken;
 typedef NSString ARTUpdateToken;
 typedef ARTJsonObject ARTPushRecipient;
 
+NS_ASSUME_NONNULL_BEGIN
+extern NSString *const ARTDeviceIdKey;
+extern NSString *const ARTDeviceUpdateTokenKey;
+extern NSString *const ARTDeviceTokenKey;
+NS_ASSUME_NONNULL_END
+
+
 #pragma mark ARTPushRegisterer interface
 
 #ifdef TARGET_OS_IOS
