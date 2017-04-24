@@ -147,4 +147,10 @@
     }];
 }
 
+#ifdef TARGET_OS_IOS
+- (ARTLocalDevice *)device {
+    return _rest.device;
+}
+#endif
+
 @end

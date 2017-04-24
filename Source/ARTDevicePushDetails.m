@@ -13,7 +13,7 @@
 
 - (instancetype)init {
     if (self = [super init]) {
-        _metadata = [[NSDictionary alloc] init];
+        _recipient = [[NSMutableDictionary alloc] init];
     }
     return self;
 }

@@ -14,10 +14,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTDevicePushDetails : NSObject
 
-@property (nullable, nonatomic) NSString *transportType;
+@property (nonatomic) NSMutableDictionary<NSString *, NSString *> *recipient;
 @property (nullable, nonatomic) NSString *state;
 @property (nullable, nonatomic) ARTErrorInfo *errorReason;
-@property (nonatomic) NSDictionary<NSString *, NSString *> *metadata;
 
 - (instancetype)init;
 

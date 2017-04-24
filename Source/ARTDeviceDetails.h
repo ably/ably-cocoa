@@ -19,11 +19,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic) NSString *clientId;
 @property (nonatomic) NSString *platform;
 @property (nonatomic) NSString *formFactor;
-@property (nonatomic) NSDictionary<NSString *, NSString *> *metadata;
+@property (nonatomic) NSMutableDictionary<NSString *, NSString *> *metadata;
 @property (nonatomic) ARTDevicePushDetails *push;
 @property (nullable, nonatomic) ARTUpdateToken *updateToken;
 
-- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)init;
 - (instancetype)initWithId:(ARTDeviceId *)deviceId;
 
 @end

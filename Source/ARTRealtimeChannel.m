@@ -26,11 +26,15 @@
 #import "ARTDefault.h"
 #import "ARTRest+Private.h"
 #import "ARTClientOptions.h"
+#ifdef TARGET_OS_IPHONE
 #import "ARTPushChannel.h"
+#endif
 
 @interface ARTRealtimeChannel () {
     ARTRealtimePresence *_realtimePresence;
+    #ifdef TARGET_OS_IPHONE
     ARTPushChannel *_pushChannel;
+    #endif
     CFRunLoopTimerRef _attachTimer;
     CFRunLoopTimerRef _detachTimer;
     __GENERIC(ARTEventEmitter, NSNull *, ARTErrorInfo *) *_attachedEventEmitter;
@@ -74,12 +78,16 @@
     return _realtimePresence;
 }
 
+#ifdef TARGET_OS_IPHONE
+
 - (ARTPushChannel *)push {
     if (!_pushChannel) {
         _pushChannel = [[ARTPushChannel alloc] init:self.realtime.rest withChannel:self];
     }
     return _pushChannel;
 }
+
+#endif
 
 - (void)internalPostMessages:(id)data callback:(void (^)(ARTErrorInfo *__art_nullable error))callback {
     ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
@@ -723,5 +731,11 @@
         return NO;
     }
 }
+
+#ifdef TARGET_OS_IOS
+- (ARTLocalDevice *)device {
+    return _realtime.device;
+}
+#endif
 
 @end

@@ -27,8 +27,6 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
 @implementation ARTPushActivationStateMachine {
     ARTPushActivationState *_current;
     NSMutableArray<ARTPushActivationEvent *> *_pendingEvents;
-    ARTRest *_rest;
-
 }
 
 - (instancetype)init:(ARTRest *)rest {
@@ -180,10 +178,10 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
     NSData *tokenData = [local.updateToken dataUsingEncoding:NSUTF8StringEncoding];
     NSString *tokenBase64 = [tokenData base64EncodedStringWithOptions:0];
     [request setValue:[NSString stringWithFormat:@"Bearer %@", tokenBase64] forHTTPHeaderField:@"Authorization"];
-    request.HTTPMethod = @"PUT";
+    request.HTTPMethod = @"PATCH";
     request.HTTPBody = [[_rest defaultEncoder] encode:@{
         @"push": @{
-            @"metadata": local.push.metadata
+            @"recipient": local.push.recipient
         }
     }];
     [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];

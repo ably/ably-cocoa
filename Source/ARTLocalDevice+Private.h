@@ -17,9 +17,12 @@ extern NSString *const ARTDeviceIdKey;
 extern NSString *const ARTDeviceUpdateTokenKey;
 extern NSString *const ARTDeviceTokenKey;
 
-@interface ARTLocalDevice : ARTDeviceDetails
+@interface ARTLocalDevice ()
+
+@property (weak, nonatomic) ARTRest *rest;
 
 + (ARTLocalDevice *_Nonnull)load:(ARTRest *)rest;
+- (NSString *_Nullable)deviceToken;
 - (void)setAndPersistDeviceToken:(NSString *_Nullable)token;
 - (void)setAndPersistUpdateToken:(NSString *_Nullable)token;
 

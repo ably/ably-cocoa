@@ -11,11 +11,17 @@
 
 @implementation ARTDeviceDetails
 
-- (instancetype)initWithId:(ARTDeviceId *)deviceId {
-    if (self = [super init]) {
-        _id = deviceId;
+- (instancetype)init {
+    if (self = [self init]) {
         _push = [[ARTDevicePushDetails alloc] init];
-        _metadata = [[NSDictionary alloc] init];
+        _metadata = [[NSMutableDictionary alloc] init];
+    }
+    return self;
+}
+
+- (instancetype)initWithId:(ARTDeviceId *)deviceId {
+    if (self = [self init]) {
+        _id = deviceId;
     }
     return self;
 }

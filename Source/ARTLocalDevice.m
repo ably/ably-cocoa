@@ -9,6 +9,9 @@
 #import "ARTLocalDevice+Private.h"
 #import "ARTDevicePushDetails.h"
 #import "ARTPush.h"
+#import "ARTRest+Private.h"
+#import "ARTAuth+Private.h"
+#import "ARTEncoder.h"
 #import <ULID/ULID.h>
 
 NSString *const ARTDevicePlatform = @"ios";
@@ -30,18 +33,21 @@ NSString *const ARTDeviceFormFactor = @"embedded";
 
 NSString *const ARTDevicePushTransportType = @"apns";
 
-@implementation ARTLocalDevice
+@implementation ARTLocalDevice {
+    __weak ARTLog *_logger;
+}
 
-- (instancetype)initWithRest:(ARTRest *rest) {
+- (instancetype)initWithRest:(ARTRest *)rest {
     if (self = [super init]) {
         _rest = rest;
+        _logger = rest.logger;
     }
     return self;
 }
 
 + (ARTLocalDevice *)load:(ARTRest *_Nonnull)rest {
-    ARTLocalDevice *device = [[ARTLocalDevice alloc] init];
-    device.clientId = _rest.auth.clientId;
+    ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithRest:rest];
+    device.clientId = [device.rest.auth getClientId];
     device.platform = ARTDevicePlatform;
     switch (UI_USER_INTERFACE_IDIOM()) {
         case UIUserInterfaceIdiomPad:
@@ -51,7 +57,7 @@ NSString *const ARTDevicePushTransportType = @"apns";
         default:
             device.formFactor = ARTDeviceFormFactor;
     }
-    device.push.transportType = ARTDevicePushTransportType;
+    device.push.recipient[@"transportType"] = ARTDevicePushTransportType;
 
     NSString *deviceId = [[NSUserDefaults standardUserDefaults] stringForKey:ARTDeviceIdKey];
     if (!deviceId) {
@@ -62,18 +68,18 @@ NSString *const ARTDevicePushTransportType = @"apns";
     device.id = deviceId;
     device.updateToken = [[NSUserDefaults standardUserDefaults] stringForKey:ARTDeviceUpdateTokenKey];
 
-    device.setDeviceToken([[NSUserDefaults standardUserDefaults] dataForKey:ARTDeviceTokenKey]);
+    [device setDeviceToken:[[NSUserDefaults standardUserDefaults] stringForKey:ARTDeviceTokenKey]];
 
     return device;
 }
 
 - (void)resetId {
     [[NSUserDefaults standardUserDefaults] setObject:nil forKey:ARTDeviceIdKey];
-    setAndPersistUpdateToken(nil);
+    [self setAndPersistUpdateToken:nil];
     NSString *deviceId = [[ULID new] ulidString];
     [[NSUserDefaults standardUserDefaults] setObject:deviceId forKey:ARTDeviceIdKey];
     [[NSUserDefaults standardUserDefaults] synchronize];
-    device.id = deviceId;
+    self.id = deviceId;
 }
 
 - (void)resetUpdateToken:(void (^)(ARTErrorInfo *error))callback {
@@ -88,12 +94,12 @@ NSString *const ARTDevicePushTransportType = @"apns";
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:path]];
     request.HTTPMethod = @"POST";
 
-    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p resetUpdateToken", _rest];
+    [_logger debug:__FILE__ line:__LINE__ message:@"RS:%p resetUpdateToken", _rest];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (!error && data) {
             ARTDeviceDetails *updated = [self.rest.encoders[response.allHeaderFields[@"Content-Type"]] decodeDeviceDetails:data error:&error];
             if (!error) {
-               self.setAndPersistUpdateToken(updated.updateToken);
+                [self setAndPersistUpdateToken:updated.updateToken];
             }
         }
         if (callback) {
@@ -103,8 +109,12 @@ NSString *const ARTDevicePushTransportType = @"apns";
     }];
 }
 
+- (NSString *)deviceToken {
+    return self.push.recipient[@"deviceToken"];
+}
+
 - (void)setDeviceToken:(NSString *_Nonnull)token {
-    self.push.metadata[@"deviceToken"] = token;
+    self.push.recipient[@"deviceToken"] = token;
 }
 
 - (void)setAndPersistDeviceToken:(NSString *)token {

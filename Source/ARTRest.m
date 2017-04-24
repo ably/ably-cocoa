@@ -35,6 +35,7 @@
 #import "ARTFallback.h"
 #import "ARTGCD.h"
 #import "ARTPush+Private.h"
+#import "ARTLocalDevice+Private.h"
 
 @implementation ARTRest {
     ARTLog *_logger;
@@ -247,6 +248,10 @@
     [request setValue:accept forHTTPHeaderField:@"Accept"];
     
     [self executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        if (error) {
+            callback(nil, error);
+            return;
+        }
         if (response.statusCode >= 400) {
             callback(nil, [self->_encoders[response.MIMEType] decodeError:data]);
         } else {

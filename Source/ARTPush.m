@@ -20,6 +20,7 @@
 #import "ARTPushActivationEvent.h"
 #import "ARTClientOptions+Private.h"
 #import "ARTPushAdmin+Private.h"
+#import "ARTLocalDevice+Private.h"
 
 NSString *const ARTDeviceIdKey = @"ARTDeviceId";
 NSString *const ARTDeviceUpdateTokenKey = @"ARTDeviceUpdateToken";
@@ -33,8 +34,8 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 - (instancetype)init:(ARTRest *)rest {
     if (self = [super init]) {
         _rest = rest;
-        _logger = [httpExecutor logger];
-        _admin = [[ARTPushAdmin alloc] init:httpExecutor];
+        _logger = [rest logger];
+        _admin = [[ARTPushAdmin alloc] init:rest];
     }
     return self;
 }
@@ -71,15 +72,19 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 }
 
 
-+ (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken rest:(ARTRest *)rest {
++ (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceTokenData rest:(ARTRest *)rest {
+    // HEX string, i.e.: <12ce7dda 8032c423 8f8bd40f 3484e5bb f4698da5 8b7fdf8d 5c55e0a2 XXXXXXXX>
+    // Normalizing token by removing symbols and spaces, i.e.: 12ce7dda8032c4238f8bd40f3484e5bbf4698da58b7fdf8d5c55e0a2XXXXXXXX
+    NSString *deviceToken = [[[deviceTokenData description] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]] stringByReplacingOccurrencesOfString:@" " withString:@""];
+
     NSLog(@"ARTPush: device token received %@", deviceToken);
-    NSData *currentDeviceToken = [[NSUserDefaults standardUserDefaults] dataForKey:ARTDeviceTokenKey];
-    if ([currentDeviceToken isEqualToData:deviceToken]) {
+    NSString *currentDeviceToken = [[NSUserDefaults standardUserDefaults] stringForKey:ARTDeviceTokenKey];
+    if ([currentDeviceToken isEqualToString:deviceToken]) {
         // Already stored.
         return;
     }
-    [[NSUserDefaults standardUserDefaults] setObject:deviceToken forKey:ARTDeviceTokenKey];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+
+    [[rest device] setAndPersistDeviceToken:deviceToken];
     NSLog(@"ARTPush: device token stored");
     [[rest.push activationMachine] sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
 }

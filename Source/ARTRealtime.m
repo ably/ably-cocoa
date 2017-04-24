@@ -60,7 +60,6 @@
         NSAssert(options, @"ARTRealtime: No options provided");
         
         _rest = [[ARTRest alloc] initWithOptions:options];
-        _push = _rest.push;
         _eventQueue = dispatch_queue_create("io.ably.realtime.events", DISPATCH_QUEUE_SERIAL);
         _internalEventEmitter = [[ARTEventEmitter alloc] initWithQueue:_eventQueue];
         _connectedEventEmitter = [[ARTEventEmitter alloc] initWithQueue:_eventQueue];

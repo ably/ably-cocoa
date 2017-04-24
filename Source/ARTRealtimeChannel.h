@@ -18,7 +18,9 @@
 ART_ASSUME_NONNULL_BEGIN
 
 @class ARTRealtimePresence;
+#ifdef TARGET_OS_IPHONE
 @class ARTPushChannel;
+#endif
 
 @interface ARTRealtimeChannel : ARTChannel
 
@@ -26,7 +28,9 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic, art_nullable) ARTErrorInfo *errorReason;
 
 @property (readonly) ARTRealtimePresence *presence;
+#ifdef TARGET_OS_IPHONE
 @property (readonly) ARTPushChannel *push;
+#endif
 
 - (void)attach;
 - (void)attach:(art_nullable void (^)(ARTErrorInfo *__art_nullable))callback;

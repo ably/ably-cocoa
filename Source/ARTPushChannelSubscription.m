@@ -10,7 +10,7 @@
 
 @implementation ARTPushChannelSubscription
 
-- (instancetype)initWithDeviceId:(NSString *)deviceId andChannel:(NSString *)channelName {
+- (instancetype)initWithDeviceId:(NSString *)deviceId channel:(NSString *)channelName {
     if (self = [super init]) {
         _deviceId = deviceId;
         _channel = channelName;
@@ -18,7 +18,7 @@
     return self;
 }
 
-- (instancetype)initWithClientId:(NSString *)clientId andChannel:(NSString *)channelName {
+- (instancetype)initWithClientId:(NSString *)clientId channel:(NSString *)channelName {
     if (self = [super init]) {
         _clientId = clientId;
         _channel = channelName;

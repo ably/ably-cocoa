@@ -55,13 +55,13 @@
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data) {
         return [[[_httpExecutor defaultEncoder] decodePushChannelSubscriptions:data error:nil] artMap:^NSString *(ARTPushChannelSubscription *item) {
-            return [(ARTPushChannelSubscription *)item channelName];
+            return ((ARTPushChannelSubscription *)item).channel;
         }];
     };
     [ARTPaginatedResult executePaginated:_httpExecutor withRequest:request andResponseProcessor:responseProcessor callback:callback];
 }
 
-- (void)get:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTPaginatedResult<ARTPushChannelSubscription *> *result, ARTErrorInfo *error))callback {
+- (void)list:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTPaginatedResult<ARTPushChannelSubscription *> *result, ARTErrorInfo *error))callback {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
     components.queryItems = [params asURLQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
@@ -73,7 +73,23 @@
     [ARTPaginatedResult executePaginated:_httpExecutor withRequest:request andResponseProcessor:responseProcessor callback:callback];
 }
 
-- (void)remove:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTErrorInfo *error))callback {
+- (void)remove:(ARTPushChannelSubscription *)subscription callback:(void (^)(ARTErrorInfo *_Nullable))callback {
+    if ((subscription.deviceId && subscription.clientId) || (!subscription.deviceId && !subscription.clientId)) {
+        callback([ARTErrorInfo createWithCode:0 message:@"ARTChannelSubscription cannot be for both a deviceId and a clientId"]);
+        return;
+    }
+    NSMutableDictionary *where = [[NSMutableDictionary alloc] init];
+    where[@"channel"] = subscription.channel;
+    if (subscription.deviceId) {
+        where[@"deviceId"] = subscription.deviceId;
+    } else {
+        where[@"clientId"] = subscription.clientId;
+    }
+    [self removeWhere:where callback:callback];
+}
+
+
+- (void)removeWhere:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTErrorInfo *error))callback {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
     components.queryItems = [params asURLQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];

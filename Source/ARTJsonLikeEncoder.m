@@ -198,8 +198,8 @@
 - (NSDictionary *)pushChannelSubscriptionToDictionary:(ARTPushChannelSubscription *)channelSubscription {
     NSMutableDictionary *output = [NSMutableDictionary dictionary];
 
-    if (channelSubscription.channelName) {
-        [output setObject:channelSubscription.channelName forKey:@"channel"];
+    if (channelSubscription.channel) {
+        [output setObject:channelSubscription.channel forKey:@"channel"];
     }
 
     if (channelSubscription.clientId) {
@@ -238,10 +238,10 @@
 
     ARTPushChannelSubscription *channelSubscription;
     if (clientId) {
-        channelSubscription = [[ARTPushChannelSubscription alloc] initWithClientId:clientId andChannel:channelName];
+        channelSubscription = [[ARTPushChannelSubscription alloc] initWithClientId:clientId channel:channelName];
     }
     else {
-        channelSubscription = [[ARTPushChannelSubscription alloc] initWithDeviceId:deviceId andChannel:channelName];
+        channelSubscription = [[ARTPushChannelSubscription alloc] initWithDeviceId:deviceId channel:channelName];
     }
 
     return channelSubscription;
@@ -621,8 +621,7 @@
 - (NSDictionary *)devicePushDetailsToDictionary:(ARTDevicePushDetails *)devicePushDetails {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
 
-    dictionary[@"transportType"] = devicePushDetails.transportType;
-    dictionary[@"metadata"] = devicePushDetails.metadata;
+    dictionary[@"recipient"] = devicePushDetails.recipient;
 
     return dictionary;
 }
@@ -635,13 +634,12 @@
     }
 
     ARTDevicePushDetails *devicePushDetails = [[ARTDevicePushDetails alloc] init];
-    devicePushDetails.transportType = [input artString:@"transportType"];
     devicePushDetails.state = [input artString:@"state"];
-    NSDictionary *error = [input valueForKey:@"errorReason"];
-    if (error) {
-        devicePushDetails.state.errorReason = [ARTErrorInfo createWithCode:[[error artNumber:@"code"] intValue] status:[[error artNumber:@"statusCode"] intValue] message:[error artString:@"message"]];
+    NSDictionary *errorReason = [input valueForKey:@"errorReason"];
+    if (errorReason) {
+        devicePushDetails.errorReason = [ARTErrorInfo createWithCode:[[errorReason artNumber:@"code"] intValue] status:[[errorReason artNumber:@"statusCode"] intValue] message:[errorReason artString:@"message"]];
     }
-    devicePushDetails.metadata = [input valueForKey:@"metadata"];
+    devicePushDetails.recipient = [input valueForKey:@"recipient"];
 
     return devicePushDetails;
 }

@@ -38,13 +38,7 @@
     NSString *tokenBase64 = [tokenData base64EncodedStringWithOptions:0];
     [request setValue:[NSString stringWithFormat:@"Bearer %@", tokenBase64] forHTTPHeaderField:@"Authorization"];
     request.HTTPMethod = @"PUT";
-    request.HTTPBody = [[_httpExecutor defaultEncoder] encode:@{
-        @"push": @{
-            @"metadata": @{
-                @"deviceToken": deviceDetails.push.deviceToken,
-            }
-        }
-    }];
+    request.HTTPBody = [[_httpExecutor defaultEncoder] encodeDeviceDetails:deviceDetails];
     [request setValue:[[_httpExecutor defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"save device with request %@", request];
@@ -63,7 +57,7 @@
     }];
 }
 
-- (void)get:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTPaginatedResult<ARTDeviceDetails *> *result, ARTErrorInfo *error))callback {
+- (void)list:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTPaginatedResult<ARTDeviceDetails *> *result, ARTErrorInfo *error))callback {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"] resolvingAgainstBaseURL:NO];
     components.queryItems = [params asURLQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
@@ -75,7 +69,11 @@
     [ARTPaginatedResult executePaginated:_httpExecutor withRequest:request andResponseProcessor:responseProcessor callback:callback];
 }
 
-- (void)remove:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTErrorInfo *error))callback {
+- (void)remove:(NSString *)deviceId callback:(void (^)(ARTErrorInfo *error))callback {
+    [self removeWhere:@{@"deviceId": deviceId} callback:callback];
+}
+
+- (void)removeWhere:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTErrorInfo *error))callback {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"] resolvingAgainstBaseURL:NO];
     components.queryItems = [params asURLQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
