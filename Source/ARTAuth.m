@@ -428,7 +428,7 @@
     _protocolClientId = clientId;
 }
 
-- (NSString *)getClientId {
+- (NSString *)clientId {
     if (_protocolClientId) {
        return _protocolClientId;
     }

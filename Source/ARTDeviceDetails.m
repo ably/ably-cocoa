@@ -12,7 +12,7 @@
 @implementation ARTDeviceDetails
 
 - (instancetype)init {
-    if (self = [self init]) {
+    if (self = [super init]) {
         _push = [[ARTDevicePushDetails alloc] init];
         _metadata = [[NSMutableDictionary alloc] init];
     }

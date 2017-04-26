@@ -53,6 +53,16 @@
     // Just to persist the class info, no properties
 }
 
+#pragma mark - Archive/Unarchive
+
+- (NSData *)archive {
+    return [NSKeyedArchiver archivedDataWithRootObject:self];
+}
+
++ (ARTPushActivationState *)unarchive:(NSData *)data {
+    return [NSKeyedUnarchiver unarchiveObjectWithData:data];
+}
+
 @end
 
 #pragma mark - Persistent State

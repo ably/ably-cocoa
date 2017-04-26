@@ -24,6 +24,7 @@ extern NSString *const ARTPushActivationPendingEventsKey;
 
 @property (nonatomic, strong) ARTRest *rest;
 @property (nonatomic, readonly) ARTPushActivationState *current;
+@property (nonatomic, weak) id delegate;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

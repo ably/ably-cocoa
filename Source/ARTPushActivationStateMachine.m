@@ -22,6 +22,8 @@
 #ifdef TARGET_OS_IOS
 #import <UIKit/UIKit.h>
 
+NSString *const ARTPushException = @"ARTPushException";
+
 NSString *const ARTPushActivationCurrentStateKey = @"ARTPushActivationCurrentState";
 NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEvents";
 
@@ -40,7 +42,7 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
         _storage = storage;
         // Unarquiving
         NSData *stateData = [_storage readKey:ARTPushActivationCurrentStateKey];
-        _current = [NSKeyedUnarchiver unarchiveObjectWithData:stateData];
+        _current = [ARTPushActivationState unarchive:stateData];
         if (!_current) {
             _current = [ARTPushActivationStateNotActivated newWithMachine:self];
         }
@@ -54,6 +56,13 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
         }
     }
     return self;
+}
+
+- (id)delegate {
+    if (!_delegate) {
+        _delegate = [UIApplication sharedApplication].delegate;
+    }
+    return _delegate;
 }
 
 - (void)sendEvent:(ARTPushActivationEvent *)event {
@@ -90,7 +99,7 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
 - (void)persist {
     // Archiving
     if ([_current isKindOfClass:[ARTPushActivationPersistentState class]]) {
-        [_storage writeKey:ARTPushActivationCurrentStateKey withValue:[NSKeyedArchiver archivedDataWithRootObject:_current]];
+        [_storage writeKey:ARTPushActivationCurrentStateKey withValue:[_current archive]];
     }
     [_storage writeKey:ARTPushActivationPendingEventsKey withValue:[NSKeyedArchiver archivedDataWithRootObject:_pendingEvents]];
 }
@@ -99,30 +108,28 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
     #ifdef TARGET_OS_IOS
     ARTLocalDevice *local = _rest.device;
 
-    if (![[UIApplication sharedApplication].delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
-        [NSException raise:@"ARTPushRegistererDelegate must be implemented on AppDelegate" format:@""];
+    if (![[self delegate] conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
+        [NSException raise:ARTPushException format:@"ARTPushRegistererDelegate must be implemented"];
     }
-
-    id delegate = [UIApplication sharedApplication].delegate;
 
     // Custom register
     SEL customRegisterMethodSelector = @selector(ablyPushCustomRegister:deviceDetails:callback:);
-    if ([delegate respondsToSelector:customRegisterMethodSelector]) {
-        [delegate ablyPushCustomRegister:error deviceDetails:local callback:^(ARTUpdateToken *updateToken, ARTErrorInfo *error) {
+    if ([[self delegate] respondsToSelector:customRegisterMethodSelector]) {
+        [[self delegate] ablyPushCustomRegister:error deviceDetails:local callback:^(ARTUpdateToken *updateToken, ARTErrorInfo *error) {
             if (error) {
                 // Failed
-                [delegate didActivateAblyPush:error];
+                [[self delegate] didActivateAblyPush:error];
                 [self sendEvent:[ARTPushActivationEventGettingUpdateTokenFailed newWithError:error]];
             }
             else if (updateToken) {
                 // Success
                 [local setAndPersistUpdateToken:updateToken];
-                [delegate didActivateAblyPush:nil];
+                [[self delegate] didActivateAblyPush:nil];
                 [self sendEvent:[ARTPushActivationEventGotUpdateToken new]];
             }
             else {
                 ARTErrorInfo *missingUpdateTokenError = [ARTErrorInfo createWithCode:0 message:@"UpdateToken is expected"];
-                [delegate didActivateAblyPush:missingUpdateTokenError];
+                [[self delegate] didActivateAblyPush:missingUpdateTokenError];
                 [self sendEvent:[ARTPushActivationEventGettingUpdateTokenFailed newWithError:missingUpdateTokenError]];
             }
         }];
@@ -153,30 +160,28 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
     #ifdef TARGET_OS_IOS
     ARTLocalDevice *local = _rest.device;
 
-    if (![[UIApplication sharedApplication].delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
-        [NSException raise:@"ARTPushRegistererDelegate must be implemented on AppDelegate" format:@""];
+    if (![[self delegate] conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
+        [NSException raise:ARTPushException format:@"ARTPushRegistererDelegate must be implemented"];
     }
-
-    id delegate = [UIApplication sharedApplication].delegate;
 
     // Custom register
     SEL customRegisterMethodSelector = @selector(ablyPushCustomRegister:deviceDetails:callback:);
-    if ([delegate respondsToSelector:customRegisterMethodSelector]) {
-        [delegate ablyPushCustomRegister:error deviceDetails:local callback:^(ARTUpdateToken *updateToken, ARTErrorInfo *error) {
+    if ([[self delegate] respondsToSelector:customRegisterMethodSelector]) {
+        [[self delegate] ablyPushCustomRegister:error deviceDetails:local callback:^(ARTUpdateToken *updateToken, ARTErrorInfo *error) {
             if (error) {
                 // Failed
-                [delegate didActivateAblyPush:error];
+                [[self delegate] didActivateAblyPush:error];
                 [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:error]];
             }
             else if (updateToken) {
                 // Success
                 [local setAndPersistUpdateToken:updateToken];
-                [delegate didActivateAblyPush:nil];
+                [[self delegate] didActivateAblyPush:nil];
                 [self sendEvent:[ARTPushActivationEventRegistrationUpdated new]];
             }
             else {
                 ARTErrorInfo *missingUpdateTokenError = [ARTErrorInfo createWithCode:0 message:@"UpdateToken is expected"];
-                [delegate didActivateAblyPush:missingUpdateTokenError];
+                [[self delegate] didActivateAblyPush:missingUpdateTokenError];
                 [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:missingUpdateTokenError]];
             }
         }];
@@ -213,21 +218,17 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
     #ifdef TARGET_OS_IOS
     ARTLocalDevice *local = _rest.device;
 
-    id delegate = [UIApplication sharedApplication].delegate;
-
     // Custom register
     SEL customDeregisterMethodSelector = @selector(ablyPushCustomDeregister:deviceId:callback:);
-    if ([delegate respondsToSelector:customDeregisterMethodSelector]) {
-        [delegate ablyPushCustomDeregister:error deviceId:local.id callback:^(ARTErrorInfo *error) {
+    if ([[self delegate] respondsToSelector:customDeregisterMethodSelector]) {
+        [[self delegate] ablyPushCustomDeregister:error deviceId:local.id callback:^(ARTErrorInfo *error) {
             if (error) {
-                // Failed
-                [delegate didDeactivateAblyPush:error];
+                [[self delegate] didDeactivateAblyPush:error];
                 [self sendEvent:[ARTPushActivationEventDeregistrationFailed newWithError:error]];
+                return;
             }
-            else {
-                // Success
-                [delegate didDeactivateAblyPush:nil];
-            }
+            [[self delegate] didDeactivateAblyPush:nil];
+            [self sendEvent:[ARTPushActivationEventDeregistered new]];
         }];
         return;
     }
@@ -246,8 +247,8 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
         if (error) {
             [[_rest logger] error:@"%@: device deregistration failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
             [self sendEvent:[ARTPushActivationEventDeregistrationFailed newWithError:[ARTErrorInfo createWithNSError:error]]];
+            return;
         }
-
         [[_rest logger] debug:__FILE__ line:__LINE__ message:@"successfully deactivate device"];
         [self sendEvent:[ARTPushActivationEventDeregistered new]];
     }];
@@ -256,11 +257,10 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
 
 - (void)callActivatedCallback:(ARTErrorInfo *)error {
     #ifdef TARGET_OS_IOS
-    if ([[UIApplication sharedApplication].delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
-        id delegate = [UIApplication sharedApplication].delegate;
+    if ([[self delegate] conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
         SEL activateCallbackMethodSelector = @selector(didActivateAblyPush:);
-        if ([delegate respondsToSelector:activateCallbackMethodSelector]) {
-            [delegate didActivateAblyPush:error];
+        if ([[self delegate] respondsToSelector:activateCallbackMethodSelector]) {
+            [[self delegate] didActivateAblyPush:error];
         }
     }
     #endif
@@ -268,11 +268,10 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
 
 - (void)callDeactivatedCallback:(ARTErrorInfo *)error {
     #ifdef TARGET_OS_IOS
-    if ([[UIApplication sharedApplication].delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
-        id delegate = [UIApplication sharedApplication].delegate;
+    if ([[self delegate] conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
         SEL deactivateCallbackMethodSelector = @selector(didDeactivateAblyPush:);
-        if ([delegate respondsToSelector:deactivateCallbackMethodSelector]) {
-            [delegate didDeactivateAblyPush:error];
+        if ([[self delegate] respondsToSelector:deactivateCallbackMethodSelector]) {
+            [[self delegate] didDeactivateAblyPush:error];
         }
     }
     #endif
@@ -280,11 +279,10 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
 
 - (void)callUpdateFailedCallback:(nullable ARTErrorInfo *)error {
     #ifdef TARGET_OS_IOS
-    if ([[UIApplication sharedApplication].delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
-        id delegate = [UIApplication sharedApplication].delegate;
+    if ([[self delegate] conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
         SEL updateFailedCallbackMethodSelector = @selector(didAblyPushRegistrationFail:);
-        if ([delegate respondsToSelector:updateFailedCallbackMethodSelector]) {
-            [delegate didAblyPushRegistrationFail:error];
+        if ([[self delegate] respondsToSelector:updateFailedCallbackMethodSelector]) {
+            [[self delegate] didAblyPushRegistrationFail:error];
         }
     }
     #endif
