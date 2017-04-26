@@ -173,7 +173,7 @@
 		D7DC8AF11C6AA0C8005AF165 /* ARTDefault+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7DC8AF01C6A9FFC005AF165 /* ARTDefault+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D7DEAFD11E65926D00D23F24 /* ARTLocalDevice.h in Headers */ = {isa = PBXBuildFile; fileRef = D7DEAFCF1E65926D00D23F24 /* ARTLocalDevice.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7DEAFD21E65926D00D23F24 /* ARTLocalDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = D7DEAFD01E65926D00D23F24 /* ARTLocalDevice.m */; };
-		D7DF73851EA600240013CD36 /* Push.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DF73831EA5FE620013CD36 /* Push.swift */; };
+		D7DF73851EA600240013CD36 /* PushActivationStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DF73831EA5FE620013CD36 /* PushActivationStateMachine.swift */; };
 		D7DF73861EA600290013CD36 /* RestClientPush.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DF73811EA5FE3F0013CD36 /* RestClientPush.swift */; };
 		D7DF73871EA6002C0013CD36 /* RealtimeClientPush.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DF737F1EA5FE2F0013CD36 /* RealtimeClientPush.swift */; };
 		D7DF738A1EA645300013CD36 /* ARTLocalDeviceStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = D7DF73881EA645300013CD36 /* ARTLocalDeviceStorage.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -445,7 +445,7 @@
 		D7DEAFD01E65926D00D23F24 /* ARTLocalDevice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTLocalDevice.m; sourceTree = "<group>"; };
 		D7DF737F1EA5FE2F0013CD36 /* RealtimeClientPush.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClientPush.swift; sourceTree = "<group>"; };
 		D7DF73811EA5FE3F0013CD36 /* RestClientPush.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClientPush.swift; sourceTree = "<group>"; };
-		D7DF73831EA5FE620013CD36 /* Push.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Push.swift; sourceTree = "<group>"; };
+		D7DF73831EA5FE620013CD36 /* PushActivationStateMachine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PushActivationStateMachine.swift; sourceTree = "<group>"; };
 		D7DF73881EA645300013CD36 /* ARTLocalDeviceStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTLocalDeviceStorage.h; sourceTree = "<group>"; };
 		D7DF73891EA645300013CD36 /* ARTLocalDeviceStorage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTLocalDeviceStorage.m; sourceTree = "<group>"; };
 		D7EBE5A21BE8391E0086E675 /* RealtimeClientConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClientConnection.swift; sourceTree = "<group>"; };
@@ -577,7 +577,7 @@
 				856AAC951B6E30C800B07119 /* AblySpec-Bridging-Header.h */,
 				EBAB9A6E1C69702800AF036B /* ReadmeExamples.swift */,
 				D7C1B8761BBEA81A0087B55F /* Auth.swift */,
-				D7DF73831EA5FE620013CD36 /* Push.swift */,
+				D7DF73831EA5FE620013CD36 /* PushActivationStateMachine.swift */,
 				856AAC981B6E312F00B07119 /* RestClient.swift */,
 				853ED7C31B7A1A3C006F1C6F /* RestClientStats.swift */,
 				D746AE2A1BBB625E003ECEF8 /* RestClientChannel.swift */,
@@ -1270,7 +1270,7 @@
 				856AAC991B6E312F00B07119 /* RestClient.swift in Sources */,
 				D746AE2C1BBB625E003ECEF8 /* RestClientChannel.swift in Sources */,
 				D71D30041C5F7B2F002115B0 /* RealtimeClientChannels.swift in Sources */,
-				D7DF73851EA600240013CD36 /* Push.swift in Sources */,
+				D7DF73851EA600240013CD36 /* PushActivationStateMachine.swift in Sources */,
 				D714A63E1C74D4B2002F2CA0 /* NSObject+TestSuite.swift in Sources */,
 				856AAC971B6E30C800B07119 /* TestUtilities.swift in Sources */,
 				D72768211C9C19040022F8B2 /* RestClientPresence.swift in Sources */,

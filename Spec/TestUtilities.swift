@@ -581,6 +581,13 @@ class MockDeviceStorage: NSObject, ARTDeviceStorage {
 
     private var simulateData: [String: NSData] = [:]
 
+    init(startWith state: ARTPushActivationState? = nil) {
+        super.init()
+        if let state = state {
+            simulateOnNextRead(state.archive(), for: ARTPushActivationCurrentStateKey)
+        }
+    }
+
     func readKey(key: String) -> NSData? {
         keysRead.append(key)
         if var data = simulateData[key] {
@@ -606,6 +613,8 @@ class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
     var clientOptions = ARTClientOptions()
     var encoder = ARTJsonLikeEncoder()
     var requests: [NSMutableURLRequest] = []
+    
+    private var simulateError: NSError?
 
     func options() -> ARTClientOptions {
         return self.clientOptions
@@ -616,13 +625,26 @@ class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
     }
 
     func executeRequest(request: NSMutableURLRequest, withAuthOption authOption: ARTAuthentication, completion callback: (NSHTTPURLResponse?, NSData?, NSError?) -> Void) {
-        self.requests.append(request)
-        callback(nil, nil, nil)
+        executeRequest(request, completion: callback)
     }
 
     func executeRequest(request: NSMutableURLRequest, completion callback: ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?) {
         self.requests.append(request)
-        callback?(nil, nil, nil)
+        delay(0) {
+            defer {
+                self.simulateError = nil
+            }
+            if let simulateError = self.simulateError {
+                callback?(nil, nil, simulateError)
+            }
+            else {
+                callback?(nil, nil, nil)
+            }
+        }
+    }
+
+    func simulateIncomingErrorOnNextRequest(error: NSError) {
+        simulateError = error
     }
 
 }
