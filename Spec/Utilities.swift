@@ -386,6 +386,27 @@ class Utilities: QuickSpec {
                     }
                 }
             }
+
+            context("Logger") {
+
+                it("should have a history of logs") {
+                    let options = AblyTests.commonAppSetup()
+                    let realtime = ARTRealtime(options: options)
+                    let channel = realtime.channels.get("foo")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    expect(realtime.logger.history).to(haveCount(10))
+                    expect(realtime.logger.history.map{ $0.message }.first).to(contain("channel state transitions to 2 - Attached"))
+                    expect(realtime.logger.history.filter{ $0.message.containsString("realtime state transitions to 2 - Connected") }).to(haveCount(1))
+                }
+
+            }
         }
     }
 }
