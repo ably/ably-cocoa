@@ -79,6 +79,7 @@ class Utilities: QuickSpec {
                     it("should handle and emit the invalid data error") {
                         let options = AblyTests.commonAppSetup()
                         let realtime = ARTRealtime(options: options)
+                        defer { realtime.close() }
                         let channel = realtime.channels.get("foo")
                         waitUntil(timeout: testTimeout) { done in
                             channel.publish("test", data: NSDate()) { error in
@@ -105,6 +106,7 @@ class Utilities: QuickSpec {
                     it("should ignore invalid transport message") {
                         let options = AblyTests.commonAppSetup()
                         let realtime = ARTRealtime(options: options)
+                        defer { realtime.close() }
                         let channel = realtime.channels.get("foo")
 
                         // Garbage values (whatever is on the heap)
@@ -392,6 +394,7 @@ class Utilities: QuickSpec {
                 it("should have a history of logs") {
                     let options = AblyTests.commonAppSetup()
                     let realtime = ARTRealtime(options: options)
+                    defer { realtime.close() }
                     let channel = realtime.channels.get("foo")
 
                     waitUntil(timeout: testTimeout) { done in
