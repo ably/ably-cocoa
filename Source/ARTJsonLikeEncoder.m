@@ -70,83 +70,120 @@
 }
 
 - (instancetype)initWithRest:(ARTRest *)rest delegate:(id<ARTJsonLikeEncoderDelegate>)delegate {
+ART_TRY_OR_REPORT_CRASH_START(rest) {
     if (self = [super init]) {
         _rest = rest;
         _logger = rest.logger;
         _delegate = delegate;
     }
     return self;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSString *)mimeType {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [_delegate mimeType];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTEncoderFormat)format {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [_delegate format];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSString *)formatAsString {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [_delegate formatAsString];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTMessage *)decodeMessage:(NSData *)data error:(NSError **)error {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [self messageFromDictionary:[self decodeDictionary:data error:error]];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSArray *)decodeMessages:(NSData *)data error:(NSError **)error {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [self messagesFromArray:[self decodeArray:data error:error]];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSData *)encodeMessage:(ARTMessage *)message error:(NSError **)error {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [self encode:[self messageToDictionary:message] error:error];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSData *)encodeMessages:(NSArray *)messages error:(NSError **)error {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [self encode:[self messagesToArray:messages] error:error];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTPresenceMessage *)decodePresenceMessage:(NSData *)data error:(NSError **)error {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [self presenceMessageFromDictionary:[self decodeDictionary:data error:error]];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSArray *)decodePresenceMessages:(NSData *)data error:(NSError **)error {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [self presenceMessagesFromArray:[self decodeArray:data error:error]];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSData *)encodePresenceMessage:(ARTPresenceMessage *)message error:(NSError **)error {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [self encode:[self presenceMessageToDictionary:message] error:error];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSData *)encodePresenceMessages:(NSArray *)messages error:(NSError **)error {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [self encode:[self presenceMessagesToArray:messages] error:error];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSData *)encodeProtocolMessage:(ARTProtocolMessage *)message error:(NSError **)error {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [self encode:[self protocolMessageToDictionary:message] error:error];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTProtocolMessage *)decodeProtocolMessage:(NSData *)data error:(NSError **)error {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [self protocolMessageFromDictionary:[self decodeDictionary:data error:error]];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTTokenDetails *)decodeTokenDetails:(NSData *)data error:(NSError **)error {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [self tokenFromDictionary:[self decodeDictionary:data error:nil] error:error];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTTokenRequest *)decodeTokenRequest:(NSData *)data error:(NSError **)error {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [self tokenRequestFromDictionary:[self decodeDictionary:data error:nil] error:error];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSData *)encodeTokenRequest:(ARTTokenRequest *)request error:(NSError **)error {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [self encode:[self tokenRequestToDictionary:request] error:error];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSData *)encodeTokenDetails:(ARTTokenDetails *)tokenDetails error:(NSError **)error {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [self encode:[self tokenDetailsToDictionary:tokenDetails] error:error];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSDate *)decodeTime:(NSData *)data error:(NSError **)error {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSArray *resp = [self decodeArray:data error:error];
     [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: decodeTime %@", _rest, [_delegate formatAsString], resp];
     if (resp && resp.count == 1) {
@@ -156,13 +193,17 @@
         }
     }
     return nil;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSArray *)decodeStats:(NSData *)data error:(NSError **)error {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [self statsFromArray:[self decodeArray:data error:error]];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTMessage *)messageFromDictionary:(NSDictionary *)input {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: messageFromDictionary %@", _rest, [_delegate formatAsString], input];
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
@@ -178,9 +219,11 @@
     message.connectionId = [input artString:@"connectionId"];
     
     return message;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSArray *)messagesFromArray:(NSArray *)input {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (![input isKindOfClass:[NSArray class]]) {
         return nil;
     }
@@ -194,6 +237,7 @@
         [output addObject:message];
     }
     return output;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTPresenceAction)presenceActionFromInt:(int) action
@@ -232,6 +276,7 @@
 }
 
 - (ARTPresenceMessage *)presenceMessageFromDictionary:(NSDictionary *)input {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: presenceMessageFromDictionary %@", _rest, [_delegate formatAsString], input];
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
@@ -250,9 +295,11 @@
     message.connectionId = [input artString:@"connectionId"];
     
     return message;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSArray *)presenceMessagesFromArray:(NSArray *)input {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (![input isKindOfClass:[NSArray class]]) {
         return nil;
     }
@@ -266,9 +313,11 @@
         [output addObject:message];
     }
     return output;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSDictionary *)messageToDictionary:(ARTMessage *)message {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSMutableDictionary *output = [NSMutableDictionary dictionary];
     
     if (message.timestamp) {
@@ -293,25 +342,31 @@
 
     [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: messageToDictionary %@", _rest, [_delegate formatAsString], output];
     return output;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSDictionary *)authDetailsToDictionary:(ARTAuthDetails *)authDetails {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSMutableDictionary *output = [NSMutableDictionary dictionary];
 
     [output setObject:authDetails.accessToken forKey:@"accessToken"];
 
     [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: authDetailsToDictionary %@", _rest, [_delegate formatAsString], output];
     return output;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTAuthDetails *)authDetailsFromDictionary:(NSDictionary *)input {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (!input) {
         return nil;
     }
     return [[ARTAuthDetails alloc] initWithToken:[input artString:@"accessToken"]];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSArray *)messagesToArray:(NSArray *)messages {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSMutableArray *output = [NSMutableArray array];
     
     for (ARTMessage *message in messages) {
@@ -323,9 +378,11 @@
     }
     
     return output;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSDictionary *)presenceMessageToDictionary:(ARTPresenceMessage *)message {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSMutableDictionary *output = [NSMutableDictionary dictionary];
     
     if (message.timestamp) {
@@ -348,9 +405,11 @@
     [output setObject:[NSNumber numberWithInt:action] forKey:@"action"];
     [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: presenceMessageToDictionary %@", _rest, [_delegate formatAsString], output];
     return output;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSArray *)presenceMessagesToArray:(NSArray *)messages {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSMutableArray *output = [NSMutableArray array];
     
     for (ARTPresenceMessage *message in messages) {
@@ -361,9 +420,11 @@
         [output addObject:item];
     }
     return output;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSDictionary *)protocolMessageToDictionary:(ARTProtocolMessage *)message {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSMutableDictionary *output = [NSMutableDictionary dictionary];
     output[@"action"] = [NSNumber numberWithInt:message.action];
 
@@ -393,9 +454,11 @@
 
     [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: protocolMessageToDictionary %@", _rest, [_delegate formatAsString], output];
     return output;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTTokenDetails *)tokenFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: tokenFromDictionary %@", _rest, [_delegate formatAsString], input];
     
     if (![input isKindOfClass:[NSDictionary class]]) {
@@ -428,9 +491,11 @@
                                            capability:[input artString:@"capability"]
                                              clientId:[input artString:@"clientId"]];
     
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSDictionary *)tokenRequestToDictionary:(ARTTokenRequest *)tokenRequest {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: tokenRequestToDictionary %@", _rest, [_delegate formatAsString], tokenRequest];
 
     NSNumber *timestamp;
@@ -453,9 +518,11 @@
     }
 
     return dictionary;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTTokenRequest *)tokenRequestFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: tokenRequestFromDictionary %@", _rest, [_delegate formatAsString], input];
 
     if (![input isKindOfClass:[NSDictionary class]]) {
@@ -486,9 +553,11 @@
                                                 keyName:[input artString:@"keyName"]
                                                   nonce:[input artString:@"nonce"]
                                                     mac:[input artString:@"mac"]];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSDictionary *)tokenDetailsToDictionary:(ARTTokenDetails *)tokenDetails {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
 
     dictionary[@"token"] = tokenDetails.token;
@@ -510,9 +579,11 @@
     }
     
     return dictionary;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTProtocolMessage *)protocolMessageFromDictionary:(NSDictionary *)input {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: protocolMessageFromDictionary %@", _rest, [_delegate formatAsString], input];
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
@@ -544,9 +615,11 @@
     }
 
     return message;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTConnectionDetails *)connectionDetailsFromDictionary:(NSDictionary *)input {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (!input) {
         return nil;
     }
@@ -558,9 +631,11 @@
                                           maxInboundRate:[input artInteger:@"maxInboundRate"]
                                       connectionStateTtl:(NSTimeInterval)[input artInteger:@"connectionStateTtl"]
                                                 serverId:[input artString:@"serverId"]];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSArray *)statsFromArray:(NSArray *)input {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (![input isKindOfClass:[NSArray class]]) {
         return nil;
     }
@@ -579,9 +654,11 @@
     }
     
     return output;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTStats *)statsFromDictionary:(NSDictionary *)input {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: statsFromDictionary %@", _rest, [_delegate formatAsString], input];
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
@@ -596,9 +673,11 @@
                              apiRequests:[self statsRequestCountFromDictionary:[input objectForKey:@"apiRequests"]]
                            tokenRequests:[self statsRequestCountFromDictionary:[input objectForKey:@"tokenRequests"]]
                                 intervalId:input[@"intervalId"]];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTStatsMessageTypes *)statsMessageTypesFromDictionary:(NSDictionary *)input {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (![input isKindOfClass:[NSDictionary class]]) {
         return [ARTStatsMessageTypes empty];
     }
@@ -612,9 +691,11 @@
     }
     
     return [ARTStatsMessageTypes empty];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTStatsMessageCount *)statsMessageCountFromDictionary:(NSDictionary *)input {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (![input isKindOfClass:[NSDictionary class]]) {
         return [ARTStatsMessageCount empty];
     }
@@ -623,9 +704,11 @@
     NSNumber *data = [input artTyped:[NSNumber class] key:@"data"];
     
     return [[ARTStatsMessageCount alloc] initWithCount:count.doubleValue data:data.doubleValue];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTStatsMessageTraffic *)statsMessageTrafficFromDictionary:(NSDictionary *)input {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (![input isKindOfClass:[NSDictionary class]]) {
         return [ARTStatsMessageTraffic empty];
     }
@@ -643,9 +726,11 @@
     }
     
     return [ARTStatsMessageTraffic empty];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTStatsConnectionTypes *)statsConnectionTypesFromDictionary:(NSDictionary *)input {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (![input isKindOfClass:[NSDictionary class]]) {
         return [ARTStatsConnectionTypes empty];
     }
@@ -659,9 +744,11 @@
     }
     
     return [ARTStatsConnectionTypes empty];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTStatsResourceCount *)statsResourceCountFromDictionary:(NSDictionary *)input {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (![input isKindOfClass:[NSDictionary class]]) {
         return [ARTStatsResourceCount empty];
     }
@@ -677,9 +764,11 @@
                                                     mean:mean.doubleValue
                                                      min:min.doubleValue
                                                  refused:refused.doubleValue];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSError *)decodeError:(NSData *)artError error:(NSError **)error {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSDictionary *decodedError = [[self decodeDictionary:artError error:error] valueForKey:@"error"];
     if (!decodedError) {
         return nil;
@@ -690,9 +779,11 @@
                                @"ARTErrorStatusCode": decodedError[@"statusCode"]
                                };
     return [NSError errorWithDomain:ARTAblyErrorDomain code:[decodedError[@"code"] intValue] userInfo:userInfo];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTStatsRequestCount *)statsRequestCountFromDictionary:(NSDictionary *)input {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: statsRequestCountFromDictionary %@", _rest, [_delegate formatAsString], input];
     if (![input isKindOfClass:[NSDictionary class]]) {
         return [ARTStatsRequestCount empty];
@@ -705,32 +796,40 @@
     return [[ARTStatsRequestCount alloc] initWithSucceeded:succeeded.doubleValue
                                                     failed:failed.doubleValue
                                                    refused:refused.doubleValue];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)writeData:(id)data encoding:(NSString *)encoding toDictionary:(NSMutableDictionary *)output {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (encoding.length) {
         output[@"encoding"] = encoding;
     }
     output[@"data"] = data;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSDictionary *)decodeDictionary:(NSData *)data error:(NSError **)error {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     id obj = [self decode:data error:error];
     if (![obj isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
     return obj;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSArray *)decodeArray:(NSData *)data error:(NSError **)error {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     id obj = [self decode:data error:error];
     if (![obj isKindOfClass:[NSArray class]]) {
         return nil;
     }
     return obj;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (id)decode:(NSData *)data error:(NSError **)error {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSError *e = nil;
     id decoded = [_delegate decode:data error:&e];
     if (e) {
@@ -741,9 +840,11 @@
     }
     [_logger debug:@"RS:%p ARTJsonLikeEncoder<%@> decoding '%@'; got: %@", _rest, [_delegate formatAsString], data, decoded];
     return decoded;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSData *)encode:(id)obj error:(NSError **)error {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSError *e = nil;
     NSData *encoded = [_delegate encode:obj error:&e];
     if (e) {
@@ -754,6 +855,7 @@
     }
     [_logger debug:@"RS:%p ARTJsonLikeEncoder<%@> encoding '%@'; got: %@", _rest, [_delegate formatAsString], obj, encoded];
     return encoded;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 @end

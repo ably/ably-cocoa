@@ -5,6 +5,7 @@ podspec :path => 'Ably.podspec'
 def project_pods
     pod 'SocketRocket', '0.5.1'
     pod 'msgpack', '0.1.8'
+    pod 'KSCrash', '1.15.8'
 end
 
 def test_pods

@@ -27,4 +27,11 @@
     return (NSInteger)round([self timeIntervalSince1970] * 1000.0);
 }
 
+- (NSString *)toSentryTimestamp {
+	NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    dateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ss'.'SS";
+    dateFormatter.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
+    return [dateFormatter stringFromDate:self];
+}
+
 @end

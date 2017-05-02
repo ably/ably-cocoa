@@ -1,7 +1,71 @@
 PODS:
   - Ably (1.0.3):
+    - KSCrash (= 1.15.8)
     - msgpack (= 0.1.8)
     - SocketRocket (= 0.5.1)
+  - KSCrash (1.15.8):
+    - KSCrash/Installations (= 1.15.8)
+  - KSCrash/Installations (1.15.8):
+    - KSCrash/Recording
+    - KSCrash/Reporting
+  - KSCrash/Recording (1.15.8):
+    - KSCrash/Recording/Tools (= 1.15.8)
+  - KSCrash/Recording/Tools (1.15.8)
+  - KSCrash/Reporting (1.15.8):
+    - KSCrash/Recording
+    - KSCrash/Reporting/Filters (= 1.15.8)
+    - KSCrash/Reporting/MessageUI (= 1.15.8)
+    - KSCrash/Reporting/Sinks (= 1.15.8)
+    - KSCrash/Reporting/Tools (= 1.15.8)
+  - KSCrash/Reporting/Filters (1.15.8):
+    - KSCrash/Recording
+    - KSCrash/Reporting/Filters/Alert (= 1.15.8)
+    - KSCrash/Reporting/Filters/AppleFmt (= 1.15.8)
+    - KSCrash/Reporting/Filters/Base (= 1.15.8)
+    - KSCrash/Reporting/Filters/Basic (= 1.15.8)
+    - KSCrash/Reporting/Filters/GZip (= 1.15.8)
+    - KSCrash/Reporting/Filters/JSON (= 1.15.8)
+    - KSCrash/Reporting/Filters/Sets (= 1.15.8)
+    - KSCrash/Reporting/Filters/Stringify (= 1.15.8)
+    - KSCrash/Reporting/Filters/Tools (= 1.15.8)
+  - KSCrash/Reporting/Filters/Alert (1.15.8):
+    - KSCrash/Recording
+    - KSCrash/Reporting/Filters/Base
+  - KSCrash/Reporting/Filters/AppleFmt (1.15.8):
+    - KSCrash/Recording
+    - KSCrash/Reporting/Filters/Base
+  - KSCrash/Reporting/Filters/Base (1.15.8):
+    - KSCrash/Recording
+  - KSCrash/Reporting/Filters/Basic (1.15.8):
+    - KSCrash/Recording
+    - KSCrash/Reporting/Filters/Base
+  - KSCrash/Reporting/Filters/GZip (1.15.8):
+    - KSCrash/Recording
+    - KSCrash/Reporting/Filters/Base
+  - KSCrash/Reporting/Filters/JSON (1.15.8):
+    - KSCrash/Recording
+    - KSCrash/Reporting/Filters/Base
+  - KSCrash/Reporting/Filters/Sets (1.15.8):
+    - KSCrash/Recording
+    - KSCrash/Reporting/Filters/AppleFmt
+    - KSCrash/Reporting/Filters/Base
+    - KSCrash/Reporting/Filters/Basic
+    - KSCrash/Reporting/Filters/GZip
+    - KSCrash/Reporting/Filters/JSON
+    - KSCrash/Reporting/Filters/Stringify
+  - KSCrash/Reporting/Filters/Stringify (1.15.8):
+    - KSCrash/Recording
+    - KSCrash/Reporting/Filters/Base
+  - KSCrash/Reporting/Filters/Tools (1.15.8):
+    - KSCrash/Recording
+  - KSCrash/Reporting/MessageUI (1.15.8):
+    - KSCrash/Recording
+  - KSCrash/Reporting/Sinks (1.15.8):
+    - KSCrash/Recording
+    - KSCrash/Reporting/Filters
+    - KSCrash/Reporting/Tools
+  - KSCrash/Reporting/Tools (1.15.8):
+    - KSCrash/Recording
   - msgpack (0.1.8)
   - SocketRocket (0.5.1)
 
@@ -13,10 +77,11 @@ EXTERNAL SOURCES:
     :path: "../.."
 
 SPEC CHECKSUMS:
-  Ably: faaabeef80b7023bb724829cfd35d658d016ec08
+  Ably: cfa7e834cdac434ba45dd7095ba932cbd72fa2a8
+  KSCrash: 4acb0f9cdb0b1ce7155c608dc175d91d750a8c3a
   msgpack: 97491d2ea799408f4694f2c7d7fd79baf77853dd
   SocketRocket: d57c7159b83c3c6655745cd15302aa24b6bae531
 
 PODFILE CHECKSUM: 6af34bf7f91045b23539816c1d0cfe253bec5ea5
 
-COCOAPODS: 1.0.1
+COCOAPODS: 1.2.0

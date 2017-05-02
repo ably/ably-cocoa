@@ -305,7 +305,7 @@
     return 128;
 }
 
-+ (NSData *)generateSecureRandomData:(size_t)length {
++ (NSMutableData *)generateSecureRandomData:(size_t)length {
     void *buf = malloc(length);
     if (!buf) {
         return nil;
@@ -316,7 +316,7 @@
         return nil;
     }
 
-    NSData *outputData = [NSData dataWithBytesNoCopy:buf length:length freeWhenDone:YES];
+    NSMutableData *outputData = [NSMutableData dataWithBytesNoCopy:buf length:length freeWhenDone:YES];
     if (!outputData) {
         free(buf);
     }

@@ -7,6 +7,7 @@
 //
 
 #import "ARTLog+Private.h"
+#import "ARTNSDate+ARTUtil.m"
 
 static const char *logLevelName(ARTLogLevel level) {
     switch(level) {
@@ -41,6 +42,29 @@ static const char *logLevelName(ARTLogLevel level) {
 
 - (NSString *)toString {
     return [NSString stringWithFormat:@"%s: %@", logLevelName(self.level), self.message];
+}
+
+- (NSDictionary *)toBreadcrumb:(NSString *)category {
+    NSString *level;
+    switch (_level) {
+        case ARTLogLevelError:
+            level = @"error";
+            break;
+        case ARTLogLevelWarn:
+            level = @"warn";
+            break;
+        case ARTLogLevelInfo:
+            level = @"info";
+            break;
+        default:
+            level = @"debug";
+    }
+    return @{
+        @"category": category,
+        @"timestamp": [_date toSentryTimestamp],
+        @"level": level,
+        @"message": _message,
+    };
 }
 
 - (NSString *)description {

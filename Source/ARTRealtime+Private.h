@@ -15,6 +15,7 @@
 
 #import "ARTRealtimeTransport.h"
 #import "ARTAuth+Private.h"
+#import "ARTRest+Private.h"
 
 @class ARTRest;
 @class ARTErrorInfo;
@@ -88,6 +89,33 @@ ART_ASSUME_NONNULL_BEGIN
 // Message sending
 - (void)send:(ARTProtocolMessage *)msg callback:(art_nullable void (^)(ARTStatus *))cb;
 
+- (void)onUncaughtException:(NSException *)e;
+
 @end
 
 ART_ASSUME_NONNULL_END
+
+#define ART_TRY_OR_MOVE_TO_FAILED_START(realtime) \
+	do {\
+	ARTRealtime *__realtime = realtime;\
+    BOOL __started = ARTstartHandlingUncaughtExceptions(__realtime.rest);\
+    BOOL __caught = false;\
+	@try {\
+		do {\
+
+#define ART_TRY_OR_MOVE_TO_FAILED_END \
+		} while(0); \
+	}\
+	@catch(NSException *e) {\
+		__caught = true;\
+        if (!__started) {\
+            @throw e;\
+        }\
+		[__realtime onUncaughtException:e];\
+	}\
+	@finally {\
+		if (!__caught && __started) {\
+            ARTstopHandlingUncaughtExceptions(__realtime.rest);\
+		}\
+	}\
+	} while(0);

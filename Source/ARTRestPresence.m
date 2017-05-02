@@ -63,21 +63,28 @@
 }
 
 - (instancetype)initWithChannel:(ARTRestChannel *)channel {
+ART_TRY_OR_REPORT_CRASH_START(channel.rest) {
     if (self = [super init]) {
         _channel = channel;
     }
     return self;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)get:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, ARTErrorInfo *error))callback {
+ART_TRY_OR_REPORT_CRASH_START(_channel.rest) {
     [self get:[[ARTPresenceQuery alloc] init] callback:callback error:nil];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (BOOL)get:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, ARTErrorInfo *error))callback error:(NSError **)errorPtr {
+ART_TRY_OR_REPORT_CRASH_START(_channel.rest) {
     return [self get:[[ARTPresenceQuery alloc] init] callback:callback error:errorPtr];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (BOOL)get:(ARTPresenceQuery *)query callback:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
+ART_TRY_OR_REPORT_CRASH_START(_channel.rest) {
     if (query.limit > 1000) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
@@ -105,13 +112,17 @@
 
     [ARTPaginatedResult executePaginated:_channel.rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
     return YES;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)history:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *, ARTErrorInfo *))callback {
+ART_TRY_OR_REPORT_CRASH_START(_channel.rest) {
     [self history:[[ARTDataQuery alloc] init] callback:callback error:nil];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (BOOL)history:(ARTDataQuery *)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, ARTErrorInfo *error))callback error:(NSError **)errorPtr {
+ART_TRY_OR_REPORT_CRASH_START(_channel.rest) {
     if (query.limit > 1000) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
@@ -148,6 +159,7 @@
 
     [ARTPaginatedResult executePaginated:_channel.rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
     return YES;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 @end

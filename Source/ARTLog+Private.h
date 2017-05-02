@@ -22,6 +22,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDate:(NSDate *)date level:(ARTLogLevel)level message:(NSString *)message;
 
 - (NSString *)toString;
+- (NSDictionary *)toBreadcrumb:(NSString *)category;
 
 @end
 

@@ -45,10 +45,13 @@
 }
 
 - (void)first:(void (^)(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [self.class executePaginated:_rest withRequest:_relFirst andResponseProcessor:_responseProcessor callback:callback];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)next:(void (^)(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (!_relNext) {
         // If there is no next page, we can't make a request, so we answer the callback
         // with a nil PaginatedResult. That's why the callback has the result as nullable
@@ -57,6 +60,7 @@
         return;
     }
     [self.class executePaginated:_rest withRequest:_relNext andResponseProcessor:_responseProcessor callback:callback];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 static NSDictionary *extractLinks(NSHTTPURLResponse *response) {
@@ -100,6 +104,7 @@ static NSMutableURLRequest *requestRelativeTo(NSMutableURLRequest *request, NSSt
 }
 
 + (void)executePaginated:(ARTRest *)rest withRequest:(NSMutableURLRequest *)request andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor callback:(void (^)(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback {
+ART_TRY_OR_REPORT_CRASH_START(rest) {
     [rest.logger debug:__FILE__ line:__LINE__ message:@"Paginated request: %@", request];
 
     [rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -133,6 +138,7 @@ static NSMutableURLRequest *requestRelativeTo(NSMutableURLRequest *request, NSSt
             callback(result, nil);
         }
     }];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 @end
