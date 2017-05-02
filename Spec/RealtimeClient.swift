@@ -1237,6 +1237,56 @@ class RealtimeClient: QuickSpec {
                 }
             }
 
+            it("should accept acks with different order") {
+                let realtime = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                defer { realtime.dispose(); realtime.close() }
+                let channel = realtime.channels.get("foo")
+                waitUntil(timeout: testTimeout) { done in
+                    channel.attach { error in
+                        expect(error).to(beNil())
+                        done()
+                    }
+                }
+                guard let transport = realtime.transport as? TestProxyTransport else {
+                    fail("TestProxyTransport is not set"); return
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    transport.beforeProcessingReceivedMessage = { pm in
+                        if pm.action == .Ack, let msgSerial = pm.msgSerial {
+                            switch msgSerial.integerValue {
+                            case 0:
+                                pm.msgSerial = 3
+                            case 1:
+                                pm.msgSerial = 2
+                            case 2:
+                                pm.msgSerial = 1
+                            default:
+                                pm.msgSerial = 0
+                            }
+                        }
+                    }
+
+                    let partialDone = AblyTests.splitDone(4, done: done)
+                    channel.publish("test1", data: nil) { error in
+                        expect(error).to(beNil())
+                        partialDone()
+                    }
+                    channel.publish("test2", data: nil) { error in
+                        expect(error).to(beNil())
+                        partialDone()
+                    }
+                    channel.publish("test3", data: nil) { error in
+                        expect(error).to(beNil())
+                        partialDone()
+                    }
+                    channel.publish("test4", data: nil) { error in
+                        expect(error).to(beNil())
+                        partialDone()
+                    }
+                }
+            }
+
             it("should never register any connection listeners for internal use with the public EventEmitter") {
                 let options = AblyTests.commonAppSetup()
                 options.autoConnect = false
