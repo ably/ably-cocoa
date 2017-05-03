@@ -1287,6 +1287,43 @@ class RealtimeClient: QuickSpec {
                 }
             }
 
+            it("transport should guarantee the incoming message order") {
+                let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
+                defer { realtime.dispose(); realtime.close() }
+                waitUntil(timeout: testTimeout) { done in
+                    realtime.connection.on(.Connected) { _ in
+                        done()
+                    }
+                }
+                guard let webSocketTransport = realtime.transport as? ARTWebSocketTransport else {
+                    fail("should be using a WebSocket transport"); return
+                }
+
+                var result: [Int] = []
+                let expectedOrder = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+
+                waitUntil(timeout: testTimeout) { done in
+                    let partialDone = AblyTests.splitDone(expectedOrder.count, done: done)
+
+                    realtime.testSuite_getArgumentFrom(NSSelectorFromString("ack:"), atIndex: 0) { object in
+                        guard let value = (object as? ARTProtocolMessage)?.msgSerial?.integerValue else {
+                            return
+                        }
+                        result.append(value)
+                        partialDone()
+                    }
+
+                    for i in expectedOrder {
+                        let message = ARTProtocolMessage()
+                        message.action = .Ack
+                        message.msgSerial = i
+                        webSocketTransport.webSocket(webSocketTransport.websocket!, didReceiveMessage: message)
+                    }
+                }
+
+                expect(result).to(equal(expectedOrder))
+            }
+
             it("should never register any connection listeners for internal use with the public EventEmitter") {
                 let options = AblyTests.commonAppSetup()
                 options.autoConnect = false
