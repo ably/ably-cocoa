@@ -15,9 +15,9 @@ class Crypto : QuickSpec {
     override func spec() {
         describe("Crypto") {
             let key = "+/h4eHh4eHh4eHh4eHh4eA=="
-            let binaryKey = NSData(base64EncodedString: key, options: NSDataBase64DecodingOptions.init(rawValue: 0))!
-            var longKey = NSMutableData(data: binaryKey)
-            longKey.appendData(binaryKey)
+            let binaryKey = NSData(base64Encoded: key, options: NSData.Base64DecodingOptions.init(rawValue: 0))!
+            var longKey = NSMutableData(data: binaryKey as Data)
+            longKey.append(binaryKey as Data)
 
             // RSE1
             context("getDefaultParams") {
@@ -29,7 +29,7 @@ class Crypto : QuickSpec {
                         "key": key
                     ])
                     expect(params.algorithm).to(equal("AES"))
-                    expect(params.key).to(equal(binaryKey))
+                    expect(params.key).to(equal(binaryKey as Data))
                     expect(params.keyLength).to(equal(128))
                     expect(params.mode).to(equal("CBC"))
 
@@ -38,7 +38,7 @@ class Crypto : QuickSpec {
                         "algorithm": "DES"
                     ])
                     expect(params.algorithm).to(equal("DES"))
-                    expect(params.key).to(equal(longKey))
+                    expect(params.key).to(equal(longKey as Data))
                     expect(params.keyLength).to(equal(256))
                     expect(params.mode).to(equal("CBC"))
                 }
@@ -47,18 +47,18 @@ class Crypto : QuickSpec {
                 context("key parameter") {
                     it("can be a binary") {
                         let params = ARTCrypto.getDefaultParams(["key": binaryKey])
-                        expect(params.key).to(equal(binaryKey))
+                        expect(params.key).to(equal(binaryKey as Data))
                     }
 
                     it("can be a base64-encoded string with standard encoding") {
                         let params = ARTCrypto.getDefaultParams(["key": key])
-                        expect(params.key).to(equal(binaryKey))
+                        expect(params.key).to(equal(binaryKey as Data))
                     }
 
                     it("can be a base64-encoded string with URL encoding") {
                         let key = "-_h4eHh4eHh4eHh4eHh4eA=="
                         let params = ARTCrypto.getDefaultParams(["key": key])
-                        expect(params.key).to(equal(binaryKey))
+                        expect(params.key).to(equal(binaryKey as Data))
                     }
                 }
 
@@ -74,7 +74,7 @@ class Crypto : QuickSpec {
                 // RSE1e
                 it("should check that keyLength is valid for algorithm") {
                     expect{ARTCrypto.getDefaultParams([
-                        "key": binaryKey.subdataWithRange(NSMakeRange(0, 10))
+                        "key": binaryKey.subdata(with: NSMakeRange(0, 10))
                     ])}.to(raiseException())
                 }
 
@@ -84,25 +84,25 @@ class Crypto : QuickSpec {
             context("generateRandomKey") {
                 // RSE2a, RSE2b
                 it("takes a single length argument and returns a binary") {
-                    var key: NSData = ARTCrypto.generateRandomKey(128)
+                    var key: NSData = ARTCrypto.generateRandomKey(128) as NSData
                     expect(key.length).to(equal(128 / 8))
 
-                    key = ARTCrypto.generateRandomKey(256)
+                    key = ARTCrypto.generateRandomKey(256) as NSData
                     expect(key.length).to(equal(256 / 8))
                 }
 
                 // RSE2a, RSE2b
                 it("takes no arguments and returns the default algorithm's default length") {
-                    let key: NSData = ARTCrypto.generateRandomKey()
+                    let key: NSData = ARTCrypto.generateRandomKey() as NSData
                     expect(key.length).to(equal(256 / 8))
                 }
             }
 
             context("encrypt") {
                 it("should generate a new IV every time it's called, and should be the first block encrypted") {
-                    let params = ARTCipherParams(algorithm: "aes", key: key)
-                    let cipher = ARTCrypto.cipherWithParams(params)
-                    let data = "data".dataUsingEncoding(NSUTF8StringEncoding)!
+                    let params = ARTCipherParams(algorithm: "aes", key: key as ARTCipherKeyCompatible)
+                    let cipher = ARTCrypto.cipher(with: params)
+                    let data = "data".data(using: String.Encoding.utf8)!
 
                     var distinctOutputs = Set<NSData>()
                     var output: NSData?
@@ -111,10 +111,10 @@ class Crypto : QuickSpec {
                         cipher.encrypt(data, output:&output)
                         distinctOutputs.insert(output!)
 
-                        let firstBlock = output!.subdataWithRange(NSMakeRange(0, Int((cipher as! ARTCbcCipher).blockLength)))
-                        let paramsWithIV = ARTCipherParams(algorithm: "aes", key: key, iv: firstBlock)
+                        let firstBlock = output!.subdata(with: NSMakeRange(0, Int((cipher as! ARTCbcCipher).blockLength)))
+                        let paramsWithIV = ARTCipherParams(algorithm: "aes", key: key as ARTCipherKeyCompatible, iv: firstBlock)
                         var sameOutput: NSData?
-                        ARTCrypto.cipherWithParams(paramsWithIV).encrypt(data, output:&sameOutput)
+                        ARTCrypto.cipher(with: paramsWithIV).encrypt(data, output:&sameOutput)
 
                         expect(output!).to(equal(sameOutput!))
                     }
@@ -127,10 +127,10 @@ class Crypto : QuickSpec {
                 context("with fixtures from \(cryptoTest).json") {
                     let (key, iv, items) = AblyTests.loadCryptoTestData(cryptoTest)
                     let decoder = ARTDataEncoder.init(cipherParams: nil, error: nil)
-                    let cipherParams = ARTCipherParams(algorithm: "aes", key: key, iv: iv)
+                    let cipherParams = ARTCipherParams(algorithm: "aes", key: key as ARTCipherKeyCompatible, iv: iv)
                     let encrypter = ARTDataEncoder.init(cipherParams: cipherParams, error: nil)
 
-                    func extractMessage(fixture: AblyTests.CryptoTestItem.TestMessage) -> ARTMessage {
+                    func extractMessage(_ fixture: AblyTests.CryptoTestItem.TestMessage) -> ARTMessage {
                         let msg = ARTMessage(name: fixture.name, data: fixture.data)
                         msg.encoding = fixture.encoding
                         return msg
@@ -142,10 +142,10 @@ class Crypto : QuickSpec {
                             let encryptedFixture = extractMessage(item.encrypted)
 
                             var error: NSError?
-                            let decoded = fixture.decodeWithEncoder(decoder, error: &error) as! ARTMessage
+                            let decoded = fixture.decode(with: decoder, error: &error) as! ARTMessage
                             expect(error).to(beNil())
 
-                            let encrypted = decoded.encodeWithEncoder(encrypter, error: &error)
+                            let encrypted = decoded.encode(with: encrypter, error: &error)
                             expect(error).to(beNil())
 
                             expect(encrypted as? ARTMessage).to(equal(encryptedFixture))
@@ -158,10 +158,10 @@ class Crypto : QuickSpec {
                             let encryptedFixture = extractMessage(item.encrypted)
 
                             var error: NSError?
-                            let decoded = fixture.decodeWithEncoder(decoder, error: &error) as! ARTMessage
+                            let decoded = fixture.decode(with: decoder, error: &error) as! ARTMessage
                             expect(error).to(beNil())
 
-                            let decrypted = encryptedFixture.decodeWithEncoder(encrypter, error: &error)
+                            let decrypted = encryptedFixture.decode(with: encrypter, error: &error)
                             expect(error).to(beNil())
 
                             expect(decrypted as? ARTMessage).to(equal(decoded))

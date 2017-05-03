@@ -64,29 +64,29 @@ PODS:
   - KSCrashAblyFork/Reporting/Tools (1.15.8-ably-1):
     - KSCrashAblyFork/Recording
   - msgpack (0.1.8)
-  - Nimble (4.1.0)
-  - Quick (0.9.3)
+  - Nimble (7.0.0)
+  - Quick (1.1.0)
   - SocketRocket (0.5.1)
-  - SwiftyJSON (2.4.0)
+  - SwiftyJSON (3.1.4)
 
 DEPENDENCIES:
   - Aspects
   - KSCrashAblyFork (= 1.15.8-ably-1)
   - msgpack (= 0.1.8)
-  - Nimble (= 4.1.0)
-  - Quick (= 0.9.3)
+  - Nimble (= 7.0.0)
+  - Quick (= 1.1.0)
   - SocketRocket (= 0.5.1)
-  - SwiftyJSON (= 2.4.0)
+  - SwiftyJSON (= 3.1.4)
 
 SPEC CHECKSUMS:
   Aspects: 7595ba96a6727a58ebcbfc954497fc5d2fdde546
   KSCrashAblyFork: 6d0dd5b033710109a8fdde28103eeb0e7f9ba1f7
   msgpack: 97491d2ea799408f4694f2c7d7fd79baf77853dd
-  Nimble: 97a0a4cae5124c117115634b2d055d8c97d0af19
-  Quick: 13a2a2b19a5d8e3ed4fd0c36ee46597fd77ebf71
+  Nimble: 874982b605d4d752fcac6be695d13c502de84b1b
+  Quick: dafc587e21eed9f4cab3249b9f9015b0b7a7f71d
   SocketRocket: d57c7159b83c3c6655745cd15302aa24b6bae531
-  SwiftyJSON: 96918c1bf505efa50c4f72957018dd3452090c9c
+  SwiftyJSON: c2842d878f95482ffceec5709abc3d05680c0220
 
-PODFILE CHECKSUM: 160cf53ef13d4ed09e5e81c2f2840457b07e012a
+PODFILE CHECKSUM: 51df8c07c1f9b8c5dc1c7d7b7c47457ddfc72d30
 
-COCOAPODS: 1.2.1
+COCOAPODS: 1.2.0

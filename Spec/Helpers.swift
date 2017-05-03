@@ -37,7 +37,7 @@ let JSONStringToData: String -> NSData? = {
 }
 
 let JSONDataToAny: NSData -> AnyObject? = {
-    try? NSJSONSerialization.JSONObjectWithData($0, options: .MutableLeaves)
+    try? NSJSONSerialization.JSONObjectWithData($0, options: .mutableLeaves)
 }
 
 /**

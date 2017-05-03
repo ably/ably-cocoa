@@ -11,7 +11,7 @@ import Quick
 import Nimble
 import SwiftyJSON
 
-func countChannels(channels: ARTRealtimeChannels) -> Int {
+func countChannels(_ channels: ARTRealtimeChannels) -> Int {
     var i = 0
     for _ in channels {
         i += 1
@@ -30,7 +30,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.autoConnect = false
 
                     let client = ARTRealtime(options: options)
-                    client.setTransportClass(TestProxyTransport.self)
+                    client.setTransport(TestProxyTransport.self)
                     client.connect()
                     defer { client.dispose(); client.close() }
 
@@ -47,7 +47,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.autoConnect = false
 
                     let client = ARTRealtime(options: options)
-                    client.setTransportClass(TestProxyTransport.self)
+                    client.setTransport(TestProxyTransport.self)
                     client.connect()
                     defer { client.dispose(); client.close() }
 
@@ -57,10 +57,10 @@ class RealtimeClientConnection: QuickSpec {
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
-                            case .Failed:
+                            case .failed:
                                 AblyTests.checkError(errorInfo, withAlternative: "Failed state")
                                 done()
-                            case .Connected:
+                            case .connected:
                                 if let transport = client.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
                                     expect(query).to(haveParam("key", withValue: options.key ?? ""))
                                     expect(query).to(haveParam("echo", withValue: "true"))
@@ -85,7 +85,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.echoMessages = false
 
                     let client = ARTRealtime(options: options)
-                    client.setTransportClass(TestProxyTransport.self)
+                    client.setTransport(TestProxyTransport.self)
                     client.connect()
                     defer { client.dispose(); client.close() }
 
@@ -95,10 +95,10 @@ class RealtimeClientConnection: QuickSpec {
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
-                            case .Failed:
+                            case .failed:
                                 AblyTests.checkError(errorInfo, withAlternative: "Failed state")
                                 done()
-                            case .Connected:
+                            case .connected:
                                 if let transport = client.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
                                     expect(query).to(haveParam("accessToken", withValue: client.auth.tokenDetails?.token ?? ""))
                                     expect(query).to(haveParam("echo", withValue: "false"))
@@ -134,7 +134,7 @@ class RealtimeClientConnection: QuickSpec {
                     let state = stateChange.current
                     let errorInfo = stateChange.reason
                     switch state {
-                    case .Connected:
+                    case .connected:
                         connected = true
                     default:
                         break
@@ -157,7 +157,7 @@ class RealtimeClientConnection: QuickSpec {
                         let state = stateChange.current
                         let errorInfo = stateChange.reason
                         switch state {
-                        case .Connected:
+                        case .connected:
                             if waiting {
                                 XCTFail("Expected to be disconnected")
                             }
@@ -166,7 +166,7 @@ class RealtimeClientConnection: QuickSpec {
                             break
                         }
                     }
-                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(2.0 * Double(NSEC_PER_SEC))), dispatch_get_main_queue()) {
+                    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + DispatchTimeInterval.seconds(2)) {
                         waiting = false
                         client.connect()
                     }
@@ -180,7 +180,7 @@ class RealtimeClientConnection: QuickSpec {
                 let client = ARTRealtime(options: options)
                 defer { client.dispose(); client.close() }
                 waitUntil(timeout: testTimeout) { done in
-                    client.connection.once(.Connecting) { _ in
+                    client.connection.once(.connecting) { _ in
                         guard let webSocketTransport = client.transport as? ARTWebSocketTransport else {
                             fail("Transport should be of type ARTWebSocketTransport"); done()
                             return
@@ -199,7 +199,7 @@ class RealtimeClientConnection: QuickSpec {
                 options.autoConnect = false
                 
                 let client = ARTRealtime(options: options)
-                client.setTransportClass(TestProxyTransport.self)
+                client.setTransport(TestProxyTransport.self)
                 client.connect()
                 
                 waitUntil(timeout: testTimeout) { done in
@@ -208,10 +208,10 @@ class RealtimeClientConnection: QuickSpec {
                         let state = stateChange.current
                         let errorInfo = stateChange.reason
                         switch state {
-                        case .Failed:
+                        case .failed:
                             AblyTests.checkError(errorInfo, withAlternative: "Failed state")
                             done()
-                        case .Connected:
+                        case .connected:
                             if let transport = client.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
                                 expect(query).to(haveParam("lib", withValue: "ios-1.0.4"))
                             }
@@ -251,11 +251,11 @@ class RealtimeClientConnection: QuickSpec {
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
-                            case .Connecting:
+                            case .connecting:
                                 if !alreadyDisconnected {
                                     events += [state]
                                 }
-                            case .Connected:
+                            case .connected:
                                 if alreadyClosed {
                                     delay(0) {
                                         client.onSuspended()
@@ -268,19 +268,19 @@ class RealtimeClientConnection: QuickSpec {
                                         client.onDisconnected()
                                     }
                                 }
-                            case .Disconnected:
+                            case .disconnected:
                                 events += [state]
                                 alreadyDisconnected = true
-                            case .Suspended:
+                            case .suspended:
                                 events += [state]
                                 client.onError(AblyTests.newErrorProtocolMessage())
-                            case .Closing:
+                            case .closing:
                                 events += [state]
-                            case .Closed:
+                            case .closed:
                                 events += [state]
                                 alreadyClosed = true
                                 client.connect()
-                            case .Failed:
+                            case .failed:
                                 events += [state]
                                 expect(errorInfo).toNot(beNil(), description: "Error is nil")
                                 connection.off()
@@ -298,14 +298,14 @@ class RealtimeClientConnection: QuickSpec {
                         return
                     }
 
-                    expect(events[0].rawValue).to(equal(ARTRealtimeConnectionState.Initialized.rawValue), description: "Should be INITIALIZED state")
-                    expect(events[1].rawValue).to(equal(ARTRealtimeConnectionState.Connecting.rawValue), description: "Should be CONNECTING state")
-                    expect(events[2].rawValue).to(equal(ARTRealtimeConnectionState.Connected.rawValue), description: "Should be CONNECTED state")
-                    expect(events[3].rawValue).to(equal(ARTRealtimeConnectionState.Disconnected.rawValue), description: "Should be DISCONNECTED state")
-                    expect(events[4].rawValue).to(equal(ARTRealtimeConnectionState.Closing.rawValue), description: "Should be CLOSING state")
-                    expect(events[5].rawValue).to(equal(ARTRealtimeConnectionState.Closed.rawValue), description: "Should be CLOSED state")
-                    expect(events[6].rawValue).to(equal(ARTRealtimeConnectionState.Suspended.rawValue), description: "Should be SUSPENDED state")
-                    expect(events[7].rawValue).to(equal(ARTRealtimeConnectionState.Failed.rawValue), description: "Should be FAILED state")
+                    expect(events[0].rawValue).to(equal(ARTRealtimeConnectionState.initialized.rawValue), description: "Should be INITIALIZED state")
+                    expect(events[1].rawValue).to(equal(ARTRealtimeConnectionState.connecting.rawValue), description: "Should be CONNECTING state")
+                    expect(events[2].rawValue).to(equal(ARTRealtimeConnectionState.connected.rawValue), description: "Should be CONNECTED state")
+                    expect(events[3].rawValue).to(equal(ARTRealtimeConnectionState.disconnected.rawValue), description: "Should be DISCONNECTED state")
+                    expect(events[4].rawValue).to(equal(ARTRealtimeConnectionState.closing.rawValue), description: "Should be CLOSING state")
+                    expect(events[5].rawValue).to(equal(ARTRealtimeConnectionState.closed.rawValue), description: "Should be CLOSED state")
+                    expect(events[6].rawValue).to(equal(ARTRealtimeConnectionState.suspended.rawValue), description: "Should be SUSPENDED state")
+                    expect(events[7].rawValue).to(equal(ARTRealtimeConnectionState.failed.rawValue), description: "Should be FAILED state")
                 }
 
                 // RTN4h
@@ -315,30 +315,30 @@ class RealtimeClientConnection: QuickSpec {
                     defer { client.dispose(); client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.connection.once(.Connected) { stateChange in
+                        client.connection.once(.connected) { stateChange in
                             expect(stateChange?.reason).to(beNil())
                             done()
                         }
                     }
 
-                    client.connection.once(.Connected) { stateChange in
+                    client.connection.once(.connected) { stateChange in
                         fail("Should not emit a Connected state")
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.connection.once(.Update) { stateChange in
+                        client.connection.once(.update) { stateChange in
                             guard let stateChange = stateChange else {
                                 fail("ConnectionStateChange is nil"); done(); return
                             }
                             expect(stateChange.reason).to(beNil())
-                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
-                            expect(stateChange.current).to(equal(ARTRealtimeConnectionState.Connected))
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
+                            expect(stateChange.current).to(equal(ARTRealtimeConnectionState.connected))
                             expect(stateChange.current).to(equal(stateChange.previous))
                             done()
                         }
 
                         let authMessage = ARTProtocolMessage()
-                        authMessage.action = .Auth
+                        authMessage.action = .auth
                         client.transport?.receive(authMessage)
                     }
                 }
@@ -359,9 +359,9 @@ class RealtimeClientConnection: QuickSpec {
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
-                            case .Connecting:
+                            case .connecting:
                                 events += [state]
-                            case .Connected:
+                            case .connected:
                                 events += [state]
                                 done()
                             default:
@@ -377,8 +377,8 @@ class RealtimeClientConnection: QuickSpec {
                         return
                     }
 
-                    expect(events[0].rawValue).to(equal(ARTRealtimeConnectionState.Connecting.rawValue), description: "Should be CONNECTING state")
-                    expect(events[1].rawValue).to(equal(ARTRealtimeConnectionState.Connected.rawValue), description: "Should be CONNECTED state")
+                    expect(events[0].rawValue).to(equal(ARTRealtimeConnectionState.connecting.rawValue), description: "Should be CONNECTING state")
+                    expect(events[1].rawValue).to(equal(ARTRealtimeConnectionState.connected.rawValue), description: "Should be CONNECTED state")
                 }
 
                 // RTN4c
@@ -394,11 +394,11 @@ class RealtimeClientConnection: QuickSpec {
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
-                            case .Connected:
+                            case .connected:
                                 connection.close()
-                            case .Closing:
+                            case .closing:
                                 events += [state]
-                            case .Closed:
+                            case .closed:
                                 events += [state]
                                 done()
                             default:
@@ -413,8 +413,8 @@ class RealtimeClientConnection: QuickSpec {
                         return
                     }
 
-                    expect(events[0].rawValue).to(equal(ARTRealtimeConnectionState.Closing.rawValue), description: "Should be CLOSING state")
-                    expect(events[1].rawValue).to(equal(ARTRealtimeConnectionState.Closed.rawValue), description: "Should be CLOSED state")
+                    expect(events[0].rawValue).to(equal(ARTRealtimeConnectionState.closing.rawValue), description: "Should be CLOSING state")
+                    expect(events[1].rawValue).to(equal(ARTRealtimeConnectionState.closed.rawValue), description: "Should be CLOSED state")
                 }
 
                 // RTN4d
@@ -424,7 +424,7 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
                     let connection = client.connection
-                    expect(connection.state.rawValue).to(equal(ARTRealtimeConnectionState.Initialized.rawValue), description: "Missing INITIALIZED state")
+                    expect(connection.state.rawValue).to(equal(ARTRealtimeConnectionState.initialized.rawValue), description: "Missing INITIALIZED state")
 
                     waitUntil(timeout: testTimeout) { done in
                         connection.on { stateChange in
@@ -432,10 +432,10 @@ class RealtimeClientConnection: QuickSpec {
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
-                            case .Connecting:
-                                expect(connection.state.rawValue).to(equal(ARTRealtimeConnectionState.Connecting.rawValue), description: "Missing CONNECTING state")
-                            case .Connected:
-                                expect(connection.state.rawValue).to(equal(ARTRealtimeConnectionState.Connected.rawValue), description: "Missing CONNECTED state")
+                            case .connecting:
+                                expect(connection.state.rawValue).to(equal(ARTRealtimeConnectionState.connecting.rawValue), description: "Missing CONNECTING state")
+                            case .connected:
+                                expect(connection.state.rawValue).to(equal(ARTRealtimeConnectionState.connected.rawValue), description: "Missing CONNECTED state")
                                 done()
                             default:
                                 break
@@ -453,14 +453,14 @@ class RealtimeClientConnection: QuickSpec {
                     defer { client.dispose(); client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.connection.once(ARTRealtimeConnectionEvent.Connected) { stateChange in
+                        client.connection.once(ARTRealtimeConnectionEvent.connected) { stateChange in
                             guard let stateChange = stateChange else {
                                 fail("ConnectionStateChange is empty"); done()
                                 return
                             }
-                            expect(stateChange).to(beAKindOf(ARTConnectionStateChange))
-                            expect(stateChange.current).to(equal(ARTRealtimeConnectionState.Connected))
-                            expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.Connecting))
+                            expect(stateChange).to(beAKindOf(ARTConnectionStateChange.self))
+                            expect(stateChange.current).to(equal(ARTRealtimeConnectionState.connected))
+                            expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.connecting))
                             done()
                         }
                         client.connect()
@@ -483,11 +483,11 @@ class RealtimeClientConnection: QuickSpec {
                             let state = stateChange.current
                             let reason = stateChange.reason
                             switch state {
-                            case .Connected:
-                                expect(stateChange.event).to(equal(ARTRealtimeConnectionEvent.Connected))
+                            case .connected:
+                                expect(stateChange.event).to(equal(ARTRealtimeConnectionEvent.connected))
                                 client.onError(AblyTests.newErrorProtocolMessage())
-                            case .Failed:
-                                expect(stateChange.event).to(equal(ARTRealtimeConnectionEvent.Failed))
+                            case .failed:
+                                expect(stateChange.event).to(equal(ARTRealtimeConnectionEvent.failed))
                                 errorInfo = reason
                                 done()
                             default:
@@ -507,7 +507,7 @@ class RealtimeClientConnection: QuickSpec {
                     defer { client.dispose(); client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.connection.once(.Connected) { stateChange in
+                        client.connection.once(.connected) { stateChange in
                             expect(stateChange?.reason).to(beNil())
                             done()
                         }
@@ -516,12 +516,12 @@ class RealtimeClientConnection: QuickSpec {
                     guard let transport = client.transport as? TestProxyTransport else {
                         fail("TestProxyTransport is not set"); return
                     }
-                    guard let originalConnectedMessage = transport.protocolMessagesReceived.filter({ $0.action == .Connected }).first else {
+                    guard let originalConnectedMessage = transport.protocolMessagesReceived.filter({ $0.action == .connected }).first else {
                         fail("First CONNECTED message not received"); return
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.connection.once(.Update) { stateChange in
+                        client.connection.once(.update) { stateChange in
                             guard let stateChange = stateChange else {
                                 fail("ConnectionStateChange is nil"); done(); return
                             }
@@ -530,12 +530,12 @@ class RealtimeClientConnection: QuickSpec {
                             }
                             expect(error.code) == 1234
                             expect(error.message) == "fabricated error"
-                            expect(stateChange.event).to(equal(ARTRealtimeConnectionEvent.Update))
+                            expect(stateChange.event).to(equal(ARTRealtimeConnectionEvent.update))
                             done()
                         }
 
                         let connectedMessageWithError = originalConnectedMessage
-                        connectedMessageWithError.error = ARTErrorInfo.createWithCode(1234, message: "fabricated error")
+                        connectedMessageWithError.error = ARTErrorInfo.create(withCode: 1234, message: "fabricated error")
                         client.transport?.receive(connectedMessageWithError)
                     }
                 }
@@ -582,7 +582,7 @@ class RealtimeClientConnection: QuickSpec {
                     let total = max*max - max
                     for client in disposable {
                         let channel = client.channels.get(channelName)
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attached))
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.attached))
 
                         channel.subscribe { message in
                             expect(message.data as? String).to(equal("message_string"))
@@ -608,7 +608,7 @@ class RealtimeClientConnection: QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 options.autoConnect = false
                 let client = ARTRealtime(options: options)
-                client.setTransportClass(TestProxyTransport.self)
+                client.setTransport(TestProxyTransport.self)
                 client.connect()
                 defer {
                     client.dispose()
@@ -621,14 +621,14 @@ class RealtimeClientConnection: QuickSpec {
                         let state = stateChange.current
                         let error = stateChange.reason
                         expect(error).to(beNil())
-                        if state == .Connected && error == nil {
+                        if state == .connected && error == nil {
                             done()
                         }
                     }
                 }
 
                 if let webSocketTransport = client.transport as? ARTWebSocketTransport {
-                    expect(webSocketTransport.state).to(equal(ARTRealtimeTransportState.Opened))
+                    expect(webSocketTransport.state).to(equal(ARTRealtimeTransportState.opened))
                 }
                 else {
                     XCTFail("WebSocket is not the default transport")
@@ -636,7 +636,7 @@ class RealtimeClientConnection: QuickSpec {
 
                 if let transport = client.transport as? TestProxyTransport {
                     // CONNECTED ProtocolMessage
-                    expect(transport.protocolMessagesReceived.map{ $0.action }).to(contain(ARTProtocolMessageAction.Connected))
+                    expect(transport.protocolMessagesReceived.map{ $0.action }).to(contain(ARTProtocolMessageAction.connected))
                 }
                 else {
                     XCTFail("MockTransport is not working")
@@ -654,7 +654,7 @@ class RealtimeClientConnection: QuickSpec {
                         options.autoConnect = false
                         options.clientId = "client_string"
                         let client = ARTRealtime(options: options)
-                        client.setTransportClass(TestProxyTransport.self)
+                        client.setTransport(TestProxyTransport.self)
                         client.connect()
                         defer { client.dispose(); client.close() }
 
@@ -667,11 +667,11 @@ class RealtimeClientConnection: QuickSpec {
 
                         let transport = client.transport as! TestProxyTransport
 
-                        guard let publishedMessage = transport.protocolMessagesSent.filter({ $0.action == .Message }).last else {
+                        guard let publishedMessage = transport.protocolMessagesSent.filter({ $0.action == .message }).last else {
                             XCTFail("No MESSAGE action was sent"); return
                         }
 
-                        guard let receivedAck = transport.protocolMessagesReceived.filter({ $0.action == .Ack }).last else {
+                        guard let receivedAck = transport.protocolMessagesReceived.filter({ $0.action == .ack }).last else {
                             XCTFail("No ACK action was received"); return
                         }
 
@@ -683,7 +683,7 @@ class RealtimeClientConnection: QuickSpec {
                         options.autoConnect = false
                         options.clientId = "client_string"
                         let client = ARTRealtime(options: options)
-                        client.setTransportClass(TestProxyTransport.self)
+                        client.setTransport(TestProxyTransport.self)
                         client.connect()
                         defer { client.dispose(); client.close() }
 
@@ -692,7 +692,7 @@ class RealtimeClientConnection: QuickSpec {
                                 let stateChange = stateChange!
                                 let state = stateChange.current
                                 let error = stateChange.reason
-                                if state == .Connected {
+                                if state == .connected {
                                     let channel = client.channels.get("test")
                                     channel.attach() { error in
                                         expect(error).to(beNil())
@@ -707,11 +707,11 @@ class RealtimeClientConnection: QuickSpec {
 
                         let transport = client.transport as! TestProxyTransport
 
-                        guard let publishedMessage = transport.protocolMessagesSent.filter({ $0.action == .Presence }).last else {
+                        guard let publishedMessage = transport.protocolMessagesSent.filter({ $0.action == .presence }).last else {
                             XCTFail("No PRESENCE action was sent"); return
                         }
 
-                        guard let receivedAck = transport.protocolMessagesReceived.filter({ $0.action == .Ack }).last else {
+                        guard let receivedAck = transport.protocolMessagesReceived.filter({ $0.action == .ack }).last else {
                             XCTFail("No ACK action was received"); return
                         }
 
@@ -723,7 +723,7 @@ class RealtimeClientConnection: QuickSpec {
                         options.token = getTestToken(key: options.key, capability: "{ \"\(ARTChannels_getChannelNamePrefix!())-test\":[\"subscribe\"] }")
                         options.autoConnect = false
                         let client = ARTRealtime(options: options)
-                        client.setTransportClass(TestProxyTransport.self)
+                        client.setTransport(TestProxyTransport.self)
                         client.connect()
                         defer { client.dispose(); client.close() }
 
@@ -736,11 +736,11 @@ class RealtimeClientConnection: QuickSpec {
 
                         let transport = client.transport as! TestProxyTransport
 
-                        guard let publishedMessage = transport.protocolMessagesSent.filter({ $0.action == .Message }).last else {
+                        guard let publishedMessage = transport.protocolMessagesSent.filter({ $0.action == .message }).last else {
                             XCTFail("No MESSAGE action was sent"); return
                         }
 
-                        guard let receivedNack = transport.protocolMessagesReceived.filter({ $0.action == .Nack }).last else {
+                        guard let receivedNack = transport.protocolMessagesReceived.filter({ $0.action == .nack }).last else {
                             XCTFail("No NACK action was received"); return
                         }
 
@@ -752,7 +752,7 @@ class RealtimeClientConnection: QuickSpec {
                         options.autoConnect = false
                         options.clientId = "client_string"
                         let client = ARTRealtime(options: options)
-                        client.setTransportClass(TestProxyTransport.self)
+                        client.setTransport(TestProxyTransport.self)
                         client.connect()
                         defer { client.dispose(); client.close() }
 
@@ -761,7 +761,7 @@ class RealtimeClientConnection: QuickSpec {
                                 let stateChange = stateChange!
                                 let state = stateChange.current
                                 let error = stateChange.reason
-                                if state == .Connected {
+                                if state == .connected {
                                     let channel = client.channels.get("test")
                                     channel.attach() { error in
                                         expect(error).to(beNil())
@@ -776,11 +776,11 @@ class RealtimeClientConnection: QuickSpec {
 
                         let transport = client.transport as! TestProxyTransport
 
-                        guard let publishedMessage = transport.protocolMessagesSent.filter({ $0.action == .Presence }).last else {
+                        guard let publishedMessage = transport.protocolMessagesSent.filter({ $0.action == .presence }).last else {
                             XCTFail("No PRESENCE action was sent"); return
                         }
 
-                        guard let receivedNack = transport.protocolMessagesReceived.filter({ $0.action == .Nack }).last else {
+                        guard let receivedNack = transport.protocolMessagesReceived.filter({ $0.action == .nack }).last else {
                             XCTFail("No NACK action was received"); return
                         }
 
@@ -795,7 +795,7 @@ class RealtimeClientConnection: QuickSpec {
                     class TotalMessages {
                         static var expected: Int32 = 0
                         static var succeeded: Int32 = 0
-                        private init() {}
+                        fileprivate init() {}
                     }
 
                     it("should contain unique serially incrementing msgSerial along with the count") {
@@ -803,7 +803,7 @@ class RealtimeClientConnection: QuickSpec {
                         options.autoConnect = false
                         options.clientId = "client_string"
                         let client = ARTRealtime(options: options)
-                        client.setTransportClass(TestProxyTransport.self)
+                        client.setTransport(TestProxyTransport.self)
                         client.connect()
                         defer { client.dispose(); client.close() }
 
@@ -835,8 +835,8 @@ class RealtimeClientConnection: QuickSpec {
                         }
 
                         let transport = client.transport as! TestProxyTransport
-                        let acks = transport.protocolMessagesReceived.filter({ $0.action == .Ack })
-                        let nacks = transport.protocolMessagesReceived.filter({ $0.action == .Nack })
+                        let acks = transport.protocolMessagesReceived.filter({ $0.action == .ack })
+                        let nacks = transport.protocolMessagesReceived.filter({ $0.action == .nack })
 
                         if acks.count != 2 {
                             fail("Received invalid number of ACK responses: \(acks.count)")
@@ -862,7 +862,7 @@ class RealtimeClientConnection: QuickSpec {
                     it("should continue incrementing msgSerial serially if the connection resumes successfully") {
                         let options = AblyTests.commonAppSetup()
                         options.clientId = "tester"
-                        options.tokenDetails = getTestTokenDetails(key: options.key!, ttl: 5.0, clientId: options.clientId)
+                        options.tokenDetails = getTestTokenDetails(key: options.key!, clientId: options.clientId, ttl: 5.0)
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
 
@@ -896,7 +896,7 @@ class RealtimeClientConnection: QuickSpec {
                         expect(client.msgSerial) == 5
 
                         waitUntil(timeout: testTimeout) { done in
-                            client.connection.once(.Disconnected) { stateChange in
+                            client.connection.once(.disconnected) { stateChange in
                                 expect(stateChange?.reason).toNot(beNil())
                                 // Token expired
                                 done()
@@ -923,8 +923,8 @@ class RealtimeClientConnection: QuickSpec {
                         guard let reconnectedTransport = client.transport as? TestProxyTransport else {
                             fail("TestProxyTransport is not set"); return
                         }
-                        let acks = reconnectedTransport.protocolMessagesReceived.filter({ $0.action == .Ack })
-                        let nacks = reconnectedTransport.protocolMessagesReceived.filter({ $0.action == .Nack })
+                        let acks = reconnectedTransport.protocolMessagesReceived.filter({ $0.action == .ack })
+                        let nacks = reconnectedTransport.protocolMessagesReceived.filter({ $0.action == .nack })
 
                         if acks.count != 1 {
                             fail("Received invalid number of ACK responses: \(acks.count)")
@@ -983,10 +983,10 @@ class RealtimeClientConnection: QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             let partialDone = AblyTests.splitDone(2, done: done)
-                            client.connection.once(.Disconnected) { _ in
+                            client.connection.once(.disconnected) { _ in
                                 partialDone()
                             }
-                            client.connection.once(.Connected) { _ in
+                            client.connection.once(.connected) { _ in
                                 channel.attach()
                                 partialDone()
                             }
@@ -1013,8 +1013,8 @@ class RealtimeClientConnection: QuickSpec {
                         guard let reconnectedTransport = client.transport as? TestProxyTransport else {
                             fail("TestProxyTransport is not set"); return
                         }
-                        let acks = reconnectedTransport.protocolMessagesReceived.filter({ $0.action == .Ack })
-                        let nacks = reconnectedTransport.protocolMessagesReceived.filter({ $0.action == .Nack })
+                        let acks = reconnectedTransport.protocolMessagesReceived.filter({ $0.action == .ack })
+                        let nacks = reconnectedTransport.protocolMessagesReceived.filter({ $0.action == .nack })
 
                         if acks.count != 1 {
                             fail("Received invalid number of ACK responses: \(acks.count)")
@@ -1043,13 +1043,13 @@ class RealtimeClientConnection: QuickSpec {
                         options.autoConnect = false
                         options.clientId = "client_string"
                         let client = ARTRealtime(options: options)
-                        client.setTransportClass(TestProxyTransport.self)
+                        client.setTransport(TestProxyTransport.self)
                         client.connect()
                         defer { client.dispose(); client.close() }
 
                         let channel = client.channels.get("channel")
                         let transport = client.transport as! TestProxyTransport
-                        transport.actionsIgnored += [.Ack, .Nack]
+                        transport.actionsIgnored += [.ack, .nack]
 
                         waitUntil(timeout: testTimeout) { done in
                             channel.attach() { error in
@@ -1081,13 +1081,13 @@ class RealtimeClientConnection: QuickSpec {
                         options.autoConnect = false
                         options.clientId = "client_string"
                         let client = ARTRealtime(options: options)
-                        client.setTransportClass(TestProxyTransport.self)
+                        client.setTransport(TestProxyTransport.self)
                         client.connect()
                         defer { client.dispose(); client.close() }
 
                         let channel = client.channels.get("channel")
                         let transport = client.transport as! TestProxyTransport
-                        transport.actionsIgnored += [.Ack, .Nack]
+                        transport.actionsIgnored += [.ack, .nack]
 
                         waitUntil(timeout: testTimeout) { done in
                             channel.attach() { error in
@@ -1109,7 +1109,7 @@ class RealtimeClientConnection: QuickSpec {
                         options.autoConnect = false
                         options.disconnectedRetryTimeout = 0.1
                         let client = ARTRealtime(options: options)
-                        client.setTransportClass(TestProxyTransport.self)
+                        client.setTransport(TestProxyTransport.self)
                         client.connect()
                         defer {
                             client.dispose()
@@ -1119,7 +1119,7 @@ class RealtimeClientConnection: QuickSpec {
                         let channel = client.channels.get("channel")
 
                         let transport = client.transport as! TestProxyTransport
-                        transport.actionsIgnored += [.Ack, .Nack]
+                        transport.actionsIgnored += [.ack, .nack]
 
                         waitUntil(timeout: testTimeout) { done in
                             channel.attach() { _ in
@@ -1143,10 +1143,10 @@ class RealtimeClientConnection: QuickSpec {
 
                             // Wait until the message is pushed to Ably first
                             delay(1.0) {
-                                client.connection.once(.Disconnected) { _ in
+                                client.connection.once(.disconnected) { _ in
                                     partialDone()
                                 }
-                                client.connection.once(.Connected) { stateChange in
+                                client.connection.once(.connected) { stateChange in
                                     expect(client.connection.id).toNot(equal(oldConnectionId))
                                     partialDone()
                                 }
@@ -1180,11 +1180,11 @@ class RealtimeClientConnection: QuickSpec {
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             expect(errorInfo).to(beNil())
-                            if state == .Connected {
+                            if state == .connected {
                                 expect(connection.id).toNot(beNil())
                                 done()
                             }
-                            else if state == .Connecting {
+                            else if state == .connecting {
                                 expect(connection.id).to(beNil())
                             }
                         }
@@ -1213,7 +1213,7 @@ class RealtimeClientConnection: QuickSpec {
                                 let stateChange = stateChange!
                                 let state = stateChange.current
                                 let errorInfo = stateChange.reason
-                                if state == .Connected {
+                                if state == .connected {
                                     guard let connectionId = currentConnection.id else {
                                         fail("connectionId is nil on CONNECTED")
                                         done()
@@ -1260,11 +1260,11 @@ class RealtimeClientConnection: QuickSpec {
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             expect(errorInfo).to(beNil())
-                            if state == .Connected {
+                            if state == .connected {
                                 expect(connection.id).toNot(beNil())
                                 done()
                             }
-                            else if state == .Connecting {
+                            else if state == .connecting {
                                 expect(connection.key).to(beNil())
                             }
                         }
@@ -1292,7 +1292,7 @@ class RealtimeClientConnection: QuickSpec {
                                 let stateChange = stateChange!
                                 let state = stateChange.current
                                 let errorInfo = stateChange.reason
-                                if state == .Connected {
+                                if state == .connected {
                                     guard let connectionKey = currentConnection.key else {
                                         fail("connectionKey is nil on CONNECTED")
                                         done()
@@ -1332,7 +1332,7 @@ class RealtimeClientConnection: QuickSpec {
                             let stateChange = stateChange!
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
-                            if state == .Connected {
+                            if state == .connected {
                                 expect(client.connection.serial).to(equal(-1))
                                 done()
                             }
@@ -1350,7 +1350,7 @@ class RealtimeClientConnection: QuickSpec {
                     let channel = client.channels.get("test")
 
                     expect(client.connection.serial).to(equal(-1))
-                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
                     expect(client.connection.serial).to(equal(-1))
 
                     for index in 0...3 {
@@ -1384,7 +1384,7 @@ class RealtimeClientConnection: QuickSpec {
 
                     // Attach first to avoid bundling publishes in the same ProtocolMessage.
                     channel.attach()
-                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
                     for _ in 1...5 {
                         waitUntil(timeout: testTimeout) { done in
@@ -1406,7 +1406,7 @@ class RealtimeClientConnection: QuickSpec {
 
                     let recoveredClient = ARTRealtime(options: options)
                     defer { recoveredClient.close() }
-                    expect(recoveredClient.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                    expect(recoveredClient.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
                     waitUntil(timeout: testTimeout) { done in
                         expect(recoveredClient.connection.serial).to(equal(lastSerial))
@@ -1430,7 +1430,7 @@ class RealtimeClientConnection: QuickSpec {
                 defer { client.dispose(); client.close() }
 
                 waitUntil(timeout: testTimeout) { done in
-                    client.connection.once(.Connected) { _ in
+                    client.connection.once(.connected) { _ in
                         done()
                     }
                 }
@@ -1441,7 +1441,7 @@ class RealtimeClientConnection: QuickSpec {
                 waitUntil(timeout: testTimeout) { done in
                     let partialDone = AblyTests.splitDone(2, done: done)
 
-                    client.connection.once(.Closing) { _ in
+                    client.connection.once(.closing) { _ in
                         oldTransport = client.transport
                         client.connect()
                         newTransport = client.transport
@@ -1449,7 +1449,7 @@ class RealtimeClientConnection: QuickSpec {
                         partialDone()
                     }
 
-                    client.connection.once(.Connected) { stateChange in
+                    client.connection.once(.connected) { stateChange in
                         guard let stateChange = stateChange else {
                             fail("Missing ConnectionStateChange"); partialDone()
                             return
@@ -1472,7 +1472,7 @@ class RealtimeClientConnection: QuickSpec {
                 defer { client.dispose(); client.close() }
 
                 waitUntil(timeout: testTimeout) { done in
-                    client.connection.once(.Connected) { _ in
+                    client.connection.once(.connected) { _ in
                         done()
                     }
                 }
@@ -1484,12 +1484,12 @@ class RealtimeClientConnection: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(3, done: done)
 
-                        client.connection.once(.Closing) { _ in
+                        client.connection.once(.closing) { _ in
                             oldTransport = client.transport
                             // Old connection must complete the close request
                             weak var oldTestProxyTransport = oldTransport as? TestProxyTransport
                             oldTestProxyTransport?.beforeProcessingReceivedMessage = { protocolMessage in
-                                if protocolMessage.action == .Closed {
+                                if protocolMessage.action == .closed {
                                     partialDone()
                                 }
                             }
@@ -1503,11 +1503,11 @@ class RealtimeClientConnection: QuickSpec {
                             partialDone()
                         }
 
-                        client.connection.once(.Closed) { _ in
+                        client.connection.once(.closed) { _ in
                             fail("New connection should not receive the old connection event")
                         }
                         
-                        client.connection.once(.Connected) { _ in
+                        client.connection.once(.connected) { _ in
                             partialDone()
                         }
 
@@ -1541,7 +1541,7 @@ class RealtimeClientConnection: QuickSpec {
 
 
                     expect(lastStateChange).toEventuallyNot(beNil(), timeout: testTimeout)
-                    expect(lastStateChange!.current).toEventually(equal(ARTRealtimeConnectionState.Closed), timeout: testTimeout)
+                    expect(lastStateChange!.current).toEventually(equal(ARTRealtimeConnectionState.closed), timeout: testTimeout)
                 }
 
                 // RTN12a
@@ -1549,7 +1549,7 @@ class RealtimeClientConnection: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
-                    client.setTransportClass(TestProxyTransport.self)
+                    client.setTransport(TestProxyTransport.self)
                     client.connect()
                     defer {
                         client.dispose()
@@ -1564,13 +1564,13 @@ class RealtimeClientConnection: QuickSpec {
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
-                            case .Connected:
+                            case .connected:
                                 client.close()
-                            case .Closing:
-                                expect(transport.protocolMessagesSent.filter({ $0.action == .Close })).to(haveCount(1))
+                            case .closing:
+                                expect(transport.protocolMessagesSent.filter({ $0.action == .close })).to(haveCount(1))
                                 states += [state]
-                            case.Closed:
-                                expect(transport.protocolMessagesReceived.filter({ $0.action == .Closed })).to(haveCount(1))
+                            case.closed:
+                                expect(transport.protocolMessagesReceived.filter({ $0.action == .closed })).to(haveCount(1))
                                 states += [state]
                                 done()
                             default:
@@ -1583,8 +1583,8 @@ class RealtimeClientConnection: QuickSpec {
                         fail("Invalid number of connection states. Expected CLOSING and CLOSE states")
                         return
                     }
-                    expect(states[0]).to(equal(ARTRealtimeConnectionState.Closing))
-                    expect(states[1]).to(equal(ARTRealtimeConnectionState.Closed))
+                    expect(states[0]).to(equal(ARTRealtimeConnectionState.closing))
+                    expect(states[1]).to(equal(ARTRealtimeConnectionState.closed))
                 }
 
                 // RTN12b
@@ -1592,7 +1592,7 @@ class RealtimeClientConnection: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
-                    client.setTransportClass(TestProxyTransport.self)
+                    client.setTransport(TestProxyTransport.self)
                     client.connect()
                     defer {
                         client.dispose()
@@ -1600,7 +1600,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     let transport = client.transport as! TestProxyTransport
-                    transport.actionsIgnored += [.Closed]
+                    transport.actionsIgnored += [.closed]
 
                     var states: [ARTRealtimeConnectionState] = []
                     var start: NSDate?
@@ -1611,15 +1611,15 @@ class RealtimeClientConnection: QuickSpec {
                         let state = stateChange.current
                         let errorInfo = stateChange.reason
                         switch state {
-                        case .Connected:
+                        case .connected:
                             client.close()
-                        case .Closing:
+                        case .closing:
                             start = NSDate()
                             states += [state]
-                        case .Closed:
+                        case .closed:
                             end = NSDate()
                             states += [state]
-                        case .Disconnected:
+                        case .disconnected:
                             states += [state]
                         default:
                             break
@@ -1634,8 +1634,8 @@ class RealtimeClientConnection: QuickSpec {
                         return
                     }
 
-                    expect(states[0]).to(equal(ARTRealtimeConnectionState.Closing))
-                    expect(states[1]).to(equal(ARTRealtimeConnectionState.Closed))
+                    expect(states[0]).to(equal(ARTRealtimeConnectionState.closing))
+                    expect(states[1]).to(equal(ARTRealtimeConnectionState.closed))
                 }
 
                 // RTN12c
@@ -1643,7 +1643,7 @@ class RealtimeClientConnection: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
-                    client.setTransportClass(TestProxyTransport.self)
+                    client.setTransport(TestProxyTransport.self)
                     client.connect()
                     defer {
                         client.dispose()
@@ -1659,16 +1659,16 @@ class RealtimeClientConnection: QuickSpec {
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
-                            case .Connected:
+                            case .connected:
                                 states += [state]
                                 client.close()
-                            case .Closing:
+                            case .closing:
                                 states += [state]
                                 transport.simulateIncomingAbruptlyClose()
-                            case .Closed:
+                            case .closed:
                                 states += [state]
                                 done()
-                            case .Disconnected, .Suspended, .Failed:
+                            case .disconnected, .suspended, .failed:
                                 states += [state]
                             default:
                                 break
@@ -1681,9 +1681,9 @@ class RealtimeClientConnection: QuickSpec {
                         return
                     }
 
-                    expect(states[0]).to(equal(ARTRealtimeConnectionState.Connected))
-                    expect(states[1]).to(equal(ARTRealtimeConnectionState.Closing))
-                    expect(states[2]).to(equal(ARTRealtimeConnectionState.Closed))
+                    expect(states[0]).to(equal(ARTRealtimeConnectionState.connected))
+                    expect(states[1]).to(equal(ARTRealtimeConnectionState.closing))
+                    expect(states[2]).to(equal(ARTRealtimeConnectionState.closed))
                 }
 
                 // RTN12d
@@ -1696,15 +1696,15 @@ class RealtimeClientConnection: QuickSpec {
                         client.dispose()
                     }
 
-                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
                     client.onDisconnected()
-                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Disconnected), timeout: testTimeout)
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.disconnected), timeout: testTimeout)
 
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
                         client.connection.once { stateChange in
-                            expect(stateChange!.current).to(equal(ARTRealtimeConnectionState.Closed))
+                            expect(stateChange!.current).to(equal(ARTRealtimeConnectionState.closed))
                             partialDone()
                         }
 
@@ -1712,7 +1712,7 @@ class RealtimeClientConnection: QuickSpec {
 
                         delay(options.disconnectedRetryTimeout + 0.5) {
                             // Make sure the retry doesn't happen.
-                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Closed))
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.closed))
                             partialDone()
                         }
                     }
@@ -1728,15 +1728,15 @@ class RealtimeClientConnection: QuickSpec {
                         client.dispose()
                     }
 
-                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
                     client.onSuspended()
-                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Suspended), timeout: testTimeout)
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.suspended), timeout: testTimeout)
 
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
                         client.connection.once { stateChange in
-                            expect(stateChange!.current).to(equal(ARTRealtimeConnectionState.Closed))
+                            expect(stateChange!.current).to(equal(ARTRealtimeConnectionState.closed))
                             partialDone()
                         }
 
@@ -1744,7 +1744,7 @@ class RealtimeClientConnection: QuickSpec {
 
                         delay(options.suspendedRetryTimeout + 0.5) {
                             // Make sure the retry doesn't happen.
-                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Closed))
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.closed))
                             partialDone()
                         }
                     }
@@ -1770,32 +1770,32 @@ class RealtimeClientConnection: QuickSpec {
                         client.ping() { error = $0 }
                     }
 
-                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Initialized))
+                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.initialized))
                     ping()
                     expect(error).toNot(beNil())
 
                     client.connect()
-                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
                     client.onSuspended()
 
-                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Suspended))
+                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.suspended))
                     ping()
                     expect(error).toNot(beNil())
 
-                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
                     client.close()
 
-                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Closing))
+                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.closing))
                     ping()
                     expect(error).toNot(beNil())
 
-                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Closed), timeout: testTimeout)
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.closed), timeout: testTimeout)
                     ping()
                     expect(error).toNot(beNil())
 
                     client.onError(AblyTests.newErrorProtocolMessage())
 
-                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Failed))
+                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.failed))
                     ping()
                     expect(error).toNot(beNil())
                 }
@@ -1808,8 +1808,8 @@ class RealtimeClientConnection: QuickSpec {
                         client.ping() { error in
                             expect(error).to(beNil())
                             let transport = client.transport as! TestProxyTransport
-                            expect(transport.protocolMessagesSent.filter{ $0.action == .Heartbeat }).to(haveCount(1))
-                            expect(transport.protocolMessagesReceived.filter{ $0.action == .Heartbeat }).to(haveCount(1))
+                            expect(transport.protocolMessagesSent.filter{ $0.action == .heartbeat }).to(haveCount(1))
+                            expect(transport.protocolMessagesReceived.filter{ $0.action == .heartbeat }).to(haveCount(1))
                             done()
                         }
                     }
@@ -1830,7 +1830,7 @@ class RealtimeClientConnection: QuickSpec {
                             }
                             let end = NSDate()
                             expect(error.message).to(contain("timed out"))
-                            expect(end.timeIntervalSinceDate(start)).to(beCloseTo(ARTDefault.realtimeRequestTimeout(), within: 1.5))
+                            expect(end.timeIntervalSince(start as Date)).to(beCloseTo(ARTDefault.realtimeRequestTimeout(), within: 1.5))
                             done()
                         }
                     }
@@ -1841,7 +1841,7 @@ class RealtimeClientConnection: QuickSpec {
             // RTN14a
             it("should enter FAILED state when API key is invalid") {
                 let options = AblyTests.commonAppSetup()
-                options.key = String(options.key!.characters.reverse())
+                options.key = String(options.key!.characters.reversed())
                 let client = ARTRealtime(options: options)
                 defer {
                     client.dispose()
@@ -1854,7 +1854,7 @@ class RealtimeClientConnection: QuickSpec {
                         let state = stateChange.current
                         let errorInfo = stateChange.reason
                         switch state {
-                        case .Failed:
+                        case .failed:
                             expect(errorInfo).toNot(beNil())
                             done()
                         default:
@@ -1878,7 +1878,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.token = getTestToken(key: options.key, ttl: tokenTtl)
 
                     let client = ARTRealtime(options: options)
-                    client.setTransportClass(TestProxyTransport.self)
+                    client.setTransport(TestProxyTransport.self)
                     defer {
                         client.dispose()
                         client.close()
@@ -1886,7 +1886,7 @@ class RealtimeClientConnection: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         // Let the token expire
-                        client.connection.once(.Disconnected) { stateChange in
+                        client.connection.once(.disconnected) { stateChange in
                             guard let reason = stateChange?.reason else {
                                 fail("Token error is missing"); done(); return
                             }
@@ -1897,13 +1897,13 @@ class RealtimeClientConnection: QuickSpec {
                                 let state = stateChange.current
                                 let errorInfo = stateChange.reason
                                 switch state {
-                                case .Connected:
+                                case .connected:
                                     expect(errorInfo).to(beNil())
                                     // New token
                                     expect(client.auth.tokenDetails!.token).toNot(equal(options.token))
                                     done()
-                                case .Failed, .Suspended:
-                                    fail("Should not emit error (\(errorInfo))")
+                                case .failed, .suspended:
+                                    fail("Should not emit error (\(String(describing: errorInfo)))")
                                     done()
                                 default:
                                     break
@@ -1927,7 +1927,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     let client = ARTRealtime(options: options)
-                    client.setTransportClass(TestProxyTransport.self)
+                    client.setTransport(TestProxyTransport.self)
                     defer {
                         client.dispose()
                         client.close()
@@ -1935,18 +1935,18 @@ class RealtimeClientConnection: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(3, done: done)
-                        client.connection.once(.Connected) { stateChange in
+                        client.connection.once(.connected) { stateChange in
                             expect(stateChange?.reason).to(beNil())
                             partialDone()
                         }
-                        client.connection.once(.Disconnected) { stateChange in
+                        client.connection.once(.disconnected) { stateChange in
                             guard let reason = stateChange?.reason else {
                                 fail("Reason is nil"); done(); return;
                             }
                             expect(reason.code) == 40142
                             partialDone()
                         }
-                        client.connection.once(.Failed) { stateChange in
+                        client.connection.once(.failed) { stateChange in
                             guard let reason = stateChange?.reason else {
                                 fail("Reason is nil"); done(); return;
                             }
@@ -1971,7 +1971,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     let client = ARTRealtime(options: options)
-                    client.setTransportClass(TestProxyTransport.self)
+                    client.setTransport(TestProxyTransport.self)
                     defer {
                         client.dispose()
                         client.close()
@@ -1985,14 +1985,14 @@ class RealtimeClientConnection: QuickSpec {
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
-                            case .Connected:
+                            case .connected:
                                 fail("Should not be connected")
                                 done()
-                            case .Failed, .Disconnected, .Suspended:
+                            case .failed, .disconnected, .suspended:
                                 guard let errorInfo = errorInfo else {
                                     fail("ErrorInfo is nil"); done(); return
                                 }
-                                expect(UInt(errorInfo.code)).to(equal(ARTState.RequestTokenFailed.rawValue))
+                                expect(UInt(errorInfo.code)).to(equal(ARTState.requestTokenFailed.rawValue))
                                 done()
                             default:
                                 break
@@ -2002,7 +2002,7 @@ class RealtimeClientConnection: QuickSpec {
                         transport = client.transport as! TestProxyTransport
                     }
 
-                    let failures = transport.protocolMessagesReceived.filter({ $0.action == .Error })
+                    let failures = transport.protocolMessagesReceived.filter({ $0.action == .error })
 
                     if failures.count != 1 {
                         fail("Should have only one connection request fail")
@@ -2025,7 +2025,7 @@ class RealtimeClientConnection: QuickSpec {
                     defer { client.dispose(); client.close() }
                     var start, end: NSDate?
                     waitUntil(timeout: testTimeout) { done in
-                        client.connection.on(.Disconnected) { stateChange in
+                        client.connection.on(.disconnected) { stateChange in
                             end = NSDate()
                             expect(stateChange!.reason!.message).to(contain("timed out"))
                             expect(client.connection.errorReason!).to(beIdenticalTo(stateChange!.reason))
@@ -2035,7 +2035,7 @@ class RealtimeClientConnection: QuickSpec {
                         start = NSDate()
                     }
                     if let start = start, let end = end {
-                        expect(end.timeIntervalSinceDate(start)).to(beCloseTo(ARTDefault.realtimeRequestTimeout(), within: 1.5))
+                        expect(end.timeIntervalSince(start as Date)).to(beCloseTo(ARTDefault.realtimeRequestTimeout(), within: 1.5))
                     }
                     else {
                         fail("Start date or end date are empty")
@@ -2073,24 +2073,24 @@ class RealtimeClientConnection: QuickSpec {
                         let partialDone = AblyTests.splitDone(2, done: done)
                         var start: NSDate?
 
-                        client.connection.once(.Disconnected) { stateChange in
+                        client.connection.once(.disconnected) { stateChange in
                             expect(stateChange!.reason!.message).to(contain("timed out"))
-                            expect(stateChange!.previous).to(equal(ARTRealtimeConnectionState.Connecting))
+                            expect(stateChange!.previous).to(equal(ARTRealtimeConnectionState.connecting))
                             expect(stateChange!.retryIn).to(beCloseTo(options.disconnectedRetryTimeout))
                             partialDone()
                             start = NSDate()
                         }
 
-                        client.connection.on(.Suspended) { stateChange in
+                        client.connection.on(.suspended) { stateChange in
                             let end = NSDate()
-                            expect(end.timeIntervalSinceDate(start!)).to(beCloseTo(expectedTime, within: 0.9))
+                            expect(end.timeIntervalSince(start! as Date)).to(beCloseTo(expectedTime, within: 0.9))
                             partialDone()
                         }
 
                         client.connect()
 
-                        client.connection.on(.Connecting) { stateChange in
-                            expect(stateChange!.previous).to(equal(ARTRealtimeConnectionState.Disconnected))
+                        client.connection.on(.connecting) { stateChange in
+                            expect(stateChange!.previous).to(equal(ARTRealtimeConnectionState.disconnected))
                             totalRetry += 1
                         }
                     }
@@ -2104,7 +2104,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.disconnectedRetryTimeout = 0.1
                     options.suspendedRetryTimeout = 0.5
                     options.autoConnect = false
-                    let expectedTime: NSTimeInterval = 1.0
+                    let expectedTime: TimeInterval = 1.0
 
                     options.authCallback = { _ in
                         // Force a timeout
@@ -2122,13 +2122,13 @@ class RealtimeClientConnection: QuickSpec {
                     defer { client.dispose(); client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.connection.on(.Suspended) { stateChange in
+                        client.connection.on(.suspended) { stateChange in
                             expect(client.connection.errorReason!.message).to(contain("timed out"))
 
                             let start = NSDate()
-                            client.connection.once(.Connecting) { stateChange in
+                            client.connection.once(.connecting) { stateChange in
                                 let end = NSDate()
-                                expect(end.timeIntervalSinceDate(start)).to(beCloseTo(options.suspendedRetryTimeout, within: 0.5))
+                                expect(end.timeIntervalSince(start as Date)).to(beCloseTo(options.suspendedRetryTimeout, within: 0.5))
                                 done()
                             }
                         }
@@ -2141,7 +2141,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.disconnectedRetryTimeout = 0.1
                     options.suspendedRetryTimeout = 0.5
                     options.autoConnect = false
-                    let expectedTime: NSTimeInterval = 1.0
+                    let expectedTime: TimeInterval = 1.0
 
                     options.authCallback = { _ in
                         // Force a timeout
@@ -2159,13 +2159,13 @@ class RealtimeClientConnection: QuickSpec {
                     defer { client.dispose(); client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.connection.on(.Suspended) { stateChange in
+                        client.connection.on(.suspended) { stateChange in
                             expect(client.connection.errorReason!.message).to(contain("timed out"))
 
                             let start = NSDate()
-                            client.connection.once(.Connecting) { stateChange in
+                            client.connection.once(.connecting) { stateChange in
                                 let end = NSDate()
-                                expect(end.timeIntervalSinceDate(start)).to(beCloseTo(options.suspendedRetryTimeout, within: 0.5))
+                                expect(end.timeIntervalSince(start as Date)).to(beCloseTo(options.suspendedRetryTimeout, within: 0.5))
                                 done()
                             }
                         }
@@ -2176,7 +2176,7 @@ class RealtimeClientConnection: QuickSpec {
 
                     // Check if the connection gets closed
                     waitUntil(timeout: testTimeout) { done in
-                        client.connection.once(.Connecting) { stateChange in
+                        client.connection.once(.connecting) { stateChange in
                             fail("Should be closing the connection"); done(); return
                         }
                         delay(2.0) {
@@ -2215,7 +2215,7 @@ class RealtimeClientConnection: QuickSpec {
                         fail("Shouldn't receive the messsage")
                     }
 
-                    expect(channel1.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+                    expect(channel1.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
                     let firstConnection: (id: String, key: String) = (client1.connection.id!, client1.connection.key!)
 
@@ -2228,11 +2228,11 @@ class RealtimeClientConnection: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
-                        client1.connection.once(.Connecting) { _ in
+                        client1.connection.once(.connecting) { _ in
                             expect(client1.resuming).to(beTrue())
                             partialDone()
                         }
-                        client1.connection.once(.Connected) { _ in
+                        client1.connection.once(.connected) { _ in
                             expect(client1.resuming).to(beFalse())
                             expect(client1.connection.id).toNot(equal(firstConnection.id))
                             expect(client1.connection.key).toNot(equal(firstConnection.key))
@@ -2240,7 +2240,7 @@ class RealtimeClientConnection: QuickSpec {
                         }
                     }
 
-                    expect(states).toEventually(equal([.Connecting, .Connected, .Disconnected, .Connecting, .Connected]), timeout: testTimeout)
+                    expect(states).toEventually(equal([.connecting, .connected, .disconnected, .connecting, .connected]), timeout: testTimeout)
                 }
 
                 // RTN15b
@@ -2253,13 +2253,13 @@ class RealtimeClientConnection: QuickSpec {
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
 
-                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
                         let expectedConnectionKey = client.connection.key!
                         let expectedConnectionSerial = client.connection.serial
                         client.onDisconnected()
 
                         waitUntil(timeout: testTimeout) { done in
-                            client.connection.once(.Connected) { _ in
+                            client.connection.once(.connected) { _ in
                                 let transport = client.transport as! TestProxyTransport
                                 let query = transport.lastUrl!.query
                                 expect(query).to(haveParam("resume", withValue: expectedConnectionKey))
@@ -2282,7 +2282,7 @@ class RealtimeClientConnection: QuickSpec {
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
 
-                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
                         let expectedConnectionId = client.connection.id
                         client.onDisconnected()
 
@@ -2290,15 +2290,15 @@ class RealtimeClientConnection: QuickSpec {
                         expect(client.queuedMessages).toEventually(haveCount(1), timeout: testTimeout)
 
                         waitUntil(timeout: testTimeout) { done in
-                            client.connection.once(.Connected) { stateChange in
+                            client.connection.once(.connected) { stateChange in
                                 let transport = client.transport as! TestProxyTransport
-                                let connectedPM = transport.protocolMessagesReceived.filter{ $0.action == .Connected }[0]
+                                let connectedPM = transport.protocolMessagesReceived.filter{ $0.action == .connected }[0]
                                 expect(connectedPM.connectionId).to(equal(expectedConnectionId))
                                 expect(stateChange!.reason).to(beNil())
                                 done()
                             }
                         }
-                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
                         expect(client.queuedMessages).toEventually(haveCount(0), timeout: testTimeout)
                     }
 
@@ -2310,7 +2310,7 @@ class RealtimeClientConnection: QuickSpec {
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
 
-                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
                         let expectedConnectionId = client.connection.id
                         client.onDisconnected()
@@ -2318,21 +2318,21 @@ class RealtimeClientConnection: QuickSpec {
                         channel.publish(nil, data: "queued message")
                         expect(client.queuedMessages).toEventually(haveCount(1), timeout: testTimeout)
 
-                        client.connection.once(.Connecting) { _ in
+                        client.connection.once(.connecting) { _ in
                             let transport = client.transport as! TestProxyTransport
                             transport.beforeProcessingReceivedMessage = { protocolMessage in
-                                if protocolMessage.action == .Connected {
-                                    protocolMessage.error = ARTErrorInfo.createWithCode(0, message: "Injected error")
+                                if protocolMessage.action == .connected {
+                                    protocolMessage.error = ARTErrorInfo.create(withCode: 0, message: "Injected error")
                                 }
                             }
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            client.connection.once(.Connected) { stateChange in
+                            client.connection.once(.connected) { stateChange in
                                 expect(stateChange!.reason!.message).to(equal("Injected error"))
                                 expect(client.connection.errorReason).to(beIdenticalTo(stateChange!.reason))
                                 let transport = client.transport as! TestProxyTransport
-                                let connectedPM = transport.protocolMessagesReceived.filter{ $0.action == .Connected }[0]
+                                let connectedPM = transport.protocolMessagesReceived.filter{ $0.action == .connected }[0]
                                 expect(connectedPM.connectionId).to(equal(expectedConnectionId))
                                 expect(client.connection.id).to(equal(expectedConnectionId))
                                 done()
@@ -2343,13 +2343,13 @@ class RealtimeClientConnection: QuickSpec {
                             fail("TestProxyTransport is not set"); return
                         }
                         transport.beforeProcessingReceivedMessage = { protocolMessage in
-                            if protocolMessage.action == .Attached {
-                                protocolMessage.error = ARTErrorInfo.createWithCode(0, message: "Channel injected error")
+                            if protocolMessage.action == .attached {
+                                protocolMessage.error = ARTErrorInfo.create(withCode: 0, message: "Channel injected error")
                             }
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            channel.once(.Attached) { stateChange in
+                            channel.once(.attached) { stateChange in
                                 guard let error = stateChange?.reason else {
                                     fail("Reason error is nil"); done(); return
                                 }
@@ -2370,13 +2370,13 @@ class RealtimeClientConnection: QuickSpec {
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
 
-                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
                         let expectedConnectionId = client.connection.id
                         client.simulateLostConnectionAndState()
 
                         waitUntil(timeout: testTimeout) { done in
-                            client.connection.once(.Connected) { stateChange in
+                            client.connection.once(.connected) { stateChange in
                                 guard let error = stateChange?.reason else {
                                     fail("Connection resume failed and error should be propagated to the channel"); done(); return
                                 }
@@ -2384,13 +2384,13 @@ class RealtimeClientConnection: QuickSpec {
                                 expect(error.message).to(contain("Unable to recover connection"))
                                 expect(client.connection.errorReason).to(beIdenticalTo(stateChange!.reason))
                                 let transport = client.transport as! TestProxyTransport
-                                let connectedPM = transport.protocolMessagesReceived.filter{ $0.action == .Connected }[0]
+                                let connectedPM = transport.protocolMessagesReceived.filter{ $0.action == .connected }[0]
                                 expect(connectedPM.connectionId).toNot(equal(expectedConnectionId))
                                 expect(client.connection.id).to(equal(connectedPM.connectionId))
                                 done()
                             }
                         }
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.detached))
                         guard let channelError = channel.errorReason else {
                             fail("Channel error is nil"); return
                         }
@@ -2407,28 +2407,28 @@ class RealtimeClientConnection: QuickSpec {
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
 
-                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
                         client.onDisconnected()
 
                         let protocolError = AblyTests.newErrorProtocolMessage()
-                        client.connection.once(.Connecting) { _ in
+                        client.connection.once(.connecting) { _ in
                             // Resuming
                             guard let transport = client.transport as? TestProxyTransport else {
                                 fail("TestProxyTransport is not set"); return
                             }
-                            transport.actionsIgnored += [.Connected]
+                            transport.actionsIgnored += [.connected]
                             client.onError(protocolError)
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            client.connection.once(.Failed) { stateChange in
+                            client.connection.once(.failed) { stateChange in
                                 expect(stateChange!.reason).to(beIdenticalTo(protocolError.error))
                                 expect(client.connection.errorReason).to(beIdenticalTo(protocolError.error))
                                 done()
                             }
                         }
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.Failed))
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
                         expect(channel.errorReason).to(beIdenticalTo(protocolError.error))
                     }
 
@@ -2453,14 +2453,14 @@ class RealtimeClientConnection: QuickSpec {
                             fail("TestProxyTransport is not set"); return
                         }
 
-                        channel.once(.Detached) { _ in
+                        channel.once(.detached) { _ in
                             fail("Should not detach channels")
                         }
                         defer { channel.off() }
 
                         waitUntil(timeout: testTimeout) { done in
                             // Wait for token to expire
-                            client.connection.once(.Disconnected) { stateChange in
+                            client.connection.once(.disconnected) { stateChange in
                                 guard let error = stateChange?.reason else {
                                     fail("Error is nil"); done(); return
                                 }
@@ -2471,7 +2471,7 @@ class RealtimeClientConnection: QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             // Wait for connection resume
-                            client.connection.once(.Connected) { stateChange in
+                            client.connection.once(.connected) { stateChange in
                                 expect(stateChange?.reason).to(beNil())
                                 done()
                             }
@@ -2481,7 +2481,7 @@ class RealtimeClientConnection: QuickSpec {
                             fail("TestProxyTransport is not set"); return
                         }
 
-                        let connectedMessages = secondTransport.protocolMessagesReceived.filter{ $0.action == .Connected }
+                        let connectedMessages = secondTransport.protocolMessagesReceived.filter{ $0.action == .connected }
                         expect(connectedMessages).to(haveCount(1)) //New transport connected
                         guard let receivedConnectionId = connectedMessages.first?.connectionId else {
                             fail("ConnectionID is nil"); return
@@ -2526,7 +2526,7 @@ class RealtimeClientConnection: QuickSpec {
                     var receivedMessages = [String]()
 
                     waitUntil(timeout: testTimeout) { done in
-                        channel1.subscribeWithAttachCallback({ errorInfo in
+                        channel1.subscribe(attachCallback: { errorInfo in
                             expect(errorInfo).to(beNil())
                             done()
                         }, callback: { message in
@@ -2541,13 +2541,13 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        client1.connection.once(.Connecting) { _ in
+                        client1.connection.once(.connecting) { _ in
                             expect(receivedMessages).to(beEmpty())
                             done()
                         }
                     }
 
-                    expect(client1.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                    expect(client1.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
                     expect(receivedMessages).toEventually(equal(expectedMessages), timeout: testTimeout)
                 }
 
@@ -2560,27 +2560,27 @@ class RealtimeClientConnection: QuickSpec {
                         options.disconnectedRetryTimeout = 1.0
 
                         let client = ARTRealtime(options: options)
-                        client.setTransportClass(TestProxyTransport.self)
+                        client.setTransport(TestProxyTransport.self)
                         client.connect()
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
 
                         channel.attach()
-                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
                         client.onDisconnected()
 
                         waitUntil(timeout: testTimeout) { done in
-                            client.connection.once(.Connecting) { _ in
+                            client.connection.once(.connecting) { _ in
                                 client.connection.setKey("key_to_be_replaced")
                                 done()
                             }
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            client.connection.once(.Connected) { _ in
+                            client.connection.once(.connected) { _ in
                                 let transport = client.transport as! TestProxyTransport
-                                let firstConnectionDetails = transport.protocolMessagesReceived.filter{ $0.action == .Connected }[0].connectionDetails
+                                let firstConnectionDetails = transport.protocolMessagesReceived.filter{ $0.action == .connected }[0].connectionDetails
                                 expect(firstConnectionDetails!.connectionKey).toNot(beNil())
                                 expect(client.connection.key).to(equal(firstConnectionDetails!.connectionKey))
                                 done()
@@ -2600,13 +2600,13 @@ class RealtimeClientConnection: QuickSpec {
 
                     var resumed = false
                     waitUntil(timeout: testTimeout) { done in
-                        client.connection.once(.Connected) { _ in
+                        client.connection.once(.connected) { _ in
                             var sentQueuedMessage: ARTMessage?
                             channel.publish(nil, data: "message") { _ in
                                 if resumed {
                                     let transport = client.transport as! TestProxyTransport
-                                    expect(transport.protocolMessagesReceived.filter{ $0.action == .Ack }).to(haveCount(1))
-                                    let sentTransportMessage = transport.protocolMessagesSent.filter{ $0.action == .Message }.first!.messages![0]
+                                    expect(transport.protocolMessagesReceived.filter{ $0.action == .ack }).to(haveCount(1))
+                                    let sentTransportMessage = transport.protocolMessagesSent.filter{ $0.action == .message }.first!.messages![0]
                                     expect(sentQueuedMessage).to(beIdenticalTo(sentTransportMessage))
                                     done()
                                 }
@@ -2617,10 +2617,10 @@ class RealtimeClientConnection: QuickSpec {
                             delay(0) {
                                 client.onDisconnected()
                             }
-                            client.connection.once(.Connected) { _ in
+                            client.connection.once(.connected) { _ in
                                 resumed = true
-                                channel.testSuite_injectIntoMethodBefore(#selector(channel.sendQueuedMessages)) {
-                                    channel.testSuite_getArgumentFrom(#selector(channel.sendMessage(_:callback:)), atIndex: 0) { arg0 in
+                                channel.testSuite_injectIntoMethod(before: #selector(channel.sendQueuedMessages)) {
+                                    channel.testSuite_getArgument(from: #selector(channel.send), at: 0) { arg0 in
                                         sentQueuedMessage = (arg0 as? ARTProtocolMessage)?.messages?[0]
                                     }
                                 }
@@ -2647,7 +2647,7 @@ class RealtimeClientConnection: QuickSpec {
 
                     client.simulateLostConnectionAndState()
 
-                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Detached), timeout: testTimeout)
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.detached), timeout: testTimeout)
                     expect(channel.errorReason?.message).to(contain("Unable to recover connection"))
                 }
 
@@ -2665,19 +2665,19 @@ class RealtimeClientConnection: QuickSpec {
                         options.token = getTestToken(key: options.key, ttl: tokenTtl)
 
                         let client = ARTRealtime(options: options)
-                        client.setTransportClass(TestProxyTransport.self)
+                        client.setTransport(TestProxyTransport.self)
                         defer {
                             client.dispose()
                             client.close()
                         }
 
                         client.connect()
-                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
                         weak var firstTransport = client.transport as? TestProxyTransport
 
                         waitUntil(timeout: testTimeout) { done in
                             // Wait for token to expire
-                            client.connection.once(.Disconnected) { stateChange in
+                            client.connection.once(.disconnected) { stateChange in
                                 guard let error = stateChange?.reason else {
                                     fail("Error is nil"); done(); return
                                 }
@@ -2687,7 +2687,7 @@ class RealtimeClientConnection: QuickSpec {
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            client.connection.once(.Connected) { stateChange in
+                            client.connection.once(.connected) { stateChange in
                                 expect(stateChange?.reason).to(beNil())
                                 done()
                             }
@@ -2701,7 +2701,7 @@ class RealtimeClientConnection: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in 
                             client.ping { error in
                                 expect(error).to(beNil())
-                                expect((client.transport as! TestProxyTransport).protocolMessagesReceived.filter({ $0.action == .Connected })).to(haveCount(1))
+                                expect((client.transport as! TestProxyTransport).protocolMessagesReceived.filter({ $0.action == .connected })).to(haveCount(1))
                                 done()
                             }
                         }                        
@@ -2722,19 +2722,19 @@ class RealtimeClientConnection: QuickSpec {
                         }
 
                         let client = ARTRealtime(options: options)
-                        client.setTransportClass(TestProxyTransport.self)
+                        client.setTransport(TestProxyTransport.self)
                         defer {
                             client.dispose()
                             client.close()
                         }
 
                         client.connect()
-                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
                         weak var firstTransport = client.transport as? TestProxyTransport
 
                         waitUntil(timeout: testTimeout) { done in
                             // Wait for token to expire
-                            client.connection.once(.Disconnected) { stateChange in
+                            client.connection.once(.disconnected) { stateChange in
                                 guard let error = stateChange?.reason else {
                                     fail("Error is nil"); done(); return
                                 }
@@ -2745,7 +2745,7 @@ class RealtimeClientConnection: QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             // Renewal will fail
-                            client.connection.once(.Failed) { stateChange in
+                            client.connection.once(.failed) { stateChange in
                                 guard let error = stateChange?.reason else {
                                     fail("Error is nil"); done(); return
                                 }
@@ -2755,7 +2755,7 @@ class RealtimeClientConnection: QuickSpec {
                             }
                         }
 
-                        expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Failed))
+                        expect(client.connection.state).to(equal(ARTRealtimeConnectionState.failed))
                     }
 
                 }
@@ -2778,7 +2778,7 @@ class RealtimeClientConnection: QuickSpec {
                     let channelReceive = clientReceive.channels.get("test")
 
                     waitUntil(timeout: testTimeout) { done in
-                        channelReceive.subscribeWithAttachCallback({ error in
+                        channelReceive.subscribe(attachCallback: { error in
                             expect(error).to(beNil())
                             channelSend.publish(nil, data: "message") { error in
                                 expect(error).to(beNil())
@@ -2819,7 +2819,7 @@ class RealtimeClientConnection: QuickSpec {
                     let channel = client.channels.get("test")
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
-                        client.connection.once(.Connected) { _ in
+                        client.connection.once(.connected) { _ in
                             expect(client.connection.serial).to(equal(-1))
                             expect(client.connection.recoveryKey).to(equal("\(client.connection.key!):\(client.connection.serial)"))
                         }
@@ -2847,7 +2847,7 @@ class RealtimeClientConnection: QuickSpec {
                     let clientOriginal = ARTRealtime(options: options)
                     defer { clientOriginal.close() }
 
-                    expect(clientOriginal.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                    expect(clientOriginal.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
                     let expectedConnectionId = clientOriginal.connection.id
 
@@ -2858,9 +2858,9 @@ class RealtimeClientConnection: QuickSpec {
                     defer { clientRecover.close() }
 
                     waitUntil(timeout: testTimeout) { done in
-                        clientRecover.connection.once(.Connected) { _ in
+                        clientRecover.connection.once(.connected) { _ in
                             let transport = clientRecover.transport as! TestProxyTransport
-                            let firstConnectionDetails = transport.protocolMessagesReceived.filter{ $0.action == .Connected }.first!.connectionDetails
+                            let firstConnectionDetails = transport.protocolMessagesReceived.filter{ $0.action == .connected }.first!.connectionDetails
                             expect(firstConnectionDetails!.connectionKey).toNot(beNil())
                             expect(clientRecover.connection.id).to(equal(expectedConnectionId))
                             expect(clientRecover.connection.key).to(equal(firstConnectionDetails!.connectionKey))
@@ -2880,8 +2880,8 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
                     waitUntil(timeout: testTimeout) { done in
-                        client.connection.once(.Connected) { _ in
-                            client.connection.once(.Closed) { _ in
+                        client.connection.once(.connected) { _ in
+                            client.connection.once(.closed) { _ in
                                 expect(client.connection.recoveryKey).to(beNil())
                                 expect(client.connection.key).to(beNil())
                                 expect(client.connection.id).to(beNil())
@@ -2904,7 +2904,7 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
                     waitUntil(timeout: testTimeout) { done in
-                        client.connection.once(.Connected) { stateChange in
+                        client.connection.once(.connected) { stateChange in
                             expect(stateChange!.reason!.message).to(contain("Unable to recover connection"))
                             expect(client.connection.errorReason).to(beIdenticalTo(stateChange!.reason))
                             done()
@@ -2943,7 +2943,7 @@ class RealtimeClientConnection: QuickSpec {
                     let client = AblyTests.newRealtime(options)
                     let channel = client.channels.get("test")
 
-                    TestProxyTransport.network = .HostUnreachable
+                    TestProxyTransport.network = .hostUnreachable
                     defer { TestProxyTransport.network = nil }
 
                     var urlConnections = [NSURL]()
@@ -2951,7 +2951,7 @@ class RealtimeClientConnection: QuickSpec {
                         if client.transport !== transport {
                             return
                         }
-                        urlConnections.append(url)
+                        urlConnections.append(url as NSURL)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
@@ -2975,8 +2975,8 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: options)
                     let channel = client.channels.get("test")
 
-                    client.setTransportClass(TestProxyTransport.self)
-                    TestProxyTransport.network = .HostUnreachable
+                    client.setTransport(TestProxyTransport.self)
+                    TestProxyTransport.network = .hostUnreachable
                     defer { TestProxyTransport.network = nil }
 
                     var urlConnections = [NSURL]()
@@ -2984,7 +2984,7 @@ class RealtimeClientConnection: QuickSpec {
                         if client.transport !== transport {
                             return
                         }
-                        urlConnections.append(url)
+                        urlConnections.append(url as NSURL)
                         if urlConnections.count == 1 {
                             TestProxyTransport.network = nil
                         }
@@ -3015,8 +3015,8 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: options)
                     let channel = client.channels.get("test")
                     
-                    client.setTransportClass(TestProxyTransport.self)
-                    TestProxyTransport.network = .HostUnreachable
+                    client.setTransport(TestProxyTransport.self)
+                    TestProxyTransport.network = .hostUnreachable
                     defer { TestProxyTransport.network = nil }
                     
                     var urlConnections = [NSURL]()
@@ -3024,7 +3024,7 @@ class RealtimeClientConnection: QuickSpec {
                         if client.transport !== transport {
                             return
                         }
-                        urlConnections.append(url)
+                        urlConnections.append(url as NSURL)
                         if urlConnections.count == 1 {
                             TestProxyTransport.network = nil
                         }
@@ -3049,16 +3049,16 @@ class RealtimeClientConnection: QuickSpec {
 
                 // RTN17d
                 context("should use an alternative host when") {
-                    for caseTest: NetworkAnswer in [.HostUnreachable,
-                                                    .RequestTimeout(timeout: 0.1),
-                                                    .HostInternalError(code: 501)] {
+                    for caseTest: NetworkAnswer in [.hostUnreachable,
+                                                    .requestTimeout(timeout: 0.1),
+                                                    .hostInternalError(code: 501)] {
                         it("\(caseTest)") {
                             let options = ARTClientOptions(key: "xxxx:xxxx")
                             options.autoConnect = false
                             let client = ARTRealtime(options: options)
                             let channel = client.channels.get("test")
 
-                            client.setTransportClass(TestProxyTransport.self)
+                            client.setTransport(TestProxyTransport.self)
                             TestProxyTransport.network = caseTest
                             defer { TestProxyTransport.network = nil }
 
@@ -3067,7 +3067,7 @@ class RealtimeClientConnection: QuickSpec {
                                 if client.transport !== transport {
                                     return
                                 }
-                                urlConnections.append(url)
+                                urlConnections.append(url as NSURL)
                                 if urlConnections.count == 1 {
                                     TestProxyTransport.network = nil
                                 }
@@ -3097,9 +3097,9 @@ class RealtimeClientConnection: QuickSpec {
                         client.dispose()
                         client.close()
                     }
-                    client.setTransportClass(TestProxyTransport.self)
+                    client.setTransport(TestProxyTransport.self)
 
-                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
                     guard let wsTransport = client.transport as? ARTWebSocketTransport else {
                         fail("expected WS transport")
@@ -3108,7 +3108,7 @@ class RealtimeClientConnection: QuickSpec {
 
                     wsTransport.webSocket(wsTransport.websocket, didFailWithError:NSError(domain: "NSPOSIXErrorDomain", code: 57, userInfo: [NSLocalizedDescriptionKey: "Socket is not connected"]))
 
-                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Disconnected), timeout: testTimeout)
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.disconnected), timeout: testTimeout)
                 }
 
                 it("should not use an alternative host when the client receives a bad request") {
@@ -3117,8 +3117,8 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: options)
                     let channel = client.channels.get("test")
 
-                    client.setTransportClass(TestProxyTransport.self)
-                    TestProxyTransport.network = .Host400BadRequest
+                    client.setTransport(TestProxyTransport.self)
+                    TestProxyTransport.network = .host400BadRequest
                     defer { TestProxyTransport.network = nil }
 
                     var urlConnections = [NSURL]()
@@ -3126,7 +3126,7 @@ class RealtimeClientConnection: QuickSpec {
                         if client.transport !== transport {
                             return
                         }
-                        urlConnections.append(url)
+                        urlConnections.append(url as NSURL)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
@@ -3150,8 +3150,8 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: options)
                     let channel = client.channels.get("test")
 
-                    client.setTransportClass(TestProxyTransport.self)
-                    TestProxyTransport.network = .HostUnreachable
+                    client.setTransport(TestProxyTransport.self)
+                    TestProxyTransport.network = .hostUnreachable
                     defer { TestProxyTransport.network = nil }
 
                     var urlConnections = [NSURL]()
@@ -3159,7 +3159,7 @@ class RealtimeClientConnection: QuickSpec {
                         if client.transport !== transport {
                             return
                         }
-                        urlConnections.append(url)
+                        urlConnections.append(url as NSURL)
                         TestProxyTransport.network = nil
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
@@ -3197,8 +3197,8 @@ class RealtimeClientConnection: QuickSpec {
                     let testHttpExecutor = TestProxyHTTPExecutor()
                     client.rest.httpExecutor = testHttpExecutor
 
-                    client.setTransportClass(TestProxyTransport.self)
-                    TestProxyTransport.network = .HostUnreachable
+                    client.setTransport(TestProxyTransport.self)
+                    TestProxyTransport.network = .hostUnreachable
                     defer { TestProxyTransport.network = nil }
 
                     var urlConnections = [NSURL]()
@@ -3206,7 +3206,7 @@ class RealtimeClientConnection: QuickSpec {
                         if client.transport !== transport {
                             return
                         }
-                        urlConnections.append(url)
+                        urlConnections.append(url as NSURL)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
@@ -3219,7 +3219,7 @@ class RealtimeClientConnection: QuickSpec {
                         }
                     }
 
-                    expect(NSRegularExpression.match(testHttpExecutor.requests[0].URL!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
+                    expect(NSRegularExpression.match(testHttpExecutor.requests[0].url!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
                     expect(urlConnections).to(haveCount(6)) // default + 5 fallbacks
 
                     let extractHostname = { (url: NSURL) in
@@ -3243,8 +3243,8 @@ class RealtimeClientConnection: QuickSpec {
                     let testHttpExecutor = TestProxyHTTPExecutor()
                     client.rest.httpExecutor = testHttpExecutor
                     
-                    client.setTransportClass(TestProxyTransport.self)
-                    TestProxyTransport.network = .HostUnreachable
+                    client.setTransport(TestProxyTransport.self)
+                    TestProxyTransport.network = .hostUnreachable
                     defer { TestProxyTransport.network = nil }
                     
                     var urlConnections = [NSURL]()
@@ -3252,7 +3252,7 @@ class RealtimeClientConnection: QuickSpec {
                         if client.transport !== transport {
                             return
                         }
-                        urlConnections.append(url)
+                        urlConnections.append(url as NSURL)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
                     
@@ -3265,7 +3265,7 @@ class RealtimeClientConnection: QuickSpec {
                         }
                     }
 
-                    expect(NSRegularExpression.match(testHttpExecutor.requests[0].URL!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
+                    expect(NSRegularExpression.match(testHttpExecutor.requests[0].url!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
                     expect(urlConnections).to(haveCount(6)) // default + 5 provided fallbacks
                     
                     let extractHostname = { (url: NSURL) in
@@ -3287,8 +3287,8 @@ class RealtimeClientConnection: QuickSpec {
                     let testHttpExecutor = TestProxyHTTPExecutor()
                     client.rest.httpExecutor = testHttpExecutor
                     
-                    client.setTransportClass(TestProxyTransport.self)
-                    TestProxyTransport.network = .HostUnreachable
+                    client.setTransport(TestProxyTransport.self)
+                    TestProxyTransport.network = .hostUnreachable
                     defer { TestProxyTransport.network = nil }
                     
                     var urlConnections = [NSURL]()
@@ -3296,7 +3296,7 @@ class RealtimeClientConnection: QuickSpec {
                         if client.transport !== transport {
                             return
                         }
-                        urlConnections.append(url)
+                        urlConnections.append(url as NSURL)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
                     
@@ -3309,7 +3309,7 @@ class RealtimeClientConnection: QuickSpec {
                         }
                     }
                     
-                    expect(NSRegularExpression.match(testHttpExecutor.requests[0].URL!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
+                    expect(NSRegularExpression.match(testHttpExecutor.requests[0].url!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
                     expect(urlConnections).to(haveCount(1))
                 }
 
@@ -3322,8 +3322,8 @@ class RealtimeClientConnection: QuickSpec {
                     let testHttpExecutor = TestProxyHTTPExecutor()
                     client.rest.httpExecutor = testHttpExecutor
 
-                    client.setTransportClass(TestProxyTransport.self)
-                    TestProxyTransport.network = .HostUnreachable
+                    client.setTransport(TestProxyTransport.self)
+                    TestProxyTransport.network = .hostUnreachable
                     defer { TestProxyTransport.network = nil }
 
                     var urlConnections = [NSURL]()
@@ -3331,7 +3331,7 @@ class RealtimeClientConnection: QuickSpec {
                         if client.transport !== transport {
                             return
                         }
-                        urlConnections.append(url)
+                        urlConnections.append(url as NSURL)
                         if urlConnections.count == 2 {
                             TestProxyTransport.network = nil
                             (client.transport as! TestProxyTransport).simulateTransportSuccess()
@@ -3350,7 +3350,7 @@ class RealtimeClientConnection: QuickSpec {
 
                     client.time { _ in }
 
-                    let timeRequestUrl = testHttpExecutor.requests.last!.URL!
+                    let timeRequestUrl = testHttpExecutor.requests.last!.url!
                     expect(timeRequestUrl.host).to(equal(urlConnections[1].host))
                 }
 
@@ -3364,22 +3364,22 @@ class RealtimeClientConnection: QuickSpec {
                 defer { realtime.close() }
 
                 waitUntil(timeout: testTimeout) { done in
-                    realtime.connection.once(.Connecting) { stateChange in
+                    realtime.connection.once(.connecting) { stateChange in
                         expect(stateChange!.reason).to(beNil())
 
                         let transport = realtime.transport as! TestProxyTransport
                         transport.beforeProcessingReceivedMessage = { protocolMessage in
-                            if protocolMessage.action == .Connected {
+                            if protocolMessage.action == .connected {
                                 protocolMessage.connectionDetails!.clientId = "john"
                                 protocolMessage.connectionDetails!.connectionKey = "123"
                             }
                         }
                     }
-                    realtime.connection.once(.Connected) { stateChange in
+                    realtime.connection.once(.connected) { stateChange in
                         expect(stateChange!.reason).to(beNil())
 
                         let transport = realtime.transport as! TestProxyTransport
-                        let connectedProtocolMessage = transport.protocolMessagesReceived.filter{ $0.action == .Connected }[0]
+                        let connectedProtocolMessage = transport.protocolMessagesReceived.filter{ $0.action == .connected }[0]
 
                         expect(realtime.auth.clientId).to(equal(connectedProtocolMessage.connectionDetails!.clientId))
                         expect(realtime.connection.key).to(equal(connectedProtocolMessage.connectionDetails!.connectionKey))
@@ -3411,11 +3411,11 @@ class RealtimeClientConnection: QuickSpec {
                                 fail("Transport is nil"); done(); return
                             }
                             expect(newTransport).toNot(beIdenticalTo(transport))
-                            expect(transport.protocolMessagesSent.filter{ $0.action == .Message }).to(haveCount(1))
-                            expect(transport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
-                            expect(newTransport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
-                            expect(transport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
-                            expect(newTransport.protocolMessagesSent.filter{ $0.action == .Message }).to(haveCount(1))
+                            expect(transport.protocolMessagesSent.filter{ $0.action == .message }).to(haveCount(1))
+                            expect(transport.protocolMessagesReceived.filter{ $0.action == .connected }).to(haveCount(1))
+                            expect(newTransport.protocolMessagesReceived.filter{ $0.action == .connected }).to(haveCount(1))
+                            expect(transport.protocolMessagesReceived.filter{ $0.action == .connected }).to(haveCount(1))
+                            expect(newTransport.protocolMessagesSent.filter{ $0.action == .message }).to(haveCount(1))
                             done()
                         }
                         client.onDisconnected()
@@ -3431,7 +3431,7 @@ class RealtimeClientConnection: QuickSpec {
                     let channel = client.channels.get("test")
                     let transport = client.transport as! TestProxyTransport
 
-                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
                     waitUntil(timeout: testTimeout) { done in
                         transport.ignoreSends = true
@@ -3440,14 +3440,14 @@ class RealtimeClientConnection: QuickSpec {
                             guard let newTransport = client.transport as? TestProxyTransport else {
                                 fail("Transport is nil"); done(); return
                             }
-                            expect(transport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
-                            expect(newTransport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
-                            expect(transport.protocolMessagesSent.filter{ $0.action == .Attach }).to(haveCount(0))
-                            expect(transport.protocolMessagesSentIgnored.filter{ $0.action == .Attach }).to(haveCount(1))
-                            expect(newTransport.protocolMessagesSent.filter{ $0.action == .Attach }).to(haveCount(1))
+                            expect(transport.protocolMessagesReceived.filter{ $0.action == .connected }).to(haveCount(1))
+                            expect(newTransport.protocolMessagesReceived.filter{ $0.action == .connected }).to(haveCount(1))
+                            expect(transport.protocolMessagesSent.filter{ $0.action == .attach }).to(haveCount(0))
+                            expect(transport.protocolMessagesSentIgnored.filter{ $0.action == .attach }).to(haveCount(1))
+                            expect(newTransport.protocolMessagesSent.filter{ $0.action == .attach }).to(haveCount(1))
                             done()
                         }
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.Attaching))
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
                         transport.ignoreSends = false
                         client.onDisconnected()
                     }
@@ -3462,7 +3462,7 @@ class RealtimeClientConnection: QuickSpec {
                     let channel = client.channels.get("test")
                     let transport = client.transport as! TestProxyTransport
 
-                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                    expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.attach() { _ in done() }
@@ -3475,14 +3475,14 @@ class RealtimeClientConnection: QuickSpec {
                             guard let newTransport = client.transport as? TestProxyTransport else {
                                 fail("Transport is nil"); done(); return
                             }
-                            expect(transport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
-                            expect(newTransport.protocolMessagesReceived.filter{ $0.action == .Connected }).to(haveCount(1))
-                            expect(transport.protocolMessagesSent.filter{ $0.action == .Detach }).to(haveCount(0))
-                            expect(transport.protocolMessagesSentIgnored.filter{ $0.action == .Detach }).to(haveCount(1))
-                            expect(newTransport.protocolMessagesSent.filter{ $0.action == .Detach }).to(haveCount(1))
+                            expect(transport.protocolMessagesReceived.filter{ $0.action == .connected }).to(haveCount(1))
+                            expect(newTransport.protocolMessagesReceived.filter{ $0.action == .connected }).to(haveCount(1))
+                            expect(transport.protocolMessagesSent.filter{ $0.action == .detach }).to(haveCount(0))
+                            expect(transport.protocolMessagesSentIgnored.filter{ $0.action == .detach }).to(haveCount(1))
+                            expect(newTransport.protocolMessagesSent.filter{ $0.action == .detach }).to(haveCount(1))
                             done()
                         }
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.Detaching))
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.detaching))
                         transport.ignoreSends = false
                         client.onDisconnected()
                     }
@@ -3513,15 +3513,15 @@ class RealtimeClientConnection: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.on { stateChange in
                                 switch stateChange!.current {
-                                case .Connecting:
+                                case .connecting:
                                     expect(stateChange!.reason).to(beNil())
                                     guard let reachability = client.reachability as? TestReachability else {
                                         fail("expected test reachability")
                                         done(); return
                                     }
                                     expect(reachability.host).to(equal(client.options.realtimeHost))
-                                    reachability.simulate(reachable: false)
-                                case .Disconnected:
+                                    reachability.simulate(false)
+                                case .disconnected:
                                     guard let reason = stateChange!.reason else {
                                         fail("expected error reason")
                                         done(); return
@@ -3540,15 +3540,15 @@ class RealtimeClientConnection: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.on { stateChange in
                                 switch stateChange!.current {
-                                case .Connected:
+                                case .connected:
                                     expect(stateChange!.reason).to(beNil())
                                     guard let reachability = client.reachability as? TestReachability else {
                                         fail("expected test reachability")
                                         done(); return
                                     }
                                     expect(reachability.host).to(equal(client.options.realtimeHost))
-                                    reachability.simulate(reachable: false)
-                                case .Disconnected:
+                                    reachability.simulate(false)
+                                case .disconnected:
                                     guard let reason = stateChange!.reason else {
                                         fail("expected error reason")
                                         done(); return
@@ -3579,21 +3579,21 @@ class RealtimeClientConnection: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.on { stateChange in
                             switch stateChange!.current {
-                            case .Connecting:
-                                if stateChange!.previous == .Disconnected {
+                            case .connecting:
+                                if stateChange!.previous == .disconnected {
                                     client.onSuspended()
-                                } else if stateChange!.previous == .Suspended {
+                                } else if stateChange!.previous == .suspended {
                                     done()
                                 }
-                            case .Connected:
+                            case .connected:
                                 client.onDisconnected()
-                            case .Disconnected, .Suspended:
+                            case .disconnected, .suspended:
                                 guard let reachability = client.reachability as? TestReachability else {
                                     fail("expected test reachability")
                                     done(); return
                                 }
                                 expect(reachability.host).to(equal(client.options.realtimeHost))
-                                reachability.simulate(reachable: true)
+                                reachability.simulate(true)
                             default:
                                 break
                             }
@@ -3626,14 +3626,14 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.connection.once(.Update) { stateChange in
+                        client.connection.once(.update) { stateChange in
                             expect(stateChange?.reason).to(beNil())
                             expect(initialToken).toNot(equal(client.auth.tokenDetails?.token))
                             done()
                         }
 
                         let authMessage = ARTProtocolMessage()
-                        authMessage.action = .Auth
+                        authMessage.action = .auth
                         client.transport?.receive(authMessage)
                     }
 
@@ -3682,18 +3682,18 @@ class RealtimeClientConnection: QuickSpec {
                         fail("Initial token is nil"); return
                     }
 
-                    channel.once(.Detached) { _ in
+                    channel.once(.detached) { _ in
                         fail("Should not detach channels")
                     }
 
                     var authorizeMethodCallCount = 0
-                    let hook = client.auth.testSuite_injectIntoMethodAfter(#selector(client.auth.authorize(_:options:callback:))) {
+                    let hook = client.auth.testSuite_injectIntoMethod(after: #selector(client.auth.authorize(_:options:callback:))) {
                         authorizeMethodCallCount += 1
                     }
                     defer { hook.remove() }
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.connection.once(.Disconnected) { stateChange in
+                        client.connection.once(.disconnected) { stateChange in
                             guard let error = stateChange?.reason else {
                                 fail("Error is nil"); done(); return
                             }
@@ -3703,7 +3703,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.connection.once(.Connected) { stateChange in
+                        client.connection.once(.connected) { stateChange in
                             expect(stateChange?.reason).to(beNil())
                             expect(initialToken).toNot(equal(client.auth.tokenDetails?.token))
                             done()
@@ -3739,13 +3739,13 @@ class RealtimeClientConnection: QuickSpec {
             it("the client may receive a CONNECTED ProtocolMessage from Ably at any point and should emit an UPDATE event") {
                 let options = AblyTests.commonAppSetup()
                 options.authCallback = { _, completion in
-                    completion(getTestToken(key: options.key!, ttl: 35), nil)
+                    completion(getTestToken(key: options.key!, ttl: 35) as NSString, nil)
                 }
                 let client = ARTRealtime(options: options)
                 defer { client.dispose(); client.close() }
 
                 waitUntil(timeout: testTimeout) { done in
-                    client.connection.once(.Connected) { stateChange in
+                    client.connection.once(.connected) { stateChange in
                         expect(stateChange?.reason).to(beNil())
                         done()
                     }
@@ -3754,21 +3754,21 @@ class RealtimeClientConnection: QuickSpec {
                 expect(client.auth.clientId).to(beNil())
 
                 client.options.authCallback = { _, completion in
-                    completion(getTestToken(key: options.key!, ttl: 5, clientId: "tester"), nil)
+                    completion(getTestToken(key: options.key!, clientId: "tester", ttl: 5) as NSString, nil)
                 }
 
-                client.connection.once(.Connected) { stateChange in
+                client.connection.once(.connected) { stateChange in
                     fail("Should not emit a Connected state")
                 }
 
                 waitUntil(timeout: 40) { done in
-                    client.connection.once(.Update) { stateChange in
+                    client.connection.once(.update) { stateChange in
                         guard let stateChange = stateChange else {
                             fail("ConnectionStateChange is nil"); done(); return
                         }
                         expect(stateChange.reason).to(beNil())
-                        expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
-                        expect(stateChange.current).to(equal(ARTRealtimeConnectionState.Connected))
+                        expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
+                        expect(stateChange.current).to(equal(ARTRealtimeConnectionState.connected))
                         expect(stateChange.current).to(equal(stateChange.previous))
                         done()
                     }
@@ -3785,7 +3785,7 @@ class RealtimeClientConnection: QuickSpec {
                 defer { client.dispose(); client.close() }
 
                 waitUntil(timeout: testTimeout) { done in
-                    client.connection.once(.Connected) { stateChange in
+                    client.connection.once(.connected) { stateChange in
                         expect(stateChange?.reason).to(beNil())
                         done()
                     }
@@ -3794,16 +3794,16 @@ class RealtimeClientConnection: QuickSpec {
                 guard let transport = client.transport as? TestProxyTransport else {
                     fail("TestProxyTransport is not set"); return
                 }
-                guard let originalConnectedMessage = transport.protocolMessagesReceived.filter({ $0.action == .Connected }).first else {
+                guard let originalConnectedMessage = transport.protocolMessagesReceived.filter({ $0.action == .connected }).first else {
                     fail("First CONNECTED message not received"); return
                 }
 
-                client.connection.once(.Connected) { stateChange in
+                client.connection.once(.connected) { stateChange in
                     fail("Should not emit a Connected state")
                 }
 
                 waitUntil(timeout: testTimeout) { done in
-                    client.connection.once(.Update) { stateChange in
+                    client.connection.once(.update) { stateChange in
                         guard let stateChange = stateChange else {
                             fail("ConnectionStateChange is nil"); done(); return
                         }
@@ -3811,14 +3811,14 @@ class RealtimeClientConnection: QuickSpec {
                             fail("Reason error is nil"); done(); return
                         }
                         expect(error.code) == 1234
-                        expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Connected))
-                        expect(stateChange.current).to(equal(ARTRealtimeConnectionState.Connected))
+                        expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
+                        expect(stateChange.current).to(equal(ARTRealtimeConnectionState.connected))
                         expect(stateChange.current).to(equal(stateChange.previous))
                         done()
                     }
 
                     let connectedMessageWithError = originalConnectedMessage
-                    connectedMessageWithError.error = ARTErrorInfo.createWithCode(1234, message: "fabricated error")
+                    connectedMessageWithError.error = ARTErrorInfo.create(withCode: 1234, message: "fabricated error")
                     client.transport?.receive(connectedMessageWithError)
                 }
 
@@ -3834,24 +3834,24 @@ class RealtimeClientConnection: QuickSpec {
                     client.close()
                 }
 
-                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.Connected), timeout: testTimeout)
+                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
                 let protoMsg = ARTProtocolMessage()
-                protoMsg.action = .Disconnect
-                protoMsg.error = ARTErrorInfo.createWithCode(123, message: "test error")
+                protoMsg.action = .disconnect
+                protoMsg.error = ARTErrorInfo.create(withCode: 123, message: "test error")
                 client.transport?.receive(protoMsg)
 
-                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.Disconnected))
+                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.disconnected))
                 expect(client.connection.errorReason).to(equal(protoMsg.error))
             }
 
             context("with fixture messages") {
-                let fixtures = JSON(data: NSData(contentsOfFile: pathForTestResource(testResourcesPath + "messages-encoding.json"))!, options: .MutableContainers)
+                let fixtures = JSON(data: NSData(contentsOfFile: pathForTestResource(testResourcesPath + "messages-encoding.json"))! as Data, options: .mutableContainers)
 
-                func expectDataToMatch(message: ARTMessage, _ fixtureMessage: JSON) {
+                func expectDataToMatch(_ message: ARTMessage, _ fixtureMessage: JSON) {
                     switch fixtureMessage["expectedType"].string! {
                     case "string":
-                        expect(message.data as? NSString).to(equal(fixtureMessage["expectedValue"].string!))
+                        expect(message.data as? NSString).to(equal(fixtureMessage["expectedValue"].string! as NSString?))
                     case "jsonObject":
                         if let data = message.data as? NSDictionary {
                             expect(JSON(data)).to(equal(fixtureMessage["expectedValue"]))
@@ -3865,7 +3865,7 @@ class RealtimeClientConnection: QuickSpec {
                             fail("expected NSArray")
                         }
                     case "binary":
-                        expect(message.data as? NSData).to(equal(fixtureMessage["expectedHexValue"].string!.dataFromHexadecimalString()!))
+                        expect(message.data as? NSData).to(equal(fixtureMessage["expectedHexValue"].string!.dataFromHexadecimalString()! as NSData?))
                     default:
                         fail("unhandled: \(fixtureMessage["expectedType"].string!)")
                     }
@@ -3879,8 +3879,8 @@ class RealtimeClientConnection: QuickSpec {
                     let channel = client.channels.get("test")
                     channel.attach()
 
-                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.Attached), timeout: testTimeout)
-                    if channel.state != .Attached {
+                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+                    if channel.state != .attached {
                         return
                     }
 
@@ -3894,14 +3894,14 @@ class RealtimeClientConnection: QuickSpec {
                                 done()
                             }
 
-                            let request = NSMutableURLRequest(URL: NSURL(string: "/channels/\(channel.name)/messages")!)
-                            request.HTTPMethod = "POST"
-                            request.HTTPBody = try! fixtureMessage.rawData()
+                            let request = NSMutableURLRequest(url: NSURL(string: "/channels/\(channel.name)/messages")! as URL)
+                            request.httpMethod = "POST"
+                            request.httpBody = try! fixtureMessage.rawData()
                             request.allHTTPHeaderFields = [
                                 "Accept" : "application/json",
                                 "Content-Type" : "application/json"
                             ]
-                            client.rest.executeRequest(request, withAuthOption: .On, completion: { _, _, err in
+                            client.rest.execute(request as URLRequest, withAuthOption: .on, completion: { _, _, err in
                                 if let err = err {
                                     fail("\(err)")
                                 }
@@ -3922,10 +3922,10 @@ class RealtimeClientConnection: QuickSpec {
                                     return
                                 }
 
-                                let request = NSMutableURLRequest(URL: NSURL(string: "/channels/\(channel.name)/messages?limit=1")!)
-                                request.HTTPMethod = "GET"
+                                let request = NSMutableURLRequest(url: NSURL(string: "/channels/\(channel.name)/messages?limit=1")! as URL)
+                                request.httpMethod = "GET"
                                 request.allHTTPHeaderFields = ["Accept" : "application/json"]
-                                client.rest.executeRequest(request, withAuthOption: .On, completion: { _, data, err in
+                                client.rest.execute(request as URLRequest, withAuthOption: .on, completion: { _, data, err in
                                     if let err = err {
                                         fail("\(err)")
                                         done()
@@ -3980,14 +3980,14 @@ class RealtimeClientConnection: QuickSpec {
                                 partlyDone()
                             }
 
-                            let request = NSMutableURLRequest(URL: NSURL(string: "/channels/\(realtimeSubscribeChannelMsgPack.name)/messages")!)
-                            request.HTTPMethod = "POST"
-                            request.HTTPBody = try! fixtureMessage.rawData()
+                            let request = NSMutableURLRequest(url: NSURL(string: "/channels/\(realtimeSubscribeChannelMsgPack.name)/messages")! as URL)
+                            request.httpMethod = "POST"
+                            request.httpBody = try! fixtureMessage.rawData()
                             request.allHTTPHeaderFields = [
                                 "Accept" : "application/json",
                                 "Content-Type" : "application/json"
                             ]
-                            restPublishClient.executeRequest(request, withAuthOption: .On, completion: { _, _, err in
+                            restPublishClient.execute(request as URLRequest, withAuthOption: .on, completion: { _, _, err in
                                 if let err = err {
                                     fail("\(err)")
                                 }
@@ -4007,9 +4007,9 @@ class RealtimeClientConnection: QuickSpec {
                     for (_, fixtureMessage) in fixtures["messages"] {
                         var data: AnyObject
                         if fixtureMessage["expectedType"] == "binary" {
-                            data = fixtureMessage["expectedHexValue"].string!.dataFromHexadecimalString()!
+                            data = fixtureMessage["expectedHexValue"].string!.dataFromHexadecimalString()! as AnyObject
                         } else {
-                            data = fixtureMessage["expectedValue"].object
+                            data = fixtureMessage["expectedValue"].object as AnyObject
                         }
 
                         for restPublishChannel in [restPublishChannelMsgPack, restPublishChannelJSON] {
@@ -4025,10 +4025,10 @@ class RealtimeClientConnection: QuickSpec {
                             }
 
                             waitUntil(timeout: testTimeout) { done in
-                                let request = NSMutableURLRequest(URL: NSURL(string: "/channels/\(restPublishChannel.name)/messages?limit=1")!)
-                                request.HTTPMethod = "GET"
+                                let request = NSMutableURLRequest(url: NSURL(string: "/channels/\(restPublishChannel.name)/messages?limit=1")! as URL)
+                                request.httpMethod = "GET"
                                 request.allHTTPHeaderFields = ["Accept" : "application/json"]
-                                restRetrieveClient.executeRequest(request, withAuthOption: .On, completion: { _, data, err in
+                                restRetrieveClient.execute(request as URLRequest, withAuthOption: .on, completion: { _, data, err in
                                     if let err = err {
                                         fail("\(err)")
                                         done()
@@ -4051,7 +4051,7 @@ class RealtimeClientConnection: QuickSpec {
                 defer { client.dispose(); client.close() }
 
                 waitUntil(timeout: testTimeout) { done in
-                    client.connection.once(.Connected) { stateChange in
+                    client.connection.once(.connected) { stateChange in
                         expect(stateChange?.reason).to(beNil())
                         done()
                     }
@@ -4065,25 +4065,25 @@ class RealtimeClientConnection: QuickSpec {
                         }
                         // Let the token expire
                         delay(0.1) {
-                            completion(tokenDetails.token, nil)
+                            completion(tokenDetails.token as ARTTokenDetailsCompatible?, nil)
                         }
                     }
                 }
 
                 let authMessage = ARTProtocolMessage()
-                authMessage.action = .Auth
+                authMessage.action = .auth
                 client.transport?.receive(authMessage)
 
                 client.close()
 
                 waitUntil(timeout: testTimeout) { done in
-                    client.connection.once(.Failed) { _ in
+                    client.connection.once(.failed) { _ in
                         fail("Should not receive error 40142")
                     }
-                    client.connection.once(.Connected) { _ in
+                    client.connection.once(.connected) { _ in
                         fail("Should not connect")
                     }
-                    client.connection.once(.Closed) { _ in
+                    client.connection.once(.closed) { _ in
                         done()
                     }
                 }

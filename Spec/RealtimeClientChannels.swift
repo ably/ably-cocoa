@@ -11,9 +11,9 @@ import Quick
 import Nimble
 
 // Swift isn't yet smart enough to do this automatically when bridging Objective-C APIs
-extension ARTRealtimeChannels: SequenceType {
-    public func generate() -> NSFastGenerator {
-        return NSFastGenerator(self)
+extension ARTRealtimeChannels: Sequence {
+    public func makeIterator() -> NSFastEnumerationIterator {
+        return NSFastEnumerationIterator(self)
     }
 }
 
@@ -94,7 +94,7 @@ class RealtimeClientChannels: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         client.channels.release("test") { errorInfo in
                             expect(errorInfo).to(beNil())
-                            expect(channel.state).to(equal(ARTRealtimeChannelState.Detached))
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.detached))
                             done()
                         }
                     }

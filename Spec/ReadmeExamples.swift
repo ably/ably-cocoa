@@ -34,10 +34,10 @@ class ReadmeExamples : QuickSpec {
             client.connection.on { stateChange in
                 let stateChange = stateChange!
                 switch stateChange.current {
-                case .Connected:
+                case .connected:
                     print("connected!")
-                case .Failed:
-                    print("failed! \(stateChange.reason)")
+                case .failed:
+                    print("failed! \(String(describing: stateChange.reason))")
                 default:
                     break
                 }
@@ -60,13 +60,13 @@ class ReadmeExamples : QuickSpec {
             let channel = client.channels.get("test")
 
             channel.subscribe { message in
-                print(message.name)
-                print(message.data)
+                print(message.name as Any)
+                print(message.data as Any)
             }
 
             channel.subscribe("myEvent") { message in
-                print(message.name)
-                print(message.data)
+                print(message.name as Any)
+                print(message.data as Any)
             }
 
             channel.publish("greeting", data: "Hello World!")
@@ -82,8 +82,8 @@ class ReadmeExamples : QuickSpec {
             channel.history { messagesPage, error in
                 let messagesPage = messagesPage!
                 print(messagesPage.items)
-                print(messagesPage.items.first)
-                print((messagesPage.items.first as? ARTMessage)?.data) // payload for the message
+                print(messagesPage.items.first as Any)
+                print(messagesPage.items.first?.data as Any) // payload for the message
                 print(messagesPage.items.count) // number of messages in the current page of history
                 messagesPage.next { nextPage, error in
                     // retrieved the next page in nextPage
@@ -99,7 +99,7 @@ class ReadmeExamples : QuickSpec {
             defer { client.close() }
 
             client.connection.on { stateChange in
-                if stateChange!.current == .Connected {
+                if stateChange!.current == .connected {
                     let channel = client.channels.get("test")
 
                     channel.presence.enter("john.doe") { errorInfo in
@@ -120,10 +120,10 @@ class ReadmeExamples : QuickSpec {
 
             channel.presence.history { presencePage, error in
                 let presencePage = presencePage!
-                if let first = presencePage.items.first as? ARTPresenceMessage {
-                    print(first.action) // Any of .Enter, .Update or .Leave
-                    print(first.clientId) // client ID of member
-                    print(first.data) // optional data payload of member
+                if let first = presencePage.items.first {
+                    print(first.action) // Any of .enter, .update or .leave
+                    print(first.clientId as Any) // client ID of member
+                    print(first.data as Any) // optional data payload of member
                     presencePage.next { nextPage, error in
                         // retrieved the next page in nextPage
                     }
@@ -152,8 +152,8 @@ class ReadmeExamples : QuickSpec {
 
             channel.history { messagesPage, error in
                 let messagesPage = messagesPage!
-                print(messagesPage.items.first)
-                print((messagesPage.items.first as? ARTMessage)?.data) // payload for the message
+                print(messagesPage.items.first as Any)
+                print(messagesPage.items.first?.data as Any) // payload for the message
                 messagesPage.next { nextPage, error in
                     // retrieved the next page in nextPage
                 }
@@ -168,8 +168,8 @@ class ReadmeExamples : QuickSpec {
 
             channel.presence.get { membersPage, error in
                 let membersPage = membersPage!
-                print(membersPage.items.first)
-                print((membersPage.items.first as? ARTPresenceMessage)?.data) // payload for the message
+                print(membersPage.items.first as Any)
+                print((membersPage.items.first)?.data as Any) // payload for the message
                 membersPage.next { nextPage, error in
                     // retrieved the next page in nextPage
                 }
@@ -184,8 +184,8 @@ class ReadmeExamples : QuickSpec {
 
             channel.presence.history { presencePage, error in
                 let presencePage = presencePage!
-                if let first = presencePage.items.first as? ARTPresenceMessage {
-                    print(first.clientId) // client ID of member
+                if let first = presencePage.items.first {
+                    print(first.clientId as Any) // client ID of member
                     presencePage.next { nextPage, error in
                         // retrieved the next page in nextPage
                     }
@@ -196,7 +196,7 @@ class ReadmeExamples : QuickSpec {
         it("testGenerateToken") {
             let client = ARTRest(options: AblyTests.commonAppSetup())
 
-            client.auth.requestToken(nil, withOptions: nil) { tokenDetails, error in
+            client.auth.requestToken(nil, with: nil) { tokenDetails, error in
                 let tokenDetails = tokenDetails!
                 print(tokenDetails.token) // "xVLyHw.CLchevH3hF....MDh9ZC_Q"
                 let client = ARTRest(token: tokenDetails.token)
@@ -209,7 +209,7 @@ class ReadmeExamples : QuickSpec {
             client.channels.get("test").publish("foo", data: "bar") { _ in
                 client.stats { statsPage, error in
                     let statsPage = statsPage!
-                    print(statsPage.items.first)
+                    print(statsPage.items.first as Any)
                     statsPage.next { nextPage, error in
                         // retrieved the next page in nextPage
                     }
@@ -221,7 +221,7 @@ class ReadmeExamples : QuickSpec {
             let client = ARTRest(options: AblyTests.commonAppSetup())
             
             client.time { time, error in
-                print(time) // 2016-02-09 03:59:24 +0000
+                print(time as Any) // 2016-02-09 03:59:24 +0000
             }
         }
 
