@@ -79,7 +79,7 @@ static const char *logLevelName(ARTLogLevel level) {
 }
 
 - (instancetype)initCapturingOutput:(BOOL)capturing {
-    return [self initCapturingOutput:true historyLines:10];
+    return [self initCapturingOutput:true historyLines:100];
 }
 
 - (instancetype)initCapturingOutput:(BOOL)capturing historyLines:(NSUInteger)historyLines {
