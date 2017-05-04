@@ -43,23 +43,54 @@ static const char *logLevelName(ARTLogLevel level) {
     return [NSString stringWithFormat:@"%s: %@", logLevelName(self.level), self.message];
 }
 
+- (NSString *)description {
+    return [self toString];
+}
+
+#pragma mark - NSCoding
+
+- (id)initWithCoder:(NSCoder *)decoder {
+    self = [super init];
+    if (!self) {
+        return nil;
+    }
+    _date = [decoder decodeObjectForKey:@"date"];
+    _level = [[decoder decodeObjectForKey:@"level"] unsignedIntValue];
+    _message = [decoder decodeObjectForKey:@"message"];
+    return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)encoder {
+    [encoder encodeObject:self.date forKey:@"date"];
+    [encoder encodeObject:[NSNumber numberWithUnsignedInteger:self.level] forKey:@"level"];
+    [encoder encodeObject:self.message forKey:@"message"];
+}
+
 @end
 
 @implementation ARTLog {
-    NSMutableArray *_captured;
+    NSMutableArray<ARTLogLine *> *_captured;
+    NSMutableArray<ARTLogLine *> *_history;
+    NSUInteger _historyLines;
 }
 
 - (instancetype)init {
-    return [self initCapturingOutput:false];
+    return [self initCapturingOutput:true];
 }
 
 - (instancetype)initCapturingOutput:(BOOL)capturing {
+    return [self initCapturingOutput:true historyLines:100];
+}
+
+- (instancetype)initCapturingOutput:(BOOL)capturing historyLines:(NSUInteger)historyLines {
     if (self = [super init]) {
         // Default
         self->_logLevel = ARTLogLevelWarn;
         if (capturing) {
             self->_captured = [[NSMutableArray alloc] init];
         }
+        _history = [[NSMutableArray alloc] init];
+        _historyLines = historyLines;
     }
     return self;
 }
@@ -72,9 +103,17 @@ static const char *logLevelName(ARTLogLevel level) {
             [_captured addObject:logLine];
         }
     }
+    [_history insertObject:logLine atIndex:0];
+    if (_history.count > _historyLines) {
+        [_history removeLastObject];
+    }
 }
 
-- (NSArray *)getCaptured {
+- (NSArray<ARTLogLine *> *)history {
+    return _history;
+}
+
+- (NSArray *)captured {
     if (!_captured) {
         [NSException raise:NSInternalInconsistencyException format:@"tried to get captured output in non-capturing instance; use initCapturingOutput:true if you want captured output."];
     }

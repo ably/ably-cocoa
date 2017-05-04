@@ -13,7 +13,7 @@
 
 ART_ASSUME_NONNULL_BEGIN
 
-@interface ARTLogLine : NSObject
+@interface ARTLogLine : NSObject <NSCoding>
 
 @property(nonatomic, readonly, strong) NSDate *date;
 @property(nonatomic, readonly) ARTLogLevel level;
@@ -27,9 +27,11 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTLog ()
 
-@property(readonly, getter=getCaptured) __GENERIC(NSArray, ARTLogLine *) *captured;
+@property (readonly) NSArray<ARTLogLine *> *captured;
+@property (readonly) NSArray<ARTLogLine *> *history;
 
 - (instancetype)initCapturingOutput:(BOOL)capturing;
+- (instancetype)initCapturingOutput:(BOOL)capturing historyLines:(NSUInteger)historyLines;
 
 @end
 
