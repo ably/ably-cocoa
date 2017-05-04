@@ -334,6 +334,8 @@ enum {
         [self webSocketMessageText:(NSString *)message];
     } else if ([message isKindOfClass:[NSData class]]) {
         [self webSocketMessageData:(NSData *)message];
+    } else if ([message isKindOfClass:[ARTProtocolMessage class]]) {
+        [self webSocketMessageProtocol:(ARTProtocolMessage *)message];
     }
 }
 
@@ -360,6 +362,18 @@ enum {
         ARTWebSocketTransport *s = weakSelf;
         if (s) {
             [s receiveWithData:data];
+        }
+    });
+}
+
+- (void)webSocketMessageProtocol:(ARTProtocolMessage *)message {
+    ARTWebSocketTransport * __weak weakSelf = self;
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did receive protocol message %@", _delegate, self, message];
+
+    dispatch_async(_workQueue, ^{
+        ARTWebSocketTransport *s = weakSelf;
+        if (s) {
+            [s receive:message];
         }
     });
 }

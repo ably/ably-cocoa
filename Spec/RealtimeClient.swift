@@ -1237,6 +1237,93 @@ class RealtimeClient: QuickSpec {
                 }
             }
 
+            it("should accept acks with different order") {
+                let realtime = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                defer { realtime.dispose(); realtime.close() }
+                let channel = realtime.channels.get("foo")
+                waitUntil(timeout: testTimeout) { done in
+                    channel.attach { error in
+                        expect(error).to(beNil())
+                        done()
+                    }
+                }
+                guard let transport = realtime.transport as? TestProxyTransport else {
+                    fail("TestProxyTransport is not set"); return
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    transport.beforeProcessingReceivedMessage = { pm in
+                        if pm.action == .Ack, let msgSerial = pm.msgSerial {
+                            switch msgSerial.integerValue {
+                            case 0:
+                                pm.msgSerial = 3
+                            case 1:
+                                pm.msgSerial = 2
+                            case 2:
+                                pm.msgSerial = 1
+                            default:
+                                pm.msgSerial = 0
+                            }
+                        }
+                    }
+
+                    let partialDone = AblyTests.splitDone(4, done: done)
+                    channel.publish("test1", data: nil) { error in
+                        expect(error).to(beNil())
+                        partialDone()
+                    }
+                    channel.publish("test2", data: nil) { error in
+                        expect(error).to(beNil())
+                        partialDone()
+                    }
+                    channel.publish("test3", data: nil) { error in
+                        expect(error).to(beNil())
+                        partialDone()
+                    }
+                    channel.publish("test4", data: nil) { error in
+                        expect(error).to(beNil())
+                        partialDone()
+                    }
+                }
+            }
+
+            it("transport should guarantee the incoming message order") {
+                let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
+                defer { realtime.dispose(); realtime.close() }
+                waitUntil(timeout: testTimeout) { done in
+                    realtime.connection.on(.Connected) { _ in
+                        done()
+                    }
+                }
+                guard let webSocketTransport = realtime.transport as? ARTWebSocketTransport else {
+                    fail("should be using a WebSocket transport"); return
+                }
+
+                var result: [Int] = []
+                let expectedOrder = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+
+                waitUntil(timeout: testTimeout) { done in
+                    let partialDone = AblyTests.splitDone(expectedOrder.count, done: done)
+
+                    realtime.testSuite_getArgumentFrom(NSSelectorFromString("ack:"), atIndex: 0) { object in
+                        guard let value = (object as? ARTProtocolMessage)?.msgSerial?.integerValue else {
+                            return
+                        }
+                        result.append(value)
+                        partialDone()
+                    }
+
+                    for i in expectedOrder {
+                        let message = ARTProtocolMessage()
+                        message.action = .Ack
+                        message.msgSerial = i
+                        webSocketTransport.webSocket(webSocketTransport.websocket!, didReceiveMessage: message)
+                    }
+                }
+
+                expect(result).to(equal(expectedOrder))
+            }
+
             it("should never register any connection listeners for internal use with the public EventEmitter") {
                 let options = AblyTests.commonAppSetup()
                 options.autoConnect = false

@@ -914,7 +914,15 @@
         // This counts as a nack of the messages earlier than serial,
         // as well as an ack
         int nCount = (int)(serial - self.pendingMessageStartSerial);
-        NSRange nackRange = NSMakeRange(0, nCount);
+        NSRange nackRange;
+        if (nCount > self.pendingMessages.count) {
+            [self.logger error:@"R:%p ARTRealtime ACK: receiving a serial greater than expected", self];
+            // Process all the available pending messages as nack
+            nackRange = NSMakeRange(0, self.pendingMessages.count);
+        }
+        else {
+            nackRange = NSMakeRange(0, nCount);
+        }
         nackMessages = [self.pendingMessages subarrayWithRange:nackRange];
         [self.pendingMessages removeObjectsInRange:nackRange];
         self.pendingMessageStartSerial = serial;
