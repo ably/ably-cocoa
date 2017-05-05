@@ -12,6 +12,8 @@
 #import "ARTNSDate+ARTUtil.h"
 #import "ARTDefault.h"
 #import "ARTCrypto+Private.h"
+#import <KSCrash/KSCrash.h>
+#import "ARTNSArray+ARTFunctional.h"
 
 @implementation ARTSentry
 
@@ -60,9 +62,9 @@ NSString* ART_uuid() {
     body[@"tags"] = tags;
     if (exception) {
         body[@"exception"] = @{
-                               @"value": ART_orNull(exception.reason),
-                               @"type": ART_orNull(exception.name),
-                               };
+           @"value": ART_orNull(exception.reason),
+           @"type": ART_orNull(exception.name),
+       };
         
         
         NSArray<NSString *> *trace = [exception callStackSymbols];
@@ -78,10 +80,10 @@ NSString* ART_uuid() {
             }
             NSString *function = [NSString stringWithFormat:@"%@::%@", [line substringWithRange:[match rangeAtIndex:1]], [line substringWithRange:[match rangeAtIndex:3]]];
             [frames addObject:@{
-                                @"function": function,
-                                @"instruction_addr": [line substringWithRange:[match rangeAtIndex:4]],
-                                @"symbol_addr": [line substringWithRange:[match rangeAtIndex:2]]
-                                }];
+                @"function": function,
+                @"instruction_addr": [line substringWithRange:[match rangeAtIndex:4]],
+                @"symbol_addr": [line substringWithRange:[match rangeAtIndex:2]]
+            }];
             if ([[line substringWithRange:[match rangeAtIndex:1]] isEqualToString:@"Ably"]) {
                 culprit = function;
             }
@@ -93,6 +95,8 @@ NSString* ART_uuid() {
             body[@"culprit"] = culprit;
         }
     }
+
+    body[@"contexts"] = ART_deviceContexts();
     
     NSData *bodyData = nil;
     id jsonError = nil;
@@ -133,7 +137,71 @@ NSString* ART_uuid() {
 }
 
 id ART_orNull(id obj) {
-    return obj ? obj : [NSNull null];
+    return obj != nil ? obj : [NSNull null];
+}
+
+NSDictionary *ART_deviceContexts() {
+    NSDictionary *info = [[KSCrash sharedInstance] systemInfo];
+
+    NSString *model =
+        #if TARGET_IPHONE_SIMULATOR
+            [[[NSProcessInfo alloc] init] environment][@"SIMULATOR_MODEL_IDENTIFIER"]
+        #elif TARGET_OS_MAC
+            info[@"model"]
+        #else
+            info[@"machine"]
+        #endif
+    ;
+
+    NSString *family = nil;
+    if (model) {
+        NSString *pattern = @"^\\D+";
+        NSRegularExpression* regex = [NSRegularExpression regularExpressionWithPattern:pattern options:0 error:nil];
+        family = [model substringWithRange:[regex firstMatchInString:model options:0 range:NSMakeRange(0, model.length)].range];
+    }
+
+    return @{
+        @"os": @{
+            @"name": ART_orNull(
+                #if TARGET_OS_IOS
+                    @"iOS"
+                #elif TARGET_OS_TV
+                    @"tvOS"
+                #elif TARGET_OS_MAC
+                    @"macOS"
+                #elif TARGET_OS_WATCH
+                    @"watchOS"
+                #else
+                    [NSNull null]
+                #endif
+            ),
+            @"version": ART_orNull(info[@"systemVersion"]),
+            @"build": ART_orNull(info[@"osVersion"]),
+            @"kernel_version": ART_orNull(info[@"kernelVersion"]),
+            @"rooted": ART_orNull(info[@"isJailbroken"]),
+        },
+        @"device": @{
+            @"arch": ART_orNull(info[@"cpuArchitecture"]),
+            @"model": ART_orNull(model),
+            @"family": ART_orNull(family),
+            @"free_memory": ART_orNull(info[@"freeMemory"]),
+            @"memory_size": ART_orNull(info[@"memorySize"]),
+            @"usable_memory": ART_orNull(info[@"usableMemory"]),
+            @"storage_size": ART_orNull(info[@"storageSize"]),
+            @"boot_time": ART_orNull(info[@"bootTime"]),
+            @"timezone": ART_orNull(info[@"timezone"]),
+        },
+        @"app": @{
+            @"app_start_time": ART_orNull(info[@"appStartTime"]),
+            @"device_app_hash": ART_orNull(info[@"deviceAppHash"]),
+            @"app_id": ART_orNull(info[@"appID"]),
+            @"build_type": ART_orNull(info[@"buildType"]),
+            @"app_identifier": ART_orNull(info[@"bundleID"]),
+            @"app_name": ART_orNull(info[@"bundleName"]),
+            @"app_build": ART_orNull(info[@"bundleVersion"]),
+            @"app_version": ART_orNull(info[@"bundleShortVersion"]),
+        },
+    };
 }
 
 @end
