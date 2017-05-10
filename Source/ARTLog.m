@@ -8,6 +8,7 @@
 
 #import "ARTLog+Private.h"
 #import "ARTNSDate+ARTUtil.m"
+#import "ARTSentry.h"
 
 static const char *logLevelName(ARTLogLevel level) {
     switch(level) {
@@ -30,12 +31,13 @@ static const char *logLevelName(ARTLogLevel level) {
 
 @implementation ARTLogLine
 
-- (id)initWithDate:(NSDate *)date level:(ARTLogLevel)level message:(NSString *)message {
+- (id)initWithDate:(NSDate *)date level:(ARTLogLevel)level message:(NSString *)message breadcrumbsKey:(NSString *)breadcrumbsKey {
     self = [self init];
     if (self) {
         _date = date;
         _level = level;
         _message = message;
+        _breadcrumbsKey = breadcrumbsKey;
     }
     return self;
 }
@@ -44,7 +46,7 @@ static const char *logLevelName(ARTLogLevel level) {
     return [NSString stringWithFormat:@"%s: %@", logLevelName(self.level), self.message];
 }
 
-- (NSDictionary *)toBreadcrumb:(NSString *)category {
+- (NSDictionary *)toBreadcrumb {
     NSString *level;
     switch (_level) {
         case ARTLogLevelError:
@@ -60,7 +62,7 @@ static const char *logLevelName(ARTLogLevel level) {
             level = @"debug";
     }
     return @{
-        @"category": category,
+        @"category": _breadcrumbsKey,
         @"timestamp": [_date toSentryTimestamp],
         @"level": level,
         @"message": _message,
@@ -81,6 +83,7 @@ static const char *logLevelName(ARTLogLevel level) {
     _date = [decoder decodeObjectForKey:@"date"];
     _level = [[decoder decodeObjectForKey:@"level"] unsignedIntValue];
     _message = [decoder decodeObjectForKey:@"message"];
+    _breadcrumbsKey = [decoder decodeObjectForKey:@"breadcrumbsKey"];
     return self;
 }
 
@@ -88,6 +91,7 @@ static const char *logLevelName(ARTLogLevel level) {
     [encoder encodeObject:self.date forKey:@"date"];
     [encoder encodeObject:[NSNumber numberWithUnsignedInteger:self.level] forKey:@"level"];
     [encoder encodeObject:self.message forKey:@"message"];
+    [encoder encodeObject:self.breadcrumbsKey forKey:@"breadcrumbsKey"];
 }
 
 @end
@@ -115,12 +119,13 @@ static const char *logLevelName(ARTLogLevel level) {
         }
         _history = [[NSMutableArray alloc] init];
         _historyLines = historyLines;
+        _breadcrumbsKey = @"logger";
     }
     return self;
 }
 
 - (void)log:(NSString *)message level:(ARTLogLevel)level {
-    ARTLogLine *logLine = [[ARTLogLine alloc] initWithDate:[NSDate date] level:level message:message];
+    ARTLogLine *logLine = [[ARTLogLine alloc] initWithDate:[NSDate date] level:level message:message breadcrumbsKey:_breadcrumbsKey];
     if (level >= self.logLevel) {
         NSLog(@"%@", [logLine toString]);
         if (_captured) {
@@ -131,6 +136,7 @@ static const char *logLevelName(ARTLogLevel level) {
     if (_history.count > _historyLines) {
         [_history removeLastObject];
     }
+    [ARTSentry setBreadcrumbs:_breadcrumbsKey value:_history];
 }
 
 - (NSArray<ARTLogLine *> *)history {

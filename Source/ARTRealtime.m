@@ -1297,16 +1297,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 }
 
 - (void)onUncaughtException:(NSException *)e {
-    NSDictionary *extra = @{
-        @"connectionState": ARTRealtimeConnectionStateToStr(self.connection.state),
-        @"connectionId": ART_orNull(self.connection.id),
-        @"connectionSerial": [NSNumber numberWithLongLong:self.connection.serial],
-    };
-    NSArray<NSDictionary *> *breadcrumbs = [[_transport.protocolMessagesLogger history] artMap:^NSDictionary *(ARTLogLine *line) {
-        return [line toBreadcrumb:@"protocolMessage"];
-    }];
     [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSException:e]];
-    [_rest onUncaughtException:e extra:extra breadcrumbs:breadcrumbs];
+    [_rest reportUncaughtException:e];
 }
 
 @end

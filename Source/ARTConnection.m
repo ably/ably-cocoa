@@ -10,6 +10,7 @@
 
 #import "ARTRealtime+Private.h"
 #import "ARTEventEmitter.h"
+#import "ARTSentry.h"
 
 @interface ARTConnection ()
 
@@ -52,6 +53,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 - (void)setId:(NSString *)newId {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     _id = newId;
+    [ARTSentry setExtras:@"connectionId" value:newId];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
@@ -64,12 +66,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 - (void)setSerial:(int64_t)serial {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     _serial = serial;
+    [ARTSentry setExtras:@"connectionSerial" value: [NSNumber numberWithLongLong:serial]];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)setState:(ARTRealtimeConnectionState)state {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     _state = state;
+    [ARTSentry setExtras:@"connectionState" value:ARTRealtimeConnectionStateToStr(state)];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 

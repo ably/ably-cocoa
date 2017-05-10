@@ -454,48 +454,35 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         [_realtime onUncaughtException:e];
         return;
     }
-    [self onUncaughtException:e extra:nil breadcrumbs:nil];
+    [self reportUncaughtException:e];
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (void)onUncaughtException:(NSException *)e extra:(NSDictionary *)extra breadcrumbs:(NSArray<NSDictionary *> *)breadcrumbs {
+- (void)reportUncaughtException:(NSException *_Nullable)e {
 ART_TRY_OR_REPORT_CRASH_START(self) {
     NSLog(@"ARTRest: uncaught exception %@\n%@", e, [e callStackSymbols]);
-    [self reportToSentry:extra breadcrumbs:breadcrumbs exception:e];
-} ART_TRY_OR_REPORT_CRASH_END
-}
-
-- (void)reportToSentry:(NSDictionary *)extra breadcrumbs:(NSArray<NSDictionary *> *)breadcrumbs exception:(NSException *_Nullable)exception {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     NSString *dns = self.options.logExceptionReportingUrl;
     if (!dns) {
         return;
     }
 
-    NSMutableDictionary *allExtras = [[NSMutableDictionary alloc] init];
-    if (extra) {
-        for (NSString *k in extra) {
-            allExtras[k] = extra[k];
-        }
-    }
+    [ARTSentry report:@"Uncaught exception" to:dns extra:[self sentryExtras] breadcrumbs:[self sentryBreadcrumbs] tags:[self sentryTags] exception:e];
+} ART_TRY_OR_REPORT_CRASH_END
+}
 
-    NSMutableArray *allBreadcrumbs = [[NSMutableArray alloc] init];
-    for (ARTLogLine *line in [_logger history]) {
-        [allBreadcrumbs addObject:[line toBreadcrumb:@"logger"]];
-    };
-    if (breadcrumbs) {
-        for (NSDictionary *b in breadcrumbs) {
-            [allBreadcrumbs addObject:b];
-        }
-    }
+- (NSDictionary *)sentryExtras {
+    return [KSCrash sharedInstance].userInfo[@"sentryExtras"];
+}
 
-    NSDictionary *tags = @{
+- (NSArray<NSDictionary *> *)sentryBreadcrumbs {
+    return [ARTSentry breadcrumbs];
+}
+
+- (NSDictionary *)sentryTags {
+    return @{
         @"appId": ART_orNull(self.auth.appId),
         @"environment": self.options.environment ? self.options.environment : @"production",
     };
-
-    [ARTSentry report:@"Uncaught exception" to:dns extra:allExtras breadcrumbs:allBreadcrumbs tags:tags exception:exception];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 BOOL ARTstartHandlingUncaughtExceptions(ARTRest *self) {
@@ -503,11 +490,29 @@ BOOL ARTstartHandlingUncaughtExceptions(ARTRest *self) {
         return false;
     }
     self->_handlingUncaughtExceptions = true;
+
+    NSString *dns = self.options.logExceptionReportingUrl;
+    if (!dns) {
+        return true;
+    }
+
+    [ARTSentry setTags:[self sentryTags]];
+    BOOL set = [ARTSentry setCrashHandler:dns];
+    if (set) {
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            [self->_logger info:@"Ably client library exception reporting enabled. Unhandled failures will be automatically submitted to errors.ably.io to help improve our service. To find out more about this feature, see https://help.ably.io/exceptions"];
+        });
+    } else {
+        [self->_logger debug:@"couldn't start crash handler"];
+    }
+
     return true;
 }
 
 void ARTstopHandlingUncaughtExceptions(ARTRest *self) {
     self->_handlingUncaughtExceptions = false;
+    [ARTSentry setCrashHandler:nil];
 }
 
 @end

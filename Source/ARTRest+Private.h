@@ -9,6 +9,7 @@
 #import "ARTRest.h"
 #import "ARTHttp.h"
 #import "ARTRealtime.h"
+#import "ARTSentry.h"
 
 @protocol ARTEncoder;
 @protocol ARTHTTPExecutor;
@@ -51,7 +52,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (nullable id<ARTCancellable>)internetIsUp:(void (^)(BOOL isUp))cb;
 
 - (void)onUncaughtException:(NSException *)e;
-- (void)onUncaughtException:(NSException *)e extra:(NSDictionary *_Nullable)extra breadcrumbs:(NSArray<NSDictionary *> *_Nullable)breadcrumbs;
+- (void)reportUncaughtException:(NSException *_Nullable)exception;
 
 @end
 

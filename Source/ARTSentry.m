@@ -13,9 +13,205 @@
 #import "ARTDefault.h"
 #import "ARTCrypto+Private.h"
 #import <KSCrash/KSCrash.h>
+#import <KSCrash/KSCrashInstallation+Private.h>
+#import <KSCrash/KSCrashMonitorType.h>
 #import "ARTNSArray+ARTFunctional.h"
 
+NSString* ART_hexMemoryAddress(id addr) {
+    if (addr && [addr isKindOfClass:[NSString class]]) {
+        return addr;
+    }
+    if (addr && [addr isKindOfClass:[NSNumber class]]) {
+        return [NSString stringWithFormat:@"0x%lx", (unsigned long)[addr unsignedIntegerValue]];
+    }
+    return nil;
+}
+
+@interface  ARTKSCrashReportFilter : NSObject<KSCrashReportFilter>
+- (instancetype)init:(NSString *)dns;
+@end
+
+@implementation ARTKSCrashReportFilter {
+    NSString *_dns;
+}
+
+- (instancetype)init:(NSString *)dns {
+    if (self = [super init]) {
+        _dns = dns;
+    }
+    return self;
+}
+
+- (void)filterReports:(NSArray<NSDictionary *> *)reports onCompletion:(KSCrashReportFilterCompletion)onCompletion {
+    if (!_dns) {
+        // Deactivated; do nothing.
+        onCompletion(reports, true, nil);
+        return;
+    }
+
+    dispatch_sync(dispatch_queue_create("io.ably.sentry", nil), ^{
+        NSMutableArray<NSMutableDictionary *> *events = [[NSMutableArray alloc] init];
+        for (NSDictionary __strong *report in reports) {
+            id recrash = report[@"recrash_report"];
+            if (recrash) {
+                report = (NSDictionary *)recrash;
+            }
+            NSArray<NSDictionary<NSString *, id> *> *binaryImagesDicts = (NSArray *)report[@"binary_images"];
+            if (!binaryImagesDicts) {
+                continue;
+            }
+            NSDictionary<NSString *, id> *crashDict = (NSDictionary *)report[@"crash"];
+            if (!crashDict) {
+                continue;
+            }
+            NSDictionary<NSString *, id> *errorDict = (NSDictionary *)crashDict[@"error"];
+            if (!errorDict) {
+                continue;
+            }
+            NSArray<NSDictionary<NSString *, id> *> *threadDicts = (NSArray *)crashDict[@"threads"];
+            if (!threadDicts) {
+                continue;
+            }
+
+            id eType = errorDict[@"type"];
+            id eValue = errorDict[@"reason"];
+            if ([eType isEqualToString:@"nsexception"]) {
+                eType = errorDict[@"nsexception"][@"name"];
+                eValue = errorDict[@"nsexception"][@"reason"];
+                if (!eValue) {
+                    eValue = errorDict[@"reason"];
+                }
+            } else if ([eType isEqualToString:@"mach"]) {
+                eType = errorDict[@"mach"][@"exception_name"];
+                eValue = [NSString stringWithFormat:@"Exception %@, Code %@, Subcode %@", errorDict[@"mach"][@"exception"], errorDict[@"mach"][@"code"], errorDict[@"mach"][@"subcode"]];
+            } else if ([eType isEqualToString:@"signal"]) {
+                eType = errorDict[@"signal"][@"name"];
+                eValue = [NSString stringWithFormat:@"Signal %@, Code %@", errorDict[@"signal"][@"signal"], errorDict[@"signal"][@"code"]];
+            } else {
+                // Not from Ably.
+                continue;
+            }
+
+            NSMutableArray *frames = [[NSMutableArray alloc] init];
+            NSString *culprit = nil;
+            for (NSDictionary *threadDict in threadDicts) {
+                if (!([threadDict[@"crashed"] boolValue])) {
+                    continue;
+                }
+                for (NSDictionary *frameDict in (NSArray<NSDictionary *> *)threadDict[@"backtrace"][@"contents"]) {
+                    [frames addObject:@{
+                        @"function": ART_orNull(frameDict[@"symbol_name"]),
+                        @"instruction_addr": ART_orNull(ART_hexMemoryAddress(frameDict[@"instruction_addr"])),
+                        @"symbol_addr": ART_orNull(ART_hexMemoryAddress(frameDict[@"symbol_addr"])),
+                    }];
+                }
+                // TODO: https://github.com/getsentry/sentry-swift/blob/a05094d7727440a28e8f2a9bc5f863d67e1daf19/Sources/Thread.swift#L47
+            }
+
+            if (crashDict[@"diagnosis"]) {
+                eValue = crashDict[@"diagnosis"];
+            }
+
+            [events addObject:[[NSMutableDictionary alloc] initWithDictionary:@{
+                @"message": @"",
+                @"exception": @{
+                    @"type": ART_orNull(eType),
+                    @"value": ART_orNull(eValue),
+                },
+                @"stacktrace": @{
+                    @"frames": frames,
+                },
+                @"timestamp": ART_orNull(report[@"report"][@"timestamp"]),
+                @"debug_meta": @{
+                    @"images": [binaryImagesDicts artMap:^NSDictionary *(NSDictionary *d) {
+                        return @{
+                            @"type": @"apple",
+                            @"cpu_subtype": ART_orNull(d[@"cpu_subtype"]),
+                            @"uuid": ART_orNull(d[@"uuid"]),
+                            @"image_vmaddr": ART_orNull(ART_hexMemoryAddress(d[@"image_vmaddr"])),
+                            @"image_addr": ART_orNull(ART_hexMemoryAddress(d[@"image_addr"])),
+                            @"cpu_type": ART_orNull(d[@"cpu_type"]),
+                            @"image_size": ART_orNull(d[@"image_size"]),
+                            @"name": ART_orNull(d[@"name"]),
+                            @"major_version": ART_orNull(d[@"major_version"]),
+                            @"minor_version": ART_orNull(d[@"minor_version"]),
+                            @"revision_version": ART_orNull(d[@"revision_version"]),
+                        };
+                    }],
+                },
+                @"culprit": ART_orNull(culprit),
+                // @"breadcrumbs": ART_orNull([KSCrash sharedInstance].userInfo[@"sentryBreadcrumbs"]),
+                @"breadcrumbs":ART_orNull([ARTSentry breadcrumbs]),
+                @"extras": ART_orNull([KSCrash sharedInstance].userInfo[@"sentryExtras"]),
+                @"tags":ART_orNull([KSCrash sharedInstance].userInfo[@"sentryTags"]),
+            }]];
+        }
+
+        [self sendEvents:events reports:reports success:true onCompletion:onCompletion];
+    });
+}
+
+- (void)sendEvents:(NSMutableArray<NSMutableDictionary *> *)events reports:(NSArray<NSDictionary *> *)reports success:(BOOL)success onCompletion:(KSCrashReportFilterCompletion)onCompletion {
+    NSMutableDictionary *event = [events lastObject];
+    if (!event) {
+        onCompletion(reports, success, nil);
+        return;
+    }
+    [events removeLastObject];
+
+    [ARTSentry report:event to:_dns callback:^(NSError *e) {
+        if (e) {
+            NSLog(@"error sending report: %@", e);
+        }
+        [self sendEvents:events reports:reports success:success && e == nil onCompletion:onCompletion];
+    }];
+}
+
+@end
+
+@interface ARTKSCrashInstallation : KSCrashInstallation
+- (instancetype)init:(NSString *)dns;
+@end
+
+@implementation ARTKSCrashInstallation {
+    NSString *_dns;
+}
+
+- (instancetype)init:(NSString *)dns {
+    if (self = [super initWithRequiredProperties:@[]]) {
+        _dns = dns;
+    }
+    return self;
+}
+
+- (id<KSCrashReportFilter>)sink {
+    return [[ARTKSCrashReportFilter alloc] init:_dns];
+}
+
+@end
+
 @implementation ARTSentry
+
++ (BOOL)setCrashHandler:(NSString *_Nullable)dns {
+    static ARTKSCrashInstallation *installation;
+    __block BOOL installed = false;
+    @synchronized (self) {
+        // Monitor only crashes our code might cause.
+        [KSCrash sharedInstance].monitoring = KSCrashMonitorTypeMachException | KSCrashMonitorTypeSignal | KSCrashMonitorTypeSystem | KSCrashMonitorTypeApplicationState;
+
+        installation = [[ARTKSCrashInstallation alloc] init:dns];
+        [installation install];
+        installed = true;
+        [installation sendAllReportsWithCompletion:^(NSArray *reports, BOOL completed, NSError *error) {
+            if (error) {
+                NSLog(@"ARTSentry: error sending reports: %@", error);
+                return;
+            }
+            NSLog(@"ARTSentry: sent %lu reports", (unsigned long)[reports count]);
+        }];
+    }
+    return installed;
+}
 
 NSString* ART_uuid() {
     NSMutableData *data = [ARTCrypto generateSecureRandomData:16];
@@ -35,38 +231,22 @@ NSString* ART_uuid() {
 }
 
 + (void)report:(NSString *)message to:(NSString *)dns extra:(NSDictionary *_Nullable)extra breadcrumbs:(NSArray<NSDictionary *> *_Nullable)breadcrumbs tags:(NSDictionary *)tags exception:(NSException *_Nullable)exception {
-    NSURL *dnsUrl = [NSURL URLWithString:dns];
-    if (!dnsUrl) {
-        NSLog(@"ARTSentry: logExceptionReportingUrl (%@) is not a valid URL; crash won't be reported", dns);
-        return;
-    }
-    if (!dnsUrl.user || !dnsUrl.password) {
-        NSLog(@"ARTSentry: logExceptionReportingUrl (%@) doesn't have public and secret key; crash won't be reported", dns);
-        return;
-    }
-    NSString *authHeader = [NSString stringWithFormat:@"Sentry sentry_version=4, sentry_key=%@, sentry_secret=%@", dnsUrl.user, dnsUrl.password];
-    NSString *projectID = [dnsUrl lastPathComponent];
-    NSString *eventID = ART_uuid();
-    
+    [ARTSentry report:message to:dns extra:extra breadcrumbs:breadcrumbs tags:tags exception:exception callback:nil];
+}
+
++ (void)report:(NSString *)message to:(NSString *)dns extra:(NSDictionary *_Nullable)extra breadcrumbs:(NSArray<NSDictionary *> *_Nullable)breadcrumbs tags:(NSDictionary *)tags exception:(NSException *_Nullable)exception callback:(void (^_Nullable)(NSError *_Nullable))callback {
     NSMutableDictionary *body = [[NSMutableDictionary alloc] init];
     body[@"message"] = message;
-    body[@"event_id"] = ART_orNull(eventID);
-    body[@"project"] = ART_orNull(projectID);
-    body[@"timestamp"] = ART_orNull([[NSDate date] toSentryTimestamp]);
-    body[@"level"] = @"error";
-    body[@"platform"] = @"cocoa";
-    body[@"release"] = [ARTDefault libraryVersion];
-    
     body[@"extra"] = extra;
     body[@"breadcrumbs"] = breadcrumbs;
     body[@"tags"] = tags;
+
     if (exception) {
         body[@"exception"] = @{
            @"value": ART_orNull(exception.reason),
            @"type": ART_orNull(exception.name),
-       };
-        
-        
+        };
+
         NSArray<NSString *> *trace = [exception callStackSymbols];
         NSString *pattern = @"[ \t]*[0-9]+[ \t]*([^ \t]+)[ \t]+([^ \t]+)[ \t]+(.+) \\+ ([0-9]+)";
         NSRegularExpression* regex = [NSRegularExpression regularExpressionWithPattern:pattern options:0 error:nil];
@@ -81,23 +261,48 @@ NSString* ART_uuid() {
             NSString *function = [NSString stringWithFormat:@"%@::%@", [line substringWithRange:[match rangeAtIndex:1]], [line substringWithRange:[match rangeAtIndex:3]]];
             [frames addObject:@{
                 @"function": function,
-                @"instruction_addr": [line substringWithRange:[match rangeAtIndex:4]],
-                @"symbol_addr": [line substringWithRange:[match rangeAtIndex:2]]
+                @"instruction_addr": ART_hexMemoryAddress([line substringWithRange:[match rangeAtIndex:4]]),
+                @"symbol_addr": ART_hexMemoryAddress([line substringWithRange:[match rangeAtIndex:2]])
             }];
             if ([[line substringWithRange:[match rangeAtIndex:1]] isEqualToString:@"Ably"]) {
                 culprit = function;
             }
         }
-        body[@"stacktrace"] = @{
-                                @"frames": frames
-                                };
+        body[@"stacktrace"] = @{@"frames": frames};
         if (culprit) {
             body[@"culprit"] = culprit;
         }
+        extra = [[NSMutableDictionary alloc] initWithDictionary:extra];
+        ((NSMutableDictionary *)extra)[@"userInfo"] = ART_orNull(exception.userInfo);
     }
 
+    [ARTSentry report:body to:dns callback:callback];
+}
+
++ (void)report:(NSMutableDictionary *)body to:(NSString *)dns callback:(void (^_Nullable)(NSError *_Nullable))callback {
+    NSURL *dnsUrl = [NSURL URLWithString:dns];
+    if (!dnsUrl) {
+        [ARTSentry reportError:callback message:@"ARTSentry: logExceptionReportingUrl (%@) is not a valid URL; crash won't be reported", dns];
+        return;
+    }
+    if (!dnsUrl.user || !dnsUrl.password) {
+        [ARTSentry reportError:callback message:@"ARTSentry: logExceptionReportingUrl (%@) doesn't have public and secret key; crash won't be reported", dns];
+        return;
+    }
+    NSString *authHeader = [NSString stringWithFormat:@"Sentry sentry_version=4, sentry_key=%@, sentry_secret=%@", dnsUrl.user, dnsUrl.password];
+    NSString *projectID = [dnsUrl lastPathComponent];
+    NSString *eventID = ART_uuid();
+
+    body[@"event_id"] = ART_orNull(eventID);
+    body[@"project"] = ART_orNull(projectID);
+    body[@"timestamp"] = ART_orNull([[NSDate date] toSentryTimestamp]);
+    body[@"level"] = @"error";
+    body[@"platform"] = @"cocoa";
+    body[@"release"] = [ARTDefault libraryVersion];
+
+    body[@"breadcrumbs"] = [ARTSentry removeBreadcrumbSecrets:body[@"breadcrumbs"]];
     body[@"contexts"] = ART_deviceContexts();
-    
+
     NSData *bodyData = nil;
     id jsonError = nil;
     @try {
@@ -108,10 +313,10 @@ NSString* ART_uuid() {
         jsonError = exception;
     }
     if (!bodyData) {
-        NSLog(@"ARTSentry: error encoding crash report as JSON: %@", jsonError);
+        [ARTSentry reportError:callback message:@"ARTSentry: error encoding crash report as JSON: %@", jsonError];
         return;
     }
-    
+
     NSURLComponents *urlComponents = [[NSURLComponents alloc] init];
     urlComponents.scheme = dnsUrl.scheme;
     urlComponents.host = dnsUrl.host;
@@ -123,7 +328,7 @@ NSString* ART_uuid() {
     [request addValue:authHeader forHTTPHeaderField:@"X-Sentry-Auth"];
     [request setHTTPMethod:@"POST"];
     [request setHTTPBody:bodyData];
-    
+
     ARTURLSessionServerTrust *session = [[ARTURLSessionServerTrust alloc] init];
     [session get:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error || !response) {
@@ -133,14 +338,104 @@ NSString* ART_uuid() {
         } else {
             NSLog(@"ARTSentry: crash report sent successfully with ID %@", eventID);
         }
+        if (callback) callback(error);
     }];
+}
+
++ (void)reportError:(void (^_Nullable)(NSError *_Nullable))callback message:(NSString *)format, ... {
+    va_list args;
+    va_start(args, format);
+    NSString *message = [[NSString alloc] initWithFormat:format arguments:args];
+    va_end(args);
+    if (callback) {
+        callback([NSError errorWithDomain:@"ARTSentry" code:0 userInfo:@{NSLocalizedDescriptionKey: message}]);
+    } else {
+        NSLog(@"%@", message);
+    }
+}
+
++ (void)setTags:(NSDictionary *)value {
+    [ARTSentry setUserInfo:@"sentryTags" value:value];
+}
+
++ (void)setExtras:(NSString *)key value:(id)value {
+    [ARTSentry setUserInfo:@"sentryExtras" key:key value:ART_orNull(value)];
+}
+
++ (NSMutableDictionary<NSString *, NSArray<id<ARTSentryBreadcrumb>> *> *)breadcrumbsDict {
+    static NSMutableDictionary *d;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        d = [[NSMutableDictionary alloc] init];
+    });
+    return d;
+}
+
++ (NSArray<NSDictionary *> *)breadcrumbs {
+    NSMutableArray *all = [[NSMutableArray alloc] init];
+    NSDictionary *dict = [ARTSentry breadcrumbsDict];
+    for (NSString *k in dict) {
+        for (id<ARTSentryBreadcrumb> breadcrumb in dict[k]) {
+            [all addObject:[breadcrumb toBreadcrumb]];
+        }
+    }
+    return all;
+}
+
++ (void)setBreadcrumbs:(NSString *)key value:()value {
+    // TODO: breadcrumbs are too big and KSCrash rejects them for crashes.
+    // We can still use them when handling exceptions though.
+    [ARTSentry breadcrumbsDict][key] = value;
+
+    // [ARTSentry setUserInfo:@"sentryBreadcrumbs" key:key value:[value artMap:^NSDictionary *(id<ARTSentryBreadcrumb> b) {
+    //     return [b toBreadcrumb];
+    // }]];
+}
+
++ (void)setUserInfo:(NSString *)key value:(id)value {
+    NSMutableDictionary *info = [NSMutableDictionary dictionaryWithDictionary:[KSCrash sharedInstance].userInfo];
+    info[key] = value;
+    [KSCrash sharedInstance].userInfo = info;
+}
+
++ (void)setUserInfo:(NSString *)key key:(NSString *)innerKey value:(id)value {
+    NSMutableDictionary *info = [NSMutableDictionary dictionaryWithDictionary:[KSCrash sharedInstance].userInfo];
+    NSMutableDictionary *inner;
+    if (info[key]) {
+        inner = [NSMutableDictionary dictionaryWithDictionary:info[key]];
+    } else {
+        inner = [[NSMutableDictionary alloc] init];
+    }
+    inner[innerKey] = value;
+    info[key] = inner;
+    [KSCrash sharedInstance].userInfo = info;
 }
 
 id ART_orNull(id obj) {
     return obj != nil ? obj : [NSNull null];
 }
 
-NSDictionary *ART_deviceContexts() {
++ (NSArray *)removeBreadcrumbSecrets:(NSArray *)breadcrumbs {
+    if (!breadcrumbs || ![breadcrumbs isKindOfClass:[NSArray class]]) {
+        return breadcrumbs;
+    }
+    NSArray<NSRegularExpression *> *regexps = [@[
+        @"([a-zA-Z0-9\\-_]+!)[a-zA-Z0-9\\-_]+", // connection key
+        @"([a-zA-Z0-9\\-_]+\\.[a-zA-Z0-9\\-_]+:)[a-zA-Z0-9\\-_]+", // key
+        @"([a-zA-Z0-9\\-_]+\\.)[a-zA-Z0-9\\-_]{20,}", // token
+    ] artMap:^NSRegularExpression *(NSString *p) {
+        return [NSRegularExpression regularExpressionWithPattern:p options:0 error:nil];
+    }];
+    return [breadcrumbs artMap:^NSDictionary *(NSDictionary *breadcrumb) {
+        NSMutableDictionary *d = [[NSMutableDictionary alloc] initWithDictionary:breadcrumb];
+        for (NSRegularExpression *r in regexps) {
+            d[@"message"] = [r stringByReplacingMatchesInString:d[@"message"] options:0 range:NSMakeRange(0, [d[@"message"] length]) withTemplate:@"$1..."];
+        }
+        return d;
+    }];
+}
+
+NSDictionary* ART_deviceContexts() {
     NSDictionary *info = [[KSCrash sharedInstance] systemInfo];
 
     NSString *model =
