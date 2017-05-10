@@ -16,7 +16,6 @@
 NSString* (^__art_nullable ARTChannels_getChannelNamePrefix)();
 
 @interface ARTChannels() {
-    __weak ARTRest *_rest;
     __weak id<ARTChannelsDelegate> _delegate;
 }
 
@@ -25,51 +24,38 @@ NSString* (^__art_nullable ARTChannels_getChannelNamePrefix)();
 @implementation ARTChannels
 
 - (instancetype)initWithDelegate:(id)delegate {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (self = [super init]) {
         _channels = [[NSMutableDictionary alloc] init];
         _delegate = delegate;
     }
     return self;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(__unsafe_unretained id [])buffer count:(NSUInteger)len {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSUInteger count = [self->_channels countByEnumeratingWithState:state objects:buffer count:len];
     for (NSUInteger i = 0; i < count; i++) {
         buffer[i] = self->_channels[buffer[i]];
     }
     return count;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (BOOL)exists:(NSString *)name {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return self->_channels[[self addPrefix:name]] != nil;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (id)get:(NSString *)name {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [self _getChannel:[self addPrefix:name] options:nil];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (id)get:(NSString *)name options:(ARTChannelOptions *)options {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [self _getChannel:[self addPrefix:name] options:options];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)release:(NSString *)name {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [self->_channels removeObjectForKey:[self addPrefix:name]];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTRestChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions *)options {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     name = [self addPrefix:name];
     ARTRestChannel *channel = self->_channels[name];
     if (!channel) {
@@ -79,11 +65,9 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         channel.options = options;
     }
     return channel;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSString *)addPrefix:(NSString *)name {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (ARTChannels_getChannelNamePrefix) {
         NSString *prefix = [NSString stringWithFormat:@"%@-", ARTChannels_getChannelNamePrefix()];
         if (![name hasPrefix:prefix]) {
@@ -91,7 +75,6 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         }
     }
     return name;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 @end
