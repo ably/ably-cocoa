@@ -449,17 +449,14 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 }
 
 - (void)onUncaughtException:(NSException *)e {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     if (_realtime) {
         [_realtime onUncaughtException:e];
         return;
     }
     [self reportUncaughtException:e];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)reportUncaughtException:(NSException *_Nullable)e {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     NSLog(@"ARTRest: uncaught exception %@\n%@", e, [e callStackSymbols]);
     NSString *dns = self.options.logExceptionReportingUrl;
     if (!dns) {
@@ -467,7 +464,6 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
     }
 
     [ARTSentry report:@"Uncaught exception" to:dns extra:[self sentryExtras] breadcrumbs:[self sentryBreadcrumbs] tags:[self sentryTags] exception:e];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSDictionary *)sentryExtras {
