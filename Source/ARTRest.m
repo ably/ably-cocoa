@@ -96,6 +96,20 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 
         [self.logger verbose:__FILE__ line:__LINE__ message:@"RS:%p initialized", self];
     } ART_TRY_OR_REPORT_CRASH_END
+
+        NSString *dns = self.options.logExceptionReportingUrl;
+        if (dns) {
+            static dispatch_once_t onceToken;
+            dispatch_once(&onceToken, ^{
+                [ARTSentry setTags:[self sentryTags]];
+                BOOL set = [ARTSentry setCrashHandler:dns];
+                if (set) {
+                    [self->_logger info:@"Ably client library exception reporting enabled. Unhandled failures will be automatically submitted to errors.ably.io to help improve our service. To find out more about this feature, see https://help.ably.io/exceptions"];
+                } else {
+                    [self->_logger debug:@"couldn't start crash handler"];
+                }
+            });
+        }
     }
     return self;
 }
@@ -489,29 +503,11 @@ BOOL ARTstartHandlingUncaughtExceptions(ARTRest *self) {
         return false;
     }
     self->_handlingUncaughtExceptions = true;
-
-    NSString *dns = self.options.logExceptionReportingUrl;
-    if (!dns) {
-        return true;
-    }
-
-    [ARTSentry setTags:[self sentryTags]];
-    BOOL set = [ARTSentry setCrashHandler:dns];
-    if (set) {
-        static dispatch_once_t onceToken;
-        dispatch_once(&onceToken, ^{
-            [self->_logger info:@"Ably client library exception reporting enabled. Unhandled failures will be automatically submitted to errors.ably.io to help improve our service. To find out more about this feature, see https://help.ably.io/exceptions"];
-        });
-    } else {
-        [self->_logger debug:@"couldn't start crash handler"];
-    }
-
     return true;
 }
 
 void ARTstopHandlingUncaughtExceptions(ARTRest *self) {
     self->_handlingUncaughtExceptions = false;
-    [ARTSentry setCrashHandler:nil];
 }
 
 @end

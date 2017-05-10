@@ -188,6 +188,11 @@ NSString* ART_hexMemoryAddress(id addr) {
     return [[ARTKSCrashReportFilter alloc] init:_dns];
 }
 
+
+- (void)install {
+    [KSCrash sharedInstance].monitoring = KSCrashMonitorTypeMachException | KSCrashMonitorTypeSignal | KSCrashMonitorTypeSystem | KSCrashMonitorTypeApplicationState;
+    [super install];
+}
 @end
 
 @implementation ARTSentry
@@ -196,9 +201,6 @@ NSString* ART_hexMemoryAddress(id addr) {
     static ARTKSCrashInstallation *installation;
     __block BOOL installed = false;
     @synchronized (self) {
-        // Monitor only crashes our code might cause.
-        [KSCrash sharedInstance].monitoring = KSCrashMonitorTypeMachException | KSCrashMonitorTypeSignal | KSCrashMonitorTypeSystem | KSCrashMonitorTypeApplicationState;
-
         installation = [[ARTKSCrashInstallation alloc] init:dns];
         [installation install];
         installed = true;
