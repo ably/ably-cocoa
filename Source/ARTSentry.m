@@ -92,6 +92,7 @@ NSString* ART_hexMemoryAddress(id addr) {
                 continue;
             }
 
+            BOOL isFromAbly = false;
             NSMutableArray *frames = [[NSMutableArray alloc] init];
             NSString *culprit = nil;
             for (NSDictionary *threadDict in threadDicts) {
@@ -99,6 +100,9 @@ NSString* ART_hexMemoryAddress(id addr) {
                     continue;
                 }
                 for (NSDictionary *frameDict in (NSArray<NSDictionary *> *)threadDict[@"backtrace"][@"contents"]) {
+                    if (!isFromAbly && [(NSString *)frameDict[@"symbol_name"] rangeOfString:@"ART"].location != NSNotFound) {
+                        isFromAbly = true;
+                    }
                     [frames addObject:@{
                         @"function": ART_orNull(frameDict[@"symbol_name"]),
                         @"instruction_addr": ART_orNull(ART_hexMemoryAddress(frameDict[@"instruction_addr"])),
@@ -106,6 +110,10 @@ NSString* ART_hexMemoryAddress(id addr) {
                     }];
                 }
                 // TODO: https://github.com/getsentry/sentry-swift/blob/a05094d7727440a28e8f2a9bc5f863d67e1daf19/Sources/Thread.swift#L47
+            }
+
+            if (!isFromAbly) {
+                continue;
             }
 
             if (crashDict[@"diagnosis"]) {
@@ -147,6 +155,7 @@ NSString* ART_hexMemoryAddress(id addr) {
             }]];
         }
 
+        NSLog(@"ARTSentry: sending %lu reports", (unsigned long)[events count]);
         [self sendEvents:events reports:reports success:true onCompletion:onCompletion];
     });
 }
@@ -161,7 +170,7 @@ NSString* ART_hexMemoryAddress(id addr) {
 
     [ARTSentry report:event to:_dns callback:^(NSError *e) {
         if (e) {
-            NSLog(@"error sending report: %@", e);
+            NSLog(@"ARTSentry: error sending report: %@", e);
         }
         [self sendEvents:events reports:reports success:success && e == nil onCompletion:onCompletion];
     }];
@@ -209,7 +218,6 @@ NSString* ART_hexMemoryAddress(id addr) {
                 NSLog(@"ARTSentry: error sending reports: %@", error);
                 return;
             }
-            NSLog(@"ARTSentry: sent %lu reports", (unsigned long)[reports count]);
         }];
     }
     return installed;
