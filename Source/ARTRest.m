@@ -55,7 +55,6 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 }
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options realtime:(ARTRealtime *_Nullable)realtime {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     self = [super init];
     if (self) {
         NSAssert(options, @"ARTRest: No options provided");
@@ -75,6 +74,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
             _logger.logLevel = options.logLevel;
         }
 
+    ART_TRY_OR_REPORT_CRASH_START(self) {
         _http = [[ARTHttp alloc] init];
         [_logger verbose:__FILE__ line:__LINE__ message:@"RS:%p %p alloc HTTP", self, _http];
         _httpExecutor = _http;
@@ -95,9 +95,9 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         _handlingUncaughtExceptions = false;
 
         [self.logger verbose:__FILE__ line:__LINE__ message:@"RS:%p initialized", self];
+    } ART_TRY_OR_REPORT_CRASH_END
     }
     return self;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (instancetype)initWithKey:(NSString *)key {
