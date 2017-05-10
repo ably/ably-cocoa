@@ -220,7 +220,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
 ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     if (!clientId || [clientId isEqualToString:_channel.clientId]) {
         if(_channel.lastPresenceAction != ARTPresenceEnter && _channel.lastPresenceAction != ARTPresenceUpdate) {
-            [NSException raise:@"Cannot leave a channel before you've entered it" format:@""];
+            [ARTException raise:@"Cannot leave a channel before you've entered it" format:@""];
         }
     }
     ARTPresenceMessage *msg = [[ARTPresenceMessage alloc] init];

@@ -121,3 +121,6 @@ NSInteger getStatusFromCode(NSInteger code) {
 }
 
 @end
+
+@implementation ARTException
+@end

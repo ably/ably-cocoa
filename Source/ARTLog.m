@@ -145,7 +145,7 @@ static const char *logLevelName(ARTLogLevel level) {
 
 - (NSArray *)captured {
     if (!_captured) {
-        [NSException raise:NSInternalInconsistencyException format:@"tried to get captured output in non-capturing instance; use initCapturingOutput:true if you want captured output."];
+        [ARTException raise:NSInternalInconsistencyException format:@"tried to get captured output in non-capturing instance; use initCapturingOutput:true if you want captured output."];
     }
     return _captured;
 }

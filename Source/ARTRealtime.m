@@ -1297,6 +1297,9 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 }
 
 - (void)onUncaughtException:(NSException *)e {
+    if ([e isKindOfClass:[ARTException class]]) {
+        @throw e;
+    }
     [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSException:e]];
     [_rest reportUncaughtException:e];
 }

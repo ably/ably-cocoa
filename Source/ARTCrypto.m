@@ -68,7 +68,7 @@
         CCAlgorithm ccAlgorithm;
         NSError *error;
         if (![self ccAlgorithm:&ccAlgorithm error:&error]) {
-            [NSException raise:NSInvalidArgumentException format:@"%@", error.userInfo[NSLocalizedFailureReasonErrorKey]];
+            [ARTException raise:NSInvalidArgumentException format:@"%@", error.userInfo[NSLocalizedFailureReasonErrorKey]];
         }
     }
     return self;
@@ -330,7 +330,7 @@
     }
     NSString *key = values[@"key"];
     if (key == nil) {
-        [NSException raise:NSInvalidArgumentException format:@"missing key parameter"];
+        [ARTException raise:NSInvalidArgumentException format:@"missing key parameter"];
     }
     return [[ARTCipherParams alloc] initWithAlgorithm:algorithm key:key];
 }

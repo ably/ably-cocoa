@@ -150,14 +150,14 @@ NSString *const ARTDefaultProduction = @"production";
 
 - (void)setFallbackHosts:(art_nullable __GENERIC(NSArray, NSString *) *)value {
     if (_fallbackHostsUseDefault) {
-        [NSException raise:ARTFallbackIncompatibleOptionsException format:@"Could not setup custom fallback hosts because it is currently configured to use default fallback hosts."];
+        [ARTException raise:ARTFallbackIncompatibleOptionsException format:@"Could not setup custom fallback hosts because it is currently configured to use default fallback hosts."];
     }
     _fallbackHosts = value;
 }
 
 - (void)setFallbackHostsUseDefault:(BOOL)value {
     if (_fallbackHosts) {
-        [NSException raise:ARTFallbackIncompatibleOptionsException format:@"Could not configure options to use default fallback hosts because a custom fallback host list is being used."];
+        [ARTException raise:ARTFallbackIncompatibleOptionsException format:@"Could not configure options to use default fallback hosts because a custom fallback host list is being used."];
     }
     _fallbackHostsUseDefault = value;
 }

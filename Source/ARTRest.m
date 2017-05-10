@@ -449,6 +449,9 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 }
 
 - (void)onUncaughtException:(NSException *)e {
+    if ([e isKindOfClass:[ARTException class]]) {
+        @throw e;
+    }
     if (_realtime) {
         [_realtime onUncaughtException:e];
         return;

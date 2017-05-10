@@ -87,7 +87,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p validating %@", _rest, options];
     if ([options isBasicAuth]) {
         if (!options.tls) {
-            [NSException raise:@"ARTAuthException" format:@"Basic authentication only connects over HTTPS (tls)."];
+            [ARTException raise:@"ARTAuthException" format:@"Basic authentication only connects over HTTPS (tls)."];
         }
         // Basic
         [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p setting up auth method Basic (anonymous)", _rest];
@@ -102,7 +102,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         _method = ARTAuthMethodToken;
         options.tokenDetails = [[ARTTokenDetails alloc] initWithToken:options.token];
     } else if (options.authUrl && options.authCallback) {
-        [NSException raise:@"ARTAuthException" format:@"Incompatible authentication configuration: please specify either authCallback and authUrl."];
+        [ARTException raise:@"ARTAuthException" format:@"Incompatible authentication configuration: please specify either authCallback and authUrl."];
     } else if (options.authUrl) {
         // Authentication url
         [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p setting up auth method Token with authUrl", _rest];
@@ -116,11 +116,11 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p setting up auth method Token with key", _rest];
         _method = ARTAuthMethodToken;
     } else {
-        [NSException raise:@"ARTAuthException" format:@"Could not setup authentication method with given options."];
+        [ARTException raise:@"ARTAuthException" format:@"Could not setup authentication method with given options."];
     }
     
     if ([options.clientId isEqual:@"*"]) {
-        [NSException raise:@"ARTAuthException" format:@"Invalid clientId: cannot contain only a wilcard \"*\"."];
+        [ARTException raise:@"ARTAuthException" format:@"Invalid clientId: cannot contain only a wilcard \"*\"."];
     }
 } ART_TRY_OR_REPORT_CRASH_END
 }

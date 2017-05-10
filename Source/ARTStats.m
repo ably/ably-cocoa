@@ -186,7 +186,7 @@ static NSString *statsUnitToString(ARTStatsGranularity unit) {
             return [formatter dateFromString:intervalId];
         }
     }
-    @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"invalid intervalId" userInfo:nil];
+    @throw [ARTException exceptionWithName:NSInvalidArgumentException reason:@"invalid intervalId" userInfo:nil];
 }
 
 + (ARTStatsGranularity)granularityFromIntervalId:(NSString *)intervalId {
@@ -196,7 +196,7 @@ static NSString *statsUnitToString(ARTStatsGranularity unit) {
             return (ARTStatsGranularity)i;
         }
     }
-    @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"invalid intervalId" userInfo:nil];
+    @throw [ARTException exceptionWithName:NSInvalidArgumentException reason:@"invalid intervalId" userInfo:nil];
 }
 
 + (NSString *)toIntervalId:(NSDate *)time granularity:(ARTStatsGranularity)granularity {

@@ -290,7 +290,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 - (void)throwOnDisconnectedOrFailed {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     if (self.realtime.connection.state == ARTRealtimeFailed || self.realtime.connection.state == ARTRealtimeDisconnected) {
-        [NSException raise:@"realtime cannot perform action in disconnected or failed state" format:@"state: %d", (int)self.realtime.connection.state];
+        [ARTException raise:@"realtime cannot perform action in disconnected or failed state" format:@"state: %d", (int)self.realtime.connection.state];
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
