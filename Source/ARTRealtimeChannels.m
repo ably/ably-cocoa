@@ -66,6 +66,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 }
 
 - (void)release:(NSString *)name callback:(void (^)(ARTErrorInfo * _Nullable))cb {
+    if (cb) {
+        void (^userCallback)(ARTErrorInfo *__art_nullable error) = cb;
+        cb = ^(ARTErrorInfo *__art_nullable error) {
+            ART_EXITING_ABLY_CODE(_realtime.rest);
+            userCallback(error);
+        };
+    }
+
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     ARTRealtimeChannel *channel;
     if ([self exists:name]) {

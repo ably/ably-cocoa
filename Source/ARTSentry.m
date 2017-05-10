@@ -52,6 +52,10 @@ NSString* ART_hexMemoryAddress(id addr) {
     dispatch_sync(dispatch_queue_create("io.ably.sentry", nil), ^{
         NSMutableArray<NSMutableDictionary *> *events = [[NSMutableArray alloc] init];
         for (NSDictionary __strong *report in reports) {
+            if (![[KSCrash sharedInstance].userInfo[@"reportToAbly"] boolValue]) {
+                break;
+            }
+
             id recrash = report[@"recrash_report"];
             if (recrash) {
                 report = (NSDictionary *)recrash;

@@ -371,6 +371,14 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 }
 
 - (void)time:(void(^)(NSDate *time, NSError *error))callback {
+    if (callback) {
+        void (^userCallback)(NSDate *time, NSError *error) = callback;
+        callback = ^(NSDate *time, NSError *error) {
+            ART_EXITING_ABLY_CODE(self);
+            userCallback(time, error);
+        };
+    }
+
 ART_TRY_OR_REPORT_CRASH_START(self) {
     NSURL *requestUrl = [NSURL URLWithString:@"/time" relativeToURL:self.baseUrl];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
@@ -415,6 +423,14 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 
 - (BOOL)stats:(ARTStatsQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
 ART_TRY_OR_REPORT_CRASH_START(self) {
+    if (callback) {
+        void (^userCallback)(__GENERIC(ARTPaginatedResult, ARTStats *) *, ARTErrorInfo *) = callback;
+        callback = ^(__GENERIC(ARTPaginatedResult, ARTStats *) *r, ARTErrorInfo *e) {
+            ART_EXITING_ABLY_CODE(self);
+            userCallback(r, e);
+        };
+    }
+
     if (query.limit > 1000) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
@@ -474,6 +490,9 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 }
 
 - (void)reportUncaughtException:(NSException *_Nullable)e {
+    if (!_handlingUncaughtExceptions) {
+        @throw e;
+    }
     NSLog(@"ARTRest: uncaught exception %@\n%@", e, [e callStackSymbols]);
     NSString *dns = self.options.logExceptionReportingUrl;
     if (!dns) {
@@ -499,15 +518,17 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 }
 
 BOOL ARTstartHandlingUncaughtExceptions(ARTRest *self) {
-    if (self->_handlingUncaughtExceptions) {
+    if (!self || self->_handlingUncaughtExceptions) {
         return false;
     }
     self->_handlingUncaughtExceptions = true;
+    [ARTSentry setUserInfo:@"reportToAbly" value:[NSNumber numberWithBool:true]];
     return true;
 }
 
 void ARTstopHandlingUncaughtExceptions(ARTRest *self) {
     self->_handlingUncaughtExceptions = false;
+    [ARTSentry setUserInfo:@"reportToAbly" value:[NSNumber numberWithBool:false]];
 }
 
 @end

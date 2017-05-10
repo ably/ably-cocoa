@@ -85,6 +85,14 @@ ART_TRY_OR_REPORT_CRASH_START(_channel.rest) {
 
 - (BOOL)get:(ARTPresenceQuery *)query callback:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
 ART_TRY_OR_REPORT_CRASH_START(_channel.rest) {
+    if (callback) {
+        void (^userCallback)(ARTPaginatedResult<ARTPresenceMessage *> *, ARTErrorInfo *) = callback;
+        callback = ^(ARTPaginatedResult<ARTPresenceMessage *> *m, ARTErrorInfo *e) {
+            ART_EXITING_ABLY_CODE(_channel.rest);
+            userCallback(m, e);
+        };
+    }
+
     if (query.limit > 1000) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
@@ -123,6 +131,14 @@ ART_TRY_OR_REPORT_CRASH_START(_channel.rest) {
 
 - (BOOL)history:(ARTDataQuery *)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, ARTErrorInfo *error))callback error:(NSError **)errorPtr {
 ART_TRY_OR_REPORT_CRASH_START(_channel.rest) {
+    if (callback) {
+        void (^userCallback)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, ARTErrorInfo *error) = callback;
+        callback = ^(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, ARTErrorInfo *error) {
+            ART_EXITING_ABLY_CODE(_channel.rest);
+            userCallback(result, error);
+        };
+    }
+
     if (query.limit > 1000) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain

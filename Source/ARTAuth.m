@@ -60,12 +60,10 @@ ART_TRY_OR_REPORT_CRASH_START(rest) {
 }
 
 - (void)dealloc {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:NSCurrentLocaleDidChangeNotification object:nil];
     #ifdef TARGET_OS_IPHONE
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationSignificantTimeChangeNotification object:nil];
     #endif
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)didReceiveCurrentLocaleDidChangeNotification:(NSNotification *)notification {
@@ -238,9 +236,16 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (void)requestToken:(ARTTokenParams *)tokenParams withOptions:(ARTAuthOptions *)authOptions
-            callback:(void (^)(ARTTokenDetails *, NSError *))callback {
-    
+- (void)requestToken:(ARTTokenParams *)tokenParams withOptions:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
+    if (callback) {
+        void (^userCallback)(ARTTokenDetails *, NSError *) = callback;
+        callback = ^(ARTTokenDetails *t, NSError *e) {
+            ART_EXITING_ABLY_CODE(_rest);
+            userCallback(t, e);
+        };
+    }
+
     // If options, params passed in, they're used instead of stored, don't merge them
     ARTAuthOptions *replacedOptions = authOptions ? authOptions : self.options;
     ARTTokenParams *currentTokenParams = tokenParams ? tokenParams : _tokenParams;
@@ -294,7 +299,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         } else {
             tokenDetailsFactory = ^(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *__art_nullable, NSError *__art_nullable)) {
                 // Create a TokenRequest and execute it
-                [self createTokenRequest:currentTokenParams options:replacedOptions callback:^(ARTTokenRequest *tokenRequest, NSError *error) {
+                [self _createTokenRequest:currentTokenParams options:replacedOptions callback:^(ARTTokenRequest *tokenRequest, NSError *error) {
                     if (error) {
                         callback(nil, error);
                     } else {
@@ -306,6 +311,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 
         tokenDetailsFactory(currentTokenParams, checkerCallback);
     }
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)handleAuthUrlResponse:(NSHTTPURLResponse *)response withData:(NSData *)data completion:(void (^)(ARTTokenDetails *, NSError *))callback {
@@ -393,6 +399,14 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 
 - (void)authorize:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
+    if (callback) {
+        void (^userCallback)(ARTTokenDetails *, NSError *) = callback;
+        callback = ^(ARTTokenDetails *t, NSError *e) {
+            ART_EXITING_ABLY_CODE(_rest);
+            userCallback(t, e);
+        };
+    }
+
     ARTAuthOptions *replacedOptions = [authOptions copy] ? : [self.options copy];
     [self storeOptions:replacedOptions];
 
@@ -466,6 +480,18 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 }
 
 - (void)createTokenRequest:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)options callback:(void (^)(ARTTokenRequest *, NSError *))callback {
+    if (callback) {
+        void (^userCallback)(ARTTokenRequest *, NSError *) = callback;
+        callback = ^(ARTTokenRequest *t, NSError *e) {
+            ART_EXITING_ABLY_CODE(_rest);
+            userCallback(t, e);
+        };
+    }
+
+    [self _createTokenRequest:tokenParams options:options callback:callback];
+}
+
+- (void)_createTokenRequest:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)options callback:(void (^)(ARTTokenRequest *, NSError *))callback {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     ARTAuthOptions *replacedOptions = options ? : self.options;
     ARTTokenParams *currentTokenParams = tokenParams ? : _tokenParams;

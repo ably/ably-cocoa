@@ -88,6 +88,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 }
 
 - (void)internalPostMessages:(id)data callback:(void (^)(ARTErrorInfo *__art_nullable error))callback {
+    if (callback) {
+        void (^userCallback)(ARTErrorInfo *__art_nullable error) = callback;
+        callback = ^(ARTErrorInfo *__art_nullable error) {
+            ART_EXITING_ABLY_CODE(_realtime.rest);
+            userCallback(error);
+        };
+    }
+
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
     msg.action = ARTProtocolMessageMessage;
@@ -302,12 +310,27 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 }
 
 - (ARTEventListener *)subscribeWithAttachCallback:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTMessage * _Nonnull))cb {
+    if (cb) {
+        void (^userCallback)(ARTMessage *__art_nullable m) = cb;
+        cb = ^(ARTMessage *__art_nullable m) {
+            ART_EXITING_ABLY_CODE(_realtime.rest);
+            userCallback(m);
+        };
+    }
+    if (onAttach) {
+        void (^userOnAttach)(ARTErrorInfo *__art_nullable m) = onAttach;
+        onAttach = ^(ARTErrorInfo *__art_nullable m) {
+            ART_EXITING_ABLY_CODE(_realtime.rest);
+            userOnAttach(m);
+        };
+    }
+
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     if (self.state == ARTRealtimeChannelFailed) {
         if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
         return nil;
     }
-    [self attach:onAttach];
+    [self _attach:onAttach];
     return [self.messagesEventEmitter on:cb];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -319,12 +342,20 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 }
 
 - (ARTEventListener *)subscribe:(NSString *)name onAttach:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTMessage * _Nonnull))cb {
+    if (cb) {
+        void (^userCallback)(ARTMessage *__art_nullable m) = cb;
+        cb = ^(ARTMessage *__art_nullable m) {
+            ART_EXITING_ABLY_CODE(_realtime.rest);
+            userCallback(m);
+        };
+    }
+
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     if (self.state == ARTRealtimeChannelFailed) {
         if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
         return nil;
     }
-    [self attach:onAttach];
+    [self _attach:onAttach];
     return [self.messagesEventEmitter on:name callback:cb];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -707,6 +738,17 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 }
 
 - (void)attach:(void (^)(ARTErrorInfo *))callback {
+    if (callback) {
+        void (^userCallback)(ARTErrorInfo *__art_nullable error) = callback;
+        callback = ^(ARTErrorInfo *__art_nullable error) {
+            ART_EXITING_ABLY_CODE(_realtime.rest);
+            userCallback(error);
+        };
+    }
+    [self _attach:callback];
+}
+
+- (void)_attach:(void (^)(ARTErrorInfo *))callback {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     switch (self.state) {
         case ARTRealtimeChannelAttaching:
@@ -748,7 +790,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         case ARTRealtimeChannelDetaching: {
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p %@", _realtime, self, @"attach after the completion of Detaching"];
             [_detachedEventEmitter once:^(ARTErrorInfo *error) {
-                [self attach:callback];
+                [self _attach:callback];
             }];
             return;
         }
@@ -802,6 +844,17 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 }
 
 - (void)detach:(void (^)(ARTErrorInfo * _Nullable))callback {
+    if (callback) {
+        void (^userCallback)(ARTErrorInfo *__art_nullable error) = callback;
+        callback = ^(ARTErrorInfo *__art_nullable error) {
+            ART_EXITING_ABLY_CODE(_realtime.rest);
+            userCallback(error);
+        };
+    }
+    [self _detach:callback];
+}
+
+- (void)_detach:(void (^)(ARTErrorInfo * _Nullable))callback {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     switch (self.state) {
         case ARTRealtimeChannelInitialized:
@@ -814,7 +867,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
                 if (callback && errorInfo) {
                     callback(errorInfo);
                 }
-                [self detach:callback];
+                [self _detach:callback];
             }];
             return;
         }

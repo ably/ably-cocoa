@@ -26,6 +26,8 @@ ART_ASSUME_NONNULL_BEGIN
 + (void)setExtras:(NSString *)key value:(id)value;
 + (NSArray<NSDictionary *> *)breadcrumbs;
 + (void)setBreadcrumbs:(NSString *)key value:(NSArray<id<ARTSentryBreadcrumb>> *)value;
++ (void)setUserInfo:(NSString *)key value:(id)value;
++ (void)setUserInfo:(NSString *)key key:(NSString *)innerKey value:(id)value;
 + (BOOL)setCrashHandler:(NSString *_Nullable)dns;
 + (void)report:(NSString *)message to:(NSString *)dns extra:(NSDictionary *_Nullable)extra breadcrumbs:(NSArray<NSDictionary *> *_Nullable)breadcrumbs tags:(NSDictionary *)tags exception:(NSException *_Nullable)exception;
 + (void)report:(NSString *)message to:(NSString *)dns extra:(NSDictionary *_Nullable)extra breadcrumbs:(NSArray<NSDictionary *> *_Nullable)breadcrumbs tags:(NSDictionary *)tags exception:(NSException *_Nullable)exception callback:(void (^_Nullable)(NSError *_Nullable))callback;

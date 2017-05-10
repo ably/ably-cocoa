@@ -84,4 +84,6 @@ void ARTstopHandlingUncaughtExceptions(ARTRest *self);
 	}\
 	} while(0);
 
+#define ART_EXITING_ABLY_CODE(rest) ARTstopHandlingUncaughtExceptions(rest);
+
 ART_ASSUME_NONNULL_END

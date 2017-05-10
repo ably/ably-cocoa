@@ -46,12 +46,28 @@
 
 - (void)first:(void (^)(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
+    if (callback) {
+        void (^userCallback)(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error) = callback;
+        callback = ^(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error) {
+            ART_EXITING_ABLY_CODE(_rest);
+            userCallback(result, error);
+        };
+    }
+
     [self.class executePaginated:_rest withRequest:_relFirst andResponseProcessor:_responseProcessor callback:callback];
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)next:(void (^)(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
+    if (callback) {
+        void (^userCallback)(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error) = callback;
+        callback = ^(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error) {
+            ART_EXITING_ABLY_CODE(_rest);
+            userCallback(result, error);
+        };
+    }
+
     if (!_relNext) {
         // If there is no next page, we can't make a request, so we answer the callback
         // with a nil PaginatedResult. That's why the callback has the result as nullable

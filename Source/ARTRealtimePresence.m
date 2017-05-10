@@ -53,6 +53,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
 
 - (void)get:(ARTRealtimePresenceQuery *)query callback:(void (^)(NSArray<ARTPresenceMessage *> *, ARTErrorInfo *))callback {
 ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
+    if (callback) {
+        void (^userCallback)(NSArray<ARTPresenceMessage *> *, ARTErrorInfo *) = callback;
+        callback = ^(NSArray<ARTPresenceMessage *> *m, ARTErrorInfo *e) {
+            ART_EXITING_ABLY_CODE(_channel.realtime.rest);
+            userCallback(m, e);
+        };
+    }
+
     [_channel throwOnDisconnectedOrFailed];
 
     switch (_channel.state) {
@@ -111,6 +119,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
 }
 
 - (void)enter:(id)data callback:(void (^)(ARTErrorInfo *))cb {
+    if (cb) {
+        void (^userCallback)(ARTErrorInfo *__art_nullable error) = cb;
+        cb = ^(ARTErrorInfo *__art_nullable error) {
+            ART_EXITING_ABLY_CODE(_channel.realtime.rest);
+            userCallback(error);
+        };
+    }
+
 ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     [self enterAfterChecks:nil data:data callback:cb];
 } ART_TRY_OR_MOVE_TO_FAILED_END
@@ -123,6 +139,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
 }
 
 - (void)enterClient:(NSString *)clientId data:(id)data callback:(void (^)(ARTErrorInfo *))cb {
+    if (cb) {
+        void (^userCallback)(ARTErrorInfo *__art_nullable error) = cb;
+        cb = ^(ARTErrorInfo *__art_nullable error) {
+            ART_EXITING_ABLY_CODE(_channel.realtime.rest);
+            userCallback(error);
+        };
+    }
+
 ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     if(!clientId) {
         if (cb) cb([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
@@ -151,6 +175,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
 }
 
 - (void)update:(id)data callback:(void (^)(ARTErrorInfo * _Nullable))cb {
+    if (cb) {
+        void (^userCallback)(ARTErrorInfo *__art_nullable error) = cb;
+        cb = ^(ARTErrorInfo *__art_nullable error) {
+            ART_EXITING_ABLY_CODE(_channel.realtime.rest);
+            userCallback(error);
+        };
+    }
+
 ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     [self updateAfterChecks:nil data:data callback:cb];
 } ART_TRY_OR_MOVE_TO_FAILED_END
@@ -163,6 +195,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
 }
 
 - (void)updateClient:(NSString *)clientId data:(id)data callback:(void (^)(ARTErrorInfo * _Nullable))cb {
+    if (cb) {
+        void (^userCallback)(ARTErrorInfo *__art_nullable error) = cb;
+        cb = ^(ARTErrorInfo *__art_nullable error) {
+            ART_EXITING_ABLY_CODE(_channel.realtime.rest);
+            userCallback(error);
+        };
+    }
+
 ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     if (!clientId) {
         if (cb) cb([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
@@ -191,6 +231,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
 }
 
 - (void)leave:(id)data callback:(void (^)(ARTErrorInfo * _Nullable))cb {
+    if (cb) {
+        void (^userCallback)(ARTErrorInfo *__art_nullable error) = cb;
+        cb = ^(ARTErrorInfo *__art_nullable error) {
+            ART_EXITING_ABLY_CODE(_channel.realtime.rest);
+            userCallback(error);
+        };
+    }
+
 ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     if (!_channel.clientId) {
         if (cb) cb([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
@@ -207,6 +255,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
 }
 
 - (void)leaveClient:(NSString *)clientId data:(id)data callback:(void (^)(ARTErrorInfo * _Nullable))cb {
+    if (cb) {
+        void (^userCallback)(ARTErrorInfo *__art_nullable error) = cb;
+        cb = ^(ARTErrorInfo *__art_nullable error) {
+            ART_EXITING_ABLY_CODE(_channel.realtime.rest);
+            userCallback(error);
+        };
+    }
+
 ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     if (!clientId) {
         if (cb) cb([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
@@ -245,6 +301,21 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
 }
 
 - (ARTEventListener *)subscribeWithAttachCallback:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTPresenceMessage * _Nonnull))cb {
+    if (cb) {
+        void (^userCallback)(ARTPresenceMessage *__art_nullable m) = cb;
+        cb = ^(ARTPresenceMessage *__art_nullable m) {
+            ART_EXITING_ABLY_CODE(_channel.realtime.rest);
+            userCallback(m);
+        };
+    }
+    if (onAttach) {
+        void (^userOnAttach)(ARTErrorInfo *__art_nullable m) = onAttach;
+        onAttach = ^(ARTErrorInfo *__art_nullable m) {
+            ART_EXITING_ABLY_CODE(_channel.realtime.rest);
+            userOnAttach(m);
+        };
+    }
+
 ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     if (_channel.state == ARTRealtimeChannelFailed) {
         if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
@@ -262,6 +333,21 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
 }
 
 - (ARTEventListener *)subscribe:(ARTPresenceAction)action onAttach:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTPresenceMessage * _Nonnull))cb {
+    if (cb) {
+        void (^userCallback)(ARTPresenceMessage *__art_nullable m) = cb;
+        cb = ^(ARTPresenceMessage *__art_nullable m) {
+            ART_EXITING_ABLY_CODE(_channel.realtime.rest);
+            userCallback(m);
+        };
+    }
+    if (onAttach) {
+        void (^userOnAttach)(ARTErrorInfo *__art_nullable m) = onAttach;
+        onAttach = ^(ARTErrorInfo *__art_nullable m) {
+            ART_EXITING_ABLY_CODE(_channel.realtime.rest);
+            userOnAttach(m);
+        };
+    }
+
 ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     if (_channel.state == ARTRealtimeChannelFailed) {
         if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);

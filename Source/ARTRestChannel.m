@@ -68,6 +68,14 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 
 - (BOOL)history:(ARTDataQuery *)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *result, ARTErrorInfo *error))callback error:(NSError **)errorPtr {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
+    if (callback) {
+        void (^userCallback)(__GENERIC(ARTPaginatedResult, ARTMessage *) *result, ARTErrorInfo *error) = callback;
+        callback = ^(__GENERIC(ARTPaginatedResult, ARTMessage *) *result, ARTErrorInfo *error) {
+            ART_EXITING_ABLY_CODE(_rest);
+            userCallback(result, error);
+        };
+    }
+
     if (query.limit > 1000) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
@@ -110,6 +118,14 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 }
 
 - (void)internalPostMessages:(id)data callback:(void (^)(ARTErrorInfo *__art_nullable error))callback {
+    if (callback) {
+        void (^userCallback)(ARTErrorInfo *__art_nullable error) = callback;
+        callback = ^(ARTErrorInfo *__art_nullable error) {
+            ART_EXITING_ABLY_CODE(_rest);
+            userCallback(error);
+        };
+    }
+
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSData *encodedMessage = nil;
     
