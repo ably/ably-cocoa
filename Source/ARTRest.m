@@ -37,7 +37,7 @@
 #import "ARTRealtime+Private.h"
 #import "ARTSentry.h"
 
-@import KSCrash;
+@import KSCrashAblyFork;
 
 @interface ARTRest () {
     __block NSUInteger _tokenErrorRetries;
