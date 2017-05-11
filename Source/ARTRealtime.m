@@ -1019,7 +1019,9 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         int nCount = (int)(serial - self.pendingMessageStartSerial);
         NSRange nackRange;
         if (nCount > self.pendingMessages.count) {
-            [self.logger error:@"R:%p ARTRealtime ACK: receiving a serial greater than expected", self];
+            NSString *message = [NSString stringWithFormat:@"R:%p ARTRealtime ACK: receiving a serial greater than expected", self];
+            [self.logger error:@"%@", message];
+            [_rest forceReport:message exception:[NSException exceptionWithName:@"ARTReport" reason:message userInfo:@{}]];
             // Process all the available pending messages as nack
             nackRange = NSMakeRange(0, self.pendingMessages.count);
         }

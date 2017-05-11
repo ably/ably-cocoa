@@ -407,12 +407,18 @@ NSString* ART_uuid() {
 }
 
 + (void)setUserInfo:(NSString *)key value:(id)value {
+    if (![KSCrash sharedInstance].userInfo) {
+        [KSCrash sharedInstance].userInfo = @{};
+    }
     NSMutableDictionary *info = [NSMutableDictionary dictionaryWithDictionary:[KSCrash sharedInstance].userInfo];
     info[key] = value;
     [KSCrash sharedInstance].userInfo = info;
 }
 
 + (void)setUserInfo:(NSString *)key key:(NSString *)innerKey value:(id)value {
+    if (![KSCrash sharedInstance].userInfo) {
+        [KSCrash sharedInstance].userInfo = @{};
+    }
     NSMutableDictionary *info = [NSMutableDictionary dictionaryWithDictionary:[KSCrash sharedInstance].userInfo];
     NSMutableDictionary *inner;
     if (info[key]) {

@@ -53,6 +53,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (void)onUncaughtException:(NSException *)e;
 - (void)reportUncaughtException:(NSException *_Nullable)exception;
+- (void)forceReport:(NSString *)message exception:(NSException *_Nullable)e;
 
 @end
 
