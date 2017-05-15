@@ -56,6 +56,7 @@
     id<ARTRealtimeTransport> _transport;
     ARTFallback *_fallbacks;
     _Nonnull dispatch_queue_t _eventQueue;
+    _Nonnull dispatch_queue_t _stateChangesQueue;
     __weak ARTEventListener *_connectionRetryFromSuspendedListener;
     __weak ARTEventListener *_connectionRetryFromDisconnectedListener;
     __weak ARTEventListener *_connectingTimeoutListener;
@@ -80,6 +81,7 @@
         _rest = [[ARTRest alloc] initWithOptions:options realtime:self];
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         _eventQueue = dispatch_queue_create("io.ably.realtime.events", DISPATCH_QUEUE_SERIAL);
+        _stateChangesQueue = dispatch_queue_create("io.ably.realtime.stateChanges", DISPATCH_QUEUE_SERIAL);
         _internalEventEmitter = [[ARTEventEmitter alloc] initWithQueue:_eventQueue];
         _connectedEventEmitter = [[ARTEventEmitter alloc] initWithQueue:_eventQueue];
         _pingEventEmitter = [[ARTEventEmitter alloc] initWithQueue:_eventQueue];
@@ -313,37 +315,41 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)transition:(ARTRealtimeConnectionState)state withErrorInfo:(ARTErrorInfo *)errorInfo {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p realtime state transitions to %tu - %@", self, state, ARTRealtimeConnectionStateToStr(state)];
+    dispatch_sync(_stateChangesQueue, ^{
+        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p realtime state transitions to %tu - %@", self, state, ARTRealtimeConnectionStateToStr(state)];
 
-    ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:state previous:self.connection.state event:(ARTRealtimeConnectionEvent)state reason:errorInfo retryIn:0];
-    [self.connection setState:state];
+        ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:state previous:self.connection.state event:(ARTRealtimeConnectionEvent)state reason:errorInfo retryIn:0];
+        [self.connection setState:state];
 
-    if (errorInfo != nil) {
-        [self.connection setErrorReason:errorInfo];
-    }
+        if (errorInfo != nil) {
+            [self.connection setErrorReason:errorInfo];
+        }
 
-    ARTEventListener *stateChangeEventListener = [self transitionSideEffects:stateChange];
+        ARTEventListener *stateChangeEventListener = [self transitionSideEffects:stateChange];
 
-    [_internalEventEmitter emit:[ARTEvent newWithConnectionEvent:(ARTRealtimeConnectionEvent)state] with:stateChange];
+        [_internalEventEmitter emit:[ARTEvent newWithConnectionEvent:(ARTRealtimeConnectionEvent)state] with:stateChange];
 
-    [stateChangeEventListener startTimer];
+        [stateChangeEventListener startTimer];
+    });
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)updateWithErrorInfo:(art_nullable ARTErrorInfo *)errorInfo {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p update requested", self];
+    dispatch_sync(_stateChangesQueue, ^{
+        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p update requested", self];
 
-    if (self.connection.state != ARTRealtimeConnected) {
-        [self.logger warn:@"R:%p update ignored because connection is not connected", self];
-        return;
-    }
+        if (self.connection.state != ARTRealtimeConnected) {
+            [self.logger warn:@"R:%p update ignored because connection is not connected", self];
+            return;
+        }
 
-    ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:self.connection.state previous:self.connection.state event:ARTRealtimeConnectionEventUpdate reason:errorInfo retryIn:0];
+        ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:self.connection.state previous:self.connection.state event:ARTRealtimeConnectionEventUpdate reason:errorInfo retryIn:0];
 
-    ARTEventListener *stateChangeEventListener = [self transitionSideEffects:stateChange];
+        ARTEventListener *stateChangeEventListener = [self transitionSideEffects:stateChange];
 
-    [stateChangeEventListener startTimer];
+        [stateChangeEventListener startTimer];
+    });
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
