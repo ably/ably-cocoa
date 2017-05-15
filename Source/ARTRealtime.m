@@ -315,7 +315,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)transition:(ARTRealtimeConnectionState)state withErrorInfo:(ARTErrorInfo *)errorInfo {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    dispatch_sync(_stateChangesQueue, ^{
+    artDispatchSync(_stateChangesQueue, ^{
         [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p realtime state transitions to %tu - %@", self, state, ARTRealtimeConnectionStateToStr(state)];
 
         ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:state previous:self.connection.state event:(ARTRealtimeConnectionEvent)state reason:errorInfo retryIn:0];
@@ -336,7 +336,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)updateWithErrorInfo:(art_nullable ARTErrorInfo *)errorInfo {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    dispatch_sync(_stateChangesQueue, ^{
+    artDispatchSync(_stateChangesQueue, ^{
         [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p update requested", self];
 
         if (self.connection.state != ARTRealtimeConnected) {
