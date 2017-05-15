@@ -27,6 +27,7 @@
 #import "ARTRest.h"
 #import "ARTClientOptions.h"
 #import "ARTTypes.h"
+#import "ARTGCD.h"
 
 @interface ARTRealtimeChannel () {
     ARTRealtimePresence *_realtimePresence;
@@ -429,7 +430,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
-    dispatch_async(_stateChangesQueue, ^{
+    artDispatchSync(_stateChangesQueue, ^{
         [self.logger debug:__FILE__ line:__LINE__ message:@"channel state transitions to %tu - %@", state, ARTRealtimeChannelStateToStr(state)];
         ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:self.state event:(ARTChannelEvent)state reason:status.errorInfo];
         self.state = state;
