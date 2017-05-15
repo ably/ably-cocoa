@@ -40,6 +40,7 @@
 
 @implementation ARTRealtimeChannel {
     _Nonnull dispatch_queue_t _eventQueue;
+    _Nonnull dispatch_queue_t _stateChangesQueue;
 }
 
 - (instancetype)initWithRealtime:(ARTRealtime *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options {
@@ -47,6 +48,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
     self = [super initWithName:name andOptions:options andLogger:realtime.options.logHandler];
     if (self) {
         _eventQueue = dispatch_queue_create("io.ably.realtime.channel", DISPATCH_QUEUE_SERIAL);
+        _stateChangesQueue = dispatch_queue_create("io.ably.realtime.channel.stateChanges", DISPATCH_QUEUE_SERIAL);
         _realtime = realtime;
         _restChannel = [_realtime.rest.channels get:self.name options:options];
         _state = ARTRealtimeChannelInitialized;
@@ -427,31 +429,33 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"channel state transitions to %tu - %@", state, ARTRealtimeChannelStateToStr(state)];
-    ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:self.state event:(ARTChannelEvent)state reason:status.errorInfo];
-    self.state = state;
+    dispatch_async(_stateChangesQueue, ^{
+        [self.logger debug:__FILE__ line:__LINE__ message:@"channel state transitions to %tu - %@", state, ARTRealtimeChannelStateToStr(state)];
+        ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:self.state event:(ARTChannelEvent)state reason:status.errorInfo];
+        self.state = state;
 
-    if (status.storeErrorInfo) {
-        _errorReason = status.errorInfo;
-    }
+        if (status.storeErrorInfo) {
+            _errorReason = status.errorInfo;
+        }
 
-    switch (state) {
-        case ARTRealtimeChannelSuspended:
-            [_attachedEventEmitter emit:nil with:status.errorInfo];
-            break;
-        case ARTRealtimeChannelDetached:
-            [self.presenceMap failsSync:status.errorInfo];
-            break;
-        case ARTRealtimeChannelFailed:
-            [_attachedEventEmitter emit:nil with:status.errorInfo];
-            [_detachedEventEmitter emit:nil with:status.errorInfo];
-            [self.presenceMap failsSync:status.errorInfo];
-            break;
-        default:
-            break;
-    }
+        switch (state) {
+            case ARTRealtimeChannelSuspended:
+                [_attachedEventEmitter emit:nil with:status.errorInfo];
+                break;
+            case ARTRealtimeChannelDetached:
+                [self.presenceMap failsSync:status.errorInfo];
+                break;
+            case ARTRealtimeChannelFailed:
+                [_attachedEventEmitter emit:nil with:status.errorInfo];
+                [_detachedEventEmitter emit:nil with:status.errorInfo];
+                [self.presenceMap failsSync:status.errorInfo];
+                break;
+            default:
+                break;
+        }
 
-    [self emit:stateChange.event with:stateChange];
+        [self emit:stateChange.event with:stateChange];
+    });
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
