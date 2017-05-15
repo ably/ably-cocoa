@@ -90,7 +90,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)send:(ARTProtocolMessage *)msg callback:(art_nullable void (^)(ARTStatus *))cb;
 
 - (void)onUncaughtException:(NSException *)e;
-- (NSDictionary *)sentryExtras;
+- (NSDictionary *)sentryExtra;
 - (NSArray<NSDictionary *> *)sentryBreadcrumbs;
 
 @end
