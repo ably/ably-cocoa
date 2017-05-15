@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name              = "Ably"
-  s.version           = "1.0.3"
+  s.version           = "1.0.4"
   s.summary           = "iOS client for Ably"
   s.description       = <<-DESC
                         iOS client library for ably.io, the realtime messaging service, written in Objective-C and ready for Swift 2.0.
