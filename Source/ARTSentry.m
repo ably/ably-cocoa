@@ -16,6 +16,7 @@
 #import <KSCrashAblyFork/KSCrashInstallation+Private.h>
 #import <KSCrashAblyFork/KSCrashMonitorType.h>
 #import "ARTNSArray+ARTFunctional.h"
+#import <KSCrashAblyFork/NSData+GZip.h>
 
 NSString* ART_hexMemoryAddress(id addr) {
     if (addr && [addr isKindOfClass:[NSString class]]) {
@@ -331,6 +332,8 @@ NSString* ART_uuid() {
         return;
     }
 
+    bodyData = [bodyData gzippedWithCompressionLevel:-1 error:nil];
+
     NSURLComponents *urlComponents = [[NSURLComponents alloc] init];
     urlComponents.scheme = dnsUrl.scheme;
     urlComponents.host = dnsUrl.host;
@@ -339,6 +342,7 @@ NSString* ART_uuid() {
     NSURL *url = [urlComponents URL];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:15];
     [request addValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+    [request addValue:@"gzip" forHTTPHeaderField:@"Content-Encoding"];
     [request addValue:authHeader forHTTPHeaderField:@"X-Sentry-Auth"];
     [request setHTTPMethod:@"POST"];
     [request setHTTPBody:bodyData];
