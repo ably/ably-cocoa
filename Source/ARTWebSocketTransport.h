@@ -23,6 +23,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (readonly, strong, nonatomic) NSString *resumeKey;
 @property (readonly, strong, nonatomic) NSNumber *connectionSerial;
+@property (readonly, strong, nonatomic) ARTLog *protocolMessagesLogger;
 
 @end
 

@@ -43,6 +43,14 @@ NSInteger getStatusFromCode(NSInteger code) {
     return [[super alloc] initWithDomain:ARTAblyErrorDomain code:error.code userInfo:userInfo];
 }
 
++ (ARTErrorInfo *)createFromNSException:(NSException *)error {
+    ARTErrorInfo *e = [self createWithCode:0 message:[NSString stringWithFormat:@"%@: %@", error.name, error.reason]];
+    for (NSString *k in error.userInfo) {
+        [e.userInfo setValue:error.userInfo[k] forKey:k];
+    }
+    return e;
+}
+
 + (ARTErrorInfo *)wrap:(ARTErrorInfo *)error prepend:(NSString *)prepend {
     return [ARTErrorInfo createWithCode:error.code status:error.statusCode message:[NSString stringWithFormat:@"%@%@", prepend, error.reason]];
 }
@@ -112,4 +120,7 @@ NSInteger getStatusFromCode(NSInteger code) {
     _errorInfo = errorInfo;
 }
 
+@end
+
+@implementation ARTException
 @end

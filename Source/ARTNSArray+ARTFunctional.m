@@ -18,4 +18,14 @@
     return array;
 }
 
+- (NSArray *)artFilter:(BOOL (^)(id))f {
+    NSMutableArray *array = [NSMutableArray arrayWithCapacity:self.count];
+    for (id e in self) {
+    	if (f(e)) {
+        	[array addObject:e];
+        }
+    }
+    return array;
+}
+
 @end

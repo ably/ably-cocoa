@@ -25,7 +25,7 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
     self = [super init];
     if (self) {
         if (key != nil && decomposeKey(key).count != 2) {
-            [NSException raise:@"Invalid key" format:@"%@ should be of the form <keyName>:<keySecret>", key];
+            [ARTException raise:@"Invalid key" format:@"%@ should be of the form <keyName>:<keySecret>", key];
         }
         else if (key != nil) {
             _key = [key copy];            

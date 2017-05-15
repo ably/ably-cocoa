@@ -33,9 +33,15 @@
 #import "ARTTokenDetails.h"
 #import "ARTDefault.h"
 #import "ARTGCD.h"
+#import "ARTLog+Private.h"
+#import "ARTRealtime+Private.h"
+#import "ARTSentry.h"
+
+@import KSCrashAblyFork;
 
 @interface ARTRest () {
     __block NSUInteger _tokenErrorRetries;
+    BOOL _handlingUncaughtExceptions;
 }
 
 @end
@@ -43,11 +49,18 @@
 @implementation ARTRest
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options {
+ART_TRY_OR_REPORT_CRASH_START(self) {
+    return [self initWithOptions:options realtime:nil];
+} ART_TRY_OR_REPORT_CRASH_END
+}
+
+- (instancetype)initWithOptions:(ARTClientOptions *)options realtime:(ARTRealtime *_Nullable)realtime {
     self = [super init];
     if (self) {
         NSAssert(options, @"ARTRest: No options provided");
         artDispatchSpecifyMainQueue();
 
+        _realtime = realtime;
         _options = [options copy];
 
         if (options.logHandler) {
@@ -61,6 +74,7 @@
             _logger.logLevel = options.logLevel;
         }
 
+    ART_TRY_OR_REPORT_CRASH_START(self) {
         _http = [[ARTHttp alloc] init];
         [_logger verbose:__FILE__ line:__LINE__ message:@"RS:%p %p alloc HTTP", self, _http];
         _httpExecutor = _http;
@@ -78,25 +92,48 @@
 
         _auth = [[ARTAuth alloc] init:self withOptions:_options];
         _channels = [[ARTRestChannels alloc] initWithRest:self];
+        _handlingUncaughtExceptions = false;
 
         [self.logger verbose:__FILE__ line:__LINE__ message:@"RS:%p initialized", self];
+    } ART_TRY_OR_REPORT_CRASH_END
+
+        NSString *dns = self.options.logExceptionReportingUrl;
+        if (dns) {
+            static dispatch_once_t onceToken;
+            dispatch_once(&onceToken, ^{
+                [ARTSentry setTags:[self sentryTags]];
+                BOOL set = [ARTSentry setCrashHandler:dns];
+                if (set) {
+                    [self->_logger info:@"Ably client library exception reporting enabled. Unhandled failures will be automatically submitted to errors.ably.io to help improve our service. To find out more about this feature, see https://help.ably.io/exceptions"];
+                } else {
+                    [self->_logger debug:@"couldn't start crash handler"];
+                }
+            });
+        }
     }
     return self;
 }
 
 - (instancetype)initWithKey:(NSString *)key {
+ART_TRY_OR_REPORT_CRASH_START(self) {
     return [self initWithOptions:[[ARTClientOptions alloc] initWithKey:key]];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (instancetype)initWithToken:(NSString *)token {
+ART_TRY_OR_REPORT_CRASH_START(self) {
     return [self initWithOptions:[[ARTClientOptions alloc] initWithToken:token]];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)dealloc {
+ART_TRY_OR_REPORT_CRASH_START(self) {
     [self.logger verbose:__FILE__ line:__LINE__ message:@"RS:%p dealloc", self];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSString *)description {
+ART_TRY_OR_REPORT_CRASH_START(self) {
     NSString *info;
     if (self.options.token) {
         info = [NSString stringWithFormat:@"token: %@", self.options.token];
@@ -111,9 +148,11 @@
         info = [NSString stringWithFormat:@"key: %@", self.options.key];
     }
     return [NSString stringWithFormat:@"%@ - \n\t %@;", [super description], info];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
+ART_TRY_OR_REPORT_CRASH_START(self) {
     request.URL = [NSURL URLWithString:request.URL.relativeString relativeToURL:self.baseUrl];
     
     switch (authOption) {
@@ -136,13 +175,17 @@
             [self executeRequestWithAuthentication:request withMethod:ARTAuthMethodBasic completion:callback];
             break;
     }
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)executeRequestWithAuthentication:(NSMutableURLRequest *)request withMethod:(ARTAuthMethod)method completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
+ART_TRY_OR_REPORT_CRASH_START(self) {
     [self executeRequestWithAuthentication:request withMethod:method force:NO completion:callback];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)executeRequestWithAuthentication:(NSMutableURLRequest *)request withMethod:(ARTAuthMethod)method force:(BOOL)force completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
+ART_TRY_OR_REPORT_CRASH_START(self) {
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p calculating authorization %lu", self, (unsigned long)method];
     if (method == ARTAuthMethodBasic) {
         // Basic
@@ -174,13 +217,17 @@
             }];
         }
     }
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)executeRequest:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
+ART_TRY_OR_REPORT_CRASH_START(self) {
     return [self executeRequest:request completion:callback fallbacks:nil retries:0];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)executeRequest:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback fallbacks:(ARTFallback *)fallbacks retries:(NSUInteger)retries {
+ART_TRY_OR_REPORT_CRASH_START(self) {
     __block ARTFallback *blockFallbacks = fallbacks;
 
     if ([request isKindOfClass:[NSMutableURLRequest class]]) {
@@ -265,9 +312,11 @@
             callback(response, data, error);
         }
     }];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (BOOL)shouldRenewToken:(NSError **)errorPtr {
+ART_TRY_OR_REPORT_CRASH_START(self) {
     if (errorPtr && *errorPtr &&
         (*errorPtr).code >= 40140 && (*errorPtr).code < 40150) {
         if ([self.auth tokenIsRenewable]) {
@@ -276,9 +325,11 @@
         *errorPtr = (NSError *)[ARTErrorInfo createWithCode:ARTStateRequestTokenFailed message:ARTAblyMessageNoMeansToRenewToken];
     }
     return NO;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (BOOL)shouldRetryWithFallback:(NSURLRequest *)request response:(NSHTTPURLResponse *)response error:(NSError *)error {
+ART_TRY_OR_REPORT_CRASH_START(self) {
     if (response.statusCode >= 500 && response.statusCode <= 504) {
         return YES;
     }
@@ -289,30 +340,46 @@
         return YES;
     }
     return NO;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSString *)currentHost {
+ART_TRY_OR_REPORT_CRASH_START(self) {
     if (_prioritizedHost) {
         // Test purpose only
         return _prioritizedHost;
     }
     return self.options.restHost;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSString *)prepareBasicAuthorisationHeader:(NSString *)key {
+ART_TRY_OR_REPORT_CRASH_START(self) {
     // Include key Base64 encoded in an Authorization header (RFC7235)
     NSData *keyData = [key dataUsingEncoding:NSUTF8StringEncoding];
     NSString *keyBase64 = [keyData base64EncodedStringWithOptions:0];
     return [NSString stringWithFormat:@"Basic %@", keyBase64];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSString *)prepareTokenAuthorisationHeader:(NSString *)token {
+ART_TRY_OR_REPORT_CRASH_START(self) {
     NSData *tokenData = [token dataUsingEncoding:NSUTF8StringEncoding];
     NSString *tokenBase64 = [tokenData base64EncodedStringWithOptions:0];
     return [NSString stringWithFormat:@"Bearer %@", tokenBase64];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)time:(void(^)(NSDate *time, NSError *error))callback {
+    if (callback) {
+        void (^userCallback)(NSDate *time, NSError *error) = callback;
+        callback = ^(NSDate *time, NSError *error) {
+            ART_EXITING_ABLY_CODE(self);
+            userCallback(time, error);
+        };
+    }
+
+ART_TRY_OR_REPORT_CRASH_START(self) {
     NSURL *requestUrl = [NSURL URLWithString:@"/time" relativeToURL:self.baseUrl];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
     request.HTTPMethod = @"GET";
@@ -329,6 +396,7 @@
             callback(time, decodeError);
         }
     }];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (id<ARTCancellable>)internetIsUp:(void (^)(BOOL isUp)) cb {
@@ -348,10 +416,21 @@
 }
 
 - (BOOL)stats:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *__art_nullable, ARTErrorInfo *__art_nullable))callback {
+ART_TRY_OR_REPORT_CRASH_START(self) {
     return [self stats:[[ARTStatsQuery alloc] init] callback:callback error:nil];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (BOOL)stats:(ARTStatsQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
+ART_TRY_OR_REPORT_CRASH_START(self) {
+    if (callback) {
+        void (^userCallback)(__GENERIC(ARTPaginatedResult, ARTStats *) *, ARTErrorInfo *) = callback;
+        callback = ^(__GENERIC(ARTPaginatedResult, ARTStats *) *r, ARTErrorInfo *e) {
+            ART_EXITING_ABLY_CODE(self);
+            userCallback(r, e);
+        };
+    }
+
     if (query.limit > 1000) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
@@ -380,18 +459,79 @@
     
     [ARTPaginatedResult executePaginated:self withRequest:request andResponseProcessor:responseProcessor callback:callback];
     return YES;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (id<ARTEncoder>)defaultEncoder {
+ART_TRY_OR_REPORT_CRASH_START(self) {
     return self.encoders[self.defaultEncoding];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSURL *)getBaseUrl {
+ART_TRY_OR_REPORT_CRASH_START(self) {
     NSURLComponents *components = [_options restUrlComponents];
     if (_prioritizedHost) {
         components.host = _prioritizedHost;
     }
     return components.URL;
+} ART_TRY_OR_REPORT_CRASH_END
+}
+
+- (void)onUncaughtException:(NSException *)e {
+    if ([e isKindOfClass:[ARTException class]]) {
+        @throw e;
+    }
+    if (_realtime) {
+        [_realtime onUncaughtException:e];
+        return;
+    }
+    [self reportUncaughtException:e];
+}
+
+- (void)reportUncaughtException:(NSException *_Nullable)e {
+    if (!_handlingUncaughtExceptions) {
+        @throw e;
+    }
+    NSLog(@"ARTRest: uncaught exception %@\n%@", e, [e callStackSymbols]);
+    [self forceReport:@"Uncaught exception" exception:e];
+}
+
+- (void)forceReport:(NSString *)message exception:(NSException *_Nullable)e {
+    NSString *dns = self.options.logExceptionReportingUrl;
+    if (!dns) {
+        return;
+    }
+    [ARTSentry report:message to:dns extra:[self sentryExtra] breadcrumbs:[self sentryBreadcrumbs] tags:[self sentryTags] exception:e];
+}
+
+- (NSDictionary *)sentryExtra {
+    return [KSCrash sharedInstance].userInfo[@"sentryExtra"];
+}
+
+- (NSArray<NSDictionary *> *)sentryBreadcrumbs {
+    return [ARTSentry flattenBreadcrumbs:[KSCrash sharedInstance].userInfo[@"sentryBreadcrumbs"]];
+}
+
+- (NSDictionary *)sentryTags {
+    return @{
+        @"appId": ART_orNull(self.auth.appId),
+        @"environment": self.options.environment ? self.options.environment : @"production",
+    };
+}
+
+BOOL ARTstartHandlingUncaughtExceptions(ARTRest *self) {
+    if (!self || self->_handlingUncaughtExceptions) {
+        return false;
+    }
+    self->_handlingUncaughtExceptions = true;
+    [ARTSentry setUserInfo:@"reportToAbly" value:[NSNumber numberWithBool:true]];
+    return true;
+}
+
+void ARTstopHandlingUncaughtExceptions(ARTRest *self) {
+    self->_handlingUncaughtExceptions = false;
+    [ARTSentry setUserInfo:@"reportToAbly" value:[NSNumber numberWithBool:false]];
 }
 
 @end
