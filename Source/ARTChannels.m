@@ -16,7 +16,6 @@
 NSString* (^__art_nullable ARTChannels_getChannelNamePrefix)();
 
 @interface ARTChannels() {
-    __weak ARTRest *_rest;
     __weak id<ARTChannelsDelegate> _delegate;
 }
 

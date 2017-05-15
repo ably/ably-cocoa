@@ -26,6 +26,8 @@
 #import "ARTDefault.h"
 #import "ARTRest.h"
 #import "ARTClientOptions.h"
+#import "ARTTypes.h"
+#import "ARTGCD.h"
 
 @interface ARTRealtimeChannel () {
     ARTRealtimePresence *_realtimePresence;
@@ -39,12 +41,15 @@
 
 @implementation ARTRealtimeChannel {
     _Nonnull dispatch_queue_t _eventQueue;
+    _Nonnull dispatch_queue_t _stateChangesQueue;
 }
 
 - (instancetype)initWithRealtime:(ARTRealtime *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options {
+ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
     self = [super initWithName:name andOptions:options andLogger:realtime.options.logHandler];
     if (self) {
         _eventQueue = dispatch_queue_create("io.ably.realtime.channel", DISPATCH_QUEUE_SERIAL);
+        _stateChangesQueue = dispatch_queue_create("io.ably.realtime.channel.stateChanges", DISPATCH_QUEUE_SERIAL);
         _realtime = realtime;
         _restChannel = [_realtime.rest.channels get:self.name options:options];
         _state = ARTRealtimeChannelInitialized;
@@ -59,20 +64,34 @@
         _detachedEventEmitter = [[ARTEventEmitter alloc] initWithQueue:_eventQueue];
     }
     return self;
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 + (instancetype)channelWithRealtime:(ARTRealtime *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options {
+ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
     return [[ARTRealtimeChannel alloc] initWithRealtime:realtime andName:name withOptions:options];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (ARTRealtimePresence *)getPresence {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     if (!_realtimePresence) {
         _realtimePresence = [[ARTRealtimePresence alloc] initWithChannel:self];
     }
     return _realtimePresence;
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)internalPostMessages:(id)data callback:(void (^)(ARTErrorInfo *__art_nullable error))callback {
+    if (callback) {
+        void (^userCallback)(ARTErrorInfo *__art_nullable error) = callback;
+        callback = ^(ARTErrorInfo *__art_nullable error) {
+            ART_EXITING_ABLY_CODE(_realtime.rest);
+            userCallback(error);
+        };
+    }
+
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
     msg.action = ARTProtocolMessageMessage;
     msg.channel = self.name;
@@ -83,9 +102,11 @@
     [self publishProtocolMessage:msg callback:^void(ARTStatus *status) {
         if (callback) callback(status.errorInfo);
     }];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)requestContinueSync {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [self.logger info:@"R:%p C:%p ARTRealtime requesting to continue sync operation after reconnect", _realtime, self];
     
     ARTProtocolMessage * msg = [[ARTProtocolMessage alloc] init];
@@ -95,9 +116,11 @@
     msg.channel = self.name;
 
     [self.realtime send:msg callback:^(ARTStatus *status) {}];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)publishPresence:(ARTPresenceMessage *)msg callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     switch (_realtime.connection.state) {
         case ARTRealtimeConnected:
             break;
@@ -134,9 +157,11 @@
     [self publishProtocolMessage:pm callback:^void(ARTStatus *status) {
         if (cb) cb(status.errorInfo);
     }];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     switch (_realtime.connection.state) {
         case ARTRealtimeClosing:
         case ARTRealtimeClosed: {
@@ -184,9 +209,11 @@
         default:
             NSAssert(NO, @"Invalid State");
     }
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)addToQueue:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     BOOL merged = NO;
     for (ARTQueuedMessage *queuedMsg in self.queuedMessages) {
         merged = [queuedMsg mergeFrom:msg callback:cb];
@@ -198,9 +225,11 @@
         ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg callback:cb];
         [self.queuedMessages addObject:qm];
     }
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)sendMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     __block BOOL gotFailure = false;
     NSString *oldConnectionId = self.realtime.connection.id;
     __block ARTEventListener *listener = [self.realtime.internalEventEmitter on:^(ARTConnectionStateChange *stateChange) {
@@ -223,106 +252,175 @@
         [self.realtime.internalEventEmitter off:listener];
         if (cb && !gotFailure) cb(status);
     }];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (ARTPresenceMap *)presenceMap {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return _presenceMap;
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)throwOnDisconnectedOrFailed {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     if (self.realtime.connection.state == ARTRealtimeFailed || self.realtime.connection.state == ARTRealtimeDisconnected) {
-        [NSException raise:@"realtime cannot perform action in disconnected or failed state" format:@"state: %d", (int)self.realtime.connection.state];
+        [ARTException raise:@"realtime cannot perform action in disconnected or failed state" format:@"state: %d", (int)self.realtime.connection.state];
     }
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (ARTEventListener<ARTMessage *> *)subscribe:(void (^)(ARTMessage * _Nonnull))callback {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return [self subscribeWithAttachCallback:nil callback:callback];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (ARTEventListener<ARTMessage *> *)subscribeWithAttachCallback:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTMessage * _Nonnull))cb {
+    if (cb) {
+        void (^userCallback)(ARTMessage *__art_nullable m) = cb;
+        cb = ^(ARTMessage *__art_nullable m) {
+            ART_EXITING_ABLY_CODE(_realtime.rest);
+            userCallback(m);
+        };
+    }
+    if (onAttach) {
+        void (^userOnAttach)(ARTErrorInfo *__art_nullable m) = onAttach;
+        onAttach = ^(ARTErrorInfo *__art_nullable m) {
+            ART_EXITING_ABLY_CODE(_realtime.rest);
+            userOnAttach(m);
+        };
+    }
+
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     if (self.state == ARTRealtimeChannelFailed) {
         if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
         return nil;
     }
     [self attach:onAttach];
     return [self.messagesEventEmitter on:cb];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (ARTEventListener<ARTMessage *> *)subscribe:(NSString *)name callback:(void (^)(ARTMessage * _Nonnull))cb {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return [self subscribe:name onAttach:nil callback:cb];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (ARTEventListener<ARTMessage *> *)subscribe:(NSString *)name onAttach:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTMessage * _Nonnull))cb {
+    if (cb) {
+        void (^userCallback)(ARTMessage *__art_nullable m) = cb;
+        cb = ^(ARTMessage *__art_nullable m) {
+            ART_EXITING_ABLY_CODE(_realtime.rest);
+            userCallback(m);
+        };
+    }
+    if (onAttach) {
+        void (^userOnAttach)(ARTErrorInfo *__art_nullable m) = onAttach;
+        onAttach = ^(ARTErrorInfo *__art_nullable m) {
+            ART_EXITING_ABLY_CODE(_realtime.rest);
+            userOnAttach(m);
+        };
+    }
+
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     if (self.state == ARTRealtimeChannelFailed) {
         if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
         return nil;
     }
     [self attach:onAttach];
     return [self.messagesEventEmitter on:name callback:cb];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)unsubscribe {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [self.messagesEventEmitter off];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)unsubscribe:(ARTEventListener<ARTMessage *> *)listener {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [self.messagesEventEmitter off:listener];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)unsubscribe:(NSString *)name listener:(ARTEventListener<ARTMessage *> *)listener {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [self.messagesEventEmitter off:name listener:listener];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (__GENERIC(ARTEventListener, ARTErrorInfo *) *)on:(ARTChannelEvent)event callback:(void (^)(ARTErrorInfo *))cb {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return [self.statesEventEmitter on:[NSNumber numberWithInt:event] callback:cb];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (__GENERIC(ARTEventListener, ARTErrorInfo *) *)on:(void (^)(ARTErrorInfo *))cb {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return [self.statesEventEmitter on:cb];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (__GENERIC(ARTEventListener, ARTErrorInfo *) *)once:(ARTChannelEvent)event callback:(void (^)(ARTErrorInfo *))cb {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return [self.statesEventEmitter once:[NSNumber numberWithInt:event] callback:cb];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (__GENERIC(ARTEventListener, ARTErrorInfo *) *)once:(void (^)(ARTErrorInfo *))cb {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return [self.statesEventEmitter once:cb];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)off {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [self.statesEventEmitter off];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 - (void)off:(ARTChannelEvent)event listener:listener {
     [self.statesEventEmitter off:[NSNumber numberWithInt:event] listener:listener];
 }
 
 - (void)off:(__GENERIC(ARTEventListener, ARTErrorInfo *) *)listener {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [self.statesEventEmitter off:listener];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)emit:(ARTChannelEvent)event with:(ARTErrorInfo *)data {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [self.statesEventEmitter emit:[NSNumber numberWithInt:event] with:data];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (ARTEventListener *)timed:(ARTEventListener *)listener deadline:(NSTimeInterval)deadline onTimeout:(void (^)())onTimeout {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return [self.statesEventEmitter timed:listener deadline:deadline onTimeout:onTimeout];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status {
-    self.state = state;
-    _errorReason = status.errorInfo;
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
+    artDispatchSync(_stateChangesQueue, ^{
+        self.state = state;
+        _errorReason = status.errorInfo;
 
-    if (state == ARTRealtimeChannelFailed) {
-        [_attachedEventEmitter emit:[NSNull null] with:status.errorInfo];
-        [_detachedEventEmitter emit:[NSNull null] with:status.errorInfo];
-    }
-    else if (state == ARTRealtimeChannelDetaching) {
-        NSString *msg = @"channel is being DETACHED";
-        [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p %@", _realtime, self, msg];
-        [_attachedEventEmitter emit:[NSNull null] with:[ARTErrorInfo createWithCode:90000 message:msg]];
-    }
+        if (state == ARTRealtimeChannelFailed) {
+            [_attachedEventEmitter emit:[NSNull null] with:status.errorInfo];
+            [_detachedEventEmitter emit:[NSNull null] with:status.errorInfo];
+        }
+        else if (state == ARTRealtimeChannelDetaching) {
+            NSString *msg = @"channel is being DETACHED";
+            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p %@", _realtime, self, msg];
+            [_attachedEventEmitter emit:[NSNull null] with:[ARTErrorInfo createWithCode:90000 message:msg]];
+        }
 
-    [self emit:(ARTChannelEvent)state with:status.errorInfo];
+        [self emit:(ARTChannelEvent)state with:status.errorInfo];
+    });
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)dealloc {
@@ -332,6 +430,7 @@
 }
 
 - (void)unlessStateChangesBefore:(NSTimeInterval)deadline do:(void(^)())callback {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     // Defer until next event loop execution so that any event emitted in the current
     // one doesn't cancel the timeout.
     ARTRealtimeChannelState state = self.state;
@@ -344,6 +443,7 @@
             // Any state change cancels the timeout.
         }] deadline:deadline onTimeout:callback];
     });
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 /**
@@ -351,14 +451,17 @@
  by checking that there is nothing after the colon
  */
 - (bool)isLastChannelSerial:(NSString *)channelSerial {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     NSArray * a = [channelSerial componentsSeparatedByString:@":"];
     if([a count] >1 && ![[a objectAtIndex:1] isEqualToString:@""] ) {
         return false;
     }
     return true;
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)onChannelMessage:(ARTProtocolMessage *)message {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     switch (message.action) {
         case ARTProtocolMessageAttached:
             [self setAttached:message];
@@ -383,13 +486,17 @@
             [self.logger warn:@"R:%p C:%p ARTRealtime, unknown ARTProtocolMessage action: %tu", _realtime, self, message.action];
             break;
     }
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (ARTRealtimeChannelState)state {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return _state;
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)setAttached:(ARTProtocolMessage *)message {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     if (self.state == ARTRealtimeChannelFailed) {
         return;
     }
@@ -418,9 +525,11 @@
         [self transition:ARTRealtimeChannelAttached status:[ARTStatus state:ARTStateOk]];
     }
     [_attachedEventEmitter emit:[NSNull null] with:nil];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)setDetached:(ARTProtocolMessage *)message {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     if (self.state == ARTRealtimeChannelFailed) {
         return;
     }
@@ -435,24 +544,32 @@
     ARTStatus *reason = [ARTStatus state:ARTStateNotAttached info:errorInfo];
     [self detachChannel:reason];
     [_detachedEventEmitter emit:[NSNull null] with:nil];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)detachChannel:(ARTStatus *)error {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [self failQueuedMessages:error];
     [self transition:ARTRealtimeChannelDetached status:error];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)setFailed:(ARTStatus *)error {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [self failQueuedMessages:error];
     [self transition:ARTRealtimeChannelFailed status:error];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)setSuspended:(ARTStatus *)error {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [self failQueuedMessages:error];
     [self transition:ARTRealtimeChannelDetached status:error];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)onMessage:(ARTProtocolMessage *)message {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     int i = 0;
     ARTDataEncoder *dataEncoder = self.dataEncoder;
     for (ARTMessage *m in message.messages) {
@@ -479,9 +596,11 @@
         
         ++i;
     }
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)onPresence:(ARTProtocolMessage *)message {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     int i = 0;
     ARTDataEncoder *dataEncoder = self.dataEncoder;
     for (ARTPresenceMessage *p in message.presence) {
@@ -511,9 +630,11 @@
 
         ++i;
     }
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)onSync:(ARTProtocolMessage *)message {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     self.presenceMap.syncMsgSerial = [message.msgSerial longLongValue];
     self.presenceMap.syncChannelSerial = message.channelSerial;
 
@@ -530,22 +651,41 @@
         [self.presenceMap endSync];
         [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p PresenceMap Sync ended", _realtime, self];
     }
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)broadcastPresence:(ARTPresenceMessage *)pm {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [self.presenceEventEmitter emit:[NSNumber numberWithUnsignedInteger:pm.action] with:pm];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)onError:(ARTProtocolMessage *)msg {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [self transition:ARTRealtimeChannelFailed status:[ARTStatus state:ARTStateError info: msg.error]];
     [self failQueuedMessages:[ARTStatus state:ARTStateError info: msg.error]];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)attach {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [self attach:nil];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)attach:(void (^)(ARTErrorInfo * _Nullable))callback {
+    if (callback) {
+        void (^userCallback)(ARTErrorInfo *__art_nullable error) = callback;
+        callback = ^(ARTErrorInfo *__art_nullable error) {
+            ART_EXITING_ABLY_CODE(_realtime.rest);
+            userCallback(error);
+        };
+    }
+    [self _attach:callback];
+}
+
+- (void)_attach:(void (^)(ARTErrorInfo *))callback {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     switch (self.state) {
         case ARTRealtimeChannelAttaching:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p already attaching", _realtime, self];
@@ -579,9 +719,11 @@
     [self transition:ARTRealtimeChannelAttaching status:[ARTStatus state:ARTStateOk]];
 
     [self attachAfterChecks:callback];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)attachAfterChecks:(void (^)(ARTErrorInfo * _Nullable))callback {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     ARTProtocolMessage *attachMessage = [[ARTProtocolMessage alloc] init];
     attachMessage.action = ARTProtocolMessageAttach;
     attachMessage.channel = self.name;
@@ -608,9 +750,22 @@
             [self.realtime.connectedEventEmitter off:reconnectedListener];
         }];
     }
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)detach:(void (^)(ARTErrorInfo * _Nullable))callback {
+    if (callback) {
+        void (^userCallback)(ARTErrorInfo *__art_nullable error) = callback;
+        callback = ^(ARTErrorInfo *__art_nullable error) {
+            ART_EXITING_ABLY_CODE(_realtime.rest);
+            userCallback(error);
+        };
+    }
+    [self _detach:callback];
+}
+
+- (void)_detach:(void (^)(ARTErrorInfo * _Nullable))callback {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     switch (self.state) {
         case ARTRealtimeChannelInitialized:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p can't detach when not attached", _realtime, self];
@@ -643,9 +798,11 @@
     [self transition:ARTRealtimeChannelDetaching status:[ARTStatus state:ARTStateOk]];
 
     [self detachAfterChecks:callback];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)detachAfterChecks:(void (^)(ARTErrorInfo * _Nullable))callback {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     ARTProtocolMessage *detachMessage = [[ARTProtocolMessage alloc] init];
     detachMessage.action = ARTProtocolMessageDetach;
     detachMessage.channel = self.name;
@@ -672,37 +829,49 @@
             [self.realtime.connectedEventEmitter off:reconnectedListener];
         }];
     }
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)detach {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [self detach:nil];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)sendQueuedMessages {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     NSArray *qms = self.queuedMessages;
     self.queuedMessages = [NSMutableArray array];
     for (ARTQueuedMessage *qm in qms) {
         [self sendMessage:qm.msg callback:qm.cb];
     }
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)failQueuedMessages:(ARTStatus *)status {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     NSArray *qms = self.queuedMessages;
     self.queuedMessages = [NSMutableArray array];
     for (ARTQueuedMessage *qm in qms) {
         qm.cb(status);
     }
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (NSString *)getClientId {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return self.realtime.auth.clientId;
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)history:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, ARTErrorInfo *))callback {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [self history:[[ARTRealtimeHistoryQuery alloc] init] callback:callback error:nil];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (BOOL)history:(ARTRealtimeHistoryQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     query.realtimeChannel = self;
     @try {
         return [_restChannel history:query callback:callback error:errorPtr];
@@ -713,6 +882,7 @@
         }
         return NO;
     }
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 @end

@@ -62,6 +62,7 @@ FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
 + (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message;
 // FIXME: base NSError
 + (ARTErrorInfo *)createWithNSError:(NSError *)error;
++ (ARTErrorInfo *)createFromNSException:(NSException *)error;
 + (ARTErrorInfo *)wrap:(ARTErrorInfo *)error prepend:(NSString *)prepend;
 
 - (NSString *)description;
@@ -79,6 +80,9 @@ FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
 
 - (NSString *)description;
 
+@end
+
+@interface ARTException : NSException
 @end
 
 ART_ASSUME_NONNULL_END

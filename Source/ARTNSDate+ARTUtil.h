@@ -16,4 +16,6 @@
 - (NSNumber *)artToNumberMs;
 - (NSInteger)artToIntegerMs;
 
+- (NSString *)toSentryTimestamp;
+
 @end

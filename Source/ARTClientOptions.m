@@ -40,6 +40,7 @@ NSString *const ARTDefaultProduction = @"production";
     _httpRequestTimeout = 15.0; //Seconds
     _httpMaxRetryDuration = 10.0; //Seconds
     _httpMaxRetryCount = 3;
+    _logExceptionReportingUrl = @"https://765e1fcaba404d7598d2fd5a2a43c4f0:8d469b2b0fb34c01a12ae217931c4aed@errors.ably.io/3";
     return self;
 }
 

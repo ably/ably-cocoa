@@ -7,6 +7,8 @@
 //
 
 #import "ARTLog+Private.h"
+#import "ARTNSDate+ARTUtil.m"
+#import "ARTSentry.h"
 
 static const char *logLevelName(ARTLogLevel level) {
     switch(level) {
@@ -29,12 +31,13 @@ static const char *logLevelName(ARTLogLevel level) {
 
 @implementation ARTLogLine
 
-- (id)initWithDate:(NSDate *)date level:(ARTLogLevel)level message:(NSString *)message {
+- (id)initWithDate:(NSDate *)date level:(ARTLogLevel)level message:(NSString *)message breadcrumbsKey:(NSString *)breadcrumbsKey {
     self = [self init];
     if (self) {
         _date = date;
         _level = level;
         _message = message;
+        _breadcrumbsKey = breadcrumbsKey;
     }
     return self;
 }
@@ -43,10 +46,61 @@ static const char *logLevelName(ARTLogLevel level) {
     return [NSString stringWithFormat:@"%s: %@", logLevelName(self.level), self.message];
 }
 
+- (NSDictionary *)toBreadcrumb {
+    NSString *level;
+    switch (_level) {
+        case ARTLogLevelError:
+            level = @"error";
+            break;
+        case ARTLogLevelWarn:
+            level = @"warn";
+            break;
+        case ARTLogLevelInfo:
+            level = @"info";
+            break;
+        default:
+            level = @"debug";
+    }
+    return @{
+        @"category": _breadcrumbsKey,
+        @"timestamp": [_date toSentryTimestamp],
+        @"level": level,
+        @"message": _message,
+    };
+}
+
+- (NSString *)description {
+    return [self toString];
+}
+
+#pragma mark - NSCoding
+
+- (id)initWithCoder:(NSCoder *)decoder {
+    self = [super init];
+    if (!self) {
+        return nil;
+    }
+    _date = [decoder decodeObjectForKey:@"date"];
+    _level = [[decoder decodeObjectForKey:@"level"] unsignedIntValue];
+    _message = [decoder decodeObjectForKey:@"message"];
+    _breadcrumbsKey = [decoder decodeObjectForKey:@"breadcrumbsKey"];
+    return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)encoder {
+    [encoder encodeObject:self.date forKey:@"date"];
+    [encoder encodeObject:[NSNumber numberWithUnsignedInteger:self.level] forKey:@"level"];
+    [encoder encodeObject:self.message forKey:@"message"];
+    [encoder encodeObject:self.breadcrumbsKey forKey:@"breadcrumbsKey"];
+}
+
 @end
 
 @implementation ARTLog {
-    NSMutableArray *_captured;
+    NSMutableArray<ARTLogLine *> *_captured;
+    NSMutableArray<ARTLogLine *> *_history;
+    NSUInteger _historyLines;
+    dispatch_queue_t _queue;
 }
 
 - (instancetype)init {
@@ -54,29 +108,44 @@ static const char *logLevelName(ARTLogLevel level) {
 }
 
 - (instancetype)initCapturingOutput:(BOOL)capturing {
+    return [self initCapturingOutput:true historyLines:100];
+}
+
+- (instancetype)initCapturingOutput:(BOOL)capturing historyLines:(NSUInteger)historyLines {
     if (self = [super init]) {
         // Default
         self->_logLevel = ARTLogLevelWarn;
         if (capturing) {
             self->_captured = [[NSMutableArray alloc] init];
         }
+        _history = [[NSMutableArray alloc] init];
+        _historyLines = historyLines;
+        _breadcrumbsKey = @"logger";
+        _queue = dispatch_queue_create("io.ably.log", DISPATCH_QUEUE_SERIAL);
     }
     return self;
 }
 
 - (void)log:(NSString *)message level:(ARTLogLevel)level {
-    ARTLogLine *logLine = [[ARTLogLine alloc] initWithDate:[NSDate date] level:level message:message];
-    if (level >= self.logLevel) {
-        NSLog(@"%@", [logLine toString]);
-        if (_captured) {
-            [_captured addObject:logLine];
+    dispatch_sync(_queue, ^{
+        ARTLogLine *logLine = [[ARTLogLine alloc] initWithDate:[NSDate date] level:level message:message breadcrumbsKey:_breadcrumbsKey];
+        if (level >= self.logLevel) {
+            NSLog(@"%@", [logLine toString]);
+            if (_captured) {
+                [_captured addObject:logLine];
+            }
         }
-    }
+        [_history insertObject:logLine atIndex:0];
+        if (_history.count > _historyLines) {
+            [_history removeLastObject];
+        }
+        [ARTSentry setBreadcrumbs:_breadcrumbsKey value:_history];
+    });
 }
 
 - (NSArray *)getCaptured {
     if (!_captured) {
-        [NSException raise:NSInternalInconsistencyException format:@"tried to get captured output in non-capturing instance; use initCapturingOutput:true if you want captured output."];
+        [ARTException raise:NSInternalInconsistencyException format:@"tried to get captured output in non-capturing instance; use initCapturingOutput:true if you want captured output."];
     }
     return _captured;
 }

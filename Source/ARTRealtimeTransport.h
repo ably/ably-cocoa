@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "CompatibilityMacros.h"
+#import "ARTLog.h"
 
 @protocol ARTRealtimeTransport;
 
@@ -64,6 +65,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportErrorType) {
 
 @property (readonly, strong, nonatomic) NSString *resumeKey;
 @property (readonly, strong, nonatomic) NSNumber *connectionSerial;
+@property (readonly, strong, nonatomic) ARTLog *protocolMessagesLogger;
 
 @property (readwrite, weak, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
 - (void)send:(NSData *)data withSource:(nullable id)decodedObject;

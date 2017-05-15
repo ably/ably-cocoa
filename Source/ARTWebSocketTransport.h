@@ -33,6 +33,8 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (BOOL)getIsConnected;
 
+@property (readonly, strong, nonatomic) ARTLog *protocolMessagesLogger;
+
 @end
 
 ART_ASSUME_NONNULL_END

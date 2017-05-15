@@ -19,6 +19,8 @@
 #import "ARTEncoder.h"
 #import "ARTDefault.h"
 #import "ARTRealtimeTransport.h"
+#import "ARTGCD.h"
+#import "ARTLog+Private.h"
 
 enum {
     ARTWsNeverConnected = -1,
@@ -53,6 +55,8 @@ enum {
         _encoder = rest.defaultEncoder;
         _logger = rest.logger;
         _auth = rest.auth;
+        _protocolMessagesLogger = [[ARTLog alloc] initCapturingOutput:false historyLines:50];
+        _protocolMessagesLogger.breadcrumbsKey = @"protocolMessages";
         _options = [options copy];
         _resumeKey = resumeKey;
         _connectionSerial = connectionSerial;
@@ -70,17 +74,22 @@ enum {
 
 - (void)send:(NSData *)data withSource:(id)decodedObject {
     if (self.websocket.readyState == SR_OPEN) {
+        if ([decodedObject isKindOfClass:[ARTProtocolMessage class]]) {
+            [_protocolMessagesLogger info:@"send %@", [decodedObject description]];
+        }
         [self.websocket send:data];
     }
 }
 
 - (void)internalSend:(ARTProtocolMessage *)msg {
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket sending action %tu", _delegate, self, msg.action];
+    [_protocolMessagesLogger info:@"send %@", [msg description]];
     NSData *data = [self.encoder encodeProtocolMessage:msg error:nil];
     [self send:data withSource:msg];
 }
 
 - (void)receive:(ARTProtocolMessage *)msg {
+    [_protocolMessagesLogger info:@"recv %@", [msg description]];
     [self.delegate realtimeTransport:self didReceiveMessage:msg];
 }
 

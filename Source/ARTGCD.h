@@ -13,5 +13,6 @@
 
 void artDispatchSpecifyMainQueue();
 void artDispatchMainQueue(dispatch_block_t block);
+void artDispatchSync(dispatch_queue_t queue, dispatch_block_t block);
 
 #endif /* ARTGCD_h */

@@ -201,7 +201,7 @@
 - (id<ARTCancellable>)makeRequest:(ARTHttpRequest *)artRequest callback:(void (^)(ARTHttpResponse *))cb {
 
     if(![artRequest.method isEqualToString:@"GET"] && ![artRequest.method isEqualToString:@"POST"]){
-        [NSException raise:@"Http method must be GET or POST" format:@""];
+        [ARTException raise:@"Http method must be GET or POST" format:@""];
     }
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:artRequest.url];

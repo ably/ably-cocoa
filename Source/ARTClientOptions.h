@@ -75,6 +75,11 @@ ART_ASSUME_NONNULL_BEGIN
  */
 @property (art_nullable, nonatomic, copy) __GENERIC(NSArray, NSString *) *fallbackHosts;
 
+/**
+ Report uncaught exceptions to Ably, together with the last lines of the logger. This helps Ably to fix bugs. Set to nil to disable.
+ */
+@property (readwrite, assign, nonatomic, nullable) NSString *logExceptionReportingUrl;
+
 - (BOOL)isBasicAuth;
 - (NSURL *)restUrl;
 - (NSURL *)realtimeUrl;

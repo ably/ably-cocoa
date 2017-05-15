@@ -36,6 +36,8 @@ typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
     ARTProtocolMessageSync = 16,
 };
 
+NSString *__art_nonnull ARTProtocolMessageActionToStr(ARTProtocolMessageAction action);
+
 ART_ASSUME_NONNULL_BEGIN
 
 /**
