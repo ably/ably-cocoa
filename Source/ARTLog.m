@@ -100,6 +100,7 @@ static const char *logLevelName(ARTLogLevel level) {
     NSMutableArray<ARTLogLine *> *_captured;
     NSMutableArray<ARTLogLine *> *_history;
     NSUInteger _historyLines;
+    dispatch_queue_t _queue;
 }
 
 - (instancetype)init {
@@ -120,23 +121,26 @@ static const char *logLevelName(ARTLogLevel level) {
         _history = [[NSMutableArray alloc] init];
         _historyLines = historyLines;
         _breadcrumbsKey = @"logger";
+        _queue = dispatch_queue_create("io.ably.log", DISPATCH_QUEUE_SERIAL);
     }
     return self;
 }
 
 - (void)log:(NSString *)message level:(ARTLogLevel)level {
-    ARTLogLine *logLine = [[ARTLogLine alloc] initWithDate:[NSDate date] level:level message:message breadcrumbsKey:_breadcrumbsKey];
-    if (level >= self.logLevel) {
-        NSLog(@"%@", [logLine toString]);
-        if (_captured) {
-            [_captured addObject:logLine];
+    dispatch_sync(_queue, ^{
+        ARTLogLine *logLine = [[ARTLogLine alloc] initWithDate:[NSDate date] level:level message:message breadcrumbsKey:_breadcrumbsKey];
+        if (level >= self.logLevel) {
+            NSLog(@"%@", [logLine toString]);
+            if (_captured) {
+                [_captured addObject:logLine];
+            }
         }
-    }
-    [_history insertObject:logLine atIndex:0];
-    if (_history.count > _historyLines) {
-        [_history removeLastObject];
-    }
-    [ARTSentry setBreadcrumbs:_breadcrumbsKey value:_history];
+        [_history insertObject:logLine atIndex:0];
+        if (_history.count > _historyLines) {
+            [_history removeLastObject];
+        }
+        [ARTSentry setBreadcrumbs:_breadcrumbsKey value:_history];
+    });
 }
 
 - (NSArray<ARTLogLine *> *)history {
