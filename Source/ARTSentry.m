@@ -52,10 +52,6 @@ NSString* ART_hexMemoryAddress(id addr) {
     dispatch_sync(dispatch_queue_create("io.ably.sentry", nil), ^{
         NSMutableArray<NSMutableDictionary *> *events = [[NSMutableArray alloc] init];
         for (NSDictionary __strong *report in reports) {
-            if (![[KSCrash sharedInstance].userInfo[@"reportToAbly"] boolValue]) {
-                break;
-            }
-
             id recrash = report[@"recrash_report"];
             if (recrash) {
                 report = (NSDictionary *)recrash;
@@ -74,6 +70,11 @@ NSString* ART_hexMemoryAddress(id addr) {
             }
             NSArray<NSDictionary<NSString *, id> *> *threadDicts = (NSArray *)crashDict[@"threads"];
             if (!threadDicts) {
+                continue;
+            }
+            NSDictionary<NSString *, id> *userDict = report[@"user"];
+            
+            if (![userDict [@"reportToAbly"] boolValue]) {
                 continue;
             }
 
@@ -152,10 +153,9 @@ NSString* ART_hexMemoryAddress(id addr) {
                     }],
                 },
                 @"culprit": ART_orNull(culprit),
-                // @"breadcrumbs": ART_orNull([KSCrash sharedInstance].userInfo[@"sentryBreadcrumbs"]),
-                @"breadcrumbs":ART_orNull([ARTSentry breadcrumbs]),
-                @"extras": ART_orNull([KSCrash sharedInstance].userInfo[@"sentryExtras"]),
-                @"tags":ART_orNull([KSCrash sharedInstance].userInfo[@"sentryTags"]),
+                @"breadcrumbs": ART_orNull([ARTSentry flattenBreadcrumbs:userDict[@"sentryBreadcrumbs"]]),
+                @"extra": ART_orNull(userDict[@"sentryExtra"]),
+                @"tags":ART_orNull(userDict[@"sentryTags"]),
             }]];
         }
 
@@ -373,37 +373,15 @@ NSString* ART_uuid() {
 }
 
 + (void)setExtras:(NSString *)key value:(id)value {
-    [ARTSentry setUserInfo:@"sentryExtras" key:key value:ART_orNull(value)];
-}
-
-+ (NSMutableDictionary<NSString *, NSArray<id<ARTSentryBreadcrumb>> *> *)breadcrumbsDict {
-    static NSMutableDictionary *d;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        d = [[NSMutableDictionary alloc] init];
-    });
-    return d;
-}
-
-+ (NSArray<NSDictionary *> *)breadcrumbs {
-    NSMutableArray *all = [[NSMutableArray alloc] init];
-    NSDictionary *dict = [ARTSentry breadcrumbsDict];
-    for (NSString *k in dict) {
-        for (id<ARTSentryBreadcrumb> breadcrumb in dict[k]) {
-            [all addObject:[breadcrumb toBreadcrumb]];
-        }
-    }
-    return all;
+    [ARTSentry setUserInfo:@"sentryExtra" key:key value:ART_orNull(value)];
 }
 
 + (void)setBreadcrumbs:(NSString *)key value:()value {
     // TODO: breadcrumbs are too big and KSCrash rejects them for crashes.
     // We can still use them when handling exceptions though.
-    [ARTSentry breadcrumbsDict][key] = value;
-
-    // [ARTSentry setUserInfo:@"sentryBreadcrumbs" key:key value:[value artMap:^NSDictionary *(id<ARTSentryBreadcrumb> b) {
-    //     return [b toBreadcrumb];
-    // }]];
+    [ARTSentry setUserInfo:@"sentryBreadcrumbs" key:key value:[value artMap:^NSDictionary *(id<ARTSentryBreadcrumb> b) {
+        return [b toBreadcrumb];
+    }]];
 }
 
 + (void)setUserInfo:(NSString *)key value:(id)value {
@@ -517,6 +495,14 @@ NSDictionary* ART_deviceContexts() {
             @"app_version": ART_orNull(info[@"bundleShortVersion"]),
         },
     };
+}
+
++ (NSArray<NSDictionary *> *)flattenBreadcrumbs:(NSDictionary<NSString *, NSArray<NSDictionary *> *> *)breadcrumbs {
+    NSMutableArray *flattened = [[NSMutableArray alloc] init];
+    for (NSString *k in breadcrumbs) {
+        [flattened addObjectsFromArray:breadcrumbs[k]]; 
+    }
+    return flattened;
 }
 
 @end

@@ -502,15 +502,15 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
     if (!dns) {
         return;
     }
-    [ARTSentry report:message to:dns extra:[self sentryExtras] breadcrumbs:[self sentryBreadcrumbs] tags:[self sentryTags] exception:e];
+    [ARTSentry report:message to:dns extra:[self sentryExtra] breadcrumbs:[self sentryBreadcrumbs] tags:[self sentryTags] exception:e];
 }
 
-- (NSDictionary *)sentryExtras {
-    return [KSCrash sharedInstance].userInfo[@"sentryExtras"];
+- (NSDictionary *)sentryExtra {
+    return [KSCrash sharedInstance].userInfo[@"sentryExtra"];
 }
 
 - (NSArray<NSDictionary *> *)sentryBreadcrumbs {
-    return [ARTSentry breadcrumbs];
+    return [ARTSentry flattenBreadcrumbs:[KSCrash sharedInstance].userInfo[@"sentryBreadcrumbs"]];
 }
 
 - (NSDictionary *)sentryTags {
