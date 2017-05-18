@@ -28,7 +28,6 @@ enum {
     ARTWsGoingAway = 1001,
     ARTWsCloseProtocolError = 1002,
     ARTWsRefuse = 1003,
-    ARTWsAbnormalClose = 1006,
     ARTWsNoUtf8 = 1007,
     ARTWsPolicyValidation = 1008,
     ARTWsTooBig = 1009,
@@ -210,10 +209,10 @@ enum {
     if (!_websocket) return;
     self.websocket.delegate = nil;
     if (reason.errorInfo) {
-        [self.websocket closeWithCode:ARTWsAbnormalClose reason:reason.errorInfo.description];
+        [self.websocket closeWithCode:ARTWsCloseNormal reason:reason.errorInfo.description];
     }
     else {
-        [self.websocket closeWithCode:ARTWsAbnormalClose reason:@"Abnormal Closure"];
+        [self.websocket closeWithCode:ARTWsCloseNormal reason:@"Abnormal Closure"];
     }
     self.websocket = nil;
 }
