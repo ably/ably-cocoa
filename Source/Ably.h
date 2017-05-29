@@ -53,7 +53,7 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import "ARTEncoder.h"
 #import "ARTJsonLikeEncoder.h"
 #import "ARTJsonEncoder.h"
-#import "ARTMsgpackEncoder.h"
+#import "ARTMsgPackEncoder.h"
 #import "ARTPaginatedResult.h"
 #import "ARTReachability.h"
 #import "ARTOSReachability.h"
