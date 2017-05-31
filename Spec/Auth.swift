@@ -927,16 +927,11 @@ class Auth : QuickSpec {
                 let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                 var createTokenRequestMethodWasCalled = false
-
-                let block: @convention(block) (AspectInfo, tokenParams: ARTTokenParams?) -> Void = { _, _ in
+                // Adds a block of code after `createTokenRequest` is triggered
+                let token = rest.auth.testSuite_injectIntoMethodAfter(NSSelectorFromString("_createTokenRequest:options:callback:")) {
                     createTokenRequestMethodWasCalled = true
                 }
-
-                let hook = ARTAuth.aspect_hookSelector(rest.auth)
-                // Adds a block of code after `createTokenRequest` is triggered
-                let token = try? hook(#selector(ARTAuth.createTokenRequest(_:options:callback:)), withOptions: .PositionAfter, usingBlock:  unsafeBitCast(block, ARTAuth.self))
-
-                expect(token).toNot(beNil())
+                defer { token.remove() }
 
                 waitUntil(timeout: testTimeout) { done in
                     rest.auth.requestToken(nil, withOptions: nil, callback: { tokenDetails, error in
