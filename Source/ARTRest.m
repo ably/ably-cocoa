@@ -530,6 +530,9 @@ BOOL ARTstartHandlingUncaughtExceptions(ARTRest *self) {
 }
 
 void ARTstopHandlingUncaughtExceptions(ARTRest *self) {
+    if (!self) {
+        return;
+    }
     self->_handlingUncaughtExceptions = false;
     [ARTSentry setUserInfo:@"reportToAbly" value:[NSNumber numberWithBool:false]];
 }
