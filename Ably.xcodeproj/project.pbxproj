@@ -188,8 +188,6 @@
 		EBAB9A711C69719900AF036B /* ARTReadmeExamples.m in Sources */ = {isa = PBXBuildFile; fileRef = EBAB9A701C69719900AF036B /* ARTReadmeExamples.m */; };
 		EBD947B41EBB8F160005DD16 /* ARTSentry.h in Headers */ = {isa = PBXBuildFile; fileRef = EBD947B31EBB8F160005DD16 /* ARTSentry.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EBD947B61EBB8F2B0005DD16 /* ARTSentry.m in Sources */ = {isa = PBXBuildFile; fileRef = EBD947B51EBB8F2B0005DD16 /* ARTSentry.m */; };
-		EBD947B71EBB8F2B0005DD16 /* ARTSentry.m in Sources */ = {isa = PBXBuildFile; fileRef = EBD947B51EBB8F2B0005DD16 /* ARTSentry.m */; };
-		EBD947B81EBB8F2B0005DD16 /* ARTSentry.m in Sources */ = {isa = PBXBuildFile; fileRef = EBD947B51EBB8F2B0005DD16 /* ARTSentry.m */; };
 		EBFA366E1D58B05000B09AA7 /* ARTRestPresence+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB7617701CB6C18C00D0981E /* ARTRestPresence+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		FA86B8010D0DCD25F4C40F73 /* Pods_Ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0465E977613804C1D28D6093 /* Pods_Ably.framework */; };
 		FEDB0C915C36485216AF6CF7 /* Pods_AblySpec.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2382AA4DD9E4EB0DCCBD81F8 /* Pods_AblySpec.framework */; };
@@ -1163,7 +1161,6 @@
 				D714A63E1C74D4B2002F2CA0 /* NSObject+TestSuite.swift in Sources */,
 				856AAC971B6E30C800B07119 /* TestUtilities.swift in Sources */,
 				D72768211C9C19040022F8B2 /* RestClientPresence.swift in Sources */,
-				EBD947B81EBB8F2B0005DD16 /* ARTSentry.m in Sources */,
 				D780846E1C68B3E50083009D /* NSObject+TestSuite.m in Sources */,
 				D7CEF1321C8DD3BC004FB242 /* RealtimeClientPresence.swift in Sources */,
 				853ED7C41B7A1A3C006F1C6F /* RestClientStats.swift in Sources */,
@@ -1243,7 +1240,6 @@
 			files = (
 				96E4083C1A38622D00087F77 /* ARTTestUtil.m in Sources */,
 				EBAB9A711C69719900AF036B /* ARTReadmeExamples.m in Sources */,
-				EBD947B71EBB8F2B0005DD16 /* ARTSentry.m in Sources */,
 				1C1E52EE1AB32EB9004A690F /* ARTRestCapabilityTest.m in Sources */,
 				1C1E52F01AB32EC7004A690F /* ARTRestChannelHistoryTest.m in Sources */,
 				1CC3D9591AB701E50005BEB0 /* ARTRealtimePresenceTest.m in Sources */,
