@@ -347,6 +347,10 @@ NSString* ART_uuid() {
     [request setHTTPMethod:@"POST"];
     [request setHTTPBody:bodyData];
 
+    if ([[NSProcessInfo processInfo].environment valueForKey:@"ARTUnitTests"]) {
+        return;
+    }
+
     ARTURLSessionServerTrust *session = [[ARTURLSessionServerTrust alloc] init];
     [session get:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error || !response) {
