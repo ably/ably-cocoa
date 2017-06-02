@@ -139,7 +139,9 @@ static const char *logLevelName(ARTLogLevel level) {
         if (_history.count > _historyLines) {
             [_history removeLastObject];
         }
-        [ARTSentry setBreadcrumbs:_breadcrumbsKey value:_history];
+        if (![[NSProcessInfo processInfo].environment valueForKey:@"ARTUnitTests"]) {
+            [ARTSentry setBreadcrumbs:_breadcrumbsKey value:_history];
+        }
     });
 }
 

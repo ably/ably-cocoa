@@ -138,6 +138,7 @@ class AblyTests {
     class func clientOptions(debug debug: Bool = false, key: String? = nil, requestToken: Bool = false) -> ARTClientOptions {
         let options = ARTClientOptions()
         options.environment = "sandbox"
+        options.logExceptionReportingUrl = nil
         if debug {
             options.logLevel = .Debug
         }
