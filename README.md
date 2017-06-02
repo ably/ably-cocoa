@@ -37,6 +37,86 @@ And then run `carthage update` to build the framework and drag the built Ably.fr
 3. Ably depends on [SocketRocket](https://github.com/facebook/SocketRocket) 0.5.1; get it [from the releases page](https://github.com/facebook/SocketRocket/releases/tag/0.5.1) and follow [its manual installation instructions](https://github.com/facebook/SocketRocket#installing-ios).
 4. Ably also depends on [msgpack](https://github.com/rvi/msgpack-objective-C) 0.1.8; get it [from the releases page](https://github.com/rvi/msgpack-objective-C/releases/tag/0.1.8) and link it into your project.
 
+## Thread-safety
+
+**The iOS client libraries are not thread-safe yet.** We recommend that you ensure that all operations on a `ARTRest` or `ARTRealtime` object happen in the same [Grand Central Dispatch serial queue](https://developer.apple.com/library/content/documentation/General/Conceptual/ConcurrencyProgrammingGuide/OperationQueues/OperationQueues.html#//apple_ref/doc/uid/TP40008091-CH102-SW6). Also, it's undefined from which queue or thread will callback blocks provided to the Ably library be called. This queue may be the same queue you use to call Ably, so if you're calling another Ably operation from your callback, you should only dispatch a new task for it if you're not already in Ably's queue. For example:
+
+**Swift**
+
+```swift
+class YourClass {
+    var ablyQueue: DispatchQueue!
+    var ably: ARTRealtime!
+
+    func initializeAbly() {
+        self.ablyQueue = DispatchQueue(label: "com.example.ably")
+        self.doAblyOperation {
+            self.ably = ARTRealtime(options: self.ablyOptions)
+        }
+    }
+
+    func subscribeToAbly() {
+        self.doAblyOperation {
+            self.ably.channels.get("foo").subscribe { message in
+                // Answer back.
+                self.doAblyOperation {
+                    self.ably.channels.get("foo").publish("reply", data:"Hi back!")
+                }
+            }
+        }
+    }
+
+    func doAblyOperation(_ operation: () -> Void) {
+        // Make sure we're not already in the Ably queue! This can happen if Ably
+        // calls our callback from the same task we dispatch.
+        if (String(validatingUTF8: __dispatch_queue_get_label(nil)) == "com.example.ably") {
+            operation()
+        } else {
+            self.ablyQueue.sync(execute: operation)
+        }
+    }
+}
+```
+
+**Objective-C**
+
+```objc
+@implementation YourClass {
+    dispatch_queue_t _ablyQueue;
+    ARTRealtime *ably;
+}
+
+- (void)initializeAbly {
+    _ablyQueue = dispatch_queue_create("com.example.ably", NULL);
+    [self doAblyOperation:^{
+        _ably = [ARTRealtime initWithOptions:[self ablyOptions]];
+    }];
+}
+
+- (void)subscribeToAbly {
+    [self doAblyOperation:^{
+        [[_ably.channels get:@"foo"] subscribe:^(ARTMessage *message) {
+            // Answer back.
+            [self doAblyOperation:^{
+                [[_ably.channels get:@"foo"] publish:@"reply" data:@"Hi back!"];
+            }];
+        }];
+    }];
+}
+
+- (void)doAblyOperation:(dispatch_block_t)block {
+    // Make sure we're not already in the Ably queue! This can happen if Ably
+    // calls our callback from the same task we dispatch.
+    if (dispatch_get_current_queue() == _ablyQueue) {
+        block();
+    } else {
+        dispatch_sync(_ablyQueue, block);
+    }
+}
+```
+
+We're working on improving this situation to be more developer-friendly and less error-prone.
+
 ## Using the Realtime API
 
 <!--
