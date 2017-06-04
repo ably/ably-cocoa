@@ -430,33 +430,31 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
-    artDispatchSync(_stateChangesQueue, ^{
-        [self.logger debug:__FILE__ line:__LINE__ message:@"channel state transitions to %tu - %@", state, ARTRealtimeChannelStateToStr(state)];
-        ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:self.state event:(ARTChannelEvent)state reason:status.errorInfo];
-        self.state = state;
+    [self.logger debug:__FILE__ line:__LINE__ message:@"channel state transitions to %tu - %@", state, ARTRealtimeChannelStateToStr(state)];
+    ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:self.state event:(ARTChannelEvent)state reason:status.errorInfo];
+    self.state = state;
 
-        if (status.storeErrorInfo) {
-            _errorReason = status.errorInfo;
-        }
+    if (status.storeErrorInfo) {
+        _errorReason = status.errorInfo;
+    }
 
-        switch (state) {
-            case ARTRealtimeChannelSuspended:
-                [_attachedEventEmitter emit:nil with:status.errorInfo];
-                break;
-            case ARTRealtimeChannelDetached:
-                [self.presenceMap failsSync:status.errorInfo];
-                break;
-            case ARTRealtimeChannelFailed:
-                [_attachedEventEmitter emit:nil with:status.errorInfo];
-                [_detachedEventEmitter emit:nil with:status.errorInfo];
-                [self.presenceMap failsSync:status.errorInfo];
-                break;
-            default:
-                break;
-        }
+    switch (state) {
+        case ARTRealtimeChannelSuspended:
+            [_attachedEventEmitter emit:nil with:status.errorInfo];
+            break;
+        case ARTRealtimeChannelDetached:
+            [self.presenceMap failsSync:status.errorInfo];
+            break;
+        case ARTRealtimeChannelFailed:
+            [_attachedEventEmitter emit:nil with:status.errorInfo];
+            [_detachedEventEmitter emit:nil with:status.errorInfo];
+            [self.presenceMap failsSync:status.errorInfo];
+            break;
+        default:
+            break;
+    }
 
-        [self emit:stateChange.event with:stateChange];
-    });
+    [self emit:stateChange.event with:stateChange];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
