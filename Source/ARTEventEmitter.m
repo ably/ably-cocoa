@@ -65,7 +65,7 @@
     __weak ARTEventEmitter *_eventHandler;
     NSTimeInterval _timeoutDeadline;
     void (^_timeoutBlock)();
-    dispatch_block_t _work;
+    NSTimer *_timer;
 }
 
 - (instancetype)initWithId:(NSString *)eventId token:(id<NSObject>)token handler:(ARTEventEmitter *)eventHandler center:(NSNotificationCenter *)center {
@@ -76,7 +76,6 @@
         _eventHandler = eventHandler;
         _timeoutDeadline = 0;
         _timeoutBlock = nil;
-        _timerIsRunning = false;
     }
     return self;
 }
@@ -114,21 +113,20 @@
     return _timeoutBlock != nil;
 }
 
+- (BOOL)timerIsRunning {
+    return _timer != nil;
+}
+
 - (void)startTimer {
-    if (_timerIsRunning) {
+    if (_timer) {
         NSAssert(false, @"timer is already running");
     }
-    _timerIsRunning = true;
-    __weak typeof(self) weakSelf = self;
-    _work = artDispatchScheduled(_timeoutDeadline, [_eventHandler queue], ^{
-        [weakSelf timeout];
-    });
+    _timer = [NSTimer scheduledTimerWithTimeInterval:_timeoutDeadline target:self selector:@selector(timeout) userInfo:nil repeats:false];
 }
 
 - (void)stopTimer {
-    artDispatchCancel(nil);
-    artDispatchCancel(_work);
-    _timerIsRunning = false;
+    [_timer invalidate];
+    _timer = nil;
 }
 
 @end
