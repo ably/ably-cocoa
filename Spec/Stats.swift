@@ -26,7 +26,7 @@ class Stats: QuickSpec {
                     ]
                     let rawData = try! data.rawData()
                     let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
-                    let subject = stats?.valueForKey(attribute) as? ARTStatsMessageTypes
+                    let subject = stats?.value(forKey: attribute) as? ARTStatsMessageTypes
 
                     it("should return a MessagesTypes object") {
                         expect(subject).to(beAnInstanceOf(ARTStatsMessageTypes))
@@ -60,7 +60,7 @@ class Stats: QuickSpec {
                     ]
                     let rawData = try! data.rawData()
                     let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
-                    let subject = stats?.valueForKey(direction) as? ARTStatsMessageTraffic
+                    let subject = stats?.value(forKey: direction) as? ARTStatsMessageTraffic
 
                     it("should return a MessageTraffic object") {
                         expect(subject).to(beAnInstanceOf(ARTStatsMessageTraffic))
@@ -139,7 +139,7 @@ class Stats: QuickSpec {
                 ]
                 let rawData = try! data.rawData()
                 let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
-                let subject = stats?.valueForKey(requestType) as? ARTStatsRequestCount
+                let subject = stats?.value(forKey: requestType) as? ARTStatsRequestCount
 
                 context(requestType) {
                     it("should return a RequestCount object") {
@@ -170,9 +170,9 @@ class Stats: QuickSpec {
                     dateComponents.day = 1
                     dateComponents.hour = 5
                     dateComponents.minute = 6
-                    dateComponents.timeZone = NSTimeZone(name: "UTC")
+                    dateComponents.timeZone = NSTimeZone(name: "UTC") as TimeZone?
 
-                    let expected = NSCalendar(identifier: NSCalendarIdentifierGregorian)?.dateFromComponents(dateComponents)
+                    let expected = NSCalendar(identifier: NSCalendar.Identifier.gregorian)?.date(from: dateComponents as DateComponents)
 
                     expect(stats?.intervalTime()).to(equal(expected))
                 }

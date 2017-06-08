@@ -30,7 +30,7 @@ class Utilities: QuickSpec {
                             "statusCode": "401",
                         ]
                     ]
-                    let data = try! NSJSONSerialization.dataWithJSONObject(jsonObject, options: [])
+                    let data = try! JSONSerialization.data(withJSONObject: jsonObject, options: [])
                     guard let protocolMessage = try? jsonEncoder.decodeProtocolMessage(data) else {
                         fail("Decoder has failed"); return
                     }
@@ -42,14 +42,14 @@ class Utilities: QuickSpec {
 
                 it("should encode a protocol message that has invalid data") {
                     let pm = ARTProtocolMessage()
-                    pm.action = .Message
+                    pm.action = .message
                     pm.channel = "foo"
                     pm.messages = [ARTMessage(name: "status", data: NSDate(), clientId: "user")]
-                    var result: NSData?
-                    expect{ result = try jsonEncoder.encodeProtocolMessage(pm) }.to(throwError { error in
+                    var result: Data?
+                    expect{ result = try jsonEncoder.encode(pm) }.to(throwError { error in
                         let e = error as NSError
                         expect(e.domain).to(equal(ARTAblyErrorDomain))
-                        expect(e.code).to(equal(Int(ARTClientCodeError.InvalidType.rawValue)))
+                        expect((e as! ARTErrorInfo).code).to(equal(Int(ARTClientCodeError.invalidType.rawValue)))
                         expect(e.localizedDescription).to(contain("Invalid type in JSON write"))
                         })
                     expect(result).to(beNil())
@@ -57,9 +57,9 @@ class Utilities: QuickSpec {
 
                 it("should decode data with malformed JSON") {
                     let malformedJSON = "{...}"
-                    let data = malformedJSON.dataUsingEncoding(NSUTF8StringEncoding)!
+                    let data = malformedJSON.data(using: String.Encoding.utf8)!
                     var result: AnyObject?
-                    expect{ result = try ARTJsonEncoder().decode(data) }.to(throwError { error in
+                    expect{ result = try ARTJsonEncoder().decode(data) as AnyObject? }.to(throwError { error in
                         let e = error as NSError
                         expect(e.localizedDescription).to(contain("data couldn’t be read"))
                     })
@@ -69,7 +69,7 @@ class Utilities: QuickSpec {
                 it("should decode data with malformed MsgPack") {
                     let data = NSData()
                     var result: AnyObject?
-                    expect{ result = try ARTMsgPackEncoder().decode(data) }.to(throwError { error in
+                    expect{ result = try ARTMsgPackEncoder().decode(data as Data) as! (Data) as (Data) as AnyObject? }.to(throwError { error in
                         expect(error).toNot(beNil())
                     })
                     expect(result).to(beNil())
@@ -110,9 +110,9 @@ class Utilities: QuickSpec {
                         let channel = realtime.channels.get("foo")
 
                         // Garbage values (whatever is on the heap)
-                        let bytes = UnsafeMutablePointer<Int>.alloc(1)
-                        defer { bytes.dealloc(1) }
-                        let data = NSData(bytes: bytes, length: sizeof(Int))
+                        let bytes = UnsafeMutablePointer<Int>.allocate(capacity: 1)
+                        defer { bytes.deallocate(capacity: 1) }
+                        let data = NSData(bytes: bytes, length: MemoryLayout<Int>.size)
 
                         waitUntil(timeout: testTimeout) { done in
                             channel.attach { error in
@@ -127,7 +127,7 @@ class Utilities: QuickSpec {
                                     fail("Should not receive any message")
                                 }
                                 var result: AnyObject?
-                                expect{ result = realtime.transport?.receiveWithData(data) }.toNot(raiseException())
+                                expect{ result = realtime.transport?.receive(with: data as Data) }.toNot(raiseException())
                                 expect(result).to(beNil())
                                 done()
                             }
@@ -174,11 +174,11 @@ class Utilities: QuickSpec {
                         let channel = rest.channels.get("foo")
 
                         // Garbage values (whatever is on the heap)
-                        let bytes = UnsafeMutablePointer<Int>.alloc(1)
-                        defer { bytes.dealloc(1) }
-                        let data = NSData(bytes: bytes, length: sizeof(Int))
+                        let bytes = UnsafeMutablePointer<Int>.allocate(capacity: 1)
+                        defer { bytes.deallocate(capacity: 1) }
+                        let data = NSData(bytes: bytes, length: MemoryLayout<Int>.size)
 
-                        testHTTPExecutor.simulateIncomingPayloadOnNextRequest(data)
+                        testHTTPExecutor.simulateIncomingPayloadOnNextRequest(data as Data)
                         waitUntil(timeout: testTimeout) { done in
                             channel.publish(nil, data: nil) { error in
                                 expect(error).to(beNil()) //ignored
@@ -186,7 +186,7 @@ class Utilities: QuickSpec {
                             }
                         }
 
-                        testHTTPExecutor.simulateIncomingPayloadOnNextRequest(data)
+                        testHTTPExecutor.simulateIncomingPayloadOnNextRequest(data as Data)
                         waitUntil(timeout: testTimeout) { done in
                             channel.history { result, error in
                                 guard let error = error else {
@@ -201,7 +201,9 @@ class Utilities: QuickSpec {
             }
 
             context("EventEmitter") {
-                var eventEmitter = ARTEventEmitter()
+                
+
+                var eventEmitter = ARTEventEmitter<NSString, AnyObject>()
                 var receivedFoo1: Int?
                 var receivedFoo2: Int?
                 var receivedBar: Int?
@@ -227,37 +229,37 @@ class Utilities: QuickSpec {
                 }
 
                 it("should emit events to all relevant listeners") {
-                    eventEmitter.emit("foo", with: 123)
+                    eventEmitter.emit("foo", with: 123 as AnyObject?)
 
                     expect(receivedFoo1).to(equal(123))
                     expect(receivedFoo2).to(equal(123))
                     expect(receivedBar).to(beNil())
                     expect(receivedAll).to(equal(123))
                     
-                    eventEmitter.emit("bar", with:456)
+                    eventEmitter.emit("bar", with:456 as AnyObject?)
                     
                     expect(receivedFoo1).to(equal(123))
                     expect(receivedFoo2).to(equal(123))
                     expect(receivedBar).to(equal(456))
                     expect(receivedAll).to(equal(456))
                     
-                    eventEmitter.emit("qux", with:789)
+                    eventEmitter.emit("qux", with:789 as AnyObject?)
                     
                     expect(receivedAll).toEventually(equal(789), timeout: testTimeout)
                 }
                 
                 it("should only call once listeners once for its event") {
-                    eventEmitter.emit("foo", with: 123)
+                    eventEmitter.emit("foo", with: 123 as AnyObject?)
 
                     expect(receivedBarOnce).to(beNil())
                     expect(receivedAllOnce).to(equal(123))
                     
-                    eventEmitter.emit("bar", with: 456)
+                    eventEmitter.emit("bar", with: 456 as AnyObject?)
                     
                     expect(receivedBarOnce).to(equal(456))
                     expect(receivedAllOnce).to(equal(123))
 
-                    eventEmitter.emit("bar", with: 789)
+                    eventEmitter.emit("bar", with: 789 as AnyObject?)
                     
                     expect(receivedBarOnce).to(equal(456))
                     expect(receivedAllOnce).to(equal(123))
@@ -266,19 +268,19 @@ class Utilities: QuickSpec {
                 context("calling off with a single listener argument") {
                     it("should stop receiving events when calling off with a single listener argument") {
                         eventEmitter.off(listenerFoo1!)
-                        eventEmitter.emit("foo", with: 123)
+                        eventEmitter.emit("foo", with: 123 as AnyObject?)
                         
                         expect(receivedFoo1).to(beNil())
                         expect(receivedFoo2).to(equal(123))
                         expect(receivedAll).to(equal(123))
                         
-                        eventEmitter.emit("bar", with: 222)
+                        eventEmitter.emit("bar", with: 222 as AnyObject?)
                         
                         expect(receivedFoo2).to(equal(123))
                         expect(receivedAll).to(equal(222))
                         
                         eventEmitter.off(listenerAll!)
-                        eventEmitter.emit("bar", with: 333)
+                        eventEmitter.emit("bar", with: 333 as AnyObject?)
                         
                         expect(receivedAll).to(equal(222))
                     }
@@ -299,7 +301,7 @@ class Utilities: QuickSpec {
                 context("calling off with listener and event arguments") {
                     it("should still receive events if off doesn't match the listener's criteria") {
                         eventEmitter.off("foo", listener: listenerAll!)
-                        eventEmitter.emit("foo", with: 111)
+                        eventEmitter.emit("foo", with: 111 as AnyObject?)
 
                         expect(receivedFoo1).to(equal(111))
                         expect(receivedAll).to(equal(111))
@@ -307,7 +309,7 @@ class Utilities: QuickSpec {
 
                     it("should stop receive events if off matches the listener's criteria") {
                         eventEmitter.off("foo", listener: listenerFoo1!)
-                        eventEmitter.emit("foo", with: 111)
+                        eventEmitter.emit("foo", with: 111 as AnyObject?)
 
                         expect(receivedFoo1).to(beNil())
                         expect(receivedAll).to(equal(111))
@@ -317,13 +319,13 @@ class Utilities: QuickSpec {
                 context("calling off with no arguments") {
                     it("should remove all listeners") {
                         eventEmitter.off()
-                        eventEmitter.emit("foo", with: 111)
+                        eventEmitter.emit("foo", with: 111 as AnyObject?)
                         
                         expect(receivedFoo1).to(beNil())
                         expect(receivedFoo2).to(beNil())
                         expect(receivedAll).to(beNil())
                         
-                        eventEmitter.emit("bar", with: 111)
+                        eventEmitter.emit("bar", with: 111 as AnyObject?)
                         
                         expect(receivedBar).to(beNil())
                         expect(receivedBarOnce).to(beNil())
@@ -333,7 +335,7 @@ class Utilities: QuickSpec {
                     it("should allow listening again") {
                         eventEmitter.off()
                         eventEmitter.on("foo", callback: { receivedFoo1 = $0 as? Int })
-                        eventEmitter.emit("foo", with: 111)
+                        eventEmitter.emit("foo", with: 111 as AnyObject?)
                         expect(receivedFoo1).to(equal(111))
                     }
 
@@ -360,7 +362,7 @@ class Utilities: QuickSpec {
                         })
                         waitUntil(timeout: 0.4) { done in
                             delay(0.1) {
-                                eventEmitter.emit("foo", with: 123)
+                                eventEmitter.emit("foo", with: 123 as AnyObject?)
                                 delay(0.15) {
                                     expect(receivedFoo1).toNot(beNil())
                                     done()
@@ -375,12 +377,12 @@ class Utilities: QuickSpec {
                         let beforeEmitting = NSDate()
                         listenerFoo1!.setTimer(0.3, onTimeout: {
                             calledOnTimeout = true
-                            expect(NSDate()).to(beCloseTo(beforeEmitting.dateByAddingTimeInterval(0.3), within: 0.2))
+                            expect(NSDate()).to(beCloseTo(beforeEmitting.addingTimeInterval(0.3), within: 0.2))
                         }).startTimer()
                         waitUntil(timeout: 0.5) { done in
                             delay(0.35) {
                                 expect(calledOnTimeout).to(beTrue())
-                                eventEmitter.emit("foo", with: 123)
+                                eventEmitter.emit("foo", with: 123 as AnyObject?)
                                 expect(receivedFoo1).to(beNil())
                                 done()
                             }
@@ -406,11 +408,10 @@ class Utilities: QuickSpec {
 
                     expect(realtime.logger.history.count).toNot(beGreaterThan(100))
                     expect(realtime.logger.history.map{ $0.message }.first).to(contain("channel state transitions to 2 - Attached"))
-                    expect(realtime.logger.history.filter{ $0.message.containsString("realtime state transitions to 2 - Connected") }).to(haveCount(1))
+                    expect(realtime.logger.history.filter{ $0.message.contains("realtime state transitions to 2 - Connected") }).to(haveCount(1))
                 }
 
             }
         }
     }
 }
-
