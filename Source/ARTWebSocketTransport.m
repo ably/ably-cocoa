@@ -284,7 +284,6 @@ enum {
                 break;
             case ARTWsBuggyClose:
             case ARTWsGoingAway:
-            case ARTWsAbnormalClose:
                 // Connectivity issue
                 [s.delegate realtimeTransportDisconnected:s];
                 break;
