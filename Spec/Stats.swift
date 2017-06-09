@@ -29,7 +29,7 @@ class Stats: QuickSpec {
                     let subject = stats?.value(forKey: attribute) as? ARTStatsMessageTypes
 
                     it("should return a MessagesTypes object") {
-                        expect(subject).to(beAnInstanceOf(ARTStatsMessageTypes))
+                        expect(subject).to(beAnInstanceOf(ARTStatsMessageTypes.self))
                     }
 
                     // TS5
@@ -63,7 +63,7 @@ class Stats: QuickSpec {
                     let subject = stats?.value(forKey: direction) as? ARTStatsMessageTraffic
 
                     it("should return a MessageTraffic object") {
-                        expect(subject).to(beAnInstanceOf(ARTStatsMessageTraffic))
+                        expect(subject).to(beAnInstanceOf(ARTStatsMessageTraffic.self))
                     }
 
                     // TS5
@@ -88,7 +88,7 @@ class Stats: QuickSpec {
                 let subject = stats?.connections
 
                 it("should return a ConnectionTypes object") {
-                    expect(subject).to(beAnInstanceOf(ARTStatsConnectionTypes))
+                    expect(subject).to(beAnInstanceOf(ARTStatsConnectionTypes.self))
                 }
 
                 it("should return value for tls opened counts") {
@@ -115,7 +115,7 @@ class Stats: QuickSpec {
                 let subject = stats?.channels
 
                 it("should return a ResourceCount object") {
-                    expect(subject).to(beAnInstanceOf(ARTStatsResourceCount))
+                    expect(subject).to(beAnInstanceOf(ARTStatsResourceCount.self))
                 }
 
                 it("should return value for opened counts") {
@@ -143,7 +143,7 @@ class Stats: QuickSpec {
 
                 context(requestType) {
                     it("should return a RequestCount object") {
-                        expect(subject).to(beAnInstanceOf(ARTStatsRequestCount))
+                        expect(subject).to(beAnInstanceOf(ARTStatsRequestCount.self))
                     }
 
                     it("should return value for succeeded") {

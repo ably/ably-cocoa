@@ -269,7 +269,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         if (response.statusCode >= 400) {
             if (data) {
                 NSError *decodeError;
-                NSError *dataError = [self->_encoders[response.MIMEType] decodeError:data error:&decodeError];
+                NSError *dataError = [self->_encoders[response.MIMEType] decodeErrorInfo:data error:&decodeError];
                 if ([self shouldRenewToken:&dataError]) {
                     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p retry request %@", self, request];
                     // Make a single attempt to reissue the token and resend the request
@@ -389,7 +389,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
     [self executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         NSError *decodeError = nil;
         if (response.statusCode >= 400) {
-            NSError *dataError = [self->_encoders[response.MIMEType] decodeError:data error:&decodeError];
+            ARTErrorInfo *dataError = [self->_encoders[response.MIMEType] decodeErrorInfo:data error:&decodeError];
             callback(nil, dataError ? dataError : decodeError);
         } else {
             NSDate *time = [self->_encoders[response.MIMEType] decodeTime:data error:&decodeError];

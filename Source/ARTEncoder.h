@@ -47,7 +47,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (nullable ARTProtocolMessage *)decodeProtocolMessage:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
 
 - (nullable NSDate *)decodeTime:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
-- (nullable NSError *)decodeError:(NSData *)error error:(NSError *_Nullable *_Nullable)error;
+- (nullable ARTErrorInfo *)decodeErrorInfo:(NSData *)error error:(NSError *_Nullable *_Nullable)error;
 - (nullable NSArray *)decodeStats:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
 
 @end

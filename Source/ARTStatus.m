@@ -29,9 +29,9 @@ NSInteger getStatusFromCode(NSInteger code) {
 
 + (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message {
     if (message) {
-        return [[super alloc] initWithDomain:ARTAblyErrorDomain code:code userInfo:@{@"ARTErrorInfoStatusCode": [NSNumber numberWithInteger:status], NSLocalizedDescriptionKey:message}];
+        return [[ARTErrorInfo alloc] initWithDomain:ARTAblyErrorDomain code:code userInfo:@{@"ARTErrorInfoStatusCode": [NSNumber numberWithInteger:status], NSLocalizedDescriptionKey:message}];
     }
-    return [[super alloc] initWithDomain:ARTAblyErrorDomain code:code userInfo:@{@"ARTErrorInfoStatusCode": [NSNumber numberWithInteger:status]}];
+    return [[ARTErrorInfo alloc] initWithDomain:ARTAblyErrorDomain code:code userInfo:@{@"ARTErrorInfoStatusCode": [NSNumber numberWithInteger:status]}];
 }
 
 + (ARTErrorInfo *)createFromNSError:(NSError *)error {
@@ -40,7 +40,7 @@ NSInteger getStatusFromCode(NSInteger code) {
     }
     NSMutableDictionary *userInfo = [error.userInfo mutableCopy];
     [userInfo setValue:error.domain forKey:@"ARTErrorInfoOriginalDomain"];
-    return [[super alloc] initWithDomain:ARTAblyErrorDomain code:error.code userInfo:userInfo];
+    return [[ARTErrorInfo alloc] initWithDomain:ARTAblyErrorDomain code:error.code userInfo:userInfo];
 }
 
 + (ARTErrorInfo *)createFromNSException:(NSException *)error {
