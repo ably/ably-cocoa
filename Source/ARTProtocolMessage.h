@@ -58,7 +58,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (nullable, readwrite, strong, nonatomic) NSString *connectionId;
 @property (nullable, readwrite, strong, nonatomic, getter=getConnectionKey) NSString *connectionKey;
 @property (readwrite, assign, nonatomic) int64_t connectionSerial;
-@property (nullable, readwrite, assign, nonatomic) NSNumber *msgSerial;
+@property (nullable, readwrite, strong, nonatomic) NSNumber *msgSerial;
 @property (nullable, readwrite, strong, nonatomic) NSDate *timestamp;
 @property (nullable, readwrite, strong, nonatomic) __GENERIC(NSArray, ARTMessage *) *messages;
 @property (nullable, readwrite, strong, nonatomic) __GENERIC(NSArray, ARTPresenceMessage *) *presence;
