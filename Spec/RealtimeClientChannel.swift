@@ -2794,7 +2794,7 @@ class RealtimeClientChannel: QuickSpec {
                             try channel.history(query, callback: { _, _ in })
                         }
                         catch let error as NSError {
-                            if (error as! ARTErrorInfo).code == ARTRealtimeHistoryError.notAttached.rawValue {
+                            if (error as? ARTErrorInfo)?.code == ARTRealtimeHistoryError.notAttached.rawValue {
                                 return
                             }
                             fail("Shouldn't raise a global error, got \(error)")

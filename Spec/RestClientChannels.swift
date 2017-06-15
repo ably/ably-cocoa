@@ -127,7 +127,7 @@ class RestClientChannels: QuickSpec {
                     ]
 
                     for channel in client.channels {
-                        expect(channels).to(contain(channel as! [ARTRestChannel]))
+                        expect(channels).to(contain(channel as! ARTRestChannel))
                     }
                 }
             }

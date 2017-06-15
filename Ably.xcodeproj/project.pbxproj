@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0698443E4343002C872BB397 /* Pods_AblyTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B7C89E5AD2143F7958C6E2D /* Pods_AblyTests.framework */; };
 		1C05CF201AC1D7EB00687AC9 /* ARTRealtime+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C05CF1E1AC1D7EB00687AC9 /* ARTRealtime+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		1C118A5D1AE63D89006AD19E /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1C118A5B1AE63D89006AD19E /* Info.plist */; };
 		1C118AB81AE6485C006AD19E /* ably-common in Resources */ = {isa = PBXBuildFile; fileRef = 1C118AB61AE6485C006AD19E /* ably-common */; };
@@ -41,6 +40,9 @@
 		1CC3D95F1AB7043F0005BEB0 /* ARTRealtimeResumeTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CC3D95E1AB7043F0005BEB0 /* ARTRealtimeResumeTest.m */; };
 		1CD8DC9F1B1C7315007EAF36 /* ARTDefault.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1CD8DCA01B1C7315007EAF36 /* ARTDefault.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */; };
+		29066A1DD8D228362EACD504 /* Pods_AblyTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 15585916A60EA13FB6969F88 /* Pods_AblyTests.framework */; };
+		535594872AEC12E5FE629C2A /* Pods_AblySpec.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70DA30305C81E0E0BCCDB0BF /* Pods_AblySpec.framework */; };
+		7B6C01E177A959309492B344 /* Pods_Ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F80BDA93E7E5148A24F64FE /* Pods_Ably.framework */; };
 		850BFB4C1B79323C009D0ADD /* ARTPaginatedResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		850BFB4D1B79323C009D0ADD /* ARTPaginatedResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */; };
 		851674EF1B7BA5CD00D35169 /* Stats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851674EE1B7BA5CD00D35169 /* Stats.swift */; };
@@ -189,8 +191,6 @@
 		EBD947B41EBB8F160005DD16 /* ARTSentry.h in Headers */ = {isa = PBXBuildFile; fileRef = EBD947B31EBB8F160005DD16 /* ARTSentry.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EBD947B61EBB8F2B0005DD16 /* ARTSentry.m in Sources */ = {isa = PBXBuildFile; fileRef = EBD947B51EBB8F2B0005DD16 /* ARTSentry.m */; };
 		EBFA366E1D58B05000B09AA7 /* ARTRestPresence+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB7617701CB6C18C00D0981E /* ARTRestPresence+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		FA86B8010D0DCD25F4C40F73 /* Pods_Ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0465E977613804C1D28D6093 /* Pods_Ably.framework */; };
-		FEDB0C915C36485216AF6CF7 /* Pods_AblySpec.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2382AA4DD9E4EB0DCCBD81F8 /* Pods_AblySpec.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -237,7 +237,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0465E977613804C1D28D6093 /* Pods_Ably.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Ably.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		15585916A60EA13FB6969F88 /* Pods_AblyTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AblyTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1C05CF1E1AC1D7EB00687AC9 /* ARTRealtime+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTRealtime+Private.h"; sourceTree = "<group>"; };
 		1C118A5B1AE63D89006AD19E /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1C118AB61AE6485C006AD19E /* ably-common */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "ably-common"; path = "../ably-common"; sourceTree = "<group>"; };
@@ -268,14 +268,12 @@
 		1CC3D95E1AB7043F0005BEB0 /* ARTRealtimeResumeTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimeResumeTest.m; sourceTree = "<group>"; };
 		1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTDefault.h; sourceTree = "<group>"; };
 		1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDefault.m; sourceTree = "<group>"; };
-		2382AA4DD9E4EB0DCCBD81F8 /* Pods_AblySpec.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AblySpec.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		318521E8A0F0EF25EFF6924B /* Pods-Ably.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Ably.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Ably/Pods-Ably.debug.xcconfig"; sourceTree = "<group>"; };
-		39C434E0A565BD99A26370EB /* Pods-AblyTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AblyTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AblyTests/Pods-AblyTests.debug.xcconfig"; sourceTree = "<group>"; };
+		1D37A536D66C2223E534A1F1 /* Pods-AblyTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AblyTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-AblyTests/Pods-AblyTests.release.xcconfig"; sourceTree = "<group>"; };
+		28F7395B253B33FE7F080536 /* Pods-AblySpec.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AblySpec.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AblySpec/Pods-AblySpec.debug.xcconfig"; sourceTree = "<group>"; };
 		3F3D07905A62187E022923A8 /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		4E95BA2279A06F30D7AB76ED /* Pods-AblyTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AblyTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-AblyTests/Pods-AblyTests.release.xcconfig"; sourceTree = "<group>"; };
-		52B54714DE3B9AA6E2F50EB1 /* Pods-AblySpec.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AblySpec.release.xcconfig"; path = "Pods/Target Support Files/Pods-AblySpec/Pods-AblySpec.release.xcconfig"; sourceTree = "<group>"; };
-		5B7C89E5AD2143F7958C6E2D /* Pods_AblyTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AblyTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		6A37386B614A9387AB4ABC29 /* Pods-AblySpec.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AblySpec.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AblySpec/Pods-AblySpec.debug.xcconfig"; sourceTree = "<group>"; };
+		59596CC6FFFAD0142043DE5A /* Pods-Ably.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Ably.release.xcconfig"; path = "Pods/Target Support Files/Pods-Ably/Pods-Ably.release.xcconfig"; sourceTree = "<group>"; };
+		70DA30305C81E0E0BCCDB0BF /* Pods_AblySpec.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AblySpec.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7F80BDA93E7E5148A24F64FE /* Pods_Ably.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Ably.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPaginatedResult.h; sourceTree = "<group>"; };
 		850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPaginatedResult.m; sourceTree = "<group>"; };
 		851674EE1B7BA5CD00D35169 /* Stats.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stats.swift; sourceTree = "<group>"; };
@@ -331,7 +329,7 @@
 		96E408421A38939E00087F77 /* ARTProtocolMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTProtocolMessage.m; sourceTree = "<group>"; };
 		96E408451A3895E800087F77 /* ARTWebSocketTransport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTWebSocketTransport.h; sourceTree = "<group>"; };
 		96E408461A3895E800087F77 /* ARTWebSocketTransport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTWebSocketTransport.m; sourceTree = "<group>"; };
-		9B00FA0A76423DABEE840FF7 /* Pods-Ably.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Ably.release.xcconfig"; path = "Pods/Target Support Files/Pods-Ably/Pods-Ably.release.xcconfig"; sourceTree = "<group>"; };
+		9F2E6125A90DEAABE0F27323 /* Pods-AblySpec.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AblySpec.release.xcconfig"; path = "Pods/Target Support Files/Pods-AblySpec/Pods-AblySpec.release.xcconfig"; sourceTree = "<group>"; };
 		D70EAAEB1BC3376200CD8B9E /* ARTRestChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTRestChannel.h; sourceTree = "<group>"; };
 		D70EAAEC1BC3376200CD8B9E /* ARTRestChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestChannel.m; sourceTree = "<group>"; };
 		D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSObject+TestSuite.swift"; sourceTree = "<group>"; };
@@ -404,6 +402,8 @@
 		D7F1D3761BF4DE72001A4B5E /* ARTRealtimePresence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimePresence.m; sourceTree = "<group>"; };
 		D7F1D3791BF4E33A001A4B5E /* ARTRestChannel+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTRestChannel+Private.h"; sourceTree = "<group>"; };
 		D7F2B8B11E42410D00B65151 /* ARTPresenceMessage+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTPresenceMessage+Private.h"; sourceTree = "<group>"; };
+		DCD7366DC26387ADC491252D /* Pods-Ably.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Ably.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Ably/Pods-Ably.debug.xcconfig"; sourceTree = "<group>"; };
+		E9DBC8EB07140E5D896020B9 /* Pods-AblyTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AblyTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-AblyTests/Pods-AblyTests.debug.xcconfig"; sourceTree = "<group>"; };
 		EB0505FB1C5BD7C4006BA7E2 /* ARTBaseMessage+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTBaseMessage+Private.h"; sourceTree = "<group>"; };
 		EB1AE0CB1C5C1EB200D62250 /* ARTEventEmitter+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTEventEmitter+Private.h"; sourceTree = "<group>"; };
 		EB1AE0CD1C5C3A4900D62250 /* Utilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
@@ -442,7 +442,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				856AAC8F1B6E304B00B07119 /* Ably.framework in Frameworks */,
-				FEDB0C915C36485216AF6CF7 /* Pods_AblySpec.framework in Frameworks */,
+				535594872AEC12E5FE629C2A /* Pods_AblySpec.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -450,7 +450,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FA86B8010D0DCD25F4C40F73 /* Pods_Ably.framework in Frameworks */,
+				7B6C01E177A959309492B344 /* Pods_Ably.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -459,7 +459,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				96BF613D1A35B2AB004CF2B3 /* Ably.framework in Frameworks */,
-				0698443E4343002C872BB397 /* Pods_AblyTests.framework in Frameworks */,
+				29066A1DD8D228362EACD504 /* Pods_AblyTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -500,6 +500,19 @@
 			name = Realtime;
 			sourceTree = "<group>";
 		};
+		514B60993BD8A01B13ECB1BC /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				DCD7366DC26387ADC491252D /* Pods-Ably.debug.xcconfig */,
+				59596CC6FFFAD0142043DE5A /* Pods-Ably.release.xcconfig */,
+				28F7395B253B33FE7F080536 /* Pods-AblySpec.debug.xcconfig */,
+				9F2E6125A90DEAABE0F27323 /* Pods-AblySpec.release.xcconfig */,
+				E9DBC8EB07140E5D896020B9 /* Pods-AblyTests.debug.xcconfig */,
+				1D37A536D66C2223E534A1F1 /* Pods-AblyTests.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
 		856AAC8B1B6E304B00B07119 /* Spec */ = {
 			isa = PBXGroup;
 			children = (
@@ -537,7 +550,7 @@
 				856AAC8B1B6E304B00B07119 /* Spec */,
 				96BF61321A35B2AB004CF2B3 /* Products */,
 				FAFEC5BB8312EB69E84C28D4 /* Frameworks */,
-				B712803211373535941FE5AA /* Pods */,
+				514B60993BD8A01B13ECB1BC /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -600,19 +613,6 @@
 				96BF61421A35B2AB004CF2B3 /* Info.plist */,
 			);
 			name = "Supporting Files";
-			sourceTree = "<group>";
-		};
-		B712803211373535941FE5AA /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				318521E8A0F0EF25EFF6924B /* Pods-Ably.debug.xcconfig */,
-				9B00FA0A76423DABEE840FF7 /* Pods-Ably.release.xcconfig */,
-				6A37386B614A9387AB4ABC29 /* Pods-AblySpec.debug.xcconfig */,
-				52B54714DE3B9AA6E2F50EB1 /* Pods-AblySpec.release.xcconfig */,
-				39C434E0A565BD99A26370EB /* Pods-AblyTests.debug.xcconfig */,
-				4E95BA2279A06F30D7AB76ED /* Pods-AblyTests.release.xcconfig */,
-			);
-			name = Pods;
 			sourceTree = "<group>";
 		};
 		D746AE301BBC299D003ECEF8 /* Rest */ = {
@@ -790,9 +790,9 @@
 			isa = PBXGroup;
 			children = (
 				3F3D07905A62187E022923A8 /* Pods.framework */,
-				0465E977613804C1D28D6093 /* Pods_Ably.framework */,
-				2382AA4DD9E4EB0DCCBD81F8 /* Pods_AblySpec.framework */,
-				5B7C89E5AD2143F7958C6E2D /* Pods_AblyTests.framework */,
+				7F80BDA93E7E5148A24F64FE /* Pods_Ably.framework */,
+				70DA30305C81E0E0BCCDB0BF /* Pods_AblySpec.framework */,
+				15585916A60EA13FB6969F88 /* Pods_AblyTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -896,12 +896,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 856AAC921B6E304B00B07119 /* Build configuration list for PBXNativeTarget "AblySpec" */;
 			buildPhases = (
-				F4859C5FC59DE6253E96EE08 /* [CP] Check Pods Manifest.lock */,
+				C5040E5F9A51E2A649346EF1 /* [CP] Check Pods Manifest.lock */,
 				856AAC861B6E304B00B07119 /* Sources */,
 				856AAC871B6E304B00B07119 /* Frameworks */,
 				856AAC881B6E304B00B07119 /* Resources */,
-				5A2F4A778F20519245535797 /* [CP] Embed Pods Frameworks */,
-				C7CC8985FA5C6556A8DF2514 /* [CP] Copy Pods Resources */,
+				8B19CC0278C82F7F9D427828 /* [CP] Embed Pods Frameworks */,
+				5165F02C8111797246884E7B /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -917,12 +917,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 96BF61471A35B2AB004CF2B3 /* Build configuration list for PBXNativeTarget "Ably" */;
 			buildPhases = (
-				1D9083EC07551819730E46A9 /* [CP] Check Pods Manifest.lock */,
+				07716A85792C4B5D8B28432B /* [CP] Check Pods Manifest.lock */,
 				96BF612C1A35B2AB004CF2B3 /* Sources */,
 				96BF612D1A35B2AB004CF2B3 /* Frameworks */,
 				96BF612E1A35B2AB004CF2B3 /* Headers */,
 				96BF612F1A35B2AB004CF2B3 /* Resources */,
-				083D6F601E7A4A36D54A0D68 /* [CP] Copy Pods Resources */,
+				2C7CA7B4E675B89CC1E96B1C /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -937,13 +937,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 96BF614A1A35B2AB004CF2B3 /* Build configuration list for PBXNativeTarget "AblyTests" */;
 			buildPhases = (
-				BE0466D5EC1E3C2E5BFA8555 /* [CP] Check Pods Manifest.lock */,
+				1015621C261820440439CCF8 /* [CP] Check Pods Manifest.lock */,
 				96BF61381A35B2AB004CF2B3 /* Sources */,
 				96BF61391A35B2AB004CF2B3 /* Frameworks */,
 				96BF613A1A35B2AB004CF2B3 /* Resources */,
 				1C5DA0141A6E5F8A00A2B7EF /* Copy Files */,
-				F79A66600C11945BE067DFC1 /* [CP] Embed Pods Frameworks */,
-				76E03E134A66AC85FEDECBE9 /* [CP] Copy Pods Resources */,
+				23AD4826C759251CB46DD588 /* [CP] Embed Pods Frameworks */,
+				8CD3CBD0FC59F39EA4AC71AA /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 				1C5DA0131A6E5F2700A2B7EF /* PBXBuildRule */,
@@ -1028,7 +1028,52 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		083D6F601E7A4A36D54A0D68 /* [CP] Copy Pods Resources */ = {
+		07716A85792C4B5D8B28432B /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		1015621C261820440439CCF8 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		23AD4826C759251CB46DD588 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-AblyTests/Pods-AblyTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		2C7CA7B4E675B89CC1E96B1C /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1043,67 +1088,7 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Ably/Pods-Ably-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		1D9083EC07551819730E46A9 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
-			showEnvVarsInLog = 0;
-		};
-		5A2F4A778F20519245535797 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-AblySpec/Pods-AblySpec-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		76E03E134A66AC85FEDECBE9 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-AblyTests/Pods-AblyTests-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		BE0466D5EC1E3C2E5BFA8555 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
-			showEnvVarsInLog = 0;
-		};
-		C7CC8985FA5C6556A8DF2514 /* [CP] Copy Pods Resources */ = {
+		5165F02C8111797246884E7B /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1118,22 +1103,7 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-AblySpec/Pods-AblySpec-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		F4859C5FC59DE6253E96EE08 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
-			showEnvVarsInLog = 0;
-		};
-		F79A66600C11945BE067DFC1 /* [CP] Embed Pods Frameworks */ = {
+		8B19CC0278C82F7F9D427828 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1145,7 +1115,37 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-AblyTests/Pods-AblyTests-frameworks.sh\"\n";
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-AblySpec/Pods-AblySpec-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		8CD3CBD0FC59F39EA4AC71AA /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-AblyTests/Pods-AblyTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C5040E5F9A51E2A649346EF1 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -1282,7 +1282,7 @@
 /* Begin XCBuildConfiguration section */
 		856AAC931B6E304B00B07119 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6A37386B614A9387AB4ABC29 /* Pods-AblySpec.debug.xcconfig */;
+			baseConfigurationReference = 28F7395B253B33FE7F080536 /* Pods-AblySpec.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
@@ -1293,14 +1293,14 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = AblySpec;
 				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
-				SWIFT_VERSION = 3.0;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
 		856AAC941B6E304B00B07119 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 52B54714DE3B9AA6E2F50EB1 /* Pods-AblySpec.release.xcconfig */;
+			baseConfigurationReference = 9F2E6125A90DEAABE0F27323 /* Pods-AblySpec.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
@@ -1410,7 +1410,7 @@
 		};
 		96BF61481A35B2AB004CF2B3 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 318521E8A0F0EF25EFF6924B /* Pods-Ably.debug.xcconfig */;
+			baseConfigurationReference = DCD7366DC26387ADC491252D /* Pods-Ably.debug.xcconfig */;
 			buildSettings = {
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				DEFINES_MODULE = YES;
@@ -1430,7 +1430,7 @@
 		};
 		96BF61491A35B2AB004CF2B3 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9B00FA0A76423DABEE840FF7 /* Pods-Ably.release.xcconfig */;
+			baseConfigurationReference = 59596CC6FFFAD0142043DE5A /* Pods-Ably.release.xcconfig */;
 			buildSettings = {
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				DEFINES_MODULE = YES;
@@ -1450,7 +1450,7 @@
 		};
 		96BF614B1A35B2AB004CF2B3 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 39C434E0A565BD99A26370EB /* Pods-AblyTests.debug.xcconfig */;
+			baseConfigurationReference = E9DBC8EB07140E5D896020B9 /* Pods-AblyTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
@@ -1464,7 +1464,7 @@
 		};
 		96BF614C1A35B2AB004CF2B3 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4E95BA2279A06F30D7AB76ED /* Pods-AblyTests.release.xcconfig */;
+			baseConfigurationReference = 1D37A536D66C2223E534A1F1 /* Pods-AblyTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				INFOPLIST_FILE = Tests/Info.plist;
