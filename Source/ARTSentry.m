@@ -28,6 +28,17 @@ NSString* ART_hexMemoryAddress(id addr) {
     return nil;
 }
 
+void ART_withKSCrash(void (^f)(KSCrash *)) {
+    static dispatch_queue_t q;
+    static dispatch_once_t t;
+    dispatch_once(&t, ^{
+        q = dispatch_queue_create("io.ably.sentry.ART_withKSCrash", NULL);
+    });
+    dispatch_sync(q, ^{
+        f([KSCrash sharedInstance]);
+    });
+}
+
 @interface  ARTKSCrashReportFilter : NSObject<KSCrashReportFilter>
 - (instancetype)init:(NSString *)dns;
 @end
@@ -204,7 +215,9 @@ NSString* ART_hexMemoryAddress(id addr) {
 
 
 - (void)install {
-    [KSCrash sharedInstance].monitoring = KSCrashMonitorTypeMachException | KSCrashMonitorTypeSignal | KSCrashMonitorTypeSystem | KSCrashMonitorTypeApplicationState;
+    ART_withKSCrash(^(KSCrash *ksCrash) {
+        ksCrash.monitoring = KSCrashMonitorTypeMachException | KSCrashMonitorTypeSignal | KSCrashMonitorTypeSystem | KSCrashMonitorTypeApplicationState;
+    });
     [super install];
 }
 @end
@@ -393,28 +406,32 @@ NSString* ART_uuid() {
 }
 
 + (void)setUserInfo:(NSString *)key value:(id)value {
-    if (![KSCrash sharedInstance].userInfo) {
-        [KSCrash sharedInstance].userInfo = @{};
-    }
-    NSMutableDictionary *info = [NSMutableDictionary dictionaryWithDictionary:[KSCrash sharedInstance].userInfo];
-    info[key] = value;
-    [KSCrash sharedInstance].userInfo = info;
+    ART_withKSCrash(^(KSCrash *ksCrash) {
+        if (!ksCrash.userInfo) {
+            ksCrash.userInfo = @{};
+        }
+        NSMutableDictionary *info = [NSMutableDictionary dictionaryWithDictionary:ksCrash.userInfo];
+        info[key] = value;
+        ksCrash.userInfo = info;
+    });
 }
 
 + (void)setUserInfo:(NSString *)key key:(NSString *)innerKey value:(id)value {
-    if (![KSCrash sharedInstance].userInfo) {
-        [KSCrash sharedInstance].userInfo = @{};
-    }
-    NSMutableDictionary *info = [NSMutableDictionary dictionaryWithDictionary:[KSCrash sharedInstance].userInfo];
-    NSMutableDictionary *inner;
-    if (info[key]) {
-        inner = [NSMutableDictionary dictionaryWithDictionary:info[key]];
-    } else {
-        inner = [[NSMutableDictionary alloc] init];
-    }
-    inner[innerKey] = value;
-    info[key] = inner;
-    [KSCrash sharedInstance].userInfo = info;
+    ART_withKSCrash(^(KSCrash *ksCrash) {
+        if (!ksCrash.userInfo) {
+            ksCrash.userInfo = @{};
+        }
+        NSMutableDictionary *info = [NSMutableDictionary dictionaryWithDictionary:ksCrash.userInfo];
+        NSMutableDictionary *inner;
+        if (info[key]) {
+            inner = [NSMutableDictionary dictionaryWithDictionary:info[key]];
+        } else {
+            inner = [[NSMutableDictionary alloc] init];
+        }
+        inner[innerKey] = value;
+        info[key] = inner;
+        ksCrash.userInfo = info;
+    });
 }
 
 id ART_orNull(id obj) {
@@ -442,7 +459,10 @@ id ART_orNull(id obj) {
 }
 
 NSDictionary* ART_deviceContexts() {
-    NSDictionary *info = [[KSCrash sharedInstance] systemInfo];
+    NSDictionary __block *info;
+    ART_withKSCrash(^(KSCrash *ksCrash) {
+        info = [ksCrash systemInfo];
+    });
 
     NSString *model =
         #if TARGET_IPHONE_SIMULATOR
