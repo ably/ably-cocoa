@@ -554,10 +554,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     // Resuming
     if (_resuming) {
         if (![message.connectionId isEqualToString:self.connection.id]) {
-            [self.logger warn:@"R:%p ARTRealtime: connection has reconnected, but resume failed. Detaching all channels", self];
-            // Fatal error, detach all channels
+            [self.logger warn:@"R:%p ARTRealtime: connection has reconnected, but resume failed. Reattaching any attached channels", self];
+            // Reattach all channels
             for (ARTRealtimeChannel *channel in self.channels) {
-                [channel detachChannel:[ARTStatus state:ARTStateConnectionDisconnected info:message.error]];
+                [channel reattachWithReason:message.error callback:nil];
             }
             _resuming = false;
         }

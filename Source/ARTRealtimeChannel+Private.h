@@ -35,6 +35,8 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (bool)isLastChannelSerial:(NSString *)channelSerial;
 
+- (void)reattachWithReason:(nullable ARTErrorInfo *)reason callback:(nullable void (^)(ARTErrorInfo *))callback;
+
 @end
 
 @interface ARTRealtimeChannel (Private)

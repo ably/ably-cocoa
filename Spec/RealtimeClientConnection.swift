@@ -2370,7 +2370,12 @@ class RealtimeClientConnection: QuickSpec {
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
 
-                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.attach { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
 
                         let expectedConnectionId = client.connection.id
                         client.simulateLostConnectionAndState()
@@ -2390,13 +2395,14 @@ class RealtimeClientConnection: QuickSpec {
                                 done()
                             }
                         }
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.detached))
+                        expect(client.msgSerial).to(equal(0))
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
                         guard let channelError = channel.errorReason else {
                             fail("Channel error is nil"); return
                         }
                         expect(channelError.code).to(equal(80008))
                         expect(channelError.message).to(contain("Unable to recover connection"))
-                        expect(client.msgSerial).to(equal(0))
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
                     }
 
                     // RTN15c4
