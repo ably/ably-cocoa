@@ -2377,7 +2377,7 @@ class RealtimeClientConnection: QuickSpec {
                             }
                         }
 
-                        let expectedConnectionId = client.connection.id
+                        let oldConnectionId = client.connection.id
                         client.simulateLostConnectionAndState()
 
                         waitUntil(timeout: testTimeout) { done in
@@ -2390,7 +2390,7 @@ class RealtimeClientConnection: QuickSpec {
                                 expect(client.connection.errorReason).to(beIdenticalTo(stateChange!.reason))
                                 let transport = client.transport as! TestProxyTransport
                                 let connectedPM = transport.protocolMessagesReceived.filter{ $0.action == .connected }[0]
-                                expect(connectedPM.connectionId).toNot(equal(expectedConnectionId))
+                                expect(connectedPM.connectionId).toNot(equal(oldConnectionId))
                                 expect(client.connection.id).to(equal(connectedPM.connectionId))
                                 done()
                             }
