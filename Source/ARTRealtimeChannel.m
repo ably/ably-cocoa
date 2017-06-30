@@ -577,7 +577,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         case ARTRealtimeChannelAttached:
         case ARTRealtimeChannelSuspended:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p reattach initiated by DETACHED message", _realtime, self];
-            [self reattach:nil withReason:message.error];
+            [self reattachWithReason:message.error callback:nil];
             return;
         case ARTRealtimeChannelAttaching: {
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p reattach initiated by DETACHED message but it is currently attaching", _realtime, self];
@@ -627,10 +627,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [self transition:ARTRealtimeChannelSuspended status:status];
     __weak __typeof(self) weakSelf = self;
     [[self unlessStateChangesBefore:retryTimeout do:^{
-        [weakSelf reattach:^(ARTErrorInfo *errorInfo) {
+        [weakSelf reattachWithReason:nil callback:^(ARTErrorInfo *errorInfo) {
             ARTStatus *status = [ARTStatus state:ARTStateError info:errorInfo];
             [weakSelf setSuspended:status];
-        } withReason:nil];
+        }];
     }] startTimer];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -771,7 +771,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (void)reattach:(void (^)(ARTErrorInfo *))callback withReason:(ARTErrorInfo *)reason {
+- (void)reattachWithReason:(ARTErrorInfo *)reason callback:(void (^)(ARTErrorInfo *))callback {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     switch (self.state) {
         case ARTRealtimeChannelAttached:
@@ -785,11 +785,15 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         default:
             break;
     }
-    [self internalAttach:callback withReason:reason];
+    [self internalAttach:callback withReason:reason storeErrorInfo:true];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)internalAttach:(void (^)(ARTErrorInfo *))callback withReason:(ARTErrorInfo *)reason {
+    [self internalAttach:callback withReason:reason storeErrorInfo:false];
+}
+
+- (void)internalAttach:(void (^)(ARTErrorInfo *))callback withReason:(ARTErrorInfo *)reason storeErrorInfo:(BOOL)storeErrorInfo {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     switch (self.state) {
         case ARTRealtimeChannelDetaching: {
@@ -814,7 +818,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     if (callback) [_attachedEventEmitter once:callback];
     // Set state: Attaching
     ARTStatus *status = reason ? [ARTStatus state:ARTStateError info:reason] : [ARTStatus state:ARTStateOk];
-    status.storeErrorInfo = false;
+    status.storeErrorInfo = storeErrorInfo;
     [self transition:ARTRealtimeChannelAttaching status:status];
 
     [self attachAfterChecks:callback];
