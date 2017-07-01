@@ -1,14 +1,62 @@
 # Change Log
 
+## [1.0.6](https://github.com/ably/ably-ios/tree/1.0.6) (2017-06-30)
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.5...1.0.6)
+
+**Merged pull requests:**
+
+- Fix RTN15c3 [\#616](https://github.com/ably/ably-ios/pull/616) ([ricardopereira](https://github.com/ricardopereira))
+
+## [0.8.15](https://github.com/ably/ably-ios/tree/0.8.15) (2017-06-15)
+[Full Changelog](https://github.com/ably/ably-ios/compare/0.8.14...0.8.15)
+
+## [1.0.5](https://github.com/ably/ably-ios/tree/1.0.5) (2017-06-15)
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.4...1.0.5)
+
+**Fixed bugs:**
+
+- ably-ios ws spec breach: closing websockets with reserved close codes [\#605](https://github.com/ably/ably-ios/issues/605)
+- Push: uncaught exception [\#594](https://github.com/ably/ably-ios/issues/594)
+
+**Closed issues:**
+
+- Connection problems and if got connected - not receiving the message [\#600](https://github.com/ably/ably-ios/issues/600)
+- Use of unresolved identifier 'ARTPush' [\#595](https://github.com/ably/ably-ios/issues/595)
+
+**Merged pull requests:**
+
+- Convert to Swift 3. [\#613](https://github.com/ably/ably-ios/pull/613) ([tcard](https://github.com/tcard))
+- Test suite [\#609](https://github.com/ably/ably-ios/pull/609) ([ricardopereira](https://github.com/ricardopereira))
+- WebSocket: remove ARTWsAbnormalClose \(1006\) [\#606](https://github.com/ably/ably-ios/pull/606) ([ricardopereira](https://github.com/ricardopereira))
+
+## [0.8.14](https://github.com/ably/ably-ios/tree/0.8.14) (2017-05-15)
+[Full Changelog](https://github.com/ably/ably-ios/compare/0.8.13...0.8.14)
+
+## [1.0.4](https://github.com/ably/ably-ios/tree/1.0.4) (2017-05-15)
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.3...1.0.4)
+
+**Merged pull requests:**
+
+- Sentry. [\#603](https://github.com/ably/ably-ios/pull/603) ([tcard](https://github.com/tcard))
+- WIP: Report crashes to Sentry. [\#599](https://github.com/ably/ably-ios/pull/599) ([tcard](https://github.com/tcard))
+- Crashes [\#598](https://github.com/ably/ably-ios/pull/598) ([ricardopereira](https://github.com/ricardopereira))
+- Log history [\#597](https://github.com/ably/ably-ios/pull/597) ([ricardopereira](https://github.com/ricardopereira))
+
+## [0.8.13](https://github.com/ably/ably-ios/tree/0.8.13) (2017-04-19)
+[Full Changelog](https://github.com/ably/ably-ios/compare/0.8.12...0.8.13)
+
+## [1.0.3](https://github.com/ably/ably-ios/tree/1.0.3) (2017-04-19)
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.2...1.0.3)
+
+**Fixed bugs:**
+
+- JSON encoding exception - handle encoding failures [\#591](https://github.com/ably/ably-ios/issues/591)
+
 ## [1.0.2](https://github.com/ably/ably-ios/tree/1.0.2) (2017-04-13)
 [Full Changelog](https://github.com/ably/ably-ios/compare/1.0.1...1.0.2)
 
 ## [0.8.12](https://github.com/ably/ably-ios/tree/0.8.12) (2017-04-13)
 [Full Changelog](https://github.com/ably/ably-ios/compare/0.8.11...0.8.12)
-
-**Fixed bugs:**
-
-- JSON encoding exception - handle encoding failures [\#591](https://github.com/ably/ably-ios/issues/591)
 
 **Closed issues:**
 
