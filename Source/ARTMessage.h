@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "ARTBaseMessage.h"
+#import "ARTTypes.h"
 
 ART_ASSUME_NONNULL_BEGIN
 
@@ -15,6 +16,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 /// The event name, if available
 @property (art_nullable, readwrite, strong, nonatomic) NSString *name;
+@property (art_nullable, nonatomic) id<ARTJsonCompatible> extras;
 
 - (instancetype)initWithName:(art_nullable NSString *)name data:(id)data;
 - (instancetype)initWithName:(art_nullable NSString *)name data:(id)data clientId:(NSString *)clientId;

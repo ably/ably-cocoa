@@ -307,6 +307,42 @@ class RestClientChannel: QuickSpec {
                 }
             }
 
+            // RSL1h, RSL6a2
+            it("should provide an optional argument that allows the extras value to be specified") {
+                let client = ARTRest(options: AblyTests.commonAppSetup())
+                let channel = client.channels.get("pushenabled:test")
+                let extras = ["push": ["key": "value"]] as ARTJsonCompatible
+
+                expect((client.encoders["application/json"] as! ARTJsonLikeEncoder).message(from: [
+                    "data": "foo",
+                    "extras": ["push": ["key": "value"]]
+                ]).extras == extras).to(beTrue())
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.publish("name", data: "some data", extras: extras) { error in
+                        if let error = error {
+                            fail("unexpected error \(error)")
+                            done(); return
+                        }
+
+                        var query = ARTDataQuery()
+                        query.limit = 1
+
+                        try! channel.history(query) { messages, error in
+                            if let error = error {
+                                fail("unexpected error \(error)")
+                                done(); return
+                            }
+                            guard let message = messages?.items.first else {
+                                fail("expected published message in history")
+                                done(); return
+                            }
+                            expect(message.extras == extras).to(beTrue())
+                            done()
+                        }
+                    }
+                }
+            }
         }
 
         // RSL2

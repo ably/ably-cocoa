@@ -15,55 +15,13 @@
 #import "ARTPresenceMessage.h"
 #import "ARTProtocolMessage.h"
 #import "ARTProtocolMessage+Private.h"
-#import "ARTStats.h"
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
 #import "ARTNSDate+ARTUtil.h"
 #import "ARTLog.h"
 #import "ARTHttp.h"
 #import "ARTStatus.h"
-#import "ARTTokenDetails.h"
-#import "ARTTokenRequest.h"
-#import "ARTAuthDetails.h"
 #import "ARTConnectionDetails.h"
 #import "ARTRest+Private.h"
-
-@interface ARTJsonLikeEncoder ()
-
-- (ARTMessage *)messageFromDictionary:(NSDictionary *)input;
-- (NSArray *)messagesFromArray:(NSArray *)input;
-
-- (ARTPresenceMessage *)presenceMessageFromDictionary:(NSDictionary *)input;
-- (NSArray *)presenceMessagesFromArray:(NSArray *)input;
-
-- (NSDictionary *)messageToDictionary:(ARTMessage *)message;
-- (NSArray *)messagesToArray:(NSArray *)messages;
-
-- (NSDictionary *)presenceMessageToDictionary:(ARTPresenceMessage *)message;
-- (NSArray *)presenceMessagesToArray:(NSArray *)messages;
-
-- (NSDictionary *)protocolMessageToDictionary:(ARTProtocolMessage *)message;
-- (ARTProtocolMessage *)protocolMessageFromDictionary:(NSDictionary *)input;
-
-- (NSDictionary *)tokenRequestToDictionary:(ARTTokenRequest *)tokenRequest;
-
-- (NSDictionary *)authDetailsToDictionary:(ARTAuthDetails *)authDetails;
-- (ARTAuthDetails *)authDetailsFromDictionary:(NSDictionary *)input;
-
-- (NSArray *)statsFromArray:(NSArray *)input;
-- (ARTStats *)statsFromDictionary:(NSDictionary *)input;
-- (ARTStatsMessageTypes *)statsMessageTypesFromDictionary:(NSDictionary *)input;
-- (ARTStatsMessageCount *)statsMessageCountFromDictionary:(NSDictionary *)input;
-- (ARTStatsMessageTraffic *)statsMessageTrafficFromDictionary:(NSDictionary *)input;
-- (ARTStatsConnectionTypes *)statsConnectionTypesFromDictionary:(NSDictionary *)input;
-- (ARTStatsResourceCount *)statsResourceCountFromDictionary:(NSDictionary *)input;
-- (ARTStatsRequestCount *)statsRequestCountFromDictionary:(NSDictionary *)input;
-
-- (void)writeData:(id)data encoding:(NSString *)encoding toDictionary:(NSMutableDictionary *)output;
-
-- (NSDictionary *)decodeDictionary:(NSData *)data error:(NSError **)error;
-- (NSArray *)decodeArray:(NSData *)data error:(NSError **)error;
-
-@end
 
 @implementation ARTJsonLikeEncoder {
     ARTLog *_logger;
@@ -167,7 +125,7 @@
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
-    
+
     ARTMessage *message = [[ARTMessage alloc] init];
     message.id = [input artString:@"id"];
     message.name = [input artString:@"name"];
@@ -176,6 +134,7 @@
     message.encoding = [input artString:@"encoding"];;
     message.timestamp = [input artDate:@"timestamp"];
     message.connectionId = [input artString:@"connectionId"];
+    message.extras = [input objectForKey:@"extras"];
     
     return message;
 }
@@ -274,7 +233,7 @@
     if (message.timestamp) {
         [output setObject:[message.timestamp artToNumberMs] forKey:@"timestamp"];
     }
-    
+
     if (message.clientId) {
         [output setObject:message.clientId forKey:@"clientId"];
     }
@@ -285,6 +244,10 @@
     
     if (message.name) {
         [output setObject:message.name forKey:@"name"];
+    }
+
+    if (message.extras) {
+        [output setObject:message.extras forKey:@"extras"];
     }
 
     if (message.connectionId) {
