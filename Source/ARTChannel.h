@@ -30,6 +30,12 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)publish:(art_nullable NSString *)name data:(art_nullable id)data clientId:(NSString *)clientId;
 - (void)publish:(art_nullable NSString *)name data:(art_nullable id)data clientId:(NSString *)clientId callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;
 
+- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data extras:(art_nullable id<ARTJsonCompatible>)extras;
+- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data extras:(art_nullable id<ARTJsonCompatible>)extras callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;
+
+- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data clientId:(NSString *)clientId extras:(art_nullable id<ARTJsonCompatible>)extras;
+- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data clientId:(NSString *)clientId extras:(art_nullable id<ARTJsonCompatible>)extras callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;
+
 - (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages;
 - (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;
 

@@ -325,6 +325,20 @@ func ==(lhs: ARTAuthOptions, rhs: ARTAuthOptions) -> Bool {
         lhs.key == rhs.key
 }
 
+func ==(lhs: ARTJsonCompatible?, rhs: ARTJsonCompatible?) -> Bool {
+    guard let lhs = lhs else {
+        return rhs == nil
+    }
+    guard let rhs = rhs else {
+        return false
+    }
+    do {
+        return NSDictionary(dictionary: try lhs.toJSON()).isEqual(to: try rhs.toJSON())
+    } catch {
+        return false
+    }
+}
+
 // MARK: Publish message class
 
 class PublishTestMessage {

@@ -33,6 +33,9 @@
     [description deleteCharactersInRange:NSMakeRange(description.length - (description.length>2 ? 2:0), 2)];
     [description appendFormat:@",\n"];
     [description appendFormat:@" name: %@\n", self.name];
+    if (self.extras) {
+        [description appendFormat:@" extras: %@\n", self.extras];
+    }
     [description appendFormat:@"}"];
     return description;
 }
@@ -40,6 +43,7 @@
 - (id)copyWithZone:(NSZone *)zone {
     ARTMessage *message = [super copyWithZone:zone];
     message->_name = self.name;
+    message->_extras = self.extras;
     return message;
 }
 

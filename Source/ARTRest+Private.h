@@ -23,7 +23,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak, nullable) ARTRealtime *realtime;
 @property (readonly, strong, nonatomic) __GENERIC(id, ARTEncoder) defaultEncoder;
 @property (readonly, strong, nonatomic) NSString *defaultEncoding; //Content-Type
-@property (readonly, strong, nonatomic) NSDictionary *encoders;
+@property (readonly, strong, nonatomic) NSDictionary<NSString *, id<ARTEncoder>> *encoders;
 
 // Private prioritized host for testing only (overrides the current `restHost`)
 @property (readwrite, strong, nonatomic, art_nullable) NSString *prioritizedHost;

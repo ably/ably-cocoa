@@ -12,6 +12,10 @@
 #import "CompatibilityMacros.h"
 #import "ARTRest.h"
 #import "ARTEncoder.h"
+#import "ARTTokenDetails.h"
+#import "ARTTokenRequest.h"
+#import "ARTAuthDetails.h"
+#import "ARTStats.h"
 
 ART_ASSUME_NONNULL_BEGIN
 
@@ -32,6 +36,44 @@ ART_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, art_nullable) id<ARTJsonLikeEncoderDelegate> delegate;
 
 - (instancetype)initWithRest:(ARTRest *)rest delegate:(id<ARTJsonLikeEncoderDelegate> __art_nullable)delegate;
+
+@end
+
+@interface ARTJsonLikeEncoder ()
+
+- (ARTMessage *)messageFromDictionary:(NSDictionary *)input;
+- (NSArray *)messagesFromArray:(NSArray *)input;
+
+- (ARTPresenceMessage *)presenceMessageFromDictionary:(NSDictionary *)input;
+- (NSArray *)presenceMessagesFromArray:(NSArray *)input;
+
+- (NSDictionary *)messageToDictionary:(ARTMessage *)message;
+- (NSArray *)messagesToArray:(NSArray *)messages;
+
+- (NSDictionary *)presenceMessageToDictionary:(ARTPresenceMessage *)message;
+- (NSArray *)presenceMessagesToArray:(NSArray *)messages;
+
+- (NSDictionary *)protocolMessageToDictionary:(ARTProtocolMessage *)message;
+- (ARTProtocolMessage *)protocolMessageFromDictionary:(NSDictionary *)input;
+
+- (NSDictionary *)tokenRequestToDictionary:(ARTTokenRequest *)tokenRequest;
+
+- (NSDictionary *)authDetailsToDictionary:(ARTAuthDetails *)authDetails;
+- (ARTAuthDetails *)authDetailsFromDictionary:(NSDictionary *)input;
+
+- (NSArray *)statsFromArray:(NSArray *)input;
+- (ARTStats *)statsFromDictionary:(NSDictionary *)input;
+- (ARTStatsMessageTypes *)statsMessageTypesFromDictionary:(NSDictionary *)input;
+- (ARTStatsMessageCount *)statsMessageCountFromDictionary:(NSDictionary *)input;
+- (ARTStatsMessageTraffic *)statsMessageTrafficFromDictionary:(NSDictionary *)input;
+- (ARTStatsConnectionTypes *)statsConnectionTypesFromDictionary:(NSDictionary *)input;
+- (ARTStatsResourceCount *)statsResourceCountFromDictionary:(NSDictionary *)input;
+- (ARTStatsRequestCount *)statsRequestCountFromDictionary:(NSDictionary *)input;
+
+- (void)writeData:(id)data encoding:(NSString *)encoding toDictionary:(NSMutableDictionary *)output;
+
+- (NSDictionary *)decodeDictionary:(NSData *)data error:(NSError **)error;
+- (NSArray *)decodeArray:(NSData *)data error:(NSError **)error;
 
 @end
 

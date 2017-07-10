@@ -45,8 +45,18 @@
 }
 
 - (void)publish:(art_nullable NSString *)name data:(art_nullable id)data callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
+    [self publish:name data:data extras:nil callback:callback];
+}
+
+- (void)publish:(NSString *)name data:(id)data extras:(id<ARTJsonCompatible>)extras {
+    [self publish:name data:data extras:extras callback:nil];
+}
+
+- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data extras:(id<ARTJsonCompatible>)extras callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
     NSError *error;
-    ARTMessage *messagesWithDataEncoded = [self encodeMessageIfNeeded:[[ARTMessage alloc] initWithName:name data:data] error:&error];
+    ARTMessage *message = [[ARTMessage alloc] initWithName:name data:data];
+    message.extras = extras;
+    ARTMessage *messagesWithDataEncoded = [self encodeMessageIfNeeded:message error:&error];
     if (error) {
         if (callback) callback([ARTErrorInfo createFromNSError:error]);
         return;
@@ -58,9 +68,19 @@
     [self publish:name data:data clientId:clientId callback:nil];
 }
 
+- (void)publish:(NSString *)name data:(id)data clientId:(NSString *)clientId extras:(id<ARTJsonCompatible>)extras {
+    [self publish:name data:data clientId:clientId extras:extras callback:nil];
+}
+
 - (void)publish:(NSString *)name data:(id)data clientId:(NSString *)clientId callback:(void (^)(ARTErrorInfo * _Nullable))callback {
+    [self publish:name data:data clientId:(NSString *)clientId extras:nil callback:callback];
+}
+
+- (void)publish:(NSString *)name data:(id)data clientId:(NSString *)clientId extras:(id<ARTJsonCompatible>)extras callback:(void (^)(ARTErrorInfo * _Nullable))callback {
     NSError *error;
-    ARTMessage *messagesWithDataEncoded = [self encodeMessageIfNeeded:[[ARTMessage alloc] initWithName:name data:data clientId:clientId] error:&error];
+    ARTMessage *message = [[ARTMessage alloc] initWithName:name data:data clientId:clientId];
+    message.extras = extras;
+    ARTMessage *messagesWithDataEncoded = [self encodeMessageIfNeeded:message error:&error];
     if (error) {
         if (callback) callback([ARTErrorInfo createFromNSError:error]);
         return;
