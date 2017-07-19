@@ -15,7 +15,7 @@
 
 - (instancetype)initWithTokenParams:(ARTTokenParams *)tokenParams keyName:(NSString *)keyName nonce:(NSString *)nonce mac:(NSString *)mac {
     if (self = [super init]) {
-        self.ttl = tokenParams.ttl ? tokenParams.ttl : [ARTDefault ttl];
+        self.ttl = tokenParams.ttl;
         self.capability = tokenParams.capability;
         self.clientId = tokenParams.clientId;
         self.timestamp = tokenParams.timestamp;
@@ -31,7 +31,7 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat: @"ARTTokenRequest: keyName=%@ clientId=%@ nonce=%@ mac=%@ ttl=%f capability=%@ timestamp=%@",
+    return [NSString stringWithFormat: @"ARTTokenRequest: keyName=%@ clientId=%@ nonce=%@ mac=%@ ttl=%@ capability=%@ timestamp=%@",
             self.keyName, self.clientId, self.nonce, self.mac, self.ttl, self.capability, self.timestamp];
 }
 
@@ -52,7 +52,7 @@
                                                                            nonce:dict[@"nonce"]
                                                                              mac:dict[@"mac"]];
     tokenRequest.clientId = dict[@"clientId"];
-    tokenRequest.ttl = millisecondsToTimeInterval([dict[@"ttl"] doubleValue]);
+    tokenRequest.ttl = dict[@"ttl"] ? [NSNumber numberWithDouble:millisecondsToTimeInterval([dict[@"ttl"] unsignedLongLongValue])] : nil;
     tokenRequest.capability = dict[@"capability"];
     tokenRequest.timestamp = [NSDate dateWithTimeIntervalSince1970:[dict[@"timestamp"] doubleValue] / 1000];
 

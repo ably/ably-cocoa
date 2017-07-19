@@ -404,7 +404,6 @@
 
     NSMutableDictionary *dictionary = [@{
              @"keyName":tokenRequest.keyName ? tokenRequest.keyName : @"",
-             @"ttl":[NSNumber numberWithUnsignedLongLong: timeIntervalToMilliseconds(tokenRequest.ttl)],
              @"capability":tokenRequest.capability ? tokenRequest.capability : @"",
              @"timestamp":timestamp,
              @"nonce":tokenRequest.nonce ? tokenRequest.nonce : @"",
@@ -413,6 +412,9 @@
 
     if (tokenRequest.clientId) {
         dictionary[@"clientId"] = tokenRequest.clientId;
+    }
+    if (tokenRequest.ttl) {
+        dictionary[@"ttl"] = [NSNumber numberWithUnsignedLongLong:timeIntervalToMilliseconds([tokenRequest.ttl doubleValue])];
     }
 
     return dictionary;
@@ -441,7 +443,7 @@
 
     ARTTokenParams *params = [[ARTTokenParams alloc] initWithClientId:[input artString:@"clientId"]
                                                                 nonce:[input artString:@"nonce"]];
-    params.ttl = millisecondsToTimeInterval([input artInteger:@"ttl"]);
+    params.ttl = [NSNumber numberWithDouble:millisecondsToTimeInterval([input artInteger:@"ttl"])];
     params.capability = [input artString:@"capability"];
     params.timestamp = [input artDate:@"timestamp"];
 

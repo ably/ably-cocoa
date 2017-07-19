@@ -825,9 +825,9 @@ class Auth : QuickSpec {
             }
             
             // RSA5
-            it("should use one hour default time to live") {
+            it("TTL should default to be omitted") {
                 let tokenParams = ARTTokenParams()
-                expect(tokenParams.ttl) == 60 * 60
+                expect(tokenParams.ttl).to(beNil())
             }
             
             // RSA6
@@ -1100,7 +1100,7 @@ class Auth : QuickSpec {
                             expect(tokenDetails).toNot(beNil())
                             expect(tokenDetails!.capability).to(equal("{\"cansubscribe:*\":[\"subscribe\"]}"))
                             expect(tokenDetails!.clientId).to(beNil())
-                            expect(tokenDetails!.expires!.timeIntervalSince1970 - tokenDetails!.issued!.timeIntervalSince1970).to(equal(tokenParams.ttl))
+                            expect(tokenDetails!.expires!.timeIntervalSince1970 - tokenDetails!.issued!.timeIntervalSince1970).to(equal(tokenParams.ttl as? Double))
                             done()
                         }
                     }
@@ -1155,7 +1155,7 @@ class Auth : QuickSpec {
                             expect(tokenDetails).toNot(beNil())
                             expect(tokenDetails!.capability).to(equal("{\"cansubscribe:*\":[\"subscribe\"]}"))
                             expect(tokenDetails!.clientId).to(beNil())
-                            expect(tokenDetails!.expires!.timeIntervalSince1970 - tokenDetails!.issued!.timeIntervalSince1970).to(equal(tokenParams.ttl))
+                            expect(tokenDetails!.expires!.timeIntervalSince1970 - tokenDetails!.issued!.timeIntervalSince1970).to(equal(tokenParams.ttl as? Double))
                             done()
                         }
                     }
@@ -1384,7 +1384,7 @@ class Auth : QuickSpec {
                         expect(httpBodyJSON).toNot(beNil(), description: "HTTPBody is empty")
                         expect(httpBodyJSON!["timestamp"]).toNot(beNil(), description: "HTTPBody has no timestamp")
                         
-                        let expectedJSON = ["ttl":NSString(format: "%f", CGFloat(60*60)), "capability":"{\"*\":[\"*\"]}", "timestamp":httpBodyJSON!["timestamp"]!]
+                        let expectedJSON = ["capability":"{\"*\":[\"*\"]}", "timestamp":httpBodyJSON!["timestamp"]!]
                         
                         expect(httpBodyJSON) == expectedJSON as NSDictionary
 
@@ -1476,6 +1476,7 @@ class Auth : QuickSpec {
                 it("using defaults") {
                     // Default values
                     let defaultTokenParams = ARTTokenParams(clientId: currentClientId)
+                    defaultTokenParams.ttl = ARTDefault.ttl() as NSNumber // Set by the server.
 
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.requestToken(nil, with: nil, callback: { tokenDetails, error in
@@ -1484,7 +1485,7 @@ class Auth : QuickSpec {
                             expect(tokenDetails?.issued).toNot(beNil())
                             expect(tokenDetails?.expires).toNot(beNil())
                             if let issued = tokenDetails?.issued, let expires = tokenDetails?.expires {
-                                expect(expires.timeIntervalSince(issued)).to(equal(defaultTokenParams.ttl))
+                                expect(expires.timeIntervalSince(issued)).to(equal(defaultTokenParams.ttl as? TimeInterval))
                             }
                             done()
                         })
@@ -1497,7 +1498,7 @@ class Auth : QuickSpec {
                     let expectedCapability = "{\"canpublish:*\":[\"publish\"]}"
 
                     let tokenParams = ARTTokenParams(clientId: currentClientId)
-                    tokenParams.ttl = expectedTtl
+                    tokenParams.ttl = NSNumber(value: expectedTtl)
                     tokenParams.capability = expectedCapability
 
                     waitUntil(timeout: testTimeout) { done in
@@ -1704,7 +1705,6 @@ class Auth : QuickSpec {
                 let rest = ARTRest(options: options)
 
                 let tokenParams = ARTTokenParams()
-                let defaultTtl = tokenParams.ttl
                 let defaultCapability = tokenParams.capability
 
                 waitUntil(timeout: testTimeout) { done in
@@ -1714,13 +1714,13 @@ class Auth : QuickSpec {
                             XCTFail("tokenRequest is nil"); done(); return
                         }
                         expect(tokenRequest.clientId).to(equal(options.clientId))
-                        expect(tokenRequest.ttl).to(equal(defaultTtl))
+                        expect(tokenRequest.ttl).to(beNil())
                         expect(tokenRequest.capability).to(equal(defaultCapability))
                         done()
                     }
                 }
 
-                tokenParams.ttl = ExpectedTokenParams.ttl
+                tokenParams.ttl = NSNumber(value: ExpectedTokenParams.ttl)
                 tokenParams.capability = ExpectedTokenParams.capability
                 tokenParams.clientId = nil
 
@@ -1746,7 +1746,7 @@ class Auth : QuickSpec {
                         expect(tokenRequest.clientId).to(beNil())
                         expect(tokenRequest.timestamp).to(beCloseTo(mockServerDate))
                         expect(serverTimeRequestCount) == 1
-                        expect(tokenRequest.ttl).to(equal(ExpectedTokenParams.ttl))
+                        expect(tokenRequest.ttl).to(equal(ExpectedTokenParams.ttl as NSNumber))
                         expect(tokenRequest.capability).to(equal(ExpectedTokenParams.capability))
                         done()
                     }
@@ -1897,7 +1897,7 @@ class Auth : QuickSpec {
                             XCTFail("TokenRequest is nil"); done(); return
                         }
                         expect(tokenRequest.clientId).to(beNil())
-                        expect(tokenRequest.ttl) == ARTDefault.ttl()
+                        expect(tokenRequest.ttl).to(beNil())
                         expect(tokenRequest.capability) == "{\"*\":[\"*\"]}"
                         done()
                     }
@@ -2026,46 +2026,54 @@ class Auth : QuickSpec {
                             XCTFail("TokenRequest is nil"); return
                         }
                         //In Seconds because TTL property is a NSTimeInterval but further it does the conversion to milliseconds
-                        expect(tokenRequest.ttl).to(equal(ARTDefault.ttl()))
+                        expect(tokenRequest.ttl).to(beNil())
                     })
 
                     let tokenParams = ARTTokenParams()
-                    expect(tokenParams.ttl).to(equal(ARTDefault.ttl()))
+                    expect(tokenParams.ttl).to(beNil())
 
                     let expectedTtl = TimeInterval(10)
-                    tokenParams.ttl = expectedTtl
+                    tokenParams.ttl = NSNumber(value: expectedTtl)
 
                     rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
                         expect(error).to(beNil())
                         guard let tokenRequest = tokenRequest else {
                             XCTFail("TokenRequest is nil"); return
                         }
-                        expect(tokenRequest.ttl).to(equal(expectedTtl))
+                        expect(tokenRequest.ttl as? TimeInterval).to(equal(expectedTtl))
                     })
                 }
 
                 it("should be specified in milliseconds") {
                     let rest = ARTRest(options: AblyTests.commonAppSetup())
 
-                    rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
+                    let params = ARTTokenParams()
+                    params.ttl = NSNumber(value: 42)
+                    rest.auth.createTokenRequest(params, options: nil, callback: { tokenRequest, error in
                         expect(error).to(beNil())
                         guard let tokenRequest = tokenRequest else {
                             XCTFail("TokenRequest is nil"); return
                         }
-                        expect(tokenRequest.ttl).to(equal(ARTDefault.ttl()))
+                        expect(tokenRequest.ttl as? TimeInterval).to(equal(42))
+
                         // Check if the encoder changes the TTL to milliseconds
                         let encoder = rest.defaultEncoder as! ARTJsonLikeEncoder
                         let data = try! encoder.encode(tokenRequest)
                         let jsonObject = (try! encoder.delegate!.decode(data)) as! NSDictionary
                         let ttl = jsonObject["ttl"] as! NSNumber
-                        expect(ttl as? Decimal).to(equal(60 * 60 * 1000))
+                        expect(ttl as? Int64).to(equal(42 * 1000))
+                        
+                        // Make sure it comes back the same.
+                        let decoded = try! encoder.decodeTokenRequest(data)
+                        expect(decoded.ttl as? TimeInterval).to(equal(42))
                     })
                 }
 
                 it("should be valid to request a token for 24 hours") {
                     let rest = ARTRest(options: AblyTests.commonAppSetup())
                     let tokenParams = ARTTokenParams()
-                    tokenParams.ttl *= 24
+                    let dayInSeconds = TimeInterval(24 * 60 * 60)
+                    tokenParams.ttl = dayInSeconds as NSNumber
 
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.requestToken(tokenParams, with: nil) { tokenDetails, error in
@@ -2073,8 +2081,7 @@ class Auth : QuickSpec {
                             guard let tokenDetails = tokenDetails else {
                                 XCTFail("TokenDetails is nil"); done(); return
                             }
-                            let dayInSeconds = 24 * 60 * 60
-                            expect(tokenDetails.expires!.timeIntervalSince(tokenDetails.issued!)).to(beCloseTo(Double(dayInSeconds)))
+                            expect(tokenDetails.expires!.timeIntervalSince(tokenDetails.issued!)).to(beCloseTo(dayInSeconds))
                             done()
                         }
                     }
@@ -2090,7 +2097,7 @@ class Auth : QuickSpec {
                 tokenParams.capability = "{ - }"
 
                 rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
-                    guard let error = error as? ARTErrorInfo else {
+                    guard let error = error else {
                         XCTFail("Error is nil"); return
                     }
                     expect(error.localizedDescription).to(contain("Capability"))
@@ -2143,7 +2150,7 @@ class Auth : QuickSpec {
                 let expectedClientId = "client_string"
                 let tokenParams = ARTTokenParams(clientId: expectedClientId)
                 let expectedTtl = 6.0
-                tokenParams.ttl = expectedTtl
+                tokenParams.ttl = NSNumber(value: expectedTtl)
                 let expectedCapability = "{}"
                 tokenParams.capability = expectedCapability
 
@@ -2168,7 +2175,7 @@ class Auth : QuickSpec {
                     expect(tokenRequest.clientId).to(equal(expectedClientId))
                     expect(tokenRequest.mac).toNot(beNil())
                     expect(tokenRequest.nonce.characters).to(haveCount(16))
-                    expect(tokenRequest.ttl).to(equal(expectedTtl))
+                    expect(tokenRequest.ttl as? TimeInterval).to(equal(expectedTtl))
                     expect(tokenRequest.capability).to(equal(expectedCapability))
                     expect(tokenRequest.timestamp).to(beCloseTo(serverTime!, within: 6.0))
                 })
@@ -2466,7 +2473,7 @@ class Auth : QuickSpec {
 
                     let tokenParams = ARTTokenParams()
                     tokenParams.clientId = ExpectedTokenParams.clientId
-                    tokenParams.ttl = ExpectedTokenParams.ttl
+                    tokenParams.ttl = ExpectedTokenParams.ttl as NSNumber
                     tokenParams.capability = ExpectedTokenParams.capability
 
                     waitUntil(timeout: testTimeout) { done in
@@ -2478,7 +2485,7 @@ class Auth : QuickSpec {
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        delay(tokenParams.ttl + 1.0) {
+                        delay(tokenParams.ttl as! TimeInterval + 1.0) {
                             rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                                 expect(error).to(beNil())
                                 guard let tokenDetails = tokenDetails else {
@@ -2499,14 +2506,14 @@ class Auth : QuickSpec {
 
                     let tokenParams = ARTTokenParams()
                     tokenParams.clientId = ExpectedTokenParams.clientId
-                    tokenParams.ttl = ExpectedTokenParams.ttl
+                    tokenParams.ttl = ExpectedTokenParams.ttl as NSNumber
                     tokenParams.capability = ExpectedTokenParams.capability
 
                     let authOptions = ARTAuthOptions()
                     var authCallbackCalled = 0
                     authOptions.authCallback = { tokenParams, completion in
                         expect(tokenParams.clientId) == ExpectedTokenParams.clientId
-                        expect(tokenParams.ttl) == ExpectedTokenParams.ttl
+                        expect(tokenParams.ttl as? TimeInterval) == ExpectedTokenParams.ttl
                         expect(tokenParams.capability) == ExpectedTokenParams.capability
                         authCallbackCalled += 1
                         completion(getTestTokenDetails(key: options.key), nil)
@@ -2574,7 +2581,7 @@ class Auth : QuickSpec {
 
                     let tokenParams = ARTTokenParams()
                     tokenParams.clientId = ExpectedTokenParams.clientId
-                    tokenParams.ttl = ExpectedTokenParams.ttl
+                    tokenParams.ttl = ExpectedTokenParams.ttl as NSNumber
                     tokenParams.capability = ExpectedTokenParams.capability
 
                     waitUntil(timeout: testTimeout) { done in
@@ -2686,6 +2693,45 @@ class Auth : QuickSpec {
                     }
                 }
 
+                // https://github.com/ably/ably-ios/issues/618
+                it("authUrl returning TokenRequest decodes TTL as expected") {
+                    let options = AblyTests.commonAppSetup()
+
+                    let rest = ARTRest(options: options)
+                    var tokenRequest: ARTTokenRequest!
+                    waitUntil(timeout: testTimeout) { done in
+                        let params = ARTTokenParams(clientId: "myClientId", nonce: "12345")
+                        expect(params.ttl).to(beNil())
+                        rest.auth.createTokenRequest(params, options: nil) { req, _ in
+                            expect(req!.ttl).to(beNil())
+                            tokenRequest = req!
+                            done()
+                        }
+                    }
+
+                    let encoder = ARTJsonLikeEncoder()
+                    encoder.delegate = ARTJsonEncoder()
+                    guard let tokenRequestJSON = String(data: try! encoder.encode(tokenRequest), encoding: .utf8) else {
+                        XCTFail("JSON Token Request is empty")
+                        return
+                    }
+
+                    options.authUrl = NSURL(string: "http://echo.ably.io")! as URL
+                    options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
+                    options.authParams?.append(NSURLQueryItem(name: "type", value: "json") as URLQueryItem)
+                    options.authParams?.append(NSURLQueryItem(name: "body", value: tokenRequestJSON as String) as URLQueryItem)
+                    options.key = nil
+
+                    waitUntil(timeout: testTimeout) { done in
+                        ARTRest(options: options).auth.authorize(nil, options: nil) { tokenDetails, error in
+                            expect(error).to(beNil())
+                            expect(tokenDetails).toNot(beNil())
+                            expect(tokenDetails?.clientId).to(equal("myClientId"))
+                            done()
+                        }
+                    }
+                }
+
                 it("authUrl with plain text") {
                     let token = getTestToken()
                     let options = ARTClientOptions()
@@ -2741,8 +2787,8 @@ class Auth : QuickSpec {
                             guard let expires = tokenDetails?.expires else {
                                 fail("TokenDetails.expires is nil"); done(); return
                             }
-                            expect(issued).to(beCloseTo(expires, within: tokenParams.ttl + 0.1))
-                            delay(tokenParams.ttl + 0.1) {
+                            expect(issued).to(beCloseTo(expires, within: tokenParams.ttl as! TimeInterval + 0.1))
+                            delay(tokenParams.ttl as! TimeInterval + 0.1) {
                                 done()
                             }
                         }
@@ -2950,7 +2996,7 @@ class Auth : QuickSpec {
                     }
 
                     // Custom
-                    tokenParams.ttl = ExpectedTokenParams.ttl
+                    tokenParams.ttl = ExpectedTokenParams.ttl as NSNumber
                     tokenParams.capability = ExpectedTokenParams.capability
                     tokenParams.clientId = nil
 
@@ -3007,7 +3053,7 @@ class Auth : QuickSpec {
                     let rest = ARTRest(options: options)
 
                     let testTokenParams = ARTTokenParams()
-                    testTokenParams.ttl = 0
+                    testTokenParams.ttl = nil
                     testTokenParams.clientId = nil
 
                     waitUntil(timeout: testTimeout) { done in
@@ -3404,7 +3450,7 @@ class Auth : QuickSpec {
                         expect(defaultTokenParamsCallCount) > 0
 
                         newTokenParams.timestamp = NSDate() as Date
-                        expect(newTokenParams.timestamp).toNot(equal(defaultTokenParams.timestamp))
+                        expect(newTokenParams.timestamp).toNot(beNil())
                         expect(defaultTokenParams.timestamp).to(beNil()) //remain nil
                         done()
                     }
@@ -3415,34 +3461,59 @@ class Auth : QuickSpec {
         describe("TokenRequest") {
             // TE6
             describe("fromJson") {
-                let json = "{" +
-                "    \"clientId\":\"myClientId\"," +
-                "    \"mac\":\"4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4=\"," +
-                "    \"capability\":\"{\\\"test\\\":[\\\"publish\\\"]}\"," +
-                "    \"ttl\":42000," +
-                "    \"timestamp\":1479087321934," +
-                "    \"keyName\":\"xxxxxx.yyyyyy\"," +
-                "    \"nonce\":\"7830658976108826\"" +
-                "}"
+                let cases = [
+                    "with TTL": (
+                        "{" +
+                        "    \"clientId\":\"myClientId\"," +
+                        "    \"mac\":\"4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4=\"," +
+                        "    \"capability\":\"{\\\"test\\\":[\\\"publish\\\"]}\"," +
+                        "    \"ttl\":42000," +
+                        "    \"timestamp\":1479087321934," +
+                        "    \"keyName\":\"xxxxxx.yyyyyy\"," +
+                        "    \"nonce\":\"7830658976108826\"" +
+                        "}",
+                        { (_ request: ARTTokenRequest) in
+                            expect(request.clientId).to(equal("myClientId"))
+                            expect(request.mac).to(equal("4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4="))
+                            expect(request.capability).to(equal("{\"test\":[\"publish\"]}"))
+                            expect(request.ttl as? TimeInterval).to(equal(TimeInterval(42)))
+                            expect(request.timestamp).to(equal(NSDate(timeIntervalSince1970: 1479087321.934) as Date))
+                            expect(request.keyName).to(equal("xxxxxx.yyyyyy"))
+                            expect(request.nonce).to(equal("7830658976108826"))
+                        }
+                    ),
+                    "without TTL": (
+                        "{" +
+                        "    \"mac\":\"4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4=\"," +
+                        "    \"capability\":\"{\\\"test\\\":[\\\"publish\\\"]}\"," +
+                        "    \"timestamp\":1479087321934," +
+                        "    \"keyName\":\"xxxxxx.yyyyyy\"," +
+                        "    \"nonce\":\"7830658976108826\"" +
+                        "}",
+                        { (_ request: ARTTokenRequest) in
+                            expect(request.clientId).to(beNil())
+                            expect(request.mac).to(equal("4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4="))
+                            expect(request.capability).to(equal("{\"test\":[\"publish\"]}"))
+                            expect(request.ttl).to(beNil())
+                            expect(request.timestamp).to(equal(NSDate(timeIntervalSince1970: 1479087321.934) as Date))
+                            expect(request.keyName).to(equal("xxxxxx.yyyyyy"))
+                            expect(request.nonce).to(equal("7830658976108826"))
+                        }
+                    )
+                ]
 
-                func check(_ request: ARTTokenRequest) {
-                    expect(request.clientId).to(equal("myClientId"))
-                    expect(request.mac).to(equal("4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4="))
-                    expect(request.capability).to(equal("{\"test\":[\"publish\"]}"))
-                    expect(request.ttl).to(equal(TimeInterval(42)))
-                    expect(request.timestamp).to(equal(NSDate(timeIntervalSince1970: 1479087321.934) as Date))
-                    expect(request.keyName).to(equal("xxxxxx.yyyyyy"))
-                    expect(request.nonce).to(equal("7830658976108826"))
-                }
+                for (caseName, (json, check)) in cases {
+                    context(caseName) {
+                        it("accepts a string, which should be interpreted as JSON") {
+                            check(try! ARTTokenRequest.fromJson(json as ARTJsonCompatible))
+                        }
 
-                it("accepts a string, which should be interpreted as JSON") {
-                    check(try! ARTTokenRequest.fromJson(json as ARTJsonCompatible))
-                }
-
-                it("accepts a NSDictionary") {
-                    let data = json.data(using: String.Encoding.utf8)!
-                    let dict = try! JSONSerialization.jsonObject(with: data, options: .mutableLeaves) as! NSDictionary
-                    check(try! ARTTokenRequest.fromJson(dict))
+                        it("accepts a NSDictionary") {
+                            let data = json.data(using: String.Encoding.utf8)!
+                            let dict = try! JSONSerialization.jsonObject(with: data, options: .mutableLeaves) as! NSDictionary
+                            check(try! ARTTokenRequest.fromJson(dict))
+                        }
+                    }
                 }
 
                 it("rejects invalid JSON") {
