@@ -20,9 +20,9 @@ ART_ASSUME_NONNULL_BEGIN
 @interface ARTTokenParams : NSObject
 
 /**
- Represents time to live (expiry) of this token in seconds.
+ Represents time to live (expiry) of this token as a NSTimeInterval.
  */
-@property (nonatomic, assign) NSTimeInterval ttl;
+@property (nonatomic, strong, nullable) NSNumber *ttl;
 
 /**
  Contains the capability JSON stringified.

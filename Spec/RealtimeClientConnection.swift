@@ -1871,7 +1871,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.autoConnect = false
                     options.authCallback = { tokenParams, callback in
                         delay(0) {
-                            callback(getTestTokenDetails(key: options.key, capability: tokenParams.capability, ttl: tokenParams.ttl), nil)
+                            callback(getTestTokenDetails(key: options.key, capability: tokenParams.capability, ttl: tokenParams.ttl as! TimeInterval?), nil)
                         }
                     }
                     let tokenTtl = 3.0
@@ -2665,7 +2665,7 @@ class RealtimeClientConnection: QuickSpec {
                         options.disconnectedRetryTimeout = 1.0
                         options.autoConnect = false
                         options.authCallback = { tokenParams, callback in
-                            callback(getTestTokenDetails(key: options.key, capability: tokenParams.capability, ttl: tokenParams.ttl), nil)
+                            callback(getTestTokenDetails(key: options.key, capability: tokenParams.capability, ttl: TimeInterval(tokenParams.ttl!)), nil)
                         }
                         let tokenTtl = 5.0
                         options.token = getTestToken(key: options.key, ttl: tokenTtl)

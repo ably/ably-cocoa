@@ -510,7 +510,7 @@ class RestClient: QuickSpec {
                             rest.httpExecutor = testHTTPExecutor
 
                             // Delay for token expiration
-                            delay(tokenParams.ttl) {
+                            delay(TimeInterval(tokenParams.ttl!)) {
                                 // [40140, 40150) - token expired and will not recover because authUrl is invalid
                                 publishTestMessage(rest) { error in
                                     guard let errorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String else {
@@ -559,7 +559,7 @@ class RestClient: QuickSpec {
                             rest.httpExecutor = testHTTPExecutor
 
                             // Delay for token expiration
-                            delay(tokenParams.ttl) {
+                            delay(TimeInterval(tokenParams.ttl!)) {
                                 // [40140, 40150) - token expired and will not recover because authUrl is invalid
                                 publishTestMessage(rest) { error in
                                     guard let errorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String else {

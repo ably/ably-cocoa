@@ -44,9 +44,9 @@ ART_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *capability;
 
 /**
- Represents time to live (expiry) of this token in seconds.
+ Represents time to live (expiry) of this token as a NSTimeInterval.
  */
-@property (nonatomic, assign) NSTimeInterval ttl;
+@property (nonatomic, strong, nullable) NSNumber *ttl;
 
 /**
  Timestamp (in millis since the epoch) of this request. Timestamps, in conjunction with the nonce, are used to prevent n requests from being replayed.

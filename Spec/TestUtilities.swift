@@ -447,7 +447,7 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
     }
     if let ttl = ttl {
         if tokenParams == nil { tokenParams = ARTTokenParams() }
-        tokenParams!.ttl = ttl
+        tokenParams!.ttl = NSNumber(value: ttl)
     }
     if let clientId = clientId {
         if tokenParams == nil { tokenParams = ARTTokenParams() }
