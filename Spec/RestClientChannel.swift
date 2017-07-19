@@ -252,7 +252,7 @@ class RestClientChannel: QuickSpec {
                     }
 
                     hook.remove()
-                    testHTTPExecutor.http = ARTHttp()
+                    testHTTPExecutor.http = ARTHttp(AblyTests.queue)
 
                     // Remains available
                     waitUntil(timeout: testTimeout) { done in
@@ -281,7 +281,7 @@ class RestClientChannel: QuickSpec {
                         channel.publish([message]) { error in
                             expect(error!.code).to(equal(Int(ARTState.mismatchedClientId.rawValue)))
 
-                            testHTTPExecutor.http = ARTHttp()
+                            testHTTPExecutor.http = ARTHttp(AblyTests.queue)
                             channel.history { page, error in
                                 expect(error).to(beNil())
                                 expect(page!.items).to(haveCount(0))

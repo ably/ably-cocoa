@@ -13,6 +13,8 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTURLSessionServerTrust : NSObject<NSURLSessionDelegate, NSURLSessionTaskDelegate>
 
+- (instancetype)init:(dispatch_queue_t)queue;
+
 - (void)get:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback;
 
 - (void)finishTasksAndInvalidate;

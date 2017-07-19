@@ -14,25 +14,35 @@
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTBaseMessage+Private.h"
 #import "ARTDataQuery.h"
+#import "ARTRest+Private.h"
 
-@implementation ARTChannel
+@implementation ARTChannel {
+    __weak ARTRest *_rest;
+}
 
-- (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options andLogger:(ARTLog *)logger {
+- (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options rest:(ARTRest *)rest {
     if (self = [super init]) {
         _name = name;
-        self.options = options;
+        _logger = rest.logger;
+        _rest = rest;
+        [self _setOptions:options];
         NSError *error;
         _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:_options.cipher error:&error];
         if (error != nil) {
-            [logger warn:@"creating ARTDataEncoder: %@", error];
+            [_logger warn:@"creating ARTDataEncoder: %@", error];
             _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:nil error:nil];
         }
-        _logger = logger;
     }
     return self;
 }
 
 - (void)setOptions:(ARTChannelOptions *)options {
+    dispatch_sync(_rest.queue, ^{
+        [self _setOptions:options];
+    });
+}
+
+- (void)_setOptions:(ARTChannelOptions *)options {
     if (!options) {
         _options = [[ARTChannelOptions alloc] initWithCipher:nil];
     } else {

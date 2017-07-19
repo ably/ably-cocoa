@@ -28,8 +28,8 @@
 - (instancetype)initWithRest:(ARTRest *)rest {
 ART_TRY_OR_REPORT_CRASH_START(rest) {
     if (self = [super init]) {
-        _channels = [[ARTChannels alloc] initWithDelegate:self];
         _rest = rest;
+        _channels = [[ARTChannels alloc] initWithDelegate:self dispatchQueue:_rest.queue];
     }
     return self;
 } ART_TRY_OR_REPORT_CRASH_END
@@ -69,6 +69,10 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [_channels release:name];
 } ART_TRY_OR_REPORT_CRASH_END
+}
+
+- (ARTRestChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions *)options {
+    return [_channels _getChannel:name options:options];
 }
 
 @end

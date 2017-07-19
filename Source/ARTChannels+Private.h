@@ -21,11 +21,23 @@ extern NSString* (^__art_nullable ARTChannels_getChannelNamePrefix)();
 
 @end
 
+@interface ARTChannelsNosyncIterable : NSObject<NSFastEnumeration>
+
+- (instancetype)init:(NSDictionary<NSString *, id> *)channels;
+
+@end
+
 @interface __GENERIC(ARTChannels, ChannelType) ()
 
 @property (nonatomic, readonly) __GENERIC(NSMutableDictionary, NSString *, ChannelType) *channels;
+@property (readonly, getter=getNosyncIterable) id<NSFastEnumeration> nosyncIterable;
 
-- (instancetype)initWithDelegate:(id<ARTChannelsDelegate>)delegate;
+- (BOOL)_exists:(NSString *)name;
+- (ChannelType)_get:(NSString *)name;
+- (ChannelType)_getChannel:(NSString *)name options:(ARTChannelOptions * _Nullable)options;
+- (void)_release:(NSString *)name;
+
+- (instancetype)initWithDelegate:(id<ARTChannelsDelegate>)delegate dispatchQueue:(dispatch_queue_t)queue;
 
 @end
 

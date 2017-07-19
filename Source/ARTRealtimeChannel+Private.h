@@ -18,6 +18,9 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimeChannel () <ARTPresenceMapDelegate>
 
+- (ARTRealtimeChannelState)state_nosync;
+- (ARTErrorInfo *)errorReason_nosync;
+
 @property (readonly, weak, nonatomic) ARTRealtime *realtime;
 @property (readonly, strong, nonatomic) ARTRestChannel *restChannel;
 @property (readwrite, strong, nonatomic) NSMutableArray *queuedMessages;
@@ -36,6 +39,9 @@ ART_ASSUME_NONNULL_BEGIN
 - (bool)isLastChannelSerial:(NSString *)channelSerial;
 
 - (void)reattachWithReason:(nullable ARTErrorInfo *)reason callback:(nullable void (^)(ARTErrorInfo *))callback;
+
+- (void)_attach:(void (^)(ARTErrorInfo * _Nullable))callback;
+- (void)_detach:(void (^)(ARTErrorInfo * _Nullable))callback;
 
 @end
 

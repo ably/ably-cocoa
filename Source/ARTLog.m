@@ -101,6 +101,7 @@ static const char *logLevelName(ARTLogLevel level) {
     NSMutableArray<ARTLogLine *> *_history;
     NSUInteger _historyLines;
     dispatch_queue_t _queue;
+    BOOL _shouldSaveBreadcrumbs;
 }
 
 - (instancetype)init {
@@ -122,6 +123,7 @@ static const char *logLevelName(ARTLogLevel level) {
         _historyLines = historyLines;
         _breadcrumbsKey = @"logger";
         _queue = dispatch_queue_create("io.ably.log", DISPATCH_QUEUE_SERIAL);
+        _shouldSaveBreadcrumbs = ![[NSProcessInfo processInfo].environment valueForKey:@"ARTUnitTests"];
     }
     return self;
 }
@@ -135,12 +137,14 @@ static const char *logLevelName(ARTLogLevel level) {
                 [_captured addObject:logLine];
             }
         }
-        [_history insertObject:logLine atIndex:0];
-        if (_history.count > _historyLines) {
-            [_history removeLastObject];
-        }
-        if (![[NSProcessInfo processInfo].environment valueForKey:@"ARTUnitTests"]) {
-            [ARTSentry setBreadcrumbs:_breadcrumbsKey value:_history];
+        if (_historyLines > 0) {
+            [_history insertObject:logLine atIndex:0];
+            if (_history.count > _historyLines) {
+                [_history removeLastObject];
+            }
+            if (_shouldSaveBreadcrumbs) {
+                [ARTSentry setBreadcrumbs:_breadcrumbsKey value:_history];
+            }
         }
     });
 }

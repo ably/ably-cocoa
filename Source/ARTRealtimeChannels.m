@@ -28,8 +28,8 @@
 - (instancetype)initWithRealtime:(ARTRealtime *)realtime {
 ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
     if (self = [super init]) {
-        _channels = [[ARTChannels alloc] initWithDelegate:self];
         _realtime = realtime;
+        _channels = [[ARTChannels alloc] initWithDelegate:self dispatchQueue:_realtime.rest.queue];
     }
     return self;
 } ART_TRY_OR_MOVE_TO_FAILED_END
@@ -70,25 +70,38 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         void (^userCallback)(ARTErrorInfo *__art_nullable error) = cb;
         cb = ^(ARTErrorInfo *__art_nullable error) {
             ART_EXITING_ABLY_CODE(_realtime.rest);
-            userCallback(error);
+            dispatch_async(_realtime.rest.userQueue, ^{
+                userCallback(error);
+            });
         };
     }
 
+dispatch_sync(_realtime.rest.queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
-    ARTRealtimeChannel *channel;
-    if ([self exists:name]) {
-        channel = [self get:name];
+    if (![_channels _exists:name]) {
+        if (cb) cb(nil);
+        return;
     }
-    if (channel) {
-        [channel detach:^(ARTErrorInfo *errorInfo) {
-            [channel off];
-            [channel unsubscribe];
-            [channel.presence unsubscribe];
-            [_channels release:name];
-            if (cb) cb(errorInfo);
-        }];
-    }
+
+    ARTRealtimeChannel *channel = [_channels _get:name];
+    [channel _detach:^(ARTErrorInfo *errorInfo) {
+        [channel off];
+        [channel unsubscribe];
+        [channel.presence unsubscribe];
+
+        // Only release if the stored channel now is the same as whne.
+        // Otherwise, subsequent calls to this release method race, and
+        // a new channel, created between the first call releases the stored
+        // one and the second call's detach callback is called, can be
+        // released unwillingly.
+        if ([_channels _exists:name] && [_channels _get:name] == channel) {
+            [_channels _release:name];
+        }
+
+        if (cb) cb(errorInfo);
+    }];
 } ART_TRY_OR_MOVE_TO_FAILED_END
+});
 }
 
 - (void)release:(NSString *)name {
@@ -101,6 +114,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return _channels.channels;
 } ART_TRY_OR_MOVE_TO_FAILED_END
+}
+
+- (id<NSFastEnumeration>)getNosyncIterable {
+    return [_channels getNosyncIterable];
+}
+
+- (ARTRealtimeChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions *)options {
+    return [_channels _getChannel:name options:options];
 }
 
 @end

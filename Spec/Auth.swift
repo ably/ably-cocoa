@@ -302,7 +302,7 @@ class Auth : QuickSpec {
                 }
 
                 // RSA4b
-                it("in Realtime, if the connection fails due to a terminal token error, then the connection should move to the FAILED state and reports the error") {
+                itt("in Realtime, if the connection fails due to a terminal token error, then the connection should move to the FAILED state and reports the error") {
                     let options = AblyTests.commonAppSetup()
                     options.authCallback = { tokenParams, completion in
                         let token = getTestToken()
@@ -836,10 +836,12 @@ class Auth : QuickSpec {
                 expect(tokenParams.capability) == "{\"*\":[\"*\"]}"
                 
                 let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-                
+                options.logLevel = .debug
+                let rest = ARTRest(options: options)
+
                 waitUntil(timeout: testTimeout) { done in
                     // Token
-                    ARTRest(options: options).auth.requestToken(tokenParams, with: options) { tokenDetails, error in
+                    rest.auth.requestToken(tokenParams, with: options) { tokenDetails, error in
                         if let e = error {
                             XCTFail((e as! ARTErrorInfo).description)
                         }

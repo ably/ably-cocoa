@@ -18,14 +18,19 @@
 
 @implementation ARTConnection {
     _Nonnull dispatch_queue_t _queue;
+    NSString *_id;
+    NSString *_key;
+    int64_t _serial;
+    ARTRealtimeConnectionState _state;
+    ARTErrorInfo *_errorReason;
 }
 
 - (instancetype)initWithRealtime:(ARTRealtime *)realtime {
 ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
     if (self = [super init]) {
-        _queue = dispatch_queue_create("io.ably.realtime.connection", DISPATCH_QUEUE_SERIAL);
-        _eventEmitter = [[ARTEventEmitter alloc] initWithQueue:_queue];
+        _eventEmitter = [[ARTPublicEventEmitter alloc] initWithRest:realtime.rest];
         _realtime = realtime;
+        _queue = _realtime.rest.queue;
         _serial = -1;
     }
     return self;
@@ -48,6 +53,66 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [_realtime ping:cb];
 } ART_TRY_OR_MOVE_TO_FAILED_END
+}
+
+- (NSString *)id {
+    __block NSString *ret;   
+dispatch_sync(_queue, ^{
+    ret = [self id_nosync];
+});
+    return ret;
+} 
+
+- (NSString *)key {
+    __block NSString *ret;   
+dispatch_sync(_queue, ^{
+    ret = [self key_nosync];
+});
+    return ret;
+} 
+
+- (int64_t)serial {
+    __block int64_t ret;   
+dispatch_sync(_queue, ^{
+    ret = [self serial_nosync];
+});
+    return ret;
+} 
+
+- (ARTRealtimeConnectionState)state {
+    __block ARTRealtimeConnectionState ret;   
+dispatch_sync(_queue, ^{
+    ret = [self state_nosync];
+});
+    return ret;
+}
+
+- (ARTErrorInfo *)errorReason {
+    __block ARTErrorInfo *ret;   
+dispatch_sync(_queue, ^{
+    ret = [self errorReason_nosync];
+});
+    return ret;
+}
+
+- (NSString *)id_nosync {
+    return _id;
+} 
+
+- (NSString *)key_nosync {
+    return _key;
+} 
+
+- (int64_t)serial_nosync {
+    return _serial;
+} 
+
+- (ARTRealtimeConnectionState)state_nosync {
+    return _state;
+}
+
+- (ARTErrorInfo *)errorReason_nosync {
+    return _errorReason;
 }
 
 - (void)setId:(NSString *)newId {
@@ -84,7 +149,16 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 }
 
 - (NSString *)getRecoveryKey {
+    __block NSString *ret;
+dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
+    ret = [self recoveryKey_nosync];
+} ART_TRY_OR_MOVE_TO_FAILED_END
+});
+    return ret;
+}
+
+- (NSString *)recoveryKey_nosync {
     switch(self.state) {
         case ARTRealtimeConnecting:
         case ARTRealtimeConnected:
@@ -99,7 +173,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         } default:
             return nil;
     }
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (ARTEventListener *)on:(ARTRealtimeConnectionEvent)event callback:(void (^)(ARTConnectionStateChange *))cb {

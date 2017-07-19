@@ -856,7 +856,7 @@ class RestClient: QuickSpec {
                         }
                     }
 
-                    testHTTPExecutor.http = ARTHttp()
+                    testHTTPExecutor.http = ARTHttp(AblyTests.queue)
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: "nil") { _ in
@@ -890,7 +890,7 @@ class RestClient: QuickSpec {
                         }
                     }
 
-                    testHTTPExecutor.http = ARTHttp()
+                    testHTTPExecutor.http = ARTHttp(AblyTests.queue)
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: "nil") { _ in
@@ -1318,7 +1318,8 @@ class RestClient: QuickSpec {
             it("client should handle error messages in plaintext and HTML format") {
                 let request = NSURLRequest(url: NSURL(string: "https://www.ably.io")! as URL)
                 waitUntil(timeout: testTimeout) { done in
-                    ARTRest(key: "xxxx:xxxx").execute(request as URLRequest, completion: { response, data, error in
+                    let rest = ARTRest(key: "xxxx:xxxx")
+                    rest.execute(request as URLRequest, completion: { response, data, error in
                         guard let contentType = response?.allHeaderFields["Content-Type"] as? String else {
                             fail("Response should have a Content-Type"); done(); return
                         }

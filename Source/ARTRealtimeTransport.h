@@ -51,6 +51,8 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
 
 @protocol ARTRealtimeTransportDelegate
 
+// All methods must be called from rest's serial queue.
+
 - (void)realtimeTransport:(id<ARTRealtimeTransport>)transport didReceiveMessage:(ARTProtocolMessage *)message;
 
 - (void)realtimeTransportAvailable:(id<ARTRealtimeTransport>)transport;
@@ -66,6 +68,8 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
 @end
 
 @protocol ARTRealtimeTransport
+
+// All methods must be called from rest's serial queue.
 
 - (instancetype)initWithRest:(ARTRest *)rest options:(ARTClientOptions *)options resumeKey:(nullable NSString *)resumeKey connectionSerial:(nullable NSNumber *)connectionSerial;
 

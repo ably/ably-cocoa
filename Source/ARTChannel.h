@@ -11,6 +11,7 @@
 #import "ARTDataEncoder.h"
 #import "ARTLog.h"
 
+@class ARTRest;
 @class ARTChannelOptions;
 @class ARTMessage;
 @class __GENERIC(ARTPaginatedResult, ItemType);
@@ -22,7 +23,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, readonly) NSString *name;
 
-- (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options andLogger:(ARTLog *)logger;
+- (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options rest:(ARTRest *)rest;
 
 - (void)publish:(art_nullable NSString *)name data:(art_nullable id)data;
 - (void)publish:(art_nullable NSString *)name data:(art_nullable id)data callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;

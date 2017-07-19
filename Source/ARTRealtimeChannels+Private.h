@@ -15,7 +15,9 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimeChannels ()
 
+@property (readonly, getter=getNosyncIterable) id<NSFastEnumeration> nosyncIterable;
 @property (nonatomic, readonly, getter=getCollection) __GENERIC(NSMutableDictionary, NSString *, ARTRealtimeChannel *) *collection;
+- (ARTRealtimeChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions * _Nullable)options;
 
 @end
 

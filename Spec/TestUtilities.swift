@@ -92,6 +92,8 @@ class AblyTests {
     static var testApplication: JSON?
     static fileprivate var setupOptionsCounter = 0
 
+    static var queue = DispatchQueue.global(qos: .userInitiated)
+
     class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false) -> ARTClientOptions {
         ARTChannels_getChannelNamePrefix = { "test-\(setupOptionsCounter)" }
         setupOptionsCounter += 1
@@ -454,7 +456,10 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
         tokenParams!.clientId = clientId
     }
 
-    client.auth.requestToken(tokenParams, with: nil, callback: completion)
+    client.auth.requestToken(tokenParams, with: nil) { details, error in
+        _ = client // Hold reference to client, since requestToken is async and will lost it.
+        completion(details, error)
+    }
 }
 
 func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil) -> ARTTokenDetails? {
@@ -571,6 +576,7 @@ class MockHTTP: ARTHttp {
 
     init(network: NetworkAnswer) {
         self.network = network
+        super.init(AblyTests.queue)
     }
 
     override public func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) {
@@ -626,7 +632,7 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
     }
     fileprivate var errorSimulator: ErrorSimulator?
 
-    var http: ARTHttp? = ARTHttp()
+    var http: ARTHttp? = ARTHttp(AblyTests.queue)
     var logger: ARTLog?
 
     var requests: [URLRequest] = []
