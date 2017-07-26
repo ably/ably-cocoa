@@ -2665,7 +2665,7 @@ class RealtimeClientConnection: QuickSpec {
                         options.disconnectedRetryTimeout = 1.0
                         options.autoConnect = false
                         options.authCallback = { tokenParams, callback in
-                            callback(getTestTokenDetails(key: options.key, capability: tokenParams.capability, ttl: TimeInterval(tokenParams.ttl!)), nil)
+                            callback(getTestTokenDetails(key: options.key, capability: tokenParams.capability, ttl: TimeInterval(60 * 60)), nil)
                         }
                         let tokenTtl = 5.0
                         options.token = getTestToken(key: options.key, ttl: tokenTtl)
@@ -3611,9 +3611,11 @@ class RealtimeClientConnection: QuickSpec {
                 // RTN22
                 it("Ably can request that a connected client re-authenticates by sending the client an AUTH ProtocolMessage") {
                     let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
                     options.useTokenAuth = true
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
+                    client.setTransport(TestProxyTransport.self)
                     let channel = client.channels.get("foo")
 
                     waitUntil(timeout: testTimeout) { done in
@@ -3621,6 +3623,7 @@ class RealtimeClientConnection: QuickSpec {
                             expect(error).to(beNil())
                             done()
                         }
+                        client.connect()
                     }
 
                     guard let initialConnectionId = client.connection.id else {
@@ -3629,6 +3632,10 @@ class RealtimeClientConnection: QuickSpec {
 
                     guard let initialToken = client.auth.tokenDetails?.token else {
                         fail("Initial token is nil"); return
+                    }
+
+                    guard let transport = client.transport as? TestProxyTransport else {
+                        fail("TestProxyTransport is not set"); return
                     }
 
                     waitUntil(timeout: testTimeout) { done in
@@ -3644,6 +3651,20 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     expect(client.connection.id).to(equal(initialConnectionId))
+                    expect(client.transport).to(beIdenticalTo(transport))
+
+                    let authMessages = transport.protocolMessagesSent.filter({ $0.action == .auth })
+                    expect(authMessages).to(haveCount(1))
+
+                    guard let authMessage = authMessages.first else {
+                        fail("Missing AUTH protocol message"); return
+                    }
+
+                    expect(authMessage.auth).toNot(beNil())
+
+                    guard let accessToken = authMessage.auth?.accessToken else {
+                        fail("Missing accessToken from AUTH ProtocolMessage auth attribute"); return
+                    }
 
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)

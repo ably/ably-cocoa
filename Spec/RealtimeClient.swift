@@ -412,6 +412,9 @@ class RealtimeClient: QuickSpec {
                             expect(accessToken).toNot(equal(firstToken))
                             expect(tokenDetails.token).toNot(equal(firstToken))
                             expect(tokenDetails.token).to(equal(accessToken))
+
+                            expect(client.transport).to(beIdenticalTo(transport))
+
                             done()
                         }
                     }
