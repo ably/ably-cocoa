@@ -18,6 +18,7 @@
 
 @implementation ARTChannel {
     __weak ARTRest *_rest;
+    dispatch_queue_t _queue;
 }
 
 - (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options rest:(ARTRest *)rest {
@@ -25,6 +26,7 @@
         _name = name;
         _logger = rest.logger;
         _rest = rest;
+        _queue = rest.queue;
         [self _setOptions:options];
         NSError *error;
         _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:_options.cipher error:&error];
@@ -37,7 +39,7 @@
 }
 
 - (void)setOptions:(ARTChannelOptions *)options {
-    dispatch_sync(_rest.queue, ^{
+    dispatch_sync(_queue, ^{
         [self _setOptions:options];
     });
 }

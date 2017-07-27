@@ -27,6 +27,8 @@
 
 @implementation ARTAuth {
     __weak ARTRest *_rest;
+    dispatch_queue_t _userQueue;
+    dispatch_queue_t _queue;
     ARTTokenParams *_tokenParams;
     // Dedicated to Protocol Message
     NSString *_protocolClientId;
@@ -36,6 +38,8 @@
 ART_TRY_OR_REPORT_CRASH_START(rest) {
     if (self = [super init]) {
         _rest = rest;
+        _userQueue = rest.userQueue;
+        _queue = rest.queue;
         _tokenDetails = options.tokenDetails;
         _options = options;
         _logger = rest.logger;
@@ -242,13 +246,13 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         void (^userCallback)(ARTTokenDetails *, NSError *) = callback;
         callback = ^(ARTTokenDetails *t, NSError *e) {
             ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_rest.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userCallback(t, e);
             });
         };
     }
 
-dispatch_async(_rest.queue, ^{
+dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [self _requestToken:tokenParams withOptions:authOptions callback:callback];
 } ART_TRY_OR_REPORT_CRASH_END
@@ -296,14 +300,14 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         if (replacedOptions.authCallback) {
             void (^userCallback)(ARTTokenParams *, void(^)(id<ARTTokenDetailsCompatible>, NSError *)) = ^(ARTTokenParams *tokenParams, void(^callback)(id<ARTTokenDetailsCompatible>, NSError *)){
                 ART_EXITING_ABLY_CODE(_rest);
-                dispatch_async(_rest.userQueue, ^{
+                dispatch_async(_userQueue, ^{
                     replacedOptions.authCallback(tokenParams, callback);
                 });
             };
 
             tokenDetailsFactory = ^(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *__art_nullable, NSError *__art_nullable)) {
                 userCallback(tokenParams, ^(id<ARTTokenDetailsCompatible> tokenDetailsCompat, NSError *error) {
-                    dispatch_async(_rest.queue, ^{
+                    dispatch_async(_queue, ^{
                     ART_TRY_OR_REPORT_CRASH_START(_rest) {
                         if (error) {
                             callback(nil, error);
@@ -420,13 +424,13 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         void (^userCallback)(ARTTokenDetails *, NSError *) = callback;
         callback = ^(ARTTokenDetails *t, NSError *e) {
             ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_rest.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userCallback(t, e);
             });
         };
     }
 
-dispatch_async(_rest.queue, ^{
+dispatch_async(_queue, ^{
     [self _authorize:tokenParams options:authOptions callback:callback];
 });
 }
@@ -511,13 +515,13 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         void (^userCallback)(ARTTokenRequest *, NSError *) = callback;
         callback = ^(ARTTokenRequest *t, NSError *e) {
             ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_rest.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userCallback(t, e);
             });
         };
     }
 
-dispatch_async(_rest.queue, ^{
+dispatch_async(_queue, ^{
     [self _createTokenRequest:tokenParams options:options callback:callback];
 });
 }
@@ -574,7 +578,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 
 - (NSString *)getClientId {
     __block NSString *clientId;
-dispatch_sync(_rest.queue, ^{
+dispatch_sync(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     clientId = self.clientId_nosync;
 } ART_TRY_OR_REPORT_CRASH_END
@@ -602,7 +606,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 
 - (void)discardTimeOffset {
 // Called from NSNotificationCenter, so must put change in the queue.
-dispatch_async(_rest.queue, ^{
+dispatch_sync(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     _timeOffset = 0;
 } ART_TRY_OR_REPORT_CRASH_END

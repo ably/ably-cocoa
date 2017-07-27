@@ -60,6 +60,8 @@
     __weak ARTEventListener *_connectionRetryFromDisconnectedListener;
     __weak ARTEventListener *_connectingTimeoutListener;
     dispatch_block_t _authenitcatingTimeoutWork;
+    dispatch_queue_t _userQueue;
+    dispatch_queue_t _queue;
 }
 
 @synthesize authorizationEmitter = _authorizationEmitter;
@@ -78,6 +80,8 @@
         NSAssert(options, @"ARTRealtime: No options provided");
         
         _rest = [[ARTRest alloc] initWithOptions:options realtime:self];
+        _userQueue = _rest.userQueue;
+        _queue = _rest.queue;
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         _internalEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
         _connectedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
@@ -218,7 +222,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)connect {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-dispatch_sync(_rest.queue, ^{
+dispatch_sync(_queue, ^{
     [self _connect];
 });
 } ART_TRY_OR_MOVE_TO_FAILED_END
@@ -234,7 +238,7 @@ dispatch_sync(_rest.queue, ^{
 
 - (void)close {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-dispatch_sync(_rest.queue, ^{
+dispatch_sync(_queue, ^{
     [self _close];
 });
 } ART_TRY_OR_MOVE_TO_FAILED_END
@@ -277,13 +281,13 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         void (^userCallback)(ARTErrorInfo *__art_nullable error) = cb;
         cb = ^(ARTErrorInfo *__art_nullable error) {
             ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_rest.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userCallback(error);
             });
         };
     }
 
-dispatch_async(_rest.queue, ^{
+dispatch_async(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     switch (self.connection.state_nosync) {
     case ARTRealtimeInitialized:

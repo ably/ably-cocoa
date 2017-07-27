@@ -35,6 +35,7 @@
 
 @implementation ARTRealtimePresence {
     __weak ARTRealtimeChannel *_channel;
+    dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
 }
 
@@ -42,6 +43,7 @@
 ART_TRY_OR_MOVE_TO_FAILED_START(channel.realtime) {
     if (self = [super init]) {
         _channel = channel;
+        _userQueue = channel.realtime.rest.userQueue;
         _queue = channel.realtime.rest.queue;
     }
     return self;
@@ -59,7 +61,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
         void (^userCallback)(NSArray<ARTPresenceMessage *> *, ARTErrorInfo *) = callback;
         callback = ^(NSArray<ARTPresenceMessage *> *m, ARTErrorInfo *e) {
             ART_EXITING_ABLY_CODE(_channel.realtime.rest);
-            dispatch_async(_channel.realtime.rest.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userCallback(m, e);
             });
         };
@@ -130,7 +132,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
         void (^userCallback)(ARTErrorInfo *__art_nullable error) = cb;
         cb = ^(ARTErrorInfo *__art_nullable error) {
             ART_EXITING_ABLY_CODE(_channel.realtime.rest);
-            dispatch_async(_channel.realtime.rest.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userCallback(error);
             });
         };
@@ -154,7 +156,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
         void (^userCallback)(ARTErrorInfo *__art_nullable error) = cb;
         cb = ^(ARTErrorInfo *__art_nullable error) {
             ART_EXITING_ABLY_CODE(_channel.realtime.rest);
-            dispatch_async(_channel.realtime.rest.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userCallback(error);
             });
         };
@@ -194,7 +196,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
         void (^userCallback)(ARTErrorInfo *__art_nullable error) = cb;
         cb = ^(ARTErrorInfo *__art_nullable error) {
             ART_EXITING_ABLY_CODE(_channel.realtime.rest);
-            dispatch_async(_channel.realtime.rest.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userCallback(error);
             });
         };
@@ -218,7 +220,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
         void (^userCallback)(ARTErrorInfo *__art_nullable error) = cb;
         cb = ^(ARTErrorInfo *__art_nullable error) {
             ART_EXITING_ABLY_CODE(_channel.realtime.rest);
-            dispatch_async(_channel.realtime.rest.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userCallback(error);
             });
         };
@@ -258,7 +260,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
         void (^userCallback)(ARTErrorInfo *__art_nullable error) = cb;
         cb = ^(ARTErrorInfo *__art_nullable error) {
             ART_EXITING_ABLY_CODE(_channel.realtime.rest);
-            dispatch_async(_channel.realtime.rest.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userCallback(error);
             });
         };
@@ -286,7 +288,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
         void (^userCallback)(ARTErrorInfo *__art_nullable error) = cb;
         cb = ^(ARTErrorInfo *__art_nullable error) {
             ART_EXITING_ABLY_CODE(_channel.realtime.rest);
-            dispatch_async(_channel.realtime.rest.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userCallback(error);
             });
         };
@@ -340,7 +342,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
         void (^userCallback)(ARTPresenceMessage *__art_nullable m) = cb;
         cb = ^(ARTPresenceMessage *__art_nullable m) {
             ART_EXITING_ABLY_CODE(_channel.realtime.rest);
-            dispatch_async(_channel.realtime.rest.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userCallback(m);
             });
         };
@@ -349,7 +351,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
         void (^userOnAttach)(ARTErrorInfo *__art_nullable m) = onAttach;
         onAttach = ^(ARTErrorInfo *__art_nullable m) {
             ART_EXITING_ABLY_CODE(_channel.realtime.rest);
-            dispatch_async(_channel.realtime.rest.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userOnAttach(m);
             });
         };
@@ -380,7 +382,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
         void (^userCallback)(ARTPresenceMessage *__art_nullable m) = cb;
         cb = ^(ARTPresenceMessage *__art_nullable m) {
             ART_EXITING_ABLY_CODE(_channel.realtime.rest);
-            dispatch_async(_channel.realtime.rest.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userCallback(m);
             });
         };
@@ -389,7 +391,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
         void (^userOnAttach)(ARTErrorInfo *__art_nullable m) = onAttach;
         onAttach = ^(ARTErrorInfo *__art_nullable m) {
             ART_EXITING_ABLY_CODE(_channel.realtime.rest);
-            dispatch_async(_channel.realtime.rest.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userOnAttach(m);
             });
         };

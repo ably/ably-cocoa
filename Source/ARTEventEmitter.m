@@ -298,12 +298,14 @@
 @implementation ARTPublicEventEmitter {
     __weak ARTRest *_rest;
     dispatch_queue_t _queue;
+    dispatch_queue_t _userQueue;
 }
 
 - (instancetype)initWithRest:(ARTRest *)rest {
     if (self = [super initWithQueue:rest.queue]) {
         _rest = rest;
         _queue = rest.queue;
+        _userQueue = rest.userQueue;
     }
     return self;
 }
@@ -313,7 +315,7 @@
         void (^userCallback)(id __art_nullable) = cb;
         cb = ^(id __art_nullable v) {
             ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_rest.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userCallback(v);
             });
         };
@@ -331,7 +333,7 @@ dispatch_sync(_queue, ^{
         void (^userCallback)(id __art_nullable) = cb;
         cb = ^(id __art_nullable v) {
             ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_rest.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userCallback(v);
             });
         };
@@ -349,7 +351,7 @@ dispatch_sync(_queue, ^{
         void (^userCallback)(id __art_nullable) = cb;
         cb = ^(id __art_nullable v) {
             ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_rest.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userCallback(v);
             });
         };
@@ -367,7 +369,7 @@ dispatch_sync(_queue, ^{
         void (^userCallback)(id __art_nullable) = cb;
         cb = ^(id __art_nullable v) {
             ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_rest.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userCallback(v);
             });
         };

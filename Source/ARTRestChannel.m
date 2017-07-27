@@ -24,6 +24,8 @@
 @implementation ARTRestChannel {
 @private
     ARTRestPresence *_restPresence;
+    dispatch_queue_t _queue;
+    dispatch_queue_t _userQueue;
 @public
     NSString *_basePath;
 }
@@ -32,6 +34,8 @@
 ART_TRY_OR_REPORT_CRASH_START(rest) {
     if (self = [super initWithName:name andOptions:options rest:rest]) {
         _rest = rest;
+        _queue = rest.queue;
+        _userQueue = rest.userQueue;
         _basePath = [NSString stringWithFormat:@"/channels/%@", [name stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]]];
         [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p instantiating under '%@'", self, name];
     }
@@ -72,12 +76,14 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         void (^userCallback)(__GENERIC(ARTPaginatedResult, ARTMessage *) *result, ARTErrorInfo *error) = callback;
         callback = ^(__GENERIC(ARTPaginatedResult, ARTMessage *) *result, ARTErrorInfo *error) {
             ART_EXITING_ABLY_CODE(_rest);
-            userCallback(result, error);
+            dispatch_async(_userQueue, ^{
+                userCallback(result, error);
+            });
         };
     }
 
     __block BOOL ret;
-dispatch_sync(_rest.queue, ^{
+dispatch_sync(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (query.limit > 1000) {
         if (errorPtr) {
@@ -129,11 +135,13 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         void (^userCallback)(ARTErrorInfo *__art_nullable error) = callback;
         callback = ^(ARTErrorInfo *__art_nullable error) {
             ART_EXITING_ABLY_CODE(_rest);
-            userCallback(error);
+            dispatch_async(_userQueue, ^{
+                userCallback(error);
+            });
         };
     }
 
-dispatch_async(_rest.queue, ^{
+dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSData *encodedMessage = nil;
     

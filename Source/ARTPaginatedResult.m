@@ -14,6 +14,8 @@
 
 @implementation ARTPaginatedResult {
     __weak ARTRest *_rest;
+    dispatch_queue_t _userQueue;
+    dispatch_queue_t _queue;
     NSMutableURLRequest *_relFirst;
     NSMutableURLRequest *_relCurrent;
     NSMutableURLRequest *_relNext;
@@ -38,6 +40,8 @@
         _isLast = !_hasNext;
         
         _rest = rest;
+        _userQueue = rest.userQueue;
+        _queue = rest.queue;
         _responseProcessor = responseProcessor;
     }
     
@@ -50,7 +54,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         void (^userCallback)(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error) = callback;
         callback = ^(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error) {
             ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_rest.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userCallback(result, error);
             });
         };
@@ -66,7 +70,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         void (^userCallback)(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error) = callback;
         callback = ^(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error) {
             ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_rest.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userCallback(result, error);
             });
         };

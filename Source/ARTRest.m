@@ -377,7 +377,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         void (^userCallback)(NSDate *time, NSError *error) = callback;
         callback = ^(NSDate *time, NSError *error) {
             ART_EXITING_ABLY_CODE(self);
-            dispatch_async(self.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userCallback(time, error);
             });
         };
@@ -436,7 +436,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         void (^userCallback)(__GENERIC(ARTPaginatedResult, ARTStats *) *, ARTErrorInfo *) = callback;
         callback = ^(__GENERIC(ARTPaginatedResult, ARTStats *) *r, ARTErrorInfo *e) {
             ART_EXITING_ABLY_CODE(self);
-            dispatch_async(self.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userCallback(r, e);
             });
         };

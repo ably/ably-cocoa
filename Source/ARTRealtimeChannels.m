@@ -23,13 +23,17 @@
 
 @implementation ARTRealtimeChannels {
     ARTChannels *_channels;
+    dispatch_queue_t _userQueue;
+    dispatch_queue_t _queue;
 }
 
 - (instancetype)initWithRealtime:(ARTRealtime *)realtime {
 ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
     if (self = [super init]) {
         _realtime = realtime;
-        _channels = [[ARTChannels alloc] initWithDelegate:self dispatchQueue:_realtime.rest.queue];
+        _userQueue = _realtime.rest.userQueue;
+        _queue = _realtime.rest.queue;
+        _channels = [[ARTChannels alloc] initWithDelegate:self dispatchQueue:_queue];
     }
     return self;
 } ART_TRY_OR_MOVE_TO_FAILED_END
@@ -70,13 +74,13 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         void (^userCallback)(ARTErrorInfo *__art_nullable error) = cb;
         cb = ^(ARTErrorInfo *__art_nullable error) {
             ART_EXITING_ABLY_CODE(_realtime.rest);
-            dispatch_async(_realtime.rest.userQueue, ^{
+            dispatch_async(_userQueue, ^{
                 userCallback(error);
             });
         };
     }
 
-dispatch_sync(_realtime.rest.queue, ^{
+dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     if (![_channels _exists:name]) {
         if (cb) cb(nil);
