@@ -806,13 +806,15 @@ class RealtimeClientPresence: QuickSpec {
                                         }
                                     }
                                     // Re-entered automatically
-                                    channel.presence.subscribe(.enter) { enter in
-                                        // The members re-entered automatically must be removed from the internal PresenceMap,
-                                        //so it must be a different object
-                                        expect(enter).toNot(beIdenticalTo(localMember))
-                                        expect(enter.clientId) == localMember.clientId
-                                        expect(enter.connectionId) == localMember.connectionId
-                                        partialDone()
+                                    AblyTests.queue.async {
+                                        channel.presence.subscribe(.enter) { enter in
+                                            // The members re-entered automatically must be removed from the internal PresenceMap,
+                                            //so it must be a different object
+                                            expect(enter).toNot(beIdenticalTo(localMember))
+                                            expect(enter.clientId) == localMember.clientId
+                                            expect(enter.connectionId) == localMember.connectionId
+                                            partialDone()
+                                        }
                                     }
                                 }
                             }
@@ -974,10 +976,12 @@ class RealtimeClientPresence: QuickSpec {
                                 transport.replaceAcksWithNacks(reEnterError) { _ in }
 
                                 // Re-entered automatically should fail
-                                channel.presence.subscribe(.enter) { enter in
-                                    fail("Should not Enter the local member")
+                                AblyTests.queue.async {
+                                    channel.presence.subscribe(.enter) { enter in
+                                        fail("Should not Enter the local member")
+                                    }
+                                    partialDone()
                                 }
-                                partialDone()
                             }
 
                             channel.once(.update) { stateChange in
@@ -1057,6 +1061,7 @@ class RealtimeClientPresence: QuickSpec {
                         options.clientId = "tester"
                         options.tokenDetails = getTestTokenDetails(key: options.key!, clientId: options.clientId, ttl: 5.0)
                         let client = AblyTests.newRealtime(options)
+                        let transport = client.transport as! TestProxyTransport
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("foo")
                         waitUntil(timeout: testTimeout) { done in
@@ -1090,7 +1095,6 @@ class RealtimeClientPresence: QuickSpec {
                                     expect(error).to(beNil())
                                     partialDone()
                                 }
-                                expect(channel.queuedMessages.count) == 1
                             }
                             channel.once(.attached) { stateChange in
                                 expect(stateChange?.reason).to(beNil())
@@ -2196,23 +2200,25 @@ class RealtimeClientPresence: QuickSpec {
                         channel.presenceMap.testSuite_injectIntoMethod(after: #selector(ARTPresenceMap.startSync)) {
                             expect(channel.presenceMap.syncInProgress).to(beTrue())
 
-                            channel.presence.subscribe(.leave) { leave in
-                                expect(leave.clientId).to(equal("user11"))
-                                expect(channel.presenceMap.members.filter{ _, presence in presence.action == .leave }).to(beEmpty())
-                                expect(channel.presenceMap.members.filter{ _, presence in presence.action == .absent }).to(haveCount(1))
-                                partialDone()
+                            AblyTests.queue.async {
+                                channel.presence.subscribe(.leave) { leave in
+                                    expect(leave.clientId).to(equal("user11"))
+                                    expect(channel.presenceMap.members.filter{ _, presence in presence.action == .leave }).to(beEmpty())
+                                    expect(channel.presenceMap.members.filter{ _, presence in presence.action == .absent }).to(haveCount(1))
+                                    partialDone()
+                                }
+                                
+                                // Inject a fabricated Presence message
+                                let leaveMessage = ARTProtocolMessage()
+                                leaveMessage.action = .presence
+                                leaveMessage.channel = channel.name
+                                leaveMessage.connectionSerial = client.connection.serial_nosync() + 1
+                                leaveMessage.timestamp = NSDate() as Date
+                                leaveMessage.presence = [
+                                    ARTPresenceMessage(clientId: "user11", action: .leave, connectionId: "another", id: "another:123:0", timestamp: NSDate() as Date)
+                                ]
+                                transport.receive(leaveMessage)
                             }
-
-                            // Inject a fabricated Presence message
-                            let leaveMessage = ARTProtocolMessage()
-                            leaveMessage.action = .presence
-                            leaveMessage.channel = channel.name
-                            leaveMessage.connectionSerial = client.connection.serial + 1
-                            leaveMessage.timestamp = NSDate() as Date
-                            leaveMessage.presence = [
-                                ARTPresenceMessage(clientId: "user11", action: .leave, connectionId: "another", id: "another:123:0", timestamp: NSDate() as Date)
-                            ]
-                            transport.receive(leaveMessage)
                         }
                         channel.presenceMap.testSuite_injectIntoMethod(before: #selector(ARTPresenceMap.endSync)) {
                             expect(channel.presenceMap.members.filter{ _, presence in presence.action == .absent }).to(haveCount(1))
@@ -3751,7 +3757,7 @@ class RealtimeClientPresence: QuickSpec {
                 let transport = client.transport as! TestProxyTransport
                 transport.beforeProcessingReceivedMessage = { protocolMessage in
                     if protocolMessage.action == .sync {
-                        expect(channel.presence.getSyncComplete).to(beFalse())
+                        expect(channel.presence.getSyncComplete_nosync()).to(beFalse())
                     }
                 }
 

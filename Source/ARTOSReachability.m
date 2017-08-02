@@ -21,11 +21,13 @@
     NSString *_host;
     void (^_callback)(BOOL);
     SCNetworkReachabilityRef _reachabilityRef;
+    dispatch_queue_t _queue;
 }
 
-- (instancetype)initWithLogger:(ARTLog *)logger {
+- (instancetype)initWithLogger:(ARTLog *)logger queue:(dispatch_queue_t)queue {
     if (self = [super init]) {
         _logger = logger;
+        _queue = queue;
         if (ARTOSReachability_instances == nil) {
             ARTOSReachability_instances = [[NSMutableDictionary alloc] init];
         }
@@ -83,7 +85,9 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
 
 - (void)internalCallback:(BOOL)reachable {
     [_logger info:@"Reachability: host %@: %d", _host, reachable];
-    _callback(reachable);
+    dispatch_async(_queue, ^{
+        _callback(reachable);
+    });
 }
 
 - (void)dealloc {

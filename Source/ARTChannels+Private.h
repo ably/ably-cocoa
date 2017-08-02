@@ -32,9 +32,11 @@ extern NSString* (^__art_nullable ARTChannels_getChannelNamePrefix)();
 @property (nonatomic, readonly) __GENERIC(NSMutableDictionary, NSString *, ChannelType) *channels;
 @property (readonly, getter=getNosyncIterable) id<NSFastEnumeration> nosyncIterable;
 
++ (NSString *)addPrefix:(NSString *)name;
+
 - (BOOL)_exists:(NSString *)name;
 - (ChannelType)_get:(NSString *)name;
-- (ChannelType)_getChannel:(NSString *)name options:(ARTChannelOptions * _Nullable)options;
+- (ChannelType)_getChannel:(NSString *)name options:(ARTChannelOptions * _Nullable)options addPrefix:(BOOL)addPrefix;
 - (void)_release:(NSString *)name;
 
 - (instancetype)initWithDelegate:(id<ARTChannelsDelegate>)delegate dispatchQueue:(dispatch_queue_t)queue;

@@ -248,16 +248,10 @@
 }
 
 - (void)emit:(id<ARTEventIdentification>)event with:(id)data {
-    NSString *eventId;
     if (event) {
-        eventId = [NSString stringWithFormat:@"%p-%@", self, [event identification]];
-        [self.notificationCenter postNotificationName:eventId object:data];
-        [self.notificationCenter postNotificationName:[NSString stringWithFormat:@"%p", self] object:data];
+        [self.notificationCenter postNotificationName:[NSString stringWithFormat:@"%p-%@", self, [event identification]] object:data];
     }
-    else {
-        eventId = [NSString stringWithFormat:@"%p", self];
-        [self.notificationCenter postNotificationName:eventId object:data];
-    }
+    [self.notificationCenter postNotificationName:[NSString stringWithFormat:@"%p", self] object:data];
 }
 
 - (void)addObject:(id)obj toArrayWithKey:(id)key inDictionary:(NSMutableDictionary *)dict {
@@ -380,6 +374,28 @@ dispatch_sync(_queue, ^{
     listener = [super once:cb];
 });
     return listener;
+}
+
+- (void)off:(id<ARTEventIdentification>)event listener:(ARTEventListener *)listener {
+dispatch_sync(_queue, ^{
+    [super off:event listener:listener];
+});
+}
+
+- (void)off:(ARTEventListener *)listener {
+dispatch_sync(_queue, ^{
+    [super off:listener];
+});
+}
+
+- (void)off {
+dispatch_sync(_queue, ^{
+    [super off];
+});
+}
+
+- (void)off_nosync {
+    [super off];
 }
 
 @end

@@ -39,6 +39,8 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)_authorize:(art_nullable ARTTokenParams *)tokenParams options:(art_nullable ARTAuthOptions *)authOptions
          callback:(void (^)(ARTTokenDetails *__art_nullable, NSError *__art_nullable))callback;
 
+- (void)_requestToken:(ARTTokenParams *__art_nullable)tokenParams withOptions:(ARTAuthOptions *__art_nullable)authOptions callback:(void (^)(ARTTokenDetails *__art_nullable, NSError *__art_nullable))callback;
+
 @end
 
 @interface ARTAuth (Private)

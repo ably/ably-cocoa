@@ -18,6 +18,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) ARTDataEncoder *dataEncoder;
 
 - (void)internalPostMessages:(id)data callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;
+- (void)_setOptions:(ARTChannelOptions *__art_nullable)options;
 
 @end
 

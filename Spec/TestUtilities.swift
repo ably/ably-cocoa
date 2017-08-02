@@ -92,7 +92,8 @@ class AblyTests {
     static var testApplication: JSON?
     static fileprivate var setupOptionsCounter = 0
 
-    static var queue = DispatchQueue.global(qos: .userInitiated)
+    static var queue = DispatchQueue(label: "io.ably.tests", qos: .userInitiated)
+    static var userQueue = DispatchQueue(label: "io.ably.tests.callbacks", qos: .userInitiated)
 
     class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false) -> ARTClientOptions {
         ARTChannels_getChannelNamePrefix = { "test-\(setupOptionsCounter)" }
@@ -130,6 +131,8 @@ class AblyTests {
         
         let key = app["keys"][0]
         options.key = key["keyStr"].stringValue
+        options.dispatchQueue = userQueue
+        options.internalDispatchQueue = queue
         return options
     }
     
@@ -144,15 +147,14 @@ class AblyTests {
         if debug {
             options.logLevel = .debug
         }
-        else {
-            options.logLevel = .info
-        }
         if let key = key {
             options.key = key
         }
         if requestToken {
             options.token = getTestToken()
         }
+        options.dispatchQueue = userQueue
+        options.internalDispatchQueue = queue
         return options
     }
 
@@ -419,12 +421,12 @@ class PublishTestMessage {
 }
 
 /// Access Token
-func getTestToken(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil) -> String {
+func getTestToken(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, file: FileString = #file, line: UInt = #line) -> String {
     if let tokenDetails = getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl) {
         return tokenDetails.token
     }
     else {
-        XCTFail("TokenDetails is empty")
+        fail("TokenDetails is empty", file: file, line: line)
         return ""
     }
 }
@@ -457,12 +459,12 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
     }
 
     client.auth.requestToken(tokenParams, with: nil) { details, error in
-        _ = client // Hold reference to client, since requestToken is async and will lost it.
+        _ = client // Hold reference to client, since requestToken is async and will lose it.
         completion(details, error)
     }
 }
 
-func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil) -> ARTTokenDetails? {
+func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, file: FileString = #file, line: UInt = #line) -> ARTTokenDetails? {
     var tokenDetails: ARTTokenDetails?
     var error: Error?
 
@@ -471,12 +473,17 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
         error = _error
     }
 
+    let start = Date()
     while tokenDetails == nil && error == nil {
         CFRunLoopRunInMode(CFRunLoopMode.defaultMode, CFTimeInterval(0.1), Bool(0))
+        if Date().timeIntervalSince(start) >= testTimeout {
+            fail("getTestTokenDetails: timeout", file: file, line: line)
+            return nil
+        }
     }
 
     if let e = error {
-        XCTFail(e.localizedDescription)
+        fail(e.localizedDescription, file: file, line: line)
     }
     return tokenDetails
 }
@@ -1228,8 +1235,11 @@ extension String {
 @objc class TestReachability : NSObject, ARTReachability {
     var host: String?
     var callback: ((Bool) -> Void)?
+    var queue: DispatchQueue
 
-    required init(logger: ARTLog) {}
+    required init(logger: ARTLog, queue: DispatchQueue) {
+        self.queue = queue
+    }
 
     func listen(forHost host: String, callback: @escaping (Bool) -> Void) {
         self.host = host
@@ -1242,6 +1252,8 @@ extension String {
     }
 
     func simulate(_ reachable: Bool) {
-        self.callback!(reachable)
+        self.queue.async {
+            self.callback!(reachable)
+        }
     }
 }

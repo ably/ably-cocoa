@@ -50,6 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTPublicEventEmitter<EventType:id<ARTEventIdentification>, ItemType> : ARTEventEmitter<EventType, ItemType>
 
 - (instancetype)initWithRest:(ARTRest *)rest;
+- (void)off_nosync;
 
 @end
 

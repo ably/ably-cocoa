@@ -71,7 +71,7 @@ dispatch_async(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     [_channel throwOnDisconnectedOrFailed];
 
-    switch (_channel.state) {
+    switch (_channel.state_nosync) {
         case ARTRealtimeChannelFailed:
         case ARTRealtimeChannelDetached:
             if (callback) callback(nil, [ARTErrorInfo createWithCode:0 message:@"invalid channel state"]);
@@ -266,15 +266,23 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
         };
     }
 
-dispatch_async(_queue, ^{
+    __block ARTException *exception = nil;
+dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
-    if (!_channel.clientId) {
+@try {
+    if (!_channel.clientId_nosync) {
         if (cb) cb([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
         return;
     }
     [self leaveAfterChecks:nil data:data callback:cb];
+} @catch (ARTException *e) {
+    exception = e;
+}
 } ART_TRY_OR_MOVE_TO_FAILED_END
 });
+    if (exception) {
+        @throw exception;
+    }
 }
 
 - (void)leaveClient:(NSString *)clientId data:(id)data {
@@ -294,7 +302,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
         };
     }
 
-dispatch_async(_queue, ^{
+dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     if (!clientId) {
         if (cb) cb([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
@@ -307,7 +315,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
 
 - (void)leaveAfterChecks:(NSString *__art_nullable)clientId data:(id)data callback:(void (^)(ARTErrorInfo *))cb {
 ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
-    if (!clientId || [clientId isEqualToString:_channel.clientId]) {
+    if (!clientId || [clientId isEqualToString:_channel.clientId_nosync]) {
         if(_channel.lastPresenceAction != ARTPresenceEnter && _channel.lastPresenceAction != ARTPresenceUpdate) {
             [ARTException raise:@"Cannot leave a channel before you've entered it" format:@""];
         }
@@ -325,10 +333,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     __block BOOL ret;
 dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
-    ret = _channel.presenceMap.syncComplete;
+    ret = [self getSyncComplete_nosync];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 });
     return ret;
+}
+
+- (BOOL)getSyncComplete_nosync {
+    return _channel.presenceMap.syncComplete;
 }
 
 - (ARTEventListener *)subscribe:(void (^)(ARTPresenceMessage * _Nonnull))callback {
@@ -360,7 +372,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     __block ARTEventListener *listener = nil;
 dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
-    if (_channel.state == ARTRealtimeChannelFailed) {
+    if (_channel.state_nosync == ARTRealtimeChannelFailed) {
         if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
         return;
     }
@@ -398,9 +410,9 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     }
 
     __block ARTEventListener *listener = nil;
-dispatch_async(_queue, ^{
+dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
-    if (_channel.state == ARTRealtimeChannelFailed) {
+    if (_channel.state_nosync == ARTRealtimeChannelFailed) {
         if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
         return;
     }
@@ -412,21 +424,31 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
 }
 
 - (void)unsubscribe {
+dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
-    [_channel.presenceEventEmitter off];
+    [self _unsubscribe];
 } ART_TRY_OR_MOVE_TO_FAILED_END
+});
+}
+
+- (void)_unsubscribe {
+    [_channel.presenceEventEmitter off];
 }
 
 - (void)unsubscribe:(ARTEventListener *)listener {
+dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     [_channel.presenceEventEmitter off:listener];
 } ART_TRY_OR_MOVE_TO_FAILED_END
+});
 }
 
 - (void)unsubscribe:(ARTPresenceAction)action listener:(ARTEventListener *)listener {
+dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     [_channel.presenceEventEmitter off:[ARTEvent newWithPresenceAction:action] listener:listener];
 } ART_TRY_OR_MOVE_TO_FAILED_END
+});
 }
 
 @end

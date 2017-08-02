@@ -74,8 +74,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         }
 
     ART_TRY_OR_REPORT_CRASH_START(self) {
-        _queue = dispatch_queue_create("io.ably.main", DISPATCH_QUEUE_SERIAL);
-        dispatch_set_target_queue(_queue, options.internalDispatchQueue);
+        _queue = options.internalDispatchQueue;
         _userQueue = options.dispatchQueue;
         _http = [[ARTHttp alloc] init:_queue];
         [_logger verbose:__FILE__ line:__LINE__ message:@"RS:%p %p alloc HTTP", self, _http];
@@ -206,7 +205,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         }
         else {
             // New Token
-            [self.auth authorize:nil options:self.options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+            [self.auth _authorize:nil options:self.options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
                 if (error) {
                     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p ARTRest reissuing token failed %@", self, error];
                     if (callback) callback(nil, nil, error);

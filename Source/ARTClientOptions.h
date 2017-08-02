@@ -101,9 +101,9 @@ ART_ASSUME_NONNULL_BEGIN
 
 /**
  The queue to which all internal concurrent operations will be dispatched.
- It will be used as target queue for an internal, serial queue.
+ It must be a serial queue. It shouldn't be the same queue as dispatchQueue.
 
- It defaults to the global queue with QOS_CLASS_BACKGROUND.
+ It defaults to a newly created serial queue.
  */
 @property (readwrite, assign, nonatomic) dispatch_queue_t internalDispatchQueue;
 

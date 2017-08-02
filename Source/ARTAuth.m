@@ -64,6 +64,10 @@ ART_TRY_OR_REPORT_CRASH_START(rest) {
 }
 
 - (void)dealloc {
+    [self removeTimeOffsetObserver];
+}
+
+- (void)removeTimeOffsetObserver {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:NSCurrentLocaleDidChangeNotification object:nil];
     #ifdef TARGET_OS_IPHONE
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationSignificantTimeChangeNotification object:nil];
@@ -235,10 +239,8 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 }
 
 - (void)requestToken:(void (^)(ARTTokenDetails *, NSError *))callback {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     // If the object arguments are omitted, the client library configured defaults are used
     [self requestToken:_tokenParams withOptions:_options callback:callback];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)requestToken:(ARTTokenParams *)tokenParams withOptions:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
@@ -533,7 +535,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     currentTokenParams.timestamp = [self currentDate];
 
     // Validate: Capability JSON text
-    NSError *errorCapability;
+    NSError *errorCapability = nil;
     [NSJSONSerialization JSONObjectWithData:[currentTokenParams.capability dataUsingEncoding:NSUTF8StringEncoding] options:0 error:&errorCapability];
 
     if (errorCapability) {
@@ -605,6 +607,17 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 }
 
 - (void)discardTimeOffset {
+    // This may run after dealloc has been called in _rest. I've seen this
+    // happen when rest.auth is put in a variable, even if (apparently) that
+    // variable doesn't outlive rest! See commit 5a354524 for a reproducible
+    // example, by running the Auth.swift tests. Instruments reports a memory
+    // leak, but I wasn't able to get to why it happens after a full day. So
+    // I'm just adding this check.
+    if (!_rest) {
+        [self removeTimeOffsetObserver];
+        return;
+    }
+
 // Called from NSNotificationCenter, so must put change in the queue.
 dispatch_sync(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {

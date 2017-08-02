@@ -245,7 +245,7 @@ class RealtimeClientChannel: QuickSpec {
 
                         let attachedMessage = ARTProtocolMessage()
                         attachedMessage.action = .attached
-                        attachedMessage.channel = "foo"
+                        attachedMessage.channel = channel.name
                         client.transport?.receive(attachedMessage)
                     }
                 }
@@ -383,7 +383,7 @@ class RealtimeClientChannel: QuickSpec {
 
                     let attachedMessage = ARTProtocolMessage()
                     attachedMessage.action = .attached
-                    attachedMessage.channel = "test"
+                    attachedMessage.channel = channel.name
                     attachedMessage.flags = 4 //Resumed
 
                     waitUntil(timeout: testTimeout) { done in
@@ -1391,7 +1391,7 @@ class RealtimeClientChannel: QuickSpec {
                     let start = NSDate()
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
                     expect(channel.errorReason).toNot(beNil())
-                    expect(callbackCalled).to(beTrue())
+                    expect(callbackCalled).toEventually(beTrue(), timeout: testTimeout)
                     let end = NSDate()
                     expect(start.addingTimeInterval(1.0)).to(beCloseTo(end, within: 0.5))
                 }
@@ -2794,10 +2794,10 @@ class RealtimeClientChannel: QuickSpec {
                             try channel.history(query, callback: { _, _ in })
                         }
                         catch let error as NSError {
-                            if (error as? ARTErrorInfo)?.code == ARTRealtimeHistoryError.notAttached.rawValue {
-                                return
+                            if error.code != ARTRealtimeHistoryError.notAttached.rawValue {
+                                fail("Shouldn't raise a global error, got \(error)")
                             }
-                            fail("Shouldn't raise a global error, got \(error)")
+                            return
                         }
                         fail("Should raise an error")
                     }
@@ -3002,7 +3002,7 @@ class RealtimeClientChannel: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         let attachedMessage = ARTProtocolMessage()
                         attachedMessage.action = .attached
-                        attachedMessage.channel = "test"
+                        attachedMessage.channel = channel.name
 
                         hook = channel.testSuite_injectIntoMethod(after: #selector(channel.onChannelMessage(_:))) {
                             done()
@@ -3018,7 +3018,7 @@ class RealtimeClientChannel: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         let attachedMessageWithError = AblyTests.newErrorProtocolMessage()
                         attachedMessageWithError.action = .attached
-                        attachedMessageWithError.channel = "test"
+                        attachedMessageWithError.channel = channel.name
 
                         channel.once(.update) { stateChange in
                             guard let stateChange = stateChange else {
@@ -3061,7 +3061,7 @@ class RealtimeClientChannel: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             let detachedMessageWithError = AblyTests.newErrorProtocolMessage()
                             detachedMessageWithError.action = .detached
-                            detachedMessageWithError.channel = "foo"
+                            detachedMessageWithError.channel = channel.name
 
                             channel.once(.attaching) { stateChange in
                                 guard let error = stateChange?.reason  else {
@@ -3115,7 +3115,7 @@ class RealtimeClientChannel: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             let detachedMessageWithError = AblyTests.newErrorProtocolMessage()
                             detachedMessageWithError.action = .detached
-                            detachedMessageWithError.channel = "foo"
+                            detachedMessageWithError.channel = channel.name
 
                             channel.once(.attaching) { stateChange in
                                 guard let error = stateChange?.reason  else {
@@ -3158,7 +3158,7 @@ class RealtimeClientChannel: QuickSpec {
 
                         let detachedMessageWithError = AblyTests.newErrorProtocolMessage()
                         detachedMessageWithError.action = .detached
-                        detachedMessageWithError.channel = "foo"
+                        detachedMessageWithError.channel = channel.name
 
                         waitUntil(timeout: testTimeout) { done in
                             channel.once(.attaching) { stateChange in
@@ -3204,7 +3204,7 @@ class RealtimeClientChannel: QuickSpec {
 
                         let detachedMessageWithError = AblyTests.newErrorProtocolMessage()
                         detachedMessageWithError.action = .detached
-                        detachedMessageWithError.channel = "foo"
+                        detachedMessageWithError.channel = channel.name
 
                         waitUntil(timeout: testTimeout) { done in
                             let partialDone = AblyTests.splitDone(2, done: done)
@@ -3257,7 +3257,7 @@ class RealtimeClientChannel: QuickSpec {
                         transport.actionsIgnored = [.attached]
                         let detachedMessageWithError = AblyTests.newErrorProtocolMessage()
                         detachedMessageWithError.action = .detached
-                        detachedMessageWithError.channel = "foo"
+                        detachedMessageWithError.channel = channel.name
                         waitUntil(timeout: testTimeout) { done in
                             channel.once(.attaching) { stateChange in
                                 guard let error = stateChange?.reason  else {
@@ -3308,7 +3308,7 @@ class RealtimeClientChannel: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         let errorProtocolMessage = AblyTests.newErrorProtocolMessage()
                         errorProtocolMessage.action = .error
-                        errorProtocolMessage.channel = "foo"
+                        errorProtocolMessage.channel = channel.name
 
                         channel.once(.failed) { stateChange in
                             guard let error = stateChange?.reason else {

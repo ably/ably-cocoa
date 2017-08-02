@@ -11,6 +11,7 @@
 #import "ARTChannels+Private.h"
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTRealtime+Private.h"
+#import "ARTRealtimePresence+Private.h"
 
 @interface ARTRealtimeChannels ()
 
@@ -40,36 +41,28 @@ ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
 }
 
 - (id)makeChannel:(NSString *)name options:(ARTChannelOptions *)options {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return [ARTRealtimeChannel channelWithRealtime:_realtime andName:name withOptions:options];
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(__unsafe_unretained id  _Nonnull *)buffer count:(NSUInteger)len {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return [_channels countByEnumeratingWithState:state objects:buffer count:len];
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (ARTRealtimeChannel *)get:(NSString *)name {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return [_channels get:name];
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (ARTRealtimeChannel *)get:(NSString *)name options:(ARTChannelOptions *)options {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return [_channels get:name options:options];
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (BOOL)exists:(NSString *)name {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return [_channels exists:name];
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)release:(NSString *)name callback:(void (^)(ARTErrorInfo * _Nullable))cb {
+    name = [ARTChannels addPrefix:name];
+
     if (cb) {
         void (^userCallback)(ARTErrorInfo *__art_nullable error) = cb;
         cb = ^(ARTErrorInfo *__art_nullable error) {
@@ -89,9 +82,9 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
     ARTRealtimeChannel *channel = [_channels _get:name];
     [channel _detach:^(ARTErrorInfo *errorInfo) {
-        [channel off];
-        [channel unsubscribe];
-        [channel.presence unsubscribe];
+        [channel off_nosync];
+        [channel _unsubscribe];
+        [channel.presence _unsubscribe];
 
         // Only release if the stored channel now is the same as whne.
         // Otherwise, subsequent calls to this release method race, and
@@ -109,9 +102,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 }
 
 - (void)release:(NSString *)name {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [self release:name callback:nil];
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (NSMutableDictionary *)getCollection {
@@ -124,8 +115,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return [_channels getNosyncIterable];
 }
 
-- (ARTRealtimeChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions *)options {
-    return [_channels _getChannel:name options:options];
+- (ARTRealtimeChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions *)options addPrefix:(BOOL)addPrefix {
+    return [_channels _getChannel:name options:options addPrefix:addPrefix];
 }
 
 @end

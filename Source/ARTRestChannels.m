@@ -71,8 +71,8 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (ARTRestChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions *)options {
-    return [_channels _getChannel:name options:options];
+- (ARTRestChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions *)options addPrefix:(BOOL)addPrefix {
+    return [_channels _getChannel:name options:options addPrefix:addPrefix];
 }
 
 @end

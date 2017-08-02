@@ -205,27 +205,17 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 }
 
 - (void)dealloc {
-ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p dealloc", self];
 
-    if (_connection) {
-        [_connection off];
-    }
-
-    if (_internalEventEmitter) {
-        [_internalEventEmitter off];
-    }
-
     self.rest.prioritizedHost = nil;
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)connect {
-ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 dispatch_sync(_queue, ^{
+ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     [self _connect];
-});
 } ART_TRY_OR_MOVE_TO_FAILED_END
+});
 }
 
 - (void)_connect {
@@ -237,11 +227,11 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)close {
-ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 dispatch_sync(_queue, ^{
+ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     [self _close];
-});
 } ART_TRY_OR_MOVE_TO_FAILED_END
+});
 }
 
 - (void)_close {
@@ -385,7 +375,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             _connectingTimeoutListener = stateChangeEventListener;
 
             if (!_reachability) {
-                _reachability = [[_reachabilityClass alloc] initWithLogger:self.logger];
+                _reachability = [[_reachabilityClass alloc] initWithLogger:self.logger queue:_queue];
             }
 
             if (!_transport) {
@@ -510,8 +500,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         [self sendQueuedMessages];
         // For every Channel
         for (ARTRealtimeChannel* channel in self.channels.nosyncIterable) {
-            if (channel.state == ARTRealtimeChannelSuspended) {
-                [channel attach];
+            if (channel.state_nosync == ARTRealtimeChannelSuspended) {
+                [channel _attach:nil];
             }
         }
     } else if (![self shouldQueueEvents]) {
@@ -871,7 +861,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     if (message.channel == nil) {
         return;
     }
-    ARTRealtimeChannel *channel = [self.channels _getChannel:message.channel options:nil];
+    ARTRealtimeChannel *channel = [self.channels _getChannel:message.channel options:nil addPrefix:false];
     [channel onChannelMessage:message];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }

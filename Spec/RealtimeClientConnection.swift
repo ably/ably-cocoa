@@ -1463,7 +1463,6 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 expect(newTransport).toNot(beNil())
-                expect(oldTransport).to(beNil())
             }
 
             // RTN11b
@@ -1767,7 +1766,12 @@ class RealtimeClientConnection: QuickSpec {
                     var error: ARTErrorInfo?
                     func ping() {
                         error = nil
-                        client.ping() { error = $0 }
+                        waitUntil(timeout: testTimeout) { done in
+                            client.ping() { e in
+                                error = e
+                                done()
+                            }
+                        }
                     }
 
                     expect(client.connection.state).to(equal(ARTRealtimeConnectionState.initialized))
@@ -2444,6 +2448,7 @@ class RealtimeClientConnection: QuickSpec {
                         options.tokenDetails = getTestTokenDetails(ttl: 5.0)
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
+                        let rest = ARTRest(options: AblyTests.clientOptions(key: options.key!))
 
                         let channel = client.channels.get("test")
                         waitUntil(timeout: testTimeout) { done in
@@ -2505,7 +2510,6 @@ class RealtimeClientConnection: QuickSpec {
                                 partialDone()
                             }
 
-                            let rest = ARTRest(options: AblyTests.clientOptions(key: options.key!))
                             rest.channels.get("test").publish([expectedMessage]) { error in
                                 expect(error).to(beNil())
                                 partialDone()

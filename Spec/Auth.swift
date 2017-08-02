@@ -302,7 +302,7 @@ class Auth : QuickSpec {
                 }
 
                 // RSA4b
-                itt("in Realtime, if the connection fails due to a terminal token error, then the connection should move to the FAILED state and reports the error") {
+                it("in Realtime, if the connection fails due to a terminal token error, then the connection should move to the FAILED state and reports the error") {
                     let options = AblyTests.commonAppSetup()
                     options.authCallback = { tokenParams, completion in
                         let token = getTestToken()
@@ -403,8 +403,10 @@ class Auth : QuickSpec {
                                 }
                             }
 
-                            // Token reauth will fail
-                            realtime.options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
+                            AblyTests.queue.sync {
+                                // Token reauth will fail
+                                realtime.options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
+                            }
 
                             // Inject AUTH
                             let authMessage = ARTProtocolMessage()
@@ -556,10 +558,12 @@ class Auth : QuickSpec {
 
                             // Token should renew and fail
                             let invalidToken = String(token.characters.reversed())
-                            realtime.options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
-                            realtime.options.authParams?.append(NSURLQueryItem(name: "type", value: "json") as URLQueryItem)
-                            let invalidTokenFormat = "{secret_token:xxx}"
-                            realtime.options.authParams?.append(NSURLQueryItem(name: "body", value: invalidTokenFormat) as URLQueryItem)
+                                AblyTests.queue.sync {
+                                realtime.options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
+                                realtime.options.authParams?.append(NSURLQueryItem(name: "type", value: "json") as URLQueryItem)
+                                let invalidTokenFormat = "{secret_token:xxx}"
+                                realtime.options.authParams?.append(NSURLQueryItem(name: "body", value: invalidTokenFormat) as URLQueryItem)
+                            }
 
                             realtime.connection.on() { stateChange in
                                 guard let stateChange = stateChange else {
@@ -656,7 +660,9 @@ class Auth : QuickSpec {
                             // Inject AUTH
                             let authMessage = ARTProtocolMessage()
                             authMessage.action = ARTProtocolMessageAction.auth
-                            realtime.transport?.receive(authMessage)
+                            AblyTests.queue.sync {
+                                realtime.transport?.receive(authMessage)
+                            }
 
                             expect(realtime.connection.errorReason).toEventuallyNot(beNil(), timeout: testTimeout)
                             guard let errorInfo = realtime.connection.errorReason else {
@@ -918,7 +924,8 @@ class Auth : QuickSpec {
                     options.clientId = "john"
                     options.authCallback = { tokenParams, completion in
                         expect(tokenParams.clientId).to(equal(options.clientId))
-                        completion(getTestToken(clientId: tokenParams.clientId) as ARTTokenDetailsCompatible?, nil)
+                        let token = getTestToken(clientId: tokenParams.clientId) as ARTTokenDetailsCompatible?
+                        completion(token, nil)
                     }
                     options.defaultTokenParams = ARTTokenParams(clientId: "tester")
                     let client = ARTRest(options: options)
@@ -1193,7 +1200,7 @@ class Auth : QuickSpec {
                 it("query will provide a token string") {
                     let testToken = getTestToken()
 
-                    let options = ARTClientOptions()
+                    let options = AblyTests.clientOptions()
                     options.authUrl = NSURL(string: "http://echo.ably.io") as URL?
                     expect(options.authUrl).toNot(beNil())
                     // Plain text
@@ -1530,9 +1537,10 @@ class Auth : QuickSpec {
                         expect(tokenParams.clientId).to(beNil())
                         completion("token_string" as ARTTokenDetailsCompatible?, nil)
                     }
+                    let rest = ARTRest(options: options)
 
                     waitUntil(timeout: testTimeout) { done in
-                        ARTRest(options: options).auth.requestToken(expectedTokenParams, with: nil) { tokenDetails, error in
+                        rest.auth.requestToken(expectedTokenParams, with: nil) { tokenDetails, error in
                             expect(error).to(beNil())
                             expect(tokenDetails!.token).to(equal("token_string"))
                             done()
@@ -1548,9 +1556,10 @@ class Auth : QuickSpec {
                         expect(tokenParams.clientId).to(beNil())
                         completion(ARTTokenDetails(token: "token_from_details"), nil)
                     }
+                    let rest = ARTRest(options: options)
 
                     waitUntil(timeout: testTimeout) { done in
-                        ARTRest(options: options).auth.requestToken(expectedTokenParams, with: nil) { tokenDetails, error in
+                        rest.auth.requestToken(expectedTokenParams, with: nil) { tokenDetails, error in
                             expect(error).to(beNil())
                             expect(tokenDetails!.token).to(equal("token_from_details"))
                             done()
@@ -1734,7 +1743,7 @@ class Auth : QuickSpec {
                 rest.auth.testSuite_returnValue(for: NSSelectorFromString("handleServerTime:"), with: mockServerDate as Date)
 
                 var serverTimeRequestCount = 0
-                let hook = rest.testSuite_injectIntoMethod(after: #selector(rest.time(_:))) {
+                let hook = rest.testSuite_injectIntoMethod(after: #selector(rest._time(_:))) {
                     serverTimeRequestCount += 1
                 }
                 defer { hook.remove() }
@@ -1874,7 +1883,7 @@ class Auth : QuickSpec {
                 authOptions.key = options.key
 
                 var serverTimeRequestCount = 0
-                let hook = rest.testSuite_injectIntoMethod(after: #selector(rest.time(_:))) {
+                let hook = rest.testSuite_injectIntoMethod(after: #selector(rest._time(_:))) {
                     serverTimeRequestCount += 1
                 }
                 defer { hook.remove() }
@@ -1914,16 +1923,19 @@ class Auth : QuickSpec {
                 let expectedClientId = "client_string"
                 let tokenParams = ARTTokenParams(clientId: expectedClientId)
 
-                rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
-                    expect(error).to(beNil())
-                    guard let tokenRequest = tokenRequest else {
-                        XCTFail("TokenRequest is nil"); return
-                    }
-                    expect(tokenRequest).to(beAnInstanceOf(ARTTokenRequest.self))
-                    expect(tokenRequest.clientId).to(equal(expectedClientId))
-                    expect(tokenRequest.mac).toNot(beNil())
-                    expect(tokenRequest.nonce).toNot(beNil())
-                })
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
+                        defer { done() }
+                        expect(error).to(beNil())
+                        guard let tokenRequest = tokenRequest else {
+                            XCTFail("TokenRequest is nil"); return
+                        }
+                        expect(tokenRequest).to(beAnInstanceOf(ARTTokenRequest.self))
+                        expect(tokenRequest.clientId).to(equal(expectedClientId))
+                        expect(tokenRequest.mac).toNot(beNil())
+                        expect(tokenRequest.nonce).toNot(beNil())
+                    })
+                }
             }
 
             // RSA9b
@@ -1933,13 +1945,16 @@ class Auth : QuickSpec {
 
                 let authOptions = ARTAuthOptions(key: "key:secret")
 
-                auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
-                    expect(error).to(beNil())
-                    guard let tokenRequest = tokenRequest else {
-                        XCTFail("TokenRequest is nil"); return
-                    }
-                    expect(tokenRequest.keyName).to(equal("key"))
-                })
+                waitUntil(timeout: testTimeout) { done in
+                    auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
+                        defer { done() }
+                        expect(error).to(beNil())
+                        guard let tokenRequest = tokenRequest else {
+                            XCTFail("TokenRequest is nil"); return
+                        }
+                        expect(tokenRequest.keyName).to(equal("key"))
+                    })
+                }
             }
 
             // RSA9c
@@ -1977,13 +1992,16 @@ class Auth : QuickSpec {
                 it("from current time if not provided") {
                     let rest = ARTRest(options: AblyTests.commonAppSetup())
 
-                    rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
-                        expect(error).to(beNil())
-                        guard let tokenRequest = tokenRequest else {
-                            XCTFail("TokenRequest is nil"); return
-                        }
-                        expect(tokenRequest.timestamp).to(beCloseTo(NSDate(), within: 1.0))
-                    })
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
+                            defer { done() }
+                            expect(error).to(beNil())
+                            guard let tokenRequest = tokenRequest else {
+                                XCTFail("TokenRequest is nil"); return
+                            }
+                            expect(tokenRequest.timestamp).to(beCloseTo(NSDate(), within: 1.0))
+                        })
+                    }
                 }
 
                 it("will retrieve the server time if queryTime is true") {
@@ -1996,7 +2014,7 @@ class Auth : QuickSpec {
 
                     let hook = ARTRest.aspect_hook(rest)
                     // Adds a block of code after `time` is triggered
-                    let _ = try? hook(#selector(ARTRest.time(_:)), .positionBefore, unsafeBitCast(block, to: ARTRest.self))
+                    let _ = try? hook(#selector(ARTRest._time(_:)), .positionBefore, unsafeBitCast(block, to: ARTRest.self))
 
                     let authOptions = ARTAuthOptions()
                     authOptions.queryTime = true
@@ -2022,14 +2040,17 @@ class Auth : QuickSpec {
                 it("should be optional") {
                     let rest = ARTRest(options: AblyTests.commonAppSetup())
 
-                    rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
-                        expect(error).to(beNil())
-                        guard let tokenRequest = tokenRequest else {
-                            XCTFail("TokenRequest is nil"); return
-                        }
-                        //In Seconds because TTL property is a NSTimeInterval but further it does the conversion to milliseconds
-                        expect(tokenRequest.ttl).to(beNil())
-                    })
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
+                            defer { done() }
+                            expect(error).to(beNil())
+                            guard let tokenRequest = tokenRequest else {
+                                XCTFail("TokenRequest is nil"); return
+                            }
+                            //In Seconds because TTL property is a NSTimeInterval but further it does the conversion to milliseconds
+                            expect(tokenRequest.ttl).to(beNil())
+                        })
+                    }
 
                     let tokenParams = ARTTokenParams()
                     expect(tokenParams.ttl).to(beNil())
@@ -2037,13 +2058,16 @@ class Auth : QuickSpec {
                     let expectedTtl = TimeInterval(10)
                     tokenParams.ttl = NSNumber(value: expectedTtl)
 
-                    rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
-                        expect(error).to(beNil())
-                        guard let tokenRequest = tokenRequest else {
-                            XCTFail("TokenRequest is nil"); return
-                        }
-                        expect(tokenRequest.ttl as? TimeInterval).to(equal(expectedTtl))
-                    })
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
+                            defer { done() }
+                            expect(error).to(beNil())
+                            guard let tokenRequest = tokenRequest else {
+                                XCTFail("TokenRequest is nil"); return
+                            }
+                            expect(tokenRequest.ttl as? TimeInterval).to(equal(expectedTtl))
+                        })
+                    }
                 }
 
                 it("should be specified in milliseconds") {
@@ -2051,24 +2075,27 @@ class Auth : QuickSpec {
 
                     let params = ARTTokenParams()
                     params.ttl = NSNumber(value: 42)
-                    rest.auth.createTokenRequest(params, options: nil, callback: { tokenRequest, error in
-                        expect(error).to(beNil())
-                        guard let tokenRequest = tokenRequest else {
-                            XCTFail("TokenRequest is nil"); return
-                        }
-                        expect(tokenRequest.ttl as? TimeInterval).to(equal(42))
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.auth.createTokenRequest(params, options: nil, callback: { tokenRequest, error in
+                            defer { done() }
+                            expect(error).to(beNil())
+                            guard let tokenRequest = tokenRequest else {
+                                XCTFail("TokenRequest is nil"); return
+                            }
+                            expect(tokenRequest.ttl as? TimeInterval).to(equal(42))
 
-                        // Check if the encoder changes the TTL to milliseconds
-                        let encoder = rest.defaultEncoder as! ARTJsonLikeEncoder
-                        let data = try! encoder.encode(tokenRequest)
-                        let jsonObject = (try! encoder.delegate!.decode(data)) as! NSDictionary
-                        let ttl = jsonObject["ttl"] as! NSNumber
-                        expect(ttl as? Int64).to(equal(42 * 1000))
-                        
-                        // Make sure it comes back the same.
-                        let decoded = try! encoder.decodeTokenRequest(data)
-                        expect(decoded.ttl as? TimeInterval).to(equal(42))
-                    })
+                            // Check if the encoder changes the TTL to milliseconds
+                            let encoder = rest.defaultEncoder as! ARTJsonLikeEncoder
+                            let data = try! encoder.encode(tokenRequest)
+                            let jsonObject = (try! encoder.delegate!.decode(data)) as! NSDictionary
+                            let ttl = jsonObject["ttl"] as! NSNumber
+                            expect(ttl as? Int64).to(equal(42 * 1000))
+                            
+                            // Make sure it comes back the same.
+                            let decoded = try! encoder.decodeTokenRequest(data)
+                            expect(decoded.ttl as? TimeInterval).to(equal(42))
+                        })
+                    }
                 }
 
                 it("should be valid to request a token for 24 hours") {
@@ -2098,13 +2125,16 @@ class Auth : QuickSpec {
                 let tokenParams = ARTTokenParams()
                 tokenParams.capability = "{ - }"
 
-                rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
-                    guard let error = error else {
-                        XCTFail("Error is nil"); return
-                    }
-                    expect(error.localizedDescription).to(contain("Capability"))
-                    expect(tokenRequest?.capability).to(beNil())
-                })
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
+                        defer { done() }
+                        guard let error = error else {
+                            XCTFail("Error is nil"); return
+                        }
+                        expect(error.localizedDescription).to(contain("Capability"))
+                        expect(tokenRequest?.capability).to(beNil())
+                    })
+                }
 
                 let expectedCapability = "{ \"cansubscribe:*\":[\"subscribe\"] }"
                 tokenParams.capability = expectedCapability
@@ -2169,18 +2199,21 @@ class Auth : QuickSpec {
                 }
                 expect(serverTime).toNot(beNil(), description: "Server time is nil")
 
-                rest.auth.createTokenRequest(tokenParams, options: authOptions, callback: { tokenRequest, error in
-                    expect(error).to(beNil())
-                    guard let tokenRequest = tokenRequest else {
-                        XCTFail("TokenRequest is nil"); return
-                    }
-                    expect(tokenRequest.clientId).to(equal(expectedClientId))
-                    expect(tokenRequest.mac).toNot(beNil())
-                    expect(tokenRequest.nonce.characters).to(haveCount(16))
-                    expect(tokenRequest.ttl as? TimeInterval).to(equal(expectedTtl))
-                    expect(tokenRequest.capability).to(equal(expectedCapability))
-                    expect(tokenRequest.timestamp).to(beCloseTo(serverTime!, within: 6.0))
-                })
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.createTokenRequest(tokenParams, options: authOptions, callback: { tokenRequest, error in
+                        defer { done() }
+                        expect(error).to(beNil())
+                        guard let tokenRequest = tokenRequest else {
+                            XCTFail("TokenRequest is nil"); return
+                        }
+                        expect(tokenRequest.clientId).to(equal(expectedClientId))
+                        expect(tokenRequest.mac).toNot(beNil())
+                        expect(tokenRequest.nonce.characters).to(haveCount(16))
+                        expect(tokenRequest.ttl as? TimeInterval).to(equal(expectedTtl))
+                        expect(tokenRequest.capability).to(equal(expectedCapability))
+                        expect(tokenRequest.timestamp).to(beCloseTo(serverTime!, within: 6.0))
+                    })
+                }
             }
 
         }
@@ -2320,7 +2353,7 @@ class Auth : QuickSpec {
 
                 let hook = ARTAuth.aspect_hook(rest.auth)
                 // Adds a block of code after `requestToken` is triggered
-                let token = try? hook(#selector(ARTAuth.requestToken(_:with:callback:)), [], unsafeBitCast(block, to: ARTAuth.self))
+                let token = try? hook(#selector(ARTAuth._requestToken(_:with:callback:)), [], unsafeBitCast(block, to: ARTAuth.self))
 
                 expect(token).toNot(beNil())
 
@@ -2444,7 +2477,7 @@ class Auth : QuickSpec {
                     authOptions.queryTime = true
 
                     var serverTimeRequestWasMade = false
-                    let hook = rest.testSuite_injectIntoMethod(after: #selector(rest.time(_:))) {
+                    let hook = rest.testSuite_injectIntoMethod(after: #selector(rest._time(_:))) {
                         serverTimeRequestWasMade = true
                     }
                     defer { hook.remove() }
@@ -2545,10 +2578,11 @@ class Auth : QuickSpec {
             // RSA10h
             it("should use the configured Auth#clientId, if not null, by default") {
                 let options = AblyTests.commonAppSetup()
+                var rest = ARTRest(options: options)
 
                 // ClientId null
                 waitUntil(timeout: testTimeout) { done in
-                    ARTRest(options: options).auth.authorize(nil, options: nil) { tokenDetails, error in
+                    rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                         expect(error).to(beNil())
                         guard let tokenDetails = tokenDetails else {
                             XCTFail("TokenDetails is nil"); done(); return
@@ -2559,10 +2593,11 @@ class Auth : QuickSpec {
                 }
 
                 options.clientId = "client_string"
+                rest = ARTRest(options: options)
 
                 // ClientId not null
                 waitUntil(timeout: testTimeout) { done in
-                    ARTRest(options: options).auth.authorize(nil, options: nil) { tokenDetails, error in
+                    rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                         expect(error).to(beNil())
                         guard let tokenDetails = tokenDetails else {
                             XCTFail("TokenDetails is nil"); done(); return
@@ -2605,7 +2640,7 @@ class Auth : QuickSpec {
                 it("authCallback") {
                     var currentTokenRequest: ARTTokenRequest? = nil
 
-                    let rest = ARTRest(options: AblyTests.commonAppSetup())
+                    var rest = ARTRest(options: AblyTests.commonAppSetup())
                     rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
                         currentTokenRequest = tokenRequest
                     })
@@ -2620,8 +2655,9 @@ class Auth : QuickSpec {
                         completion(currentTokenRequest!, nil)
                     }
 
+                    rest = ARTRest(options: options)
                     waitUntil(timeout: testTimeout) { done in
-                        ARTRest(options: options).auth.authorize(nil, options: nil) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                             expect(error).to(beNil())
                             guard let tokenDetails = tokenDetails else {
                                 XCTFail("TokenDetails is nil"); done(); return
@@ -2638,8 +2674,9 @@ class Auth : QuickSpec {
                     let options = ARTClientOptions()
                     options.authUrl = NSURL(string: "http://echo.ably.io")! as URL
 
+                    let rest = ARTRest(options: options)
                     waitUntil(timeout: testTimeout) { done in
-                        ARTRest(options: options).auth.authorize(nil, options: nil) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                             guard let error = error as? ARTErrorInfo else {
                                 fail("Error is nil"); done(); return
                             }
@@ -2669,10 +2706,11 @@ class Auth : QuickSpec {
                     options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
                     options.authParams?.append(NSURLQueryItem(name: "type", value: "json") as URLQueryItem)
                     options.authParams?.append(NSURLQueryItem(name: "body", value: "[]") as URLQueryItem)
+                    var rest = ARTRest(options: options)
 
                     // Invalid TokenDetails
                     waitUntil(timeout: testTimeout) { done in
-                        ARTRest(options: options).auth.authorize(nil, options: nil) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                             guard let error = error else {
                                 fail("Error is nil"); done(); return
                             }
@@ -2684,10 +2722,11 @@ class Auth : QuickSpec {
 
                     options.authParams?.removeLast()
                     options.authParams?.append(NSURLQueryItem(name: "body", value: tokenDetailsJSON as String) as URLQueryItem)
+                    rest = ARTRest(options: options)
 
                     // Valid token
                     waitUntil(timeout: testTimeout) { done in
-                        ARTRest(options: options).auth.authorize(nil, options: nil) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                             expect(error).to(beNil())
                             expect(tokenDetails).toNot(beNil())
                             done()
@@ -2699,7 +2738,7 @@ class Auth : QuickSpec {
                 it("authUrl returning TokenRequest decodes TTL as expected") {
                     let options = AblyTests.commonAppSetup()
 
-                    let rest = ARTRest(options: options)
+                    var rest = ARTRest(options: options)
                     var tokenRequest: ARTTokenRequest!
                     waitUntil(timeout: testTimeout) { done in
                         let params = ARTTokenParams(clientId: "myClientId", nonce: "12345")
@@ -2723,9 +2762,10 @@ class Auth : QuickSpec {
                     options.authParams?.append(NSURLQueryItem(name: "type", value: "json") as URLQueryItem)
                     options.authParams?.append(NSURLQueryItem(name: "body", value: tokenRequestJSON as String) as URLQueryItem)
                     options.key = nil
+                    rest = ARTRest(options: options)
 
                     waitUntil(timeout: testTimeout) { done in
-                        ARTRest(options: options).auth.authorize(nil, options: nil) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                             expect(error).to(beNil())
                             expect(tokenDetails).toNot(beNil())
                             expect(tokenDetails?.clientId).to(equal("myClientId"))
@@ -2742,10 +2782,11 @@ class Auth : QuickSpec {
                     options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
                     options.authParams?.append(NSURLQueryItem(name: "type", value: "text") as URLQueryItem)
                     options.authParams?.append(NSURLQueryItem(name: "body", value: "") as URLQueryItem)
+                    var rest = ARTRest(options: options)
 
                     // Invalid token
                     waitUntil(timeout: testTimeout) { done in
-                        ARTRest(options: options).auth.authorize(nil, options: nil) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                             expect(error).toNot(beNil())
                             expect(tokenDetails).to(beNil())
                             done()
@@ -2754,10 +2795,11 @@ class Auth : QuickSpec {
 
                     options.authParams?.removeLast()
                     options.authParams?.append(NSURLQueryItem(name: "body", value: token) as URLQueryItem)
+                    rest = ARTRest(options: options)
 
                     // Valid token
                     waitUntil(timeout: testTimeout) { done in
-                        ARTRest(options: options).auth.authorize(nil, options: nil) { tokenDetails, error in
+                        rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                             expect(error).to(beNil())
                             expect(tokenDetails).toNot(beNil())
                             done()
@@ -3007,7 +3049,7 @@ class Auth : QuickSpec {
                     authOptions.queryTime = true
 
                     var serverTimeRequestCount = 0
-                    let hook = rest.testSuite_injectIntoMethod(after: #selector(rest.time(_:))) {
+                    let hook = rest.testSuite_injectIntoMethod(after: #selector(rest._time(_:))) {
                         serverTimeRequestCount += 1
                     }
                     defer { hook.remove() }
@@ -3111,7 +3153,7 @@ class Auth : QuickSpec {
                     let currentDate = NSDate()
 
                     var serverTimeRequestCount = 0
-                    let hook = rest.testSuite_injectIntoMethod(after: #selector(rest.time(_:))) {
+                    let hook = rest.testSuite_injectIntoMethod(after: #selector(rest._time(_:))) {
                         serverTimeRequestCount += 1
                     }
                     defer { hook.remove() }
@@ -3159,7 +3201,7 @@ class Auth : QuickSpec {
                     rest.auth.testSuite_returnValue(for: NSSelectorFromString("handleServerTime:"), with: mockServerDate as Date)
 
                     var serverTimeRequestCount = 0
-                    let hook = rest.testSuite_injectIntoMethod(after: #selector(rest.time(_:))) {
+                    let hook = rest.testSuite_injectIntoMethod(after: #selector(rest._time(_:))) {
                         serverTimeRequestCount += 1
                     }
                     defer { hook.remove() }
@@ -3189,7 +3231,7 @@ class Auth : QuickSpec {
                     let rest = ARTRest(options: options)
 
                     var serverTimeRequestCount = 0
-                    let hook = rest.testSuite_injectIntoMethod(after: #selector(rest.time(_:))) {
+                    let hook = rest.testSuite_injectIntoMethod(after: #selector(rest._time(_:))) {
                         serverTimeRequestCount += 1
                     }
                     defer { hook.remove() }
@@ -3256,7 +3298,7 @@ class Auth : QuickSpec {
                     let rest = ARTRest(options: options)
 
                     var serverTimeRequestCount = 0
-                    let hook = rest.testSuite_injectIntoMethod(after: #selector(rest.time)) {
+                    let hook = rest.testSuite_injectIntoMethod(after: #selector(rest._time)) {
                         serverTimeRequestCount += 1
                     }
                     defer { hook.remove() }

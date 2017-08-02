@@ -673,9 +673,7 @@ class RestClient: QuickSpec {
                     testHTTPExecutor.http = MockHTTP(network: .hostUnreachable)
                     let channel = client.channels.get("test")
 
-                    var capturedURLs = [String]()
                     testHTTPExecutor.afterRequest = { request, callback in
-                        capturedURLs.append(request.url!.absoluteString)
                         if testHTTPExecutor.requests.count == 2 {
                             // Stop
                             testHTTPExecutor.http = nil
@@ -693,6 +691,7 @@ class RestClient: QuickSpec {
                     if testHTTPExecutor.requests.count < 2 {
                         return
                     }
+                    let capturedURLs = testHTTPExecutor.requests.map { $0.url!.absoluteString }
                     expect(NSRegularExpression.match(capturedURLs[0], pattern: "//rest.ably.io")).to(beTrue())
                     expect(NSRegularExpression.match(capturedURLs[1], pattern: "//[a-e].ably-realtime.com")).to(beTrue())
                 }
@@ -706,9 +705,7 @@ class RestClient: QuickSpec {
                     testHTTPExecutor.http = MockHTTP(network: .hostUnreachable)
                     let channel = client.channels.get("test")
                     
-                    var capturedURLs = [String]()
                     testHTTPExecutor.afterRequest = { request, callback in
-                        capturedURLs.append(request.url!.absoluteString)
                         if testHTTPExecutor.requests.count == 2 {
                             // Stop
                             testHTTPExecutor.http = nil
@@ -727,6 +724,7 @@ class RestClient: QuickSpec {
                         return
                     }
 
+                    let capturedURLs = testHTTPExecutor.requests.map { $0.url!.absoluteString }
                     expect(NSRegularExpression.match(capturedURLs[1], pattern: "//[f-j].ably-realtime.com")).to(beTrue())
                 }
 
@@ -740,9 +738,7 @@ class RestClient: QuickSpec {
                     testHTTPExecutor.http = MockHTTP(network: .hostUnreachable)
                     let channel = client.channels.get("test")
 
-                    var capturedURLs = [String]()
                     testHTTPExecutor.afterRequest = { request, callback in
-                        capturedURLs.append(request.url!.absoluteString)
                         if testHTTPExecutor.requests.count == 2 {
                             // Stop
                             testHTTPExecutor.http = nil
@@ -761,6 +757,7 @@ class RestClient: QuickSpec {
                         return
                     }
 
+                    let capturedURLs = testHTTPExecutor.requests.map { $0.url!.absoluteString }
                     expect(NSRegularExpression.match(capturedURLs[1], pattern: "//[a-e].ably-realtime.com")).to(beTrue())
                 }
 
@@ -793,11 +790,6 @@ class RestClient: QuickSpec {
                     testHTTPExecutor.http = MockHTTP(network: .hostUnreachable)
                     let channel = client.channels.get("test")
                     
-                    var capturedURLs = [String]()
-                    testHTTPExecutor.afterRequest = { request, callback in
-                        capturedURLs.append(request.url!.absoluteString)
-                    }
-                    
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: "nil") { _ in
                             done()
@@ -805,6 +797,7 @@ class RestClient: QuickSpec {
                     }
                     
                     expect(testHTTPExecutor.requests).to(haveCount(1))
+                    let capturedURLs = testHTTPExecutor.requests.map { $0.url!.absoluteString }
                     expect(NSRegularExpression.match(capturedURLs[0], pattern: "//rest.ably.io")).to(beTrue())
                 }
                 
@@ -817,9 +810,7 @@ class RestClient: QuickSpec {
                     testHTTPExecutor.http = MockHTTP(network: .hostUnreachable)
                     let channel = client.channels.get("test")
                     
-                    var capturedURLs = [String]()
                     testHTTPExecutor.afterRequest = { request, callback in
-                        capturedURLs.append(request.url!.absoluteString)
                         if testHTTPExecutor.requests.count == 2 {
                             // Stop
                             testHTTPExecutor.http = nil
@@ -838,6 +829,7 @@ class RestClient: QuickSpec {
                         return
                     }
                     
+                    let capturedURLs = testHTTPExecutor.requests.map { $0.url!.absoluteString }
                     expect(NSRegularExpression.match(capturedURLs[1], pattern: "//[a-e].ably-realtime.com")).to(beTrue())
                 }
 

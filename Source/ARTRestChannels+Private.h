@@ -17,7 +17,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTRestChannels ()
 
-- (ARTRestChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions * _Nullable)options;
+- (ARTRestChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions * _Nullable)options addPrefix:(BOOL)addPrefix;
 
 @end
 

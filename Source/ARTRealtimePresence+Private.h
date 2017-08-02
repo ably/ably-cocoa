@@ -14,6 +14,8 @@
 @interface ARTRealtimePresence ()
 
 - (instancetype)initWithChannel:(ARTRealtimeChannel *)channel;
+- (void)_unsubscribe;
+- (BOOL)getSyncComplete_nosync;
 
 @end
 

@@ -54,15 +54,15 @@ dispatch_sync(_queue, ^{
 }
 
 - (BOOL)_exists:(NSString *)name {
-    return self->_channels[[self addPrefix:name]] != nil;
+    return self->_channels[[ARTChannels addPrefix:name]] != nil;
 }
 
 - (id)get:(NSString *)name {
-    return [self getChannel:[self addPrefix:name] options:nil];
+    return [self getChannel:[ARTChannels addPrefix:name] options:nil];
 }
 
 - (id)get:(NSString *)name options:(ARTChannelOptions *)options {
-    return [self getChannel:[self addPrefix:name] options:options];
+    return [self getChannel:[ARTChannels addPrefix:name] options:options];
 }
 
 - (void)release:(NSString *)name {
@@ -72,25 +72,27 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)_release:(NSString *)name {
-    [self->_channels removeObjectForKey:[self addPrefix:name]];
+    [self->_channels removeObjectForKey:[ARTChannels addPrefix:name]];
 }
 
 - (ARTRestChannel *)getChannel:(NSString *)name options:(ARTChannelOptions *)options {
     __block ARTRestChannel *channel;
 dispatch_sync(_queue, ^{
-    channel = [self _getChannel:name options:options];
+    channel = [self _getChannel:name options:options addPrefix:true];
 });
     return channel;
 }
 
-- (ARTRestChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions *)options {
-    name = [self addPrefix:name];
+- (ARTRestChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions *)options addPrefix:(BOOL)addPrefix {
+    if (addPrefix) {
+        name = [ARTChannels addPrefix:name];
+    }
     ARTRestChannel *channel = [self _get:name];
     if (!channel) {
         channel = [_delegate makeChannel:name options:options];
         [self->_channels setObject:channel forKey:name];
     } else if (options) {
-        channel.options = options;
+        [channel _setOptions:options];
     }
     return channel;
 }
@@ -99,7 +101,7 @@ dispatch_sync(_queue, ^{
     return self->_channels[name];
 }
 
-- (NSString *)addPrefix:(NSString *)name {
++ (NSString *)addPrefix:(NSString *)name {
     if (ARTChannels_getChannelNamePrefix) {
         NSString *prefix = [NSString stringWithFormat:@"%@-", ARTChannels_getChannelNamePrefix()];
         if (![name hasPrefix:prefix]) {

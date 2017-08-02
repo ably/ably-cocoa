@@ -159,16 +159,16 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 }
 
 - (NSString *)recoveryKey_nosync {
-    switch(self.state) {
+    switch(self.state_nosync) {
         case ARTRealtimeConnecting:
         case ARTRealtimeConnected:
         case ARTRealtimeDisconnected:
         case ARTRealtimeSuspended: {
-            NSString *recStr = self.key;
+            NSString *recStr = self.key_nosync;
             if (recStr == nil) {
                 return nil;
             }
-            NSString *str = [recStr stringByAppendingString:[NSString stringWithFormat:@":%ld", (long)self.serial]];
+            NSString *str = [recStr stringByAppendingString:[NSString stringWithFormat:@":%ld", (long)self.serial_nosync]];
             return str;
         } default:
             return nil;
@@ -176,54 +176,38 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 }
 
 - (ARTEventListener *)on:(ARTRealtimeConnectionEvent)event callback:(void (^)(ARTConnectionStateChange *))cb {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return [_eventEmitter on:[ARTEvent newWithConnectionEvent:event] callback:cb];
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (ARTEventListener *)on:(void (^)(ARTConnectionStateChange *))cb {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return [_eventEmitter on:cb];
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (ARTEventListener *)once:(ARTRealtimeConnectionEvent)event callback:(void (^)(ARTConnectionStateChange *))cb {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return [_eventEmitter once:[ARTEvent newWithConnectionEvent:event] callback:cb];
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (ARTEventListener *)once:(void (^)(ARTConnectionStateChange *))cb {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return [_eventEmitter once:cb];
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)off {
     if (_realtime && _realtime.rest) {
-        ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
-            [_eventEmitter off];
-        } ART_TRY_OR_MOVE_TO_FAILED_END
+        [_eventEmitter off];
     } else {
         [_eventEmitter off];
     }
 }
 - (void)off:(ARTRealtimeConnectionEvent)event listener:(ARTEventListener *)listener {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [_eventEmitter off:[ARTEvent newWithConnectionEvent:event] listener:listener];
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)off:(ARTEventListener *)listener {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [_eventEmitter off:listener];
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)emit:(ARTRealtimeConnectionEvent)event with:(ARTConnectionStateChange *)data {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [_eventEmitter emit:[ARTEvent newWithConnectionEvent:event] with:data];
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 @end
