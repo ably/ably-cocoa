@@ -120,7 +120,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     ARTPaginatedResultResponseProcessor responseProcessor = ^NSArray<ARTMessage *> *(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
         id<ARTEncoder> encoder = [_rest.encoders objectForKey:response.MIMEType];
         return [[encoder decodeMessages:data error:errorPtr] artMap:^(ARTMessage *message) {
-            NSError *error;
+            NSError *error = nil;
             message = [message decodeWithEncoder:self.dataEncoder error:&error];
             if (error != nil) {
                 ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createFromNSError:error] prepend:@"Failed to decode data: "];

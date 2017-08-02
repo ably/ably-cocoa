@@ -2759,17 +2759,21 @@ class RealtimeClientChannel: QuickSpec {
                     let queryRest = queryRealtime as ARTDataQuery
 
                     waitUntil(timeout: testTimeout) { done in
-                        try! channelRest.history(queryRest) { _, _ in
-                            done()
-                        }
+                        expect {
+                            try channelRest.history(queryRest) { _, _ in
+                                done()
+                            }
+                        }.toNot(throwError() { err in fail("\(err)"); done() })
                     }
                     expect(restChannelHistoryMethodWasCalled).to(beTrue())
                     restChannelHistoryMethodWasCalled = false
 
                     waitUntil(timeout: testTimeout) { done in
-                        try! channelRealtime.history(queryRealtime) { _, _ in
-                            done()
-                        }
+                        expect {
+                            try channelRealtime.history(queryRealtime) { _, _ in
+                                done()
+                            }
+                        }.toNot(throwError() { err in fail("\(err)"); done() })
                     }
                     expect(restChannelHistoryMethodWasCalled).to(beTrue())
                 }
@@ -2824,10 +2828,12 @@ class RealtimeClientChannel: QuickSpec {
                             expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
                             waitUntil(timeout: testTimeout) { done in
-                                try! channel.history(query) { _, errorInfo in
-                                    expect(errorInfo).to(beNil())
-                                    done()
-                                }
+                                expect {
+                                    try channel.history(query) { _, errorInfo in
+                                        expect(errorInfo).to(beNil())
+                                        done()
+                                    }
+                                }.toNot(throwError() { err in fail("\(err)"); done() })
                             }
 
                             let queryString = testHTTPExecutor.requests.last!.url!.query
@@ -2891,13 +2897,15 @@ class RealtimeClientChannel: QuickSpec {
                         query.untilAttach = true
 
                         waitUntil(timeout: testTimeout) { done in
-                            try! channel2.history(query) { result, errorInfo in
-                                expect(result!.items).to(haveCount(20))
-                                expect(result!.hasNext).to(beFalse())
-                                expect(result!.items.first?.data as? String).to(equal("message 19"))
-                                expect(result!.items.last?.data as? String).to(equal("message 0"))
-                                done()
-                            }
+                            expect {
+                                try channel2.history(query) { result, errorInfo in
+                                    expect(result!.items).to(haveCount(20))
+                                    expect(result!.hasNext).to(beFalse())
+                                    expect(result!.items.first?.data as? String).to(equal("message 19"))
+                                    expect(result!.items.last?.data as? String).to(equal("message 0"))
+                                    done()
+                                }
+                            }.toNot(throwError() { err in fail("\(err)"); done() })
                         }
                     }
 
@@ -2960,22 +2968,24 @@ class RealtimeClientChannel: QuickSpec {
                     query.limit = 10
 
                     waitUntil(timeout: testTimeout) { done in
-                        try! channel2.history(query) { result, errorInfo in
-                            expect(result!.items).to(haveCount(10))
-                            expect(result!.hasNext).to(beTrue())
-                            expect(result!.isLast).to(beFalse())
-                            expect((result!.items.first! ).data as? String).to(equal("message 19"))
-                            expect((result!.items.last! ).data as? String).to(equal("message 10"))
-
-                            result!.next { result, errorInfo in
+                        expect {
+                            try channel2.history(query) { result, errorInfo in
                                 expect(result!.items).to(haveCount(10))
-                                expect(result!.hasNext).to(beFalse())
-                                expect(result!.isLast).to(beTrue())
-                                expect((result!.items.first! ).data as? String).to(equal("message 9"))
-                                expect((result!.items.last! ).data as? String).to(equal("message 0"))
-                                done()
+                                expect(result!.hasNext).to(beTrue())
+                                expect(result!.isLast).to(beFalse())
+                                expect((result!.items.first! ).data as? String).to(equal("message 19"))
+                                expect((result!.items.last! ).data as? String).to(equal("message 10"))
+
+                                result!.next { result, errorInfo in
+                                    expect(result!.items).to(haveCount(10))
+                                    expect(result!.hasNext).to(beFalse())
+                                    expect(result!.isLast).to(beTrue())
+                                    expect((result!.items.first! ).data as? String).to(equal("message 9"))
+                                    expect((result!.items.last! ).data as? String).to(equal("message 0"))
+                                    done()
+                                }
                             }
-                        }
+                        }.toNot(throwError() { err in fail("\(err)"); done() })
                     }
                 }
 

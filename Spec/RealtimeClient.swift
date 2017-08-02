@@ -255,10 +255,12 @@ class RealtimeClient: QuickSpec {
                     // Async
                     waitUntil(timeout: testTimeout) { done in
                         // Proxy from `client.rest.stats`
-                        try! client.stats(query, callback: { paginated, error in
-                            expect(paginated).toNot(beNil())
-                            done()
-                        })
+                        expect {
+                            try client.stats(query, callback: { paginated, error in
+                                expect(paginated).toNot(beNil())
+                                done()
+                            })
+                        }.toNot(throwError() { err in fail("\(err)"); done() })
                     }
                 }
 
@@ -269,12 +271,14 @@ class RealtimeClient: QuickSpec {
                     var paginatedResult: ARTPaginatedResult<AnyObject>?
 
                     // Realtime
-                    try! client.stats(query, callback: { paginated, error in
-                        if let e = error {
-                            XCTFail(e.localizedDescription)
-                        }
-                        paginatedResult = paginated as! ARTPaginatedResult<AnyObject>?
-                    })
+                    expect {
+                        try client.stats(query, callback: { paginated, error in
+                            if let e = error {
+                                XCTFail(e.localizedDescription)
+                            }
+                            paginatedResult = paginated as! ARTPaginatedResult<AnyObject>?
+                        })
+                    }.toNot(throwError())
                     expect(paginatedResult).toEventuallyNot(beNil(), timeout: testTimeout)
                     if paginatedResult == nil {
                         return
@@ -282,18 +286,20 @@ class RealtimeClient: QuickSpec {
 
                     // Rest
                     waitUntil(timeout: testTimeout) { done in
-                        try! client.rest.stats(query, callback: { paginated, error in
-                            defer { done() }
-                            if let e = error {
-                                XCTFail(e.localizedDescription)
-                                return
-                            }
-                            guard let paginated = paginated else {
-                                XCTFail("both paginated and error are nil")
-                                return
-                            } 
-                            expect(paginated.items.count).to(equal(paginatedResult!.items.count))
-                        })
+                        expect {
+                            try client.rest.stats(query, callback: { paginated, error in
+                                defer { done() }
+                                if let e = error {
+                                    XCTFail(e.localizedDescription)
+                                    return
+                                }
+                                guard let paginated = paginated else {
+                                    XCTFail("both paginated and error are nil")
+                                    return
+                                } 
+                                expect(paginated.items.count).to(equal(paginatedResult!.items.count))
+                            })
+                        }.toNot(throwError() { err in fail("\(err)"); done() })
                     }
                 }
             }

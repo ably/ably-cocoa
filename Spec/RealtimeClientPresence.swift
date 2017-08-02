@@ -3505,17 +3505,21 @@ class RealtimeClientPresence: QuickSpec {
                     let queryRest = queryRealtime as ARTDataQuery
 
                     waitUntil(timeout: testTimeout) { done in
-                        try! channelRest.presence.history(queryRest) { _, _ in
-                            done()
-                        }
+                        expect {
+                            try channelRest.presence.history(queryRest) { _, _ in
+                                done()
+                            }
+                        }.toNot(throwError() { err in fail("\(err)"); done() })
                     }
                     expect(restPresenceHistoryMethodWasCalled).to(beTrue())
                     restPresenceHistoryMethodWasCalled = false
 
                     waitUntil(timeout: testTimeout) { done in
-                        try! channelRealtime.presence.history(queryRealtime) { _, _ in
-                            done()
-                        }
+                        expect {
+                            try channelRealtime.presence.history(queryRealtime) { _, _ in
+                                done()
+                            }
+                        }.toNot(throwError() { err in fail("\(err)"); done() })
                     }
                     expect(restPresenceHistoryMethodWasCalled).to(beTrue())
                 }
@@ -3636,10 +3640,12 @@ class RealtimeClientPresence: QuickSpec {
                             expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
                             waitUntil(timeout: testTimeout) { done in
-                                try! channel.presence.history(query) { _, errorInfo in
-                                    expect(errorInfo).to(beNil())
-                                    done()
-                                }
+                                expect {
+                                    try channel.presence.history(query) { _, errorInfo in
+                                        expect(errorInfo).to(beNil())
+                                        done()
+                                    }
+                                }.toNot(throwError() { err in fail("\(err)"); done() })
                             }
 
                             let queryString = testHTTPExecutor.requests.last!.url!.query
@@ -3689,13 +3695,15 @@ class RealtimeClientPresence: QuickSpec {
                         query.untilAttach = true
 
                         waitUntil(timeout: testTimeout) { done in
-                            try! channel.presence.history(query) { result, errorInfo in
-                                expect(result!.items).to(haveCount(25))
-                                expect(result!.hasNext).to(beFalse())
-                                expect((result!.items.first)?.clientId).to(equal("user25"))
-                                expect((result!.items.last)?.clientId).to(equal("user1"))
-                                done()
-                            }
+                            expect {
+                                try channel.presence.history(query) { result, errorInfo in
+                                    expect(result!.items).to(haveCount(25))
+                                    expect(result!.hasNext).to(beFalse())
+                                    expect((result!.items.first)?.clientId).to(equal("user25"))
+                                    expect((result!.items.last)?.clientId).to(equal("user1"))
+                                    done()
+                                }
+                            }.toNot(throwError() { err in fail("\(err)"); done() })
                         }
                     }
 
