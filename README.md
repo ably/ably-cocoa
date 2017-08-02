@@ -49,9 +49,11 @@ All internal operations are dispatched to a single serial GCD queue. By default,
 queue uses the global queue with `QOS_CLASS_BACKGROUND` as a delegate. You can specify
 another delegate queue with `ARTClientOptions.internalDispatchQueue`.
 
-All callbacks provided by the user will be dispatched to the main queue by default.
+All calls to callbacks provided by the user are dispatched to the main queue by default.
 This allows you to react to Ably's output by doing UI operations directly. You
-can specify a different queue with `ARTClientOptions.dispatchQueue`.
+can specify a different queue with `ARTClientOptions.dispatchQueue`. It shouldn't
+be the same queue as the `ARTClientOptions.internalDispatchQueue`, since that can
+lead to deadlocks.
 
 ## Using the Realtime API
 
