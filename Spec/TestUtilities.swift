@@ -230,6 +230,17 @@ class AblyTests {
         }
     }
 
+    class func waitFor<T>(timeout: TimeInterval, f: @escaping (@escaping (T?) -> Void) -> Void) -> T? {
+        var value: T?
+        waitUntil(timeout: timeout) { done in
+            f() { v in
+                value = v
+                done()
+            }
+        }
+        return value
+    }
+
     // MARK: Crypto
 
     struct CryptoTestItem {

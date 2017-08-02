@@ -37,13 +37,13 @@ private func postTestStats(_ stats: JSON) -> ARTClientOptions {
     return options
 }
 
-private func queryStats(_ client: ARTRest, _ query: ARTStatsQuery) -> ARTPaginatedResult<AnyObject> {
-    var stats: ARTPaginatedResult<AnyObject>?
+private func queryStats(_ client: ARTRest, _ query: ARTStatsQuery) -> ARTPaginatedResult<ARTStats> {
+    var stats: ARTPaginatedResult<ARTStats>?
     let dummyError = ARTErrorInfo()
     var error: ARTErrorInfo? = dummyError
 
     try! client.stats(query, callback: { result, err in
-        stats = result as! ARTPaginatedResult<AnyObject>?
+        stats = result
         error = err
     })
 
@@ -56,26 +56,6 @@ private func queryStats(_ client: ARTRest, _ query: ARTStatsQuery) -> ARTPaginat
     }
     
     return stats!
-}
-
-private func getPage(_ paginator: ((ARTPaginatedResult<AnyObject>?, ARTErrorInfo?) -> Void) -> Void) -> ARTPaginatedResult<AnyObject> {
-    var newResult: ARTPaginatedResult<AnyObject>?
-    let dummyError = ARTErrorInfo()
-    var error: ARTErrorInfo? = dummyError
-    paginator({ paginatorResult, err in
-        newResult = paginatorResult
-        error = err
-    })
-    
-    while error === dummyError {
-        CFRunLoopRunInMode(CFRunLoopMode.defaultMode, CFTimeInterval(0.1), Bool(0))
-    }
-    
-    if let error = error {
-        XCTFail(error.message)
-    }
-    
-    return newResult!
 }
 
 class RestClientStats: QuickSpec {
@@ -186,8 +166,8 @@ class RestClientStats: QuickSpec {
                         query.unit = .month
                         
                         let result = queryStats(client, query)
-                        let totalInbound = (result.items as! [ARTStats]).reduce(0, { $0 + $1.inbound.all.messages.count })
-                        let totalOutbound = (result.items as! [ARTStats]).reduce(0, { $0 + $1.outbound.all.messages.count })
+                        let totalInbound = (result.items).reduce(0, { $0 + $1.inbound.all.messages.count })
+                        let totalOutbound = (result.items).reduce(0, { $0 + $1.outbound.all.messages.count })
                         
                         expect(result.items.count).to(equal(1))
                         expect(totalInbound).to(equal(50 + 60 + 70))
@@ -202,8 +182,8 @@ class RestClientStats: QuickSpec {
                         query.unit = .month
                         
                         let result = queryStats(client, query)
-                        let totalInbound = (result.items as! [ARTStats]).reduce(0, { $0 + $1.inbound.all.messages.count })
-                        let totalOutbound = (result.items as! [ARTStats]).reduce(0, { $0 + $1.outbound.all.messages.count })
+                        let totalInbound = (result.items).reduce(0, { $0 + $1.inbound.all.messages.count })
+                        let totalOutbound = (result.items).reduce(0, { $0 + $1.outbound.all.messages.count })
                         
                         expect(result.items.count).to(equal(1))
                         expect(totalInbound).to(equal(50 + 60 + 70))
@@ -217,8 +197,8 @@ class RestClientStats: QuickSpec {
                         query.limit = 1
                         
                         let result = queryStats(client, query)
-                        let totalInbound = (result.items as! [ARTStats]).reduce(0, { $0 + $1.inbound.all.messages.count })
-                        let totalOutbound = (result.items as! [ARTStats]).reduce(0, { $0 + $1.outbound.all.messages.count })
+                        let totalInbound = (result.items).reduce(0, { $0 + $1.inbound.all.messages.count })
+                        let totalOutbound = (result.items).reduce(0, { $0 + $1.outbound.all.messages.count })
                         
                         expect(result.items.count).to(equal(1))
                         expect(totalInbound).to(equal(60))
@@ -233,8 +213,8 @@ class RestClientStats: QuickSpec {
                         query.direction = .forwards
                         
                         let result = queryStats(client, query)
-                        let totalInbound = (result.items as! [ARTStats]).reduce(0, { $0 + $1.inbound.all.messages.count })
-                        let totalOutbound = (result.items as! [ARTStats]).reduce(0, { $0 + $1.outbound.all.messages.count })
+                        let totalInbound = (result.items).reduce(0, { $0 + $1.inbound.all.messages.count })
+                        let totalOutbound = (result.items).reduce(0, { $0 + $1.outbound.all.messages.count })
                         
                         expect(result.items.count).to(equal(1))
                         expect(totalInbound).to(equal(50))
@@ -249,24 +229,48 @@ class RestClientStats: QuickSpec {
 
                         let firstPage = queryStats(client, query)
                         expect(firstPage.items.count).to(equal(1))
-                        expect((firstPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(7000))
+                        expect((firstPage.items)[0].inbound.all.messages.data).to(equal(7000))
                         expect(firstPage.hasNext).to(beTrue())
                         expect(firstPage.isLast).to(beFalse())
                         
-                        let secondPage = getPage(firstPage.next as! ((ARTPaginatedResult<AnyObject>?, ARTErrorInfo?) -> Void) -> Void)
+                        guard let secondPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+                            firstPage.next { page, err in
+                                expect(err).to(beNil())
+                                value(page)
+                            }
+                        }) else {
+                            return
+                        }
+
                         expect(secondPage.items.count).to(equal(1))
-                        expect((secondPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(6000))
+                        expect((secondPage.items)[0].inbound.all.messages.data).to(equal(6000))
                         expect(secondPage.hasNext).to(beTrue())
                         expect(secondPage.isLast).to(beFalse())
                         
-                        let thirdPage = getPage(secondPage.next as! ((ARTPaginatedResult<AnyObject>?, ARTErrorInfo?) -> Void) -> Void)
+                        guard let thirdPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+                            secondPage.next { page, err in
+                                expect(err).to(beNil())
+                                value(page)
+                            }
+                        }) else {
+                            return
+                        }
+
                         expect(thirdPage.items.count).to(equal(1))
-                        expect((thirdPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(5000))
+                        expect((thirdPage.items)[0].inbound.all.messages.data).to(equal(5000))
                         expect(thirdPage.isLast).to(beTrue())
                         
-                        let firstPageAgain = getPage(thirdPage.first as! ((ARTPaginatedResult<AnyObject>?, ARTErrorInfo?) -> Void) -> Void)
+                        guard let firstPageAgain: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+                            thirdPage.first { page, err in
+                                expect(err).to(beNil())
+                                value(page)
+                            }
+                        }) else {
+                            return
+                        }
+
                         expect(firstPageAgain.items.count).to(equal(1))
-                        expect((firstPageAgain.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(7000))
+                        expect((firstPageAgain.items)[0].inbound.all.messages.data).to(equal(7000))
                     }
                     
                     it("should be paginated according to the limit (fowards)") {
@@ -278,24 +282,48 @@ class RestClientStats: QuickSpec {
                         
                         let firstPage = queryStats(client, query)
                         expect(firstPage.items.count).to(equal(1))
-                        expect((firstPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(5000))
+                        expect((firstPage.items)[0].inbound.all.messages.data).to(equal(5000))
                         expect(firstPage.hasNext).to(beTrue())
                         expect(firstPage.isLast).to(beFalse())
                         
-                        let secondPage = getPage(firstPage.next as! ((ARTPaginatedResult<AnyObject>?, ARTErrorInfo?) -> Void) -> Void)
+                        guard let secondPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+                            firstPage.next { page, err in
+                                expect(err).to(beNil())
+                                value(page)
+                            }
+                        }) else {
+                            return
+                        }
+
                         expect(secondPage.items.count).to(equal(1))
-                        expect((secondPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(6000))
+                        expect((secondPage.items)[0].inbound.all.messages.data).to(equal(6000))
                         expect(secondPage.hasNext).to(beTrue())
                         expect(secondPage.isLast).to(beFalse())
                         
-                        let thirdPage = getPage(secondPage.next as! ((ARTPaginatedResult<AnyObject>?, ARTErrorInfo?) -> Void) -> Void)
+                        guard let thirdPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+                            secondPage.next { page, err in
+                                expect(err).to(beNil())
+                                value(page)
+                            }
+                        }) else {
+                            return
+                        }
+
                         expect(thirdPage.items.count).to(equal(1))
-                        expect((thirdPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(7000))
+                        expect((thirdPage.items)[0].inbound.all.messages.data).to(equal(7000))
                         expect(thirdPage.isLast).to(beTrue())
                         
-                        let firstPageAgain = getPage(thirdPage.first as! ((ARTPaginatedResult<AnyObject>?, ARTErrorInfo?) -> Void) -> Void)
+                        guard let firstPageAgain: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+                            thirdPage.first { page, err in
+                                expect(err).to(beNil())
+                                value(page)
+                            }
+                        }) else {
+                            return
+                        }
+
                         expect(firstPageAgain.items.count).to(equal(1))
-                        expect((firstPageAgain.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(5000))
+                        expect((firstPageAgain.items)[0].inbound.all.messages.data).to(equal(5000))
                     }
                 }
                 
