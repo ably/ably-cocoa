@@ -105,7 +105,15 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     }
 
     NSURLComponents *componentsUrl = [NSURLComponents componentsWithString:[_basePath stringByAppendingPathComponent:@"messages"]];
-    componentsUrl.queryItems = [query asQueryItems];
+    NSError *error = nil;
+    componentsUrl.queryItems = [query asQueryItems:&error];
+    if (error) {
+        if (errorPtr) {
+            *errorPtr = error;
+        }
+        ret = NO;
+        return;
+    }
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:componentsUrl.URL];
 

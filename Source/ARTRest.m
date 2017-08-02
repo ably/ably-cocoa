@@ -459,7 +459,14 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
     }
 
     NSURLComponents *requestUrl = [NSURLComponents componentsWithString:@"/stats"];
-    requestUrl.queryItems = [query asQueryItems];
+    NSError *error = nil;
+    requestUrl.queryItems = [query asQueryItems:&error];
+    if (error) {
+        if (errorPtr) {
+            *errorPtr = error;
+        }
+        return NO;
+    }
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[requestUrl URLRelativeToURL:self.baseUrl]];
     
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {

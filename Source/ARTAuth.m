@@ -560,8 +560,9 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
                 if (error) {
                     callback(nil, error);
                 } else {
-                    _timeOffset = [time timeIntervalSinceNow];
-                    currentTokenParams.timestamp = time;
+                    NSDate *serverTime = [self handleServerTime:time];
+                    _timeOffset = [serverTime timeIntervalSinceNow];
+                    currentTokenParams.timestamp = serverTime;
                     callback([currentTokenParams sign:replacedOptions.key], nil);
                 }
             }];
@@ -569,6 +570,13 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
             callback([currentTokenParams sign:replacedOptions.key], nil);
         }
     }
+} ART_TRY_OR_REPORT_CRASH_END
+}
+
+// For mocking when testing.
+- (NSDate *)handleServerTime:(NSDate *)time {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
+    return time;
 } ART_TRY_OR_REPORT_CRASH_END
 }
 

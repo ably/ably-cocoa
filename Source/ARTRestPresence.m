@@ -167,7 +167,14 @@ ART_TRY_OR_REPORT_CRASH_START(_channel.rest) {
     }
 
     NSURLComponents *requestUrl = [NSURLComponents componentsWithString:[_channel.basePath stringByAppendingPathComponent:@"presence/history"]];
-    requestUrl.queryItems = [query asQueryItems];
+    NSError *error = nil;
+    requestUrl.queryItems = [query asQueryItems:&error];
+    if (error) {
+        if (errorPtr) {
+            *errorPtr = error;
+        }
+        return NO;
+    }
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl.URL];
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
