@@ -414,8 +414,8 @@ class RestClient: QuickSpec {
                             expect(error).to(beNil())
                             expect(result).toNot(beNil())
 
-                            guard let headerErrorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String else {
-                                fail("X-Ably-ErrorCode not found"); done();
+                            guard let headerErrorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-Errorcode"] as? String else {
+                                fail("X-Ably-Errorcode not found"); done();
                                 return
                             }
                             expect(Int(headerErrorCode)).to(equal(40142))
@@ -444,8 +444,8 @@ class RestClient: QuickSpec {
                         expect(errorCode).to(equal(40160))
                         expect(result).to(beNil())
 
-                        guard let headerErrorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String else {
-                            fail("X-Ably-ErrorCode not found"); done();
+                        guard let headerErrorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-Errorcode"] as? String else {
+                            fail("X-Ably-Errorcode not found"); done();
                             return
                         }
                         expect(Int(headerErrorCode)).to(equal(40160))
@@ -513,8 +513,8 @@ class RestClient: QuickSpec {
                             delay(TimeInterval(tokenParams.ttl!)) {
                                 // [40140, 40150) - token expired and will not recover because authUrl is invalid
                                 publishTestMessage(rest) { error in
-                                    guard let errorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String else {
-                                        fail("expected X-Ably-ErrorCode header in request")
+                                    guard let errorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-Errorcode"] as? String else {
+                                        fail("expected X-Ably-Errorcode header in request")
                                         return
                                     }
                                     expect(Int(errorCode)).to(beGreaterThanOrEqualTo(40140))
@@ -562,8 +562,8 @@ class RestClient: QuickSpec {
                             delay(TimeInterval(tokenParams.ttl!)) {
                                 // [40140, 40150) - token expired and will not recover because authUrl is invalid
                                 publishTestMessage(rest) { error in
-                                    guard let errorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String else {
-                                        fail("expected X-Ably-ErrorCode header in request")
+                                    guard let errorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-Errorcode"] as? String else {
+                                        fail("expected X-Ably-Errorcode header in request")
                                         return
                                     }
                                     expect(Int(errorCode)).to(beGreaterThanOrEqualTo(40140))
@@ -861,9 +861,9 @@ class RestClient: QuickSpec {
                         return
                     }
 
-                    expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//\(ARTDefault.restHost())")).to(beTrue())
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//\(ARTDefault.restHost()!)")).to(beTrue())
                     expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-                    expect(NSRegularExpression.match(testHTTPExecutor.requests[2].url!.absoluteString, pattern: "//\(ARTDefault.restHost())")).to(beTrue())
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[2].url!.absoluteString, pattern: "//\(ARTDefault.restHost()!)")).to(beTrue())
                 }
 
                 // RSC15e
@@ -1308,7 +1308,7 @@ class RestClient: QuickSpec {
 
             // https://github.com/ably/ably-ios/issues/589
             it("client should handle error messages in plaintext and HTML format") {
-                let request = NSURLRequest(url: NSURL(string: "https://www.ably.io")! as URL)
+                let request = NSURLRequest(url: NSURL(string: "https://www.example.com")! as URL)
                 waitUntil(timeout: testTimeout) { done in
                     let rest = ARTRest(key: "xxxx:xxxx")
                     rest.execute(request as URLRequest, completion: { response, data, error in

@@ -611,7 +611,14 @@ class RestClientChannel: QuickSpec {
                                 XCTFail("HTTPBody is nil");
                                 done(); return
                             }
-                            expect(AblyTests.msgpackToJSON(httpBody as NSData)).to(equal(caseTest.expected))
+                            var json = AblyTests.msgpackToJSON(httpBody as NSData)
+                            if let s = json["data"].string, let data = try? JSONSerialization.jsonObject(with: s.data(using: .utf8)!) {
+                                // Make sure the formatting is the same by parsing
+                                // and reformatting in the same way as the test
+                                // case.
+                                json["data"] = JSON(JSON(data).rawString()!)
+                            }
+                            expect(json).to(equal(caseTest.expected))
                             done()
                         }
                     }

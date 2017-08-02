@@ -36,6 +36,7 @@ class RestClientChannels: QuickSpec {
         beforeEach {
             client = ARTRest(key: "fake:key")
             channelName = ProcessInfo.processInfo.globallyUniqueString
+            ARTChannels_getChannelNamePrefix = { "RestClientChannels-" }
         }
 
         let cipherParams: ARTCipherParams? = nil
@@ -52,7 +53,7 @@ class RestClientChannels: QuickSpec {
                     // RSN3a
                     it("should return a channel") {
                         let channel = client.channels.get(channelName)
-                        expect(channel).to(beAChannel(named: "\(ARTChannels_getChannelNamePrefix!())-\(channelName)"))
+                        expect(channel).to(beAChannel(named: "\(ARTChannels_getChannelNamePrefix!())-\(channelName!)"))
 
                         let sameChannel = client.channels.get(channelName)
                         expect(sameChannel).to(beIdenticalTo(channel))
@@ -63,7 +64,7 @@ class RestClientChannels: QuickSpec {
                         let options = ARTChannelOptions(cipher: cipherParams)
                         let channel = client.channels.get(channelName, options: options)
 
-                        expect(channel).to(beAChannel(named: "\(ARTChannels_getChannelNamePrefix!())-\(channelName)"))
+                        expect(channel).to(beAChannel(named: "\(ARTChannels_getChannelNamePrefix!())-\(channelName!)"))
                         expect(channel.options).to(beIdenticalTo(options))
                     }
 
@@ -111,7 +112,7 @@ class RestClientChannels: QuickSpec {
                         autoreleasepool {
                             channel = client.channels.get(channelName)
 
-                            expect(channel).to(beAChannel(named: "\(ARTChannels_getChannelNamePrefix!())-\(channelName)"))
+                            expect(channel).to(beAChannel(named: "\(ARTChannels_getChannelNamePrefix!())-\(channelName!)"))
                             client.channels.release(channel.name)
                         }
 

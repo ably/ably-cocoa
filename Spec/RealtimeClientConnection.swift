@@ -1873,10 +1873,9 @@ class RealtimeClientConnection: QuickSpec {
                 it("should not emit error with a renewable token") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
+                    options.disconnectedRetryTimeout = 0.1
                     options.authCallback = { tokenParams, callback in
-                        delay(0) {
-                            callback(getTestTokenDetails(key: options.key, capability: tokenParams.capability, ttl: tokenParams.ttl as! TimeInterval?), nil)
-                        }
+                        callback(getTestTokenDetails(key: options.key, capability: tokenParams.capability, ttl: tokenParams.ttl as! TimeInterval?), nil)
                     }
                     let tokenTtl = 3.0
                     options.token = getTestToken(key: options.key, ttl: tokenTtl)
@@ -2392,20 +2391,16 @@ class RealtimeClientConnection: QuickSpec {
                                 expect(error.code).to(equal(80008))
                                 expect(error.message).to(contain("Unable to recover connection"))
                                 expect(client.connection.errorReason).to(beIdenticalTo(stateChange!.reason))
-                                let transport = client.transport as! TestProxyTransport
-                                let connectedPM = transport.protocolMessagesReceived.filter{ $0.action == .connected }[0]
-                                expect(connectedPM.connectionId).toNot(equal(oldConnectionId))
-                                expect(client.connection.id).to(equal(connectedPM.connectionId))
                                 done()
                             }
                         }
+                        let transport = client.transport as! TestProxyTransport
+                        let connectedPM = transport.protocolMessagesReceived.filter{ $0.action == .connected }[0]
+                        expect(connectedPM.connectionId).toNot(equal(oldConnectionId))
+                        expect(client.connection.id).to(equal(connectedPM.connectionId))
                         expect(client.msgSerial).to(equal(0))
                         expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
-                        guard let channelError = channel.errorReason else {
-                            fail("Channel error is nil"); return
-                        }
-                        expect(channelError.code).to(equal(80008))
-                        expect(channelError.message).to(contain("Unable to recover connection"))
+                        expect(channel.errorReason).to(beNil())
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
                     }
 
@@ -2649,7 +2644,7 @@ class RealtimeClientConnection: QuickSpec {
                         options.authCallback = { tokenParams, callback in
                             callback(getTestTokenDetails(key: options.key, capability: tokenParams.capability, ttl: TimeInterval(60 * 60)), nil)
                         }
-                        let tokenTtl = 5.0
+                        let tokenTtl = 2.0
                         options.token = getTestToken(key: options.key, ttl: tokenTtl)
 
                         let client = ARTRealtime(options: options)
@@ -2661,7 +2656,7 @@ class RealtimeClientConnection: QuickSpec {
 
                         client.connect()
                         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-                        weak var firstTransport = client.transport as? TestProxyTransport
+                        let firstTransport = client.transport as? TestProxyTransport
 
                         waitUntil(timeout: testTimeout) { done in
                             // Wait for token to expire
@@ -2683,8 +2678,8 @@ class RealtimeClientConnection: QuickSpec {
                         expect(client.connection.errorReason).to(beNil())
 
                         // New connection
-                        expect(firstTransport).to(beNil())
                         expect(client.transport).toNot(beNil())
+                        expect(client.transport).toNot(beIdenticalTo(firstTransport))
 
                         waitUntil(timeout: testTimeout) { done in 
                             client.ping { error in

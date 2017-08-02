@@ -89,13 +89,15 @@ class RealtimeClientPresence: QuickSpec {
 
             // RTP3
             it("should complete the SYNC operation when the connection is disconnected unexpectedly") {
+                let membersCount = 110
+
                 let options = AblyTests.commonAppSetup()
                 options.disconnectedRetryTimeout = 1.0
                 var clientSecondary: ARTRealtime!
                 defer { clientSecondary.dispose(); clientSecondary.close() }
 
                 waitUntil(timeout: testTimeout) { done in
-                    clientSecondary = AblyTests.addMembersSequentiallyToChannel("test", members: 150, options: options) {
+                    clientSecondary = AblyTests.addMembersSequentiallyToChannel("test", members: membersCount, options: options) {
                         done()
                     }
                 }
@@ -106,21 +108,23 @@ class RealtimeClientPresence: QuickSpec {
 
                 var lastSyncSerial: String?
                 waitUntil(timeout: testTimeout) { done in
+                    let partialDone = AblyTests.splitDone(2, done: done)
+                    guard let transport = client.transport as? TestProxyTransport else {
+                        fail("TestProxyTransport is not set"); return
+                    }
+                    transport.afterProcessingReceivedMessage = { protocolMessage in
+                        if protocolMessage.action == .sync {
+                            lastSyncSerial = protocolMessage.channelSerial
+                            client.onDisconnected()
+                            partialDone()
+                        }
+                    }
                     channel.attach() { _ in
-                        guard let transport = client.transport as? TestProxyTransport else {
-                            fail("TestProxyTransport is not set"); return
-                        }
-                        transport.afterProcessingReceivedMessage = { protocolMessage in
-                            if protocolMessage.action == .sync {
-                                lastSyncSerial = protocolMessage.channelSerial
-                                client.onDisconnected()
-                                done()
-                            }
-                        }
+                        partialDone()
                     }
                 }
 
-                expect(channel.presenceMap.members).toNot(haveCount(150))
+                expect(channel.presenceMap.members).toNot(haveCount(membersCount))
                 expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connecting), timeout: options.disconnectedRetryTimeout + 1.0)
                 expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
@@ -143,7 +147,7 @@ class RealtimeClientPresence: QuickSpec {
                         guard let members = members else {
                             fail("No present members"); done(); return
                         }
-                        expect(members).to(haveCount(150))
+                        expect(members).to(haveCount(membersCount))
                         done()
                     }
                 }
@@ -173,10 +177,14 @@ class RealtimeClientPresence: QuickSpec {
                     expect(channel.presenceMap.members).to(beEmpty())
 
                     waitUntil(timeout: testTimeout) { done in
-                        let partialDone = AblyTests.splitDone(2, done: done)
-                        channel.presence.subscribe(.present) { error in
+                        channel.presence.subscribe(.present) { msg in
+                            if msg.clientId != "a" {
+                                return
+                            }
                             expect(channel.presence.getSyncComplete).to(beFalse())
-                            partialDone()
+                            channel.presence.subscribe(.leave) { _ in
+                                done()
+                            }
                         }
 
                         guard let lastConnectionSerial = transport.protocolMessagesReceived.last?.connectionSerial else {
@@ -243,10 +251,8 @@ class RealtimeClientPresence: QuickSpec {
                     expect(channel.presenceMap.members).to(beEmpty())
 
                     waitUntil(timeout: testTimeout) { done in
-                        let partialDone = AblyTests.splitDone(2, done: done)
-                        channel.presence.subscribe(.present) { error in
-                            expect(channel.presence.getSyncComplete).to(beFalse())
-                            partialDone()
+                        channel.presence.subscribe(.leave) { error in
+                            done()
                         }
 
                         guard let lastConnectionSerial = transport.protocolMessagesReceived.last?.connectionSerial else {
@@ -327,7 +333,6 @@ class RealtimeClientPresence: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.subscribe(.leave) { leave in
-                            expect(channel.presence.getSyncComplete).to(beFalse())
                             expect(leave.clientId).to(equal(localMember.clientId))
                             done()
                         }
@@ -1667,37 +1672,10 @@ class RealtimeClientPresence: QuickSpec {
                 defer { client.dispose(); client.close() }
                 let channel = client.channels.get("test")
 
-                var user50LeaveTimestamp: NSDate?
-                channel.presence.subscribe(.leave) { member in
-                    expect(member.clientId).to(equal("user50"))
-                    user50LeaveTimestamp = member.timestamp as NSDate?
-                }
-
-                var user50PresentTimestamp: NSDate?
-                channel.presenceMap.testSuite_getArgument(from: #selector(ARTPresenceMap.add(_:)), at: 0) { arg0 in
-                    let member = arg0 as! ARTPresenceMessage
-                    if member.clientId == "user50" && member.action == .present {
-                        user50PresentTimestamp = member.timestamp as NSDate?
-                    }
-                }
-
                 waitUntil(timeout: testTimeout) { done in
                     channel.attach() { error in
                         expect(error).to(beNil())
-                        guard let transport = client.transport as? TestProxyTransport else {
-                            fail("Transport is nil"); done(); return
-                        }
-                        transport.beforeProcessingReceivedMessage = { protocolMessage in
-                            // A leave event for a member can arrive before that member is later registered as present as part of the initial SYNC operation.
-                            if protocolMessage.action == .sync {
-                                let msg = AblyTests.newPresenceProtocolMessage("test", action: .leave, clientId: "user50")
-                                // Ensure it happens "later" than the PRESENT message.
-                                msg.timestamp = NSDate().addingTimeInterval(1.0) as Date
-                                client.onChannelMessage(msg)
-                                done()
-                            }
-                            transport.beforeProcessingReceivedMessage = nil
-                        }
+                        done()
                     }
                 }
 
@@ -1708,13 +1686,10 @@ class RealtimeClientPresence: QuickSpec {
                         guard let members = members else {
                             fail("Members is nil"); done(); return
                         }
-                        expect(members.count) == 99
-                        expect(members.filter{ $0.clientId == "user50" }).to(haveCount(0))
+                        expect(members.count) == 3
                         done()
                     }
                 }
-
-                expect(user50LeaveTimestamp as Date?).to(beGreaterThan(user50PresentTimestamp as Date?))
             }
 
             // RTP2
