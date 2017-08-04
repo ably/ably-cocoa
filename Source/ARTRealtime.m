@@ -382,7 +382,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                 }
                 _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:resumeKey connectionSerial:connectionSerial];
                 _transport.delegate = self;
-                [self transportConnectForcingNewToken:_renewingToken];
+                [self transportConnectForcingNewToken:_renewingToken keepConnection:false];
             }
 
             if (self.connection.state != ARTRealtimeFailed && self.connection.state != ARTRealtimeClosed && self.connection.state != ARTRealtimeDisconnected) {
@@ -646,8 +646,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     switch (self.connection.state) {
         case ARTRealtimeConnecting:
         case ARTRealtimeConnected:
-            _resuming = true;
-            [self transportReconnectWithRenewedToken];
+            [self transportConnectForcingNewToken:true keepConnection:true];
             break;
         default:
             [self.logger error:@"Invalid Realtime state: expected Connecting or Connected, has %@", ARTRealtimeConnectionStateToStr(self.connection.state)];
@@ -731,18 +730,18 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 - (void)transportReconnectWithHost:(NSString *)host {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     [self.transport setHost:host];
-    [self transportConnectForcingNewToken:false];
+    [self transportConnectForcingNewToken:false keepConnection:false];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)transportReconnectWithRenewedToken {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     _renewingToken = true;
-    [self transportConnectForcingNewToken:true];
+    [self transportConnectForcingNewToken:true keepConnection:false];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (void)transportConnectForcingNewToken:(BOOL)forceNewToken {
+- (void)transportConnectForcingNewToken:(BOOL)forceNewToken keepConnection:(BOOL)keepConnection {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     ARTClientOptions *options = [self.options copy];
     if ([options isBasicAuth]) {
@@ -768,9 +767,11 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                 // FIXME: should cancel the auth request as well.
             });
 
-            // Deactivate use of `ARTAuthDelegate`: `authorize` should complete without waiting for a CONNECTED state.
             id<ARTAuthDelegate> delegate = self.auth.delegate;
-            self.auth.delegate = nil;
+            if (!keepConnection) {
+                // Deactivate use of `ARTAuthDelegate`: `authorize` should complete without waiting for a CONNECTED state.
+                self.auth.delegate = nil;
+            }
             @try {
                 [self.auth authorize:nil options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
                     // Cancel scheduled work
@@ -792,12 +793,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                         return;
                     }
 
-                    if (forceNewToken) {
+                    if (forceNewToken && !keepConnection) {
                         [_transport close];
                         _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:_transport.resumeKey connectionSerial:_transport.connectionSerial];
                         _transport.delegate = self;
                     }
-                    [[weakSelf transport] connectWithToken:tokenDetails.token];
+                    if (!keepConnection) {
+                        [[weakSelf transport] connectWithToken:tokenDetails.token];
+                    }
                 }];
             }
             @finally {
