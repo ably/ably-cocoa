@@ -559,7 +559,7 @@ class Auth : QuickSpec {
 
                             // Token should renew and fail
                             let invalidToken = String(token.characters.reversed())
-                                AblyTests.queue.sync {
+                            AblyTests.queue.sync {
                                 realtime.options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
                                 realtime.options.authParams?.append(NSURLQueryItem(name: "type", value: "json") as URLQueryItem)
                                 let invalidTokenFormat = "{secret_token:xxx}"

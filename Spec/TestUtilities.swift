@@ -94,6 +94,7 @@ class AblyTests {
 
     static var queue = DispatchQueue(label: "io.ably.tests", qos: .userInitiated)
     static var userQueue = DispatchQueue(label: "io.ably.tests.callbacks", qos: .userInitiated)
+    static var extraQueue = DispatchQueue(label: "io.ably.tests.extra", qos: .userInitiated)
 
     class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false) -> ARTClientOptions {
         ARTChannels_getChannelNamePrefix = { "test-\(setupOptionsCounter)" }

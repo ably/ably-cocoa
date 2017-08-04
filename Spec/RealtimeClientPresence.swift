@@ -811,7 +811,7 @@ class RealtimeClientPresence: QuickSpec {
                                         }
                                     }
                                     // Re-entered automatically
-                                    AblyTests.queue.async {
+                                    AblyTests.extraQueue.async {
                                         channel.presence.subscribe(.enter) { enter in
                                             // The members re-entered automatically must be removed from the internal PresenceMap,
                                             //so it must be a different object
@@ -2175,7 +2175,7 @@ class RealtimeClientPresence: QuickSpec {
                         channel.presenceMap.testSuite_injectIntoMethod(after: #selector(ARTPresenceMap.startSync)) {
                             expect(channel.presenceMap.syncInProgress).to(beTrue())
 
-                            AblyTests.queue.async {
+                            AblyTests.extraQueue.async {
                                 channel.presence.subscribe(.leave) { leave in
                                     expect(leave.clientId).to(equal("user11"))
                                     expect(channel.presenceMap.members.filter{ _, presence in presence.action == .leave }).to(beEmpty())
