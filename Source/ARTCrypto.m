@@ -66,7 +66,7 @@
         _iv = iv;
 
         CCAlgorithm ccAlgorithm;
-        NSError *error;
+        NSError *error = nil;
         if (![self ccAlgorithm:&ccAlgorithm error:&error]) {
             [ARTException raise:NSInvalidArgumentException format:@"%@", error.userInfo[NSLocalizedFailureReasonErrorKey]];
         }

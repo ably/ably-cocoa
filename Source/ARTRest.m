@@ -269,7 +269,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 
         if (response.statusCode >= 400) {
             if (data) {
-                NSError *decodeError;
+                NSError *decodeError = nil;
                 NSError *dataError = [self->_encoders[response.MIMEType] decodeErrorInfo:data error:&decodeError];
                 if ([self shouldRenewToken:&dataError]) {
                     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p retry request %@", self, request];

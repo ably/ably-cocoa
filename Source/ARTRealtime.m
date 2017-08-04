@@ -919,7 +919,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         msg.msgSerial = [NSNumber numberWithLongLong:self.msgSerial];
     }
 
-    NSError *error;
+    NSError *error = nil;
     NSData *data = [self.rest.defaultEncoder encodeProtocolMessage:msg error:&error];
 
     if (error) {

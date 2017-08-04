@@ -28,7 +28,7 @@
         _rest = rest;
         _queue = rest.queue;
         [self _setOptions:options];
-        NSError *error;
+        NSError *error = nil;
         _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:_options.cipher error:&error];
         if (error != nil) {
             [_logger warn:@"creating ARTDataEncoder: %@", error];
@@ -65,7 +65,7 @@
 }
 
 - (void)publish:(art_nullable NSString *)name data:(art_nullable id)data extras:(id<ARTJsonCompatible>)extras callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
-    NSError *error;
+    NSError *error = nil;
     ARTMessage *message = [[ARTMessage alloc] initWithName:name data:data];
     message.extras = extras;
     ARTMessage *messagesWithDataEncoded = [self encodeMessageIfNeeded:message error:&error];
@@ -89,7 +89,7 @@
 }
 
 - (void)publish:(NSString *)name data:(id)data clientId:(NSString *)clientId extras:(id<ARTJsonCompatible>)extras callback:(void (^)(ARTErrorInfo * _Nullable))callback {
-    NSError *error;
+    NSError *error = nil;
     ARTMessage *message = [[ARTMessage alloc] initWithName:name data:data clientId:clientId];
     message.extras = extras;
     ARTMessage *messagesWithDataEncoded = [self encodeMessageIfNeeded:message error:&error];
@@ -105,7 +105,7 @@
 }
 
 - (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
-    NSError *error;
+    NSError *error = nil;
     NSMutableArray<ARTMessage *> *messagesWithDataEncoded = [NSMutableArray new];
     for (ARTMessage *message in messages) {
         [messagesWithDataEncoded addObject:[self encodeMessageIfNeeded:message error:&error]];

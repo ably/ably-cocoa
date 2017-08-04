@@ -44,7 +44,7 @@
 }
 
 + (ARTTokenDetails *__art_nullable)fromJson:(id<ARTJsonCompatible>)json error:(NSError *__art_nullable *__art_nullable)error {
-    NSError *e;
+    NSError *e = nil;
     NSDictionary *dict = [json toJSON:&e];
     if (e) {
         if (error) {
