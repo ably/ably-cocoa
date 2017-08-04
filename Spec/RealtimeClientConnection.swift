@@ -3642,18 +3642,19 @@ class RealtimeClientConnection: QuickSpec {
                     guard let accessToken = authMessage.auth?.accessToken else {
                         fail("Missing accessToken from AUTH ProtocolMessage auth attribute"); return
                     }
+                    
+                    let rest = ARTRest(options: AblyTests.clientOptions(key: options.key!))
 
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
                         let expectedMessage = ARTMessage(name: "ios", data: "message1")
-
+                        
                         channel.subscribe() { message in
                             expect(message.name).to(equal(expectedMessage.name))
                             expect(message.data as? String).to(equal(expectedMessage.data as? String))
                             partialDone()
                         }
 
-                        let rest = ARTRest(options: AblyTests.clientOptions(key: options.key!))
                         rest.channels.get("foo").publish([expectedMessage]) { error in
                             expect(error).to(beNil())
                             partialDone()
@@ -3691,7 +3692,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     var authorizeMethodCallCount = 0
-                    let hook = client.auth.testSuite_injectIntoMethod(after: #selector(client.auth.authorize(_:options:callback:))) {
+                    let hook = client.auth.testSuite_injectIntoMethod(after: #selector(client.auth._authorize(_:options:callback:))) {
                         authorizeMethodCallCount += 1
                     }
                     defer { hook.remove() }
@@ -3716,6 +3717,8 @@ class RealtimeClientConnection: QuickSpec {
 
                     expect(client.connection.id).to(equal(initialConnectionId))
                     expect(authorizeMethodCallCount) == 1
+                    
+                    let rest = ARTRest(options: AblyTests.clientOptions(key: options.key!))
 
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
@@ -3727,7 +3730,6 @@ class RealtimeClientConnection: QuickSpec {
                             partialDone()
                         }
 
-                        let rest = ARTRest(options: AblyTests.clientOptions(key: options.key!))
                         rest.channels.get("foo").publish([expectedMessage]) { error in
                             expect(error).to(beNil())
                             partialDone()
@@ -3742,11 +3744,6 @@ class RealtimeClientConnection: QuickSpec {
             // RTN24
             it("the client may receive a CONNECTED ProtocolMessage from Ably at any point and should emit an UPDATE event") {
                 let options = AblyTests.commonAppSetup()
-                options.authCallback = { _, completion in
-                    getTestToken(key: options.key!, ttl: 35) { token in
-                        completion(token as NSString, nil)
-                    }
-                }
                 let client = ARTRealtime(options: options)
                 defer { client.dispose(); client.close() }
 
@@ -3757,32 +3754,30 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
-                expect(client.auth.clientId).to(beNil())
+                waitUntil(timeout: testTimeout) { done in
+                    let authMessage = ARTProtocolMessage()
+                    authMessage.action = ARTProtocolMessageAction.connected
+                    authMessage.error = ARTErrorInfo.create(withCode: 1234, message: "fabricated error")
 
-                client.options.authCallback = { _, completion in
-                    getTestToken(key: options.key!, clientId: "tester", ttl: 5) { token in
-                        completion(token as NSString, nil)
+                    let listener = client.connection.once(.connected) { _ in 
+                        fail("shouldn't emit CONNECTED")
                     }
-                }
-
-                client.connection.once(.connected) { stateChange in
-                    fail("Should not emit a Connected state")
-                }
-
-                waitUntil(timeout: 40) { done in
                     client.connection.once(.update) { stateChange in
                         guard let stateChange = stateChange else {
                             fail("ConnectionStateChange is nil"); done(); return
                         }
-                        expect(stateChange.reason).to(beNil())
                         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
                         expect(stateChange.current).to(equal(ARTRealtimeConnectionState.connected))
                         expect(stateChange.current).to(equal(stateChange.previous))
-                        done()
+                        expect(stateChange.reason).to(beIdenticalTo(authMessage.error))
+                        delay(0.5) { // Give some time for the other listener to be triggered.
+                            client.connection.off(listener)
+                            done()
+                        }
                     }
-                }
 
-                expect(client.auth.clientId).to(equal("tester"))
+                    client.transport?.receive(authMessage)
+                }
             }
 
             // RTN24

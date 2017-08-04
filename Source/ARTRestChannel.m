@@ -57,10 +57,9 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 
 - (ARTRestPresence *)getPresence {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
-    static dispatch_once_t once;
-    dispatch_once(&once, ^{
+    if (!_restPresence) {
         _restPresence = [[ARTRestPresence alloc] initWithChannel:self];
-    });
+    }
     return _restPresence;
 } ART_TRY_OR_REPORT_CRASH_END
 }

@@ -97,7 +97,7 @@ ART_ASSUME_NONNULL_BEGIN
 
  It defaults to the main queue.
  */
-@property (readwrite, assign, nonatomic) dispatch_queue_t dispatchQueue;
+@property (readwrite, strong, nonatomic) dispatch_queue_t dispatchQueue;
 
 /**
  The queue to which all internal concurrent operations will be dispatched.
@@ -105,7 +105,7 @@ ART_ASSUME_NONNULL_BEGIN
 
  It defaults to a newly created serial queue.
  */
-@property (readwrite, assign, nonatomic) dispatch_queue_t internalDispatchQueue;
+@property (readwrite, strong, nonatomic) dispatch_queue_t internalDispatchQueue;
 
 - (BOOL)isBasicAuth;
 - (NSURL *)restUrl;

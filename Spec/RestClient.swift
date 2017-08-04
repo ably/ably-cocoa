@@ -484,17 +484,17 @@ class RestClient: QuickSpec {
                     let tokenParams = ARTTokenParams()
                     tokenParams.ttl = 3.0 //Seconds
 
-                    waitUntil(timeout: testTimeout) { done in
+                    guard let options: ARTClientOptions = (AblyTests.waitFor(timeout: testTimeout) { value in
                         auth.requestToken(tokenParams, with: nil) { tokenDetails, error in
                             if let e = error {
                                 XCTFail(e.localizedDescription)
-                                done()
+                                value(nil)
                                 return
                             }
 
                             guard let currentTokenDetails = tokenDetails else {
                                 XCTFail("expected tokenDetails not to be nil when error is nil")
-                                done()
+                                value(nil)
                                 return
                             }
 
@@ -505,23 +505,28 @@ class RestClient: QuickSpec {
                             options.tokenDetails = ARTTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires!.addingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
 
                             options.authUrl = NSURL(string: "http://test-auth.ably.io") as URL?
+                            value(options)
+                        }
+                    }) else {
+                        return
+                    }
 
-                            let rest = ARTRest(options: options)
-                            rest.httpExecutor = testHTTPExecutor
+                    let rest = ARTRest(options: options)
+                    rest.httpExecutor = testHTTPExecutor
 
-                            // Delay for token expiration
-                            delay(TimeInterval(tokenParams.ttl!)) {
-                                // [40140, 40150) - token expired and will not recover because authUrl is invalid
-                                publishTestMessage(rest) { error in
-                                    guard let errorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-Errorcode"] as? String else {
-                                        fail("expected X-Ably-Errorcode header in request")
-                                        return
-                                    }
-                                    expect(Int(errorCode)).to(beGreaterThanOrEqualTo(40140))
-                                    expect(Int(errorCode)).to(beLessThan(40150))
-                                    expect(error).toNot(beNil())
-                                    done()
+                    waitUntil(timeout: testTimeout) { done in
+                        // Delay for token expiration
+                        delay(TimeInterval(tokenParams.ttl!)) {
+                            // [40140, 40150) - token expired and will not recover because authUrl is invalid
+                            publishTestMessage(rest) { error in
+                                guard let errorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-Errorcode"] as? String else {
+                                    fail("expected X-Ably-Errorcode header in request")
+                                    return
                                 }
+                                expect(Int(errorCode)).to(beGreaterThanOrEqualTo(40140))
+                                expect(Int(errorCode)).to(beLessThan(40150))
+                                expect(error).toNot(beNil())
+                                done()
                             }
                         }
                     }

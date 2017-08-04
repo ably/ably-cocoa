@@ -527,7 +527,6 @@ class RealtimeClientPresence: QuickSpec {
                                 expect(channel.queuedMessages).to(haveCount(0))
                                 done()
                             }
-                            expect(channel.queuedMessages).to(haveCount(1))
                             channel.onError(protocolError)
                         }
                     }
@@ -580,7 +579,6 @@ class RealtimeClientPresence: QuickSpec {
                                 expect(channel.queuedMessages).to(haveCount(0))
                                 done()
                             }
-                            expect(channel.queuedMessages).to(haveCount(1))
                         }
                     }
 
@@ -1552,17 +1550,20 @@ class RealtimeClientPresence: QuickSpec {
                 it("optionally a callback can be provided that is called for failure") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
-                    let client = ARTRealtime(options: options)
+                    let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
                     waitUntil(timeout: testTimeout) { done in
                         let protocolError = AblyTests.newErrorProtocolMessage()
+                        channel.once(.attaching) { _ in
+                            channel.onError(protocolError)
+                        }
+                        (client.transport as! TestProxyTransport).actionsIgnored += [.attached]
                         channel.presence.update("online") { error in
                             expect(error).to(beIdenticalTo(protocolError.error))
                             done()
                         }
-                        channel.onError(protocolError)
                     }
                 }
 
@@ -1686,7 +1687,7 @@ class RealtimeClientPresence: QuickSpec {
                         guard let members = members else {
                             fail("Members is nil"); done(); return
                         }
-                        expect(members.count) == 3
+                        expect(members.count) == 100
                         done()
                     }
                 }
@@ -3027,18 +3028,21 @@ class RealtimeClientPresence: QuickSpec {
                     }
 
                     it("should result in an error if the channel moves to the FAILED state") {
-                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
 
                         waitUntil(timeout: testTimeout) { done in
                             let error = AblyTests.newErrorProtocolMessage()
+                            channel.once(.attaching) { _ in
+                                channel.onError(error)
+                            }
+                            (client.transport as! TestProxyTransport).actionsIgnored += [.attached]
                             //Call: enterClient, updateClient and leaveClient
                             performMethod(channel.presence) { errorInfo in
                                 expect(errorInfo).to(equal(error.error))
                                 done()
                             }
-                            channel.onError(error)
                         }
                     }
                 }
@@ -3309,7 +3313,7 @@ class RealtimeClientPresence: QuickSpec {
 
                 // RTP11b
                 it("should result in an error if the channel moves to the FAILED state") {
-                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
@@ -3317,6 +3321,10 @@ class RealtimeClientPresence: QuickSpec {
                         let pm = AblyTests.newErrorProtocolMessage()
                         guard let protocolError = pm.error else {
                             fail("Protocol error is empty"); done(); return
+                        }
+                        (client.transport as! TestProxyTransport).actionsIgnored += [.attached]
+                        channel.once(.attaching) { _ in
+                            channel.onError(pm)
                         }
                         channel.presence.get() { members, error in
                             guard let error = error else {
@@ -3326,7 +3334,6 @@ class RealtimeClientPresence: QuickSpec {
                             expect(members).to(beNil())
                             done()
                         }
-                        channel.onError(pm)
                     }
 
                     expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
@@ -3459,14 +3466,20 @@ class RealtimeClientPresence: QuickSpec {
                                 expect(error).to(beNil())
                                 let transport = client.transport as! TestProxyTransport
                                 transport.beforeProcessingReceivedMessage = { message in
-                                    if message.action == .sync && channel.isLastSerial(message.channelSerial!)  {
-                                        channel.presence.get(query) { members, error in
-                                            expect(error).to(beNil())
-                                            expect(members).to(haveCount(100))
-                                            done()
-                                        }
+                                    if message.action == .sync {
+                                        // Ignore next SYNC so that the sync process never finishes.
+                                        transport.actionsIgnored += [.sync]
+                                        done()
                                     }
                                 }
+                            }
+                        }
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.presence.get(query) { members, error in
+                                expect(error).to(beNil())
+                                expect(members).to(haveCount(100))
+                                done()
                             }
                         }
                     }
@@ -3610,7 +3623,7 @@ class RealtimeClientPresence: QuickSpec {
                             try channel.presence.history(query, callback: { _, _ in })
                         }
                         catch let error as NSError {
-                            if (error as? ARTErrorInfo)?.code == ARTRealtimeHistoryError.notAttached.rawValue {
+                            if error.code == ARTRealtimeHistoryError.notAttached.rawValue {
                                 return
                             }
                             fail("Shouldn't raise a global error, got \(error)")
