@@ -981,7 +981,7 @@ class RealtimeClientPresence: QuickSpec {
                                 transport.replaceAcksWithNacks(reEnterError) { _ in }
 
                                 // Re-entered automatically should fail
-                                AblyTests.queue.async {
+                                AblyTests.extraQueue.async {
                                     channel.presence.subscribe(.enter) { enter in
                                         fail("Should not Enter the local member")
                                     }

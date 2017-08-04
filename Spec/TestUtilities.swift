@@ -230,9 +230,9 @@ class AblyTests {
         }
     }
 
-    class func waitFor<T>(timeout: TimeInterval, f: @escaping (@escaping (T?) -> Void) -> Void) -> T? {
+    class func waitFor<T>(timeout: TimeInterval, file: FileString = #file, line: UInt = #line, f: @escaping (@escaping (T?) -> Void) -> Void) -> T? {
         var value: T?
-        waitUntil(timeout: timeout) { done in
+        waitUntil(timeout: timeout, file: file, line: line) { done in
             f() { v in
                 value = v
                 done()
@@ -433,12 +433,15 @@ class PublishTestMessage {
 
 /// Access Token
 func getTestToken(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, file: FileString = #file, line: UInt = #line) -> String {
-    if let tokenDetails = getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl) {
-        return tokenDetails.token
-    }
-    else {
-        fail("TokenDetails is empty", file: file, line: line)
-        return ""
+    return getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl, file: file, line: line)?.token ?? ""
+}
+
+func getTestToken(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, file: FileString = #file, line: UInt = #line, completion: @escaping (String) -> Void) {
+    getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl) { tokenDetails, error in
+        if let e = error {
+            fail(e.localizedDescription, file: file, line: line)
+        }
+        completion(tokenDetails?.token ?? "")
     }
 }
 
@@ -476,21 +479,12 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
 }
 
 func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, file: FileString = #file, line: UInt = #line) -> ARTTokenDetails? {
-    var tokenDetails: ARTTokenDetails?
-    var error: Error?
-
-    getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl) { _tokenDetails, _error in
-        tokenDetails = _tokenDetails
-        error = _error
-    }
-
-    let start = Date()
-    while tokenDetails == nil && error == nil {
-        CFRunLoopRunInMode(CFRunLoopMode.defaultMode, CFTimeInterval(0.1), Bool(0))
-        if Date().timeIntervalSince(start) >= testTimeout {
-            fail("getTestTokenDetails: timeout", file: file, line: line)
-            return nil
+    guard let (tokenDetails, error) = (AblyTests.waitFor(timeout: testTimeout, file: file, line: line) { value in
+        getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl) { tokenDetails, error in
+            value((tokenDetails, error))
         }
+    }) else {
+        return nil
     }
 
     if let e = error {

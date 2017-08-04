@@ -305,9 +305,10 @@ class Auth : QuickSpec {
                 it("in Realtime, if the connection fails due to a terminal token error, then the connection should move to the FAILED state and reports the error") {
                     let options = AblyTests.commonAppSetup()
                     options.authCallback = { tokenParams, completion in
-                        let token = getTestToken()
-                        let invalidToken = String(token.characters.reversed())
-                        completion(invalidToken as ARTTokenDetailsCompatible?, nil)
+                        getTestToken() { token in
+                            let invalidToken = String(token.characters.reversed())
+                            completion(invalidToken as ARTTokenDetailsCompatible?, nil)
+                        }
                     }
                     options.autoConnect = false
 
@@ -464,7 +465,7 @@ class Auth : QuickSpec {
                         it("if the connection is CONNECTED, then the connection should remain CONNECTED") {
                             let options = AblyTests.clientOptions()
                             options.authCallback = { tokenParams, completion in
-                                completion(getTestTokenDetails(), nil)
+                                getTestTokenDetails(completion: completion)
                             }
                             let realtime = ARTRealtime(options: options)
                             defer { realtime.dispose(); realtime.close() }
@@ -634,7 +635,7 @@ class Auth : QuickSpec {
                             let options = AblyTests.clientOptions()
                             options.autoConnect = false
                             options.authCallback = { tokenParams, completion in
-                                completion(getTestTokenDetails(), nil)
+                                getTestTokenDetails(completion: completion)
                             }
 
                             let realtime = ARTRealtime(options: options)
@@ -924,8 +925,9 @@ class Auth : QuickSpec {
                     options.clientId = "john"
                     options.authCallback = { tokenParams, completion in
                         expect(tokenParams.clientId).to(equal(options.clientId))
-                        let token = getTestToken(clientId: tokenParams.clientId) as ARTTokenDetailsCompatible?
-                        completion(token, nil)
+                        getTestToken(clientId: tokenParams.clientId) { token in
+                            completion(token as ARTTokenDetailsCompatible?, nil)
+                        }
                     }
                     options.defaultTokenParams = ARTTokenParams(clientId: "tester")
                     let client = ARTRest(options: options)
@@ -2551,7 +2553,7 @@ class Auth : QuickSpec {
                         expect(tokenParams.ttl as? TimeInterval) == ExpectedTokenParams.ttl
                         expect(tokenParams.capability) == ExpectedTokenParams.capability
                         authCallbackCalled += 1
-                        completion(getTestTokenDetails(key: options.key), nil)
+                        getTestTokenDetails(key: options.key, completion: completion)
                     }
 
                     waitUntil(timeout: testTimeout) { done in

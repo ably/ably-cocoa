@@ -1875,7 +1875,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.autoConnect = false
                     options.disconnectedRetryTimeout = 0.1
                     options.authCallback = { tokenParams, callback in
-                        callback(getTestTokenDetails(key: options.key, capability: tokenParams.capability, ttl: tokenParams.ttl as! TimeInterval?), nil)
+                        getTestTokenDetails(key: options.key, capability: tokenParams.capability, ttl: tokenParams.ttl as! TimeInterval?, completion: callback)
                     }
                     let tokenTtl = 3.0
                     options.token = getTestToken(key: options.key, ttl: tokenTtl)
@@ -2642,7 +2642,7 @@ class RealtimeClientConnection: QuickSpec {
                         options.disconnectedRetryTimeout = 1.0
                         options.autoConnect = false
                         options.authCallback = { tokenParams, callback in
-                            callback(getTestTokenDetails(key: options.key, capability: tokenParams.capability, ttl: TimeInterval(60 * 60)), nil)
+                            getTestTokenDetails(key: options.key, capability: tokenParams.capability, ttl: TimeInterval(60 * 60), completion: callback)
                         }
                         let tokenTtl = 2.0
                         options.token = getTestToken(key: options.key, ttl: tokenTtl)
@@ -3743,7 +3743,9 @@ class RealtimeClientConnection: QuickSpec {
             it("the client may receive a CONNECTED ProtocolMessage from Ably at any point and should emit an UPDATE event") {
                 let options = AblyTests.commonAppSetup()
                 options.authCallback = { _, completion in
-                    completion(getTestToken(key: options.key!, ttl: 35) as NSString, nil)
+                    getTestToken(key: options.key!, ttl: 35) { token in
+                        completion(token as NSString, nil)
+                    }
                 }
                 let client = ARTRealtime(options: options)
                 defer { client.dispose(); client.close() }
@@ -3758,7 +3760,9 @@ class RealtimeClientConnection: QuickSpec {
                 expect(client.auth.clientId).to(beNil())
 
                 client.options.authCallback = { _, completion in
-                    completion(getTestToken(key: options.key!, clientId: "tester", ttl: 5) as NSString, nil)
+                    getTestToken(key: options.key!, clientId: "tester", ttl: 5) { token in
+                        completion(token as NSString, nil)
+                    }
                 }
 
                 client.connection.once(.connected) { stateChange in

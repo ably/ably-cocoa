@@ -721,7 +721,7 @@ class RealtimeClient: QuickSpec {
 
                         let authOptions = ARTAuthOptions()
                         authOptions.authCallback = { tokenParams, completion in
-                            completion(getTestTokenDetails(clientId: "tester"), nil)
+                            getTestTokenDetails(clientId: "tester", completion: completion)
                         }
 
                         client.auth.authorize(tokenParams, options: authOptions) { tokenDetails, error in

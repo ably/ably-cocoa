@@ -2356,7 +2356,7 @@ class RealtimeClientChannel: QuickSpec {
                     it("message should be published following authentication and received back with the clientId intact") {
                         let options = AblyTests.clientOptions()
                         options.authCallback = { tokenParams, completion in
-                            completion(getTestTokenDetails(clientId: "john"), nil)
+                            getTestTokenDetails(clientId: "john", completion: completion)
                         }
                         let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
@@ -2379,7 +2379,7 @@ class RealtimeClientChannel: QuickSpec {
                     it("message should be rejected by the Ably service and the message error should contain the server error") {
                         let options = AblyTests.clientOptions()
                         options.authCallback = { tokenParams, completion in
-                            completion(getTestTokenDetails(clientId: "john"), nil)
+                            getTestTokenDetails(clientId: "john", completion: completion)
                         }
                         let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }

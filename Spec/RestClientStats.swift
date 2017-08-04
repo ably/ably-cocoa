@@ -37,24 +37,17 @@ private func postTestStats(_ stats: JSON) -> ARTClientOptions {
     return options
 }
 
-private func queryStats(_ client: ARTRest, _ query: ARTStatsQuery) -> ARTPaginatedResult<ARTStats> {
-    var stats: ARTPaginatedResult<ARTStats>?
-    let dummyError = ARTErrorInfo()
-    var error: ARTErrorInfo? = dummyError
-
-    try! client.stats(query, callback: { result, err in
-        stats = result
-        error = err
-    })
-
-    while error === dummyError {
-        CFRunLoopRunInMode(CFRunLoopMode.defaultMode, CFTimeInterval(0.1), Bool(0))
-    }
-    
+private func queryStats(_ client: ARTRest, _ query: ARTStatsQuery, file: FileString = #file, line: UInt = #line) -> ARTPaginatedResult<ARTStats> {
+    let (stats, error) = (AblyTests.waitFor(timeout: testTimeout, file: file, line: line) { value in
+        expect {
+            try client.stats(query, callback: { result, err in
+                value((result, err))
+            })
+        }.toNot(throwError() { _ in value(nil) })
+    })!
     if let error = error {
-        XCTFail(error.message)
+        fail(error.message, file: file, line: line)
     }
-    
     return stats!
 }
 
