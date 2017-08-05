@@ -141,7 +141,7 @@ static const char *logLevelName(ARTLogLevel level) {
         }
         if (![[NSProcessInfo processInfo].environment valueForKey:@"ARTUnitTests"]) {
             #ifdef SENTRY
-            [ARTSentry setBreadcrumbs:_breadcrumbsKey value:_history];
+            //[ARTSentry setBreadcrumbs:_breadcrumbsKey value:_history];
             #endif
         }
     });
