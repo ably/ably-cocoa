@@ -17,21 +17,25 @@
 #import "ARTPaginatedResult+Private.h"
 #import "ARTDataQuery+Private.h"
 #import "ARTJsonEncoder.h"
-#import "ARTAuth.h"
+#import "ARTAuth+Private.h"
 #import "ARTTokenDetails.h"
 #import "ARTNSArray+ARTFunctional.h"
 
 @implementation ARTRestChannel {
 @private
     ARTRestPresence *_restPresence;
+    dispatch_queue_t _queue;
+    dispatch_queue_t _userQueue;
 @public
     NSString *_basePath;
 }
 
 - (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRest *)rest {
 ART_TRY_OR_REPORT_CRASH_START(rest) {
-    if (self = [super initWithName:name andOptions:options andLogger:rest.logger]) {
+    if (self = [super initWithName:name andOptions:options rest:rest]) {
         _rest = rest;
+        _queue = rest.queue;
+        _userQueue = rest.userQueue;
         _basePath = [NSString stringWithFormat:@"/channels/%@", [name stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]]];
         [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p instantiating under '%@'", self, name];
     }
@@ -67,22 +71,27 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 }
 
 - (BOOL)history:(ARTDataQuery *)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *result, ARTErrorInfo *error))callback error:(NSError **)errorPtr {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (callback) {
         void (^userCallback)(__GENERIC(ARTPaginatedResult, ARTMessage *) *result, ARTErrorInfo *error) = callback;
         callback = ^(__GENERIC(ARTPaginatedResult, ARTMessage *) *result, ARTErrorInfo *error) {
             ART_EXITING_ABLY_CODE(_rest);
-            userCallback(result, error);
+            dispatch_async(_userQueue, ^{
+                userCallback(result, error);
+            });
         };
     }
 
+    __block BOOL ret;
+dispatch_sync(_queue, ^{
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (query.limit > 1000) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
                                             code:ARTDataQueryErrorLimit
                                         userInfo:@{NSLocalizedDescriptionKey:@"Limit supports up to 1000 results only"}];
         }
-        return NO;
+        ret = NO;
+        return;
     }
     if ([query.start compare:query.end] == NSOrderedDescending) {
         if (errorPtr) {
@@ -90,18 +99,27 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
                                             code:ARTDataQueryErrorTimestampRange
                                         userInfo:@{NSLocalizedDescriptionKey:@"Start must be equal to or less than end"}];
         }
-        return NO;
+        ret = NO;
+        return;
     }
 
     NSURLComponents *componentsUrl = [NSURLComponents componentsWithString:[_basePath stringByAppendingPathComponent:@"messages"]];
-    componentsUrl.queryItems = [query asQueryItems];
+    NSError *error = nil;
+    componentsUrl.queryItems = [query asQueryItems:&error];
+    if (error) {
+        if (errorPtr) {
+            *errorPtr = error;
+        }
+        ret = NO;
+        return;
+    }
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:componentsUrl.URL];
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^NSArray<ARTMessage *> *(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
         id<ARTEncoder> encoder = [_rest.encoders objectForKey:response.MIMEType];
         return [[encoder decodeMessages:data error:errorPtr] artMap:^(ARTMessage *message) {
-            NSError *error;
+            NSError *error = nil;
             message = [message decodeWithEncoder:self.dataEncoder error:&error];
             if (error != nil) {
                 ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createFromNSError:error] prepend:@"Failed to decode data: "];
@@ -113,8 +131,10 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p stats request %@", _rest, request];
     [ARTPaginatedResult executePaginated:_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
-    return YES;
+    ret = YES;
 } ART_TRY_OR_REPORT_CRASH_END
+});
+    return ret;
 }
 
 - (void)internalPostMessages:(id)data callback:(void (^)(ARTErrorInfo *__art_nullable error))callback {
@@ -122,21 +142,24 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         void (^userCallback)(ARTErrorInfo *__art_nullable error) = callback;
         callback = ^(ARTErrorInfo *__art_nullable error) {
             ART_EXITING_ABLY_CODE(_rest);
-            userCallback(error);
+            dispatch_async(_userQueue, ^{
+                userCallback(error);
+            });
         };
     }
 
+dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSData *encodedMessage = nil;
     
     if ([data isKindOfClass:[ARTMessage class]]) {
         ARTMessage *message = (ARTMessage *)data;
-        if (message.clientId && self.rest.auth.clientId && ![message.clientId isEqualToString:self.rest.auth.clientId]) {
+        if (message.clientId && self.rest.auth.clientId_nosync && ![message.clientId isEqualToString:self.rest.auth.clientId_nosync]) {
             callback([ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
             return;
         }
         else {
-            message.clientId = self.rest.auth.clientId;
+            message.clientId = self.rest.auth.clientId_nosync;
         }
         NSError *encodeError = nil;
         encodedMessage = [self.rest.defaultEncoder encodeMessage:message error:&encodeError];
@@ -147,7 +170,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     } else if ([data isKindOfClass:[NSArray class]]) {
         __GENERIC(NSArray, ARTMessage *) *messages = (NSArray *)data;
         for (ARTMessage *message in messages) {
-            if (message.clientId && self.rest.auth.clientId && ![message.clientId isEqualToString:self.rest.auth.clientId]) {
+            if (message.clientId && self.rest.auth.clientId_nosync && ![message.clientId isEqualToString:self.rest.auth.clientId_nosync]) {
                 callback([ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
                 return;
             }
@@ -176,6 +199,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         }
     }];
 } ART_TRY_OR_REPORT_CRASH_END
+});
 }
 
 @end

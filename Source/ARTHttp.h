@@ -22,45 +22,12 @@ ART_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface ARTHttpRequest : NSObject
-
-@property (readonly, strong, nonatomic) NSString *method;
-@property (readonly, strong, nonatomic) NSURL *url;
-@property (art_nullable, readonly, strong, nonatomic) NSDictionary *headers;
-@property (art_nullable, readonly, strong, nonatomic) NSData *body;
-
-- (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithMethod:(NSString *)method url:(NSURL *)url headers:(art_nullable NSDictionary *)headers body:(art_nullable NSData *)body;
-- (ARTHttpRequest *)requestWithRelativeUrl:(NSString *)relUrl;
-
-@end
-
-@interface ARTHttpResponse : NSObject
-
-@property (readonly, assign, nonatomic) int status;
-@property (nullable, readwrite, nonatomic) ARTErrorInfo *error;
-@property (nullable, readonly, nonatomic) NSDictionary *headers;
-@property (nullable, readonly, nonatomic) NSData *body;
-
-- (instancetype)init;
-- (instancetype)initWithStatus:(int)status headers:(art_nullable NSDictionary *)headers body:(art_nullable NSData *)body;
-
-+ (instancetype)response;
-+ (instancetype)responseWithStatus:(int)status headers:(art_nullable NSDictionary *)headers body:(art_nullable NSData *)body;
-
-- (NSString *)contentType;
-- (NSDictionary *)links;
-
-@end
-
 @interface ARTHttp : NSObject<ARTHTTPExecutor>
 
 @property (nonatomic, weak) ARTLog *logger;
 
-- (instancetype)init;
-
-- (id<ARTCancellable>)makeRequestWithMethod:(NSString *)method url:(NSURL *)url headers:(art_nullable NSDictionary *)headers body:(art_nullable NSData *)body callback:(void (^)(ARTHttpResponse *))cb;
-
+- (instancetype)init UNAVAILABLE_ATTRIBUTE;
+- (instancetype)init:(dispatch_queue_t)queue;
 
 @end
 

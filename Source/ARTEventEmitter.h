@@ -19,36 +19,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)identification;
 @end
 
-@interface ARTEvent : NSObject<ARTEventIdentification>
-
-- (instancetype)initWithString:(NSString *)value;
-+ (instancetype)newWithString:(NSString *)value;
-
-@end
-
-#pragma mark - ARTEventListener
-
 @interface ARTEventListener : NSObject
-
-@property (nonatomic, readonly) NSString *eventId;
-@property (weak, nonatomic, readonly) id<NSObject> token;
-@property (nonatomic, readonly) NSUInteger count;
-
-- (instancetype)init NS_UNAVAILABLE;
-- (instancetype)initWithId:(NSString *)eventId token:(id<NSObject>)token handler:(ARTEventEmitter *)eventHandler center:(NSNotificationCenter *)center;
-
-- (ARTEventListener *)setTimer:(NSTimeInterval)timeoutDeadline onTimeout:(void (^)())timeoutBlock;
-- (void)startTimer;
-- (void)stopTimer;
-
 @end
 
 #pragma mark - ARTEventEmitter
 
 @interface ARTEventEmitter<EventType:id<ARTEventIdentification>, ItemType> : NSObject
 
-- (instancetype)init;
-- (instancetype)initWithQueue:(dispatch_queue_t)queue;
+- (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
 - (ARTEventListener *)on:(EventType)event callback:(void (^)(ItemType __art_nullable))cb;
 - (ARTEventListener *)on:(void (^)(ItemType __art_nullable))cb;
@@ -59,8 +37,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)off:(EventType)event listener:(ARTEventListener *)listener;
 - (void)off:(ARTEventListener *)listener;
 - (void)off;
-
-- (void)emit:(nullable EventType)event with:(nullable ItemType)data;
 
 @end
 

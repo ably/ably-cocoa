@@ -45,11 +45,13 @@ void ART_withKSCrash(void (^f)(KSCrash *)) {
 
 @implementation ARTKSCrashReportFilter {
     NSString *_dns;
+    dispatch_queue_t _queue;
 }
 
 - (instancetype)init:(NSString *)dns {
     if (self = [super init]) {
         _dns = dns;
+        _queue = dispatch_queue_create("io.ably.sentry", nil);
     }
     return self;
 }
@@ -61,7 +63,7 @@ void ART_withKSCrash(void (^f)(KSCrash *)) {
         return;
     }
 
-    dispatch_sync(dispatch_queue_create("io.ably.sentry", nil), ^{
+    dispatch_sync(_queue, ^{
         NSMutableArray<NSMutableDictionary *> *events = [[NSMutableArray alloc] init];
         for (NSDictionary __strong *report in reports) {
             id recrash = report[@"recrash_report"];

@@ -25,8 +25,8 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) NSString *defaultEncoding; //Content-Type
 @property (readonly, strong, nonatomic) NSDictionary<NSString *, id<ARTEncoder>> *encoders;
 
-// Private prioritized host for testing only (overrides the current `restHost`)
-@property (readwrite, strong, nonatomic, art_nullable) NSString *prioritizedHost;
+// Must be atomic!
+@property (readwrite, strong, atomic, art_nullable) NSString *prioritizedHost;
 
 @property (nonatomic, weak) id<ARTHTTPExecutor> httpExecutor;
 
@@ -34,12 +34,16 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, readonly) ARTLog *logger;
 
+@property (nonatomic, strong) dispatch_queue_t queue;
+@property (nonatomic, strong) dispatch_queue_t userQueue;
+
 // MARK: Not accessible by tests
 @property (readonly, strong, nonatomic) ARTHttp *http;
 @property (strong, nonatomic) ARTAuth *auth;
 @property (readwrite, assign, nonatomic) int fallbackCount;
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options realtime:(ARTRealtime *_Nullable)realtime;
+- (void)_time:(void (^)(NSDate *__art_nullable, NSError *__art_nullable))callback;
 
 // MARK: ARTHTTPExecutor
 

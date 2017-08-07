@@ -19,9 +19,7 @@
     NSUInteger l = [self count];
     for (NSInteger i = 0; i < l; i++) {
         if (cond([self objectAtIndex:i])) {
-            @synchronized(self) {
-                [self removeObjectAtIndex:i];
-            }
+            [self removeObjectAtIndex:i];
             i--;
             l--;
         }
@@ -137,10 +135,6 @@
 
 @implementation ARTEventEmitter
 
-- (instancetype)init {
-    return [self initWithQueue:dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0)];
-}
-
 - (instancetype)initWithQueue:(dispatch_queue_t)queue {
     self = [super init];
     if (self) {
@@ -221,22 +215,16 @@
     NSString *eventId = [NSString stringWithFormat:@"%p-%@", self, [event identification]];
     if (![eventId isEqualToString:listener.eventId]) return;
     [listener removeObserver];
-    @synchronized (_listeners) {
-        [self.listeners[listener.eventId] removeObject:listener];
-        if ([self.listeners[listener.eventId] firstObject] == nil) {
-            [self.listeners removeObjectForKey:listener.eventId];
-        }
+    [self.listeners[listener.eventId] removeObject:listener];
+    if ([self.listeners[listener.eventId] firstObject] == nil) {
+        [self.listeners removeObjectForKey:listener.eventId];
     }
 }
 
 - (void)off:(ARTEventListener *)listener {
     [listener removeObserver];
-    @synchronized (_listeners) {
-        [self.listeners[listener.eventId] removeObject:listener];
-    }
-    @synchronized (_anyListeners) {
-        [self.anyListeners removeObject:listener];
-    }
+    [self.listeners[listener.eventId] removeObject:listener];
+    [self.anyListeners removeObject:listener];
 }
 
 - (void)off {
@@ -244,75 +232,178 @@
 }
 
 - (void)resetListeners {
-    @synchronized (_listeners) {
-        for (NSArray<ARTEventListener *> *items in [_listeners allValues]) {
-            for (ARTEventListener *item in items) {
-                [item removeObserver];
-            }
-        }
-        [_listeners removeAllObjects];
-    }
-    _listeners = [[NSMutableDictionary alloc] init];
-
-    @synchronized (_anyListeners) {
-        for (ARTEventListener *item in _anyListeners) {
+    for (NSArray<ARTEventListener *> *items in [_listeners allValues]) {
+        for (ARTEventListener *item in items) {
             [item removeObserver];
         }
-        [_anyListeners removeAllObjects];
     }
+    [_listeners removeAllObjects];
+    _listeners = [[NSMutableDictionary alloc] init];
+
+    for (ARTEventListener *item in _anyListeners) {
+        [item removeObserver];
+    }
+    [_anyListeners removeAllObjects];
     _anyListeners = [[NSMutableArray alloc] init];
 }
 
 - (void)emit:(id<ARTEventIdentification>)event with:(id)data {
-    NSString *eventId;
     if (event) {
-        eventId = [NSString stringWithFormat:@"%p-%@", self, [event identification]];
-        [self.notificationCenter postNotificationName:eventId object:data];
-        [self.notificationCenter postNotificationName:[NSString stringWithFormat:@"%p", self] object:data];
+        [self.notificationCenter postNotificationName:[NSString stringWithFormat:@"%p-%@", self, [event identification]] object:data];
     }
-    else {
-        eventId = [NSString stringWithFormat:@"%p", self];
-        [self.notificationCenter postNotificationName:eventId object:data];
-    }
+    [self.notificationCenter postNotificationName:[NSString stringWithFormat:@"%p", self] object:data];
 }
 
 - (void)addObject:(id)obj toArrayWithKey:(id)key inDictionary:(NSMutableDictionary *)dict {
-    @synchronized (dict) {
-        NSMutableArray *array = [dict objectForKey:key];
-        if (array == nil) {
-            array = [[NSMutableArray alloc] init];
-            [dict setObject:array forKey:key];
-        }
-        if ([array indexOfObject:obj] == NSNotFound) {
-            [array addObject:obj];
-        }
+    NSMutableArray *array = [dict objectForKey:key];
+    if (array == nil) {
+        array = [[NSMutableArray alloc] init];
+        [dict setObject:array forKey:key];
+    }
+    if ([array indexOfObject:obj] == NSNotFound) {
+        [array addObject:obj];
     }
 }
 
 - (void)removeObject:(id)obj fromArrayWithKey:(id)key inDictionary:(NSMutableDictionary *)dict {
-    @synchronized (dict) {
-        NSMutableArray *array = [dict objectForKey:key];
-        if (array == nil) {
-            return;
-        }
-        [array removeObject:obj];
-        if ([array count] == 0) {
-            [dict removeObjectForKey:key];
-        }
+    NSMutableArray *array = [dict objectForKey:key];
+    if (array == nil) {
+        return;
+    }
+    [array removeObject:obj];
+    if ([array count] == 0) {
+        [dict removeObjectForKey:key];
     }
 }
 
 - (void)removeObject:(id)obj fromArrayWithKey:(id)key inDictionary:(NSMutableDictionary *)dict where:(BOOL(^)(id))cond {
-    @synchronized (dict) {
-        NSMutableArray *array = [dict objectForKey:key];
-        if (array == nil) {
-            return;
-        }
-        [array artRemoveWhere:cond];
-        if ([array count] == 0) {
-            [dict removeObjectForKey:key];
-        }
+    NSMutableArray *array = [dict objectForKey:key];
+    if (array == nil) {
+        return;
     }
+    [array artRemoveWhere:cond];
+    if ([array count] == 0) {
+        [dict removeObjectForKey:key];
+    }
+}
+
+@end
+
+@implementation ARTPublicEventEmitter {
+    __weak ARTRest *_rest;
+    dispatch_queue_t _queue;
+    dispatch_queue_t _userQueue;
+}
+
+- (instancetype)initWithRest:(ARTRest *)rest {
+    if (self = [super initWithQueue:rest.queue]) {
+        _rest = rest;
+        _queue = rest.queue;
+        _userQueue = rest.userQueue;
+    }
+    return self;
+}
+
+- (ARTEventListener *)on:(id)event callback:(void (^)(id __art_nullable))cb {
+    if (cb) {
+        void (^userCallback)(id __art_nullable) = cb;
+        cb = ^(id __art_nullable v) {
+            ART_EXITING_ABLY_CODE(_rest);
+            dispatch_async(_userQueue, ^{
+                userCallback(v);
+            });
+        };
+    }
+    
+    __block ARTEventListener *listener;
+dispatch_sync(_queue, ^{
+    listener = [super on:event callback:cb];
+});
+    return listener;
+}
+
+- (ARTEventListener *)on:(void (^)(id __art_nullable))cb {
+    if (cb) {
+        void (^userCallback)(id __art_nullable) = cb;
+        cb = ^(id __art_nullable v) {
+            ART_EXITING_ABLY_CODE(_rest);
+            dispatch_async(_userQueue, ^{
+                userCallback(v);
+            });
+        };
+    }
+    
+    __block ARTEventListener *listener;
+dispatch_sync(_queue, ^{
+    listener = [super on:cb];
+});
+    return listener;
+}
+
+- (ARTEventListener *)once:(id)event callback:(void (^)(id __art_nullable))cb {
+    if (cb) {
+        void (^userCallback)(id __art_nullable) = cb;
+        cb = ^(id __art_nullable v) {
+            ART_EXITING_ABLY_CODE(_rest);
+            dispatch_async(_userQueue, ^{
+                userCallback(v);
+            });
+        };
+    }
+
+    __block ARTEventListener *listener;
+dispatch_sync(_queue, ^{
+    listener = [super once:event callback:cb];
+});
+    return listener;
+}
+
+- (ARTEventListener *)once:(void (^)(id __art_nullable))cb {
+    if (cb) {
+        void (^userCallback)(id __art_nullable) = cb;
+        cb = ^(id __art_nullable v) {
+            ART_EXITING_ABLY_CODE(_rest);
+            dispatch_async(_userQueue, ^{
+                userCallback(v);
+            });
+        };
+    }
+
+    __block ARTEventListener *listener;
+dispatch_sync(_queue, ^{
+    listener = [super once:cb];
+});
+    return listener;
+}
+
+- (void)off:(id<ARTEventIdentification>)event listener:(ARTEventListener *)listener {
+dispatch_sync(_queue, ^{
+    [super off:event listener:listener];
+});
+}
+
+- (void)off:(ARTEventListener *)listener {
+dispatch_sync(_queue, ^{
+    [super off:listener];
+});
+}
+
+- (void)off {
+dispatch_sync(_queue, ^{
+    [super off];
+});
+}
+
+- (void)off_nosync {
+    [super off];
+}
+
+@end
+
+@implementation ARTInternalEventEmitter
+
+- (instancetype)initWithQueue:(dispatch_queue_t)queue {
+   return [super initWithQueue:queue];
 }
 
 @end

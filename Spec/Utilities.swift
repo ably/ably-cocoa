@@ -49,7 +49,7 @@ class Utilities: QuickSpec {
                     expect{ result = try jsonEncoder.encode(pm) }.to(throwError { error in
                         let e = error as NSError
                         expect(e.domain).to(equal(ARTAblyErrorDomain))
-                        expect((e as! ARTErrorInfo).code).to(equal(Int(ARTClientCodeError.invalidType.rawValue)))
+                        expect(e.code).to(equal(Int(ARTClientCodeError.invalidType.rawValue)))
                         expect(e.localizedDescription).to(contain("Invalid type in JSON write"))
                         })
                     expect(result).to(beNil())
@@ -203,7 +203,7 @@ class Utilities: QuickSpec {
             context("EventEmitter") {
                 
 
-                var eventEmitter = ARTEventEmitter<NSString, AnyObject>()
+                var eventEmitter = ARTInternalEventEmitter<NSString, AnyObject>(queue: AblyTests.queue)
                 var receivedFoo1: Int?
                 var receivedFoo2: Int?
                 var receivedBar: Int?
@@ -214,7 +214,7 @@ class Utilities: QuickSpec {
                 weak var listenerAll: ARTEventListener?
                 
                 beforeEach {
-                    eventEmitter = ARTEventEmitter()
+                    eventEmitter = ARTInternalEventEmitter(queue: AblyTests.queue)
                     receivedFoo1 = nil
                     receivedFoo2 = nil
                     receivedBar = nil

@@ -18,11 +18,15 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimeChannel () <ARTPresenceMapDelegate>
 
+- (ARTRealtimeChannelState)state_nosync;
+- (ARTErrorInfo *)errorReason_nosync;
+- (NSString *_Nullable)clientId_nosync;
+
 @property (readonly, weak, nonatomic) ARTRealtime *realtime;
 @property (readonly, strong, nonatomic) ARTRestChannel *restChannel;
 @property (readwrite, strong, nonatomic) NSMutableArray *queuedMessages;
 @property (readwrite, strong, nonatomic, art_nullable) NSString *attachSerial;
-@property (readonly, getter=getClientId) NSString *clientId;
+@property (readonly, nullable, getter=getClientId) NSString *clientId;
 @property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTChannelStateChange *> *internalEventEmitter;
 @property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTChannelStateChange *> *statesEventEmitter;
 @property (readonly, strong, nonatomic) ARTEventEmitter<id<ARTEventIdentification>, ARTMessage *> *messagesEventEmitter;
@@ -36,6 +40,12 @@ ART_ASSUME_NONNULL_BEGIN
 - (bool)isLastChannelSerial:(NSString *)channelSerial;
 
 - (void)reattachWithReason:(nullable ARTErrorInfo *)reason callback:(nullable void (^)(ARTErrorInfo *))callback;
+
+- (void)_attach:(void (^_Nullable)(ARTErrorInfo * _Nullable))callback;
+- (void)_detach:(void (^_Nullable)(ARTErrorInfo * _Nullable))callback;
+
+- (void)_unsubscribe;
+- (void)off_nosync;
 
 @end
 

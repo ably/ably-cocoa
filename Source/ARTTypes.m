@@ -158,7 +158,7 @@ NSString *ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event) {
 
 - (NSDictionary *)toJSON:(NSError *__art_nullable *__art_nullable)error {
     NSData *data = [self dataUsingEncoding:NSUTF8StringEncoding];
-    NSError *jsonError;
+    NSError *jsonError = nil;
     id json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonError];
     if (jsonError) {
         if (error) {

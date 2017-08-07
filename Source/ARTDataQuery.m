@@ -30,7 +30,7 @@ static NSString *queryDirectionToString(ARTQueryDirection direction) {
     }
 }
 
-- (NSMutableArray *)asQueryItems {
+- (NSMutableArray *)asQueryItems:(NSError *_Nullable*)error {
     NSMutableArray *items = [NSMutableArray array];
 
     if (self.start) {
@@ -50,12 +50,16 @@ static NSString *queryDirectionToString(ARTQueryDirection direction) {
 
 @implementation ARTRealtimeHistoryQuery
 
-- (NSMutableArray *)asQueryItems {
-    NSMutableArray *items = [super asQueryItems];
+- (NSMutableArray *)asQueryItems:(NSError **)errorPtr {
+    NSMutableArray *items = [super asQueryItems:errorPtr];
+    if (*errorPtr) {
+        return nil;
+    }
     if (self.untilAttach) {
         NSAssert(self.realtimeChannel, @"ARTRealtimeHistoryQuery used from outside ARTRealtimeChannel.history");
-        if (self.realtimeChannel.state != ARTRealtimeChannelAttached) {
-            @throw [NSError errorWithDomain:ARTAblyErrorDomain code:ARTRealtimeHistoryErrorNotAttached userInfo:nil];
+        if (self.realtimeChannel.state_nosync != ARTRealtimeChannelAttached) {
+            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain code:ARTRealtimeHistoryErrorNotAttached userInfo:@{NSLocalizedDescriptionKey:@"ARTRealtimeHistoryQuery: untilAttach used in channel that isn't attached"}];
+            return nil;
         }
         [items addObject:[NSURLQueryItem queryItemWithName:@"fromSerial" value:self.realtimeChannel.attachSerial]];
     }

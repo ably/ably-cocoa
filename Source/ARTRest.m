@@ -58,7 +58,6 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
     self = [super init];
     if (self) {
         NSAssert(options, @"ARTRest: No options provided");
-        artDispatchSpecifyMainQueue();
 
         _realtime = realtime;
         _options = [options copy];
@@ -75,7 +74,9 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         }
 
     ART_TRY_OR_REPORT_CRASH_START(self) {
-        _http = [[ARTHttp alloc] init];
+        _queue = options.internalDispatchQueue;
+        _userQueue = options.dispatchQueue;
+        _http = [[ARTHttp alloc] init:_queue];
         [_logger verbose:__FILE__ line:__LINE__ message:@"RS:%p %p alloc HTTP", self, _http];
         _httpExecutor = _http;
         _httpExecutor.logger = _logger;
@@ -204,7 +205,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         }
         else {
             // New Token
-            [self.auth authorize:nil options:self.options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+            [self.auth _authorize:nil options:self.options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
                 if (error) {
                     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p ARTRest reissuing token failed %@", self, error];
                     if (callback) callback(nil, nil, error);
@@ -268,7 +269,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 
         if (response.statusCode >= 400) {
             if (data) {
-                NSError *decodeError;
+                NSError *decodeError = nil;
                 NSError *dataError = [self->_encoders[response.MIMEType] decodeErrorInfo:data error:&decodeError];
                 if ([self shouldRenewToken:&dataError]) {
                     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p retry request %@", self, request];
@@ -375,10 +376,17 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         void (^userCallback)(NSDate *time, NSError *error) = callback;
         callback = ^(NSDate *time, NSError *error) {
             ART_EXITING_ABLY_CODE(self);
-            userCallback(time, error);
+            dispatch_async(_userQueue, ^{
+                userCallback(time, error);
+            });
         };
     }
+dispatch_async(_queue, ^{
+    [self _time:callback];
+});
+}
 
+- (void)_time:(void(^)(NSDate *time, NSError *error))callback {
 ART_TRY_OR_REPORT_CRASH_START(self) {
     NSURL *requestUrl = [NSURL URLWithString:@"/time" relativeToURL:self.baseUrl];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
@@ -427,7 +435,9 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         void (^userCallback)(__GENERIC(ARTPaginatedResult, ARTStats *) *, ARTErrorInfo *) = callback;
         callback = ^(__GENERIC(ARTPaginatedResult, ARTStats *) *r, ARTErrorInfo *e) {
             ART_EXITING_ABLY_CODE(self);
-            userCallback(r, e);
+            dispatch_async(_userQueue, ^{
+                userCallback(r, e);
+            });
         };
     }
 
@@ -449,7 +459,14 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
     }
 
     NSURLComponents *requestUrl = [NSURLComponents componentsWithString:@"/stats"];
-    requestUrl.queryItems = [query asQueryItems];
+    NSError *error = nil;
+    requestUrl.queryItems = [query asQueryItems:&error];
+    if (error) {
+        if (errorPtr) {
+            *errorPtr = error;
+        }
+        return NO;
+    }
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[requestUrl URLRelativeToURL:self.baseUrl]];
     
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
@@ -457,7 +474,9 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         return [encoder decodeStats:data error:errorPtr];
     };
     
+dispatch_async(_queue, ^{
     [ARTPaginatedResult executePaginated:self withRequest:request andResponseProcessor:responseProcessor callback:callback];
+});
     return YES;
 } ART_TRY_OR_REPORT_CRASH_END
 }
@@ -471,8 +490,9 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 - (NSURL *)getBaseUrl {
 ART_TRY_OR_REPORT_CRASH_START(self) {
     NSURLComponents *components = [_options restUrlComponents];
-    if (_prioritizedHost) {
-        components.host = _prioritizedHost;
+    NSString *prioritizedHost = self.prioritizedHost; // Important to use the property, not the variable; it's atomic!
+    if (prioritizedHost) { 
+        components.host = prioritizedHost;
     }
     return components.URL;
 } ART_TRY_OR_REPORT_CRASH_END

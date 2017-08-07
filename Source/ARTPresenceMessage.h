@@ -7,7 +7,7 @@
 //
 
 #import "ARTBaseMessage.h"
-#import "ARTEventEmitter.h"
+#import "ARTEventEmitter+Private.h"
 
 /// Presence action type
 typedef NS_ENUM(NSUInteger, ARTPresenceAction) {

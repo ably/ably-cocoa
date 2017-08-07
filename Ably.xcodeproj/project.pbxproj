@@ -168,6 +168,7 @@
 		EB2D84F71CD75CCE00F23CDA /* ARTReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = EB2D84F61CD75CCE00F23CDA /* ARTReachability.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EB2D84FD1CD769B800F23CDA /* ARTOSReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = EB2D84FC1CD769B700F23CDA /* ARTOSReachability.m */; };
 		EB2D85011CD769C800F23CDA /* ARTOSReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = EB2D85001CD769C800F23CDA /* ARTOSReachability.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		EB4B1A0C1F2190BB00467F07 /* ARTRestChannels+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB4B1A0B1F2190BB00467F07 /* ARTRestChannels+Private.h */; };
 		EB503C881C7E4A090053AF00 /* ARTClientOptions+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB503C871C7E4A090053AF00 /* ARTClientOptions+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EB503C8A1C7F1FE40053AF00 /* ARTLog+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB503C891C7F1FE40053AF00 /* ARTLog+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EB5E058D1C77027600A48B39 /* ARTCrypto+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB5E058C1C77027600A48B39 /* ARTCrypto+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -415,6 +416,7 @@
 		EB2D85001CD769C800F23CDA /* ARTOSReachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTOSReachability.h; sourceTree = "<group>"; };
 		EB3239421C59AB0400892664 /* ARTDataEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDataEncoder.m; sourceTree = "<group>"; };
 		EB3239461C59AB2C00892664 /* ARTDataEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTDataEncoder.h; sourceTree = "<group>"; };
+		EB4B1A0B1F2190BB00467F07 /* ARTRestChannels+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTRestChannels+Private.h"; sourceTree = "<group>"; };
 		EB503C871C7E4A090053AF00 /* ARTClientOptions+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTClientOptions+Private.h"; sourceTree = "<group>"; };
 		EB503C891C7F1FE40053AF00 /* ARTLog+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTLog+Private.h"; sourceTree = "<group>"; };
 		EB5E058C1C77027600A48B39 /* ARTCrypto+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTCrypto+Private.h"; sourceTree = "<group>"; };
@@ -634,6 +636,7 @@
 				D7F1D3721BF4DE07001A4B5E /* ARTRestPresence.m */,
 				EB89D4021C61C1A4007FA5B7 /* ARTRestChannels.h */,
 				EB89D4031C61C1A4007FA5B7 /* ARTRestChannels.m */,
+				EB4B1A0B1F2190BB00467F07 /* ARTRestChannels+Private.h */,
 			);
 			name = Rest;
 			sourceTree = "<group>";
@@ -868,6 +871,7 @@
 				D746AE2F1BBBE7D7003ECEF8 /* ARTPaginatedResult+Private.h in Headers */,
 				D746AE431BBC5CD0003ECEF8 /* ARTRealtimeChannel+Private.h in Headers */,
 				D746AE251BBB611C003ECEF8 /* ARTChannel+Private.h in Headers */,
+				EB4B1A0C1F2190BB00467F07 /* ARTRestChannels+Private.h in Headers */,
 				D7F1D3731BF4DE07001A4B5E /* ARTRestPresence.h in Headers */,
 				D7B17EE31.0.308B00A6958E /* ARTConnectionDetails.h in Headers */,
 				D7F2B8B21E42410D00B65151 /* ARTPresenceMessage+Private.h in Headers */,

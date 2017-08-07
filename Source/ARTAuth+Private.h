@@ -7,7 +7,7 @@
 //
 
 #import "ARTAuth.h"
-#import "ARTEventEmitter.h"
+#import "ARTEventEmitter+Private.h"
 
 typedef NS_ENUM(NSUInteger, ARTAuthorizationState) {
     ARTAuthorizationSucceeded, //ItemType: nil
@@ -24,6 +24,8 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTAuth ()
 
+- (NSString *)clientId_nosync;
+
 @property (nonatomic, readonly, strong) ARTClientOptions *options;
 @property (nonatomic, readonly, assign) ARTAuthMethod method;
 
@@ -34,9 +36,16 @@ ART_ASSUME_NONNULL_BEGIN
 @property (art_nullable, weak) id<ARTAuthDelegate> delegate;
 @property (readonly, assign) BOOL authorizing;
 
+- (void)_authorize:(art_nullable ARTTokenParams *)tokenParams options:(art_nullable ARTAuthOptions *)authOptions
+         callback:(void (^)(ARTTokenDetails *__art_nullable, NSError *__art_nullable))callback;
+
+- (void)_requestToken:(ARTTokenParams *__art_nullable)tokenParams withOptions:(ARTAuthOptions *__art_nullable)authOptions callback:(void (^)(ARTTokenDetails *__art_nullable, NSError *__art_nullable))callback;
+
 @end
 
 @interface ARTAuth (Private)
+
+- (instancetype)init:(ARTRest *)rest withOptions:(ARTClientOptions *)options;
 
 - (ARTAuthOptions *)mergeOptions:(ARTAuthOptions *)customOptions;
 - (ARTTokenParams *)mergeParams:(ARTTokenParams *)customParams;

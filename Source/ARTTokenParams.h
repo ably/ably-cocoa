@@ -17,7 +17,7 @@ ART_ASSUME_NONNULL_BEGIN
 /**
  Type that provided parameters of a token request.
  */
-@interface ARTTokenParams : NSObject
+@interface ARTTokenParams : NSObject<NSCopying>
 
 /**
  Represents time to live (expiry) of this token as a NSTimeInterval.

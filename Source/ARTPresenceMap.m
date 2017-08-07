@@ -9,7 +9,7 @@
 #import "ARTPresenceMap.h"
 #import "ARTPresenceMessage.h"
 #import "ARTPresenceMessage+Private.h"
-#import "ARTEventEmitter.h"
+#import "ARTEventEmitter+Private.h"
 #import "ARTLog.h"
 
 typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
@@ -63,7 +63,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
         [self reset];
         _syncSessionId = 0;
         _syncState = ARTPresenceSyncInitialized;
-        _syncEventEmitter = [[ARTEventEmitter alloc] initWithQueue:queue];
+        _syncEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:queue];
     }
     return self;
 }

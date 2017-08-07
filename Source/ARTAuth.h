@@ -24,10 +24,9 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTAuth : NSObject
 
-@property (art_nullable, readonly, getter=getClientId) NSString *clientId;
+- (instancetype)init NS_UNAVAILABLE;
 
-// FIXME: review (Why rest?)
-- (instancetype)init:(ARTRest *)rest withOptions:(ARTClientOptions *)options;
+@property (art_nullable, readonly, getter=getClientId) NSString *clientId;
 
 /**
  # (RSA8) Auth#requestToken

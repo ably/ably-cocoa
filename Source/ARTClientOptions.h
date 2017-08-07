@@ -87,9 +87,25 @@ ART_ASSUME_NONNULL_BEGIN
 @property (assign, nonatomic) BOOL fallbackHostsUseDefault;
 
 /**
- Report uncaught exceptions to Ably, together with the last lines of the logger. This helps Ably to fix bugs. Set to nil to disable.
+ Report uncaught exceptions to Ably, together with the last lines of the logger. This helps Ably fix bugs. Set to nil to disable.
  */
 @property (readwrite, strong, nonatomic, nullable) NSString *logExceptionReportingUrl;
+
+/**
+ The queue to which all calls to user-provided callbacks will be dispatched
+ asynchronously. It will be used as target queue for an internal, serial queue.
+
+ It defaults to the main queue.
+ */
+@property (readwrite, strong, nonatomic) dispatch_queue_t dispatchQueue;
+
+/**
+ The queue to which all internal concurrent operations will be dispatched.
+ It must be a serial queue. It shouldn't be the same queue as dispatchQueue.
+
+ It defaults to a newly created serial queue.
+ */
+@property (readwrite, strong, nonatomic) dispatch_queue_t internalDispatchQueue;
 
 - (BOOL)isBasicAuth;
 - (NSURL *)restUrl;

@@ -112,14 +112,16 @@ class RestClientPresence: QuickSpec {
                     query.clientId = "john"
 
                     waitUntil(timeout: testTimeout) { done in
-                        try! channel.presence.get(query) { membersPage, error in
-                            expect(error).to(beNil())
-                            expect(membersPage!.items).to(haveCount(1))
-                            let member = membersPage!.items[0]
-                            expect(member.clientId).to(equal("john"))
-                            expect(member.data as? NSObject).to(equal("web" as NSObject?))
-                            done()
-                        }
+                        expect {
+                            try channel.presence.get(query) { membersPage, error in
+                                expect(error).to(beNil())
+                                expect(membersPage!.items).to(haveCount(1))
+                                let member = membersPage!.items[0]
+                                expect(member.clientId).to(equal("john"))
+                                expect(member.data as? NSObject).to(equal("web" as NSObject?))
+                                done()
+                            }
+                        }.toNot(throwError())
                     }
                 }
 
@@ -156,17 +158,19 @@ class RestClientPresence: QuickSpec {
                     query.connectionId = disposable.last!.connection.id!
 
                     waitUntil(timeout: testTimeout) { done in
-                        try! channel.presence.get(query) { membersPage, error in
-                            expect(error).to(beNil())
-                            expect(membersPage!.items).to(haveCount(3))
-                            expect(membersPage!.hasNext).to(beFalse())
-                            expect(membersPage!.isLast).to(beTrue())
-                            expect(membersPage!.items).to(allPass({ member in
-                                let member = member!
-                                return NSRegularExpression.match(member.clientId, pattern: "^user(7|8|9)")
-                            }))
-                            done()
-                        }
+                        expect {
+                            try channel.presence.get(query) { membersPage, error in
+                                expect(error).to(beNil())
+                                expect(membersPage!.items).to(haveCount(3))
+                                expect(membersPage!.hasNext).to(beFalse())
+                                expect(membersPage!.isLast).to(beTrue())
+                                expect(membersPage!.items).to(allPass({ member in
+                                    let member = member!
+                                    return NSRegularExpression.match(member.clientId, pattern: "^user(7|8|9)")
+                                }))
+                                done()
+                            }
+                        }.toNot(throwError())
                     }
                 }
 
@@ -261,27 +265,31 @@ class RestClientPresence: QuickSpec {
                         expect(query.direction).to(equal(ARTQueryDirection.backwards))
 
                         waitUntil(timeout: testTimeout) { done in
-                            try! channel.presence.history(query) { membersPage, error in
-                                expect(error).to(beNil())
-                                let firstMember = membersPage!.items.first!
-                                expect(firstMember.clientId).to(equal("user10"))
-                                let lastMember = membersPage!.items.last!
-                                expect(lastMember.clientId).to(equal("user1"))
-                                done()
-                            }
+                            expect {
+                                try channel.presence.history(query) { membersPage, error in
+                                    expect(error).to(beNil())
+                                    let firstMember = membersPage!.items.first!
+                                    expect(firstMember.clientId).to(equal("user10"))
+                                    let lastMember = membersPage!.items.last!
+                                    expect(lastMember.clientId).to(equal("user1"))
+                                    done()
+                                }
+                            }.toNot(throwError())
                         }
 
                         query.direction = .forwards
 
                         waitUntil(timeout: testTimeout) { done in
-                            try! channel.presence.history(query) { membersPage, error in
-                                expect(error).to(beNil())
-                                let firstMember = membersPage!.items.first!
-                                expect(firstMember.clientId).to(equal("user1"))
-                                let lastMember = membersPage!.items.last!
-                                expect(lastMember.clientId).to(equal("user10"))
-                                done()
-                            }
+                            expect {
+                                try channel.presence.history(query) { membersPage, error in
+                                    expect(error).to(beNil())
+                                    let firstMember = membersPage!.items.first!
+                                    expect(firstMember.clientId).to(equal("user1"))
+                                    let lastMember = membersPage!.items.last!
+                                    expect(lastMember.clientId).to(equal("user10"))
+                                    done()
+                                }
+                            }.toNot(throwError())
                         }
                     }
 
@@ -315,13 +323,15 @@ class RestClientPresence: QuickSpec {
                         query.limit = 1
 
                         waitUntil(timeout: testTimeout) { done in
-                            try! channel.presence.history(query) { membersPage, error in
-                                expect(error).to(beNil())
-                                expect(membersPage!.items).to(haveCount(1))
-                                expect(membersPage!.hasNext).to(beFalse())
-                                expect(membersPage!.isLast).to(beTrue())
-                                done()
-                            }
+                            expect {
+                                try channel.presence.history(query) { membersPage, error in
+                                    expect(error).to(beNil())
+                                    expect(membersPage!.items).to(haveCount(1))
+                                    expect(membersPage!.hasNext).to(beFalse())
+                                    expect(membersPage!.isLast).to(beTrue())
+                                    done()
+                                }
+                            }.toNot(throwError())
                         }
 
                         query.limit = 1001
@@ -365,17 +375,19 @@ class RestClientPresence: QuickSpec {
                     query.connectionId = disposable.last!.connection.id!
 
                     waitUntil(timeout: testTimeout) { done in
-                        try! channel.presence.get(query) { membersPage, error in
-                            expect(error).to(beNil())
-                            expect(membersPage!.items).to(haveCount(3))
-                            expect(membersPage!.hasNext).to(beFalse())
-                            expect(membersPage!.isLast).to(beTrue())
-                            expect(membersPage!.items).to(allPass({ member in
-                                let member = member 
-                                return NSRegularExpression.match(member!.clientId, pattern: "^user(7|8|9)")
-                            }))
-                            done()
-                        }
+                        expect {
+                            try channel.presence.get(query) { membersPage, error in
+                                expect(error).to(beNil())
+                                expect(membersPage!.items).to(haveCount(3))
+                                expect(membersPage!.hasNext).to(beFalse())
+                                expect(membersPage!.isLast).to(beTrue())
+                                expect(membersPage!.items).to(allPass({ member in
+                                    let member = member 
+                                    return NSRegularExpression.match(member!.clientId, pattern: "^user(7|8|9)")
+                                }))
+                                done()
+                            }
+                        }.toNot(throwError())
                     }
                 }
 
@@ -442,11 +454,13 @@ class RestClientPresence: QuickSpec {
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            try! channel.presence.history(query) { membersPage, error in
-                                expect(error).to(beNil())
-                                expect(membersPage!.items).to(haveCount(3))
-                                done()
-                            }
+                            expect {
+                                try channel.presence.history(query) { membersPage, error in
+                                    expect(error).to(beNil())
+                                    expect(membersPage!.items).to(haveCount(3))
+                                    done()
+                                }
+                            }.toNot(throwError())
                         }
                     }
 

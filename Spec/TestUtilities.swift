@@ -92,6 +92,10 @@ class AblyTests {
     static var testApplication: JSON?
     static fileprivate var setupOptionsCounter = 0
 
+    static var queue = DispatchQueue(label: "io.ably.tests", qos: .userInitiated)
+    static var userQueue = DispatchQueue(label: "io.ably.tests.callbacks", qos: .userInitiated)
+    static var extraQueue = DispatchQueue(label: "io.ably.tests.extra", qos: .userInitiated)
+
     class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false) -> ARTClientOptions {
         ARTChannels_getChannelNamePrefix = { "test-\(setupOptionsCounter)" }
         setupOptionsCounter += 1
@@ -128,6 +132,8 @@ class AblyTests {
         
         let key = app["keys"][0]
         options.key = key["keyStr"].stringValue
+        options.dispatchQueue = userQueue
+        options.internalDispatchQueue = queue
         return options
     }
     
@@ -142,15 +148,14 @@ class AblyTests {
         if debug {
             options.logLevel = .debug
         }
-        else {
-            options.logLevel = .info
-        }
         if let key = key {
             options.key = key
         }
         if requestToken {
             options.token = getTestToken()
         }
+        options.dispatchQueue = userQueue
+        options.internalDispatchQueue = queue
         return options
     }
 
@@ -224,6 +229,17 @@ class AblyTests {
                 XCTFail("splitDone called more than the expected \(howMany) times", file: file, line: line)
             }
         }
+    }
+
+    class func waitFor<T>(timeout: TimeInterval, file: FileString = #file, line: UInt = #line, f: @escaping (@escaping (T?) -> Void) -> Void) -> T? {
+        var value: T?
+        waitUntil(timeout: timeout, file: file, line: line) { done in
+            f() { v in
+                value = v
+                done()
+            }
+        }
+        return value
     }
 
     // MARK: Crypto
@@ -417,13 +433,16 @@ class PublishTestMessage {
 }
 
 /// Access Token
-func getTestToken(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil) -> String {
-    if let tokenDetails = getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl) {
-        return tokenDetails.token
-    }
-    else {
-        XCTFail("TokenDetails is empty")
-        return ""
+func getTestToken(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, file: FileString = #file, line: UInt = #line) -> String {
+    return getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl, file: file, line: line)?.token ?? ""
+}
+
+func getTestToken(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, file: FileString = #file, line: UInt = #line, completion: @escaping (String) -> Void) {
+    getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl) { tokenDetails, error in
+        if let e = error {
+            fail(e.localizedDescription, file: file, line: line)
+        }
+        completion(tokenDetails?.token ?? "")
     }
 }
 
@@ -454,24 +473,23 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
         tokenParams!.clientId = clientId
     }
 
-    client.auth.requestToken(tokenParams, with: nil, callback: completion)
+    client.auth.requestToken(tokenParams, with: nil) { details, error in
+        _ = client // Hold reference to client, since requestToken is async and will lose it.
+        completion(details, error)
+    }
 }
 
-func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil) -> ARTTokenDetails? {
-    var tokenDetails: ARTTokenDetails?
-    var error: Error?
-
-    getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl) { _tokenDetails, _error in
-        tokenDetails = _tokenDetails
-        error = _error
-    }
-
-    while tokenDetails == nil && error == nil {
-        CFRunLoopRunInMode(CFRunLoopMode.defaultMode, CFTimeInterval(0.1), Bool(0))
+func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, file: FileString = #file, line: UInt = #line) -> ARTTokenDetails? {
+    guard let (tokenDetails, error) = (AblyTests.waitFor(timeout: testTimeout, file: file, line: line) { value in
+        getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl) { tokenDetails, error in
+            value((tokenDetails, error))
+        }
+    }) else {
+        return nil
     }
 
     if let e = error {
-        XCTFail(e.localizedDescription)
+        fail(e.localizedDescription, file: file, line: line)
     }
     return tokenDetails
 }
@@ -571,6 +589,7 @@ class MockHTTP: ARTHttp {
 
     init(network: NetworkAnswer) {
         self.network = network
+        super.init(AblyTests.queue)
     }
 
     override public func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) {
@@ -626,7 +645,7 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
     }
     fileprivate var errorSimulator: ErrorSimulator?
 
-    var http: ARTHttp? = ARTHttp()
+    var http: ARTHttp? = ARTHttp(AblyTests.queue)
     var logger: ARTLog?
 
     var requests: [URLRequest] = []
@@ -1222,8 +1241,11 @@ extension String {
 @objc class TestReachability : NSObject, ARTReachability {
     var host: String?
     var callback: ((Bool) -> Void)?
+    var queue: DispatchQueue
 
-    required init(logger: ARTLog) {}
+    required init(logger: ARTLog, queue: DispatchQueue) {
+        self.queue = queue
+    }
 
     func listen(forHost host: String, callback: @escaping (Bool) -> Void) {
         self.host = host
@@ -1236,6 +1258,8 @@ extension String {
     }
 
     func simulate(_ reachable: Bool) {
-        self.callback!(reachable)
+        self.queue.async {
+            self.callback!(reachable)
+        }
     }
 }

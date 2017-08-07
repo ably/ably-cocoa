@@ -245,7 +245,7 @@ class RealtimeClientChannel: QuickSpec {
 
                         let attachedMessage = ARTProtocolMessage()
                         attachedMessage.action = .attached
-                        attachedMessage.channel = "foo"
+                        attachedMessage.channel = channel.name
                         client.transport?.receive(attachedMessage)
                     }
                 }
@@ -383,7 +383,7 @@ class RealtimeClientChannel: QuickSpec {
 
                     let attachedMessage = ARTProtocolMessage()
                     attachedMessage.action = .attached
-                    attachedMessage.channel = "test"
+                    attachedMessage.channel = channel.name
                     attachedMessage.flags = 4 //Resumed
 
                     waitUntil(timeout: testTimeout) { done in
@@ -1391,7 +1391,7 @@ class RealtimeClientChannel: QuickSpec {
                     let start = NSDate()
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
                     expect(channel.errorReason).toNot(beNil())
-                    expect(callbackCalled).to(beTrue())
+                    expect(callbackCalled).toEventually(beTrue(), timeout: testTimeout)
                     let end = NSDate()
                     expect(start.addingTimeInterval(1.0)).to(beCloseTo(end, within: 0.5))
                 }
@@ -2356,7 +2356,7 @@ class RealtimeClientChannel: QuickSpec {
                     it("message should be published following authentication and received back with the clientId intact") {
                         let options = AblyTests.clientOptions()
                         options.authCallback = { tokenParams, completion in
-                            completion(getTestTokenDetails(clientId: "john"), nil)
+                            getTestTokenDetails(clientId: "john", completion: completion)
                         }
                         let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
@@ -2379,7 +2379,7 @@ class RealtimeClientChannel: QuickSpec {
                     it("message should be rejected by the Ably service and the message error should contain the server error") {
                         let options = AblyTests.clientOptions()
                         options.authCallback = { tokenParams, completion in
-                            completion(getTestTokenDetails(clientId: "john"), nil)
+                            getTestTokenDetails(clientId: "john", completion: completion)
                         }
                         let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
@@ -2759,17 +2759,21 @@ class RealtimeClientChannel: QuickSpec {
                     let queryRest = queryRealtime as ARTDataQuery
 
                     waitUntil(timeout: testTimeout) { done in
-                        try! channelRest.history(queryRest) { _, _ in
-                            done()
-                        }
+                        expect {
+                            try channelRest.history(queryRest) { _, _ in
+                                done()
+                            }
+                        }.toNot(throwError() { err in fail("\(err)"); done() })
                     }
                     expect(restChannelHistoryMethodWasCalled).to(beTrue())
                     restChannelHistoryMethodWasCalled = false
 
                     waitUntil(timeout: testTimeout) { done in
-                        try! channelRealtime.history(queryRealtime) { _, _ in
-                            done()
-                        }
+                        expect {
+                            try channelRealtime.history(queryRealtime) { _, _ in
+                                done()
+                            }
+                        }.toNot(throwError() { err in fail("\(err)"); done() })
                     }
                     expect(restChannelHistoryMethodWasCalled).to(beTrue())
                 }
@@ -2794,10 +2798,10 @@ class RealtimeClientChannel: QuickSpec {
                             try channel.history(query, callback: { _, _ in })
                         }
                         catch let error as NSError {
-                            if (error as? ARTErrorInfo)?.code == ARTRealtimeHistoryError.notAttached.rawValue {
-                                return
+                            if error.code != ARTRealtimeHistoryError.notAttached.rawValue {
+                                fail("Shouldn't raise a global error, got \(error)")
                             }
-                            fail("Shouldn't raise a global error, got \(error)")
+                            return
                         }
                         fail("Should raise an error")
                     }
@@ -2824,10 +2828,12 @@ class RealtimeClientChannel: QuickSpec {
                             expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
                             waitUntil(timeout: testTimeout) { done in
-                                try! channel.history(query) { _, errorInfo in
-                                    expect(errorInfo).to(beNil())
-                                    done()
-                                }
+                                expect {
+                                    try channel.history(query) { _, errorInfo in
+                                        expect(errorInfo).to(beNil())
+                                        done()
+                                    }
+                                }.toNot(throwError() { err in fail("\(err)"); done() })
                             }
 
                             let queryString = testHTTPExecutor.requests.last!.url!.query
@@ -2891,13 +2897,15 @@ class RealtimeClientChannel: QuickSpec {
                         query.untilAttach = true
 
                         waitUntil(timeout: testTimeout) { done in
-                            try! channel2.history(query) { result, errorInfo in
-                                expect(result!.items).to(haveCount(20))
-                                expect(result!.hasNext).to(beFalse())
-                                expect(result!.items.first?.data as? String).to(equal("message 19"))
-                                expect(result!.items.last?.data as? String).to(equal("message 0"))
-                                done()
-                            }
+                            expect {
+                                try channel2.history(query) { result, errorInfo in
+                                    expect(result!.items).to(haveCount(20))
+                                    expect(result!.hasNext).to(beFalse())
+                                    expect(result!.items.first?.data as? String).to(equal("message 19"))
+                                    expect(result!.items.last?.data as? String).to(equal("message 0"))
+                                    done()
+                                }
+                            }.toNot(throwError() { err in fail("\(err)"); done() })
                         }
                     }
 
@@ -2960,22 +2968,24 @@ class RealtimeClientChannel: QuickSpec {
                     query.limit = 10
 
                     waitUntil(timeout: testTimeout) { done in
-                        try! channel2.history(query) { result, errorInfo in
-                            expect(result!.items).to(haveCount(10))
-                            expect(result!.hasNext).to(beTrue())
-                            expect(result!.isLast).to(beFalse())
-                            expect((result!.items.first! ).data as? String).to(equal("message 19"))
-                            expect((result!.items.last! ).data as? String).to(equal("message 10"))
-
-                            result!.next { result, errorInfo in
+                        expect {
+                            try channel2.history(query) { result, errorInfo in
                                 expect(result!.items).to(haveCount(10))
-                                expect(result!.hasNext).to(beFalse())
-                                expect(result!.isLast).to(beTrue())
-                                expect((result!.items.first! ).data as? String).to(equal("message 9"))
-                                expect((result!.items.last! ).data as? String).to(equal("message 0"))
-                                done()
+                                expect(result!.hasNext).to(beTrue())
+                                expect(result!.isLast).to(beFalse())
+                                expect((result!.items.first! ).data as? String).to(equal("message 19"))
+                                expect((result!.items.last! ).data as? String).to(equal("message 10"))
+
+                                result!.next { result, errorInfo in
+                                    expect(result!.items).to(haveCount(10))
+                                    expect(result!.hasNext).to(beFalse())
+                                    expect(result!.isLast).to(beTrue())
+                                    expect((result!.items.first! ).data as? String).to(equal("message 9"))
+                                    expect((result!.items.last! ).data as? String).to(equal("message 0"))
+                                    done()
+                                }
                             }
-                        }
+                        }.toNot(throwError() { err in fail("\(err)"); done() })
                     }
                 }
 
@@ -3002,7 +3012,7 @@ class RealtimeClientChannel: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         let attachedMessage = ARTProtocolMessage()
                         attachedMessage.action = .attached
-                        attachedMessage.channel = "test"
+                        attachedMessage.channel = channel.name
 
                         hook = channel.testSuite_injectIntoMethod(after: #selector(channel.onChannelMessage(_:))) {
                             done()
@@ -3018,7 +3028,7 @@ class RealtimeClientChannel: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         let attachedMessageWithError = AblyTests.newErrorProtocolMessage()
                         attachedMessageWithError.action = .attached
-                        attachedMessageWithError.channel = "test"
+                        attachedMessageWithError.channel = channel.name
 
                         channel.once(.update) { stateChange in
                             guard let stateChange = stateChange else {
@@ -3061,7 +3071,7 @@ class RealtimeClientChannel: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             let detachedMessageWithError = AblyTests.newErrorProtocolMessage()
                             detachedMessageWithError.action = .detached
-                            detachedMessageWithError.channel = "foo"
+                            detachedMessageWithError.channel = channel.name
 
                             channel.once(.attaching) { stateChange in
                                 guard let error = stateChange?.reason  else {
@@ -3115,7 +3125,7 @@ class RealtimeClientChannel: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             let detachedMessageWithError = AblyTests.newErrorProtocolMessage()
                             detachedMessageWithError.action = .detached
-                            detachedMessageWithError.channel = "foo"
+                            detachedMessageWithError.channel = channel.name
 
                             channel.once(.attaching) { stateChange in
                                 guard let error = stateChange?.reason  else {
@@ -3158,7 +3168,7 @@ class RealtimeClientChannel: QuickSpec {
 
                         let detachedMessageWithError = AblyTests.newErrorProtocolMessage()
                         detachedMessageWithError.action = .detached
-                        detachedMessageWithError.channel = "foo"
+                        detachedMessageWithError.channel = channel.name
 
                         waitUntil(timeout: testTimeout) { done in
                             channel.once(.attaching) { stateChange in
@@ -3204,7 +3214,7 @@ class RealtimeClientChannel: QuickSpec {
 
                         let detachedMessageWithError = AblyTests.newErrorProtocolMessage()
                         detachedMessageWithError.action = .detached
-                        detachedMessageWithError.channel = "foo"
+                        detachedMessageWithError.channel = channel.name
 
                         waitUntil(timeout: testTimeout) { done in
                             let partialDone = AblyTests.splitDone(2, done: done)
@@ -3257,7 +3267,7 @@ class RealtimeClientChannel: QuickSpec {
                         transport.actionsIgnored = [.attached]
                         let detachedMessageWithError = AblyTests.newErrorProtocolMessage()
                         detachedMessageWithError.action = .detached
-                        detachedMessageWithError.channel = "foo"
+                        detachedMessageWithError.channel = channel.name
                         waitUntil(timeout: testTimeout) { done in
                             channel.once(.attaching) { stateChange in
                                 guard let error = stateChange?.reason  else {
@@ -3308,7 +3318,7 @@ class RealtimeClientChannel: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         let errorProtocolMessage = AblyTests.newErrorProtocolMessage()
                         errorProtocolMessage.action = .error
-                        errorProtocolMessage.channel = "foo"
+                        errorProtocolMessage.channel = channel.name
 
                         channel.once(.failed) { stateChange in
                             guard let error = stateChange?.reason else {

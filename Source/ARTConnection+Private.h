@@ -17,6 +17,13 @@ ART_ASSUME_NONNULL_BEGIN
 
 @interface ARTConnection ()
 
+- (NSString *)id_nosync;
+- (NSString *)key_nosync;
+- (int64_t)serial_nosync;
+- (ARTRealtimeConnectionState)state_nosync;
+- (ARTErrorInfo *)errorReason_nosync;
+- (NSString *)recoveryKey_nosync;
+
 @property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTConnectionStateChange *> *eventEmitter;
 @property(weak, nonatomic) ARTRealtime* realtime;
 

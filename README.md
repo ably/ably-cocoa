@@ -39,83 +39,20 @@ And then run `carthage update` to build the framework and drag the built Ably.fr
 
 ## Thread-safety
 
-**The iOS client libraries are not thread-safe yet.** We recommend that you ensure that all operations on a `ARTRest` or `ARTRealtime` object happen in the same [Grand Central Dispatch serial queue](https://developer.apple.com/library/content/documentation/General/Conceptual/ConcurrencyProgrammingGuide/OperationQueues/OperationQueues.html#//apple_ref/doc/uid/TP40008091-CH102-SW6). Also, it's undefined from which queue or thread will callback blocks provided to the Ably library be called. This queue may be the same queue you use to call Ably, so if you're calling another Ably operation from your callback, you should only dispatch a new task for it if you're not already in Ably's queue. For example:
+The library makes the following thread-safety guarantees:
 
-**Swift**
+* The whole public interface can be safely accessed, both for read and writing, from any thread.
+* "Value" objects (e. g. `ARTTokenDetails`, data from messages) returned by the library can be safely read from and written to.
+* Objects passed to the library must not be mutated afterwards. They can be safely passed again, or read from; they won't be written to by the library.
 
-```swift
-class YourClass {
-    var ablyQueue: DispatchQueue!
-    var ably: ARTRealtime!
+All internal operations are dispatched to a single serial GCD queue. You can specify
+a custom queue for this, which must be serial, with `ARTClientOptions.internalDispatchQueue`.
 
-    func initializeAbly() {
-        self.ablyQueue = DispatchQueue(label: "com.example.ably")
-        self.doAblyOperation {
-            self.ably = ARTRealtime(options: self.ablyOptions)
-        }
-    }
-
-    func subscribeToAbly() {
-        self.doAblyOperation {
-            self.ably.channels.get("foo").subscribe { message in
-                // Answer back.
-                self.doAblyOperation {
-                    self.ably.channels.get("foo").publish("reply", data:"Hi back!")
-                }
-            }
-        }
-    }
-
-    func doAblyOperation(_ operation: () -> Void) {
-        // Make sure we're not already in the Ably queue! This can happen if Ably
-        // calls our callback from the same task we dispatch.
-        if (String(validatingUTF8: __dispatch_queue_get_label(nil)) == "com.example.ably") {
-            operation()
-        } else {
-            self.ablyQueue.sync(execute: operation)
-        }
-    }
-}
-```
-
-**Objective-C**
-
-```objc
-@implementation YourClass {
-    dispatch_queue_t _ablyQueue;
-    ARTRealtime *ably;
-}
-
-- (void)initializeAbly {
-    _ablyQueue = dispatch_queue_create("com.example.ably", NULL);
-    [self doAblyOperation:^{
-        _ably = [ARTRealtime initWithOptions:[self ablyOptions]];
-    }];
-}
-
-- (void)subscribeToAbly {
-    [self doAblyOperation:^{
-        [[_ably.channels get:@"foo"] subscribe:^(ARTMessage *message) {
-            // Answer back.
-            [self doAblyOperation:^{
-                [[_ably.channels get:@"foo"] publish:@"reply" data:@"Hi back!"];
-            }];
-        }];
-    }];
-}
-
-- (void)doAblyOperation:(dispatch_block_t)block {
-    // Make sure we're not already in the Ably queue! This can happen if Ably
-    // calls our callback from the same task we dispatch.
-    if (dispatch_get_current_queue() == _ablyQueue) {
-        block();
-    } else {
-        dispatch_sync(_ablyQueue, block);
-    }
-}
-```
-
-We're working on improving this situation to be more developer-friendly and less error-prone.
+All calls to callbacks provided by the user are dispatched to the main queue by default.
+This allows you to react to Ably's output by doing UI operations directly. You
+can specify a different queue with `ARTClientOptions.dispatchQueue`. It shouldn't
+be the same queue as the `ARTClientOptions.internalDispatchQueue`, since that can
+lead to deadlocks.
 
 ## Using the Realtime API
 

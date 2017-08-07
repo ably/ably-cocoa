@@ -147,7 +147,7 @@
             }
             if ([data isKindOfClass:[NSString class]]) {
                 NSData *jsonData = [data dataUsingEncoding:NSUTF8StringEncoding];
-                NSError *error;
+                NSError *error = nil;
                 data = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
                 if (error != nil) {
                     errorInfo = [ARTErrorInfo createFromNSError:error];

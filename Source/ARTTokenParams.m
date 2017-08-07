@@ -57,6 +57,16 @@
             self.ttl, self.capability, self.timestamp];
 }
 
+- (id)copyWithZone:(NSZone *)zone {
+    ARTTokenParams *token = [[[self class] allocWithZone:zone] initWithClientId:_clientId nonce:_nonce];
+
+    token.ttl = _ttl;
+    token.capability = _capability;
+    token.timestamp = _timestamp;
+
+    return token;
+}
+
 - (NSMutableArray *)toArray {
     NSMutableArray *params = [[NSMutableArray alloc] init];
     
