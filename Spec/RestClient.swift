@@ -457,6 +457,25 @@ class RestClient: QuickSpec {
             // RSC14
             context("Authentication") {
 
+                // RSC14a
+                it("should support basic authentication when an API key is provided with the key option") {
+                    let options = AblyTests.commonAppSetup()
+                    guard let components = options.key?.components(separatedBy: ":"), let keyName = components.first, let keySecret = components.last else {
+                        fail("Invalid API key: \(options.key ?? "nil")"); return
+                    }
+                    ARTClientOptions.setDefaultEnvironment("sandbox")
+                    defer {
+                        ARTClientOptions.setDefaultEnvironment(nil)
+                    }
+                    let rest = ARTRest(key: "\(keyName):\(keySecret)")
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.channels.get("foo").publish(nil, data: "testing") { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+                }
+
                 // RSC14b
                 context("basic authentication flag") {
                     it("should be true when key is set") {
