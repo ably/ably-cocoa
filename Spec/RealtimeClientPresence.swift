@@ -2451,6 +2451,36 @@ class RealtimeClientPresence: QuickSpec {
                     expect(received.clientId).to(equal("john"))
                 }
 
+                // RTP10d
+                it("if the client is not currently ENTERED, Ably will respond with an ACK and the request will succeed") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.leave(nil) { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enter("online") { error in
+                            expect(error).to(beNil())
+                            channel.presence.leave(nil) { error in
+                                expect(error).to(beNil())
+                                channel.presence.leave(nil) { error in
+                                    expect(error).to(beNil())
+                                    done()
+                                }
+                            }
+                        }
+                    }
+                }
+
             }
 
             // RTP8
