@@ -349,6 +349,81 @@ class RestClientChannel: QuickSpec {
         // RSL2
         describe("history") {
 
+            // RSL2a
+            it("should return a PaginatedResult page containing the first page of messages") {
+                let client = ARTRest(options: AblyTests.commonAppSetup())
+                let channel = client.channels.get("foo")
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.publish([
+                        .init(name: nil, data: "m1"),
+                        .init(name: nil, data: "m2"),
+                        .init(name: nil, data: "m3"),
+                        .init(name: nil, data: "m4"),
+                        .init(name: nil, data: "m5"),
+                    ],
+                    callback: { error in
+                        expect(error).to(beNil())
+                        done()
+                    })
+                }
+
+                let query = ARTDataQuery()
+                query.direction = .forwards
+                query.limit = 2
+
+                try! channel.history(query) { result, error in
+                    guard let result = result else {
+                        fail("Result is empty"); return
+                    }
+                    expect(error).to(beNil())
+                    expect(result.hasNext).to(beTrue())
+                    expect(result.isLast).to(beFalse())
+                    expect(result.items).to(haveCount(2))
+                    let items = result.items.flatMap({ $0.data as? String })
+                    expect(items.first).to(equal("m1"))
+                    expect(items.last).to(equal("m2"))
+
+                    result.next { result, error in
+                        guard let result = result else {
+                            fail("Result is empty"); return
+                        }
+                        expect(error).to(beNil())
+                        expect(result.hasNext).to(beTrue())
+                        expect(result.isLast).to(beFalse())
+                        expect(result.items).to(haveCount(2))
+                        let items = result.items.flatMap({ $0.data as? String })
+                        expect(items.first).to(equal("m3"))
+                        expect(items.last).to(equal("m4"))
+
+                        result.next { result, error in
+                            guard let result = result else {
+                                fail("Result is empty"); return
+                            }
+                            expect(error).to(beNil())
+                            expect(result.hasNext).to(beFalse())
+                            expect(result.isLast).to(beTrue())
+                            expect(result.items).to(haveCount(1))
+                            let items = result.items.flatMap({ $0.data as? String })
+                            expect(items.first).to(equal("m5"))
+
+                            result.first { result, error in
+                                guard let result = result else {
+                                    fail("Result is empty"); return
+                                }
+                                expect(error).to(beNil())
+                                expect(result.hasNext).to(beTrue())
+                                expect(result.isLast).to(beFalse())
+                                expect(result.items).to(haveCount(2))
+                                let items = result.items.flatMap({ $0.data as? String })
+                                expect(items.first).to(equal("m1"))
+                                expect(items.last).to(equal("m2"))
+                            }
+                        }
+                    }
+                }
+            }
+
             // RSL2b
             context("query arguments") {
 
