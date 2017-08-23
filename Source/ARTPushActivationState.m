@@ -30,12 +30,8 @@
     return self;
 }
 
-+ (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine {
-    return [[ARTPushActivationState alloc] initWithMachine:machine];
-}
-
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
-    NSAssert(false, @"-[%s:%d %s] should always be overriden.", __FILE__, __LINE__, __FUNCTION__);
+    NSAssert(false, @"-[%s:%d %s] should always be overriden; class %@ doesn't.", __FILE__, __LINE__, __FUNCTION__, NSStringFromClass(self.class));
     return nil;
 }
 
@@ -81,14 +77,14 @@
 
         if (local.updateToken != nil) {
             // Already registered.
-            return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
+            return [[ARTPushActivationStateWaitingForNewPushDeviceDetails alloc] initWithMachine:self.machine];
         }
 
         if ([local deviceToken] != nil) {
             [self.machine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
         }
 
-        return [ARTPushActivationStateWaitingForPushDeviceDetails newWithMachine:self.machine];
+        return [[ARTPushActivationStateWaitingForPushDeviceDetails alloc] initWithMachine:self.machine];
     }
     return nil;
 }
@@ -105,11 +101,11 @@
     else if ([event isKindOfClass:[ARTPushActivationEventGotUpdateToken class]]) {
         [ARTLocalDevice load:self.machine.rest].updateToken = [[NSUserDefaults standardUserDefaults] stringForKey:ARTDeviceUpdateTokenKey];
         [self.machine callActivatedCallback:nil];
-        return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
+        return [[ARTPushActivationStateWaitingForNewPushDeviceDetails alloc] initWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventGettingUpdateTokenFailed class]]) {
         [self.machine callActivatedCallback:[(ARTPushActivationEventGettingUpdateTokenFailed *)event error]];
-        return [ARTPushActivationStateNotActivated newWithMachine:self.machine];
+        return [[ARTPushActivationStateNotActivated alloc] initWithMachine:self.machine];
     }
     return nil;
 }
@@ -125,11 +121,11 @@
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
         [self.machine callDeactivatedCallback:nil];
-        return [ARTPushActivationStateNotActivated newWithMachine:self.machine];
+        return [[ARTPushActivationStateNotActivated alloc] initWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventGotPushDeviceDetails class]]) {
         [self.machine deviceRegistration:nil];
-        return [ARTPushActivationStateWaitingForUpdateToken newWithMachine:self.machine];
+        return [[ARTPushActivationStateWaitingForUpdateToken alloc] initWithMachine:self.machine];
     }
     return nil;
 }
@@ -146,11 +142,11 @@
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
         [self.machine deviceUnregistration:nil];
-        return [ARTPushActivationStateWaitingForDeregistration newWithMachine:self.machine];
+        return [[ARTPushActivationStateWaitingForDeregistration alloc] initWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventGotPushDeviceDetails class]]) {
         [self.machine deviceUpdateRegistration:nil];
-        return [ARTPushActivationStateWaitingForRegistrationUpdate newWithMachine:self.machine];
+        return [[ARTPushActivationStateWaitingForRegistrationUpdate alloc] initWithMachine:self.machine];
     }
     return nil;
 }
@@ -163,14 +159,14 @@
     [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
         [self.machine callActivatedCallback:nil];
-        return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
+        return [[ARTPushActivationStateWaitingForNewPushDeviceDetails alloc] initWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventRegistrationUpdated class]]) {
-        return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
+        return [[ARTPushActivationStateWaitingForNewPushDeviceDetails alloc] initWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventUpdatingRegistrationFailed class]]) {
         [self.machine callUpdateFailedCallback:[(ARTPushActivationEventUpdatingRegistrationFailed *)event error]];
-        return [ARTPushActivationStateAfterRegistrationUpdateFailed newWithMachine:self.machine];
+        return [[ARTPushActivationStateAfterRegistrationUpdateFailed alloc] initWithMachine:self.machine];
     }
     return nil;
 }
@@ -184,11 +180,11 @@
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]] ||
         [event isKindOfClass:[ARTPushActivationEventGotPushDeviceDetails class]]) {
         [self.machine deviceRegistration:nil];
-        return [ARTPushActivationStateWaitingForUpdateToken newWithMachine:self.machine];
+        return [[ARTPushActivationStateWaitingForUpdateToken alloc] initWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
         [self.machine callDeactivatedCallback:nil];
-        return [ARTPushActivationStateNotActivated newWithMachine:self.machine];
+        return [[ARTPushActivationStateNotActivated alloc] initWithMachine:self.machine];
     }
     return nil;
 }
@@ -200,7 +196,7 @@
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
     [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
-        return [ARTPushActivationStateWaitingForDeregistration newWithMachine:self.machine];
+        return [[ARTPushActivationStateWaitingForDeregistration alloc] initWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventDeregistered class]]) {
         ARTLocalDevice *local = [ARTLocalDevice load:self.machine.rest];
@@ -208,11 +204,11 @@
         [[NSUserDefaults standardUserDefaults] setObject:nil forKey:ARTDeviceUpdateTokenKey];
         [[NSUserDefaults standardUserDefaults] synchronize];
         [self.machine callDeactivatedCallback:nil];
-        return [ARTPushActivationStateNotActivated newWithMachine:self.machine];
+        return [[ARTPushActivationStateNotActivated alloc] initWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventDeregistrationFailed class]]) {
         [self.machine callDeactivatedCallback:[(ARTPushActivationEventDeregistrationFailed *)event error]];
-        return [ARTPushActivationStateWaitingForDeregistration newWithMachine:self.machine];
+        return [[ARTPushActivationStateWaitingForDeregistration alloc] initWithMachine:self.machine];
     }
     return nil;
 

@@ -36,7 +36,7 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
         NSData *stateData = [[NSUserDefaults standardUserDefaults] objectForKey:ARTPushActivationCurrentStateKey];
         _current = [NSKeyedUnarchiver unarchiveObjectWithData:stateData];
         if (!_current) {
-            _current = [ARTPushActivationStateNotActivated newWithMachine:self];
+            _current = [[ARTPushActivationStateNotActivated alloc] initWithMachine:self];
         }
         NSData *pendingEventsData = [[NSUserDefaults standardUserDefaults] objectForKey:ARTPushActivationPendingEventsKey];
         _pendingEvents = [NSKeyedUnarchiver unarchiveObjectWithData:pendingEventsData];
