@@ -315,11 +315,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
 
 - (void)leaveAfterChecks:(NSString *__art_nullable)clientId data:(id)data callback:(void (^)(ARTErrorInfo *))cb {
 ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
-    if (!clientId || [clientId isEqualToString:_channel.clientId_nosync]) {
-        if(_channel.lastPresenceAction != ARTPresenceEnter && _channel.lastPresenceAction != ARTPresenceUpdate) {
-            [ARTException raise:@"Cannot leave a channel before you've entered it" format:@""];
-        }
-    }
     ARTPresenceMessage *msg = [[ARTPresenceMessage alloc] init];
     msg.action = ARTPresenceLeave;
     msg.data = data;

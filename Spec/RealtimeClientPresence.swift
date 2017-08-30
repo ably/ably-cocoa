@@ -2451,6 +2451,36 @@ class RealtimeClientPresence: QuickSpec {
                     expect(received.clientId).to(equal("john"))
                 }
 
+                // RTP10d
+                it("if the client is not currently ENTERED, Ably will respond with an ACK and the request will succeed") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john"
+
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.leave(nil) { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enter("online") { error in
+                            expect(error).to(beNil())
+                            channel.presence.leave(nil) { error in
+                                expect(error).to(beNil())
+                                channel.presence.leave(nil) { error in
+                                    expect(error).to(beNil())
+                                    done()
+                                }
+                            }
+                        }
+                    }
+                }
+
             }
 
             // RTP8
@@ -3812,6 +3842,47 @@ class RealtimeClientPresence: QuickSpec {
 
                     expect(encodeNumberOfCalls).to(equal(1))
                     expect(decodeNumberOfCalls).to(equal(1))
+                }
+
+                // RTP14d
+                it("should be present all the registered members on a presence channel") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+
+                    let john = "john"
+                    let max = "max"
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(4, done: done)
+                        channel.presence.subscribe { message in
+                            expect(message.clientId).to(satisfyAnyOf(equal(john), equal(max)))
+                            partialDone()
+                        }
+                        channel.presence.enterClient(john, data: nil) { error in
+                            expect(error).to(beNil())
+                            partialDone()
+                        }
+                        channel.presence.enterClient(max, data: nil) { error in
+                            expect(error).to(beNil())
+                            partialDone()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.get { members, error in
+                            expect(error).to(beNil())
+                            guard let members = members else {
+                                fail("Members is nil"); done(); return
+                            }
+                            expect(members).to(haveCount(2))
+                            let clientIds = members.map({ $0.clientId })
+                            // Cannot guarantee the order
+                            expect(clientIds).to(equal([john, max]) || equal([max, john]))
+                            done()
+                        }
+                    }
+
                 }
 
             }

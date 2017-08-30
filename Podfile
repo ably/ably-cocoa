@@ -24,7 +24,3 @@ end
 target 'AblySpec' do
     test_pods
 end
-
-target 'AblyTests' do
-    test_pods
-end
