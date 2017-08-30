@@ -1280,7 +1280,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         }
     }
 
-    if (error.type == ARTRealtimeTransportErrorTypeNoInternet) {
+    if (error.type != ARTRealtimeTransportErrorTypeOther) {
         [self transition:ARTRealtimeDisconnected];
     } else {
         [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];

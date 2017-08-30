@@ -304,7 +304,7 @@ enum {
         type = ARTRealtimeTransportErrorTypeTimeout;
     } else if ([error.domain isEqualToString:(NSString *)kCFErrorDomainCFNetwork]) {
         type = ARTRealtimeTransportErrorTypeHostUnreachable;
-    } else if ([error.domain isEqualToString:@"NSPOSIXErrorDomain"] && error.code == 57) {
+    } else if ([error.domain isEqualToString:@"NSPOSIXErrorDomain"] && (error.code == 57 || error.code == 50)) {
         type = ARTRealtimeTransportErrorTypeNoInternet;
     } else if ([error.domain isEqualToString:SRWebSocketErrorDomain] && error.code == 2132) {
         id status = error.userInfo[SRHTTPResponseErrorKey];

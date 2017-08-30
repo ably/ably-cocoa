@@ -154,12 +154,7 @@ class RealtimeClient: QuickSpec {
                             expect(webSocketTransport.websocketURL?.host).to(equal("fake.ably.io"))
                             partialDone()
                         }
-                        client.connection.once(.failed) { stateChange in
-                            guard let reason = stateChange?.reason else {
-                                fail("Reason is nil"); done(); return
-                            }
-                            expect(reason.code) == Int(CFNetworkErrors.cfHostErrorUnknown.rawValue)
-                            expect(reason.message).to(contain("kCFErrorDomainCFNetwork"))
+                        client.connection.once(.disconnected) { stateChange in
                             partialDone()
                         }
                         client.connect()
