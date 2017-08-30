@@ -3855,16 +3855,16 @@ class RealtimeClientPresence: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(4, done: done)
+                        channel.presence.subscribe { message in
+                            expect(message.clientId).to(satisfyAnyOf(equal(john), equal(max)))
+                            partialDone()
+                        }
                         channel.presence.enterClient(john, data: nil) { error in
                             expect(error).to(beNil())
                             partialDone()
                         }
                         channel.presence.enterClient(max, data: nil) { error in
                             expect(error).to(beNil())
-                            partialDone()
-                        }
-                        channel.presence.subscribe { message in
-                            expect(message.clientId).to(satisfyAnyOf(equal(john), equal(max)))
                             partialDone()
                         }
                     }
