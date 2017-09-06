@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine;
 + (instancetype)new NS_UNAVAILABLE;
 
+@property (atomic, strong, nullable) ARTPushActivationStateMachine *machine;
+
 - (nullable ARTPushActivationState *)transition:(ARTPushActivationEvent *)event;
 
 @end
