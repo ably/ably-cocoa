@@ -11,8 +11,6 @@
 @class ARTPushDeviceRegistrations;
 @class ARTPushChannelSubscriptions;
 
-@protocol ARTHTTPAuthenticatedExecutor;
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPushAdmin : NSObject

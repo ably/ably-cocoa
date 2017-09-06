@@ -11,15 +11,14 @@
 
 @class ARTPushChannelSubscription;
 @class ARTPaginatedResult;
-
-@protocol ARTHTTPAuthenticatedExecutor;
+@class ARTRest;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPushChannelSubscriptions : NSObject
 
 - (instancetype)init NS_UNAVAILABLE;
-- (instancetype)init:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor;
+- (instancetype)init:(ARTRest *)rest;
 
 - (void)save:(ARTPushChannelSubscription *)channelSubscription callback:(void (^)(ARTErrorInfo *_Nullable))callback;
 
