@@ -35,10 +35,6 @@
     return nil;
 }
 
-- (void)logEventTransition:(ARTPushActivationEvent *)event file:(const char *)file line:(NSUInteger)line {
-    NSLog(@"%@ state: transitioning to %@ event", NSStringFromClass(self.class), NSStringFromClass(event.class));
-}
-
 - (id)copyWithZone:(NSZone *)zone {
     // Implement NSCopying by retaining the original instead of creating a new copy when the class and its contents are immutable.
     return self;
@@ -67,7 +63,6 @@
 @implementation ARTPushActivationStateNotActivated
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
-    [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
         [self.machine callDeactivatedCallback:nil];
         return self;
@@ -94,7 +89,6 @@
 @implementation ARTPushActivationStateWaitingForUpdateToken
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
-    [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
         return self;
     }
@@ -115,7 +109,6 @@
 @implementation ARTPushActivationStateWaitingForPushDeviceDetails
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
-    [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
         return self;
     }
@@ -135,7 +128,6 @@
 @implementation ARTPushActivationStateWaitingForNewPushDeviceDetails
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
-    [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
         [self.machine callActivatedCallback:nil];
         return self;
@@ -156,7 +148,6 @@
 @implementation ARTPushActivationStateWaitingForRegistrationUpdate
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
-    [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
         [self.machine callActivatedCallback:nil];
         return [[ARTPushActivationStateWaitingForNewPushDeviceDetails alloc] initWithMachine:self.machine];
@@ -176,7 +167,6 @@
 @implementation ARTPushActivationStateAfterRegistrationUpdateFailed
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
-    [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]] ||
         [event isKindOfClass:[ARTPushActivationEventGotPushDeviceDetails class]]) {
         [self.machine deviceRegistration:nil];
@@ -194,7 +184,6 @@
 @implementation ARTPushActivationStateWaitingForDeregistration
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
-    [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
         return [[ARTPushActivationStateWaitingForDeregistration alloc] initWithMachine:self.machine];
     }
