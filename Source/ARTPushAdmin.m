@@ -11,15 +11,12 @@
 #import "ARTPushDeviceRegistrations.h"
 #import "ARTPushChannelSubscriptions.h"
 
-@implementation ARTPushAdmin {
-    id<ARTHTTPAuthenticatedExecutor> _httpExecutor;
-}
+@implementation ARTPushAdmin;
 
-- (instancetype)init:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor {
+- (instancetype)init:(ARTRest *)rest {
     if (self = [super init]) {
-        _httpExecutor = httpExecutor;
-        _deviceRegistrations = [[ARTPushDeviceRegistrations alloc] init:httpExecutor];
-        _channelSubscriptions = [[ARTPushChannelSubscriptions alloc] init:httpExecutor];
+        _deviceRegistrations = [[ARTPushDeviceRegistrations alloc] init:rest];
+        _channelSubscriptions = [[ARTPushChannelSubscriptions alloc] init:rest];
     }
     return self;
 }

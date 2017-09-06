@@ -19,17 +19,33 @@
 @implementation ARTPushDeviceRegistrations {
     __weak ARTRest *_rest;
     __weak ARTLog* _logger;
+    dispatch_queue_t _queue;
+    dispatch_queue_t _userQueue;
 }
 
 - (instancetype)init:(ARTRest *)rest {
     if (self = [super init]) {
         _rest = rest;
         _logger = [rest logger];
+        _queue = rest.queue;
+        _userQueue = rest.userQueue;
     }
     return self;
 }
 
 - (void)save:(ARTDeviceDetails *)deviceDetails callback:(void (^)(ARTErrorInfo *error))callback {
+    if (callback) {
+        void (^userCallback)(ARTErrorInfo *error) = callback;
+        callback = ^(ARTErrorInfo *error) {
+            ART_EXITING_ABLY_CODE(_rest);
+            dispatch_async(_userQueue, ^{
+                userCallback(error);
+            });
+        };
+    }
+
+dispatch_async(_queue, ^{
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (!deviceDetails.updateToken) {
         [_logger error:@"%@: update token is missing", NSStringFromClass(self.class)];
         return;
@@ -56,9 +72,23 @@
             [_logger error:@"%@: save device failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
         }
     }];
+} ART_TRY_OR_REPORT_CRASH_END
+});
 }
 
 - (void)list:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTPaginatedResult<ARTDeviceDetails *> *result, ARTErrorInfo *error))callback {
+    if (callback) {
+        void (^userCallback)(ARTPaginatedResult *, ARTErrorInfo *error) = callback;
+        callback = ^(ARTPaginatedResult *result, ARTErrorInfo *error) {
+            ART_EXITING_ABLY_CODE(_rest);
+            dispatch_async(_userQueue, ^{
+                userCallback(result, error);
+            });
+        };
+    }
+
+dispatch_async(_queue, ^{
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"] resolvingAgainstBaseURL:NO];
     components.queryItems = [params asURLQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
@@ -68,6 +98,8 @@
         return [[_rest defaultEncoder] decodeDevicesDetails:data error:error];
     };
     [ARTPaginatedResult executePaginated:_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
+} ART_TRY_OR_REPORT_CRASH_END
+});
 }
 
 - (void)remove:(NSString *)deviceId callback:(void (^)(ARTErrorInfo *error))callback {
@@ -75,6 +107,18 @@
 }
 
 - (void)removeWhere:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTErrorInfo *error))callback {
+    if (callback) {
+        void (^userCallback)(ARTErrorInfo *error) = callback;
+        callback = ^(ARTErrorInfo *error) {
+            ART_EXITING_ABLY_CODE(_rest);
+            dispatch_async(_userQueue, ^{
+                userCallback(error);
+            });
+        };
+    }
+
+dispatch_async(_queue, ^{
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"] resolvingAgainstBaseURL:NO];
     components.queryItems = [params asURLQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
@@ -92,6 +136,8 @@
             [_logger error:@"%@: remove device failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
         }
     }];
+} ART_TRY_OR_REPORT_CRASH_END
+});
 }
 
 @end

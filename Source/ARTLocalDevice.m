@@ -47,7 +47,7 @@ NSString *const ARTDevicePushTransportType = @"apns";
 
 + (ARTLocalDevice *)load:(ARTRest *_Nonnull)rest {
     ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithRest:rest];
-    device.clientId = [device.rest.auth getClientId];
+    device.clientId = device.rest.auth.clientId_nosync;
     device.platform = ARTDevicePlatform;
     switch (UI_USER_INTERFACE_IDIOM()) {
         case UIUserInterfaceIdiomPad:

@@ -9,11 +9,15 @@
 #ifndef ARTPushAdmin_Private_h
 #define ARTPushAdmin_Private_h
 
+#import "ARTPushAdmin.h"
+
+@class ARTRest;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPushAdmin ()
 
-- (instancetype)init:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor;
+- (instancetype)init:(ARTRest *)rest;
 
 @end
 

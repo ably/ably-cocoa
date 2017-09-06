@@ -584,7 +584,9 @@ void ARTstopHandlingUncaughtExceptions(ARTRest *self) {
     static dispatch_once_t once;
     static id device;
     dispatch_once(&once, ^{
-        device = [ARTLocalDevice load:self];
+        dispatch_sync(_queue, ^{
+            device = [ARTLocalDevice load:self];
+        });
     });
     return device;
 }
