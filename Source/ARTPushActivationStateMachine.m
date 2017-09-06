@@ -122,7 +122,6 @@ dispatch_async(_queue, ^{
                 else if (updateToken) {
                     // Success
                     [local setAndPersistUpdateToken:updateToken];
-                    [delegate didActivateAblyPush:nil];
                     [self sendEvent:[ARTPushActivationEventGotUpdateToken new]];
                 }
                 else {
