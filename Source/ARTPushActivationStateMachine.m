@@ -52,13 +52,16 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
 }
 
 - (void)handleEvent:(nonnull ARTPushActivationEvent *)event {
+    NSLog(@"handling event %@ from %@", NSStringFromClass(event.class), NSStringFromClass(_current.class));
+
     ARTPushActivationState *maybeNext = [_current transition:event];
 
     if (maybeNext == nil) {
+        NSLog(@"enqueuing event: %@", NSStringFromClass(event.class));
         [_pendingEvents addObject:event];
         return;
     }
-
+    NSLog(@"transition: %@ -> %@", NSStringFromClass(_current.class), NSStringFromClass(maybeNext.class));
     _current = maybeNext;
 
     while (true) {
@@ -66,12 +69,14 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
         if (pending == nil) {
             break;
         }
+        NSLog(@"attempting to consume pending event: %@", NSStringFromClass(pending.class));
         maybeNext = [_current transition:pending];
         if (maybeNext == nil) {
             break;
         }
         [_pendingEvents dequeue];
 
+        NSLog(@"transition: %@ -> %@", NSStringFromClass(_current.class), NSStringFromClass(maybeNext.class));
         _current = maybeNext;
     }
 
