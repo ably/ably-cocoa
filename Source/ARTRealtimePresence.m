@@ -69,12 +69,16 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
 
 dispatch_async(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
-    [_channel throwOnDisconnectedOrFailed];
-
     switch (_channel.state_nosync) {
         case ARTRealtimeChannelFailed:
-        case ARTRealtimeChannelDetached:
             if (callback) callback(nil, [ARTErrorInfo createWithCode:0 message:@"invalid channel state"]);
+            return;
+        case ARTRealtimeChannelSuspended:
+            if (query && !query.waitForSync) {
+                if (callback) callback(_channel.presenceMap.members.allValues, nil);
+                return;
+            }
+            if (callback) callback(nil, [ARTErrorInfo createWithCode:91005 message:@"presence state is out of sync due to the channel being SUSPENDED"]);
             return;
         default:
             break;
