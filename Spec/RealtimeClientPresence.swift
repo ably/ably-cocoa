@@ -3430,6 +3430,82 @@ class RealtimeClientPresence: QuickSpec {
 
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.detached), timeout: testTimeout)
                 }
+                
+                // RTP11d
+                context("If the Channel is in the SUSPENDED state then") {
+                    func getSuspendedChannel() -> (ARTRealtimeChannel, ARTRealtime) {
+                        let options = AblyTests.commonAppSetup()
+                        
+                        let client = ARTRealtime(options: options)
+                        let channel = client.channels.get("test")
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.once(.suspended) { _ in
+                                done()
+                            }
+                            client.onSuspended()
+                        }
+                        
+                        return (channel, client)
+                    }
+
+                    for (name, getPresence) in [
+                        ("by default", { channel, callback in
+                            channel.presence.get(callback)
+                        }),
+                        ("if waitForSync is true", { channel, callback in
+                            let params = ARTRealtimePresenceQuery()
+                            params.waitForSync = true
+                            channel.presence.get(params, callback: callback)
+                        })
+                    ] as [(String, (ARTRealtimeChannel, @escaping ([ARTPresenceMessage]?, ARTErrorInfo?) -> Void) -> Void)] {
+                        context(name) {
+                            it("results in an error") {
+                                let (channel, client) = getSuspendedChannel()
+                                defer { client.dispose(); client.close() }
+                                
+                                getPresence(channel) { result, err in
+                                    expect(result).to(beNil())
+                                    expect(err).toNot(beNil())
+                                    guard let err = err else {
+                                        return
+                                    }
+                                    expect(err.code).to(equal(91005))
+                                }
+                            }
+                        }
+                    }
+                    
+                    context("if waitForSync is false") {
+                        let getParams = ARTRealtimePresenceQuery()
+                        getParams.waitForSync = false
+                        
+                        it("returns the members in the current PresenceMap") {
+                            let (channel, client) = getSuspendedChannel()
+                            defer { client.dispose(); client.close() }
+                            
+                            var msgs = [String: ARTPresenceMessage]()
+                            for i in 0..<3 {
+                                let msg = ARTPresenceMessage(clientId: "client\(i)", action: .present, connectionId: "foo", id: "foo:0:0")
+                                msgs[msg.clientId!] = msg
+                                channel.presenceMap.internalAdd(msg)
+                            }
+                            
+                            channel.presence.get(getParams) { result, err in
+                                expect(err).to(beNil())
+                                expect(result).toNot(beNil())
+                                guard let result = result else {
+                                    return
+                                }
+                                var resultByClient = [String: ARTPresenceMessage]()
+                                for msg in result {
+                                    resultByClient[msg.clientId ?? "(no clientId)"] = msg
+                                }
+                                expect(resultByClient).to(equal(msgs))
+                            }
+                        }
+                    }
+                }
 
                 // RTP11c
                 context("Query (set of params)") {

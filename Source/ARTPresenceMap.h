@@ -55,6 +55,8 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)onceSyncEnds:(void (^)(__GENERIC(NSArray, ARTPresenceMessage *) *))callback;
 - (void)onceSyncFails:(void (^)(ARTErrorInfo *))callback;
 
+- (void)internalAdd:(ARTPresenceMessage *)message;
+
 @end
 
 ART_ASSUME_NONNULL_END
