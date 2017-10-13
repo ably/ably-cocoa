@@ -12,11 +12,11 @@
 #import "ARTNSDate+ARTUtil.h"
 #import "ARTDefault.h"
 #import "ARTCrypto+Private.h"
-#import <KSCrashAblyFork/KSCrash.h>
-#import <KSCrashAblyFork/KSCrashInstallation+Private.h>
-#import <KSCrashAblyFork/KSCrashMonitorType.h>
+#import <KSCrash/KSCrash.h>
+#import <KSCrash/KSCrashInstallation+Private.h>
+#import <KSCrash/KSCrashMonitorType.h>
+#import <KSCrash/NSData+GZip.h>
 #import "ARTNSArray+ARTFunctional.h"
-#import <KSCrashAblyFork/NSData+GZip.h>
 
 NSString* ART_hexMemoryAddress(id addr) {
     if (addr && [addr isKindOfClass:[NSString class]]) {

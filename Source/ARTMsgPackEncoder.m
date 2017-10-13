@@ -7,7 +7,7 @@
 //
 
 #import "ARTMsgPackEncoder.h"
-#import "MessagePack.h"
+#import <msgpack/msgpack.h>
 
 @implementation ARTMsgPackEncoder
 

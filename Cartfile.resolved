@@ -1,0 +1,3 @@
+github "ably-forks/KSCrash" "1.15.8-ably-1"
+github "facebook/SocketRocket" "28035e1a98a427853e4038ff1b70479fa8374cfa"
+github "whitesmith/msgpack-objective-C" "f711740bc5fe96f280cabd392ac8153ce9d0abd9"
