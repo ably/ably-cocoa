@@ -552,7 +552,7 @@ You can also view the [community reported Github issues](https://github.com/ably
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
 
-## Release notes
+## Release Process
 
 This library uses [semantic versioning](http://semver.org/). For each release, the following needs to be done:
 
@@ -565,4 +565,4 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
 
 ## License
 
-Copyright (c) 2015 Ably Real-time Ltd, Licensed under the Apache License, Version 2.0.  Refer to [LICENSE](LICENSE) for the license terms.
+Copyright (c) 2017 Ably Real-time Ltd, Licensed under the Apache License, Version 2.0.  Refer to [LICENSE](LICENSE) for the license terms.
