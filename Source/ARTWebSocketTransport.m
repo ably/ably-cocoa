@@ -78,7 +78,7 @@ enum {
         if ([decodedObject isKindOfClass:[ARTProtocolMessage class]]) {
             [_protocolMessagesLogger info:@"send %@", [decodedObject description]];
         }
-        [self.websocket send:data];
+        [self.websocket sendData:data error:nil];
     }
 }
 
