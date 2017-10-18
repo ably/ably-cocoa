@@ -1283,8 +1283,6 @@
 				MODULEMAP_FILE = Source/Ably.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SEPARATE_STRIP = YES;
-				STRIP_STYLE = all;
 				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
@@ -1306,8 +1304,6 @@
 				MODULEMAP_FILE = Source/Ably.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SEPARATE_STRIP = YES;
-				STRIP_STYLE = all;
 				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
