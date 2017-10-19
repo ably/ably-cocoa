@@ -7,19 +7,20 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTTypes.h"
-#import "ARTCrypto.h"
 
-ART_ASSUME_NONNULL_BEGIN
+#import <Ably/ARTTypes.h>
+#import <Ably/ARTCrypto.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTChannelOptions : NSObject
 
-@property (nonatomic, strong, art_nullable) ARTCipherParams *cipher;
+@property (nonatomic, strong, nullable) ARTCipherParams *cipher;
 
 
-- (instancetype)initWithCipher:(id<ARTCipherParamsCompatible> __art_nullable)cipherParams;
+- (instancetype)initWithCipher:(id<ARTCipherParamsCompatible> _Nullable)cipherParams;
 - (instancetype)initWithCipherKey:(id<ARTCipherKeyCompatible>)key;
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

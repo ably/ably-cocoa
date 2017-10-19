@@ -13,7 +13,7 @@ typedef NS_OPTIONS(NSUInteger, ARTProtocolMessageFlag) {
     ARTProtocolMessageFlagResumed = (1UL << 2) //4
 };
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTProtocolMessage ()
 
@@ -28,4 +28,4 @@ ART_ASSUME_NONNULL_BEGIN
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

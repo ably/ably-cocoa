@@ -7,9 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "CompatibilityMacros.h"
-#import "ARTMessage.h"
-#import "ARTPresenceMessage.h"
+
+#import <Ably/ARTMessage.h>
+#import <Ably/ARTPresenceMessage.h>
 
 @class ARTConnectionDetails;
 @class ARTAuthDetails;
@@ -38,9 +38,9 @@ typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
     ARTProtocolMessageAuth = 17,
 };
 
-NSString *__art_nonnull ARTProtocolMessageActionToStr(ARTProtocolMessageAction action);
+NSString *_Nonnull ARTProtocolMessageActionToStr(ARTProtocolMessageAction action);
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 /**
  A message sent and received over the Realtime protocol.
@@ -60,12 +60,12 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) int64_t connectionSerial;
 @property (nullable, readwrite, strong, nonatomic) NSNumber *msgSerial;
 @property (nullable, readwrite, strong, nonatomic) NSDate *timestamp;
-@property (nullable, readwrite, strong, nonatomic) __GENERIC(NSArray, ARTMessage *) *messages;
-@property (nullable, readwrite, strong, nonatomic) __GENERIC(NSArray, ARTPresenceMessage *) *presence;
+@property (nullable, readwrite, strong, nonatomic) NSArray<ARTMessage *> *messages;
+@property (nullable, readwrite, strong, nonatomic) NSArray<ARTPresenceMessage *> *presence;
 @property (readwrite, assign, nonatomic) int64_t flags;
 @property (nullable, readwrite, nonatomic) ARTConnectionDetails *connectionDetails;
 @property (nullable, nonatomic) ARTAuthDetails *auth;
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

@@ -6,10 +6,10 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#import "ARTAuthOptions.h"
-#import "CompatibilityMacros.h"
+#import <Ably/ARTAuthOptions.h>
+#import <Ably/CompatibilityMacros.h>
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTAuthOptions ()
 
@@ -17,4 +17,4 @@ ART_ASSUME_NONNULL_BEGIN
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

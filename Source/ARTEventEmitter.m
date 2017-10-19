@@ -304,10 +304,10 @@
     return self;
 }
 
-- (ARTEventListener *)on:(id)event callback:(void (^)(id __art_nullable))cb {
+- (ARTEventListener *)on:(id)event callback:(void (^)(id _Nullable))cb {
     if (cb) {
-        void (^userCallback)(id __art_nullable) = cb;
-        cb = ^(id __art_nullable v) {
+        void (^userCallback)(id _Nullable) = cb;
+        cb = ^(id _Nullable v) {
             ART_EXITING_ABLY_CODE(_rest);
             dispatch_async(_userQueue, ^{
                 userCallback(v);
@@ -322,10 +322,10 @@ dispatch_sync(_queue, ^{
     return listener;
 }
 
-- (ARTEventListener *)on:(void (^)(id __art_nullable))cb {
+- (ARTEventListener *)on:(void (^)(id _Nullable))cb {
     if (cb) {
-        void (^userCallback)(id __art_nullable) = cb;
-        cb = ^(id __art_nullable v) {
+        void (^userCallback)(id _Nullable) = cb;
+        cb = ^(id _Nullable v) {
             ART_EXITING_ABLY_CODE(_rest);
             dispatch_async(_userQueue, ^{
                 userCallback(v);
@@ -340,10 +340,10 @@ dispatch_sync(_queue, ^{
     return listener;
 }
 
-- (ARTEventListener *)once:(id)event callback:(void (^)(id __art_nullable))cb {
+- (ARTEventListener *)once:(id)event callback:(void (^)(id _Nullable))cb {
     if (cb) {
-        void (^userCallback)(id __art_nullable) = cb;
-        cb = ^(id __art_nullable v) {
+        void (^userCallback)(id _Nullable) = cb;
+        cb = ^(id _Nullable v) {
             ART_EXITING_ABLY_CODE(_rest);
             dispatch_async(_userQueue, ^{
                 userCallback(v);
@@ -358,10 +358,10 @@ dispatch_sync(_queue, ^{
     return listener;
 }
 
-- (ARTEventListener *)once:(void (^)(id __art_nullable))cb {
+- (ARTEventListener *)once:(void (^)(id _Nullable))cb {
     if (cb) {
-        void (^userCallback)(id __art_nullable) = cb;
-        cb = ^(id __art_nullable v) {
+        void (^userCallback)(id _Nullable) = cb;
+        cb = ^(id _Nullable v) {
             ART_EXITING_ABLY_CODE(_rest);
             dispatch_async(_userQueue, ^{
                 userCallback(v);

@@ -6,19 +6,20 @@
 //  Copyright © 2015 Ably. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
-#import "ARTTypes.h"
+#import <Foundation/Foundation.h>
 
-ART_ASSUME_NONNULL_BEGIN
+#import <Ably/ARTTypes.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTURLSessionServerTrust : NSObject<NSURLSessionDelegate, NSURLSessionTaskDelegate>
 
 - (instancetype)init:(dispatch_queue_t)queue;
 
-- (void)get:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback;
+- (void)get:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback;
 
 - (void)finishTasksAndInvalidate;
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

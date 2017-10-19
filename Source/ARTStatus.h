@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "CompatibilityMacros.h"
 
 typedef NS_ENUM(NSUInteger, ARTState) {
     ARTStateOk = 0,
@@ -49,7 +48,7 @@ typedef CF_ENUM(NSUInteger, ARTClientCodeError) {
     ARTClientCodeErrorInvalidType,
 };
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
 
@@ -87,12 +86,12 @@ FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
  */
 @interface ARTStatus : NSObject
 
-@property (art_nullable, readonly, strong, nonatomic) ARTErrorInfo *errorInfo;
+@property (nullable, readonly, strong, nonatomic) ARTErrorInfo *errorInfo;
 @property (nonatomic, assign) BOOL storeErrorInfo;
 @property (nonatomic, assign) ARTState state;
 
 + (ARTStatus *)state:(ARTState) state;
-+ (ARTStatus *)state:(ARTState) state info:(art_nullable ARTErrorInfo *) info;
++ (ARTStatus *)state:(ARTState) state info:(nullable ARTErrorInfo *) info;
 
 - (NSString *)description;
 
@@ -101,4 +100,4 @@ FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
 @interface ARTException : NSException
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

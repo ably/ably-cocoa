@@ -7,22 +7,23 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTTypes.h"
-#import "ARTStatus.h"
 
-ART_ASSUME_NONNULL_BEGIN
+#import <Ably/ARTTypes.h>
+#import <Ably/ARTStatus.h>
 
-@interface __GENERIC(ARTPaginatedResult, ItemType) : NSObject
+NS_ASSUME_NONNULL_BEGIN
 
-@property (nonatomic, strong, readonly) __GENERIC(NSArray, ItemType) *items;
+@interface ARTPaginatedResult<ItemType> : NSObject
+
+@property (nonatomic, strong, readonly) NSArray<ItemType> *items;
 @property (nonatomic, readonly) BOOL hasNext;
 @property (nonatomic, readonly) BOOL isLast;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
-- (void)first:(void (^)(__GENERIC(ARTPaginatedResult, ItemType) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback;
-- (void)next:(void (^)(__GENERIC(ARTPaginatedResult, ItemType) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback;
+- (void)first:(void (^)(ARTPaginatedResult<ItemType> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
+- (void)next:(void (^)(ARTPaginatedResult<ItemType> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

@@ -6,15 +6,15 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTAuth.h"
-#import "ARTEventEmitter.h"
+#import <Ably/ARTAuth.h>
+#import <Ably/ARTEventEmitter.h>
 
 typedef NS_ENUM(NSUInteger, ARTAuthorizationState) {
     ARTAuthorizationSucceeded, //ItemType: nil
     ARTAuthorizationFailed //ItemType: NSError
 };
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 /// Messages related to the ARTAuth
 @protocol ARTAuthDelegate <NSObject>
@@ -30,16 +30,16 @@ ART_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, assign) ARTAuthMethod method;
 
 @property (nonatomic, weak) ARTLog *logger;
-@property (art_nullable, nonatomic, readonly, strong) ARTTokenDetails *tokenDetails;
+@property (nullable, nonatomic, readonly, strong) ARTTokenDetails *tokenDetails;
 @property (nonatomic, readonly, assign) NSTimeInterval timeOffset;
 
-@property (art_nullable, weak) id<ARTAuthDelegate> delegate;
+@property (nullable, weak) id<ARTAuthDelegate> delegate;
 @property (readonly, assign) BOOL authorizing;
 
-- (void)_authorize:(art_nullable ARTTokenParams *)tokenParams options:(art_nullable ARTAuthOptions *)authOptions
-         callback:(void (^)(ARTTokenDetails *__art_nullable, NSError *__art_nullable))callback;
+- (void)_authorize:(nullable ARTTokenParams *)tokenParams options:(nullable ARTAuthOptions *)authOptions
+         callback:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback;
 
-- (void)_requestToken:(ARTTokenParams *__art_nullable)tokenParams withOptions:(ARTAuthOptions *__art_nullable)authOptions callback:(void (^)(ARTTokenDetails *__art_nullable, NSError *__art_nullable))callback;
+- (void)_requestToken:(ARTTokenParams *_Nullable)tokenParams withOptions:(ARTAuthOptions *_Nullable)authOptions callback:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback;
 
 @end
 
@@ -54,7 +54,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (NSMutableURLRequest *)buildRequest:(nullable ARTAuthOptions *)options withParams:(nullable ARTTokenParams *)params;
 
 // Execute the received ARTTokenRequest
-- (void)executeTokenRequest:(ARTTokenRequest *)tokenRequest callback:(void (^)(ARTTokenDetails *__art_nullable tokenDetails, NSError *__art_nullable error))callback;
+- (void)executeTokenRequest:(ARTTokenRequest *)tokenRequest callback:(void (^)(ARTTokenDetails *_Nullable tokenDetails, NSError *_Nullable error))callback;
 
 // CONNECTED ProtocolMessage may contain a clientId
 - (void)setProtocolClientId:(NSString *)clientId;
@@ -88,4 +88,4 @@ ART_ASSUME_NONNULL_BEGIN
 + (instancetype)newWithAuthorizationState:(ARTAuthorizationState)value;
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "ARTBaseMessage.h"
-#import "ARTEventEmitter.h"
+#import <Ably/ARTBaseMessage.h>
+#import <Ably/ARTEventEmitter.h>
 
 /// Presence action type
 typedef NS_ENUM(NSUInteger, ARTPresenceAction) {
@@ -20,7 +20,7 @@ typedef NS_ENUM(NSUInteger, ARTPresenceAction) {
 
 NSString *_Nonnull ARTPresenceActionToStr(ARTPresenceAction action);
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 /// List of members present on a channel
 @interface ARTPresenceMessage : ARTBaseMessage
@@ -40,4 +40,4 @@ ART_ASSUME_NONNULL_BEGIN
 + (instancetype)newWithPresenceAction:(ARTPresenceAction)value;
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

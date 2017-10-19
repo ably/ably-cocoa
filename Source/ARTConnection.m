@@ -142,7 +142,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (void)setErrorReason:(ARTErrorInfo *__art_nullable)errorReason {
+- (void)setErrorReason:(ARTErrorInfo *_Nullable)errorReason {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     _errorReason = errorReason;
 } ART_TRY_OR_MOVE_TO_FAILED_END

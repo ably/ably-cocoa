@@ -6,13 +6,9 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#ifndef ARTSentry_h
-#define ARTSentry_h
-
 #import <Foundation/Foundation.h>
-#import "CompatibilityMacros.h"
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTSentryBreadcrumb <NSCoding>
 
@@ -37,6 +33,4 @@ ART_ASSUME_NONNULL_BEGIN
 
 id ART_orNull(id _Nullable obj);
 
-ART_ASSUME_NONNULL_END
-
-#endif /* ARTSentry_h */
+NS_ASSUME_NONNULL_END

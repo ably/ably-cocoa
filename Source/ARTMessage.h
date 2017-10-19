@@ -7,20 +7,21 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTBaseMessage.h"
-#import "ARTTypes.h"
 
-ART_ASSUME_NONNULL_BEGIN
+#import <Ably/ARTBaseMessage.h>
+#import <Ably/ARTTypes.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTMessage : ARTBaseMessage
 
 /// The event name, if available
-@property (art_nullable, readwrite, strong, nonatomic) NSString *name;
-@property (art_nullable, nonatomic) id<ARTJsonCompatible> extras;
+@property (nullable, readwrite, strong, nonatomic) NSString *name;
+@property (nullable, nonatomic) id<ARTJsonCompatible> extras;
 
-- (instancetype)initWithName:(art_nullable NSString *)name data:(id)data;
-- (instancetype)initWithName:(art_nullable NSString *)name data:(id)data clientId:(NSString *)clientId;
+- (instancetype)initWithName:(nullable NSString *)name data:(id)data;
+- (instancetype)initWithName:(nullable NSString *)name data:(id)data clientId:(NSString *)clientId;
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

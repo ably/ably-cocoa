@@ -6,14 +6,11 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#ifndef ARTRestChannels_Private_h
-#define ARTRestChannels_Private_h
-
-#import "ARTRestChannels.h"
+#import <Ably/ARTRestChannels.h>
 
 @class ARTRestChannel;
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRestChannels ()
 
@@ -21,7 +18,4 @@ ART_ASSUME_NONNULL_BEGIN
 
 @end
 
-ART_ASSUME_NONNULL_END
-
-
-#endif /* ARTRestChannels_Private_h */
+NS_ASSUME_NONNULL_END

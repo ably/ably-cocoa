@@ -10,8 +10,8 @@
 
 @implementation ARTConnectionDetails
 
-- (instancetype)initWithClientId:(NSString *__art_nullable)clientId
-                   connectionKey:(NSString *__art_nullable)connectionKey
+- (instancetype)initWithClientId:(NSString *_Nullable)clientId
+                   connectionKey:(NSString *_Nullable)connectionKey
                   maxMessageSize:(NSInteger)maxMessageSize
                     maxFrameSize:(NSInteger)maxFrameSize
                   maxInboundRate:(NSInteger)maxInboundRate

@@ -7,11 +7,12 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTTypes.h"
-#import "ARTTokenParams.h"
-#import "ARTAuthOptions.h"
 
-ART_ASSUME_NONNULL_BEGIN
+#import <Ably/ARTTypes.h>
+#import <Ably/ARTTokenParams.h>
+#import <Ably/ARTAuthOptions.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 /**
  Type containing the token request details.
@@ -26,7 +27,7 @@ ART_ASSUME_NONNULL_BEGIN
 /**
  A clientId to associate with this token.
  */
-@property (art_nullable, nonatomic, copy, readwrite) NSString *clientId;
+@property (nullable, nonatomic, copy, readwrite) NSString *clientId;
 
 /**
  Unique 16+ character nonce.
@@ -57,11 +58,11 @@ ART_ASSUME_NONNULL_BEGIN
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithTokenParams:(ARTTokenParams *)tokenParams keyName:(NSString *)keyName nonce:(NSString *)nonce mac:(NSString *)mac;
 
-+ (ARTTokenRequest *__art_nullable)fromJson:(id<ARTJsonCompatible>)json error:(NSError *__art_nullable *__art_nullable)error;
++ (ARTTokenRequest *_Nullable)fromJson:(id<ARTJsonCompatible>)json error:(NSError *_Nullable *_Nullable)error;
 
 @end
 
 @interface ARTTokenRequest (ARTTokenDetailsCompatible) <ARTTokenDetailsCompatible>
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

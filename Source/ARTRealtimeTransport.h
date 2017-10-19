@@ -7,8 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "CompatibilityMacros.h"
-#import "ARTLog.h"
+#import <Ably/ARTLog.h>
 
 @protocol ARTRealtimeTransport;
 
@@ -18,7 +17,7 @@
 @class ARTClientOptions;
 @class ARTRest;
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, ARTRealtimeTransportErrorType) {
     ARTRealtimeTransportErrorTypeHostUnreachable,
@@ -59,7 +58,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
 - (void)realtimeTransportUnavailable:(id<ARTRealtimeTransport>)transport;
 
 - (void)realtimeTransportClosed:(id<ARTRealtimeTransport>)transport;
-- (void)realtimeTransportDisconnected:(id<ARTRealtimeTransport>)transport withError:(art_nullable ARTRealtimeTransportError *)error;
+- (void)realtimeTransportDisconnected:(id<ARTRealtimeTransport>)transport withError:(nullable ARTRealtimeTransportError *)error;
 - (void)realtimeTransportNeverConnected:(id<ARTRealtimeTransport>)transport;
 - (void)realtimeTransportRefused:(id<ARTRealtimeTransport>)transport;
 - (void)realtimeTransportTooBig:(id<ARTRealtimeTransport>)transport;
@@ -94,4 +93,4 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

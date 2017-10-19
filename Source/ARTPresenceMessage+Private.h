@@ -6,7 +6,7 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#import "ARTPresenceMessage.h"
+#import <Ably/ARTPresenceMessage.h>
 
 @interface ARTPresenceMessage ()
 

@@ -7,10 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTTypes.h"
-#import "ARTAuthOptions.h"
 
-ART_ASSUME_NONNULL_BEGIN
+#import <Ably/ARTTypes.h>
+#import <Ably/ARTAuthOptions.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 /**
  Type containing the token request response.
@@ -25,32 +26,32 @@ ART_ASSUME_NONNULL_BEGIN
 /**
  Contains the expiry time in milliseconds.
  */
-@property (nonatomic, readonly, strong, art_nullable) NSDate *expires;
+@property (nonatomic, readonly, strong, nullable) NSDate *expires;
 
 /**
  Contains the time the token was issued in milliseconds.
  */
-@property (nonatomic, readonly, strong, art_nullable) NSDate *issued;
+@property (nonatomic, readonly, strong, nullable) NSDate *issued;
 
 /**
  Contains the capability JSON stringified.
  */
-@property (nonatomic, readonly, copy, art_nullable) NSString *capability;
+@property (nonatomic, readonly, copy, nullable) NSString *capability;
 
 /**
  Contains the clientId assigned to the token if provided.
  */
-@property (nonatomic, readonly, copy, art_nullable) NSString *clientId;
+@property (nonatomic, readonly, copy, nullable) NSString *clientId;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithToken:(NSString *)token;
-- (instancetype)initWithToken:(NSString *)token expires:(art_nullable NSDate *)expires issued:(art_nullable  NSDate *)issued capability:(art_nullable  NSString *)capability clientId:(art_nullable NSString *)clientId;
+- (instancetype)initWithToken:(NSString *)token expires:(nullable NSDate *)expires issued:(nullable  NSDate *)issued capability:(nullable  NSString *)capability clientId:(nullable NSString *)clientId;
 
-+ (ARTTokenDetails *__art_nullable)fromJson:(id<ARTJsonCompatible>)json error:(NSError *__art_nullable *__art_nullable)error;
++ (ARTTokenDetails *_Nullable)fromJson:(id<ARTJsonCompatible>)json error:(NSError *_Nullable *_Nullable)error;
 
 @end
 
 @interface ARTTokenDetails (ARTTokenDetailsCompatible) <ARTTokenDetailsCompatible>
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

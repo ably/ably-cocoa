@@ -7,11 +7,12 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTTypes.h"
-#import "ARTLog.h"
-#import "ARTRealtimeChannels.h"
-#import "ARTEventEmitter.h"
-#import "ARTConnection.h"
+
+#import <Ably/ARTTypes.h>
+#import <Ably/ARTLog.h>
+#import <Ably/ARTRealtimeChannels.h>
+#import <Ably/ARTEventEmitter.h>
+#import <Ably/ARTConnection.h>
 
 @class ARTStatus;
 @class ARTMessage;
@@ -29,7 +30,7 @@
 @class ARTProtocolMessage;
 @class ARTRealtimeChannels;
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 #define ART_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
 
@@ -40,7 +41,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) ARTConnection *connection;
 @property (nonatomic, strong, readonly) ARTRealtimeChannels *channels;
 @property (readonly, getter=getAuth) ARTAuth *auth;
-@property (readonly, art_nullable, getter=getClientId) NSString *clientId;
+@property (readonly, nullable, getter=getClientId) NSString *clientId;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
@@ -58,15 +59,15 @@ Instance the Ably library with the given options.
 */
 - (instancetype)initWithOptions:(ARTClientOptions *)options;
 
-- (void)time:(void (^)(NSDate *__art_nullable, NSError *__art_nullable))cb;
-- (void)ping:(void (^)(ARTErrorInfo *__art_nullable))cb;
+- (void)time:(void (^)(NSDate *_Nullable, NSError *_Nullable))cb;
+- (void)ping:(void (^)(ARTErrorInfo *_Nullable))cb;
 
-- (BOOL)stats:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *__art_nullable, ARTErrorInfo *__art_nullable))callback;
-- (BOOL)stats:(art_nullable ARTStatsQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *__art_nullable, ARTErrorInfo *__art_nullable))callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
+- (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback;
+- (BOOL)stats:(nullable ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
 - (void)connect;
 - (void)close;
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END
