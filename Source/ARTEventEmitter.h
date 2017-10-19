@@ -19,6 +19,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)identification;
 @end
 
+@interface ARTEvent : NSObject<ARTEventIdentification>
+
+- (instancetype)initWithString:(NSString *)value;
++ (instancetype)newWithString:(NSString *)value;
+
+@end
+
 @interface ARTEventListener : NSObject
 @end
 

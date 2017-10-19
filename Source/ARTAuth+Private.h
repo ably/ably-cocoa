@@ -7,7 +7,7 @@
 //
 
 #import "ARTAuth.h"
-#import "ARTEventEmitter+Private.h"
+#import "ARTEventEmitter.h"
 
 typedef NS_ENUM(NSUInteger, ARTAuthorizationState) {
     ARTAuthorizationSucceeded, //ItemType: nil

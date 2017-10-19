@@ -9,7 +9,6 @@
 #import <Foundation/Foundation.h>
 #import "CompatibilityMacros.h"
 #import "ARTTypes.h"
-#import "ARTEventEmitter+Private.h"
 
 @class ARTRealtime;
 @class ARTEventEmitter;

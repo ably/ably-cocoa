@@ -9,7 +9,7 @@
 #import "ARTConnection+Private.h"
 
 #import "ARTRealtime+Private.h"
-#import "ARTEventEmitter.h"
+#import "ARTEventEmitter+Private.h"
 #import "ARTSentry.h"
 
 @interface ARTConnection ()
