@@ -1,3 +1,3 @@
 github "facebook/SocketRocket" "master"
-github "whitesmith/msgpack-objective-C" "carthage-support"
+github "whitesmith/msgpack-objective-C" "disable-modules"
 github "ably-forks/KSCrash" "1.15.8-ably-1"
