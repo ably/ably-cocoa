@@ -37,7 +37,12 @@
 #import "ARTRealtime+Private.h"
 #import "ARTSentry.h"
 
+#if COCOAPODS
+#import <KSCrashAblyFork/KSCrash.h>
+#else
+// Carthage
 #import <KSCrash/KSCrash.h>
+#endif
 
 @interface ARTRest () {
     __block NSUInteger _tokenErrorRetries;
