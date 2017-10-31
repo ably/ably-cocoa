@@ -23,7 +23,7 @@ int (^ARTFallback_getRandomHostIndex)(int count) = ^int(int count) {
 
 @implementation ARTFallback
 
-- (instancetype)initWithFallbackHosts:(art_nullable __GENERIC(NSArray, NSString *) *)fallbackHosts {
+- (instancetype)initWithFallbackHosts:(nullable NSArray<NSString *> *)fallbackHosts {
     self = [super init];
     if (self) {
         if (fallbackHosts != nil && fallbackHosts.count == 0) {

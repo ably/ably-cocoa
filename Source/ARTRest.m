@@ -37,7 +37,12 @@
 #import "ARTRealtime+Private.h"
 #import "ARTSentry.h"
 
+#if COCOAPODS
 #import <KSCrashAblyFork/KSCrash.h>
+#else
+// Carthage
+#import <KSCrash/KSCrash.h>
+#endif
 
 @interface ARTRest () {
     __block NSUInteger _tokenErrorRetries;
@@ -152,7 +157,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (void)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
+- (void)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
 ART_TRY_OR_REPORT_CRASH_START(self) {
     request.URL = [NSURL URLWithString:request.URL.relativeString relativeToURL:self.baseUrl];
     
@@ -179,13 +184,13 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (void)executeRequestWithAuthentication:(NSMutableURLRequest *)request withMethod:(ARTAuthMethod)method completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
+- (void)executeRequestWithAuthentication:(NSMutableURLRequest *)request withMethod:(ARTAuthMethod)method completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
 ART_TRY_OR_REPORT_CRASH_START(self) {
     [self executeRequestWithAuthentication:request withMethod:method force:NO completion:callback];
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (void)executeRequestWithAuthentication:(NSMutableURLRequest *)request withMethod:(ARTAuthMethod)method force:(BOOL)force completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
+- (void)executeRequestWithAuthentication:(NSMutableURLRequest *)request withMethod:(ARTAuthMethod)method force:(BOOL)force completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
 ART_TRY_OR_REPORT_CRASH_START(self) {
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p calculating authorization %lu", self, (unsigned long)method];
     if (method == ARTAuthMethodBasic) {
@@ -221,13 +226,13 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (void)executeRequest:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
+- (void)executeRequest:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
 ART_TRY_OR_REPORT_CRASH_START(self) {
     return [self executeRequest:request completion:callback fallbacks:nil retries:0];
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (void)executeRequest:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback fallbacks:(ARTFallback *)fallbacks retries:(NSUInteger)retries {
+- (void)executeRequest:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback fallbacks:(ARTFallback *)fallbacks retries:(NSUInteger)retries {
 ART_TRY_OR_REPORT_CRASH_START(self) {
     __block ARTFallback *blockFallbacks = fallbacks;
 
@@ -423,17 +428,17 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
     return nil;
 }
 
-- (BOOL)stats:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *__art_nullable, ARTErrorInfo *__art_nullable))callback {
+- (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback {
 ART_TRY_OR_REPORT_CRASH_START(self) {
     return [self stats:[[ARTStatsQuery alloc] init] callback:callback error:nil];
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (BOOL)stats:(ARTStatsQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
+- (BOOL)stats:(ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult<ARTStats *> *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
 ART_TRY_OR_REPORT_CRASH_START(self) {
     if (callback) {
-        void (^userCallback)(__GENERIC(ARTPaginatedResult, ARTStats *) *, ARTErrorInfo *) = callback;
-        callback = ^(__GENERIC(ARTPaginatedResult, ARTStats *) *r, ARTErrorInfo *e) {
+        void (^userCallback)(ARTPaginatedResult<ARTStats *> *, ARTErrorInfo *) = callback;
+        callback = ^(ARTPaginatedResult<ARTStats *> *r, ARTErrorInfo *e) {
             ART_EXITING_ABLY_CODE(self);
             dispatch_async(_userQueue, ^{
                 userCallback(r, e);

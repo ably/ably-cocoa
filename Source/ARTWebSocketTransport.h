@@ -7,15 +7,14 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "CompatibilityMacros.h"
 
-#import "ARTRealtimeTransport.h"
+#import <Ably/ARTRealtimeTransport.h>
 
 @class ARTClientOptions;
 @class ARTRest;
 @class ARTLog;
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTWebSocketTransport : NSObject <ARTRealtimeTransport>
 
@@ -27,4 +26,4 @@ ART_ASSUME_NONNULL_BEGIN
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

@@ -10,7 +10,7 @@
 
 // MARK: Global helper functions
 
-__GENERIC(NSArray, NSString *) *decomposeKey(NSString *key) {
+NSArray<NSString *> *decomposeKey(NSString *key) {
     return [key componentsSeparatedByString:@":"];
 }
 
@@ -156,7 +156,7 @@ NSString *ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event) {
 
 @implementation NSString (ARTJsonCompatible)
 
-- (NSDictionary *)toJSON:(NSError *__art_nullable *__art_nullable)error {
+- (NSDictionary *)toJSON:(NSError *_Nullable *_Nullable)error {
     NSData *data = [self dataUsingEncoding:NSUTF8StringEncoding];
     NSError *jsonError = nil;
     id json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonError];
@@ -179,7 +179,7 @@ NSString *ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event) {
 
 @implementation NSDictionary (ARTJsonCompatible)
 
-- (NSDictionary *)toJSON:(NSError *__art_nullable *__art_nullable)error {
+- (NSDictionary *)toJSON:(NSError *_Nullable *_Nullable)error {
     if (error) {
         *error = nil;
     }

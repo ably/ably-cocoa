@@ -48,11 +48,11 @@
     return self;
 }
 
-- (void)first:(void (^)(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback {
+- (void)first:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (callback) {
-        void (^userCallback)(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error) = callback;
-        callback = ^(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error) {
+        void (^userCallback)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) = callback;
+        callback = ^(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) {
             ART_EXITING_ABLY_CODE(_rest);
             dispatch_async(_userQueue, ^{
                 userCallback(result, error);
@@ -64,11 +64,11 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (void)next:(void (^)(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback {
+- (void)next:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (callback) {
-        void (^userCallback)(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error) = callback;
-        callback = ^(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error) {
+        void (^userCallback)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) = callback;
+        callback = ^(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) {
             ART_EXITING_ABLY_CODE(_rest);
             dispatch_async(_userQueue, ^{
                 userCallback(result, error);
@@ -127,7 +127,7 @@ static NSMutableURLRequest *requestRelativeTo(NSMutableURLRequest *request, NSSt
     return [NSMutableURLRequest requestWithURL:url];
 }
 
-+ (void)executePaginated:(ARTRest *)rest withRequest:(NSMutableURLRequest *)request andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor callback:(void (^)(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback {
++ (void)executePaginated:(ARTRest *)rest withRequest:(NSMutableURLRequest *)request andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor callback:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
 ART_TRY_OR_REPORT_CRASH_START(rest) {
     [rest.logger debug:__FILE__ line:__LINE__ message:@"Paginated request: %@", request];
 

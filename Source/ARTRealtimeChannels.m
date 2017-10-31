@@ -64,8 +64,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
     name = [ARTChannels addPrefix:name];
 
     if (cb) {
-        void (^userCallback)(ARTErrorInfo *__art_nullable error) = cb;
-        cb = ^(ARTErrorInfo *__art_nullable error) {
+        void (^userCallback)(ARTErrorInfo *error) = cb;
+        cb = ^(ARTErrorInfo *error) {
             ART_EXITING_ABLY_CODE(_realtime.rest);
             dispatch_async(_userQueue, ^{
                 userCallback(error);

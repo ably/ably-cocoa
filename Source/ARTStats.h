@@ -7,9 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTDataQuery.h"
 
-ART_ASSUME_NONNULL_BEGIN
+#import <Ably/ARTDataQuery.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
     ARTStatsGranularityMinute,
@@ -150,4 +151,4 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

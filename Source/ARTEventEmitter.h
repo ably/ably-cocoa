@@ -19,6 +19,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)identification;
 @end
 
+@interface ARTEvent : NSObject<ARTEventIdentification>
+
+- (instancetype)initWithString:(NSString *)value;
++ (instancetype)newWithString:(NSString *)value;
+
+@end
+
 @interface ARTEventListener : NSObject
 @end
 
@@ -28,11 +35,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
-- (ARTEventListener *)on:(EventType)event callback:(void (^)(ItemType __art_nullable))cb;
-- (ARTEventListener *)on:(void (^)(ItemType __art_nullable))cb;
+- (ARTEventListener *)on:(EventType)event callback:(void (^)(ItemType _Nullable))cb;
+- (ARTEventListener *)on:(void (^)(ItemType _Nullable))cb;
 
-- (ARTEventListener *)once:(EventType)event callback:(void (^)(ItemType __art_nullable))cb;
-- (ARTEventListener *)once:(void (^)(ItemType __art_nullable))cb;
+- (ARTEventListener *)once:(EventType)event callback:(void (^)(ItemType _Nullable))cb;
+- (ARTEventListener *)once:(void (^)(ItemType _Nullable))cb;
 
 - (void)off:(EventType)event listener:(ARTEventListener *)listener;
 - (void)off:(ARTEventListener *)listener;
@@ -44,11 +51,11 @@ NS_ASSUME_NONNULL_BEGIN
 // This way you can automatically "implement the EventEmitter pattern" for a class
 // as the spec says. It's supposed to be used together with ART_EMBED_IMPLEMENTATION_EVENT_EMITTER
 // in the implementation of the class.
-#define ART_EMBED_INTERFACE_EVENT_EMITTER(EventType, ItemType) - (ARTEventListener *)on:(EventType)event callback:(void (^)(ItemType __art_nullable))cb;\
-- (ARTEventListener *)on:(void (^)(ItemType __art_nullable))cb;\
+#define ART_EMBED_INTERFACE_EVENT_EMITTER(EventType, ItemType) - (ARTEventListener *)on:(EventType)event callback:(void (^)(ItemType _Nullable))cb;\
+- (ARTEventListener *)on:(void (^)(ItemType _Nullable))cb;\
 \
-- (ARTEventListener *)once:(EventType)event callback:(void (^)(ItemType __art_nullable))cb;\
-- (ARTEventListener *)once:(void (^)(ItemType __art_nullable))cb;\
+- (ARTEventListener *)once:(EventType)event callback:(void (^)(ItemType _Nullable))cb;\
+- (ARTEventListener *)once:(void (^)(ItemType _Nullable))cb;\
 \
 - (void)off:(EventType)event listener:(ARTEventListener *)listener;\
 - (void)off:(ARTEventListener *)listener;\
@@ -58,19 +65,19 @@ NS_ASSUME_NONNULL_BEGIN
 // instance variable, which must be called _eventEmitter, of type ARTEventEmitter *.
 // It's supposed to be used together with ART_EMBED_IMPLEMENTATION_EVENT_EMITTER in the
 // header file of the class.
-#define ART_EMBED_IMPLEMENTATION_EVENT_EMITTER(EventType, ItemType) - (ARTEventListener *)on:(EventType)event callback:(void (^)(ItemType __art_nullable))cb {\
+#define ART_EMBED_IMPLEMENTATION_EVENT_EMITTER(EventType, ItemType) - (ARTEventListener *)on:(EventType)event callback:(void (^)(ItemType _Nullable))cb {\
 return [_eventEmitter on:event callback:cb];\
 }\
 \
-- (ARTEventListener *)on:(void (^)(ItemType __art_nullable))cb {\
+- (ARTEventListener *)on:(void (^)(ItemType _Nullable))cb {\
 return [_eventEmitter on:cb];\
 }\
 \
-- (ARTEventListener *)once:(EventType)event callback:(void (^)(ItemType __art_nullable))cb {\
+- (ARTEventListener *)once:(EventType)event callback:(void (^)(ItemType _Nullable))cb {\
 return [_eventEmitter once:event callback:cb];\
 }\
 \
-- (ARTEventListener *)once:(void (^)(ItemType __art_nullable))cb {\
+- (ARTEventListener *)once:(void (^)(ItemType _Nullable))cb {\
 return [_eventEmitter once:cb];\
 }\
 \

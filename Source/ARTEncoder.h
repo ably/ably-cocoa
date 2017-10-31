@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "CompatibilityMacros.h"
 
 @class ARTMessage;
 @class ARTPresenceMessage;
@@ -20,7 +19,7 @@ typedef NS_ENUM(NSUInteger, ARTEncoderFormat) {
     ARTEncoderFormatMsgPack
 };
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTEncoder
 
@@ -52,4 +51,4 @@ ART_ASSUME_NONNULL_BEGIN
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

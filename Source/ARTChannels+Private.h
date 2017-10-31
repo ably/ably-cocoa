@@ -6,14 +6,14 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTChannels.h"
+#import <Ably/ARTChannels.h>
 
 @class ARTRestChannel;
 @class ARTChannelOptions;
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
-extern NSString* (^__art_nullable ARTChannels_getChannelNamePrefix)();
+extern NSString* (^_Nullable ARTChannels_getChannelNamePrefix)();
 
 @protocol ARTChannelsDelegate <NSObject>
 
@@ -27,9 +27,9 @@ extern NSString* (^__art_nullable ARTChannels_getChannelNamePrefix)();
 
 @end
 
-@interface __GENERIC(ARTChannels, ChannelType) ()
+@interface ARTChannels<ChannelType> ()
 
-@property (nonatomic, readonly) __GENERIC(NSMutableDictionary, NSString *, ChannelType) *channels;
+@property (nonatomic, readonly) NSMutableDictionary<NSString *, ChannelType> *channels;
 @property (readonly, getter=getNosyncIterable) id<NSFastEnumeration> nosyncIterable;
 
 + (NSString *)addPrefix:(NSString *)name;
@@ -43,4 +43,4 @@ extern NSString* (^__art_nullable ARTChannels_getChannelNamePrefix)();
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

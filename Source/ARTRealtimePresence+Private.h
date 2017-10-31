@@ -6,10 +6,7 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#ifndef ARTRealtimePresence_Private_h
-#define ARTRealtimePresence_Private_h
-
-#import "ARTRealtimePresence.h"
+#import <Ably/ARTRealtimePresence.h>
 
 @interface ARTRealtimePresence ()
 
@@ -18,5 +15,3 @@
 - (BOOL)getSyncComplete_nosync;
 
 @end
-
-#endif /* ARTRealtimePresence_Private_h */

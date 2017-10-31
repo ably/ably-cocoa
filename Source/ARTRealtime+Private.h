@@ -6,28 +6,28 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTRealtime.h"
-#import "ARTEventEmitter.h"
-#import "ARTTypes.h"
-#import "ARTQueuedMessage.h"
-#import "ARTProtocolMessage.h"
-#import "ARTReachability.h"
+#import <Ably/ARTRealtime.h>
+#import <Ably/ARTEventEmitter.h>
+#import <Ably/ARTTypes.h>
+#import <Ably/ARTQueuedMessage.h>
+#import <Ably/ARTProtocolMessage.h>
+#import <Ably/ARTReachability.h>
 
-#import "ARTRealtimeTransport.h"
-#import "ARTAuth+Private.h"
-#import "ARTRest+Private.h"
+#import <Ably/ARTRealtimeTransport.h>
+#import <Ably/ARTAuth+Private.h>
+#import <Ably/ARTRest+Private.h>
 
 @class ARTRest;
 @class ARTErrorInfo;
 @class ARTProtocolMessage;
 @class ARTConnection;
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtime () <ARTRealtimeTransportDelegate, ARTAuthDelegate>
 
-@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, ARTEvent *, ARTConnectionStateChange *) *internalEventEmitter;
-@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, ARTEvent *, NSNull *) *connectedEventEmitter;
+@property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTConnectionStateChange *> *internalEventEmitter;
+@property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, NSNull *> *connectedEventEmitter;
 
 // State properties
 - (BOOL)shouldSendEvents;
@@ -45,7 +45,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (readwrite, strong, nonatomic) ARTRest *rest;
 @property (readonly, nullable) id<ARTRealtimeTransport> transport;
-@property (readonly, strong, nonatomic, art_nonnull) id<ARTReachability> reachability;
+@property (readonly, strong, nonatomic, nonnull) id<ARTReachability> reachability;
 @property (readonly, getter=getLogger) ARTLog *logger;
 @property (nonatomic) NSTimeInterval connectionStateTtl;
 
@@ -53,10 +53,10 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) int64_t msgSerial;
 
 /// List of queued messages on a connection in the disconnected or connecting states.
-@property (readwrite, strong, nonatomic) __GENERIC(NSMutableArray, ARTQueuedMessage*) *queuedMessages;
+@property (readwrite, strong, nonatomic) NSMutableArray<ARTQueuedMessage *> *queuedMessages;
 
 /// List of pending messages waiting for ACK/NACK action to confirm the success receipt and acceptance.
-@property (readwrite, strong, nonatomic) __GENERIC(NSMutableArray, ARTQueuedMessage*) *pendingMessages;
+@property (readwrite, strong, nonatomic) NSMutableArray<ARTQueuedMessage *> *pendingMessages;
 
 /// First `msgSerial` pending message.
 @property (readwrite, assign, nonatomic) int64_t pendingMessageStartSerial;
@@ -84,10 +84,10 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)onChannelMessage:(ARTProtocolMessage *)message;
 
 - (void)setTransportClass:(Class)transportClass;
-- (void)setReachabilityClass:(Class __art_nullable)reachabilityClass;
+- (void)setReachabilityClass:(Class _Nullable)reachabilityClass;
 
 // Message sending
-- (void)send:(ARTProtocolMessage *)msg callback:(art_nullable void (^)(ARTStatus *))cb;
+- (void)send:(ARTProtocolMessage *)msg callback:(nullable void (^)(ARTStatus *))cb;
 
 - (void)onUncaughtException:(NSException *)e;
 - (NSDictionary *)sentryExtra;
@@ -95,7 +95,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END
 
 #define ART_TRY_OR_MOVE_TO_FAILED_START(realtime) \
 	do {\

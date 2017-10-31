@@ -7,10 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTAuthOptions.h"
-#import "ARTLog.h"
 
-ART_ASSUME_NONNULL_BEGIN
+#import <Ably/ARTAuthOptions.h>
+#import <Ably/ARTLog.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTClientOptions : ARTAuthOptions
 
@@ -28,15 +29,15 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) BOOL echoMessages;
 @property (readwrite, assign, nonatomic) BOOL useBinaryProtocol;
 @property (readwrite, assign, nonatomic) BOOL autoConnect;
-@property (art_nullable, readwrite, copy, nonatomic) NSString *recover;
+@property (nullable, readwrite, copy, nonatomic) NSString *recover;
 
 /**
  The id of the client represented by this instance.
  The clientId is relevant to presence operations, where the clientId is the principal identifier of the client in presence update messages. The clientId is also relevant to authentication; a token issued for a specific client may be used to authenticate the bearer of that token to the service.
  */
-@property (readwrite, strong, nonatomic, art_nullable) NSString *clientId;
+@property (readwrite, strong, nonatomic, nullable) NSString *clientId;
 
-@property (readwrite, strong, nonatomic, art_nullable) ARTTokenParams *defaultTokenParams;
+@property (readwrite, strong, nonatomic, nullable) ARTTokenParams *defaultTokenParams;
 
 /**
  Represents the timeout (in seconds) to retry connection when it's disconnected.
@@ -79,7 +80,7 @@ ART_ASSUME_NONNULL_BEGIN
 /**
  Optionally allows one or more fallback hosts to be used instead of the default fallback hosts.
  */
-@property (art_nullable, nonatomic, copy) __GENERIC(NSArray, NSString *) *fallbackHosts;
+@property (nullable, nonatomic, copy) NSArray<NSString *> *fallbackHosts;
 
 /**
  Optionally allows the default fallback hosts `[a-e].ably-realtime.com` to be used when `environment` is not production or a custom realtime or REST host endpoint is being used. It is never valid to configure `fallbackHost` and set `fallbackHostsUseDefault` to `true`.
@@ -117,4 +118,4 @@ ART_ASSUME_NONNULL_BEGIN
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

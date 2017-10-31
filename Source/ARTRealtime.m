@@ -50,7 +50,7 @@
 @implementation ARTRealtime {
     BOOL _resuming;
     BOOL _renewingToken;
-    __GENERIC(ARTEventEmitter, ARTEvent *, ARTErrorInfo *) *_pingEventEmitter;
+    ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_pingEventEmitter;
     NSDate *_startedReconnection;
     Class _transportClass;
     Class _reachabilityClass;
@@ -268,8 +268,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)ping:(void (^)(ARTErrorInfo *)) cb {
     if (cb) {
-        void (^userCallback)(ARTErrorInfo *__art_nullable error) = cb;
-        cb = ^(ARTErrorInfo *__art_nullable error) {
+        void (^userCallback)(ARTErrorInfo *_Nullable error) = cb;
+        cb = ^(ARTErrorInfo *_Nullable error) {
             ART_EXITING_ABLY_CODE(_rest);
             dispatch_async(_userQueue, ^{
                 userCallback(error);
@@ -305,13 +305,13 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 });
 }
 
-- (BOOL)stats:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *, ARTErrorInfo *))callback {
+- (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *, ARTErrorInfo *))callback {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     return [self stats:[[ARTStatsQuery alloc] init] callback:callback error:nil];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (BOOL)stats:(ARTStatsQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
+- (BOOL)stats:(ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult<ARTStats *> *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     return [self.rest stats:query callback:callback error:errorPtr];
 } ART_TRY_OR_MOVE_TO_FAILED_END
@@ -342,7 +342,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (void)updateWithErrorInfo:(art_nullable ARTErrorInfo *)errorInfo {
+- (void)updateWithErrorInfo:(nullable ARTErrorInfo *)errorInfo {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p update requested", self];
 

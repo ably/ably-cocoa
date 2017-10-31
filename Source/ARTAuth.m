@@ -272,7 +272,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         return;
     }
 
-    void (^checkerCallback)(ARTTokenDetails *__art_nullable, NSError *__art_nullable) = ^(ARTTokenDetails *tokenDetails, NSError *error) {
+    void (^checkerCallback)(ARTTokenDetails *_Nullable, NSError *_Nullable) = ^(ARTTokenDetails *tokenDetails, NSError *error) {
         if (error) {
             callback(nil, error);
             return;
@@ -298,7 +298,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
             }
         }];
     } else {
-        void (^tokenDetailsFactory)(ARTTokenParams *, void(^)(ARTTokenDetails *__art_nullable, NSError *__art_nullable));
+        void (^tokenDetailsFactory)(ARTTokenParams *, void(^)(ARTTokenDetails *_Nullable, NSError *_Nullable));
         if (replacedOptions.authCallback) {
             void (^userCallback)(ARTTokenParams *, void(^)(id<ARTTokenDetailsCompatible>, NSError *)) = ^(ARTTokenParams *tokenParams, void(^callback)(id<ARTTokenDetailsCompatible>, NSError *)){
                 ART_EXITING_ABLY_CODE(_rest);
@@ -307,7 +307,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
                 });
             };
 
-            tokenDetailsFactory = ^(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *__art_nullable, NSError *__art_nullable)) {
+            tokenDetailsFactory = ^(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *_Nullable, NSError *_Nullable)) {
                 userCallback(tokenParams, ^(id<ARTTokenDetailsCompatible> tokenDetailsCompat, NSError *error) {
                     dispatch_async(_queue, ^{
                     ART_TRY_OR_REPORT_CRASH_START(_rest) {
@@ -322,7 +322,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
             };
             [self.logger debug:@"RS:%p ARTAuth: using authCallback", _rest];
         } else {
-            tokenDetailsFactory = ^(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *__art_nullable, NSError *__art_nullable)) {
+            tokenDetailsFactory = ^(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *_Nullable, NSError *_Nullable)) {
                 // Create a TokenRequest and execute it
                 [self _createTokenRequest:currentTokenParams options:replacedOptions callback:^(ARTTokenRequest *tokenRequest, NSError *error) {
                     if (error) {

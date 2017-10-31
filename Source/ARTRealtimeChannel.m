@@ -30,6 +30,7 @@
 #import "ARTGCD.h"
 #import "ARTConnection+Private.h"
 #import "ARTRestChannels+Private.h"
+#import "ARTEventEmitter+Private.h"
 
 @interface ARTRealtimeChannel () {
     ARTRealtimePresence *_realtimePresence;

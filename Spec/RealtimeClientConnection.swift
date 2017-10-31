@@ -3097,7 +3097,7 @@ class RealtimeClientConnection: QuickSpec {
                                 return
                             }
 
-                            wsTransport.webSocket(wsTransport.websocket, didFailWithError:error)
+                            wsTransport.webSocket(wsTransport.websocket!, didFailWithError:error)
                             expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.disconnected), timeout: testTimeout)
                         }
                     }

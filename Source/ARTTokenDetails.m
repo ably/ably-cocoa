@@ -43,7 +43,7 @@
     return tokenDetails;
 }
 
-+ (ARTTokenDetails *__art_nullable)fromJson:(id<ARTJsonCompatible>)json error:(NSError *__art_nullable *__art_nullable)error {
++ (ARTTokenDetails *_Nullable)fromJson:(id<ARTJsonCompatible>)json error:(NSError *_Nullable *_Nullable)error {
     NSError *e = nil;
     NSDictionary *dict = [json toJSON:&e];
     if (e) {

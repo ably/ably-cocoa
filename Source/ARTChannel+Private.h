@@ -6,20 +6,20 @@
 //  Copyright (c) 2015 г. Ably. All rights reserved.
 //
 
-#import "ARTChannel.h"
-#import "ARTLog.h"
+#import <Ably/ARTChannel.h>
+#import <Ably/ARTLog.h>
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTChannel()
 
 @property (readonly, getter=getLogger) ARTLog *logger;
-@property (nonatomic, strong, art_null_resettable) ARTChannelOptions *options;
+@property (nonatomic, strong, null_resettable) ARTChannelOptions *options;
 @property (nonatomic, strong, readonly) ARTDataEncoder *dataEncoder;
 
-- (void)internalPostMessages:(id)data callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;
-- (void)_setOptions:(ARTChannelOptions *__art_nullable)options;
+- (void)internalPostMessages:(id)data callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback;
+- (void)_setOptions:(ARTChannelOptions *_Nullable)options;
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END
