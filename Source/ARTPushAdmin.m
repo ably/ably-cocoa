@@ -8,17 +8,64 @@
 
 #import "ARTPushAdmin.h"
 #import "ARTHttp.h"
+#import "ARTRest+Private.h"
 #import "ARTPushDeviceRegistrations.h"
 #import "ARTPushChannelSubscriptions.h"
+#import "ARTLog.h"
+#import "ARTJsonEncoder.h"
+#import "ARTJsonLikeEncoder.h"
 
-@implementation ARTPushAdmin;
+@implementation ARTPushAdmin {
+    ARTRest *_rest;
+    __weak ARTLog *_logger;
+    dispatch_queue_t _userQueue;
+    dispatch_queue_t _queue;
+}
 
 - (instancetype)init:(ARTRest *)rest {
     if (self = [super init]) {
+        _rest = rest;
+        _logger = [rest logger];
         _deviceRegistrations = [[ARTPushDeviceRegistrations alloc] init:rest];
         _channelSubscriptions = [[ARTPushChannelSubscriptions alloc] init:rest];
+        _userQueue = rest.userQueue;
+        _queue = rest.queue;
     }
     return self;
+}
+
+- (void)publish:(ARTPushRecipient *)recipient notification:(ARTJsonObject *)notification callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+    if (callback) {
+        void (^userCallback)(ARTErrorInfo *error) = callback;
+        callback = ^(ARTErrorInfo *error) {
+            ART_EXITING_ABLY_CODE(_rest);
+            dispatch_async(_userQueue, ^{
+                userCallback(error);
+            });
+        };
+    }
+
+    dispatch_async(_queue, ^{
+        ART_TRY_OR_REPORT_CRASH_START(_rest) {
+            NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/publish"]];
+            request.HTTPMethod = @"POST";
+            NSMutableDictionary *body = [NSMutableDictionary dictionary];
+            [body setObject:recipient forKey:@"recipient"];
+            [body addEntriesFromDictionary:notification];
+            request.HTTPBody = [[_rest defaultEncoder] encode:body error:nil];
+            [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
+
+            [_logger debug:__FILE__ line:__LINE__ message:@"push notification to a single device %@", request];
+            [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+                if (error) {
+                    [_logger error:@"%@: push notification to a single device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+                    if (callback) callback([ARTErrorInfo createFromNSError:error]);
+                    return;
+                }
+                if (callback) callback(nil);
+            }];
+        } ART_TRY_OR_REPORT_CRASH_END
+    });
 }
 
 @end

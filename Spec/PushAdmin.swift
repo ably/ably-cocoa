@@ -177,7 +177,7 @@ class PushAdmin : QuickSpec {
 
             fit("should perform an HTTP request to /push/publish") {
                 waitUntil(timeout: testTimeout) { done in
-                    rest.push.publish(recipient, notification: payload) { error in
+                    rest.push.admin.publish(recipient, notification: payload) { error in
                         expect(error).to(beNil())
                         done()
                     }
@@ -248,7 +248,7 @@ class PushAdmin : QuickSpec {
                         done()
                     }
 
-                    realtime.push.publish(["ablyChannel": channel.name], notification: payload) { error in
+                    realtime.push.admin.publish(["ablyChannel": channel.name], notification: payload) { error in
                         expect(error).to(beNil())
                     }
                 }
@@ -351,7 +351,7 @@ class PushAdmin : QuickSpec {
                 it("should unregister a device") {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                     waitUntil(timeout: testTimeout) { done in
-                        realtime.push.admin.deviceRegistrations.remove(self.deviceDetails) { error in
+                        realtime.push.admin.deviceRegistrations.remove(self.deviceDetails.id) { error in
                             expect(error).to(beNil())
                             done()
                         }

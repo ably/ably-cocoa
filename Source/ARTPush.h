@@ -14,12 +14,6 @@
 @class ARTRealtime;
 @class ARTDeviceDetails;
 
-// More context
-typedef NSString ARTDeviceId;
-typedef NSData ARTDeviceToken;
-typedef NSString ARTUpdateToken;
-typedef ARTJsonObject ARTPushRecipient;
-
 #pragma mark ARTPushRegisterer interface
 
 #ifdef TARGET_OS_IOS
@@ -50,9 +44,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) ARTPushAdmin *admin;
 
 - (instancetype)init NS_UNAVAILABLE;
-
-/// Publish a push notification.
-- (void)publish:(ARTPushRecipient *)recipient notification:(ARTJsonObject *)notification callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;
 
 #ifdef TARGET_OS_IOS
 

@@ -22,7 +22,12 @@
 @class __GENERIC(ARTPaginatedResult, ItemType);
 @class ARTStats;
 
+// More context
 typedef NSDictionary<NSString *, id> ARTJsonObject;
+typedef NSString ARTDeviceId;
+typedef NSData ARTDeviceToken;
+typedef NSString ARTUpdateToken;
+typedef ARTJsonObject ARTPushRecipient;
 
 typedef NS_ENUM(NSUInteger, ARTAuthentication) {
     ARTAuthenticationOff,
