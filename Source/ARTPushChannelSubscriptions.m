@@ -47,14 +47,15 @@
 dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"]];
-    request.HTTPMethod = @"PUT";
+    request.HTTPMethod = @"POST";
     request.HTTPBody = [[_rest defaultEncoder] encodePushChannelSubscription:channelSubscription error:nil];
     [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"save channel subscription with request %@", request];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
-        if (response.statusCode == 200 /*OK*/) {
+        if (response.statusCode == 201 /*CREATED*/) {
             [_logger debug:__FILE__ line:__LINE__ message:@"channel subscription saved successfully"];
+            callback(nil);
         }
         else if (error) {
             [_logger error:@"%@: save channel subscription failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
