@@ -69,9 +69,12 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         }
         else if (error) {
             [_logger error:@"%@: save device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            callback([ARTErrorInfo createFromNSError:error]);
         }
         else {
             [_logger error:@"%@: save device failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
+            NSString *plain = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            callback([ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[plain shortString]]);
         }
     }];
 } ART_TRY_OR_REPORT_CRASH_END

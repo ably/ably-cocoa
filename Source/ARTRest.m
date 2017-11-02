@@ -275,12 +275,8 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 
             if (!validContentType) {
                 NSString *plain = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-                // Short response data
-                NSRange stringRange = {0, MIN([plain length], 1000)}; //1KB
-                stringRange = [plain rangeOfComposedCharacterSequencesForRange:stringRange];
-                NSString *shortPlain = [plain substringWithRange:stringRange];
                 // Construct artificial error
-                error = [ARTErrorInfo createWithCode:response.statusCode * 100 status:response.statusCode message:shortPlain];
+                error = [ARTErrorInfo createWithCode:response.statusCode * 100 status:response.statusCode message:[plain shortString]];
                 data = nil; // Discard data; format is unreliable.
                 [self.logger error:@"Request %@ failed with %@", request, error];
             }

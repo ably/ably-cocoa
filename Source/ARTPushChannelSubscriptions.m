@@ -15,6 +15,7 @@
 #import "ARTEncoder.h"
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTRest+Private.h"
+#import "ARTTypes.h"
 
 @implementation ARTPushChannelSubscriptions {
     __weak ARTRest *_rest;
@@ -59,9 +60,12 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         }
         else if (error) {
             [_logger error:@"%@: save channel subscription failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            callback([ARTErrorInfo createFromNSError:error]);
         }
         else {
             [_logger error:@"%@: save channel subscription failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
+            NSString *plain = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            callback([ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[plain shortString]]);
         }
     }];
 } ART_TRY_OR_REPORT_CRASH_END
@@ -179,12 +183,16 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*OK*/) {
             [_logger debug:__FILE__ line:__LINE__ message:@"%@: channel subscription removed successfully", NSStringFromClass(self.class)];
+            callback(nil);
         }
         else if (error) {
             [_logger error:@"%@: remove channel subscription failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            callback([ARTErrorInfo createFromNSError:error]);
         }
         else {
             [_logger error:@"%@: remove channel subscription failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
+            NSString *plain = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            callback([ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[plain shortString]]);
         }
     }];
 }

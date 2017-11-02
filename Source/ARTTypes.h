@@ -193,6 +193,10 @@ NSString *generateNonce();
 @interface NSString (ARTJsonCompatible) <ARTJsonCompatible>
 @end
 
+@interface NSString (Utilities)
+- (NSString *)shortString;
+@end
+
 @interface NSDictionary (ARTJsonCompatible) <ARTJsonCompatible>
 @end
 
