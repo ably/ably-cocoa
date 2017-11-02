@@ -46,24 +46,26 @@
 
 dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
-    if (!deviceDetails.updateToken) {
-        [_logger error:@"%@: update token is missing", NSStringFromClass(self.class)];
-        return;
-    }
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceDetails.id]];
-    NSData *tokenData = [deviceDetails.updateToken dataUsingEncoding:NSUTF8StringEncoding];
-    NSString *tokenBase64 = [tokenData base64EncodedStringWithOptions:0];
-    [request setValue:[NSString stringWithFormat:@"Bearer %@", tokenBase64] forHTTPHeaderField:@"Authorization"];
     request.HTTPMethod = @"PUT";
     request.HTTPBody = [[_rest defaultEncoder] encodeDeviceDetails:deviceDetails error:nil];
     [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
+    ARTAuthentication authentication = ARTAuthenticationOn;
+    if (deviceDetails.updateToken) {
+        NSData *tokenData = [deviceDetails.updateToken dataUsingEncoding:NSUTF8StringEncoding];
+        NSString *tokenBase64 = [tokenData base64EncodedStringWithOptions:0];
+        [request setValue:[NSString stringWithFormat:@"Bearer %@", tokenBase64] forHTTPHeaderField:@"Authorization"];
+        authentication = ARTAuthenticationOff;
+    }
+
     [_logger debug:__FILE__ line:__LINE__ message:@"save device with request %@", request];
-    [_rest executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [_rest executeRequest:request withAuthOption:authentication completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*OK*/) {
             [_logger debug:__FILE__ line:__LINE__ message:@"%@: save device successfully", NSStringFromClass(self.class)];
             ARTDeviceDetails *deviceDetails = [[_rest defaultEncoder] decodeDeviceDetails:data error:nil];
             deviceDetails.updateToken = deviceDetails.updateToken;
+            callback(nil);
         }
         else if (error) {
             [_logger error:@"%@: save device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
