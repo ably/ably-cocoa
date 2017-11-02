@@ -99,7 +99,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     request.HTTPMethod = @"GET";
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **error) {
-        return [[_rest defaultEncoder] decodeDevicesDetails:data error:error];
+        return [_rest.encoders[response.MIMEType] decodeDevicesDetails:data error:error];
     };
     [ARTPaginatedResult executePaginated:_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
 } ART_TRY_OR_REPORT_CRASH_END

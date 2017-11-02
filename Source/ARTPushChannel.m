@@ -172,7 +172,7 @@ const NSUInteger ARTDefaultLimit = 100;
     request.HTTPMethod = @"GET";
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **error) {
-        return [[_rest defaultEncoder] decodePushChannelSubscriptions:data error:error];
+        return [_rest.encoders[response.MIMEType] decodePushChannelSubscriptions:data error:error];
     };
 
     [ARTPaginatedResult executePaginated:_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];

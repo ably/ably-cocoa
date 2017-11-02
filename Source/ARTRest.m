@@ -493,8 +493,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[requestUrl URLRelativeToURL:self.baseUrl]];
     
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
-        id<ARTEncoder> encoder = [self.encoders objectForKey:response.MIMEType];
-        return [encoder decodeStats:data error:errorPtr];
+        return [self.encoders[response.MIMEType] decodeStats:data error:errorPtr];
     };
     
 dispatch_async(_queue, ^{
