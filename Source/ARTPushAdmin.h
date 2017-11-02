@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init NS_UNAVAILABLE;
 
 /// Publish a push notification.
-- (void)publish:(ARTPushRecipient *)recipient notification:(ARTJsonObject *)notification callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback;
+- (void)publish:(ARTPushRecipient *)recipient data:(ARTJsonObject *)data callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback;
 
 @property (nonatomic, readonly) ARTPushDeviceRegistrations* deviceRegistrations;
 @property (nonatomic, readonly) ARTPushChannelSubscriptions* channelSubscriptions;

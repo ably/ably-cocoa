@@ -177,7 +177,7 @@ class PushAdmin : QuickSpec {
 
             fit("should perform an HTTP request to /push/publish") {
                 waitUntil(timeout: testTimeout) { done in
-                    rest.push.admin.publish(recipient, notification: payload) { error in
+                    rest.push.admin.publish(recipient, data: payload) { error in
                         expect(error).to(beNil())
                         done()
                     }
@@ -201,7 +201,7 @@ class PushAdmin : QuickSpec {
 
             it("should reject empty values/data for recipient") {
                 waitUntil(timeout: testTimeout) { done in
-                    rest.push.admin.publish(["client_id": ""], notification: payload) { error in
+                    rest.push.admin.publish(["client_id": ""], data: payload) { error in
                         expect(error).toNot(beNil())
                         done()
                     }
@@ -210,7 +210,7 @@ class PushAdmin : QuickSpec {
 
             it("should reject empty values/data for payload") {
                 waitUntil(timeout: testTimeout) { done in
-                    rest.push.admin.publish(recipient, notification: ["notification": ""]) { error in
+                    rest.push.admin.publish(recipient, data: ["notification": ""]) { error in
                         expect(error).toNot(beNil())
                         done()
                     }
@@ -219,7 +219,7 @@ class PushAdmin : QuickSpec {
 
             it("should reject an invalid recipient") {
                 waitUntil(timeout: testTimeout) { done in
-                    rest.push.admin.publish(["foo": "bar"], notification: payload) { error in
+                    rest.push.admin.publish(["foo": "bar"], data: payload) { error in
                         expect(error).toNot(beNil())
                         done()
                     }
@@ -228,7 +228,7 @@ class PushAdmin : QuickSpec {
 
             it("should reject an invalid notification payload") {
                 waitUntil(timeout: testTimeout) { done in
-                    rest.push.admin.publish(recipient, notification: ["foo": "bar"]) { error in
+                    rest.push.admin.publish(recipient, data: ["foo": "bar"]) { error in
                         expect(error).toNot(beNil())
                         done()
                     }
@@ -248,7 +248,7 @@ class PushAdmin : QuickSpec {
                         done()
                     }
 
-                    realtime.push.admin.publish(["ablyChannel": channel.name], notification: payload) { error in
+                    realtime.push.admin.publish(["ablyChannel": channel.name], data: payload) { error in
                         expect(error).to(beNil())
                     }
                 }

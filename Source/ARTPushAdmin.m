@@ -34,7 +34,7 @@
     return self;
 }
 
-- (void)publish:(ARTPushRecipient *)recipient notification:(ARTJsonObject *)notification callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+- (void)publish:(ARTPushRecipient *)recipient data:(ARTJsonObject *)data callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
     if (callback) {
         void (^userCallback)(ARTErrorInfo *error) = callback;
         callback = ^(ARTErrorInfo *error) {
@@ -51,7 +51,7 @@
             request.HTTPMethod = @"POST";
             NSMutableDictionary *body = [NSMutableDictionary dictionary];
             [body setObject:recipient forKey:@"recipient"];
-            [body addEntriesFromDictionary:notification];
+            [body addEntriesFromDictionary:data];
             request.HTTPBody = [[_rest defaultEncoder] encode:body error:nil];
             [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
