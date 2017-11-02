@@ -76,6 +76,10 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 });
 }
 
+- (void)get:(ARTDeviceId *)deviceId callback:(void (^)(ARTPaginatedResult<ARTDeviceDetails *> *,  ARTErrorInfo *))callback {
+    [self list:@{@"deviceId": deviceId} callback:callback];
+}
+
 - (void)list:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTPaginatedResult<ARTDeviceDetails *> *result, ARTErrorInfo *error))callback {
     if (callback) {
         void (^userCallback)(ARTPaginatedResult *, ARTErrorInfo *error) = callback;
