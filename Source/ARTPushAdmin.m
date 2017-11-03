@@ -47,6 +47,16 @@
 
     dispatch_async(_queue, ^{
         ART_TRY_OR_REPORT_CRASH_START(_rest) {
+            if (![[recipient allKeys] count]) {
+                if (callback) callback([ARTErrorInfo createWithCode:0 message:@"Recipient is missing"]);
+                return;
+            }
+
+            if (![[data allKeys] count]) {
+                if (callback) callback([ARTErrorInfo createWithCode:0 message:@"Data payload is missing"]);
+                return;
+            }
+
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/publish"]];
             request.HTTPMethod = @"POST";
             NSMutableDictionary *body = [NSMutableDictionary dictionary];
