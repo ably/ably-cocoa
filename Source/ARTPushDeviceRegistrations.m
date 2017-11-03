@@ -81,8 +81,10 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 });
 }
 
-- (void)get:(ARTDeviceId *)deviceId callback:(void (^)(ARTPaginatedResult<ARTDeviceDetails *> *,  ARTErrorInfo *))callback {
-    [self list:@{@"deviceId": deviceId} callback:callback];
+- (void)get:(ARTDeviceId *)deviceId callback:(void (^)(ARTDeviceDetails *,  ARTErrorInfo *))callback {
+    [self list:@{@"deviceId": deviceId} callback:^(ARTPaginatedResult<ARTDeviceDetails *> *result, ARTErrorInfo *error) {
+        if (callback) callback(result.items.firstObject, error);
+    }];
 }
 
 - (void)list:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTPaginatedResult<ARTDeviceDetails *> *result, ARTErrorInfo *error))callback {
