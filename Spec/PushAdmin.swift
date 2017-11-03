@@ -201,8 +201,11 @@ class PushAdmin : QuickSpec {
 
             it("should reject empty values/data for recipient") {
                 waitUntil(timeout: testTimeout) { done in
-                    rest.push.admin.publish(["client_id": ""], data: payload) { error in
-                        expect(error).toNot(beNil())
+                    rest.push.admin.publish(["clientId": ""], data: payload) { error in
+                        guard let error = error else {
+                            fail("Error is missing"); done(); return
+                        }
+                        expect(error.message).to(contain("recipient is empty"))
                         done()
                     }
                 }
@@ -211,7 +214,10 @@ class PushAdmin : QuickSpec {
             it("should reject empty values/data for payload") {
                 waitUntil(timeout: testTimeout) { done in
                     rest.push.admin.publish(recipient, data: ["notification": ""]) { error in
-                        expect(error).toNot(beNil())
+                        guard let error = error else {
+                            fail("Error is missing"); done(); return
+                        }
+                        expect(error.message).to(contain("payload is empty"))
                         done()
                     }
                 }
@@ -220,7 +226,10 @@ class PushAdmin : QuickSpec {
             it("should reject an invalid recipient") {
                 waitUntil(timeout: testTimeout) { done in
                     rest.push.admin.publish(["foo": "bar"], data: payload) { error in
-                        expect(error).toNot(beNil())
+                        guard let error = error else {
+                            fail("Error is missing"); done(); return
+                        }
+                        expect(error.message).to(contain("invalid recipient"))
                         done()
                     }
                 }
@@ -229,7 +238,10 @@ class PushAdmin : QuickSpec {
             it("should reject an invalid notification payload") {
                 waitUntil(timeout: testTimeout) { done in
                     rest.push.admin.publish(recipient, data: ["foo": "bar"]) { error in
-                        expect(error).toNot(beNil())
+                        guard let error = error else {
+                            fail("Error is missing"); done(); return
+                        }
+                        expect(error.message).to(contain("invalid payload"))
                         done()
                     }
                 }
