@@ -276,6 +276,9 @@ class PushAdmin : QuickSpec {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                     waitUntil(timeout: testTimeout) { done in
                         realtime.push.admin.deviceRegistrations.get("testDeviceDetails") { device, error in
+                            guard let device = device else {
+                                fail("Device is missing"); done(); return;
+                            }
                             expect(device).to(equal(self.deviceDetails))
                             expect(error).to(beNil())
                             done()
