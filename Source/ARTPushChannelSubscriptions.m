@@ -85,14 +85,12 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 
 dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
-    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
+    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channels"] resolvingAgainstBaseURL:NO];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"GET";
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **error) {
-        return [[_rest.encoders[response.MIMEType] decodePushChannelSubscriptions:data error:error] artMap:^NSString *(ARTPushChannelSubscription *item) {
-            return ((ARTPushChannelSubscription *)item).channel;
-        }];
+        return [_rest.encoders[response.MIMEType] decode:data error:error];
     };
     [ARTPaginatedResult executePaginated:_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
 } ART_TRY_OR_REPORT_CRASH_END
@@ -181,7 +179,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 
     [_logger debug:__FILE__ line:__LINE__ message:@"remove channel subscription with request %@", request];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
-        if (response.statusCode == 200 /*OK*/) {
+        if (response.statusCode == 204 /*not returning any content*/) {
             [_logger debug:__FILE__ line:__LINE__ message:@"%@: channel subscription removed successfully", NSStringFromClass(self.class)];
             callback(nil);
         }

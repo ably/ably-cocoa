@@ -102,6 +102,11 @@ class PushAdmin : QuickSpec {
 
     private lazy var allSubscriptions: [ARTPushChannelSubscription] = PushAdmin.allSubscriptions
 
+    private lazy var allSubscriptionsChannels: [String] = {
+        var seen = Set<String>()
+        return allSubscriptions.filter({ seen.insert($0.channel).inserted }).map({ $0.channel })
+    }()
+
     override class func setUp() {
         super.setUp()
         let rest = ARTRest(options: AblyTests.commonAppSetup())
@@ -113,7 +118,7 @@ class PushAdmin : QuickSpec {
                 defer {
                     group.leave()
                 }
-                assert(error == nil)
+                assert(error == nil, error?.message ?? "no message")
             }
         }
 
@@ -123,7 +128,7 @@ class PushAdmin : QuickSpec {
                 defer {
                     group.leave()
                 }
-                assert(error == nil)
+                assert(error == nil, error?.message ?? "no message")
             }
         }
 
@@ -157,7 +162,7 @@ class PushAdmin : QuickSpec {
         var httpExecutor: MockHTTPExecutor!
 
         let recipient = [
-            "client_id": "bob"
+            "clientId": "bob"
         ]
 
         let payload = [
@@ -175,7 +180,7 @@ class PushAdmin : QuickSpec {
         // RHS1a
         describe("publish") {
 
-            fit("should perform an HTTP request to /push/publish") {
+            it("should perform an HTTP request to /push/publish") {
                 waitUntil(timeout: testTimeout) { done in
                     rest.push.admin.publish(recipient, data: payload) { error in
                         expect(error).to(beNil())
@@ -183,7 +188,16 @@ class PushAdmin : QuickSpec {
                     }
                 }
 
-                switch extractBodyAsMsgPack(httpExecutor.requests.first) {
+                guard let request = httpExecutor.requests.first else {
+                    fail("Request is missing"); return
+                }
+                guard let url = request.url else {
+                    fail("URL is missing"); return
+                }
+
+                expect(url.absoluteString).to(contain("/push/publish"))
+
+                switch extractBodyAsMsgPack(request) {
                 case .failure(let error):
                     XCTFail(error)
                 case .success(let httpBody):
@@ -199,69 +213,105 @@ class PushAdmin : QuickSpec {
                 }
             }
 
-            it("should reject empty values/data for recipient") {
-                waitUntil(timeout: testTimeout) { done in
-                    rest.push.admin.publish(["clientId": ""], data: payload) { error in
-                        guard let error = error else {
-                            fail("Error is missing"); done(); return
-                        }
-                        expect(error.message).to(contain("recipient is empty"))
-                        done()
-                    }
-                }
-            }
-
-            it("should reject empty values/data for payload") {
-                waitUntil(timeout: testTimeout) { done in
-                    rest.push.admin.publish(recipient, data: ["notification": ""]) { error in
-                        guard let error = error else {
-                            fail("Error is missing"); done(); return
-                        }
-                        expect(error.message).to(contain("payload is empty"))
-                        done()
-                    }
-                }
-            }
-
-            it("should reject an invalid recipient") {
-                waitUntil(timeout: testTimeout) { done in
-                    rest.push.admin.publish(["foo": "bar"], data: payload) { error in
-                        guard let error = error else {
-                            fail("Error is missing"); done(); return
-                        }
-                        expect(error.message).to(contain("invalid recipient"))
-                        done()
-                    }
-                }
-            }
-
-            it("should reject an invalid notification payload") {
-                waitUntil(timeout: testTimeout) { done in
-                    rest.push.admin.publish(recipient, data: ["foo": "bar"]) { error in
-                        guard let error = error else {
-                            fail("Error is missing"); done(); return
-                        }
-                        expect(error.message).to(contain("invalid payload"))
-                        done()
-                    }
-                }
-            }
-
-            it("should send a notification") {
+            it("should work as expected") {
                 let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
-                let channel = realtime.channels.get("push-test")
+                let channel = realtime.channels.get("pushenabled:push_admin_publish-ok")
 
                 waitUntil(timeout: testTimeout) { done in
-                    channel.subscribe { message in
-                        guard let data = message.data as? NSDictionary else {
-                            fail("Message data should be a dictionary"); done(); return
-                        }
-                        expect(data).to(equal(payload as NSDictionary))
+                    channel.attach() { error in
+                        expect(error).to(beNil())
                         done()
                     }
+                }
 
-                    realtime.push.admin.publish(["ablyChannel": channel.name], data: payload) { error in
+                waitUntil(timeout: testTimeout) { done in
+                    let partialDone = AblyTests.splitDone(2, done: done)
+                    channel.subscribe("__ably_push__") { message in
+                        guard let data = message.data as? NSDictionary else {
+                            fail("Data is not a JSON Object"); partialDone(); return
+                        }
+                        expect(data).to(equal(["data": ["foo": "bar"]] as NSDictionary))
+                        partialDone()
+                    }
+                    realtime.push.admin.publish(["ablyChannel": channel.name], data: ["data": ["foo": "bar"]]) { error in
                         expect(error).to(beNil())
+                        partialDone()
+                    }
+                }
+            }
+
+            it("should fail with a bad recipient") {
+                let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
+                let channel = realtime.channels.get("pushenabled:push_admin_publish-bad-recipient")
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.attach() { error in
+                        expect(error).to(beNil())
+                        done()
+                    }
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.subscribe("__ably_push__") { message in
+                        fail("Should not be called")
+                    }
+                    realtime.push.admin.publish(["foo": "bar"], data: ["data": ["foo": "bar"]]) { error in
+                        guard let error = error else {
+                            fail("Error is missing"); done(); return
+                        }
+                        expect(error.statusCode) == 400
+                        expect(error.message).to(contain("recipient must contain a deviceId, clientId, or transportType"))
+                        done()
+                    }
+                }
+            }
+
+            it("should fail with an empty recipient") {
+                let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
+                let channel = realtime.channels.get("pushenabled:push_admin_publish-empty-recipient")
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.attach() { error in
+                        expect(error).to(beNil())
+                        done()
+                    }
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.subscribe("__ably_push__") { message in
+                        fail("Should not be called")
+                    }
+                    realtime.push.admin.publish([:], data: ["data": ["foo": "bar"]]) { error in
+                        guard let error = error else {
+                            fail("Error is missing"); done(); return
+                        }
+                        expect(error.message.lowercased()).to(contain("recipient is missing"))
+                        done()
+                    }
+                }
+            }
+
+            it("should fail with an empty payload") {
+                let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
+                let channel = realtime.channels.get("pushenabled:push_admin_publish-empty-payload")
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.attach() { error in
+                        expect(error).to(beNil())
+                        done()
+                    }
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.subscribe("__ably_push__") { message in
+                        fail("Should not be called")
+                    }
+                    realtime.push.admin.publish(["ablyChannel": channel.name], data: [:]) { error in
+                        guard let error = error else {
+                            fail("Error is missing"); done(); return
+                        }
+                        expect(error.message.lowercased()).to(contain("data payload is missing"))
+                        done()
                     }
                 }
             }
@@ -286,7 +336,7 @@ class PushAdmin : QuickSpec {
                     }
                 }
 
-                it("should not return a device if it does not exist") {
+                it("should not return a device if it doesnt exist") {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                     waitUntil(timeout: testTimeout) { done in
                         realtime.push.admin.deviceRegistrations.get("madeup") { device, error in
@@ -318,28 +368,28 @@ class PushAdmin : QuickSpec {
                     }
                 }
 
-                it("should list devices by client id") {
+                it("should list devices by client id") { [allDeviceDetails] in
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                     waitUntil(timeout: testTimeout) { done in
                         realtime.push.admin.deviceRegistrations.list(["clientId": "clientA"]) { result, error in
                             guard let result = result else {
                                 fail("PaginatedResult should not be empty"); done(); return
                             }
-                            expect(result.items.count) == 2
+                            expect(result.items.count) == allDeviceDetails.filter({ $0.clientId == "clientA" }).count
                             expect(error).to(beNil())
                             done()
                         }
                     }
                 }
 
-                it("should list devices sorted") {
+                it("should list devices sorted") { [allDeviceDetails] in
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                     waitUntil(timeout: testTimeout) { done in
                         realtime.push.admin.deviceRegistrations.list(["direction": "forwards"]) { result, error in
                             guard let result = result else {
                                 fail("PaginatedResult should not be empty"); done(); return
                             }
-                            expect(result.items.count) == 0
+                            expect(result.items.count) == allDeviceDetails.count
                             expect(error).to(beNil())
                             done()
                         }
@@ -437,17 +487,16 @@ class PushAdmin : QuickSpec {
             }
 
             // RHS1c2
-            context("listChannels") {
+            context("listChannels") { [allSubscriptionsChannels] in
                 it("should receive a list of subscriptions") {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                     waitUntil(timeout: testTimeout) { done in
                         realtime.push.admin.channelSubscriptions.listChannels() { result, error in
+                            expect(error).to(beNil())
                             guard let result = result else {
                                 fail("PaginatedResult should not be empty"); done(); return
                             }
-                            expect(result.items.count) == 1
-                            expect(result.items.first) == "pushenabled:qux"
-                            expect(error).to(beNil())
+                            expect(result.items as [String]).to(contain(allSubscriptionsChannels + [subscription.channel]))
                             done()
                         }
                     }

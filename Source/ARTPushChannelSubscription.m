@@ -26,4 +26,8 @@
     return self;
 }
 
+- (NSString *)description {
+    return [NSString stringWithFormat:@"%@ - \n\t deviceId: %@; clientId: %@; \n\t channel: %@;", [super description], self.deviceId, self.clientId, self.channel];
+}
+
 @end
