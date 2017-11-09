@@ -10,9 +10,8 @@ import XCTest
 import Ably
 @testable import Tests
 
-
-
 class TestsTests: XCTestCase {
+
     let options: ARTClientOptions! = nil
 
     func testAblyWorks() {
@@ -26,14 +25,14 @@ class TestsTests: XCTestCase {
             "Accept" : "application/json",
             "Content-Type" : "application/json"
         ]
-        URLSession.shared.dataTask(with: request, completionHandler: { data, _, error in
+        URLSession.shared.dataTask(with: request as URLRequest) { data, _, error in
             defer { postAppExpectation.fulfill() }
             if let e = error {
                 XCTFail("Error setting up sandbox app: \(e)")
                 return
             }
             responseData = data
-        }) .resume()
+        }.resume()
         self.waitForExpectations(timeout: 10, handler: nil)
 
         guard let key = responseData
@@ -65,22 +64,23 @@ class TestsTests: XCTestCase {
 
         let backgroundRealtimeExpectation = self.expectation(description: "Realtime in a Background Queue")
         var realtime: ARTRealtime! //strong reference
-        URLSession.shared.dataTask(with: URL(string:"https://ably.io")!, completionHandler: { _ in
+        URLSession.shared.dataTask(with: URL(string: "https://ably.io")!) { _ in
             realtime = ARTRealtime(key: key as String)
             realtime.channels.get("foo").attach { _ in
                 defer { backgroundRealtimeExpectation.fulfill() }
             }
-        }) .resume()
+        } .resume()
         self.waitForExpectations(timeout: 10, handler: nil)
 
         let backgroundRestExpectation = self.expectation(description: "Rest in a Background Queue")
         var rest: ARTRest! //strong reference
-        URLSession.shared.dataTask(with: URL(string:"https://ably.io")!, completionHandler: { _ in
+        URLSession.shared.dataTask(with: URL(string: "https://ably.io")!) { _ in
             rest = ARTRest(key: key as String)
             rest.channels.get("foo").history { _ in
                 defer { backgroundRestExpectation.fulfill() }
             }
-        }) .resume()
+        }.resume()
         self.waitForExpectations(timeout: 10, handler: nil)
     }
+
 }
