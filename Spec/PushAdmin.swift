@@ -178,7 +178,7 @@ class PushAdmin : QuickSpec {
         }
 
         // RHS1a
-        describe("publish") {
+        fdescribe("publish") {
 
             it("should perform an HTTP request to /push/publish") {
                 waitUntil(timeout: testTimeout) { done in
@@ -318,7 +318,7 @@ class PushAdmin : QuickSpec {
 
         }
 
-        describe("Device Registrations") {
+        fdescribe("Device Registrations") {
 
             // RHS1b1
             context("get") {
@@ -452,7 +452,7 @@ class PushAdmin : QuickSpec {
 
         }
 
-        describe("Channel Subscriptions") {
+        fdescribe("Channel Subscriptions") {
 
             let subscription = ARTPushChannelSubscription(clientId: "newClient", channel: "pushenabled:qux")
 
