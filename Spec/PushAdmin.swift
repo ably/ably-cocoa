@@ -414,7 +414,9 @@ class PushAdmin : QuickSpec {
             // RHS1b4
             context("remove") {
                 it("should unregister a device") {
-                    let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
+                    let options = AblyTests.commonAppSetup()
+                    options.pushFullWait = true
+                    let realtime = ARTRealtime(options: options)
                     waitUntil(timeout: testTimeout) { done in
                         realtime.push.admin.deviceRegistrations.remove(self.deviceDetails.id) { error in
                             expect(error).to(beNil())
@@ -427,7 +429,9 @@ class PushAdmin : QuickSpec {
             // RHS1b3
             context("save") {
                 it("should register a device") {
-                    let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
+                    let options = AblyTests.commonAppSetup()
+                    options.pushFullWait = true
+                    let realtime = ARTRealtime(options: options)
                     waitUntil(timeout: testTimeout) { done in
                         realtime.push.admin.deviceRegistrations.save(self.deviceDetails) { error in
                             expect(error).to(beNil())
@@ -438,13 +442,68 @@ class PushAdmin : QuickSpec {
             }
 
             // RHS1b5
-            context("removeWhere") {
+            context("removeWhere") { [allDeviceDetails] in
                 it("should unregister a device") {
-                    let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
+                    let options = AblyTests.commonAppSetup()
+                    options.pushFullWait = true
+                    let realtime = ARTRealtime(options: options)
+
+                    let params = [
+                        "clientId": "clientA"
+                    ]
+
+                    let expectedRemoved = allDeviceDetails.filter({ $0.clientId == "clientA" })
+
                     waitUntil(timeout: testTimeout) { done in
-                        realtime.push.admin.deviceRegistrations.removeWhere(["clientId": "clientA"]) { error in
+                        realtime.push.admin.deviceRegistrations.list(params) { result, error in
+                            guard let result = result else {
+                                fail("PaginatedResult should not be empty"); done(); return
+                            }
+                            expect(result.items).to(contain(expectedRemoved))
                             expect(error).to(beNil())
                             done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        realtime.push.admin.deviceRegistrations.removeWhere(params) { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        realtime.push.admin.deviceRegistrations.list(params) { result, error in
+                            guard let result = result else {
+                                fail("PaginatedResult should not be empty"); done(); return
+                            }
+                            expect(result.items.count) == 0
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    // --- Restore state for next tests ---
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(expectedRemoved.count, done: done)
+                        for removedDevice in expectedRemoved {
+                            realtime.push.admin.deviceRegistrations.save(removedDevice) { error in
+                                expect(error).to(beNil())
+                                partialDone()
+                            }
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        realtime.push.admin.channelSubscriptions.save(self.subscriptionFooDevice2) { error in
+                            expect(error).to(beNil())
+                            partialDone()
+                        }
+                        realtime.push.admin.channelSubscriptions.save(self.subscriptionBarDevice2) { error in
+                            expect(error).to(beNil())
+                            partialDone()
                         }
                     }
                 }
@@ -530,7 +589,9 @@ class PushAdmin : QuickSpec {
             // RHS1c5
             context("removeWhere") {
                 it("should remove by cliendId") {
-                    let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
+                    let options = AblyTests.commonAppSetup()
+                    options.pushFullWait = true
+                    let realtime = ARTRealtime(options: options)
 
                     let params = [
                         "clientId": "clientB"
@@ -560,12 +621,6 @@ class PushAdmin : QuickSpec {
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        delay(3) {
-                            done()
-                        }
-                    }
-
-                    waitUntil(timeout: testTimeout) { done in
                         realtime.push.admin.channelSubscriptions.list(params) { result, error in
                             guard let result = result else {
                                 fail("PaginatedResult should not be empty"); done(); return
@@ -588,7 +643,9 @@ class PushAdmin : QuickSpec {
                 }
 
                 it("should remove by cliendId and channel") {
-                    let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
+                    let options = AblyTests.commonAppSetup()
+                    options.pushFullWait = true
+                    let realtime = ARTRealtime(options: options)
 
                     let params = [
                         "clientId": "clientB",
@@ -600,6 +657,17 @@ class PushAdmin : QuickSpec {
                     ]
 
                     waitUntil(timeout: testTimeout) { done in
+                        realtime.push.admin.channelSubscriptions.list(params) { result, error in
+                            guard let result = result else {
+                                fail("PaginatedResult should not be empty"); done(); return
+                            }
+                            expect(result.items).to(contain(expectedRemoved))
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
                         realtime.push.admin.channelSubscriptions.removeWhere(params) { error in
                             expect(error).to(beNil())
                             done()
@@ -616,23 +684,15 @@ class PushAdmin : QuickSpec {
                             done()
                         }
                     }
-
-                    waitUntil(timeout: testTimeout) { done in
-                        let partialDone = AblyTests.splitDone(expectedRemoved.count, done: done)
-                        for removedSubscription in expectedRemoved {
-                            realtime.push.admin.channelSubscriptions.save(removedSubscription) { error in
-                                expect(error).to(beNil())
-                                partialDone()
-                            }
-                        }
-                    }
                 }
 
                 it("should remove by deviceId") {
-                    let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
+                    let options = AblyTests.commonAppSetup()
+                    options.pushFullWait = true
+                    let realtime = ARTRealtime(options: options)
 
                     let params = [
-                        "deviceId": "subscriptionBarDevice2.deviceId",
+                        "deviceId": "deviceDetails2ClientA",
                     ]
 
                     let expectedRemoved = [
@@ -641,6 +701,17 @@ class PushAdmin : QuickSpec {
                     ]
 
                     waitUntil(timeout: testTimeout) { done in
+                        realtime.push.admin.channelSubscriptions.list(params) { result, error in
+                            guard let result = result else {
+                                fail("PaginatedResult should not be empty"); done(); return
+                            }
+                            expect(result.items).to(contain(expectedRemoved))
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
                         realtime.push.admin.channelSubscriptions.removeWhere(params) { error in
                             expect(error).to(beNil())
                             done()
@@ -655,16 +726,6 @@ class PushAdmin : QuickSpec {
                             expect(result.items.count) == 0
                             expect(error).to(beNil())
                             done()
-                        }
-                    }
-
-                    waitUntil(timeout: testTimeout) { done in
-                        let partialDone = AblyTests.splitDone(expectedRemoved.count, done: done)
-                        for removedSubscription in expectedRemoved {
-                            realtime.push.admin.channelSubscriptions.save(removedSubscription) { error in
-                                expect(error).to(beNil())
-                                partialDone()
-                            }
                         }
                     }
                 }

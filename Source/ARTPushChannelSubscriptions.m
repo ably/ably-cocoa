@@ -47,14 +47,18 @@
 
 dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"]];
+    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
+    if (_rest.options.pushFullWait) {
+        components.queryItems = @[[NSURLQueryItem queryItemWithName:@"fullWait" value:@"true"]];
+    }
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"POST";
     request.HTTPBody = [[_rest defaultEncoder] encodePushChannelSubscription:channelSubscription error:nil];
     [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"save channel subscription with request %@", request];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
-        if (response.statusCode == 201 /*CREATED*/) {
+        if (response.statusCode == 200 /*Ok*/ || response.statusCode == 201 /*Created*/) {
             [_logger debug:__FILE__ line:__LINE__ message:@"channel subscription saved successfully"];
             callback(nil);
         }
@@ -174,12 +178,15 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 - (void)_removeWhere:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTErrorInfo *error))callback {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
     components.queryItems = [params asURLQueryItems];
+    if (_rest.options.pushFullWait) {
+        components.queryItems = [components.queryItems arrayByAddingObject:[NSURLQueryItem queryItemWithName:@"fullWait" value:@"true"]];
+    }
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"DELETE";
 
     [_logger debug:__FILE__ line:__LINE__ message:@"remove channel subscription with request %@", request];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
-        if (response.statusCode == 204 /*not returning any content*/) {
+        if (response.statusCode == 200 /*Ok*/ || response.statusCode == 204 /*not returning any content*/) {
             [_logger debug:__FILE__ line:__LINE__ message:@"%@: channel subscription removed successfully", NSStringFromClass(self.class)];
             callback(nil);
         }

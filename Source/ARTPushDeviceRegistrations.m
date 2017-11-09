@@ -46,7 +46,11 @@
 
 dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceDetails.id]];
+    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceDetails.id] resolvingAgainstBaseURL:NO];
+    if (_rest.options.pushFullWait) {
+        components.queryItems = @[[NSURLQueryItem queryItemWithName:@"fullWait" value:@"true"]];
+    }
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"PUT";
     request.HTTPBody = [[_rest defaultEncoder] encodeDeviceDetails:deviceDetails error:nil];
     [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
@@ -175,13 +179,17 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 
 dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceId]];
+    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceId] resolvingAgainstBaseURL:NO];
+    if (_rest.options.pushFullWait) {
+        components.queryItems = @[[NSURLQueryItem queryItemWithName:@"fullWait" value:@"true"]];
+    }
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"DELETE";
     [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"remove device with request %@", request];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
-        if (response.statusCode == 204 /*not returning any content*/) {
+        if (response.statusCode == 200 /*Ok*/ || response.statusCode == 204 /*not returning any content*/) {
             [_logger debug:__FILE__ line:__LINE__ message:@"%@: save device successfully", NSStringFromClass(self.class)];
             callback(nil);
         }
@@ -214,12 +222,15 @@ dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"] resolvingAgainstBaseURL:NO];
     components.queryItems = [params asURLQueryItems];
+    if (_rest.options.pushFullWait) {
+        components.queryItems = [components.queryItems arrayByAddingObject:[NSURLQueryItem queryItemWithName:@"fullWait" value:@"true"]];
+    }
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"DELETE";
 
     [_logger debug:__FILE__ line:__LINE__ message:@"remove devices with request %@", request];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
-        if (response.statusCode == 204 /*not returning any content*/) {
+        if (response.statusCode == 200 /*Ok*/ || response.statusCode == 204 /*not returning any content*/) {
             [_logger debug:__FILE__ line:__LINE__ message:@"%@: remove devices successfully", NSStringFromClass(self.class)];
             callback(nil);
         }
