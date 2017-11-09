@@ -542,8 +542,25 @@ class PushAdmin : QuickSpec {
                     ]
 
                     waitUntil(timeout: testTimeout) { done in
+                        realtime.push.admin.channelSubscriptions.list(params) { result, error in
+                            guard let result = result else {
+                                fail("PaginatedResult should not be empty"); done(); return
+                            }
+                            expect(result.items).to(contain(expectedRemoved))
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
                         realtime.push.admin.channelSubscriptions.removeWhere(params) { error in
                             expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        delay(3) {
                             done()
                         }
                     }
