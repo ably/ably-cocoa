@@ -1328,6 +1328,28 @@ class RealtimeClient: QuickSpec {
                 expect(result).to(equal(expectedOrder))
             }
 
+            // Possible issue of https://github.com/ably/ably-ios/issues/640
+            fit("should unlock queue when the timer ends") {
+                let options = ARTClientOptions(key: "xxxx:xxxx")
+                options.autoConnect = false
+                let client = ARTRealtime(options: options)
+                let channel = client.channels.get("foo")
+
+                waitUntil(timeout: testTimeout) { done in
+                    // Schedule a timer in the `internalDispatchQueue`
+                    let listener = client.internalEventEmitter.once { _ in }
+                    listener.setTimer(0.2, onTimeout: {
+                        // another lock
+                        channel.unsubscribe()
+                        done()
+                    })
+                    listener.startTimer()
+
+                    // lock
+                    channel.unsubscribe()
+                }
+            }
+
             it("should never register any connection listeners for internal use with the public EventEmitter") {
                 let options = AblyTests.commonAppSetup()
                 options.autoConnect = false
