@@ -1329,7 +1329,7 @@ class RealtimeClient: QuickSpec {
             }
 
             // Possible issue of https://github.com/ably/ably-ios/issues/640
-            fit("should unlock queue when the timer ends") {
+            xit("should unlock queue when the timer ends") {
                 let options = ARTClientOptions(key: "xxxx:xxxx")
                 options.autoConnect = false
                 let client = ARTRealtime(options: options)
@@ -1348,6 +1348,34 @@ class RealtimeClient: QuickSpec {
                     // lock
                     channel.unsubscribe()
                 }
+            }
+
+            class AblyManager {
+                static let sharedClient = ARTRealtime(options: { $0.autoConnect = false; return $0 }(ARTClientOptions(key: "xxxx:xxxx")))
+            }
+
+            // Possible issue of https://github.com/ably/ably-ios/issues/640
+            fit("should dispatch in user queue") {
+                class Foo {
+                    let channel = "foo"
+                    init() {
+                        AblyManager.sharedClient.channels.get(channel).subscribe { _ in
+                            // keep reference
+                            self.update()
+                        }
+                    }
+                    deinit {
+                        close()
+                    }
+                    func update() {
+                    }
+                    func close() {
+                        AblyManager.sharedClient.channels.get(channel).unsubscribe()
+                    }
+                }
+
+                let foo = Foo()
+                foo.close()
             }
 
             it("should never register any connection listeners for internal use with the public EventEmitter") {
