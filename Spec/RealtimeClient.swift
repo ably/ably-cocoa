@@ -1355,7 +1355,7 @@ class RealtimeClient: QuickSpec {
             }
 
             // Possible issue of https://github.com/ably/ably-ios/issues/640
-            fit("should dispatch in user queue") {
+            xit("should dispatch in user queue") {
                 class Foo {
                     let channel = "foo"
                     init() {
