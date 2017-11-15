@@ -10,6 +10,8 @@ install:
   - gem install fastlane -v 2.64.0
   # CocoaPods
   - pod install
+  # Carthage
+  - carthage bootstrap
 script:
   # Run tests
   # Use `travis_wait` when a long running command or compile step regularly takes longer than 10 minutes without producing any output.
