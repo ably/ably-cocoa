@@ -77,7 +77,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
 }
 
 - (BOOL)add:(ARTPresenceMessage *)message {
-    ARTPresenceMessage *latest = [_members objectForKey:message.clientId];
+    ARTPresenceMessage *latest = [_members objectForKey:message.memberKey];
     if ([self isNewestPresence:message comparingWith:latest]) {
         ARTPresenceMessage *messageCopy = [message copy];
         switch (message.action) {
@@ -106,7 +106,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
 
 - (void)internalAdd:(ARTPresenceMessage *)message withSessionId:(NSUInteger)sessionId {
     message.syncSessionId = sessionId;
-    [_members setObject:message forKey:message.clientId];
+    [_members setObject:message forKey:message.memberKey];
     // Local member
     if ([message.connectionId isEqualToString:[self.delegate connectionId]]) {
         [_localMembers addObject:message];
@@ -125,7 +125,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
         [self internalAdd:message withSessionId:message.syncSessionId];
     }
     else {
-        [_members removeObjectForKey:message.clientId];
+        [_members removeObjectForKey:message.memberKey];
         [_localMembers removeObject:message];
     }
 }
