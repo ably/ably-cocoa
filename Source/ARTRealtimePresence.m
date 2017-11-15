@@ -16,6 +16,7 @@
 #import "ARTPresence+Private.h"
 #import "ARTDataQuery+Private.h"
 #import "ARTConnection+Private.h"
+#import "ARTNSArray+ARTFunctional.h"
 
 #pragma mark - ARTRealtimePresenceQuery
 
@@ -84,6 +85,11 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
             break;
     }
 
+    BOOL (^filterMemberBlock)(ARTPresenceMessage *message) = ^BOOL(ARTPresenceMessage *message) {
+        return (query.clientId == nil || [message.clientId isEqualToString:query.clientId]) &&
+            (query.connectionId == nil || [message.connectionId isEqualToString:query.connectionId]);
+    };
+
     [_channel _attach:^(ARTErrorInfo *error) {
         if (error) {
             callback(nil, error);
@@ -91,13 +97,16 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
         }
         if (_channel.presenceMap.syncInProgress && query.waitForSync) {
             [_channel.presenceMap onceSyncEnds:^(NSArray<ARTPresenceMessage *> *members) {
-                callback(members, nil);
+                NSArray<ARTPresenceMessage *> *filteredMembers = [members artFilter:filterMemberBlock];
+                callback(filteredMembers, nil);
             }];
             [_channel.presenceMap onceSyncFails:^(ARTErrorInfo *error) {
                 callback(nil, error);
             }];
         } else {
-            callback(_channel.presenceMap.members.allValues, nil);
+            NSArray<ARTPresenceMessage *> *members = _channel.presenceMap.members.allValues;
+            NSArray<ARTPresenceMessage *> *filteredMembers = [members artFilter:filterMemberBlock];
+            callback(filteredMembers, nil);
         }
     }];
 } ART_TRY_OR_MOVE_TO_FAILED_END
