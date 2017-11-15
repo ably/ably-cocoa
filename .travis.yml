@@ -6,8 +6,6 @@ env:
   - LANG=en_US.UTF-8
 before_install:
 install:
-  # Install Fastlane
-  - gem install fastlane -v 2.64.0
   # CocoaPods
   - pod install
   # Carthage
