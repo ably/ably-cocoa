@@ -1328,6 +1328,31 @@ class RealtimeClient: QuickSpec {
                 expect(result).to(equal(expectedOrder))
             }
 
+            class AblyManager {
+                static let sharedClient = ARTRealtime(options: { $0.autoConnect = false; return $0 }(ARTClientOptions(key: "xxxx:xxxx")))
+            }
+
+            // Issue https://github.com/ably/ably-ios/issues/640
+            it("should dispatch in user queue when removing an observer") {
+                class Foo {
+                    init() {
+                        AblyManager.sharedClient.channels.get("foo").subscribe { _ in
+                            // keep reference
+                            self.update()
+                        }
+                    }
+                    func update() {
+                    }
+                    deinit {
+                        AblyManager.sharedClient.channels.get("foo").unsubscribe()
+                    }
+                }
+
+                var foo: Foo? = Foo()
+                foo = nil
+                AblyManager.sharedClient.channels.get("foo").unsubscribe()
+            }
+
             it("should never register any connection listeners for internal use with the public EventEmitter") {
                 let options = AblyTests.commonAppSetup()
                 options.autoConnect = false

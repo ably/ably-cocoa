@@ -63,7 +63,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
         _presenceMap.delegate = self;
         _lastPresenceAction = ARTPresenceAbsent;
         _statesEventEmitter = [[ARTPublicEventEmitter alloc] initWithRest:_realtime.rest];
-        _messagesEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
+        _messagesEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueues:_queue userQueue:_userQueue];
         _presenceEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
         _attachedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
         _detachedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
