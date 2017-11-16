@@ -2135,7 +2135,7 @@ class RealtimeClientPresence: QuickSpec {
 
                     expect(channel.presenceMap.syncInProgress).toEventually(beFalse(), timeout: testTimeout)
 
-                    guard let user11MemberKey = channel.presenceMap.members["user11"]?.memberKey() else {
+                    guard let user11MemberKey = channel.presenceMap.members["\(clientMembers?.connection.id ?? ""):user11"]?.memberKey() else {
                         fail("user11 memberKey is not present"); return
                     }
 
