@@ -3423,6 +3423,40 @@ class RealtimeClientChannel: QuickSpec {
                 }
             }
 
+            // https://github.com/ably/ably-ios/issues/614
+            it("should not crash when an ATTACH request is responded with a DETACHED") {
+                let options = AblyTests.commonAppSetup()
+                let client = AblyTests.newRealtime(options)
+                defer { client.dispose(); client.close() }
+                let channel = client.channels.get("foo")
+
+                let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                ARTDefault.setRealtimeRequestTimeout(1.0)
+
+                guard let transport = client.transport as? TestProxyTransport else {
+                    fail("TestProxyTransport is not set"); return
+                }
+
+                transport.changeReceivedMessage = { protocolMessage in
+                    if protocolMessage.action == .attached {
+                        protocolMessage.action = .detached
+                        protocolMessage.error = ARTErrorInfo.create(withCode: 50000, status: 500, message: "Timeout waiting for master to become ready")
+                    }
+                    return protocolMessage
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.attach { error in
+                        guard let error = error else {
+                            fail("Error is nil"); done(); return
+                        }
+                        expect(error.statusCode) == 500
+                        done()
+                    }
+                }
+            }
+
         }
     }
 }

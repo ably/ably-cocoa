@@ -709,10 +709,11 @@ class TestProxyTransport: ARTWebSocketTransport {
     fileprivate(set) var rawDataReceived = [Data]()
     fileprivate var replacingAcksWithNacks: ARTErrorInfo?
     fileprivate var ignoreWebSocket = false
-    
+
     var beforeProcessingSentMessage: Optional<(ARTProtocolMessage)->()> = nil
-    var beforeProcessingReceivedMessage: Optional<(ARTProtocolMessage)->()> = nil
+    var beforeProcessingReceivedMessage: Optional<(ARTProtocolMessage) -> Void> = nil
     var afterProcessingReceivedMessage: Optional<(ARTProtocolMessage)->()> = nil
+    var changeReceivedMessage: ((ARTProtocolMessage) -> ARTProtocolMessage)? = nil
 
     var actionsIgnored = [ARTProtocolMessageAction]()
     var ignoreSends = false
@@ -826,23 +827,27 @@ class TestProxyTransport: ARTWebSocketTransport {
         super.send(data, withSource: decodedObject)
     }
 
-    override func receive(_ msg: ARTProtocolMessage) {
-        if msg.action == .ack || msg.action == .presence {
+    override func receive(_ original: ARTProtocolMessage) {
+        if original.action == .ack || original.action == .presence {
             if let error = replacingAcksWithNacks {
-                msg.action = .nack
-                msg.error = error
+                original.action = .nack
+                original.error = error
             }
         }
-        protocolMessagesReceived.append(msg)
-        if actionsIgnored.contains(msg.action) {
+        protocolMessagesReceived.append(original)
+        if actionsIgnored.contains(original.action) {
             return
         }
         if let performEvent = beforeProcessingReceivedMessage {
-            performEvent(msg)
+            performEvent(original)
+        }
+        var msg = original
+        if let performEvent = changeReceivedMessage {
+            msg = performEvent(original)
         }
         super.receive(msg)
         if let performEvent = afterProcessingReceivedMessage {
-            performEvent(msg)
+            performEvent(original)
         }
     }
 
