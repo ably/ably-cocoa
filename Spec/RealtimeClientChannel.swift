@@ -67,13 +67,13 @@ class RealtimeClientChannel: QuickSpec {
                 }
                 
                 expect(channel1.presenceMap.members).toEventually(haveCount(2), timeout: testTimeout)
-                expect(channel1.presenceMap.members.keys).to(allPass({ $0!.hasPrefix("Client") }))
+                expect(channel1.presenceMap.members.keys).to(allPass({ $0!.hasPrefix("\(channel1.connectionId):Client") || $0!.hasPrefix("\(channel2.connectionId):Client") }))
                 expect(channel1.presenceMap.members.values).to(allPass({ $0!.action == .present }))
 
                 expect(channel2.presenceMap.members).toEventually(haveCount(2), timeout: testTimeout)
-                expect(channel2.presenceMap.members.keys).to(allPass({ $0!.hasPrefix("Client") }))
-                expect(channel2.presenceMap.members["Client 1"]!.action).to(equal(ARTPresenceAction.present))
-                expect(channel2.presenceMap.members["Client 2"]!.action).to(equal(ARTPresenceAction.present))
+                expect(channel2.presenceMap.members.keys).to(allPass({ $0!.hasPrefix("\(channel1.connectionId):Client") || $0!.hasPrefix("\(channel2.connectionId):Client") }))
+                expect(channel2.presenceMap.members["\(channel1.connectionId):Client 1"]!.action).to(equal(ARTPresenceAction.present))
+                expect(channel2.presenceMap.members["\(channel2.connectionId):Client 2"]!.action).to(equal(ARTPresenceAction.present))
             }
 
             // RTL2
