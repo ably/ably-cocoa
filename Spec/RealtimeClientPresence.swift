@@ -1710,7 +1710,7 @@ class RealtimeClientPresence: QuickSpec {
                         }
                     }
 
-                    guard let intialPresenceMessage = channel.presenceMap.members["tester"] else {
+                    guard let intialPresenceMessage = channel.presenceMap.members["\(channel.connectionId):tester"] else {
                         fail("Missing Presence message"); return
                     }
 
@@ -1729,7 +1729,7 @@ class RealtimeClientPresence: QuickSpec {
                         }
                     }
 
-                    guard let updatedPresenceMessage = channel.presenceMap.members["tester"] else {
+                    guard let updatedPresenceMessage = channel.presenceMap.members["\(channel.connectionId):tester"] else {
                         fail("Missing Presence message"); return
                     }
 
