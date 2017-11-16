@@ -3590,6 +3590,148 @@ class RealtimeClientPresence: QuickSpec {
                         }
                     }
 
+                    // RTP11c2
+                    it("should return members filtered by clientId") {
+                        let options = AblyTests.commonAppSetup()
+                        let now = NSDate()
+
+                        let client = AblyTests.newRealtime(options)
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("foo")
+
+                        let presenceData: [ARTPresenceMessage] = [
+                            ARTPresenceMessage(clientId: "a", action: .enter, connectionId: "one", id: "one:0:0", timestamp: now as Date),
+                            ARTPresenceMessage(clientId: "a", action: .leave, connectionId: "one", id: "fabricated:0:1", timestamp: (now as Date) + 1),
+                            ARTPresenceMessage(clientId: "b", action: .enter, connectionId: "one", id: "one:0:2", timestamp: now as Date),
+                            ARTPresenceMessage(clientId: "b", action: .leave, connectionId: "one", id: "fabricated:0:3", timestamp: (now as Date) - 1),
+                            ARTPresenceMessage(clientId: "c", action: .enter, connectionId: "one", id: "fabricated:0:4", timestamp: now as Date),
+                            ARTPresenceMessage(clientId: "c", action: .leave, connectionId: "one", id: "fabricated:0:5", timestamp: (now as Date) - 1),
+                        ]
+
+                        guard let transport = client.transport as? TestProxyTransport else {
+                            fail("TestProxyTransport is not set"); return
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.attach() { error in
+                                expect(error).to(beNil())
+
+                                // Inject a fabricated Presence message
+                                let presenceMessage = ARTProtocolMessage()
+                                presenceMessage.action = .presence
+                                presenceMessage.channel = channel.name
+                                presenceMessage.timestamp = NSDate() as Date
+                                presenceMessage.presence = presenceData
+
+                                transport.receive(presenceMessage)
+
+                                done()
+                            }
+                        }
+
+                        let query = ARTRealtimePresenceQuery()
+                        query.clientId = "b"
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.presence.get(query) { members, error in
+                                expect(error).to(beNil())
+                                guard let members = members else {
+                                    fail("Members is nil"); done(); return
+                                }
+                                expect(members).to(haveCount(1))
+                                expect(members).to(allPass({ (member: ARTPresenceMessage?) in member!.action != .absent }))
+                                expect(members.filter{ $0.clientId == "a" }).to(beEmpty())
+                                expect(members.filter{ $0.clientId == "b" }).to(haveCount(1))
+                                expect(members.filter{ $0.clientId == "c" }).to(beEmpty())
+                                done()
+                            }
+                        }
+                    }
+
+                    // RTP11c3
+                    it("should return members filtered by connectionId") {
+                        let options = AblyTests.commonAppSetup()
+                        let now = NSDate()
+
+                        var clientMembers: ARTRealtime?
+                        defer { clientMembers?.dispose(); clientMembers?.close() }
+                        waitUntil(timeout: testTimeout) { done in
+                            clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 101, options: options) {
+                                done()
+                            }
+                        }
+
+                        let clientSubscribed = AblyTests.newRealtime(options)
+                        defer { clientSubscribed.dispose(); clientSubscribed.close() }
+                        let channelSubscribed = clientSubscribed.channels.get("foo")
+
+                        let presenceData: [ARTPresenceMessage] = [
+                            ARTPresenceMessage(clientId: "a", action: .enter, connectionId: "one", id: "one:0:0", timestamp: now as Date),
+                            ARTPresenceMessage(clientId: "a", action: .leave, connectionId: "one", id: "fabricated:0:1", timestamp: (now as Date) + 1),
+                            ARTPresenceMessage(clientId: "b", action: .enter, connectionId: "one", id: "one:0:2", timestamp: now as Date),
+                            ARTPresenceMessage(clientId: "b", action: .leave, connectionId: "one", id: "fabricated:0:3", timestamp: (now as Date) - 1),
+                            ARTPresenceMessage(clientId: "c", action: .enter, connectionId: "one", id: "fabricated:0:4", timestamp: now as Date),
+                            ARTPresenceMessage(clientId: "c", action: .leave, connectionId: "one", id: "fabricated:0:5", timestamp: (now as Date) - 1),
+                        ]
+
+                        guard let transport = clientSubscribed.transport as? TestProxyTransport else {
+                            fail("TestProxyTransport is not set"); return
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            transport.afterProcessingReceivedMessage = { protocolMessage in
+                                // Receive the first Sync message from Ably service
+                                if protocolMessage.action == .sync {
+
+                                    // Inject a fabricated Presence message
+                                    let presenceMessage = ARTProtocolMessage()
+                                    presenceMessage.action = .presence
+                                    presenceMessage.channel = protocolMessage.channel
+                                    presenceMessage.connectionSerial = protocolMessage.connectionSerial + 1
+                                    presenceMessage.timestamp = NSDate() as Date
+                                    presenceMessage.presence = presenceData
+
+                                    transport.receive(presenceMessage)
+
+                                    // Simulate an end to the sync
+                                    let endSyncMessage = ARTProtocolMessage()
+                                    endSyncMessage.action = .sync
+                                    endSyncMessage.channel = protocolMessage.channel
+                                    endSyncMessage.channelSerial = "validserialprefix:" //with no part after the `:` this indicates the end to the SYNC
+                                    endSyncMessage.connectionSerial = protocolMessage.connectionSerial + 2
+                                    endSyncMessage.timestamp = NSDate() as Date
+
+                                    transport.afterProcessingReceivedMessage = nil
+                                    transport.receive(endSyncMessage)
+
+                                    // Stop the next sync message from Ably service because we already injected the end of the sync
+                                    transport.actionsIgnored = [.sync]
+
+                                    done()
+                                }
+                            }
+                            channelSubscribed.attach()
+                        }
+
+                        let query = ARTRealtimePresenceQuery()
+                        query.connectionId = "one"
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channelSubscribed.presence.get(query) { members, error in
+                                expect(error).to(beNil())
+                                guard let members = members else {
+                                    fail("Members is nil"); done(); return
+                                }
+                                expect(members).to(haveCount(2))
+                                expect(members).to(allPass({ (member: ARTPresenceMessage?) in member!.action != .absent }))
+                                expect(members.filter{ $0.clientId == "a" }).to(beEmpty())
+                                expect(members.filter{ $0.clientId == "b" }).to(haveCount(1))
+                                expect(members.filter{ $0.clientId == "c" }).to(haveCount(1))
+                                done()
+                            }
+                        }
+                    }
+
                 }
 
             }
