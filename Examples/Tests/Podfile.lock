@@ -1,5 +1,5 @@
 PODS:
-  - Ably (1.0.6):
+  - Ably (1.0.9):
     - KSCrashAblyFork (= 1.15.8-ably-1)
     - msgpack (= 0.1.8)
     - SocketRocket (= 0.5.1)
@@ -74,14 +74,14 @@ DEPENDENCIES:
 
 EXTERNAL SOURCES:
   Ably:
-    :path: "../.."
+    :path: ../..
 
 SPEC CHECKSUMS:
-  Ably: 86578d591c0a840c82e099a73e23b29466ff6af5
+  Ably: cc4bc164d4c5a0b904b1390b54985c7fadfd939f
   KSCrashAblyFork: 6d0dd5b033710109a8fdde28103eeb0e7f9ba1f7
   msgpack: 97491d2ea799408f4694f2c7d7fd79baf77853dd
   SocketRocket: d57c7159b83c3c6655745cd15302aa24b6bae531
 
 PODFILE CHECKSUM: 6af34bf7f91045b23539816c1d0cfe253bec5ea5
 
-COCOAPODS: 1.2.1
+COCOAPODS: 1.3.1
