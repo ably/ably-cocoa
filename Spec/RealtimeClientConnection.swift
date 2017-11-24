@@ -2899,7 +2899,7 @@ class RealtimeClientConnection: QuickSpec {
 
             // RTN17
             context("Host Fallback") {
-                let expectedHostOrder = [4, 3, 0, 2, 1]
+                let expectedHostOrder = [3, 4, 0, 2, 1]
                 let originalARTFallback_getRandomHostIndex = ARTFallback_getRandomHostIndex
 
                 beforeEach {
@@ -2907,8 +2907,22 @@ class RealtimeClientConnection: QuickSpec {
                         let hostIndexes = [1, 1, 0, 0, 0]
                         var i = 0
                         return { count in
-                            let hostIndex = hostIndexes[i]
-                            i += 1
+                            assert(count > 0, "Fallback array is empty")
+
+                            let hostIndex: Int32
+                            if i < Int(count) {
+                                hostIndex = Int32(hostIndexes[i])
+                            }
+                            else {
+                                hostIndex = count - 1
+                            }
+
+                            if i < hostIndexes.count {
+                                i += 1
+                            }
+                            else {
+                                i = 0
+                            }
                             return Int32(hostIndex)
                         }
                     }()
@@ -2921,9 +2935,14 @@ class RealtimeClientConnection: QuickSpec {
                 // RTN17b
                 it("failing connections with custom endpoint should result in an error immediately") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
-                    options.environment = "test"
+                    options.environment = "test" //do not use the default endpoint
+                    expect(options.fallbackHostsUseDefault).to(beFalse())
+                    expect(options.fallbackHosts).to(beNil())
                     options.autoConnect = false
+                    options.queueMessages = false
+
                     let client = AblyTests.newRealtime(options)
+                    defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
                     TestProxyTransport.network = .hostUnreachable
@@ -2938,16 +2957,93 @@ class RealtimeClientConnection: QuickSpec {
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
-                    client.connect()
-                    defer { client.dispose(); client.close() }
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.on(.disconnected) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("StateChange is empty"); done(); return
+                            }
+                            expect(stateChange.previous) == ARTRealtimeConnectionState.connecting
+                            expect(stateChange.current) == ARTRealtimeConnectionState.disconnected
+                            guard let reason = stateChange.reason else {
+                                fail("Reason is empty"); done(); return
+                            }
+                            expect(reason.message).to(contain("host unreachable"))
+                            done()
+                        }
+                        client.connect()
+                    }
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: "message") { error in
-                            expect(error!.message).to(contain("TestProxyTransport error"))
+                            guard let error = error else {
+                                fail("Error is nil"); done(); return
+                            }
+                            expect(error.message).to(contain("invalid channel state"))
+                            guard let reason = channel.errorReason else {
+                                fail("Reason is nil"); done(); return
+                            }
+                            expect(reason.message).to(contain("host unreachable"))
                             done()
                         }
                     }
 
+                    expect(urlConnections).to(haveCount(1))
+                }
+
+                // RTN17b
+                it("failing connections with custom endpoint should result in time outs") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.environment = "test" //do not use the default endpoint
+                    expect(options.fallbackHostsUseDefault).to(beFalse())
+                    expect(options.fallbackHosts).to(beNil())
+                    options.autoConnect = false
+
+                    let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                    defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                    ARTDefault.setRealtimeRequestTimeout(1.0)
+
+                    let client = AblyTests.newRealtime(options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("test")
+
+                    TestProxyTransport.network = .hostUnreachable
+                    defer { TestProxyTransport.network = nil }
+
+                    var urlConnections = [NSURL]()
+                    TestProxyTransport.networkConnectEvent = { transport, url in
+                        if client.transport !== transport {
+                            return
+                        }
+                        urlConnections.append(url as NSURL)
+                    }
+                    defer { TestProxyTransport.networkConnectEvent = nil }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.on(.disconnected) { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("StateChange is empty"); done(); return
+                            }
+                            expect(stateChange.previous) == ARTRealtimeConnectionState.connecting
+                            expect(stateChange.current) == ARTRealtimeConnectionState.disconnected
+                            guard let reason = stateChange.reason else {
+                                fail("Reason is empty"); done(); return
+                            }
+                            expect(reason.message).to(contain("host unreachable"))
+                            done()
+                        }
+                        client.connect()
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "message") { error in
+                            guard let error = error else {
+                                fail("Error is nil"); done(); return
+                            }
+                            expect(error.message).to(contain("attach timed out"))
+                            done()
+                        }
+                    }
+                    
                     expect(urlConnections).to(haveCount(1))
                 }
 
@@ -2957,6 +3053,10 @@ class RealtimeClientConnection: QuickSpec {
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
                     let channel = client.channels.get("test")
+
+                    let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                    defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                    ARTDefault.setRealtimeRequestTimeout(1.0)
 
                     client.setTransport(TestProxyTransport.self)
                     TestProxyTransport.network = .hostUnreachable
@@ -2997,7 +3097,11 @@ class RealtimeClientConnection: QuickSpec {
                     options.fallbackHosts = ["f.ably-realtime.com", "g.ably-realtime.com", "h.ably-realtime.com", "i.ably-realtime.com", "j.ably-realtime.com"]                    
                     let client = ARTRealtime(options: options)
                     let channel = client.channels.get("test")
-                    
+
+                    let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                    defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                    ARTDefault.setRealtimeRequestTimeout(1.0)
+
                     client.setTransport(TestProxyTransport.self)
                     TestProxyTransport.network = .hostUnreachable
                     defer { TestProxyTransport.network = nil }
@@ -3040,6 +3144,10 @@ class RealtimeClientConnection: QuickSpec {
                             options.autoConnect = false
                             let client = ARTRealtime(options: options)
                             let channel = client.channels.get("test")
+
+                            let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                            defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                            ARTDefault.setRealtimeRequestTimeout(1.0)
 
                             client.setTransport(TestProxyTransport.self)
                             TestProxyTransport.network = caseTest
@@ -3109,6 +3217,10 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: options)
                     let channel = client.channels.get("test")
 
+                    let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                    defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                    ARTDefault.setRealtimeRequestTimeout(1.0)
+
                     client.setTransport(TestProxyTransport.self)
                     TestProxyTransport.network = .host400BadRequest
                     defer { TestProxyTransport.network = nil }
@@ -3141,6 +3253,10 @@ class RealtimeClientConnection: QuickSpec {
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
                     let channel = client.channels.get("test")
+
+                    let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                    defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                    ARTDefault.setRealtimeRequestTimeout(1.0)
 
                     client.setTransport(TestProxyTransport.self)
                     TestProxyTransport.network = .hostUnreachable
@@ -3185,6 +3301,10 @@ class RealtimeClientConnection: QuickSpec {
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
                     let channel = client.channels.get("test")
+
+                    let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                    defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                    ARTDefault.setRealtimeRequestTimeout(1.0)
 
                     let testHttpExecutor = TestProxyHTTPExecutor()
                     client.rest.httpExecutor = testHttpExecutor
@@ -3231,7 +3351,11 @@ class RealtimeClientConnection: QuickSpec {
                     options.fallbackHosts = fbHosts
                     let client = ARTRealtime(options: options)
                     let channel = client.channels.get("test")
-                    
+
+                    let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                    defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                    ARTDefault.setRealtimeRequestTimeout(1.0)
+
                     let testHttpExecutor = TestProxyHTTPExecutor()
                     client.rest.httpExecutor = testHttpExecutor
                     
@@ -3340,7 +3464,11 @@ class RealtimeClientConnection: QuickSpec {
 
                     expect(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
 
-                    client.time { _ in }
+                    waitUntil(timeout: testTimeout) { done in
+                        client.time { _ in
+                            done()
+                        }
+                    }
 
                     let timeRequestUrl = testHttpExecutor.requests.last!.url!
                     expect(timeRequestUrl.host).to(equal(urlConnections[1].host))
