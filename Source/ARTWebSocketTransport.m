@@ -257,10 +257,7 @@ enum {
 
     switch (code) {
     case ARTWsCloseNormal:
-        if (_state == ARTRealtimeTransportStateClosing) {
-            // OK
-            [_delegate realtimeTransportClosed:self];
-        }
+        [_delegate realtimeTransportClosed:self];
         break;
     case ARTWsNeverConnected:
         [_delegate realtimeTransportNeverConnected:self];

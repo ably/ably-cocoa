@@ -1238,8 +1238,13 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         return;
     }
 
-    // Close succeeded. Nothing more to do.
-    [self transition:ARTRealtimeClosed];
+    if (self.connection.state_nosync == ARTRealtimeClosing) {
+        // Close succeeded. Nothing more to do.
+        [self transition:ARTRealtimeClosed];
+    } else if (self.connection.state_nosync != ARTRealtimeClosed && self.connection.state_nosync != ARTRealtimeFailed) {
+        // Unexpected closure; recover.
+        [self transition:ARTRealtimeDisconnected];
+    }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
