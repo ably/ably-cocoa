@@ -1404,6 +1404,30 @@ class RealtimeClient: QuickSpec {
                     client.connect()
                 }
             }
+            
+            fit("moves to DISCONNECTED on an unexpected normal WebSocket close") {
+                let options = AblyTests.commonAppSetup()
+                options.disconnectedRetryTimeout = 0.3
+                let client = ARTRealtime(options: options)
+                defer { client.dispose(); client.close() }
+                
+                var received = false
+                client.channels.get("test").subscribe() { msg in
+                    received = true
+                }
+
+                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+                
+                let ws = (client.transport! as! ARTWebSocketTransport).websocket!
+                ws.close(withCode: 1000, reason: "test")
+                
+                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.disconnected), timeout: testTimeout)
+                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+                
+                client.channels.get("test").publish(nil, data: "test")
+                
+                expect(received).toEventually(beTrue(), timeout: testTimeout)
+            }
         }
     }
 }
