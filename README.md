@@ -30,6 +30,10 @@ Add this line to your application's Cartfile:
 
 And then run `carthage update` to build the framework and drag the built Ably.framework into your Xcode project.
 
+If you see, for example, a `dyld: Library not loaded: @rpath/SocketRocket.framework/SocketRocket` error, then most likely you forgot to add all the dependencies to your project. You have more detailed information [here](https://github.com/Carthage/Carthage#adding-frameworks-to-an-application).
+
+![](Examples/Images/linked-frameworks.png)
+
 ### Manual installation 
 
 1. Get the code from GitHub [from the release page](https://github.com/ably/ably-ios/releases/tag/1.0.9), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-ios.git`
@@ -546,11 +550,12 @@ You can also view the [community reported Github issues](https://github.com/ably
 ## Contributing
 
 1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Ensure you have added suitable tests and the test suite is passing
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
+2. Install dependencies by running `pod install` and `carthage bootstrap`
+3. Create your feature branch (`git checkout -b my-new-feature`)
+4. Commit your changes (`git commit -am 'Add some feature'`)
+5. Ensure you have added suitable tests and the test suite is passing
+6. Push to the branch (`git push origin my-new-feature`)
+7. Create a new Pull Request
 
 ## Release Process
 
