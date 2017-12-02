@@ -159,10 +159,10 @@ class AblyTests {
         return options
     }
 
-    class func newErrorProtocolMessage() -> ARTProtocolMessage {
+    class func newErrorProtocolMessage(message: String = "Fail test") -> ARTProtocolMessage {
         let protocolMessage = ARTProtocolMessage()
         protocolMessage.action = .error
-        protocolMessage.error = ARTErrorInfo.create(withCode: 0, message: "Fail test")
+        protocolMessage.error = ARTErrorInfo.create(withCode: 0, message: message)
         return protocolMessage
     }
 

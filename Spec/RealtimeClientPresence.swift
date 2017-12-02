@@ -3046,12 +3046,21 @@ class RealtimeClientPresence: QuickSpec {
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
 
-                        channel.onError(AblyTests.newErrorProtocolMessage())
+                        let expectedErrorMessage = "Something has failed"
+                        channel.onError(AblyTests.newErrorProtocolMessage(message: expectedErrorMessage))
 
                         waitUntil(timeout: testTimeout) { done in
                             //Call: enterClient, updateClient and leaveClient
-                            performMethod(channel.presence) { errorInfo in
-                                expect(errorInfo!.message).to(contain("invalid channel state"))
+                            performMethod(channel.presence) { error in
+                                guard let error = error else {
+                                    fail("Error is empty"); done(); return
+                                }
+                                expect(error.message).to(contain("invalid channel state"))
+                                expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
+                                guard let reason = channel.errorReason else {
+                                    fail("Reason is empty"); done(); return
+                                }
+                                expect(reason.message).to(equal(expectedErrorMessage))
                                 done()
                             }
                         }
