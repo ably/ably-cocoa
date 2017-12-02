@@ -3821,8 +3821,9 @@ class RealtimeClientPresence: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.history { membersPage, error in
                             expect(error).to(beNil())
-
-                            let membersPage = membersPage!
+                            guard let membersPage = membersPage else {
+                                fail("membersPage is empty"); done(); return
+                            }
                             expect(membersPage).to(beAnInstanceOf(ARTPaginatedResult<ARTPresenceMessage>.self))
                             expect(membersPage.items).to(haveCount(100))
 
@@ -3837,7 +3838,9 @@ class RealtimeClientPresence: QuickSpec {
 
                             membersPage.next { nextPage, error in
                                 expect(error).to(beNil())
-                                let nextPage = nextPage!
+                                guard let nextPage = nextPage else {
+                                    fail("nextPage is empty"); done(); return
+                                }
                                 expect(nextPage).to(beAnInstanceOf(ARTPaginatedResult<ARTPresenceMessage>.self))
                                 expect(nextPage.items).to(haveCount(50))
 
@@ -3966,11 +3969,15 @@ class RealtimeClientPresence: QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             expect {
-                                try channel.presence.history(query) { result, errorInfo in
-                                    expect(result!.items).to(haveCount(25))
-                                    expect(result!.hasNext).to(beFalse())
-                                    expect((result!.items.first)?.clientId).to(equal("user25"))
-                                    expect((result!.items.last)?.clientId).to(equal("user1"))
+                                try channel.presence.history(query) { result, error in
+                                    expect(error).to(beNil())
+                                    guard let result = result else {
+                                        fail("Result is empty"); done(); return
+                                    }
+                                    expect(result.items).to(haveCount(25))
+                                    expect(result.hasNext).to(beFalse())
+                                    expect((result.items.first)?.clientId).to(equal("user25"))
+                                    expect((result.items.last)?.clientId).to(equal("user1"))
                                     done()
                                 }
                             }.toNot(throwError() { err in fail("\(err)"); done() })

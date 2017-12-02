@@ -938,7 +938,12 @@ class Auth : QuickSpec {
                         channel.publish(nil, data: "message") { error in
                             expect(error).to(beNil())
                             channel.history() { paginatedResult, error in
-                                let message = paginatedResult!.items.first!
+                                guard let result = paginatedResult else {
+                                    fail("PaginatedResult is empty"); done(); return
+                                }
+                                guard let message = result.items.first else {
+                                    fail("First message does not exist"); done(); return
+                                }
                                 expect(message.clientId).to(equal("john"))
                                 done()
                             }
@@ -1618,8 +1623,11 @@ class Auth : QuickSpec {
                         }
                         channel.history { page, error in
                             expect(error).to(beNil())
-                            expect(page!.items).to(haveCount(1))
-                            expect((page!.items[0] ).clientId).to(beNil())
+                            guard let page = page else {
+                                fail("Result is empty"); done(); return
+                            }
+                            expect(page.items).to(haveCount(1))
+                            expect((page.items[0] ).clientId).to(beNil())
                             done()
                         }
                     }
@@ -1674,9 +1682,12 @@ class Auth : QuickSpec {
                             expect(httpBody.unbox.first!["clientId"]).to(beNil())
                         }
                         channel.history { page, error in
+                            guard let page = page else {
+                                fail("Page is empty"); done(); return
+                            }
                             expect(error).to(beNil())
-                            expect(page!.items).to(haveCount(1))
-                            expect((page!.items[0] ).clientId).to(beNil())
+                            expect(page.items).to(haveCount(1))
+                            expect((page.items[0] ).clientId).to(beNil())
                             done()
                         }
                     }
@@ -1698,7 +1709,12 @@ class Auth : QuickSpec {
                         expect(error).to(beNil())
                         channel.history { page, error in
                             expect(error).to(beNil())
-                            let item = page!.items[0] 
+                            guard let page = page else {
+                                fail("Page is empty"); done(); return
+                            }
+                            guard let item = page.items.first else {
+                                fail("First item does not exist"); done(); return
+                            }
                             expect(item.clientId).to(equal("john"))
                             done()
                         }

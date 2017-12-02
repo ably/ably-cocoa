@@ -2898,11 +2898,15 @@ class RealtimeClientChannel: QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             expect {
-                                try channel2.history(query) { result, errorInfo in
-                                    expect(result!.items).to(haveCount(20))
-                                    expect(result!.hasNext).to(beFalse())
-                                    expect(result!.items.first?.data as? String).to(equal("message 19"))
-                                    expect(result!.items.last?.data as? String).to(equal("message 0"))
+                                try channel2.history(query) { result, error in
+                                    expect(error).to(beNil())
+                                    guard let result = result else {
+                                        fail("Result is empty"); done(); return
+                                    }
+                                    expect(result.items).to(haveCount(20))
+                                    expect(result.hasNext).to(beFalse())
+                                    expect(result.items.first?.data as? String).to(equal("message 19"))
+                                    expect(result.items.last?.data as? String).to(equal("message 0"))
                                     done()
                                 }
                             }.toNot(throwError() { err in fail("\(err)"); done() })
@@ -2925,11 +2929,15 @@ class RealtimeClientChannel: QuickSpec {
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        channel.history { result, _ in
+                        channel.history { result, error in
+                            expect(error).to(beNil())
                             expect(result).to(beAKindOf(ARTPaginatedResult<ARTMessage>.self))
-                            expect(result!.items).to(haveCount(1))
-                            expect(result!.hasNext).to(beFalse())
-                            let messages = result!.items 
+                            guard let result = result else {
+                                fail("Result is empty"); done(); return
+                            }
+                            expect(result.items).to(haveCount(1))
+                            expect(result.hasNext).to(beFalse())
+                            let messages = result.items 
                             expect(messages[0].data as? String).to(equal("message"))
                             done()
                         }
