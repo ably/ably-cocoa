@@ -439,6 +439,7 @@ dispatch_async(_queue, ^{
 
 - (void)_authorize:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
+    __block BOOL completed = false;
 
     ARTAuthOptions *replacedOptions = [authOptions copy] ? : [self.options copy];
     [self storeOptions:replacedOptions];
@@ -473,7 +474,14 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
             [lastDelegate.authorizationEmitter off];
         }];
         [lastDelegate.authorizationEmitter once:[ARTEvent newWithAuthorizationState:ARTAuthorizationFailed] callback:^(NSError *error) {
-            failureBlock(error);
+            if (completed) {
+                [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p authorization failed with \"%@\" but the request token has already been completed", _rest, error];
+                failureBlock(error);
+            }
+            else {
+                completed = true;
+                failureBlock(error);
+            }
             [lastDelegate.authorizationEmitter off];
         }];
     }
@@ -482,6 +490,11 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [self.logger verbose:@"RS:%p ARTAuth: requesting new token.", _rest];
     _authorizing = true;
     [self _requestToken:currentTokenParams withOptions:replacedOptions callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+        if (completed) {
+            return;
+        }
+        completed = true;
+
         if (error) {
             failureBlock(error);
             if (lastDelegate) {

@@ -864,7 +864,7 @@ class RealtimeClient: QuickSpec {
                         client.connect()
                     }
 
-                    let hook = client.auth.testSuite_injectIntoMethod(after: #selector(client.auth.authorize(_:options:callback:))) {
+                    let hook = client.auth.testSuite_injectIntoMethod(after: #selector(client.auth._authorize(_:options:callback:))) {
                         guard let transport = client.transport as? TestProxyTransport else {
                             fail("TestProxyTransport is not set"); return
                         }
@@ -913,7 +913,7 @@ class RealtimeClient: QuickSpec {
                         client.connect()
                     }
 
-                    let hook = client.auth.testSuite_injectIntoMethod(after: #selector(client.auth.authorize(_:options:callback:))) {
+                    let hook = client.auth.testSuite_injectIntoMethod(after: #selector(client.auth._authorize(_:options:callback:))) {
                         client.onSuspended()
                     }
                     defer { hook.remove() }
@@ -926,10 +926,10 @@ class RealtimeClient: QuickSpec {
                         }
 
                         client.auth.authorize(nil, options: nil) { tokenDetails, error in
-                            guard let error = error else {
+                            guard let error = error as? ARTErrorInfo else {
                                 fail("ErrorInfo is nil"); partialDone(); return
                             }
-                            expect(UInt((error as! ARTErrorInfo).code)) == ARTState.authorizationFailed.rawValue
+                            expect(UInt(error.code)) == ARTState.authorizationFailed.rawValue
                             expect(tokenDetails).to(beNil())
                             partialDone()
                         }
@@ -955,7 +955,7 @@ class RealtimeClient: QuickSpec {
                         client.connect()
                     }
 
-                    let hook = client.auth.testSuite_injectIntoMethod(after: #selector(client.auth.authorize(_:options:callback:))) {
+                    let hook = client.auth.testSuite_injectIntoMethod(after: #selector(client.auth._authorize(_:options:callback:))) {
                         delay(0) {
                             client.close()
                         }
@@ -970,10 +970,10 @@ class RealtimeClient: QuickSpec {
                         }
 
                         client.auth.authorize(nil, options: nil) { tokenDetails, error in
-                            guard let error = error else {
+                            guard let error = error as? ARTErrorInfo else {
                                 fail("ErrorInfo is nil"); partialDone(); return
                             }
-                            expect(UInt((error as! ARTErrorInfo).code)) == ARTState.authorizationFailed.rawValue
+                            expect(UInt((error).code)) == ARTState.authorizationFailed.rawValue
                             expect(tokenDetails).to(beNil())
                             partialDone()
                         }
