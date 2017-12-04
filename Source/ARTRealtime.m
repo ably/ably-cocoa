@@ -147,9 +147,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                 }
             }
             break;
+        case ARTRealtimeClosing: {
+                // Should ignore because the connection is being closed
+                [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p new connection from authorize has been ignored because the   connection is being closed", _rest];
+                break;
+            }
         default:
             // Client state is NOT Connecting or Connected, so it should start a new connection
-            [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p start a connection using %@", _rest, tokenDetails];
+            [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p new connection from successfull authorize %@", _rest, tokenDetails];
             [self transition:ARTRealtimeConnecting];
             break;
     }
