@@ -1326,10 +1326,13 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         }
     }
 
-    if (error.type != ARTRealtimeTransportErrorTypeOther) {
-        [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
-    } else {
-        [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
+    switch (error.type) {
+        case ARTRealtimeTransportErrorTypeBadResponse:
+        case ARTRealtimeTransportErrorTypeOther:
+            [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
+            break;
+        default:
+            [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
