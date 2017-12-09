@@ -52,6 +52,7 @@
     BOOL _renewingToken;
     ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_pingEventEmitter;
     NSDate *_startedReconnection;
+    NSDate *_lastActivity;
     Class _transportClass;
     Class _reachabilityClass;
     id<ARTRealtimeTransport> _transport;
@@ -60,6 +61,7 @@
     __weak ARTEventListener *_connectionRetryFromDisconnectedListener;
     __weak ARTEventListener *_connectingTimeoutListener;
     dispatch_block_t _authenitcatingTimeoutWork;
+    dispatch_block_t _idleTimer;
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
 }
@@ -555,7 +557,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)onConnected:(ARTProtocolMessage *)message {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    _renewingToken = false;
+   _renewingToken = false;
 
     // Resuming
     if (_resuming) {
@@ -593,6 +595,11 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             }
             if (message.connectionDetails && message.connectionDetails.connectionStateTtl) {
                 _connectionStateTtl = message.connectionDetails.connectionStateTtl;
+            }
+            if (message.connectionDetails && message.connectionDetails.maxIdleInterval) {
+                _maxIdleInterval = message.connectionDetails.maxIdleInterval;
+                _lastActivity = [NSDate date];
+                [self setIdleTimer];
             }
             [self transition:ARTRealtimeConnected withErrorInfo:message.error];
             break;
@@ -690,6 +697,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     // Cancel auth scheduled work
     artDispatchCancel(_authenitcatingTimeoutWork);
     _authenitcatingTimeoutWork = nil;
+    // Idle timer
+    [self stopIdleTimer];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
@@ -1139,6 +1148,31 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
+- (void)onActivity {
+    _lastActivity = [NSDate date];
+    [self setIdleTimer];
+}
+
+- (void)setIdleTimer {
+ART_TRY_OR_MOVE_TO_FAILED_START(self) {
+    if (self.maxIdleInterval <= 0) {
+        return;
+    }
+    artDispatchCancel(_idleTimer);
+    _idleTimer = artDispatchScheduled([ARTDefault realtimeRequestTimeout] + self.maxIdleInterval, _rest.queue, ^{
+        [self.logger error:@"R:%p No activity seen from realtime in %f seconds; assuming connection has dropped", self, [[NSDate date] timeIntervalSinceDate:_lastActivity]];
+        [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createWithCode:80003 status:408 message:@"Idle timer expired"]];
+    });
+} ART_TRY_OR_MOVE_TO_FAILED_END
+}
+
+- (void)stopIdleTimer {
+ART_TRY_OR_MOVE_TO_FAILED_START(self) {
+    artDispatchCancel(_idleTimer);
+    _idleTimer = nil;
+} ART_TRY_OR_MOVE_TO_FAILED_END
+}
+
 - (void)setTransportClass:(Class)transportClass {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     _transportClass = transportClass;
@@ -1155,6 +1189,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)realtimeTransport:(id)transport didReceiveMessage:(ARTProtocolMessage *)message {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
+    [self onActivity];
+
     if (!message) {
         // Invalid data
         return;
