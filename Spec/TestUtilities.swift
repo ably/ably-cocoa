@@ -708,7 +708,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     fileprivate(set) var rawDataSent = [Data]()
     fileprivate(set) var rawDataReceived = [Data]()
     fileprivate var replacingAcksWithNacks: ARTErrorInfo?
-    fileprivate var ignoreWebSocket = false
+    var ignoreWebSocket = false
 
     var beforeProcessingSentMessage: Optional<(ARTProtocolMessage)->()> = nil
     var beforeProcessingReceivedMessage: Optional<(ARTProtocolMessage) -> Void> = nil
@@ -868,7 +868,7 @@ class TestProxyTransport: ARTWebSocketTransport {
         msg.connectionId = "x-xxxxxxxx"
         msg.connectionKey = "xxxxxxx-xxxxxxxxxxxxxx-xxxxxxxx"
         msg.connectionSerial = -1
-        msg.connectionDetails = ARTConnectionDetails(clientId: nil, connectionKey: "a8c10!t-3D0O4ejwTdvLkl-b33a8c10", maxMessageSize: 16384, maxFrameSize: 262144, maxInboundRate: 250, connectionStateTtl: 60, serverId: "testServerId")
+        msg.connectionDetails = ARTConnectionDetails(clientId: nil, connectionKey: "a8c10!t-3D0O4ejwTdvLkl-b33a8c10", maxMessageSize: 16384, maxFrameSize: 262144, maxInboundRate: 250, connectionStateTtl: 60, serverId: "testServerId", maxIdleInterval: 15000)
         super.receive(msg)
     }
 

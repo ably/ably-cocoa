@@ -48,6 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic, nonnull) id<ARTReachability> reachability;
 @property (readonly, getter=getLogger) ARTLog *logger;
 @property (nonatomic) NSTimeInterval connectionStateTtl;
+@property (nonatomic) NSTimeInterval maxIdleInterval;
 
 /// Current protocol `msgSerial`. Starts at zero.
 @property (readwrite, assign, nonatomic) int64_t msgSerial;

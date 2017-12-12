@@ -3750,6 +3750,73 @@ class RealtimeClientConnection: QuickSpec {
 
             }
 
+            // RTN23
+            fit("should disconnect the transport when no activity exist") {
+                let options = AblyTests.commonAppSetup()
+                let client = AblyTests.newRealtime(options)
+                defer { client.dispose(); client.close() }
+
+                let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                ARTDefault.setRealtimeRequestTimeout(0.5)
+
+                var expectedInactivityTimeout: TimeInterval?
+                waitUntil(timeout: testTimeout) { done in
+                    let partialDone = AblyTests.splitDone(2, done: done)
+
+                    guard let transport = client.transport as? TestProxyTransport else {
+                        fail("TestProxyTransport is not set"); partialDone(); return
+                    }
+
+                    var noActivityHasStartedAt: Date?
+                    transport.changeReceivedMessage = { protocolMessage in
+                        if protocolMessage.action == .connected, let connectionDetails = protocolMessage.connectionDetails {
+                            connectionDetails.setMaxIdleInterval(3)
+                            expectedInactivityTimeout = connectionDetails.maxIdleInterval + ARTDefault.realtimeRequestTimeout()
+                            // Force no activity
+                            transport.ignoreWebSocket = true
+                            noActivityHasStartedAt = Date()
+                            transport.changeReceivedMessage = nil
+                            partialDone()
+                        }
+                        return protocolMessage
+                    }
+
+                    client.connection.on(.disconnected) { stateChange in
+                        let now = Date()
+
+                        guard let stateChange = stateChange else {
+                            fail("ConnectionStateChange is missing"); partialDone(); return
+                        }
+                        expect(stateChange.previous) == ARTRealtimeConnectionState.connected
+
+                        guard let noActivityHasStartedAt = noActivityHasStartedAt else {
+                            fail("No activity date is missing"); partialDone(); return
+                        }
+                        guard let expectedInactivityTimeout = expectedInactivityTimeout else {
+                            fail("Expected inactivity timeout is missing"); partialDone(); return
+                        }
+
+                        expect(now.timeIntervalSince(noActivityHasStartedAt)).to(beCloseTo(expectedInactivityTimeout, within: 1.0))
+
+                        guard let reason = stateChange.reason else {
+                            fail("ConnectionStateChange reason is missing"); partialDone(); return
+                        }
+                        guard let errorReason = client.connection.errorReason else {
+                            fail("Connection error is missing"); partialDone(); return
+                        }
+
+                        expect(reason.message).to(contain("Idle timer expired"))
+                        expect(errorReason.message).to(contain("Idle timer expired"))
+
+                        partialDone()
+                    }
+                }
+
+                expect(expectedInactivityTimeout) == 3.5
+                expect(client.maxIdleInterval) == 3.0
+            }
+
             // RTN24
             it("the client may receive a CONNECTED ProtocolMessage from Ably at any point and should emit an UPDATE event") {
                 let options = AblyTests.commonAppSetup()
