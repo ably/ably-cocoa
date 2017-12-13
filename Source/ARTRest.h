@@ -55,6 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) ARTPush *push;
 #ifdef TARGET_OS_IOS
 @property (nonnull, nonatomic, readonly, getter=device) ARTLocalDevice *device;
+@property (nonnull, nonatomic, readonly, getter=device_nosync) ARTLocalDevice *device_nosync;
 #endif
 
 @end
