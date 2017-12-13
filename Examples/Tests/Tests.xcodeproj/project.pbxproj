@@ -281,6 +281,7 @@
 				"${BUILT_PRODUCTS_DIR}/Ably/Ably.framework",
 				"${BUILT_PRODUCTS_DIR}/KSCrashAblyFork/KSCrashAblyFork.framework",
 				"${BUILT_PRODUCTS_DIR}/SocketRocket/SocketRocket.framework",
+				"${BUILT_PRODUCTS_DIR}/ULID/ULID.framework",
 				"${BUILT_PRODUCTS_DIR}/msgpack/msgpack.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
@@ -288,6 +289,7 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Ably.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/KSCrashAblyFork.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SocketRocket.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ULID.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/msgpack.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -335,6 +337,7 @@
 				"${BUILT_PRODUCTS_DIR}/Ably/Ably.framework",
 				"${BUILT_PRODUCTS_DIR}/KSCrashAblyFork/KSCrashAblyFork.framework",
 				"${BUILT_PRODUCTS_DIR}/SocketRocket/SocketRocket.framework",
+				"${BUILT_PRODUCTS_DIR}/ULID/ULID.framework",
 				"${BUILT_PRODUCTS_DIR}/msgpack/msgpack.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
@@ -342,6 +345,7 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Ably.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/KSCrashAblyFork.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SocketRocket.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ULID.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/msgpack.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;

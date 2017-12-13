@@ -652,6 +652,37 @@ class MockHTTP: ARTHttp {
 
 }
 
+class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
+
+    var _logger = ARTLog()
+    var clientOptions = ARTClientOptions()
+    var encoder = ARTJsonLikeEncoder()
+    var requests: [URLRequest] = []
+
+    func logger() -> ARTLog {
+        return _logger
+    }
+
+    func options() -> ARTClientOptions {
+        return self.clientOptions
+    }
+
+    func defaultEncoder() -> ARTEncoder {
+        return self.encoder
+    }
+
+    func execute(_ request: NSMutableURLRequest, withAuthOption authOption: ARTAuthentication, completion callback: @escaping (HTTPURLResponse?, Data?, Error?) -> Void) {
+        self.requests.append(request as URLRequest)
+        callback(nil, nil, nil)
+    }
+
+    func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) {
+        self.requests.append(request)
+        callback?(nil, nil, nil)
+    }
+
+}
+
 /// Records each request and response for test purpose.
 class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
     struct ErrorSimulator {

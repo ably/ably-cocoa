@@ -15,6 +15,7 @@
 #import "ARTEncoder.h"
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTRest+Private.h"
+#import "ARTTypes.h"
 
 @implementation ARTPushChannelSubscriptions {
     __weak ARTRest *_rest;
@@ -46,21 +47,29 @@
 
 dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"]];
-    request.HTTPMethod = @"PUT";
+    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
+    if (_rest.options.pushFullWait) {
+        components.queryItems = @[[NSURLQueryItem queryItemWithName:@"fullWait" value:@"true"]];
+    }
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
+    request.HTTPMethod = @"POST";
     request.HTTPBody = [[_rest defaultEncoder] encodePushChannelSubscription:channelSubscription error:nil];
     [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"save channel subscription with request %@", request];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
-        if (response.statusCode == 200 /*OK*/) {
+        if (response.statusCode == 200 /*Ok*/ || response.statusCode == 201 /*Created*/) {
             [_logger debug:__FILE__ line:__LINE__ message:@"channel subscription saved successfully"];
+            callback(nil);
         }
         else if (error) {
             [_logger error:@"%@: save channel subscription failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            callback([ARTErrorInfo createFromNSError:error]);
         }
         else {
             [_logger error:@"%@: save channel subscription failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
+            NSString *plain = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            callback([ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[plain shortString]]);
         }
     }];
 } ART_TRY_OR_REPORT_CRASH_END
@@ -80,14 +89,12 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 
 dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
-    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
+    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channels"] resolvingAgainstBaseURL:NO];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"GET";
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **error) {
-        return [[[_rest defaultEncoder] decodePushChannelSubscriptions:data error:error] artMap:^NSString *(ARTPushChannelSubscription *item) {
-            return ((ARTPushChannelSubscription *)item).channel;
-        }];
+        return [_rest.encoders[response.MIMEType] decode:data error:error];
     };
     [ARTPaginatedResult executePaginated:_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
 } ART_TRY_OR_REPORT_CRASH_END
@@ -113,7 +120,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     request.HTTPMethod = @"GET";
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **error) {
-        return [[_rest defaultEncoder] decodePushChannelSubscriptions:data error:error];
+        return [_rest.encoders[response.MIMEType] decodePushChannelSubscriptions:data error:error];
     };
     [ARTPaginatedResult executePaginated:_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
 } ART_TRY_OR_REPORT_CRASH_END
@@ -171,19 +178,26 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 - (void)_removeWhere:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTErrorInfo *error))callback {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
     components.queryItems = [params asURLQueryItems];
+    if (_rest.options.pushFullWait) {
+        components.queryItems = [components.queryItems arrayByAddingObject:[NSURLQueryItem queryItemWithName:@"fullWait" value:@"true"]];
+    }
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"DELETE";
 
     [_logger debug:__FILE__ line:__LINE__ message:@"remove channel subscription with request %@", request];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
-        if (response.statusCode == 200 /*OK*/) {
+        if (response.statusCode == 200 /*Ok*/ || response.statusCode == 204 /*not returning any content*/) {
             [_logger debug:__FILE__ line:__LINE__ message:@"%@: channel subscription removed successfully", NSStringFromClass(self.class)];
+            callback(nil);
         }
         else if (error) {
             [_logger error:@"%@: remove channel subscription failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            callback([ARTErrorInfo createFromNSError:error]);
         }
         else {
             [_logger error:@"%@: remove channel subscription failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
+            NSString *plain = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            callback([ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[plain shortString]]);
         }
     }];
 }
