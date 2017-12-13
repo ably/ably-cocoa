@@ -42,8 +42,11 @@
     if (challenge.protectionSpace.serverTrust) {
         completionHandler(NSURLSessionAuthChallengeUseCredential, [[NSURLCredential alloc] initWithTrust:challenge.protectionSpace.serverTrust]);
     }
-    else {
+    else if ([challenge.sender respondsToSelector:@selector(performDefaultHandlingForAuthenticationChallenge:)]) {
         [challenge.sender performDefaultHandlingForAuthenticationChallenge:challenge];
+    }
+    else {
+        completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
     }
 }
 

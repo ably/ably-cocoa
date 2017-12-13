@@ -269,3 +269,15 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
 }
 
 @end
+
+#pragma mark - NSString (Utilities)
+
+@implementation NSString (Utilities)
+
+- (NSString *)shortString {
+    NSRange stringRange = {0, MIN([self length], 1000)}; //1KB
+    stringRange = [self rangeOfComposedCharacterSequencesForRange:stringRange];
+    return [self substringWithRange:stringRange];
+}
+
+@end

@@ -29,6 +29,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) BOOL useBinaryProtocol;
 @property (readwrite, assign, nonatomic) BOOL autoConnect;
 @property (art_nullable, readwrite, copy, nonatomic) NSString *recover;
+@property (readwrite, assign, nonatomic) BOOL pushFullWait;
 
 /**
  The id of the client represented by this instance.
