@@ -581,12 +581,18 @@ void ARTstopHandlingUncaughtExceptions(ARTRest *self) {
 }
 
 - (ARTLocalDevice *)device {
+    __block ARTLocalDevice *ret;
+    dispatch_sync(_queue, ^{
+        ret = [self device_nosync];
+    });
+    return ret;
+}
+
+- (NSString *)device_nosync {
     static dispatch_once_t once;
     static id device;
     dispatch_once(&once, ^{
-        dispatch_sync(_queue, ^{
-            device = [ARTLocalDevice load:self];
-        });
+        device = [ARTLocalDevice load:self];
     });
     return device;
 }
