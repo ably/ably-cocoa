@@ -101,7 +101,7 @@ dispatch_async(_queue, ^{
 
 - (void)deviceRegistration:(ARTErrorInfo *)error {
     #ifdef TARGET_OS_IOS
-    ARTLocalDevice *local = _rest.device;
+    ARTLocalDevice *local = _rest.device_nosync;
 
     if (![[UIApplication sharedApplication].delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
         [NSException raise:@"ARTPushRegistererDelegate must be implemented on AppDelegate" format:@""];
@@ -156,7 +156,7 @@ dispatch_async(_queue, ^{
 
 - (void)deviceUpdateRegistration:(ARTErrorInfo *)error {
     #ifdef TARGET_OS_IOS
-    ARTLocalDevice *local = _rest.device;
+    ARTLocalDevice *local = _rest.device_nosync;
 
     if (![[UIApplication sharedApplication].delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
         [NSException raise:@"ARTPushRegistererDelegate must be implemented on AppDelegate" format:@""];
@@ -218,7 +218,7 @@ dispatch_async(_queue, ^{
 
 - (void)deviceUnregistration:(ARTErrorInfo *)error {
     #ifdef TARGET_OS_IOS
-    ARTLocalDevice *local = _rest.device;
+    ARTLocalDevice *local = _rest.device_nosync;
 
     id delegate = [UIApplication sharedApplication].delegate;
 
