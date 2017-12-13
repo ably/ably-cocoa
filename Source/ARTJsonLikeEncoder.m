@@ -624,7 +624,7 @@
     dictionary[@"formFactor"] = deviceDetails.formFactor;
 
     if (deviceDetails.clientId) {
-        dictionary[@"cliendId"] = deviceDetails.clientId;
+        dictionary[@"clientId"] = deviceDetails.clientId;
     }
 
     dictionary[@"push"] = [self devicePushDetailsToDictionary:deviceDetails.push];

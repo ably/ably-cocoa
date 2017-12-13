@@ -51,6 +51,10 @@ NSInteger getStatusFromCode(NSInteger code) {
     return e;
 }
 
++ (ARTErrorInfo *)createUnknownError {
+    return [ARTErrorInfo createWithCode:0 message:@"Unknown error"];
+}
+
 + (ARTErrorInfo *)wrap:(ARTErrorInfo *)error prepend:(NSString *)prepend {
     return [ARTErrorInfo createWithCode:error.code status:error.statusCode message:[NSString stringWithFormat:@"%@%@", prepend, error.reason]];
 }
