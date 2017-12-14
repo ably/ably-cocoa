@@ -318,7 +318,7 @@ class RealtimeClientPresence: QuickSpec {
                     let localMember = ARTPresenceMessage(clientId: NSUUID().uuidString, action: .enter, connectionId: "another", id: "another:0:0")
                     channel.presenceMap.add(localMember)
                     expect(channel.presenceMap.members).to(haveCount(3))
-                    expect(channel.presenceMap.members.filter{ clientId, _ in clientId == localMember.clientId }).to(haveCount(1))
+                    expect(channel.presenceMap.members.filter{ memberKey, _ in memberKey.contains(localMember.clientId!) }).to(haveCount(1))
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.get { members, error in

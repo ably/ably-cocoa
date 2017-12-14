@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTPresenceMap : NSObject
 
 /// List of members.
-/// The key is the clientId and the value is the latest relevant ARTPresenceMessage for that clientId.
+/// The key is the memberKey and the value is the latest relevant ARTPresenceMessage for that clientId.
 @property (readonly, atomic) NSDictionary<NSString *, ARTPresenceMessage *> *members;
 
 /// List of internal members.
