@@ -2412,13 +2412,21 @@ class RealtimeClientPresence: QuickSpec {
                     }
                 }
 
-                it("should raise an exception if client is not present") {
+                it("should raise an error if client is not present") {
                     let options = AblyTests.commonAppSetup()
-                    options.clientId = "john"
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
-                    expect(channel.presence.leave("offline")).to(raiseException())
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.leave("offline") { error in
+                            guard let error = error else {
+                                fail("Error is nil"); done(); return
+                            }
+                            expect(error.code) == Int(ARTState.noClientId.rawValue)
+                            expect(error.message).to(contain("message without clientId"))
+                            done()
+                        }
+                    }
                 }
 
                 // RTP10c
