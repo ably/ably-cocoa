@@ -36,6 +36,8 @@ enum {
     ARTWsTlsError = 1015
 };
 
+NSString *WebSocketStateToStr(SRReadyState state);
+
 @implementation ARTWebSocketTransport {
     id<ARTRealtimeTransportDelegate> _delegate;
     ARTRealtimeTransportState _state;
@@ -321,6 +323,9 @@ enum {
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
+    if (self.websocket.readyState != SR_OPEN) {
+        return;
+    }
     if ([message isKindOfClass:[NSString class]]) {
         [self webSocketMessageText:(NSString *)message];
     } else if ([message isKindOfClass:[NSData class]]) {
@@ -331,7 +336,7 @@ enum {
 }
 
 - (void)webSocketMessageText:(NSString *)text {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did receive message %@", _delegate, self, text];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket in %@ state did receive message %@", _delegate, self, WebSocketStateToStr(self.websocket.readyState), text];
 
     NSData *data = nil;
     data = [((NSString *)text) dataUsingEncoding:NSUTF8StringEncoding];
@@ -340,15 +345,28 @@ enum {
 }
 
 - (void)webSocketMessageData:(NSData *)data {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did receive data %@", _delegate, self, data];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket in %@ state did receive data %@", _delegate, self, WebSocketStateToStr(self.websocket.readyState), data];
 
     [self receiveWithData:data];
 }
 
 - (void)webSocketMessageProtocol:(ARTProtocolMessage *)message {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did receive protocol message %@", _delegate, self, message];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket in %@ state did receive protocol message %@", _delegate, self, WebSocketStateToStr(self.websocket.readyState), message];
 
     [self receive:message];
 }
 
 @end
+
+NSString *WebSocketStateToStr(SRReadyState state) {
+    switch (state) {
+        case SR_CONNECTING:
+            return @"Connecting"; //0
+        case SR_OPEN:
+            return @"Open"; //1
+        case SR_CLOSING:
+            return @"Closing"; //2
+        case SR_CLOSED:
+            return @"Closed"; //2
+    }
+}

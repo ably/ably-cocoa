@@ -374,6 +374,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     // i.e. the `unlessStateChangesBefore` is setting a timer and if the `ARTRealtime` instance is released before that timer, then it could create a leak.
     __weak __typeof(self) weakSelf = self;
 
+    [self.logger verbose:@"R:%p realtime is transitioning from %@ to %@", self, ARTRealtimeConnectionStateToStr(stateChange.previous), ARTRealtimeConnectionStateToStr(stateChange.current)];
+
     switch (stateChange.current) {
         case ARTRealtimeConnecting: {
             stateChangeEventListener = [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
@@ -1206,7 +1208,12 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         return;
     }
 
-    [self.logger verbose:@"R:%p ARTRealtime didReceive Protocol Message %@ ", self, ARTProtocolMessageActionToStr(message.action)];
+    if (self.connection.state_nosync == ARTRealtimeDisconnected) {
+        // Already disconnected
+        return;
+    }
+
+    [self.logger verbose:@"R:%p ARTRealtime did receive Protocol Message %@ (connection state is %@)", self, ARTProtocolMessageActionToStr(message.action), ARTRealtimeConnectionStateToStr(self.connection.state_nosync)];
 
     if (message.error) {
         [self.logger verbose:@"R:%p ARTRealtime Protocol Message with error %@ ", self, message.error];
