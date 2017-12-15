@@ -22,7 +22,6 @@ const NSUInteger ARTDefaultLimit = 100;
     __weak ARTRest *_rest;
     __weak ARTLog *_logger;
     __weak ARTChannel *_channel;
-    __weak id<ARTHTTPAuthenticatedExecutor> _httpExecutor;
 }
 
 - (instancetype)init:(ARTRest *)rest withChannel:(ARTChannel *)channel {
@@ -60,12 +59,11 @@ const NSUInteger ARTDefaultLimit = 100;
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"]];
     request.HTTPMethod = @"POST";
-    request.HTTPBody = [[_httpExecutor defaultEncoder] encode:@{
+    request.HTTPBody = [[_rest defaultEncoder] encode:@{
         @"deviceId": deviceId,
         @"channel": _channel.name,
-        } error:nil];
-    [request setValue:[[_httpExecutor defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
-
+    } error:nil];
+    [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"subscribe notifications for device %@ in channel %@", deviceId, _channel.name];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -84,11 +82,11 @@ const NSUInteger ARTDefaultLimit = 100;
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"]];
     request.HTTPMethod = @"POST";
-    request.HTTPBody = [[_httpExecutor defaultEncoder] encode:@{
+    request.HTTPBody = [[_rest defaultEncoder] encode:@{
         @"clientId": clientId,
         @"channel": _channel.name,
-        } error:nil];
-    [request setValue:[[_httpExecutor defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
+    } error:nil];
+    [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"subscribe notifications for clientId %@ in channel %@", clientId, _channel.name];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
