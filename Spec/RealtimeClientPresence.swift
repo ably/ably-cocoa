@@ -2191,9 +2191,9 @@ class RealtimeClientPresence: QuickSpec {
                                 leaveMessage.action = .presence
                                 leaveMessage.channel = channel.name
                                 leaveMessage.connectionSerial = client.connection.serial_nosync() + 1
-                                leaveMessage.timestamp = NSDate() as Date
+                                leaveMessage.timestamp = Date()
                                 leaveMessage.presence = [
-                                    ARTPresenceMessage(clientId: "user11", action: .leave, connectionId: "another", id: "another:123:0", timestamp: NSDate() as Date)
+                                    ARTPresenceMessage(clientId: "user11", action: .leave, connectionId: "another", id: "another:123:0", timestamp: Date())
                                 ]
                                 transport.receive(leaveMessage)
                             }
@@ -2210,7 +2210,8 @@ class RealtimeClientPresence: QuickSpec {
                         }
                     }
 
-                    expect(channel.presenceMap.members).to(haveCount(19))
+                    // A single clientId may be present multiple times on the same channel via different client connections and that's way user11 is present because user11 presences messages were in distinct connections.
+                    expect(channel.presenceMap.members).to(haveCount(20))
                 }
 
                 // RTP2g
