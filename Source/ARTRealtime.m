@@ -585,7 +585,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
         for (ARTRealtimeChannel *channel in self.channels.nosyncIterable) {
             if (channel.presenceMap.syncInProgress) {
-                [channel requestContinueSync];
+                // FIXME or not, regarding https://github.com/ably/docs/issues/349
+                //[channel requestContinueSync];
             }
         }
     }

@@ -145,7 +145,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
 - (void)requestContinueSync {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p ARTRealtime requesting to continue sync operation after reconnect", _realtime, self];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) ARTRealtime requesting to continue sync operation after reconnect using msgSerial %lld and channelSerial %@", _realtime, self, self.name, self.presenceMap.syncMsgSerial, self.presenceMap.syncChannelSerial];
 
     ARTProtocolMessage * msg = [[ARTProtocolMessage alloc] init];
     msg.action = ARTProtocolMessageSync;
@@ -153,7 +153,9 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     msg.channelSerial = self.presenceMap.syncChannelSerial;
     msg.channel = self.name;
 
-    [self.realtime send:msg callback:^(ARTStatus *status) {}];
+    [self.realtime send:msg callback:^(ARTStatus *status) {
+        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) ARTRealtime continue sync status is %@", _realtime, self, self.name, status];
+    }];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
@@ -586,6 +588,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
             break;
     }
 
+    if (message.resumed) {
+        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p channel has resumed", _realtime, self];
+    }
+
     self.attachSerial = message.channelSerial;
 
     if (message.hasPresence) {
@@ -597,6 +603,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
             // When an ATTACHED message is received without a HAS_PRESENCE flag and PresenceMap has existing members
             [self.presenceMap startSync];
             [self.presenceMap endSync];
+            [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p PresenceMap has been reset", _realtime, self];
         }
     }
 
@@ -753,6 +760,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
     if (!self.presenceMap.syncInProgress) {
         [self.presenceMap startSync];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p PresenceMap Sync started", _realtime, self];
     }
 
     for (int i=0; i<[message.presence count]; i++) {
