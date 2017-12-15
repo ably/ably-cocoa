@@ -1334,7 +1334,9 @@ class RealtimeClientPresence: QuickSpec {
                             expect(error).to(beIdenticalTo(protocolError.error))
                             done()
                         }
-                        channel2.onError(protocolError)
+                        delay(0) {
+                            channel2.onError(protocolError)
+                        }
                     }
                 }
 
