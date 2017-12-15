@@ -529,7 +529,9 @@ class RealtimeClientPresence: QuickSpec {
                                 expect(channel.queuedMessages).to(haveCount(0))
                                 done()
                             }
-                            channel.onError(protocolError)
+                            delay(0) {
+                                channel.onError(protocolError)
+                            }
                         }
                     }
 
