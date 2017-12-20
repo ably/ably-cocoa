@@ -325,9 +325,13 @@ NSString *WebSocketStateToStr(SRReadyState state);
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
-    if (self.websocket.readyState != SR_OPEN) {
+    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did receive message", _delegate, self];
+
+    if (self.websocket.readyState == SR_CLOSED) {
+        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket is closed, message has been ignored", _delegate, self];
         return;
     }
+
     if ([message isKindOfClass:[NSString class]]) {
         [self webSocketMessageText:(NSString *)message];
     } else if ([message isKindOfClass:[NSData class]]) {
