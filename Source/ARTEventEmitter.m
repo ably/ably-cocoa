@@ -321,8 +321,21 @@
         _rest = rest;
         _queue = rest.queue;
         _userQueue = rest.userQueue;
+
+        if (rest.logger.logLevel == ARTLogLevelVerbose) {
+            [self.notificationCenter addObserverForName:nil
+                                                 object:nil
+                                                  queue:nil
+                                             usingBlock:^(NSNotification *notification) {
+                                                 NSLog(@"VERBOSE: PublicEventEmitter Notification emitted %@", notification.name);
+                                             }];
+        }
     }
     return self;
+}
+
+- (void)dealloc {
+    [self.notificationCenter removeObserver:self];
 }
 
 - (ARTEventListener *)on:(id)event callback:(void (^)(id _Nullable))cb {
