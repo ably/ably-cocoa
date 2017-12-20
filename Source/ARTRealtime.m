@@ -149,7 +149,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             break;
         case ARTRealtimeClosing: {
                 // Should ignore because the connection is being closed
-                [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p new connection from authorize has been ignored because the   connection is being closed", _rest];
+                [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p new connection from authorize has been ignored because the connection is being closed", _rest];
                 break;
             }
         default:

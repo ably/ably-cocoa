@@ -546,7 +546,7 @@ class RealtimeClientConnection: QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 options.echoMessages = false
                 var disposable = [ARTRealtime]()
-                let max = 50
+                let max = 25
                 let channelName = "chat"
                 let sync = NSLock()
 
@@ -2700,8 +2700,7 @@ class RealtimeClientConnection: QuickSpec {
                         let tokenDetails = getTestTokenDetails(key: options.key, capability: nil, ttl: tokenTtl)!
                         options.token = tokenDetails.token
                         options.authCallback = { tokenParams, callback in
-                            // Let the token expire.
-                            delay(tokenTtl) {
+                            delay(1.0) {
                                 callback(tokenDetails, nil) // Return the same expired token again.
                             }
                         }
@@ -3571,7 +3570,9 @@ class RealtimeClientConnection: QuickSpec {
                         }
                         expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
                         transport.ignoreSends = false
-                        client.onDisconnected()
+                        delay(0) {
+                            client.onDisconnected()
+                        }
                     }
                 }
 

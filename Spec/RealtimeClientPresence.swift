@@ -216,7 +216,9 @@ class RealtimeClientPresence: QuickSpec {
                         sync2Message.presence = [
                             ARTPresenceMessage(clientId: "a", action: .leave, connectionId: "another", id: "another:1:0"),
                         ]
-                        transport.receive(sync2Message)
+                        delay(0.5) {
+                            transport.receive(sync2Message)
+                        }
                     }
 
                     expect(channel.presence.getSyncComplete).to(beTrue())
@@ -529,7 +531,7 @@ class RealtimeClientPresence: QuickSpec {
                                 expect(channel.queuedMessages).to(haveCount(0))
                                 done()
                             }
-                            delay(0) {
+                            delay(0.1) {
                                 channel.onError(protocolError)
                             }
                         }
@@ -1334,7 +1336,7 @@ class RealtimeClientPresence: QuickSpec {
                             expect(error).to(beIdenticalTo(protocolError.error))
                             done()
                         }
-                        delay(0) {
+                        delay(0.1) {
                             channel2.onError(protocolError)
                         }
                     }
