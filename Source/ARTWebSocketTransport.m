@@ -271,7 +271,9 @@ NSString *WebSocketStateToStr(SRReadyState state);
         break;
     case ARTWsRefuse:
     case ARTWsPolicyValidation:
-        [_delegate realtimeTransportRefused:self];
+        [_delegate realtimeTransportRefused:self withError:[[ARTRealtimeTransportError alloc] initWithError:[ARTErrorInfo createWithCode:code message:reason]
+                                                                                                           type:ARTRealtimeTransportErrorTypeRefused
+                                                                                                            url:self.websocketURL]];
         break;
     case ARTWsTooBig:
         [_delegate realtimeTransportTooBig:self];

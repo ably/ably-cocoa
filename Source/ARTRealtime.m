@@ -1352,18 +1352,26 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         return;
     }
 
-    [self transition:ARTRealtimeFailed];
+    [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:@"Transport never connected"]];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (void)realtimeTransportRefused:(id<ARTRealtimeTransport>)transport {
+- (void)realtimeTransportRefused:(id<ARTRealtimeTransport>)transport withError:(ARTRealtimeTransportError *)error {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     if (transport != self.transport) {
         // Old connection
         return;
     }
 
-    [self transition:ARTRealtimeFailed];
+    if (error && error.type == ARTRealtimeTransportErrorTypeRefused) {
+        [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:[NSString stringWithFormat:@"Connection refused using %@", error.url]]];
+    }
+    else if (error) {
+        [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
+    }
+    else {
+        [self transition:ARTRealtimeFailed];
+    }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
@@ -1374,7 +1382,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         return;
     }
 
-    [self transition:ARTRealtimeFailed];
+    [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:@"Transport too big"]];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
