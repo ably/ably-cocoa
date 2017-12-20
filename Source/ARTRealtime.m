@@ -451,6 +451,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             [_authorizationEmitter emit:[ARTEvent newWithAuthorizationState:ARTAuthorizationFailed] with:stateChange.reason];
             break;
         case ARTRealtimeDisconnected: {
+            [_authorizationEmitter emit:[ARTEvent newWithAuthorizationState:ARTAuthorizationCancelled] with:nil];
+
             if (!_startedReconnection) {
                 _startedReconnection = [NSDate date];
                 [_internalEventEmitter on:^(ARTConnectionStateChange *change) {
@@ -459,6 +461,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                     }
                 }];
             }
+
             if ([[NSDate date] timeIntervalSinceDate:_startedReconnection] >= _connectionStateTtl) {
                 artDispatchScheduled(0, _rest.queue, ^{
                     [self transition:ARTRealtimeSuspended withErrorInfo:stateChange.reason];

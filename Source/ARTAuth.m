@@ -469,10 +469,12 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (lastDelegate) {
         // Only the last request should remain
         [lastDelegate.authorizationEmitter off];
+
         [lastDelegate.authorizationEmitter once:[ARTEvent newWithAuthorizationState:ARTAuthorizationSucceeded] callback:^(id null) {
             successBlock(_tokenDetails);
             [lastDelegate.authorizationEmitter off];
         }];
+
         [lastDelegate.authorizationEmitter once:[ARTEvent newWithAuthorizationState:ARTAuthorizationFailed] callback:^(NSError *error) {
             if (completed) {
                 [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p authorization failed with \"%@\" but the request token has already been completed", _rest, error];
@@ -481,6 +483,19 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
             else {
                 completed = true;
                 failureBlock(error);
+            }
+            [lastDelegate.authorizationEmitter off];
+        }];
+
+        [lastDelegate.authorizationEmitter once:[ARTEvent newWithAuthorizationState:ARTAuthorizationCancelled] callback:^(id null) {
+            NSError *cancelled = [ARTErrorInfo createWithCode:kCFURLErrorCancelled message:@"Authorization has been cancelled"];
+            if (completed) {
+                [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p authorization cancelled but the request token has already been completed", _rest];
+                failureBlock(cancelled);
+            }
+            else {
+                completed = true;
+                failureBlock(cancelled);
             }
             [lastDelegate.authorizationEmitter off];
         }];
@@ -696,6 +711,8 @@ NSString *ARTAuthorizationStateToStr(ARTAuthorizationState state) {
             return @"Succeeded"; //0
         case ARTAuthorizationFailed:
             return @"Failed"; //1
+        case ARTAuthorizationCancelled:
+            return @"Cancelled"; //2
     }
 }
 
