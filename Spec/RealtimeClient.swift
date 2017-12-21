@@ -193,6 +193,7 @@ class RealtimeClient: QuickSpec {
                 options.autoConnect = false
 
                 let client = ARTRealtime(options: options)
+                defer { client.dispose(); client.close() }
 
                 client.channels.get("test").subscribe({ message in
                     // Attached
