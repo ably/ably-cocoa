@@ -273,13 +273,13 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     BOOL merged = NO;
     for (ARTQueuedMessage *queuedMsg in self.queuedMessages) {
-        merged = [queuedMsg mergeFrom:msg callback:cb];
+        merged = [queuedMsg mergeFrom:msg sentCallback:nil ackCallback:cb];
         if (merged) {
             break;
         }
     }
     if (!merged) {
-        ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg callback:cb];
+        ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg sentCallback:nil ackCallback:cb];
         [self.queuedMessages addObject:qm];
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
@@ -316,7 +316,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         msg.connectionId = _realtime.connection.id_nosync;
     }
 
-    [self.realtime send:pm callback:^(ARTStatus *status) {
+    [self.realtime send:pm sentCallback:nil ackCallback:^(ARTStatus *status) {
         // New state change can occur before receiving publishing acknowledgement.
         [self.realtime.internalEventEmitter off:listener];
         if (cb && !connectionStateHasChanged) cb(status);
@@ -889,15 +889,19 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     attachMessage.action = ARTProtocolMessageAttach;
     attachMessage.channel = self.name;
 
-    [self.realtime send:attachMessage callback:nil];
-
     __weak typeof(self) weakSelf = self;
-    [[self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
-        // Timeout
-        ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTStateAttachTimedOut message:@"attach timed out"];
-        ARTStatus *status = [ARTStatus state:ARTStateAttachTimedOut info:errorInfo];
-        [weakSelf setSuspended:status];
-    }] startTimer];
+    [self.realtime send:attachMessage sentCallback:^(ARTErrorInfo *error) {
+        if (error) {
+            return;
+        }
+        // Set attach timer after the connection is active
+        [[self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
+            // Timeout
+            ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTStateAttachTimedOut message:@"attach timed out"];
+            ARTStatus *status = [ARTStatus state:ARTStateAttachTimedOut info:errorInfo];
+            [weakSelf setSuspended:status];
+        }] startTimer];
+    } ackCallback:nil];
 
     if (![self.realtime shouldQueueEvents]) {
         ARTEventListener *reconnectedListener = [self.realtime.connectedEventEmitter once:^(NSNull *n) {
@@ -984,7 +988,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     detachMessage.action = ARTProtocolMessageDetach;
     detachMessage.channel = self.name;
 
-    [self.realtime send:detachMessage callback:nil];
+    [self.realtime send:detachMessage sentCallback:nil ackCallback:nil];
 
     [[self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
         if (!self.realtime) {
@@ -1024,7 +1028,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     NSArray *qms = self.queuedMessages;
     self.queuedMessages = [NSMutableArray array];
     for (ARTQueuedMessage *qm in qms) {
-        [self sendMessage:qm.msg callback:qm.cb];
+        [self sendMessage:qm.msg callback:qm.ackCallback];
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -1034,7 +1038,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     NSArray *qms = self.queuedMessages;
     self.queuedMessages = [NSMutableArray array];
     for (ARTQueuedMessage *qm in qms) {
-        qm.cb(status);
+        qm.ackCallback(status);
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }

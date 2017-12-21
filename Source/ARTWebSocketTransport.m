@@ -75,7 +75,7 @@ NSString *WebSocketStateToStr(SRReadyState state);
     self.delegate = nil;
 }
 
-- (void)send:(NSData *)data withSource:(id)decodedObject {
+- (BOOL)send:(NSData *)data withSource:(id)decodedObject {
     if (self.websocket.readyState == SR_OPEN) {
         if ([decodedObject isKindOfClass:[ARTProtocolMessage class]]) {
             [_protocolMessagesLogger info:@"send %@", [decodedObject description]];
@@ -86,6 +86,16 @@ NSString *WebSocketStateToStr(SRReadyState state);
         // https://github.com/facebook/SocketRocket/issues/542
         [self.websocket sendData:data error:nil];
         #endif
+        return true;
+    }
+    else {
+        NSString *extraInformation = @"";
+        if ([decodedObject isKindOfClass:[ARTProtocolMessage class]]) {
+            ARTProtocolMessage *msg = (ARTProtocolMessage *)decodedObject;
+            extraInformation = [NSString stringWithFormat:@"with action \"%tu - %@\" ", msg.action, ARTProtocolMessageActionToStr(msg.action)];
+        }
+        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p sending message %@was ignored because websocket isn't ready", _delegate, self, extraInformation];
+        return false;
     }
 }
 

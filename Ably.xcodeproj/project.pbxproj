@@ -66,6 +66,8 @@
 		96E408481A3895E800087F77 /* ARTWebSocketTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = 96E408461A3895E800087F77 /* ARTWebSocketTransport.m */; };
 		D70EAAED1BC3376200CD8B9E /* ARTRestChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = D70EAAEB1BC3376200CD8B9E /* ARTRestChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D70EAAEE1BC3376200CD8B9E /* ARTRestChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = D70EAAEC1BC3376200CD8B9E /* ARTRestChannel.m */; };
+		D70EECAC1FEAF331008A50CD /* ARTPendingMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = D70EECAA1FEAF331008A50CD /* ARTPendingMessage.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D70EECAD1FEAF331008A50CD /* ARTPendingMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = D70EECAB1FEAF331008A50CD /* ARTPendingMessage.m */; };
 		D714A63E1C74D4B2002F2CA0 /* NSObject+TestSuite.swift in Sources */ = {isa = PBXBuildFile; fileRef = D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */; };
 		D714A6401C75F0C5002F2CA0 /* ARTWebSocketTransport+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D714A63F1C75F0C5002F2CA0 /* ARTWebSocketTransport+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D71D30041C5F7B2F002115B0 /* RealtimeClientChannels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71D30031C5F7B2F002115B0 /* RealtimeClientChannels.swift */; };
@@ -294,6 +296,8 @@
 		9F2E6125A90DEAABE0F27323 /* Pods-AblySpec.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AblySpec.release.xcconfig"; path = "Pods/Target Support Files/Pods-AblySpec/Pods-AblySpec.release.xcconfig"; sourceTree = "<group>"; };
 		D70EAAEB1BC3376200CD8B9E /* ARTRestChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTRestChannel.h; sourceTree = "<group>"; };
 		D70EAAEC1BC3376200CD8B9E /* ARTRestChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestChannel.m; sourceTree = "<group>"; };
+		D70EECAA1FEAF331008A50CD /* ARTPendingMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPendingMessage.h; sourceTree = "<group>"; };
+		D70EECAB1FEAF331008A50CD /* ARTPendingMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPendingMessage.m; sourceTree = "<group>"; };
 		D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSObject+TestSuite.swift"; sourceTree = "<group>"; };
 		D714A63F1C75F0C5002F2CA0 /* ARTWebSocketTransport+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTWebSocketTransport+Private.h"; sourceTree = "<group>"; };
 		D71D30031C5F7B2F002115B0 /* RealtimeClientChannels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClientChannels.swift; sourceTree = "<group>"; };
@@ -618,6 +622,8 @@
 				D746AE321BBC29EB003ECEF8 /* Transport */,
 				D746AE451BBD6FE9003ECEF8 /* ARTQueuedMessage.h */,
 				D746AE461BBD6FE9003ECEF8 /* ARTQueuedMessage.m */,
+				D70EECAA1FEAF331008A50CD /* ARTPendingMessage.h */,
+				D70EECAB1FEAF331008A50CD /* ARTPendingMessage.m */,
 				EB89D4081C61C5ED007FA5B7 /* ARTRealtimeChannels.h */,
 				D7CEF12C1C8D821D004FB242 /* ARTRealtimeChannels+Private.h */,
 				EB89D40A1C61C6EA007FA5B7 /* ARTRealtimeChannels.m */,
@@ -802,6 +808,7 @@
 				D7CEF12D1C8D821D004FB242 /* ARTRealtimeChannels+Private.h in Headers */,
 				EB89D4011C61C10E007FA5B7 /* ARTChannels+Private.h in Headers */,
 				1CD8DC9F1B1C7315007EAF36 /* ARTDefault.h in Headers */,
+				D70EECAC1FEAF331008A50CD /* ARTPendingMessage.h in Headers */,
 				D7D8F8211BC2BE16009718F2 /* ARTAuthOptions.h in Headers */,
 				EB82F8511C59D29B00661917 /* ARTDataEncoder.h in Headers */,
 				D746AE401BBC5B14003ECEF8 /* ARTEventEmitter.h in Headers */,
@@ -1112,6 +1119,7 @@
 				1C6C18A41ADFDAB100AB79E4 /* ARTLog.m in Sources */,
 				D70EAAEE1BC3376200CD8B9E /* ARTRestChannel.m in Sources */,
 				D746AE291BBB61C9003ECEF8 /* ARTPresence.m in Sources */,
+				D70EECAD1FEAF331008A50CD /* ARTPendingMessage.m in Sources */,
 				EBD947B61EBB8F2B0005DD16 /* ARTSentry.m in Sources */,
 				96A507BE1A3791490077CDF8 /* ARTRealtime.m in Sources */,
 				967A43221A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.m in Sources */,

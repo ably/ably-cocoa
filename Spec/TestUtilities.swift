@@ -819,11 +819,11 @@ class TestProxyTransport: ARTWebSocketTransport {
         send(data, withSource: message)
     }
 
-    override func send(_ data: Data, withSource decodedObject: Any?) {
+    override func send(_ data: Data, withSource decodedObject: Any?) -> Bool {
         if let msg = decodedObject as? ARTProtocolMessage {
             if ignoreSends {
                 protocolMessagesSentIgnored.append(msg)
-                return
+                return false
             }
             protocolMessagesSent.append(msg)
             if let performEvent = beforeProcessingSentMessage {
@@ -831,7 +831,7 @@ class TestProxyTransport: ARTWebSocketTransport {
             }
         }
         rawDataSent.append(data)
-        super.send(data, withSource: decodedObject)
+        return super.send(data, withSource: decodedObject)
     }
 
     override func receive(_ original: ARTProtocolMessage) {

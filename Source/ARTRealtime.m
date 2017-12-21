@@ -27,6 +27,7 @@
 #import "ARTProtocolMessage+Private.h"
 #import "ARTEventEmitter+Private.h"
 #import "ARTQueuedMessage.h"
+#import "ARTPendingMessage.h"
 #import "ARTConnection+Private.h"
 #import "ARTConnectionDetails.h"
 #import "ARTStats.h"
@@ -124,7 +125,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                 ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
                 msg.action = ARTProtocolMessageAuth;
                 msg.auth = [[ARTAuthDetails alloc] initWithToken:tokenDetails.token];
-                [self send:msg callback:nil];
+                [self send:msg sentCallback:nil ackCallback:nil];
             }
             break;
         case ARTRealtimeConnecting: {
@@ -936,7 +937,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (void)sendImpl:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb {
+- (void)sendImpl:(ARTProtocolMessage *)msg sentCallback:(void (^)(ARTErrorInfo *))sentCallback ackCallback:(void (^)(ARTStatus *))ackCallback {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     if (msg.ackRequired) {
         msg.msgSerial = [NSNumber numberWithLongLong:self.msgSerial];
@@ -946,46 +947,54 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     NSData *data = [self.rest.defaultEncoder encodeProtocolMessage:msg error:&error];
 
     if (error) {
-        cb([ARTStatus state:ARTStateError info:[ARTErrorInfo createFromNSError:error]]);
+        ARTErrorInfo *e = [ARTErrorInfo createFromNSError:error];
+        if (sentCallback) sentCallback(e);
+        if (ackCallback) ackCallback([ARTStatus state:ARTStateError info:e]);
         return;
     }
     else if (!data) {
-        cb([ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:ARTClientCodeErrorInvalidType message:@"Encoder as failed without error."]]);
+        ARTErrorInfo *e = [ARTErrorInfo createWithCode:ARTClientCodeErrorInvalidType message:@"Encoder as failed without error."];
+        if (sentCallback) sentCallback(e);
+        if (ackCallback) ackCallback([ARTStatus state:ARTStateError info:e]);
         return;
     }
 
     if (msg.ackRequired) {
         self.msgSerial++;
-        ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg callback:cb];
-        [self.pendingMessages addObject:qm];
+        ARTPendingMessage *pm = [[ARTPendingMessage alloc] initWithProtocolMessage:msg ackCallback:ackCallback];
+        [self.pendingMessages addObject:pm];
     }
 
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p ARTRealtime sending action %tu - %@", self, msg.action, ARTProtocolMessageActionToStr(msg.action)];
-    // Callback is called with ACK/NACK action
-    [self.transport send:data withSource:msg];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p sending action %tu - %@", self, msg.action, ARTProtocolMessageActionToStr(msg.action)];
+    if ([self.transport send:data withSource:msg]) {
+        if (sentCallback) sentCallback(nil);
+        // `ackCallback()` is called with ACK/NACK action
+    }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (void)send:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb {
+- (void)send:(ARTProtocolMessage *)msg sentCallback:(void (^)(ARTErrorInfo *))sentCallback ackCallback:(void (^)(ARTStatus *))ackCallback {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     if ([self shouldSendEvents]) {
-        [self sendImpl:msg callback:cb];
-    } else if ([self shouldQueueEvents]) {
+        [self sendImpl:msg sentCallback:sentCallback ackCallback:ackCallback];
+    }
+    else if ([self shouldQueueEvents]) {
         BOOL merged = NO;
         for (ARTQueuedMessage *queuedMsg in self.queuedMessages) {
-            merged = [queuedMsg mergeFrom:msg callback:cb];
+            merged = [queuedMsg mergeFrom:msg sentCallback:nil ackCallback:ackCallback];
             if (merged) {
                 break;
             }
         }
         if (!merged) {
-            ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg callback:cb];
+            ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg sentCallback:nil ackCallback:ackCallback];
             [self.queuedMessages addObject:qm];
         }
-    } else {
+    }
+    else {
         // TODO review error code
-        if (cb) {
-            cb([ARTStatus state:ARTStateError]);
+        if (ackCallback) {
+            ackCallback([ARTStatus state:ARTStateError]);
         }
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
@@ -993,11 +1002,11 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)resendPendingMessages {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    NSArray<ARTQueuedMessage *> *pms = self.pendingMessages;
+    NSArray<ARTPendingMessage *> *pms = self.pendingMessages;
     self.pendingMessages = [NSMutableArray array];
-    for (ARTQueuedMessage *pendingMessage in pms) {
-        [self send:pendingMessage.msg callback:^(ARTStatus *status) {
-            pendingMessage.cb(status);
+    for (ARTPendingMessage *pendingMessage in pms) {
+        [self send:pendingMessage.msg sentCallback:nil ackCallback:^(ARTStatus *status) {
+            pendingMessage.ackCallback(status);
         }];
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
@@ -1005,10 +1014,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)failPendingMessages:(ARTStatus *)status {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    NSArray<ARTQueuedMessage *> *pms = self.pendingMessages;
+    NSArray<ARTPendingMessage *> *pms = self.pendingMessages;
     self.pendingMessages = [NSMutableArray array];
-    for (ARTQueuedMessage *pendingMessage in pms) {
-        pendingMessage.cb(status);
+    for (ARTPendingMessage *pendingMessage in pms) {
+        pendingMessage.ackCallback(status);
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -1019,7 +1028,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     self.queuedMessages = [NSMutableArray array];
 
     for (ARTQueuedMessage *message in qms) {
-        [self sendImpl:message.msg callback:message.cb];
+        [self sendImpl:message.msg sentCallback:message.sentCallback ackCallback:message.ackCallback];
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -1029,7 +1038,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     NSArray *qms = self.queuedMessages;
     self.queuedMessages = [NSMutableArray array];
     for (ARTQueuedMessage *message in qms) {
-        message.cb(status);
+        message.sentCallback(status.errorInfo);
+        message.ackCallback(status);
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -1086,12 +1096,12 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         self.pendingMessageStartSerial += count;
     }
 
-    for (ARTQueuedMessage *msg in nackMessages) {
-        if (msg.cb) msg.cb([ARTStatus state:ARTStateError info:message.error]);
+    for (ARTPendingMessage *msg in nackMessages) {
+        msg.ackCallback([ARTStatus state:ARTStateError info:message.error]);
     }
 
-    for (ARTQueuedMessage *msg in ackMessages) {
-        if (msg.cb) msg.cb([ARTStatus state:ARTStateOk]);
+    for (ARTPendingMessage *msg in ackMessages) {
+        msg.ackCallback([ARTStatus state:ARTStateOk]);
     }
 
     [self.logger verbose:@"R:%p ARTRealtime ACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
@@ -1126,8 +1136,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     [self.pendingMessages removeObjectsInRange:nackRange];
     self.pendingMessageStartSerial += count;
 
-    for (ARTQueuedMessage *msg in nackMessages) {
-        if (msg.cb) msg.cb([ARTStatus state:ARTStateError info:message.error]);
+    for (ARTPendingMessage *msg in nackMessages) {
+        msg.ackCallback([ARTStatus state:ARTStateError info:message.error]);
     }
 
     [self.logger verbose:@"R:%p ARTRealtime NACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
