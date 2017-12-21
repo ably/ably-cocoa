@@ -3049,16 +3049,6 @@ class RealtimeClientConnection: QuickSpec {
                         client.connect()
                     }
 
-                    waitUntil(timeout: testTimeout) { done in
-                        channel.publish(nil, data: "message") { error in
-                            guard let error = error else {
-                                fail("Error is nil"); done(); return
-                            }
-                            expect(error.message).to(contain("attach timed out"))
-                            done()
-                        }
-                    }
-                    
                     expect(urlConnections).to(haveCount(1))
                 }
 
@@ -3067,6 +3057,7 @@ class RealtimeClientConnection: QuickSpec {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
                     let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
@@ -3089,13 +3080,16 @@ class RealtimeClientConnection: QuickSpec {
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
-                    client.connect()
-                    defer { client.dispose(); client.close() }
-
                     waitUntil(timeout: testTimeout) { done in
-                        channel.publish(nil, data: "message") { error in
+                        // wss://[a-e].ably-realtime.com: when a timeout occurs
+                        client.connection.once(.disconnected) { error in
                             done()
                         }
+                        // wss://[a-e].ably-realtime.com: when a 401 occurs because of the `xxxx:xxxx` key
+                        client.connection.once(.failed) { error in
+                            done()
+                        }
+                        client.connect()
                     }
 
                     expect(urlConnections).to(haveCount(2))
@@ -3111,6 +3105,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.autoConnect = false
                     options.fallbackHosts = ["f.ably-realtime.com", "g.ably-realtime.com", "h.ably-realtime.com", "i.ably-realtime.com", "j.ably-realtime.com"]                    
                     let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
                     let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
@@ -3132,14 +3127,17 @@ class RealtimeClientConnection: QuickSpec {
                         }
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
-                    
-                    client.connect()
-                    defer { client.dispose(); client.close() }
-                    
+
                     waitUntil(timeout: testTimeout) { done in
-                        channel.publish(nil, data: "message") { error in
+                        // wss://[a-e].ably-realtime.com: when a timeout occurs
+                        client.connection.once(.disconnected) { error in
                             done()
                         }
+                        // wss://[a-e].ably-realtime.com: when a 401 occurs because of the `xxxx:xxxx` key
+                        client.connection.once(.failed) { error in
+                            done()
+                        }
+                        client.connect()
                     }
                     
                     expect(urlConnections.count > 1 && urlConnections.count <= options.fallbackHosts!.count + 1).to(beTrue())
@@ -3158,6 +3156,7 @@ class RealtimeClientConnection: QuickSpec {
                             let options = ARTClientOptions(key: "xxxx:xxxx")
                             options.autoConnect = false
                             let client = ARTRealtime(options: options)
+                            defer { client.dispose(); client.close() }
                             let channel = client.channels.get("test")
 
                             let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
@@ -3180,13 +3179,16 @@ class RealtimeClientConnection: QuickSpec {
                             }
                             defer { TestProxyTransport.networkConnectEvent = nil }
 
-                            client.connect()
-                            defer { client.dispose(); client.close() }
-
                             waitUntil(timeout: testTimeout) { done in
-                                channel.publish(nil, data: "message") { error in
+                                // wss://[a-e].ably-realtime.com: when a timeout occurs
+                                client.connection.once(.disconnected) { error in
                                     done()
                                 }
+                                // wss://[a-e].ably-realtime.com: when a 401 occurs because of the `xxxx:xxxx` key
+                                client.connection.once(.failed) { error in
+                                    done()
+                                }
+                                client.connect()
                             }
 
                             expect(urlConnections).to(haveCount(2))
@@ -3267,6 +3269,7 @@ class RealtimeClientConnection: QuickSpec {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
                     let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
@@ -3287,19 +3290,30 @@ class RealtimeClientConnection: QuickSpec {
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
-                    client.connect()
-                    defer { client.dispose(); client.close() }
-
                     waitUntil(timeout: testTimeout) { done in
-                        channel.publish(nil, data: "message") { error in
-                            done()
+                        // Unreachable and try a fallback
+                        client.connection.on { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ConnectionStateChange is nil"); done(); return
+                            }
+                            // Timeout or 401 occurs because of the `xxxx:xxxx` key
+                            if stateChange.current == .disconnected || stateChange.current == .failed {
+                                client.connection.off()
+                                done()
+                            }
                         }
+                        client.connect()
                     }
 
                     client.connect()
 
                     waitUntil(timeout: testTimeout) { done in
-                        channel.publish(nil, data: "message") { error in
+                        // 401 occurs because of the `xxxx:xxxx` key
+                        client.connection.once(.failed) { stateChange in
+                            guard let error = stateChange?.reason else {
+                                fail("Error is nil"); done(); return
+                            }
+                            expect(error.message).to(contain("bad response"))
                             done()
                         }
                     }
@@ -3315,6 +3329,7 @@ class RealtimeClientConnection: QuickSpec {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
                     let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
@@ -3337,13 +3352,16 @@ class RealtimeClientConnection: QuickSpec {
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
-                    client.connect()
-                    defer { client.dispose(); client.close() }
-
                     waitUntil(timeout: testTimeout) { done in
-                        channel.publish(nil, data: "message") { error in
+                        // wss://[a-e].ably-realtime.com: when a timeout occurs
+                        client.connection.once(.disconnected) { error in
                             done()
                         }
+                        // wss://[a-e].ably-realtime.com: when a 401 occurs because of the `xxxx:xxxx` key
+                        client.connection.once(.failed) { error in
+                            done()
+                        }
+                        client.connect()
                     }
 
                     expect(NSRegularExpression.match(testHttpExecutor.requests[0].url!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
@@ -3365,6 +3383,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.autoConnect = false
                     options.fallbackHosts = fbHosts
                     let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
                     let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
@@ -3386,14 +3405,17 @@ class RealtimeClientConnection: QuickSpec {
                         urlConnections.append(url as NSURL)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
-                    
-                    client.connect()
-                    defer { client.dispose(); client.close() }
-                    
+
                     waitUntil(timeout: testTimeout) { done in
-                        channel.publish(nil, data: "message") { error in
+                        // wss://[a-e].ably-realtime.com: when a timeout occurs
+                        client.connection.once(.disconnected) { error in
                             done()
                         }
+                        // wss://[a-e].ably-realtime.com: when a 401 occurs because of the `xxxx:xxxx` key
+                        client.connection.once(.failed) { error in
+                            done()
+                        }
+                        client.connect()
                     }
 
                     expect(NSRegularExpression.match(testHttpExecutor.requests[0].url!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
