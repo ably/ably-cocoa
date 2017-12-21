@@ -304,6 +304,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             return;
         }
         [[[_pingEventEmitter once:cb] setTimer:[ARTDefault realtimeRequestTimeout] onTimeout:^{
+            [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p ping timed out", self];
             cb([ARTErrorInfo createWithCode:ARTCodeErrorConnectionTimedOut status:ARTStateConnectionFailed message:@"timed out"]);
         }] startTimer];
         [self.transport sendPing];
@@ -710,6 +711,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     _authenitcatingTimeoutWork = nil;
     // Idle timer
     [self stopIdleTimer];
+    // Ping timer
+    [_pingEventEmitter off];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 

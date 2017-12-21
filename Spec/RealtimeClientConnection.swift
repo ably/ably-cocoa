@@ -1824,10 +1824,24 @@ class RealtimeClientConnection: QuickSpec {
                     let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
                     waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.connected) { _ in
+                            done()
+                        }
+                    }
+                    guard let transport = client.transport as? TestProxyTransport else {
+                        fail("TestProxyTransport is not set"); return
+                    }
+
+                    let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                    defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                    ARTDefault.setRealtimeRequestTimeout(3.0)
+
+                    transport.actionsIgnored += [.heartbeat]
+
+                    waitUntil(timeout: testTimeout) { done in
                         let start = NSDate()
-                        let transport = client.transport as! TestProxyTransport
                         transport.ignoreSends = true
-                        ARTDefault.setRealtimeRequestTimeout(3.0)
+
                         client.ping() { error in
                             guard let error = error else {
                                 fail("expected error"); done(); return
