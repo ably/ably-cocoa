@@ -1889,7 +1889,7 @@ class RealtimeClientChannel: QuickSpec {
                                     fail("Error is nil"); done(); return
                                 }
                                 expect(error.message).to(contain("invalid channel state"))
-                                expect(channel.state).to(equal(ARTRealtimeChannelState.detaching))
+                                expect(channel.state).to(satisfyAnyOf(equal(ARTRealtimeChannelState.detaching), equal(ARTRealtimeChannelState.detached)))
                                 partialDone()
                             }
                         }
