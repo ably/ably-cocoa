@@ -429,6 +429,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             break;
         }
         case ARTRealtimeClosing: {
+            [self stopIdleTimer];
             [_reachability off];
             stateChangeEventListener = [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
                 [weakSelf transition:ARTRealtimeClosed];
@@ -437,6 +438,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             break;
         }
         case ARTRealtimeClosed:
+            [self stopIdleTimer];
             [_reachability off];
             [self.transport close];
             _connection.key = nil;
@@ -700,6 +702,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)cancelTimers {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
+    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p cancel timers", self];
     [_connectionRetryFromSuspendedListener stopTimer];
     _connectionRetryFromSuspendedListener = nil;
     [_connectionRetryFromDisconnectedListener stopTimer];
@@ -1173,6 +1176,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 }
 
 - (void)onActivity {
+    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p activity", self];
     _lastActivity = [NSDate date];
     [self setIdleTimer];
 }
@@ -1180,11 +1184,13 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 - (void)setIdleTimer {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     if (self.maxIdleInterval <= 0) {
+        [self.logger verbose:@"R:%p set idle timer had been ignored", self];
         return;
     }
     artDispatchCancel(_idleTimer);
     _idleTimer = artDispatchScheduled([ARTDefault realtimeRequestTimeout] + self.maxIdleInterval, _rest.queue, ^{
         [self.logger error:@"R:%p No activity seen from realtime in %f seconds; assuming connection has dropped", self, [[NSDate date] timeIntervalSinceDate:_lastActivity]];
+
         [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createWithCode:80003 status:408 message:@"Idle timer expired"]];
     });
 } ART_TRY_OR_MOVE_TO_FAILED_END
