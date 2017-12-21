@@ -1063,7 +1063,7 @@ class RealtimeClientConnection: QuickSpec {
                                 })
                                 // Wait until the message is pushed to Ably first
                                 delay(1.0) {
-                                    transport.simulateIncomingNormalClose()
+                                    client.close()
                                 }
                             }
                         }
