@@ -1,5 +1,57 @@
 # Change Log
 
+## [1.0.9](https://github.com/ably/ably-ios/tree/1.0.9) (2017-09-15)
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.8...1.0.9)
+
+**Implemented enhancements:**
+
+- Objective-C tests review [\#627](https://github.com/ably/ably-ios/issues/627)
+- Spike: Review what's needed to use GCD to make the lib thread-safe [\#602](https://github.com/ably/ably-ios/issues/602)
+
+**Closed issues:**
+
+- Lib throws an exception if you try to do some actions when disconnected [\#635](https://github.com/ably/ably-ios/issues/635)
+- Presence.enter on appWillEnterForeground, leave on appDidEnterBackground issues. [\#634](https://github.com/ably/ably-ios/issues/634)
+- Push.activate callback not being called [\#633](https://github.com/ably/ably-ios/issues/633)
+- RTP11d \(Presence.get when SUSPENDED\) not implemented; throws on DISCONNECTED [\#630](https://github.com/ably/ably-ios/issues/630)
+- ARTPushActivationState Crash when call ably.push.activate [\#628](https://github.com/ably/ably-ios/issues/628)
+- ACK: receiving a serial greater than expected [\#604](https://github.com/ably/ably-ios/issues/604)
+
+**Merged pull requests:**
+
+- Implement RTP11d. [\#636](https://github.com/ably/ably-ios/pull/636) ([tcard](https://github.com/tcard))
+- Port legacy tests to Swift [\#629](https://github.com/ably/ably-ios/pull/629) ([ricardopereira](https://github.com/ricardopereira))
+
+## [1.0.8](https://github.com/ably/ably-ios/tree/1.0.8) (2017-08-07)
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.7...1.0.8)
+
+**Closed issues:**
+
+- 1.0 auth flow doesn't work? [\#622](https://github.com/ably/ably-ios/issues/622)
+
+**Merged pull requests:**
+
+- Reuse connection when receiving an AUTH. [\#623](https://github.com/ably/ably-ios/pull/623) ([tcard](https://github.com/tcard))
+- \[WIP\] Make the library thread-safe. [\#620](https://github.com/ably/ably-ios/pull/620) ([tcard](https://github.com/tcard))
+
+## [1.0.7](https://github.com/ably/ably-ios/tree/1.0.7) (2017-07-24)
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.6...1.0.7)
+
+**Fixed bugs:**
+
+- TTL is being populated as a default for token requests in tokenRequestToDictionary method [\#618](https://github.com/ably/ably-ios/issues/618)
+
+**Closed issues:**
+
+- channel doesn't have 'subscribe' interface anymore? [\#621](https://github.com/ably/ably-ios/issues/621)
+- Connection resume failure detaches all channels [\#612](https://github.com/ably/ably-ios/issues/612)
+- 0.9 spec: Extras field [\#552](https://github.com/ably/ably-ios/issues/552)
+
+**Merged pull requests:**
+
+- Default token TTL to nil, not 60\*60. [\#619](https://github.com/ably/ably-ios/pull/619) ([tcard](https://github.com/tcard))
+- Add extras field to Message. [\#617](https://github.com/ably/ably-ios/pull/617) ([tcard](https://github.com/tcard))
+
 ## [1.0.6](https://github.com/ably/ably-ios/tree/1.0.6) (2017-06-30)
 [Full Changelog](https://github.com/ably/ably-ios/compare/1.0.5...1.0.6)
 
