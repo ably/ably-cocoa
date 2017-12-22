@@ -11,14 +11,21 @@
 
 @class ARTProtocolMessage;
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ARTQueuedMessage : NSObject
 
 @property (readonly, strong, nonatomic) ARTProtocolMessage *msg;
-@property (readonly, strong, nonatomic) NSMutableArray *cbs;
+@property (readonly, strong, nonatomic) NSMutableArray *sentCallbacks;
+@property (readonly, strong, nonatomic) NSMutableArray *ackCallbacks;
 
-- (instancetype)initWithProtocolMessage:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb;
-- (BOOL)mergeFrom:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb;
+- (instancetype)initWithProtocolMessage:(ARTProtocolMessage *)msg sentCallback:(nullable void (^)(ARTErrorInfo *_Nullable))sentCallback ackCallback:(nullable void (^)(ARTStatus *))ackCallback;
 
-- (void (^)(ARTStatus *))cb;
+- (BOOL)mergeFrom:(ARTProtocolMessage *)msg sentCallback:(nullable void (^)(ARTErrorInfo *_Nullable))sentCallback ackCallback:(nullable void (^)(ARTStatus *))ackCallback;
+
+- (void (^)(ARTErrorInfo *))sentCallback;
+- (void (^)(ARTStatus *))ackCallback;
 
 @end
+
+NS_ASSUME_NONNULL_END

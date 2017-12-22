@@ -10,6 +10,7 @@
 #import <Ably/ARTEventEmitter.h>
 #import <Ably/ARTTypes.h>
 #import <Ably/ARTQueuedMessage.h>
+#import <Ably/ARTPendingMessage.h>
 #import <Ably/ARTProtocolMessage.h>
 #import <Ably/ARTReachability.h>
 
@@ -57,7 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, strong, nonatomic) NSMutableArray<ARTQueuedMessage *> *queuedMessages;
 
 /// List of pending messages waiting for ACK/NACK action to confirm the success receipt and acceptance.
-@property (readwrite, strong, nonatomic) NSMutableArray<ARTQueuedMessage *> *pendingMessages;
+@property (readwrite, strong, nonatomic) NSMutableArray<ARTPendingMessage *> *pendingMessages;
 
 /// First `msgSerial` pending message.
 @property (readwrite, assign, nonatomic) int64_t pendingMessageStartSerial;
@@ -88,7 +89,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setReachabilityClass:(Class _Nullable)reachabilityClass;
 
 // Message sending
-- (void)send:(ARTProtocolMessage *)msg callback:(nullable void (^)(ARTStatus *))cb;
+- (void)send:(ARTProtocolMessage *)msg sentCallback:(nullable void (^)(ARTErrorInfo *_Nullable))sentCallback ackCallback:(nullable void (^)(ARTStatus *))ackCallback;
 
 - (void)onUncaughtException:(NSException *)e;
 - (NSDictionary *)sentryExtra;

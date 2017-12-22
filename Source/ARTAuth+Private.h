@@ -11,7 +11,8 @@
 
 typedef NS_ENUM(NSUInteger, ARTAuthorizationState) {
     ARTAuthorizationSucceeded, //ItemType: nil
-    ARTAuthorizationFailed //ItemType: NSError
+    ARTAuthorizationFailed, //ItemType: NSError
+    ARTAuthorizationCancelled, //ItemType: nil
 };
 
 NS_ASSUME_NONNULL_BEGIN

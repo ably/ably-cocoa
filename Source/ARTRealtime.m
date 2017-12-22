@@ -27,6 +27,7 @@
 #import "ARTProtocolMessage+Private.h"
 #import "ARTEventEmitter+Private.h"
 #import "ARTQueuedMessage.h"
+#import "ARTPendingMessage.h"
 #import "ARTConnection+Private.h"
 #import "ARTConnectionDetails.h"
 #import "ARTStats.h"
@@ -124,7 +125,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                 ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
                 msg.action = ARTProtocolMessageAuth;
                 msg.auth = [[ARTAuthDetails alloc] initWithToken:tokenDetails.token];
-                [self send:msg callback:nil];
+                [self send:msg sentCallback:nil ackCallback:nil];
             }
             break;
         case ARTRealtimeConnecting: {
@@ -147,9 +148,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                 }
             }
             break;
+        case ARTRealtimeClosing: {
+                // Should ignore because the connection is being closed
+                [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p new connection from authorize has been ignored because the connection is being closed", _rest];
+                break;
+            }
         default:
             // Client state is NOT Connecting or Connected, so it should start a new connection
-            [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p start a connection using %@", _rest, tokenDetails];
+            [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p new connection from successfull authorize %@", _rest, tokenDetails];
             [self transition:ARTRealtimeConnecting];
             break;
     }
@@ -299,6 +305,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             return;
         }
         [[[_pingEventEmitter once:cb] setTimer:[ARTDefault realtimeRequestTimeout] onTimeout:^{
+            [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p ping timed out", self];
             cb([ARTErrorInfo createWithCode:ARTCodeErrorConnectionTimedOut status:ARTStateConnectionFailed message:@"timed out"]);
         }] startTimer];
         [self.transport sendPing];
@@ -369,6 +376,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     // i.e. the `unlessStateChangesBefore` is setting a timer and if the `ARTRealtime` instance is released before that timer, then it could create a leak.
     __weak __typeof(self) weakSelf = self;
 
+    [self.logger verbose:@"R:%p realtime is transitioning from %@ to %@", self, ARTRealtimeConnectionStateToStr(stateChange.previous), ARTRealtimeConnectionStateToStr(stateChange.current)];
+
     switch (stateChange.current) {
         case ARTRealtimeConnecting: {
             stateChangeEventListener = [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
@@ -420,6 +429,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             break;
         }
         case ARTRealtimeClosing: {
+            [self stopIdleTimer];
             [_reachability off];
             stateChangeEventListener = [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
                 [weakSelf transition:ARTRealtimeClosed];
@@ -428,6 +438,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             break;
         }
         case ARTRealtimeClosed:
+            [self stopIdleTimer];
             [_reachability off];
             [self.transport close];
             _connection.key = nil;
@@ -444,6 +455,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             [_authorizationEmitter emit:[ARTEvent newWithAuthorizationState:ARTAuthorizationFailed] with:stateChange.reason];
             break;
         case ARTRealtimeDisconnected: {
+            [_authorizationEmitter emit:[ARTEvent newWithAuthorizationState:ARTAuthorizationCancelled] with:nil];
+
             if (!_startedReconnection) {
                 _startedReconnection = [NSDate date];
                 [_internalEventEmitter on:^(ARTConnectionStateChange *change) {
@@ -452,6 +465,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                     }
                 }];
             }
+
             if ([[NSDate date] timeIntervalSinceDate:_startedReconnection] >= _connectionStateTtl) {
                 artDispatchScheduled(0, _rest.queue, ^{
                     [self transition:ARTRealtimeSuspended withErrorInfo:stateChange.reason];
@@ -509,7 +523,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     } else if (![self shouldQueueEvents]) {
         ARTStatus *channelStatus = status;
         if (!channelStatus) {
-            channelStatus = [self defaultError];
+            channelStatus = stateChange.reason ? [ARTStatus state:ARTStateError info:stateChange.reason] : [self defaultError];
         }
         [self failQueuedMessages:channelStatus];
         // For every Channel
@@ -546,9 +560,9 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)onHeartbeat {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    [self.logger verbose:@"R:%p ARTRealtime heartbeat received", self];
+    [self.logger verbose:@"R:%p heartbeat received", self];
     if(self.connection.state_nosync != ARTRealtimeConnected) {
-        NSString *msg = [NSString stringWithFormat:@"ARTRealtime received a ping when in state %@", ARTRealtimeConnectionStateToStr(self.connection.state_nosync)];
+        NSString *msg = [NSString stringWithFormat:@"received a ping when in state %@", ARTRealtimeConnectionStateToStr(self.connection.state_nosync)];
         [self.logger warn:@"R:%p %@", self, msg];
     }
     [_pingEventEmitter emit:nil with:nil];
@@ -578,7 +592,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
         for (ARTRealtimeChannel *channel in self.channels.nosyncIterable) {
             if (channel.presenceMap.syncInProgress) {
-                [channel requestContinueSync];
+                // FIXME or not, regarding https://github.com/ably/docs/issues/349
+                //[channel requestContinueSync];
             }
         }
     }
@@ -623,7 +638,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)onDisconnected:(ARTProtocolMessage *)message {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    [self.logger info:@"R:%p ARTRealtime disconnected", self];
+    [self.logger info:@"R:%p Realtime disconnected", self];
     ARTErrorInfo *error = message.error;
     if ([self shouldRenewToken:&error]) {
         [self transition:ARTRealtimeDisconnected withErrorInfo:error];
@@ -638,7 +653,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)onClosed {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    [self.logger info:@"R:%p ARTRealtime closed", self];
+    [self.logger info:@"R:%p Realtime closed", self];
     switch (self.connection.state_nosync) {
         case ARTRealtimeClosed:
             break;
@@ -687,6 +702,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)cancelTimers {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
+    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p cancel timers", self];
     [_connectionRetryFromSuspendedListener stopTimer];
     _connectionRetryFromSuspendedListener = nil;
     [_connectionRetryFromDisconnectedListener stopTimer];
@@ -699,11 +715,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     _authenitcatingTimeoutWork = nil;
     // Idle timer
     [self stopIdleTimer];
+    // Ping timer
+    [_pingEventEmitter off];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)onConnectionTimeOut {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
+    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p connection timed out", self];
     // Cancel connecting scheduled work
     [_connectingTimeoutListener stopTimer];
     _connectingTimeoutListener = nil;
@@ -765,7 +784,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     }
     else {
         // Token
-        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p connecting with token auth; authorising", self];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p connecting with token auth; authorising (timeout of %f)", self, [ARTDefault realtimeRequestTimeout]];
 
         if (!forceNewToken && [self.auth tokenRemainsValid]) {
             // Reuse token
@@ -922,7 +941,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (void)sendImpl:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb {
+- (void)sendImpl:(ARTProtocolMessage *)msg sentCallback:(void (^)(ARTErrorInfo *))sentCallback ackCallback:(void (^)(ARTStatus *))ackCallback {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     if (msg.ackRequired) {
         msg.msgSerial = [NSNumber numberWithLongLong:self.msgSerial];
@@ -932,46 +951,54 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     NSData *data = [self.rest.defaultEncoder encodeProtocolMessage:msg error:&error];
 
     if (error) {
-        cb([ARTStatus state:ARTStateError info:[ARTErrorInfo createFromNSError:error]]);
+        ARTErrorInfo *e = [ARTErrorInfo createFromNSError:error];
+        if (sentCallback) sentCallback(e);
+        if (ackCallback) ackCallback([ARTStatus state:ARTStateError info:e]);
         return;
     }
     else if (!data) {
-        cb([ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:ARTClientCodeErrorInvalidType message:@"Encoder as failed without error."]]);
+        ARTErrorInfo *e = [ARTErrorInfo createWithCode:ARTClientCodeErrorInvalidType message:@"Encoder as failed without error."];
+        if (sentCallback) sentCallback(e);
+        if (ackCallback) ackCallback([ARTStatus state:ARTStateError info:e]);
         return;
     }
 
     if (msg.ackRequired) {
         self.msgSerial++;
-        ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg callback:cb];
-        [self.pendingMessages addObject:qm];
+        ARTPendingMessage *pm = [[ARTPendingMessage alloc] initWithProtocolMessage:msg ackCallback:ackCallback];
+        [self.pendingMessages addObject:pm];
     }
 
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p ARTRealtime sending action %tu - %@", self, msg.action, ARTProtocolMessageActionToStr(msg.action)];
-    // Callback is called with ACK/NACK action
-    [self.transport send:data withSource:msg];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p sending action %tu - %@", self, msg.action, ARTProtocolMessageActionToStr(msg.action)];
+    if ([self.transport send:data withSource:msg]) {
+        if (sentCallback) sentCallback(nil);
+        // `ackCallback()` is called with ACK/NACK action
+    }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (void)send:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb {
+- (void)send:(ARTProtocolMessage *)msg sentCallback:(void (^)(ARTErrorInfo *))sentCallback ackCallback:(void (^)(ARTStatus *))ackCallback {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     if ([self shouldSendEvents]) {
-        [self sendImpl:msg callback:cb];
-    } else if ([self shouldQueueEvents]) {
+        [self sendImpl:msg sentCallback:sentCallback ackCallback:ackCallback];
+    }
+    else if ([self shouldQueueEvents]) {
         BOOL merged = NO;
         for (ARTQueuedMessage *queuedMsg in self.queuedMessages) {
-            merged = [queuedMsg mergeFrom:msg callback:cb];
+            merged = [queuedMsg mergeFrom:msg sentCallback:nil ackCallback:ackCallback];
             if (merged) {
                 break;
             }
         }
         if (!merged) {
-            ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg callback:cb];
+            ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg sentCallback:nil ackCallback:ackCallback];
             [self.queuedMessages addObject:qm];
         }
-    } else {
+    }
+    else {
         // TODO review error code
-        if (cb) {
-            cb([ARTStatus state:ARTStateError]);
+        if (ackCallback) {
+            ackCallback([ARTStatus state:ARTStateError]);
         }
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
@@ -979,11 +1006,11 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)resendPendingMessages {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    NSArray<ARTQueuedMessage *> *pms = self.pendingMessages;
+    NSArray<ARTPendingMessage *> *pms = self.pendingMessages;
     self.pendingMessages = [NSMutableArray array];
-    for (ARTQueuedMessage *pendingMessage in pms) {
-        [self send:pendingMessage.msg callback:^(ARTStatus *status) {
-            pendingMessage.cb(status);
+    for (ARTPendingMessage *pendingMessage in pms) {
+        [self send:pendingMessage.msg sentCallback:nil ackCallback:^(ARTStatus *status) {
+            pendingMessage.ackCallback(status);
         }];
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
@@ -991,10 +1018,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)failPendingMessages:(ARTStatus *)status {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    NSArray<ARTQueuedMessage *> *pms = self.pendingMessages;
+    NSArray<ARTPendingMessage *> *pms = self.pendingMessages;
     self.pendingMessages = [NSMutableArray array];
-    for (ARTQueuedMessage *pendingMessage in pms) {
-        pendingMessage.cb(status);
+    for (ARTPendingMessage *pendingMessage in pms) {
+        pendingMessage.ackCallback(status);
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -1005,7 +1032,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     self.queuedMessages = [NSMutableArray array];
 
     for (ARTQueuedMessage *message in qms) {
-        [self sendImpl:message.msg callback:message.cb];
+        [self sendImpl:message.msg sentCallback:message.sentCallback ackCallback:message.ackCallback];
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -1015,7 +1042,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     NSArray *qms = self.queuedMessages;
     self.queuedMessages = [NSMutableArray array];
     for (ARTQueuedMessage *message in qms) {
-        message.cb(status);
+        message.sentCallback(status.errorInfo);
+        message.ackCallback(status);
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -1026,8 +1054,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     int count = message.count;
     NSArray *nackMessages = nil;
     NSArray *ackMessages = nil;
-    [self.logger verbose:@"R:%p ARTRealtime ACK: msgSerial=%lld, count=%d", self, serial, count];
-    [self.logger verbose:@"R:%p ARTRealtime ACK (before processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
+    [self.logger verbose:@"R:%p ACK: msgSerial=%lld, count=%d", self, serial, count];
+    [self.logger verbose:@"R:%p ACK (before processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
 
     if (serial < self.pendingMessageStartSerial) {
         // This is an error condition and shouldn't happen but
@@ -1043,7 +1071,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         int nCount = (int)(serial - self.pendingMessageStartSerial);
         NSRange nackRange;
         if (nCount > self.pendingMessages.count) {
-            NSString *message = [NSString stringWithFormat:@"R:%p ARTRealtime ACK: receiving a serial greater than expected", self];
+            NSString *message = [NSString stringWithFormat:@"R:%p ACK: receiving a serial greater than expected", self];
             [self.logger error:@"%@", message];
             [_rest forceReport:message exception:[NSException exceptionWithName:@"ARTReport" reason:message userInfo:@{}]];
             // Process all the available pending messages as nack
@@ -1060,7 +1088,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     if (serial == self.pendingMessageStartSerial) {
         NSRange ackRange;
         if (count > self.pendingMessages.count) {
-            [self.logger error:@"R:%p ARTRealtime ACK: count response is greater than the total of pending messages", self];
+            [self.logger error:@"R:%p ACK: count response is greater than the total of pending messages", self];
             // Process all the available pending messages
             ackRange = NSMakeRange(0, self.pendingMessages.count);
         }
@@ -1072,15 +1100,15 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         self.pendingMessageStartSerial += count;
     }
 
-    for (ARTQueuedMessage *msg in nackMessages) {
-        if (msg.cb) msg.cb([ARTStatus state:ARTStateError info:message.error]);
+    for (ARTPendingMessage *msg in nackMessages) {
+        msg.ackCallback([ARTStatus state:ARTStateError info:message.error]);
     }
 
-    for (ARTQueuedMessage *msg in ackMessages) {
-        if (msg.cb) msg.cb([ARTStatus state:ARTStateOk]);
+    for (ARTPendingMessage *msg in ackMessages) {
+        msg.ackCallback([ARTStatus state:ARTStateOk]);
     }
 
-    [self.logger verbose:@"R:%p ARTRealtime ACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
+    [self.logger verbose:@"R:%p ACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
@@ -1088,8 +1116,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     int64_t serial = [message.msgSerial longLongValue];
     int count = message.count;
-    [self.logger verbose:@"R:%p ARTRealtime NACK: msgSerial=%lld, count=%d", self, serial, count];
-    [self.logger verbose:@"R:%p ARTRealtime NACK (before processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
+    [self.logger verbose:@"R:%p NACK: msgSerial=%lld, count=%d", self, serial, count];
+    [self.logger verbose:@"R:%p NACK (before processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
 
     if (serial != self.pendingMessageStartSerial) {
         // This is an error condition and it shouldn't happen but
@@ -1100,7 +1128,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
     NSRange nackRange;
     if (count > self.pendingMessages.count) {
-        [self.logger error:@"R:%p ARTRealtime NACK: count response is greater than the total of pending messages", self];
+        [self.logger error:@"R:%p NACK: count response is greater than the total of pending messages", self];
         // Process all the available pending messages
         nackRange = NSMakeRange(0, self.pendingMessages.count);
     }
@@ -1112,11 +1140,11 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     [self.pendingMessages removeObjectsInRange:nackRange];
     self.pendingMessageStartSerial += count;
 
-    for (ARTQueuedMessage *msg in nackMessages) {
-        if (msg.cb) msg.cb([ARTStatus state:ARTStateError info:message.error]);
+    for (ARTPendingMessage *msg in nackMessages) {
+        msg.ackCallback([ARTStatus state:ARTStateError info:message.error]);
     }
 
-    [self.logger verbose:@"R:%p ARTRealtime NACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
+    [self.logger verbose:@"R:%p NACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
@@ -1149,6 +1177,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 }
 
 - (void)onActivity {
+    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p activity", self];
     _lastActivity = [NSDate date];
     [self setIdleTimer];
 }
@@ -1156,11 +1185,13 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 - (void)setIdleTimer {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     if (self.maxIdleInterval <= 0) {
+        [self.logger verbose:@"R:%p set idle timer had been ignored", self];
         return;
     }
     artDispatchCancel(_idleTimer);
     _idleTimer = artDispatchScheduled([ARTDefault realtimeRequestTimeout] + self.maxIdleInterval, _rest.queue, ^{
         [self.logger error:@"R:%p No activity seen from realtime in %f seconds; assuming connection has dropped", self, [[NSDate date] timeIntervalSinceDate:_lastActivity]];
+
         [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createWithCode:80003 status:408 message:@"Idle timer expired"]];
     });
 } ART_TRY_OR_MOVE_TO_FAILED_END
@@ -1201,10 +1232,15 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         return;
     }
 
-    [self.logger verbose:@"R:%p ARTRealtime didReceive Protocol Message %@ ", self, ARTProtocolMessageActionToStr(message.action)];
+    if (self.connection.state_nosync == ARTRealtimeDisconnected) {
+        // Already disconnected
+        return;
+    }
+
+    [self.logger verbose:@"R:%p did receive Protocol Message %@ (connection state is %@)", self, ARTProtocolMessageActionToStr(message.action), ARTRealtimeConnectionStateToStr(self.connection.state_nosync)];
 
     if (message.error) {
-        [self.logger verbose:@"R:%p ARTRealtime Protocol Message with error %@ ", self, message.error];
+        [self.logger verbose:@"R:%p Protocol Message with error %@ ", self, message.error];
     }
 
     NSAssert(transport == self.transport, @"Unexpected transport");
@@ -1321,10 +1357,13 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         }
     }
 
-    if (error.type != ARTRealtimeTransportErrorTypeOther) {
-        [self transition:ARTRealtimeDisconnected];
-    } else {
-        [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
+    switch (error.type) {
+        case ARTRealtimeTransportErrorTypeBadResponse:
+        case ARTRealtimeTransportErrorTypeOther:
+            [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
+            break;
+        default:
+            [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -1336,18 +1375,26 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         return;
     }
 
-    [self transition:ARTRealtimeFailed];
+    [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:@"Transport never connected"]];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (void)realtimeTransportRefused:(id<ARTRealtimeTransport>)transport {
+- (void)realtimeTransportRefused:(id<ARTRealtimeTransport>)transport withError:(ARTRealtimeTransportError *)error {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     if (transport != self.transport) {
         // Old connection
         return;
     }
 
-    [self transition:ARTRealtimeFailed];
+    if (error && error.type == ARTRealtimeTransportErrorTypeRefused) {
+        [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:[NSString stringWithFormat:@"Connection refused using %@", error.url]]];
+    }
+    else if (error) {
+        [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
+    }
+    else {
+        [self transition:ARTRealtimeFailed];
+    }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
@@ -1358,7 +1405,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         return;
     }
 
-    [self transition:ARTRealtimeFailed];
+    [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:@"Transport too big"]];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 

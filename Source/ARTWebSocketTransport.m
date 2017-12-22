@@ -36,6 +36,8 @@ enum {
     ARTWsTlsError = 1015
 };
 
+NSString *WebSocketStateToStr(SRReadyState state);
+
 @implementation ARTWebSocketTransport {
     id<ARTRealtimeTransportDelegate> _delegate;
     ARTRealtimeTransportState _state;
@@ -73,7 +75,7 @@ enum {
     self.delegate = nil;
 }
 
-- (void)send:(NSData *)data withSource:(id)decodedObject {
+- (BOOL)send:(NSData *)data withSource:(id)decodedObject {
     if (self.websocket.readyState == SR_OPEN) {
         if ([decodedObject isKindOfClass:[ARTProtocolMessage class]]) {
             [_protocolMessagesLogger info:@"send %@", [decodedObject description]];
@@ -84,6 +86,16 @@ enum {
         // https://github.com/facebook/SocketRocket/issues/542
         [self.websocket sendData:data error:nil];
         #endif
+        return true;
+    }
+    else {
+        NSString *extraInformation = @"";
+        if ([decodedObject isKindOfClass:[ARTProtocolMessage class]]) {
+            ARTProtocolMessage *msg = (ARTProtocolMessage *)decodedObject;
+            extraInformation = [NSString stringWithFormat:@"with action \"%tu - %@\" ", msg.action, ARTProtocolMessageActionToStr(msg.action)];
+        }
+        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p sending message %@was ignored because websocket isn't ready", _delegate, self, extraInformation];
+        return false;
     }
 }
 
@@ -269,7 +281,9 @@ enum {
         break;
     case ARTWsRefuse:
     case ARTWsPolicyValidation:
-        [_delegate realtimeTransportRefused:self];
+        [_delegate realtimeTransportRefused:self withError:[[ARTRealtimeTransportError alloc] initWithError:[ARTErrorInfo createWithCode:code message:reason]
+                                                                                                           type:ARTRealtimeTransportErrorTypeRefused
+                                                                                                            url:self.websocketURL]];
         break;
     case ARTWsTooBig:
         [_delegate realtimeTransportTooBig:self];
@@ -321,6 +335,13 @@ enum {
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
+    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did receive message", _delegate, self];
+
+    if (self.websocket.readyState == SR_CLOSED) {
+        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket is closed, message has been ignored", _delegate, self];
+        return;
+    }
+
     if ([message isKindOfClass:[NSString class]]) {
         [self webSocketMessageText:(NSString *)message];
     } else if ([message isKindOfClass:[NSData class]]) {
@@ -331,7 +352,7 @@ enum {
 }
 
 - (void)webSocketMessageText:(NSString *)text {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did receive message %@", _delegate, self, text];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket in %@ state did receive message %@", _delegate, self, WebSocketStateToStr(self.websocket.readyState), text];
 
     NSData *data = nil;
     data = [((NSString *)text) dataUsingEncoding:NSUTF8StringEncoding];
@@ -340,15 +361,28 @@ enum {
 }
 
 - (void)webSocketMessageData:(NSData *)data {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did receive data %@", _delegate, self, data];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket in %@ state did receive data %@", _delegate, self, WebSocketStateToStr(self.websocket.readyState), data];
 
     [self receiveWithData:data];
 }
 
 - (void)webSocketMessageProtocol:(ARTProtocolMessage *)message {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did receive protocol message %@", _delegate, self, message];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket in %@ state did receive protocol message %@", _delegate, self, WebSocketStateToStr(self.websocket.readyState), message];
 
     [self receive:message];
 }
 
 @end
+
+NSString *WebSocketStateToStr(SRReadyState state) {
+    switch (state) {
+        case SR_CONNECTING:
+            return @"Connecting"; //0
+        case SR_OPEN:
+            return @"Open"; //1
+        case SR_CLOSING:
+            return @"Closing"; //2
+        case SR_CLOSED:
+            return @"Closed"; //2
+    }
+}

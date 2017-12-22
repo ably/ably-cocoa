@@ -71,6 +71,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
 dispatch_async(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     switch (_channel.state_nosync) {
+        case ARTRealtimeChannelDetached:
         case ARTRealtimeChannelFailed:
             if (callback) callback(nil, [ARTErrorInfo createWithCode:0 message:@"invalid channel state"]);
             return;

@@ -169,7 +169,12 @@ class RestClientChannel: QuickSpec {
                             expect(client.auth.method).to(equal(ARTAuthMethod.basic))
                             channel.history { page, error in
                                 expect(error).to(beNil())
-                                let item = page!.items[0] 
+                                guard let page = page else {
+                                    fail("Page is empty"); done(); return
+                                }
+                                guard let item = page.items.first else {
+                                    fail("First item does not exist"); done(); return
+                                }
                                 expect(item.clientId).to(equal("tester"))
                                 done()
                             }
@@ -199,7 +204,12 @@ class RestClientChannel: QuickSpec {
                                 expect(error).to(beNil())
                                 channel.history { page, error in
                                     expect(error).to(beNil())
-                                    let item = page!.items[0] 
+                                    guard let page = page else {
+                                        fail("Page is empty"); done(); return
+                                    }
+                                    guard let item = page.items.first else {
+                                        fail("First item does not exist"); done(); return
+                                    }
                                     expect(item.clientId).to(equal("john"))
                                     done()
                                 }
@@ -222,7 +232,12 @@ class RestClientChannel: QuickSpec {
                             expect(error).to(beNil())
                             channel.history { page, error in
                                 expect(error).to(beNil())
-                                let item = page!.items[0] 
+                                guard let page = page else {
+                                    fail("Page is empty"); done(); return
+                                }
+                                guard let item = page.items.first else {
+                                    fail("First item does not exist"); done(); return
+                                }
                                 expect(item.clientId).to(equal("john"))
                                 done()
                             }
@@ -284,7 +299,10 @@ class RestClientChannel: QuickSpec {
                             testHTTPExecutor.http = ARTHttp(AblyTests.queue)
                             channel.history { page, error in
                                 expect(error).to(beNil())
-                                expect(page!.items).to(haveCount(0))
+                                guard let page = page else {
+                                    fail("Page is empty"); done(); return
+                                }
+                                expect(page.items).to(haveCount(0))
                                 done()
                             }
                         }
@@ -961,7 +979,13 @@ class RestClientChannel: QuickSpec {
 
                 waitUntil(timeout: testTimeout) { done in
                     channel.history { result, error in
-                        let message = (result!.items )[0]
+                        expect(error).to(beNil())
+                        guard let result = result else {
+                            fail("Result is empty"); done(); return
+                        }
+                        guard let message = result.items.first else {
+                            fail("First item does not exist"); done(); return
+                        }
                         expect(message.data is NSData).to(beTrue())
                         expect(message.encoding).to(equal("json/utf-8/cipher+aes-256-cbc"))
                         done()
@@ -994,7 +1018,13 @@ class RestClientChannel: QuickSpec {
 
                 waitUntil(timeout: testTimeout) { done in
                     channel.history { result, error in
-                        let message = (result!.items )[0]
+                        expect(error).to(beNil())
+                        guard let result = result else {
+                            fail("Result is empty"); done(); return
+                        }
+                        guard let message = result.items.first else {
+                            fail("First item does not exist"); done(); return
+                        }
                         expect(message.data as? NSData).to(equal(expectedData as NSData?))
                         expect(message.encoding).to(equal("invalid"))
 
