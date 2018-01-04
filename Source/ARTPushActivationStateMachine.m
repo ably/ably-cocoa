@@ -103,11 +103,15 @@ dispatch_async(_queue, ^{
     #ifdef TARGET_OS_IOS
     ARTLocalDevice *local = _rest.device_nosync;
 
-    if (![[UIApplication sharedApplication].delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
+    __block id delegate;
+    dispatch_sync(_userQueue, ^{
+        // -[UIApplication delegate] is an UI API call
+        delegate = [UIApplication sharedApplication].delegate;
+    });
+
+    if (![delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
         [NSException raise:@"ARTPushRegistererDelegate must be implemented on AppDelegate" format:@""];
     }
-
-    id delegate = [UIApplication sharedApplication].delegate;
 
     // Custom register
     SEL customRegisterMethodSelector = @selector(ablyPushCustomRegister:deviceDetails:callback:);
@@ -158,11 +162,15 @@ dispatch_async(_queue, ^{
     #ifdef TARGET_OS_IOS
     ARTLocalDevice *local = _rest.device_nosync;
 
-    if (![[UIApplication sharedApplication].delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
+    __block id delegate;
+    dispatch_sync(_userQueue, ^{
+        // -[UIApplication delegate] is an UI API call
+        delegate = [UIApplication sharedApplication].delegate;
+    });
+
+    if (![delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
         [NSException raise:@"ARTPushRegistererDelegate must be implemented on AppDelegate" format:@""];
     }
-
-    id delegate = [UIApplication sharedApplication].delegate;
 
     // Custom register
     SEL customRegisterMethodSelector = @selector(ablyPushCustomRegister:deviceDetails:callback:);
@@ -220,7 +228,11 @@ dispatch_async(_queue, ^{
     #ifdef TARGET_OS_IOS
     ARTLocalDevice *local = _rest.device_nosync;
 
-    id delegate = [UIApplication sharedApplication].delegate;
+    __block id delegate;
+    dispatch_sync(_userQueue, ^{
+        // -[UIApplication delegate] is an UI API call
+        delegate = [UIApplication sharedApplication].delegate;
+    });
 
     // Custom register
     SEL customDeregisterMethodSelector = @selector(ablyPushCustomDeregister:deviceId:callback:);
