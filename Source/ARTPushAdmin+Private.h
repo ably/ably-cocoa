@@ -9,7 +9,7 @@
 #ifndef ARTPushAdmin_Private_h
 #define ARTPushAdmin_Private_h
 
-#import "ARTPushAdmin.h"
+#import <Ably/ARTPushAdmin.h>
 
 @class ARTRest;
 
