@@ -9,7 +9,7 @@
 #ifndef ARTPush_Private_h
 #define ARTPush_Private_h
 
-#import "ARTPush.h"
+#import <Ably/ARTPush.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

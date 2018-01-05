@@ -9,7 +9,7 @@
 #ifndef ARTLocalDevice_Private_h
 #define ARTLocalDevice_Private_h
 
-#import "ARTRest.h"
+#import <Ably/ARTRest.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
