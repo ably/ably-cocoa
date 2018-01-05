@@ -6,13 +6,9 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#ifndef ARTReachability_h
-#define ARTReachability_h
+#import <Ably/ARTLog.h>
 
-#import "CompatibilityMacros.h"
-#import "ARTLog.h"
-
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTReachability <NSObject>
 
@@ -23,6 +19,4 @@ ART_ASSUME_NONNULL_BEGIN
 
 @end
 
-ART_ASSUME_NONNULL_END
-
-#endif /* ARTReachability_h */
+NS_ASSUME_NONNULL_END

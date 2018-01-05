@@ -7,14 +7,13 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "CompatibilityMacros.h"
 
 @class ARTPresenceMap;
 @class ARTPresenceMessage;
 @class ARTErrorInfo;
 @class ARTLog;
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 /// ARTPresenceMapDelegate
 @protocol ARTPresenceMapDelegate <NSObject>
@@ -27,7 +26,7 @@ ART_ASSUME_NONNULL_BEGIN
 @interface ARTPresenceMap : NSObject
 
 /// List of members.
-/// The key is the clientId and the value is the latest relevant ARTPresenceMessage for that clientId.
+/// The key is the memberKey and the value is the latest relevant ARTPresenceMessage for that clientId.
 @property (readonly, atomic) NSDictionary<NSString *, ARTPresenceMessage *> *members;
 
 /// List of internal members.
@@ -52,11 +51,11 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)endSync;
 - (void)failsSync:(ARTErrorInfo *)error;
 
-- (void)onceSyncEnds:(void (^)(__GENERIC(NSArray, ARTPresenceMessage *) *))callback;
+- (void)onceSyncEnds:(void (^)(NSArray<ARTPresenceMessage *> *))callback;
 - (void)onceSyncFails:(void (^)(ARTErrorInfo *))callback;
 
 - (void)internalAdd:(ARTPresenceMessage *)message;
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

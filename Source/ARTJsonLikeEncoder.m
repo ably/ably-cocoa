@@ -721,7 +721,8 @@
                                             maxFrameSize:[input artInteger:@"maxFrameSize"]
                                           maxInboundRate:[input artInteger:@"maxInboundRate"]
                                       connectionStateTtl:(NSTimeInterval)[input artInteger:@"connectionStateTtl"]
-                                                serverId:[input artString:@"serverId"]];
+                                                serverId:[input artString:@"serverId"]
+                                         maxIdleInterval:millisecondsToTimeInterval([input artInteger:@"maxIdleInterval"])];
 }
 
 - (NSArray *)statsFromArray:(NSArray *)input {

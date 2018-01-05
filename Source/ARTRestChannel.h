@@ -7,22 +7,23 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTChannel.h"
-#import "ARTLog.h"
+
+#import <Ably/ARTChannel.h>
+#import <Ably/ARTLog.h>
 
 @class ARTRest;
 @class ARTRestPresence;
 @class ARTPushChannel;
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRestChannel : ARTChannel
 
 @property (readonly) ARTRestPresence *presence;
 @property (readonly) ARTPushChannel *push;
 
-- (BOOL)history:(art_nullable ARTDataQuery *)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
+- (BOOL)history:(nullable ARTDataQuery *)query callback:(void(^)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

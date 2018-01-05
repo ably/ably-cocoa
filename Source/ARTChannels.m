@@ -13,7 +13,7 @@
 #import "ARTChannelOptions.h"
 #import "ARTRestChannel.h"
 
-NSString* (^__art_nullable ARTChannels_getChannelNamePrefix)();
+NSString* (^_Nullable ARTChannels_getChannelNamePrefix)();
 
 @interface ARTChannels() {
     __weak id<ARTChannelsDelegate> _delegate;

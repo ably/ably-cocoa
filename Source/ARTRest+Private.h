@@ -6,27 +6,27 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "ARTRest.h"
-#import "ARTHttp.h"
-#import "ARTRealtime.h"
-#import "ARTSentry.h"
+#import <Ably/ARTRest.h>
+#import <Ably/ARTHttp.h>
+#import <Ably/ARTRealtime.h>
+#import <Ably/ARTSentry.h>
 
 @protocol ARTEncoder;
 @protocol ARTHTTPExecutor;
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 /// ARTRest private methods that are used internally and for whitebox testing
 @interface ARTRest () <ARTHTTPAuthenticatedExecutor>
 
 @property (nonatomic, strong, readonly) ARTClientOptions *options;
 @property (nonatomic, weak, nullable) ARTRealtime *realtime;
-@property (readonly, strong, nonatomic) __GENERIC(id, ARTEncoder) defaultEncoder;
+@property (readonly, strong, nonatomic) id<ARTEncoder> defaultEncoder;
 @property (readonly, strong, nonatomic) NSString *defaultEncoding; //Content-Type
 @property (readonly, strong, nonatomic) NSDictionary<NSString *, id<ARTEncoder>> *encoders;
 
 // Must be atomic!
-@property (readwrite, strong, atomic, art_nullable) NSString *prioritizedHost;
+@property (readwrite, strong, atomic, nullable) NSString *prioritizedHost;
 
 @property (nonatomic, weak) id<ARTHTTPExecutor> httpExecutor;
 
@@ -43,7 +43,15 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) int fallbackCount;
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options realtime:(ARTRealtime *_Nullable)realtime;
-- (void)_time:(void (^)(NSDate *__art_nullable, NSError *__art_nullable))callback;
+- (void)_time:(void (^)(NSDate *_Nullable, NSError *_Nullable))callback;
+
+// MARK: ARTHTTPExecutor
+
+- (void)executeRequest:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback;
+
+// MARK: Internal
+
+- (void)executeRequest:(NSURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback;
 
 - (nullable id<ARTCancellable>)internetIsUp:(void (^)(BOOL isUp))cb;
 
@@ -83,4 +91,4 @@ void ARTstopHandlingUncaughtExceptions(ARTRest *self);
 
 #define ART_EXITING_ABLY_CODE(rest) ARTstopHandlingUncaughtExceptions(rest);
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

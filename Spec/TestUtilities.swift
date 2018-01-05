@@ -159,10 +159,10 @@ class AblyTests {
         return options
     }
 
-    class func newErrorProtocolMessage() -> ARTProtocolMessage {
+    class func newErrorProtocolMessage(message: String = "Fail test") -> ARTProtocolMessage {
         let protocolMessage = ARTProtocolMessage()
         protocolMessage.action = .error
-        protocolMessage.error = ARTErrorInfo.create(withCode: 0, message: "Fail test")
+        protocolMessage.error = ARTErrorInfo.create(withCode: 0, message: message)
         return protocolMessage
     }
 
@@ -748,11 +748,12 @@ class TestProxyTransport: ARTWebSocketTransport {
     fileprivate(set) var rawDataSent = [Data]()
     fileprivate(set) var rawDataReceived = [Data]()
     fileprivate var replacingAcksWithNacks: ARTErrorInfo?
-    fileprivate var ignoreWebSocket = false
-    
+    var ignoreWebSocket = false
+
     var beforeProcessingSentMessage: Optional<(ARTProtocolMessage)->()> = nil
-    var beforeProcessingReceivedMessage: Optional<(ARTProtocolMessage)->()> = nil
+    var beforeProcessingReceivedMessage: Optional<(ARTProtocolMessage) -> Void> = nil
     var afterProcessingReceivedMessage: Optional<(ARTProtocolMessage)->()> = nil
+    var changeReceivedMessage: ((ARTProtocolMessage) -> ARTProtocolMessage)? = nil
 
     var actionsIgnored = [ARTProtocolMessageAction]()
     var ignoreSends = false
@@ -773,15 +774,18 @@ class TestProxyTransport: ARTWebSocketTransport {
                         hook?.remove()
                     }
                 }
-                let error = NSError.init(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "TestProxyTransport error"])
                 switch network {
                 case .noInternet, .hostUnreachable:
+                    let error = NSError.init(domain: "test.ably.io", code: 0, userInfo: [NSLocalizedDescriptionKey: "host unreachable"])
                     performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, type: .hostUnreachable, url: self.lastUrl!))
                 case .requestTimeout(let timeout):
+                    let error = NSError.init(domain: "test.ably.io", code: 0, userInfo: [NSLocalizedDescriptionKey: "timed out"])
                     performConnectError(0.1 + timeout, error: ARTRealtimeTransportError.init(error: error, type: .timeout, url: self.lastUrl!))
                 case .hostInternalError(let code):
+                    let error = NSError.init(domain: "test.ably.io", code: 500, userInfo: [NSLocalizedDescriptionKey: "internal error"])
                     performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, badResponseCode: code, url: self.lastUrl!))
                 case .host400BadRequest:
+                    let error = NSError.init(domain: "test.ably.io", code: 400, userInfo: [NSLocalizedDescriptionKey: "bad request"])
                     performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, badResponseCode: 400, url: self.lastUrl!))
                 }
             }
@@ -814,15 +818,19 @@ class TestProxyTransport: ARTWebSocketTransport {
                     }
                 }
                 let error = NSError.init(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "TestProxyTransport error"])
+                guard let lastUrl = self.lastUrl else {
+                    print("lastUrl is empty")
+                    return
+                }
                 switch network {
                 case .noInternet, .hostUnreachable:
-                    performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, type: .hostUnreachable, url: self.lastUrl!))
+                    performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, type: .hostUnreachable, url: lastUrl))
                 case .requestTimeout(let timeout):
-                    performConnectError(0.1 + timeout, error: ARTRealtimeTransportError.init(error: error, type: .timeout, url: self.lastUrl!))
+                    performConnectError(0.1 + timeout, error: ARTRealtimeTransportError.init(error: error, type: .timeout, url: lastUrl))
                 case .hostInternalError(let code):
-                    performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, badResponseCode: code, url: self.lastUrl!))
+                    performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, badResponseCode: code, url: lastUrl))
                 case .host400BadRequest:
-                    performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, badResponseCode: 400, url: self.lastUrl!))
+                    performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, badResponseCode: 400, url: lastUrl))
                 }
             }
         }
@@ -851,11 +859,11 @@ class TestProxyTransport: ARTWebSocketTransport {
         send(data, withSource: message)
     }
 
-    override func send(_ data: Data, withSource decodedObject: Any?) {
+    override func send(_ data: Data, withSource decodedObject: Any?) -> Bool {
         if let msg = decodedObject as? ARTProtocolMessage {
             if ignoreSends {
                 protocolMessagesSentIgnored.append(msg)
-                return
+                return false
             }
             protocolMessagesSent.append(msg)
             if let performEvent = beforeProcessingSentMessage {
@@ -863,26 +871,30 @@ class TestProxyTransport: ARTWebSocketTransport {
             }
         }
         rawDataSent.append(data)
-        super.send(data, withSource: decodedObject)
+        return super.send(data, withSource: decodedObject)
     }
 
-    override func receive(_ msg: ARTProtocolMessage) {
-        if msg.action == .ack || msg.action == .presence {
+    override func receive(_ original: ARTProtocolMessage) {
+        if original.action == .ack || original.action == .presence {
             if let error = replacingAcksWithNacks {
-                msg.action = .nack
-                msg.error = error
+                original.action = .nack
+                original.error = error
             }
         }
-        protocolMessagesReceived.append(msg)
-        if actionsIgnored.contains(msg.action) {
+        protocolMessagesReceived.append(original)
+        if actionsIgnored.contains(original.action) {
             return
         }
         if let performEvent = beforeProcessingReceivedMessage {
-            performEvent(msg)
+            performEvent(original)
+        }
+        var msg = original
+        if let performEvent = changeReceivedMessage {
+            msg = performEvent(original)
         }
         super.receive(msg)
         if let performEvent = afterProcessingReceivedMessage {
-            performEvent(msg)
+            performEvent(original)
         }
     }
 
@@ -903,7 +915,7 @@ class TestProxyTransport: ARTWebSocketTransport {
         msg.connectionId = "x-xxxxxxxx"
         msg.connectionKey = "xxxxxxx-xxxxxxxxxxxxxx-xxxxxxxx"
         msg.connectionSerial = -1
-        msg.connectionDetails = ARTConnectionDetails(clientId: nil, connectionKey: "a8c10!t-3D0O4ejwTdvLkl-b33a8c10", maxMessageSize: 16384, maxFrameSize: 262144, maxInboundRate: 250, connectionStateTtl: 60, serverId: "testServerId")
+        msg.connectionDetails = ARTConnectionDetails(clientId: nil, connectionKey: "a8c10!t-3D0O4ejwTdvLkl-b33a8c10", maxMessageSize: 16384, maxFrameSize: 262144, maxInboundRate: 250, connectionStateTtl: 60, serverId: "testServerId", maxIdleInterval: 15000)
         super.receive(msg)
     }
 
@@ -925,7 +937,7 @@ class TestProxyTransport: ARTWebSocketTransport {
         }
     }
 
-    override func webSocket(_ webSocket: SRWebSocket, didCloseWithCode code: Int, reason: String, wasClean: Bool) {
+    override func webSocket(_ webSocket: SRWebSocket, didCloseWithCode code: Int, reason: String?, wasClean: Bool) {
         if !ignoreWebSocket {
             super.webSocket(webSocket, didCloseWithCode: code, reason: reason, wasClean: wasClean)
         }
@@ -1078,19 +1090,19 @@ extension ARTWebSocketTransport {
         let CLOSE_NORMAL = 1000
         self.setState(ARTRealtimeTransportState.closing)
         let webSocketDelegate = self as SRWebSocketDelegate
-        webSocketDelegate.webSocket!(nil, didCloseWithCode: CLOSE_NORMAL, reason: "", wasClean: true)
+        webSocketDelegate.webSocket!(self.websocket!, didCloseWithCode: CLOSE_NORMAL, reason: "", wasClean: true)
     }
 
     func simulateIncomingAbruptlyClose() {
         let CLOSE_ABNORMAL = 1006
         let webSocketDelegate = self as SRWebSocketDelegate
-        webSocketDelegate.webSocket!(nil, didCloseWithCode: CLOSE_ABNORMAL, reason: "connection was closed abnormally", wasClean: false)
+        webSocketDelegate.webSocket!(self.websocket!, didCloseWithCode: CLOSE_ABNORMAL, reason: "connection was closed abnormally", wasClean: false)
     }
 
     func simulateIncomingError() {
         let error = NSError(domain: ARTAblyErrorDomain, code: 0, userInfo: [NSLocalizedDescriptionKey:"Fail test"])
         let webSocketDelegate = self as SRWebSocketDelegate
-        webSocketDelegate.webSocket!(nil, didFailWithError: error)
+        webSocketDelegate.webSocket!(self.websocket!, didFailWithError: error)
     }
 }
 

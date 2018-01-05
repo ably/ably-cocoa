@@ -193,6 +193,7 @@ class RealtimeClient: QuickSpec {
                 options.autoConnect = false
 
                 let client = ARTRealtime(options: options)
+                defer { client.dispose(); client.close() }
 
                 client.channels.get("test").subscribe({ message in
                     // Attached
@@ -864,7 +865,7 @@ class RealtimeClient: QuickSpec {
                         client.connect()
                     }
 
-                    let hook = client.auth.testSuite_injectIntoMethod(after: #selector(client.auth.authorize(_:options:callback:))) {
+                    let hook = client.auth.testSuite_injectIntoMethod(after: #selector(client.auth._authorize(_:options:callback:))) {
                         guard let transport = client.transport as? TestProxyTransport else {
                             fail("TestProxyTransport is not set"); return
                         }
@@ -913,7 +914,7 @@ class RealtimeClient: QuickSpec {
                         client.connect()
                     }
 
-                    let hook = client.auth.testSuite_injectIntoMethod(after: #selector(client.auth.authorize(_:options:callback:))) {
+                    let hook = client.auth.testSuite_injectIntoMethod(after: #selector(client.auth._authorize(_:options:callback:))) {
                         client.onSuspended()
                     }
                     defer { hook.remove() }
@@ -926,10 +927,10 @@ class RealtimeClient: QuickSpec {
                         }
 
                         client.auth.authorize(nil, options: nil) { tokenDetails, error in
-                            guard let error = error else {
+                            guard let error = error as? ARTErrorInfo else {
                                 fail("ErrorInfo is nil"); partialDone(); return
                             }
-                            expect(UInt((error as! ARTErrorInfo).code)) == ARTState.authorizationFailed.rawValue
+                            expect(UInt(error.code)) == ARTState.authorizationFailed.rawValue
                             expect(tokenDetails).to(beNil())
                             partialDone()
                         }
@@ -955,7 +956,7 @@ class RealtimeClient: QuickSpec {
                         client.connect()
                     }
 
-                    let hook = client.auth.testSuite_injectIntoMethod(after: #selector(client.auth.authorize(_:options:callback:))) {
+                    let hook = client.auth.testSuite_injectIntoMethod(after: #selector(client.auth._authorize(_:options:callback:))) {
                         delay(0) {
                             client.close()
                         }
@@ -970,10 +971,10 @@ class RealtimeClient: QuickSpec {
                         }
 
                         client.auth.authorize(nil, options: nil) { tokenDetails, error in
-                            guard let error = error else {
+                            guard let error = error as? ARTErrorInfo else {
                                 fail("ErrorInfo is nil"); partialDone(); return
                             }
-                            expect(UInt((error as! ARTErrorInfo).code)) == ARTState.authorizationFailed.rawValue
+                            expect(UInt((error).code)) == ARTState.authorizationFailed.rawValue
                             expect(tokenDetails).to(beNil())
                             partialDone()
                         }
@@ -1328,6 +1329,31 @@ class RealtimeClient: QuickSpec {
                 expect(result).to(equal(expectedOrder))
             }
 
+            class AblyManager {
+                static let sharedClient = ARTRealtime(options: { $0.autoConnect = false; return $0 }(ARTClientOptions(key: "xxxx:xxxx")))
+            }
+
+            // Issue https://github.com/ably/ably-ios/issues/640
+            it("should dispatch in user queue when removing an observer") {
+                class Foo {
+                    init() {
+                        AblyManager.sharedClient.channels.get("foo").subscribe { _ in
+                            // keep reference
+                            self.update()
+                        }
+                    }
+                    func update() {
+                    }
+                    deinit {
+                        AblyManager.sharedClient.channels.get("foo").unsubscribe()
+                    }
+                }
+
+                var foo: Foo? = Foo()
+                foo = nil
+                AblyManager.sharedClient.channels.get("foo").unsubscribe()
+            }
+
             it("should never register any connection listeners for internal use with the public EventEmitter") {
                 let options = AblyTests.commonAppSetup()
                 options.autoConnect = false
@@ -1378,6 +1404,30 @@ class RealtimeClient: QuickSpec {
                     }
                     client.connect()
                 }
+            }
+            
+            it("moves to DISCONNECTED on an unexpected normal WebSocket close") {
+                let options = AblyTests.commonAppSetup()
+                options.disconnectedRetryTimeout = 0.3
+                let client = ARTRealtime(options: options)
+                defer { client.dispose(); client.close() }
+                
+                var received = false
+                client.channels.get("test").subscribe() { msg in
+                    received = true
+                }
+
+                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+                
+                let ws = (client.transport! as! ARTWebSocketTransport).websocket!
+                ws.close(withCode: 1000, reason: "test")
+                
+                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.disconnected), timeout: testTimeout)
+                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+                
+                client.channels.get("test").publish(nil, data: "test")
+                
+                expect(received).toEventually(beTrue(), timeout: testTimeout)
             }
         }
     }

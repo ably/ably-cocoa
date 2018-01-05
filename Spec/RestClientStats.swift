@@ -109,18 +109,12 @@ class RestClientStats: QuickSpec {
                         expect(result.items.count).to(equal(3))
                         
                         let totalInbound = result.items.reduce(0 as UInt, {
-                            if let stats = $1 as? ARTStats {
-                                return $0 + stats.inbound.all.messages.count
-                            }
-                            return $0
+                            return $0 + $1.inbound.all.messages.count
                         })
                         expect(totalInbound).to(equal(50 + 60 + 70))
                         
                         let totalOutbound = result.items.reduce(0 as UInt, {
-                            if let stats = $1 as? ARTStats {
-                                return $0 + stats.outbound.all.messages.count
-                            }
-                            return $0
+                            return $0 + $1.outbound.all.messages.count
                         })
                         expect(totalOutbound).to(equal(20 + 10 + 40))
                     }
@@ -134,16 +128,10 @@ class RestClientStats: QuickSpec {
                         
                         let result = queryStats(client, query)
                         let totalInbound = result.items.reduce(0 as UInt, {
-                            if let stats = $1 as? ARTStats {
-                                return $0 + stats.inbound.all.messages.count
-                            }
-                            return $0
+                            return $0 + $1.inbound.all.messages.count
                         })
                         let totalOutbound = result.items.reduce(0 as UInt, {
-                            if let stats = $1 as? ARTStats {
-                                return $0 + stats.outbound.all.messages.count
-                            }
-                            return $0
+                            return $0 + $1.outbound.all.messages.count
                         })
                         
                         expect(result.items.count).to(equal(1))

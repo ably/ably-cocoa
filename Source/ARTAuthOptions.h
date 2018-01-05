@@ -7,65 +7,66 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTTypes.h"
+
+#import <Ably/ARTTypes.h>
 
 @class ARTTokenDetails;
 @class ARTAuth;
 
 @protocol ARTTokenDetailsCompatible <NSObject>
-- (void)toTokenDetails:(ARTAuth *__art_nonnull)auth callback:(void (^__art_nonnull)(ARTTokenDetails *__art_nullable, NSError *__art_nullable))callback;
+- (void)toTokenDetails:(ARTAuth *_Nonnull)auth callback:(void (^_Nonnull)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback;
 @end
 
 @interface NSString (ARTTokenDetailsCompatible) <ARTTokenDetailsCompatible>
 @end
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTAuthOptions : NSObject<NSCopying>
 
 /**
  Full Ably key string as obtained from dashboard.
  */
-@property (nonatomic, copy, art_nullable) NSString *key;
+@property (nonatomic, copy, nullable) NSString *key;
 
 /**
  An authentication token issued for this application against a specific key and `TokenParams`.
  */
-@property (nonatomic, copy, art_nullable) NSString *token;
+@property (nonatomic, copy, nullable) NSString *token;
 
 /**
  An authentication token issued for this application against a specific key and `TokenParams`.
  */
-@property (nonatomic, strong, art_nullable) ARTTokenDetails *tokenDetails;
+@property (nonatomic, strong, nullable) ARTTokenDetails *tokenDetails;
 
 /**
  A callback to call to obtain a signed token request.
  
  This enables a client to obtain token requests from another entity, so tokens can be renewed without the client requiring access to keys.
  */
-@property (nonatomic, copy, art_nullable) void (^authCallback)(ARTTokenParams *, void(^)(id<ARTTokenDetailsCompatible> __art_nullable, NSError *__art_nullable));
+@property (nonatomic, copy, nullable) void (^authCallback)(ARTTokenParams *, void(^)(id<ARTTokenDetailsCompatible> _Nullable, NSError *_Nullable));
 
 /**
  A URL to queryto obtain a signed token request.
  
  This enables a client to obtain token requests from another entity, so tokens can be renewed without the client requiring access to keys.
  */
-@property (nonatomic, strong, art_nullable) NSURL *authUrl;
+@property (nonatomic, strong, nullable) NSURL *authUrl;
 
 /**
  The HTTP verb to be used when a request is made by the library to the authUrl. Defaults to GET, supports GET and POST.
  */
-@property (nonatomic, copy, art_null_resettable) NSString *authMethod;
+@property (nonatomic, copy, null_resettable) NSString *authMethod;
 
 /**
  Headers to be included in any request made by the library to the authURL.
  */
-@property (nonatomic, copy, art_nullable) __GENERIC(NSDictionary, NSString *, NSString *) *authHeaders;
+@property (nonatomic, copy, nullable) NSDictionary<NSString *, NSString *> *authHeaders;
 
 /**
  Additional params to be included in any request made by the library to the authUrl, either as query params in the case of GET or in the body in the case of POST.
  */
-@property (nonatomic, copy, art_nullable) __GENERIC(NSArray, NSURLQueryItem *) *authParams;
+@property (nonatomic, copy, nullable) NSArray<NSURLQueryItem *> *authParams;
 
 /**
  This may be set in instances that the library is to sign token requests based on a given key.
@@ -92,4 +93,4 @@ ART_ASSUME_NONNULL_BEGIN
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

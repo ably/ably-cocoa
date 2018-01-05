@@ -6,13 +6,10 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#ifndef ARTLog_Private_h
-#define ARTLog_Private_h
+#import <Ably/ARTLog.h>
+#import <Ably/ARTSentry.h>
 
-#import "ARTLog.h"
-#import "ARTSentry.h"
-
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTLogLine : NSObject <ARTSentryBreadcrumb>
 
@@ -38,6 +35,4 @@ ART_ASSUME_NONNULL_BEGIN
 
 @end
 
-ART_ASSUME_NONNULL_END
-
-#endif /* ARTLog_Private_h */
+NS_ASSUME_NONNULL_END

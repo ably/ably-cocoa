@@ -6,15 +6,11 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#ifndef ARTRestChannels_h
-#define ARTRestChannels_h
+#import <Ably/ARTChannels.h>
+#import <Ably/ARTRestChannel.h>
+#import <Ably/ARTRest.h>
 
-#import "ARTChannels.h"
-#import "ARTRestChannel.h"
-#import "ARTRest.h"
-#import "CompatibilityMacros.h"
-
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRestChannels : NSObject<NSFastEnumeration>
 
@@ -30,6 +26,4 @@ ART_ASSUME_NONNULL_BEGIN
 
 @end
 
-ART_ASSUME_NONNULL_END
-
-#endif /* ARTRestChannels_h */
+NS_ASSUME_NONNULL_END

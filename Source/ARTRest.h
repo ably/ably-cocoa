@@ -7,10 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTTypes.h"
-#import "ARTLog.h"
-#import "ARTRestChannels.h"
-#import "ARTLocalDevice.h"
+
+#import <Ably/ARTTypes.h>
+#import <Ably/ARTLog.h>
+#import <Ably/ARTRestChannels.h>
+#import <Ably/ARTLocalDevice.h>
 
 @protocol ARTHTTPExecutor;
 
@@ -21,7 +22,7 @@
 @class ARTCancellable;
 @class ARTStatsQuery;
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRest : NSObject
 
@@ -44,10 +45,10 @@ ART_ASSUME_NONNULL_BEGIN
 + (instancetype)createWithKey:(NSString *)key NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
 + (instancetype)createWithToken:(NSString *)tokenId NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
 
-- (void)time:(void (^)(NSDate *__art_nullable, NSError *__art_nullable))callback;
+- (void)time:(void (^)(NSDate *_Nullable, NSError *_Nullable))callback;
 
-- (BOOL)stats:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *__art_nullable, ARTErrorInfo *__art_nullable))callback;
-- (BOOL)stats:(art_nullable ARTStatsQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *__art_nullable, ARTErrorInfo *__art_nullable))callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
+- (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback;
+- (BOOL)stats:(nullable ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
 @property (nonatomic, strong, readonly) ARTRestChannels *channels;
 @property (nonatomic, strong, readonly) ARTAuth *auth;
@@ -59,4 +60,4 @@ ART_ASSUME_NONNULL_BEGIN
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

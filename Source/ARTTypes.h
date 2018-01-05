@@ -7,9 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "CompatibilityMacros.h"
-#import "ARTStatus.h"
-#import "ARTEventEmitter.h"
+
+#import <Ably/ARTStatus.h>
+#import <Ably/ARTEventEmitter.h>
 
 @class ARTStatus;
 @class ARTHttpResponse;
@@ -19,7 +19,7 @@
 @class ARTTokenParams;
 @class ARTTokenRequest;
 @class ARTTokenDetails;
-@class __GENERIC(ARTPaginatedResult, ItemType);
+@class ARTPaginatedResult<ItemType>;
 @class ARTStats;
 
 // More context
@@ -56,7 +56,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
     ARTRealtimeFailed
 };
 
-NSString *__art_nonnull ARTRealtimeConnectionStateToStr(ARTRealtimeConnectionState state);
+NSString *_Nonnull ARTRealtimeConnectionStateToStr(ARTRealtimeConnectionState state);
 
 
 #pragma mark - ARTRealtimeConnectionEvent
@@ -73,7 +73,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionEvent) {
     ARTRealtimeConnectionEventUpdate
 };
 
-NSString *__art_nonnull ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event);
+NSString *_Nonnull ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event);
 
 
 #pragma mark - ARTRealtimeChannelState
@@ -88,7 +88,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
     ARTRealtimeChannelFailed
 };
 
-NSString *__art_nonnull ARTRealtimeChannelStateToStr(ARTRealtimeChannelState state);
+NSString *_Nonnull ARTRealtimeChannelStateToStr(ARTRealtimeChannelState state);
 
 
 #pragma mark - ARTChannelEvent
@@ -104,7 +104,7 @@ typedef NS_ENUM(NSUInteger, ARTChannelEvent) {
     ARTChannelEventUpdate
 };
 
-NSString *__art_nonnull ARTChannelEventToStr(ARTChannelEvent event);
+NSString *_Nonnull ARTChannelEventToStr(ARTChannelEvent event);
 
 
 typedef NS_ENUM(NSInteger, ARTDataQueryError) {
@@ -116,10 +116,10 @@ typedef NS_ENUM(NSInteger, ARTRealtimeHistoryError) {
     ARTRealtimeHistoryErrorNotAttached = ARTDataQueryErrorTimestampRange + 1
 };
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 /// Decompose API key
-__GENERIC(NSArray, NSString *) *decomposeKey(NSString *key);
+NSArray<NSString *> *decomposeKey(NSString *key);
 
 NSString *encodeBase64(NSString *value);
 NSString *decodeBase64(NSString *base64);
@@ -142,18 +142,18 @@ NSString *generateNonce();
 - (instancetype)initWithCurrent:(ARTRealtimeConnectionState)current
                        previous:(ARTRealtimeConnectionState)previous
                           event:(ARTRealtimeConnectionEvent)event
-                         reason:(ARTErrorInfo *__art_nullable)reason;
+                         reason:(ARTErrorInfo *_Nullable)reason;
 
 - (instancetype)initWithCurrent:(ARTRealtimeConnectionState)current
                        previous:(ARTRealtimeConnectionState)previous
                           event:(ARTRealtimeConnectionEvent)event
-                         reason:(ARTErrorInfo *__art_nullable)reason
+                         reason:(ARTErrorInfo *_Nullable)reason
                         retryIn:(NSTimeInterval)retryIn;
 
 @property (readonly, nonatomic) ARTRealtimeConnectionState current;
 @property (readonly, nonatomic) ARTRealtimeConnectionState previous;
 @property (readonly, nonatomic) ARTRealtimeConnectionEvent event;
-@property (readonly, nonatomic, art_nullable) ARTErrorInfo *reason;
+@property (readonly, nonatomic, nullable) ARTErrorInfo *reason;
 @property (readonly, nonatomic) NSTimeInterval retryIn;
 
 @end
@@ -165,18 +165,18 @@ NSString *generateNonce();
 - (instancetype)initWithCurrent:(ARTRealtimeChannelState)current
                        previous:(ARTRealtimeChannelState)previous
                           event:(ARTChannelEvent)event
-                         reason:(ARTErrorInfo *__art_nullable)reason;
+                         reason:(ARTErrorInfo *_Nullable)reason;
 
 - (instancetype)initWithCurrent:(ARTRealtimeChannelState)current
                        previous:(ARTRealtimeChannelState)previous
                           event:(ARTChannelEvent)event
-                         reason:(ARTErrorInfo *__art_nullable)reason
+                         reason:(ARTErrorInfo *_Nullable)reason
                         resumed:(BOOL)resumed;
 
 @property (readonly, nonatomic) ARTRealtimeChannelState current;
 @property (readonly, nonatomic) ARTRealtimeChannelState previous;
 @property (readonly, nonatomic) ARTChannelEvent event;
-@property (readonly, nonatomic, art_nullable) ARTErrorInfo *reason;
+@property (readonly, nonatomic, nullable) ARTErrorInfo *reason;
 @property (readonly, nonatomic) BOOL resumed;
 
 @end
@@ -184,7 +184,7 @@ NSString *generateNonce();
 #pragma mark - ARTJsonCompatible
 
 @protocol ARTJsonCompatible <NSObject>
-- (NSDictionary *__art_nullable)toJSON:(NSError *__art_nullable *__art_nullable)error;
+- (NSDictionary *_Nullable)toJSON:(NSError *_Nullable *_Nullable)error;
 @end
 
 @interface NSString (ARTEventIdentification) <ARTEventIdentification>
@@ -213,4 +213,4 @@ NSString *generateNonce();
 - (id)peek;
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

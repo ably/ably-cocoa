@@ -13,7 +13,7 @@
 #import "ARTRest.h"
 #import "ARTRealtime.h"
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @class ARTChannel;
 @class XCTestExpectation;
@@ -77,4 +77,4 @@ typedef void (^ARTRealtimeConstructorCb)(ARTRealtime *realtime);
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

@@ -54,6 +54,7 @@
 #pragma mark - ARTEventListener
 
 @interface ARTEventListener ()
+@property (readonly) BOOL invalidated;
 @property (readonly) BOOL timerIsRunning;
 @property (readonly) BOOL hasTimer;
 @end
@@ -75,21 +76,35 @@
         _timeoutDeadline = 0;
         _timeoutBlock = nil;
         _timerIsRunning = false;
+        _invalidated = false;
     }
     return self;
 }
 
 - (void)dealloc {
-    [self removeObserver];
+    [self invalidate];
+    [_center removeObserver:_token];
 }
 
 - (void)removeObserver {
-    [self stopTimer];
-    [_center removeObserver:_token];
+    [self invalidate];
+    if (_eventHandler && _eventHandler.userQueue) {
+        dispatch_async(_eventHandler.userQueue, ^{
+            [_center removeObserver:_token];
+        });
+    }
+    else {
+        [_center removeObserver:_token];
+    }
 }
 
 - (BOOL)handled {
     return _count++ > 0;
+}
+
+- (void)invalidate {
+    _invalidated = true;
+    [self stopTimer];
 }
 
 - (ARTEventListener *)setTimer:(NSTimeInterval)timeoutDeadline onTimeout:(void (^)())timeoutBlock {
@@ -136,10 +151,16 @@
 @implementation ARTEventEmitter
 
 - (instancetype)initWithQueue:(dispatch_queue_t)queue {
+    self = [self initWithQueues:queue userQueue:nil];
+    return self;
+}
+
+- (instancetype)initWithQueues:(dispatch_queue_t)queue userQueue:(dispatch_queue_t)userQueue {
     self = [super init];
     if (self) {
         _notificationCenter = [[NSNotificationCenter alloc] init];
         _queue = queue;
+        _userQueue = userQueue;
         [self resetListeners];
     }
     return self;
@@ -149,7 +170,7 @@
     NSString *eventId = [NSString stringWithFormat:@"%p-%@", self, [event identification]];
     __weak __block ARTEventListener *weakListener;
     id<NSObject> observerToken = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
-        if (weakListener == nil) return;
+        if (weakListener == nil || [weakListener invalidated]) return;
         if ([weakListener hasTimer] && ![weakListener timerIsRunning]) return;
         [weakListener stopTimer];
         cb(note.object);
@@ -165,7 +186,7 @@
     __weak __block ARTEventListener *weakListener;
     __weak typeof(self) weakSelf = self;
     id<NSObject> observerToken = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
-        if (weakListener == nil) return;
+        if (weakListener == nil || [weakListener invalidated]) return;
         if ([weakListener hasTimer] && ![weakListener timerIsRunning]) return;
         if ([weakListener handled]) return;
         [weakListener removeObserver];
@@ -182,7 +203,7 @@
     NSString *eventId = [NSString stringWithFormat:@"%p", self];
     __weak __block ARTEventListener *weakListener;
     id<NSObject> observerToken = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
-        if (weakListener == nil) return;
+        if (weakListener == nil || [weakListener invalidated]) return;
         if ([weakListener hasTimer] && ![weakListener timerIsRunning]) return;
         [weakListener stopTimer];
         cb(note.object);
@@ -198,7 +219,7 @@
     __weak __block ARTEventListener *weakListener;
     __weak typeof(self) weakSelf = self;
     id<NSObject> observerToken = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
-        if (weakListener == nil) return;
+        if (weakListener == nil || [weakListener invalidated]) return;
         if ([weakListener hasTimer] && ![weakListener timerIsRunning]) return;
         if ([weakListener handled]) return;
         [weakListener removeObserver];
@@ -300,14 +321,27 @@
         _rest = rest;
         _queue = rest.queue;
         _userQueue = rest.userQueue;
+
+        if (rest.logger.logLevel == ARTLogLevelVerbose) {
+            [self.notificationCenter addObserverForName:nil
+                                                 object:nil
+                                                  queue:nil
+                                             usingBlock:^(NSNotification *notification) {
+                                                 NSLog(@"VERBOSE: PublicEventEmitter Notification emitted %@", notification.name);
+                                             }];
+        }
     }
     return self;
 }
 
-- (ARTEventListener *)on:(id)event callback:(void (^)(id __art_nullable))cb {
+- (void)dealloc {
+    [self.notificationCenter removeObserver:self];
+}
+
+- (ARTEventListener *)on:(id)event callback:(void (^)(id _Nullable))cb {
     if (cb) {
-        void (^userCallback)(id __art_nullable) = cb;
-        cb = ^(id __art_nullable v) {
+        void (^userCallback)(id _Nullable) = cb;
+        cb = ^(id _Nullable v) {
             ART_EXITING_ABLY_CODE(_rest);
             dispatch_async(_userQueue, ^{
                 userCallback(v);
@@ -322,10 +356,10 @@ dispatch_sync(_queue, ^{
     return listener;
 }
 
-- (ARTEventListener *)on:(void (^)(id __art_nullable))cb {
+- (ARTEventListener *)on:(void (^)(id _Nullable))cb {
     if (cb) {
-        void (^userCallback)(id __art_nullable) = cb;
-        cb = ^(id __art_nullable v) {
+        void (^userCallback)(id _Nullable) = cb;
+        cb = ^(id _Nullable v) {
             ART_EXITING_ABLY_CODE(_rest);
             dispatch_async(_userQueue, ^{
                 userCallback(v);
@@ -340,10 +374,10 @@ dispatch_sync(_queue, ^{
     return listener;
 }
 
-- (ARTEventListener *)once:(id)event callback:(void (^)(id __art_nullable))cb {
+- (ARTEventListener *)once:(id)event callback:(void (^)(id _Nullable))cb {
     if (cb) {
-        void (^userCallback)(id __art_nullable) = cb;
-        cb = ^(id __art_nullable v) {
+        void (^userCallback)(id _Nullable) = cb;
+        cb = ^(id _Nullable v) {
             ART_EXITING_ABLY_CODE(_rest);
             dispatch_async(_userQueue, ^{
                 userCallback(v);
@@ -358,10 +392,10 @@ dispatch_sync(_queue, ^{
     return listener;
 }
 
-- (ARTEventListener *)once:(void (^)(id __art_nullable))cb {
+- (ARTEventListener *)once:(void (^)(id _Nullable))cb {
     if (cb) {
-        void (^userCallback)(id __art_nullable) = cb;
-        cb = ^(id __art_nullable v) {
+        void (^userCallback)(id _Nullable) = cb;
+        cb = ^(id _Nullable v) {
             ART_EXITING_ABLY_CODE(_rest);
             dispatch_async(_userQueue, ^{
                 userCallback(v);
@@ -404,6 +438,10 @@ dispatch_sync(_queue, ^{
 
 - (instancetype)initWithQueue:(dispatch_queue_t)queue {
    return [super initWithQueue:queue];
+}
+
+- (instancetype)initWithQueues:(dispatch_queue_t)queue userQueue:(dispatch_queue_t)userQueue {
+    return [super initWithQueues:queue userQueue:userQueue];
 }
 
 @end

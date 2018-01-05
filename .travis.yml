@@ -6,14 +6,16 @@ env:
   - LANG=en_US.UTF-8
 before_install:
 install:
-  # Install Scan
-  - gem install scan -v 0.14.2
+  - brew update
+  - brew upgrade carthage
   # CocoaPods
   - pod install
+  # Carthage
+  - carthage bootstrap
 script:
   # Run tests
   # Use `travis_wait` when a long running command or compile step regularly takes longer than 10 minutes without producing any output.
   # It writes a short line to the build log every minute for 20 minutes, extending the amount of time your command has to finish.
   # Prefix `travis_wait` with a greater number to extend the wait time.
-  - scan --scheme "Ably" --open_report false --devices "iPhone 6s"
+  - fastlane scan --scheme "Ably" --open_report false --devices "iPhone 6s"
   - bash ./Scripts/run_examples_tests.sh

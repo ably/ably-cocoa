@@ -6,15 +6,12 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#ifndef ARTPresence_Private_h
-#define ARTPresence_Private_h
-
-#import "ARTPresence.h"
-#import "ARTChannel.h"
+#import <Ably/ARTPresence.h>
+#import <Ably/ARTChannel.h>
 
 @interface ARTPresenceQuery ()
 
-- (__GENERIC(NSMutableArray, NSURLQueryItem *) *)asQueryItems;
+- (NSMutableArray<NSURLQueryItem *> *)asQueryItems;
 
 @end
 
@@ -25,5 +22,3 @@
 - (instancetype)initWithChannel:(ARTChannel *)channel;
 
 @end
-
-#endif /* ARTPresence_Private_h */

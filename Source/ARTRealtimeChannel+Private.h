@@ -7,14 +7,14 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTRestChannel.h"
-#import "ARTRealtimeChannel.h"
-#import "ARTPresenceMap.h"
-#import "ARTEventEmitter.h"
+#import <Ably/ARTRestChannel.h>
+#import <Ably/ARTRealtimeChannel.h>
+#import <Ably/ARTPresenceMap.h>
+#import <Ably/ARTEventEmitter.h>
 
 @class ARTProtocolMessage;
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimeChannel () <ARTPresenceMapDelegate>
 
@@ -25,7 +25,7 @@ ART_ASSUME_NONNULL_BEGIN
 @property (readonly, weak, nonatomic) ARTRealtime *realtime;
 @property (readonly, strong, nonatomic) ARTRestChannel *restChannel;
 @property (readwrite, strong, nonatomic) NSMutableArray *queuedMessages;
-@property (readwrite, strong, nonatomic, art_nullable) NSString *attachSerial;
+@property (readwrite, strong, nonatomic, nullable) NSString *attachSerial;
 @property (readonly, nullable, getter=getClientId) NSString *clientId;
 @property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTChannelStateChange *> *internalEventEmitter;
 @property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTChannelStateChange *> *statesEventEmitter;
@@ -54,7 +54,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status;
 
 - (void)onChannelMessage:(ARTProtocolMessage *)message;
-- (void)publishPresence:(ARTPresenceMessage *)pm callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb;
+- (void)publishPresence:(ARTPresenceMessage *)pm callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb;
 - (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb;
 
 - (void)setAttached:(ARTProtocolMessage *)message;
@@ -80,4 +80,4 @@ ART_ASSUME_NONNULL_BEGIN
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

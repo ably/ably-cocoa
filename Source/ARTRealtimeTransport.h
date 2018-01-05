@@ -7,8 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "CompatibilityMacros.h"
-#import "ARTLog.h"
+#import <Ably/ARTLog.h>
 
 @protocol ARTRealtimeTransport;
 
@@ -18,14 +17,15 @@
 @class ARTClientOptions;
 @class ARTRest;
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, ARTRealtimeTransportErrorType) {
+    ARTRealtimeTransportErrorTypeOther,
     ARTRealtimeTransportErrorTypeHostUnreachable,
     ARTRealtimeTransportErrorTypeNoInternet,
     ARTRealtimeTransportErrorTypeTimeout,
     ARTRealtimeTransportErrorTypeBadResponse,
-    ARTRealtimeTransportErrorTypeOther
+    ARTRealtimeTransportErrorTypeRefused
 };
 
 typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
@@ -59,9 +59,9 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
 - (void)realtimeTransportUnavailable:(id<ARTRealtimeTransport>)transport;
 
 - (void)realtimeTransportClosed:(id<ARTRealtimeTransport>)transport;
-- (void)realtimeTransportDisconnected:(id<ARTRealtimeTransport>)transport withError:(art_nullable ARTRealtimeTransportError *)error;
+- (void)realtimeTransportDisconnected:(id<ARTRealtimeTransport>)transport withError:(nullable ARTRealtimeTransportError *)error;
 - (void)realtimeTransportNeverConnected:(id<ARTRealtimeTransport>)transport;
-- (void)realtimeTransportRefused:(id<ARTRealtimeTransport>)transport;
+- (void)realtimeTransportRefused:(id<ARTRealtimeTransport>)transport withError:(nullable ARTRealtimeTransportError *)error;
 - (void)realtimeTransportTooBig:(id<ARTRealtimeTransport>)transport;
 - (void)realtimeTransportFailed:(id<ARTRealtimeTransport>)transport withError:(ARTRealtimeTransportError *)error;
 
@@ -79,7 +79,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
 @property (nullable, readwrite, strong, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
 @property (readonly, strong, nonatomic) ARTLog *protocolMessagesLogger;
 
-- (void)send:(NSData *)data withSource:(nullable id)decodedObject;
+- (BOOL)send:(NSData *)data withSource:(nullable id)decodedObject;
 - (void)receive:(ARTProtocolMessage *)msg;
 - (nullable ARTProtocolMessage *)receiveWithData:(NSData *)data;
 - (void)connectWithKey:(NSString *)key;
@@ -94,4 +94,4 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

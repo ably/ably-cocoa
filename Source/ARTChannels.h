@@ -7,13 +7,12 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "CompatibilityMacros.h"
 
 @class ARTRest;
 @class ARTRestChannel;
 @class ARTChannelOptions;
 
-@interface __GENERIC(ARTChannels, ChannelType) : NSObject<NSFastEnumeration>
+@interface ARTChannels<ChannelType> : NSObject<NSFastEnumeration>
 
 - (BOOL)exists:(NSString *)name;
 - (ChannelType)get:(NSString *)name;

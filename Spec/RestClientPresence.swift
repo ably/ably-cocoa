@@ -199,8 +199,9 @@ class RestClientPresence: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.history { membersPage, error in
                             expect(error).to(beNil())
-
-                            let membersPage = membersPage!
+                            guard let membersPage = membersPage else {
+                                fail("Page is empty"); done(); return
+                            }
                             expect(membersPage).to(beAnInstanceOf(ARTPaginatedResult<ARTPresenceMessage>.self))
                             expect(membersPage.items).to(haveCount(100))
 
@@ -215,7 +216,9 @@ class RestClientPresence: QuickSpec {
 
                             membersPage.next { nextPage, error in
                                 expect(error).to(beNil())
-                                let nextPage = nextPage!
+                                guard let nextPage = nextPage else {
+                                    fail("nextPage is empty"); done(); return
+                                }
                                 expect(nextPage).to(beAnInstanceOf(ARTPaginatedResult<ARTPresenceMessage>.self))
                                 expect(nextPage.items).to(haveCount(50))
 

@@ -7,15 +7,16 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTTypes.h"
-#import "ARTLog.h"
-#import "ARTRestChannel.h"
-#import "ARTPresenceMessage.h"
-#import "ARTEventEmitter.h"
-#import "ARTRealtimePresence.h"
-#import "ARTDataQuery.h"
 
-ART_ASSUME_NONNULL_BEGIN
+#import <Ably/ARTTypes.h>
+#import <Ably/ARTLog.h>
+#import <Ably/ARTRestChannel.h>
+#import <Ably/ARTPresenceMessage.h>
+#import <Ably/ARTEventEmitter.h>
+#import <Ably/ARTRealtimePresence.h>
+#import <Ably/ARTDataQuery.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 @class ARTRealtimePresence;
 #ifdef TARGET_OS_IPHONE
@@ -25,7 +26,7 @@ ART_ASSUME_NONNULL_BEGIN
 @interface ARTRealtimeChannel : ARTChannel
 
 @property (readwrite, assign, nonatomic) ARTRealtimeChannelState state;
-@property (readonly, strong, nonatomic, art_nullable) ARTErrorInfo *errorReason;
+@property (readonly, strong, nonatomic, nullable) ARTErrorInfo *errorReason;
 
 @property (readonly) ARTRealtimePresence *presence;
 #ifdef TARGET_OS_IPHONE
@@ -33,21 +34,21 @@ ART_ASSUME_NONNULL_BEGIN
 #endif
 
 - (void)attach;
-- (void)attach:(art_nullable void (^)(ARTErrorInfo *__art_nullable))callback;
+- (void)attach:(nullable void (^)(ARTErrorInfo *_Nullable))callback;
 
 - (void)detach;
-- (void)detach:(art_nullable void (^)(ARTErrorInfo *__art_nullable))callback;
+- (void)detach:(nullable void (^)(ARTErrorInfo *_Nullable))callback;
 
-- (ARTEventListener *__art_nullable)subscribe:(void (^)(ARTMessage *message))callback;
-- (ARTEventListener *__art_nullable)subscribeWithAttachCallback:(art_nullable void (^)(ARTErrorInfo *__art_nullable))onAttach callback:(void (^)(ARTMessage *message))cb;
-- (ARTEventListener *__art_nullable)subscribe:(NSString *)name callback:(void (^)(ARTMessage *message))cb;
-- (ARTEventListener *__art_nullable)subscribe:(NSString *)name onAttach:(art_nullable void (^)(ARTErrorInfo *__art_nullable))onAttach callback:(void (^)(ARTMessage *message))cb;
+- (ARTEventListener *_Nullable)subscribe:(void (^)(ARTMessage *message))callback;
+- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable void (^)(ARTErrorInfo *_Nullable))onAttach callback:(void (^)(ARTMessage *message))cb;
+- (ARTEventListener *_Nullable)subscribe:(NSString *)name callback:(void (^)(ARTMessage *message))cb;
+- (ARTEventListener *_Nullable)subscribe:(NSString *)name onAttach:(nullable void (^)(ARTErrorInfo *_Nullable))onAttach callback:(void (^)(ARTMessage *message))cb;
 
 - (void)unsubscribe;
-- (void)unsubscribe:(ARTEventListener *__art_nullable)listener;
-- (void)unsubscribe:(NSString *)name listener:(ARTEventListener *__art_nullable)listener;
+- (void)unsubscribe:(ARTEventListener *_Nullable)listener;
+- (void)unsubscribe:(NSString *)name listener:(ARTEventListener *_Nullable)listener;
 
-- (BOOL)history:(ARTRealtimeHistoryQuery *__art_nullable)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
+- (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(void(^)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
 ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 
@@ -60,4 +61,4 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 + (instancetype)newWithChannelEvent:(ARTChannelEvent)value;
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

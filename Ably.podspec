@@ -15,6 +15,7 @@ Pod::Spec.new do |s|
   s.platform          = :ios, '8.0'
   s.requires_arc      = true
   s.source_files      = 'Source/*.{h,m}'
+  s.private_header_files = 'Source/*+Private.h'
   s.module_map        = 'Source/Ably.modulemap'
   s.dependency 'SocketRocket', '0.5.1'
   s.dependency 'msgpack', '0.1.8'

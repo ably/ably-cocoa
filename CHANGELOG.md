@@ -1,5 +1,113 @@
 # Change Log
 
+## [1.0.10](https://github.com/ably/ably-ios/tree/1.0.10) (2017-12-22)
+[Full Changelog](https://github.com/ably/ably-ios/compare/v1.1.0-beta.push.1...1.0.10)
+
+**Implemented enhancements:**
+
+- Implement RTN23a idle timeout [\#638](https://github.com/ably/ably-ios/issues/638)
+- Document thread-safety requirements in current version [\#601](https://github.com/ably/ably-ios/issues/601)
+- Crash strategy [\#596](https://github.com/ably/ably-ios/issues/596)
+- ART\* should match IDL definition [\#557](https://github.com/ably/ably-ios/issues/557)
+- PagiantedResult isLast and hasNext are methods, not attributes [\#534](https://github.com/ably/ably-ios/issues/534)
+- Auth: buffer of 15s for token expiry not implemented [\#115](https://github.com/ably/ably-ios/issues/115)
+
+**Fixed bugs:**
+
+- Presence map is using clientId as its key, rather than memberKey [\#641](https://github.com/ably/ably-ios/issues/641)
+- Exception thrown when invoking \[\_channel unsubscribe\] [\#640](https://github.com/ably/ably-ios/issues/640)
+- Presence map is accessible. [\#631](https://github.com/ably/ably-ios/issues/631)
+- Pod installation issue: KSCrashAblyFork not found [\#615](https://github.com/ably/ably-ios/issues/615)
+- Reported crash when an ATTACH is responded to with a DETACHED after a while [\#614](https://github.com/ably/ably-ios/issues/614)
+- ARTPush didRegisterForRemoteNotificationsWithDeviceToken error [\#611](https://github.com/ably/ably-ios/issues/611)
+- Crash in ARTOSReachability [\#593](https://github.com/ably/ably-ios/issues/593)
+- Presence message timestamp interpretation is wrong [\#580](https://github.com/ably/ably-ios/issues/580)
+- Library crash bug reports [\#553](https://github.com/ably/ably-ios/issues/553)
+- Realtime: queued messages not handled like it is supposed to be [\#108](https://github.com/ably/ably-ios/issues/108)
+
+**Closed issues:**
+
+- Presence enter error coming [\#664](https://github.com/ably/ably-ios/issues/664)
+- Rarely no incoming messages and no errors [\#657](https://github.com/ably/ably-ios/issues/657)
+- Ably ios client closes connection 'WS:0x6000000befc0 websocket did disconnect \(code 1000\) \(null\)' [\#655](https://github.com/ably/ably-ios/issues/655)
+- Deadlock in \[rest device\] when called from activation state machine [\#654](https://github.com/ably/ably-ios/issues/654)
+- Not getting message when app is in Background [\#653](https://github.com/ably/ably-ios/issues/653)
+- Clean CI build [\#652](https://github.com/ably/ably-ios/issues/652)
+- How to deal with error "attempted to subscribe while channel is in Failed state" [\#650](https://github.com/ably/ably-ios/issues/650)
+- Occasionally getting "Attached timed out" when using \[subscribeWithAttachCallback\] [\#649](https://github.com/ably/ably-ios/issues/649)
+- Carthage Install Error [\#637](https://github.com/ably/ably-ios/issues/637)
+- Crash in \[ARTRealtime transitionSideEffects:\] \(508\) [\#624](https://github.com/ably/ably-ios/issues/624)
+- List of tests that are intermitently failing [\#283](https://github.com/ably/ably-ios/issues/283)
+- RestClientStats tests are failing inconsistently. [\#142](https://github.com/ably/ably-ios/issues/142)
+- Realtime: check test coverage for Queued Messages [\#109](https://github.com/ably/ably-ios/issues/109)
+- Realtime: timeouts implementations are outdated [\#41](https://github.com/ably/ably-ios/issues/41)
+
+**Merged pull requests:**
+
+- Clean test suite [\#665](https://github.com/ably/ably-ios/pull/665) ([ricardopereira](https://github.com/ricardopereira))
+- Push: fix deadlock in rest.device [\#663](https://github.com/ably/ably-ios/pull/663) ([ricardopereira](https://github.com/ricardopereira))
+- RTN23 [\#660](https://github.com/ably/ably-ios/pull/660) ([ricardopereira](https://github.com/ricardopereira))
+- Improve info about Carthage and contribution setup [\#658](https://github.com/ably/ably-ios/pull/658) ([ricardopereira](https://github.com/ricardopereira))
+- Move to DISCONNECTED on unexpected WebSocket close. [\#656](https://github.com/ably/ably-ios/pull/656) ([tcard](https://github.com/tcard))
+- Fix: when an ATTACH request is responded with a DETACHED [\#651](https://github.com/ably/ably-ios/pull/651) ([ricardopereira](https://github.com/ricardopereira))
+- Fix: ambiguous reference to member 'dataTask\(with:completionHandler:\)' [\#648](https://github.com/ably/ably-ios/pull/648) ([ricardopereira](https://github.com/ricardopereira))
+- Fix: presence map key and get with query \(clientId and connectionId\) [\#647](https://github.com/ably/ably-ios/pull/647) ([ricardopereira](https://github.com/ricardopereira))
+- CocoaPod: add `private\_header\_files` prop [\#646](https://github.com/ably/ably-ios/pull/646) ([ricardopereira](https://github.com/ricardopereira))
+- Fix \#640 [\#644](https://github.com/ably/ably-ios/pull/644) ([ricardopereira](https://github.com/ricardopereira))
+- Push Admin tests [\#642](https://github.com/ably/ably-ios/pull/642) ([ricardopereira](https://github.com/ricardopereira))
+- Carthage support [\#639](https://github.com/ably/ably-ios/pull/639) ([ricardopereira](https://github.com/ricardopereira))
+## [1.0.9](https://github.com/ably/ably-ios/tree/1.0.9) (2017-09-15)
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.8...1.0.9)
+
+**Implemented enhancements:**
+
+- Objective-C tests review [\#627](https://github.com/ably/ably-ios/issues/627)
+- Spike: Review what's needed to use GCD to make the lib thread-safe [\#602](https://github.com/ably/ably-ios/issues/602)
+
+**Closed issues:**
+
+- Lib throws an exception if you try to do some actions when disconnected [\#635](https://github.com/ably/ably-ios/issues/635)
+- Presence.enter on appWillEnterForeground, leave on appDidEnterBackground issues. [\#634](https://github.com/ably/ably-ios/issues/634)
+- Push.activate callback not being called [\#633](https://github.com/ably/ably-ios/issues/633)
+- RTP11d \(Presence.get when SUSPENDED\) not implemented; throws on DISCONNECTED [\#630](https://github.com/ably/ably-ios/issues/630)
+- ARTPushActivationState Crash when call ably.push.activate [\#628](https://github.com/ably/ably-ios/issues/628)
+- ACK: receiving a serial greater than expected [\#604](https://github.com/ably/ably-ios/issues/604)
+
+**Merged pull requests:**
+
+- Implement RTP11d. [\#636](https://github.com/ably/ably-ios/pull/636) ([tcard](https://github.com/tcard))
+- Port legacy tests to Swift [\#629](https://github.com/ably/ably-ios/pull/629) ([ricardopereira](https://github.com/ricardopereira))
+
+## [1.0.8](https://github.com/ably/ably-ios/tree/1.0.8) (2017-08-07)
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.7...1.0.8)
+
+**Closed issues:**
+
+- 1.0 auth flow doesn't work? [\#622](https://github.com/ably/ably-ios/issues/622)
+
+**Merged pull requests:**
+
+- Reuse connection when receiving an AUTH. [\#623](https://github.com/ably/ably-ios/pull/623) ([tcard](https://github.com/tcard))
+- \[WIP\] Make the library thread-safe. [\#620](https://github.com/ably/ably-ios/pull/620) ([tcard](https://github.com/tcard))
+
+## [1.0.7](https://github.com/ably/ably-ios/tree/1.0.7) (2017-07-24)
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.6...1.0.7)
+
+**Fixed bugs:**
+
+- TTL is being populated as a default for token requests in tokenRequestToDictionary method [\#618](https://github.com/ably/ably-ios/issues/618)
+
+**Closed issues:**
+
+- channel doesn't have 'subscribe' interface anymore? [\#621](https://github.com/ably/ably-ios/issues/621)
+- Connection resume failure detaches all channels [\#612](https://github.com/ably/ably-ios/issues/612)
+- 0.9 spec: Extras field [\#552](https://github.com/ably/ably-ios/issues/552)
+
+**Merged pull requests:**
+
+- Default token TTL to nil, not 60\*60. [\#619](https://github.com/ably/ably-ios/pull/619) ([tcard](https://github.com/tcard))
+- Add extras field to Message. [\#617](https://github.com/ably/ably-ios/pull/617) ([tcard](https://github.com/tcard))
+
 ## [1.0.6](https://github.com/ably/ably-ios/tree/1.0.6) (2017-06-30)
 [Full Changelog](https://github.com/ably/ably-ios/compare/1.0.5...1.0.6)
 

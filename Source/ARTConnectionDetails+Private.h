@@ -6,16 +6,17 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#import "ARTConnectionDetails.h"
-#import "CompatibilityMacros.h"
+#import <Ably/ARTConnectionDetails.h>
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTConnectionDetails ()
 
-@property (readwrite, strong, nonatomic, art_nullable) NSString *clientId;
-@property (readwrite, strong, nonatomic, art_nullable) NSString *connectionKey;
+@property (readwrite, strong, nonatomic, nullable) NSString *clientId;
+@property (readwrite, strong, nonatomic, nullable) NSString *connectionKey;
+
+- (void)setMaxIdleInterval:(NSTimeInterval)seconds;
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

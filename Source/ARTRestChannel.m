@@ -134,13 +134,13 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
             message = [message decodeWithEncoder:self.dataEncoder error:&error];
             if (error != nil) {
                 ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createFromNSError:error] prepend:@"Failed to decode data: "];
-                [self.logger error:@"RS:%p %@", _rest, errorInfo.message];
+                [self.logger error:@"RS:%p C:%p (%@) %@", _rest, self, self.name, errorInfo.message];
             }
             return message;
         }];
     };
 
-    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p stats request %@", _rest, request];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p C:%p (%@) stats request %@", _rest, self, self.name, request];
     [ARTPaginatedResult executePaginated:_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
     ret = YES;
 } ART_TRY_OR_REPORT_CRASH_END
@@ -202,7 +202,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         [request setValue:self.rest.defaultEncoding forHTTPHeaderField:@"Content-Type"];
     }
 
-    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p post message %@", _rest, [[NSString alloc] initWithData:encodedMessage encoding:NSUTF8StringEncoding]];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p C:%p (%@) post message %@", _rest, self, self.name, [[NSString alloc] initWithData:encodedMessage encoding:NSUTF8StringEncoding]];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (callback) {
             ARTErrorInfo *errorInfo = error ? [ARTErrorInfo createFromNSError:error] : nil;

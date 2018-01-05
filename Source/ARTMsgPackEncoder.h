@@ -6,14 +6,10 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#ifndef ARTMsgPackEncoder_h
-#define ARTMsgPackEncoder_h
-
 #import <Foundation/Foundation.h>
-#import "ARTJsonLikeEncoder.h"
+
+#import <Ably/ARTJsonLikeEncoder.h>
 
 @interface ARTMsgPackEncoder : NSObject <ARTJsonLikeEncoderDelegate>
 
 @end
-
-#endif

@@ -7,11 +7,12 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTTypes.h"
-#import "ARTLog.h"
-#import "ARTRealtimeChannels.h"
-#import "ARTEventEmitter.h"
-#import "ARTConnection.h"
+
+#import <Ably/ARTTypes.h>
+#import <Ably/ARTLog.h>
+#import <Ably/ARTRealtimeChannels.h>
+#import <Ably/ARTEventEmitter.h>
+#import <Ably/ARTConnection.h>
 
 @class ARTStatus;
 @class ARTMessage;
@@ -30,7 +31,7 @@
 @class ARTProtocolMessage;
 @class ARTRealtimeChannels;
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 #define ART_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
 
@@ -45,7 +46,7 @@ ART_ASSUME_NONNULL_BEGIN
 #ifdef TARGET_OS_IOS
 @property (nonnull, nonatomic, readonly, getter=device) ARTLocalDevice *device;
 #endif
-@property (readonly, art_nullable, getter=getClientId) NSString *clientId;
+@property (readonly, nullable, getter=getClientId) NSString *clientId;
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -66,15 +67,15 @@ Instance the Ably library using a key only. This is simply a convenience constru
 + (instancetype)createWithKey:(NSString *)key NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
 + (instancetype)createWithToken:(NSString *)tokenId NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
 
-- (void)time:(void (^)(NSDate *__art_nullable, NSError *__art_nullable))cb;
-- (void)ping:(void (^)(ARTErrorInfo *__art_nullable))cb;
+- (void)time:(void (^)(NSDate *_Nullable, NSError *_Nullable))cb;
+- (void)ping:(void (^)(ARTErrorInfo *_Nullable))cb;
 
-- (BOOL)stats:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *__art_nullable, ARTErrorInfo *__art_nullable))callback;
-- (BOOL)stats:(art_nullable ARTStatsQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTStats *) *__art_nullable, ARTErrorInfo *__art_nullable))callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
+- (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback;
+- (BOOL)stats:(nullable ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
 - (void)connect;
 - (void)close;
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END
