@@ -498,7 +498,7 @@ client.auth.requestToken(nil, withOptions: nil) { tokenDetails, error in
 }];
 ```
 
-### Fetching your application's stats
+### Fetching your application's stats
 
 **Swift**
 
