@@ -557,6 +557,10 @@ You can also view the [community reported Github issues](https://github.com/ably
 6. Push to the branch (`git push origin my-new-feature`)
 7. Create a new Pull Request
 
+## Running tests
+
+The project supports fastlane. To run tests use `fastlane scan --scheme "Ably"`.
+
 ## Release Process
 
 This library uses [semantic versioning](http://semver.org/). For each release, the following needs to be done:
