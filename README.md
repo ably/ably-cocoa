@@ -498,7 +498,7 @@ client.auth.requestToken(nil, withOptions: nil) { tokenDetails, error in
 }];
 ```
 
-### Fetching your application's stats
+### Fetching your application's stats
 
 **Swift**
 
@@ -556,6 +556,10 @@ You can also view the [community reported Github issues](https://github.com/ably
 5. Ensure you have added suitable tests and the test suite is passing
 6. Push to the branch (`git push origin my-new-feature`)
 7. Create a new Pull Request
+
+## Running tests
+
+The project supports fastlane. To run tests use `fastlane scan --scheme "Ably"`.
 
 ## Release Process
 
