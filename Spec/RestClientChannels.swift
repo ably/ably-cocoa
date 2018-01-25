@@ -12,16 +12,16 @@ import Quick
 import Aspects
 
 // Swift isn't yet smart enough to do this automatically when bridging Objective-C APIs
-extension ARTRestChannels: SequenceType {
-    public func generate() -> NSFastGenerator {
-        return NSFastGenerator(self)
+extension ARTRestChannels: Sequence {
+    public func makeIterator() -> NSFastEnumerationIterator {
+        return NSFastEnumerationIterator(self)
     }
 }
 
-private func beAChannel(named channelName: String) -> MatcherFunc<ARTChannel> {
-    return MatcherFunc { actualExpression, failureMessage in
+private func beAChannel(named channelName: String) -> Predicate<ARTChannel> {
+    return Predicate.fromDeprecatedClosure { actualExpression, failureMessage in
         let channel = try! actualExpression.evaluate()
-        failureMessage.expected = "expected \(channel)"
+        failureMessage.expected = "expected \(String(describing: channel))"
         failureMessage.postfixMessage = "be a channel"
 
         return channel?.name == channelName
@@ -35,7 +35,8 @@ class RestClientChannels: QuickSpec {
 
         beforeEach {
             client = ARTRest(key: "fake:key")
-            channelName = NSProcessInfo.processInfo().globallyUniqueString
+            channelName = ProcessInfo.processInfo.globallyUniqueString
+            ARTChannels_getChannelNamePrefix = { "RestClientChannels-" }
         }
 
         let cipherParams: ARTCipherParams? = nil
@@ -52,7 +53,7 @@ class RestClientChannels: QuickSpec {
                     // RSN3a
                     it("should return a channel") {
                         let channel = client.channels.get(channelName)
-                        expect(channel).to(beAChannel(named: "\(ARTChannels_getChannelNamePrefix!())-\(channelName)"))
+                        expect(channel).to(beAChannel(named: "\(ARTChannels_getChannelNamePrefix!())-\(channelName!)"))
 
                         let sameChannel = client.channels.get(channelName)
                         expect(sameChannel).to(beIdenticalTo(channel))
@@ -63,7 +64,7 @@ class RestClientChannels: QuickSpec {
                         let options = ARTChannelOptions(cipher: cipherParams)
                         let channel = client.channels.get(channelName, options: options)
 
-                        expect(channel).to(beAChannel(named: "\(ARTChannels_getChannelNamePrefix!())-\(channelName)"))
+                        expect(channel).to(beAChannel(named: "\(ARTChannels_getChannelNamePrefix!())-\(channelName!)"))
                         expect(channel.options).to(beIdenticalTo(options))
                     }
 
@@ -111,7 +112,7 @@ class RestClientChannels: QuickSpec {
                         autoreleasepool {
                             channel = client.channels.get(channelName)
 
-                            expect(channel).to(beAChannel(named: "\(ARTChannels_getChannelNamePrefix!())-\(channelName)"))
+                            expect(channel).to(beAChannel(named: "\(ARTChannels_getChannelNamePrefix!())-\(channelName!)"))
                             client.channels.release(channel.name)
                         }
 
@@ -123,11 +124,11 @@ class RestClientChannels: QuickSpec {
                 it("should be enumerable") {
                     let channels = [
                         client.channels.get(channelName),
-                        client.channels.get(String(channelName.characters.reverse()))
+                        client.channels.get(String(channelName.characters.reversed()))
                     ]
 
                     for channel in client.channels {
-                        expect(channels).to(contain(channel))
+                        expect(channels).to(contain(channel as! ARTRestChannel))
                     }
                 }
             }

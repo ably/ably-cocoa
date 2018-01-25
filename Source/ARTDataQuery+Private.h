@@ -6,14 +6,14 @@
 //  Copyright (c) 2015 г. Ably. All rights reserved.
 //
 
-#import "ARTDataQuery.h"
-#import "ARTRealtimeChannel.h"
+#import <Ably/ARTDataQuery.h>
+#import <Ably/ARTRealtimeChannel.h>
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTDataQuery(Private)
 
-- (NSMutableArray /* <NSURLQueryItem *> */ *)asQueryItems;
+- (NSMutableArray /* <NSURLQueryItem *> */ *)asQueryItems:(NSError *_Nullable *)error;
 
 @end
 
@@ -23,4 +23,4 @@ ART_ASSUME_NONNULL_BEGIN
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

@@ -7,9 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTTypes.h"
 
-ART_ASSUME_NONNULL_BEGIN
+#import <Ably/ARTTypes.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, ARTLogLevel) {
     ARTLogLevelVerbose,
@@ -37,6 +38,7 @@ typedef NS_ENUM(NSUInteger, ARTLogLevel) {
 @interface ARTLog (Shorthand)
 
 - (void)verbose:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
+- (void)verbose:(const char *)fileName line:(NSUInteger)line message:(NSString *)message, ... NS_FORMAT_FUNCTION(3,4);
 - (void)debug:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
 - (void)debug:(const char *)fileName line:(NSUInteger)line message:(NSString *)message, ... NS_FORMAT_FUNCTION(3,4);
 - (void)info:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
@@ -45,4 +47,4 @@ typedef NS_ENUM(NSUInteger, ARTLogLevel) {
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

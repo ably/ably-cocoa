@@ -21,6 +21,7 @@
 #import "ARTClientOptions+Private.h"
 #import "ARTPushAdmin+Private.h"
 #import "ARTLocalDevice+Private.h"
+#import "ARTRealtime+Private.h"
 
 NSString *const ARTDeviceIdKey = @"ARTDeviceId";
 NSString *const ARTDeviceUpdateTokenKey = @"ARTDeviceUpdateToken";
@@ -38,26 +39,6 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
         _admin = [[ARTPushAdmin alloc] init:rest];
     }
     return self;
-}
-
-- (void)publish:(ARTPushRecipient *)recipient notification:(ARTJsonObject *)notification callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/publish"]];
-    request.HTTPMethod = @"POST";
-    NSMutableDictionary *body = [NSMutableDictionary dictionary];
-    [body setObject:recipient forKey:@"recipient"];
-    [body addEntriesFromDictionary:notification];
-    request.HTTPBody = [[_rest defaultEncoder] encode:body];
-    [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
-
-    [_logger debug:__FILE__ line:__LINE__ message:@"push notification to a single device %@", request];
-    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
-        if (error) {
-            [_logger error:@"%@: push notification to a single device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
-            if (callback) callback([ARTErrorInfo createWithNSError:error]);
-            return;
-        }
-        if (callback) callback(nil);
-    }];
 }
 
 #ifdef TARGET_OS_IOS
@@ -89,9 +70,17 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
     [[rest.push activationMachine] sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
 }
 
++ (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken realtime:(ARTRealtime *)realtime {
+    [ARTPush didRegisterForRemoteNotificationsWithDeviceToken:deviceToken rest:realtime.rest];
+}
+
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error rest:(ARTRest *)rest {
     NSLog(@"ARTPush: device token not received (%@)", [error localizedDescription]);
-    [[rest.push activationMachine] sendEvent:[ARTPushActivationEventGettingUpdateTokenFailed newWithError:[ARTErrorInfo createWithNSError:error]]];
+    [[rest.push activationMachine] sendEvent:[ARTPushActivationEventGettingUpdateTokenFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+}
+
++ (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime {
+    [ARTPush didFailToRegisterForRemoteNotificationsWithError:error rest:realtime.rest];
 }
 
 - (void)activate {

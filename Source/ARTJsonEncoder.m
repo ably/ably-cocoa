@@ -22,12 +22,20 @@
     return @"json";
 }
 
-- (id)decode:(NSData *)data {
-    return [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+- (id)decode:(NSData *)data error:(NSError **)error {
+    return [NSJSONSerialization JSONObjectWithData:data options:0 error:error];
 }
 
-- (NSData *)encode:(id)obj {
-    return [NSJSONSerialization dataWithJSONObject:obj options:0 error:nil];
+- (NSData *)encode:(id)obj error:(NSError **)error {
+    @try {
+        return [NSJSONSerialization dataWithJSONObject:obj options:0 error:error];
+    }
+    @catch (NSException *exception) {
+        if (error) {
+            *error = [[NSError alloc] initWithDomain:ARTAblyErrorDomain code:ARTClientCodeErrorInvalidType userInfo:@{NSLocalizedDescriptionKey: exception.reason}];
+        }
+        return nil;
+    }
 }
 
 @end

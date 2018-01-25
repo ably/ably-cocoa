@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "CompatibilityMacros.h"
+#import <Ably/ARTLog.h>
 
 @protocol ARTRealtimeTransport;
 
@@ -17,15 +17,22 @@
 @class ARTClientOptions;
 @class ARTRest;
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, ARTRealtimeTransportErrorType) {
+    ARTRealtimeTransportErrorTypeOther,
     ARTRealtimeTransportErrorTypeHostUnreachable,
     ARTRealtimeTransportErrorTypeNoInternet,
     ARTRealtimeTransportErrorTypeTimeout,
     ARTRealtimeTransportErrorTypeBadResponse,
-    ARTRealtimeTransportErrorTypeAuth,
-    ARTRealtimeTransportErrorTypeOther
+    ARTRealtimeTransportErrorTypeRefused
+};
+
+typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
+    ARTRealtimeTransportStateOpening,
+    ARTRealtimeTransportStateOpened,
+    ARTRealtimeTransportStateClosing,
+    ARTRealtimeTransportStateClosed,
 };
 
 @interface ARTRealtimeTransportError : NSObject
@@ -44,15 +51,17 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportErrorType) {
 
 @protocol ARTRealtimeTransportDelegate
 
+// All methods must be called from rest's serial queue.
+
 - (void)realtimeTransport:(id<ARTRealtimeTransport>)transport didReceiveMessage:(ARTProtocolMessage *)message;
 
 - (void)realtimeTransportAvailable:(id<ARTRealtimeTransport>)transport;
 - (void)realtimeTransportUnavailable:(id<ARTRealtimeTransport>)transport;
 
 - (void)realtimeTransportClosed:(id<ARTRealtimeTransport>)transport;
-- (void)realtimeTransportDisconnected:(id<ARTRealtimeTransport>)transport;
+- (void)realtimeTransportDisconnected:(id<ARTRealtimeTransport>)transport withError:(nullable ARTRealtimeTransportError *)error;
 - (void)realtimeTransportNeverConnected:(id<ARTRealtimeTransport>)transport;
-- (void)realtimeTransportRefused:(id<ARTRealtimeTransport>)transport;
+- (void)realtimeTransportRefused:(id<ARTRealtimeTransport>)transport withError:(nullable ARTRealtimeTransportError *)error;
 - (void)realtimeTransportTooBig:(id<ARTRealtimeTransport>)transport;
 - (void)realtimeTransportFailed:(id<ARTRealtimeTransport>)transport withError:(ARTRealtimeTransportError *)error;
 
@@ -60,23 +69,29 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportErrorType) {
 
 @protocol ARTRealtimeTransport
 
-- (instancetype)initWithRest:(ARTRest *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial;
+// All methods must be called from rest's serial queue.
+
+- (instancetype)initWithRest:(ARTRest *)rest options:(ARTClientOptions *)options resumeKey:(nullable NSString *)resumeKey connectionSerial:(nullable NSNumber *)connectionSerial;
 
 @property (readonly, strong, nonatomic) NSString *resumeKey;
 @property (readonly, strong, nonatomic) NSNumber *connectionSerial;
+@property (readonly, assign, nonatomic) ARTRealtimeTransportState state;
+@property (nullable, readwrite, strong, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
+@property (readonly, strong, nonatomic) ARTLog *protocolMessagesLogger;
 
-@property (readwrite, weak, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
-- (void)send:(ARTProtocolMessage *)msg;
+- (BOOL)send:(NSData *)data withSource:(nullable id)decodedObject;
 - (void)receive:(ARTProtocolMessage *)msg;
-- (void)connect;
-- (void)connectForcingNewToken:(BOOL)forceNewToken;
+- (nullable ARTProtocolMessage *)receiveWithData:(NSData *)data;
+- (void)connectWithKey:(NSString *)key;
+- (void)connectWithToken:(NSString *)token;
 - (void)sendClose;
 - (void)sendPing;
 - (void)close;
 - (void)abort:(ARTStatus *)reason;
 - (NSString *)host;
 - (void)setHost:(NSString *)host;
+- (ARTRealtimeTransportState)state;
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

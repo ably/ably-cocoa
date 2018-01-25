@@ -12,15 +12,15 @@ import Quick
 import SwiftyJSON
 import Foundation
 
-private func postTestStats(stats: JSON) -> ARTClientOptions {
+private func postTestStats(_ stats: JSON) -> ARTClientOptions {
     let options = AblyTests.setupOptions(AblyTests.jsonRestOptions, forceNewApp: true);
     
     let keyBase64 = encodeBase64(options.key ?? "")
 
-    let request = NSMutableURLRequest(URL: NSURL(string: "\(AblyTests.clientOptions().restUrl().absoluteString!)/stats")!)
+    let request = NSMutableURLRequest(url: URL(string: "\(AblyTests.clientOptions().restUrl().absoluteString)/stats")!)
     
-    request.HTTPMethod = "POST"
-    request.HTTPBody = try? stats.rawData()
+    request.httpMethod = "POST"
+    request.httpBody = try? stats.rawData()
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Basic \(keyBase64)", forHTTPHeaderField: "Authorization")
     
@@ -37,45 +37,18 @@ private func postTestStats(stats: JSON) -> ARTClientOptions {
     return options
 }
 
-private func queryStats(client: ARTRest, _ query: ARTStatsQuery) -> ARTPaginatedResult {
-    var stats: ARTPaginatedResult?
-    let dummyError = ARTErrorInfo()
-    var error: ARTErrorInfo? = dummyError
-
-    try! client.stats(query, callback: { result, err in
-        stats = result
-        error = err
-    })
-
-    while error === dummyError {
-        CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Bool(0))
-    }
-    
+private func queryStats(_ client: ARTRest, _ query: ARTStatsQuery, file: FileString = #file, line: UInt = #line) -> ARTPaginatedResult<ARTStats> {
+    let (stats, error) = (AblyTests.waitFor(timeout: testTimeout, file: file, line: line) { value in
+        expect {
+            try client.stats(query, callback: { result, err in
+                value((result, err))
+            })
+        }.toNot(throwError() { _ in value(nil) })
+    })!
     if let error = error {
-        XCTFail(error.message)
+        fail(error.message, file: file, line: line)
     }
-    
     return stats!
-}
-
-private func getPage(paginator: ((ARTPaginatedResult?, ARTErrorInfo?) -> Void) -> Void) -> ARTPaginatedResult {
-    var newResult: ARTPaginatedResult?
-    let dummyError = ARTErrorInfo()
-    var error: ARTErrorInfo? = dummyError
-    paginator({ paginatorResult, err in
-        newResult = paginatorResult
-        error = err
-    })
-    
-    while error === dummyError {
-        CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Bool(0))
-    }
-    
-    if let error = error {
-        XCTFail(error.message)
-    }
-    
-    return newResult!
 }
 
 class RestClientStats: QuickSpec {
@@ -85,31 +58,31 @@ class RestClientStats: QuickSpec {
             context("stats") {
                 // RSC6a
                 context("result") {
-                    let calendar = NSCalendar(identifier: NSCalendarIdentifierGregorian)!
+                    let calendar = NSCalendar(identifier: NSCalendar.Identifier.gregorian)!
                     let dateComponents = NSDateComponents()
-                    dateComponents.year = calendar.component(NSCalendarUnit.Year, fromDate: NSDate()) - 1
+                    dateComponents.year = calendar.component(NSCalendar.Unit.year, from: NSDate() as Date) - 1
                     dateComponents.month = 2
                     dateComponents.day = 3
                     dateComponents.hour = 16
                     dateComponents.minute = 3
-                    let date = calendar.dateFromComponents(dateComponents)!
-                    let dateFormatter = NSDateFormatter()
-                    dateFormatter.timeZone = NSTimeZone(name: "UTC")
+                    let date = calendar.date(from: dateComponents as DateComponents)!
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.timeZone = NSTimeZone(name: "UTC") as TimeZone!
                     dateFormatter.dateFormat = "YYYY-MM-dd:HH:mm"
                     
                     let statsFixtures: JSON = [
                         [
-                            "intervalId": dateFormatter.stringFromDate(date), // 20XX-02-03:16:03
+                            "intervalId": dateFormatter.string(from: date), // 20XX-02-03:16:03
                             "inbound": [ "realtime": [ "messages": [ "count": 50, "data": 5000 ] ] ],
                             "outbound": [ "realtime": [ "messages": [ "count": 20, "data": 2000 ] ] ]
                         ],
                         [
-                            "intervalId": dateFormatter.stringFromDate(date.dateByAddingTimeInterval(60)), // 20XX-02-03:16:04
+                            "intervalId": dateFormatter.string(from: date.addingTimeInterval(60)), // 20XX-02-03:16:04
                             "inbound": [ "realtime": [ "messages": [ "count": 60, "data": 6000 ] ] ],
                             "outbound": [ "realtime": [ "messages": [ "count": 10, "data": 1000 ] ] ]
                         ],
                         [
-                            "intervalId": dateFormatter.stringFromDate(date.dateByAddingTimeInterval(120)), // 20XX-02-03:16:05
+                            "intervalId": dateFormatter.string(from: date.addingTimeInterval(120)), // 20XX-02-03:16:05
                             "inbound": [ "realtime": [ "messages": [ "count": 70, "data": 7000 ] ] ],
                             "outbound": [ "realtime": [ "messages": [ "count": 40, "data": 4000 ] ] ],
                             "persisted": [ "presence": [ "count": 20, "data": 2000 ] ],
@@ -130,24 +103,18 @@ class RestClientStats: QuickSpec {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.start = date
-                        query.direction = .Forwards
+                        query.direction = .forwards
                         
                         let result = queryStats(client, query)
                         expect(result.items.count).to(equal(3))
                         
-                        let totalInbound = result.items.reduce(0 as UInt, combine: {
-                            if let stats = $1 as? ARTStats {
-                                return $0 + stats.inbound.all.messages.count
-                            }
-                            return $0
+                        let totalInbound = result.items.reduce(0 as UInt, {
+                            return $0 + $1.inbound.all.messages.count
                         })
                         expect(totalInbound).to(equal(50 + 60 + 70))
                         
-                        let totalOutbound = result.items.reduce(0 as UInt, combine: {
-                            if let stats = $1 as? ARTStats {
-                                return $0 + stats.outbound.all.messages.count
-                            }
-                            return $0
+                        let totalOutbound = result.items.reduce(0 as UInt, {
+                            return $0 + $1.outbound.all.messages.count
                         })
                         expect(totalOutbound).to(equal(20 + 10 + 40))
                     }
@@ -156,21 +123,15 @@ class RestClientStats: QuickSpec {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.start = date
-                        query.direction = .Forwards
-                        query.unit = .Hour
+                        query.direction = .forwards
+                        query.unit = .hour
                         
                         let result = queryStats(client, query)
-                        let totalInbound = result.items.reduce(0 as UInt, combine: {
-                            if let stats = $1 as? ARTStats {
-                                return $0 + stats.inbound.all.messages.count
-                            }
-                            return $0
+                        let totalInbound = result.items.reduce(0 as UInt, {
+                            return $0 + $1.inbound.all.messages.count
                         })
-                        let totalOutbound = result.items.reduce(0 as UInt, combine: {
-                            if let stats = $1 as? ARTStats {
-                                return $0 + stats.outbound.all.messages.count
-                            }
-                            return $0
+                        let totalOutbound = result.items.reduce(0 as UInt, {
+                            return $0 + $1.outbound.all.messages.count
                         })
                         
                         expect(result.items.count).to(equal(1))
@@ -181,13 +142,13 @@ class RestClientStats: QuickSpec {
                     it("should match day-level inbound and outbound fixture data (forwards)") {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
-                        query.end = calendar.dateByAddingUnit(.Day, value: 1, toDate: date, options: NSCalendarOptions(rawValue: 0))
-                        query.direction = .Forwards
-                        query.unit = .Month
+                        query.end = calendar.date(byAdding: .day, value: 1, to: date, options: NSCalendar.Options(rawValue: 0))
+                        query.direction = .forwards
+                        query.unit = .month
                         
                         let result = queryStats(client, query)
-                        let totalInbound = (result.items as! [ARTStats]).reduce(0, combine: { $0 + $1.inbound.all.messages.count })
-                        let totalOutbound = (result.items as! [ARTStats]).reduce(0, combine: { $0 + $1.outbound.all.messages.count })
+                        let totalInbound = (result.items).reduce(0, { $0 + $1.inbound.all.messages.count })
+                        let totalOutbound = (result.items).reduce(0, { $0 + $1.outbound.all.messages.count })
                         
                         expect(result.items.count).to(equal(1))
                         expect(totalInbound).to(equal(50 + 60 + 70))
@@ -197,13 +158,13 @@ class RestClientStats: QuickSpec {
                     it("should match month-level inbound and outbound fixture data (forwards)") {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
-                        query.end = calendar.dateByAddingUnit(.Month, value: 1, toDate: date, options: NSCalendarOptions(rawValue: 0))
-                        query.direction = .Forwards
-                        query.unit = .Month
+                        query.end = calendar.date(byAdding: .month, value: 1, to: date, options: NSCalendar.Options(rawValue: 0))
+                        query.direction = .forwards
+                        query.unit = .month
                         
                         let result = queryStats(client, query)
-                        let totalInbound = (result.items as! [ARTStats]).reduce(0, combine: { $0 + $1.inbound.all.messages.count })
-                        let totalOutbound = (result.items as! [ARTStats]).reduce(0, combine: { $0 + $1.outbound.all.messages.count })
+                        let totalInbound = (result.items).reduce(0, { $0 + $1.inbound.all.messages.count })
+                        let totalOutbound = (result.items).reduce(0, { $0 + $1.outbound.all.messages.count })
                         
                         expect(result.items.count).to(equal(1))
                         expect(totalInbound).to(equal(50 + 60 + 70))
@@ -213,12 +174,12 @@ class RestClientStats: QuickSpec {
                     it("should contain only one item when limit is 1 (backwards") {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
-                        query.end = date.dateByAddingTimeInterval(60) // 20XX-02-03:16:04
+                        query.end = date.addingTimeInterval(60) // 20XX-02-03:16:04
                         query.limit = 1
                         
                         let result = queryStats(client, query)
-                        let totalInbound = (result.items as! [ARTStats]).reduce(0, combine: { $0 + $1.inbound.all.messages.count })
-                        let totalOutbound = (result.items as! [ARTStats]).reduce(0, combine: { $0 + $1.outbound.all.messages.count })
+                        let totalInbound = (result.items).reduce(0, { $0 + $1.inbound.all.messages.count })
+                        let totalOutbound = (result.items).reduce(0, { $0 + $1.outbound.all.messages.count })
                         
                         expect(result.items.count).to(equal(1))
                         expect(totalInbound).to(equal(60))
@@ -228,13 +189,13 @@ class RestClientStats: QuickSpec {
                     it("should contain only one item when limit is 1 (forwards") {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
-                        query.end = date.dateByAddingTimeInterval(60) // 20XX-02-03:16:04
+                        query.end = date.addingTimeInterval(60) // 20XX-02-03:16:04
                         query.limit = 1
-                        query.direction = .Forwards
+                        query.direction = .forwards
                         
                         let result = queryStats(client, query)
-                        let totalInbound = (result.items as! [ARTStats]).reduce(0, combine: { $0 + $1.inbound.all.messages.count })
-                        let totalOutbound = (result.items as! [ARTStats]).reduce(0, combine: { $0 + $1.outbound.all.messages.count })
+                        let totalInbound = (result.items).reduce(0, { $0 + $1.inbound.all.messages.count })
+                        let totalOutbound = (result.items).reduce(0, { $0 + $1.outbound.all.messages.count })
                         
                         expect(result.items.count).to(equal(1))
                         expect(totalInbound).to(equal(50))
@@ -244,58 +205,106 @@ class RestClientStats: QuickSpec {
                     it("should be paginated according to the limit (backwards") {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
-                        query.end = date.dateByAddingTimeInterval(120) // 20XX-02-03:16:05
+                        query.end = date.addingTimeInterval(120) // 20XX-02-03:16:05
                         query.limit = 1
 
                         let firstPage = queryStats(client, query)
                         expect(firstPage.items.count).to(equal(1))
-                        expect((firstPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(7000))
+                        expect((firstPage.items)[0].inbound.all.messages.data).to(equal(7000))
                         expect(firstPage.hasNext).to(beTrue())
                         expect(firstPage.isLast).to(beFalse())
                         
-                        let secondPage = getPage(firstPage.next)
+                        guard let secondPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+                            firstPage.next { page, err in
+                                expect(err).to(beNil())
+                                value(page)
+                            }
+                        }) else {
+                            return
+                        }
+
                         expect(secondPage.items.count).to(equal(1))
-                        expect((secondPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(6000))
+                        expect((secondPage.items)[0].inbound.all.messages.data).to(equal(6000))
                         expect(secondPage.hasNext).to(beTrue())
                         expect(secondPage.isLast).to(beFalse())
                         
-                        let thirdPage = getPage(secondPage.next)
+                        guard let thirdPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+                            secondPage.next { page, err in
+                                expect(err).to(beNil())
+                                value(page)
+                            }
+                        }) else {
+                            return
+                        }
+
                         expect(thirdPage.items.count).to(equal(1))
-                        expect((thirdPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(5000))
+                        expect((thirdPage.items)[0].inbound.all.messages.data).to(equal(5000))
                         expect(thirdPage.isLast).to(beTrue())
                         
-                        let firstPageAgain = getPage(thirdPage.first)
+                        guard let firstPageAgain: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+                            thirdPage.first { page, err in
+                                expect(err).to(beNil())
+                                value(page)
+                            }
+                        }) else {
+                            return
+                        }
+
                         expect(firstPageAgain.items.count).to(equal(1))
-                        expect((firstPageAgain.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(7000))
+                        expect((firstPageAgain.items)[0].inbound.all.messages.data).to(equal(7000))
                     }
                     
                     it("should be paginated according to the limit (fowards)") {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
-                        query.end = date.dateByAddingTimeInterval(120) // 20XX-02-03:16:05
+                        query.end = date.addingTimeInterval(120) // 20XX-02-03:16:05
                         query.limit = 1
-                        query.direction = .Forwards
+                        query.direction = .forwards
                         
                         let firstPage = queryStats(client, query)
                         expect(firstPage.items.count).to(equal(1))
-                        expect((firstPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(5000))
+                        expect((firstPage.items)[0].inbound.all.messages.data).to(equal(5000))
                         expect(firstPage.hasNext).to(beTrue())
                         expect(firstPage.isLast).to(beFalse())
                         
-                        let secondPage = getPage(firstPage.next)
+                        guard let secondPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+                            firstPage.next { page, err in
+                                expect(err).to(beNil())
+                                value(page)
+                            }
+                        }) else {
+                            return
+                        }
+
                         expect(secondPage.items.count).to(equal(1))
-                        expect((secondPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(6000))
+                        expect((secondPage.items)[0].inbound.all.messages.data).to(equal(6000))
                         expect(secondPage.hasNext).to(beTrue())
                         expect(secondPage.isLast).to(beFalse())
                         
-                        let thirdPage = getPage(secondPage.next)
+                        guard let thirdPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+                            secondPage.next { page, err in
+                                expect(err).to(beNil())
+                                value(page)
+                            }
+                        }) else {
+                            return
+                        }
+
                         expect(thirdPage.items.count).to(equal(1))
-                        expect((thirdPage.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(7000))
+                        expect((thirdPage.items)[0].inbound.all.messages.data).to(equal(7000))
                         expect(thirdPage.isLast).to(beTrue())
                         
-                        let firstPageAgain = getPage(thirdPage.first)
+                        guard let firstPageAgain: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+                            thirdPage.first { page, err in
+                                expect(err).to(beNil())
+                                value(page)
+                            }
+                        }) else {
+                            return
+                        }
+
                         expect(firstPageAgain.items.count).to(equal(1))
-                        expect((firstPageAgain.items as! [ARTStats])[0].inbound.all.messages.data).to(equal(5000))
+                        expect((firstPageAgain.items)[0].inbound.all.messages.data).to(equal(5000))
                     }
                 }
                 
@@ -307,8 +316,8 @@ class RestClientStats: QuickSpec {
                             let client = ARTRest(key: "fake:key")
                             let query = ARTStatsQuery()
                             
-                            query.start = NSDate.distantFuture()
-                            query.end = NSDate.distantPast()
+                            query.start = NSDate.distantFuture
+                            query.end = NSDate.distantPast
 
                             expect{try client.stats(query, callback:{ status, result in })}.to(throwError())
                         }
@@ -319,7 +328,7 @@ class RestClientStats: QuickSpec {
                         it("should be backwards by default") {
                             let query = ARTStatsQuery()
                             
-                            expect(query.direction).to(equal(ARTQueryDirection.Backwards));
+                            expect(query.direction).to(equal(ARTQueryDirection.backwards));
                         }
                     }
                     
@@ -346,7 +355,7 @@ class RestClientStats: QuickSpec {
                         it("should default to minute") {
                             let query = ARTStatsQuery()
                             
-                            expect(query.unit).to(equal(ARTStatsGranularity.Minute))
+                            expect(query.unit).to(equal(ARTStatsGranularity.minute))
                         }
                     }
                 }

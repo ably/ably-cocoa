@@ -28,7 +28,6 @@
 - (instancetype)initWithClientId:(NSString *)clientId nonce:(NSString *)nonce {
     if (self = [super init]) {
         _timestamp = nil;
-        _ttl = [ARTDefault ttl];
         _capability = @"{\"*\":[\"*\"]}"; // allow all
         _clientId = clientId;
         _nonce = nonce;
@@ -54,8 +53,18 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat: @"ARTTokenParams: ttl=%f capability=%@ timestamp=%@",
+    return [NSString stringWithFormat: @"ARTTokenParams: ttl=%@ capability=%@ timestamp=%@",
             self.ttl, self.capability, self.timestamp];
+}
+
+- (id)copyWithZone:(NSZone *)zone {
+    ARTTokenParams *token = [[[self class] allocWithZone:zone] initWithClientId:_clientId nonce:_nonce];
+
+    token.ttl = _ttl;
+    token.capability = _capability;
+    token.timestamp = _timestamp;
+
+    return token;
 }
 
 - (NSMutableArray *)toArray {
@@ -63,8 +72,8 @@
     
     if (self.clientId)
         [params addObject:[NSURLQueryItem queryItemWithName:@"clientId" value:self.clientId]];
-    if (self.ttl > 0)
-        [params addObject:[NSURLQueryItem queryItemWithName:@"ttl" value:[NSString stringWithFormat:@"%f", self.ttl]]];
+    if (self.ttl)
+        [params addObject:[NSURLQueryItem queryItemWithName:@"ttl" value:[NSString stringWithFormat:@"%@", self.ttl]]];
     if (self.capability)
         [params addObject:[NSURLQueryItem queryItemWithName:@"capability" value:self.capability]];
     if (self.timestamp > 0)
@@ -78,8 +87,8 @@
     
     if (self.clientId)
         params[@"clientId"] = self.clientId;
-    if (self.ttl > 0)
-        params[@"ttl"] = [NSString stringWithFormat:@"%f", self.ttl];
+    if (self.ttl)
+        params[@"ttl"] = [NSString stringWithFormat:@"%@", self.ttl];
     if (self.capability)
         params[@"capability"] = self.capability;
     if (self.timestamp > 0)
@@ -153,8 +162,9 @@ static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
     NSString *keyName = keyComponents[0];
     NSString *keySecret = keyComponents[1];
     NSString *clientId = self.clientId ? self.clientId : @"";
+    NSString *ttl = self.ttl ? [NSString stringWithFormat:@"%lld", timeIntervalToMilliseconds([self.ttl doubleValue])] : @"";
     
-    NSString *signText = [NSString stringWithFormat:@"%@\n%lld\n%@\n%@\n%lld\n%@\n", keyName, timeIntervalToMilliseconds(self.ttl), self.capability, clientId, dateToMilliseconds(self.timestamp), nonce];
+    NSString *signText = [NSString stringWithFormat:@"%@\n%@\n%@\n%@\n%lld\n%@\n", keyName, ttl, self.capability, clientId, dateToMilliseconds(self.timestamp), nonce];
     NSString *mac = hmacForDataAndKey([signText dataUsingEncoding:NSUTF8StringEncoding], [keySecret dataUsingEncoding:NSUTF8StringEncoding]);
     
     return [[ARTTokenRequest alloc] initWithTokenParams:self keyName:keyName nonce:nonce mac:mac];

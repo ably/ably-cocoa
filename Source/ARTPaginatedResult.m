@@ -13,7 +13,9 @@
 #import "ARTRest+Private.h"
 
 @implementation ARTPaginatedResult {
-    id<ARTHTTPAuthenticatedExecutor> _httpExecutor;
+    __weak ARTRest *_rest;
+    dispatch_queue_t _userQueue;
+    dispatch_queue_t _queue;
     NSMutableURLRequest *_relFirst;
     NSMutableURLRequest *_relCurrent;
     NSMutableURLRequest *_relNext;
@@ -21,7 +23,7 @@
 }
 
 - (instancetype)initWithItems:(NSArray *)items
-                     httpExecutor:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor
+                     rest:(ARTRest *)rest
                      relFirst:(NSMutableURLRequest *)relFirst
                    relCurrent:(NSMutableURLRequest *)relCurrent
                       relNext:(NSMutableURLRequest *)relNext
@@ -37,18 +39,43 @@
         _hasNext = !!relNext;
         _isLast = !_hasNext;
         
-        _httpExecutor = httpExecutor;
+        _rest = rest;
+        _userQueue = rest.userQueue;
+        _queue = rest.queue;
         _responseProcessor = responseProcessor;
     }
     
     return self;
 }
 
-- (void)first:(void (^)(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback {
-    [self.class executePaginated:_httpExecutor withRequest:_relFirst andResponseProcessor:_responseProcessor callback:callback];
+- (void)first:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
+    if (callback) {
+        void (^userCallback)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) = callback;
+        callback = ^(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) {
+            ART_EXITING_ABLY_CODE(_rest);
+            dispatch_async(_userQueue, ^{
+                userCallback(result, error);
+            });
+        };
+    }
+
+    [self.class executePaginated:_rest withRequest:_relFirst andResponseProcessor:_responseProcessor callback:callback];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (void)next:(void (^)(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback {
+- (void)next:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
+    if (callback) {
+        void (^userCallback)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) = callback;
+        callback = ^(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) {
+            ART_EXITING_ABLY_CODE(_rest);
+            dispatch_async(_userQueue, ^{
+                userCallback(result, error);
+            });
+        };
+    }
+
     if (!_relNext) {
         // If there is no next page, we can't make a request, so we answer the callback
         // with a nil PaginatedResult. That's why the callback has the result as nullable
@@ -56,7 +83,8 @@
         callback(nil, nil);
         return;
     }
-    [self.class executePaginated:_httpExecutor withRequest:_relNext andResponseProcessor:_responseProcessor callback:callback];
+    [self.class executePaginated:_rest withRequest:_relNext andResponseProcessor:_responseProcessor callback:callback];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 static NSDictionary *extractLinks(NSHTTPURLResponse *response) {
@@ -99,17 +127,24 @@ static NSMutableURLRequest *requestRelativeTo(NSMutableURLRequest *request, NSSt
     return [NSMutableURLRequest requestWithURL:url];
 }
 
-+ (void)executePaginated:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor withRequest:(NSMutableURLRequest *)request andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor callback:(void (^)(__GENERIC(ARTPaginatedResult, id) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback {
-    [[httpExecutor logger] debug:__FILE__ line:__LINE__ message:@"Paginated request: %@", request];
++ (void)executePaginated:(ARTRest *)rest withRequest:(NSMutableURLRequest *)request andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor callback:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+ART_TRY_OR_REPORT_CRASH_START(rest) {
+    [rest.logger debug:__FILE__ line:__LINE__ message:@"Paginated request: %@", request];
 
-    [httpExecutor executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
-            callback(nil, [ARTErrorInfo createWithNSError:error]);
+            callback(nil, [ARTErrorInfo createFromNSError:error]);
         } else {
-            [[httpExecutor logger] debug:__FILE__ line:__LINE__ message:@"Paginated response: %@", response];
-            [[httpExecutor logger] debug:__FILE__ line:__LINE__ message:@"Paginated response data: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
+            [[rest logger] debug:__FILE__ line:__LINE__ message:@"Paginated response: %@", response];
+            [[rest logger] debug:__FILE__ line:__LINE__ message:@"Paginated response data: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
 
-            NSArray *items = responseProcessor(response, data);
+            NSError *decodeError = nil;
+            NSArray *items = responseProcessor(response, data, &decodeError);
+
+            if (decodeError) {
+                callback(nil, [ARTErrorInfo createFromNSError:decodeError]);
+                return;
+            }
 
             NSDictionary *links = extractLinks(response);
 
@@ -118,7 +153,7 @@ static NSMutableURLRequest *requestRelativeTo(NSMutableURLRequest *request, NSSt
             NSMutableURLRequest *nextRel = requestRelativeTo(request, links[@"next"]);;
 
             ARTPaginatedResult *result = [[ARTPaginatedResult alloc] initWithItems:items
-                                                                      httpExecutor:httpExecutor
+                                                                              rest:rest
                                                                           relFirst:firstRel
                                                                         relCurrent:currentRel
                                                                            relNext:nextRel
@@ -127,6 +162,7 @@ static NSMutableURLRequest *requestRelativeTo(NSMutableURLRequest *request, NSSt
             callback(result, nil);
         }
     }];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 @end

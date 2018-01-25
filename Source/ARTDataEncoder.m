@@ -64,7 +64,7 @@
         // data before encrypting.
         jsonEncoded = [NSJSONSerialization dataWithJSONObject:data options:0 error:&error];
         if (error) {
-            return [[ARTDataEncoderOutput alloc] initWithData:data encoding:nil errorInfo:[ARTErrorInfo createWithNSError:error]];
+            return [[ARTDataEncoderOutput alloc] initWithData:data encoding:nil errorInfo:[ARTErrorInfo createFromNSError:error]];
         }
         encoded = data;
         encoding = @"json";
@@ -147,10 +147,10 @@
             }
             if ([data isKindOfClass:[NSString class]]) {
                 NSData *jsonData = [data dataUsingEncoding:NSUTF8StringEncoding];
-                NSError *error;
+                NSError *error = nil;
                 data = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
                 if (error != nil) {
-                    errorInfo = [ARTErrorInfo createWithNSError:error];
+                    errorInfo = [ARTErrorInfo createFromNSError:error];
                 }
             } else if (![data isKindOfClass:[NSArray class]] && ![data isKindOfClass:[NSDictionary class]]) {
                 errorInfo = [ARTErrorInfo createWithCode:0 message:[NSString stringWithFormat:@"invalid data type for 'json' decoding: '%@'", [data class]]];

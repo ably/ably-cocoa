@@ -7,25 +7,30 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTRestChannel.h"
-#import "ARTRealtimeChannel.h"
-#import "ARTEventEmitter.h"
+#import <Ably/ARTRestChannel.h>
+#import <Ably/ARTRealtimeChannel.h>
+#import <Ably/ARTPresenceMap.h>
+#import <Ably/ARTEventEmitter.h>
 
-@class ARTPresenceMap;
 @class ARTProtocolMessage;
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTRealtimeChannel ()
+@interface ARTRealtimeChannel () <ARTPresenceMapDelegate>
+
+- (ARTRealtimeChannelState)state_nosync;
+- (ARTErrorInfo *)errorReason_nosync;
+- (NSString *_Nullable)clientId_nosync;
 
 @property (readonly, weak, nonatomic) ARTRealtime *realtime;
 @property (readonly, strong, nonatomic) ARTRestChannel *restChannel;
 @property (readwrite, strong, nonatomic) NSMutableArray *queuedMessages;
-@property (readwrite, strong, nonatomic, art_nullable) NSString *attachSerial;
-@property (readonly, getter=getClientId) NSString *clientId;
-@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNumber *, ARTErrorInfo *) *statesEventEmitter;
-@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSString *, ARTMessage *) *messagesEventEmitter;
-@property (readonly, strong, nonatomic) __GENERIC(ARTEventEmitter, NSNumber *, ARTPresenceMessage *) *presenceEventEmitter;
+@property (readwrite, strong, nonatomic, nullable) NSString *attachSerial;
+@property (readonly, nullable, getter=getClientId) NSString *clientId;
+@property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTChannelStateChange *> *internalEventEmitter;
+@property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTChannelStateChange *> *statesEventEmitter;
+@property (readonly, strong, nonatomic) ARTEventEmitter<id<ARTEventIdentification>, ARTMessage *> *messagesEventEmitter;
+@property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTPresenceMessage *> *presenceEventEmitter;
 @property (readwrite, strong, nonatomic) ARTPresenceMap *presenceMap;
 @property (readwrite, assign, nonatomic) ARTPresenceAction lastPresenceAction;
 
@@ -34,6 +39,14 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (bool)isLastChannelSerial:(NSString *)channelSerial;
 
+- (void)reattachWithReason:(nullable ARTErrorInfo *)reason callback:(nullable void (^)(ARTErrorInfo *))callback;
+
+- (void)_attach:(void (^_Nullable)(ARTErrorInfo * _Nullable))callback;
+- (void)_detach:(void (^_Nullable)(ARTErrorInfo * _Nullable))callback;
+
+- (void)_unsubscribe;
+- (void)off_nosync;
+
 @end
 
 @interface ARTRealtimeChannel (Private)
@@ -41,7 +54,7 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status;
 
 - (void)onChannelMessage:(ARTProtocolMessage *)message;
-- (void)publishPresence:(ARTPresenceMessage *)pm callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb;
+- (void)publishPresence:(ARTPresenceMessage *)pm callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb;
 - (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb;
 
 - (void)setAttached:(ARTProtocolMessage *)message;
@@ -56,15 +69,15 @@ ART_ASSUME_NONNULL_BEGIN
 - (void)failQueuedMessages:(ARTStatus *)status;
 - (void)sendMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb;
 
-- (void)setSuspended:(ARTStatus *)error;
-- (void)setFailed:(ARTStatus *)error;
+- (void)setSuspended:(ARTStatus *)status;
+- (void)setFailed:(ARTStatus *)status;
 - (void)throwOnDisconnectedOrFailed;
 
 - (void)broadcastPresence:(ARTPresenceMessage *)pm;
-- (void)detachChannel:(ARTStatus *) error;
+- (void)detachChannel:(ARTStatus *)status;
 
 - (void)requestContinueSync;
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

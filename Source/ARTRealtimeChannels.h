@@ -6,15 +6,11 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#ifndef ARTRealtimeChannels_h
-#define ARTRealtimeChannels_h
+#import <Ably/ARTChannels.h>
+#import <Ably/ARTRealtimeChannel.h>
+#import <Ably/ARTRealtime.h>
 
-#import "ARTChannels.h"
-#import "ARTRealtimeChannel.h"
-#import "ARTRealtime.h"
-#import "CompatibilityMacros.h"
-
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimeChannels : NSObject<NSFastEnumeration>
 
@@ -26,11 +22,9 @@ ART_ASSUME_NONNULL_BEGIN
 - (BOOL)exists:(NSString *)name;
 - (ARTRealtimeChannel *)get:(NSString *)name;
 - (ARTRealtimeChannel *)get:(NSString *)name options:(ARTChannelOptions *)options;
-- (void)release:(NSString *)name callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable))errorInfo;
+- (void)release:(NSString *)name callback:(nullable void (^)(ARTErrorInfo *_Nullable))errorInfo;
 - (void)release:(NSString *)name;
 
 @end
 
-ART_ASSUME_NONNULL_END
-
-#endif /* ARTRealtimeChannels_h */
+NS_ASSUME_NONNULL_END

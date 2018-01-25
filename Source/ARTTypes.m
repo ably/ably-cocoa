@@ -10,7 +10,7 @@
 
 // MARK: Global helper functions
 
-__GENERIC(NSArray, NSString *) *decomposeKey(NSString *key) {
+NSArray<NSString *> *decomposeKey(NSString *key) {
     return [key componentsSeparatedByString:@":"];
 }
 
@@ -46,15 +46,16 @@ NSString *generateNonce() {
 
 @implementation ARTConnectionStateChange
 
-- (instancetype)initWithCurrent:(ARTRealtimeConnectionState)current previous:(ARTRealtimeConnectionState)previous reason:(ARTErrorInfo *)reason {
-    return [self initWithCurrent:current previous:previous reason:reason retryIn:(NSTimeInterval)0];
+- (instancetype)initWithCurrent:(ARTRealtimeConnectionState)current previous:(ARTRealtimeConnectionState)previous event:(ARTRealtimeConnectionEvent)event reason:(ARTErrorInfo *)reason {
+    return [self initWithCurrent:current previous:previous event:event reason:reason retryIn:(NSTimeInterval)0];
 }
 
-- (instancetype)initWithCurrent:(ARTRealtimeConnectionState)current previous:(ARTRealtimeConnectionState)previous reason:(ARTErrorInfo *)reason retryIn:(NSTimeInterval)retryIn {
+- (instancetype)initWithCurrent:(ARTRealtimeConnectionState)current previous:(ARTRealtimeConnectionState)previous event:(ARTRealtimeConnectionEvent)event reason:(ARTErrorInfo *)reason retryIn:(NSTimeInterval)retryIn {
     self = [self init];
     if (self) {
         _current = current;
         _previous = previous;
+        _event = event;
         _reason = reason;
         _retryIn = retryIn;
     }
@@ -62,12 +63,17 @@ NSString *generateNonce() {
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%@ - \n\t current: %@; \n\t previous: %@; \n\t reason: %@; \n\t retryIn: %f; \n", [super description], ARTRealtimeStateToStr(_current), ARTRealtimeStateToStr(_previous), _reason, _retryIn];
+    return [NSString stringWithFormat:@"%@ - \n\t current: %@; \n\t previous: %@; \n\t reason: %@; \n\t retryIn: %f; \n", [super description], ARTRealtimeConnectionStateToStr(_current), ARTRealtimeConnectionStateToStr(_previous), _reason, _retryIn];
 }
 
-NSString *ARTRealtimeStateToStr(ARTRealtimeConnectionState state) {
-    switch(state)
-    {
+- (void)setRetryIn:(NSTimeInterval)retryIn {
+    _retryIn = retryIn;
+}
+
+@end
+
+NSString *ARTRealtimeConnectionStateToStr(ARTRealtimeConnectionState state) {
+    switch(state) {
         case ARTRealtimeInitialized:
             return @"Initialized"; //0
         case ARTRealtimeConnecting:
@@ -84,22 +90,75 @@ NSString *ARTRealtimeStateToStr(ARTRealtimeConnectionState state) {
             return @"Closed"; //6
         case ARTRealtimeFailed:
             return @"Failed"; //7
-        default:
-            return [NSString stringWithFormat: @"unknown connection state %d", (int)state];
     }
 }
 
-- (void)setRetryIn:(NSTimeInterval)retryIn {
-    _retryIn = retryIn;
+NSString *ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event) {
+    switch(event) {
+        case ARTRealtimeConnectionEventInitialized:
+            return @"Initialized"; //0
+        case ARTRealtimeConnectionEventConnecting:
+            return @"Connecting"; //1
+        case ARTRealtimeConnectionEventConnected:
+            return @"Connected"; //2
+        case ARTRealtimeConnectionEventDisconnected:
+            return @"Disconnected"; //3
+        case ARTRealtimeConnectionEventSuspended:
+            return @"Suspended"; //4
+        case ARTRealtimeConnectionEventClosing:
+            return @"Closing"; //5
+        case ARTRealtimeConnectionEventClosed:
+            return @"Closed"; //6
+        case ARTRealtimeConnectionEventFailed:
+            return @"Failed"; //7
+        case ARTRealtimeConnectionEventUpdate:
+            return @"Update"; //8
+    }
+}
+
+#pragma mark - ARTChannelStateChange
+
+@implementation ARTChannelStateChange
+
+- (instancetype)initWithCurrent:(ARTRealtimeChannelState)current previous:(ARTRealtimeChannelState)previous event:(ARTChannelEvent)event reason:(ARTErrorInfo *)reason {
+    return [self initWithCurrent:current previous:previous event:event reason:reason resumed:NO];
+}
+
+- (instancetype)initWithCurrent:(ARTRealtimeChannelState)current previous:(ARTRealtimeChannelState)previous event:(ARTChannelEvent)event reason:(ARTErrorInfo *)reason resumed:(BOOL)resumed {
+    self = [self init];
+    if (self) {
+        _current = current;
+        _previous = previous;
+        _event = event;
+        _reason = reason;
+        _resumed = resumed;
+    }
+    return self;
+}
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"%@ - \n\t current: %@; \n\t previous: %@; \n\t reason: %@; \n\t resumed: %d; \n", [super description], ARTRealtimeChannelStateToStr(_current), ARTRealtimeChannelStateToStr(_previous), _reason, _resumed];
 }
 
 @end
 
+#pragma mark - ARTEventIdentification
+
+@implementation NSString (ARTEventIdentification)
+
+- (NSString *)identification {
+    return self;
+}
+
+@end
+
+#pragma mark - ARTJsonCompatible
+
 @implementation NSString (ARTJsonCompatible)
 
-- (NSDictionary *)toJSON:(NSError *__art_nullable *__art_nullable)error {
+- (NSDictionary *)toJSON:(NSError *_Nullable *_Nullable)error {
     NSData *data = [self dataUsingEncoding:NSUTF8StringEncoding];
-    NSError *jsonError;
+    NSError *jsonError = nil;
     id json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonError];
     if (jsonError) {
         if (error) {
@@ -120,7 +179,7 @@ NSString *ARTRealtimeStateToStr(ARTRealtimeConnectionState state) {
 
 @implementation NSDictionary (ARTJsonCompatible)
 
-- (NSDictionary *)toJSON:(NSError *__art_nullable *__art_nullable)error {
+- (NSDictionary *)toJSON:(NSError *_Nullable *_Nullable)error {
     if (error) {
         *error = nil;
     }
@@ -128,6 +187,54 @@ NSString *ARTRealtimeStateToStr(ARTRealtimeConnectionState state) {
 }
 
 @end
+
+@implementation NSURL (ARTLog)
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"%@", self.absoluteString];
+}
+
+@end
+
+NSString *ARTRealtimeChannelStateToStr(ARTRealtimeChannelState state) {
+    switch (state) {
+        case ARTRealtimeChannelInitialized:
+            return @"Initialized"; //0
+        case ARTRealtimeChannelAttaching:
+            return @"Attaching"; //1
+        case ARTRealtimeChannelAttached:
+            return @"Attached"; //2
+        case ARTRealtimeChannelDetaching:
+            return @"Detaching"; //3
+        case ARTRealtimeChannelDetached:
+            return @"Detached"; //4
+        case ARTRealtimeChannelSuspended:
+            return @"Suspended"; //5
+        case ARTRealtimeChannelFailed:
+            return @"Failed"; //6
+    }
+}
+
+NSString *ARTChannelEventToStr(ARTChannelEvent event) {
+    switch (event) {
+        case ARTChannelEventInitialized:
+            return @"Initialized"; //0
+        case ARTChannelEventAttaching:
+            return @"Attaching"; //1
+        case ARTChannelEventAttached:
+            return @"Attached"; //2
+        case ARTChannelEventDetaching:
+            return @"Detaching"; //3
+        case ARTChannelEventDetached:
+            return @"Detached"; //4
+        case ARTChannelEventSuspended:
+            return @"Suspended"; //5
+        case ARTChannelEventFailed:
+            return @"Failed"; //6
+        case ARTChannelEventUpdate:
+            return @"Update"; //7
+    }
+}
 
 @implementation NSDictionary (URLQueryItemAdditions)
 
@@ -159,6 +266,18 @@ NSString *ARTRealtimeStateToStr(ARTRealtimeConnectionState state) {
 
 - (id)peek {
     return [self firstObject];
+}
+
+@end
+
+#pragma mark - NSString (Utilities)
+
+@implementation NSString (Utilities)
+
+- (NSString *)shortString {
+    NSRange stringRange = {0, MIN([self length], 1000)}; //1KB
+    stringRange = [self rangeOfComposedCharacterSequencesForRange:stringRange];
+    return [self substringWithRange:stringRange];
 }
 
 @end

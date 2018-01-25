@@ -6,33 +6,28 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#ifndef ARTWebSocketTransport_Private_h
-#define ARTWebSocketTransport_Private_h
-
-#import "ARTWebSocketTransport.h"
-#import "CompatibilityMacros.h"
+#import <Ably/ARTWebSocketTransport.h>
+#import <Ably/CompatibilityMacros.h>
 #import <SocketRocket/SRWebSocket.h>
-#import "ARTEncoder.h"
-#import "ARTAuth.h"
+#import <Ably/ARTEncoder.h>
+#import <Ably/ARTAuth.h>
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTWebSocketTransport () <SRWebSocketDelegate>
 
 // From RestClient
 @property (readwrite, strong, nonatomic) id<ARTEncoder> encoder;
 @property (readonly, strong, nonatomic) ARTLog *logger;
-@property (readonly, strong, nonatomic) ARTAuth *auth;
 @property (readonly, strong, nonatomic) ARTClientOptions *options;
 
-@property (readwrite, strong, nonatomic, art_nullable) SRWebSocket *websocket;
-@property (readwrite, strong, nonatomic, art_nullable) NSURL *websocketURL;
+@property (readwrite, strong, nonatomic, nullable) SRWebSocket *websocket;
+@property (readwrite, strong, nonatomic, nullable) NSURL *websocketURL;
 
-- (void)sendWithData:(NSData *)data;
-- (void)receiveWithData:(NSData *)data;
+- (NSURL *)setupWebSocket:(NSArray<NSURLQueryItem *> *)params withOptions:(ARTClientOptions *)options resumeKey:(NSString *_Nullable)resumeKey connectionSerial:(NSNumber *_Nullable)connectionSerial;
+
+- (void)setState:(ARTRealtimeTransportState)state;
 
 @end
 
-ART_ASSUME_NONNULL_END
-
-#endif /* ARTWebSocketTransport_Private_h */
+NS_ASSUME_NONNULL_END

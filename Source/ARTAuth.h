@@ -7,8 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTTypes.h"
-#import "ARTLog.h"
+
+#import <Ably/ARTTypes.h>
+#import <Ably/ARTLog.h>
 
 @class ARTRest;
 @class ARTLog;
@@ -18,7 +19,7 @@
 @class ARTTokenDetails;
 @class ARTTokenRequest;
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - ARTAuth
 
@@ -26,8 +27,7 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (nullable, readonly) NSString *clientId;
 
-// FIXME: review (Why rest?)
-- (instancetype)init:(ARTRest *)rest withOptions:(ARTClientOptions *)options;
+- (instancetype)init NS_UNAVAILABLE;
 
 /**
  # (RSA8) Auth#requestToken
@@ -41,14 +41,20 @@ ART_ASSUME_NONNULL_BEGIN
  - Parameter authOptions: Authentication options (optional).
  - Parameter callback: Completion callback (ARTTokenDetails, NSError).
  */
-- (void)requestToken:(art_nullable ARTTokenParams *)tokenParams withOptions:(art_nullable ARTAuthOptions *)authOptions
-            callback:(void (^)(ARTTokenDetails *__art_nullable, NSError *__art_nullable))callback;
+- (void)requestToken:(nullable ARTTokenParams *)tokenParams withOptions:(nullable ARTAuthOptions *)authOptions
+            callback:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback;
+- (void)requestToken:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback;
 
-- (void)authorise:(art_nullable ARTTokenParams *)tokenParams options:(art_nullable ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *__art_nullable, NSError *__art_nullable))callback;
+- (void)authorise:(nullable ARTTokenParams *)tokenParams options:(nullable ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback DEPRECATED_MSG_ATTRIBUTE("method will be removed in v1.0. Use 'authorize:' method instead.");
 
-- (void)createTokenRequest:(art_nullable ARTTokenParams *)tokenParams options:(art_nullable ARTAuthOptions *)options
-                  callback:(void (^)(ARTTokenRequest *__art_nullable tokenRequest, NSError *__art_nullable error))callback;
+- (void)authorize:(nullable ARTTokenParams *)tokenParams options:(nullable ARTAuthOptions *)authOptions
+         callback:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback;
+- (void)authorize:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback;
+
+- (void)createTokenRequest:(nullable ARTTokenParams *)tokenParams options:(nullable ARTAuthOptions *)options
+                  callback:(void (^)(ARTTokenRequest *_Nullable tokenRequest, NSError *_Nullable error))callback;
+- (void)createTokenRequest:(void (^)(ARTTokenRequest *_Nullable tokenRequest, NSError *_Nullable error))callback;
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

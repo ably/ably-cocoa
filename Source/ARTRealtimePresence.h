@@ -7,12 +7,13 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTRestPresence.h"
-#import "ARTDataQuery.h"
-#import "ARTEventEmitter.h"
-#import "ARTRealtimeChannel.h"
 
-ART_ASSUME_NONNULL_BEGIN
+#import <Ably/ARTRestPresence.h>
+#import <Ably/ARTDataQuery.h>
+#import <Ably/ARTEventEmitter.h>
+#import <Ably/ARTRealtimeChannel.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimePresenceQuery : ARTPresenceQuery
 
@@ -24,39 +25,39 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (readonly, getter=getSyncComplete) BOOL syncComplete;
 
-- (void)get:(void (^)(__GENERIC(NSArray, ARTPresenceMessage *) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback;
-- (void)get:(ARTRealtimePresenceQuery *)query callback:(void (^)(__GENERIC(NSArray, ARTPresenceMessage *) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback;
+- (void)get:(void (^)(NSArray<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
+- (void)get:(ARTRealtimePresenceQuery *)query callback:(void (^)(NSArray<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
 
-- (void)enter:(id __art_nullable)data;
-- (void)enter:(id __art_nullable)data callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb;
+- (void)enter:(id _Nullable)data;
+- (void)enter:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb;
 
-- (void)update:(id __art_nullable)data;
-- (void)update:(id __art_nullable)data callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb;
+- (void)update:(id _Nullable)data;
+- (void)update:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb;
 
-- (void)leave:(id __art_nullable)data;
-- (void)leave:(id __art_nullable)data callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb;
+- (void)leave:(id _Nullable)data;
+- (void)leave:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb;
 
-- (void)enterClient:(NSString *)clientId data:(id __art_nullable)data;
-- (void)enterClient:(NSString *)clientId data:(id __art_nullable)data callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb;
+- (void)enterClient:(NSString *)clientId data:(id _Nullable)data;
+- (void)enterClient:(NSString *)clientId data:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb;
 
-- (void)updateClient:(NSString *)clientId data:(id __art_nullable)data;
-- (void)updateClient:(NSString *)clientId data:(id __art_nullable)data callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb;
+- (void)updateClient:(NSString *)clientId data:(id _Nullable)data;
+- (void)updateClient:(NSString *)clientId data:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb;
 
-- (void)leaveClient:(NSString *)clientId data:(id __art_nullable)data;
-- (void)leaveClient:(NSString *)clientId data:(id __art_nullable)data callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb;
+- (void)leaveClient:(NSString *)clientId data:(id _Nullable)data;
+- (void)leaveClient:(NSString *)clientId data:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb;
 
-- (__GENERIC(ARTEventListener, ARTPresenceMessage *) *__art_nullable)subscribe:(void (^)(ARTPresenceMessage *message))callback;
-- (__GENERIC(ARTEventListener, ARTPresenceMessage *) *__art_nullable)subscribeWithAttachCallback:(art_nullable void (^)(ARTErrorInfo *__art_nullable))onAttach callback:(void (^)(ARTPresenceMessage *message))cb;
-- (__GENERIC(ARTEventListener, ARTPresenceMessage *) *__art_nullable)subscribe:(ARTPresenceAction)action callback:(void (^)(ARTPresenceMessage *message))cb;
-- (__GENERIC(ARTEventListener, ARTPresenceMessage *) *__art_nullable)subscribe:(ARTPresenceAction)action onAttach:(art_nullable void (^)(ARTErrorInfo *__art_nullable))onAttach callback:(void (^)(ARTPresenceMessage *message))cb;
+- (ARTEventListener *_Nullable)subscribe:(void (^)(ARTPresenceMessage *message))callback;
+- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable void (^)(ARTErrorInfo *_Nullable))onAttach callback:(void (^)(ARTPresenceMessage *message))cb;
+- (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action callback:(void (^)(ARTPresenceMessage *message))cb;
+- (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action onAttach:(nullable void (^)(ARTErrorInfo *_Nullable))onAttach callback:(void (^)(ARTPresenceMessage *message))cb;
 
 - (void)unsubscribe;
-- (void)unsubscribe:(__GENERIC(ARTEventListener, ARTPresenceMessage *) *)listener;
-- (void)unsubscribe:(ARTPresenceAction)action listener:(__GENERIC(ARTEventListener, ARTPresenceMessage *) *)listener;
+- (void)unsubscribe:(ARTEventListener *)listener;
+- (void)unsubscribe:(ARTPresenceAction)action listener:(ARTEventListener *)listener;
 
-- (void)history:(void(^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback;
-- (BOOL)history:(ARTRealtimeHistoryQuery *__art_nullable)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback error:(NSError *__art_nullable *__art_nullable)errorPtr;
+- (void)history:(void(^)(ARTPaginatedResult<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
+- (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(void(^)(ARTPaginatedResult<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

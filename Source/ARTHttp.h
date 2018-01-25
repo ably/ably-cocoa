@@ -7,21 +7,21 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTTypes.h"
-#import "ARTLog.h"
+
+#import <Ably/ARTTypes.h>
+#import <Ably/ARTLog.h>
 
 @class ARTErrorInfo;
 @class ARTClientOptions;
 
 @protocol ARTEncoder;
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTHTTPExecutor
 
-@property (nonatomic) ARTLog *logger;
-
-- (void)executeRequest:(NSMutableURLRequest *)request completion:(art_nullable void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback;
+- (ARTLog *)logger;
+- (void)executeRequest:(NSURLRequest *)request completion:(nullable void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback;
 
 @end
 
@@ -31,44 +31,15 @@ ART_ASSUME_NONNULL_BEGIN
 
 - (id<ARTEncoder>)defaultEncoder;
 
-- (void)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback;
-
-@end
-
-
-@interface ARTHttpRequest : NSObject
-
-@property (readonly, strong, nonatomic) NSString *method;
-@property (readonly, strong, nonatomic) NSURL *url;
-@property (art_nullable, readonly, strong, nonatomic) NSDictionary *headers;
-@property (art_nullable, readonly, strong, nonatomic) NSData *body;
-
-- (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithMethod:(NSString *)method url:(NSURL *)url headers:(art_nullable NSDictionary *)headers body:(art_nullable NSData *)body;
-- (ARTHttpRequest *)requestWithRelativeUrl:(NSString *)relUrl;
-
-@end
-
-@interface ARTHttpResponse : NSObject
-
-@property (readonly, assign, nonatomic) int status;
-@property (readwrite, strong, nonatomic) ARTErrorInfo *error;
-@property (art_nullable, readonly, strong, nonatomic) NSDictionary *headers;
-@property (art_nullable, readonly, strong, nonatomic) NSData *body;
-
-- (instancetype)init;
-- (instancetype)initWithStatus:(int)status headers:(art_nullable NSDictionary *)headers body:(art_nullable NSData *)body;
-
-+ (instancetype)response;
-+ (instancetype)responseWithStatus:(int)status headers:(art_nullable NSDictionary *)headers body:(art_nullable NSData *)body;
-
-- (NSString *)contentType;
-- (NSDictionary *)links;
+- (void)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback;
 
 @end
 
 @interface ARTHttp : NSObject<ARTHTTPExecutor>
 
+- (instancetype)init UNAVAILABLE_ATTRIBUTE;
+- (instancetype)init:(dispatch_queue_t)queue logger:(ARTLog *)logger;
+
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

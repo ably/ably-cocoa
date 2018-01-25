@@ -41,6 +41,8 @@
 
 + (NSString *)typeDescription:(ARTRealtimeTransportErrorType)type {
     switch (type) {
+    case ARTRealtimeTransportErrorTypeOther:
+        return @"Other";
     case ARTRealtimeTransportErrorTypeHostUnreachable:
         return @"Unreachable";
     case ARTRealtimeTransportErrorTypeNoInternet:
@@ -49,10 +51,8 @@
         return @"Timeout";
     case ARTRealtimeTransportErrorTypeBadResponse:
         return @"BadResponse";
-    case ARTRealtimeTransportErrorTypeAuth:
-        return @"Auth";
-    case ARTRealtimeTransportErrorTypeOther:
-        return @"Other";
+    case ARTRealtimeTransportErrorTypeRefused:
+        return @"Refused";
     }
 }
 

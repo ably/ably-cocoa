@@ -1,1 +1,4 @@
-github "square/SocketRocket" == 0.5.0
+github "facebook/SocketRocket" "master"
+github "rvi/msgpack-objective-C" "master"
+github "ably-forks/KSCrash" "1.15.8-ably-1"
+github "whitesmith/ulid"

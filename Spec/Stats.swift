@@ -23,11 +23,12 @@ class Stats: QuickSpec {
                     let data: JSON = [
                         [ attribute: [ "messages": [ "count": 5], "all": [ "data": 10 ] ] ]
                     ]
-                    let stats = encoder.decodeStats(try! data.rawData())?[0] as? ARTStats
-                    let subject = stats?.valueForKey(attribute) as? ARTStatsMessageTypes
+                    let rawData = try! data.rawData()
+                    let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+                    let subject = stats?.value(forKey: attribute) as? ARTStatsMessageTypes
 
                     it("should return a MessagesTypes object") {
-                        expect(subject).to(beAnInstanceOf(ARTStatsMessageTypes))
+                        expect(subject).to(beAnInstanceOf(ARTStatsMessageTypes.self))
                     }
 
                     // TS5
@@ -56,11 +57,12 @@ class Stats: QuickSpec {
                             "all": [ "messages": [ "count": 25 ], "presence": [ "data": 210 ] ]
                         ] ]
                     ]
-                    let stats = encoder.decodeStats(try! data.rawData())?[0] as? ARTStats
-                    let subject = stats?.valueForKey(direction) as? ARTStatsMessageTraffic
+                    let rawData = try! data.rawData()
+                    let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+                    let subject = stats?.value(forKey: direction) as? ARTStatsMessageTraffic
 
                     it("should return a MessageTraffic object") {
-                        expect(subject).to(beAnInstanceOf(ARTStatsMessageTraffic))
+                        expect(subject).to(beAnInstanceOf(ARTStatsMessageTraffic.self))
                     }
 
                     // TS5
@@ -80,11 +82,12 @@ class Stats: QuickSpec {
                 let data: JSON = [
                     [ "connections": [ "tls": [ "opened": 5], "all": [ "peak": 10 ] ] ]
                 ]
-                let stats = encoder.decodeStats(try! data.rawData())?[0] as? ARTStats
+                let rawData = try! data.rawData()
+                let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
                 let subject = stats?.connections
 
                 it("should return a ConnectionTypes object") {
-                    expect(subject).to(beAnInstanceOf(ARTStatsConnectionTypes))
+                    expect(subject).to(beAnInstanceOf(ARTStatsConnectionTypes.self))
                 }
 
                 it("should return value for tls opened counts") {
@@ -106,11 +109,12 @@ class Stats: QuickSpec {
                 let data: JSON = [
                     [ "channels": [ "opened": 5, "peak": 10 ] ]
                 ]
-                let stats = encoder.decodeStats(try! data.rawData())?[0] as? ARTStats
+                let rawData = try! data.rawData()
+                let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
                 let subject = stats?.channels
 
                 it("should return a ResourceCount object") {
-                    expect(subject).to(beAnInstanceOf(ARTStatsResourceCount))
+                    expect(subject).to(beAnInstanceOf(ARTStatsResourceCount.self))
                 }
 
                 it("should return value for opened counts") {
@@ -132,12 +136,13 @@ class Stats: QuickSpec {
                 let data: JSON = [
                     [ requestType: [ "succeeded": 5, "failed": 10 ] ]
                 ]
-                let stats = encoder.decodeStats(try! data.rawData())?[0] as? ARTStats
-                let subject = stats?.valueForKey(requestType) as? ARTStatsRequestCount
+                let rawData = try! data.rawData()
+                let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+                let subject = stats?.value(forKey: requestType) as? ARTStatsRequestCount
 
                 context(requestType) {
                     it("should return a RequestCount object") {
-                        expect(subject).to(beAnInstanceOf(ARTStatsRequestCount))
+                        expect(subject).to(beAnInstanceOf(ARTStatsRequestCount.self))
                     }
 
                     it("should return value for succeeded") {
@@ -154,7 +159,8 @@ class Stats: QuickSpec {
                 let data: JSON = [
                     [ "intervalId": "2004-02-01:05:06" ]
                 ]
-                let stats = encoder.decodeStats(try! data.rawData())?[0] as? ARTStats
+                let rawData = try! data.rawData()
+                let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
 
                 it("should return a Date object representing the start of the interval") {
                     let dateComponents = NSDateComponents()
@@ -163,9 +169,9 @@ class Stats: QuickSpec {
                     dateComponents.day = 1
                     dateComponents.hour = 5
                     dateComponents.minute = 6
-                    dateComponents.timeZone = NSTimeZone(name: "UTC")
+                    dateComponents.timeZone = NSTimeZone(name: "UTC") as TimeZone?
 
-                    let expected = NSCalendar(identifier: NSCalendarIdentifierGregorian)?.dateFromComponents(dateComponents)
+                    let expected = NSCalendar(identifier: NSCalendar.Identifier.gregorian)?.date(from: dateComponents as DateComponents)
 
                     expect(stats?.intervalTime()).to(equal(expected))
                 }

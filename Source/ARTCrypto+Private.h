@@ -6,26 +6,23 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#ifndef ARTCrypto_Private_h
-#define ARTCrypto_Private_h
+#import <Ably/ARTCrypto.h>
+#import <Ably/ARTLog.h>
 
-#import "ARTCrypto.h"
-#import "ARTLog.h"
-
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTCipherParams ()
 
-@property (readonly, strong, nonatomic, art_nullable) NSData *iv;
+@property (readonly, strong, nonatomic, nullable) NSData *iv;
 @property (nonatomic, weak) ARTLog *logger;
-- (instancetype)initWithAlgorithm:(NSString *)algorithm key:(id<ARTCipherKeyCompatible>)key iv:(NSData *__art_nullable)iv;
+- (instancetype)initWithAlgorithm:(NSString *)algorithm key:(id<ARTCipherKeyCompatible>)key iv:(NSData *_Nullable)iv;
 
 @end
 
 @protocol ARTChannelCipher
 
-- (ARTStatus *)encrypt:(NSData *)plaintext output:(NSData *__art_nullable*__art_nullable)output;
-- (ARTStatus *)decrypt:(NSData *)ciphertext output:(NSData *__art_nullable*__art_nullable)output;
+- (ARTStatus *)encrypt:(NSData *)plaintext output:(NSData *_Nullable *_Nullable)output;
+- (ARTStatus *)decrypt:(NSData *)ciphertext output:(NSData *_Nullable *_Nullable)output;
 - (NSString *)cipherName;
 - (size_t) keyLength;
 
@@ -37,7 +34,7 @@ ART_ASSUME_NONNULL_BEGIN
 + (instancetype)cbcCipherWithParams:(ARTCipherParams *)cipherParams;
 
 
-@property (nonatomic, weak) ARTLog * logger;
+@property (nonatomic, weak) ARTLog *logger;
 @property (readonly, strong, nonatomic) NSData *keySpec;
 @property NSData *iv;
 @property (readonly) NSUInteger blockLength;
@@ -50,12 +47,10 @@ ART_ASSUME_NONNULL_BEGIN
 + (int)defaultKeyLength;
 + (int)defaultBlockLength;
 
-+ (NSData *)generateSecureRandomData:(size_t)length;
++ (nullable NSMutableData *)generateSecureRandomData:(size_t)length;
 
 + (id<ARTChannelCipher>)cipherWithParams:(ARTCipherParams *)params;
 
 @end
 
-ART_ASSUME_NONNULL_END
-
-#endif /* ARTCrypto_Private_h */
+NS_ASSUME_NONNULL_END

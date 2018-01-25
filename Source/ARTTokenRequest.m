@@ -9,6 +9,7 @@
 #import "ARTTokenRequest.h"
 #import "ARTTokenParams.h"
 #import "ARTAuth+Private.h"
+#import "ARTDefault.h"
 
 @implementation ARTTokenRequest
 
@@ -30,12 +31,12 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat: @"ARTTokenRequest: keyName=%@ clientId=%@ nonce=%@ mac=%@ ttl=%f capability=%@ timestamp=%@",
+    return [NSString stringWithFormat: @"ARTTokenRequest: keyName=%@ clientId=%@ nonce=%@ mac=%@ ttl=%@ capability=%@ timestamp=%@",
             self.keyName, self.clientId, self.nonce, self.mac, self.ttl, self.capability, self.timestamp];
 }
 
-+ (ARTTokenRequest *__art_nullable)fromJson:(id<ARTJsonCompatible>)json error:(NSError *__art_nullable *__art_nullable)error {
-    NSError *e;
++ (ARTTokenRequest *_Nullable)fromJson:(id<ARTJsonCompatible>)json error:(NSError *_Nullable *_Nullable)error {
+    NSError *e = nil;
     NSDictionary *dict = [json toJSON:&e];
     if (e) {
         if (error) {
@@ -51,7 +52,7 @@
                                                                            nonce:dict[@"nonce"]
                                                                              mac:dict[@"mac"]];
     tokenRequest.clientId = dict[@"clientId"];
-    tokenRequest.ttl = millisecondsToTimeInterval([dict[@"ttl"] doubleValue]);
+    tokenRequest.ttl = dict[@"ttl"] ? [NSNumber numberWithDouble:millisecondsToTimeInterval([dict[@"ttl"] unsignedLongLongValue])] : nil;
     tokenRequest.capability = dict[@"capability"];
     tokenRequest.timestamp = [NSDate dateWithTimeIntervalSince1970:[dict[@"timestamp"] doubleValue] / 1000];
 

@@ -5,4 +5,4 @@ set -e
 
 cd "Examples/Tests"
 pod install
-scan -s Tests
+fastlane scan -s Tests

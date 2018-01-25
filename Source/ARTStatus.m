@@ -13,6 +13,10 @@
 // Reverse-DNS style domain
 NSString *const ARTAblyErrorDomain = @"io.ably.cocoa";
 
+NSString *const ARTFallbackIncompatibleOptionsException = @"ARTFallbackIncompatibleOptionsException";
+
+NSString *const ARTAblyMessageNoMeansToRenewToken = @"no means to renew the token is provided (either an API key, authCallback or authUrl)";
+
 NSInteger getStatusFromCode(NSInteger code) {
     return code / 100;
 }
@@ -24,30 +28,62 @@ NSInteger getStatusFromCode(NSInteger code) {
 }
 
 + (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message {
-    return [[super alloc] initWithDomain:ARTAblyErrorDomain code:code userInfo:@{@"status": [NSNumber numberWithInteger:status], NSLocalizedDescriptionKey:message}];
+    if (message) {
+        return [[ARTErrorInfo alloc] initWithDomain:ARTAblyErrorDomain code:code userInfo:@{@"ARTErrorInfoStatusCode": [NSNumber numberWithInteger:status], NSLocalizedDescriptionKey:message}];
+    }
+    return [[ARTErrorInfo alloc] initWithDomain:ARTAblyErrorDomain code:code userInfo:@{@"ARTErrorInfoStatusCode": [NSNumber numberWithInteger:status]}];
 }
 
-+ (ARTErrorInfo *)createWithNSError:(NSError *)error {
++ (ARTErrorInfo *)createFromNSError:(NSError *)error {
     if ([error isKindOfClass:[ARTErrorInfo class]]) {
         return (ARTErrorInfo *)error;
     }
-    return [ARTErrorInfo createWithCode:error.code message:error.description];
+    NSMutableDictionary *userInfo = [error.userInfo mutableCopy];
+    [userInfo setValue:error.domain forKey:@"ARTErrorInfoOriginalDomain"];
+    return [[ARTErrorInfo alloc] initWithDomain:ARTAblyErrorDomain code:error.code userInfo:userInfo];
+}
+
++ (ARTErrorInfo *)createFromNSException:(NSException *)error {
+    ARTErrorInfo *e = [self createWithCode:0 message:[NSString stringWithFormat:@"%@: %@", error.name, error.reason]];
+    for (NSString *k in error.userInfo) {
+        [e.userInfo setValue:error.userInfo[k] forKey:k];
+    }
+    return e;
+}
+
++ (ARTErrorInfo *)createUnknownError {
+    return [ARTErrorInfo createWithCode:0 message:@"Unknown error"];
 }
 
 + (ARTErrorInfo *)wrap:(ARTErrorInfo *)error prepend:(NSString *)prepend {
-    return [ARTErrorInfo createWithCode:error.code status:error.statusCode message:[NSString stringWithFormat:@"%@%@", prepend, error.message]];
+    return [ARTErrorInfo createWithCode:error.code status:error.statusCode message:[NSString stringWithFormat:@"%@%@", prepend, error.reason]];
 }
 
-- (NSString *)getMessage {
-    return (NSString *)self.userInfo[NSLocalizedDescriptionKey];
+- (NSString *)message {
+    NSString *description = (NSString *)self.userInfo[NSLocalizedDescriptionKey];
+    if (!description || [description isEqualToString:@""]) {
+        description = [self reason];
+    }
+    return description;
 }
 
-- (NSInteger)getStatus {
-    return [(NSNumber *)self.userInfo[@"status"] integerValue];
+- (NSString *)reason {
+    NSString *reason = (NSString *)self.userInfo[NSLocalizedFailureReasonErrorKey];
+    if (!reason || [reason isEqualToString:@""]) {
+        reason = (NSString *)self.userInfo[@"NSDebugDescription"];
+    }
+    if (!reason || [reason isEqualToString:@""]) {
+        reason = (NSString *)self.userInfo[@"ARTErrorInfoOriginalDomain"];
+    }
+    return reason;
+}
+
+- (NSInteger)statusCode {
+    return [(NSNumber *)self.userInfo[@"ARTErrorInfoStatusCode"] integerValue];
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"ARTErrorInfo with code %ld, message: %@", (long)self.statusCode, self.message];
+    return [NSString stringWithFormat:@"ARTErrorInfo with code %ld, message: %@, reason: %@", (long)self.code, self.message, self.reason];
 }
 
 @end
@@ -59,6 +95,7 @@ NSInteger getStatusFromCode(NSInteger code) {
     if (self) {
         _state = ARTStateOk;
         _errorInfo = nil;
+        _storeErrorInfo = false;
    }
     return self;
 }
@@ -72,6 +109,7 @@ NSInteger getStatusFromCode(NSInteger code) {
 + (ARTStatus *)state:(ARTState)state info:(ARTErrorInfo *)info {
     ARTStatus * s = [ARTStatus state:state];
     s.errorInfo = info;
+    s.storeErrorInfo = true;
     return s;
 }
 
@@ -86,4 +124,7 @@ NSInteger getStatusFromCode(NSInteger code) {
     _errorInfo = errorInfo;
 }
 
+@end
+
+@implementation ARTException
 @end

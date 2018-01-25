@@ -7,15 +7,14 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "CompatibilityMacros.h"
 
-#import "ARTRealtimeTransport.h"
+#import <Ably/ARTRealtimeTransport.h>
 
 @class ARTClientOptions;
 @class ARTRest;
 @class ARTLog;
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTWebSocketTransport : NSObject <ARTRealtimeTransport>
 
@@ -23,16 +22,8 @@ ART_ASSUME_NONNULL_BEGIN
 
 @property (readonly, strong, nonatomic) NSString *resumeKey;
 @property (readonly, strong, nonatomic) NSNumber *connectionSerial;
-@property (readwrite, weak, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
-
-@property (readonly, getter=getIsConnected) BOOL isConnected;
-
-@property (readwrite, assign, nonatomic) BOOL closing;
-
-- (NSURL *)setupWebSocket:(__GENERIC(NSArray, NSURLQueryItem *) *)params withOptions:(ARTClientOptions *)options resumeKey:(NSString *__art_nullable)resumeKey connectionSerial:(NSNumber *__art_nullable)connectionSerial;
-
-- (BOOL)getIsConnected;
+@property (readonly, strong, nonatomic) ARTLog *protocolMessagesLogger;
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

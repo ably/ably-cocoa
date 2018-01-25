@@ -33,8 +33,11 @@ static NSString *statsUnitToString(ARTStatsGranularity unit) {
     }
 }
 
-- (NSMutableArray *)asQueryItems {
-    NSMutableArray *items = [super asQueryItems];
+- (NSMutableArray *)asQueryItems:(NSError **)error {
+    NSMutableArray *items = [super asQueryItems:error];
+    if (*error) {
+        return nil;
+    }
     [items addObject:[NSURLQueryItem queryItemWithName:@"unit" value:statsUnitToString(self.unit)]];
     return items;
 }
@@ -186,7 +189,7 @@ static NSString *statsUnitToString(ARTStatsGranularity unit) {
             return [formatter dateFromString:intervalId];
         }
     }
-    @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"invalid intervalId" userInfo:nil];
+    @throw [ARTException exceptionWithName:NSInvalidArgumentException reason:@"invalid intervalId" userInfo:nil];
 }
 
 + (ARTStatsGranularity)granularityFromIntervalId:(NSString *)intervalId {
@@ -196,7 +199,7 @@ static NSString *statsUnitToString(ARTStatsGranularity unit) {
             return (ARTStatsGranularity)i;
         }
     }
-    @throw [NSException exceptionWithName:NSInvalidArgumentException reason:@"invalid intervalId" userInfo:nil];
+    @throw [ARTException exceptionWithName:NSInvalidArgumentException reason:@"invalid intervalId" userInfo:nil];
 }
 
 + (NSString *)toIntervalId:(NSDate *)time granularity:(ARTStatsGranularity)granularity {

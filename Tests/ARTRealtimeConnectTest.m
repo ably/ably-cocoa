@@ -116,17 +116,22 @@
     ARTRealtime *realtime = [[ARTRealtime alloc] initWithOptions:options];
     [realtime.connection on:^(ARTConnectionStateChange *stateChange) {
         ARTRealtimeConnectionState state = stateChange.current;
-    
-        if(state == ARTRealtimeConnected) {
+        if (state == ARTRealtimeConnected) {
             XCTAssertEqual(realtime.connection.serial, -1);
-            ARTRealtimeChannel *c =[realtime.channels get:@"chan"];
-            [c publish:nil data:@"message" callback:^(ARTErrorInfo *errorInfo) {
+            ARTRealtimeChannel *c = [realtime.channels get:@"chan"];
+            // The serial is updated whenever a ProtocolMessage is received that contains a connectionSerial value.
+            [c subscribe:^(ARTMessage *message) {
                 XCTAssertEqual(realtime.connection.serial, 0);
-                [c publish:nil data:@"message2" callback:^(ARTErrorInfo *errorInfo) {
+                [c unsubscribe];
+                [c subscribe:^(ARTMessage *message) {
                     XCTAssertEqual(realtime.connection.serial, 1);
+                    [c unsubscribe];
+                }];
+            }];
+            [c publish:nil data:@"message" callback:^(ARTErrorInfo *errorInfo) {
+                [c publish:nil data:@"message2" callback:^(ARTErrorInfo *errorInfo) {
                     [expectation fulfill];
                 }];
-                XCTAssertEqual(realtime.connection.serial, 0); //confirms that serial only updates after an ack
             }];
             [c attach];
         }

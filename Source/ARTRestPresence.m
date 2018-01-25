@@ -60,24 +60,45 @@
 
 @implementation ARTRestPresence {
     __weak ARTRestChannel *_channel;
+    dispatch_queue_t _userQueue;
+    dispatch_queue_t _queue;
 }
 
 - (instancetype)initWithChannel:(ARTRestChannel *)channel {
+ART_TRY_OR_REPORT_CRASH_START(channel.rest) {
     if (self = [super init]) {
         _channel = channel;
+        _userQueue = channel.rest.userQueue;
+        _queue = channel.rest.queue;
     }
     return self;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)get:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, ARTErrorInfo *error))callback {
+ART_TRY_OR_REPORT_CRASH_START(_channel.rest) {
     [self get:[[ARTPresenceQuery alloc] init] callback:callback error:nil];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (BOOL)get:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, ARTErrorInfo *error))callback error:(NSError **)errorPtr {
+ART_TRY_OR_REPORT_CRASH_START(_channel.rest) {
     return [self get:[[ARTPresenceQuery alloc] init] callback:callback error:errorPtr];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (BOOL)get:(ARTPresenceQuery *)query callback:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
+ART_TRY_OR_REPORT_CRASH_START(_channel.rest) {
+    if (callback) {
+        void (^userCallback)(ARTPaginatedResult<ARTPresenceMessage *> *, ARTErrorInfo *) = callback;
+        callback = ^(ARTPaginatedResult<ARTPresenceMessage *> *m, ARTErrorInfo *e) {
+            ART_EXITING_ABLY_CODE(_channel.rest);
+            dispatch_async(_userQueue, ^{
+                userCallback(m, e);
+            });
+        };
+    }
+
     if (query.limit > 1000) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
@@ -91,9 +112,9 @@
     requestUrl.queryItems = [query asQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl.URL];
 
-    ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data) {
+    ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
         id<ARTEncoder> encoder = [_channel.rest.encoders objectForKey:response.MIMEType];
-        return [[encoder decodePresenceMessages:data] artMap:^(ARTPresenceMessage *message) {
+        return [[encoder decodePresenceMessages:data error:errorPtr] artMap:^(ARTPresenceMessage *message) {
             // FIXME: This should be refactored to be done by ART{Json,...}Encoder.
             // The ART{Json,...}Encoder should take a ARTDataEncoder and use it every
             // time it is enc/decoding a message. This also applies for REST and Realtime
@@ -103,15 +124,31 @@
         }];
     };
 
+dispatch_async(_queue, ^{
     [ARTPaginatedResult executePaginated:_channel.rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
+});
     return YES;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)history:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *, ARTErrorInfo *))callback {
+ART_TRY_OR_REPORT_CRASH_START(_channel.rest) {
     [self history:[[ARTDataQuery alloc] init] callback:callback error:nil];
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (BOOL)history:(ARTDataQuery *)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, ARTErrorInfo *error))callback error:(NSError **)errorPtr {
+ART_TRY_OR_REPORT_CRASH_START(_channel.rest) {
+    if (callback) {
+        void (^userCallback)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, ARTErrorInfo *error) = callback;
+        callback = ^(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, ARTErrorInfo *error) {
+            ART_EXITING_ABLY_CODE(_channel.rest);
+            dispatch_async(_userQueue, ^{
+                userCallback(result, error);
+            });
+        };
+    }
+
     if (query.limit > 1000) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
@@ -130,24 +167,34 @@
     }
 
     NSURLComponents *requestUrl = [NSURLComponents componentsWithString:[_channel.basePath stringByAppendingPathComponent:@"presence/history"]];
-    requestUrl.queryItems = [query asQueryItems];
+    NSError *error = nil;
+    requestUrl.queryItems = [query asQueryItems:&error];
+    if (error) {
+        if (errorPtr) {
+            *errorPtr = error;
+        }
+        return NO;
+    }
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl.URL];
 
-    ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data) {
+    ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
         id<ARTEncoder> encoder = [_channel.rest.encoders objectForKey:response.MIMEType];
-        return [[encoder decodePresenceMessages:data] artMap:^(ARTPresenceMessage *message) {
-            NSError *error;
+        return [[encoder decodePresenceMessages:data error:errorPtr] artMap:^(ARTPresenceMessage *message) {
+            NSError *error = nil;
             message = [message decodeWithEncoder:_channel.dataEncoder error:&error];
             if (error != nil) {
-                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:(ARTErrorInfo *)error.userInfo[NSLocalizedFailureReasonErrorKey] prepend:@"Failed to decode data: "];
+                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createFromNSError:error] prepend:@"Failed to decode data: "];
                 [_channel.logger error:@"RS:%p %@", _channel.rest, errorInfo.message];
             }
             return message;
         }];
     };
 
+dispatch_async(_queue, ^{
     [ARTPaginatedResult executePaginated:_channel.rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
+});
     return YES;
+} ART_TRY_OR_REPORT_CRASH_END
 }
 
 @end

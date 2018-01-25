@@ -9,27 +9,18 @@
 #import <Foundation/Foundation.h>
 
 @class ARTErrorInfo;
-@class ARTPushActivationState;
 @class ARTPushActivationEvent;
 @class ARTRest;
 
-@protocol ARTDeviceStorage;
-
 NS_ASSUME_NONNULL_BEGIN
-
-extern NSString *const ARTPushActivationCurrentStateKey;
-extern NSString *const ARTPushActivationPendingEventsKey;
 
 @interface ARTPushActivationStateMachine : NSObject
 
 @property (nonatomic, strong) ARTRest *rest;
-@property (nonatomic, readonly) ARTPushActivationState *current;
-@property (nonatomic, weak) id delegate;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
 - (instancetype)init:(ARTRest *)rest;
-- (instancetype)init:(ARTRest *)rest storage:(id<ARTDeviceStorage>)storage;
 
 - (void)sendEvent:(ARTPushActivationEvent *)event;
 

@@ -28,13 +28,13 @@
     return [[self alloc] initWithMachine:machine];
 }
 
-- (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
-    NSAssert(false, @"-[%s:%d %s] should always be overriden.", __FILE__, __LINE__, __FUNCTION__);
-    return nil;
-}
-
 - (void)logEventTransition:(ARTPushActivationEvent *)event file:(const char *)file line:(NSUInteger)line {
     NSLog(@"%@ state: transitioning to %@ event", NSStringFromClass(self.class), NSStringFromClass(event.class));
+}
+
+- (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
+    NSAssert(false, @"-[%s:%d %s] should always be overriden; class %@ doesn't.", __FILE__, __LINE__, __FUNCTION__, NSStringFromClass(self.class));
+    return nil;
 }
 
 - (id)copyWithZone:(NSZone *)zone {

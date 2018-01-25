@@ -6,22 +6,20 @@
 //  Copyright (c) 2015 г. Ably. All rights reserved.
 //
 
-#import "ARTPaginatedResult.h"
+#import <Ably/ARTPaginatedResult.h>
 
 @class ARTRest;
 
-@protocol ARTHTTPAuthenticatedExecutor;
+NS_ASSUME_NONNULL_BEGIN
 
-ART_ASSUME_NONNULL_BEGIN
+@interface ARTPaginatedResult<ItemType> ()
 
-@interface __GENERIC(ARTPaginatedResult, ItemType) ()
+typedef NSArray<ItemType> *_Nullable(^ARTPaginatedResultResponseProcessor)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable *_Nullable);
 
-typedef __GENERIC(NSArray, ItemType) *__art_nullable(^ARTPaginatedResultResponseProcessor)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable);
-
-+ (void)executePaginated:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor withRequest:(NSMutableURLRequest *)request
++ (void)executePaginated:(ARTRest *)rest withRequest:(NSMutableURLRequest *)request
               andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
-                       callback:(void (^)(__GENERIC(ARTPaginatedResult, ItemType) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback;
+                       callback:(void (^)(ARTPaginatedResult<ItemType> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

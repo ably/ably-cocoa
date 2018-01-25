@@ -17,39 +17,34 @@
 #import "ARTTypes.h"
 #import "ARTLocalDevice+Private.h"
 #import "ARTDevicePushDetails.h"
-#import "ARTLocalDeviceStorage.h"
 
 #ifdef TARGET_OS_IOS
 #import <UIKit/UIKit.h>
-
-NSString *const ARTPushException = @"ARTPushException";
 
 NSString *const ARTPushActivationCurrentStateKey = @"ARTPushActivationCurrentState";
 NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEvents";
 
 @implementation ARTPushActivationStateMachine {
+    ARTPushActivationState *_current;
     NSMutableArray<ARTPushActivationEvent *> *_pendingEvents;
-    id<ARTDeviceStorage> _storage;
+    dispatch_queue_t _queue;
+    dispatch_queue_t _userQueue;
 }
 
 - (instancetype)init:(ARTRest *)rest {
-    return [self init:rest storage:[ARTLocalDeviceStorage new]];
-}
-
-- (instancetype)init:(ARTRest *)rest storage:(id<ARTDeviceStorage>)storage {
     if (self = [super init]) {
         _rest = rest;
-        _storage = storage;
-        // Unarquiving
-        NSData *stateData = [_storage readKey:ARTPushActivationCurrentStateKey];
-        _current = [ARTPushActivationState unarchive:stateData];
+        _queue = _rest.queue;
+        _userQueue = _rest.userQueue;
+        // Unarchiving
+        NSData *stateData = [[NSUserDefaults standardUserDefaults] objectForKey:ARTPushActivationCurrentStateKey];
+        _current = [NSKeyedUnarchiver unarchiveObjectWithData:stateData];
         if (!_current) {
-            _current = [ARTPushActivationStateNotActivated newWithMachine:self];
-        }
-        else {
+            _current = [[ARTPushActivationStateNotActivated alloc] initWithMachine:self];
+        } else {
             _current.machine = self;
         }
-        NSData *pendingEventsData = [_storage readKey:ARTPushActivationPendingEventsKey];
+        NSData *pendingEventsData = [[NSUserDefaults standardUserDefaults] objectForKey:ARTPushActivationPendingEventsKey];
         _pendingEvents = [NSKeyedUnarchiver unarchiveObjectWithData:pendingEventsData];
         if (!_pendingEvents) {
             _pendingEvents = [NSMutableArray array];
@@ -58,25 +53,23 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
     return self;
 }
 
-- (id)delegate {
-    if (!_delegate) {
-        _delegate = [UIApplication sharedApplication].delegate;
-    }
-    return _delegate;
-}
-
 - (void)sendEvent:(ARTPushActivationEvent *)event {
+dispatch_async(_queue, ^{
     [self handleEvent:event];
+});
 }
 
 - (void)handleEvent:(nonnull ARTPushActivationEvent *)event {
+    NSLog(@"handling event %@ from %@", NSStringFromClass(event.class), NSStringFromClass(_current.class));
+
     ARTPushActivationState *maybeNext = [_current transition:event];
 
     if (maybeNext == nil) {
+        NSLog(@"enqueuing event: %@", NSStringFromClass(event.class));
         [_pendingEvents addObject:event];
         return;
     }
-
+    NSLog(@"transition: %@ -> %@", NSStringFromClass(_current.class), NSStringFromClass(maybeNext.class));
     _current = maybeNext;
 
     while (true) {
@@ -84,12 +77,14 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
         if (pending == nil) {
             break;
         }
+        NSLog(@"attempting to consume pending event: %@", NSStringFromClass(pending.class));
         maybeNext = [_current transition:pending];
         if (maybeNext == nil) {
             break;
         }
         [_pendingEvents dequeue];
 
+        NSLog(@"transition: %@ -> %@", NSStringFromClass(_current.class), NSStringFromClass(maybeNext.class));
         _current = maybeNext;
     }
 
@@ -99,54 +94,61 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
 - (void)persist {
     // Archiving
     if ([_current isKindOfClass:[ARTPushActivationPersistentState class]]) {
-        [_storage writeKey:ARTPushActivationCurrentStateKey withValue:[_current archive]];
+        [[NSUserDefaults standardUserDefaults] setObject:[NSKeyedArchiver archivedDataWithRootObject:_current] forKey:ARTPushActivationCurrentStateKey];
     }
-    [_storage writeKey:ARTPushActivationPendingEventsKey withValue:[NSKeyedArchiver archivedDataWithRootObject:_pendingEvents]];
+    [[NSUserDefaults standardUserDefaults] setObject:[NSKeyedArchiver archivedDataWithRootObject:_pendingEvents] forKey:ARTPushActivationPendingEventsKey];
 }
 
 - (void)deviceRegistration:(ARTErrorInfo *)error {
     #ifdef TARGET_OS_IOS
-    ARTLocalDevice *local = _rest.device;
+    ARTLocalDevice *local = _rest.device_nosync;
 
-    if (![[self delegate] conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
-        [NSException raise:ARTPushException format:@"ARTPushRegistererDelegate must be implemented"];
+    __block id delegate;
+    dispatch_sync(_userQueue, ^{
+        // -[UIApplication delegate] is an UI API call
+        delegate = [UIApplication sharedApplication].delegate;
+    });
+
+    if (![delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
+        [NSException raise:@"ARTPushRegistererDelegate must be implemented on AppDelegate" format:@""];
     }
 
     // Custom register
     SEL customRegisterMethodSelector = @selector(ablyPushCustomRegister:deviceDetails:callback:);
-    if ([[self delegate] respondsToSelector:customRegisterMethodSelector]) {
-        [[self delegate] ablyPushCustomRegister:error deviceDetails:local callback:^(ARTUpdateToken *updateToken, ARTErrorInfo *error) {
-            if (error) {
-                // Failed
-                [[self delegate] didActivateAblyPush:error];
-                [self sendEvent:[ARTPushActivationEventGettingUpdateTokenFailed newWithError:error]];
-            }
-            else if (updateToken) {
-                // Success
-                [local setAndPersistUpdateToken:updateToken];
-                [[self delegate] didActivateAblyPush:nil];
-                [self sendEvent:[ARTPushActivationEventGotUpdateToken new]];
-            }
-            else {
-                ARTErrorInfo *missingUpdateTokenError = [ARTErrorInfo createWithCode:0 message:@"UpdateToken is expected"];
-                [[self delegate] didActivateAblyPush:missingUpdateTokenError];
-                [self sendEvent:[ARTPushActivationEventGettingUpdateTokenFailed newWithError:missingUpdateTokenError]];
-            }
-        }];
+    if ([delegate respondsToSelector:customRegisterMethodSelector]) {
+        dispatch_async(_userQueue, ^{
+            [delegate ablyPushCustomRegister:error deviceDetails:local callback:^(ARTUpdateToken *updateToken, ARTErrorInfo *error) {
+                if (error) {
+                    // Failed
+                    [delegate didActivateAblyPush:error];
+                    [self sendEvent:[ARTPushActivationEventGettingUpdateTokenFailed newWithError:error]];
+                }
+                else if (updateToken) {
+                    // Success
+                    [local setAndPersistUpdateToken:updateToken];
+                    [self sendEvent:[ARTPushActivationEventGotUpdateToken new]];
+                }
+                else {
+                    ARTErrorInfo *missingUpdateTokenError = [ARTErrorInfo createWithCode:0 message:@"UpdateToken is expected"];
+                    [delegate didActivateAblyPush:missingUpdateTokenError];
+                    [self sendEvent:[ARTPushActivationEventGettingUpdateTokenFailed newWithError:missingUpdateTokenError]];
+                }
+            }];
+        });
         return;
     }
 
     // Asynchronous HTTP request
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"]];
     request.HTTPMethod = @"POST";
-    request.HTTPBody = [[_rest defaultEncoder] encodeDeviceDetails:local];
+    request.HTTPBody = [[_rest defaultEncoder] encodeDeviceDetails:local error:nil];
     [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
     [[_rest logger] debug:__FILE__ line:__LINE__ message:@"device registration with request %@", request];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             [[_rest logger] error:@"%@: device registration failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
-            [self sendEvent:[ARTPushActivationEventGettingUpdateTokenFailed newWithError:[ARTErrorInfo createWithNSError:error]]];
+            [self sendEvent:[ARTPushActivationEventGettingUpdateTokenFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
             return;
         }
         ARTDeviceDetails *deviceDetails = [[_rest defaultEncoder] decodeDeviceDetails:data error:nil];
@@ -158,33 +160,41 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
 
 - (void)deviceUpdateRegistration:(ARTErrorInfo *)error {
     #ifdef TARGET_OS_IOS
-    ARTLocalDevice *local = _rest.device;
+    ARTLocalDevice *local = _rest.device_nosync;
 
-    if (![[self delegate] conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
-        [NSException raise:ARTPushException format:@"ARTPushRegistererDelegate must be implemented"];
+    __block id delegate;
+    dispatch_sync(_userQueue, ^{
+        // -[UIApplication delegate] is an UI API call
+        delegate = [UIApplication sharedApplication].delegate;
+    });
+
+    if (![delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
+        [NSException raise:@"ARTPushRegistererDelegate must be implemented on AppDelegate" format:@""];
     }
 
     // Custom register
     SEL customRegisterMethodSelector = @selector(ablyPushCustomRegister:deviceDetails:callback:);
-    if ([[self delegate] respondsToSelector:customRegisterMethodSelector]) {
-        [[self delegate] ablyPushCustomRegister:error deviceDetails:local callback:^(ARTUpdateToken *updateToken, ARTErrorInfo *error) {
-            if (error) {
-                // Failed
-                [[self delegate] didActivateAblyPush:error];
-                [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:error]];
-            }
-            else if (updateToken) {
-                // Success
-                [local setAndPersistUpdateToken:updateToken];
-                [[self delegate] didActivateAblyPush:nil];
-                [self sendEvent:[ARTPushActivationEventRegistrationUpdated new]];
-            }
-            else {
-                ARTErrorInfo *missingUpdateTokenError = [ARTErrorInfo createWithCode:0 message:@"UpdateToken is expected"];
-                [[self delegate] didActivateAblyPush:missingUpdateTokenError];
-                [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:missingUpdateTokenError]];
-            }
-        }];
+    if ([delegate respondsToSelector:customRegisterMethodSelector]) {
+        dispatch_async(_userQueue, ^{
+            [delegate ablyPushCustomRegister:error deviceDetails:local callback:^(ARTUpdateToken *updateToken, ARTErrorInfo *error) {
+                if (error) {
+                    // Failed
+                    [delegate didActivateAblyPush:error];
+                    [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:error]];
+                }
+                else if (updateToken) {
+                    // Success
+                    [local setAndPersistUpdateToken:updateToken];
+                    [delegate didActivateAblyPush:nil];
+                    [self sendEvent:[ARTPushActivationEventRegistrationUpdated new]];
+                }
+                else {
+                    ARTErrorInfo *missingUpdateTokenError = [ARTErrorInfo createWithCode:0 message:@"UpdateToken is expected"];
+                    [delegate didActivateAblyPush:missingUpdateTokenError];
+                    [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:missingUpdateTokenError]];
+                }
+            }];
+        });
         return;
     }
 
@@ -197,14 +207,14 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
         @"push": @{
             @"recipient": local.push.recipient
         }
-    }];
+    } error:nil];
     [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
     [[_rest logger] debug:__FILE__ line:__LINE__ message:@"update device with request %@", request];
     [_rest executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             [[_rest logger] error:@"%@: update device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
-            [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:[ARTErrorInfo createWithNSError:error]]];
+            [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
             return;
         }
         ARTDeviceDetails *deviceDetails = [[_rest defaultEncoder] decodeDeviceDetails:data error:nil];
@@ -216,20 +226,30 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
 
 - (void)deviceUnregistration:(ARTErrorInfo *)error {
     #ifdef TARGET_OS_IOS
-    ARTLocalDevice *local = _rest.device;
+    ARTLocalDevice *local = _rest.device_nosync;
+
+    __block id delegate;
+    dispatch_sync(_userQueue, ^{
+        // -[UIApplication delegate] is an UI API call
+        delegate = [UIApplication sharedApplication].delegate;
+    });
 
     // Custom register
     SEL customDeregisterMethodSelector = @selector(ablyPushCustomDeregister:deviceId:callback:);
-    if ([[self delegate] respondsToSelector:customDeregisterMethodSelector]) {
-        [[self delegate] ablyPushCustomDeregister:error deviceId:local.id callback:^(ARTErrorInfo *error) {
-            if (error) {
-                [[self delegate] didDeactivateAblyPush:error];
-                [self sendEvent:[ARTPushActivationEventDeregistrationFailed newWithError:error]];
-                return;
-            }
-            [[self delegate] didDeactivateAblyPush:nil];
-            [self sendEvent:[ARTPushActivationEventDeregistered new]];
-        }];
+    if ([delegate respondsToSelector:customDeregisterMethodSelector]) {
+        dispatch_async(_userQueue, ^{
+            [delegate ablyPushCustomDeregister:error deviceId:local.id callback:^(ARTErrorInfo *error) {
+                if (error) {
+                    // Failed
+                    [delegate didDeactivateAblyPush:error];
+                    [self sendEvent:[ARTPushActivationEventDeregistrationFailed newWithError:error]];
+                }
+                else {
+                    // Success
+                    [delegate didDeactivateAblyPush:nil];
+                }
+            }];
+        });
         return;
     }
 
@@ -246,9 +266,9 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             [[_rest logger] error:@"%@: device deregistration failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
-            [self sendEvent:[ARTPushActivationEventDeregistrationFailed newWithError:[ARTErrorInfo createWithNSError:error]]];
-            return;
+            [self sendEvent:[ARTPushActivationEventDeregistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
         }
+
         [[_rest logger] debug:__FILE__ line:__LINE__ message:@"successfully deactivate device"];
         [self sendEvent:[ARTPushActivationEventDeregistered new]];
     }];
@@ -257,34 +277,43 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
 
 - (void)callActivatedCallback:(ARTErrorInfo *)error {
     #ifdef TARGET_OS_IOS
-    if ([[self delegate] conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
+dispatch_async(_userQueue, ^{
+    if ([[UIApplication sharedApplication].delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
+        id delegate = [UIApplication sharedApplication].delegate;
         SEL activateCallbackMethodSelector = @selector(didActivateAblyPush:);
-        if ([[self delegate] respondsToSelector:activateCallbackMethodSelector]) {
-            [[self delegate] didActivateAblyPush:error];
+        if ([delegate respondsToSelector:activateCallbackMethodSelector]) {
+            [delegate didActivateAblyPush:error];
         }
     }
+});
     #endif
 }
 
 - (void)callDeactivatedCallback:(ARTErrorInfo *)error {
     #ifdef TARGET_OS_IOS
-    if ([[self delegate] conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
+dispatch_async(_userQueue, ^{
+    if ([[UIApplication sharedApplication].delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
+        id delegate = [UIApplication sharedApplication].delegate;
         SEL deactivateCallbackMethodSelector = @selector(didDeactivateAblyPush:);
-        if ([[self delegate] respondsToSelector:deactivateCallbackMethodSelector]) {
-            [[self delegate] didDeactivateAblyPush:error];
+        if ([delegate respondsToSelector:deactivateCallbackMethodSelector]) {
+            [delegate didDeactivateAblyPush:error];
         }
     }
+});
     #endif
 }
 
 - (void)callUpdateFailedCallback:(nullable ARTErrorInfo *)error {
     #ifdef TARGET_OS_IOS
-    if ([[self delegate] conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
+dispatch_async(_userQueue, ^{
+    if ([[UIApplication sharedApplication].delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
+        id delegate = [UIApplication sharedApplication].delegate;
         SEL updateFailedCallbackMethodSelector = @selector(didAblyPushRegistrationFail:);
-        if ([[self delegate] respondsToSelector:updateFailedCallbackMethodSelector]) {
-            [[self delegate] didAblyPushRegistrationFail:error];
+        if ([delegate respondsToSelector:updateFailedCallbackMethodSelector]) {
+            [delegate didAblyPushRegistrationFail:error];
         }
     }
+});
     #endif
 }
 

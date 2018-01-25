@@ -15,7 +15,7 @@ You can install Ably for iOS through CocoaPods, Carthage or manually.
 Add this line to your application's Podfile:
 
     # For Xcode 7.3 and newer
-    pod 'Ably', '~> 0.8'
+    pod 'Ably', '~> 1.0'
 
 And then install the dependency:
 
@@ -26,16 +26,37 @@ And then install the dependency:
 Add this line to your application's Cartfile:
 
     # For Xcode 7.3 and newer
-    github "ably/ably-ios" ~> 0.8
+    github "ably/ably-ios" ~> 1.0
 
 And then run `carthage update` to build the framework and drag the built Ably.framework into your Xcode project.
 
+If you see, for example, a `dyld: Library not loaded: @rpath/SocketRocket.framework/SocketRocket` error, then most likely you forgot to add all the dependencies to your project. You have more detailed information [here](https://github.com/Carthage/Carthage#adding-frameworks-to-an-application).
+
+![](Examples/Images/linked-frameworks.png)
+
 ### Manual installation 
 
-1. Get the code from GitHub [from the release page](https://github.com/ably/ably-ios/releases/tag/0.8.0), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-ios.git` 
+1. Get the code from GitHub [from the release page](https://github.com/ably/ably-ios/releases/tag/1.0.10), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-ios.git`
 2. Drag the directory `ably-ios/ably-ios` into your project as a group.
 3. Ably depends on [SocketRocket](https://github.com/facebook/SocketRocket) 0.5.1; get it [from the releases page](https://github.com/facebook/SocketRocket/releases/tag/0.5.1) and follow [its manual installation instructions](https://github.com/facebook/SocketRocket#installing-ios).
 4. Ably also depends on [msgpack](https://github.com/rvi/msgpack-objective-C) 0.1.8; get it [from the releases page](https://github.com/rvi/msgpack-objective-C/releases/tag/0.1.8) and link it into your project.
+
+## Thread-safety
+
+The library makes the following thread-safety guarantees:
+
+* The whole public interface can be safely accessed, both for read and writing, from any thread.
+* "Value" objects (e. g. `ARTTokenDetails`, data from messages) returned by the library can be safely read from and written to.
+* Objects passed to the library must not be mutated afterwards. They can be safely passed again, or read from; they won't be written to by the library.
+
+All internal operations are dispatched to a single serial GCD queue. You can specify
+a custom queue for this, which must be serial, with `ARTClientOptions.internalDispatchQueue`.
+
+All calls to callbacks provided by the user are dispatched to the main queue by default.
+This allows you to react to Ably's output by doing UI operations directly. You
+can specify a different queue with `ARTClientOptions.dispatchQueue`. It shouldn't
+be the same queue as the `ARTClientOptions.internalDispatchQueue`, since that can
+lead to deadlocks.
 
 ## Using the Realtime API
 
@@ -529,12 +550,24 @@ You can also view the [community reported Github issues](https://github.com/ably
 ## Contributing
 
 1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Ensure you have added suitable tests and the test suite is passing
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
+2. Install dependencies by running `pod install` and `carthage bootstrap`
+3. Create your feature branch (`git checkout -b my-new-feature`)
+4. Commit your changes (`git commit -am 'Add some feature'`)
+5. Ensure you have added suitable tests and the test suite is passing
+6. Push to the branch (`git push origin my-new-feature`)
+7. Create a new Pull Request
+
+## Release Process
+
+This library uses [semantic versioning](http://semver.org/). For each release, the following needs to be done:
+
+* Run script `./Scripts/set-version.sh x.x.x` to assign the new version number.
+* Run [`github_changelog_generator`](https://github.com/skywinder/Github-Changelog-Generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). Once the CHANGELOG has completed, manually change the `Unreleased` heading and link with the current version number such as `v1.0.0`. Also ensure that the `Full Changelog` link points to the new version tag instead of the `HEAD`. Commit this change.
+* Push tag to origin such as `git push origin x.x.x`.
+* Visit [releases page](https://github.com/ably/ably-ios/releases) and `Add release notes`.
+* Remember to release an update for the [CocoaPods](https://guides.cocoapods.org/making/making-a-cocoapod.html#release).
+* Remember to generate and attach the prebuilt framework for [Carthage](https://github.com/Carthage/Carthage#archive-prebuilt-frameworks-into-one-zip-file).
 
 ## License
 
-Copyright (c) 2015 Ably Real-time Ltd, Licensed under the Apache License, Version 2.0.  Refer to [LICENSE](LICENSE) for the license terms.
+Copyright (c) 2017 Ably Real-time Ltd, Licensed under the Apache License, Version 2.0.  Refer to [LICENSE](LICENSE) for the license terms.

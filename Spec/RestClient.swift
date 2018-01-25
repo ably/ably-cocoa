@@ -15,21 +15,19 @@ class RestClient: QuickSpec {
 
         var testHTTPExecutor: TestProxyHTTPExecutor!
 
-        beforeEach {
-            testHTTPExecutor = TestProxyHTTPExecutor()
-        }
-
         describe("RestClient") {
             // G4
             it("All REST requests should include the current API version") {
-                let client = ARTRest(options: AblyTests.commonAppSetup())
+                let options = AblyTests.commonAppSetup()
+                let client = ARTRest(options: options)
+                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 client.httpExecutor = testHTTPExecutor
                 let channel = client.channels.get("test")
                 waitUntil(timeout: testTimeout) { done in
                     channel.publish(nil, data: "message") { error in
                         expect(error).to(beNil())
                         let version = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["X-Ably-Version"]
-                        expect(version).to(equal("0.8"))
+                        expect(version).to(equal("1.0"))
                         done()
                     }
                 }
@@ -110,14 +108,14 @@ class RestClient: QuickSpec {
                     options.logHandler = ARTLog(capturingOutput: true)
                     let client = ARTRest(options: options)
 
-                    client.logger.log("This is a warning", withLevel: .Warn)
+                    client.logger.log("This is a warning", with: .warn)
 
-                    expect(client.logger.logLevel).to(equal(ARTLogLevel.Warn))
+                    expect(client.logger.logLevel).to(equal(ARTLogLevel.warn))
                     guard let line = options.logHandler.captured.last else {
                         fail("didn't log line.")
                         return
                     }
-                    expect(line.level).to(equal(ARTLogLevel.Warn))
+                    expect(line.level).to(equal(ARTLogLevel.warn))
                     expect(line.toString()).to(equal("WARN: This is a warning"))
                 }
 
@@ -126,22 +124,22 @@ class RestClient: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.logHandler = ARTLog(capturingOutput: true)
                     let client = ARTRest(options: options)
-                    client.logger.logLevel = .Error
+                    client.logger.logLevel = .error
 
                     let logTime = NSDate()
-                    client.logger.log("This is a warning", withLevel: .Warn)
+                    client.logger.log("This is a warning", with: .warn)
 
-                    let logs = options.logHandler.captured.filter({!$0.date.isBefore(logTime)})
+                    let logs = options.logHandler.captured.filter({!$0.date.isBefore(logTime as Date)})
                     expect(logs).to(beEmpty())
                 }
 
                 // RSC4
                 it("should accept a custom logger") {
                     struct Log {
-                        static var interceptedLog: (String, ARTLogLevel) = ("", .None)
+                        static var interceptedLog: (String, ARTLogLevel) = ("", .none)
                     }
                     class MyLogger : ARTLog {
-                        override func log(message: String, withLevel level: ARTLogLevel) {
+                        override func log(_ message: String, with level: ARTLogLevel) {
                             Log.interceptedLog = (message, level)
                         }
                     }
@@ -149,13 +147,13 @@ class RestClient: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     let customLogger = MyLogger()
                     options.logHandler = customLogger
-                    options.logLevel = .Verbose
+                    options.logLevel = .verbose
                     let client = ARTRest(options: options)
 
-                    client.logger.log("This is a warning", withLevel: .Warn)
+                    client.logger.log("This is a warning", with: .warn)
                     
                     expect(Log.interceptedLog.0).to(equal("This is a warning"))
-                    expect(Log.interceptedLog.1).to(equal(ARTLogLevel.Warn))
+                    expect(Log.interceptedLog.1).to(equal(ARTLogLevel.warn))
                     
                     expect(client.logger.logLevel).to(equal(customLogger.logLevel))
                 }
@@ -167,11 +165,12 @@ class RestClient: QuickSpec {
                     let options = ARTClientOptions(key: "fake:key")
                     options.restHost = "fake.ably.io"
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
                     
                     publishTestMessage(client, failOnError: false)
                     
-                    expect(testHTTPExecutor.requests.first?.URL?.host).toEventually(equal("fake.ably.io"), timeout: testTimeout)
+                    expect(testHTTPExecutor.requests.first?.url?.host).toEventually(equal("fake.ably.io"), timeout: testTimeout)
                 }
 
                 it("should ignore an environment when restHost is customized") {
@@ -179,43 +178,47 @@ class RestClient: QuickSpec {
                     options.environment = "test"
                     options.restHost = "fake.ably.io"
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
 
                     publishTestMessage(client, failOnError: false)
 
-                    expect(testHTTPExecutor.requests.first?.URL?.host).toEventually(equal("fake.ably.io"), timeout: testTimeout)
+                    expect(testHTTPExecutor.requests.first?.url?.host).toEventually(equal("fake.ably.io"), timeout: testTimeout)
                 }
                 
                 it("should accept an environment when restHost is left unchanged") {
                     let options = ARTClientOptions(key: "fake:key")
                     options.environment = "myEnvironment"
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
                     
                     publishTestMessage(client, failOnError: false)
                     
-                    expect(testHTTPExecutor.requests.first?.URL?.host).toEventually(equal("myEnvironment-rest.ably.io"), timeout: testTimeout)
+                    expect(testHTTPExecutor.requests.first?.url?.host).toEventually(equal("myEnvironment-rest.ably.io"), timeout: testTimeout)
                 }
                 
                 it("should default to https://rest.ably.io") {
                     let options = ARTClientOptions(key: "fake:key")
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
                     
                     publishTestMessage(client, failOnError: false)
                     
-                    expect(testHTTPExecutor.requests.first?.URL?.absoluteString).toEventually(beginWith("https://rest.ably.io"), timeout: testTimeout)
+                    expect(testHTTPExecutor.requests.first?.url?.absoluteString).toEventually(beginWith("https://rest.ably.io"), timeout: testTimeout)
                 }
                 
                 it("should connect over plain http:// when tls is off") {
                     let options = AblyTests.clientOptions(requestToken: true)
                     options.tls = false
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
                     
                     publishTestMessage(client, failOnError: false)
                     
-                    expect(testHTTPExecutor.requests.first?.URL?.scheme).toEventually(equal("http"), timeout: testTimeout)
+                    expect(testHTTPExecutor.requests.first?.url?.scheme).toEventually(equal("http"), timeout: testTimeout)
                 }
 
                 it("should not prepend the environment if environment is configured as @production@") {
@@ -233,18 +236,18 @@ class RestClient: QuickSpec {
                 it("timeout for any single HTTP request and response") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.restHost = "10.255.255.1" //non-routable IP address
-                    expect(options.httpRequestTimeout).to(equal(15.0)) //Seconds
-                    options.httpRequestTimeout = 0.5
+                    expect(options.httpRequestTimeout).to(equal(10.0)) //Seconds
+                    options.httpRequestTimeout = 1.0
                     let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
                     waitUntil(timeout: testTimeout) { done in
                         let start = NSDate()
                         channel.publish(nil, data: "message") { error in
                             let end = NSDate()
-                            expect(end.timeIntervalSinceDate(start)).to(beCloseTo(options.httpRequestTimeout, within: 0.1))
+                            expect(end.timeIntervalSince(start as Date)).to(beCloseTo(options.httpRequestTimeout, within: 0.5))
                             expect(error).toNot(beNil())
                             if let error = error {
-                                expect(error.code).to(equal(-1001))
+                                expect((error ).code).to(satisfyAnyOf(equal(-1001 /*Timed Out*/), equal(-1004 /*Cannot Connect To Host*/)))
                             }
                             done()
                         }
@@ -256,12 +259,13 @@ class RestClient: QuickSpec {
                     expect(options.httpMaxRetryCount).to(equal(3))
                     options.httpMaxRetryCount = 1
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
-                    testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
 
                     var totalRetry: UInt = 0
                     testHTTPExecutor.afterRequest = { request, _ in
-                        if NSRegularExpression.match(request.URL!.absoluteString, pattern: "//[a-e].ably-realtime.com") {
+                        if NSRegularExpression.match(request.url!.absoluteString, pattern: "//[a-e].ably-realtime.com") {
                             totalRetry += 1
                         }
                     }
@@ -277,17 +281,18 @@ class RestClient: QuickSpec {
 
                 it("max elapsed time in which fallback host retries for HTTP requests will be attempted") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
-                    expect(options.httpMaxRetryDuration).to(equal(10.0)) //Seconds
-                    options.httpMaxRetryDuration = 0.2
+                    expect(options.httpMaxRetryDuration).to(equal(15.0)) //Seconds
+                    options.httpMaxRetryDuration = 1.0
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
-                    testHTTPExecutor.http = MockHTTP(network: .RequestTimeout(timeout: 0.1))
+                    testHTTPExecutor.http = MockHTTP(network: .requestTimeout(timeout: 0.1), logger: options.logHandler)
                     let channel = client.channels.get("test")
                     waitUntil(timeout: testTimeout) { done in
                         let start = NSDate()
                         channel.publish(nil, data: "nil") { _ in
                             let end = NSDate()
-                            expect(end.timeIntervalSinceDate(start)).to(beCloseTo(options.httpMaxRetryDuration, within: 0.5))
+                            expect(end.timeIntervalSince(start as Date)).to(beCloseTo(options.httpMaxRetryDuration, within: 0.9))
                             done()
                         }
                     }
@@ -311,6 +316,7 @@ class RestClient: QuickSpec {
                 options.restHost = "rest.ably.test"
                 expect(options.restHost).to(equal("rest.ably.test"))
                 let client = ARTRest(options: options)
+                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 client.httpExecutor = testHTTPExecutor
                 waitUntil(timeout: testTimeout) { done in
                     client.channels.get("test").publish(nil, data: "message") { error in
@@ -318,7 +324,7 @@ class RestClient: QuickSpec {
                         done()
                     }
                 }
-                expect(testHTTPExecutor.requests.first!.URL!.absoluteString).to(contain("//rest.ably.test"))
+                expect(testHTTPExecutor.requests.first!.url!.absoluteString).to(contain("//rest.ably.test"))
             }
             
             // RSC16
@@ -330,7 +336,7 @@ class RestClient: QuickSpec {
                     var time: NSDate?
 
                     client.time({ date, error in
-                        time = date
+                        time = date as NSDate? as NSDate?
                     })
                     
                     expect(time?.timeIntervalSince1970).toEventually(beCloseTo(NSDate().timeIntervalSince1970, within: 60), timeout: testTimeout)
@@ -342,11 +348,13 @@ class RestClient: QuickSpec {
                 let options = AblyTests.commonAppSetup()
 
                 let clientHttps = ARTRest(options: options)
+                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 clientHttps.httpExecutor = testHTTPExecutor
 
                 options.clientId = "client_http"
                 options.tls = false
                 let clientHttp = ARTRest(options: options)
+                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 clientHttp.httpExecutor = testHTTPExecutor
 
                 waitUntil(timeout: testTimeout) { done in
@@ -361,32 +369,40 @@ class RestClient: QuickSpec {
                     }
                 }
 
-                let requestUrlA = testHTTPExecutor.requests.first!.URL!
+                let requestUrlA = testHTTPExecutor.requests.first!.url!
                 expect(requestUrlA.scheme).to(equal("https"))
 
-                let requestUrlB = testHTTPExecutor.requests.last!.URL!
+                let requestUrlB = testHTTPExecutor.requests.last!.url!
                 expect(requestUrlB.scheme).to(equal("http"))
             }
 
             // RSC9
             it("should use Auth to manage authentication") {
                 let options = AblyTests.clientOptions()
-                options.tokenDetails = getTestTokenDetails()
+                guard let testTokenDetails = getTestTokenDetails() else {
+                    fail("No test token details"); return
+                }
+                options.tokenDetails = testTokenDetails
+                options.authCallback = { tokenParams, completion in
+                    completion(testTokenDetails, nil)
+                }
+
+                let client = ARTRest(options: options)
+                expect(client.auth).to(beAnInstanceOf(ARTAuth.self))
 
                 waitUntil(timeout: testTimeout) { done in
-                    ARTRest(options: options).auth.authorise(nil, options: nil) { tokenDetails, error in
+                    client.auth.authorize(nil, options: nil) { tokenDetails, error in
                         if let e = error {
-                            XCTFail(e.description)
+                            XCTFail(e.localizedDescription)
                             done()
                             return
                         }
                         guard let tokenDetails = tokenDetails else {
-                            XCTFail("expected tokenDetails not to be nil when error is nil")
+                            XCTFail("expected tokenDetails to not be nil when error is nil")
                             done()
                             return
                         }
-                        // Use the same token because it is valid
-                        expect(tokenDetails.token).to(equal(options.tokenDetails!.token))
+                        expect(tokenDetails.token).to(equal(testTokenDetails.token))
                         done()
                     }
                 }
@@ -397,6 +413,7 @@ class RestClient: QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 options.token = getTestToken(ttl: 0.5)
                 let client = ARTRest(options: options)
+                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 client.httpExecutor = testHTTPExecutor
                 let auth = client.auth
 
@@ -406,8 +423,8 @@ class RestClient: QuickSpec {
                             expect(error).to(beNil())
                             expect(result).toNot(beNil())
 
-                            guard let headerErrorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String else {
-                                fail("X-Ably-ErrorCode not found"); done();
+                            guard let headerErrorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-Errorcode"] as? String else {
+                                fail("X-Ably-Errorcode not found"); done();
                                 return
                             }
                             expect(Int(headerErrorCode)).to(equal(40142))
@@ -425,6 +442,7 @@ class RestClient: QuickSpec {
                 let options = AblyTests.clientOptions()
                 options.token = getTestToken(capability: "{ \"main\":[\"subscribe\"] }")
                 let client = ARTRest(options: options)
+                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 client.httpExecutor = testHTTPExecutor
 
                 waitUntil(timeout: testTimeout) { done in
@@ -436,8 +454,8 @@ class RestClient: QuickSpec {
                         expect(errorCode).to(equal(40160))
                         expect(result).to(beNil())
 
-                        guard let headerErrorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String else {
-                            fail("X-Ably-ErrorCode not found"); done();
+                        guard let headerErrorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-Errorcode"] as? String else {
+                            fail("X-Ably-Errorcode not found"); done();
                             return
                         }
                         expect(Int(headerErrorCode)).to(equal(40160))
@@ -448,6 +466,25 @@ class RestClient: QuickSpec {
 
             // RSC14
             context("Authentication") {
+
+                // RSC14a
+                it("should support basic authentication when an API key is provided with the key option") {
+                    let options = AblyTests.commonAppSetup()
+                    guard let components = options.key?.components(separatedBy: ":"), let keyName = components.first, let keySecret = components.last else {
+                        fail("Invalid API key: \(options.key ?? "nil")"); return
+                    }
+                    ARTClientOptions.setDefaultEnvironment("sandbox")
+                    defer {
+                        ARTClientOptions.setDefaultEnvironment(nil)
+                    }
+                    let rest = ARTRest(key: "\(keyName):\(keySecret)")
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.channels.get("foo").publish(nil, data: "testing") { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+                }
 
                 // RSC14b
                 context("basic authentication flag") {
@@ -476,17 +513,17 @@ class RestClient: QuickSpec {
                     let tokenParams = ARTTokenParams()
                     tokenParams.ttl = 3.0 //Seconds
 
-                    waitUntil(timeout: testTimeout) { done in
-                        auth.requestToken(tokenParams, withOptions: nil) { tokenDetails, error in
+                    guard let options: ARTClientOptions = (AblyTests.waitFor(timeout: testTimeout) { value in
+                        auth.requestToken(tokenParams, with: nil) { tokenDetails, error in
                             if let e = error {
-                                XCTFail(e.description)
-                                done()
+                                XCTFail(e.localizedDescription)
+                                value(nil)
                                 return
                             }
 
                             guard let currentTokenDetails = tokenDetails else {
                                 XCTFail("expected tokenDetails not to be nil when error is nil")
-                                done()
+                                value(nil)
                                 return
                             }
 
@@ -494,26 +531,32 @@ class RestClient: QuickSpec {
                             options.key = client.options.key
 
                             // Expired token
-                            options.tokenDetails = ARTTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires!.dateByAddingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
+                            options.tokenDetails = ARTTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires!.addingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
 
-                            options.authUrl = NSURL(string: "http://test-auth.ably.io")
+                            options.authUrl = NSURL(string: "http://test-auth.ably.io") as URL?
+                            value(options)
+                        }
+                    }) else {
+                        return
+                    }
 
-                            let rest = ARTRest(options: options)
-                            rest.httpExecutor = testHTTPExecutor
+                    let rest = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                    rest.httpExecutor = testHTTPExecutor
 
-                            // Delay for token expiration
-                            delay(tokenParams.ttl) {
-                                // [40140, 40150) - token expired and will not recover because authUrl is invalid
-                                publishTestMessage(rest) { error in
-                                    guard let errorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String else {
-                                        fail("expected X-Ably-ErrorCode header in request")
-                                        return
-                                    }
-                                    expect(Int(errorCode)).to(beGreaterThanOrEqualTo(40140))
-                                    expect(Int(errorCode)).to(beLessThan(40150))
-                                    expect(error).toNot(beNil())
-                                    done()
+                    waitUntil(timeout: testTimeout) { done in
+                        // Delay for token expiration
+                        delay(TimeInterval(tokenParams.ttl!)) {
+                            // [40140, 40150) - token expired and will not recover because authUrl is invalid
+                            publishTestMessage(rest) { error in
+                                guard let errorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-Errorcode"] as? String else {
+                                    fail("expected X-Ably-Errorcode header in request")
+                                    return
                                 }
+                                expect(Int(errorCode)).to(beGreaterThanOrEqualTo(40140))
+                                expect(Int(errorCode)).to(beLessThan(40150))
+                                expect(error).toNot(beNil())
+                                done()
                             }
                         }
                     }
@@ -528,9 +571,9 @@ class RestClient: QuickSpec {
                     tokenParams.ttl = 3.0 //Seconds
 
                     waitUntil(timeout: testTimeout) { done in
-                        auth.requestToken(tokenParams, withOptions: nil) { tokenDetails, error in
+                        auth.requestToken(tokenParams, with: nil) { tokenDetails, error in
                             if let e = error {
-                                XCTFail(e.description)
+                                XCTFail(e.localizedDescription)
                                 done()
                                 return
                             }
@@ -545,17 +588,18 @@ class RestClient: QuickSpec {
                             options.key = client.options.key
 
                             // Expired token
-                            options.tokenDetails = ARTTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires!.dateByAddingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
+                            options.tokenDetails = ARTTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires!.addingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
 
                             let rest = ARTRest(options: options)
+                            testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                             rest.httpExecutor = testHTTPExecutor
 
                             // Delay for token expiration
-                            delay(tokenParams.ttl) {
+                            delay(TimeInterval(tokenParams.ttl!)) {
                                 // [40140, 40150) - token expired and will not recover because authUrl is invalid
                                 publishTestMessage(rest) { error in
-                                    guard let errorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-ErrorCode"] as? String else {
-                                        fail("expected X-Ably-ErrorCode header in request")
+                                    guard let errorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-Errorcode"] as? String else {
+                                        fail("expected X-Ably-Errorcode header in request")
                                         return
                                     }
                                     expect(Int(errorCode)).to(beGreaterThanOrEqualTo(40140))
@@ -573,13 +617,79 @@ class RestClient: QuickSpec {
             // RSC15
             context("Host Fallback") {
 
+                // TO3k7
+                context("fallbackHostsUseDefault option") {
+
+                    it("allows the default fallback hosts to be used when @environment@ is not production") {
+                        let options = ARTClientOptions(key: "xxxx:xxxx")
+                        options.environment = "not-production"
+                        options.fallbackHostsUseDefault = true
+
+                        let client = ARTRest(options: options)
+                        expect(client.options.fallbackHostsUseDefault).to(beTrue())
+                        // Not production
+                        expect(client.options.environment).toNot(beNil())
+                        expect(client.options.environment).toNot(equal("production"))
+
+                        let fallback = ARTFallback(options: client.options)
+                        expect(fallback.hosts).to(haveCount(ARTDefault.fallbackHosts().count))
+
+                        ARTDefault.fallbackHosts().forEach() {
+                            expect(fallback.hosts).to(contain($0))
+                        }
+                    }
+
+                    it("allows the default fallback hosts to be used when a custom Realtime or REST host endpoint is being used") {
+                        let options = ARTClientOptions(key: "xxxx:xxxx")
+                        options.restHost = "fake1.ably.io"
+                        options.realtimeHost = "fake2.ably.io"
+                        options.fallbackHostsUseDefault = true
+
+                        let client = ARTRest(options: options)
+                        expect(client.options.fallbackHostsUseDefault).to(beTrue())
+                        // Custom
+                        expect(client.options.restHost).toNot(equal(ARTDefault.restHost()))
+                        expect(client.options.realtimeHost).toNot(equal(ARTDefault.realtimeHost()))
+
+                        let fallback = ARTFallback(options: client.options)
+                        expect(fallback.hosts).to(haveCount(ARTDefault.fallbackHosts().count))
+
+                        ARTDefault.fallbackHosts().forEach() {
+                            expect(fallback.hosts).to(contain($0))
+                        }
+                    }
+
+                    it("should be inactive by default") {
+                        let options = ARTClientOptions(key: "xxxx:xxxx")
+                        expect(options.fallbackHostsUseDefault).to(beFalse())
+                    }
+
+                    it("should never accept to configure @fallbackHost@ and set @fallbackHostsUseDefault@ to @true@") {
+                        let options = ARTClientOptions(key: "xxxx:xxxx")
+                        expect(options.fallbackHosts).to(beNil())
+                        expect(options.fallbackHostsUseDefault).to(beFalse())
+
+                        expect{ options.fallbackHosts = [] }.toNot(raiseException())
+
+                        expect{ options.fallbackHostsUseDefault = true }.to(raiseException(named: ARTFallbackIncompatibleOptionsException))
+
+                        options.fallbackHosts = nil
+
+                        expect{ options.fallbackHostsUseDefault = true }.toNot(raiseException())
+
+                        expect { options.fallbackHosts = ["fake.ably.io"] }.to(raiseException(named: ARTFallbackIncompatibleOptionsException))
+                    }
+
+                }
+
                 // RSC15b
                 it("failing HTTP requests with custom endpoint should result in an error immediately") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.environment = "test"
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
-                    testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
 
                     waitUntil(timeout: testTimeout) { done in
@@ -588,19 +698,20 @@ class RestClient: QuickSpec {
                             done()
                         }
                     }
+
+                    expect(testHTTPExecutor.requests).to(haveCount(1))
                 }
 
                 // RSC15b
                 it("applies when the default rest.ably.io endpoint is being used") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
-                    testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
 
-                    var capturedURLs = [String]()
                     testHTTPExecutor.afterRequest = { request, callback in
-                        capturedURLs.append(request.URL!.absoluteString!)
                         if testHTTPExecutor.requests.count == 2 {
                             // Stop
                             testHTTPExecutor.http = nil
@@ -618,6 +729,7 @@ class RestClient: QuickSpec {
                     if testHTTPExecutor.requests.count < 2 {
                         return
                     }
+                    let capturedURLs = testHTTPExecutor.requests.map { $0.url!.absoluteString }
                     expect(NSRegularExpression.match(capturedURLs[0], pattern: "//rest.ably.io")).to(beTrue())
                     expect(NSRegularExpression.match(capturedURLs[1], pattern: "//[a-e].ably-realtime.com")).to(beTrue())
                 }
@@ -627,13 +739,12 @@ class RestClient: QuickSpec {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.fallbackHosts = ["f.ably-realtime.com", "g.ably-realtime.com", "h.ably-realtime.com", "i.ably-realtime.com", "j.ably-realtime.com"]
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
-                    testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
                     
-                    var capturedURLs = [String]()
                     testHTTPExecutor.afterRequest = { request, callback in
-                        capturedURLs.append(request.URL!.absoluteString!)
                         if testHTTPExecutor.requests.count == 2 {
                             // Stop
                             testHTTPExecutor.http = nil
@@ -652,7 +763,63 @@ class RestClient: QuickSpec {
                         return
                     }
 
+                    let capturedURLs = testHTTPExecutor.requests.map { $0.url!.absoluteString }
                     expect(NSRegularExpression.match(capturedURLs[1], pattern: "//[f-j].ably-realtime.com")).to(beTrue())
+                }
+
+                // RSC15b
+                it("applies when ClientOptions#fallbackHostsUseDefault is true") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.environment = "rsc15b"
+                    options.fallbackHostsUseDefault = true
+                    let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                    client.httpExecutor = testHTTPExecutor
+                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
+                    let channel = client.channels.get("test")
+
+                    testHTTPExecutor.afterRequest = { request, callback in
+                        if testHTTPExecutor.requests.count == 2 {
+                            // Stop
+                            testHTTPExecutor.http = nil
+                            callback!(nil, nil, nil)
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "nil") { _ in
+                            done()
+                        }
+                    }
+
+                    expect(testHTTPExecutor.requests).to(haveCount(2))
+                    if testHTTPExecutor.requests.count < 2 {
+                        return
+                    }
+
+                    let capturedURLs = testHTTPExecutor.requests.map { $0.url!.absoluteString }
+                    expect(NSRegularExpression.match(capturedURLs[1], pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+                }
+
+                // RSC15b
+                it("do not apply when ClientOptions#fallbackHostsUseDefault is false") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.environment = "rsc15b"
+                    options.fallbackHostsUseDefault = false
+                    let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                    client.httpExecutor = testHTTPExecutor
+                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "message") { error in
+                            expect(error!.message).to(contain("hostname could not be found"))
+                            done()
+                        }
+                    }
+
+                    expect(testHTTPExecutor.requests).to(haveCount(1))
                 }
                 
                 // RSC15b
@@ -660,14 +827,10 @@ class RestClient: QuickSpec {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.fallbackHosts = [] //to test TO3k6
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
-                    testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
-                    
-                    var capturedURLs = [String]()
-                    testHTTPExecutor.afterRequest = { request, callback in
-                        capturedURLs.append(request.URL!.absoluteString!)
-                    }
                     
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: "nil") { _ in
@@ -676,6 +839,7 @@ class RestClient: QuickSpec {
                     }
                     
                     expect(testHTTPExecutor.requests).to(haveCount(1))
+                    let capturedURLs = testHTTPExecutor.requests.map { $0.url!.absoluteString }
                     expect(NSRegularExpression.match(capturedURLs[0], pattern: "//rest.ably.io")).to(beTrue())
                 }
                 
@@ -684,13 +848,12 @@ class RestClient: QuickSpec {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.fallbackHosts = nil
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
-                    testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
                     
-                    var capturedURLs = [String]()
                     testHTTPExecutor.afterRequest = { request, callback in
-                        capturedURLs.append(request.URL!.absoluteString!)
                         if testHTTPExecutor.requests.count == 2 {
                             // Stop
                             testHTTPExecutor.http = nil
@@ -709,16 +872,18 @@ class RestClient: QuickSpec {
                         return
                     }
                     
+                    let capturedURLs = testHTTPExecutor.requests.map { $0.url!.absoluteString }
                     expect(NSRegularExpression.match(capturedURLs[1], pattern: "//[a-e].ably-realtime.com")).to(beTrue())
                 }
 
                 // RSC15e
-                it("every new HTTP request is first attempted to the primary host rest.ably.io") {
+                it("every new HTTP request is first attempted to the default primary host rest.ably.io") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.httpMaxRetryCount = 1
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
-                    testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
 
                     waitUntil(timeout: testTimeout) { done in
@@ -727,7 +892,7 @@ class RestClient: QuickSpec {
                         }
                     }
 
-                    testHTTPExecutor.http = ARTHttp()
+                    testHTTPExecutor.http = ARTHttp(AblyTests.queue, logger: options.logHandler)
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: "nil") { _ in
@@ -739,9 +904,45 @@ class RestClient: QuickSpec {
                     if testHTTPExecutor.requests.count != 3 {
                         return
                     }
-                    expect(NSRegularExpression.match(testHTTPExecutor.requests[0].URL!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
-                    expect(NSRegularExpression.match(testHTTPExecutor.requests[1].URL!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-                    expect(NSRegularExpression.match(testHTTPExecutor.requests[2].URL!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
+
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//\(ARTDefault.restHost()!)")).to(beTrue())
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[2].url!.absoluteString, pattern: "//\(ARTDefault.restHost()!)")).to(beTrue())
+                }
+
+                // RSC15e
+                it("if ClientOptions#restHost is set then every new HTTP request should first attempt ClientOptions#restHost") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.httpMaxRetryCount = 1
+                    options.restHost = "fake.ably.io"
+                    let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                    client.httpExecutor = testHTTPExecutor
+                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
+                    let channel = client.channels.get("test")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "nil") { _ in
+                            done()
+                        }
+                    }
+
+                    testHTTPExecutor.http = ARTHttp(AblyTests.queue, logger: options.logHandler)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "nil") { _ in
+                            done()
+                        }
+                    }
+
+                    expect(testHTTPExecutor.requests).to(haveCount(2))
+                    if testHTTPExecutor.requests.count != 2 {
+                        return
+                    }
+
+                    expect(client.options.restHost).to(equal("fake.ably.io"))
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//\(client.options.restHost)")).to(beTrue())
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.absoluteString, pattern: "//\(client.options.restHost)")).to(beTrue())
                 }
 
                 // RSC15a
@@ -766,12 +967,21 @@ class RestClient: QuickSpec {
                         ARTFallback_getRandomHostIndex = originalARTFallback_getRandomHostIndex
                     }
 
+                    it("default fallback hosts should match @[a-e].ably-realtime.com@") {
+                        let defaultFallbackHosts = ARTDefault.fallbackHosts()
+                        defaultFallbackHosts?.forEach { host in
+                            expect(host).to(match("[a-e].ably-realtime.com"))
+                        }
+                        expect(defaultFallbackHosts).to(haveCount(5))
+                    }
+
                     it("until httpMaxRetryCount has been reached") {
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         let client = ARTRest(options: options)
                         options.httpMaxRetryCount = 3
+                        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                         client.httpExecutor = testHTTPExecutor
-                        testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                        testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                         testHTTPExecutor.afterRequest = { _, _ in
                             if testHTTPExecutor.requests.count > Int(1 + options.httpMaxRetryCount) {
                                 fail("Should not retry more than \(options.httpMaxRetryCount)")
@@ -788,11 +998,11 @@ class RestClient: QuickSpec {
 
                         expect(testHTTPExecutor.requests).to(haveCount(Int(1 + options.httpMaxRetryCount)))
 
-                        let extractHostname = { (request: NSMutableURLRequest) in
-                            NSRegularExpression.extract(request.URL!.absoluteString, pattern: "[a-e].ably-realtime.com")
+                        let extractHostname = { (request: URLRequest) in
+                            NSRegularExpression.extract(request.url!.absoluteString, pattern: "[a-e].ably-realtime.com")
                         }
                         let resultFallbackHosts = testHTTPExecutor.requests.flatMap(extractHostname)
-                        let expectedFallbackHosts = Array(expectedHostOrder.map({ ARTDefault.fallbackHosts()[$0] as! String })[0..<Int(options.httpMaxRetryCount)])
+                        let expectedFallbackHosts = Array(expectedHostOrder.map({ ARTDefault.fallbackHosts()[$0] })[0..<Int(options.httpMaxRetryCount)])
 
                         expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
                     }
@@ -807,8 +1017,9 @@ class RestClient: QuickSpec {
                                                    "f.ably-realtime.com"]
                         options.fallbackHosts = customFallbackHosts
                         let client = ARTRest(options: options)
+                        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                         client.httpExecutor = testHTTPExecutor
-                        testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                        testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                         let channel = client.channels.get("test")
                         
                         waitUntil(timeout: testTimeout) { done in
@@ -819,8 +1030,8 @@ class RestClient: QuickSpec {
 
                         expect(testHTTPExecutor.requests).to(haveCount(customFallbackHosts.count + 1))
                         
-                        let extractHostname = { (request: NSMutableURLRequest) in
-                            NSRegularExpression.extract(request.URL!.absoluteString, pattern: "[f-j].ably-realtime.com")
+                        let extractHostname = { (request: URLRequest) in
+                            NSRegularExpression.extract(request.url!.absoluteString, pattern: "[f-j].ably-realtime.com")
                         }
                         let resultFallbackHosts = testHTTPExecutor.requests.flatMap(extractHostname)
                         let expectedFallbackHosts = expectedHostOrder.map { customFallbackHosts[$0] }
@@ -832,8 +1043,9 @@ class RestClient: QuickSpec {
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         options.httpMaxRetryCount = 10
                         let client = ARTRest(options: options)
+                        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                         client.httpExecutor = testHTTPExecutor
-                        testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                        testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                         let channel = client.channels.get("test")
 
                         waitUntil(timeout: testTimeout) { done in
@@ -844,11 +1056,11 @@ class RestClient: QuickSpec {
 
                         expect(testHTTPExecutor.requests).to(haveCount(ARTDefault.fallbackHosts().count + 1))
 
-                        let extractHostname = { (request: NSMutableURLRequest) in
-                            NSRegularExpression.extract(request.URL!.absoluteString, pattern: "[a-e].ably-realtime.com")
+                        let extractHostname = { (request: URLRequest) in
+                            NSRegularExpression.extract(request.url!.absoluteString, pattern: "[a-e].ably-realtime.com")
                         }
                         let resultFallbackHosts = testHTTPExecutor.requests.flatMap(extractHostname)
-                        let expectedFallbackHosts = expectedHostOrder.map { ARTDefault.fallbackHosts()[$0] as! String }
+                        let expectedFallbackHosts = expectedHostOrder.map { ARTDefault.fallbackHosts()[$0] }
 
                         expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
                     }
@@ -861,8 +1073,9 @@ class RestClient: QuickSpec {
                         options.fallbackHosts = _fallbackHosts
                         
                         let client = ARTRest(options: options)
+                        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                         client.httpExecutor = testHTTPExecutor
-                        testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                        testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                         testHTTPExecutor.afterRequest = { _, _ in
                             if testHTTPExecutor.requests.count > Int(1 + options.httpMaxRetryCount) {
                                 fail("Should not retry more than \(options.httpMaxRetryCount)")
@@ -880,8 +1093,8 @@ class RestClient: QuickSpec {
                         expect(testHTTPExecutor.requests).to(haveCount(Int(1 + options.httpMaxRetryCount)))
                         expect((testHTTPExecutor.requests.count) < (_fallbackHosts.count + 1)).to(beTrue())
                         
-                        let extractHostname = { (request: NSMutableURLRequest) in
-                            NSRegularExpression.extract(request.URL!.absoluteString, pattern: "[f-j].ably-realtime.com")
+                        let extractHostname = { (request: URLRequest) in
+                            NSRegularExpression.extract(request.url!.absoluteString, pattern: "[f-j].ably-realtime.com")
                         }
                         let resultFallbackHosts = testHTTPExecutor.requests.flatMap(extractHostname)
                         let expectedFallbackHosts = Array(expectedHostOrder.map({ _fallbackHosts[$0] })[0..<Int(options.httpMaxRetryCount)])
@@ -895,8 +1108,9 @@ class RestClient: QuickSpec {
                         options.fallbackHosts = _fallbackHosts
                         
                         let client = ARTRest(options: options)
+                        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                         client.httpExecutor = testHTTPExecutor
-                        testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                        testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                         let channel = client.channels.get("test")
                         
                         waitUntil(timeout: testTimeout) { done in
@@ -907,8 +1121,8 @@ class RestClient: QuickSpec {
                         
                         expect(testHTTPExecutor.requests).to(haveCount(ARTDefault.fallbackHosts().count + 1))
                         
-                        let extractHostname = { (request: NSMutableURLRequest) in
-                            NSRegularExpression.extract(request.URL!.absoluteString, pattern: "[f-j].ably-realtime.com")
+                        let extractHostname = { (request: URLRequest) in
+                            NSRegularExpression.extract(request.url!.absoluteString, pattern: "[f-j].ably-realtime.com")
                         }
                         let resultFallbackHosts = testHTTPExecutor.requests.flatMap(extractHostname)
                         let expectedFallbackHosts = expectedHostOrder.map { _fallbackHosts[$0] }
@@ -922,8 +1136,9 @@ class RestClient: QuickSpec {
                         options.fallbackHosts = []
                         
                         let client = ARTRest(options: options)
+                        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                         client.httpExecutor = testHTTPExecutor
-                        testHTTPExecutor.http = MockHTTP(network: .HostUnreachable)
+                        testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                         testHTTPExecutor.afterRequest = { _, _ in
                             if testHTTPExecutor.requests.count > Int(1 + options.httpMaxRetryCount) {
                                 fail("Should not retry more than \(options.httpMaxRetryCount)")
@@ -939,21 +1154,22 @@ class RestClient: QuickSpec {
                         }
                         
                         expect(testHTTPExecutor.requests).to(haveCount(1))
-                        expect(NSRegularExpression.match(testHTTPExecutor.requests[0].URL!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
+                        expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
                     }
                 }
 
                 // RSC15d
                 context("should use an alternative host when") {
 
-                    for caseTest: NetworkAnswer in [.HostUnreachable,
-                                                    .RequestTimeout(timeout: 0.1),
-                                                    .HostInternalError(code: 501)] {
+                    for caseTest: NetworkAnswer in [.hostUnreachable,
+                                                    .requestTimeout(timeout: 0.1),
+                                                    .hostInternalError(code: 501)] {
                         it("\(caseTest)") {
                             let options = ARTClientOptions(key: "xxxx:xxxx")
                             let client = ARTRest(options: options)
+                            testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                             client.httpExecutor = testHTTPExecutor
-                            testHTTPExecutor.http = MockHTTP(network: caseTest)
+                            testHTTPExecutor.http = MockHTTP(network: caseTest, logger: options.logHandler)
                             let channel = client.channels.get("test")
 
                             testHTTPExecutor.afterRequest = { _, callback in
@@ -974,8 +1190,8 @@ class RestClient: QuickSpec {
                             if testHTTPExecutor.requests.count != 2 {
                                 return
                             }
-                            expect(NSRegularExpression.match(testHTTPExecutor.requests[0].URL!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
-                            expect(NSRegularExpression.match(testHTTPExecutor.requests[1].URL!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+                            expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
+                            expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
                         }
                     }
                 }
@@ -984,8 +1200,9 @@ class RestClient: QuickSpec {
                 it("should not use an alternative host when the client receives an bad request") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.httpExecutor = testHTTPExecutor
-                    testHTTPExecutor.http = MockHTTP(network: .Host400BadRequest)
+                    testHTTPExecutor.http = MockHTTP(network: .host400BadRequest, logger: options.logHandler)
                     let channel = client.channels.get("test")
 
                     testHTTPExecutor.afterRequest = { _ in
@@ -1002,7 +1219,7 @@ class RestClient: QuickSpec {
                     }
 
                     expect(testHTTPExecutor.requests).to(haveCount(1))
-                    expect(NSRegularExpression.match(testHTTPExecutor.requests[0].URL!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
                 }
             }
 
@@ -1012,6 +1229,7 @@ class RestClient: QuickSpec {
                 expect(options.useBinaryProtocol).to(beTrue())
 
                 let rest = ARTRest(options: options)
+                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 rest.httpExecutor = testHTTPExecutor
                 waitUntil(timeout: testTimeout) { done in
                     rest.channels.get("test").publish(nil, data: "message") { error in
@@ -1020,7 +1238,7 @@ class RestClient: QuickSpec {
                 }
 
                 switch extractBodyAsMsgPack(testHTTPExecutor.requests.first) {
-                case .Failure(let error):
+                case .failure(let error):
                     fail(error)
                 default: break
                 }
@@ -1034,7 +1252,7 @@ class RestClient: QuickSpec {
                 }
 
                 let transport = realtime.transport as! TestProxyTransport
-                let object = AblyTests.msgpackToJSON(transport.rawDataSent.last!)
+                let object = AblyTests.msgpackToJSON(transport.rawDataSent.last! as NSData)
                 expect(object["messages"][0]["data"].string).to(equal("message"))
             }
 
@@ -1044,6 +1262,7 @@ class RestClient: QuickSpec {
                 options.useBinaryProtocol = false
 
                 let rest = ARTRest(options: options)
+                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 rest.httpExecutor = testHTTPExecutor
                 waitUntil(timeout: testTimeout) { done in
                     rest.channels.get("test").publish(nil, data: "message") { error in
@@ -1052,7 +1271,7 @@ class RestClient: QuickSpec {
                 }
 
                 switch extractBodyAsJSON(testHTTPExecutor.requests.first) {
-                case .Failure(let error):
+                case .failure(let error):
                     fail(error)
                 default: break
                 }
@@ -1066,14 +1285,15 @@ class RestClient: QuickSpec {
                 }
 
                 let transport = realtime.transport as! TestProxyTransport
-                let object = try! NSJSONSerialization.JSONObjectWithData(transport.rawDataSent.first!, options: NSJSONReadingOptions(rawValue: 0))
-                expect(NSJSONSerialization.isValidJSONObject(object)).to(beTrue())
+                let object = try! JSONSerialization.jsonObject(with: transport.rawDataSent.first!, options: JSONSerialization.ReadingOptions(rawValue: 0))
+                expect(JSONSerialization.isValidJSONObject(object)).to(beTrue())
             }
 
             // RSC7a
             it("X-Ably-Version must be included in all REST requests") {
                 let options = AblyTests.commonAppSetup()
                 let client = ARTRest(options: options)
+                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 client.httpExecutor = testHTTPExecutor
                 waitUntil(timeout: testTimeout) { done in
                     client.channels.get("test").publish(nil, data: "message") { error in
@@ -1090,7 +1310,9 @@ class RestClient: QuickSpec {
             
             // RSC7b
             it("X-Ably-Lib: [lib][.optional variant]?-[version] should be included in all REST requests") {
-                let client = ARTRest(options: AblyTests.commonAppSetup())
+                let options = AblyTests.commonAppSetup()
+                let client = ARTRest(options: options)
+                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 client.httpExecutor = testHTTPExecutor
                 let channel = client.channels.get("test")
                 waitUntil(timeout: testTimeout) { done in
@@ -1100,7 +1322,7 @@ class RestClient: QuickSpec {
                         let ablyBundleLibVersion = ARTDefault.libraryVersion()
                         expect(headerLibVersion).to(equal(ablyBundleLibVersion))
                         
-                        let patternToMatch = "ios-0.8."
+                        let patternToMatch = "ios-1.0."
                         let match = headerLibVersion?.hasPrefix(patternToMatch)
                         expect(match).to(beTrue())
                         
@@ -1121,7 +1343,7 @@ class RestClient: QuickSpec {
                                 fail("Error is empty"); done()
                                 return
                             }
-                            expect(error.code).to(equal(Int(ARTState.RequestTokenFailed.rawValue)))
+                            expect((error ).code).to(equal(Int(ARTState.requestTokenFailed.rawValue)))
                             expect(error.message).to(contain("no means to renew the token is provided"))
                             done()
                         }
@@ -1133,12 +1355,32 @@ class RestClient: QuickSpec {
             it("background behaviour") {
                 let options = AblyTests.commonAppSetup()
                 waitUntil(timeout: testTimeout) { done in
-                    NSURLSession.sharedSession().dataTaskWithURL(NSURL(string:"https://ably.io")!) { _ in
+                    URLSession.shared.dataTask(with: NSURL(string:"https://ably.io")! as URL) { _ in
                         let rest = ARTRest(options: options)
                         rest.channels.get("foo").history { _ in
                             done()
                         }
                     }.resume()
+                }
+            }
+
+            // https://github.com/ably/ably-ios/issues/589
+            it("client should handle error messages in plaintext and HTML format") {
+                let request = NSURLRequest(url: NSURL(string: "https://www.example.com")! as URL)
+                waitUntil(timeout: testTimeout) { done in
+                    let rest = ARTRest(key: "xxxx:xxxx")
+                    rest.execute(request as URLRequest, completion: { response, data, error in
+                        guard let contentType = response?.allHeaderFields["Content-Type"] as? String else {
+                            fail("Response should have a Content-Type"); done(); return
+                        }
+                        expect(contentType).to(contain("text/html"))
+                        guard let error = error as? ARTErrorInfo else {
+                            fail("Error is nil"); done(); return
+                        }
+                        expect(error.statusCode) == 200
+                        expect(error.message.lengthOfBytes(using: String.Encoding.utf8)) == 1000
+                        done()
+                    })
                 }
             }
 

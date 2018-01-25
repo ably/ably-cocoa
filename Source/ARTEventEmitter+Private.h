@@ -6,25 +6,54 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#include "ARTEventEmitter.h"
-#include "CompatibilityMacros.h"
+#include <Ably/ARTEventEmitter.h>
+#include <Ably/ARTRest.h>
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
-@interface __GENERIC(ARTEventEmitterEntry, ItemType) : NSObject
+#pragma mark - ARTEventListener
 
-@property (readwrite, strong, nonatomic) __GENERIC(ARTEventListener, ItemType) *listener;
-@property (readwrite, nonatomic) BOOL once;
+@interface ARTEventListener ()
 
-- (instancetype)initWithListener:(__GENERIC(ARTEventListener, ItemType) *)listener once:(BOOL)once;
+@property (nonatomic, readonly) NSString *eventId;
+@property (weak, nonatomic, readonly) id<NSObject> token;
+@property (nonatomic, readonly) NSUInteger count;
+
+- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithId:(NSString *)eventId token:(id<NSObject>)token handler:(ARTEventEmitter *)eventHandler center:(NSNotificationCenter *)center;
+
+- (ARTEventListener *)setTimer:(NSTimeInterval)timeoutDeadline onTimeout:(void (^)())timeoutBlock;
+- (void)startTimer;
+- (void)stopTimer;
 
 @end
 
-@interface __GENERIC(ARTEventEmitter, EventType, ItemType) ()
+@interface ARTEventEmitter<EventType, ItemType> ()
 
-@property (readwrite, nonatomic) __GENERIC(NSMutableDictionary, EventType, __GENERIC(NSMutableArray, __GENERIC(ARTEventEmitterEntry, ItemType) *) *) *listeners;
-@property (readwrite, nonatomic) __GENERIC(NSMutableArray, __GENERIC(ARTEventEmitterEntry, ItemType) *) *anyListeners;
+- (void)emit:(nullable EventType)event with:(nullable ItemType)data;
+
+@property (nonatomic, readonly) NSNotificationCenter *notificationCenter;
+@property (nonatomic, readonly) dispatch_queue_t queue;
+@property (nonatomic, readonly) dispatch_queue_t userQueue;
+
+@property (readonly, atomic) NSMutableDictionary<NSString *, NSMutableArray<ARTEventListener *> *> *listeners;
+@property (readonly, atomic) NSMutableArray<ARTEventListener *> *anyListeners;
 
 @end
 
-ART_ASSUME_NONNULL_END
+@interface ARTPublicEventEmitter<EventType:id<ARTEventIdentification>, ItemType> : ARTEventEmitter<EventType, ItemType>
+
+- (instancetype)initWithRest:(ARTRest *)rest;
+- (void)off_nosync;
+
+@end
+
+@interface ARTInternalEventEmitter<EventType:id<ARTEventIdentification>, ItemType> : ARTEventEmitter<EventType, ItemType>
+
+- (instancetype)initWithQueue:(dispatch_queue_t)queue;
+- (instancetype)initWithQueues:(dispatch_queue_t)queue userQueue:(_Nullable dispatch_queue_t)userQueue;
+
+@end
+
+NS_ASSUME_NONNULL_END
+

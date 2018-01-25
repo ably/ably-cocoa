@@ -13,31 +13,50 @@
 
 @implementation ARTQueuedMessage
 
-- (instancetype)initWithProtocolMessage:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb {
+- (instancetype)initWithProtocolMessage:(ARTProtocolMessage *)msg sentCallback:(void (^)(ARTErrorInfo *))sentCallback ackCallback:(void (^)(ARTStatus *))ackCallback {
     self = [super init];
     if (self) {
         _msg = msg;
-        _cbs = [NSMutableArray array];
-        if (cb) {
-            [_cbs addObject:cb];
+        _sentCallbacks = [NSMutableArray array];
+        if (sentCallback) {
+            [_sentCallbacks addObject:sentCallback];
+        }
+        _ackCallbacks = [NSMutableArray array];
+        if (ackCallback) {
+            [_ackCallbacks addObject:ackCallback];
         }
     }
     return self;
 }
 
-- (BOOL)mergeFrom:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb {
+- (NSString *)description {
+    return [self.msg description];
+}
+
+- (BOOL)mergeFrom:(ARTProtocolMessage *)msg sentCallback:(void (^)(ARTErrorInfo *))sentCallback ackCallback:(void (^)(ARTStatus *))ackCallback {
     if ([self.msg mergeFrom:msg]) {
-        if (cb) {
-            [self.cbs addObject:cb];
+        if (sentCallback) {
+            [self.sentCallbacks addObject:sentCallback];
+        }
+        if (ackCallback) {
+            [self.ackCallbacks addObject:ackCallback];
         }
         return YES;
     }
     return NO;
 }
 
-- (void (^)(ARTStatus *))cb {
-    return ^(ARTStatus * status) {
-        for (void (^cb)(ARTStatus *) in self.cbs) {
+- (void (^)(ARTErrorInfo *))sentCallback {
+    return ^(ARTErrorInfo *error) {
+        for (void (^cb)(ARTErrorInfo *) in self.sentCallbacks) {
+            cb(error);
+        }
+    };
+}
+
+- (void (^)(ARTStatus *))ackCallback {
+    return ^(ARTStatus *status) {
+        for (void (^cb)(ARTStatus *) in self.ackCallbacks) {
             cb(status);
         }
     };

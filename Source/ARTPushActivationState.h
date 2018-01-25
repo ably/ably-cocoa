@@ -17,12 +17,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPushActivationState : NSObject <NSCoding>
 
-@property (atomic) ARTPushActivationStateMachine *machine;
-
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine;
 + (instancetype)new NS_UNAVAILABLE;
 + (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine;
+
+@property (atomic, strong, nullable) ARTPushActivationStateMachine *machine;
 
 - (nullable ARTPushActivationState *)transition:(ARTPushActivationEvent *)event;
 

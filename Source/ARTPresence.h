@@ -7,16 +7,17 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTTypes.h"
-#import "ARTPresenceMessage.h"
-#import "ARTPaginatedResult.h"
 
-ART_ASSUME_NONNULL_BEGIN
+#import <Ably/ARTTypes.h>
+#import <Ably/ARTPresenceMessage.h>
+#import <Ably/ARTPaginatedResult.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPresence : NSObject
 
-- (void)history:(void(^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *__art_nullable result, ARTErrorInfo *__art_nullable error))callback;
+- (void)history:(void(^)(ARTPaginatedResult<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

@@ -7,30 +7,29 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "CompatibilityMacros.h"
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @class ARTHttpResponse;
 @class ARTClientOptions;
 
-extern int (^ARTFallback_getRandomHostIndex)(int count);
-
 @interface ARTFallback : NSObject
-{
-    
-}
+
+/**
+ Init with options.
+ */
+- (instancetype)initWithOptions:(ARTClientOptions *)options;
 
 /**
  Init with fallback hosts array.
  */
-- (instancetype)initWithFallbackHosts:(art_nullable __GENERIC(NSArray, NSString *) *)fallbackHosts;
+- (instancetype)initWithFallbackHosts:(nullable NSArray<NSString *> *)fallbackHosts;
 
 /**
  returns a random fallback host, returns null when all hosts have been popped.
  */
--(NSString *) popFallbackHost;
+- (nullable NSString *)popFallbackHost;
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

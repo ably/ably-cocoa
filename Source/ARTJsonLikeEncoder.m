@@ -15,7 +15,6 @@
 #import "ARTPresenceMessage.h"
 #import "ARTProtocolMessage.h"
 #import "ARTProtocolMessage+Private.h"
-#import "ARTStats.h"
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
 #import "ARTNSDate+ARTUtil.h"
 #import "ARTLog.h"
@@ -23,6 +22,7 @@
 #import "ARTStatus.h"
 #import "ARTTokenDetails.h"
 #import "ARTTokenRequest.h"
+#import "ARTAuthDetails.h"
 #import "ARTPush.h"
 #import "ARTDeviceDetails.h"
 #import "ARTDevicePushDetails.h"
@@ -30,10 +30,6 @@
 #import "ARTRest+Private.h"
 #import "ARTJsonEncoder.h"
 #import "ARTPushChannelSubscription.h"
-
-@interface ARTJsonLikeEncoder ()
-
-@end
 
 @implementation ARTJsonLikeEncoder {
     __weak ARTRest *_rest;
@@ -83,72 +79,72 @@
     return [_delegate formatAsString];
 }
 
-- (ARTMessage *)decodeMessage:(NSData *)data {
-    return [self messageFromDictionary:[self decodeDictionary:data]];
+- (ARTMessage *)decodeMessage:(NSData *)data error:(NSError **)error {
+    return [self messageFromDictionary:[self decodeDictionary:data error:error]];
 }
 
-- (NSArray *)decodeMessages:(NSData *)data {
-    return [self messagesFromArray:[self decodeArray:data]];
+- (NSArray *)decodeMessages:(NSData *)data error:(NSError **)error {
+    return [self messagesFromArray:[self decodeArray:data error:error]];
 }
 
-- (NSData *)encodeMessage:(ARTMessage *)message {
-    return [self encode:[self messageToDictionary:message]];
+- (NSData *)encodeMessage:(ARTMessage *)message error:(NSError **)error {
+    return [self encode:[self messageToDictionary:message] error:error];
 }
 
-- (NSData *)encodeMessages:(NSArray *)messages {
-    return [self encode:[self messagesToArray:messages]];
+- (NSData *)encodeMessages:(NSArray *)messages error:(NSError **)error {
+    return [self encode:[self messagesToArray:messages] error:error];
 }
 
-- (ARTPresenceMessage *)decodePresenceMessage:(NSData *)data {
-    return [self presenceMessageFromDictionary:[self decodeDictionary:data]];
+- (ARTPresenceMessage *)decodePresenceMessage:(NSData *)data error:(NSError **)error {
+    return [self presenceMessageFromDictionary:[self decodeDictionary:data error:error]];
 }
 
-- (NSArray *)decodePresenceMessages:(NSData *)data {
-    return [self presenceMessagesFromArray:[self decodeArray:data]];
+- (NSArray *)decodePresenceMessages:(NSData *)data error:(NSError **)error {
+    return [self presenceMessagesFromArray:[self decodeArray:data error:error]];
 }
 
-- (NSData *)encodePresenceMessage:(ARTPresenceMessage *)message {
-    return [self encode:[self presenceMessageToDictionary:message]];
+- (NSData *)encodePresenceMessage:(ARTPresenceMessage *)message error:(NSError **)error {
+    return [self encode:[self presenceMessageToDictionary:message] error:error];
 }
 
-- (NSData *)encodePresenceMessages:(NSArray *)messages {
-    return [self encode:[self presenceMessagesToArray:messages]];
+- (NSData *)encodePresenceMessages:(NSArray *)messages error:(NSError **)error {
+    return [self encode:[self presenceMessagesToArray:messages] error:error];
 }
 
-- (NSData *)encodeProtocolMessage:(ARTProtocolMessage *)message {
-    return [self encode:[self protocolMessageToDictionary:message]];
+- (NSData *)encodeProtocolMessage:(ARTProtocolMessage *)message error:(NSError **)error {
+    return [self encode:[self protocolMessageToDictionary:message] error:error];
 }
 
-- (ARTProtocolMessage *)decodeProtocolMessage:(NSData *)data {
-    return [self protocolMessageFromDictionary:[self decodeDictionary:data]];
+- (ARTProtocolMessage *)decodeProtocolMessage:(NSData *)data error:(NSError **)error {
+    return [self protocolMessageFromDictionary:[self decodeDictionary:data error:error]];
 }
 
-- (ARTTokenDetails *)decodeTokenDetails:(NSData *)data error:(NSError * __autoreleasing *)error {
-    return [self tokenFromDictionary:[self decodeDictionary:data] error:error];
+- (ARTTokenDetails *)decodeTokenDetails:(NSData *)data error:(NSError **)error {
+    return [self tokenFromDictionary:[self decodeDictionary:data error:nil] error:error];
 }
 
-- (ARTTokenRequest *)decodeTokenRequest:(NSData *)data error:(NSError * __autoreleasing *)error {
-    return [self tokenRequestFromDictionary:[self decodeDictionary:data] error:error];
+- (ARTTokenRequest *)decodeTokenRequest:(NSData *)data error:(NSError **)error {
+    return [self tokenRequestFromDictionary:[self decodeDictionary:data error:nil] error:error];
 }
 
-- (NSData *)encodeTokenRequest:(ARTTokenRequest *)request {
-    return [self encode:[self tokenRequestToDictionary:request]];
+- (NSData *)encodeTokenRequest:(ARTTokenRequest *)request error:(NSError **)error {
+    return [self encode:[self tokenRequestToDictionary:request] error:error];
 }
 
-- (NSData *)encodeTokenDetails:(ARTTokenDetails *)tokenDetails {
-    return [self encode:[self tokenDetailsToDictionary:tokenDetails]];
+- (NSData *)encodeTokenDetails:(ARTTokenDetails *)tokenDetails error:(NSError **)error {
+    return [self encode:[self tokenDetailsToDictionary:tokenDetails] error:error];
 }
 
-- (NSData *)encodeDeviceDetails:(ARTDeviceDetails *)deviceDetails {
-    return [self encode:[self deviceDetailsToDictionary:deviceDetails]];
+- (NSData *)encodeDeviceDetails:(ARTDeviceDetails *)deviceDetails error:(NSError **)error {
+    return [self encode:[self deviceDetailsToDictionary:deviceDetails] error:error];
 }
 
-- (ARTDeviceDetails *)decodeDeviceDetails:(NSData *)data error:(NSError * __autoreleasing *)error {
-    return [self deviceDetailsFromDictionary:[self decodeDictionary:data] error:error];
+- (ARTDeviceDetails *)decodeDeviceDetails:(NSData *)data error:(NSError **)error {
+    return [self deviceDetailsFromDictionary:[self decodeDictionary:data error:nil] error:error];
 }
 
 - (NSArray<ARTDeviceDetails *> *)decodeDevicesDetails:(NSData *)data error:(NSError * __autoreleasing *)error {
-    return [self devicesDetailsFromArray:[self decodeArray:data] error:error];
+    return [self devicesDetailsFromArray:[self decodeArray:data error:nil] error:error];
 }
 
 - (NSArray<ARTDeviceDetails *> *)devicesDetailsFromArray:(NSArray *)input error:(NSError * __autoreleasing *)error {
@@ -163,24 +159,24 @@
     return output;
 }
 
-- (NSData *)encodeDevicePushDetails:(ARTDevicePushDetails *)devicePushDetails {
-    return [self encode:[self devicePushDetailsToDictionary:devicePushDetails]];
+- (NSData *)encodeDevicePushDetails:(ARTDevicePushDetails *)devicePushDetails error:(NSError **)error {
+    return [self encode:[self devicePushDetailsToDictionary:devicePushDetails] error:error];
 }
 
 - (ARTDevicePushDetails *)decodeDevicePushDetails:(NSData *)data error:(NSError * __autoreleasing *)error {
-    return [self devicePushDetailsFromDictionary:[self decode:data] error:error];
+    return [self devicePushDetailsFromDictionary:[self decode:data error:nil] error:error];
 }
 
-- (NSData *)encodePushChannelSubscription:(ARTPushChannelSubscription *)channelSubscription {
-    return [self encode:[self pushChannelSubscriptionToDictionary:channelSubscription]];
+- (NSData *)encodePushChannelSubscription:(ARTPushChannelSubscription *)channelSubscription error:(NSError * __autoreleasing *)error {
+    return [self encode:[self pushChannelSubscriptionToDictionary:channelSubscription] error:error];
 }
 
 - (ARTPushChannelSubscription *)decodePushChannelSubscription:(NSData *)data error:(NSError * __autoreleasing *)error {
-    return [self pushChannelSubscriptionFromDictionary:[self decodeDictionary:data] error:error];
+    return [self pushChannelSubscriptionFromDictionary:[self decodeDictionary:data error:nil] error:error];
 }
 
 - (NSArray<ARTPushChannelSubscription *> *)decodePushChannelSubscriptions:(NSData *)data error:(NSError * __autoreleasing *)error {
-    return [self pushChannelSubscriptionsFromArray:[self decodeArray:data] error:error];
+    return [self pushChannelSubscriptionsFromArray:[self decodeArray:data error:nil] error:error];
 }
 
 - (NSArray<ARTPushChannelSubscription *> *)pushChannelSubscriptionsFromArray:(NSArray *)input error:(NSError * __autoreleasing *)error {
@@ -247,8 +243,8 @@
     return channelSubscription;
 }
 
-- (NSDate *)decodeTime:(NSData *)data {
-    NSArray *resp = [self decodeArray:data];
+- (NSDate *)decodeTime:(NSData *)data error:(NSError **)error {
+    NSArray *resp = [self decodeArray:data error:error];
     [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: decodeTime %@", _rest, [_delegate formatAsString], resp];
     if (resp && resp.count == 1) {
         NSNumber *num = resp[0];
@@ -259,8 +255,8 @@
     return nil;
 }
 
-- (NSArray *)decodeStats:(NSData *)data {
-    return [self statsFromArray:[self decodeArray:data]];
+- (NSArray *)decodeStats:(NSData *)data error:(NSError **)error {
+    return [self statsFromArray:[self decodeArray:data error:error]];
 }
 
 - (ARTMessage *)messageFromDictionary:(NSDictionary *)input {
@@ -268,7 +264,7 @@
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
-    
+
     ARTMessage *message = [[ARTMessage alloc] init];
     message.id = [input artString:@"id"];
     message.name = [input artString:@"name"];
@@ -277,6 +273,7 @@
     message.encoding = [input artString:@"encoding"];;
     message.timestamp = [input artDate:@"timestamp"];
     message.connectionId = [input artString:@"connectionId"];
+    message.extras = [input objectForKey:@"extras"];
     
     return message;
 }
@@ -375,7 +372,7 @@
     if (message.timestamp) {
         [output setObject:[message.timestamp artToNumberMs] forKey:@"timestamp"];
     }
-    
+
     if (message.clientId) {
         [output setObject:message.clientId forKey:@"clientId"];
     }
@@ -388,12 +385,32 @@
         [output setObject:message.name forKey:@"name"];
     }
 
+    if (message.extras) {
+        [output setObject:message.extras forKey:@"extras"];
+    }
+
     if (message.connectionId) {
         [output setObject:message.connectionId forKey:@"connectionId"];
     }
 
     [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: messageToDictionary %@", _rest, [_delegate formatAsString], output];
     return output;
+}
+
+- (NSDictionary *)authDetailsToDictionary:(ARTAuthDetails *)authDetails {
+    NSMutableDictionary *output = [NSMutableDictionary dictionary];
+
+    [output setObject:authDetails.accessToken forKey:@"accessToken"];
+
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: authDetailsToDictionary %@", _rest, [_delegate formatAsString], output];
+    return output;
+}
+
+- (ARTAuthDetails *)authDetailsFromDictionary:(NSDictionary *)input {
+    if (!input) {
+        return nil;
+    }
+    return [[ARTAuthDetails alloc] initWithToken:[input artString:@"accessToken"]];
 }
 
 - (NSArray *)messagesToArray:(NSArray *)messages {
@@ -451,11 +468,19 @@
 - (NSDictionary *)protocolMessageToDictionary:(ARTProtocolMessage *)message {
     NSMutableDictionary *output = [NSMutableDictionary dictionary];
     output[@"action"] = [NSNumber numberWithInt:message.action];
-    if(message.channel) {
+
+    if (message.channel) {
         output[@"channel"] = message.channel;
     }
-    output[@"msgSerial"] = [NSNumber numberWithLongLong:message.msgSerial];
-    
+
+    if (message.channelSerial) {
+        output[@"channelSerial"] = message.channelSerial;
+    }
+
+    if (message.msgSerial) {
+        output[@"msgSerial"] = message.msgSerial;
+    }
+
     if (message.messages) {
         output[@"messages"] = [self messagesToArray:message.messages];
     }
@@ -463,6 +488,11 @@
     if (message.presence) {
         output[@"presence"] = [self presenceMessagesToArray:message.presence];
     }
+
+    if (message.auth) {
+        output[@"auth"] = [self authDetailsToDictionary:message.auth];
+    }
+
     [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: protocolMessageToDictionary %@", _rest, [_delegate formatAsString], output];
     return output;
 }
@@ -513,7 +543,6 @@
 
     NSMutableDictionary *dictionary = [@{
              @"keyName":tokenRequest.keyName ? tokenRequest.keyName : @"",
-             @"ttl":[NSNumber numberWithUnsignedLongLong: timeIntervalToMilliseconds(tokenRequest.ttl)],
              @"capability":tokenRequest.capability ? tokenRequest.capability : @"",
              @"timestamp":timestamp,
              @"nonce":tokenRequest.nonce ? tokenRequest.nonce : @"",
@@ -522,6 +551,9 @@
 
     if (tokenRequest.clientId) {
         dictionary[@"clientId"] = tokenRequest.clientId;
+    }
+    if (tokenRequest.ttl) {
+        dictionary[@"ttl"] = [NSNumber numberWithUnsignedLongLong:timeIntervalToMilliseconds([tokenRequest.ttl doubleValue])];
     }
 
     return dictionary;
@@ -550,7 +582,7 @@
 
     ARTTokenParams *params = [[ARTTokenParams alloc] initWithClientId:[input artString:@"clientId"]
                                                                 nonce:[input artString:@"nonce"]];
-    params.ttl = millisecondsToTimeInterval([input artInteger:@"ttl"]);
+    params.ttl = [NSNumber numberWithDouble:millisecondsToTimeInterval([input artInteger:@"ttl"])];
     params.capability = [input artString:@"capability"];
     params.timestamp = [input artDate:@"timestamp"];
 
@@ -592,7 +624,7 @@
     dictionary[@"formFactor"] = deviceDetails.formFactor;
 
     if (deviceDetails.clientId) {
-        dictionary[@"cliendId"] = deviceDetails.clientId;
+        dictionary[@"clientId"] = deviceDetails.clientId;
     }
 
     dictionary[@"push"] = [self devicePushDetailsToDictionary:deviceDetails.push];
@@ -661,13 +693,14 @@
         message.connectionSerial = [serial longLongValue];
     }
     message.id = [input artString:@"id"];
-    message.msgSerial = [[input artNumber:@"msgSerial"] longLongValue];
+    message.msgSerial = [input artNumber:@"msgSerial"];
     message.timestamp = [input artDate:@"timestamp"];
     message.messages = [self messagesFromArray:[input objectForKey:@"messages"]];
     message.presence = [self presenceMessagesFromArray:[input objectForKey:@"presence"]];
     message.connectionKey = [input artString:@"connectionKey"];
     message.flags = [[input artNumber:@"flags"] longLongValue];
     message.connectionDetails = [self connectionDetailsFromDictionary:[input valueForKey:@"connectionDetails"]];
+    message.auth = [self authDetailsFromDictionary:[input valueForKey:@"auth"]];
 
     NSDictionary *error = [input valueForKey:@"error"];
     if (error) {
@@ -688,7 +721,8 @@
                                             maxFrameSize:[input artInteger:@"maxFrameSize"]
                                           maxInboundRate:[input artInteger:@"maxInboundRate"]
                                       connectionStateTtl:(NSTimeInterval)[input artInteger:@"connectionStateTtl"]
-                                                serverId:[input artString:@"serverId"]];
+                                                serverId:[input artString:@"serverId"]
+                                         maxIdleInterval:millisecondsToTimeInterval([input artInteger:@"maxIdleInterval"])];
 }
 
 - (NSArray *)statsFromArray:(NSArray *)input {
@@ -810,14 +844,12 @@
                                                  refused:refused.doubleValue];
 }
 
-- (NSError *)decodeError:(NSData *)error {
-    NSDictionary *decodedError = [[self decodeDictionary:error] valueForKey:@"error"];
-    NSDictionary *userInfo = @{
-                               NSLocalizedDescriptionKey: @"",
-                               NSLocalizedFailureReasonErrorKey: decodedError[@"message"],
-                               @"ARTErrorStatusCode": decodedError[@"statusCode"]
-                               };
-    return [NSError errorWithDomain:ARTAblyErrorDomain code:[decodedError[@"code"] intValue] userInfo:userInfo];
+- (ARTErrorInfo *)decodeErrorInfo:(NSData *)artError error:(NSError **)error {
+    NSDictionary *decodedError = [[self decodeDictionary:artError error:error] valueForKey:@"error"];
+    if (!decodedError) {
+        return nil;
+    }
+    return [ARTErrorInfo createWithCode:[decodedError[@"code"] intValue] status:[decodedError[@"statusCode"] intValue] message:decodedError[@"message"]];
 }
 
 - (ARTStatsRequestCount *)statsRequestCountFromDictionary:(NSDictionary *)input {
@@ -842,31 +874,45 @@
     output[@"data"] = data;
 }
 
-- (id)decode:(NSData *)data {
-    id decoded = [_delegate decode:data];
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@> decoding '%@'; got: %@", _rest, [_delegate formatAsString], data, decoded];
-    return decoded;
-}
-
-- (NSDictionary *)decodeDictionary:(NSData *)data {
-    id obj = [self decode:data];
+- (NSDictionary *)decodeDictionary:(NSData *)data error:(NSError **)error {
+    id obj = [self decode:data error:error];
     if (![obj isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
     return obj;
 }
 
-- (NSArray *)decodeArray:(NSData *)data {
-    id obj = [self decode:data];
+- (NSArray *)decodeArray:(NSData *)data error:(NSError **)error {
+    id obj = [self decode:data error:error];
     if (![obj isKindOfClass:[NSArray class]]) {
         return nil;
     }
     return obj;
 }
 
-- (NSData *)encode:(id)obj {
-    NSData *encoded = [_delegate encode:obj]; 
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@> encoding '%@'; got: %@", _rest, [_delegate formatAsString], obj, encoded];
+- (id)decode:(NSData *)data error:(NSError **)error {
+    NSError *e = nil;
+    id decoded = [_delegate decode:data error:&e];
+    if (e) {
+        [_logger error:@"failed decoding data %@ with error: %@ (%@)", data, e.localizedDescription, e.localizedFailureReason];
+    }
+    if (error) {
+        *error = e;
+    }
+    [_logger debug:@"RS:%p ARTJsonLikeEncoder<%@> decoding '%@'; got: %@", _rest, [_delegate formatAsString], data, decoded];
+    return decoded;
+}
+
+- (NSData *)encode:(id)obj error:(NSError **)error {
+    NSError *e = nil;
+    NSData *encoded = [_delegate encode:obj error:&e];
+    if (e) {
+        [_logger error:@"failed encoding object %@ with error: %@ (%@)", obj, e.localizedDescription, e.localizedFailureReason];
+    }
+    if (error) {
+        *error = e;
+    }
+    [_logger debug:@"RS:%p ARTJsonLikeEncoder<%@> encoding '%@'; got: %@", _rest, [_delegate formatAsString], obj, encoded];
     return encoded;
 }
 

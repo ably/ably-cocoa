@@ -1,9 +1,9 @@
 Pod::Spec.new do |s|
   s.name              = "Ably"
-  s.version           = "0.8.9"
+  s.version           = `Scripts/get-version.sh`
   s.summary           = "iOS client for Ably"
   s.description       = <<-DESC
-                        iOS client library for ably.io, the realtime messaging service, written in Objective-C and ready for Swift 2.0.
+                        iOS client library for ably.io, the realtime messaging service, written in Objective-C and ready for Swift 3.0.
                         DESC
   s.homepage          = "https://www.ably.io"
   s.license           = { :type => 'Apache 2.0', :file => 'LICENSE' }
@@ -15,8 +15,10 @@ Pod::Spec.new do |s|
   s.platform          = :ios, '8.0'
   s.requires_arc      = true
   s.source_files      = 'Source/*.{h,m}'
+  s.private_header_files = 'Source/*+Private.h'
   s.module_map        = 'Source/Ably.modulemap'
   s.dependency 'SocketRocket', '0.5.1'
   s.dependency 'msgpack', '0.1.8'
+  s.dependency 'KSCrashAblyFork', '1.15.8-ably-1'
   s.dependency 'ULID', '1.0.2'
 end

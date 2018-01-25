@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTFallback.h"
+#import "ARTFallback+Private.h"
 
 #import "ARTDefault.h"
 #import "ARTStatus.h"
@@ -19,19 +19,16 @@ int (^ARTFallback_getRandomHostIndex)(int count) = ^int(int count) {
 
 @interface ARTFallback ()
 
-@property (readwrite, strong, nonatomic) NSMutableArray * hosts;
-
 @end
 
 @implementation ARTFallback
 
-- (instancetype)initWithFallbackHosts:(art_nullable __GENERIC(NSArray, NSString *) *)fallbackHosts {
+- (instancetype)initWithFallbackHosts:(nullable NSArray<NSString *> *)fallbackHosts {
     self = [super init];
     if (self) {
         if (fallbackHosts != nil && fallbackHosts.count == 0) {
             return nil;
         }
-
         self.hosts = [NSMutableArray array];
         NSMutableArray * hostArray = [[NSMutableArray alloc] initWithArray: fallbackHosts ? fallbackHosts : [ARTDefault fallbackHosts]];
         size_t count = [hostArray count];
@@ -44,17 +41,48 @@ int (^ARTFallback_getRandomHostIndex)(int count) = ^int(int count) {
     return self;
 }
 
+- (instancetype)initWithOptions:(ARTClientOptions *)options {
+    if (options.fallbackHostsUseDefault) {
+        return [self initWithFallbackHosts:nil]; //default
+    }
+    return [self initWithFallbackHosts:options.fallbackHosts];
+}
+
 - (instancetype)init {
     return [self initWithFallbackHosts:nil];
 }
 
 - (NSString *)popFallbackHost {
-    if([self.hosts count] ==0) {
+    if ([self.hosts count] ==0) {
         return nil;
     }
-    NSString *host= [self.hosts lastObject];
+    NSString *host = [self.hosts lastObject];
     [self.hosts removeLastObject];
     return host;
+}
+
++ (BOOL)restShouldFallback:(NSURL *)url withOptions:(ARTClientOptions *)options {
+    // Default REST
+    if ([url.host isEqualToString:[ARTDefault restHost]]) {
+        return YES;
+    }
+    // Custom host / environment
+    else if (options.fallbackHostsUseDefault) {
+        return YES;
+    }
+    return NO;
+}
+
++ (BOOL)realtimeShouldFallback:(NSURL *)url withOptions:(ARTClientOptions *)options {
+    // Default Realtime
+    if ([url.host isEqualToString:[ARTDefault realtimeHost]]) {
+        return YES;
+    }
+    // Custom host / environment
+    else if (options.fallbackHostsUseDefault) {
+        return YES;
+    }
+    return NO;
 }
 
 @end

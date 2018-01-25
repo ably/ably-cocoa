@@ -10,6 +10,7 @@
 #import "ARTHttp.h"
 #import "ARTLog.h"
 #import "ARTJsonLikeEncoder.h"
+#import "ARTRest+Private.h"
 #import "ARTClientOptions.h"
 #import "ARTPaginatedResult+Private.h"
 #import "ARTPushChannelSubscription.h"
@@ -18,16 +19,17 @@
 const NSUInteger ARTDefaultLimit = 100;
 
 @implementation ARTPushChannel {
+    __weak ARTRest *_rest;
     __weak ARTLog *_logger;
     __weak ARTChannel *_channel;
-    __weak id<ARTHTTPAuthenticatedExecutor> _httpExecutor;
 }
 
-- (instancetype)init:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor withChannel:(ARTChannel *)channel {
+- (instancetype)init:(ARTRest *)rest withChannel:(ARTChannel *)channel {
     if (self == [super self]) {
+        _rest = rest;
+        _logger = [rest logger];
         _channel = channel;
         _logger = channel.logger;
-        _httpExecutor = httpExecutor;
     }
     return self;
 }
@@ -57,19 +59,18 @@ const NSUInteger ARTDefaultLimit = 100;
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"]];
     request.HTTPMethod = @"POST";
-    request.HTTPBody = [[_httpExecutor defaultEncoder] encode:@{
+    request.HTTPBody = [[_rest defaultEncoder] encode:@{
         @"deviceId": deviceId,
         @"channel": _channel.name,
-    }];
-    [request setValue:[[_httpExecutor defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
-
+    } error:nil];
+    [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"subscribe notifications for device %@ in channel %@", deviceId, _channel.name];
-    [_httpExecutor executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             [_logger error:@"%@: subscribe notifications for device %@ in channel %@ failed (%@)", NSStringFromClass(self.class), deviceId, _channel.name, error.localizedDescription];
         }
-        if (callback) callback(error ? [ARTErrorInfo createWithNSError:error] : nil);
+        if (callback) callback(error ? [ARTErrorInfo createFromNSError:error] : nil);
     }];
 }
 
@@ -81,18 +82,18 @@ const NSUInteger ARTDefaultLimit = 100;
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"]];
     request.HTTPMethod = @"POST";
-    request.HTTPBody = [[_httpExecutor defaultEncoder] encode:@{
+    request.HTTPBody = [[_rest defaultEncoder] encode:@{
         @"clientId": clientId,
         @"channel": _channel.name,
-    }];
-    [request setValue:[[_httpExecutor defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
+    } error:nil];
+    [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"subscribe notifications for clientId %@ in channel %@", clientId, _channel.name];
-    [_httpExecutor executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             [_logger error:@"%@: subscribe notifications for clientId %@ in channel %@ failed (%@)", NSStringFromClass(self.class), clientId, _channel.name, error.localizedDescription];
         }
-        if (callback) callback(error ? [ARTErrorInfo createWithNSError:error] : nil);
+        if (callback) callback(error ? [ARTErrorInfo createFromNSError:error] : nil);
     }];
 }
 
@@ -113,11 +114,11 @@ const NSUInteger ARTDefaultLimit = 100;
     request.HTTPMethod = @"DELETE";
 
     [_logger debug:__FILE__ line:__LINE__ message:@"unsubscribe notifications for device %@ in channel %@", deviceId, _channel.name];
-    [_httpExecutor executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             [_logger error:@"%@: unsubscribe notifications for device %@ in channel %@ failed (%@)", NSStringFromClass(self.class), deviceId, _channel.name, error.localizedDescription];
         }
-        if (callback) callback(error ? [ARTErrorInfo createWithNSError:error] : nil);
+        if (callback) callback(error ? [ARTErrorInfo createFromNSError:error] : nil);
     }];
 }
 
@@ -137,11 +138,11 @@ const NSUInteger ARTDefaultLimit = 100;
     request.HTTPMethod = @"DELETE";
 
     [_logger debug:__FILE__ line:__LINE__ message:@"unsubscribe notifications for clientId %@ in channel %@", clientId, _channel.name];
-    [_httpExecutor executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             [_logger error:@"%@: unsubscribe notifications for clientId %@ in channel %@ failed (%@)", NSStringFromClass(self.class), clientId, _channel.name, error.localizedDescription];
         }
-        if (callback) callback(error ? [ARTErrorInfo createWithNSError:error] : nil);
+        if (callback) callback(error ? [ARTErrorInfo createFromNSError:error] : nil);
     }];
 }
 
@@ -168,12 +169,11 @@ const NSUInteger ARTDefaultLimit = 100;
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"GET";
 
-    ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data) {
-        ARTErrorInfo *error;
-        return [[_httpExecutor defaultEncoder] decodePushChannelSubscriptions:data error:&error];
+    ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **error) {
+        return [_rest.encoders[response.MIMEType] decodePushChannelSubscriptions:data error:error];
     };
 
-    [ARTPaginatedResult executePaginated:_httpExecutor withRequest:request andResponseProcessor:responseProcessor callback:callback];
+    [ARTPaginatedResult executePaginated:_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
 }
 
 - (ARTDeviceDetails *)getDevice:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {

@@ -7,38 +7,38 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "CompatibilityMacros.h"
-#import "ARTStatus.h"
-#import "ARTCrypto.h"
+
+#import <Ably/ARTStatus.h>
+#import <Ably/ARTCrypto.h>
 
 @class ARTCipherParams;
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTDataEncoderOutput : NSObject
 
-@property (readonly, nonatomic, art_nullable) id data;
-@property (readonly, nonatomic, art_nullable) NSString *encoding;
-@property (readonly, nonatomic, art_nullable) ARTErrorInfo *errorInfo;
+@property (readonly, nonatomic, nullable) id data;
+@property (readonly, nonatomic, nullable) NSString *encoding;
+@property (readonly, nonatomic, nullable) ARTErrorInfo *errorInfo;
 
-- initWithData:(id __art_nullable)data encoding:(NSString *__art_nullable)encoding errorInfo:(ARTErrorInfo *__art_nullable)errorInfo;
+- initWithData:(id _Nullable)data encoding:(NSString *_Nullable)encoding errorInfo:(ARTErrorInfo *_Nullable)errorInfo;
 
 @end
 
 @interface ARTDataEncoder : NSObject 
 
-- (instancetype)initWithCipherParams:(ARTCipherParams *__art_nullable)params error:(NSError *__art_nullable*__art_nullable)error;
-- (ARTDataEncoderOutput *)encode:(id __art_nullable)data;
-- (ARTDataEncoderOutput *)decode:(id __art_nullable)data encoding:(NSString *__art_nullable)encoding;
+- (instancetype)initWithCipherParams:(ARTCipherParams *_Nullable)params error:(NSError *_Nullable*_Nullable)error;
+- (ARTDataEncoderOutput *)encode:(id _Nullable)data;
+- (ARTDataEncoderOutput *)decode:(id _Nullable)data encoding:(NSString *_Nullable)encoding;
 
 @end
 
 @interface NSString (ARTDataEncoder)
 
-+ (NSString *)artAddEncoding:(NSString *)encoding toString:(NSString *__art_nullable)s;
++ (NSString *)artAddEncoding:(NSString *)encoding toString:(NSString *_Nullable)s;
 - (NSString *)artLastEncoding;
-- (NSString *)artRemoveLastEncoding;
+- (nullable NSString *)artRemoveLastEncoding;
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

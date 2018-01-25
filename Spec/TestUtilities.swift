@@ -27,44 +27,46 @@ enum CryptoTest: String {
 }
 
 class Configuration : QuickConfiguration {
-    override class func configure(configuration: Quick.Configuration!) {
-        configuration.beforeEach {
-
+    override class func configure(_ configuration: Quick.Configuration!) {
+        configuration.beforeSuite {
+            AsyncDefaults.Timeout = testTimeout
         }
     }
 }
 
-func pathForTestResource(resourcePath: String) -> String {
-    let testBundle = NSBundle(forClass: AblyTests.self)
-    return testBundle.pathForResource(resourcePath, ofType: "")!
+func pathForTestResource(_ resourcePath: String) -> String {
+    let testBundle = Bundle(for: AblyTests.self)
+    return testBundle.path(forResource: resourcePath, ofType: "")!
 }
 
-let appSetupJson = JSON(data: NSData(contentsOfFile: pathForTestResource(testResourcesPath + "test-app-setup.json"))!, options: .MutableContainers)
+let appSetupJson = JSON(parseJSON: try! String(contentsOfFile: pathForTestResource(testResourcesPath + "test-app-setup.json")))
 
-let testTimeout: NSTimeInterval = 10.0
+let testTimeout: TimeInterval = 10.0
 let testResourcesPath = "ably-common/test-resources/"
 
 /// Common test utilities.
 class AblyTests {
 
-    class func base64ToData(base64: String) -> NSData {
-        return NSData(base64EncodedString: base64, options: NSDataBase64DecodingOptions(rawValue: 0))!
+    class func base64ToData(_ base64: String) -> Data {
+        return Data(base64Encoded: base64, options: NSData.Base64DecodingOptions(rawValue: 0))!
     }
 
-    class func msgpackToJSON(data: NSData) -> JSON {
-        return JSON(data: ARTJsonEncoder().encode(ARTMsgPackEncoder().decode(data)))
+    class func msgpackToJSON(_ data: NSData) -> JSON {
+        let decoded = try! ARTMsgPackEncoder().decode(data as Data)
+        let encoded = try! ARTJsonEncoder().encode(decoded)
+        return JSON(data: encoded)
     }
 
-    class func checkError(errorInfo: ARTErrorInfo?, withAlternative message: String) {
+    class func checkError(_ errorInfo: ARTErrorInfo?, withAlternative message: String) {
         if let error = errorInfo {
-            XCTFail("\(error.code): \(error.message)")
+            XCTFail("\((error ).code): \(error.message)")
         }
         else if !message.isEmpty {
             XCTFail(message)
         }
     }
 
-    class func checkError(errorInfo: ARTErrorInfo?) {
+    class func checkError(_ errorInfo: ARTErrorInfo?) {
         checkError(errorInfo, withAlternative: "")
     }
 
@@ -78,7 +80,7 @@ class AblyTests {
     class var authTokenCases: [String: (ARTAuthOptions) -> ()] {
         get { return [
             "useTokenAuth": { $0.useTokenAuth = true; $0.key = "fake:key" },
-            "authUrl": { $0.authUrl = NSURL(string: "http://test.com") },
+            "authUrl": { $0.authUrl = URL(string: "http://test.com") },
             "authCallback": { $0.authCallback = { _, _ in return } },
             "tokenDetails": { $0.tokenDetails = ARTTokenDetails(token: "token") },
             "token": { $0.token = "token" },
@@ -88,9 +90,13 @@ class AblyTests {
     }
 
     static var testApplication: JSON?
-    static private var setupOptionsCounter = 0
+    static fileprivate var setupOptionsCounter = 0
 
-    class func setupOptions(options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false) -> ARTClientOptions {
+    static var queue = DispatchQueue(label: "io.ably.tests", qos: .userInitiated)
+    static var userQueue = DispatchQueue(label: "io.ably.tests.callbacks", qos: .userInitiated)
+    static var extraQueue = DispatchQueue(label: "io.ably.tests.extra", qos: .userInitiated)
+
+    class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false) -> ARTClientOptions {
         ARTChannels_getChannelNamePrefix = { "test-\(setupOptionsCounter)" }
         setupOptionsCounter += 1
 
@@ -99,9 +105,9 @@ class AblyTests {
         }
 
         guard let app = testApplication else {
-            let request = NSMutableURLRequest(URL: NSURL(string: "https://\(options.restHost):\(options.tlsPort)/apps")!)
-            request.HTTPMethod = "POST"
-            request.HTTPBody = try? appSetupJson["post_apps"].rawData()
+            let request = NSMutableURLRequest(url: URL(string: "https://\(options.restHost):\(options.tlsPort)/apps")!)
+            request.httpMethod = "POST"
+            request.httpBody = try? appSetupJson["post_apps"].rawData()
 
             request.allHTTPHeaderFields = [
                 "Accept" : "application/json",
@@ -111,14 +117,13 @@ class AblyTests {
             let (responseData, responseError, _) = NSURLSessionServerTrustSync().get(request)
 
             if let error = responseError {
-                XCTFail(error.localizedDescription)
-                return options
+                fatalError(error.localizedDescription)
             }
 
             testApplication = JSON(data: responseData!)
             
             if debug {
-                options.logLevel = .Verbose
+                options.logLevel = .verbose
                 print(testApplication!)
             }
 
@@ -127,21 +132,21 @@ class AblyTests {
         
         let key = app["keys"][0]
         options.key = key["keyStr"].stringValue
+        options.dispatchQueue = userQueue
+        options.internalDispatchQueue = queue
         return options
     }
     
-    class func commonAppSetup(debug debug: Bool = false) -> ARTClientOptions {
+    class func commonAppSetup(_ debug: Bool = false) -> ARTClientOptions {
         return AblyTests.setupOptions(AblyTests.jsonRestOptions, debug: debug)
     }
 
-    class func clientOptions(debug debug: Bool = false, key: String? = nil, requestToken: Bool = false) -> ARTClientOptions {
+    class func clientOptions(_ debug: Bool = false, key: String? = nil, requestToken: Bool = false) -> ARTClientOptions {
         let options = ARTClientOptions()
         options.environment = "sandbox"
+        options.logExceptionReportingUrl = nil
         if debug {
-            options.logLevel = .Debug
-        }
-        else {
-            options.logLevel = .Info
+            options.logLevel = .debug
         }
         if let key = key {
             options.key = key
@@ -149,34 +154,36 @@ class AblyTests {
         if requestToken {
             options.token = getTestToken()
         }
+        options.dispatchQueue = userQueue
+        options.internalDispatchQueue = queue
         return options
     }
 
-    class func newErrorProtocolMessage() -> ARTProtocolMessage {
+    class func newErrorProtocolMessage(message: String = "Fail test") -> ARTProtocolMessage {
         let protocolMessage = ARTProtocolMessage()
-        protocolMessage.action = .Error
-        protocolMessage.error = ARTErrorInfo.createWithCode(0, message: "Fail test")
+        protocolMessage.action = .error
+        protocolMessage.error = ARTErrorInfo.create(withCode: 0, message: message)
         return protocolMessage
     }
 
-    class func newPresenceProtocolMessage(channel: String, action: ARTPresenceAction, clientId: String) -> ARTProtocolMessage {
+    class func newPresenceProtocolMessage(_ channel: String, action: ARTPresenceAction, clientId: String) -> ARTProtocolMessage {
         let protocolMessage = ARTProtocolMessage()
-        protocolMessage.action = .Presence
+        protocolMessage.action = .presence
         protocolMessage.channel = channel
-        protocolMessage.timestamp = NSDate()
+        protocolMessage.timestamp = Date()
         let presenceMessage = ARTPresenceMessage()
         presenceMessage.action = action
         presenceMessage.clientId = clientId
-        presenceMessage.timestamp = NSDate()
+        presenceMessage.timestamp = Date()
         protocolMessage.presence = [presenceMessage]
         return protocolMessage
     }
 
-    class func newRealtime(options: ARTClientOptions) -> ARTRealtime {
+    class func newRealtime(_ options: ARTClientOptions) -> ARTRealtime {
         let autoConnect = options.autoConnect
         options.autoConnect = false
         let realtime = ARTRealtime(options: options)
-        realtime.setTransportClass(TestProxyTransport.self)
+        realtime.setTransport(TestProxyTransport.self)
         realtime.setReachabilityClass(TestReachability.self)
         if autoConnect {
             options.autoConnect = true
@@ -186,10 +193,10 @@ class AblyTests {
     }
 
     class func newRandomString() -> String {
-        return NSProcessInfo.processInfo().globallyUniqueString
+        return ProcessInfo.processInfo.globallyUniqueString
     }
 
-    class func addMembersSequentiallyToChannel(channelName: String, members: Int = 1, startFrom: Int = 1, data: AnyObject? = nil, options: ARTClientOptions, done: ()->()) -> [ARTRealtime] {
+    class func addMembersSequentiallyToChannel(_ channelName: String, members: Int = 1, startFrom: Int = 1, data: AnyObject? = nil, options: ARTClientOptions, done: @escaping ()->()) -> ARTRealtime {
         let client = ARTRealtime(options: options)
         let channel = client.channels.get(channelName)
 
@@ -208,19 +215,31 @@ class AblyTests {
                 }
             }
         }
-        return [client]
+
+        return client
     }
 
-    class func splitDone(howMany: Int, done: () -> ()) -> (() -> ()) {
+    class func splitDone(_ howMany: Int, file: StaticString = #file, line: UInt = #line, done: @escaping () -> Void) -> (() -> Void) {
         var left = howMany
         return {
             left -= 1
             if left == 0 {
                 done()
             } else if left < 0 {
-                fail("splitDone called more than the expected \(howMany) times")
+                XCTFail("splitDone called more than the expected \(howMany) times", file: file, line: line)
             }
         }
+    }
+
+    class func waitFor<T>(timeout: TimeInterval, file: FileString = #file, line: UInt = #line, f: @escaping (@escaping (T?) -> Void) -> Void) -> T? {
+        var value: T?
+        waitUntil(timeout: timeout, file: file, line: line) { done in
+            f() { v in
+                value = v
+                done()
+            }
+        }
+        return value
     }
 
     // MARK: Crypto
@@ -245,68 +264,71 @@ class AblyTests {
 
     }
 
-    class func loadCryptoTestData(file: String) -> (key: NSData, iv: NSData, items: [CryptoTestItem]) {
-        let json = JSON(data: NSData(contentsOfFile: pathForTestResource(file))!)
+    class func loadCryptoTestData(_ file: String) -> (key: Data, iv: Data, items: [CryptoTestItem]) {
+        let json = JSON(parseJSON: try! String(contentsOfFile: pathForTestResource(file)))
 
-        let keyData = NSData(base64EncodedString: json["key"].stringValue, options: NSDataBase64DecodingOptions(rawValue: 0))!
-        let ivData = NSData(base64EncodedString: json["iv"].stringValue, options: NSDataBase64DecodingOptions(rawValue: 0))!
+        let keyData = Data(base64Encoded: json["key"].stringValue, options: Data.Base64DecodingOptions(rawValue: 0))!
+        let ivData = Data(base64Encoded: json["iv"].stringValue, options: Data.Base64DecodingOptions(rawValue: 0))!
         let items = json["items"].map{ $0.1 }.map(CryptoTestItem.init)
         
         return (keyData, ivData, items)
     }
 
-    class func loadCryptoTestData(crypto: CryptoTest) -> (key: NSData, iv: NSData, items: [CryptoTestItem]) {
+    class func loadCryptoTestData(_ crypto: CryptoTest) -> (key: Data, iv: Data, items: [CryptoTestItem]) {
         return loadCryptoTestData(testResourcesPath + crypto.rawValue + ".json")
     }
 
 }
 
-class NSURLSessionServerTrustSync: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate {
+class NSURLSessionServerTrustSync: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
 
-    func get(request: NSMutableURLRequest) -> (NSData?, NSError?, NSHTTPURLResponse?) {
+    func get(_ request: NSMutableURLRequest) -> (Data?, NSError?, HTTPURLResponse?) {
         var responseError: NSError?
-        var responseData: NSData?
-        var httpResponse: NSHTTPURLResponse?;
+        var responseData: Data?
+        var httpResponse: HTTPURLResponse?;
         var requestCompleted = false
 
-        let configuration = NSURLSessionConfiguration.defaultSessionConfiguration()
-        let session = NSURLSession(configuration:configuration, delegate:self, delegateQueue:NSOperationQueue.mainQueue())
+        let configuration = URLSessionConfiguration.default
+        let session = Foundation.URLSession(configuration:configuration, delegate:self, delegateQueue:OperationQueue.main)
 
-        let task = session.dataTaskWithRequest(request) { data, response, error in
-            if let response = response as? NSHTTPURLResponse {
+        let task = session.dataTask(with: request as URLRequest, completionHandler: { data, response, error in
+            if let response = response as? HTTPURLResponse {
                 responseData = data
-                responseError = error
+                responseError = error as NSError?
                 httpResponse = response
             }
+            else if let error = error {
+                responseError = error as NSError?
+            }
             requestCompleted = true
-        }
+        }) 
         task.resume()
 
         while !requestCompleted {
-            CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Bool(0))
+            CFRunLoopRunInMode(CFRunLoopMode.defaultMode, CFTimeInterval(0.1), Bool(0))
         }
 
         return (responseData, responseError, httpResponse)
     }
 
-    func URLSession(session: NSURLSession, task: NSURLSessionTask, didReceiveChallenge challenge: NSURLAuthenticationChallenge, completionHandler: (NSURLSessionAuthChallengeDisposition, NSURLCredential?) -> Void) {
+    func urlSession(_ session: URLSession, task: URLSessionTask, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         // Try to extract the server certificate for trust validation
         if let serverTrust = challenge.protectionSpace.serverTrust {
             // Server trust authentication
             // Reference: https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/URLLoadingSystem/Articles/AuthenticationChallenges.html
-            completionHandler(NSURLSessionAuthChallengeDisposition.UseCredential, NSURLCredential(forTrust: serverTrust))
+            completionHandler(Foundation.URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust: serverTrust))
         }
         else {
-            challenge.sender?.performDefaultHandlingForAuthenticationChallenge?(challenge)
+            challenge.sender?.performDefaultHandling?(for: challenge)
             XCTFail("Current authentication: \(challenge.protectionSpace.authenticationMethod)")
         }
     }
 
 }
 
-extension NSDate {
-    func isBefore(other: NSDate) -> Bool {
-        return self.compare(other) == NSComparisonResult.OrderedAscending
+extension Date {
+    func isBefore(_ other: Date) -> Bool {
+        return self.compare(other) == ComparisonResult.orderedAscending
     }
 }
 
@@ -319,12 +341,26 @@ func ==(lhs: ARTAuthOptions, rhs: ARTAuthOptions) -> Bool {
         lhs.key == rhs.key
 }
 
+func ==(lhs: ARTJsonCompatible?, rhs: ARTJsonCompatible?) -> Bool {
+    guard let lhs = lhs else {
+        return rhs == nil
+    }
+    guard let rhs = rhs else {
+        return false
+    }
+    do {
+        return NSDictionary(dictionary: try lhs.toJSON()).isEqual(to: try rhs.toJSON())
+    } catch {
+        return false
+    }
+}
+
 // MARK: Publish message class
 
 class PublishTestMessage {
 
     var completion: Optional<(ARTErrorInfo?)->()>
-    var error: ARTErrorInfo? = ARTErrorInfo.createWithNSError(NSError(domain: "", code: -1, userInfo: nil))
+    var error: ARTErrorInfo? = ARTErrorInfo.create(from: NSError(domain: "", code: -1, userInfo: nil))
 
     init(client: ARTRest, failOnError: Bool = true, completion: Optional<(ARTErrorInfo?)->()> = nil) {
         client.channels.get("test").publish(nil, data: "message") { error in
@@ -354,16 +390,16 @@ class PublishTestMessage {
         client.connection.on { stateChange in
             let stateChange = stateChange!
             let state = stateChange.current
-            if state == .Connected {
+            if state == .connected {
                 let channel = client.channels.get("test")
-                channel.on { errorInfo in
-                    switch channel.state {
-                    case .Attached:
+                channel.on { stateChange in
+                    switch stateChange!.current {
+                    case .attached:
                         channel.publish(nil, data: "message") { errorInfo in
                             complete(errorInfo)
                         }
-                    case .Failed:
-                        complete(errorInfo)
+                    case .failed:
+                        complete(stateChange!.reason)
                     default:
                         break
                     }
@@ -376,39 +412,42 @@ class PublishTestMessage {
 }
 
 /// Rest - Publish message
-func publishTestMessage(rest: ARTRest, completion: Optional<(ARTErrorInfo?)->()>) -> PublishTestMessage {
+@discardableResult func publishTestMessage(_ rest: ARTRest, completion: Optional<(ARTErrorInfo?)->()>) -> PublishTestMessage {
     return PublishTestMessage(client: rest, failOnError: false, completion: completion)
 }
 
-func publishTestMessage(rest: ARTRest, failOnError: Bool = true) -> PublishTestMessage {
+@discardableResult func publishTestMessage(_ rest: ARTRest, failOnError: Bool = true) -> PublishTestMessage {
     return PublishTestMessage(client: rest, failOnError: failOnError)
 }
 
 /// Realtime - Publish message with callback
 /// (publishes if connection state changes to CONNECTED and channel state changes to ATTACHED)
-func publishFirstTestMessage(realtime: ARTRealtime, completion: Optional<(ARTErrorInfo?)->()>) -> PublishTestMessage {
+@discardableResult func publishFirstTestMessage(_ realtime: ARTRealtime, completion: Optional<(ARTErrorInfo?)->()>) -> PublishTestMessage {
     return PublishTestMessage(client: realtime, failOnError: false, completion: completion)
 }
 
 /// Realtime - Publish message
 /// (publishes if connection state changes to CONNECTED and channel state changes to ATTACHED)
-func publishFirstTestMessage(realtime: ARTRealtime, failOnError: Bool = true) -> PublishTestMessage {
+@discardableResult func publishFirstTestMessage(_ realtime: ARTRealtime, failOnError: Bool = true) -> PublishTestMessage {
     return PublishTestMessage(client: realtime, failOnError: failOnError)
 }
 
 /// Access Token
-func getTestToken(key key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: NSTimeInterval? = nil) -> String {
-    if let tokenDetails = getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl) {
-        return tokenDetails.token
-    }
-    else {
-        XCTFail("TokenDetails is empty")
-        return ""
+func getTestToken(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, file: FileString = #file, line: UInt = #line) -> String {
+    return getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl, file: file, line: line)?.token ?? ""
+}
+
+func getTestToken(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, file: FileString = #file, line: UInt = #line, completion: @escaping (String) -> Void) {
+    getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl) { tokenDetails, error in
+        if let e = error {
+            fail(e.localizedDescription, file: file, line: line)
+        }
+        completion(tokenDetails?.token ?? "")
     }
 }
 
 /// Access TokenDetails
-func getTestTokenDetails(key key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: NSTimeInterval? = nil) -> ARTTokenDetails? {
+func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, completion: @escaping (ARTTokenDetails?, Error?) -> Void) {
     let options: ARTClientOptions
     if let key = key {
         options = AblyTests.clientOptions()
@@ -420,9 +459,6 @@ func getTestTokenDetails(key key: String? = nil, clientId: String? = nil, capabi
 
     let client = ARTRest(options: options)
 
-    var tokenDetails: ARTTokenDetails?
-    var error: NSError?
-
     var tokenParams: ARTTokenParams? = nil
     if let capability = capability {
         tokenParams = ARTTokenParams()
@@ -430,35 +466,37 @@ func getTestTokenDetails(key key: String? = nil, clientId: String? = nil, capabi
     }
     if let ttl = ttl {
         if tokenParams == nil { tokenParams = ARTTokenParams() }
-        tokenParams!.ttl = ttl
+        tokenParams!.ttl = NSNumber(value: ttl)
     }
     if let clientId = clientId {
         if tokenParams == nil { tokenParams = ARTTokenParams() }
         tokenParams!.clientId = clientId
     }
 
-    client.auth.requestToken(tokenParams, withOptions: nil) { _tokenDetails, _error in
-        tokenDetails = _tokenDetails
-        error = _error
+    client.auth.requestToken(tokenParams, with: nil) { details, error in
+        _ = client // Hold reference to client, since requestToken is async and will lose it.
+        completion(details, error)
     }
+}
 
-    while tokenDetails == nil && error == nil {
-        CFRunLoopRunInMode(kCFRunLoopDefaultMode, CFTimeInterval(0.1), Bool(0))
+func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, file: FileString = #file, line: UInt = #line) -> ARTTokenDetails? {
+    guard let (tokenDetails, error) = (AblyTests.waitFor(timeout: testTimeout, file: file, line: line) { value in
+        getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl) { tokenDetails, error in
+            value((tokenDetails, error))
+        }
+    }) else {
+        return nil
     }
 
     if let e = error {
-        XCTFail(e.description)
+        fail(e.localizedDescription, file: file, line: line)
     }
     return tokenDetails
 }
 
-public func delay(seconds: NSTimeInterval, closure: ()->()) {
-    dispatch_after(
-        dispatch_time(
-            DISPATCH_TIME_NOW,
-            Int64(seconds * Double(NSEC_PER_SEC))
-        ),
-        dispatch_get_main_queue(), closure)
+public func delay(_ seconds: TimeInterval, closure: @escaping ()->()) {
+    DispatchQueue.main.asyncAfter(
+        deadline: DispatchTime.now() + Double(Int64(seconds * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC), execute: closure)
 }
 
 class Box<T> {
@@ -469,105 +507,106 @@ class Box<T> {
 }
 
 enum Result<T> {
-    case Success(Box<T>)
-    case Failure(String)
+    case success(Box<T>)
+    case failure(String)
     /// Constructs a success wrapping a `value`.
     init(value: Box<T>) {
-        self = .Success(value)
+        self = .success(value)
     }
     /// Constructs a failure wrapping an `error`.
     init(error: String) {
-        self = .Failure(error)
+        self = .failure(error)
     }
 }
 
-func extractURL(request: NSMutableURLRequest?) -> Result<NSURL> {
+func extractURL(_ request: URLRequest?) -> Result<URL> {
     guard let request = request
         else { return Result(error: "No request found") }
     
-    guard let url = request.URL
+    guard let url = request.url
         else { return Result(error: "Request has no URL defined") }
     
-    return Result.Success(Box(url))
+    return Result.success(Box(url))
 }
 
-func extractBodyAsJSON(request: NSMutableURLRequest?) -> Result<NSDictionary> {
+func extractBodyAsJSON(_ request: URLRequest?) -> Result<NSDictionary> {
     guard let request = request
         else { return Result(error: "No request found") }
     
-    guard let bodyData = request.HTTPBody
+    guard let bodyData = request.httpBody
         else { return Result(error: "No HTTPBody") }
     
-    guard let json = try? NSJSONSerialization.JSONObjectWithData(bodyData, options: .MutableLeaves)
+    guard let json = try? JSONSerialization.jsonObject(with: bodyData, options: .mutableLeaves)
         else { return Result(error: "Invalid json") }
     
     guard let httpBody = json as? NSDictionary
         else { return Result(error: "HTTPBody has invalid format") }
 
-    return Result.Success(Box(httpBody))
+    return Result.success(Box(httpBody))
 }
 
-func extractBodyAsMsgPack(request: NSMutableURLRequest?) -> Result<NSDictionary> {
+func extractBodyAsMsgPack(_ request: URLRequest?) -> Result<NSDictionary> {
     guard let request = request
         else { return Result(error: "No request found") }
 
-    guard let bodyData = request.HTTPBody
+    guard let bodyData = request.httpBody
         else { return Result(error: "No HTTPBody") }
 
-    let json = ARTMsgPackEncoder().decode(bodyData)
+    let json = try! ARTMsgPackEncoder().decode(bodyData)
 
     guard let httpBody = json as? NSDictionary
-        else { return Result(error: "expected dictionary, got \(json.dynamicType): \(json)") }
+        else { return Result(error: "expected dictionary, got \(type(of: (json) as AnyObject)): \(json)") }
 
-    return Result.Success(Box(httpBody))
+    return Result.success(Box(httpBody))
 }
 
-func extractBodyAsMessages(request: NSMutableURLRequest?) -> Result<[NSDictionary]> {
+func extractBodyAsMessages(_ request: URLRequest?) -> Result<[NSDictionary]> {
     guard let request = request
         else { return Result(error: "No request found") }
 
-    guard let bodyData = request.HTTPBody
+    guard let bodyData = request.httpBody
         else { return Result(error: "No HTTPBody") }
 
-    let json = ARTMsgPackEncoder().decode(bodyData)
+    let json = try! ARTMsgPackEncoder().decode(bodyData)
 
     guard let httpBody = json as? NSArray
-        else { return Result(error: "expected array, got \(json.dynamicType): \(json)") }
+        else { return Result(error: "expected array, got \(type(of: (json) as AnyObject)): \(json)") }
 
-    return Result.Success(Box(httpBody.map{$0 as! NSDictionary}))
+    return Result.success(Box(httpBody.map{$0 as! NSDictionary}))
 }
 
 enum NetworkAnswer {
-    case NoInternet
-    case HostUnreachable
-    case RequestTimeout(timeout: NSTimeInterval)
-    case HostInternalError(code: Int)
-    case Host400BadRequest
+    case noInternet
+    case hostUnreachable
+    case requestTimeout(timeout: TimeInterval)
+    case hostInternalError(code: Int)
+    case host400BadRequest
 }
 
 class MockHTTP: ARTHttp {
 
     let network: NetworkAnswer
 
-    init(network: NetworkAnswer) {
+    init(network: NetworkAnswer, logger: ARTLog) {
         self.network = network
+        super.init(AblyTests.queue, logger: logger)
     }
 
-    override func executeRequest(request: NSMutableURLRequest, completion callback: ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?) {
+    override public func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) {
         delay(0.0) { // Delay to simulate asynchronicity.
             switch self.network {
-            case .NoInternet:
+            case .noInternet:
                 callback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1009, userInfo: [NSLocalizedDescriptionKey: "The Internet connection appears to be offline.."]))
-            case .HostUnreachable:
+            case .hostUnreachable:
                 callback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1003, userInfo: [NSLocalizedDescriptionKey: "A server with the specified hostname could not be found."]))
-            case .RequestTimeout(let timeout):
+            case .requestTimeout(let timeout):
                 delay(timeout) {
                     callback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1001, userInfo: [NSLocalizedDescriptionKey: "The request timed out."]))
                 }
-            case .HostInternalError(let code):
-                callback?(NSHTTPURLResponse(URL: NSURL(string: "http://ios.test.suite")!, statusCode: code, HTTPVersion: nil, headerFields: nil), nil, nil)
-            case .Host400BadRequest:
-                callback?(NSHTTPURLResponse(URL: NSURL(string: "http://ios.test.suite")!, statusCode: 400, HTTPVersion: nil, headerFields: nil), nil, nil)
+            case .hostInternalError(let code):
+                callback?(HTTPURLResponse(url: URL(string: "http://ios.test.suite")!, statusCode: code, httpVersion: nil, headerFields: nil), nil, nil)
+            case .host400BadRequest:
+                callback?(HTTPURLResponse(url: URL(string: "http://ios.test.suite")!, statusCode: 400, httpVersion: nil, headerFields: nil), nil, nil)
             }
         }
     }
@@ -591,7 +630,7 @@ class MockDeviceStorage: NSObject, ARTDeviceStorage {
     func readKey(key: String) -> NSData? {
         keysRead.append(key)
         if var data = simulateData[key] {
-            defer { simulateData.removeValueForKey(key) }
+            defer { simulateData.removeValue(forKey: key) }
             return data
         }
         return nil
@@ -609,12 +648,14 @@ class MockDeviceStorage: NSObject, ARTDeviceStorage {
 
 class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
 
-    var logger = ARTLog()
+    var _logger = ARTLog()
     var clientOptions = ARTClientOptions()
     var encoder = ARTJsonLikeEncoder()
-    var requests: [NSMutableURLRequest] = []
-    
-    private var simulateError: NSError?
+    var requests: [URLRequest] = []
+
+    func logger() -> ARTLog {
+        return _logger
+    }
 
     func options() -> ARTClientOptions {
         return self.clientOptions
@@ -624,61 +665,93 @@ class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
         return self.encoder
     }
 
-    func executeRequest(request: NSMutableURLRequest, withAuthOption authOption: ARTAuthentication, completion callback: (NSHTTPURLResponse?, NSData?, NSError?) -> Void) {
-        executeRequest(request, completion: callback)
+    func execute(_ request: NSMutableURLRequest, withAuthOption authOption: ARTAuthentication, completion callback: @escaping (HTTPURLResponse?, Data?, Error?) -> Void) {
+        self.requests.append(request as URLRequest)
+        callback(nil, nil, nil)
     }
 
-    func executeRequest(request: NSMutableURLRequest, completion callback: ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?) {
+    func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) {
         self.requests.append(request)
-        delay(0) {
-            defer {
-                self.simulateError = nil
-            }
-            if let simulateError = self.simulateError {
-                callback?(nil, nil, simulateError)
-            }
-            else {
-                callback?(nil, nil, nil)
-            }
-        }
-    }
-
-    func simulateIncomingErrorOnNextRequest(error: NSError) {
-        simulateError = error
+        callback?(nil, nil, nil)
     }
 
 }
 
 /// Records each request and response for test purpose.
 class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
+    struct ErrorSimulator {
+        let value: Int
+        let description: String
+        let serverId = "server-test-suite"
+        var statusCode: Int = 401
 
-    var http: ARTHttp? = ARTHttp()
-    var logger: ARTLog!
+        mutating func stubResponse(_ url: URL) -> HTTPURLResponse? {
+            return HTTPURLResponse(url: url, statusCode: statusCode, httpVersion: "HTTP/1.1", headerFields: [
+                "Content-Length": String(stubData?.count ?? 0),
+                "Content-Type": "application/json",
+                "X-Ably-Errorcode": String(value),
+                "X-Ably-Errormessage": description,
+                "X-Ably-Serverid": serverId,
+                ]
+            )
+        }
+
+        lazy var stubData: Data? = {
+            let jsonObject = ["error": [
+                    "statusCode": modf(Float(self.value)/100).0, //whole number part
+                    "code": self.value,
+                    "message": self.description,
+                    "serverId": self.serverId,
+                ]
+            ]
+            return try? JSONSerialization.data(withJSONObject: jsonObject, options: JSONSerialization.WritingOptions.init(rawValue: 0))
+        }()
+    }
+    fileprivate var errorSimulator: ErrorSimulator?
+
+    var http: ARTHttp!
+    var _logger: ARTLog!
     
-    var requests: [NSMutableURLRequest] = []
-    var responses: [NSHTTPURLResponse] = []
+    init(_ logger: ARTLog) {
+        self._logger = logger
+        self.http = ARTHttp(AblyTests.queue, logger: _logger)
+    }
+    
+    func logger() -> ARTLog {
+        return self._logger
+    }
 
-    var beforeRequest: Optional<(NSMutableURLRequest, ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?)->()> = nil
-    var afterRequest: Optional<(NSMutableURLRequest, ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?)->()> = nil
-    var beforeProcessingDataResponse: Optional<(NSData?)->(NSData)> = nil
+    var requests: [URLRequest] = []
+    var responses: [HTTPURLResponse] = []
 
-    func executeRequest(request: NSMutableURLRequest, completion callback: ((NSHTTPURLResponse?, NSData?, NSError?) -> Void)?) {
+    var beforeRequest: Optional<(URLRequest, ((HTTPURLResponse?, Data?, NSError?) -> Void)?)->()> = nil
+    var afterRequest: Optional<(URLRequest, ((HTTPURLResponse?, Data?, NSError?) -> Void)?)->()> = nil
+    var beforeProcessingDataResponse: Optional<(Data?)->(Data)> = nil
+
+    public func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) {
         guard let http = self.http else {
             return
         }
         self.requests.append(request)
+
+        if var simulatedError = errorSimulator, var requestURL = request.url {
+            defer { errorSimulator = nil }
+            callback?(simulatedError.stubResponse(requestURL), simulatedError.stubData, nil)
+            return
+        }
+
         if let performEvent = beforeRequest {
             performEvent(request, callback)
         }
-        http.executeRequest(request, completion: { response, data, error in
+        http.execute(request, completion: { response, data, error in
             if let httpResponse = response {
                 self.responses.append(httpResponse)
             }
             if let performEvent = self.beforeProcessingDataResponse {
-                callback?(response, performEvent(data), error)
+                callback?(response, performEvent(data), error as NSError?)
             }
             else {
-                callback?(response, data, error)
+                callback?(response, data, error as NSError?)
             }
         })
         if let performEvent = afterRequest {
@@ -686,64 +759,76 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
         }
     }
 
+    func simulateIncomingServerErrorOnNextRequest(_ errorValue: Int, description: String) {
+        errorSimulator = ErrorSimulator(value: errorValue, description: description, statusCode: 401, stubData: nil)
+    }
+
+    func simulateIncomingPayloadOnNextRequest(_ data: Data) {
+        errorSimulator = ErrorSimulator(value: 0, description: "", statusCode: 200, stubData: data)
+    }
+
 }
 
 /// Records each message for test purpose.
 class TestProxyTransport: ARTWebSocketTransport {
 
-    var lastUrl: NSURL?
+    var lastUrl: URL?
 
-    private(set) var protocolMessagesSent = [ARTProtocolMessage]()
-    private(set) var protocolMessagesReceived = [ARTProtocolMessage]()
-    private(set) var protocolMessagesSentIgnored = [ARTProtocolMessage]()
+    fileprivate(set) var protocolMessagesSent = [ARTProtocolMessage]()
+    fileprivate(set) var protocolMessagesReceived = [ARTProtocolMessage]()
+    fileprivate(set) var protocolMessagesSentIgnored = [ARTProtocolMessage]()
 
-    private(set) var rawDataSent = [NSData]()
-    private(set) var rawDataReceived = [NSData]()
-    private var replacingAcksWithNacks: ARTErrorInfo?
-    private var ignoreWebSocket = false
-    
+    fileprivate(set) var rawDataSent = [Data]()
+    fileprivate(set) var rawDataReceived = [Data]()
+    fileprivate var replacingAcksWithNacks: ARTErrorInfo?
+    var ignoreWebSocket = false
+
     var beforeProcessingSentMessage: Optional<(ARTProtocolMessage)->()> = nil
-    var beforeProcessingReceivedMessage: Optional<(ARTProtocolMessage)->()> = nil
+    var beforeProcessingReceivedMessage: Optional<(ARTProtocolMessage) -> Void> = nil
     var afterProcessingReceivedMessage: Optional<(ARTProtocolMessage)->()> = nil
+    var changeReceivedMessage: ((ARTProtocolMessage) -> ARTProtocolMessage)? = nil
 
     var actionsIgnored = [ARTProtocolMessageAction]()
     var ignoreSends = false
 
     static var network: NetworkAnswer? = nil
-    static var networkConnectEvent: Optional<(NSURL)->()> = nil
+    static var networkConnectEvent: Optional<(ARTRealtimeTransport, URL)->()> = nil
 
-    override func connect() {
+    override func connect(withKey key: String) {
         if let network = TestProxyTransport.network {
             var hook: AspectToken?
             hook = SRWebSocket.testSuite_replaceClassMethod(#selector(SRWebSocket.open)) {
                 if TestProxyTransport.network == nil {
                     return
                 }
-                func performConnectError(secondsForDelay: NSTimeInterval, error: ARTRealtimeTransportError) {
+                func performConnectError(_ secondsForDelay: TimeInterval, error: ARTRealtimeTransportError) {
                     delay(secondsForDelay) {
                         self.delegate?.realtimeTransportFailed(self, withError: error)
                         hook?.remove()
                     }
                 }
-                let error = NSError.init(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "TestProxyTransport error"])
                 switch network {
-                case .NoInternet, .HostUnreachable:
-                    performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, type: .HostUnreachable, url: self.lastUrl!))
-                case .RequestTimeout(let timeout):
-                    performConnectError(0.1 + timeout, error: ARTRealtimeTransportError.init(error: error, type: .Timeout, url: self.lastUrl!))
-                case .HostInternalError(let code):
+                case .noInternet, .hostUnreachable:
+                    let error = NSError.init(domain: "test.ably.io", code: 0, userInfo: [NSLocalizedDescriptionKey: "host unreachable"])
+                    performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, type: .hostUnreachable, url: self.lastUrl!))
+                case .requestTimeout(let timeout):
+                    let error = NSError.init(domain: "test.ably.io", code: 0, userInfo: [NSLocalizedDescriptionKey: "timed out"])
+                    performConnectError(0.1 + timeout, error: ARTRealtimeTransportError.init(error: error, type: .timeout, url: self.lastUrl!))
+                case .hostInternalError(let code):
+                    let error = NSError.init(domain: "test.ably.io", code: 500, userInfo: [NSLocalizedDescriptionKey: "internal error"])
                     performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, badResponseCode: code, url: self.lastUrl!))
-                case .Host400BadRequest:
+                case .host400BadRequest:
+                    let error = NSError.init(domain: "test.ably.io", code: 400, userInfo: [NSLocalizedDescriptionKey: "bad request"])
                     performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, badResponseCode: 400, url: self.lastUrl!))
                 }
             }
         }
-        super.connect()
+        super.connect(withKey: key)
 
         if let performNetworkConnect = TestProxyTransport.networkConnectEvent {
             func perform() {
                 if let lastUrl = self.lastUrl {
-                    performNetworkConnect(lastUrl)
+                    performNetworkConnect(self, lastUrl)
                 } else {
                     delay(0.1) { perform() }
                 }
@@ -752,55 +837,106 @@ class TestProxyTransport: ARTWebSocketTransport {
         }
     }
 
-    override func setupWebSocket(params: [NSURLQueryItem], withOptions options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?) -> NSURL {
-        let url = super.setupWebSocket(params, withOptions: options, resumeKey: resumeKey, connectionSerial: connectionSerial)
+    override func connect(withToken token: String) {
+        if let network = TestProxyTransport.network {
+            var hook: AspectToken?
+            hook = SRWebSocket.testSuite_replaceClassMethod(#selector(SRWebSocket.open)) {
+                if TestProxyTransport.network == nil {
+                    return
+                }
+                func performConnectError(_ secondsForDelay: TimeInterval, error: ARTRealtimeTransportError) {
+                    delay(secondsForDelay) {
+                        self.delegate?.realtimeTransportFailed(self, withError: error)
+                        hook?.remove()
+                    }
+                }
+                let error = NSError.init(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "TestProxyTransport error"])
+                guard let lastUrl = self.lastUrl else {
+                    print("lastUrl is empty")
+                    return
+                }
+                switch network {
+                case .noInternet, .hostUnreachable:
+                    performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, type: .hostUnreachable, url: lastUrl))
+                case .requestTimeout(let timeout):
+                    performConnectError(0.1 + timeout, error: ARTRealtimeTransportError.init(error: error, type: .timeout, url: lastUrl))
+                case .hostInternalError(let code):
+                    performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, badResponseCode: code, url: lastUrl))
+                case .host400BadRequest:
+                    performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, badResponseCode: 400, url: lastUrl))
+                }
+            }
+        }
+        super.connect(withToken: token)
+
+        if let performNetworkConnect = TestProxyTransport.networkConnectEvent {
+            func perform() {
+                if let lastUrl = self.lastUrl {
+                    performNetworkConnect(self, lastUrl)
+                } else {
+                    delay(0.1) { perform() }
+                }
+            }
+            perform()
+        }
+    }
+
+    override func setupWebSocket(_ params: [URLQueryItem], with options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?) -> URL {
+        let url = super.setupWebSocket(params, with: options, resumeKey: resumeKey, connectionSerial: connectionSerial)
         lastUrl = url
         return url
     }
 
-    override func send(msg: ARTProtocolMessage) {
-        if ignoreSends {
-            protocolMessagesSentIgnored.append(msg)
-            return
-        }
-        protocolMessagesSent.append(msg)
-        if let performEvent = beforeProcessingSentMessage {
-            performEvent(msg)
-        }
-        super.send(msg)
+    func send(_ message: ARTProtocolMessage) {
+        let data = try! encoder.encode(message)
+        send(data, withSource: message)
     }
 
-    override func sendWithData(data: NSData) {
-        rawDataSent.append(data)
-        super.sendWithData(data)
-    }
-
-    override func receive(msg: ARTProtocolMessage) {
-        if msg.action == .Ack {
-            if let error = replacingAcksWithNacks {
-                msg.action = .Nack
-                msg.error = error
+    override func send(_ data: Data, withSource decodedObject: Any?) -> Bool {
+        if let msg = decodedObject as? ARTProtocolMessage {
+            if ignoreSends {
+                protocolMessagesSentIgnored.append(msg)
+                return false
+            }
+            protocolMessagesSent.append(msg)
+            if let performEvent = beforeProcessingSentMessage {
+                performEvent(msg)
             }
         }
-        protocolMessagesReceived.append(msg)
-        if actionsIgnored.contains(msg.action) {
+        rawDataSent.append(data)
+        return super.send(data, withSource: decodedObject)
+    }
+
+    override func receive(_ original: ARTProtocolMessage) {
+        if original.action == .ack || original.action == .presence {
+            if let error = replacingAcksWithNacks {
+                original.action = .nack
+                original.error = error
+            }
+        }
+        protocolMessagesReceived.append(original)
+        if actionsIgnored.contains(original.action) {
             return
         }
         if let performEvent = beforeProcessingReceivedMessage {
-            performEvent(msg)
+            performEvent(original)
+        }
+        var msg = original
+        if let performEvent = changeReceivedMessage {
+            msg = performEvent(original)
         }
         super.receive(msg)
         if let performEvent = afterProcessingReceivedMessage {
-            performEvent(msg)
+            performEvent(original)
         }
     }
 
-    override func receiveWithData(data: NSData) {
+    override func receive(with data: Data) -> ARTProtocolMessage? {
         rawDataReceived.append(data)
-        super.receiveWithData(data)
+        return super.receive(with: data)
     }
 
-    func replaceAcksWithNacks(error: ARTErrorInfo, block: (() -> ()) -> ()) {
+    func replaceAcksWithNacks(_ error: ARTErrorInfo, block: (_ doneReplacing: @escaping () -> Void) -> Void) {
         replacingAcksWithNacks = error
         block({ self.replacingAcksWithNacks = nil })
     }
@@ -808,33 +944,33 @@ class TestProxyTransport: ARTWebSocketTransport {
     func simulateTransportSuccess() {
         self.ignoreWebSocket = true
         let msg = ARTProtocolMessage()
-        msg.action = .Connected
+        msg.action = .connected
         msg.connectionId = "x-xxxxxxxx"
         msg.connectionKey = "xxxxxxx-xxxxxxxxxxxxxx-xxxxxxxx"
         msg.connectionSerial = -1
-        msg.connectionDetails = ARTConnectionDetails(clientId: nil, connectionKey: "a8c10!t-3D0O4ejwTdvLkl-b33a8c10", maxMessageSize: 16384, maxFrameSize: 262144, maxInboundRate: 250, connectionStateTtl: 60, serverId: "testServerId")
+        msg.connectionDetails = ARTConnectionDetails(clientId: nil, connectionKey: "a8c10!t-3D0O4ejwTdvLkl-b33a8c10", maxMessageSize: 16384, maxFrameSize: 262144, maxInboundRate: 250, connectionStateTtl: 60, serverId: "testServerId", maxIdleInterval: 15000)
         super.receive(msg)
     }
 
-    override func webSocketDidOpen(webSocket: SRWebSocket) {
+    override func webSocketDidOpen(_ webSocket: SRWebSocket) {
         if !ignoreWebSocket {
             super.webSocketDidOpen(webSocket)
         }
     }
 
-    override func webSocket(webSocket: SRWebSocket, didFailWithError error: NSError) {
+    override func webSocket(_ webSocket: SRWebSocket, didFailWithError error: Error) {
         if !ignoreWebSocket {
             super.webSocket(webSocket, didFailWithError: error)
         }
     }
 
-    override func webSocket(webSocket: SRWebSocket, didReceiveMessage message: AnyObject?) {
+    override func webSocket(_ webSocket: SRWebSocket, didReceiveMessage message: Any?) {
         if !ignoreWebSocket {
             super.webSocket(webSocket, didReceiveMessage: message)
         }
     }
 
-    override func webSocket(webSocket: SRWebSocket, didCloseWithCode code: Int, reason: String, wasClean: Bool) {
+    override func webSocket(_ webSocket: SRWebSocket, didCloseWithCode code: Int, reason: String?, wasClean: Bool) {
         if !ignoreWebSocket {
             super.webSocket(webSocket, didCloseWithCode: code, reason: reason, wasClean: wasClean)
         }
@@ -844,10 +980,11 @@ class TestProxyTransport: ARTWebSocketTransport {
 
 // MARK: - Extensions
 
-extension SequenceType where Generator.Element: NSData {
+extension Sequence where Iterator.Element == Data {
 
-    var toMsgPackArray: [AnyObject] {
-        return map({ ARTMsgPackEncoder().decode($0) })
+    func toMsgPackArray<T>() -> [T] {
+        let msgPackEncoder = ARTMsgPackEncoder()
+        return map({ try! msgPackEncoder.decode($0) as! T })
     }
     
 }
@@ -861,7 +998,7 @@ func + <K,V> (left: Dictionary<K,V>, right: Dictionary<K,V>?) -> Dictionary<K,V>
     }
 }
 
-func += <K,V> (inout left: Dictionary<K,V>, right: Dictionary<K,V>?) {
+func += <K,V> (left: inout Dictionary<K,V>, right: Dictionary<K,V>?) {
     guard let right = right else { return }
     right.forEach { key, value in
         left.updateValue(value, forKey: key)
@@ -870,7 +1007,7 @@ func += <K,V> (inout left: Dictionary<K,V>, right: Dictionary<K,V>?) {
 
 extension ARTMessage {
 
-    public override func isEqual(object: AnyObject?) -> Bool {
+    open override func isEqual(_ object: Any?) -> Bool {
         if let other = object as? ARTMessage {
             return self.name == other.name &&
                 self.encoding == other.encoding &&
@@ -885,19 +1022,19 @@ extension ARTMessage {
 extension NSObject {
 
     var toBase64: String {
-        return (try? NSJSONSerialization.dataWithJSONObject(self, options: NSJSONWritingOptions(rawValue: 0)).base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0))) ?? ""
+        return (try? JSONSerialization.data(withJSONObject: self, options: JSONSerialization.WritingOptions(rawValue: 0)).base64EncodedString(options: NSData.Base64EncodingOptions(rawValue: 0))) ?? ""
     }
 
 }
 
-extension NSData {
+extension Data {
 
-    override var toBase64: String {
-        return self.base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0))
+    var toBase64: String {
+        return self.base64EncodedString(options: NSData.Base64EncodingOptions(rawValue: 0))
     }
 
     var toUTF8String: String {
-        return NSString(data: self, encoding: NSUTF8StringEncoding) as! String
+        return NSString(data: self, encoding: String.Encoding.utf8.rawValue)! as String
     }
     
 }
@@ -914,60 +1051,37 @@ extension JSON {
 
 }
 
-
-extension NSDate: Comparable { }
-
-public func ==(lhs: NSDate, rhs: NSDate) -> Bool {
-    return (lhs.compare(rhs) == .OrderedSame)
-}
-
-public func <(lhs: NSDate, rhs: NSDate) -> Bool {
-    return (lhs.compare(rhs) == .OrderedAscending)
-}
-
-public func >(lhs: NSDate, rhs: NSDate) -> Bool {
-    return (lhs.compare(rhs) == .OrderedDescending)
-}
-
-public func <=(lhs: NSDate, rhs: NSDate) -> Bool {
-    return (lhs < rhs || lhs == rhs)
-}
-
-public func >=(lhs: NSDate, rhs: NSDate) -> Bool {
-    return (lhs > rhs || lhs == rhs)
-}
-
 extension NSRegularExpression {
 
-    class func match(value: String?, pattern: String) -> Bool {
+    class func match(_ value: String?, pattern: String) -> Bool {
         guard let value = value else {
             return false
         }
-        let options = NSRegularExpressionOptions()
+        let options = NSRegularExpression.Options()
         let regex = try! NSRegularExpression(pattern: pattern, options: options)
-        let range = NSMakeRange(0, value.lengthOfBytesUsingEncoding(NSUTF8StringEncoding))
-        return regex.rangeOfFirstMatchInString(value, options: [], range: range).location != NSNotFound
+        let range = NSMakeRange(0, value.lengthOfBytes(using: String.Encoding.utf8))
+        return regex.rangeOfFirstMatch(in: value, options: [], range: range).location != NSNotFound
     }
 
-    class func extract(value: String?, pattern: String) -> String? {
+    class func extract(_ value: String?, pattern: String) -> String? {
         guard let value = value else {
             return nil
         }
-        let options = NSRegularExpressionOptions()
+        let options = NSRegularExpression.Options()
         let regex = try! NSRegularExpression(pattern: pattern, options: options)
-        let range = NSMakeRange(0, value.lengthOfBytesUsingEncoding(NSUTF8StringEncoding))
-        let result = regex.firstMatchInString(value, options: [], range: range)
-        guard let textRange = result?.rangeAtIndex(0) else { return nil }
-        let convertedRange =  value.startIndex.advancedBy(textRange.location)..<value.startIndex.advancedBy(textRange.location+textRange.length)
-        return value.substringWithRange(convertedRange)
+        let range = NSMakeRange(0, value.lengthOfBytes(using: String.Encoding.utf8))
+        let result = regex.firstMatch(in: value, options: [], range: range)
+        guard let textRange = result?.rangeAt(0) else { return nil }
+        let convertedRange =  value.characters.index(value.startIndex, offsetBy: textRange.location)..<value.characters.index(value.startIndex, offsetBy: textRange.location+textRange.length)
+        return value.substring(with: convertedRange)
     }
 
 }
 
 extension String {
 
-    func replace(value: String, withString string: String) -> String {
-        return self.stringByReplacingOccurrencesOfString(value, withString: string, options: NSStringCompareOptions.LiteralSearch, range: nil)
+    func replace(_ value: String, withString string: String) -> String {
+        return self.replacingOccurrences(of: value, with: string, options: NSString.CompareOptions.literal, range: nil)
     }
 
 }
@@ -983,18 +1097,18 @@ extension ARTRealtime {
         self.onDisconnected()
     }
 
-    func simulateSuspended() {
+    func simulateSuspended(beforeSuspension beforeSuspensionCallback: @escaping (_ done: @escaping () -> ()) -> Void) {
         waitUntil(timeout: testTimeout) { done in
-            self.connection.on(.Closed) { _ in
+            self.connection.once(.disconnected) { _ in
+                beforeSuspensionCallback(done)
                 self.onSuspended()
-                done()
             }
-            self.close()
+            self.onDisconnected()
         }
     }
 
     func dispose() {
-        let names = self.channels.map({ $0.name })
+        let names = self.channels.map({ ($0 as! ARTRealtimeChannel).name })
         for name in names {
             self.channels.release(name)
         }
@@ -1007,35 +1121,35 @@ extension ARTWebSocketTransport {
 
     func simulateIncomingNormalClose() {
         let CLOSE_NORMAL = 1000
-        self.closing = true
+        self.setState(ARTRealtimeTransportState.closing)
         let webSocketDelegate = self as SRWebSocketDelegate
-        webSocketDelegate.webSocket!(nil, didCloseWithCode: CLOSE_NORMAL, reason: "", wasClean: true)
+        webSocketDelegate.webSocket!(self.websocket!, didCloseWithCode: CLOSE_NORMAL, reason: "", wasClean: true)
     }
 
     func simulateIncomingAbruptlyClose() {
         let CLOSE_ABNORMAL = 1006
         let webSocketDelegate = self as SRWebSocketDelegate
-        webSocketDelegate.webSocket!(nil, didCloseWithCode: CLOSE_ABNORMAL, reason: "connection was closed abnormally", wasClean: false)
+        webSocketDelegate.webSocket!(self.websocket!, didCloseWithCode: CLOSE_ABNORMAL, reason: "connection was closed abnormally", wasClean: false)
     }
 
     func simulateIncomingError() {
         let error = NSError(domain: ARTAblyErrorDomain, code: 0, userInfo: [NSLocalizedDescriptionKey:"Fail test"])
         let webSocketDelegate = self as SRWebSocketDelegate
-        webSocketDelegate.webSocket!(nil, didFailWithError: error)
+        webSocketDelegate.webSocket!(self.websocket!, didFailWithError: error)
     }
 }
 
 extension ARTAuth {
 
-    func testSuite_forceTokenToExpire(file: StaticString = #file, line: UInt = #line) {
+    func testSuite_forceTokenToExpire(_ file: StaticString = #file, line: UInt = #line) {
         guard let tokenDetails = self.tokenDetails else {
             XCTFail("TokenDetails is nil", file: file, line: line)
             return
         }
         self.setTokenDetails(ARTTokenDetails(
             token: tokenDetails.token,
-            expires: NSDate().dateByAddingTimeInterval(-1.0),
-            issued: NSDate().dateByAddingTimeInterval(-1.0),
+            expires: Date().addingTimeInterval(-1.0),
+            issued: Date().addingTimeInterval(-1.0),
             capability: tokenDetails.capability,
             clientId: tokenDetails.clientId
             )
@@ -1044,58 +1158,75 @@ extension ARTAuth {
 
 }
 
+extension ARTPresenceMessage {
+
+    convenience init(clientId: String, action: ARTPresenceAction, connectionId: String, id: String, timestamp: Date = Date()) {
+        self.init()
+        self.action = action
+        self.clientId = clientId
+        self.connectionId = connectionId
+        self.id = id
+        self.timestamp = timestamp
+    }
+
+}
+
 extension ARTRealtimeConnectionState : CustomStringConvertible {
     public var description : String {
-        return ARTRealtimeStateToStr(self)
+        return ARTRealtimeConnectionStateToStr(self)
+    }
+}
+
+extension ARTRealtimeConnectionEvent : CustomStringConvertible {
+    public var description : String {
+        return ARTRealtimeConnectionEventToStr(self)
     }
 }
 
 extension ARTProtocolMessageAction : CustomStringConvertible {
     public var description : String {
-        return ARTRealtime.protocolStr(self)
+        return ARTProtocolMessageActionToStr(self)
     }
 }
 
 extension ARTRealtimeChannelState : CustomStringConvertible {
     public var description : String {
-        switch self {
-        case .Initialized:
-            return "Initialized"
-        case .Attaching:
-            return "Attaching"
-        case .Attached:
-            return "Attached"
-        case .Detaching:
-            return "Detaching"
-        case .Detached:
-            return "Detached"
-        case .Failed:
-            return "Failed"
-        }
+        return ARTRealtimeChannelStateToStr(self)
+    }
+}
+
+extension ARTChannelEvent : CustomStringConvertible {
+    public var description : String {
+        return ARTChannelEventToStr(self)
+    }
+}
+
+extension ARTPresenceAction : CustomStringConvertible {
+    public var description : String {
+        return ARTPresenceActionToStr(self)
     }
 }
 
 // MARK: - Custom Nimble Matchers
 
 /// A Nimble matcher that succeeds when two dates are quite the same.
-public func beCloseTo<T: NSDate>(expectedValue: NSDate?) -> MatcherFunc<T?> {
-    return MatcherFunc { actualExpression, failureMessage in
+public func beCloseTo(_ expectedValue: Date) -> Predicate<Date> {
+    return Predicate.fromDeprecatedClosure { actualExpression, failureMessage in
         failureMessage.postfixMessage = "equal <\(expectedValue)>"
-        guard let actualValue = try actualExpression.evaluate() as? NSDate else { return false }
-        guard let expectedValue = expectedValue else { return false }
+        guard let actualValue = try actualExpression.evaluate() else { return false }
         return abs(actualValue.timeIntervalSince1970 - expectedValue.timeIntervalSince1970) < 0.5
     }
 }
 
 /// A Nimble matcher that succeeds when a param exists.
-public func haveParam(key: String, withValue expectedValue: String) -> NonNilMatcherFunc<String> {
-    return NonNilMatcherFunc { actualExpression, failureMessage in
+public func haveParam(_ key: String, withValue expectedValue: String) -> Predicate<String> {
+    return Predicate.fromDeprecatedClosure { actualExpression, failureMessage in
         failureMessage.postfixMessage = "param <\(key)=\(expectedValue)> exists"
         guard let actualValue = try actualExpression.evaluate() else { return false }
-        let queryItems = actualValue.componentsSeparatedByString("&")
+        let queryItems = actualValue.components(separatedBy: "&")
         for item in queryItems {
-            let param = item.componentsSeparatedByString("=")
-            if let currentKey = param.first, let currentValue = param.last where currentKey == key && currentValue == expectedValue {
+            let param = item.components(separatedBy: "=")
+            if let currentKey = param.first, let currentValue = param.last, currentKey == key && currentValue == expectedValue {
                 return true
             }
         }
@@ -1104,7 +1235,7 @@ public func haveParam(key: String, withValue expectedValue: String) -> NonNilMat
 }
 
 /// A Nimble matcher that succeeds when all Keys from a Dictionary are valid.
-public func allKeysPass<U: CollectionType where U: DictionaryLiteralConvertible, U.Generator.Element == (U.Key, U.Value)> (passFunc: (U.Key) -> Bool) -> NonNilMatcherFunc<U> {
+public func allKeysPass<U: Collection> (_ passFunc: @escaping (U.Key) -> Bool) -> Predicate<U> where U: ExpressibleByDictionaryLiteral, U.Iterator.Element == (U.Key, U.Value) {
 
     let elementEvaluator: (Expression<U.Generator.Element>, FailureMessage) throws -> Bool = {
         expression, failureMessage in
@@ -1113,7 +1244,7 @@ public func allKeysPass<U: CollectionType where U: DictionaryLiteralConvertible,
         return passFunc(value.0)
     }
 
-    return NonNilMatcherFunc { actualExpression, failureMessage in
+    return Predicate.fromDeprecatedClosure { actualExpression, failureMessage in
         failureMessage.actualValue = nil
         if let actualValue = try actualExpression.evaluate() {
             for item in actualValue {
@@ -1137,7 +1268,7 @@ public func allKeysPass<U: CollectionType where U: DictionaryLiteralConvertible,
 }
 
 /// A Nimble matcher that succeeds when all Values from a Dictionary are valid.
-public func allValuesPass<U: CollectionType where U: DictionaryLiteralConvertible, U.Generator.Element == (U.Key, U.Value)> (passFunc: (U.Value) -> Bool) -> NonNilMatcherFunc<U> {
+public func allValuesPass<U: Collection> (_ passFunc: @escaping (U.Value) -> Bool) -> Predicate<U> where U: ExpressibleByDictionaryLiteral, U.Iterator.Element == (U.Key, U.Value) {
 
     let elementEvaluator: (Expression<U.Generator.Element>, FailureMessage) throws -> Bool = {
         expression, failureMessage in
@@ -1146,7 +1277,7 @@ public func allValuesPass<U: CollectionType where U: DictionaryLiteralConvertibl
         return passFunc(value.1)
     }
 
-    return NonNilMatcherFunc { actualExpression, failureMessage in
+    return Predicate.fromDeprecatedClosure { actualExpression, failureMessage in
         failureMessage.actualValue = nil
         if let actualValue = try actualExpression.evaluate() {
             for item in actualValue {
@@ -1178,27 +1309,30 @@ extension String {
     ///
     /// - returns: Data represented by this hexadecimal string.
 
-    func dataFromHexadecimalString() -> NSData? {
+    func dataFromHexadecimalString() -> Data? {
         let data = NSMutableData(capacity: characters.count / 2)
 
-        let regex = try! NSRegularExpression(pattern: "[0-9a-f]{1,2}", options: .CaseInsensitive)
-        regex.enumerateMatchesInString(self, options: [], range: NSMakeRange(0, characters.count)) { match, flags, stop in
-            let byteString = (self as NSString).substringWithRange(match!.range)
+        let regex = try! NSRegularExpression(pattern: "[0-9a-f]{1,2}", options: .caseInsensitive)
+        regex.enumerateMatches(in: self, options: [], range: NSMakeRange(0, characters.count)) { match, flags, stop in
+            let byteString = (self as NSString).substring(with: match!.range)
             var num = UInt8(byteString, radix: 16)
-            data?.appendBytes(&num, length: 1)
+            data?.append(&num, length: 1)
         }
 
-        return data
+        return data as Data?
     }
 }
 
 @objc class TestReachability : NSObject, ARTReachability {
     var host: String?
     var callback: ((Bool) -> Void)?
+    var queue: DispatchQueue
 
-    required init(logger: ARTLog) {}
+    required init(logger: ARTLog, queue: DispatchQueue) {
+        self.queue = queue
+    }
 
-    func listenForHost(host: String, callback: (Bool) -> Void) {
+    func listen(forHost host: String, callback: @escaping (Bool) -> Void) {
         self.host = host
         self.callback = callback
     }
@@ -1208,7 +1342,9 @@ extension String {
         self.callback = nil
     }
 
-    func simulate(reachable reachable: Bool) {
-        self.callback!(reachable)
+    func simulate(_ reachable: Bool) {
+        self.queue.async {
+            self.callback!(reachable)
+        }
     }
 }

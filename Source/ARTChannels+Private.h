@@ -6,27 +6,41 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTChannels.h"
+#import <Ably/ARTChannels.h>
 
 @class ARTRestChannel;
 @class ARTChannelOptions;
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
-extern NSString* (^__art_nullable ARTChannels_getChannelNamePrefix)();
+extern NSString* (^_Nullable ARTChannels_getChannelNamePrefix)();
 
 @protocol ARTChannelsDelegate <NSObject>
 
-- (id)makeChannel:(NSString *)channel options:(ARTChannelOptions *)options;
+- (id)makeChannel:(NSString *)channel options:(nullable ARTChannelOptions *)options;
 
 @end
 
-@interface __GENERIC(ARTChannels, ChannelType) ()
+@interface ARTChannelsNosyncIterable : NSObject<NSFastEnumeration>
 
-@property (nonatomic, readonly) __GENERIC(NSMutableDictionary, NSString *, ChannelType) *channels;
-
-- (instancetype)initWithDelegate:(id<ARTChannelsDelegate>)delegate;
+- (instancetype)init:(NSDictionary<NSString *, id> *)channels;
 
 @end
 
-ART_ASSUME_NONNULL_END
+@interface ARTChannels<ChannelType> ()
+
+@property (nonatomic, readonly) NSMutableDictionary<NSString *, ChannelType> *channels;
+@property (readonly, getter=getNosyncIterable) id<NSFastEnumeration> nosyncIterable;
+
++ (NSString *)addPrefix:(NSString *)name;
+
+- (BOOL)_exists:(NSString *)name;
+- (ChannelType)_get:(NSString *)name;
+- (ChannelType)_getChannel:(NSString *)name options:(ARTChannelOptions * _Nullable)options addPrefix:(BOOL)addPrefix;
+- (void)_release:(NSString *)name;
+
+- (instancetype)initWithDelegate:(id<ARTChannelsDelegate>)delegate dispatchQueue:(dispatch_queue_t)queue;
+
+@end
+
+NS_ASSUME_NONNULL_END

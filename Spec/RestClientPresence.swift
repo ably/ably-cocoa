@@ -35,9 +35,9 @@ class RestClientPresence: QuickSpec {
                     let expectedPattern = "^user(\\d+)$"
                     waitUntil(timeout: testTimeout) { done in
                         // Load 150 members (2 pages)
-                        disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 150, data:expectedData, options: options) {
+                        disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 150, data:expectedData as AnyObject?, options: options) {
                             done()
-                        }
+                        }]
                     }
 
                     waitUntil(timeout: testTimeout) { done in
@@ -45,13 +45,13 @@ class RestClientPresence: QuickSpec {
                             expect(error).to(beNil())
 
                             let membersPage = membersPage!
-                            expect(membersPage).to(beAnInstanceOf(ARTPaginatedResult))
+                            expect(membersPage).to(beAnInstanceOf(ARTPaginatedResult<ARTPresenceMessage>.self))
                             expect(membersPage.items).to(haveCount(100))
 
-                            let members = membersPage.items as! [ARTPresenceMessage]
+                            let members = membersPage.items 
                             expect(members).to(allPass({ member in
                                 return NSRegularExpression.match(member!.clientId, pattern: expectedPattern)
-                                    && (member!.data as? NSObject) == expectedData
+                                    && (member!.data as? String) == expectedData
                             }))
 
                             expect(membersPage.hasNext).to(beTrue())
@@ -60,13 +60,13 @@ class RestClientPresence: QuickSpec {
                             membersPage.next { nextPage, error in
                                 expect(error).to(beNil())
                                 let nextPage = nextPage!
-                                expect(nextPage).to(beAnInstanceOf(ARTPaginatedResult))
+                                expect(nextPage).to(beAnInstanceOf(ARTPaginatedResult<ARTPresenceMessage>.self))
                                 expect(nextPage.items).to(haveCount(50))
 
-                                let members = nextPage.items as! [ARTPresenceMessage]
+                                let members = nextPage.items 
                                 expect(members).to(allPass({ member in
                                     return NSRegularExpression.match(member!.clientId, pattern: expectedPattern)
-                                        && (member!.data as? NSObject) == expectedData
+                                        && (member!.data as? String) == expectedData
                                 }))
 
                                 expect(nextPage.hasNext).to(beFalse())
@@ -112,14 +112,16 @@ class RestClientPresence: QuickSpec {
                     query.clientId = "john"
 
                     waitUntil(timeout: testTimeout) { done in
-                        try! channel.presence.get(query) { membersPage, error in
-                            expect(error).to(beNil())
-                            expect(membersPage!.items).to(haveCount(1))
-                            let member = membersPage!.items[0] as! ARTPresenceMessage
-                            expect(member.clientId).to(equal("john"))
-                            expect(member.data as? NSObject).to(equal("web"))
-                            done()
-                        }
+                        expect {
+                            try channel.presence.get(query) { membersPage, error in
+                                expect(error).to(beNil())
+                                expect(membersPage!.items).to(haveCount(1))
+                                let member = membersPage!.items[0]
+                                expect(member.clientId).to(equal("john"))
+                                expect(member.data as? NSObject).to(equal("web" as NSObject?))
+                                done()
+                            }
+                        }.toNot(throwError())
                     }
                 }
 
@@ -139,16 +141,16 @@ class RestClientPresence: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         // One connection
-                        disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 6, options: options) {
+                        disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 6, options: options) {
                             done()
-                        }
+                        }]
                     }
 
                     waitUntil(timeout: testTimeout) { done in
                         // Another connection
-                        disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 3, startFrom: 7, options: options) {
+                        disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 3, startFrom: 7, options: options) {
                             done()
-                        }
+                        }]
                     }
 
                     let query = ARTRealtimePresenceQuery()
@@ -156,17 +158,19 @@ class RestClientPresence: QuickSpec {
                     query.connectionId = disposable.last!.connection.id!
 
                     waitUntil(timeout: testTimeout) { done in
-                        try! channel.presence.get(query) { membersPage, error in
-                            expect(error).to(beNil())
-                            expect(membersPage!.items).to(haveCount(3))
-                            expect(membersPage!.hasNext).to(beFalse())
-                            expect(membersPage!.isLast).to(beTrue())
-                            expect(membersPage!.items).to(allPass({ member in
-                                let member = member as! ARTPresenceMessage
-                                return NSRegularExpression.match(member.clientId, pattern: "^user(7|8|9)")
-                            }))
-                            done()
-                        }
+                        expect {
+                            try channel.presence.get(query) { membersPage, error in
+                                expect(error).to(beNil())
+                                expect(membersPage!.items).to(haveCount(3))
+                                expect(membersPage!.hasNext).to(beFalse())
+                                expect(membersPage!.isLast).to(beTrue())
+                                expect(membersPage!.items).to(allPass({ member in
+                                    let member = member!
+                                    return NSRegularExpression.match(member.clientId, pattern: "^user(7|8|9)")
+                                }))
+                                done()
+                            }
+                        }.toNot(throwError())
                     }
                 }
 
@@ -187,23 +191,24 @@ class RestClientPresence: QuickSpec {
                     let expectedData = "online"
                     let expectedPattern = "^user(\\d+)$"
                     waitUntil(timeout: testTimeout) { done in
-                        realtime = AblyTests.addMembersSequentiallyToChannel("test", members: 150, data: expectedData, options: options) {
+                        realtime = AblyTests.addMembersSequentiallyToChannel("test", members: 150, data: expectedData as AnyObject?, options: options) {
                             done()
-                        }.first
+                        }
                     }
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.history { membersPage, error in
                             expect(error).to(beNil())
-
-                            let membersPage = membersPage!
-                            expect(membersPage).to(beAnInstanceOf(ARTPaginatedResult))
+                            guard let membersPage = membersPage else {
+                                fail("Page is empty"); done(); return
+                            }
+                            expect(membersPage).to(beAnInstanceOf(ARTPaginatedResult<ARTPresenceMessage>.self))
                             expect(membersPage.items).to(haveCount(100))
 
-                            let members = membersPage.items as! [ARTPresenceMessage]
+                            let members = membersPage.items 
                             expect(members).to(allPass({ member in
                                 return NSRegularExpression.match(member!.clientId, pattern: expectedPattern)
-                                    && (member!.data as? NSObject) == expectedData
+                                    && (member!.data as? String) == expectedData
                             }))
 
                             expect(membersPage.hasNext).to(beTrue())
@@ -211,14 +216,16 @@ class RestClientPresence: QuickSpec {
 
                             membersPage.next { nextPage, error in
                                 expect(error).to(beNil())
-                                let nextPage = nextPage!
-                                expect(nextPage).to(beAnInstanceOf(ARTPaginatedResult))
+                                guard let nextPage = nextPage else {
+                                    fail("nextPage is empty"); done(); return
+                                }
+                                expect(nextPage).to(beAnInstanceOf(ARTPaginatedResult<ARTPresenceMessage>.self))
                                 expect(nextPage.items).to(haveCount(50))
 
-                                let members = nextPage.items as! [ARTPresenceMessage]
+                                let members = nextPage.items 
                                 expect(members).to(allPass({ member in
                                     return NSRegularExpression.match(member!.clientId, pattern: expectedPattern)
-                                        && (member!.data as? NSObject) == expectedData
+                                        && (member!.data as? String) == expectedData
                                 }))
 
                                 expect(nextPage.hasNext).to(beFalse())
@@ -252,36 +259,40 @@ class RestClientPresence: QuickSpec {
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 10, data:nil, options: options) {
+                            disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 10, data:nil, options: options) {
                                 done()
-                            }
+                            }]
                         }
 
                         let query = ARTDataQuery()
-                        expect(query.direction).to(equal(ARTQueryDirection.Backwards))
+                        expect(query.direction).to(equal(ARTQueryDirection.backwards))
 
                         waitUntil(timeout: testTimeout) { done in
-                            try! channel.presence.history(query) { membersPage, error in
-                                expect(error).to(beNil())
-                                let firstMember = membersPage!.items.first as! ARTPresenceMessage
-                                expect(firstMember.clientId).to(equal("user10"))
-                                let lastMember = membersPage!.items.last as! ARTPresenceMessage
-                                expect(lastMember.clientId).to(equal("user1"))
-                                done()
-                            }
+                            expect {
+                                try channel.presence.history(query) { membersPage, error in
+                                    expect(error).to(beNil())
+                                    let firstMember = membersPage!.items.first!
+                                    expect(firstMember.clientId).to(equal("user10"))
+                                    let lastMember = membersPage!.items.last!
+                                    expect(lastMember.clientId).to(equal("user1"))
+                                    done()
+                                }
+                            }.toNot(throwError())
                         }
 
-                        query.direction = .Forwards
+                        query.direction = .forwards
 
                         waitUntil(timeout: testTimeout) { done in
-                            try! channel.presence.history(query) { membersPage, error in
-                                expect(error).to(beNil())
-                                let firstMember = membersPage!.items.first as! ARTPresenceMessage
-                                expect(firstMember.clientId).to(equal("user1"))
-                                let lastMember = membersPage!.items.last as! ARTPresenceMessage
-                                expect(lastMember.clientId).to(equal("user10"))
-                                done()
-                            }
+                            expect {
+                                try channel.presence.history(query) { membersPage, error in
+                                    expect(error).to(beNil())
+                                    let firstMember = membersPage!.items.first!
+                                    expect(firstMember.clientId).to(equal("user1"))
+                                    let lastMember = membersPage!.items.last!
+                                    expect(lastMember.clientId).to(equal("user10"))
+                                    done()
+                                }
+                            }.toNot(throwError())
                         }
                     }
 
@@ -307,7 +318,7 @@ class RestClientPresence: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             realtime = AblyTests.addMembersSequentiallyToChannel("test", members: 1, options: options) {
                                 done()
-                            }.first
+                            }
                         }
 
                         let query = ARTDataQuery()
@@ -315,19 +326,21 @@ class RestClientPresence: QuickSpec {
                         query.limit = 1
 
                         waitUntil(timeout: testTimeout) { done in
-                            try! channel.presence.history(query) { membersPage, error in
-                                expect(error).to(beNil())
-                                expect(membersPage!.items).to(haveCount(1))
-                                expect(membersPage!.hasNext).to(beFalse())
-                                expect(membersPage!.isLast).to(beTrue())
-                                done()
-                            }
+                            expect {
+                                try channel.presence.history(query) { membersPage, error in
+                                    expect(error).to(beNil())
+                                    expect(membersPage!.items).to(haveCount(1))
+                                    expect(membersPage!.hasNext).to(beFalse())
+                                    expect(membersPage!.isLast).to(beTrue())
+                                    done()
+                                }
+                            }.toNot(throwError())
                         }
 
                         query.limit = 1001
 
-                        expect { try channel.presence.history(query) { _, _ in } }.to(throwError { (error: ErrorType) in
-                            expect(error._code).to(equal(ARTDataQueryError.Limit.rawValue))
+                        expect { try channel.presence.history(query) { _, _ in } }.to(throwError { (error: Error) in
+                            expect(error._code).to(equal(ARTDataQueryError.limit.rawValue))
                         })
                     }
                 }
@@ -348,16 +361,16 @@ class RestClientPresence: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         // One connection
-                        disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 6, options: options) {
+                        disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 6, options: options) {
                             done()
-                        }
+                        }]
                     }
 
                     waitUntil(timeout: testTimeout) { done in
                         // Another connection
-                        disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 3, startFrom: 7, options: options) {
+                        disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 3, startFrom: 7, options: options) {
                             done()
-                        }
+                        }]
                     }
 
                     let query = ARTRealtimePresenceQuery()
@@ -365,17 +378,19 @@ class RestClientPresence: QuickSpec {
                     query.connectionId = disposable.last!.connection.id!
 
                     waitUntil(timeout: testTimeout) { done in
-                        try! channel.presence.get(query) { membersPage, error in
-                            expect(error).to(beNil())
-                            expect(membersPage!.items).to(haveCount(3))
-                            expect(membersPage!.hasNext).to(beFalse())
-                            expect(membersPage!.isLast).to(beTrue())
-                            expect(membersPage!.items).to(allPass({ member in
-                                let member = member as! ARTPresenceMessage?
-                                return NSRegularExpression.match(member!.clientId, pattern: "^user(7|8|9)")
-                            }))
-                            done()
-                        }
+                        expect {
+                            try channel.presence.get(query) { membersPage, error in
+                                expect(error).to(beNil())
+                                expect(membersPage!.items).to(haveCount(3))
+                                expect(membersPage!.hasNext).to(beFalse())
+                                expect(membersPage!.isLast).to(beTrue())
+                                expect(membersPage!.items).to(allPass({ member in
+                                    let member = member 
+                                    return NSRegularExpression.match(member!.clientId, pattern: "^user(7|8|9)")
+                                }))
+                                done()
+                            }
+                        }.toNot(throwError())
                     }
                 }
 
@@ -404,9 +419,9 @@ class RestClientPresence: QuickSpec {
                         let query = ARTDataQuery()
 
                         waitUntil(timeout: testTimeout) { done in
-                            disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 25, options: options) {
+                            disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 25, options: options) {
                                 done()
-                            }
+                            }]
                         }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -422,9 +437,9 @@ class RestClientPresence: QuickSpec {
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 3, options: options) {
+                            disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 3, options: options) {
                                 done()
-                            }
+                            }]
                         }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -436,17 +451,19 @@ class RestClientPresence: QuickSpec {
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            disposable += AblyTests.addMembersSequentiallyToChannel("test", members: 10, options: options) {
+                            disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 10, options: options) {
                                 done()
-                            }
+                            }]
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            try! channel.presence.history(query) { membersPage, error in
-                                expect(error).to(beNil())
-                                expect(membersPage!.items).to(haveCount(3))
-                                done()
-                            }
+                            expect {
+                                try channel.presence.history(query) { membersPage, error in
+                                    expect(error).to(beNil())
+                                    expect(membersPage!.items).to(haveCount(3))
+                                    done()
+                                }
+                            }.toNot(throwError())
                         }
                     }
 
@@ -456,18 +473,18 @@ class RestClientPresence: QuickSpec {
                         let channel = client.channels.get("test")
 
                         let query = ARTDataQuery()
-                        query.direction = .Backwards
-                        query.end = NSDate()
-                        query.start = query.end!.dateByAddingTimeInterval(10.0)
+                        query.direction = .backwards
+                        query.end = NSDate() as Date
+                        query.start = query.end!.addingTimeInterval(10.0)
 
-                        expect { try channel.presence.history(query) { _, _ in } }.to(throwError { (error: ErrorType) in
-                            expect(error._code).to(equal(ARTDataQueryError.TimestampRange.rawValue))
+                        expect { try channel.presence.history(query) { _, _ in } }.to(throwError { (error: Error) in
+                            expect(error._code).to(equal(ARTDataQueryError.timestampRange.rawValue))
                         })
 
-                        query.direction = .Forwards
+                        query.direction = .forwards
 
-                        expect { try channel.presence.history(query) { _, _ in } }.to(throwError { (error: ErrorType) in
-                            expect(error._code).to(equal(ARTDataQueryError.TimestampRange.rawValue))
+                        expect { try channel.presence.history(query) { _, _ in } }.to(throwError { (error: Error) in
+                            expect(error._code).to(equal(ARTDataQueryError.timestampRange.rawValue))
                         })
                     }
 
@@ -490,21 +507,29 @@ class RestClientPresence: QuickSpec {
                 var realtime = ARTRealtime(options: options)
                 defer { realtime.dispose(); realtime.close() }
                 waitUntil(timeout: testTimeout) { done in
-                    realtime.channels.get("test").presence.enterClient("john", data: expectedData) { _ in done() }
+                    let partialDone = AblyTests.splitDone(2, done: done)
+                    let channel = realtime.channels.get("test")
+                    channel.presence.enterClient("john", data: expectedData) { _ in
+                        partialDone()
+                    }
+                    channel.presence.subscribe { _ in
+                        channel.presence.unsubscribe()
+                        partialDone()
+                    }
                 }
 
                 typealias Done = () -> Void
-                func checkReceivedMessage(done: Done) -> (ARTPaginatedResult?, ARTErrorInfo?) -> Void {
+                func checkReceivedMessage<T: ARTBaseMessage>(_ done: @escaping Done) -> (ARTPaginatedResult<T>?, ARTErrorInfo?) -> Void {
                     return { membersPage, error in
                         expect(error).to(beNil())
-                        let member = membersPage!.items[0] as! ARTBaseMessage
-                        expect(member.data as? NSDictionary).to(equal(expectedData))
+                        let member = membersPage!.items[0]
+                        expect(member.data as? NSDictionary).to(equal(expectedData as NSDictionary?))
                         done()
                     }
                 }
 
                 var decodeNumberOfCalls = 0
-                let hook = ARTBaseMessage.testSuite_injectIntoClassMethod(#selector(ARTBaseMessage.decodeWithEncoder(_:error:))) {
+                let hook = ARTBaseMessage.testSuite_injectIntoClassMethod(#selector(ARTBaseMessage.decode)) {
                     decodeNumberOfCalls += 1
                 }
                 defer { hook?.remove() }

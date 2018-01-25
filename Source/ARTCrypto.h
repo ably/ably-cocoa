@@ -7,10 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTTypes.h"
-#import "ARTStatus.h"
 
-ART_ASSUME_NONNULL_BEGIN
+#import <Ably/ARTTypes.h>
+#import <Ably/ARTStatus.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTCipherKeyCompatible <NSObject>
 - (NSData *)toData;
@@ -55,4 +56,4 @@ ART_ASSUME_NONNULL_BEGIN
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

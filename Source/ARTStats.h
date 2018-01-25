@@ -7,9 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTDataQuery.h"
 
-ART_ASSUME_NONNULL_BEGIN
+#import <Ably/ARTDataQuery.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
     ARTStatsGranularityMinute,
@@ -44,9 +45,9 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 @property (readonly, strong, nonatomic) ARTStatsMessageCount *presence;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithAll:(ARTStatsMessageCount *)all
-                   messages:(ARTStatsMessageCount *)messages
-                   presence:(ARTStatsMessageCount *)presence;
+- (instancetype)initWithAll:(nullable ARTStatsMessageCount *)all
+                   messages:(nullable ARTStatsMessageCount *)messages
+                   presence:(nullable ARTStatsMessageCount *)presence;
 
 + (instancetype)empty;
 
@@ -60,10 +61,10 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *webhook;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithAll:(ARTStatsMessageTypes *)all
-                   realtime:(ARTStatsMessageTypes *)realtime
-                       rest:(ARTStatsMessageTypes *)rest
-                    webhook:(ARTStatsMessageTypes *)webhook;
+- (instancetype)initWithAll:(nullable ARTStatsMessageTypes *)all
+                   realtime:(nullable ARTStatsMessageTypes *)realtime
+                       rest:(nullable ARTStatsMessageTypes *)rest
+                    webhook:(nullable ARTStatsMessageTypes *)webhook;
 
 + (instancetype)empty;
 
@@ -95,9 +96,9 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 @property (readonly, strong, nonatomic) ARTStatsResourceCount *tls;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithAll:(ARTStatsResourceCount *)all
-                      plain:(ARTStatsResourceCount *)plain
-                        tls:(ARTStatsResourceCount *)tls;
+- (instancetype)initWithAll:(nullable ARTStatsResourceCount *)all
+                      plain:(nullable ARTStatsResourceCount *)plain
+                        tls:(nullable ARTStatsResourceCount *)tls;
 
 + (instancetype)empty;
 
@@ -150,4 +151,4 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

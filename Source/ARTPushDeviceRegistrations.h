@@ -11,17 +11,18 @@
 
 @class ARTDeviceDetails;
 @class ARTPaginatedResult;
-
-@protocol ARTHTTPAuthenticatedExecutor;
+@class ARTRest;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPushDeviceRegistrations : NSObject
 
 - (instancetype)init NS_UNAVAILABLE;
-- (instancetype)init:(id<ARTHTTPAuthenticatedExecutor>)httpExecutor;
+- (instancetype)init:(ARTRest *)rest;
 
 - (void)save:(ARTDeviceDetails *)deviceDetails callback:(void (^)(ARTErrorInfo *_Nullable))callback;
+
+- (void)get:(ARTDeviceId *)deviceId callback:(void (^)(ARTDeviceDetails *_Nullable,  ARTErrorInfo *_Nullable))callback;
 
 - (void)list:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTPaginatedResult<ARTDeviceDetails *> *_Nullable,  ARTErrorInfo *_Nullable))callback;
 

@@ -7,7 +7,7 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTRestChannel.h"
+#import <Ably/ARTRestChannel.h>
 
 @interface ARTRestChannel ()
 

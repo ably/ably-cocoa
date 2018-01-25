@@ -26,4 +26,53 @@
     return self;
 }
 
+- (id)copyWithZone:(NSZone *)zone {
+    ARTDeviceDetails *device = [[[self class] allocWithZone:zone] init];
+
+    device.id = self.id;
+    device.clientId = self.clientId;
+    device.platform = self.platform;
+    device.formFactor = self.formFactor;
+    device.metadata = [self.metadata copy];
+    device.push = [self.push copy];
+    device.updateToken = self.updateToken;
+
+    return device;
+}
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"%@ - \n\t id: %@; \n\t clientId: %@; \n\t platform: %@; \n\t formFactor: %@; \n\t updateToken: %@;", [super description], self.id, self.clientId, self.formFactor, self.platform, self.updateToken];
+}
+
+- (BOOL)isEqualToDeviceDetail:(ARTDeviceDetails *)device {
+    if (!device) {
+        return NO;
+    }
+
+    BOOL haveEqualDeviceId = (!self.id && !device.id) || [self.id isEqualToString:device.id];
+    BOOL haveEqualCliendId = (!self.clientId && !device.clientId) || [self.clientId isEqualToString:device.clientId];
+    BOOL haveEqualPlatform = (!self.platform && !device.platform) || [self.platform isEqualToString:device.platform];
+    BOOL haveEqualFormFactor = (!self.formFactor && !device.formFactor) || [self.formFactor isEqualToString:device.formFactor];
+
+    return haveEqualDeviceId && haveEqualCliendId && haveEqualPlatform && haveEqualFormFactor;
+}
+
+#pragma mark - NSObject
+
+- (BOOL)isEqual:(id)object {
+    if (self == object) {
+        return YES;
+    }
+
+    if (![object isKindOfClass:[ARTDeviceDetails class]]) {
+        return NO;
+    }
+
+    return [self isEqualToDeviceDetail:(ARTDeviceDetails *)object];
+}
+
+- (NSUInteger)hash {
+    return [self.id hash] ^ [self.clientId hash] ^ [self.formFactor hash] ^ [self.platform hash];
+}
+
 @end

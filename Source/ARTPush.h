@@ -11,20 +11,8 @@
 #import "ARTPushAdmin.h"
 
 @class ARTRest;
+@class ARTRealtime;
 @class ARTDeviceDetails;
-
-// More context
-typedef NSString ARTDeviceId;
-typedef NSData ARTDeviceToken;
-typedef NSString ARTUpdateToken;
-typedef ARTJsonObject ARTPushRecipient;
-
-NS_ASSUME_NONNULL_BEGIN
-extern NSString *const ARTDeviceIdKey;
-extern NSString *const ARTDeviceUpdateTokenKey;
-extern NSString *const ARTDeviceTokenKey;
-NS_ASSUME_NONNULL_END
-
 
 #pragma mark ARTPushRegisterer interface
 
@@ -57,13 +45,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init NS_UNAVAILABLE;
 
-/// Publish a push notification.
-- (void)publish:(ARTPushRecipient *)recipient notification:(ARTJsonObject *)notification callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback;
-
 #ifdef TARGET_OS_IOS
+
 /// Push Registration token
+
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken rest:(ARTRest *)rest;
++ (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken realtime:(ARTRealtime *)realtime;
+
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error rest:(ARTRest *)rest;
++ (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime;
 
 /// Register a device, including the information necessary to deliver push notifications to it.
 - (void)activate;

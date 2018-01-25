@@ -10,22 +10,30 @@
 
 @interface ARTURLSessionServerTrust() {
     NSURLSession *_session;
+    dispatch_queue_t _queue;
 }
 
 @end
 
 @implementation ARTURLSessionServerTrust
 
-- (instancetype)init {
+- (instancetype)init:(dispatch_queue_t)queue {
     if (self = [super init]) {
         _session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:nil];
+        _queue = queue;
     }
     return self;
 }
 
-- (void)get:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *__art_nullable, NSData *__art_nullable, NSError *__art_nullable))callback {
+- (void)finishTasksAndInvalidate {
+    [_session finishTasksAndInvalidate];
+}
+
+- (void)get:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
     NSURLSessionDataTask *task = [_session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        callback((NSHTTPURLResponse *)response, data, error);
+        dispatch_async(_queue, ^{
+            callback((NSHTTPURLResponse *)response, data, error);
+        });
     }];
     [task resume];
 }
@@ -34,8 +42,11 @@
     if (challenge.protectionSpace.serverTrust) {
         completionHandler(NSURLSessionAuthChallengeUseCredential, [[NSURLCredential alloc] initWithTrust:challenge.protectionSpace.serverTrust]);
     }
-    else {
+    else if ([challenge.sender respondsToSelector:@selector(performDefaultHandlingForAuthenticationChallenge:)]) {
         [challenge.sender performDefaultHandlingForAuthenticationChallenge:challenge];
+    }
+    else {
+        completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
     }
 }
 

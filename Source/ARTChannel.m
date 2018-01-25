@@ -14,25 +14,37 @@
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTBaseMessage+Private.h"
 #import "ARTDataQuery.h"
+#import "ARTRest+Private.h"
 
-@implementation ARTChannel
+@implementation ARTChannel {
+    __weak ARTRest *_rest;
+    dispatch_queue_t _queue;
+}
 
-- (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options andLogger:(ARTLog *)logger {
+- (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options rest:(ARTRest *)rest {
     if (self = [super init]) {
         _name = name;
-        self.options = options;
-        NSError *error;
+        _logger = rest.logger;
+        _rest = rest;
+        _queue = rest.queue;
+        [self _setOptions:options];
+        NSError *error = nil;
         _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:_options.cipher error:&error];
         if (error != nil) {
-            [logger warn:@"creating ARTDataEncoder: %@", error];
+            [_logger warn:@"creating ARTDataEncoder: %@", error];
             _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:nil error:nil];
         }
-        _logger = logger;
     }
     return self;
 }
 
 - (void)setOptions:(ARTChannelOptions *)options {
+    dispatch_sync(_queue, ^{
+        [self _setOptions:options];
+    });
+}
+
+- (void)_setOptions:(ARTChannelOptions *)options {
     if (!options) {
         _options = [[ARTChannelOptions alloc] initWithCipher:nil];
     } else {
@@ -45,17 +57,47 @@
 }
 
 - (void)publish:(art_nullable NSString *)name data:(art_nullable id)data callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
-    [self internalPostMessages:[self encodeMessageIfNeeded:[[ARTMessage alloc] initWithName:name data:data]]
-                      callback:callback];
+    [self publish:name data:data extras:nil callback:callback];
+}
+
+- (void)publish:(NSString *)name data:(id)data extras:(id<ARTJsonCompatible>)extras {
+    [self publish:name data:data extras:extras callback:nil];
+}
+
+- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data extras:(id<ARTJsonCompatible>)extras callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
+    NSError *error = nil;
+    ARTMessage *message = [[ARTMessage alloc] initWithName:name data:data];
+    message.extras = extras;
+    ARTMessage *messagesWithDataEncoded = [self encodeMessageIfNeeded:message error:&error];
+    if (error) {
+        if (callback) callback([ARTErrorInfo createFromNSError:error]);
+        return;
+    }
+    [self internalPostMessages:messagesWithDataEncoded callback:callback];
 }
 
 - (void)publish:(NSString *)name data:(id)data clientId:(NSString *)clientId {
     [self publish:name data:data clientId:clientId callback:nil];
 }
 
+- (void)publish:(NSString *)name data:(id)data clientId:(NSString *)clientId extras:(id<ARTJsonCompatible>)extras {
+    [self publish:name data:data clientId:clientId extras:extras callback:nil];
+}
+
 - (void)publish:(NSString *)name data:(id)data clientId:(NSString *)clientId callback:(void (^)(ARTErrorInfo * _Nullable))callback {
-    [self internalPostMessages:[self encodeMessageIfNeeded:[[ARTMessage alloc] initWithName:name data:data clientId:clientId]]
-                      callback:callback];
+    [self publish:name data:data clientId:(NSString *)clientId extras:nil callback:callback];
+}
+
+- (void)publish:(NSString *)name data:(id)data clientId:(NSString *)clientId extras:(id<ARTJsonCompatible>)extras callback:(void (^)(ARTErrorInfo * _Nullable))callback {
+    NSError *error = nil;
+    ARTMessage *message = [[ARTMessage alloc] initWithName:name data:data clientId:clientId];
+    message.extras = extras;
+    ARTMessage *messagesWithDataEncoded = [self encodeMessageIfNeeded:message error:&error];
+    if (error) {
+        if (callback) callback([ARTErrorInfo createFromNSError:error]);
+        return;
+    }
+    [self internalPostMessages:messagesWithDataEncoded callback:callback];
 }
 
 - (void)publish:(NSArray<ARTMessage *> *)messages {
@@ -63,20 +105,29 @@
 }
 
 - (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
-    [self internalPostMessages:[messages artMap:^id(ARTMessage *message) {
-        return [self encodeMessageIfNeeded:message];
-    }] callback:callback];
+    NSError *error = nil;
+    NSMutableArray<ARTMessage *> *messagesWithDataEncoded = [NSMutableArray new];
+    for (ARTMessage *message in messages) {
+        [messagesWithDataEncoded addObject:[self encodeMessageIfNeeded:message error:&error]];
+    }
+    if (error) {
+        callback([ARTErrorInfo createFromNSError:error]);
+        return;
+    }
+    [self internalPostMessages:messagesWithDataEncoded callback:callback];
 }
 
-- (ARTMessage *)encodeMessageIfNeeded:(ARTMessage *)message {
+- (ARTMessage *)encodeMessageIfNeeded:(ARTMessage *)message error:(NSError **)error {
     if (!self.dataEncoder) {
         return message;
     }
-    NSError *error = nil;
-    message = [message encodeWithEncoder:self.dataEncoder error:&error];
-    if (error != nil) {
-        [self.logger error:@"ARTChannel: error encoding data: %@", error];
-        [NSException raise:NSInvalidArgumentException format:@"ARTChannel: error encoding data: %@", error];
+    NSError *e = nil;
+    message = [message encodeWithEncoder:self.dataEncoder error:&e];
+    if (e) {
+        [self.logger error:@"ARTChannel: error encoding data: %@", e];
+    }
+    if (error) {
+        *error = e;
     }
     return message;
 }

@@ -65,9 +65,9 @@
         _iv = iv;
 
         CCAlgorithm ccAlgorithm;
-        NSError *error;
+        NSError *error = nil;
         if (![self ccAlgorithm:&ccAlgorithm error:&error]) {
-            [NSException raise:NSInvalidArgumentException format:@"%@", error.userInfo[NSLocalizedFailureReasonErrorKey]];
+            [ARTException raise:NSInvalidArgumentException format:@"%@", error.userInfo[NSLocalizedFailureReasonErrorKey]];
         }
     }
     return self;
@@ -304,7 +304,7 @@
     return 128;
 }
 
-+ (NSData *)generateSecureRandomData:(size_t)length {
++ (NSMutableData *)generateSecureRandomData:(size_t)length {
     void *buf = malloc(length);
     if (!buf) {
         return nil;
@@ -315,7 +315,7 @@
         return nil;
     }
 
-    NSData *outputData = [NSData dataWithBytesNoCopy:buf length:length freeWhenDone:YES];
+    NSMutableData *outputData = [NSMutableData dataWithBytesNoCopy:buf length:length freeWhenDone:YES];
     if (!outputData) {
         free(buf);
     }
@@ -329,7 +329,7 @@
     }
     NSString *key = values[@"key"];
     if (key == nil) {
-        [NSException raise:NSInvalidArgumentException format:@"missing key parameter"];
+        [ARTException raise:NSInvalidArgumentException format:@"missing key parameter"];
     }
     return [[ARTCipherParams alloc] initWithAlgorithm:algorithm key:key];
 }

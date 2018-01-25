@@ -6,16 +6,11 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#ifndef ARTClientOptions_Private_h
-#define ARTClientOptions_Private_h
-
-#import "ARTClientOptions.h"
+#import <Ably/ARTClientOptions.h>
 
 @interface ARTClientOptions ()
 
-+ (void)setDefaultEnvironment:(NSString *__art_nullable)environment;
-- (NSURLComponents *__art_nonnull)restUrlComponents;
++ (void)setDefaultEnvironment:(NSString *_Nullable)environment;
+- (NSURLComponents *_Nonnull)restUrlComponents;
 
 @end
-
-#endif /* ARTClientOptions_Private_h */

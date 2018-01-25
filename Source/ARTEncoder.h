@@ -7,8 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "CompatibilityMacros.h"
-#import "ARTTypes.h"
 
 @class ARTMessage;
 @class ARTPresenceMessage;
@@ -26,7 +24,7 @@ typedef NS_ENUM(NSUInteger, ARTEncoderFormat) {
     ARTEncoderFormatMsgPack
 };
 
-ART_ASSUME_NONNULL_BEGIN
+NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTEncoder
 
@@ -34,57 +32,57 @@ ART_ASSUME_NONNULL_BEGIN
 - (ARTEncoderFormat)format;
 - (NSString *)formatAsString;
 
-- (id)decode:(NSData *)data;
-- (NSData *)encode:(id)obj;
+- (id)decode:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+- (NSData *)encode:(id)obj error:(NSError *_Nullable *_Nullable)error;
 
 
 // TokenRequest
-- (art_nullable NSData *)encodeTokenRequest:(ARTTokenRequest *)request;
-- (art_nullable ARTTokenRequest *)decodeTokenRequest:(NSData *)data error:(NSError * __autoreleasing *)error;
+- (nullable NSData *)encodeTokenRequest:(ARTTokenRequest *)request error:(NSError *_Nullable *_Nullable)error;
+- (nullable ARTTokenRequest *)decodeTokenRequest:(NSData *)data error:(NSError * __autoreleasing *)error;
 
 // TokenDetails
-- (art_nullable NSData *)encodeTokenDetails:(ARTTokenDetails *)tokenDetails;
-- (art_nullable ARTTokenDetails *)decodeTokenDetails:(NSData *)data error:(NSError * __autoreleasing *)error;
+- (nullable NSData *)encodeTokenDetails:(ARTTokenDetails *)tokenDetails error:(NSError *_Nullable *_Nullable)error;
+- (nullable ARTTokenDetails *)decodeTokenDetails:(NSData *)data error:(NSError * __autoreleasing *)error;
 
 // Message
-- (art_nullable NSData *)encodeMessage:(ARTMessage *)message;
-- (art_nullable ARTMessage *)decodeMessage:(NSData *)data;
+- (nullable NSData *)encodeMessage:(ARTMessage *)message error:(NSError *_Nullable *_Nullable)error;
+- (nullable ARTMessage *)decodeMessage:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
 
 // Message list
-- (art_nullable NSData *)encodeMessages:(NSArray *)messages;
-- (art_nullable NSArray<ARTMessage *> *)decodeMessages:(NSData *)data;
+- (nullable NSData *)encodeMessages:(NSArray<ARTMessage *> *)messages error:(NSError *_Nullable *_Nullable)error;
+- (nullable NSArray<ARTMessage *> *)decodeMessages:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
 
 // PresenceMessage
-- (art_nullable NSData *)encodePresenceMessage:(ARTPresenceMessage *)message;
-- (art_nullable ARTPresenceMessage *)decodePresenceMessage:(NSData *)data;
+- (nullable NSData *)encodePresenceMessage:(ARTPresenceMessage *)message error:(NSError *_Nullable *_Nullable)error;
+- (nullable ARTPresenceMessage *)decodePresenceMessage:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
 
 // PresenceMessage list
-- (art_nullable NSData *)encodePresenceMessages:(NSArray *)messages;
-- (art_nullable NSArray<ARTPresenceMessage *> *)decodePresenceMessages:(NSData *)data;
+- (nullable NSData *)encodePresenceMessages:(NSArray<ARTPresenceMessage *> *)messages error:(NSError *_Nullable *_Nullable)error;
+- (nullable NSArray<ARTPresenceMessage *> *)decodePresenceMessages:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
 
 // ProtocolMessage
-- (art_nullable NSData *)encodeProtocolMessage:(ARTProtocolMessage *)message;
-- (art_nullable ARTProtocolMessage *)decodeProtocolMessage:(NSData *)data;
+- (nullable NSData *)encodeProtocolMessage:(ARTProtocolMessage *)message error:(NSError *_Nullable *_Nullable)error;
+- (nullable ARTProtocolMessage *)decodeProtocolMessage:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
 
 // DeviceDetails
-- (art_nullable NSData *)encodeDeviceDetails:(ARTDeviceDetails *)deviceDetails;
-- (art_nullable ARTDeviceDetails *)decodeDeviceDetails:(NSData *)data error:(NSError * __autoreleasing *)error;
-- (art_nullable NSArray<ARTDeviceDetails *> *)decodeDevicesDetails:(NSData *)data error:(NSError * __autoreleasing *)error;
+- (nullable NSData *)encodeDeviceDetails:(ARTDeviceDetails *)deviceDetails error:(NSError *_Nullable *_Nullable)error;
+- (nullable ARTDeviceDetails *)decodeDeviceDetails:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+- (nullable NSArray<ARTDeviceDetails *> *)decodeDevicesDetails:(NSData *)data error:(NSError * __autoreleasing *)error;
 
 // DevicePushDetails
-- (art_nullable NSData *)encodeDevicePushDetails:(ARTDevicePushDetails *)devicePushDetails;
-- (art_nullable ARTDevicePushDetails *)decodeDevicePushDetails:(NSData *)data error:(NSError * __autoreleasing *)error;
+- (nullable NSData *)encodeDevicePushDetails:(ARTDevicePushDetails *)devicePushDetails error:(NSError *_Nullable *_Nullable)error;
+- (nullable ARTDevicePushDetails *)decodeDevicePushDetails:(NSData *)data error:(NSError * __autoreleasing *)error;
 
 // Push Channel Subscription
-- (art_nullable NSData *)encodePushChannelSubscription:(ARTPushChannelSubscription *)channelSubscription;
-- (art_nullable ARTPushChannelSubscription *)decodePushChannelSubscription:(NSData *)data error:(NSError * __autoreleasing *)error;
-- (art_nullable NSArray<ARTPushChannelSubscription *> *)decodePushChannelSubscriptions:(NSData *)data error:(NSError * __autoreleasing *)error;
+- (nullable NSData *)encodePushChannelSubscription:(ARTPushChannelSubscription *)channelSubscription error:(NSError * __autoreleasing *)error;
+- (nullable ARTPushChannelSubscription *)decodePushChannelSubscription:(NSData *)data error:(NSError * __autoreleasing *)error;
+- (nullable NSArray<ARTPushChannelSubscription *> *)decodePushChannelSubscriptions:(NSData *)data error:(NSError * __autoreleasing *)error;
 
 // Others
-- (art_nullable NSDate *)decodeTime:(NSData *)data;
-- (art_nullable NSError *)decodeError:(NSData *)error;
-- (art_nullable NSArray *)decodeStats:(NSData *)data;
+- (nullable NSDate *)decodeTime:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+- (nullable ARTErrorInfo *)decodeErrorInfo:(NSData *)error error:(NSError *_Nullable *_Nullable)error;
+- (nullable NSArray *)decodeStats:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
 
 @end
 
-ART_ASSUME_NONNULL_END
+NS_ASSUME_NONNULL_END

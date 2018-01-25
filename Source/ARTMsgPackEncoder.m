@@ -7,7 +7,7 @@
 //
 
 #import "ARTMsgPackEncoder.h"
-#import "MessagePack.h"
+#import <msgpack/MessagePack.h>
 
 @implementation ARTMsgPackEncoder
 
@@ -23,11 +23,11 @@
     return @"msgpack";
 }
 
-- (id)decode:(NSData *)data {
+- (id)decode:(NSData *)data error:(NSError **)error {
     return [data messagePackParse];
 }
 
-- (NSData *)encode:(id)obj {
+- (NSData *)encode:(id)obj error:(NSError **)error {
     return [obj messagePack];
 }
 
