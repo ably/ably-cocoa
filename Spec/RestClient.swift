@@ -1176,7 +1176,7 @@ class RestClient: QuickSpec {
                     testHTTPExecutor.http = MockHTTP(network: .host400BadRequest)
                     let channel = client.channels.get("test")
 
-                    testHTTPExecutor.afterRequest = { _ in
+                    testHTTPExecutor.afterRequest = { _ , _ in
                         if testHTTPExecutor.requests.count == 2 {
                             // Stop
                             testHTTPExecutor.http = nil
@@ -1321,9 +1321,9 @@ class RestClient: QuickSpec {
             it("background behaviour") {
                 let options = AblyTests.commonAppSetup()
                 waitUntil(timeout: testTimeout) { done in
-                    URLSession.shared.dataTask(with: NSURL(string:"https://ably.io")! as URL) { _ in
+                  URLSession.shared.dataTask(with: NSURL(string:"https://ably.io")! as URL) { _ , _ , _  in
                         let rest = ARTRest(options: options)
-                        rest.channels.get("foo").history { _ in
+                    rest.channels.get("foo").history { _ , _  in
                             done()
                         }
                     }.resume()
