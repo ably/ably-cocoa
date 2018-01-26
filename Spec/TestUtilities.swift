@@ -1164,7 +1164,7 @@ public func haveParam(_ key: String, withValue expectedValue: String) -> Predica
 /// A Nimble matcher that succeeds when all Keys from a Dictionary are valid.
 public func allKeysPass<U: Collection> (_ passFunc: @escaping (U.Key) -> Bool) -> Predicate<U> where U: ExpressibleByDictionaryLiteral, U.Iterator.Element == (U.Key, U.Value) {
 
-    let elementEvaluator: (Expression<U.Generator.Element>, FailureMessage) throws -> Bool = {
+    let elementEvaluator: (Expression<U.Iterator.Element>, FailureMessage) throws -> Bool = {
         expression, failureMessage in
         failureMessage.postfixMessage = "pass a condition"
         let value = try expression.evaluate()!
@@ -1197,7 +1197,7 @@ public func allKeysPass<U: Collection> (_ passFunc: @escaping (U.Key) -> Bool) -
 /// A Nimble matcher that succeeds when all Values from a Dictionary are valid.
 public func allValuesPass<U: Collection> (_ passFunc: @escaping (U.Value) -> Bool) -> Predicate<U> where U: ExpressibleByDictionaryLiteral, U.Iterator.Element == (U.Key, U.Value) {
 
-    let elementEvaluator: (Expression<U.Generator.Element>, FailureMessage) throws -> Bool = {
+    let elementEvaluator: (Expression<U.Iterator.Element>, FailureMessage) throws -> Bool = {
         expression, failureMessage in
         failureMessage.postfixMessage = "pass a condition"
         let value = try expression.evaluate()!
