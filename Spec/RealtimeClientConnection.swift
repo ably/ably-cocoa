@@ -1859,7 +1859,7 @@ class RealtimeClientConnection: QuickSpec {
             // RTN14a
             it("should enter FAILED state when API key is invalid") {
                 let options = AblyTests.commonAppSetup()
-                options.key = String(options.key!.characters.reversed())
+                options.key = String(options.key!.reversed())
                 options.autoConnect = false
                 let client = ARTRealtime(options: options)
                 defer {
