@@ -13,7 +13,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern NSString* (^_Nullable ARTChannels_getChannelNamePrefix)();
+extern NSString* (^_Nullable ARTChannels_getChannelNamePrefix)(void);
 
 @protocol ARTChannelsDelegate <NSObject>
 
