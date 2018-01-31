@@ -1859,7 +1859,7 @@ class RealtimeClientConnection: QuickSpec {
             // RTN14a
             it("should enter FAILED state when API key is invalid") {
                 let options = AblyTests.commonAppSetup()
-                options.key = String(options.key!.characters.reversed())
+                options.key = String(options.key!.reversed())
                 options.autoConnect = false
                 let client = ARTRealtime(options: options)
                 defer {
@@ -2125,7 +2125,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.autoConnect = false
                     let expectedTime: TimeInterval = 1.0
 
-                    options.authCallback = { _ in
+                    options.authCallback = { _ , _ in
                         // Force a timeout
                     }
 
@@ -2162,7 +2162,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.autoConnect = false
                     let expectedTime: TimeInterval = 1.0
 
-                    options.authCallback = { _ in
+                    options.authCallback = { _ , _ in
                         // Force a timeout
                     }
 
@@ -3502,7 +3502,7 @@ class RealtimeClientConnection: QuickSpec {
                     expect(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
 
                     waitUntil(timeout: testTimeout) { done in
-                        client.time { _ in
+                      client.time { _ , _  in
                             done()
                         }
                     }

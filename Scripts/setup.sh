@@ -4,7 +4,7 @@
 set -e
 
 # Install Fastlane
-gem install fastlane
+gem install fastlane -v 2.77.1
 
 # Install CocoaPods
 gem install cocoapods
