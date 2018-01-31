@@ -670,7 +670,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)onAuth {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    [self.logger info:@"R:%p server has requested an authorise", self];
+    [self.logger info:@"R:%p server has requested an authorize", self];
     switch (self.connection.state_nosync) {
         case ARTRealtimeConnecting:
         case ARTRealtimeConnected:
@@ -821,7 +821,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                             break;
                     }
 
-                    [[weakSelf getLogger] debug:__FILE__ line:__LINE__ message:@"R:%p authorised: %@ error: %@", weakSelf, tokenDetails, error];
+                    [[weakSelf getLogger] debug:__FILE__ line:__LINE__ message:@"R:%p authorized: %@ error: %@", weakSelf, tokenDetails, error];
                     if (error) {
                         [weakSelf handleTokenAuthError:error];
                         return;
