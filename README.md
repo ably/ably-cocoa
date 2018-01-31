@@ -569,8 +569,8 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
 * Run [`github_changelog_generator`](https://github.com/skywinder/Github-Changelog-Generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). Once the CHANGELOG has completed, manually change the `Unreleased` heading and link with the current version number such as `v1.0.0`. Also ensure that the `Full Changelog` link points to the new version tag instead of the `HEAD`. Commit this change.
 * Push tag to origin such as `git push origin x.x.x`.
 * Visit [releases page](https://github.com/ably/ably-ios/releases) and `Add release notes`.
-* Remember to release an update for the [CocoaPods](https://guides.cocoapods.org/making/making-a-cocoapod.html#release).
-* Remember to generate and attach the prebuilt framework for [Carthage](https://github.com/Carthage/Carthage#archive-prebuilt-frameworks-into-one-zip-file).
+* Release an update for CocoaPods: `pod lib lint && pod trunk push Ably.podspec`.
+* Generate the prebuilt framework for Carthage (`carthage build --no-skip-current && carthage archive Ably`) and attach the zip file to the release.
 
 ## License
 
