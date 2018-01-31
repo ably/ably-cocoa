@@ -409,12 +409,6 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (void)authorise:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
-    [self authorize:tokenParams options:authOptions callback:callback];
-} ART_TRY_OR_REPORT_CRASH_END
-}
-
 - (void)authorize:(void (^)(ARTTokenDetails *, NSError *))callback {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [self authorize:_options.defaultTokenParams options:_options callback:callback];

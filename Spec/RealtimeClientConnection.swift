@@ -4291,7 +4291,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
             }
 
-            it("should abort reconnection with new token if the server has requested it to authorise and after it the connection has been closed") {
+            it("should abort reconnection with new token if the server has requested it to authorize and after it the connection has been closed") {
                 let options = AblyTests.commonAppSetup()
                 let client = ARTRealtime(options: options)
                 defer { client.dispose(); client.close() }

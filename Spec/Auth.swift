@@ -3362,13 +3362,6 @@ class Auth : QuickSpec {
 
             }
 
-            // RSA10l
-            it("has an alias method @RestClient#authorise@ and should use @RealtimeClient#authorize@") {
-                let rest = ARTRest(key: "xxxx:xxxx")
-                expect(rest.auth.responds(to: #selector(ARTAuth.authorise(_:options:callback:)))) == true
-                expect(rest.auth.responds(to: #selector(ARTAuth.authorize(_:options:callback:)))) == true
-            }
-
         }
 
         describe("TokenParams") {
@@ -3408,7 +3401,7 @@ class Auth : QuickSpec {
         describe("Reauth") {
 
             // RTC8
-            it("should use authorise({force: true}) to reauth with a token with a different set of capabilities") {
+            it("should use authorize({force: true}) to reauth with a token with a different set of capabilities") {
                 let options = AblyTests.commonAppSetup()
                 let initialToken = getTestToken(clientId: "tester", capability: "{\"restricted\":[\"*\"]}")
                 options.token = initialToken
