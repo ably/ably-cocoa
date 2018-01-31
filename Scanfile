@@ -1,0 +1,10 @@
+scheme "Ably"
+
+devices [
+  "iPhone 4s (9.3)",
+  "iPhone 5 (10.3.1)",
+  "iPhone 8 (11.2)"
+]
+
+clean true
+open_report false
