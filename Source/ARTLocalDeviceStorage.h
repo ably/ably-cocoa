@@ -11,8 +11,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTDeviceStorage <NSObject>
-- (nullable NSData *)readKey:(NSString *)key;
-- (void)writeKey:(NSString *)key withValue:(nullable NSData *)value;
+- (nullable id)objectForKey:(NSString *)key;
+- (void)setObject:(nullable id)value forKey:(NSString *)key;
 @end
 
 @interface ARTLocalDeviceStorage : NSObject<ARTDeviceStorage>

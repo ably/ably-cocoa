@@ -10,6 +10,7 @@
 #import "ARTPushActivationStateMachine.h"
 #import "ARTPushActivationEvent.h"
 #import "ARTLocalDevice+Private.h"
+#import "ARTLocalDeviceStorage.h"
 #import "ARTDevicePushDetails.h"
 #import "ARTLog.h"
 #import "ARTRest+Private.h"
@@ -83,12 +84,12 @@
     else if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
         ARTLocalDevice *local = [ARTLocalDevice load:self.machine.rest];
 
-        if (local.updateToken != nil) {
+        if (local.updateToken) {
             // Already registered.
             return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
         }
 
-        if ([local deviceToken] != nil) {
+        if ([local deviceToken]) {
             [self.machine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
         }
 
@@ -107,7 +108,7 @@
         return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventGotUpdateToken class]]) {
-        [ARTLocalDevice load:self.machine.rest].updateToken = [[NSUserDefaults standardUserDefaults] stringForKey:ARTDeviceUpdateTokenKey];
+        [ARTLocalDevice load:self.machine.rest].updateToken = [self.machine.rest.storage objectForKey:ARTDeviceUpdateTokenKey];
         [self.machine callActivatedCallback:nil];
         return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
     }
@@ -209,8 +210,7 @@
     else if ([event isKindOfClass:[ARTPushActivationEventDeregistered class]]) {
         ARTLocalDevice *local = [ARTLocalDevice load:self.machine.rest];
         local.updateToken = nil;
-        [[NSUserDefaults standardUserDefaults] setObject:nil forKey:ARTDeviceUpdateTokenKey];
-        [[NSUserDefaults standardUserDefaults] synchronize];
+        [self.machine.rest.storage setObject:nil forKey:ARTDeviceUpdateTokenKey];
         [self.machine callDeactivatedCallback:nil];
         return [ARTPushActivationStateNotActivated newWithMachine:self.machine];
     }

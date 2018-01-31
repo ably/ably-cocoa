@@ -10,11 +10,11 @@
 
 @implementation ARTLocalDeviceStorage
 
-- (NSData *)readKey:(NSString *)key {
+- (nullable id)objectForKey:(NSString *)key {
     return [[NSUserDefaults standardUserDefaults] objectForKey:key];
 }
 
-- (void)writeKey:(NSString *)key withValue:(id)value {
+- (void)setObject:(nullable id)value forKey:(NSString *)key {
     [[NSUserDefaults standardUserDefaults] setObject:value forKey:key];
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
