@@ -1,0 +1,32 @@
+default_platform(:ios)
+
+platform :ios do
+
+  lane :test_iOS11 do
+    run_tests(workspace: "Ably.xcworkspace",
+              devices: ["iPhone 8 (11.2)"],
+              clean: true)
+    slack(
+      message: "Completed tests on iOS11"
+    )
+  end
+
+  lane :test_iOS10 do
+    run_tests(workspace: "Ably.xcworkspace",
+              devices: ["iPhone 7 (10.3.1)"],
+              clean: false)
+    slack(
+      message: "Completed tests on iOS10"
+    )
+  end
+
+  lane :test_iOS9 do
+    run_tests(workspace: "Ably.xcworkspace",
+              devices: ["iPhone 4s (9.3)"],
+              clean: false)
+    slack(
+      message: "Completed tests on iOS9"
+    )
+  end
+
+end

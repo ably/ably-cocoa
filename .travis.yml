@@ -16,10 +16,9 @@ install:
   - gem install fastlane -v '2.79.0'
 script:
   - xcrun simctl erase all
-  - fastlane scan --devices "iPhone 8 (11.2)" --clean
-  - fastlane scan --devices "iPhone 7 (10.3.1)"
-  - fastlane scan --devices "iPhone 4s (9.3)"
-  - fastlane scan --devices "iPhone 4s (8.4)"
+  - fastlane test_iOS11
+  - fastlane test_iOS10
+  - fastlane test_iOS9
 
 after_success:
   - sleep 5

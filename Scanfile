@@ -1,4 +1,3 @@
 scheme "Ably"
 
-clean true
 open_report false
