@@ -1,9 +1,4 @@
 scheme "Ably"
 
-devices [
-  "iPhone 5 (10.3)",
-  "iPhone 8 (11.2)"
-]
-
 clean true
 open_report false

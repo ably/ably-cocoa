@@ -20,7 +20,7 @@ script:
   # It writes a short line to the build log every minute for 20 minutes, extending the amount of time your command has to finish.
   # Prefix `travis_wait` with a greater number to extend the wait time.
   - xcrun simctl erase all
-  - fastlane scan
+  - fastlane scan --devices "iPhone 8 (11.2), iPhone 5 (10.3)" --clean
 
 after_success:
   - sleep 5
