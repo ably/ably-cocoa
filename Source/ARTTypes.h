@@ -22,6 +22,13 @@
 @class ARTPaginatedResult<ItemType>;
 @class ARTStats;
 
+// More context
+typedef NSDictionary<NSString *, id> ARTJsonObject;
+typedef NSString ARTDeviceId;
+typedef NSData ARTDeviceToken;
+typedef NSString ARTUpdateToken;
+typedef ARTJsonObject ARTPushRecipient;
+
 typedef NS_ENUM(NSUInteger, ARTAuthentication) {
     ARTAuthenticationOff,
     ARTAuthenticationOn,
@@ -186,10 +193,24 @@ NSString *generateNonce(void);
 @interface NSString (ARTJsonCompatible) <ARTJsonCompatible>
 @end
 
+@interface NSString (Utilities)
+- (NSString *)shortString;
+@end
+
 @interface NSDictionary (ARTJsonCompatible) <ARTJsonCompatible>
 @end
 
 @interface NSURL (ARTLog)
+@end
+
+@interface NSDictionary (URLQueryItemAdditions)
+@property (nonatomic, readonly) NSArray<NSURLQueryItem *> *asURLQueryItems;
+@end
+
+@interface NSMutableArray (QueueAdditions)
+- (void)enqueue:(id)object;
+- (id)dequeue;
+- (id)peek;
 @end
 
 NS_ASSUME_NONNULL_END

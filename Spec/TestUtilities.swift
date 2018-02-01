@@ -587,9 +587,9 @@ class MockHTTP: ARTHttp {
 
     let network: NetworkAnswer
 
-    init(network: NetworkAnswer) {
+    init(network: NetworkAnswer, logger: ARTLog) {
         self.network = network
-        super.init(AblyTests.queue)
+        super.init(AblyTests.queue, logger: logger)
     }
 
     override public func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) {
@@ -613,40 +613,144 @@ class MockHTTP: ARTHttp {
 
 }
 
-/// Records each request and response for test purpose.
-class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
-    struct ErrorSimulator {
-        let value: Int
-        let description: String
-        let serverId = "server-test-suite"
-        var statusCode: Int = 401
+class MockDeviceStorage: NSObject, ARTDeviceStorage {
 
-        mutating func stubResponse(_ url: URL) -> HTTPURLResponse? {
-            return HTTPURLResponse(url: url, statusCode: statusCode, httpVersion: "HTTP/1.1", headerFields: [
-                "Content-Length": String(stubData?.count ?? 0),
-                "Content-Type": "application/json",
-                "X-Ably-Errorcode": String(value),
-                "X-Ably-Errormessage": description,
-                "X-Ably-Serverid": serverId,
-                ]
-            )
+    var keysRead: [String] = []
+    var keysWritten: [String] = []
+
+    private var simulateData: [String: Data] = [:]
+    private var simulateString: [String: String] = [:]
+
+    init(startWith state: ARTPushActivationState? = nil) {
+        super.init()
+        if let state = state {
+            simulateOnNextRead(data: state.archive(), for: ARTPushActivationCurrentStateKey)
+        }
+    }
+
+    func object(forKey key: String) -> Any? {
+        keysRead.append(key)
+        if var data = simulateData[key] {
+            defer { simulateData.removeValue(forKey: key) }
+            return data
+        }
+        if var string = simulateString[key] {
+            defer { simulateString.removeValue(forKey: key) }
+            return string
+        }
+        return nil
+    }
+
+    func setObject(_ value: Any?, forKey key: String) {
+        keysWritten.append(key)
+    }
+
+    func simulateOnNextRead(data value: Data, `for` key: String) {
+        simulateData[key] = value
+    }
+
+    func simulateOnNextRead(string value: String, `for` key: String) {
+        simulateString[key] = value
+    }
+
+}
+
+fileprivate struct ErrorSimulator {
+    let value: Int
+    let description: String
+    let serverId = "server-test-suite"
+    var statusCode: Int = 401
+
+    mutating func stubResponse(_ url: URL) -> HTTPURLResponse? {
+        return HTTPURLResponse(url: url, statusCode: statusCode, httpVersion: "HTTP/1.1", headerFields: [
+            "Content-Length": String(stubData?.count ?? 0),
+            "Content-Type": "application/json",
+            "X-Ably-Errorcode": String(value),
+            "X-Ably-Errormessage": description,
+            "X-Ably-Serverid": serverId,
+            ]
+        )
+    }
+
+    lazy var stubData: Data? = {
+        let jsonObject = ["error": [
+            "statusCode": modf(Float(self.value)/100).0, //whole number part
+            "code": self.value,
+            "message": self.description,
+            "serverId": self.serverId,
+            ]
+        ]
+        return try? JSONSerialization.data(withJSONObject: jsonObject, options: JSONSerialization.WritingOptions.init(rawValue: 0))
+    }()
+}
+
+class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
+
+    fileprivate var errorSimulator: NSError?
+
+    var _logger = ARTLog()
+    var clientOptions = ARTClientOptions()
+    var encoder = ARTJsonLikeEncoder()
+    var requests: [URLRequest] = []
+
+    func logger() -> ARTLog {
+        return _logger
+    }
+
+    func options() -> ARTClientOptions {
+        return self.clientOptions
+    }
+
+    func defaultEncoder() -> ARTEncoder {
+        return self.encoder
+    }
+
+    func execute(_ request: NSMutableURLRequest, withAuthOption authOption: ARTAuthentication, completion callback: @escaping (HTTPURLResponse?, Data?, Error?) -> Void) {
+        self.requests.append(request as URLRequest)
+
+        if var simulatedError = errorSimulator, var requestURL = request.url {
+            defer { errorSimulator = nil }
+            callback(nil, nil, simulatedError)
+            return
         }
 
-        lazy var stubData: Data? = {
-            let jsonObject = ["error": [
-                    "statusCode": modf(Float(self.value)/100).0, //whole number part
-                    "code": self.value,
-                    "message": self.description,
-                    "serverId": self.serverId,
-                ]
-            ]
-            return try? JSONSerialization.data(withJSONObject: jsonObject, options: JSONSerialization.WritingOptions.init(rawValue: 0))
-        }()
+        callback(nil, nil, nil)
     }
+
+    func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) {
+        self.requests.append(request)
+        
+        if var simulatedError = errorSimulator, var requestURL = request.url {
+            defer { errorSimulator = nil }
+            callback?(nil, nil, simulatedError)
+            return
+        }
+
+        callback?(nil, nil, nil)
+    }
+
+    func simulateIncomingErrorOnNextRequest(_ error: NSError) {
+        errorSimulator = error
+    }
+
+}
+
+/// Records each request and response for test purpose.
+class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
+
     fileprivate var errorSimulator: ErrorSimulator?
 
-    var http: ARTHttp? = ARTHttp(AblyTests.queue)
-    var logger: ARTLog?
+    var http: ARTHttp!
+    var _logger: ARTLog!
+    
+    init(_ logger: ARTLog) {
+        self._logger = logger
+        self.http = ARTHttp(AblyTests.queue, logger: _logger)
+    }
+    
+    func logger() -> ARTLog {
+        return self._logger
+    }
 
     var requests: [URLRequest] = []
     var responses: [HTTPURLResponse] = []
@@ -819,6 +923,7 @@ class TestProxyTransport: ARTWebSocketTransport {
         let _ = send(data, withSource: message)
     }
 
+    @discardableResult
     override func send(_ data: Data, withSource decodedObject: Any?) -> Bool {
         if let msg = decodedObject as? ARTProtocolMessage {
             if ignoreSends {
@@ -893,7 +998,7 @@ class TestProxyTransport: ARTWebSocketTransport {
 
     override func webSocket(_ webSocket: SRWebSocket, didReceiveMessage message: Any?) {
         if !ignoreWebSocket {
-            super.webSocket(webSocket, didReceiveMessage: message as Any)
+            super.webSocket(webSocket, didReceiveMessage: message!)
         }
     }
 

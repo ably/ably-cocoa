@@ -2963,12 +2963,12 @@ class RealtimeClientConnection: QuickSpec {
                     TestProxyTransport.network = .hostUnreachable
                     defer { TestProxyTransport.network = nil }
 
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
@@ -3024,12 +3024,12 @@ class RealtimeClientConnection: QuickSpec {
                     TestProxyTransport.network = .hostUnreachable
                     defer { TestProxyTransport.network = nil }
 
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url as URL)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
@@ -3068,12 +3068,12 @@ class RealtimeClientConnection: QuickSpec {
                     TestProxyTransport.network = .hostUnreachable
                     defer { TestProxyTransport.network = nil }
 
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url as URL)
                         if urlConnections.count == 1 {
                             TestProxyTransport.network = nil
                         }
@@ -3116,12 +3116,12 @@ class RealtimeClientConnection: QuickSpec {
                     TestProxyTransport.network = .hostUnreachable
                     defer { TestProxyTransport.network = nil }
                     
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url as URL)
                         if urlConnections.count == 1 {
                             TestProxyTransport.network = nil
                         }
@@ -3167,12 +3167,12 @@ class RealtimeClientConnection: QuickSpec {
                             TestProxyTransport.network = caseTest
                             defer { TestProxyTransport.network = nil }
 
-                            var urlConnections = [NSURL]()
+                            var urlConnections = [URL]()
                             TestProxyTransport.networkConnectEvent = { transport, url in
                                 if client.transport !== transport {
                                     return
                                 }
-                                urlConnections.append(url as NSURL)
+                                urlConnections.append(url as URL)
                                 if urlConnections.count == 1 {
                                     TestProxyTransport.network = nil
                                 }
@@ -3242,12 +3242,12 @@ class RealtimeClientConnection: QuickSpec {
                     TestProxyTransport.network = .host400BadRequest
                     defer { TestProxyTransport.network = nil }
 
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url as URL)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
@@ -3280,12 +3280,12 @@ class RealtimeClientConnection: QuickSpec {
                     TestProxyTransport.network = .hostUnreachable
                     defer { TestProxyTransport.network = nil }
 
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url as URL)
                         TestProxyTransport.network = nil
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
@@ -3336,19 +3336,20 @@ class RealtimeClientConnection: QuickSpec {
                     defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
                     ARTDefault.setRealtimeRequestTimeout(1.0)
 
-                    let testHttpExecutor = TestProxyHTTPExecutor()
+                    let testHttpExecutor = TestProxyHTTPExecutor(options.logHandler)
+
                     client.rest.httpExecutor = testHttpExecutor
 
                     client.setTransport(TestProxyTransport.self)
                     TestProxyTransport.network = .hostUnreachable
                     defer { TestProxyTransport.network = nil }
 
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url as URL)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
@@ -3367,7 +3368,7 @@ class RealtimeClientConnection: QuickSpec {
                     expect(NSRegularExpression.match(testHttpExecutor.requests[0].url!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
                     expect(urlConnections).to(haveCount(6)) // default + 5 fallbacks
 
-                    let extractHostname = { (url: NSURL) in
+                    let extractHostname = { (url: URL) in
                         NSRegularExpression.extract(url.absoluteString, pattern: "[a-e].ably-realtime.com")
                     }
                     let resultFallbackHosts = urlConnections.flatMap(extractHostname)
@@ -3390,19 +3391,20 @@ class RealtimeClientConnection: QuickSpec {
                     defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
                     ARTDefault.setRealtimeRequestTimeout(1.0)
 
-                    let testHttpExecutor = TestProxyHTTPExecutor()
+                    let testHttpExecutor = TestProxyHTTPExecutor(options.logHandler)
+
                     client.rest.httpExecutor = testHttpExecutor
                     
                     client.setTransport(TestProxyTransport.self)
                     TestProxyTransport.network = .hostUnreachable
                     defer { TestProxyTransport.network = nil }
                     
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url as URL)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
@@ -3421,7 +3423,7 @@ class RealtimeClientConnection: QuickSpec {
                     expect(NSRegularExpression.match(testHttpExecutor.requests[0].url!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
                     expect(urlConnections).to(haveCount(6)) // default + 5 provided fallbacks
                     
-                    let extractHostname = { (url: NSURL) in
+                    let extractHostname = { (url: URL) in
                         NSRegularExpression.extract(url.absoluteString, pattern: "[f-j].ably-realtime.com")
                     }
                     let resultFallbackHosts = urlConnections.flatMap(extractHostname)
@@ -3437,19 +3439,19 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: options)
                     let channel = client.channels.get("test")
                     
-                    let testHttpExecutor = TestProxyHTTPExecutor()
+                    let testHttpExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.rest.httpExecutor = testHttpExecutor
                     
                     client.setTransport(TestProxyTransport.self)
                     TestProxyTransport.network = .hostUnreachable
                     defer { TestProxyTransport.network = nil }
                     
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url as URL)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
                     
@@ -3472,19 +3474,19 @@ class RealtimeClientConnection: QuickSpec {
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
 
-                    let testHttpExecutor = TestProxyHTTPExecutor()
+                    let testHttpExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.rest.httpExecutor = testHttpExecutor
 
                     client.setTransport(TestProxyTransport.self)
                     TestProxyTransport.network = .hostUnreachable
                     defer { TestProxyTransport.network = nil }
 
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url as URL)
                         if urlConnections.count == 2 {
                             TestProxyTransport.network = nil
                             (client.transport as! TestProxyTransport).simulateTransportSuccess()
@@ -4140,7 +4142,7 @@ class RealtimeClientConnection: QuickSpec {
                                 done()
                             }
 
-                            let request = NSMutableURLRequest(url: NSURL(string: "/channels/\(channel.name)/messages")! as URL)
+                            let request = NSMutableURLRequest(url: URL(string: "/channels/\(channel.name)/messages")!)
                             request.httpMethod = "POST"
                             request.httpBody = try! fixtureMessage.rawData()
                             request.allHTTPHeaderFields = [
@@ -4168,7 +4170,7 @@ class RealtimeClientConnection: QuickSpec {
                                     return
                                 }
 
-                                let request = NSMutableURLRequest(url: NSURL(string: "/channels/\(channel.name)/messages?limit=1")! as URL)
+                                let request = NSMutableURLRequest(url: URL(string: "/channels/\(channel.name)/messages?limit=1")!)
                                 request.httpMethod = "GET"
                                 request.allHTTPHeaderFields = ["Accept" : "application/json"]
                                 client.rest.execute(request as URLRequest, withAuthOption: .on, completion: { _, data, err in
@@ -4226,7 +4228,7 @@ class RealtimeClientConnection: QuickSpec {
                                 partlyDone()
                             }
 
-                            let request = NSMutableURLRequest(url: NSURL(string: "/channels/\(realtimeSubscribeChannelMsgPack.name)/messages")! as URL)
+                            let request = NSMutableURLRequest(url: URL(string: "/channels/\(realtimeSubscribeChannelMsgPack.name)/messages")!)
                             request.httpMethod = "POST"
                             request.httpBody = try! fixtureMessage.rawData()
                             request.allHTTPHeaderFields = [
@@ -4271,7 +4273,7 @@ class RealtimeClientConnection: QuickSpec {
                             }
 
                             waitUntil(timeout: testTimeout) { done in
-                                let request = NSMutableURLRequest(url: NSURL(string: "/channels/\(restPublishChannel.name)/messages?limit=1")! as URL)
+                                let request = NSMutableURLRequest(url: URL(string: "/channels/\(restPublishChannel.name)/messages?limit=1")!)
                                 request.httpMethod = "GET"
                                 request.allHTTPHeaderFields = ["Accept" : "application/json"]
                                 restRetrieveClient.execute(request as URLRequest, withAuthOption: .on, completion: { _, data, err in

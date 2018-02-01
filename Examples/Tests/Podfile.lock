@@ -3,6 +3,7 @@ PODS:
     - KSCrashAblyFork (= 1.15.8-ably-1)
     - msgpack (= 0.1.8)
     - SocketRocket (= 0.5.1)
+    - ULID (= 1.0.2)
   - KSCrashAblyFork (1.15.8-ably-1):
     - KSCrashAblyFork/Installations (= 1.15.8-ably-1)
   - KSCrashAblyFork/Installations (1.15.8-ably-1):
@@ -68,6 +69,7 @@ PODS:
     - KSCrashAblyFork/Recording
   - msgpack (0.1.8)
   - SocketRocket (0.5.1)
+  - ULID (1.0.2)
 
 DEPENDENCIES:
   - Ably (from `../..`)
@@ -81,6 +83,7 @@ SPEC CHECKSUMS:
   KSCrashAblyFork: 6d0dd5b033710109a8fdde28103eeb0e7f9ba1f7
   msgpack: 97491d2ea799408f4694f2c7d7fd79baf77853dd
   SocketRocket: d57c7159b83c3c6655745cd15302aa24b6bae531
+  ULID: fcabaa95746b670beb80c029beb3372da2f729bd
 
 PODFILE CHECKSUM: 6af34bf7f91045b23539816c1d0cfe253bec5ea5
 

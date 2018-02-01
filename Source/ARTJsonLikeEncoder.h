@@ -31,7 +31,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, weak) ARTRest *rest;
 @property (nonatomic, strong, nullable) id<ARTJsonLikeEncoderDelegate> delegate;
 
-- (instancetype)initWithRest:(ARTRest *)rest delegate:(id<ARTJsonLikeEncoderDelegate> _Nullable)delegate;
+- (instancetype)initWithDelegate:(id<ARTJsonLikeEncoderDelegate>)delegate;
+- (instancetype)initWithLogger:(ARTLog *)logger delegate:(nullable id<ARTJsonLikeEncoderDelegate>)delegate;
+- (instancetype)initWithRest:(ARTRest *)rest delegate:(nullable id<ARTJsonLikeEncoderDelegate>)delegate;
 
 @end
 

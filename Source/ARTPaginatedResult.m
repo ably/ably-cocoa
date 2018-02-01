@@ -135,8 +135,8 @@ ART_TRY_OR_REPORT_CRASH_START(rest) {
         if (error) {
             callback(nil, [ARTErrorInfo createFromNSError:error]);
         } else {
-            [rest.logger debug:__FILE__ line:__LINE__ message:@"Paginated response: %@", response];
-            [rest.logger debug:__FILE__ line:__LINE__ message:@"Paginated response data: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
+            [[rest logger] debug:__FILE__ line:__LINE__ message:@"Paginated response: %@", response];
+            [[rest logger] debug:__FILE__ line:__LINE__ message:@"Paginated response data: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
 
             NSError *decodeError = nil;
             NSArray *items = responseProcessor(response, data, &decodeError);
@@ -153,7 +153,7 @@ ART_TRY_OR_REPORT_CRASH_START(rest) {
             NSMutableURLRequest *nextRel = requestRelativeTo(request, links[@"next"]);;
 
             ARTPaginatedResult *result = [[ARTPaginatedResult alloc] initWithItems:items
-                                                                          rest:rest
+                                                                              rest:rest
                                                                           relFirst:firstRel
                                                                         relCurrent:currentRel
                                                                            relNext:nextRel

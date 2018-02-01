@@ -13,6 +13,11 @@
 @class ARTProtocolMessage;
 @class ARTTokenDetails;
 @class ARTTokenRequest;
+@class ARTDeviceDetails;
+@class ARTDevicePushDetails;
+@class ARTPushChannelSubscription;
+
+@protocol ARTPushRecipient;
 
 typedef NS_ENUM(NSUInteger, ARTEncoderFormat) {
     ARTEncoderFormatJson,
@@ -27,24 +32,53 @@ NS_ASSUME_NONNULL_BEGIN
 - (ARTEncoderFormat)format;
 - (NSString *)formatAsString;
 
+- (id)decode:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+- (NSData *)encode:(id)obj error:(NSError *_Nullable *_Nullable)error;
+
+
+// TokenRequest
 - (nullable NSData *)encodeTokenRequest:(ARTTokenRequest *)request error:(NSError *_Nullable *_Nullable)error;
+- (nullable ARTTokenRequest *)decodeTokenRequest:(NSData *)data error:(NSError * __autoreleasing *)error;
+
+// TokenDetails
 - (nullable NSData *)encodeTokenDetails:(ARTTokenDetails *)tokenDetails error:(NSError *_Nullable *_Nullable)error;
+- (nullable ARTTokenDetails *)decodeTokenDetails:(NSData *)data error:(NSError * __autoreleasing *)error;
 
-- (nullable ARTTokenDetails *)decodeTokenDetails:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
-- (nullable ARTTokenRequest *)decodeTokenRequest:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
-- (nullable ARTMessage *)decodeMessage:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
-- (nullable NSArray *)decodeMessages:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+// Message
 - (nullable NSData *)encodeMessage:(ARTMessage *)message error:(NSError *_Nullable *_Nullable)error;
-- (nullable NSData *)encodeMessages:(NSArray *)messages error:(NSError *_Nullable *_Nullable)error;
+- (nullable ARTMessage *)decodeMessage:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
 
-- (nullable ARTPresenceMessage *)decodePresenceMessage:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
-- (nullable NSArray *)decodePresenceMessages:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+// Message list
+- (nullable NSData *)encodeMessages:(NSArray<ARTMessage *> *)messages error:(NSError *_Nullable *_Nullable)error;
+- (nullable NSArray<ARTMessage *> *)decodeMessages:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+
+// PresenceMessage
 - (nullable NSData *)encodePresenceMessage:(ARTPresenceMessage *)message error:(NSError *_Nullable *_Nullable)error;
-- (nullable NSData *)encodePresenceMessages:(NSArray *)messages error:(NSError *_Nullable *_Nullable)error;
+- (nullable ARTPresenceMessage *)decodePresenceMessage:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
 
+// PresenceMessage list
+- (nullable NSData *)encodePresenceMessages:(NSArray<ARTPresenceMessage *> *)messages error:(NSError *_Nullable *_Nullable)error;
+- (nullable NSArray<ARTPresenceMessage *> *)decodePresenceMessages:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+
+// ProtocolMessage
 - (nullable NSData *)encodeProtocolMessage:(ARTProtocolMessage *)message error:(NSError *_Nullable *_Nullable)error;
 - (nullable ARTProtocolMessage *)decodeProtocolMessage:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
 
+// DeviceDetails
+- (nullable NSData *)encodeDeviceDetails:(ARTDeviceDetails *)deviceDetails error:(NSError *_Nullable *_Nullable)error;
+- (nullable ARTDeviceDetails *)decodeDeviceDetails:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+- (nullable NSArray<ARTDeviceDetails *> *)decodeDevicesDetails:(NSData *)data error:(NSError * __autoreleasing *)error;
+
+// DevicePushDetails
+- (nullable NSData *)encodeDevicePushDetails:(ARTDevicePushDetails *)devicePushDetails error:(NSError *_Nullable *_Nullable)error;
+- (nullable ARTDevicePushDetails *)decodeDevicePushDetails:(NSData *)data error:(NSError * __autoreleasing *)error;
+
+// Push Channel Subscription
+- (nullable NSData *)encodePushChannelSubscription:(ARTPushChannelSubscription *)channelSubscription error:(NSError * __autoreleasing *)error;
+- (nullable ARTPushChannelSubscription *)decodePushChannelSubscription:(NSData *)data error:(NSError * __autoreleasing *)error;
+- (nullable NSArray<ARTPushChannelSubscription *> *)decodePushChannelSubscriptions:(NSData *)data error:(NSError * __autoreleasing *)error;
+
+// Others
 - (nullable NSDate *)decodeTime:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
 - (nullable ARTErrorInfo *)decodeErrorInfo:(NSData *)error error:(NSError *_Nullable *_Nullable)error;
 - (nullable NSArray *)decodeStats:(NSData *)data error:(NSError *_Nullable *_Nullable)error;

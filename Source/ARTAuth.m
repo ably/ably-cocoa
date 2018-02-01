@@ -608,7 +608,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (NSString *)getClientId {
+- (NSString *)clientId {
     __block NSString *clientId;
 dispatch_sync(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {

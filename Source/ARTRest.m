@@ -36,6 +36,10 @@
 #import "ARTLog+Private.h"
 #import "ARTRealtime+Private.h"
 #import "ARTSentry.h"
+#import "ARTPush.h"
+#import "ARTPush+Private.h"
+#import "ARTLocalDevice+Private.h"
+#import "ARTLocalDeviceStorage.h"
 
 #if COCOAPODS
 #import <KSCrashAblyFork/KSCrash.h>
@@ -51,7 +55,11 @@
 
 @end
 
-@implementation ARTRest
+@implementation ARTRest {
+    ARTLog *_logger;
+}
+
+@synthesize logger = _logger;
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options {
 ART_TRY_OR_REPORT_CRASH_START(self) {
@@ -81,10 +89,10 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
     ART_TRY_OR_REPORT_CRASH_START(self) {
         _queue = options.internalDispatchQueue;
         _userQueue = options.dispatchQueue;
-        _http = [[ARTHttp alloc] init:_queue];
+        _storage = [ARTLocalDeviceStorage new];
+        _http = [[ARTHttp alloc] init:_queue logger:_logger];
         [_logger verbose:__FILE__ line:__LINE__ message:@"RS:%p %p alloc HTTP", self, _http];
         _httpExecutor = _http;
-        _httpExecutor.logger = _logger;
 
         id<ARTEncoder> jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithRest:self delegate:[[ARTJsonEncoder alloc] init]];
         id<ARTEncoder> msgPackEncoder = [[ARTJsonLikeEncoder alloc] initWithRest:self delegate:[[ARTMsgPackEncoder alloc] init]];
@@ -97,6 +105,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         _tokenErrorRetries = 0;
 
         _auth = [[ARTAuth alloc] init:self withOptions:_options];
+        _push = [[ARTPush alloc] init:self];
         _channels = [[ARTRestChannels alloc] initWithRest:self];
         _handlingUncaughtExceptions = false;
 
@@ -130,6 +139,18 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 ART_TRY_OR_REPORT_CRASH_START(self) {
     return [self initWithOptions:[[ARTClientOptions alloc] initWithToken:token]];
 } ART_TRY_OR_REPORT_CRASH_END
+}
+
++ (instancetype)createWithOptions:(ARTClientOptions *)options {
+    return [[ARTRest alloc] initWithOptions:options];
+}
+
++ (instancetype)createWithKey:(NSString *)key {
+    return [[ARTRest alloc] initWithKey:key];
+}
+
++ (instancetype)createWithToken:(NSString *)tokenId {
+    return [[ARTRest alloc] initWithToken:tokenId];
 }
 
 - (void)dealloc {
@@ -261,12 +282,8 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 
             if (!validContentType) {
                 NSString *plain = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-                // Short response data
-                NSRange stringRange = {0, MIN([plain length], 1000)}; //1KB
-                stringRange = [plain rangeOfComposedCharacterSequencesForRange:stringRange];
-                NSString *shortPlain = [plain substringWithRange:stringRange];
                 // Construct artificial error
-                error = [ARTErrorInfo createWithCode:response.statusCode * 100 status:response.statusCode message:shortPlain];
+                error = [ARTErrorInfo createWithCode:response.statusCode * 100 status:response.statusCode message:[plain shortString]];
                 data = nil; // Discard data; format is unreliable.
                 [self.logger error:@"Request %@ failed with %@", request, error];
             }
@@ -276,11 +293,11 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
             if (data) {
                 NSError *decodeError = nil;
                 NSError *dataError = [self->_encoders[response.MIMEType] decodeErrorInfo:data error:&decodeError];
-                if ([self shouldRenewToken:&dataError]) {
+                if ([self shouldRenewToken:&dataError] && [request isKindOfClass:[NSMutableURLRequest class]]) {
                     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p retry request %@", self, request];
                     // Make a single attempt to reissue the token and resend the request
                     if (_tokenErrorRetries < 1) {
-                        [self executeRequest:request withAuthOption:ARTAuthenticationTokenRetry completion:callback];
+                        [self executeRequest:(NSMutableURLRequest *)request withAuthOption:ARTAuthenticationTokenRetry completion:callback];
                         return;
                     }
                 }
@@ -400,6 +417,10 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
     [request setValue:accept forHTTPHeaderField:@"Accept"];
     
     [self executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+        if (error) {
+            callback(nil, error);
+            return;
+        }
         NSError *decodeError = nil;
         if (response.statusCode >= 400) {
             ARTErrorInfo *dataError = [self->_encoders[response.MIMEType] decodeErrorInfo:data error:&decodeError];
@@ -475,8 +496,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[requestUrl URLRelativeToURL:self.baseUrl]];
     
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
-        id<ARTEncoder> encoder = [self.encoders objectForKey:response.MIMEType];
-        return [encoder decodeStats:data error:errorPtr];
+        return [self.encoders[response.MIMEType] decodeStats:data error:errorPtr];
     };
     
 dispatch_async(_queue, ^{
@@ -560,6 +580,23 @@ void ARTstopHandlingUncaughtExceptions(ARTRest *self) {
     }
     self->_handlingUncaughtExceptions = false;
     [ARTSentry setUserInfo:@"reportToAbly" value:[NSNumber numberWithBool:false]];
+}
+
+- (ARTLocalDevice *)device {
+    __block ARTLocalDevice *ret;
+    dispatch_sync(_queue, ^{
+        ret = [self device_nosync];
+    });
+    return ret;
+}
+
+- (NSString *)device_nosync {
+    static dispatch_once_t once;
+    static id device;
+    dispatch_once(&once, ^{
+        device = [ARTLocalDevice load:self];
+    });
+    return device;
 }
 
 @end
