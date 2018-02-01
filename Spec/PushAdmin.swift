@@ -178,7 +178,7 @@ class PushAdmin : QuickSpec {
         }
 
         // RHS1a
-        fdescribe("publish") {
+        describe("publish") {
 
             it("should perform an HTTP request to /push/publish") {
                 waitUntil(timeout: testTimeout) { done in
@@ -213,7 +213,7 @@ class PushAdmin : QuickSpec {
                 }
             }
 
-            it("should work as expected") {
+            pending("should work as expected") {
                 let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                 let channel = realtime.channels.get("pushenabled:push_admin_publish-ok")
 
@@ -226,6 +226,8 @@ class PushAdmin : QuickSpec {
 
                 waitUntil(timeout: testTimeout) { done in
                     let partialDone = AblyTests.splitDone(2, done: done)
+                    // FIXME: waiting a response
+                    // https://github.com/ably/ably-ios/issues/669
                     channel.subscribe("__ably_push__") { message in
                         guard let data = message.data as? NSDictionary else {
                             fail("Data is not a JSON Object"); partialDone(); return
@@ -318,7 +320,7 @@ class PushAdmin : QuickSpec {
 
         }
 
-        fdescribe("Device Registrations") {
+        describe("Device Registrations") {
 
             // RHS1b1
             context("get") {
@@ -511,7 +513,7 @@ class PushAdmin : QuickSpec {
 
         }
 
-        fdescribe("Channel Subscriptions") {
+        describe("Channel Subscriptions") {
 
             let subscription = ARTPushChannelSubscription(clientId: "newClient", channel: "pushenabled:qux")
 

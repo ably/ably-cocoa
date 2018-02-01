@@ -10,6 +10,7 @@
 #import "ARTPushActivationStateMachine.h"
 #import "ARTPushActivationEvent.h"
 #import "ARTLocalDevice+Private.h"
+#import "ARTLocalDeviceStorage.h"
 #import "ARTDevicePushDetails.h"
 #import "ARTLog.h"
 #import "ARTRest+Private.h"
@@ -22,6 +23,14 @@
         _machine = machine;
     }
     return self;
+}
+
++ (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine {
+    return [[self alloc] initWithMachine:machine];
+}
+
+- (void)logEventTransition:(ARTPushActivationEvent *)event file:(const char *)file line:(NSUInteger)line {
+    NSLog(@"%@ state: transitioning to %@ event", NSStringFromClass(self.class), NSStringFromClass(event.class));
 }
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
@@ -45,6 +54,16 @@
     // Just to persist the class info, no properties
 }
 
+#pragma mark - Archive/Unarchive
+
+- (NSData *)archive {
+    return [NSKeyedArchiver archivedDataWithRootObject:self];
+}
+
++ (ARTPushActivationState *)unarchive:(NSData *)data {
+    return [NSKeyedUnarchiver unarchiveObjectWithData:data];
+}
+
 @end
 
 #pragma mark - Persistent State
@@ -57,6 +76,7 @@
 @implementation ARTPushActivationStateNotActivated
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
+    [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
         [self.machine callDeactivatedCallback:nil];
         return self;
@@ -64,16 +84,16 @@
     else if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
         ARTLocalDevice *local = [ARTLocalDevice load:self.machine.rest];
 
-        if (local.updateToken != nil) {
+        if (local.updateToken) {
             // Already registered.
-            return [[ARTPushActivationStateWaitingForNewPushDeviceDetails alloc] initWithMachine:self.machine];
+            return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
         }
 
-        if ([local deviceToken] != nil) {
+        if ([local deviceToken]) {
             [self.machine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
         }
 
-        return [[ARTPushActivationStateWaitingForPushDeviceDetails alloc] initWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForPushDeviceDetails newWithMachine:self.machine];
     }
     return nil;
 }
@@ -83,17 +103,18 @@
 @implementation ARTPushActivationStateWaitingForUpdateToken
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
+    [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
         return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventGotUpdateToken class]]) {
-        [ARTLocalDevice load:self.machine.rest].updateToken = [[NSUserDefaults standardUserDefaults] stringForKey:ARTDeviceUpdateTokenKey];
+        [ARTLocalDevice load:self.machine.rest].updateToken = [self.machine.rest.storage objectForKey:ARTDeviceUpdateTokenKey];
         [self.machine callActivatedCallback:nil];
-        return [[ARTPushActivationStateWaitingForNewPushDeviceDetails alloc] initWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventGettingUpdateTokenFailed class]]) {
         [self.machine callActivatedCallback:[(ARTPushActivationEventGettingUpdateTokenFailed *)event error]];
-        return [[ARTPushActivationStateNotActivated alloc] initWithMachine:self.machine];
+        return [ARTPushActivationStateNotActivated newWithMachine:self.machine];
     }
     return nil;
 }
@@ -103,16 +124,17 @@
 @implementation ARTPushActivationStateWaitingForPushDeviceDetails
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
+    [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
         return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
         [self.machine callDeactivatedCallback:nil];
-        return [[ARTPushActivationStateNotActivated alloc] initWithMachine:self.machine];
+        return [ARTPushActivationStateNotActivated newWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventGotPushDeviceDetails class]]) {
         [self.machine deviceRegistration:nil];
-        return [[ARTPushActivationStateWaitingForUpdateToken alloc] initWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForUpdateToken newWithMachine:self.machine];
     }
     return nil;
 }
@@ -122,17 +144,18 @@
 @implementation ARTPushActivationStateWaitingForNewPushDeviceDetails
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
+    [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
         [self.machine callActivatedCallback:nil];
         return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
         [self.machine deviceUnregistration:nil];
-        return [[ARTPushActivationStateWaitingForDeregistration alloc] initWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForDeregistration newWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventGotPushDeviceDetails class]]) {
         [self.machine deviceUpdateRegistration:nil];
-        return [[ARTPushActivationStateWaitingForRegistrationUpdate alloc] initWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForRegistrationUpdate newWithMachine:self.machine];
     }
     return nil;
 }
@@ -142,16 +165,17 @@
 @implementation ARTPushActivationStateWaitingForRegistrationUpdate
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
+    [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
         [self.machine callActivatedCallback:nil];
-        return [[ARTPushActivationStateWaitingForNewPushDeviceDetails alloc] initWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventRegistrationUpdated class]]) {
-        return [[ARTPushActivationStateWaitingForNewPushDeviceDetails alloc] initWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventUpdatingRegistrationFailed class]]) {
         [self.machine callUpdateFailedCallback:[(ARTPushActivationEventUpdatingRegistrationFailed *)event error]];
-        return [[ARTPushActivationStateAfterRegistrationUpdateFailed alloc] initWithMachine:self.machine];
+        return [ARTPushActivationStateAfterRegistrationUpdateFailed newWithMachine:self.machine];
     }
     return nil;
 }
@@ -161,14 +185,15 @@
 @implementation ARTPushActivationStateAfterRegistrationUpdateFailed
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
+    [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]] ||
         [event isKindOfClass:[ARTPushActivationEventGotPushDeviceDetails class]]) {
         [self.machine deviceRegistration:nil];
-        return [[ARTPushActivationStateWaitingForUpdateToken alloc] initWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForUpdateToken newWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
         [self.machine callDeactivatedCallback:nil];
-        return [[ARTPushActivationStateNotActivated alloc] initWithMachine:self.machine];
+        return [ARTPushActivationStateNotActivated newWithMachine:self.machine];
     }
     return nil;
 }
@@ -178,20 +203,20 @@
 @implementation ARTPushActivationStateWaitingForDeregistration
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
+    [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
-        return [[ARTPushActivationStateWaitingForDeregistration alloc] initWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForDeregistration newWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventDeregistered class]]) {
         ARTLocalDevice *local = [ARTLocalDevice load:self.machine.rest];
         local.updateToken = nil;
-        [[NSUserDefaults standardUserDefaults] setObject:nil forKey:ARTDeviceUpdateTokenKey];
-        [[NSUserDefaults standardUserDefaults] synchronize];
+        [self.machine.rest.storage setObject:nil forKey:ARTDeviceUpdateTokenKey];
         [self.machine callDeactivatedCallback:nil];
-        return [[ARTPushActivationStateNotActivated alloc] initWithMachine:self.machine];
+        return [ARTPushActivationStateNotActivated newWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventDeregistrationFailed class]]) {
         [self.machine callDeactivatedCallback:[(ARTPushActivationEventDeregistrationFailed *)event error]];
-        return [[ARTPushActivationStateWaitingForDeregistration alloc] initWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForDeregistration newWithMachine:self.machine];
     }
     return nil;
 

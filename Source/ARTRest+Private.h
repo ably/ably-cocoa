@@ -13,6 +13,7 @@
 
 @protocol ARTEncoder;
 @protocol ARTHTTPExecutor;
+@protocol ARTDeviceStorage;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -29,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, strong, atomic, nullable) NSString *prioritizedHost;
 
 @property (nonatomic, weak) id<ARTHTTPExecutor> httpExecutor;
+@property (nonatomic) id<ARTDeviceStorage> storage;
 
 @property (nonatomic, readonly, getter=getBaseUrl) NSURL *baseUrl;
 

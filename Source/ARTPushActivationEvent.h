@@ -9,10 +9,14 @@
 #import <Foundation/Foundation.h>
 
 @class ARTErrorInfo;
+@class ARTPushActivationState;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPushActivationEvent : NSObject <NSCoding>
+
+- (NSData *)archive;
++ (nullable ARTPushActivationState *)unarchive:(NSData *)data;
 
 @end
 

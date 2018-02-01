@@ -125,14 +125,12 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 }
 
 #ifdef TARGET_OS_IPHONE
-
 - (ARTPushChannel *)push {
     if (!_pushChannel) {
         _pushChannel = [[ARTPushChannel alloc] init:self.realtime.rest withChannel:self];
     }
     return _pushChannel;
 }
-
 #endif
 
 #ifdef TARGET_OS_IOS

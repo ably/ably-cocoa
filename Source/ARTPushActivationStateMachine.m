@@ -6,7 +6,7 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#import "ARTPushActivationStateMachine.h"
+#import "ARTPushActivationStateMachine+Private.h"
 #import "ARTPush.h"
 #import "ARTPushActivationEvent.h"
 #import "ARTPushActivationState.h"
@@ -16,6 +16,7 @@
 #import "ARTJsonLikeEncoder.h"
 #import "ARTTypes.h"
 #import "ARTLocalDevice+Private.h"
+#import "ARTLocalDeviceStorage.h"
 #import "ARTDevicePushDetails.h"
 
 #ifdef TARGET_OS_IOS
@@ -25,6 +26,7 @@ NSString *const ARTPushActivationCurrentStateKey = @"ARTPushActivationCurrentSta
 NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEvents";
 
 @implementation ARTPushActivationStateMachine {
+    ARTPushActivationEvent *_lastHandledEvent;
     ARTPushActivationState *_current;
     NSMutableArray<ARTPushActivationEvent *> *_pendingEvents;
     dispatch_queue_t _queue;
@@ -37,20 +39,44 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
         _queue = _rest.queue;
         _userQueue = _rest.userQueue;
         // Unarchiving
-        NSData *stateData = [[NSUserDefaults standardUserDefaults] objectForKey:ARTPushActivationCurrentStateKey];
+        NSData *stateData = [rest.storage objectForKey:ARTPushActivationCurrentStateKey];
         _current = [NSKeyedUnarchiver unarchiveObjectWithData:stateData];
         if (!_current) {
             _current = [[ARTPushActivationStateNotActivated alloc] initWithMachine:self];
         } else {
             _current.machine = self;
         }
-        NSData *pendingEventsData = [[NSUserDefaults standardUserDefaults] objectForKey:ARTPushActivationPendingEventsKey];
+        NSData *pendingEventsData = [rest.storage objectForKey:ARTPushActivationPendingEventsKey];
         _pendingEvents = [NSKeyedUnarchiver unarchiveObjectWithData:pendingEventsData];
         if (!_pendingEvents) {
             _pendingEvents = [NSMutableArray array];
         }
     }
     return self;
+}
+
+- (ARTPushActivationEvent *)lastEvent {
+    __block ARTPushActivationEvent *ret;
+    dispatch_sync(_queue, ^{
+        ret = [self lastEvent_nosync];
+    });
+    return ret;
+}
+
+- (ARTPushActivationEvent *)lastEvent_nosync {
+    return _lastHandledEvent;
+}
+
+- (ARTPushActivationState *)current {
+    __block ARTPushActivationState *ret;
+    dispatch_sync(_queue, ^{
+        ret = [self current_nosync];
+    });
+    return ret;
+}
+
+- (ARTPushActivationState *)current_nosync {
+    return _current;
 }
 
 - (void)sendEvent:(ARTPushActivationEvent *)event {
@@ -61,6 +87,7 @@ dispatch_async(_queue, ^{
 
 - (void)handleEvent:(nonnull ARTPushActivationEvent *)event {
     NSLog(@"handling event %@ from %@", NSStringFromClass(event.class), NSStringFromClass(_current.class));
+    _lastHandledEvent = event;
 
     ARTPushActivationState *maybeNext = [_current transition:event];
 
@@ -70,6 +97,7 @@ dispatch_async(_queue, ^{
         return;
     }
     NSLog(@"transition: %@ -> %@", NSStringFromClass(_current.class), NSStringFromClass(maybeNext.class));
+    if (self.transitions) self.transitions(event, _current, maybeNext);
     _current = maybeNext;
 
     while (true) {
@@ -85,6 +113,7 @@ dispatch_async(_queue, ^{
         [_pendingEvents dequeue];
 
         NSLog(@"transition: %@ -> %@", NSStringFromClass(_current.class), NSStringFromClass(maybeNext.class));
+        if (self.transitions) self.transitions(event, _current, maybeNext);
         _current = maybeNext;
     }
 
@@ -94,9 +123,9 @@ dispatch_async(_queue, ^{
 - (void)persist {
     // Archiving
     if ([_current isKindOfClass:[ARTPushActivationPersistentState class]]) {
-        [[NSUserDefaults standardUserDefaults] setObject:[NSKeyedArchiver archivedDataWithRootObject:_current] forKey:ARTPushActivationCurrentStateKey];
+        [self.rest.storage setObject:[NSKeyedArchiver archivedDataWithRootObject:_current] forKey:ARTPushActivationCurrentStateKey];
     }
-    [[NSUserDefaults standardUserDefaults] setObject:[NSKeyedArchiver archivedDataWithRootObject:_pendingEvents] forKey:ARTPushActivationPendingEventsKey];
+    [self.rest.storage setObject:[NSKeyedArchiver archivedDataWithRootObject:_pendingEvents] forKey:ARTPushActivationPendingEventsKey];
 }
 
 - (void)deviceRegistration:(ARTErrorInfo *)error {
@@ -104,10 +133,15 @@ dispatch_async(_queue, ^{
     ARTLocalDevice *local = _rest.device_nosync;
 
     __block id delegate;
-    dispatch_sync(_userQueue, ^{
-        // -[UIApplication delegate] is an UI API call
-        delegate = [UIApplication sharedApplication].delegate;
-    });
+    if (self.delegate) {
+        delegate = self.delegate;
+    }
+    else {
+        dispatch_sync(_userQueue, ^{
+            // -[UIApplication delegate] is an UI API call
+            delegate = UIApplication.sharedApplication.delegate;
+        });
+    }
 
     if (![delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
         [NSException raise:@"ARTPushRegistererDelegate must be implemented on AppDelegate" format:@""];
@@ -163,10 +197,15 @@ dispatch_async(_queue, ^{
     ARTLocalDevice *local = _rest.device_nosync;
 
     __block id delegate;
-    dispatch_sync(_userQueue, ^{
-        // -[UIApplication delegate] is an UI API call
-        delegate = [UIApplication sharedApplication].delegate;
-    });
+    if (self.delegate) {
+        delegate = self.delegate;
+    }
+    else {
+        dispatch_sync(_userQueue, ^{
+            // -[UIApplication delegate] is an UI API call
+            delegate = UIApplication.sharedApplication.delegate;
+        });
+    }
 
     if (![delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
         [NSException raise:@"ARTPushRegistererDelegate must be implemented on AppDelegate" format:@""];
@@ -229,10 +268,15 @@ dispatch_async(_queue, ^{
     ARTLocalDevice *local = _rest.device_nosync;
 
     __block id delegate;
-    dispatch_sync(_userQueue, ^{
-        // -[UIApplication delegate] is an UI API call
-        delegate = [UIApplication sharedApplication].delegate;
-    });
+    if (self.delegate) {
+        delegate = self.delegate;
+    }
+    else {
+        dispatch_sync(_userQueue, ^{
+            // -[UIApplication delegate] is an UI API call
+            delegate = UIApplication.sharedApplication.delegate;
+        });
+    }
 
     // Custom register
     SEL customDeregisterMethodSelector = @selector(ablyPushCustomDeregister:deviceId:callback:);
@@ -247,6 +291,7 @@ dispatch_async(_queue, ^{
                 else {
                     // Success
                     [delegate didDeactivateAblyPush:nil];
+                    [self sendEvent:[ARTPushActivationEventDeregistered new]];
                 }
             }];
         });
@@ -267,8 +312,8 @@ dispatch_async(_queue, ^{
         if (error) {
             [[_rest logger] error:@"%@: device deregistration failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
             [self sendEvent:[ARTPushActivationEventDeregistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+            return;
         }
-
         [[_rest logger] debug:__FILE__ line:__LINE__ message:@"successfully deactivate device"];
         [self sendEvent:[ARTPushActivationEventDeregistered new]];
     }];
@@ -278,8 +323,15 @@ dispatch_async(_queue, ^{
 - (void)callActivatedCallback:(ARTErrorInfo *)error {
     #ifdef TARGET_OS_IOS
 dispatch_async(_userQueue, ^{
-    if ([[UIApplication sharedApplication].delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
-        id delegate = [UIApplication sharedApplication].delegate;
+    id delegate;
+    if (self.delegate) {
+        delegate = self.delegate;
+    }
+    else {
+        delegate = UIApplication.sharedApplication.delegate;
+    }
+
+    if ([delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
         SEL activateCallbackMethodSelector = @selector(didActivateAblyPush:);
         if ([delegate respondsToSelector:activateCallbackMethodSelector]) {
             [delegate didActivateAblyPush:error];
@@ -292,8 +344,15 @@ dispatch_async(_userQueue, ^{
 - (void)callDeactivatedCallback:(ARTErrorInfo *)error {
     #ifdef TARGET_OS_IOS
 dispatch_async(_userQueue, ^{
-    if ([[UIApplication sharedApplication].delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
-        id delegate = [UIApplication sharedApplication].delegate;
+    id delegate;
+    if (self.delegate) {
+        delegate = self.delegate;
+    }
+    else {
+        delegate = UIApplication.sharedApplication.delegate;
+    }
+
+    if ([delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
         SEL deactivateCallbackMethodSelector = @selector(didDeactivateAblyPush:);
         if ([delegate respondsToSelector:deactivateCallbackMethodSelector]) {
             [delegate didDeactivateAblyPush:error];
@@ -306,8 +365,15 @@ dispatch_async(_userQueue, ^{
 - (void)callUpdateFailedCallback:(nullable ARTErrorInfo *)error {
     #ifdef TARGET_OS_IOS
 dispatch_async(_userQueue, ^{
-    if ([[UIApplication sharedApplication].delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
-        id delegate = [UIApplication sharedApplication].delegate;
+    id delegate;
+    if (self.delegate) {
+        delegate = self.delegate;
+    }
+    else {
+        delegate = UIApplication.sharedApplication.delegate;
+    }
+
+    if ([delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
         SEL updateFailedCallbackMethodSelector = @selector(didAblyPushRegistrationFail:);
         if ([delegate respondsToSelector:updateFailedCallbackMethodSelector]) {
             [delegate didAblyPushRegistrationFail:error];

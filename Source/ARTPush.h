@@ -7,8 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTTypes.h"
-#import "ARTPushAdmin.h"
+#import <Ably/ARTTypes.h>
+#import <Ably/ARTPushAdmin.h>
 
 @class ARTRest;
 @class ARTRealtime;
