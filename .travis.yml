@@ -17,7 +17,7 @@ install:
 script:
   - xcrun simctl erase all
   - fastlane scan --devices "iPhone 8 (11.2)" --clean
-  - fastlane scan --devices "iPhone 7 (10.3)" --clean
+  - fastlane scan --devices "iPhone 7 (10.3.1)" --clean
   - fastlane scan --devices "iPhone 4s (9.3)" --clean
 
 
