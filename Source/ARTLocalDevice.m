@@ -12,6 +12,7 @@
 #import "ARTRest+Private.h"
 #import "ARTAuth+Private.h"
 #import "ARTEncoder.h"
+#import "ARTLocalDeviceStorage.h"
 #import <ULID/ULID.h>
 
 NSString *const ARTDevicePlatform = @"ios";
@@ -59,26 +60,24 @@ NSString *const ARTDevicePushTransportType = @"apns";
     }
     device.push.recipient[@"transportType"] = ARTDevicePushTransportType;
 
-    NSString *deviceId = [[NSUserDefaults standardUserDefaults] stringForKey:ARTDeviceIdKey];
+    NSString *deviceId = [rest.storage objectForKey:ARTDeviceIdKey];
     if (!deviceId) {
         deviceId = [[ULID new] ulidString];
-        [[NSUserDefaults standardUserDefaults] setObject:deviceId forKey:ARTDeviceIdKey];
-        [[NSUserDefaults standardUserDefaults] synchronize];
+        [rest.storage setObject:deviceId forKey:ARTDeviceIdKey];
     }
     device.id = deviceId;
-    device.updateToken = [[NSUserDefaults standardUserDefaults] stringForKey:ARTDeviceUpdateTokenKey];
+    device.updateToken = [rest.storage objectForKey:ARTDeviceUpdateTokenKey];
 
-    [device setDeviceToken:[[NSUserDefaults standardUserDefaults] stringForKey:ARTDeviceTokenKey]];
+    [device setDeviceToken:[rest.storage objectForKey:ARTDeviceTokenKey]];
 
     return device;
 }
 
 - (void)resetId {
-    [[NSUserDefaults standardUserDefaults] setObject:nil forKey:ARTDeviceIdKey];
+    [self.rest.storage setObject:nil forKey:ARTDeviceIdKey];
     [self setAndPersistUpdateToken:nil];
     NSString *deviceId = [[ULID new] ulidString];
-    [[NSUserDefaults standardUserDefaults] setObject:deviceId forKey:ARTDeviceIdKey];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    [self.rest.storage setObject:deviceId forKey:ARTDeviceIdKey];
     self.id = deviceId;
 }
 
@@ -118,14 +117,12 @@ NSString *const ARTDevicePushTransportType = @"apns";
 }
 
 - (void)setAndPersistDeviceToken:(NSString *)token {
-    [[NSUserDefaults standardUserDefaults] setObject:token forKey:ARTDeviceTokenKey];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    [self.rest.storage setObject:token forKey:ARTDeviceTokenKey];
     [self setDeviceToken:token];
 }
 
 - (void)setAndPersistUpdateToken:(NSString *)token {
-    [[NSUserDefaults standardUserDefaults] setObject:token forKey:ARTDeviceUpdateTokenKey];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    [self.rest.storage setObject:token forKey:ARTDeviceUpdateTokenKey];
     self.updateToken = token;
 }
 

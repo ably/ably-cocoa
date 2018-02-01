@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTDeviceDetails.h"
+#import <Ably/ARTDeviceDetails.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

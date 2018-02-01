@@ -9,8 +9,11 @@
 #import <Foundation/Foundation.h>
 
 @class ARTErrorInfo;
+@class ARTPushActivationState;
 @class ARTPushActivationEvent;
 @class ARTRest;
+
+@protocol ARTDeviceStorage;
 
 NS_ASSUME_NONNULL_BEGIN
 

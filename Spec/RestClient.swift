@@ -351,6 +351,15 @@ class RestClient: QuickSpec {
                 testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                 clientHttps.httpExecutor = testHTTPExecutor
 
+                waitUntil(timeout: testTimeout) { done in
+                    publishTestMessage(clientHttps) { error in
+                        done()
+                    }
+                }
+
+                let requestUrlA = testHTTPExecutor.requests.first!.url!
+                expect(requestUrlA.scheme).to(equal("https"))
+
                 options.clientId = "client_http"
                 options.tls = false
                 let clientHttp = ARTRest(options: options)
@@ -358,19 +367,10 @@ class RestClient: QuickSpec {
                 clientHttp.httpExecutor = testHTTPExecutor
 
                 waitUntil(timeout: testTimeout) { done in
-                    publishTestMessage(clientHttps) { error in
-                        done()
-                    }
-                }
-
-                waitUntil(timeout: testTimeout) { done in
                     publishTestMessage(clientHttp) { error in
                         done()
                     }
                 }
-
-                let requestUrlA = testHTTPExecutor.requests.first!.url!
-                expect(requestUrlA.scheme).to(equal("https"))
 
                 let requestUrlB = testHTTPExecutor.requests.last!.url!
                 expect(requestUrlB.scheme).to(equal("http"))

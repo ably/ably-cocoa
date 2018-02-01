@@ -78,6 +78,7 @@
 		D71D30041C5F7B2F002115B0 /* RealtimeClientChannels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71D30031C5F7B2F002115B0 /* RealtimeClientChannels.swift */; };
 		D72304701BB72CED00F1ABDA /* RealtimeClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D723046F1BB72CED00F1ABDA /* RealtimeClient.swift */; };
 		D72768211C9C19040022F8B2 /* RestClientPresence.swift in Sources */ = {isa = PBXBuildFile; fileRef = D72768201C9C19040022F8B2 /* RestClientPresence.swift */; };
+		D72C67DF201AB74000978EBB /* ARTPushActivationStateMachine+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D72C67DE201AB74000978EBB /* ARTPushActivationStateMachine+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D73691FF1DB788C40062C150 /* ARTAuthDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = D73691FD1DB788C40062C150 /* ARTAuthDetails.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D73692001DB788C40062C150 /* ARTAuthDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = D73691FE1DB788C40062C150 /* ARTAuthDetails.m */; };
 		D736A0C91F916553005ABE81 /* KSCrash.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D736A0C61F916553005ABE81 /* KSCrash.framework */; };
@@ -159,6 +160,9 @@
 		D7DC8AF11C6AA0C8005AF165 /* ARTDefault+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7DC8AF01C6A9FFC005AF165 /* ARTDefault+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D7DEAFD11E65926D00D23F24 /* ARTLocalDevice.h in Headers */ = {isa = PBXBuildFile; fileRef = D7DEAFCF1E65926D00D23F24 /* ARTLocalDevice.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7DEAFD21E65926D00D23F24 /* ARTLocalDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = D7DEAFD01E65926D00D23F24 /* ARTLocalDevice.m */; };
+		D7DF73851EA600240013CD36 /* PushActivationStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DF73831EA5FE620013CD36 /* PushActivationStateMachine.swift */; };
+		D7DF738A1EA645300013CD36 /* ARTLocalDeviceStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = D7DF73881EA645300013CD36 /* ARTLocalDeviceStorage.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D7DF738B1EA645300013CD36 /* ARTLocalDeviceStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = D7DF73891EA645300013CD36 /* ARTLocalDeviceStorage.m */; };
 		D7EBE5A31BE8391E0086E675 /* RealtimeClientConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7EBE5A21BE8391E0086E675 /* RealtimeClientConnection.swift */; };
 		D7EBE5A41BE9F6900086E675 /* ARTConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = D7D29B401BE3DD0600374295 /* ARTConnection.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7F1D3731BF4DE07001A4B5E /* ARTRestPresence.h in Headers */ = {isa = PBXBuildFile; fileRef = D7F1D3711BF4DE07001A4B5E /* ARTRestPresence.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -337,6 +341,7 @@
 		D71D30031C5F7B2F002115B0 /* RealtimeClientChannels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClientChannels.swift; sourceTree = "<group>"; };
 		D723046F1BB72CED00F1ABDA /* RealtimeClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClient.swift; sourceTree = "<group>"; };
 		D72768201C9C19040022F8B2 /* RestClientPresence.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClientPresence.swift; sourceTree = "<group>"; };
+		D72C67DE201AB74000978EBB /* ARTPushActivationStateMachine+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTPushActivationStateMachine+Private.h"; sourceTree = "<group>"; };
 		D73691FD1DB788C40062C150 /* ARTAuthDetails.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTAuthDetails.h; sourceTree = "<group>"; };
 		D73691FE1DB788C40062C150 /* ARTAuthDetails.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTAuthDetails.m; sourceTree = "<group>"; };
 		D736A0C61F916553005ABE81 /* KSCrash.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KSCrash.framework; path = Carthage/Build/iOS/KSCrash.framework; sourceTree = "<group>"; };
@@ -417,6 +422,9 @@
 		D7DC8AF01C6A9FFC005AF165 /* ARTDefault+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ARTDefault+Private.h"; sourceTree = "<group>"; };
 		D7DEAFCF1E65926D00D23F24 /* ARTLocalDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTLocalDevice.h; sourceTree = "<group>"; };
 		D7DEAFD01E65926D00D23F24 /* ARTLocalDevice.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTLocalDevice.m; sourceTree = "<group>"; };
+		D7DF73831EA5FE620013CD36 /* PushActivationStateMachine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PushActivationStateMachine.swift; sourceTree = "<group>"; };
+		D7DF73881EA645300013CD36 /* ARTLocalDeviceStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTLocalDeviceStorage.h; sourceTree = "<group>"; };
+		D7DF73891EA645300013CD36 /* ARTLocalDeviceStorage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTLocalDeviceStorage.m; sourceTree = "<group>"; };
 		D7EBE5A21BE8391E0086E675 /* RealtimeClientConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClientConnection.swift; sourceTree = "<group>"; };
 		D7EE14F51F07964500C178D5 /* Version.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Version.xcconfig; sourceTree = "<group>"; };
 		D7F1D3711BF4DE07001A4B5E /* ARTRestPresence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTRestPresence.h; sourceTree = "<group>"; };
@@ -559,6 +567,7 @@
 				EB1AE0CD1C5C3A4900D62250 /* Utilities.swift */,
 				EB7913A71C6E54C3000ABF9B /* Crypto.swift */,
 				D74A17B61FA0D81A006D27B5 /* PushAdmin.swift */,
+				D7DF73831EA5FE620013CD36 /* PushActivationStateMachine.swift */,
 			);
 			path = Spec;
 			sourceTree = "<group>";
@@ -657,6 +666,7 @@
 			isa = PBXGroup;
 			children = (
 				D71966E21E5DF360000974DD /* ARTPushActivationStateMachine.h */,
+				D72C67DE201AB74000978EBB /* ARTPushActivationStateMachine+Private.h */,
 				D71966E31E5DF360000974DD /* ARTPushActivationStateMachine.m */,
 				D71966E81E5E006E000974DD /* ARTPushActivationState.h */,
 				D71966E91E5E006E000974DD /* ARTPushActivationState.m */,
@@ -854,9 +864,11 @@
 				D7B621931E4A6FE600684474 /* ARTDeviceDetails.m */,
 				D768C6AA1E4B5B0200436011 /* ARTDevicePushDetails.h */,
 				D768C6AB1E4B5B0200436011 /* ARTDevicePushDetails.m */,
-				EBFFAC181E97919C003E7326 /* ARTLocalDevice+Private.h */,
 				D7DEAFCF1E65926D00D23F24 /* ARTLocalDevice.h */,
+				EBFFAC181E97919C003E7326 /* ARTLocalDevice+Private.h */,
 				D7DEAFD01E65926D00D23F24 /* ARTLocalDevice.m */,
+				D7DF73881EA645300013CD36 /* ARTLocalDeviceStorage.h */,
+				D7DF73891EA645300013CD36 /* ARTLocalDeviceStorage.m */,
 				D71966E71E5DFFC6000974DD /* Activation State Machine */,
 				D71966E61E5DFFB2000974DD /* Admin */,
 			);
@@ -888,6 +900,7 @@
 				EB91213E1CA0AD6600BA0A40 /* ARTMsgPackEncoder.h in Headers */,
 				96A507BD1A3791490077CDF8 /* ARTRealtime.h in Headers */,
 				EB5E058D1C77027600A48B39 /* ARTCrypto+Private.h in Headers */,
+				D72C67DF201AB74000978EBB /* ARTPushActivationStateMachine+Private.h in Headers */,
 				D7DC8AF11C6AA0C8005AF165 /* ARTDefault+Private.h in Headers */,
 				961343D81A42E0B7006DC822 /* ARTClientOptions.h in Headers */,
 				D7534C321D79E5C20054C182 /* Ably.h in Headers */,
@@ -982,6 +995,7 @@
 				D7D8F8251BC2C691009718F2 /* ARTTokenDetails.h in Headers */,
 				D7D8F82B1BC2C706009718F2 /* ARTTokenRequest.h in Headers */,
 				EB1AE0CC1C5C1EB200D62250 /* ARTEventEmitter+Private.h in Headers */,
+				D7DF738A1EA645300013CD36 /* ARTLocalDeviceStorage.h in Headers */,
 				960D07931A45F1D800ED8C8C /* ARTCrypto.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1155,6 +1169,7 @@
 				856AAC991B6E312F00B07119 /* RestClient.swift in Sources */,
 				D746AE2C1BBB625E003ECEF8 /* RestClientChannel.swift in Sources */,
 				D71D30041C5F7B2F002115B0 /* RealtimeClientChannels.swift in Sources */,
+				D7DF73851EA600240013CD36 /* PushActivationStateMachine.swift in Sources */,
 				D714A63E1C74D4B2002F2CA0 /* NSObject+TestSuite.swift in Sources */,
 				856AAC971B6E30C800B07119 /* TestUtilities.swift in Sources */,
 				D72768211C9C19040022F8B2 /* RestClientPresence.swift in Sources */,
@@ -1224,6 +1239,7 @@
 				EB9121401CA0AD8200BA0A40 /* ARTMsgPackEncoder.m in Sources */,
 				96BF61651A35CDE1004CF2B3 /* ARTBaseMessage.m in Sources */,
 				D7F1D3781BF4DE72001A4B5E /* ARTRealtimePresence.m in Sources */,
+				D7DF738B1EA645300013CD36 /* ARTLocalDeviceStorage.m in Sources */,
 				D7B621911E4A6E0200684474 /* ARTPush.m in Sources */,
 				D7AE18D31E5B410F00478D82 /* ARTPushChannelSubscriptions.m in Sources */,
 				1CD8DCA01B1C7315007EAF36 /* ARTDefault.m in Sources */,
