@@ -7,7 +7,8 @@ platform :ios do
               devices: ["iPhone 8 (11.2)"],
               clean: true)
     slack(
-      message: "Completed tests on iOS11"
+      message: "Completed tests on iOS11",
+      default_payloads: []
     )
   end
 
@@ -16,7 +17,8 @@ platform :ios do
               devices: ["iPhone 7 (10.3.1)"],
               clean: false)
     slack(
-      message: "Completed tests on iOS10"
+      message: "Completed tests on iOS10",
+      default_payloads: []
     )
   end
 
@@ -25,7 +27,8 @@ platform :ios do
               devices: ["iPhone 4s (9.3)"],
               clean: false)
     slack(
-      message: "Completed tests on iOS9"
+      message: "Completed tests on iOS9",
+      default_payloads: []
     )
   end
 
