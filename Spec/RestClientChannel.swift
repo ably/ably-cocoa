@@ -614,10 +614,10 @@ class RestClientChannel: QuickSpec {
                     expect(query.limit) == 100
 
                     query.limit = 1001
-                    expect{ try channel.history(query, callback: { _ in }) }.to(throwError())
+                  expect{ try channel.history(query, callback: { _ , _  in }) }.to(throwError())
 
                     query.limit = 1000
-                    expect{ try channel.history(query, callback: { _ in }) }.toNot(throwError())
+                  expect{ try channel.history(query, callback: { _ , _  in }) }.toNot(throwError())
                 }
 
             }

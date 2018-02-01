@@ -124,7 +124,7 @@ class RestClientChannels: QuickSpec {
                 it("should be enumerable") {
                     let channels = [
                         client.channels.get(channelName),
-                        client.channels.get(String(channelName.characters.reversed()))
+                        client.channels.get(String(channelName.reversed()))
                     ]
 
                     for channel in client.channels {

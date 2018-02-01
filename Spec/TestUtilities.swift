@@ -305,7 +305,7 @@ class NSURLSessionServerTrustSync: NSObject, URLSessionDelegate, URLSessionTaskD
         task.resume()
 
         while !requestCompleted {
-            CFRunLoopRunInMode(CFRunLoopMode.defaultMode, CFTimeInterval(0.1), Bool(0))
+            CFRunLoopRunInMode(CFRunLoopMode.defaultMode, CFTimeInterval(0.1), Bool(truncating: 0))
         }
 
         return (responseData, responseError, httpResponse)
@@ -920,7 +920,7 @@ class TestProxyTransport: ARTWebSocketTransport {
 
     func send(_ message: ARTProtocolMessage) {
         let data = try! encoder.encode(message)
-        send(data, withSource: message)
+        let _ = send(data, withSource: message)
     }
 
     @discardableResult
@@ -1103,9 +1103,9 @@ extension NSRegularExpression {
         let regex = try! NSRegularExpression(pattern: pattern, options: options)
         let range = NSMakeRange(0, value.lengthOfBytes(using: String.Encoding.utf8))
         let result = regex.firstMatch(in: value, options: [], range: range)
-        guard let textRange = result?.rangeAt(0) else { return nil }
-        let convertedRange =  value.characters.index(value.startIndex, offsetBy: textRange.location)..<value.characters.index(value.startIndex, offsetBy: textRange.location+textRange.length)
-        return value.substring(with: convertedRange)
+      guard let textRange = result?.range(at: 0) else { return nil }
+        let convertedRange =  value.index(value.startIndex, offsetBy: textRange.location)..<value.index(value.startIndex, offsetBy: textRange.location+textRange.length)
+        return String(value[convertedRange.lowerBound..<convertedRange.upperBound])
     }
 
 }
@@ -1269,7 +1269,7 @@ public func haveParam(_ key: String, withValue expectedValue: String) -> Predica
 /// A Nimble matcher that succeeds when all Keys from a Dictionary are valid.
 public func allKeysPass<U: Collection> (_ passFunc: @escaping (U.Key) -> Bool) -> Predicate<U> where U: ExpressibleByDictionaryLiteral, U.Iterator.Element == (U.Key, U.Value) {
 
-    let elementEvaluator: (Expression<U.Generator.Element>, FailureMessage) throws -> Bool = {
+    let elementEvaluator: (Expression<U.Iterator.Element>, FailureMessage) throws -> Bool = {
         expression, failureMessage in
         failureMessage.postfixMessage = "pass a condition"
         let value = try expression.evaluate()!
@@ -1302,7 +1302,7 @@ public func allKeysPass<U: Collection> (_ passFunc: @escaping (U.Key) -> Bool) -
 /// A Nimble matcher that succeeds when all Values from a Dictionary are valid.
 public func allValuesPass<U: Collection> (_ passFunc: @escaping (U.Value) -> Bool) -> Predicate<U> where U: ExpressibleByDictionaryLiteral, U.Iterator.Element == (U.Key, U.Value) {
 
-    let elementEvaluator: (Expression<U.Generator.Element>, FailureMessage) throws -> Bool = {
+    let elementEvaluator: (Expression<U.Iterator.Element>, FailureMessage) throws -> Bool = {
         expression, failureMessage in
         failureMessage.postfixMessage = "pass a condition"
         let value = try expression.evaluate()!
@@ -1342,10 +1342,10 @@ extension String {
     /// - returns: Data represented by this hexadecimal string.
 
     func dataFromHexadecimalString() -> Data? {
-        let data = NSMutableData(capacity: characters.count / 2)
+        let data = NSMutableData(capacity: self.count / 2)
 
         let regex = try! NSRegularExpression(pattern: "[0-9a-f]{1,2}", options: .caseInsensitive)
-        regex.enumerateMatches(in: self, options: [], range: NSMakeRange(0, characters.count)) { match, flags, stop in
+        regex.enumerateMatches(in: self, options: [], range: NSMakeRange(0, self.count)) { match, flags, stop in
             let byteString = (self as NSString).substring(with: match!.range)
             var num = UInt8(byteString, radix: 16)
             data?.append(&num, length: 1)

@@ -542,7 +542,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (ARTEventListener *)unlessStateChangesBefore:(NSTimeInterval)deadline do:(void(^)())callback {
+- (ARTEventListener *)unlessStateChangesBefore:(NSTimeInterval)deadline do:(void(^)(void))callback {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return [[self.internalEventEmitter once:^(ARTChannelStateChange *stateChange) {
         // Any state change cancels the timeout.

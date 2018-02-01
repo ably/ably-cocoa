@@ -259,7 +259,7 @@ class Auth : QuickSpec {
 
                     let channel = rest.channels.get("test")
 
-                    testHTTPExecutor.afterRequest = { _ in
+                    testHTTPExecutor.afterRequest = { _ , _ in
                         testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(40141, description: "token revoked")
                     }
 
@@ -309,7 +309,7 @@ class Auth : QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.authCallback = { tokenParams, completion in
                         getTestToken() { token in
-                            let invalidToken = String(token.characters.reversed())
+                            let invalidToken = String(token.reversed())
                             completion(invalidToken as ARTTokenDetailsCompatible?, nil)
                         }
                     }
@@ -561,7 +561,7 @@ class Auth : QuickSpec {
                             }
 
                             // Token should renew and fail
-                            let invalidToken = String(token.characters.reversed())
+                            let invalidToken = String(token.reversed())
                             AblyTests.queue.sync {
                                 realtime.options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
                                 realtime.options.authParams?.append(NSURLQueryItem(name: "type", value: "json") as URLQueryItem)
@@ -1999,7 +1999,7 @@ class Auth : QuickSpec {
                         guard let tokenRequest1 = tokenRequest else {
                             XCTFail("TokenRequest1 is nil"); done(); return
                         }
-                        expect(tokenRequest1.nonce.characters).to(haveCount(16))
+                        expect(tokenRequest1.nonce).to(haveCount(16))
 
                         // Second
                         rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
@@ -2007,7 +2007,7 @@ class Auth : QuickSpec {
                             guard let tokenRequest2 = tokenRequest else {
                                 XCTFail("TokenRequest2 is nil"); done(); return
                             }
-                            expect(tokenRequest2.nonce.characters).to(haveCount(16))
+                            expect(tokenRequest2.nonce).to(haveCount(16))
 
                             // Uniqueness
                             expect(tokenRequest1.nonce).toNot(equal(tokenRequest2.nonce))
@@ -2239,7 +2239,7 @@ class Auth : QuickSpec {
                         }
                         expect(tokenRequest.clientId).to(equal(expectedClientId))
                         expect(tokenRequest.mac).toNot(beNil())
-                        expect(tokenRequest.nonce.characters).to(haveCount(16))
+                        expect(tokenRequest.nonce).to(haveCount(16))
                         expect(tokenRequest.ttl as? TimeInterval).to(equal(expectedTtl))
                         expect(tokenRequest.capability).to(equal(expectedCapability))
                         expect(tokenRequest.timestamp).to(beCloseTo(serverTime!, within: 6.0))
@@ -3377,13 +3377,6 @@ class Auth : QuickSpec {
 
             }
 
-            // RSA10l
-            it("has an alias method @RestClient#authorise@ and should use @RealtimeClient#authorize@") {
-                let rest = ARTRest(key: "xxxx:xxxx")
-                expect(rest.auth.responds(to: #selector(ARTAuth.authorise(_:options:callback:)))) == true
-                expect(rest.auth.responds(to: #selector(ARTAuth.authorize(_:options:callback:)))) == true
-            }
-
         }
 
         describe("TokenParams") {
@@ -3423,7 +3416,7 @@ class Auth : QuickSpec {
         describe("Reauth") {
 
             // RTC8
-            it("should use authorise({force: true}) to reauth with a token with a different set of capabilities") {
+            it("should use authorize({force: true}) to reauth with a token with a different set of capabilities") {
                 let options = AblyTests.commonAppSetup()
                 let initialToken = getTestToken(clientId: "tester", capability: "{\"restricted\":[\"*\"]}")
                 options.token = initialToken

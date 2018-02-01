@@ -128,7 +128,7 @@ uint64_t dateToMilliseconds(NSDate *date);
 uint64_t timeIntervalToMilliseconds(NSTimeInterval seconds);
 NSTimeInterval millisecondsToTimeInterval(uint64_t msecs);
 
-NSString *generateNonce();
+NSString *generateNonce(void);
 
 // FIXME: review
 @protocol ARTCancellable

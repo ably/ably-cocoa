@@ -63,7 +63,7 @@
     __weak NSNotificationCenter *_center;
     __weak ARTEventEmitter *_eventHandler;
     NSTimeInterval _timeoutDeadline;
-    void (^_timeoutBlock)();
+    void (^_timeoutBlock)(void);
     dispatch_block_t _work;
 }
 
@@ -107,7 +107,7 @@
     [self stopTimer];
 }
 
-- (ARTEventListener *)setTimer:(NSTimeInterval)timeoutDeadline onTimeout:(void (^)())timeoutBlock {
+- (ARTEventListener *)setTimer:(NSTimeInterval)timeoutDeadline onTimeout:(void (^)(void))timeoutBlock {
     if (_timeoutBlock) {
         NSAssert(false, @"timer is already set");
     }

@@ -846,7 +846,7 @@ class RealtimeClientPresence: QuickSpec {
 
                             var clientMembers: ARTRealtime?
                             waitUntil(timeout: testTimeout) { done in
-                                clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 3, options: options) {
+                                clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 2, options: options) {
                                     done()
                                 }
                             }
@@ -861,7 +861,7 @@ class RealtimeClientPresence: QuickSpec {
                                 let partialDone = AblyTests.splitDone(2, done: done)
                                 channel.presence.get { members, error in
                                     expect(error).to(beNil())
-                                    expect(members).to(haveCount(3))
+                                    expect(members).to(haveCount(2))
                                     partialDone()
                                 }
                                 channel.presence.enter(nil) { error in
@@ -870,7 +870,7 @@ class RealtimeClientPresence: QuickSpec {
                                 }
                             }
 
-                            expect(channel.presenceMap.members).to(haveCount(4))
+                            expect(channel.presenceMap.members).to(haveCount(3))
                             expect(channel.presenceMap.localMembers).to(haveCount(1))
 
                             waitUntil(timeout: testTimeout) { done in
@@ -899,7 +899,7 @@ class RealtimeClientPresence: QuickSpec {
 
                                 channel.presence.subscribe(.leave) { leave in
                                     // Members will leave the PresenceMap due to the ATTACHED without Presence
-                                    expect(leave.clientId).to(satisfyAnyOf(equal("local1"), equal("user1"), equal("user2"), equal("user3")))
+                                    expect(leave.clientId).to(satisfyAnyOf(equal("local1"), equal("user1"), equal("user2")))
                                 }
 
                                 // Re-entered automatically

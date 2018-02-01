@@ -1,5 +1,24 @@
 # Change Log
 
+## [1.0.11](https://github.com/ably/ably-ios/tree/1.0.11) (2018-01-31)
+
+**Fixed bugs:**
+
+- Uncaught Exception: '-\[\_\_NSCFURLSessionConnection performDefaultHandlingForAuthenticationChallenge:\]: unrecognized selector [\#674](https://github.com/ably/ably-ios/issues/674)
+
+**Closed issues:**
+
+- Update tests to Swift 4 [\#668](https://github.com/ably/ably-ios/issues/668)
+- Push activation fails if already registered [\#661](https://github.com/ably/ably-ios/issues/661)
+- Log from ably-ios client in an inconsistent state [\#659](https://github.com/ably/ably-ios/issues/659)
+- ARTMessage.data is not converting into Dictionary [\#643](https://github.com/ably/ably-ios/issues/643)
+
+**Merged pull requests:**
+
+- Fix: check if `NSCFURLSessionConnection` responds to the `performDefaultHandlingForAuthenticationChallenge` selector [\#676](https://github.com/ably/ably-ios/pull/676) ([ricardopereira](https://github.com/ricardopereira))
+- Swift 4: upgrade settings and dependencies [\#671](https://github.com/ably/ably-ios/pull/671) ([funkyboy](https://github.com/funkyboy))
+- Fix format of section [\#666](https://github.com/ably/ably-ios/pull/666) ([funkyboy](https://github.com/funkyboy))
+
 ## [1.0.10](https://github.com/ably/ably-ios/tree/1.0.10) (2017-12-22)
 [Full Changelog](https://github.com/ably/ably-ios/compare/v1.1.0-beta.push.1...1.0.10)
 
@@ -109,17 +128,17 @@
 - Add extras field to Message. [\#617](https://github.com/ably/ably-ios/pull/617) ([tcard](https://github.com/tcard))
 
 ## [1.0.6](https://github.com/ably/ably-ios/tree/1.0.6) (2017-06-30)
-[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.5...1.0.6)
+[Full Changelog](https://github.com/ably/ably-ios/compare/0.8.15...1.0.6)
 
 **Merged pull requests:**
 
 - Fix RTN15c3 [\#616](https://github.com/ably/ably-ios/pull/616) ([ricardopereira](https://github.com/ricardopereira))
 
 ## [0.8.15](https://github.com/ably/ably-ios/tree/0.8.15) (2017-06-15)
-[Full Changelog](https://github.com/ably/ably-ios/compare/0.8.14...0.8.15)
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.5...0.8.15)
 
 ## [1.0.5](https://github.com/ably/ably-ios/tree/1.0.5) (2017-06-15)
-[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.4...1.0.5)
+[Full Changelog](https://github.com/ably/ably-ios/compare/0.8.14...1.0.5)
 
 **Fixed bugs:**
 
@@ -128,7 +147,6 @@
 
 **Closed issues:**
 
-- Connection problems and if got connected - not receiving the message [\#600](https://github.com/ably/ably-ios/issues/600)
 - Use of unresolved identifier 'ARTPush' [\#595](https://github.com/ably/ably-ios/issues/595)
 
 **Merged pull requests:**
@@ -138,10 +156,10 @@
 - WebSocket: remove ARTWsAbnormalClose \(1006\) [\#606](https://github.com/ably/ably-ios/pull/606) ([ricardopereira](https://github.com/ricardopereira))
 
 ## [0.8.14](https://github.com/ably/ably-ios/tree/0.8.14) (2017-05-15)
-[Full Changelog](https://github.com/ably/ably-ios/compare/0.8.13...0.8.14)
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.4...0.8.14)
 
 ## [1.0.4](https://github.com/ably/ably-ios/tree/1.0.4) (2017-05-15)
-[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.3...1.0.4)
+[Full Changelog](https://github.com/ably/ably-ios/compare/0.8.13...1.0.4)
 
 **Merged pull requests:**
 
@@ -151,7 +169,7 @@
 - Log history [\#597](https://github.com/ably/ably-ios/pull/597) ([ricardopereira](https://github.com/ricardopereira))
 
 ## [0.8.13](https://github.com/ably/ably-ios/tree/0.8.13) (2017-04-19)
-[Full Changelog](https://github.com/ably/ably-ios/compare/0.8.12...0.8.13)
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.3...0.8.13)
 
 ## [1.0.3](https://github.com/ably/ably-ios/tree/1.0.3) (2017-04-19)
 [Full Changelog](https://github.com/ably/ably-ios/compare/1.0.2...1.0.3)
@@ -161,10 +179,10 @@
 - JSON encoding exception - handle encoding failures [\#591](https://github.com/ably/ably-ios/issues/591)
 
 ## [1.0.2](https://github.com/ably/ably-ios/tree/1.0.2) (2017-04-13)
-[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.1...1.0.2)
+[Full Changelog](https://github.com/ably/ably-ios/compare/0.8.12...1.0.2)
 
 ## [0.8.12](https://github.com/ably/ably-ios/tree/0.8.12) (2017-04-13)
-[Full Changelog](https://github.com/ably/ably-ios/compare/0.8.11...0.8.12)
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.1...0.8.12)
 
 **Closed issues:**
 
@@ -176,10 +194,10 @@
 - Encoder: handle invalid types gracefully [\#592](https://github.com/ably/ably-ios/pull/592) ([ricardopereira](https://github.com/ricardopereira))
 
 ## [1.0.1](https://github.com/ably/ably-ios/tree/1.0.1) (2017-03-31)
-[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.0...1.0.1)
+[Full Changelog](https://github.com/ably/ably-ios/compare/0.8.11...1.0.1)
 
 ## [0.8.11](https://github.com/ably/ably-ios/tree/0.8.11) (2017-03-31)
-[Full Changelog](https://github.com/ably/ably-ios/compare/0.8.10...0.8.11)
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.0...0.8.11)
 
 **Fixed bugs:**
 

@@ -2623,7 +2623,7 @@ class RealtimeClientChannel: QuickSpec {
                             if protocolMessage.action == .message {
                                 let messageReceived = protocolMessage.messages![0]
                                 // Replacement: `json/utf-8/cipher+aes-256-cbc/base64` to `invalid/cipher+aes-256-cbc/base64`
-                                let newEncoding = "invalid" + messageReceived.encoding!.substring(from: "json/utf-8".endIndex)
+                                let newEncoding = "invalid" + messageReceived.encoding!["json/utf-8".endIndex...]
                                 messageReceived.encoding = newEncoding
                             }
                         }
