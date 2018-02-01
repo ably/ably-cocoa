@@ -19,6 +19,7 @@ script:
   - fastlane scan --devices "iPhone 8 (11.2)" --clean
   - fastlane scan --devices "iPhone 7 (10.3.1)"
   - fastlane scan --devices "iPhone 4s (9.3)"
+  - fastlane scan --devices "iPhone 4s (8.4)"
 
 after_success:
   - sleep 5
