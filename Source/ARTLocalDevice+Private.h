@@ -6,9 +6,6 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#ifndef ARTLocalDevice_Private_h
-#define ARTLocalDevice_Private_h
-
 #import <Ably/ARTRest.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -29,5 +26,3 @@ extern NSString *const ARTDeviceTokenKey;
 @end
 
 NS_ASSUME_NONNULL_END
-
-#endif /* ARTLocalDevice_Private_h */

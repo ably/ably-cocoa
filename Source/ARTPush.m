@@ -21,6 +21,7 @@
 #import "ARTClientOptions+Private.h"
 #import "ARTPushAdmin+Private.h"
 #import "ARTLocalDevice+Private.h"
+#import "ARTLocalDeviceStorage.h"
 #import "ARTRealtime+Private.h"
 
 NSString *const ARTDeviceIdKey = @"ARTDeviceId";
@@ -59,7 +60,7 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
     NSString *deviceToken = [[[deviceTokenData description] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]] stringByReplacingOccurrencesOfString:@" " withString:@""];
 
     NSLog(@"ARTPush: device token received %@", deviceToken);
-    NSString *currentDeviceToken = [[NSUserDefaults standardUserDefaults] stringForKey:ARTDeviceTokenKey];
+    NSString *currentDeviceToken = [rest.storage objectForKey:ARTDeviceTokenKey];
     if ([currentDeviceToken isEqualToString:deviceToken]) {
         // Already stored.
         return;

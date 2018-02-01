@@ -25,9 +25,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTAuth : NSObject
 
-- (instancetype)init NS_UNAVAILABLE;
+@property (nullable, readonly) NSString *clientId;
 
-@property (nullable, readonly, getter=getClientId) NSString *clientId;
+- (instancetype)init NS_UNAVAILABLE;
 
 /**
  # (RSA8) Auth#requestToken
