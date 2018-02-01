@@ -17,7 +17,9 @@ install:
 script:
   - xcrun simctl erase all
   - fastlane test_iOS11
+  - xcrun simctl erase all
   - fastlane test_iOS10
+  - xcrun simctl erase all
   - fastlane test_iOS9
 
 after_success:
