@@ -2,33 +2,38 @@ default_platform(:ios)
 
 platform :ios do
 
+  lane :build do
+    scan(build_for_testing: true,
+         clean: true)
+  end
+
   lane :test_iOS11 do
-    run_tests(workspace: "Ably.xcworkspace",
-              devices: ["iPhone 8 (11.2)"],
-              clean: true)
+    run_tests(devices: ["iPhone 8 (11.2)"],
+              test_without_building: true)
     slack(
       message: "Completed tests on iOS11",
-      default_payloads: []
+      success: :test_result,
+      default_payloads: [:test_result, :git_branch, :git_author, :last_git_commit_message]
     )
   end
 
   lane :test_iOS10 do
-    run_tests(workspace: "Ably.xcworkspace",
-              devices: ["iPhone 7 (10.3.1)"],
-              clean: false)
+    run_tests(devices: ["iPhone 7 (10.3.1)"],
+              test_without_building: true)
     slack(
       message: "Completed tests on iOS10",
-      default_payloads: []
+      success: :test_result,
+      default_payloads: [:test_result, :git_branch, :git_author, :last_git_commit_message]
     )
   end
 
   lane :test_iOS9 do
-    run_tests(workspace: "Ably.xcworkspace",
-              devices: ["iPhone 4s (9.3)"],
-              clean: false)
+    run_tests(devices: ["iPhone 4s (9.3)"],
+              test_without_building: true)
     slack(
       message: "Completed tests on iOS9",
-      default_payloads: []
+      success: :test_result,
+      default_payloads: [:test_result, :git_branch, :git_author, :last_git_commit_message]
     )
   end
 
