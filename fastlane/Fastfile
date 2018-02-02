@@ -4,7 +4,8 @@ platform :ios do
 
   lane :build do
     scan(build_for_testing: true,
-         clean: true)
+         clean: true,
+         skip_slack: true)
   end
 
   lane :test_iOS11 do
