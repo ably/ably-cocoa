@@ -53,3 +53,8 @@ xcodebuild.log
 
 # Scan
 test_output/
+
+# Fastlane
+Fastlane/report.xml
+Fastlane/test_output
+Fastlane/README.md
