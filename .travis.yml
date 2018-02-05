@@ -18,11 +18,11 @@ script:
   - xcrun simctl erase all
   - fastlane ios build
   - fastlane test_iOS11
-  - sleep 1
+  - sleep 5
   - fastlane test_iOS10
-  - sleep 1
+  - sleep 5
   - fastlane test_iOS9
-  - sleep 1
+  - sleep 5
   - fastlane test_iOS8
 
 after_success:
