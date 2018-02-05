@@ -12,7 +12,7 @@ install:
   - pod install
   # Carthage
   - carthage bootstrap
-  # Update fastlane
+  # Update fastlane 
   - gem install fastlane -v '2.80.0'
 script:
   - xcrun simctl erase all
