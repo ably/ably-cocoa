@@ -1,3 +1,5 @@
 scheme "Ably"
 
 open_report false
+
+clean true
