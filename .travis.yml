@@ -5,10 +5,11 @@ env:
   - LC_CTYPE=en_US.UTF-8
   - LANG=en_US.UTF-8
   matrix:
-    - iOS11=test_iOS11
-    - iOS10=test_iOS10
-    - iOS9=test_iOS9
-    - iOS8=test_iOS8
+    include:
+      - LANE=test_iOS11
+      - LANE=test_iOS10
+      - LANE=test_iOS9
+      - LANE=test_iOS8
 before_install:
   - gem install cocoapods -v '1.4.0'
 install:
@@ -23,6 +24,6 @@ install:
 before_script:
   - xcrun simctl erase all
 script:
-  ./Scripts/run_travis_tests.sh
+  fastlane $LANE
 after_success:
   - sleep 5
