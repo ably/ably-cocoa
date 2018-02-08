@@ -8,6 +8,7 @@ env:
     - iOS11=test_iOS11
     - iOS10=test_iOS10
     - iOS9=test_iOS9
+    - iOS8=test_iOS8
 before_install:
   - gem install cocoapods -v '1.4.0'
 install:
