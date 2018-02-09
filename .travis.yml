@@ -6,9 +6,9 @@ env:
   - LANG=en_US.UTF-8
 matrix:
   include:
-    - env: LANE=test_iOS11
-    - env: LANE=test_iOS10
-    - env: LANE=test_iOS9
+    - env: NAME="ably-iOS" LANE=test_iOS11
+    - env: NAME="ably-iOS" LANE=test_iOS10
+    - env: NAME="ably-iOS" LANE=test_iOS9
 before_install:
   - gem install cocoapods -v '1.4.0'
 install:
