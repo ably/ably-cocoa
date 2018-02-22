@@ -10,9 +10,11 @@ This SDK is compatible with projects that target:
 - iOS10 
 - iOS11
 
-We actively run tests on all these platforms during development and before making a new release.
+We maintain compatibility and explicitly support these platform versions, including performing CI testing on all library revisions.
 
-Note: the SDK is still compatible also with iOS8. We are not actively running test on that target, but we are not aware of any incompatility or bugs at the moment. We are planning to drop support to iOS8 in an upcoming release. 
+We do not explicitly maintain compatibility with older platform versions; we no longer perform CI testing on iOS8 as of version 1.0.11 (released on January 31st 2018). Any known incompatibilities with older versions can be found [here](https://github.com/ably/ably-ios/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
+
+If you find any issues with iOS8, please [raise an issue](https://github.com/ably/ably-ios/issues) in this repository and we may consider a fix, but cannot guarantee this. We recommend our customers drop support for iOS8 given that [less than 0.5% of users are still using it as of Feb 2017](https://david-smith.org/iosversionstats/).
 
 ## Documentation
 
