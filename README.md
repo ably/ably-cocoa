@@ -14,7 +14,7 @@ We maintain compatibility and explicitly support these platform versions, includ
 
 We do not explicitly maintain compatibility with older platform versions; we no longer perform CI testing on iOS8 as of version 1.0.11 (released on January 31st 2018). Any known incompatibilities with older versions can be found [here](https://github.com/ably/ably-ios/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
 
-If you find any issues with iOS8, please [raise an issue](https://github.com/ably/ably-ios/issues) in this repository and we may consider a fix, but cannot guarantee this. We recommend our customers drop support for iOS8 given that [less than 0.5% of users are still using it as of Feb 2017](https://david-smith.org/iosversionstats/).
+If you find any issues with unsupported platform versions, please [raise an issue](https://github.com/ably/ably-ios/issues) in this repository or [contact Ably customer support](https://support.ably.io) for advice.
 
 ## Documentation
 
