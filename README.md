@@ -1,7 +1,20 @@
 # [Ably](https://www.ably.io) iOS client library
 
 An iOS client library for [ably.io](https://www.ably.io), the realtime messaging service, written in Objective-C.
-This SDK is compatible with projects that target iOS9, iOS10 and iOS11.
+
+## Supported platforms
+
+This SDK is compatible with projects that target:
+
+- iOS9
+- iOS10 
+- iOS11
+
+We maintain compatibility and explicitly support these platform versions, including performing CI testing on all library revisions.
+
+We do not explicitly maintain compatibility with older platform versions; we no longer perform CI testing on iOS8 as of version 1.0.11 (released on January 31st 2018). Any known incompatibilities with older versions can be found [here](https://github.com/ably/ably-ios/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
+
+If you find any issues with unsupported platform versions, please [raise an issue](https://github.com/ably/ably-ios/issues) in this repository or [contact Ably customer support](https://support.ably.io) for advice.
 
 ## Documentation
 
