@@ -186,53 +186,67 @@ static const char *logLevelName(ARTLogLevel level) {
 }
 
 - (void)verbose:(NSString *)format, ... {
-    va_list args;
-    va_start(args, format);
-    [self log:[[NSString alloc] initWithFormat:format arguments:args] level:ARTLogLevelVerbose];
-    va_end(args);
+    if (self.logLevel == ARTLogLevelVerbose) {
+        va_list args;
+        va_start(args, format);
+        [self log:[[NSString alloc] initWithFormat:format arguments:args] level:ARTLogLevelVerbose];
+        va_end(args);
+    }
 }
 
 
 - (void)verbose:(const char *)fileName line:(NSUInteger)line message:(NSString *)message, ... {
-    va_list args;
-    va_start(args, message);
-    [self log:[[NSString alloc] initWithFormat:[NSString stringWithFormat:@"(%@:%lu) %@", [[NSString stringWithUTF8String:fileName] lastPathComponent], (unsigned long)line, message] arguments:args] level:ARTLogLevelVerbose];
-    va_end(args);
+    if (self.logLevel == ARTLogLevelVerbose) {
+        va_list args;
+        va_start(args, message);
+        [self log:[[NSString alloc] initWithFormat:[NSString stringWithFormat:@"(%@:%lu) %@", [[NSString stringWithUTF8String:fileName] lastPathComponent], (unsigned long)line, message] arguments:args] level:ARTLogLevelVerbose];
+        va_end(args);
+    }
 }
 
 - (void)debug:(NSString *)format, ... {
-    va_list args;
-    va_start(args, format);
-    [self log:[[NSString alloc] initWithFormat:format arguments:args] level:ARTLogLevelDebug];
-    va_end(args);
+    if (self.logLevel == ARTLogLevelDebug) {
+        va_list args;
+        va_start(args, format);
+        [self log:[[NSString alloc] initWithFormat:format arguments:args] level:ARTLogLevelDebug];
+        va_end(args);
+    }
 }
 
 - (void)debug:(const char *)fileName line:(NSUInteger)line message:(NSString *)message, ... {
-    va_list args;
-    va_start(args, message);
-    [self log:[[NSString alloc] initWithFormat:[NSString stringWithFormat:@"(%@:%lu) %@", [[NSString stringWithUTF8String:fileName] lastPathComponent], (unsigned long)line, message] arguments:args] level:ARTLogLevelDebug];
-    va_end(args);
+    if (self.logLevel == ARTLogLevelDebug) {
+        va_list args;
+        va_start(args, message);
+        [self log:[[NSString alloc] initWithFormat:[NSString stringWithFormat:@"(%@:%lu) %@", [[NSString stringWithUTF8String:fileName] lastPathComponent], (unsigned long)line, message] arguments:args] level:ARTLogLevelDebug];
+        va_end(args);
+    }
 }
 
 - (void)info:(NSString *)format, ... {
-    va_list args;
-    va_start(args, format);
-    [self log:[[NSString alloc] initWithFormat:format arguments:args] level:ARTLogLevelInfo];
-    va_end(args);
+    if (self.logLevel == ARTLogLevelInfo) {
+        va_list args;
+        va_start(args, format);
+        [self log:[[NSString alloc] initWithFormat:format arguments:args] level:ARTLogLevelInfo];
+        va_end(args);
+    }
 }
 
 - (void)warn:(NSString *)format, ... {
-    va_list args;
-    va_start(args, format);
-    [self log:[[NSString alloc] initWithFormat:format arguments:args] level:ARTLogLevelWarn];
-    va_end(args);
+    if (self.logLevel == ARTLogLevelWarn) {
+        va_list args;
+        va_start(args, format);
+        [self log:[[NSString alloc] initWithFormat:format arguments:args] level:ARTLogLevelWarn];
+        va_end(args);
+    }
 }
 
 - (void)error:(NSString *)format, ... {
-    va_list args;
-    va_start(args, format);
-    [self log:[[NSString alloc] initWithFormat:format arguments:args] level:ARTLogLevelError];
-    va_end(args);
+    if (self.logLevel == ARTLogLevelError) {
+        va_list args;
+        va_start(args, format);
+        [self log:[[NSString alloc] initWithFormat:format arguments:args] level:ARTLogLevelError];
+        va_end(args);
+    }
 }
 
 - (void)log:(NSString *)message withLevel:(ARTLogLevel)level {
