@@ -186,7 +186,7 @@ static const char *logLevelName(ARTLogLevel level) {
 }
 
 - (void)verbose:(NSString *)format, ... {
-    if (self.logLevel == ARTLogLevelVerbose) {
+    if (self.logLevel <= ARTLogLevelVerbose) {
         va_list args;
         va_start(args, format);
         [self log:[[NSString alloc] initWithFormat:format arguments:args] level:ARTLogLevelVerbose];
@@ -196,7 +196,7 @@ static const char *logLevelName(ARTLogLevel level) {
 
 
 - (void)verbose:(const char *)fileName line:(NSUInteger)line message:(NSString *)message, ... {
-    if (self.logLevel == ARTLogLevelVerbose) {
+    if (self.logLevel <= ARTLogLevelVerbose) {
         va_list args;
         va_start(args, message);
         [self log:[[NSString alloc] initWithFormat:[NSString stringWithFormat:@"(%@:%lu) %@", [[NSString stringWithUTF8String:fileName] lastPathComponent], (unsigned long)line, message] arguments:args] level:ARTLogLevelVerbose];
@@ -205,7 +205,7 @@ static const char *logLevelName(ARTLogLevel level) {
 }
 
 - (void)debug:(NSString *)format, ... {
-    if (self.logLevel == ARTLogLevelDebug) {
+    if (self.logLevel <= ARTLogLevelDebug) {
         va_list args;
         va_start(args, format);
         [self log:[[NSString alloc] initWithFormat:format arguments:args] level:ARTLogLevelDebug];
@@ -214,7 +214,7 @@ static const char *logLevelName(ARTLogLevel level) {
 }
 
 - (void)debug:(const char *)fileName line:(NSUInteger)line message:(NSString *)message, ... {
-    if (self.logLevel == ARTLogLevelDebug) {
+    if (self.logLevel <= ARTLogLevelDebug) {
         va_list args;
         va_start(args, message);
         [self log:[[NSString alloc] initWithFormat:[NSString stringWithFormat:@"(%@:%lu) %@", [[NSString stringWithUTF8String:fileName] lastPathComponent], (unsigned long)line, message] arguments:args] level:ARTLogLevelDebug];
@@ -223,7 +223,7 @@ static const char *logLevelName(ARTLogLevel level) {
 }
 
 - (void)info:(NSString *)format, ... {
-    if (self.logLevel == ARTLogLevelInfo) {
+    if (self.logLevel <= ARTLogLevelInfo) {
         va_list args;
         va_start(args, format);
         [self log:[[NSString alloc] initWithFormat:format arguments:args] level:ARTLogLevelInfo];
@@ -232,7 +232,7 @@ static const char *logLevelName(ARTLogLevel level) {
 }
 
 - (void)warn:(NSString *)format, ... {
-    if (self.logLevel == ARTLogLevelWarn) {
+    if (self.logLevel <= ARTLogLevelWarn) {
         va_list args;
         va_start(args, format);
         [self log:[[NSString alloc] initWithFormat:format arguments:args] level:ARTLogLevelWarn];
@@ -241,7 +241,7 @@ static const char *logLevelName(ARTLogLevel level) {
 }
 
 - (void)error:(NSString *)format, ... {
-    if (self.logLevel == ARTLogLevelError) {
+    if (self.logLevel <= ARTLogLevelError) {
         va_list args;
         va_start(args, format);
         [self log:[[NSString alloc] initWithFormat:format arguments:args] level:ARTLogLevelError];
