@@ -2,6 +2,20 @@
 
 An iOS client library for [ably.io](https://www.ably.io), the realtime messaging service, written in Objective-C.
 
+## Supported platforms
+
+This SDK is compatible with projects that target:
+
+- iOS9
+- iOS10 
+- iOS11
+
+We maintain compatibility and explicitly support these platform versions, including performing CI testing on all library revisions.
+
+We do not explicitly maintain compatibility with older platform versions; we no longer perform CI testing on iOS8 as of version 1.0.11 (released on January 31st 2018). Any known incompatibilities with older versions can be found [here](https://github.com/ably/ably-ios/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
+
+If you find any issues with unsupported platform versions, please [raise an issue](https://github.com/ably/ably-ios/issues) in this repository or [contact Ably customer support](https://support.ably.io) for advice.
+
 ## Documentation
 
 Visit https://www.ably.io/documentation for a complete API reference and more examples.
@@ -569,8 +583,8 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
 * Run [`github_changelog_generator`](https://github.com/skywinder/Github-Changelog-Generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). Once the CHANGELOG has completed, manually change the `Unreleased` heading and link with the current version number such as `v1.0.0`. Also ensure that the `Full Changelog` link points to the new version tag instead of the `HEAD`. Commit this change.
 * Push tag to origin such as `git push origin x.x.x`.
 * Visit [releases page](https://github.com/ably/ably-ios/releases) and `Add release notes`.
-* Remember to release an update for the [CocoaPods](https://guides.cocoapods.org/making/making-a-cocoapod.html#release).
-* Remember to generate and attach the prebuilt framework for [Carthage](https://github.com/Carthage/Carthage#archive-prebuilt-frameworks-into-one-zip-file).
+* Release an update for CocoaPods: `(pod lib lint && pod trunk push Ably.podspec)`.
+* Generate the prebuilt framework for Carthage (`(carthage build --no-skip-current && carthage archive Ably)`) and attach the zip file to the release.
 
 ## License
 
