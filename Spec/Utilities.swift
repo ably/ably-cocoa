@@ -396,6 +396,7 @@ class Utilities: QuickSpec {
                 it("should have a history of logs") {
                     let options = AblyTests.commonAppSetup()
                     let realtime = ARTRealtime(options: options)
+                    realtime.logger.logLevel = .verbose
                     defer { realtime.close() }
                     let channel = realtime.channels.get("foo")
 
