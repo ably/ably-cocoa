@@ -563,12 +563,14 @@ You can also view the [community reported Github issues](https://github.com/ably
 
 ## Contributing
 
+In this repo the `master` branch contains the latest stable version of the Ably SDK. Pushing changes to the `master` branch is locked. All the development (bug fixing, feature implementation, etc.) is done against the `develop` branch, which you should branch from whenever you'd like to make modifications. Here's the steps to follow when contributing to this repo.
+
 1. Fork it
 2. Install dependencies by running `pod install` and `carthage bootstrap`
-3. Create your feature branch (`git checkout -b my-new-feature`)
+3. Create your feature branch from `develop` (`git checkout develop && git checkout -b my-new-feature-branch`)
 4. Commit your changes (`git commit -am 'Add some feature'`)
 5. Ensure you have added suitable tests and the test suite is passing
-6. Push to the branch (`git push origin my-new-feature`)
+6. Push to the branch (`git push origin my-new-feature-branch`)
 7. Create a new Pull Request
 
 ## Running tests
