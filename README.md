@@ -581,9 +581,13 @@ The project supports fastlane. To run tests use `fastlane scan --scheme "Ably"`.
 
 This library uses [semantic versioning](http://semver.org/). For each release, the following needs to be done:
 
+* Create a new branch `release-x.x.x` (where `x.x.x` is the new version number) from the `develop` branch
 * Run script `./Scripts/set-version.sh x.x.x` to assign the new version number.
 * Run [`github_changelog_generator`](https://github.com/skywinder/Github-Changelog-Generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). Once the CHANGELOG has completed, manually change the `Unreleased` heading and link with the current version number such as `v1.0.0`. Also ensure that the `Full Changelog` link points to the new version tag instead of the `HEAD`. Commit this change.
 * Push tag to origin such as `git push origin x.x.x`.
+* Make a PR against `develop`
+* Wait for review. Once the PR is approved, merge it into `develop`
+* Fast-forward the master branch: `git checkout master && git merge --ff-only develop`
 * Visit [releases page](https://github.com/ably/ably-ios/releases) and `Add release notes`.
 * Release an update for CocoaPods: `(pod lib lint && pod trunk push Ably.podspec)`.
 * Generate the prebuilt framework for Carthage (`(carthage build --no-skip-current && carthage archive Ably)`) and attach the zip file to the release.
