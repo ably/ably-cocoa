@@ -1328,6 +1328,35 @@ class RealtimeClient: QuickSpec {
 
                 expect(result).to(equal(expectedOrder))
             }
+            
+            it ("subscriber should receive messages in the same order in which they have been sent") {
+                let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
+                defer { realtime.dispose(); realtime.close() }
+                waitUntil(timeout: testTimeout) { done in
+                    realtime.connection.on(.connected) { _ in
+                        done()
+                    }
+                }
+                
+                let channel = realtime.channels.get("testing")
+                let expectedResults = [Int](1...50)
+                
+                waitUntil(timeout: testTimeout) { done in
+                    var index = 0
+                    channel.subscribe({ message in
+                        let value = expectedResults[index]
+                        let receivedValue = message.name
+                        expect(receivedValue).to(equal(String(value)))
+                        index += 1
+                        if (receivedValue == String(describing: expectedResults.last!)) {
+                            done()
+                        }
+                    })
+                    for i in expectedResults {
+                        channel.publish(String(i), data: nil)
+                    }
+                }
+            }
 
             class AblyManager {
                 static let sharedClient = ARTRealtime(options: { $0.autoConnect = false; return $0 }(ARTClientOptions(key: "xxxx:xxxx")))
