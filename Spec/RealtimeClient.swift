@@ -1338,11 +1338,6 @@ class RealtimeClient: QuickSpec {
                         done()
                     }
                 }
-                waitUntil(timeout: testTimeout) { done in
-                    realtime2.connection.on(.connected) { _ in
-                        done()
-                    }
-                }
                 
                 let subscribeChannel = realtime1.channels.get("testing")
                 let sendChannel = realtime2.channels.get("testing")
