@@ -1330,20 +1330,27 @@ class RealtimeClient: QuickSpec {
             }
             
             it ("subscriber should receive messages in the same order in which they have been sent") {
-                let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
-                defer { realtime.dispose(); realtime.close() }
+                let realtime1 = ARTRealtime(options: AblyTests.commonAppSetup())
+                let realtime2 = ARTRealtime(options: AblyTests.commonAppSetup())
+                defer { realtime1.dispose(); realtime1.close(); realtime2.dispose(); realtime2.close(); }
                 waitUntil(timeout: testTimeout) { done in
-                    realtime.connection.on(.connected) { _ in
+                    realtime1.connection.on(.connected) { _ in
+                        done()
+                    }
+                }
+                waitUntil(timeout: testTimeout) { done in
+                    realtime2.connection.on(.connected) { _ in
                         done()
                     }
                 }
                 
-                let channel = realtime.channels.get("testing")
+                let subscribeChannel = realtime1.channels.get("testing")
+                let sendChannel = realtime2.channels.get("testing")
                 let expectedResults = [Int](1...50)
                 
                 waitUntil(timeout: testTimeout) { done in
                     var index = 0
-                    channel.subscribe({ message in
+                    subscribeChannel.subscribe({ message in
                         let value = expectedResults[index]
                         let receivedValue = message.name
                         expect(receivedValue).to(equal(String(value)))
@@ -1353,7 +1360,7 @@ class RealtimeClient: QuickSpec {
                         }
                     })
                     for i in expectedResults {
-                        channel.publish(String(i), data: nil)
+                        sendChannel.publish(String(i), data: nil)
                     }
                 }
             }
