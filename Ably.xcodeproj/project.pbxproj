@@ -121,6 +121,7 @@
 		D7588AF41BFF91B800BB8279 /* ARTURLSessionServerTrust.m in Sources */ = {isa = PBXBuildFile; fileRef = D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */; };
 		D75A3F1B1DDE5B62002A4AAD /* ARTGCD.h in Headers */ = {isa = PBXBuildFile; fileRef = D75A3F191DDE5B62002A4AAD /* ARTGCD.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D75A3F1C1DDE5B62002A4AAD /* ARTGCD.m in Sources */ = {isa = PBXBuildFile; fileRef = D75A3F1A1DDE5B62002A4AAD /* ARTGCD.m */; };
+		D75F49C4205ACFEC003DE04F /* ARTDeviceStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = D75F49C2205ACFEC003DE04F /* ARTDeviceStorage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D75F49C7205AD4D4003DE04F /* SAMKeychain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D75F49C6205AD4D4003DE04F /* SAMKeychain.framework */; };
 		D75F49C8205AD525003DE04F /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D75F49C6205AD4D4003DE04F /* SAMKeychain.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D768C6AC1E4B5B0200436011 /* ARTDevicePushDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = D768C6AA1E4B5B0200436011 /* ARTDevicePushDetails.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -382,6 +383,7 @@
 		D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTURLSessionServerTrust.m; sourceTree = "<group>"; };
 		D75A3F191DDE5B62002A4AAD /* ARTGCD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTGCD.h; sourceTree = "<group>"; };
 		D75A3F1A1DDE5B62002A4AAD /* ARTGCD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTGCD.m; sourceTree = "<group>"; };
+		D75F49C2205ACFEC003DE04F /* ARTDeviceStorage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTDeviceStorage.h; sourceTree = "<group>"; };
 		D75F49C6205AD4D4003DE04F /* SAMKeychain.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SAMKeychain.framework; path = Carthage/Build/iOS/SAMKeychain.framework; sourceTree = "<group>"; };
 		D768C6AA1E4B5B0200436011 /* ARTDevicePushDetails.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTDevicePushDetails.h; sourceTree = "<group>"; };
 		D768C6AB1E4B5B0200436011 /* ARTDevicePushDetails.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDevicePushDetails.m; sourceTree = "<group>"; };
@@ -873,6 +875,7 @@
 				D7DEAFCF1E65926D00D23F24 /* ARTLocalDevice.h */,
 				EBFFAC181E97919C003E7326 /* ARTLocalDevice+Private.h */,
 				D7DEAFD01E65926D00D23F24 /* ARTLocalDevice.m */,
+				D75F49C2205ACFEC003DE04F /* ARTDeviceStorage.h */,
 				D7DF73881EA645300013CD36 /* ARTLocalDeviceStorage.h */,
 				D7DF73891EA645300013CD36 /* ARTLocalDeviceStorage.m */,
 				D71966E71E5DFFC6000974DD /* Activation State Machine */,
@@ -958,6 +961,7 @@
 				EBD947B41EBB8F160005DD16 /* ARTSentry.h in Headers */,
 				EBFFAC1B1E97EF68003E7326 /* ARTPushAdmin+Private.h in Headers */,
 				D7D5A69C1CA40C350071BD6D /* ARTConnectionDetails+Private.h in Headers */,
+				D75F49C4205ACFEC003DE04F /* ARTDeviceStorage.h in Headers */,
 				D7B621901E4A6E0200684474 /* ARTPush.h in Headers */,
 				96E408471A3895E800087F77 /* ARTWebSocketTransport.h in Headers */,
 				EB503C8A1C7F1FE40053AF00 /* ARTLog+Private.h in Headers */,
