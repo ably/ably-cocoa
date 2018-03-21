@@ -26,8 +26,8 @@
 // More context
 typedef NSDictionary<NSString *, id> ARTJsonObject;
 typedef NSString ARTDeviceId;
+typedef NSString ARTDeviceSecret;
 typedef NSData ARTDeviceToken;
-typedef NSString ARTUpdateToken;
 typedef ARTJsonObject ARTPushRecipient;
 
 typedef NS_ENUM(NSUInteger, ARTAuthentication) {
@@ -196,6 +196,11 @@ NSString *generateNonce(void);
 
 @interface NSString (Utilities)
 - (NSString *)shortString;
+- (NSString *)base64Encoded;
+@end
+
+@interface NSDate (Utilities)
++ (NSDate *)dateWithMillisecondsSince1970:(uint64_t)msecs;
 @end
 
 @interface NSDictionary (ARTJsonCompatible) <ARTJsonCompatible>

@@ -7,15 +7,17 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <Ably/ARTDeviceStorage.h>
+
+@class ARTLog;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol ARTDeviceStorage <NSObject>
-- (nullable id)objectForKey:(NSString *)key;
-- (void)setObject:(nullable id)value forKey:(NSString *)key;
-@end
-
 @interface ARTLocalDeviceStorage : NSObject<ARTDeviceStorage>
+
+- (instancetype)initWithLogger:(ARTLog *)logger;
+
++ (instancetype)newWithLogger:(ARTLog *)logger;
 
 @end
 
