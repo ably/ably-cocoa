@@ -34,10 +34,10 @@ class PushActivationStateMachine : QuickSpec {
             }
 
             it("should read the current state in disk") {
-                let storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForUpdateToken(machine: initialStateMachine))
+                let storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeviceRegistration(machine: initialStateMachine))
                 rest.storage = storage
                 let stateMachine = ARTPushActivationStateMachine(rest)
-                expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForUpdateToken.self))
+                expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
                 expect(storage.keysRead).to(haveCount(2))
                 expect(storage.keysRead.filter({ $0.hasSuffix("CurrentState") })).to(haveCount(1))
                 expect(storage.keysWritten).to(beEmpty())
@@ -73,7 +73,7 @@ class PushActivationStateMachine : QuickSpec {
                         storage.simulateOnNextRead(string: testDeviceId, for: ARTDeviceIdKey)
 
                         let testDeviceUpdateToken = "xxxx-xxxx-xxx"
-                        storage.simulateOnNextRead(string: testDeviceUpdateToken, for: ARTDeviceUpdateTokenKey)
+                        storage.simulateOnNextRead(string: testDeviceUpdateToken, for: ARTDeviceIdentityTokenKey)
 
                         stateMachine.send(ARTPushActivationEventCalledActivate())
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
@@ -157,7 +157,7 @@ class PushActivationStateMachine : QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             let partialDone = AblyTests.splitDone(2, done: done)
                             stateMachine.transitions = { event, from, to in
-                                if event is ARTPushActivationEventGotUpdateToken {
+                                if event is ARTPushActivationEventGotDeviceRegistration {
                                     stateMachine.transitions = nil
                                     partialDone()
                                 }
@@ -169,7 +169,7 @@ class PushActivationStateMachine : QuickSpec {
                                 return nil
                             }
                             stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
-                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForUpdateToken.self))
+                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
                         }
 
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
@@ -186,7 +186,7 @@ class PushActivationStateMachine : QuickSpec {
                             let simulatedError = NSError(domain: "", code: 1234, userInfo: nil)
                             let partialDone = AblyTests.splitDone(2, done: done)
                             stateMachine.transitions = { event, from, to in
-                                if let event = event as? ARTPushActivationEventGettingUpdateTokenFailed {
+                                if let event = event as? ARTPushActivationEventGettingDeviceRegistrationFailed {
                                     expect(event.error.domain) == ARTAblyErrorDomain
                                     expect(event.error.code) == simulatedError.code
                                     stateMachine.transitions = nil
@@ -200,7 +200,7 @@ class PushActivationStateMachine : QuickSpec {
                                 return simulatedError
                             }
                             stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
-                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForUpdateToken.self))
+                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
                         }
 
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
@@ -215,13 +215,13 @@ class PushActivationStateMachine : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             stateMachine.transitions = { event, from, to in
-                                if event is ARTPushActivationEventGotUpdateToken {
+                                if event is ARTPushActivationEventGotDeviceRegistration {
                                     stateMachine.transitions = nil
                                     done()
                                 }
                             }
                             stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
-                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForUpdateToken.self))
+                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
                         }
 
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
@@ -257,7 +257,7 @@ class PushActivationStateMachine : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             stateMachine.transitions = { event, from, to in
-                                if let event = event as? ARTPushActivationEventGettingUpdateTokenFailed {
+                                if let event = event as? ARTPushActivationEventGettingDeviceRegistrationFailed {
                                     expect(event.error.domain) == ARTAblyErrorDomain
                                     expect(event.error.code) == simulatedError.code
                                     stateMachine.transitions = nil
@@ -265,7 +265,7 @@ class PushActivationStateMachine : QuickSpec {
                                 }
                             }
                             stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
-                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForUpdateToken.self))
+                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
                         }
 
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
@@ -300,14 +300,14 @@ class PushActivationStateMachine : QuickSpec {
                 var storage: MockDeviceStorage!
 
                 beforeEach {
-                    storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForUpdateToken(machine: initialStateMachine))
+                    storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeviceRegistration(machine: initialStateMachine))
                     rest.storage = storage
                     stateMachine = ARTPushActivationStateMachine(rest)
                 }
 
                 it("on Event CalledActivate") {
                     stateMachine.send(ARTPushActivationEventCalledActivate())
-                    expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForUpdateToken.self))
+                    expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
                 }
 
                 it("on Event GotUpdateToken") {
@@ -317,7 +317,7 @@ class PushActivationStateMachine : QuickSpec {
                     }
                     defer { hook.remove() }
 
-                    stateMachine.send(ARTPushActivationEventGotUpdateToken())
+                    stateMachine.send(ARTPushActivationEventGotDeviceRegistration())
                     expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
                     expect(activatedCallbackCalled).to(beTrue())
                 }
@@ -329,7 +329,7 @@ class PushActivationStateMachine : QuickSpec {
                     }
                     defer { hook.remove() }
 
-                    stateMachine.send(ARTPushActivationEventGettingUpdateTokenFailed())
+                    stateMachine.send(ARTPushActivationEventGettingDeviceRegistrationFailed())
                     expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
                     expect(activatedCallbackCalled).to(beTrue())
                 }
@@ -539,7 +539,7 @@ class PushActivationStateMachine : QuickSpec {
                     stateMachine.send(ARTPushActivationEventDeregistered())
                     expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
                     expect(deactivatedCallbackCalled).to(beTrue())
-                    expect(storage.keysWritten.filter({ $0 == ARTDeviceUpdateTokenKey })).to(haveCount(1))
+                    expect(storage.keysWritten.filter({ $0 == ARTDeviceIdentityTokenKey })).to(haveCount(1))
                 }
 
                 it("on Event DeregistrationFailed") {

@@ -13,6 +13,7 @@
 @class ARTRest;
 @class ARTRealtime;
 @class ARTDeviceDetails;
+@class ARTDeviceIdentityTokenDetails;
 
 #pragma mark ARTPushRegisterer interface
 
@@ -27,7 +28,7 @@
 
 - (void)didAblyPushRegistrationFail:(nullable ARTErrorInfo *)error;
 
-- (void)ablyPushCustomRegister:(nullable ARTErrorInfo *)error deviceDetails:(nullable ARTDeviceDetails *)deviceDetails callback:(void (^ _Nonnull)(ARTUpdateToken * _Nonnull, ARTErrorInfo * _Nullable))callback;
+- (void)ablyPushCustomRegister:(nullable ARTErrorInfo *)error deviceDetails:(nullable ARTDeviceDetails *)deviceDetails callback:(void (^ _Nonnull)(ARTDeviceIdentityTokenDetails * _Nullable, ARTErrorInfo * _Nullable))callback;
 - (void)ablyPushCustomDeregister:(nullable ARTErrorInfo *)error deviceId:(nullable ARTDeviceId *)deviceId callback:(void (^ _Nullable)(ARTErrorInfo * _Nullable))callback;
 
 @end

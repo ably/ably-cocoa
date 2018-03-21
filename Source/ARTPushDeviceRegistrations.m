@@ -12,9 +12,11 @@
 #import "ARTPaginatedResult+Private.h"
 #import "ARTDeviceDetails.h"
 #import "ARTDevicePushDetails.h"
+#import "ARTDeviceIdentityTokenDetails.h"
 #import "ARTClientOptions.h"
 #import "ARTEncoder.h"
 #import "ARTRest+Private.h"
+#import "ARTLocalDevice.h"
 
 @implementation ARTPushDeviceRegistrations {
     __weak ARTRest *_rest;
@@ -33,6 +35,19 @@
     return self;
 }
 
+- (void)deviceAuthentication:(ARTDeviceId *)deviceId request:(NSMutableURLRequest *)request localDevice:(ARTLocalDevice *)localDevice {
+    if ([localDevice.id isEqualToString:deviceId]) {
+        if (localDevice.identityTokenDetails) {
+            [_logger debug:__FILE__ line:__LINE__ message:@"adding device authentication using local device identity token"];
+            [request setValue:[localDevice.identityTokenDetails.token base64Encoded] forHTTPHeaderField:@"X-Ably-DeviceIdentityToken"];
+        }
+        else if (localDevice.secret) {
+            [_logger debug:__FILE__ line:__LINE__ message:@"adding device authentication using local device secret"];
+            [request setValue:localDevice.secret forHTTPHeaderField:@"X-Ably-DeviceSecret"];
+        }
+    }
+}
+
 - (void)save:(ARTDeviceDetails *)deviceDetails callback:(void (^)(ARTErrorInfo *error))callback {
     if (callback) {
         void (^userCallback)(ARTErrorInfo *error) = callback;
@@ -43,6 +58,8 @@
             });
         };
     }
+
+    ARTLocalDevice *local = _rest.device;
 
 dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
@@ -55,16 +72,10 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     request.HTTPBody = [[_rest defaultEncoder] encodeDeviceDetails:deviceDetails error:nil];
     [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
-    ARTAuthentication authentication = ARTAuthenticationOn;
-    if (deviceDetails.updateToken) {
-        NSData *tokenData = [deviceDetails.updateToken dataUsingEncoding:NSUTF8StringEncoding];
-        NSString *tokenBase64 = [tokenData base64EncodedStringWithOptions:0];
-        [request setValue:[NSString stringWithFormat:@"Bearer %@", tokenBase64] forHTTPHeaderField:@"Authorization"];
-        authentication = ARTAuthenticationOff;
-    }
+    [self deviceAuthentication:deviceDetails.id request:request localDevice:local];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"save device with request %@", request];
-    [_rest executeRequest:request withAuthOption:authentication completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*OK*/) {
             NSError *decodeError = nil;
             ARTDeviceDetails *deviceDetails = [[_rest defaultEncoder] decodeDeviceDetails:data error:&decodeError];
@@ -73,8 +84,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
                 callback([ARTErrorInfo createFromNSError:decodeError]);
             }
             else {
-                [_logger debug:__FILE__ line:__LINE__ message:@"%@: save device successfully", NSStringFromClass(self.class)];
-                deviceDetails.updateToken = deviceDetails.updateToken;
+                [_logger debug:__FILE__ line:__LINE__ message:@"%@: successfully saved device %@", NSStringFromClass(self.class), deviceDetails.id];
                 callback(nil);
             }
         }
@@ -103,10 +113,14 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         };
     }
 
+    ARTLocalDevice *local = _rest.device;
+
 dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceId]];
     request.HTTPMethod = @"GET";
+
+    [self deviceAuthentication:deviceId request:request localDevice:local];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"get device with request %@", request];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {

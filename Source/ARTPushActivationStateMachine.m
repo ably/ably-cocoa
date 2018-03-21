@@ -16,8 +16,9 @@
 #import "ARTJsonLikeEncoder.h"
 #import "ARTTypes.h"
 #import "ARTLocalDevice+Private.h"
-#import "ARTLocalDeviceStorage.h"
+#import "ARTDeviceStorage.h"
 #import "ARTDevicePushDetails.h"
+#import "ARTDeviceIdentityTokenDetails.h"
 
 #ifdef TARGET_OS_IOS
 #import <UIKit/UIKit.h>
@@ -151,21 +152,21 @@ dispatch_async(_queue, ^{
     SEL customRegisterMethodSelector = @selector(ablyPushCustomRegister:deviceDetails:callback:);
     if ([delegate respondsToSelector:customRegisterMethodSelector]) {
         dispatch_async(_userQueue, ^{
-            [delegate ablyPushCustomRegister:error deviceDetails:local callback:^(ARTUpdateToken *updateToken, ARTErrorInfo *error) {
+            [delegate ablyPushCustomRegister:error deviceDetails:local callback:^(ARTDeviceIdentityTokenDetails *identityTokenDetails, ARTErrorInfo *error) {
                 if (error) {
                     // Failed
                     [delegate didActivateAblyPush:error];
-                    [self sendEvent:[ARTPushActivationEventGettingUpdateTokenFailed newWithError:error]];
+                    [self sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:error]];
                 }
-                else if (updateToken) {
+                else if (identityTokenDetails) {
                     // Success
-                    [local setAndPersistUpdateToken:updateToken];
-                    [self sendEvent:[ARTPushActivationEventGotUpdateToken new]];
+                    [local setAndPersistIdentityTokenDetails:identityTokenDetails];
+                    [self sendEvent:[ARTPushActivationEventGotDeviceRegistration new]];
                 }
                 else {
-                    ARTErrorInfo *missingUpdateTokenError = [ARTErrorInfo createWithCode:0 message:@"UpdateToken is expected"];
-                    [delegate didActivateAblyPush:missingUpdateTokenError];
-                    [self sendEvent:[ARTPushActivationEventGettingUpdateTokenFailed newWithError:missingUpdateTokenError]];
+                    ARTErrorInfo *missingIdentityTokenError = [ARTErrorInfo createWithCode:0 message:@"Device Identity Token Details is expected"];
+                    [delegate didActivateAblyPush:missingIdentityTokenError];
+                    [self sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:missingIdentityTokenError]];
                 }
             }];
         });
@@ -182,12 +183,18 @@ dispatch_async(_queue, ^{
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             [[_rest logger] error:@"%@: device registration failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
-            [self sendEvent:[ARTPushActivationEventGettingUpdateTokenFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+            [self sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
             return;
         }
-        ARTDeviceDetails *deviceDetails = [[_rest defaultEncoder] decodeDeviceDetails:data error:nil];
-        [local setAndPersistUpdateToken:deviceDetails.updateToken];
-        [self sendEvent:[ARTPushActivationEventGotUpdateToken new]];
+        NSError *decodeError = nil;
+        ARTDeviceIdentityTokenDetails *identityTokenDetails = [[_rest defaultEncoder] decodeDeviceIdentityTokenDetails:data error:&decodeError];
+        if (decodeError) {
+            [[_rest logger] error:@"%@: decode identity token details failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            [self sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+            return;
+        }
+        [local setAndPersistIdentityTokenDetails:identityTokenDetails];
+        [self sendEvent:[ARTPushActivationEventGotDeviceRegistration new]];
     }];
     #endif
 }
@@ -215,22 +222,22 @@ dispatch_async(_queue, ^{
     SEL customRegisterMethodSelector = @selector(ablyPushCustomRegister:deviceDetails:callback:);
     if ([delegate respondsToSelector:customRegisterMethodSelector]) {
         dispatch_async(_userQueue, ^{
-            [delegate ablyPushCustomRegister:error deviceDetails:local callback:^(ARTUpdateToken *updateToken, ARTErrorInfo *error) {
+            [delegate ablyPushCustomRegister:error deviceDetails:local callback:^(ARTDeviceIdentityTokenDetails *identityTokenDetails, ARTErrorInfo *error) {
                 if (error) {
                     // Failed
                     [delegate didActivateAblyPush:error];
                     [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:error]];
                 }
-                else if (updateToken) {
+                else if (identityTokenDetails) {
                     // Success
-                    [local setAndPersistUpdateToken:updateToken];
+                    [local setAndPersistIdentityTokenDetails:identityTokenDetails];
                     [delegate didActivateAblyPush:nil];
                     [self sendEvent:[ARTPushActivationEventRegistrationUpdated new]];
                 }
                 else {
-                    ARTErrorInfo *missingUpdateTokenError = [ARTErrorInfo createWithCode:0 message:@"UpdateToken is expected"];
-                    [delegate didActivateAblyPush:missingUpdateTokenError];
-                    [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:missingUpdateTokenError]];
+                    ARTErrorInfo *missingIdentityTokenError = [ARTErrorInfo createWithCode:0 message:@"Device Identity Token Details is expected"];
+                    [delegate didActivateAblyPush:missingIdentityTokenError];
+                    [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:missingIdentityTokenError]];
                 }
             }];
         });
@@ -238,7 +245,7 @@ dispatch_async(_queue, ^{
     }
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:local.id]];
-    NSData *tokenData = [local.updateToken dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *tokenData = [local.identityTokenDetails.token dataUsingEncoding:NSUTF8StringEncoding];
     NSString *tokenBase64 = [tokenData base64EncodedStringWithOptions:0];
     [request setValue:[NSString stringWithFormat:@"Bearer %@", tokenBase64] forHTTPHeaderField:@"Authorization"];
     request.HTTPMethod = @"PATCH";
@@ -256,8 +263,14 @@ dispatch_async(_queue, ^{
             [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
             return;
         }
-        ARTDeviceDetails *deviceDetails = [[_rest defaultEncoder] decodeDeviceDetails:data error:nil];
-        [local setAndPersistUpdateToken:deviceDetails.updateToken];
+        NSError *decodeError = nil;
+        ARTDeviceIdentityTokenDetails *identityTokenDetails = [[_rest defaultEncoder] decodeDeviceIdentityTokenDetails:data error:&decodeError];
+        if (decodeError) {
+            [[_rest logger] error:@"%@: decode identity token details failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+            return;
+        }
+        [local setAndPersistIdentityTokenDetails:identityTokenDetails];
         [self sendEvent:[ARTPushActivationEventRegistrationUpdated new]];
     }];
     #endif
