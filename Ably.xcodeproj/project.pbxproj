@@ -121,6 +121,8 @@
 		D7588AF41BFF91B800BB8279 /* ARTURLSessionServerTrust.m in Sources */ = {isa = PBXBuildFile; fileRef = D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */; };
 		D75A3F1B1DDE5B62002A4AAD /* ARTGCD.h in Headers */ = {isa = PBXBuildFile; fileRef = D75A3F191DDE5B62002A4AAD /* ARTGCD.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D75A3F1C1DDE5B62002A4AAD /* ARTGCD.m in Sources */ = {isa = PBXBuildFile; fileRef = D75A3F1A1DDE5B62002A4AAD /* ARTGCD.m */; };
+		D75F49C7205AD4D4003DE04F /* SAMKeychain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D75F49C6205AD4D4003DE04F /* SAMKeychain.framework */; };
+		D75F49C8205AD525003DE04F /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D75F49C6205AD4D4003DE04F /* SAMKeychain.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D768C6AC1E4B5B0200436011 /* ARTDevicePushDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = D768C6AA1E4B5B0200436011 /* ARTDevicePushDetails.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D768C6AD1E4B5B0200436011 /* ARTDevicePushDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = D768C6AB1E4B5B0200436011 /* ARTDevicePushDetails.m */; };
 		D77394031C6F6FFE00F5478F /* ARTProtocolMessage+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D77394021C6F6FFE00F5478F /* ARTProtocolMessage+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -228,6 +230,7 @@
 				D736A1231F9178B0005ABE81 /* KSCrash.framework in Copy Carthage Frameworks to Test bundle */,
 				D736A1241F9178B0005ABE81 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */,
 				D736A1251F9178B0005ABE81 /* SocketRocket.framework in Copy Carthage Frameworks to Test bundle */,
+				D75F49C8205AD525003DE04F /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */,
 			);
 			name = "Copy Carthage Frameworks to Test bundle";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -379,6 +382,7 @@
 		D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTURLSessionServerTrust.m; sourceTree = "<group>"; };
 		D75A3F191DDE5B62002A4AAD /* ARTGCD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTGCD.h; sourceTree = "<group>"; };
 		D75A3F1A1DDE5B62002A4AAD /* ARTGCD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTGCD.m; sourceTree = "<group>"; };
+		D75F49C6205AD4D4003DE04F /* SAMKeychain.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SAMKeychain.framework; path = Carthage/Build/iOS/SAMKeychain.framework; sourceTree = "<group>"; };
 		D768C6AA1E4B5B0200436011 /* ARTDevicePushDetails.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTDevicePushDetails.h; sourceTree = "<group>"; };
 		D768C6AB1E4B5B0200436011 /* ARTDevicePushDetails.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDevicePushDetails.m; sourceTree = "<group>"; };
 		D77394021C6F6FFE00F5478F /* ARTProtocolMessage+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTProtocolMessage+Private.h"; sourceTree = "<group>"; };
@@ -490,6 +494,8 @@
 				D736A0C91F916553005ABE81 /* KSCrash.framework in Frameworks */,
 				D736A0CA1F916553005ABE81 /* msgpack.framework in Frameworks */,
 				D736A0CB1F916553005ABE81 /* SocketRocket.framework in Frameworks */,
+				D77A0C961FFEEF0300711131 /* ULID.framework in Frameworks */,
+				D75F49C7205AD4D4003DE04F /* SAMKeychain.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -878,6 +884,8 @@
 		FAFEC5BB8312EB69E84C28D4 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D75F49C6205AD4D4003DE04F /* SAMKeychain.framework */,
+				D77A0C951FFEEF0300711131 /* ULID.framework */,
 				D736A0C61F916553005ABE81 /* KSCrash.framework */,
 				D736A0C71F916553005ABE81 /* msgpack.framework */,
 				D736A0C81F916553005ABE81 /* SocketRocket.framework */,
@@ -1158,6 +1166,30 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
+		};
+		D736A0CF1F91657E005ABE81 /* Carthage */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Carthage/Build/iOS/KSCrash.framework",
+				"$(SRCROOT)/Carthage/Build/iOS/msgpack.framework",
+				"$(SRCROOT)/Carthage/Build/iOS/SocketRocket.framework",
+				"$(SRCROOT)/Carthage/Build/iOS/ULID.framework",
+				"$(SRCROOT)/Carthage/Build/iOS/SAMKeychain.framework",
+			);
+			name = Carthage;
+			outputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(FRAMEWORKS_FOLDER_PATH)/KSCrash.framework",
+				"$(BUILT_PRODUCTS_DIR)/$(FRAMEWORKS_FOLDER_PATH)/msgpack.framework",
+				"$(BUILT_PRODUCTS_DIR)/$(FRAMEWORKS_FOLDER_PATH)/SocketRocket.framework",
+				"$(BUILT_PRODUCTS_DIR)/$(FRAMEWORKS_FOLDER_PATH)/ULID.framework",
+				"$(BUILT_PRODUCTS_DIR)/$(FRAMEWORKS_FOLDER_PATH)/SAMKeychain.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/usr/local/bin/carthage copy-frameworks";
 		};
 /* End PBXShellScriptBuildPhase section */
 
