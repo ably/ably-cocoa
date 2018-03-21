@@ -322,6 +322,14 @@
     return outputData;
 }
 
++ (NSData *)generateHashSHA256:(NSData *)data {
+    u_int8_t digest[CC_SHA256_DIGEST_LENGTH * sizeof(u_int8_t)];
+    memset(digest, 0x0, CC_SHA256_DIGEST_LENGTH);
+    CC_SHA256([data bytes], (CC_LONG)[data length], digest);
+    NSData *hash = [NSData dataWithBytes:digest length:CC_SHA256_DIGEST_LENGTH];
+    return hash;
+}
+
 + (ARTCipherParams *)getDefaultParams:(NSDictionary *)values {
     NSString *algorithm = values[@"algorithm"];
     if (algorithm == nil) {
