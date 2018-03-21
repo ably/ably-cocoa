@@ -280,4 +280,18 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
     return [self substringWithRange:stringRange];
 }
 
+- (NSString *)base64Encoded {
+    return encodeBase64(self);
+}
+
+@end
+
+#pragma mark - NSDate (Utilities)
+
+@implementation NSDate (Utilities)
+
++ (NSDate *)dateWithMillisecondsSince1970:(uint64_t)msecs {
+    return [NSDate dateWithTimeIntervalSince1970:millisecondsToTimeInterval(msecs)];
+}
+
 @end

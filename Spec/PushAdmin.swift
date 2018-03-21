@@ -14,6 +14,7 @@ class PushAdmin : QuickSpec {
 
     private static var deviceDetails: ARTDeviceDetails = {
         let deviceDetails = ARTDeviceDetails(id: "testDeviceDetails")
+        deviceDetails.secret = ARTLocalDevice.generateSecret()
         deviceDetails.platform = "ios"
         deviceDetails.formFactor = "phone"
         deviceDetails.metadata = NSMutableDictionary()
@@ -26,6 +27,7 @@ class PushAdmin : QuickSpec {
 
     private static var deviceDetails1ClientA: ARTDeviceDetails = {
         let deviceDetails = ARTDeviceDetails(id: "deviceDetails1ClientA")
+        deviceDetails.secret = ARTLocalDevice.generateSecret()
         deviceDetails.platform = "android"
         deviceDetails.formFactor = "tablet"
         deviceDetails.clientId = "clientA"
@@ -39,6 +41,7 @@ class PushAdmin : QuickSpec {
 
     private static var deviceDetails2ClientA: ARTDeviceDetails = {
         let deviceDetails = ARTDeviceDetails(id: "deviceDetails2ClientA")
+        deviceDetails.secret = ARTLocalDevice.generateSecret()
         deviceDetails.platform = "android"
         deviceDetails.formFactor = "tablet"
         deviceDetails.clientId = "clientA"
@@ -52,6 +55,7 @@ class PushAdmin : QuickSpec {
 
     private static var deviceDetails3ClientB: ARTDeviceDetails = {
         let deviceDetails = ARTDeviceDetails(id: "deviceDetails3ClientB")
+        deviceDetails.secret = ARTLocalDevice.generateSecret()
         deviceDetails.platform = "android"
         deviceDetails.formFactor = "tablet"
         deviceDetails.clientId = "clientB"
@@ -110,6 +114,7 @@ class PushAdmin : QuickSpec {
     override class func setUp() {
         super.setUp()
         let rest = ARTRest(options: AblyTests.commonAppSetup())
+        rest.storage = MockDeviceStorage()
         let group = DispatchGroup()
 
         for device in allDeviceDetails {
@@ -137,6 +142,7 @@ class PushAdmin : QuickSpec {
 
     override class func tearDown() {
         let rest = ARTRest(options: AblyTests.commonAppSetup())
+        rest.storage = MockDeviceStorage()
         let group = DispatchGroup()
 
         for device in allDeviceDetails {
@@ -160,6 +166,7 @@ class PushAdmin : QuickSpec {
 
         var rest: ARTRest!
         var httpExecutor: MockHTTPExecutor!
+        var storage: MockDeviceStorage!
 
         let recipient = [
             "clientId": "bob"
@@ -175,6 +182,8 @@ class PushAdmin : QuickSpec {
             rest = ARTRest(key: "xxxx:xxxx")
             httpExecutor = MockHTTPExecutor()
             rest.httpExecutor = httpExecutor
+            storage = MockDeviceStorage()
+            rest.storage = storage
         }
 
         // RHS1a

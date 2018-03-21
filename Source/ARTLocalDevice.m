@@ -12,7 +12,9 @@
 #import "ARTRest+Private.h"
 #import "ARTAuth+Private.h"
 #import "ARTEncoder.h"
-#import "ARTLocalDeviceStorage.h"
+#import "ARTDeviceStorage.h"
+#import "ARTDeviceIdentityTokenDetails.h"
+#import "ARTCrypto+Private.h"
 #import <ULID/ULID.h>
 
 NSString *const ARTDevicePlatform = @"ios";
@@ -62,50 +64,33 @@ NSString *const ARTDevicePushTransportType = @"apns";
 
     NSString *deviceId = [rest.storage objectForKey:ARTDeviceIdKey];
     if (!deviceId) {
-        deviceId = [[ULID new] ulidString];
+        deviceId = [self generateId];
         [rest.storage setObject:deviceId forKey:ARTDeviceIdKey];
     }
     device.id = deviceId;
-    device.updateToken = [rest.storage objectForKey:ARTDeviceUpdateTokenKey];
+
+    NSString *deviceSecret = [rest.storage secretForDevice:deviceId];
+    if (!deviceSecret) {
+        deviceSecret = [self generateSecret];
+        [rest.storage setSecret:deviceSecret forDevice:deviceId];
+    }
+    device.secret = deviceSecret;
+
+    device->_identityTokenDetails = [ARTDeviceIdentityTokenDetails unarchive:[rest.storage objectForKey:ARTDeviceIdentityTokenKey]];
 
     [device setDeviceToken:[rest.storage objectForKey:ARTDeviceTokenKey]];
 
     return device;
 }
 
-- (void)resetId {
-    [self.rest.storage setObject:nil forKey:ARTDeviceIdKey];
-    [self setAndPersistUpdateToken:nil];
-    NSString *deviceId = [[ULID new] ulidString];
-    [self.rest.storage setObject:deviceId forKey:ARTDeviceIdKey];
-    self.id = deviceId;
++ (NSString *)generateId {
+    return [[ULID new] ulidString];
 }
 
-- (void)resetUpdateToken:(void (^)(ARTErrorInfo *error))callback {
-    if (self.id == nil || self.updateToken == nil) {
-        if (callback) callback(nil);
-        return;
-    }
-
-    NSString *path = @"/push/deviceDetails";
-    path = [path stringByAppendingPathComponent:self.id];
-    path = [path stringByAppendingPathComponent:@"resetUpdateToken"];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:path]];
-    request.HTTPMethod = @"POST";
-
-    [_logger debug:__FILE__ line:__LINE__ message:@"RS:%p resetUpdateToken", _rest];
-    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
-        if (!error && data) {
-            ARTDeviceDetails *updated = [self.rest.encoders[response.allHeaderFields[@"Content-Type"]] decodeDeviceDetails:data error:&error];
-            if (!error) {
-                [self setAndPersistUpdateToken:updated.updateToken];
-            }
-        }
-        if (callback) {
-            ARTErrorInfo *errorInfo = error ? [ARTErrorInfo createFromNSError:error] : nil;
-            callback(errorInfo);
-        }
-    }];
++ (NSString *)generateSecret {
+    NSData *randomData = [ARTCrypto generateSecureRandomData:32];
+    NSData *hash = [ARTCrypto generateHashSHA256:randomData];
+    return [hash base64EncodedStringWithOptions:0];
 }
 
 - (NSString *)deviceToken {
@@ -116,14 +101,14 @@ NSString *const ARTDevicePushTransportType = @"apns";
     self.push.recipient[@"deviceToken"] = token;
 }
 
-- (void)setAndPersistDeviceToken:(NSString *)token {
-    [self.rest.storage setObject:token forKey:ARTDeviceTokenKey];
-    [self setDeviceToken:token];
+- (void)setAndPersistDeviceToken:(NSString *)deviceToken {
+    [self.rest.storage setObject:deviceToken forKey:ARTDeviceTokenKey];
+    [self setDeviceToken:deviceToken];
 }
 
-- (void)setAndPersistUpdateToken:(NSString *)token {
-    [self.rest.storage setObject:token forKey:ARTDeviceUpdateTokenKey];
-    self.updateToken = token;
+- (void)setAndPersistIdentityTokenDetails:(ARTDeviceIdentityTokenDetails *)tokenDetails {
+    [self.rest.storage setObject:[tokenDetails archive] forKey:ARTDeviceIdentityTokenKey];
+    _identityTokenDetails = tokenDetails;
 }
 
 @end
