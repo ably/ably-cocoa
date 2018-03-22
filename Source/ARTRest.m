@@ -593,7 +593,7 @@ void ARTstopHandlingUncaughtExceptions(ARTRest *self) {
     static dispatch_once_t once;
     static id device;
     dispatch_once(&once, ^{
-        device = [ARTLocalDevice load:self];
+        device = [ARTLocalDevice load:self.auth.clientId_nosync storage:self.storage];
     });
     return device;
 }

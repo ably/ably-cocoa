@@ -8,6 +8,8 @@
 
 #import <Ably/ARTRest.h>
 
+@protocol ARTDeviceStorage;
+
 NS_ASSUME_NONNULL_BEGIN
 
 extern NSString *const ARTDeviceIdKey;
@@ -17,10 +19,10 @@ extern NSString *const ARTDeviceTokenKey;
 
 @interface ARTLocalDevice ()
 
-@property (weak, nonatomic) ARTRest *rest;
+@property (strong, nonatomic) id<ARTDeviceStorage> storage;
 
-+ (ARTLocalDevice *_Nonnull)load:(ARTRest *)rest;
-- (NSString *_Nullable)deviceToken;
++ (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage;
+- (nullable NSString *)deviceToken;
 - (void)setAndPersistDeviceToken:(nullable NSString *)deviceToken;
 - (void)setAndPersistIdentityTokenDetails:(nullable ARTDeviceIdentityTokenDetails *)tokenDetails;
 
