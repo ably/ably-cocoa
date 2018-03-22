@@ -17,6 +17,7 @@
 #import "ARTEncoder.h"
 #import "ARTRest+Private.h"
 #import "ARTLocalDevice.h"
+#import "ARTNSMutableRequest+ARTPush.h"
 
 @implementation ARTPushDeviceRegistrations {
     __weak ARTRest *_rest;
@@ -33,19 +34,6 @@
         _userQueue = rest.userQueue;
     }
     return self;
-}
-
-- (void)deviceAuthentication:(ARTDeviceId *)deviceId request:(NSMutableURLRequest *)request localDevice:(ARTLocalDevice *)localDevice {
-    if ([localDevice.id isEqualToString:deviceId]) {
-        if (localDevice.identityTokenDetails) {
-            [_logger debug:__FILE__ line:__LINE__ message:@"adding device authentication using local device identity token"];
-            [request setValue:[localDevice.identityTokenDetails.token base64Encoded] forHTTPHeaderField:@"X-Ably-DeviceIdentityToken"];
-        }
-        else if (localDevice.secret) {
-            [_logger debug:__FILE__ line:__LINE__ message:@"adding device authentication using local device secret"];
-            [request setValue:localDevice.secret forHTTPHeaderField:@"X-Ably-DeviceSecret"];
-        }
-    }
 }
 
 - (void)save:(ARTDeviceDetails *)deviceDetails callback:(void (^)(ARTErrorInfo *error))callback {
@@ -71,8 +59,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     request.HTTPMethod = @"PUT";
     request.HTTPBody = [[_rest defaultEncoder] encodeDeviceDetails:deviceDetails error:nil];
     [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
-
-    [self deviceAuthentication:deviceDetails.id request:request localDevice:local];
+    [request setDeviceAuthentication:deviceDetails.id localDevice:local logger:_logger];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"save device with request %@", request];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -119,8 +106,7 @@ dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceId]];
     request.HTTPMethod = @"GET";
-
-    [self deviceAuthentication:deviceId request:request localDevice:local];
+    [request setDeviceAuthentication:deviceId localDevice:local logger:_logger];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"get device with request %@", request];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -232,6 +218,8 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         };
     }
 
+    ARTLocalDevice *local = _rest.device;
+
 dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"] resolvingAgainstBaseURL:NO];
@@ -241,6 +229,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     }
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"DELETE";
+    [request setDeviceAuthentication:[params objectForKey:@"deviceId"] localDevice:local];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"remove devices with request %@", request];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
