@@ -16,6 +16,7 @@
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTRest+Private.h"
 #import "ARTTypes.h"
+#import "ARTNSMutableRequest+ARTPush.h"
 
 @implementation ARTPushChannelSubscriptions {
     __weak ARTRest *_rest;
@@ -45,6 +46,8 @@
         };
     }
 
+    ARTLocalDevice *local = _rest.device;
+
 dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
@@ -55,6 +58,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     request.HTTPMethod = @"POST";
     request.HTTPBody = [[_rest defaultEncoder] encodePushChannelSubscription:channelSubscription error:nil];
     [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
+    [request setDeviceAuthentication:channelSubscription.deviceId localDevice:local];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"save channel subscription with request %@", request];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -156,7 +160,6 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 });
 }
 
-
 - (void)removeWhere:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTErrorInfo *error))callback {
     if (callback) {
         void (^userCallback)(ARTErrorInfo *error) = callback;
@@ -183,6 +186,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     }
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"DELETE";
+    [request setDeviceAuthentication:[params objectForKey:@"deviceId"] localDevice:_rest.device_nosync];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"remove channel subscription with request %@", request];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
