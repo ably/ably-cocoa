@@ -82,7 +82,7 @@
         return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
-        ARTLocalDevice *local = [ARTLocalDevice load:self.machine.rest];
+        ARTLocalDevice *local = self.machine.rest.device_nosync;
 
         if (local.identityTokenDetails) {
             // Already registered.
@@ -207,7 +207,7 @@
         return [ARTPushActivationStateWaitingForDeregistration newWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventDeregistered class]]) {
-        ARTLocalDevice *local = [ARTLocalDevice load:self.machine.rest];
+        ARTLocalDevice *local = self.machine.rest.device_nosync;
         [local setAndPersistIdentityTokenDetails:nil];
         [self.machine callDeactivatedCallback:nil];
         return [ARTPushActivationStateNotActivated newWithMachine:self.machine];
