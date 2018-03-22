@@ -9,8 +9,6 @@
 #import "ARTLocalDevice+Private.h"
 #import "ARTDevicePushDetails.h"
 #import "ARTPush.h"
-#import "ARTRest+Private.h"
-#import "ARTAuth+Private.h"
 #import "ARTEncoder.h"
 #import "ARTDeviceStorage.h"
 #import "ARTDeviceIdentityTokenDetails.h"
@@ -36,21 +34,18 @@ NSString *const ARTDeviceFormFactor = @"embedded";
 
 NSString *const ARTDevicePushTransportType = @"apns";
 
-@implementation ARTLocalDevice {
-    __weak ARTLog *_logger;
-}
+@implementation ARTLocalDevice
 
-- (instancetype)initWithRest:(ARTRest *)rest {
+- (instancetype)initWithClientId:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage {
     if (self = [super init]) {
-        _rest = rest;
-        _logger = rest.logger;
+        self.clientId = clientId;
+        self.storage = storage;
     }
     return self;
 }
 
-+ (ARTLocalDevice *)load:(ARTRest *_Nonnull)rest {
-    ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithRest:rest];
-    device.clientId = device.rest.auth.clientId_nosync;
++ (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage {
+    ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithClientId:clientId storage:storage];
     device.platform = ARTDevicePlatform;
     switch (UI_USER_INTERFACE_IDIOM()) {
         case UIUserInterfaceIdiomPad:
@@ -62,23 +57,23 @@ NSString *const ARTDevicePushTransportType = @"apns";
     }
     device.push.recipient[@"transportType"] = ARTDevicePushTransportType;
 
-    NSString *deviceId = [rest.storage objectForKey:ARTDeviceIdKey];
+    NSString *deviceId = [storage objectForKey:ARTDeviceIdKey];
     if (!deviceId) {
         deviceId = [self generateId];
-        [rest.storage setObject:deviceId forKey:ARTDeviceIdKey];
+        [storage setObject:deviceId forKey:ARTDeviceIdKey];
     }
     device.id = deviceId;
 
-    NSString *deviceSecret = [rest.storage secretForDevice:deviceId];
+    NSString *deviceSecret = [storage secretForDevice:deviceId];
     if (!deviceSecret) {
         deviceSecret = [self generateSecret];
-        [rest.storage setSecret:deviceSecret forDevice:deviceId];
+        [storage setSecret:deviceSecret forDevice:deviceId];
     }
     device.secret = deviceSecret;
 
-    device->_identityTokenDetails = [ARTDeviceIdentityTokenDetails unarchive:[rest.storage objectForKey:ARTDeviceIdentityTokenKey]];
+    device->_identityTokenDetails = [ARTDeviceIdentityTokenDetails unarchive:[storage objectForKey:ARTDeviceIdentityTokenKey]];
 
-    [device setDeviceToken:[rest.storage objectForKey:ARTDeviceTokenKey]];
+    [device setDeviceToken:[storage objectForKey:ARTDeviceTokenKey]];
 
     return device;
 }
@@ -102,12 +97,12 @@ NSString *const ARTDevicePushTransportType = @"apns";
 }
 
 - (void)setAndPersistDeviceToken:(NSString *)deviceToken {
-    [self.rest.storage setObject:deviceToken forKey:ARTDeviceTokenKey];
+    [self.storage setObject:deviceToken forKey:ARTDeviceTokenKey];
     [self setDeviceToken:deviceToken];
 }
 
 - (void)setAndPersistIdentityTokenDetails:(ARTDeviceIdentityTokenDetails *)tokenDetails {
-    [self.rest.storage setObject:[tokenDetails archive] forKey:ARTDeviceIdentityTokenKey];
+    [self.storage setObject:[tokenDetails archive] forKey:ARTDeviceIdentityTokenKey];
     _identityTokenDetails = tokenDetails;
 }
 
