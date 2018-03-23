@@ -106,4 +106,8 @@ NSString *const ARTDevicePushTransportType = @"apns";
     _identityTokenDetails = tokenDetails;
 }
 
+- (BOOL)isRegistered {
+    return _identityTokenDetails != nil;
+}
+
 @end
