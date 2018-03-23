@@ -434,7 +434,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(httpExecutor.requests.count) == 0
                     }
 
-                    it("should fire Deregistered event") {
+                    it("should fire Deregistered event and include DeviceSecret HTTP header") {
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
 
                         let delegate = StateMachineDelegate()
@@ -463,6 +463,55 @@ class PushActivationStateMachine : QuickSpec {
                         }
                         expect(request.httpMethod) == "DELETE"
                         expect(url.query).to(contain(rest.device.id))
+                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
+                        expect(authorization).to(equal(rest.device.secret))
+                    }
+
+                    it("should fire Deregistered event and include DeviceIdentityToken HTTP header") {
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
+
+                        let delegate = StateMachineDelegate()
+                        stateMachine.delegate = delegate
+
+                        let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(
+                            token: "123456",
+                            issued: Date(),
+                            expires: Date.distantFuture,
+                            capability: "",
+                            deviceId: rest.device.id
+                        )
+
+                        expect(rest.device.identityTokenDetails).to(beNil())
+                        rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
+                        defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
+                        expect(rest.device.identityTokenDetails).toNot(beNil())
+
+                        waitUntil(timeout: testTimeout) { done in
+                            stateMachine.transitions = { event, from, to in
+                                if event is ARTPushActivationEventDeregistered {
+                                    stateMachine.transitions = nil
+                                    done()
+                                }
+                            }
+                            stateMachine.send(ARTPushActivationEventCalledDeactivate())
+                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
+                        }
+
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
+                        expect(httpExecutor.requests.count) == 1
+                        let requests = httpExecutor.requests.flatMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
+                        expect(requests).to(haveCount(1))
+                        guard let request = httpExecutor.requests.first else {
+                            fail("should have a \"/push/deviceRegistrations\" request"); return
+                        }
+                        guard let url = request.url else {
+                            fail("should have a \"/push/deviceRegistrations\" URL"); return
+                        }
+                        expect(request.httpMethod) == "DELETE"
+                        expect(url.query).to(contain(rest.device.id))
+                        expect(rest.device.identityTokenDetails).to(beNil())
+                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                        expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
                     }
 
                     it("should fire DeregistrationFailed event") {
