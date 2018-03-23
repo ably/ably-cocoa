@@ -150,26 +150,30 @@ const NSUInteger ARTDefaultLimit = 100;
     }];
 }
 
-- (void)listSubscriptions:(void(^)(ARTPaginatedResult<ARTPushChannelSubscription *> *_Nullable, ARTErrorInfo *_Nullable))callback {
-    [self listSubscriptions:nil callback:callback];
-}
+- (BOOL)listSubscriptions:(NSDictionary<NSString *, NSString *> *)params callback:(void(^)(ARTPaginatedResult<ARTPushChannelSubscription *> *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+    NSMutableDictionary<NSString *, NSString *> *mutableParams = params ? [NSMutableDictionary dictionaryWithDictionary:params] : [[NSMutableDictionary alloc] init];
 
-- (void)listSubscriptions:(NSDictionary<NSString *, NSString *> *)params callback:(void(^)(ARTPaginatedResult<ARTPushChannelSubscription *> *_Nullable, ARTErrorInfo *_Nullable))callback {
+    if (!mutableParams[@"deviceId"] && !mutableParams[@"clientId"]) {
+        if (errorPtr) {
+            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                            code:ARTDataQueryErrorMissingRequiredFields
+                                        userInfo:@{NSLocalizedDescriptionKey:@"cannot list subscriptions with null device ID or null client ID"}];
+        }
+        return NO;
+    }
+    if (mutableParams[@"deviceId"] && mutableParams[@"clientId"]) {
+        if (errorPtr) {
+            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                            code:ARTDataQueryErrorInvalidParameters
+                                        userInfo:@{NSLocalizedDescriptionKey:@"cannot list subscriptions with device ID and client ID"}];
+        }
+        return NO;
+    }
+
+    mutableParams[@"concatFilters"] = @"true";
+
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
-    ARTLocalDevice *device = [self getDevice:callback ? ^(ARTErrorInfo *error) {
-        callback(nil, error);
-    } : nil];
-    if (![device isRegistered]) {
-        return;
-    }
-
-    NSMutableDictionary<NSString *, NSString *> *p = params ? [NSMutableDictionary dictionaryWithDictionary:params] : [[NSMutableDictionary alloc] init];
-    p[@"deviceId"] = device.id;
-    if (device.clientId) {
-        p[@"clientId"] = device.clientId;
-    }
-
-    components.queryItems = [p asURLQueryItems];;
+    components.queryItems = [mutableParams asURLQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"GET";
 
@@ -178,6 +182,7 @@ const NSUInteger ARTDefaultLimit = 100;
     };
 
     [ARTPaginatedResult executePaginated:_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
+    return YES;
 }
 
 - (ARTLocalDevice *)getDevice:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {

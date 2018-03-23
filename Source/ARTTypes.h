@@ -110,6 +110,9 @@ NSString *_Nonnull ARTChannelEventToStr(ARTChannelEvent event);
 typedef NS_ENUM(NSInteger, ARTDataQueryError) {
     ARTDataQueryErrorLimit = 1,
     ARTDataQueryErrorTimestampRange = 2,
+    ARTDataQueryErrorMissingRequiredFields = 3,
+    ARTDataQueryErrorInvalidParameters = 4,
+    ARTDataQueryErrorDeviceInactive = 5,
 };
 
 typedef NS_ENUM(NSInteger, ARTRealtimeHistoryError) {

@@ -1295,9 +1295,9 @@ public func beCloseTo(_ expectedValue: Date) -> Predicate<Date> {
 }
 
 /// A Nimble matcher that succeeds when a param exists.
-public func haveParam(_ key: String, withValue expectedValue: String) -> Predicate<String> {
+public func haveParam(_ key: String, withValue expectedValue: String?) -> Predicate<String> {
     return Predicate.fromDeprecatedClosure { actualExpression, failureMessage in
-        failureMessage.postfixMessage = "param <\(key)=\(expectedValue)> exists"
+        failureMessage.postfixMessage = "param <\(key)=\(expectedValue ?? "nil")> exists"
         guard let actualValue = try actualExpression.evaluate() else { return false }
         let queryItems = actualValue.components(separatedBy: "&")
         for item in queryItems {
