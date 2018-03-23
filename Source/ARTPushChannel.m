@@ -15,6 +15,8 @@
 #import "ARTPaginatedResult+Private.h"
 #import "ARTPushChannelSubscription.h"
 #import "ARTChannel+Private.h"
+#import "ARTLocalDevice+Private.h"
+#import "ARTNSMutableRequest+ARTPush.h"
 
 const NSUInteger ARTDefaultLimit = 100;
 
@@ -51,8 +53,8 @@ const NSUInteger ARTDefaultLimit = 100;
 }
 
 - (void)subscribeDevice:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
-    ARTDeviceDetails *device = [self getDevice:callback];
-    if (!device) {
+    ARTLocalDevice *device = [self getDevice:callback];
+    if (![device isRegistered]) {
         return;
     }
     NSString *deviceId = device.id;
@@ -64,6 +66,7 @@ const NSUInteger ARTDefaultLimit = 100;
         @"channel": _channel.name,
     } error:nil];
     [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
+    [request setDeviceAuthentication:deviceId localDevice:device];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"subscribe notifications for device %@ in channel %@", deviceId, _channel.name];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -98,8 +101,8 @@ const NSUInteger ARTDefaultLimit = 100;
 }
 
 - (void)unsubscribeDevice:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
-    ARTDeviceDetails *device = [self getDevice:callback];
-    if (!device) {
+    ARTLocalDevice *device = [self getDevice:callback];
+    if (![device isRegistered]) {
         return;
     }
     NSString *deviceId = device.id;
@@ -152,10 +155,10 @@ const NSUInteger ARTDefaultLimit = 100;
 
 - (void)listSubscriptions:(NSDictionary<NSString *, NSString *> *)params callback:(void(^)(ARTPaginatedResult<ARTPushChannelSubscription *> *_Nullable, ARTErrorInfo *_Nullable))callback {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
-    ARTDeviceDetails *device = [self getDevice:callback ? ^(ARTErrorInfo *error) {
+    ARTLocalDevice *device = [self getDevice:callback ? ^(ARTErrorInfo *error) {
         callback(nil, error);
     } : nil];
-    if (!device) {
+    if (![device isRegistered]) {
         return;
     }
 
@@ -176,17 +179,17 @@ const NSUInteger ARTDefaultLimit = 100;
     [ARTPaginatedResult executePaginated:_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
 }
 
-- (ARTDeviceDetails *)getDevice:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
-    ARTDeviceDetails *device = [_channel device];
-    if (!device) {
+- (ARTLocalDevice *)getDevice:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
+    ARTLocalDevice *device = [_channel device];
+    if (![device isRegistered]) {
         if (callback) callback([ARTErrorInfo createWithCode:0 message:@"cannot use device before ARTRest.push.activate has finished"]);
     }
     return device;
 }
 
 - (NSString *)getClientId:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
-    ARTDeviceDetails *device = [self getDevice:callback];
-    if (!device) {
+    ARTLocalDevice *device = [self getDevice:callback];
+    if (![device isRegistered]) {
         return nil;
     }
     if (!device.clientId) {
