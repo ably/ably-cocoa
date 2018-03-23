@@ -25,6 +25,7 @@ extern NSString *const ARTDeviceTokenKey;
 - (nullable NSString *)deviceToken;
 - (void)setAndPersistDeviceToken:(nullable NSString *)deviceToken;
 - (void)setAndPersistIdentityTokenDetails:(nullable ARTDeviceIdentityTokenDetails *)tokenDetails;
+- (BOOL)isRegistered;
 
 + (NSString *)generateId;
 + (NSString *)generateSecret;
