@@ -42,7 +42,7 @@ class PushChannel : QuickSpec {
                 }
 
                 // RSH7a2, RSH7a3
-                it("should do a request to /push/channelSubscriptions and include device authentication") {
+                it("should do a POST request to /push/channelSubscriptions and include device authentication") {
                     let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", deviceId: rest.device.id)
                     rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
                     defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
@@ -102,7 +102,7 @@ class PushChannel : QuickSpec {
                 }
 
                 // RSH7a2
-                it("should do a request to /push/channelSubscriptions") {
+                it("should do a POST request to /push/channelSubscriptions") {
                     let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", deviceId: rest.device.id)
                     rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
                     defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
@@ -133,6 +133,55 @@ class PushChannel : QuickSpec {
                     expect(body.value(forKey: "channel") as? String).to(equal(channel.name))
 
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]).to(beNil())
+                    expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
+                }
+            }
+
+            // RSH7c
+            context("unsubscribeDevice") {
+                // RSH7c1
+                it("should fail if the LocalDevice doesn't have a deviceIdentityToken") {
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.channels.get("foo").push.unsubscribeDevice { error in
+                            guard let error = error else {
+                                fail("Error is nil"); done(); return
+                            }
+                            expect(error.message).to(contain("cannot use device before ARTRest.push.activate has finished"))
+                            done()
+                        }
+                    }
+                }
+
+                // RSH7c2, RSH7c3
+                it("should do a DELETE request to /push/channelSubscriptions and include device authentication") {
+                    let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", deviceId: rest.device.id)
+                    rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
+                    defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
+
+                    let channel = rest.channels.get("foo")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.push.unsubscribeDevice { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    guard let request = mockHttpExecutor.requests.first else {
+                        fail("should have a \"/push/channelSubscriptions\" request"); return
+                    }
+                    guard let url = request.url, url.absoluteString.contains("/push/channelSubscriptions") else {
+                        fail("should have a \"/push/channelSubscriptions\" URL"); return
+                    }
+                    guard let query = request.url?.query else {
+                        fail("should have a body"); return
+                    }
+
+                    expect(request.httpMethod) == "DELETE"
+                    expect(query).to(haveParam("deviceId", withValue: rest.device.id))
+                    expect(query).to(haveParam("channel", withValue: channel.name))
+
+                    let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                    expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
                 }
             }
