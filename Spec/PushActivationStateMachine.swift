@@ -107,6 +107,11 @@ class PushActivationStateMachine : QuickSpec {
                         stateMachine.send(ARTPushActivationEventCalledActivate())
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))
                     }
+
+                    it("on Event GotPushDeviceDetails") {
+                        stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
+                    }
                 }
 
             }
