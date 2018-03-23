@@ -223,6 +223,12 @@ class PushActivationStateMachine : QuickSpec {
                         let delegate = StateMachineDelegate()
                         stateMachine.delegate = delegate
 
+                        var setAndPersistIdentityTokenDetailsCalled = false
+                        let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
+                            setAndPersistIdentityTokenDetailsCalled = true
+                        }
+                        defer { hookDevice.remove() }
+
                         waitUntil(timeout: testTimeout) { done in
                             stateMachine.transitions = { event, from, to in
                                 if event is ARTPushActivationEventGotDeviceRegistration {
@@ -235,6 +241,7 @@ class PushActivationStateMachine : QuickSpec {
                         }
 
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
+                        expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
                         expect(httpExecutor.requests.count) == 1
                         let requests = httpExecutor.requests.flatMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
                         expect(requests).to(haveCount(1))
