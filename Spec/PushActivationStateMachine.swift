@@ -250,6 +250,7 @@ class PushActivationStateMachine : QuickSpec {
                         guard let body = stateMachine.rest.defaultEncoder.decode(rawBody, error: nil) as? NSDictionary else {
                             fail("body is invalid"); return
                         }
+                        expect(request.httpMethod) == "POST"
                         expect(body.value(forKey: "id") as? String).to(equal(rest.device.id))
                         expect(body.value(forKey: "push")).toNot(beNil())
                         expect(body.value(forKey: "formFactor")).toNot(beNil())
