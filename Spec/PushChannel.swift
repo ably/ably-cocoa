@@ -244,6 +244,87 @@ class PushChannel : QuickSpec {
             }
         }
 
+        // RSH7e
+        context("listSubscriptions") {
+            it("should return a paginated result with PushChannelSubscription filtered by channel and device") {
+                let params = [
+                    "deviceId": "111",
+                    "channel": "aaa"
+                ]
+                let channel = rest.channels.get("foo")
+                waitUntil(timeout: testTimeout) { done in
+                    try? channel.push.listSubscriptions(params) { result, error in
+                        expect(error).to(beNil())
+                        expect(result).toNot(beNil())
+                        done()
+                    }
+                }
+
+                guard let request = mockHttpExecutor.requests.first else {
+                    fail("should have a \"/push/channelSubscriptions\" request"); return
+                }
+                guard let url = request.url, url.absoluteString.contains("/push/channelSubscriptions") else {
+                    fail("should have a \"/push/channelSubscriptions\" URL"); return
+                }
+                guard let query = request.url?.query else {
+                    fail("should have a body"); return
+                }
+
+                expect(query).to(haveParam("deviceId", withValue: params["deviceId"]))
+                expect(query).toNot(haveParam("clientId", withValue: rest.device.clientId))
+                expect(query).to(haveParam("channel", withValue: params["channel"]))
+                expect(query).to(haveParam("concatFilters", withValue: "true"))
+            }
+
+            it("should return a paginated result with PushChannelSubscription filtered by channel and client") {
+                let params = [
+                    "clientId": "tester",
+                    "channel": "aaa"
+                ]
+                let channel = rest.channels.get("foo")
+                waitUntil(timeout: testTimeout) { done in
+                    try? channel.push.listSubscriptions(params) { result, error in
+                        expect(error).to(beNil())
+                        expect(result).toNot(beNil())
+                        done()
+                    }
+                }
+
+                guard let request = mockHttpExecutor.requests.first else {
+                    fail("should have a \"/push/channelSubscriptions\" request"); return
+                }
+                guard let url = request.url, url.absoluteString.contains("/push/channelSubscriptions") else {
+                    fail("should have a \"/push/channelSubscriptions\" URL"); return
+                }
+                guard let query = request.url?.query else {
+                    fail("should have a body"); return
+                }
+
+                expect(query).to(haveParam("clientId", withValue: params["clientId"]))
+                expect(query).toNot(haveParam("deviceId", withValue: rest.device.id))
+                expect(query).to(haveParam("channel", withValue: params["channel"]))
+                expect(query).to(haveParam("concatFilters", withValue: "true"))
+            }
+
+            it("should not accept null deviceId and null clientId") {
+                let channel = rest.channels.get("foo")
+                expect { try channel.push.listSubscriptions([:]) { _, _ in } }.to(throwError { (error: NSError) in
+                    expect(error.code).to(equal(ARTDataQueryError.missingRequiredFields.rawValue))
+                })
+            }
+
+            it("should not accept both deviceId and clientId params at the same time") {
+                let params = [
+                    "deviceId": "x",
+                    "clientId": "y"
+                ]
+                let channel = rest.channels.get("foo")
+                expect { try channel.push.listSubscriptions(params) { _, _ in } }.to(throwError { (error: NSError) in
+                    expect(error.code).to(equal(ARTDataQueryError.invalidParameters.rawValue))
+                })
+            }
+        }
+
     }
 
 }
