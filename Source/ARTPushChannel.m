@@ -194,7 +194,7 @@ const NSUInteger ARTDefaultLimit = 100;
         return nil;
     }
     if (!device.clientId) {
-        if (callback) callback([ARTErrorInfo createWithCode:0 message:@"cannot subscribe with null client ID"]);
+        if (callback) callback([ARTErrorInfo createWithCode:0 message:@"cannot subscribe/unsubscribe with null client ID"]);
         return nil;
     }
     return device.clientId;

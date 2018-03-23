@@ -95,7 +95,7 @@ class PushChannel : QuickSpec {
                             guard let error = error else {
                                 fail("Error is nil"); done(); return
                             }
-                            expect(error.message).to(contain("cannot subscribe with null client ID"))
+                            expect(error.message).to(contain("null client ID"))
                             done()
                         }
                     }
@@ -186,6 +186,62 @@ class PushChannel : QuickSpec {
                 }
             }
 
+        }
+
+        // RSH7d
+        context("unsubscribeClient") {
+            // RSH7d1
+            it("should fail if the LocalDevice doesn't have a clientId") {
+                let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", deviceId: rest.device.id)
+                rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
+                defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
+
+                let originalClientId = rest.device.clientId
+                rest.device.clientId = nil
+                defer { rest.device.clientId = originalClientId }
+
+                waitUntil(timeout: testTimeout) { done in
+                    rest.channels.get("foo").push.unsubscribeClient { error in
+                        guard let error = error else {
+                            fail("Error is nil"); done(); return
+                        }
+                        expect(error.message).to(contain("null client ID"))
+                        done()
+                    }
+                }
+            }
+
+            // RSH7d2
+            it("should do a DELETE request to /push/channelSubscriptions") {
+                let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", deviceId: rest.device.id)
+                rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
+                defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
+
+                let channel = rest.channels.get("foo")
+                waitUntil(timeout: testTimeout) { done in
+                    channel.push.unsubscribeClient { error in
+                        expect(error).to(beNil())
+                        done()
+                    }
+                }
+
+                guard let request = mockHttpExecutor.requests.first else {
+                    fail("should have a \"/push/channelSubscriptions\" request"); return
+                }
+                guard let url = request.url, url.absoluteString.contains("/push/channelSubscriptions") else {
+                    fail("should have a \"/push/channelSubscriptions\" URL"); return
+                }
+                guard let query = request.url?.query else {
+                    fail("should have a body"); return
+                }
+
+                expect(request.httpMethod) == "DELETE"
+                expect(query).to(haveParam("clientId", withValue: rest.device.clientId!))
+                expect(query).to(haveParam("channel", withValue: channel.name))
+
+                expect(request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]).to(beNil())
+                expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
+            }
         }
 
     }
