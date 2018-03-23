@@ -131,6 +131,7 @@
 		D777EEE1206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = D777EEDF206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.m */; };
 		D777EEE42063A64E002EBA03 /* ARTNSMutableRequest+ARTPush.h in Headers */ = {isa = PBXBuildFile; fileRef = D777EEE22063A64E002EBA03 /* ARTNSMutableRequest+ARTPush.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D777EEE52063A64E002EBA03 /* ARTNSMutableRequest+ARTPush.m in Sources */ = {isa = PBXBuildFile; fileRef = D777EEE32063A64E002EBA03 /* ARTNSMutableRequest+ARTPush.m */; };
+		D777EEE820650ADF002EBA03 /* PushChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D777EEE620650A85002EBA03 /* PushChannel.swift */; };
 		D77A0C961FFEEF0300711131 /* ULID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D77A0C951FFEEF0300711131 /* ULID.framework */; };
 		D77A0C971FFEF1F200711131 /* ULID.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D77A0C951FFEEF0300711131 /* ULID.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D77F02A81DAF8099001B3FF9 /* ARTFallback+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D77F02A71DAF8099001B3FF9 /* ARTFallback+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -399,6 +400,7 @@
 		D777EEDF206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTDeviceIdentityTokenDetails.m; sourceTree = "<group>"; };
 		D777EEE22063A64E002EBA03 /* ARTNSMutableRequest+ARTPush.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ARTNSMutableRequest+ARTPush.h"; sourceTree = "<group>"; };
 		D777EEE32063A64E002EBA03 /* ARTNSMutableRequest+ARTPush.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "ARTNSMutableRequest+ARTPush.m"; sourceTree = "<group>"; };
+		D777EEE620650A85002EBA03 /* PushChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushChannel.swift; sourceTree = "<group>"; };
 		D77A0C951FFEEF0300711131 /* ULID.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ULID.framework; path = Carthage/Build/iOS/ULID.framework; sourceTree = "<group>"; };
 		D77F02A71DAF8099001B3FF9 /* ARTFallback+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTFallback+Private.h"; sourceTree = "<group>"; };
 		D780846C1C68B3E50083009D /* NSObject+TestSuite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+TestSuite.h"; sourceTree = "<group>"; };
@@ -588,6 +590,7 @@
 				EB7913A71C6E54C3000ABF9B /* Crypto.swift */,
 				D74A17B61FA0D81A006D27B5 /* PushAdmin.swift */,
 				D7DF73831EA5FE620013CD36 /* PushActivationStateMachine.swift */,
+				D777EEE620650A85002EBA03 /* PushChannel.swift */,
 			);
 			path = Spec;
 			sourceTree = "<group>";
@@ -1212,6 +1215,7 @@
 				D72304701BB72CED00F1ABDA /* RealtimeClient.swift in Sources */,
 				D74A17B81FA0D9A3006D27B5 /* PushAdmin.swift in Sources */,
 				EB7913A81C6E54C3000ABF9B /* Crypto.swift in Sources */,
+				D777EEE820650ADF002EBA03 /* PushChannel.swift in Sources */,
 				D746AE2D1BBB625E003ECEF8 /* RestClientChannels.swift in Sources */,
 				EBAB9A6F1C69702800AF036B /* ReadmeExamples.swift in Sources */,
 				D7C1B8771BBEA81A0087B55F /* Auth.swift in Sources */,
