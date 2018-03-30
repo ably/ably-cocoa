@@ -766,7 +766,7 @@ class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
             return
         }
 
-        callback(nil, nil, nil)
+        callback(HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: ["X-Ably-HTTPExecutor": "MockHTTPExecutor"]), nil, nil)
     }
 
     func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) {
@@ -778,7 +778,7 @@ class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
             return
         }
 
-        callback?(nil, nil, nil)
+        callback?(HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: ["X-Ably-HTTPExecutor": "MockHTTPExecutor"]), nil, nil)
     }
 
     func simulateIncomingErrorOnNextRequest(_ error: NSError) {
