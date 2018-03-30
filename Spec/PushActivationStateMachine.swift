@@ -519,6 +519,7 @@ class PushActivationStateMachine : QuickSpec {
 
             }
 
+            // RSH3g
             context("State WaitingForDeregistration") {
 
                 var stateMachine: ARTPushActivationStateMachine!
@@ -542,10 +543,16 @@ class PushActivationStateMachine : QuickSpec {
                     }
                     defer { hook.remove() }
 
+                    var setAndPersistIdentityTokenDetailsCalled = false
+                    let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
+                        setAndPersistIdentityTokenDetailsCalled = true
+                    }
+                    defer { hookDevice.remove() }
+
                     stateMachine.send(ARTPushActivationEventDeregistered())
                     expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
                     expect(deactivatedCallbackCalled).to(beTrue())
-                    expect(storage.keysWritten.filter({ $0 == ARTDeviceIdentityTokenKey })).to(haveCount(1))
+                    expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
                 }
 
                 it("on Event DeregistrationFailed") {
