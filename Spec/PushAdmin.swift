@@ -190,7 +190,7 @@ class PushAdmin : QuickSpec {
             localDevice = rest.device
         }
 
-        // RHS1a
+        // RSH1a
         describe("publish") {
 
             it("should perform an HTTP request to /push/publish") {
@@ -335,7 +335,7 @@ class PushAdmin : QuickSpec {
 
         describe("Device Registrations") {
 
-            // RHS1b1
+            // RSH1b1
             context("get") {
                 it("should return a device") {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
@@ -419,7 +419,7 @@ class PushAdmin : QuickSpec {
                 }
             }
 
-            // RHS1b2
+            // RSH1b2
             context("list") {
                 it("should list devices by id") {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
@@ -478,7 +478,7 @@ class PushAdmin : QuickSpec {
                 }
             }
 
-            // RHS1b4
+            // RSH1b4
             context("remove") {
                 it("should unregister a device") {
                     let options = AblyTests.commonAppSetup()
@@ -503,7 +503,7 @@ class PushAdmin : QuickSpec {
                 }
             }
 
-            // RHS1b3
+            // RSH1b3
             context("save") {
                 it("should register a device") {
                     let options = AblyTests.commonAppSetup()
@@ -588,7 +588,7 @@ class PushAdmin : QuickSpec {
                 }
             }
 
-            // RHS1b5
+            // RSH1b5
             context("removeWhere") { [allDeviceDetails] in
                 it("should unregister a device") {
                     let options = AblyTests.commonAppSetup()
@@ -673,7 +673,7 @@ class PushAdmin : QuickSpec {
 
             let subscription = ARTPushChannelSubscription(clientId: "newClient", channel: "pushenabled:qux")
 
-            // RHS1c3
+            // RSH1c3
             context("save") {
                 it("should add a subscription") {
                     let options = AblyTests.commonAppSetup()
@@ -783,7 +783,7 @@ class PushAdmin : QuickSpec {
                 }
             }
 
-            // RHS1c1
+            // RSH1c1
             context("list") {
                 it("should receive a list of subscriptions") {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
@@ -800,7 +800,7 @@ class PushAdmin : QuickSpec {
                 }
             }
 
-            // RHS1c2
+            // RSH1c2
             context("listChannels") { [allSubscriptionsChannels] in
                 it("should receive a list of subscriptions") {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
@@ -817,7 +817,7 @@ class PushAdmin : QuickSpec {
                 }
             }
 
-            // RHS1c4
+            // RSH1c4
             context("remove") {
                 it("should remove a subscription") {
                     let options = AblyTests.commonAppSetup()
@@ -912,7 +912,7 @@ class PushAdmin : QuickSpec {
                 }
             }
 
-            // RHS1c5
+            // RSH1c5
             context("removeWhere") {
                 it("should remove by cliendId") {
                     let options = AblyTests.commonAppSetup()
