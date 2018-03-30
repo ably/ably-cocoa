@@ -299,7 +299,8 @@ class PushActivationStateMachine : QuickSpec {
 
             }
 
-            context("State WaitingForUpdateToken") {
+            // RSH3c
+            context("State WaitingForDeviceRegistration") {
 
                 var stateMachine: ARTPushActivationStateMachine!
                 var storage: MockDeviceStorage!
@@ -315,7 +316,7 @@ class PushActivationStateMachine : QuickSpec {
                     expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
                 }
 
-                it("on Event GotUpdateToken") {
+                it("on Event GotDeviceRegistration") {
                     var activatedCallbackCalled = false
                     let hook = stateMachine.testSuite_injectIntoMethod(after: NSSelectorFromString("callActivatedCallback:")) {
                         activatedCallbackCalled = true
@@ -327,7 +328,7 @@ class PushActivationStateMachine : QuickSpec {
                     expect(activatedCallbackCalled).to(beTrue())
                 }
 
-                it("on Event GettingUpdateTokenFailed") {
+                it("on Event GettingDeviceRegistrationFailed") {
                     var activatedCallbackCalled = false
                     let hook = stateMachine.testSuite_injectIntoMethod(after: NSSelectorFromString("callActivatedCallback:")) {
                         activatedCallbackCalled = true
