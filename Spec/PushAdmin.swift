@@ -165,7 +165,7 @@ class PushAdmin : QuickSpec {
     override func spec() {
 
         var rest: ARTRest!
-        var httpExecutor: MockHTTPExecutor!
+        var mockHttpExecutor: MockHTTPExecutor!
         var storage: MockDeviceStorage!
 
         let recipient = [
@@ -180,8 +180,8 @@ class PushAdmin : QuickSpec {
 
         beforeEach {
             rest = ARTRest(key: "xxxx:xxxx")
-            httpExecutor = MockHTTPExecutor()
-            rest.httpExecutor = httpExecutor
+            mockHttpExecutor = MockHTTPExecutor()
+            rest.httpExecutor = mockHttpExecutor
             storage = MockDeviceStorage()
             rest.storage = storage
         }
@@ -197,7 +197,7 @@ class PushAdmin : QuickSpec {
                     }
                 }
 
-                guard let request = httpExecutor.requests.first else {
+                guard let request = mockHttpExecutor.requests.first else {
                     fail("Request is missing"); return
                 }
                 guard let url = request.url else {
