@@ -186,143 +186,143 @@ class PushChannel : QuickSpec {
                 }
             }
 
-        }
+            // RSH7d
+            context("unsubscribeClient") {
+                // RSH7d1
+                it("should fail if the LocalDevice doesn't have a clientId") {
+                    let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", deviceId: rest.device.id)
+                    rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
+                    defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-        // RSH7d
-        context("unsubscribeClient") {
-            // RSH7d1
-            it("should fail if the LocalDevice doesn't have a clientId") {
-                let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", deviceId: rest.device.id)
-                rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-                defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
+                    let originalClientId = rest.device.clientId
+                    rest.device.clientId = nil
+                    defer { rest.device.clientId = originalClientId }
 
-                let originalClientId = rest.device.clientId
-                rest.device.clientId = nil
-                defer { rest.device.clientId = originalClientId }
-
-                waitUntil(timeout: testTimeout) { done in
-                    rest.channels.get("foo").push.unsubscribeClient { error in
-                        guard let error = error else {
-                            fail("Error is nil"); done(); return
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.channels.get("foo").push.unsubscribeClient { error in
+                            guard let error = error else {
+                                fail("Error is nil"); done(); return
+                            }
+                            expect(error.message).to(contain("null client ID"))
+                            done()
                         }
-                        expect(error.message).to(contain("null client ID"))
-                        done()
-                    }
-                }
-            }
-
-            // RSH7d2
-            it("should do a DELETE request to /push/channelSubscriptions") {
-                let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", deviceId: rest.device.id)
-                rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-                defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
-
-                let channel = rest.channels.get("foo")
-                waitUntil(timeout: testTimeout) { done in
-                    channel.push.unsubscribeClient { error in
-                        expect(error).to(beNil())
-                        done()
                     }
                 }
 
-                guard let request = mockHttpExecutor.requests.first else {
-                    fail("should have a \"/push/channelSubscriptions\" request"); return
-                }
-                guard let url = request.url, url.absoluteString.contains("/push/channelSubscriptions") else {
-                    fail("should have a \"/push/channelSubscriptions\" URL"); return
-                }
-                guard let query = request.url?.query else {
-                    fail("should have a body"); return
-                }
+                // RSH7d2
+                it("should do a DELETE request to /push/channelSubscriptions") {
+                    let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", deviceId: rest.device.id)
+                    rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
+                    defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-                expect(request.httpMethod) == "DELETE"
-                expect(query).to(haveParam("clientId", withValue: rest.device.clientId!))
-                expect(query).to(haveParam("channel", withValue: channel.name))
-
-                expect(request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]).to(beNil())
-                expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
-            }
-        }
-
-        // RSH7e
-        context("listSubscriptions") {
-            it("should return a paginated result with PushChannelSubscription filtered by channel and device") {
-                let params = [
-                    "deviceId": "111",
-                    "channel": "aaa"
-                ]
-                let channel = rest.channels.get("foo")
-                waitUntil(timeout: testTimeout) { done in
-                    try? channel.push.listSubscriptions(params) { result, error in
-                        expect(error).to(beNil())
-                        expect(result).toNot(beNil())
-                        done()
+                    let channel = rest.channels.get("foo")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.push.unsubscribeClient { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
                     }
-                }
 
-                guard let request = mockHttpExecutor.requests.first else {
-                    fail("should have a \"/push/channelSubscriptions\" request"); return
-                }
-                guard let url = request.url, url.absoluteString.contains("/push/channelSubscriptions") else {
-                    fail("should have a \"/push/channelSubscriptions\" URL"); return
-                }
-                guard let query = request.url?.query else {
-                    fail("should have a body"); return
-                }
-
-                expect(query).to(haveParam("deviceId", withValue: params["deviceId"]))
-                expect(query).toNot(haveParam("clientId", withValue: rest.device.clientId))
-                expect(query).to(haveParam("channel", withValue: params["channel"]))
-                expect(query).to(haveParam("concatFilters", withValue: "true"))
-            }
-
-            it("should return a paginated result with PushChannelSubscription filtered by channel and client") {
-                let params = [
-                    "clientId": "tester",
-                    "channel": "aaa"
-                ]
-                let channel = rest.channels.get("foo")
-                waitUntil(timeout: testTimeout) { done in
-                    try? channel.push.listSubscriptions(params) { result, error in
-                        expect(error).to(beNil())
-                        expect(result).toNot(beNil())
-                        done()
+                    guard let request = mockHttpExecutor.requests.first else {
+                        fail("should have a \"/push/channelSubscriptions\" request"); return
                     }
-                }
+                    guard let url = request.url, url.absoluteString.contains("/push/channelSubscriptions") else {
+                        fail("should have a \"/push/channelSubscriptions\" URL"); return
+                    }
+                    guard let query = request.url?.query else {
+                        fail("should have a body"); return
+                    }
 
-                guard let request = mockHttpExecutor.requests.first else {
-                    fail("should have a \"/push/channelSubscriptions\" request"); return
-                }
-                guard let url = request.url, url.absoluteString.contains("/push/channelSubscriptions") else {
-                    fail("should have a \"/push/channelSubscriptions\" URL"); return
-                }
-                guard let query = request.url?.query else {
-                    fail("should have a body"); return
-                }
+                    expect(request.httpMethod) == "DELETE"
+                    expect(query).to(haveParam("clientId", withValue: rest.device.clientId!))
+                    expect(query).to(haveParam("channel", withValue: channel.name))
 
-                expect(query).to(haveParam("clientId", withValue: params["clientId"]))
-                expect(query).toNot(haveParam("deviceId", withValue: rest.device.id))
-                expect(query).to(haveParam("channel", withValue: params["channel"]))
-                expect(query).to(haveParam("concatFilters", withValue: "true"))
+                    expect(request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]).to(beNil())
+                    expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
+                }
             }
 
-            it("should not accept null deviceId and null clientId") {
-                let channel = rest.channels.get("foo")
-                expect { try channel.push.listSubscriptions([:]) { _, _ in } }.to(throwError { (error: NSError) in
-                    expect(error.code).to(equal(ARTDataQueryError.missingRequiredFields.rawValue))
-                })
+            // RSH7e
+            context("listSubscriptions") {
+                it("should return a paginated result with PushChannelSubscription filtered by channel and device") {
+                    let params = [
+                        "deviceId": "111",
+                        "channel": "aaa"
+                    ]
+                    let channel = rest.channels.get("foo")
+                    waitUntil(timeout: testTimeout) { done in
+                        try? channel.push.listSubscriptions(params) { result, error in
+                            expect(error).to(beNil())
+                            expect(result).toNot(beNil())
+                            done()
+                        }
+                    }
+
+                    guard let request = mockHttpExecutor.requests.first else {
+                        fail("should have a \"/push/channelSubscriptions\" request"); return
+                    }
+                    guard let url = request.url, url.absoluteString.contains("/push/channelSubscriptions") else {
+                        fail("should have a \"/push/channelSubscriptions\" URL"); return
+                    }
+                    guard let query = request.url?.query else {
+                        fail("should have a body"); return
+                    }
+
+                    expect(query).to(haveParam("deviceId", withValue: params["deviceId"]))
+                    expect(query).toNot(haveParam("clientId", withValue: rest.device.clientId))
+                    expect(query).to(haveParam("channel", withValue: params["channel"]))
+                    expect(query).to(haveParam("concatFilters", withValue: "true"))
+                }
+
+                it("should return a paginated result with PushChannelSubscription filtered by channel and client") {
+                    let params = [
+                        "clientId": "tester",
+                        "channel": "aaa"
+                    ]
+                    let channel = rest.channels.get("foo")
+                    waitUntil(timeout: testTimeout) { done in
+                        try? channel.push.listSubscriptions(params) { result, error in
+                            expect(error).to(beNil())
+                            expect(result).toNot(beNil())
+                            done()
+                        }
+                    }
+
+                    guard let request = mockHttpExecutor.requests.first else {
+                        fail("should have a \"/push/channelSubscriptions\" request"); return
+                    }
+                    guard let url = request.url, url.absoluteString.contains("/push/channelSubscriptions") else {
+                        fail("should have a \"/push/channelSubscriptions\" URL"); return
+                    }
+                    guard let query = request.url?.query else {
+                        fail("should have a body"); return
+                    }
+
+                    expect(query).to(haveParam("clientId", withValue: params["clientId"]))
+                    expect(query).toNot(haveParam("deviceId", withValue: rest.device.id))
+                    expect(query).to(haveParam("channel", withValue: params["channel"]))
+                    expect(query).to(haveParam("concatFilters", withValue: "true"))
+                }
+
+                it("should not accept null deviceId and null clientId") {
+                    let channel = rest.channels.get("foo")
+                    expect { try channel.push.listSubscriptions([:]) { _, _ in } }.to(throwError { (error: NSError) in
+                        expect(error.code).to(equal(ARTDataQueryError.missingRequiredFields.rawValue))
+                    })
+                }
+
+                it("should not accept both deviceId and clientId params at the same time") {
+                    let params = [
+                        "deviceId": "x",
+                        "clientId": "y"
+                    ]
+                    let channel = rest.channels.get("foo")
+                    expect { try channel.push.listSubscriptions(params) { _, _ in } }.to(throwError { (error: NSError) in
+                        expect(error.code).to(equal(ARTDataQueryError.invalidParameters.rawValue))
+                    })
+                }
             }
 
-            it("should not accept both deviceId and clientId params at the same time") {
-                let params = [
-                    "deviceId": "x",
-                    "clientId": "y"
-                ]
-                let channel = rest.channels.get("foo")
-                expect { try channel.push.listSubscriptions(params) { _, _ in } }.to(throwError { (error: NSError) in
-                    expect(error.code).to(equal(ARTDataQueryError.invalidParameters.rawValue))
-                })
-            }
         }
 
     }
