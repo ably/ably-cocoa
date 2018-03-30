@@ -153,7 +153,7 @@ class PushActivationStateMachine : QuickSpec {
                         })
                     }
 
-                    it("should use custom registerCallback and fire GotUpdateToken event") {
+                    it("should use custom registerCallback and fire GotDeviceRegistration event") {
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))
 
                         let delegate = StateMachineDelegateCustomCallbacks()
@@ -181,7 +181,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(httpExecutor.requests.count) == 0
                     }
 
-                    it("should use custom registerCallback and fire GettingUpdateTokenFailed event") {
+                    it("should use custom registerCallback and fire GettingDeviceRegistrationFailed event") {
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))
 
                         let delegate = StateMachineDelegateCustomCallbacks()
@@ -212,7 +212,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(httpExecutor.requests.count) == 0
                     }
 
-                    it("should fire GotUpdateToken event") {
+                    it("should fire GotDeviceRegistration event") {
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))
 
                         let delegate = StateMachineDelegate()
@@ -251,7 +251,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(body.value(forKey: "platform")).toNot(beNil())
                     }
 
-                    it("should fire GettingUpdateTokenFailed event") {
+                    it("should fire GettingDeviceRegistrationFailed event") {
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))
 
                         let delegate = StateMachineDelegate()
