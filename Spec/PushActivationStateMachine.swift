@@ -600,10 +600,11 @@ class StateMachineDelegateCustomCallbacks: StateMachineDelegate {
     var onPushCustomRegister: ((ARTErrorInfo?, ARTDeviceDetails?) -> NSError?)?
     var onPushCustomDeregister: ((ARTErrorInfo?, ARTDeviceId?) -> NSError?)?
 
-    func ablyPushCustomRegister(_ error: ARTErrorInfo?, deviceDetails: ARTDeviceDetails?, callback: @escaping (String, ARTErrorInfo?) -> Void) {
+    func ablyPushCustomRegister(_ error: ARTErrorInfo?, deviceDetails: ARTDeviceDetails?, callback: @escaping (ARTDeviceIdentityTokenDetails?, ARTErrorInfo?) -> Void) {
         let error = onPushCustomRegister?(error, deviceDetails)
-        delay(0) {
-            callback("", error == nil ? nil : ARTErrorInfo.create(from: error!))
+        delay(0) { [deviceId = deviceDetails?.id] in
+            let deviceIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "123456", issued: Date(), expires: Date.distantFuture, capability: "", deviceId: deviceId ?? "unknown")
+            callback(deviceIdentityTokenDetails, error == nil ? nil : ARTErrorInfo.create(from: error!))
         }
     }
 
