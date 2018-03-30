@@ -167,6 +167,7 @@ class PushAdmin : QuickSpec {
         var rest: ARTRest!
         var mockHttpExecutor: MockHTTPExecutor!
         var storage: MockDeviceStorage!
+        var localDevice: ARTLocalDevice!
 
         let recipient = [
             "clientId": "bob"
@@ -184,6 +185,7 @@ class PushAdmin : QuickSpec {
             rest.httpExecutor = mockHttpExecutor
             storage = MockDeviceStorage()
             rest.storage = storage
+            localDevice = rest.device
         }
 
         // RHS1a
@@ -361,6 +363,58 @@ class PushAdmin : QuickSpec {
                         }
                     }
                 }
+
+                context("push device authentication") {
+                    it("should include DeviceIdentityToken HTTP header") {
+                        let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
+                        realtime.rest.httpExecutor = mockHttpExecutor
+
+                        let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(
+                            token: "123456",
+                            issued: Date(),
+                            expires: Date.distantFuture,
+                            capability: "",
+                            deviceId: localDevice.id
+                        )
+
+                        expect(localDevice.identityTokenDetails).to(beNil())
+                        realtime.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
+                        defer { realtime.rest.device.setAndPersistIdentityTokenDetails(nil) }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            realtime.push.admin.deviceRegistrations.get(localDevice.id) { device, error in
+                                done()
+                            }
+                        }
+
+                        guard let request = mockHttpExecutor.requests.first else {
+                            fail("No requests found")
+                            return
+                        }
+
+                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                        expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
+                    }
+
+                    it("should include DeviceSecret HTTP header") {
+                        let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
+                        realtime.rest.httpExecutor = mockHttpExecutor
+
+                        waitUntil(timeout: testTimeout) { done in
+                            realtime.push.admin.deviceRegistrations.get(localDevice.id) { device, error in
+                                done()
+                            }
+                        }
+
+                        guard let request = mockHttpExecutor.requests.first else {
+                            fail("No requests found")
+                            return
+                        }
+
+                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
+                        expect(authorization).to(equal(localDevice.secret))
+                    }
+                }
             }
 
             // RHS1b2
@@ -449,6 +503,65 @@ class PushAdmin : QuickSpec {
                             done()
                         }
                     }
+
+                context("push device authentication") {
+                    it("should include DeviceIdentityToken HTTP header") {
+                        let options = AblyTests.commonAppSetup()
+                        options.pushFullWait = true
+                        let realtime = ARTRealtime(options: options)
+                        realtime.rest.httpExecutor = mockHttpExecutor
+
+                        let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(
+                            token: "123456",
+                            issued: Date(),
+                            expires: Date.distantFuture,
+                            capability: "",
+                            deviceId: localDevice.id
+                        )
+
+                        expect(localDevice.identityTokenDetails).to(beNil())
+                        realtime.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
+                        defer { realtime.rest.device.setAndPersistIdentityTokenDetails(nil) }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            realtime.push.admin.deviceRegistrations.save(localDevice) { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        guard let request = mockHttpExecutor.requests.first else {
+                            fail("No requests found")
+                            return
+                        }
+                        expect(request.httpMethod).to(equal("PUT"))
+
+                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                        expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
+                    }
+
+                    it("should include DeviceSecret HTTP header") {
+                        let options = AblyTests.commonAppSetup()
+                        options.pushFullWait = true
+                        let realtime = ARTRealtime(options: options)
+                        realtime.rest.httpExecutor = mockHttpExecutor
+
+                        waitUntil(timeout: testTimeout) { done in
+                            realtime.push.admin.deviceRegistrations.save(localDevice) { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        guard let request = mockHttpExecutor.requests.first else {
+                            fail("No requests found")
+                            return
+                        }
+                        expect(request.httpMethod).to(equal("PUT"))
+
+                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
+                        expect(authorization).to(equal(localDevice.secret))
+                    }
                 }
             }
 
@@ -536,6 +649,63 @@ class PushAdmin : QuickSpec {
                             done()
                         }
                     }
+
+                context("push device authentication") {
+                    it("should include DeviceIdentityToken HTTP header") {
+                        let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
+                        realtime.rest.httpExecutor = mockHttpExecutor
+
+                        let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(
+                            token: "123456",
+                            issued: Date(),
+                            expires: Date.distantFuture,
+                            capability: "",
+                            deviceId: localDevice.id
+                        )
+
+                        expect(localDevice.identityTokenDetails).to(beNil())
+                        realtime.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
+                        defer { realtime.rest.device.setAndPersistIdentityTokenDetails(nil) }
+
+                        let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: "pushenabled:qux")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            realtime.push.admin.channelSubscriptions.save(subscription) { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        guard let request = mockHttpExecutor.requests.first else {
+                            fail("No requests found")
+                            return
+                        }
+
+                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                        expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
+                    }
+
+                    it("should include DeviceSecret HTTP header") {
+                        let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
+                        realtime.rest.httpExecutor = mockHttpExecutor
+
+                        let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: "pushenabled:qux")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            realtime.push.admin.channelSubscriptions.save(subscription) { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        guard let request = mockHttpExecutor.requests.first else {
+                            fail("No requests found")
+                            return
+                        }
+
+                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
+                        expect(authorization).to(equal(localDevice.secret))
+                    }
                 }
             }
 
@@ -593,6 +763,64 @@ class PushAdmin : QuickSpec {
                             expect(error).to(beNil())
                             done()
                         }
+                    }
+                }
+
+                context("push device authentication") {
+                    it("should include DeviceIdentityToken HTTP header") {
+                        let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
+                        realtime.rest.httpExecutor = mockHttpExecutor
+
+                        let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(
+                            token: "123456",
+                            issued: Date(),
+                            expires: Date.distantFuture,
+                            capability: "",
+                            deviceId: localDevice.id
+                        )
+
+                        expect(localDevice.identityTokenDetails).to(beNil())
+                        realtime.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
+                        defer { realtime.rest.device.setAndPersistIdentityTokenDetails(nil) }
+
+                        let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: "pushenabled:qux")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            realtime.push.admin.channelSubscriptions.remove(subscription) { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        guard let request = mockHttpExecutor.requests.first else {
+                            fail("No requests found")
+                            return
+                        }
+
+                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                        expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
+                    }
+
+                    it("should include DeviceSecret HTTP header") {
+                        let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
+                        realtime.rest.httpExecutor = mockHttpExecutor
+
+                        let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: "pushenabled:qux")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            realtime.push.admin.channelSubscriptions.remove(subscription) { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        guard let request = mockHttpExecutor.requests.first else {
+                            fail("No requests found")
+                            return
+                        }
+
+                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
+                        expect(authorization).to(equal(localDevice.secret))
                     }
                 }
             }
