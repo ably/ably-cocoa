@@ -167,7 +167,7 @@
     [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
         [self.machine callActivatedCallback:nil];
-        return [ARTPushActivationStateWaitingForRegistrationUpdate newWithMachine:self.machine];
+        return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventRegistrationUpdated class]]) {
         return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
