@@ -998,5 +998,16 @@ class PushAdmin : QuickSpec {
 
         }
 
+        describe("local device") {
+
+            it("should include an id and a secret") {
+                expect(localDevice.id).toNot(beNil())
+                expect(localDevice.secret).toNot(beNil())
+                expect(localDevice.identityTokenDetails).to(beNil())
+            }
+
+        }
+
     }
+
 }
