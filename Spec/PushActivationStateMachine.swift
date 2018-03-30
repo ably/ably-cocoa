@@ -43,6 +43,7 @@ class PushActivationStateMachine : QuickSpec {
                 expect(storage.keysWritten).to(beEmpty())
             }
 
+            // RSH3a
             context("State NotActivated") {
 
                 var stateMachine: ARTPushActivationStateMachine!
@@ -68,12 +69,13 @@ class PushActivationStateMachine : QuickSpec {
                 }
 
                 context("on Event CalledActivate") {
-                    it("if the local device has id and updateToken then should transition to WaitingForNewPushDeviceDetails") {
+                    it("if the local device has id and deviceIdentityToken then should transition to WaitingForNewPushDeviceDetails") {
                         let testDeviceId = "aaaa"
                         storage.simulateOnNextRead(string: testDeviceId, for: ARTDeviceIdKey)
 
-                        let testDeviceUpdateToken = "xxxx-xxxx-xxx"
-                        storage.simulateOnNextRead(string: testDeviceUpdateToken, for: ARTDeviceIdentityTokenKey)
+                        let testDeviceIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", deviceId: testDeviceId)
+                        stateMachine.rest.device.setAndPersistIdentityTokenDetails(testDeviceIdentityTokenDetails)
+                        defer { stateMachine.rest.device.setAndPersistIdentityTokenDetails(nil) }
 
                         stateMachine.send(ARTPushActivationEventCalledActivate())
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
@@ -82,8 +84,11 @@ class PushActivationStateMachine : QuickSpec {
                     it("if the local device has the necessary push details should send event GotPushDeviceDetails") {
                         let delegate = StateMachineDelegate()
                         stateMachine.delegate = delegate
+
                         let testDeviceToken = "xxxx-xxxx-xxxx-xxxx-xxxx"
-                        storage.simulateOnNextRead(string: testDeviceToken, for: ARTDeviceTokenKey)
+                        stateMachine.rest.device.setAndPersistDeviceToken(testDeviceToken)
+                        defer { stateMachine.rest.device.setAndPersistDeviceToken(nil) }
+
                         waitUntil(timeout: testTimeout) { done in
                             let partialDone = AblyTests.splitDone(2, done: done)
                             stateMachine.transitions = { event, from, to in
