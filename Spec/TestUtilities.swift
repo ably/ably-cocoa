@@ -645,7 +645,7 @@ class MockDeviceStorage: NSObject, ARTDeviceStorage {
         keysWritten.append(key)
     }
 
-    func secret(forDevice deviceId: String) -> String? {
+    func secret(forDevice deviceId: ARTDeviceId) -> String? {
         keysRead.append(ARTDeviceSecretKey)
         if var value = simulateString[ARTDeviceSecretKey] {
             defer { simulateString.removeValue(forKey: ARTDeviceSecretKey) }
@@ -654,7 +654,7 @@ class MockDeviceStorage: NSObject, ARTDeviceStorage {
         return nil
     }
 
-    func setSecret(_ value: String?, forDevice deviceId: String) {
+    func setSecret(_ value: String?, forDevice deviceId: ARTDeviceId) {
         keysWritten.append(ARTDeviceSecretKey)
     }
 
