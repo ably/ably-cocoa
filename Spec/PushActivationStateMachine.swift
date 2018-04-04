@@ -29,11 +29,11 @@ class PushActivationStateMachine : QuickSpec {
 
         describe("Activation state machine") {
 
-            it("should set NotActivated state is current state in disk is empty") {
+            it("should set NotActivated state as current state when disk is empty") {
                 expect(initialStateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
             }
 
-            it("should read the current state in disk") {
+            it("should read the current state from disk") {
                 let storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeviceRegistration(machine: initialStateMachine))
                 rest.storage = storage
                 let stateMachine = ARTPushActivationStateMachine(rest)
