@@ -101,7 +101,7 @@ class PushChannel : QuickSpec {
                     }
                 }
 
-                // RSH7a2
+                // RSH7b2
                 it("should do a POST request to /push/channelSubscriptions") {
                     let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", deviceId: rest.device.id)
                     rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
