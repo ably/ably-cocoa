@@ -34,4 +34,4 @@ Add relevant console logs.
 ### Link to sample project
 Feel free to link to a sample project that showcases the issue.
 
-PS. If you are an enterprise customer please get in touch directly at support@ably.io
+P.S. If you are an [Ably Enterprise customer](https://www.ably.io/pricing/enterprise), please [get in touch](https://www.ably.io/contact) with a link to this issue to get prioritized support.
