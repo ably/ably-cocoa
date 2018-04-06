@@ -35,7 +35,7 @@ class PushChannel : QuickSpec {
                             guard let error = error else {
                                 fail("Error is nil"); done(); return
                             }
-                            expect(error.message).to(contain("cannot use device before ARTRest.push.activate has finished"))
+                            expect(error.message).to(contain("cannot use device before device activation has finished"))
                             done()
                         }
                     }
@@ -146,7 +146,7 @@ class PushChannel : QuickSpec {
                             guard let error = error else {
                                 fail("Error is nil"); done(); return
                             }
-                            expect(error.message).to(contain("cannot use device before ARTRest.push.activate has finished"))
+                            expect(error.message).to(contain("cannot use device before device activation has finished"))
                             done()
                         }
                     }
