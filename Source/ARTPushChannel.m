@@ -188,7 +188,7 @@ const NSUInteger ARTDefaultLimit = 100;
 - (ARTLocalDevice *)getDevice:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
     ARTLocalDevice *device = [_channel device];
     if (![device isRegistered]) {
-        if (callback) callback([ARTErrorInfo createWithCode:0 message:@"cannot use device before ARTRest.push.activate has finished"]);
+        if (callback) callback([ARTErrorInfo createWithCode:0 message:@"cannot use device before device activation has finished"]);
     }
     return device;
 }
