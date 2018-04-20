@@ -77,7 +77,14 @@ class PushActivationStateMachine : QuickSpec {
                         stateMachine.rest.device.setAndPersistIdentityTokenDetails(testDeviceIdentityTokenDetails)
                         defer { stateMachine.rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-                        stateMachine.send(ARTPushActivationEventCalledActivate())
+                        waitUntil(timeout: testTimeout) { done in
+                            stateMachine.transitions = { event, from, to in
+                                if event is ARTPushActivationEventCalledActivate {
+                                    done()
+                                }
+                            }
+                            stateMachine.send(ARTPushActivationEventCalledActivate())
+                        }
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
                     }
 
