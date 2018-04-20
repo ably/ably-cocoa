@@ -293,9 +293,9 @@ class PushActivationStateMachine : QuickSpec {
                         }
                         expect(request.httpMethod) == "POST"
                         expect(body.value(forKey: "id") as? String).to(equal(rest.device.id))
-                        expect(body.value(forKey: "push")).toNot(beNil())
-                        expect(body.value(forKey: "formFactor")).toNot(beNil())
-                        expect(body.value(forKey: "platform")).toNot(beNil())
+                        expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(["recipient": ["transportType": "apns"]]))
+                        expect(body.value(forKey: "formFactor") as? String) == "phone"
+                        expect(body.value(forKey: "platform") as? String) == "ios"
                     }
 
                     // RSH3b3c
@@ -338,9 +338,9 @@ class PushActivationStateMachine : QuickSpec {
                             fail("body is invalid"); return
                         }
                         expect(body.value(forKey: "id") as? String).to(equal(rest.device.id))
-                        expect(body.value(forKey: "push")).toNot(beNil())
-                        expect(body.value(forKey: "formFactor")).toNot(beNil())
-                        expect(body.value(forKey: "platform")).toNot(beNil())
+                        expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(["recipient": ["transportType": "apns"]]))
+                        expect(body.value(forKey: "formFactor") as? String) == "phone"
+                        expect(body.value(forKey: "platform") as? String) == "ios"
                     }
 
                     // RSH3b3d
