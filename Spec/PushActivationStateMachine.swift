@@ -92,7 +92,20 @@ class PushActivationStateMachine : QuickSpec {
                     }
 
                     // RSH3a2b
-                    // TODO
+                    context("local device") {
+                        it("should have a generated id") {
+                            expect(rest.device.id.lengthOfBytes(using: .utf8)) == 26 //ulid
+                        }
+                        it("should have a generated secret") {
+                            guard let deviceSecret = rest.device.secret else {
+                                fail("Device Secret should be available because it's loaded when the getter of the property is called"); return
+                            }
+                            guard let data = Data(base64Encoded: deviceSecret) else {
+                                fail("Device Secret should be encoded with Base64"); return
+                            }
+                            expect(data.count) == 32 //32 bytes digest
+                        }
+                    }
 
                     // RSH3a2c
                     it("if the local device has the necessary push details should send event GotPushDeviceDetails") {
