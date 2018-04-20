@@ -226,7 +226,7 @@ class PushActivationStateMachine : QuickSpec {
                         stateMachine.delegate = delegate
 
                         waitUntil(timeout: testTimeout) { done in
-                            let simulatedError = NSError(domain: "", code: 1234, userInfo: nil)
+                            let simulatedError = NSError(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
                             let partialDone = AblyTests.splitDone(2, done: done)
                             stateMachine.transitions = { event, from, to in
                                 if let event = event as? ARTPushActivationEventGettingDeviceRegistrationFailed {
@@ -305,7 +305,7 @@ class PushActivationStateMachine : QuickSpec {
                         let delegate = StateMachineDelegate()
                         stateMachine.delegate = delegate
 
-                        let simulatedError = NSError(domain: "", code: 1234, userInfo: nil)
+                        let simulatedError = NSError(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
                         httpExecutor.simulateIncomingErrorOnNextRequest(simulatedError)
 
                         waitUntil(timeout: testTimeout) { done in
@@ -484,7 +484,7 @@ class PushActivationStateMachine : QuickSpec {
                         stateMachine.delegate = delegate
 
                         waitUntil(timeout: testTimeout) { done in
-                            let simulatedError = NSError(domain: "", code: 1234, userInfo: nil)
+                            let simulatedError = NSError(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
                             let partialDone = AblyTests.splitDone(2, done: done)
                             stateMachine.transitions = { event, from, to in
                                 if let event = event as? ARTPushActivationEventDeregistrationFailed {
@@ -599,7 +599,7 @@ class PushActivationStateMachine : QuickSpec {
                         let delegate = StateMachineDelegate()
                         stateMachine.delegate = delegate
 
-                        let simulatedError = NSError(domain: "", code: 1234, userInfo: nil)
+                        let simulatedError = NSError(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
                         httpExecutor.simulateIncomingErrorOnNextRequest(simulatedError)
 
                         waitUntil(timeout: testTimeout) { done in
