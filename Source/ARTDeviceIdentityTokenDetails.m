@@ -8,6 +8,12 @@
 
 #import "ARTDeviceIdentityTokenDetails.h"
 
+NSString *const ARTCoderTokenKey = @"token";
+NSString *const ARTCoderIssuedKey = @"issued";
+NSString *const ARTCoderExpiresKey = @"expires";
+NSString *const ARTCoderCapabilityKey = @"capability";
+NSString *const ARTCoderDeviceIdKey = @"deviceId";
+
 @implementation ARTDeviceIdentityTokenDetails
 
 - (instancetype)initWithToken:(NSString *)token issued:(NSDate *)issued expires:(NSDate *)expires capability:(NSString *)capability deviceId:(NSString *)deviceId {
@@ -40,21 +46,21 @@
         return nil;
     }
 
-    _token = [aDecoder decodeObjectForKey:@"token"];
-    _issued = [aDecoder decodeObjectForKey:@"issued"];
-    _expires = [aDecoder decodeObjectForKey:@"expires"];
-    _capability = [aDecoder decodeObjectForKey:@"capability"];
-    _deviceId = [aDecoder decodeObjectForKey:@"deviceId"];
+    _token = [aDecoder decodeObjectForKey:ARTCoderTokenKey];
+    _issued = [aDecoder decodeObjectForKey:ARTCoderIssuedKey];
+    _expires = [aDecoder decodeObjectForKey:ARTCoderExpiresKey];
+    _capability = [aDecoder decodeObjectForKey:ARTCoderCapabilityKey];
+    _deviceId = [aDecoder decodeObjectForKey:ARTCoderDeviceIdKey];
 
     return self;
 }
 
 - (void)encodeWithCoder:(NSCoder *)aCoder {
-    [aCoder encodeObject:self.token forKey:@"token"];
-    [aCoder encodeObject:self.issued forKey:@"issued"];
-    [aCoder encodeObject:self.expires forKey:@"expires"];
-    [aCoder encodeObject:self.capability forKey:@"capability"];
-    [aCoder encodeObject:self.deviceId forKey:@"deviceId"];
+    [aCoder encodeObject:self.token forKey:ARTCoderTokenKey];
+    [aCoder encodeObject:self.issued forKey:ARTCoderIssuedKey];
+    [aCoder encodeObject:self.expires forKey:ARTCoderExpiresKey];
+    [aCoder encodeObject:self.capability forKey:ARTCoderCapabilityKey];
+    [aCoder encodeObject:self.deviceId forKey:ARTCoderDeviceIdKey];
 }
 
 #pragma mark - Archive/Unarchive
