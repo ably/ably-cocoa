@@ -161,8 +161,7 @@ dispatch_async(_queue, ^{
                 }
                 else if (identityTokenDetails) {
                     // Success
-                    [local setAndPersistIdentityTokenDetails:identityTokenDetails];
-                    [self sendEvent:[ARTPushActivationEventGotDeviceRegistration new]];
+                    [self sendEvent:[ARTPushActivationEventGotDeviceRegistration newWithIdentityTokenDetails:identityTokenDetails]];
                 }
                 else {
                     ARTErrorInfo *missingIdentityTokenError = [ARTErrorInfo createWithCode:0 message:@"Device Identity Token Details is expected"];
@@ -194,8 +193,7 @@ dispatch_async(_queue, ^{
             [self sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
             return;
         }
-        [local setAndPersistIdentityTokenDetails:identityTokenDetails];
-        [self sendEvent:[ARTPushActivationEventGotDeviceRegistration new]];
+        [self sendEvent:[ARTPushActivationEventGotDeviceRegistration newWithIdentityTokenDetails:identityTokenDetails]];
     }];
     #endif
 }

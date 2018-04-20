@@ -8,6 +8,10 @@
 
 #import "ARTPushActivationEvent.h"
 #import "ARTTypes.h"
+#import "ARTDeviceIdentityTokenDetails.h"
+
+NSString *const ARTCoderErrorKey = @"error";
+NSString *const ARTCoderIdentityTokenDetailsKey = @"identityTokenDetails";
 
 @implementation ARTPushActivationEvent
 
@@ -56,14 +60,14 @@
 
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
-        _error = [aDecoder decodeObjectForKey:@"error"];
+        _error = [aDecoder decodeObjectForKey:ARTCoderErrorKey];
     }
     return self;
 }
 
 - (void)encodeWithCoder:(NSCoder *)aCoder {
     [super encodeWithCoder:aCoder];
-    [aCoder encodeObject:self.error forKey:@"error"];
+    [aCoder encodeObject:self.error forKey:ARTCoderErrorKey];
 }
 
 @end
@@ -80,6 +84,30 @@
 @end
 
 @implementation ARTPushActivationEventGotDeviceRegistration
+
+- (instancetype)initWithIdentityTokenDetails:(ARTDeviceIdentityTokenDetails *)identityTokenDetails {
+    if (self = [super init]) {
+        _identityTokenDetails = identityTokenDetails;
+    }
+    return self;
+}
+
++ (instancetype)newWithIdentityTokenDetails:(ARTDeviceIdentityTokenDetails *)identityTokenDetails {
+    return [[self alloc] initWithIdentityTokenDetails:identityTokenDetails];
+}
+
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if (self = [super initWithCoder:aDecoder]) {
+        _identityTokenDetails = [aDecoder decodeObjectForKey:ARTCoderIdentityTokenDetailsKey];
+    }
+    return self;
+}
+
+- (void)encodeWithCoder:(NSCoder *)aCoder {
+    [super encodeWithCoder:aCoder];
+    [aCoder encodeObject:self.identityTokenDetails forKey:ARTCoderIdentityTokenDetailsKey];
+}
+
 @end
 
 @implementation ARTPushActivationEventGettingDeviceRegistrationFailed
