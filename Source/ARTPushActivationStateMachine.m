@@ -256,7 +256,7 @@ dispatch_async(_queue, ^{
         }
     } error:nil];
     [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
-    [request setDeviceAuthentication:local.id localDevice:local];
+    [request setDeviceAuthentication:local];
 
     [[_rest logger] debug:__FILE__ line:__LINE__ message:@"update device with request %@", request];
     [_rest executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -321,7 +321,7 @@ dispatch_async(_queue, ^{
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"DELETE";
-    [request setDeviceAuthentication:local.id localDevice:local];
+    [request setDeviceAuthentication:local];
 
     [[_rest logger] debug:__FILE__ line:__LINE__ message:@"device deregistration with request %@", request];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
