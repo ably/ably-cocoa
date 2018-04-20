@@ -10,6 +10,7 @@
 
 @class ARTErrorInfo;
 @class ARTPushActivationState;
+@class ARTDeviceIdentityTokenDetails;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -42,6 +43,15 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface ARTPushActivationEventGotDeviceRegistration : ARTPushActivationEvent
+
+@property (nonatomic, readonly) ARTDeviceIdentityTokenDetails *identityTokenDetails;
+
+- (instancetype)init UNAVAILABLE_ATTRIBUTE;
++ (instancetype)new UNAVAILABLE_ATTRIBUTE;
+
+- (instancetype)initWithIdentityTokenDetails:(ARTDeviceIdentityTokenDetails *)identityTokenDetails;
++ (instancetype)newWithIdentityTokenDetails:(ARTDeviceIdentityTokenDetails *)identityTokenDetails;
+
 @end
 
 @interface ARTPushActivationEventGettingDeviceRegistrationFailed : ARTPushActivationErrorEvent
