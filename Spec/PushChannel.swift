@@ -321,6 +321,41 @@ class PushChannel : QuickSpec {
                         expect(error.code).to(equal(ARTDataQueryError.invalidParameters.rawValue))
                     })
                 }
+
+                it("should return a paginated result with PushChannelSubscription") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "tester"
+                    let rest = ARTRest(options: options)
+                    rest.storage = MockDeviceStorage()
+
+                    // Activate device
+                    let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", deviceId: rest.device.id)
+                    rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
+                    defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
+
+                    let channel = rest.channels.get("pushenabled:foo")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.push.subscribeClient { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    let params: [String: String] = [
+                        "clientId": options.clientId!,
+                        "channel": channel.name
+                    ]
+                    waitUntil(timeout: testTimeout) { done in
+                        try! channel.push.listSubscriptions(params) { result, error in
+                            expect(error).to(beNil())
+                            guard let result = result else {
+                                fail("Result is nil"); done(); return
+                            }
+                            expect(result.items.count) == 1
+                            done()
+                        }
+                    }
+                }
             }
 
         }
