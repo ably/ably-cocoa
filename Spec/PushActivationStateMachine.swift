@@ -398,9 +398,25 @@ class PushActivationStateMachine : QuickSpec {
                     }
                     defer { hook.remove() }
 
-                    stateMachine.send(ARTPushActivationEventGotDeviceRegistration())
+                    var setAndPersistIdentityTokenDetailsCalled = false
+                    let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
+                        setAndPersistIdentityTokenDetailsCalled = true
+                    }
+                    defer { hookDevice.remove() }
+
+                    let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(
+                        token: "123456",
+                        issued: Date(),
+                        expires: Date.distantFuture,
+                        capability: "",
+                        deviceId: rest.device.id
+                    )
+
+                    stateMachine.send(ARTPushActivationEventGotDeviceRegistration(identityTokenDetails: testIdentityTokenDetails))
                     expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
                     expect(activatedCallbackCalled).to(beTrue())
+                    expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
+                    expect(storage.keysWritten).to(contain(["ARTDeviceId", "ARTDeviceSecret", "ARTDeviceIdentityToken"]))
                 }
 
                 // RSH3c3
