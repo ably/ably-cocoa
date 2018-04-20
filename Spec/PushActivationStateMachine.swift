@@ -55,6 +55,7 @@ class PushActivationStateMachine : QuickSpec {
                     stateMachine = ARTPushActivationStateMachine(rest)
                 }
 
+                // RSH3a1
                 it("on Event CalledDeactivate, should transition to NotActivated") {
                     var deactivatedCallbackCalled = false
                     let hook = stateMachine.testSuite_injectIntoMethod(after: NSSelectorFromString("callDeactivatedCallback:")) {
@@ -68,7 +69,9 @@ class PushActivationStateMachine : QuickSpec {
                     expect(deactivatedCallbackCalled).to(beTrue())
                 }
 
+                // RSH3a2
                 context("on Event CalledActivate") {
+                    // RSH3a2a
                     it("if the local device has id and deviceIdentityToken then should transition to WaitingForNewPushDeviceDetails") {
                         let testDeviceId = "aaaa"
                         storage.simulateOnNextRead(string: testDeviceId, for: ARTDeviceIdKey)
@@ -88,6 +91,10 @@ class PushActivationStateMachine : QuickSpec {
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
                     }
 
+                    // RSH3a2b
+                    // TODO
+
+                    // RSH3a2c
                     it("if the local device has the necessary push details should send event GotPushDeviceDetails") {
                         let delegate = StateMachineDelegate()
                         stateMachine.delegate = delegate
@@ -110,15 +117,17 @@ class PushActivationStateMachine : QuickSpec {
                         }
                     }
 
+                    // RSH3a2d
                     it("none of them then should transition to WaitingForPushDeviceDetails") {
                         stateMachine.send(ARTPushActivationEventCalledActivate())
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))
                     }
+                }
 
-                    it("on Event GotPushDeviceDetails") {
-                        stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
-                    }
+                // RSH3a3
+                it("on Event GotPushDeviceDetails") {
+                    stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
+                    expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
                 }
 
             }
@@ -135,11 +144,13 @@ class PushActivationStateMachine : QuickSpec {
                     stateMachine = ARTPushActivationStateMachine(rest)
                 }
 
+                // RSH3b1
                 it("on Event CalledActivate") {
                     stateMachine.send(ARTPushActivationEventCalledActivate())
                     expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))
                 }
 
+                // RSH3b2
                 it("on Event CalledDeactivate") {
                     var deactivatedCallbackCalled = false
                     let hook = stateMachine.testSuite_injectIntoMethod(after: NSSelectorFromString("callDeactivatedCallback:")) {
@@ -165,6 +176,7 @@ class PushActivationStateMachine : QuickSpec {
                         })
                     }
 
+                    // RSH3b3a, RSH3b3c, RSH3b3d
                     it("should use custom registerCallback and fire GotDeviceRegistration event") {
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))
 
@@ -186,6 +198,7 @@ class PushActivationStateMachine : QuickSpec {
                                 return nil
                             }
                             stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
+                            // RSH3b3d
                             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
                         }
 
@@ -193,6 +206,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(httpExecutor.requests.count) == 0
                     }
 
+                    // RSH3b3c
                     it("should use custom registerCallback and fire GettingDeviceRegistrationFailed event") {
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))
 
@@ -224,6 +238,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(httpExecutor.requests.count) == 0
                     }
 
+                    // RSH3b3b, RSH3b3c, RSH3b3d
                     it("should fire GotDeviceRegistration event") {
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))
 
@@ -244,6 +259,7 @@ class PushActivationStateMachine : QuickSpec {
                                 }
                             }
                             stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
+                            // RSH3b3d
                             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
                         }
 
@@ -271,6 +287,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(body.value(forKey: "platform")).toNot(beNil())
                     }
 
+                    // RSH3b3c
                     it("should fire GettingDeviceRegistrationFailed event") {
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))
 
@@ -331,11 +348,13 @@ class PushActivationStateMachine : QuickSpec {
                     stateMachine = ARTPushActivationStateMachine(rest)
                 }
 
+                // RSH3c1
                 it("on Event CalledActivate") {
                     stateMachine.send(ARTPushActivationEventCalledActivate())
                     expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
                 }
 
+                // RSH3c2
                 it("on Event GotDeviceRegistration") {
                     var activatedCallbackCalled = false
                     let hook = stateMachine.testSuite_injectIntoMethod(after: NSSelectorFromString("callActivatedCallback:")) {
@@ -348,6 +367,7 @@ class PushActivationStateMachine : QuickSpec {
                     expect(activatedCallbackCalled).to(beTrue())
                 }
 
+                // RSH3c3
                 it("on Event GettingDeviceRegistrationFailed") {
                     var activatedCallbackCalled = false
                     let hook = stateMachine.testSuite_injectIntoMethod(after: NSSelectorFromString("callActivatedCallback:")) {
@@ -374,6 +394,7 @@ class PushActivationStateMachine : QuickSpec {
                     stateMachine = ARTPushActivationStateMachine(rest)
                 }
 
+                // RSH3d1
                 it("on Event CalledActivate") {
                     var activatedCallbackCalled = false
                     let hook = stateMachine.testSuite_injectIntoMethod(after: NSSelectorFromString("callActivatedCallback:")) {
@@ -389,6 +410,7 @@ class PushActivationStateMachine : QuickSpec {
                 // RSH3d2
                 context("on Event CalledDeactivate") {
 
+                    // RSH3d2a, RSH3d2c, RSH3d2d
                     it("should use custom deregisterCallback and fire Deregistered event") {
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
 
@@ -410,6 +432,7 @@ class PushActivationStateMachine : QuickSpec {
                                 return nil
                             }
                             stateMachine.send(ARTPushActivationEventCalledDeactivate())
+                            // RSH3d2d
                             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
                         }
 
@@ -417,6 +440,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(httpExecutor.requests.count) == 0
                     }
 
+                    // RSH3d2c
                     it("should use custom deregisterCallback and fire DeregistrationFailed event") {
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
 
@@ -448,6 +472,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(httpExecutor.requests.count) == 0
                     }
 
+                    // RSH3d2b, RSH3d2c, RSH3d2d
                     it("should fire Deregistered event and include DeviceSecret HTTP header") {
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
 
@@ -462,6 +487,7 @@ class PushActivationStateMachine : QuickSpec {
                                 }
                             }
                             stateMachine.send(ARTPushActivationEventCalledDeactivate())
+                            // RSH3d2d
                             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
                         }
 
@@ -481,6 +507,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(authorization).to(equal(rest.device.secret))
                     }
 
+                    // RSH3d2b, RSH3d2c, RSH3d2d
                     it("should fire Deregistered event and include DeviceIdentityToken HTTP header") {
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
 
@@ -508,6 +535,7 @@ class PushActivationStateMachine : QuickSpec {
                                 }
                             }
                             stateMachine.send(ARTPushActivationEventCalledDeactivate())
+                            // RSH3d2d
                             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
                         }
 
@@ -528,6 +556,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
                     }
 
+                    // RSH3d2c
                     it("should fire DeregistrationFailed event") {
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
 
@@ -568,10 +597,12 @@ class PushActivationStateMachine : QuickSpec {
 
             }
 
+            // RSH3e
             context("State WaitingForRegistrationUpdate") {
                 // Doesn't happen in iOS
             }
 
+            // RSH3f
             context("State AfterRegistrationUpdateFailed") {
 
                 it("on Event CalledActivate") {
@@ -600,11 +631,13 @@ class PushActivationStateMachine : QuickSpec {
                     stateMachine = ARTPushActivationStateMachine(rest)
                 }
 
+                // RSH3g1
                 it("on Event CalledDeactivate") {
                     stateMachine.send(ARTPushActivationEventCalledDeactivate())
                     expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
                 }
 
+                // RSH3g2
                 it("on Event Deregistered") {
                     var deactivatedCallbackCalled = false
                     let hook = stateMachine.testSuite_injectIntoMethod(after: NSSelectorFromString("callDeactivatedCallback:")) {
@@ -624,6 +657,7 @@ class PushActivationStateMachine : QuickSpec {
                     expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
                 }
 
+                // RSH3g3
                 it("on Event DeregistrationFailed") {
                     var deactivatedCallbackCalled = false
                     let hook = stateMachine.testSuite_injectIntoMethod(after: NSSelectorFromString("callDeactivatedCallback:")) {
