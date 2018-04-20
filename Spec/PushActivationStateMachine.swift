@@ -189,7 +189,7 @@ class PushActivationStateMachine : QuickSpec {
                         })
                     }
 
-                    // RSH3b3a, RSH3b3c, RSH3b3d
+                    // RSH3b3a, RSH3b3c
                     it("should use custom registerCallback and fire GotDeviceRegistration event") {
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))
 
@@ -211,7 +211,6 @@ class PushActivationStateMachine : QuickSpec {
                                 return nil
                             }
                             stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
-                            // RSH3b3d
                             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
                         }
 
@@ -251,7 +250,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(httpExecutor.requests.count) == 0
                     }
 
-                    // RSH3b3b, RSH3b3c, RSH3b3d
+                    // RSH3b3b, RSH3b3c
                     it("should fire GotDeviceRegistration event") {
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))
 
@@ -272,7 +271,6 @@ class PushActivationStateMachine : QuickSpec {
                                 }
                             }
                             stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
-                            // RSH3b3d
                             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
                         }
 
@@ -343,6 +341,31 @@ class PushActivationStateMachine : QuickSpec {
                         expect(body.value(forKey: "push")).toNot(beNil())
                         expect(body.value(forKey: "formFactor")).toNot(beNil())
                         expect(body.value(forKey: "platform")).toNot(beNil())
+                    }
+
+                    // RSH3b3d
+                    it("should transition to WaitingForDeviceRegistration") {
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))
+
+                        let delegate = StateMachineDelegate()
+                        stateMachine.delegate = delegate
+
+                        var setAndPersistIdentityTokenDetailsCalled = false
+                        let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
+                            setAndPersistIdentityTokenDetailsCalled = true
+                        }
+                        defer { hookDevice.remove() }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            stateMachine.transitions = { event, from, to in
+                                if event is ARTPushActivationEventGotDeviceRegistration {
+                                    stateMachine.transitions = nil
+                                    done()
+                                }
+                            }
+                            stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
+                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
+                        }
                     }
 
                 }
