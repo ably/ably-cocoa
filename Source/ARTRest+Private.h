@@ -61,6 +61,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)reportUncaughtException:(NSException *_Nullable)exception;
 - (void)forceReport:(NSString *)message exception:(NSException *_Nullable)e;
 
+- (void)resetDeviceOnceToken;
+
 @end
 
 BOOL ARTstartHandlingUncaughtExceptions(ARTRest *self);
