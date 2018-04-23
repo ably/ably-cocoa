@@ -604,7 +604,7 @@ static dispatch_once_t *device_once_token;
 }
 
 - (void)resetDeviceOnceToken {
-    *device_once_token = 0;
+    if (device_once_token) *device_once_token = 0;
 }
 
 @end
