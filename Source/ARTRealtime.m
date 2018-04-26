@@ -227,7 +227,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 }
 
 - (void)_connect {
-    if(self.connection.state_nosync == ARTRealtimeClosing) {
+    NSTimeInterval intervalSinceLast = [[NSDate date] timeIntervalSinceDate:_lastActivity];
+    
+    // We want to enforce a new connection also when there hasn't been activity for longer than (idle interval + TTL)
+    if(self.connection.state_nosync == ARTRealtimeClosing || intervalSinceLast > (_maxIdleInterval + _connectionStateTtl)) {
         // New connection
         _transport = nil;
     }
