@@ -72,18 +72,9 @@ NSString *const ARTCoderIdentityTokenDetailsKey = @"identityTokenDetails";
 
 @end
 
-#pragma mark - Activation Events
+#pragma mark - Event with Device Identity Token details
 
-@implementation ARTPushActivationEventCalledActivate
-@end
-
-@implementation ARTPushActivationEventCalledDeactivate
-@end
-
-@implementation ARTPushActivationEventGotPushDeviceDetails
-@end
-
-@implementation ARTPushActivationEventGotDeviceRegistration
+@implementation ARTPushActivationDeviceIdentityEvent
 
 - (instancetype)initWithIdentityTokenDetails:(ARTDeviceIdentityTokenDetails *)identityTokenDetails {
     if (self = [super init]) {
@@ -108,6 +99,20 @@ NSString *const ARTCoderIdentityTokenDetailsKey = @"identityTokenDetails";
     [aCoder encodeObject:self.identityTokenDetails forKey:ARTCoderIdentityTokenDetailsKey];
 }
 
+@end
+
+#pragma mark - Activation Events
+
+@implementation ARTPushActivationEventCalledActivate
+@end
+
+@implementation ARTPushActivationEventCalledDeactivate
+@end
+
+@implementation ARTPushActivationEventGotPushDeviceDetails
+@end
+
+@implementation ARTPushActivationEventGotDeviceRegistration
 @end
 
 @implementation ARTPushActivationEventGettingDeviceRegistrationFailed
