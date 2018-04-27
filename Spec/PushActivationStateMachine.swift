@@ -702,6 +702,25 @@ class PushActivationStateMachine : QuickSpec {
                     expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
                 }
 
+                // RSH3e3
+                it("on Event UpdatingRegistrationFailed") {
+                    let expectedError = ARTErrorInfo(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
+
+                    var updateFailedCallbackCalled = false
+                    let hook = stateMachine.testSuite_getArgument(from: NSSelectorFromString("callUpdateFailedCallback:"), at: 0, callback: { arg0 in
+                        updateFailedCallbackCalled = true
+                        guard let error = arg0 as? ARTErrorInfo else {
+                            fail("Error is missing"); return
+                        }
+                        expect(error) == expectedError
+                    })
+                    defer { hook.remove() }
+
+                    stateMachine.send(ARTPushActivationEventUpdatingRegistrationFailed(error: expectedError))
+                    expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                    expect(updateFailedCallbackCalled).to(beTrue())
+                }
+
             }
 
             // RSH3f
