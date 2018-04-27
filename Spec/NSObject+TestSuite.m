@@ -19,8 +19,8 @@
     } error:nil];
 }
 
-- (void)testSuite_getArgumentFrom:(SEL)selector atIndex:(NSInteger)index callback:(void (^)(id))callback {
-    [self aspect_hookSelector:selector withOptions:AspectPositionAfter usingBlock:^(id<AspectInfo> info) {
+- (id<AspectToken>)testSuite_getArgumentFrom:(SEL)selector atIndex:(NSInteger)index callback:(void (^)(id))callback {
+    return [self aspect_hookSelector:selector withOptions:AspectPositionAfter usingBlock:^(id<AspectInfo> info) {
         __autoreleasing id arg;
         [[info originalInvocation] getArgument:&arg atIndex:2+index];
         callback([arg copy]);
