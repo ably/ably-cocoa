@@ -161,6 +161,7 @@ dispatch_async(_queue, ^{
                 }
                 else if (identityTokenDetails) {
                     // Success
+                    [delegate didActivateAblyPush:nil];
                     [self sendEvent:[ARTPushActivationEventGotDeviceRegistration newWithIdentityTokenDetails:identityTokenDetails]];
                 }
                 else {
