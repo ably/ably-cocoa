@@ -2649,6 +2649,48 @@ class RealtimeClientConnection: QuickSpec {
                         }
                     }
                 }
+                
+                // RTN15g
+                context("when connection (ttl + idle interval) period has passed since last activity") {
+                    
+                    it("uses a new connection") {
+                        let options = AblyTests.commonAppSetup()
+                        var client: ARTRealtime!
+                        var connectionId = ""
+                        let customTtlInterval: TimeInterval = 1.0
+                        let customIdleInterval: TimeInterval = 1.0
+                        // We want this to be > than the sum of the two above
+                        let reconnectAfterInterval: TimeInterval = 5.0
+                        client = AblyTests.newRealtime(options)
+                        client.connect()
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.connected) { _ in
+                                expect(client.connection.id).toNot(beNil())
+                                connectionId = client.connection.id!
+                                client.connectionStateTtl = customTtlInterval
+                                client.maxIdleInterval = customIdleInterval
+                                client.connection.once(.disconnected) { _ in
+                                    let disconnectedAt = Date()
+                                    expect(client.connectionStateTtl).to(equal(customTtlInterval))
+                                    expect(client.maxIdleInterval).to(equal(customIdleInterval))
+                                    client.connection.once(.connecting) { _ in
+                                        let reconnectionInterval = Date().timeIntervalSince(disconnectedAt)
+                                        expect(reconnectionInterval).to(beGreaterThan(client.connectionStateTtl + client.maxIdleInterval))
+                                        client.connection.once(.connected) { _ in
+                                            expect(client.connection.id).toNot(equal(connectionId))
+                                            done()
+                                        }
+                                    }
+                                    delay(reconnectAfterInterval) {
+                                        client.connect()
+                                    }
+                                }
+                                client.onDisconnected()
+                            }
+                        }
+                    }
+                }
 
                 // RTN15h
                 context("DISCONNECTED message contains a token error") {
