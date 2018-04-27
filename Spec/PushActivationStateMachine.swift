@@ -658,7 +658,29 @@ class PushActivationStateMachine : QuickSpec {
 
             // RSH3e
             context("State WaitingForRegistrationUpdate") {
-                // Doesn't happen in iOS
+
+                var stateMachine: ARTPushActivationStateMachine!
+                var storage: MockDeviceStorage!
+
+                beforeEach {
+                    storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForRegistrationUpdate(machine: initialStateMachine))
+                    rest.storage = storage
+                    stateMachine = ARTPushActivationStateMachine(rest)
+                }
+
+                // RSH3e1
+                it("on Event CalledActivate") {
+                    var activatedCallbackCalled = false
+                    let hook = stateMachine.testSuite_injectIntoMethod(after: NSSelectorFromString("callActivatedCallback:")) {
+                        activatedCallbackCalled = true
+                    }
+                    defer { hook.remove() }
+
+                    stateMachine.send(ARTPushActivationEventCalledActivate())
+                    expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                    expect(activatedCallbackCalled).to(beTrue())
+                }
+
             }
 
             // RSH3f
