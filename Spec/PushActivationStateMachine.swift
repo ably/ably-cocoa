@@ -726,12 +726,190 @@ class PushActivationStateMachine : QuickSpec {
             // RSH3f
             context("State AfterRegistrationUpdateFailed") {
 
-                it("on Event CalledActivate") {
-                    // Doesn't happen in iOS
+                var stateMachine: ARTPushActivationStateMachine!
+                var storage: MockDeviceStorage!
+
+                beforeEach {
+                    storage = MockDeviceStorage(startWith: ARTPushActivationStateAfterRegistrationUpdateFailed(machine: initialStateMachine))
+                    rest.storage = storage
+                    stateMachine = ARTPushActivationStateMachine(rest)
                 }
 
-                it("on Event GotPushDeviceDetails") {
-                    // Doesn't happen in iOS
+                // RSH3f1
+                context("on Event CalledActivate") {
+                    it("should use custom registerCallback and fire RegistrationUpdated event") {
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+
+                        let delegate = StateMachineDelegateCustomCallbacks()
+                        stateMachine.delegate = delegate
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
+                            stateMachine.transitions = { event, from, to in
+                                if event is ARTPushActivationEventRegistrationUpdated {
+                                    stateMachine.transitions = nil
+                                    partialDone()
+                                }
+                            }
+                            delegate.onPushCustomRegister = { error, deviceDetails in
+                                expect(error).to(beNil())
+                                expect(deviceDetails).to(beIdenticalTo(rest.device))
+                                partialDone()
+                                return nil
+                            }
+                            stateMachine.send(ARTPushActivationEventCalledActivate())
+                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                        }
+
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                        expect(httpExecutor.requests.count) == 0
+                    }
+
+                    it("should use custom registerCallback and fire UpdatingRegistrationFailed event") {
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+
+                        let delegate = StateMachineDelegateCustomCallbacks()
+                        stateMachine.delegate = delegate
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let simulatedError = NSError(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
+                            let partialDone = AblyTests.splitDone(2, done: done)
+                            stateMachine.transitions = { event, from, to in
+                                if let event = event as? ARTPushActivationEventUpdatingRegistrationFailed {
+                                    expect(event.error.domain) == ARTAblyErrorDomain
+                                    expect(event.error.code) == simulatedError.code
+                                    stateMachine.transitions = nil
+                                    partialDone()
+                                }
+                            }
+                            delegate.onPushCustomRegister = { error, deviceDetails in
+                                expect(error).to(beNil())
+                                expect(deviceDetails).to(beIdenticalTo(rest.device))
+                                partialDone()
+                                return simulatedError
+                            }
+                            stateMachine.send(ARTPushActivationEventCalledActivate())
+                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                        }
+
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                        expect(httpExecutor.requests.count) == 0
+                    }
+
+                    it("should fire RegistrationUpdated event") {
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+
+                        let delegate = StateMachineDelegate()
+                        stateMachine.delegate = delegate
+
+                        var setAndPersistIdentityTokenDetailsCalled = false
+                        let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
+                            setAndPersistIdentityTokenDetailsCalled = true
+                        }
+                        defer { hookDevice.remove() }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            stateMachine.transitions = { event, from, to in
+                                if event is ARTPushActivationEventRegistrationUpdated {
+                                    stateMachine.transitions = nil
+                                    done()
+                                }
+                            }
+                            stateMachine.send(ARTPushActivationEventCalledActivate())
+                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                        }
+
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                        expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
+                        expect(httpExecutor.requests.count) == 1
+                        let requests = httpExecutor.requests.flatMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(stateMachine.rest.device.id)" })
+                        expect(requests).to(haveCount(1))
+                        guard let request = httpExecutor.requests.first else {
+                            fail("should have a \"/push/deviceRegistrations\" request"); return
+                        }
+                        guard let url = request.url else {
+                            fail("should have a \"/push/deviceRegistrations\" URL"); return
+                        }
+                        guard let rawBody = request.httpBody else {
+                            fail("should have a body"); return
+                        }
+                        guard let body = stateMachine.rest.defaultEncoder.decode(rawBody, error: nil) as? NSDictionary else {
+                            fail("body is invalid"); return
+                        }
+                        expect(request.httpMethod) == "PATCH"
+                        expect(body.value(forKey: "id")).to(beNil())
+                        expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(["recipient": ["transportType": "apns"]]))
+                        expect(body.value(forKey: "formFactor")).to(beNil())
+                        expect(body.value(forKey: "platform")).to(beNil())
+                    }
+
+                    it("should fire UpdatingRegistrationFailed event") {
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+
+                        let delegate = StateMachineDelegate()
+                        stateMachine.delegate = delegate
+
+                        let simulatedError = NSError(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
+                        httpExecutor.simulateIncomingErrorOnNextRequest(simulatedError)
+
+                        waitUntil(timeout: testTimeout) { done in
+                            stateMachine.transitions = { event, from, to in
+                                if let event = event as? ARTPushActivationEventUpdatingRegistrationFailed {
+                                    expect(event.error.domain) == ARTAblyErrorDomain
+                                    expect(event.error.code) == simulatedError.code
+                                    stateMachine.transitions = nil
+                                    done()
+                                }
+                            }
+                            stateMachine.send(ARTPushActivationEventCalledActivate())
+                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                        }
+
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                        expect(httpExecutor.requests.count) == 1
+                        let requests = httpExecutor.requests.flatMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(stateMachine.rest.device.id)" })
+                        expect(requests).to(haveCount(1))
+                        guard let request = httpExecutor.requests.first else {
+                            fail("should have a \"/push/deviceRegistrations\" request"); return
+                        }
+                        guard let url = request.url else {
+                            fail("should have a \"/push/deviceRegistrations\" URL"); return
+                        }
+                        guard let rawBody = request.httpBody else {
+                            fail("should have a body"); return
+                        }
+                        guard let body = stateMachine.rest.defaultEncoder.decode(rawBody, error: nil) as? NSDictionary else {
+                            fail("body is invalid"); return
+                        }
+                        expect(body.value(forKey: "id")).to(beNil())
+                        expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(["recipient": ["transportType": "apns"]]))
+                        expect(body.value(forKey: "formFactor")).to(beNil())
+                        expect(body.value(forKey: "platform")).to(beNil())
+                    }
+
+                    it("should transition to WaitingForRegistrationUpdate") {
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+
+                        let delegate = StateMachineDelegate()
+                        stateMachine.delegate = delegate
+
+                        var setAndPersistIdentityTokenDetailsCalled = false
+                        let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
+                            setAndPersistIdentityTokenDetailsCalled = true
+                        }
+                        defer { hookDevice.remove() }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            stateMachine.transitions = { event, from, to in
+                                if event is ARTPushActivationEventCalledActivate {
+                                    stateMachine.transitions = nil
+                                    done()
+                                }
+                            }
+                            stateMachine.send(ARTPushActivationEventCalledActivate())
+                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                        }
+                    }
                 }
 
                 it("on Event CalledDeactivate") {
