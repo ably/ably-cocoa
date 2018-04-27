@@ -194,12 +194,12 @@
     [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]] ||
         [event isKindOfClass:[ARTPushActivationEventGotPushDeviceDetails class]]) {
-        [self.machine deviceRegistration:nil];
-        return [ARTPushActivationStateWaitingForDeviceRegistration newWithMachine:self.machine];
+        [self.machine deviceUpdateRegistration:nil];
+        return [ARTPushActivationStateWaitingForRegistrationUpdate newWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
-        [self.machine callDeactivatedCallback:nil];
-        return [ARTPushActivationStateNotActivated newWithMachine:self.machine];
+        [self.machine deviceUnregistration:nil];
+        return [ARTPushActivationStateWaitingForDeregistration newWithMachine:self.machine];
     }
     return nil;
 }
@@ -224,7 +224,6 @@
         return [ARTPushActivationStateWaitingForDeregistration newWithMachine:self.machine];
     }
     return nil;
-
 }
 
 @end
