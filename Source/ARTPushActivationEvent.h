@@ -31,18 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-#pragma mark - Events
-
-@interface ARTPushActivationEventCalledActivate : ARTPushActivationEvent
-@end
-
-@interface ARTPushActivationEventCalledDeactivate : ARTPushActivationEvent
-@end
-
-@interface ARTPushActivationEventGotPushDeviceDetails : ARTPushActivationEvent
-@end
-
-@interface ARTPushActivationEventGotDeviceRegistration : ARTPushActivationEvent
+/// Event with Device Identity Token details
+@interface ARTPushActivationDeviceIdentityEvent : ARTPushActivationEvent
 
 @property (nonatomic, readonly) ARTDeviceIdentityTokenDetails *identityTokenDetails;
 
@@ -54,10 +44,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+#pragma mark - Events
+
+@interface ARTPushActivationEventCalledActivate : ARTPushActivationEvent
+@end
+
+@interface ARTPushActivationEventCalledDeactivate : ARTPushActivationEvent
+@end
+
+@interface ARTPushActivationEventGotPushDeviceDetails : ARTPushActivationEvent
+@end
+
+@interface ARTPushActivationEventGotDeviceRegistration : ARTPushActivationDeviceIdentityEvent
+@end
+
 @interface ARTPushActivationEventGettingDeviceRegistrationFailed : ARTPushActivationErrorEvent
 @end
 
-@interface ARTPushActivationEventRegistrationUpdated : ARTPushActivationEvent
+@interface ARTPushActivationEventRegistrationUpdated : ARTPushActivationDeviceIdentityEvent
 @end
 
 @interface ARTPushActivationEventUpdatingRegistrationFailed : ARTPushActivationErrorEvent

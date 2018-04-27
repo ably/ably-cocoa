@@ -173,7 +173,11 @@
         return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventRegistrationUpdated class]]) {
-        return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
+        ARTPushActivationEventRegistrationUpdated *registrationUpdatedEvent = (ARTPushActivationEventRegistrationUpdated *)event;
+        ARTLocalDevice *local = self.machine.rest.device_nosync;
+        [local setAndPersistIdentityTokenDetails:registrationUpdatedEvent.identityTokenDetails];
+        [self.machine callActivatedCallback:nil];
+        return [ARTPushActivationStateWaitingForRegistrationUpdate newWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventUpdatingRegistrationFailed class]]) {
         [self.machine callUpdateFailedCallback:[(ARTPushActivationEventUpdatingRegistrationFailed *)event error]];
