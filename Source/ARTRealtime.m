@@ -227,12 +227,17 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 }
 
 - (void)_connect {
-    NSTimeInterval intervalSinceLast = [[NSDate date] timeIntervalSinceDate:_lastActivity];
-    
-    // We want to enforce a new connection also when there hasn't been activity for longer than (idle interval + TTL)
-    if(self.connection.state_nosync == ARTRealtimeClosing || intervalSinceLast > (_maxIdleInterval + _connectionStateTtl)) {
+    if(self.connection.state_nosync == ARTRealtimeClosing) {
         // New connection
         _transport = nil;
+    }
+    
+    // We want to enforce a new connection also when there hasn't been activity for longer than (idle interval + TTL)
+    NSTimeInterval intervalSinceLast = [[NSDate date] timeIntervalSinceDate:_lastActivity];
+    if (intervalSinceLast > (_maxIdleInterval + _connectionStateTtl)) {
+        [self.connection setId:nil];
+        [self.connection setKey:nil];
+        [self.connection setSerial:0];
     }
     [self transition:ARTRealtimeConnecting];
 }
