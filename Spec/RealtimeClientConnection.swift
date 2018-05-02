@@ -2652,15 +2652,15 @@ class RealtimeClientConnection: QuickSpec {
                 
                 // RTN15g
                 context("when connection (ttl + idle interval) period has passed since last activity") {
+                    let options = AblyTests.commonAppSetup()
+                    var client: ARTRealtime!
+                    var connectionId = ""
+                    let customTtlInterval: TimeInterval = 1.0
+                    let customIdleInterval: TimeInterval = 1.0
+                    // We want this to be > than the sum of the two above
+                    let reconnectAfterInterval: TimeInterval = 5.0
                     
                     it("uses a new connection") {
-                        let options = AblyTests.commonAppSetup()
-                        var client: ARTRealtime!
-                        var connectionId = ""
-                        let customTtlInterval: TimeInterval = 1.0
-                        let customIdleInterval: TimeInterval = 1.0
-                        // We want this to be > than the sum of the two above
-                        let reconnectAfterInterval: TimeInterval = 5.0
                         client = AblyTests.newRealtime(options)
                         client.connect()
                         
@@ -2680,6 +2680,42 @@ class RealtimeClientConnection: QuickSpec {
                                         client.connection.once(.connected) { _ in
                                             expect(client.connection.id).toNot(equal(connectionId))
                                             done()
+                                        }
+                                    }
+                                    delay(reconnectAfterInterval) {
+                                        client.connect()
+                                    }
+                                }
+                                client.onDisconnected()
+                            }
+                        }
+                    }
+                    
+                    it("reattaches to the same channels after a new connection has been established") {
+                        client = AblyTests.newRealtime(options)
+                        client.connect()
+                        let channelName = "test-reattach-after-ttl"
+                        let channel = client.channels.get(channelName)
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.connected) { _ in
+                                connectionId = client.connection.id!
+                                client.connectionStateTtl = customTtlInterval
+                                client.maxIdleInterval = customIdleInterval
+                                channel.attach { error in
+                                    if let error = error {
+                                        fail(error.message)
+                                    }
+                                    expect(channel.state).to(equal(ARTRealtimeChannelState.attached))
+                                }
+                                client.connection.once(.disconnected) { _ in
+                                    client.connection.once(.connecting) { _ in
+                                        client.connection.once(.connected) { _ in
+                                            expect(client.connection.id).toNot(equal(connectionId))
+                                            let newChannel = client.channels.get(channelName)
+                                            newChannel.once(.attached) { _ in
+                                                done()
+                                            }
                                         }
                                     }
                                     delay(reconnectAfterInterval) {
