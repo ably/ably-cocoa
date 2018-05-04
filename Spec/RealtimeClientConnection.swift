@@ -2650,7 +2650,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
                 
-                // RTN15g
+                // RTN15g RTN15g1
                 context("when connection (ttl + idle interval) period has passed since last activity") {
                     let options = AblyTests.commonAppSetup()
                     var client: ARTRealtime!
@@ -2690,7 +2690,7 @@ class RealtimeClientConnection: QuickSpec {
                             }
                         }
                     }
-                    
+                    // RTN15g3
                     it("reattaches to the same channels after a new connection has been established") {
                         client = AblyTests.newRealtime(options)
                         client.connect()
@@ -2728,7 +2728,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
                 
-                // RTN15g
+                // RTN15g2
                 context("when connection (ttl + idle interval) period has NOT passed since last activity") {
                     
                     let options = AblyTests.commonAppSetup()
