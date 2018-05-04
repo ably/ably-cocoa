@@ -1420,6 +1420,18 @@ class PushActivationStateMachine : QuickSpec {
                 expect(stateMachine.pendingEvents).to(beEmpty())
             }
 
+            // RSH5
+            it("event handling sould be atomic and sequential") {
+                let storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeregistration(machine: initialStateMachine))
+                rest.storage = storage
+                let stateMachine = ARTPushActivationStateMachine(rest)
+                stateMachine.send(ARTPushActivationEventCalledActivate())
+                DispatchQueue(label: "QueueA").sync {
+                    stateMachine.send(ARTPushActivationEventDeregistered())
+                }
+                expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))
+            }
+
         }
     }
 }
