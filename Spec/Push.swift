@@ -13,5 +13,35 @@ import Quick
 class Push : QuickSpec {
     override func spec() {
 
+        var rest: ARTRest!
+        var mockHttpExecutor: MockHTTPExecutor!
+        var storage: MockDeviceStorage!
+
+        beforeEach {
+            rest = ARTRest(key: "xxxx:xxxx")
+            mockHttpExecutor = MockHTTPExecutor()
+            rest.httpExecutor = mockHttpExecutor
+            storage = MockDeviceStorage()
+            rest.storage = storage
+        }
+
+        // RSH2
+        describe("activation") {
+
+            // RSH2a
+            it("activate method should send a CalledActivate event to the state machine") {
+                defer { rest.push.activationMachine().transitions = nil }
+                waitUntil(timeout: testTimeout) { done in
+                    rest.push.activationMachine().transitions = { event, _, _ in
+                        if event is ARTPushActivationEventCalledActivate {
+                            done()
+                        }
+                    }
+                    rest.push.activate()
+                }
+            }
+
+        }
+
     }
 }
