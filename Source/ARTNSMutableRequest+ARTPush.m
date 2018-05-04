@@ -32,4 +32,12 @@
     }
 }
 
+- (void)setDeviceAuthentication:(ARTLocalDevice *)localDevice {
+    [self setDeviceAuthentication:localDevice logger:nil];
+}
+
+- (void)setDeviceAuthentication:(ARTLocalDevice *)localDevice logger:(ARTLog *)logger {
+    [self setDeviceAuthentication:localDevice.id localDevice:localDevice logger:nil];
+}
+
 @end

@@ -108,6 +108,9 @@
         return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventGotDeviceRegistration class]]) {
+        ARTPushActivationEventGotDeviceRegistration *gotDeviceRegistrationEvent = (ARTPushActivationEventGotDeviceRegistration *)event;
+        ARTLocalDevice *local = self.machine.rest.device_nosync;
+        [local setAndPersistIdentityTokenDetails:gotDeviceRegistrationEvent.identityTokenDetails];
         [self.machine callActivatedCallback:nil];
         return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
     }

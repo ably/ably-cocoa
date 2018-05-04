@@ -19,6 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setDeviceAuthentication:(ARTDeviceId *)deviceId localDevice:(ARTLocalDevice *)localDevice;
 - (void)setDeviceAuthentication:(ARTDeviceId *)deviceId localDevice:(ARTLocalDevice *)localDevice logger:(nullable ARTLog *)logger;
+- (void)setDeviceAuthentication:(ARTLocalDevice *)localDevice;
+- (void)setDeviceAuthentication:(ARTLocalDevice *)localDevice logger:(nullable ARTLog *)logger;
 
 @end
 
