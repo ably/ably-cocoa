@@ -1,6 +1,38 @@
 # Change Log
 
+## [1.0.12](https://github.com/ably/ably-ios/tree/1.0.12) (2018-03-16)
+
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.11...1.0.12)
+
+**Implemented enhancements:**
+
+- Supported Platforms section in the README [\#696](https://github.com/ably/ably-ios/issues/696)
+- Address warnings in KSCrash fork [\#680](https://github.com/ably/ably-ios/issues/680)
+
+**Fixed bugs:**
+
+- App Store publication when using Carthage [\#698](https://github.com/ably/ably-ios/issues/698)
+- High Memory Usage [\#691](https://github.com/ably/ably-ios/issues/691)
+
+**Closed issues:**
+
+- Remove deprecated Authorise method [\#677](https://github.com/ably/ably-ios/issues/677)
+- Run Travis tests on iOS 9, 10 and 11 [\#675](https://github.com/ably/ably-ios/issues/675)
+
+**Merged pull requests:**
+
+- Fix memory consumption bug [\#702](https://github.com/ably/ably-ios/pull/702) ([funkyboy](https://github.com/funkyboy))
+- Remove copy frameworks phase from the Xcode project [\#700](https://github.com/ably/ably-ios/pull/700) ([funkyboy](https://github.com/funkyboy))
+- Add supported platform to README [\#693](https://github.com/ably/ably-ios/pull/693) ([funkyboy](https://github.com/funkyboy))
+- Address KSCrash warnings [\#686](https://github.com/ably/ably-ios/pull/686) ([funkyboy](https://github.com/funkyboy))
+- Pull specific version of SocketRocket [\#684](https://github.com/ably/ably-ios/pull/684) ([funkyboy](https://github.com/funkyboy))
+- Remove deprecated authorise [\#679](https://github.com/ably/ably-ios/pull/679) ([funkyboy](https://github.com/funkyboy))
+- Update release instructions [\#678](https://github.com/ably/ably-ios/pull/678) ([funkyboy](https://github.com/funkyboy))
+- Push ActivationStateMachine tests [\#662](https://github.com/ably/ably-ios/pull/662) ([ricardopereira](https://github.com/ricardopereira))
+- Push notifications [\#582](https://github.com/ably/ably-ios/pull/582) ([ricardopereira](https://github.com/ricardopereira))
+
 ## [1.0.11](https://github.com/ably/ably-ios/tree/1.0.11) (2018-01-31)
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.10...1.0.11)
 
 **Fixed bugs:**
 

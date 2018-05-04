@@ -12,7 +12,7 @@ This SDK is compatible with projects that target:
 
 We maintain compatibility and explicitly support these platform versions, including performing CI testing on all library revisions.
 
-We do not explicitly maintain compatibility with older platform versions; we no longer perform CI testing on iOS8 as of version 1.0.11 (released on January 31st 2018). Any known incompatibilities with older versions can be found [here](https://github.com/ably/ably-ios/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
+We do not explicitly maintain compatibility with older platform versions; we no longer perform CI testing on iOS8 as of version 1.0.12 (released on January 31st 2018). Any known incompatibilities with older versions can be found [here](https://github.com/ably/ably-ios/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
 
 If you find any issues with unsupported platform versions, please [raise an issue](https://github.com/ably/ably-ios/issues) in this repository or [contact Ably customer support](https://support.ably.io) for advice.
 
@@ -50,7 +50,7 @@ If you see, for example, a `dyld: Library not loaded: @rpath/SocketRocket.framew
 
 ### Manual installation 
 
-1. Get the code from GitHub [from the release page](https://github.com/ably/ably-ios/releases/tag/1.0.11), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-ios.git`
+1. Get the code from GitHub [from the release page](https://github.com/ably/ably-ios/releases/tag/1.0.12), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-ios.git`
 2. Drag the directory `ably-ios/ably-ios` into your project as a group.
 3. Ably depends on [SocketRocket](https://github.com/facebook/SocketRocket) 0.5.1; get it [from the releases page](https://github.com/facebook/SocketRocket/releases/tag/0.5.1) and follow [its manual installation instructions](https://github.com/facebook/SocketRocket#installing-ios).
 4. Ably also depends on [msgpack](https://github.com/rvi/msgpack-objective-C) 0.1.8; get it [from the releases page](https://github.com/rvi/msgpack-objective-C/releases/tag/0.1.8) and link it into your project.
@@ -563,12 +563,14 @@ You can also view the [community reported Github issues](https://github.com/ably
 
 ## Contributing
 
+In this repo the `master` branch contains the latest stable version of the Ably SDK. Pushing changes to the `master` branch is locked. All the development (bug fixing, feature implementation, etc.) is done against the `develop` branch, which you should branch from whenever you'd like to make modifications. Here's the steps to follow when contributing to this repo.
+
 1. Fork it
 2. Install dependencies by running `pod install` and `carthage bootstrap`
-3. Create your feature branch (`git checkout -b my-new-feature`)
+3. Create your feature branch from `develop` (`git checkout develop && git checkout -b my-new-feature-branch`)
 4. Commit your changes (`git commit -am 'Add some feature'`)
 5. Ensure you have added suitable tests and the test suite is passing
-6. Push to the branch (`git push origin my-new-feature`)
+6. Push to the branch (`git push origin my-new-feature-branch`)
 7. Create a new Pull Request
 
 ## Running tests
@@ -579,9 +581,13 @@ The project supports fastlane. To run tests use `fastlane scan --scheme "Ably"`.
 
 This library uses [semantic versioning](http://semver.org/). For each release, the following needs to be done:
 
+* Create a new branch `release-x.x.x` (where `x.x.x` is the new version number) from the `develop` branch
 * Run script `./Scripts/set-version.sh x.x.x` to assign the new version number.
 * Run [`github_changelog_generator`](https://github.com/skywinder/Github-Changelog-Generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). Once the CHANGELOG has completed, manually change the `Unreleased` heading and link with the current version number such as `v1.0.0`. Also ensure that the `Full Changelog` link points to the new version tag instead of the `HEAD`. Commit this change.
 * Push tag to origin such as `git push origin x.x.x`.
+* Make a PR against `develop`
+* Wait for review. Once the PR is approved, merge it into `develop`
+* Fast-forward the master branch: `git checkout master && git merge --ff-only develop`
 * Visit [releases page](https://github.com/ably/ably-ios/releases) and `Add release notes`.
 * Release an update for CocoaPods: `(pod lib lint && pod trunk push Ably.podspec)`.
 * Generate the prebuilt framework for Carthage (`(carthage build --no-skip-current && carthage archive Ably)`) and attach the zip file to the release.
