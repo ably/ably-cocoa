@@ -1354,13 +1354,19 @@ class PushActivationStateMachine : QuickSpec {
 
                 // RSH3g3
                 it("on Event DeregistrationFailed") {
+                    let expectedError = ARTErrorInfo(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
+
                     var deactivatedCallbackCalled = false
-                    let hook = stateMachine.testSuite_injectIntoMethod(after: NSSelectorFromString("callDeactivatedCallback:")) {
+                    let hook = stateMachine.testSuite_getArgument(from: NSSelectorFromString("callDeactivatedCallback:"), at: 0, callback: { arg0 in
                         deactivatedCallbackCalled = true
-                    }
+                        guard let error = arg0 as? ARTErrorInfo else {
+                            fail("Error is missing"); return
+                        }
+                        expect(error) == expectedError
+                    })
                     defer { hook.remove() }
 
-                    stateMachine.send(ARTPushActivationEventDeregistrationFailed())
+                    stateMachine.send(ARTPushActivationEventDeregistrationFailed(error: expectedError))
                     expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
                     expect(deactivatedCallbackCalled).to(beTrue())
                 }
