@@ -18,6 +18,10 @@ class PushActivationStateMachine : QuickSpec {
         var storage: MockDeviceStorage!
         var initialStateMachine: ARTPushActivationStateMachine!
 
+        let expectedFormFactor = "phone"
+        let expectedPlatform = "ios"
+        let expectedPushRecipient: [String: [String: String]] = ["recipient": ["transportType": "apns"]]
+
         beforeEach {
             rest = ARTRest(key: "xxxx:xxxx")
             httpExecutor = MockHTTPExecutor()
@@ -294,9 +298,9 @@ class PushActivationStateMachine : QuickSpec {
                         }
                         expect(request.httpMethod) == "POST"
                         expect(body.value(forKey: "id") as? String).to(equal(rest.device.id))
-                        expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(["recipient": ["transportType": "apns"]]))
-                        expect(body.value(forKey: "formFactor") as? String) == "phone"
-                        expect(body.value(forKey: "platform") as? String) == "ios"
+                        expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(expectedPushRecipient))
+                        expect(body.value(forKey: "formFactor") as? String) == expectedFormFactor
+                        expect(body.value(forKey: "platform") as? String) == expectedPlatform
                     }
 
                     // RSH3b3c
@@ -339,9 +343,9 @@ class PushActivationStateMachine : QuickSpec {
                             fail("body is invalid"); return
                         }
                         expect(body.value(forKey: "id") as? String).to(equal(rest.device.id))
-                        expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(["recipient": ["transportType": "apns"]]))
-                        expect(body.value(forKey: "formFactor") as? String) == "phone"
-                        expect(body.value(forKey: "platform") as? String) == "ios"
+                        expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(expectedPushRecipient))
+                        expect(body.value(forKey: "formFactor") as? String) == expectedFormFactor
+                        expect(body.value(forKey: "platform") as? String) == expectedPlatform
                     }
 
                     // RSH3b3d
