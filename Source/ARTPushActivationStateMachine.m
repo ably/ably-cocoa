@@ -30,7 +30,6 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
 @implementation ARTPushActivationStateMachine {
     ARTPushActivationEvent *_lastHandledEvent;
     ARTPushActivationState *_current;
-    NSMutableArray<ARTPushActivationEvent *> *_pendingEvents;
     dispatch_queue_t _queue;
     dispatch_queue_t _userQueue;
 }

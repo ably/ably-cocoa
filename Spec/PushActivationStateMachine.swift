@@ -1379,6 +1379,47 @@ class PushActivationStateMachine : QuickSpec {
 
             }
 
+            // RSH4
+            it("should queue event that has no transition defined for it") {
+                // Start with WaitingForDeregistration state
+                let storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeregistration(machine: initialStateMachine))
+                rest.storage = storage
+                let stateMachine = ARTPushActivationStateMachine(rest)
+
+                stateMachine.transitions = { event, from, to in
+                    fail("Should not handle the CalledActivate event because it should be queued")
+                }
+
+                stateMachine.send(ARTPushActivationEventCalledActivate())
+
+                expect(stateMachine.pendingEvents).toEventually(haveCount(1), timeout: testTimeout)
+                stateMachine.transitions = nil
+
+                guard let pendingEvent = stateMachine.pendingEvents.firstObject else {
+                    fail("Pending event is missing"); return
+                }
+                expect(pendingEvent).to(beAKindOf(ARTPushActivationEventCalledActivate.self))
+
+                waitUntil(timeout: testTimeout) { done in
+                    let partialDone = AblyTests.splitDone(2, done: done)
+                    stateMachine.transitions = { event, from, to in
+                        if from is ARTPushActivationStateWaitingForDeregistration, to is ARTPushActivationStateNotActivated {
+                            // Handle Deregistered event
+                            partialDone()
+                        }
+                        else if event is ARTPushActivationEventDeregistered, from is ARTPushActivationStateNotActivated, to is ARTPushActivationStateWaitingForPushDeviceDetails {
+                            // Consume queued CalledActivate event
+                            partialDone()
+                        }
+                    }
+                    stateMachine.send(ARTPushActivationEventDeregistered())
+                    expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))
+                }
+                stateMachine.transitions = nil
+
+                expect(stateMachine.pendingEvents).to(beEmpty())
+            }
+
         }
     }
 }
