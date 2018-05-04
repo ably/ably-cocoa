@@ -2663,6 +2663,7 @@ class RealtimeClientConnection: QuickSpec {
                     it("uses a new connection") {
                         client = AblyTests.newRealtime(options)
                         client.connect()
+                        defer { client.close() }
                         
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.connected) { _ in
@@ -2694,6 +2695,7 @@ class RealtimeClientConnection: QuickSpec {
                     it("reattaches to the same channels after a new connection has been established") {
                         client = AblyTests.newRealtime(options)
                         client.connect()
+                        defer { client.close() }
                         let channelName = "test-reattach-after-ttl"
                         let channel = client.channels.get(channelName)
                         
@@ -2741,6 +2743,7 @@ class RealtimeClientConnection: QuickSpec {
                     it("uses the same connection") {
                         client = AblyTests.newRealtime(options)
                         client.connect()
+                        defer { client.close() }
                         
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.connected) { _ in
