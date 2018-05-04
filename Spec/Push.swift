@@ -41,6 +41,19 @@ class Push : QuickSpec {
                 }
             }
 
+            // RSH2b
+            it("deactivate method should send a CalledDeactivate event to the state machine") {
+                defer { rest.push.activationMachine().transitions = nil }
+                waitUntil(timeout: testTimeout) { done in
+                    rest.push.activationMachine().transitions = { event, _, _ in
+                        if event is ARTPushActivationEventCalledDeactivate {
+                            done()
+                        }
+                    }
+                    rest.push.deactivate()
+                }
+            }
+
         }
 
     }
