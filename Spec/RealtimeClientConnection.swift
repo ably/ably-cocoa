@@ -2712,8 +2712,7 @@ class RealtimeClientConnection: QuickSpec {
                                     client.connection.once(.connecting) { _ in
                                         client.connection.once(.connected) { _ in
                                             expect(client.connection.id).toNot(equal(connectionId))
-                                            let newChannel = client.channels.get(channelName)
-                                            newChannel.once(.attached) { _ in
+                                            channel.once(.attached) { _ in
                                                 done()
                                             }
                                         }
