@@ -1348,6 +1348,8 @@ class PushActivationStateMachine : QuickSpec {
                     expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
                     expect(deactivatedCallbackCalled).to(beTrue())
                     expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
+                    // RSH3g2a
+                    expect(stateMachine.rest.device.identityTokenDetails).to(beNil())
                 }
 
                 // RSH3g3
