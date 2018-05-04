@@ -21,11 +21,12 @@
 #import "ARTClientOptions+Private.h"
 #import "ARTPushAdmin+Private.h"
 #import "ARTLocalDevice+Private.h"
-#import "ARTLocalDeviceStorage.h"
+#import "ARTDeviceStorage.h"
 #import "ARTRealtime+Private.h"
 
 NSString *const ARTDeviceIdKey = @"ARTDeviceId";
-NSString *const ARTDeviceUpdateTokenKey = @"ARTDeviceUpdateToken";
+NSString *const ARTDeviceSecretKey = @"ARTDeviceSecret";
+NSString *const ARTDeviceIdentityTokenKey = @"ARTDeviceIdentityToken";
 NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
 @implementation ARTPush {
@@ -77,7 +78,7 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error rest:(ARTRest *)rest {
     NSLog(@"ARTPush: device token not received (%@)", [error localizedDescription]);
-    [[rest.push activationMachine] sendEvent:[ARTPushActivationEventGettingUpdateTokenFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+    [[rest.push activationMachine] sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
 }
 
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime {

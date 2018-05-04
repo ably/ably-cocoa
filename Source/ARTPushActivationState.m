@@ -10,7 +10,7 @@
 #import "ARTPushActivationStateMachine.h"
 #import "ARTPushActivationEvent.h"
 #import "ARTLocalDevice+Private.h"
-#import "ARTLocalDeviceStorage.h"
+#import "ARTDeviceStorage.h"
 #import "ARTDevicePushDetails.h"
 #import "ARTLog.h"
 #import "ARTRest+Private.h"
@@ -82,9 +82,9 @@
         return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
-        ARTLocalDevice *local = [ARTLocalDevice load:self.machine.rest];
+        ARTLocalDevice *local = self.machine.rest.device_nosync;
 
-        if (local.updateToken) {
+        if (local.identityTokenDetails) {
             // Already registered.
             return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
         }
@@ -100,20 +100,19 @@
 
 @end
 
-@implementation ARTPushActivationStateWaitingForUpdateToken
+@implementation ARTPushActivationStateWaitingForDeviceRegistration
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
     [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
         return self;
     }
-    else if ([event isKindOfClass:[ARTPushActivationEventGotUpdateToken class]]) {
-        [ARTLocalDevice load:self.machine.rest].updateToken = [self.machine.rest.storage objectForKey:ARTDeviceUpdateTokenKey];
+    else if ([event isKindOfClass:[ARTPushActivationEventGotDeviceRegistration class]]) {
         [self.machine callActivatedCallback:nil];
         return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
     }
-    else if ([event isKindOfClass:[ARTPushActivationEventGettingUpdateTokenFailed class]]) {
-        [self.machine callActivatedCallback:[(ARTPushActivationEventGettingUpdateTokenFailed *)event error]];
+    else if ([event isKindOfClass:[ARTPushActivationEventGettingDeviceRegistrationFailed class]]) {
+        [self.machine callActivatedCallback:[(ARTPushActivationEventGettingDeviceRegistrationFailed *)event error]];
         return [ARTPushActivationStateNotActivated newWithMachine:self.machine];
     }
     return nil;
@@ -126,7 +125,7 @@
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
     [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
-        return self;
+        return [ARTPushActivationStateWaitingForPushDeviceDetails newWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
         [self.machine callDeactivatedCallback:nil];
@@ -134,7 +133,7 @@
     }
     else if ([event isKindOfClass:[ARTPushActivationEventGotPushDeviceDetails class]]) {
         [self.machine deviceRegistration:nil];
-        return [ARTPushActivationStateWaitingForUpdateToken newWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForDeviceRegistration newWithMachine:self.machine];
     }
     return nil;
 }
@@ -168,7 +167,7 @@
     [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
         [self.machine callActivatedCallback:nil];
-        return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
+        return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventRegistrationUpdated class]]) {
         return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
@@ -189,7 +188,7 @@
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]] ||
         [event isKindOfClass:[ARTPushActivationEventGotPushDeviceDetails class]]) {
         [self.machine deviceRegistration:nil];
-        return [ARTPushActivationStateWaitingForUpdateToken newWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForDeviceRegistration newWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
         [self.machine callDeactivatedCallback:nil];
@@ -208,9 +207,8 @@
         return [ARTPushActivationStateWaitingForDeregistration newWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventDeregistered class]]) {
-        ARTLocalDevice *local = [ARTLocalDevice load:self.machine.rest];
-        local.updateToken = nil;
-        [self.machine.rest.storage setObject:nil forKey:ARTDeviceUpdateTokenKey];
+        ARTLocalDevice *local = self.machine.rest.device_nosync;
+        [local setAndPersistIdentityTokenDetails:nil];
         [self.machine callDeactivatedCallback:nil];
         return [ARTPushActivationStateNotActivated newWithMachine:self.machine];
     }

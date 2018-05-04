@@ -48,6 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (int)defaultBlockLength;
 
 + (nullable NSMutableData *)generateSecureRandomData:(size_t)length;
++ (NSData *)generateHashSHA256:(NSData *)data;
 
 + (id<ARTChannelCipher>)cipherWithParams:(ARTCipherParams *)params;
 

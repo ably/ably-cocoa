@@ -79,10 +79,10 @@
 @implementation ARTPushActivationEventGotPushDeviceDetails
 @end
 
-@implementation ARTPushActivationEventGotUpdateToken
+@implementation ARTPushActivationEventGotDeviceRegistration
 @end
 
-@implementation ARTPushActivationEventGettingUpdateTokenFailed
+@implementation ARTPushActivationEventGettingDeviceRegistrationFailed
 @end
 
 @implementation ARTPushActivationEventRegistrationUpdated

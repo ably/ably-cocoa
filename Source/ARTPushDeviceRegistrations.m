@@ -12,9 +12,12 @@
 #import "ARTPaginatedResult+Private.h"
 #import "ARTDeviceDetails.h"
 #import "ARTDevicePushDetails.h"
+#import "ARTDeviceIdentityTokenDetails.h"
 #import "ARTClientOptions.h"
 #import "ARTEncoder.h"
 #import "ARTRest+Private.h"
+#import "ARTLocalDevice.h"
+#import "ARTNSMutableRequest+ARTPush.h"
 
 @implementation ARTPushDeviceRegistrations {
     __weak ARTRest *_rest;
@@ -44,6 +47,8 @@
         };
     }
 
+    ARTLocalDevice *local = _rest.device;
+
 dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceDetails.id] resolvingAgainstBaseURL:NO];
@@ -54,17 +59,10 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     request.HTTPMethod = @"PUT";
     request.HTTPBody = [[_rest defaultEncoder] encodeDeviceDetails:deviceDetails error:nil];
     [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
-
-    ARTAuthentication authentication = ARTAuthenticationOn;
-    if (deviceDetails.updateToken) {
-        NSData *tokenData = [deviceDetails.updateToken dataUsingEncoding:NSUTF8StringEncoding];
-        NSString *tokenBase64 = [tokenData base64EncodedStringWithOptions:0];
-        [request setValue:[NSString stringWithFormat:@"Bearer %@", tokenBase64] forHTTPHeaderField:@"Authorization"];
-        authentication = ARTAuthenticationOff;
-    }
+    [request setDeviceAuthentication:deviceDetails.id localDevice:local logger:_logger];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"save device with request %@", request];
-    [_rest executeRequest:request withAuthOption:authentication completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*OK*/) {
             NSError *decodeError = nil;
             ARTDeviceDetails *deviceDetails = [[_rest defaultEncoder] decodeDeviceDetails:data error:&decodeError];
@@ -73,8 +71,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
                 callback([ARTErrorInfo createFromNSError:decodeError]);
             }
             else {
-                [_logger debug:__FILE__ line:__LINE__ message:@"%@: save device successfully", NSStringFromClass(self.class)];
-                deviceDetails.updateToken = deviceDetails.updateToken;
+                [_logger debug:__FILE__ line:__LINE__ message:@"%@: successfully saved device %@", NSStringFromClass(self.class), deviceDetails.id];
                 callback(nil);
             }
         }
@@ -103,10 +100,13 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         };
     }
 
+    ARTLocalDevice *local = _rest.device;
+
 dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceId]];
     request.HTTPMethod = @"GET";
+    [request setDeviceAuthentication:deviceId localDevice:local logger:_logger];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"get device with request %@", request];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -218,6 +218,8 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         };
     }
 
+    ARTLocalDevice *local = _rest.device;
+
 dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"] resolvingAgainstBaseURL:NO];
@@ -227,6 +229,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     }
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"DELETE";
+    [request setDeviceAuthentication:[params objectForKey:@"deviceId"] localDevice:local];
 
     [_logger debug:__FILE__ line:__LINE__ message:@"remove devices with request %@", request];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {

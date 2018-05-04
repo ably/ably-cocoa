@@ -9,14 +9,15 @@
 #import <Foundation/Foundation.h>
 #import <Ably/ARTDeviceDetails.h>
 
+@class ARTDeviceIdentityTokenDetails;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTLocalDevice : ARTDeviceDetails
 
-- (instancetype)init NS_UNAVAILABLE;
+@property (nullable, nonatomic, readonly) ARTDeviceIdentityTokenDetails *identityTokenDetails;
 
-- (void)resetId;
-- (void)resetUpdateToken:(void (^_Nullable)(ARTErrorInfo * _Nullable))callback;
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

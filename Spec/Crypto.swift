@@ -98,6 +98,16 @@ class Crypto : QuickSpec {
                 }
             }
 
+            context("generateHashSHA256") {
+                it("takes data and returns a SHA256 digest") {
+                    let string = "The quick brown fox jumps over the lazy dog"
+                    let expectedHash = "D7A8FBB307D7809469CA9ABCB0082E4F8D5651E46D3CDB762D02D0BF37C9E592" //hex
+                    let stringData = string.data(using: .utf8)!
+                    let result = ARTCrypto.generateHashSHA256(stringData)
+                    expect(result.hexString).to(equal(expectedHash))
+                }
+            }
+
             context("encrypt") {
                 it("should generate a new IV every time it's called, and should be the first block encrypted") {
                     let params = ARTCipherParams(algorithm: "aes", key: key as ARTCipherKeyCompatible)

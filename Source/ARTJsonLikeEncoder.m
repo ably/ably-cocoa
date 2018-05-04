@@ -25,6 +25,7 @@
 #import "ARTAuthDetails.h"
 #import "ARTPush.h"
 #import "ARTDeviceDetails.h"
+#import "ARTDeviceIdentityTokenDetails.h"
 #import "ARTDevicePushDetails.h"
 #import "ARTConnectionDetails.h"
 #import "ARTRest+Private.h"
@@ -157,6 +158,10 @@
         [output addObject:deviceDetails];
     }
     return output;
+}
+
+- (ARTDeviceIdentityTokenDetails *)decodeDeviceIdentityTokenDetails:(NSData *)data error:(NSError * __autoreleasing *)error {
+    return [self deviceIdentityTokenDetailsFromDictionary:[self decodeDictionary:data error:nil] error:error];
 }
 
 - (NSData *)encodeDevicePushDetails:(ARTDevicePushDetails *)devicePushDetails error:(NSError **)error {
@@ -620,6 +625,7 @@
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
 
     dictionary[@"id"] = deviceDetails.id;
+    dictionary[@"deviceSecret"] = deviceDetails.secret;
     dictionary[@"platform"] = deviceDetails.platform;
     dictionary[@"formFactor"] = deviceDetails.formFactor;
 
@@ -645,9 +651,29 @@
     deviceDetails.formFactor = [input artString:@"formFactor"];
     deviceDetails.metadata = [input valueForKey:@"metadata"];
     deviceDetails.push = [self devicePushDetailsFromDictionary:input[@"push"] error:error];
-    deviceDetails.updateToken = [input artString:@"updateToken"];
 
     return deviceDetails;
+}
+
+- (ARTDeviceIdentityTokenDetails *)deviceIdentityTokenDetailsFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: deviceIdentityTokenDetailsFromDictionary %@", _rest, [_delegate formatAsString], input];
+
+    if (![input isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
+
+    NSDictionary *deviceIdentityTokenInput = input[@"deviceIdentityToken"];
+    NSString *token = [deviceIdentityTokenInput artString:@"token"];
+    NSNumber *issuedMsecs = [deviceIdentityTokenInput artNumber:@"issued"];
+    NSDate *issued = [NSDate dateWithMillisecondsSince1970:issuedMsecs.doubleValue];
+    NSNumber *expiresMsecs = [deviceIdentityTokenInput artNumber:@"expires"];
+    NSDate *expires = [NSDate dateWithMillisecondsSince1970:expiresMsecs.doubleValue];
+    NSString *capability = [deviceIdentityTokenInput artString:@"capability"];
+    NSString *deviceId = [deviceIdentityTokenInput artString:@"deviceId"];
+
+    ARTDeviceIdentityTokenDetails *deviceIdentityTokenDetails = [[ARTDeviceIdentityTokenDetails alloc] initWithToken:token issued:issued expires:expires capability:capability deviceId:deviceId];
+
+    return deviceIdentityTokenDetails;
 }
 
 - (NSDictionary *)devicePushDetailsToDictionary:(ARTDevicePushDetails *)devicePushDetails {

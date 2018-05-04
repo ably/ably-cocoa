@@ -35,13 +35,12 @@
     device.formFactor = self.formFactor;
     device.metadata = [self.metadata copy];
     device.push = [self.push copy];
-    device.updateToken = self.updateToken;
 
     return device;
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%@ - \n\t id: %@; \n\t clientId: %@; \n\t platform: %@; \n\t formFactor: %@; \n\t updateToken: %@;", [super description], self.id, self.clientId, self.formFactor, self.platform, self.updateToken];
+    return [NSString stringWithFormat:@"%@ - \n\t id: %@; \n\t clientId: %@; \n\t platform: %@; \n\t formFactor: %@;", [super description], self.id, self.clientId, self.formFactor, self.platform];
 }
 
 - (BOOL)isEqualToDeviceDetail:(ARTDeviceDetails *)device {

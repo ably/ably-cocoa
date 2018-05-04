@@ -645,6 +645,19 @@ class MockDeviceStorage: NSObject, ARTDeviceStorage {
         keysWritten.append(key)
     }
 
+    func secret(forDevice deviceId: String) -> String? {
+        keysRead.append(ARTDeviceSecretKey)
+        if var value = simulateString[ARTDeviceSecretKey] {
+            defer { simulateString.removeValue(forKey: ARTDeviceSecretKey) }
+            return value
+        }
+        return nil
+    }
+
+    func setSecret(_ value: String?, forDevice deviceId: String) {
+        keysWritten.append(ARTDeviceSecretKey)
+    }
+
     func simulateOnNextRead(data value: Data, `for` key: String) {
         simulateData[key] = value
     }
@@ -1068,7 +1081,38 @@ extension Data {
     var toUTF8String: String {
         return NSString(data: self, encoding: String.Encoding.utf8.rawValue)! as String
     }
+
+    var bytes: [UInt8]{
+        return [UInt8](self)
+    }
+
+    var hexString: String {
+        var result = ""
+
+        for byte in bytes {
+            result += String(format: "%02x", UInt(byte))
+        }
+
+        return result.uppercased()
+    }
     
+}
+
+extension NSData {
+
+    var hexString: String {
+        var result = ""
+
+        var bytes = [UInt8](repeating: 0, count: length)
+        getBytes(&bytes, length: length)
+
+        for byte in bytes {
+            result += String(format: "%02x", UInt(byte))
+        }
+
+        return result.uppercased()
+    }
+
 }
 
 extension JSON {

@@ -89,7 +89,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
     ART_TRY_OR_REPORT_CRASH_START(self) {
         _queue = options.internalDispatchQueue;
         _userQueue = options.dispatchQueue;
-        _storage = [ARTLocalDeviceStorage new];
+        _storage = [ARTLocalDeviceStorage newWithLogger:_logger];
         _http = [[ARTHttp alloc] init:_queue logger:_logger];
         [_logger verbose:__FILE__ line:__LINE__ message:@"RS:%p %p alloc HTTP", self, _http];
         _httpExecutor = _http;
@@ -594,7 +594,7 @@ void ARTstopHandlingUncaughtExceptions(ARTRest *self) {
     static dispatch_once_t once;
     static id device;
     dispatch_once(&once, ^{
-        device = [ARTLocalDevice load:self];
+        device = [ARTLocalDevice load:self.auth.clientId_nosync storage:self.storage];
     });
     return device;
 }
