@@ -22,6 +22,8 @@ NSString *const ARTPushActivationPendingEventsKey;
 @property (readonly, nonatomic) ARTPushActivationState *current;
 @property (readonly, nonatomic) ARTPushActivationState *current_nosync;
 
+@property (readonly, nonatomic) NSMutableArray<ARTPushActivationEvent *> *pendingEvents;
+
 @end
 
 NS_ASSUME_NONNULL_END
