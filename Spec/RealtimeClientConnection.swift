@@ -2653,12 +2653,12 @@ class RealtimeClientConnection: QuickSpec {
                 // RTN15g RTN15g1
                 context("when connection (ttl + idle interval) period has passed since last activity") {
                     let options = AblyTests.commonAppSetup()
+                    // We want this to be > than the sum of customTtlInterval and customIdleInterval
+                    options.disconnectedRetryTimeout = 5.0
                     var client: ARTRealtime!
                     var connectionId = ""
                     let customTtlInterval: TimeInterval = 1.0
                     let customIdleInterval: TimeInterval = 1.0
-                    // We want this to be > than the sum of the two above
-                    let reconnectAfterInterval: TimeInterval = 5.0
                     
                     it("uses a new connection") {
                         client = AblyTests.newRealtime(options)
@@ -2682,9 +2682,6 @@ class RealtimeClientConnection: QuickSpec {
                                             expect(client.connection.id).toNot(equal(connectionId))
                                             done()
                                         }
-                                    }
-                                    delay(reconnectAfterInterval) {
-                                        client.connect()
                                     }
                                 }
                                 client.onDisconnected()
@@ -2719,9 +2716,6 @@ class RealtimeClientConnection: QuickSpec {
                                             }
                                         }
                                     }
-                                    delay(reconnectAfterInterval) {
-                                        client.connect()
-                                    }
                                 }
                                 client.onDisconnected()
                             }
@@ -2731,14 +2725,12 @@ class RealtimeClientConnection: QuickSpec {
                 
                 // RTN15g2
                 context("when connection (ttl + idle interval) period has NOT passed since last activity") {
-                    
                     let options = AblyTests.commonAppSetup()
+                    options.disconnectedRetryTimeout = 5.0
                     var client: ARTRealtime!
                     var connectionId = ""
                     let customTtlInterval: TimeInterval = 20.0
                     let customIdleInterval: TimeInterval = 20.0
-                    // We want this to be < than the sum of the two above and < testTimeout
-                    let reconnectAfterInterval: TimeInterval = 5.0
                     
                     it("uses the same connection") {
                         client = AblyTests.newRealtime(options)
@@ -2762,9 +2754,6 @@ class RealtimeClientConnection: QuickSpec {
                                             expect(client.connection.id).to(equal(connectionId))
                                             done()
                                         }
-                                    }
-                                    delay(reconnectAfterInterval) {
-                                        client.connect()
                                     }
                                 }
                                 client.onDisconnected()
