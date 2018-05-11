@@ -388,7 +388,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                     [self.connection setId:nil];
                     [self.connection setKey:nil];
                     [self.connection setSerial:0];
-                    _transport = nil;
                 }
             }
             
