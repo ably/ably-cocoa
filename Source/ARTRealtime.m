@@ -231,14 +231,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         // New connection
         _transport = nil;
     }
-    
-    // We want to enforce a new connection also when there hasn't been activity for longer than (idle interval + TTL)
-    NSTimeInterval intervalSinceLast = [[NSDate date] timeIntervalSinceDate:_lastActivity];
-    if (intervalSinceLast > (_maxIdleInterval + _connectionStateTtl)) {
-        [self.connection setId:nil];
-        [self.connection setKey:nil];
-        [self.connection setSerial:0];
-    }
     [self transition:ARTRealtimeConnecting];
 }
 
@@ -388,6 +380,18 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
     switch (stateChange.current) {
         case ARTRealtimeConnecting: {
+            
+            // RTN15g We want to enforce a new connection also when there hasn't been activity for longer than (idle interval + TTL)
+            if (stateChange.previous == ARTRealtimeDisconnected || stateChange.previous == ARTRealtimeSuspended) {
+                NSTimeInterval intervalSinceLast = [[NSDate date] timeIntervalSinceDate:_lastActivity];
+                if (intervalSinceLast > (_maxIdleInterval + _connectionStateTtl)) {
+                    [self.connection setId:nil];
+                    [self.connection setKey:nil];
+                    [self.connection setSerial:0];
+                    _transport = nil;
+                }
+            }
+            
             stateChangeEventListener = [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
                 [weakSelf onConnectionTimeOut];
             }];
