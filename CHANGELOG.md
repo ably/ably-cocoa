@@ -1,7 +1,29 @@
 # Change Log
 
-## [1.0.12](https://github.com/ably/ably-ios/tree/1.0.12) (2018-03-16)
+## [1.0.13](https://github.com/ably/ably-ios/tree/HEAD)
 
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.12...1.0.13)
+
+**Implemented enhancements:**
+
+- Add connection freshness check [\#645] (https://github.com/ably/ably-ios/issues/645)
+- Run CI on develop after a branch is merged [\#699](https://github.com/ably/ably-ios/issues/699)
+- Investigate the performance of the iOS SDK vs the JS one [\#695](https://github.com/ably/ably-ios/issues/695)
+
+**Closed issues:**
+
+- realtime.ably.io is blocked in Russia [\#718](https://github.com/ably/ably-ios/issues/718)
+- Channel history problem [\#717](https://github.com/ably/ably-ios/issues/717)
+- Use of NSURLConnection [\#712](https://github.com/ably/ably-ios/issues/712)
+
+**Merged pull requests:**
+
+- Enforce new connection when last activity \> than \(idle interval + TTL\) [\#719](https://github.com/ably/ably-ios/pull/719) ([funkyboy](https://github.com/funkyboy))
+- Add test for sequence of received messages [\#706](https://github.com/ably/ably-ios/pull/706) ([funkyboy](https://github.com/funkyboy))
+- Add build of develop branch on Travis [\#705](https://github.com/ably/ably-ios/pull/705) ([funkyboy](https://github.com/funkyboy))
+- Update contributing instructions [\#704](https://github.com/ably/ably-ios/pull/704) ([funkyboy](https://github.com/funkyboy))
+
+## [1.0.12](https://github.com/ably/ably-ios/tree/1.0.12) (2018-03-16)
 [Full Changelog](https://github.com/ably/ably-ios/compare/1.0.11...1.0.12)
 
 **Implemented enhancements:**
