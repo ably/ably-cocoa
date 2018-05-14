@@ -2649,6 +2649,118 @@ class RealtimeClientConnection: QuickSpec {
                         }
                     }
                 }
+                
+                // RTN15g RTN15g1
+                context("when connection (ttl + idle interval) period has passed since last activity") {
+                    let options = AblyTests.commonAppSetup()
+                    // We want this to be > than the sum of customTtlInterval and customIdleInterval
+                    options.disconnectedRetryTimeout = 5.0
+                    var client: ARTRealtime!
+                    var connectionId = ""
+                    let customTtlInterval: TimeInterval = 1.0
+                    let customIdleInterval: TimeInterval = 1.0
+                    
+                    it("uses a new connection") {
+                        client = AblyTests.newRealtime(options)
+                        client.connect()
+                        defer { client.close() }
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.connected) { _ in
+                                expect(client.connection.id).toNot(beNil())
+                                connectionId = client.connection.id!
+                                client.connectionStateTtl = customTtlInterval
+                                client.maxIdleInterval = customIdleInterval
+                                client.connection.once(.disconnected) { _ in
+                                    let disconnectedAt = Date()
+                                    expect(client.connectionStateTtl).to(equal(customTtlInterval))
+                                    expect(client.maxIdleInterval).to(equal(customIdleInterval))
+                                    client.connection.once(.connecting) { _ in
+                                        let reconnectionInterval = Date().timeIntervalSince(disconnectedAt)
+                                        expect(reconnectionInterval).to(beGreaterThan(client.connectionStateTtl + client.maxIdleInterval))
+                                        client.connection.once(.connected) { _ in
+                                            expect(client.connection.id).toNot(equal(connectionId))
+                                            done()
+                                        }
+                                    }
+                                }
+                                client.onDisconnected()
+                            }
+                        }
+                    }
+                    // RTN15g3
+                    it("reattaches to the same channels after a new connection has been established") {
+                        client = AblyTests.newRealtime(options)
+                        client.connect()
+                        defer { client.close() }
+                        let channelName = "test-reattach-after-ttl"
+                        let channel = client.channels.get(channelName)
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.connected) { _ in
+                                connectionId = client.connection.id!
+                                client.connectionStateTtl = customTtlInterval
+                                client.maxIdleInterval = customIdleInterval
+                                channel.attach { error in
+                                    if let error = error {
+                                        fail(error.message)
+                                    }
+                                    expect(channel.state).to(equal(ARTRealtimeChannelState.attached))
+                                }
+                                client.connection.once(.disconnected) { _ in
+                                    client.connection.once(.connecting) { _ in
+                                        client.connection.once(.connected) { _ in
+                                            expect(client.connection.id).toNot(equal(connectionId))
+                                            channel.once(.attached) { _ in
+                                                done()
+                                            }
+                                        }
+                                    }
+                                }
+                                client.onDisconnected()
+                            }
+                        }
+                    }
+                }
+                
+                // RTN15g2
+                context("when connection (ttl + idle interval) period has NOT passed since last activity") {
+                    let options = AblyTests.commonAppSetup()
+                    options.disconnectedRetryTimeout = 5.0
+                    var client: ARTRealtime!
+                    var connectionId = ""
+                    let customTtlInterval: TimeInterval = 20.0
+                    let customIdleInterval: TimeInterval = 20.0
+                    
+                    it("uses the same connection") {
+                        client = AblyTests.newRealtime(options)
+                        client.connect()
+                        defer { client.close() }
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.connected) { _ in
+                                expect(client.connection.id).toNot(beNil())
+                                connectionId = client.connection.id!
+                                client.connectionStateTtl = customTtlInterval
+                                client.maxIdleInterval = customIdleInterval
+                                client.connection.once(.disconnected) { _ in
+                                    let disconnectedAt = Date()
+                                    expect(client.connectionStateTtl).to(equal(customTtlInterval))
+                                    expect(client.maxIdleInterval).to(equal(customIdleInterval))
+                                    client.connection.once(.connecting) { _ in
+                                        let reconnectionInterval = Date().timeIntervalSince(disconnectedAt)
+                                        expect(reconnectionInterval).to(beLessThan(client.connectionStateTtl + client.maxIdleInterval))
+                                        client.connection.once(.connected) { _ in
+                                            expect(client.connection.id).to(equal(connectionId))
+                                            done()
+                                        }
+                                    }
+                                }
+                                client.onDisconnected()
+                            }
+                        }
+                    }
+                }
 
                 // RTN15h
                 context("DISCONNECTED message contains a token error") {
@@ -3313,7 +3425,7 @@ class RealtimeClientConnection: QuickSpec {
                             guard let error = stateChange?.reason else {
                                 fail("Error is nil"); done(); return
                             }
-                            expect(error.message).to(contain("bad response"))
+                            expect(error.message).to(contain("Invalid key"))
                             done()
                         }
                     }
