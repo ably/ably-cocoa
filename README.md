@@ -12,7 +12,7 @@ This SDK is compatible with projects that target:
 
 We maintain compatibility and explicitly support these platform versions, including performing CI testing on all library revisions.
 
-We do not explicitly maintain compatibility with older platform versions; we no longer perform CI testing on iOS8 as of version 1.0.12 (released on January 31st 2018). Any known incompatibilities with older versions can be found [here](https://github.com/ably/ably-ios/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
+We do not explicitly maintain compatibility with older platform versions; we no longer perform CI testing on iOS8 as of version 1.0.13 (released on January 31st 2018). Any known incompatibilities with older versions can be found [here](https://github.com/ably/ably-ios/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
 
 If you find any issues with unsupported platform versions, please [raise an issue](https://github.com/ably/ably-ios/issues) in this repository or [contact Ably customer support](https://support.ably.io) for advice.
 
@@ -50,7 +50,7 @@ If you see, for example, a `dyld: Library not loaded: @rpath/SocketRocket.framew
 
 ### Manual installation 
 
-1. Get the code from GitHub [from the release page](https://github.com/ably/ably-ios/releases/tag/1.0.12), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-ios.git`
+1. Get the code from GitHub [from the release page](https://github.com/ably/ably-ios/releases/tag/1.0.13), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-ios.git`
 2. Drag the directory `ably-ios/ably-ios` into your project as a group.
 3. Ably depends on [SocketRocket](https://github.com/facebook/SocketRocket) 0.5.1; get it [from the releases page](https://github.com/facebook/SocketRocket/releases/tag/0.5.1) and follow [its manual installation instructions](https://github.com/facebook/SocketRocket#installing-ios).
 4. Ably also depends on [msgpack](https://github.com/rvi/msgpack-objective-C) 0.1.8; get it [from the releases page](https://github.com/rvi/msgpack-objective-C/releases/tag/0.1.8) and link it into your project.
