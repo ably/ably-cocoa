@@ -587,7 +587,7 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
 * Push tag to origin such as `git push origin x.x.x`.
 * Make a PR against `develop`
 * Wait for review. Once the PR is approved, merge it into `develop`
-* Fast-forward the master branch: `git checkout master && git merge --ff-only develop && git push`
+* Fast-forward the master branch: `git checkout master && git merge --ff-only develop && git push origin master`
 * Visit [releases page](https://github.com/ably/ably-ios/releases) and `Add release notes`.
 * Release an update for CocoaPods: `(pod lib lint && pod trunk push Ably.podspec)`.
 * Generate the prebuilt framework for Carthage (`(carthage build --no-skip-current && carthage archive Ably)`) and attach the zip file to the release.
