@@ -1,6 +1,6 @@
 # Change Log
 
-## [1.0.13](https://github.com/ably/ably-ios/tree/HEAD)
+## [1.0.13](https://github.com/ably/ably-ios/tree/1.0.13)
 
 [Full Changelog](https://github.com/ably/ably-ios/compare/1.0.12...1.0.13)
 
