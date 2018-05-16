@@ -2657,8 +2657,8 @@ class RealtimeClientConnection: QuickSpec {
                     options.disconnectedRetryTimeout = 5.0
                     var client: ARTRealtime!
                     var connectionId = ""
-                    let customTtlInterval: TimeInterval = 1.0
-                    let customIdleInterval: TimeInterval = 1.0
+                    let customTtlInterval: TimeInterval = 0.1
+                    let customIdleInterval: TimeInterval = 0.1
                     
                     it("uses a new connection") {
                         client = AblyTests.newRealtime(options)
