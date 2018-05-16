@@ -2706,6 +2706,7 @@ class RealtimeClientConnection: QuickSpec {
                                         fail(error.message)
                                     }
                                     expect(channel.state).to(equal(ARTRealtimeChannelState.attached))
+                                    client.onDisconnected()
                                 }
                                 client.connection.once(.disconnected) { _ in
                                     client.connection.once(.connecting) { _ in
@@ -2718,7 +2719,6 @@ class RealtimeClientConnection: QuickSpec {
                                         }
                                     }
                                 }
-                                client.onDisconnected()
                             }
                         }
                     }
