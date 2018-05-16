@@ -2711,7 +2711,8 @@ class RealtimeClientConnection: QuickSpec {
                                     client.connection.once(.connecting) { _ in
                                         client.connection.once(.connected) { _ in
                                             expect(client.connection.id).toNot(equal(connectionId))
-                                            channel.once(.attached) { _ in
+                                            channel.once(.attached) { stateChange in
+                                                expect(stateChange?.resumed).to(beFalse())
                                                 done()
                                             }
                                         }
