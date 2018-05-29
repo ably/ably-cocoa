@@ -3619,6 +3619,234 @@ class Auth : QuickSpec {
                 }
             }
         }
+
+        describe("JWT and realtime") {
+            let channelName = "test_JWT"
+            let messageName = "message_JWT"
+            
+            context("client initialized with a JWT token in ClientOptions") {
+                let options = AblyTests.clientOptions()
+
+                context("with valid credentials") {
+                    options.token = getJWTToken()
+                    let client = AblyTests.newRealtime(options)
+                    defer { client.dispose(); client.close() }
+
+                    it("pulls stats successfully") {
+                        waitUntil(timeout: testTimeout) { done in
+                            client.stats{ stats, error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+                    }
+                }
+
+                context("with invalid credentials") {
+                    options.token = getJWTToken(invalid: true)
+                    options.autoConnect = false
+                    let client = AblyTests.newRealtime(options)
+                    defer { client.dispose(); client.close() }
+
+                    it("fails to connect with reason 'invalid signature'") {
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.failed) { stateChange in
+                                expect(stateChange!.reason!.code).to(equal(40144))
+                                expect(stateChange!.reason!.description).to(contain("invalid signature"))
+                                done()
+                            }
+                            client.connect()
+                        }
+                    }
+                }
+            }
+
+            context("when using auth_url") {
+                let options = AblyTests.clientOptions()
+                let keys = getKeys()
+                options.autoConnect = false
+                options.authUrl = NSURL(string: echoServerAddress)! as URL
+
+
+                context("with valid credentials") {
+                    options.authParams = [URLQueryItem]() as [URLQueryItem]?
+                    options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]) as URLQueryItem)
+                    options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]) as URLQueryItem)
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+
+                    it("fetches a channels and posts a message") {
+                        client.channels.get(channelName).publish(messageName, data: nil, callback: { error in
+                            expect(error).to(beNil())
+                        })
+                    }
+                }
+
+                context("with wrong credentials") {
+                    options.authParams = [URLQueryItem]() as [URLQueryItem]?
+                    options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]) as URLQueryItem)
+                    options.authParams?.append(URLQueryItem(name: "keySecret", value: "INVALID") as URLQueryItem)
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+
+                    it("fails to connect with reason 'invalid signature'") {
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.failed) { stateChange in
+                                expect(stateChange!.reason!.code).to(equal(40144))
+                                expect(stateChange!.reason!.description).to(contain("invalid signature"))
+                                done()
+                            }
+                            client.connect()
+                        }
+                    }
+                }
+
+                context("when token expires") {
+                    let tokenDuration = 5.0
+                    options.authParams = [URLQueryItem]() as [URLQueryItem]?
+                    options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]) as URLQueryItem)
+                    options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]) as URLQueryItem)
+                    options.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))) as URLQueryItem)
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+
+                    it ("receives a 40142 error from the server") {
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.connected) { stateChange in
+                                delay(tokenDuration + 1) {
+                                    done()
+                                }
+                            }
+                            client.connect()
+                        }
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.disconnected) { stateChange in
+                                expect(stateChange!.reason!.code).to(equal(40142))
+                                expect(stateChange!.reason!.description).to(contain("Key/token status changed (expire)"))
+                                done()
+                            }
+                        }
+
+                    }
+                }
+            }
+
+            context("when using authCallback") {
+                let options = AblyTests.clientOptions()
+
+                context("with valid credentials") {
+                    options.authCallback = { tokenParams, completion in
+                        let token = ARTTokenDetails(token: getJWTToken()!)
+                        completion(token, nil)
+                    }
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+
+                    it("pulls stats successfully") {
+                        waitUntil(timeout: testTimeout) { done in
+                            client.stats{ stats, error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+                    }
+                }
+
+                context("with invalid credentials") {
+                    options.authCallback = { tokenParams, completion in
+                        let token = ARTTokenDetails(token: getJWTToken(invalid: true)!)
+                        completion(token, nil)
+                    }
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+
+                    it("fails to connect") {
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.failed) { stateChange in
+                                expect(stateChange!.reason!.code).to(equal(40144))
+                                expect(stateChange!.reason!.description).to(contain("invalid signature"))
+                                done()
+                            }
+                            client.connect()
+                        }
+                    }
+                }
+            }
+
+            context("when token expires and has a means to renew") {
+                let tokenDuration = 3.0
+                let options = AblyTests.clientOptions()
+                options.useTokenAuth = true
+                options.autoConnect = false
+                options.authCallback = { tokenParams, completion in
+                    let token = ARTTokenDetails(token: getJWTToken(expiresIn: Int(tokenDuration))!)
+                    completion(token, nil)
+                }
+                let client = ARTRealtime(options: options)
+                defer { client.dispose(); client.close() }
+
+                it("reconnects using authCallback and obtains a new token") {
+                    var originalToken = ""
+                    var originalConnectionID = ""
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.connected) { _ in
+                            originalToken = client.auth.tokenDetails!.token
+                            originalConnectionID = client.connection.id!
+                            delay(tokenDuration + 1) {
+                                done()
+                            }
+                        }
+                        client.connect()
+                    }
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.disconnected) { stateChange in
+                            expect(stateChange!.reason!.code).to(equal(40142))
+
+                            client.connection.once(.connected) { _ in
+                                expect(client.connection.id).to(equal(originalConnectionID))
+                                expect(client.auth.tokenDetails!.token).toNot(equal(originalToken))
+                                done()
+                            }
+                        }
+                    }
+                }
+            }
+            
+            context("when the token request includes a clientId") {
+                let clientId = "JWTClientId"
+                let options = AblyTests.clientOptions()
+                options.tokenDetails = ARTTokenDetails(token: getJWTToken(clientId: clientId)!)
+                options.autoConnect = false
+                let client = ARTRealtime(options: options)
+                defer { client.dispose(); client.close() }
+                
+                it("the clientId is the same specified in the JWT token request") {
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.connected) { _ in
+                            expect(client.auth.clientId).to(equal(clientId))
+                            done()
+                        }
+                        client.connect()
+                    }
+                }
+            }
+            
+            context("when the token request includes subscribe-only capabilities") {
+                let capability = "{\"\(channelName)\":[\"subscribe\"]}"
+                let options = AblyTests.clientOptions()
+                options.tokenDetails = ARTTokenDetails(token: getJWTToken(capability: capability)!)
+                let client = ARTRealtime(options: options)
+                defer { client.dispose(); client.close() }
+
+                it("fails to publish to a channel with subscribe-only capability") {
+                    waitUntil(timeout: testTimeout) { done in
+                        client.channels.get(channelName).publish(messageName, data: nil, callback: { error in
+                            expect(error?.code).to(equal(90001))
+                            expect(error?.message).to(contain("channel operation failed"))
+                            done()
+                        })
+                    }
+                }
             }
         }
     }
