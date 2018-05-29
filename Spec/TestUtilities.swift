@@ -503,7 +503,7 @@ func encodeString(_ input: String) -> String? {
     return nil
 }
 
-func getJWTToken(invalid: Bool = false, expiresIn: Int = 3600, clientId: String = "testClientIDiOS", capability: String = "{\"*\":[\"*\"]}", jwtType: String = "", embedded: Int = 0) -> String? {
+func getJWTToken(invalid: Bool = false, expiresIn: Int = 3600, clientId: String = "testClientIDiOS", capability: String = "{\"*\":[\"*\"]}", jwtType: String = "", encrypted: Int = 0) -> String? {
     let options = AblyTests.commonAppSetup()
     guard let components = options.key?.components(separatedBy: ":"), let keyName = components.first, var keySecret = components.last else {
         fail("Invalid API key: \(options.key ?? "nil")")
@@ -521,7 +521,7 @@ func getJWTToken(invalid: Bool = false, expiresIn: Int = 3600, clientId: String 
         URLQueryItem(name: "client_id", value: clientId),
         URLQueryItem(name: "capability", value: capability),
         URLQueryItem(name: "jwtType", value: jwtType),
-        URLQueryItem(name: "embedded", value: String(embedded)),
+        URLQueryItem(name: "encrypted", value: String(encrypted)),
     ]
     
     let request = NSMutableURLRequest(url: URLCcomponents!.url!)
