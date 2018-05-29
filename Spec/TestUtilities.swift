@@ -43,6 +43,7 @@ let appSetupJson = JSON(parseJSON: try! String(contentsOfFile: pathForTestResour
 
 let testTimeout: TimeInterval = 10.0
 let testResourcesPath = "ably-common/test-resources/"
+let echoServerAddress = "https://shrouded-plains-50367.herokuapp.com/createJWT" // TODO: change this
 
 /// Common test utilities.
 class AblyTests {
@@ -492,6 +493,52 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
         fail(e.localizedDescription, file: file, line: line)
     }
     return tokenDetails
+}
+
+func encodeString(_ input: String) -> String? {
+    let allowedQueryParamAndKey =  CharacterSet(charactersIn: "{}[]*: ")
+   if let encodedString_ = input.addingPercentEncoding(withAllowedCharacters: allowedQueryParamAndKey) {
+        return encodedString_
+    }
+    return nil
+}
+
+func getJWTToken(invalid: Bool = false, expiresIn: Int = 3600, clientId: String = "testClientIDiOS", capability: String = "{\"*\":[\"*\"]}", jwtType: String = "", embedded: Int = 0) -> String? {
+    let options = AblyTests.commonAppSetup()
+    guard let components = options.key?.components(separatedBy: ":"), let keyName = components.first, var keySecret = components.last else {
+        fail("Invalid API key: \(options.key ?? "nil")")
+        return nil
+    }
+    if (invalid) {
+        keySecret = "invalid"
+    }
+
+    var URLCcomponents = URLComponents(string: echoServerAddress)
+    URLCcomponents?.queryItems = [
+        URLQueryItem(name: "keyName", value: keyName),
+        URLQueryItem(name: "keySecret", value: keySecret),
+        URLQueryItem(name: "expiresIn", value: String(expiresIn)),
+        URLQueryItem(name: "client_id", value: clientId),
+        URLQueryItem(name: "capability", value: capability),
+        URLQueryItem(name: "jwtType", value: jwtType),
+        URLQueryItem(name: "embedded", value: String(embedded)),
+    ]
+    
+    let request = NSMutableURLRequest(url: URLCcomponents!.url!)
+    let (responseData, responseError, _) = NSURLSessionServerTrustSync().get(request)
+    if let error = responseError {
+        fail(error.localizedDescription)
+        return nil
+    }
+    return String(data: responseData!, encoding: String.Encoding.utf8)
+}
+
+func getKeys() -> Dictionary<String, String> {
+    let options = AblyTests.commonAppSetup()
+    guard let components = options.key?.components(separatedBy: ":"), let keyName = components.first, let keySecret = components.last else {
+        fatalError("Invalid API key)")
+    }
+    return ["keyName": keyName, "keySecret": keySecret]
 }
 
 public func delay(_ seconds: TimeInterval, closure: @escaping ()->()) {
