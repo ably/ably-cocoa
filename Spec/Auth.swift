@@ -3849,5 +3849,38 @@ class Auth : QuickSpec {
                 }
             }
         }
+        
+        describe("JWT and rest") {
+            let options = AblyTests.clientOptions()
+            
+            context("when the JWT token embeds an Ably token") {
+                options.tokenDetails = ARTTokenDetails(token: getJWTToken(jwtType: "embedded")!)
+                let client = ARTRest(options: options)
+                
+                it ("pulls stats successfully") {
+                    waitUntil(timeout: testTimeout) { done in
+                        client.stats{ stats, error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+                }
+            }
+            
+            context("when the JWT token embeds an Ably token and it is requested as encrypted") {
+                options.tokenDetails = ARTTokenDetails(token: getJWTToken(jwtType: "embedded", encrypted: 1)!)
+                let client = ARTRest(options: options)
+                
+                it ("pulls stats successfully") {
+                    waitUntil(timeout: testTimeout) { done in
+                        client.stats{ stats, error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+                }
+            }
+            
+        }
     }
 }
