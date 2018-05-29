@@ -239,7 +239,7 @@ class Auth : QuickSpec {
                             guard let error = error else {
                                 fail("Error is nil"); done(); return
                             }
-                            expect(UInt(error.code)).to(equal(ARTState.requestTokenFailed.rawValue))
+                            expect(error.code).to(equal(40142))
                             expect(realtime.connection.state).to(equal(ARTRealtimeConnectionState.failed))
                             done()
                         }
@@ -3617,6 +3617,8 @@ class Auth : QuickSpec {
                 it("rejects non-object JSON") {
                     expect{try ARTTokenDetails.fromJson("[]" as ARTJsonCompatible)}.to(throwError())
                 }
+            }
+        }
             }
         }
     }
