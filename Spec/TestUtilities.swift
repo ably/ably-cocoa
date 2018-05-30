@@ -518,7 +518,7 @@ func getJWTToken(invalid: Bool = false, expiresIn: Int = 3600, clientId: String 
         URLQueryItem(name: "keyName", value: keyName),
         URLQueryItem(name: "keySecret", value: keySecret),
         URLQueryItem(name: "expiresIn", value: String(expiresIn)),
-        URLQueryItem(name: "client_id", value: clientId),
+        URLQueryItem(name: "clientId", value: clientId),
         URLQueryItem(name: "capability", value: capability),
         URLQueryItem(name: "jwtType", value: jwtType),
         URLQueryItem(name: "encrypted", value: String(encrypted)),
