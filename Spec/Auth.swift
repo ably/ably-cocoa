@@ -3729,6 +3729,35 @@ class Auth : QuickSpec {
 
                     }
                 }
+                
+                context("when the server sends and AUTH protocol message") {
+                    it("client reauths correctly without going through a disconnection") {
+                        // The server sends an AUTH protocol message 30 seconds before a token expires
+                        // We create a token that lasts 35 seconds, so there's room to receive the AUTH message
+                        let tokenDuration = 35.0
+                        options.authParams = [URLQueryItem]() as [URLQueryItem]?
+                        options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]) as URLQueryItem)
+                        options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]) as URLQueryItem)
+                        options.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))) as URLQueryItem)
+                        let client = ARTRealtime(options: options)
+                        client.setTransport(TestProxyTransport.self)
+                        defer { client.dispose(); client.close() }
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.connected) { stateChange in
+                                let originalToken = client.auth.tokenDetails?.token
+                                let transport = client.transport as! TestProxyTransport
+                                
+                                client.connection.once(.update) { stateChange in
+                                    expect(transport.protocolMessagesReceived.filter({ $0.action == .auth })).to(haveCount(1))
+                                    expect(originalToken).toNot(equal(client.auth.tokenDetails?.token))
+                                    done()
+                                }
+                            }
+                            client.connect()
+                        }
+                    }
+                }
             }
 
             context("when using authCallback") {
