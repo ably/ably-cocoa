@@ -3907,22 +3907,35 @@ class Auth : QuickSpec {
             }
             
             context("when the JWT token is returned with application/jwt content tye") {
+                let options = AblyTests.clientOptions()
+                let keys = getKeys()
+                options.authUrl = NSURL(string: echoServerAddress)! as URL
+                options.authParams = [URLQueryItem]() as [URLQueryItem]?
+                options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]) as URLQueryItem)
+                options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]) as URLQueryItem)
+                options.authParams?.append(URLQueryItem(name: "returnType", value: "jwt") as URLQueryItem)
+                let client = ARTRest(options: options)
                 
                 it("the client successfully connects and pulls stats") {
-                    let options = AblyTests.clientOptions()
-                    let keys = getKeys()
-                    options.authUrl = NSURL(string: echoServerAddress)! as URL
-                    options.authParams = [URLQueryItem]() as [URLQueryItem]?
-                    options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]) as URLQueryItem)
-                    options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]) as URLQueryItem)
-                    options.authParams?.append(URLQueryItem(name: "returnType", value: "jwt") as URLQueryItem)
-                    let client = ARTRest(options: options)
-                    
                     waitUntil(timeout: testTimeout) { done in
                         client.stats{ stats, error in
                             expect(error).to(beNil())
                             done()
                         }
+                    }
+                }
+                
+                it("the client can request a new token to initilize another client that connects and pulls stats") {
+                    waitUntil(timeout: testTimeout) { done in
+                        client.auth.requestToken(nil, with: nil, callback: { tokenDetails, error in
+                            let newClientOptions = AblyTests.clientOptions()
+                            newClientOptions.token = tokenDetails!.token
+                            let newClient = ARTRest(options: newClientOptions)
+                            newClient.stats{ stats, error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        })
                     }
                 }
             }
