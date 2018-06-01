@@ -3774,40 +3774,36 @@ class Auth : QuickSpec {
             }
 
             context("when token expires and has a means to renew") {
-                let tokenDuration = 3.0
-                let options = AblyTests.clientOptions()
-                options.useTokenAuth = true
-                options.autoConnect = false
-                options.authCallback = { tokenParams, completion in
-                    let token = ARTTokenDetails(token: getJWTToken(expiresIn: Int(tokenDuration))!)
-                    completion(token, nil)
-                }
-                let client = ARTRealtime(options: options)
-                defer { client.dispose(); client.close() }
 
                 it("reconnects using authCallback and obtains a new token") {
+                    let tokenDuration = 3.0
+                    let options = AblyTests.clientOptions()
+                    options.useTokenAuth = true
+                    options.autoConnect = false
+                    options.authCallback = { tokenParams, completion in
+                        let token = ARTTokenDetails(token: getJWTToken(expiresIn: Int(tokenDuration))!)
+                        completion(token, nil)
+                    }
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
                     var originalToken = ""
                     var originalConnectionID = ""
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connected) { _ in
                             originalToken = client.auth.tokenDetails!.token
                             originalConnectionID = client.connection.id!
-                            delay(tokenDuration + 1) {
-                                done()
+
+                            client.connection.once(.disconnected) { stateChange in
+                                expect(stateChange!.reason!.code).to(equal(40142))
+
+                                client.connection.once(.connected) { _ in
+                                    expect(client.connection.id).to(equal(originalConnectionID))
+                                    expect(client.auth.tokenDetails!.token).toNot(equal(originalToken))
+                                    done()
+                                }
                             }
                         }
                         client.connect()
-                    }
-                    waitUntil(timeout: testTimeout) { done in
-                        client.connection.once(.disconnected) { stateChange in
-                            expect(stateChange!.reason!.code).to(equal(40142))
-
-                            client.connection.once(.connected) { _ in
-                                expect(client.connection.id).to(equal(originalConnectionID))
-                                expect(client.auth.tokenDetails!.token).toNot(equal(originalToken))
-                                done()
-                            }
-                        }
                     }
                 }
             }
