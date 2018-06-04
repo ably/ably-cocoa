@@ -2657,8 +2657,8 @@ class RealtimeClientConnection: QuickSpec {
                     options.disconnectedRetryTimeout = 5.0
                     var client: ARTRealtime!
                     var connectionId = ""
-                    let customTtlInterval: TimeInterval = 1.0
-                    let customIdleInterval: TimeInterval = 1.0
+                    let customTtlInterval: TimeInterval = 0.1
+                    let customIdleInterval: TimeInterval = 0.1
                     
                     it("uses a new connection") {
                         client = AblyTests.newRealtime(options)
@@ -2691,7 +2691,6 @@ class RealtimeClientConnection: QuickSpec {
                     // RTN15g3
                     it("reattaches to the same channels after a new connection has been established") {
                         client = AblyTests.newRealtime(options)
-                        client.connect()
                         defer { client.close() }
                         let channelName = "test-reattach-after-ttl"
                         let channel = client.channels.get(channelName)
@@ -2706,19 +2705,21 @@ class RealtimeClientConnection: QuickSpec {
                                         fail(error.message)
                                     }
                                     expect(channel.state).to(equal(ARTRealtimeChannelState.attached))
+                                    client.onDisconnected()
                                 }
                                 client.connection.once(.disconnected) { _ in
                                     client.connection.once(.connecting) { _ in
                                         client.connection.once(.connected) { _ in
                                             expect(client.connection.id).toNot(equal(connectionId))
-                                            channel.once(.attached) { _ in
+                                            channel.once(.attached) { stateChange in
+                                                expect(stateChange?.resumed).to(beFalse())
                                                 done()
                                             }
                                         }
                                     }
                                 }
-                                client.onDisconnected()
                             }
+                            client.connect()
                         }
                     }
                 }
@@ -2729,8 +2730,6 @@ class RealtimeClientConnection: QuickSpec {
                     options.disconnectedRetryTimeout = 5.0
                     var client: ARTRealtime!
                     var connectionId = ""
-                    let customTtlInterval: TimeInterval = 20.0
-                    let customIdleInterval: TimeInterval = 20.0
                     
                     it("uses the same connection") {
                         client = AblyTests.newRealtime(options)
@@ -2741,12 +2740,8 @@ class RealtimeClientConnection: QuickSpec {
                             client.connection.once(.connected) { _ in
                                 expect(client.connection.id).toNot(beNil())
                                 connectionId = client.connection.id!
-                                client.connectionStateTtl = customTtlInterval
-                                client.maxIdleInterval = customIdleInterval
                                 client.connection.once(.disconnected) { _ in
                                     let disconnectedAt = Date()
-                                    expect(client.connectionStateTtl).to(equal(customTtlInterval))
-                                    expect(client.maxIdleInterval).to(equal(customIdleInterval))
                                     client.connection.once(.connecting) { _ in
                                         let reconnectionInterval = Date().timeIntervalSince(disconnectedAt)
                                         expect(reconnectionInterval).to(beLessThan(client.connectionStateTtl + client.maxIdleInterval))
