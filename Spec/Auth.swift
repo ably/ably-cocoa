@@ -3661,6 +3661,7 @@ class Auth : QuickSpec {
                 }
             }
 
+            // RSA8g RSA8c
             context("when using auth_url") {
                 let options = AblyTests.clientOptions()
                 let keys = getKeys()
@@ -3730,6 +3731,7 @@ class Auth : QuickSpec {
                     }
                 }
                 
+                // RTC8a4
                 context("when the server sends and AUTH protocol message") {
                     it("client reauths correctly without going through a disconnection") {
                         // The server sends an AUTH protocol message 30 seconds before a token expires
@@ -3760,6 +3762,7 @@ class Auth : QuickSpec {
                 }
             }
 
+            // RSA8g
             context("when using authCallback") {
                 let options = AblyTests.clientOptions()
 
@@ -3875,6 +3878,7 @@ class Auth : QuickSpec {
             }
         }
         
+        // RSC1 RSC1a RSC1c RSA3d
         describe("JWT and rest") {
             let options = AblyTests.clientOptions()
             
@@ -3906,6 +3910,7 @@ class Auth : QuickSpec {
                 }
             }
             
+            // RSA4f, RSA8c
             context("when the JWT token is returned with application/jwt content tye") {
                 let options = AblyTests.clientOptions()
                 let keys = getKeys()
