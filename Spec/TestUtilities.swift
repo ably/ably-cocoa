@@ -495,14 +495,6 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
     return tokenDetails
 }
 
-func encodeString(_ input: String) -> String? {
-    let allowedQueryParamAndKey =  CharacterSet(charactersIn: "{}[]*: ")
-   if let encodedString_ = input.addingPercentEncoding(withAllowedCharacters: allowedQueryParamAndKey) {
-        return encodedString_
-    }
-    return nil
-}
-
 func getJWTToken(invalid: Bool = false, expiresIn: Int = 3600, clientId: String = "testClientIDiOS", capability: String = "{\"*\":[\"*\"]}", jwtType: String = "", encrypted: Int = 0) -> String? {
     let options = AblyTests.commonAppSetup()
     guard let components = options.key?.components(separatedBy: ":"), let keyName = components.first, var keySecret = components.last else {
