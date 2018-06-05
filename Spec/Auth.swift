@@ -3842,7 +3842,6 @@ class Auth : QuickSpec {
                 let clientId = "JWTClientId"
                 let options = AblyTests.clientOptions()
                 options.tokenDetails = ARTTokenDetails(token: getJWTToken(clientId: clientId)!)
-                options.autoConnect = false
                 let client = ARTRealtime(options: options)
                 defer { client.dispose(); client.close() }
                 
