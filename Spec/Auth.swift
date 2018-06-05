@@ -3665,9 +3665,7 @@ class Auth : QuickSpec {
             context("when using authUrl") {
                 let options = AblyTests.clientOptions()
                 let keys = getKeys()
-                options.autoConnect = false
                 options.authUrl = NSURL(string: echoServerAddress)! as URL
-
 
                 context("with valid credentials") {
                     options.authParams = [URLQueryItem]() as [URLQueryItem]?
@@ -3678,9 +3676,12 @@ class Auth : QuickSpec {
 
                     it("fetches a channels and posts a message") {
                         waitUntil(timeout: testTimeout) { done in
-                            client.channels.get(channelName).publish(messageName, data: nil, callback: { error in
-                                expect(error).to(beNil())
-                                done()
+                            client.connection.once(.connected, callback: { _ in
+                                let channel = client.channels.get(channelName)
+                                channel.publish(messageName, data: nil, callback: { error in
+                                    expect(error).to(beNil())
+                                    done()
+                                })
                             })
                             client.connect()
                         }
@@ -3739,6 +3740,7 @@ class Auth : QuickSpec {
                         options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]) as URLQueryItem)
                         options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]) as URLQueryItem)
                         options.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))) as URLQueryItem)
+                        options.autoConnect = false // Prevent auto connection so we can set the transport proxy
                         let client = ARTRealtime(options: options)
                         client.setTransport(TestProxyTransport.self)
                         defer { client.dispose(); client.close() }
