@@ -3677,9 +3677,13 @@ class Auth : QuickSpec {
                     defer { client.dispose(); client.close() }
 
                     it("fetches a channels and posts a message") {
-                        client.channels.get(channelName).publish(messageName, data: nil, callback: { error in
-                            expect(error).to(beNil())
-                        })
+                        waitUntil(timeout: testTimeout) { done in
+                            client.channels.get(channelName).publish(messageName, data: nil, callback: { error in
+                                expect(error).to(beNil())
+                                done()
+                            })
+                            client.connect()
+                        }
                     }
                 }
 
