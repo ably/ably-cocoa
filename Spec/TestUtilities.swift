@@ -505,8 +505,8 @@ func getJWTToken(invalid: Bool = false, expiresIn: Int = 3600, clientId: String 
         keySecret = "invalid"
     }
 
-    var URLCcomponents = URLComponents(string: echoServerAddress)
-    URLCcomponents?.queryItems = [
+    var urlComponents = URLComponents(string: echoServerAddress)
+    urlComponents?.queryItems = [
         URLQueryItem(name: "keyName", value: keyName),
         URLQueryItem(name: "keySecret", value: keySecret),
         URLQueryItem(name: "expiresIn", value: String(expiresIn)),
@@ -516,7 +516,7 @@ func getJWTToken(invalid: Bool = false, expiresIn: Int = 3600, clientId: String 
         URLQueryItem(name: "encrypted", value: String(encrypted)),
     ]
     
-    let request = NSMutableURLRequest(url: URLCcomponents!.url!)
+    let request = NSMutableURLRequest(url: urlComponents!.url!)
     let (responseData, responseError, _) = NSURLSessionServerTrustSync().get(request)
     if let error = responseError {
         fail(error.localizedDescription)
