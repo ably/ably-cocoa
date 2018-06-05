@@ -3662,7 +3662,7 @@ class Auth : QuickSpec {
             }
 
             // RSA8g RSA8c
-            context("when using auth_url") {
+            context("when using authUrl") {
                 let options = AblyTests.clientOptions()
                 let keys = getKeys()
                 options.autoConnect = false
@@ -3908,7 +3908,7 @@ class Auth : QuickSpec {
             }
             
             // RSA4f, RSA8c
-            context("when the JWT token is returned with application/jwt content tye") {
+            context("when the JWT token is returned with application/jwt content type") {
                 let options = AblyTests.clientOptions()
                 let keys = getKeys()
                 options.authUrl = NSURL(string: echoServerAddress)! as URL
