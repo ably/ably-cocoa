@@ -3718,20 +3718,14 @@ class Auth : QuickSpec {
                     it ("receives a 40142 error from the server") {
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.connected) { stateChange in
-                                delay(tokenDuration + 1) {
+                                client.connection.once(.disconnected) { stateChange in
+                                    expect(stateChange!.reason!.code).to(equal(40142))
+                                    expect(stateChange!.reason!.description).to(contain("Key/token status changed (expire)"))
                                     done()
                                 }
                             }
                             client.connect()
                         }
-                        waitUntil(timeout: testTimeout) { done in
-                            client.connection.once(.disconnected) { stateChange in
-                                expect(stateChange!.reason!.code).to(equal(40142))
-                                expect(stateChange!.reason!.description).to(contain("Key/token status changed (expire)"))
-                                done()
-                            }
-                        }
-
                     }
                 }
                 
