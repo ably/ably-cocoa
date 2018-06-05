@@ -3634,7 +3634,7 @@ class Auth : QuickSpec {
 
                     it("pulls stats successfully") {
                         waitUntil(timeout: testTimeout) { done in
-                            client.stats{ stats, error in
+                            client.stats { stats, error in
                                 expect(error).to(beNil())
                                 done()
                             }
@@ -3776,7 +3776,7 @@ class Auth : QuickSpec {
 
                     it("pulls stats successfully") {
                         waitUntil(timeout: testTimeout) { done in
-                            client.stats{ stats, error in
+                            client.stats { stats, error in
                                 expect(error).to(beNil())
                                 done()
                             }
@@ -3887,7 +3887,7 @@ class Auth : QuickSpec {
                 
                 it ("pulls stats successfully") {
                     waitUntil(timeout: testTimeout) { done in
-                        client.stats{ stats, error in
+                        client.stats { stats, error in
                             expect(error).to(beNil())
                             done()
                         }
@@ -3901,7 +3901,7 @@ class Auth : QuickSpec {
                 
                 it ("pulls stats successfully") {
                     waitUntil(timeout: testTimeout) { done in
-                        client.stats{ stats, error in
+                        client.stats { stats, error in
                             expect(error).to(beNil())
                             done()
                         }
@@ -3922,7 +3922,7 @@ class Auth : QuickSpec {
                 
                 it("the client successfully connects and pulls stats") {
                     waitUntil(timeout: testTimeout) { done in
-                        client.stats{ stats, error in
+                        client.stats { stats, error in
                             expect(error).to(beNil())
                             done()
                         }
@@ -3935,7 +3935,7 @@ class Auth : QuickSpec {
                             let newClientOptions = AblyTests.clientOptions()
                             newClientOptions.token = tokenDetails!.token
                             let newClient = ARTRest(options: newClientOptions)
-                            newClient.stats{ stats, error in
+                            newClient.stats { stats, error in
                                 expect(error).to(beNil())
                                 done()
                             }
