@@ -43,7 +43,7 @@ let appSetupJson = JSON(parseJSON: try! String(contentsOfFile: pathForTestResour
 
 let testTimeout: TimeInterval = 10.0
 let testResourcesPath = "ably-common/test-resources/"
-let echoServerAddress = "https://shrouded-plains-50367.herokuapp.com/createJWT" // TODO: change this
+let echoServerAddress = "https://echo.ably.io/createJWT"
 
 /// Common test utilities.
 class AblyTests {
