@@ -26,7 +26,3 @@ script:
   - fastlane $LANE
 after_success:
   - sleep 5
-
-branches:
-  only:
-  - develop
