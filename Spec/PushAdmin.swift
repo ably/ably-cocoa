@@ -119,23 +119,24 @@ class PushAdmin : QuickSpec {
         rest.storage = MockDeviceStorage()
         let group = DispatchGroup()
 
+        group.enter()
         for device in allDeviceDetails {
-            group.enter()
             rest.push.admin.deviceRegistrations.save(device) { error in
-                defer {
+                assert(error == nil, error?.message ?? "no message")
+                if (allDeviceDetails.last == device) {
                     group.leave()
                 }
-                assert(error == nil, error?.message ?? "no message")
             }
         }
+        group.wait()
 
+        group.enter()
         for subscription in allSubscriptions {
-            group.enter()
             rest.push.admin.channelSubscriptions.save(subscription) { error in
-                defer {
+                assert(error == nil, error?.message ?? "no message")
+                if (allSubscriptions.last == subscription) {
                     group.leave()
                 }
-                assert(error == nil, error?.message ?? "no message")
             }
         }
 
