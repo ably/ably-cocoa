@@ -29,7 +29,7 @@ Describe what happened instead.
 Add relevant console logs.
 ```
 
-**Tip:** set the log level to debug. E.g. `realtime.logger.logLevel = .debug`
+**Tip:** set the log level to debug. E.g. `realtime.logger.logLevel = .debug` and take a look at our [troubleshooting guide](https://support.ably.io/solution/articles/3000063743-guide-information-we-need-to-help-you-diagnose-problems)
 
 ### Link to sample project
 Feel free to link to a sample project that showcases the issue.
