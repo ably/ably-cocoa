@@ -1,12 +1,28 @@
 # Change Log
 
-## [1.0.13](https://github.com/ably/ably-ios/tree/1.0.13)
+## [1.0.14](https://github.com/ably/ably-ios/tree/1.0.14)
 
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.13...1.0.14)
+
+**Implemented enhancements:**
+
+- Implement RTN15a [\#729](https://github.com/ably/ably-ios/issues/729)
+- Improve RTN15G tests [\#725](https://github.com/ably/ably-ios/issues/725)
+- Add test for JWT token [\#713](https://github.com/ably/ably-ios/issues/713)
+- Implement connection state freshness check [\#645](https://github.com/ably/ably-ios/issues/645)
+
+**Merged pull requests:**
+
+- Fix race condition in preparing tests for push [\#733](https://github.com/ably/ably-ios/pull/733) ([funkyboy](https://github.com/funkyboy))
+- Improve RTN15G tests [\#726](https://github.com/ably/ably-ios/pull/726) ([funkyboy](https://github.com/funkyboy))
+- Add jwt tests [\#714](https://github.com/ably/ably-ios/pull/714) ([funkyboy](https://github.com/funkyboy))
+- Add issue template [\#711](https://github.com/ably/ably-ios/pull/711) ([funkyboy](https://github.com/funkyboy))
+
+## [1.0.13](https://github.com/ably/ably-ios/tree/1.0.13) (2018-05-14)
 [Full Changelog](https://github.com/ably/ably-ios/compare/1.0.12...1.0.13)
 
 **Implemented enhancements:**
 
-- Add connection freshness check [\#645] (https://github.com/ably/ably-ios/issues/645)
 - Run CI on develop after a branch is merged [\#699](https://github.com/ably/ably-ios/issues/699)
 - Investigate the performance of the iOS SDK vs the JS one [\#695](https://github.com/ably/ably-ios/issues/695)
 
@@ -28,18 +44,20 @@
 
 **Implemented enhancements:**
 
-- Supported Platforms section in the README [\#696](https://github.com/ably/ably-ios/issues/696)
 - Address warnings in KSCrash fork [\#680](https://github.com/ably/ably-ios/issues/680)
 
 **Fixed bugs:**
 
-- App Store publication when using Carthage [\#698](https://github.com/ably/ably-ios/issues/698)
-- High Memory Usage [\#691](https://github.com/ably/ably-ios/issues/691)
+- App Store publication issues when using Carthage [\#698](https://github.com/ably/ably-ios/issues/698)
+- High Memory usage with my trackee channels [\#691](https://github.com/ably/ably-ios/issues/691)
+- UI stuck at unsubscribe or calling subscribe when connection disconnected  [\#673](https://github.com/ably/ably-ios/issues/673)
 
 **Closed issues:**
 
-- Remove deprecated Authorise method [\#677](https://github.com/ably/ably-ios/issues/677)
+- Remove authorise  [\#677](https://github.com/ably/ably-ios/issues/677)
 - Run Travis tests on iOS 9, 10 and 11 [\#675](https://github.com/ably/ably-ios/issues/675)
+- Full test coverage of push functionality before GA release [\#632](https://github.com/ably/ably-ios/issues/632)
+- Memory leak when publishing via realtime [\#625](https://github.com/ably/ably-ios/issues/625)
 
 **Merged pull requests:**
 
