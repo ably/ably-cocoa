@@ -2011,7 +2011,7 @@ class RealtimeClientConnection: QuickSpec {
                                 guard let errorInfo = errorInfo else {
                                     fail("ErrorInfo is nil"); done(); return
                                 }
-                                expect(UInt(errorInfo.code)).to(equal(ARTState.requestTokenFailed.rawValue))
+                                expect(errorInfo.code).to(equal(40142))
                                 done()
                             default:
                                 break

@@ -359,7 +359,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
             callback(tokenDetails, nil);
         }
     }
-    else if ([response.MIMEType isEqualToString:@"text/plain"]) {
+    else if ([response.MIMEType isEqualToString:@"text/plain"] || [response.MIMEType isEqualToString:@"application/jwt"]) {
         NSString *token = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
         if ([token isEqualToString:@""]) {
             callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:NSURLErrorCancelled userInfo:@{NSLocalizedDescriptionKey:@"authUrl: token is empty"}]);

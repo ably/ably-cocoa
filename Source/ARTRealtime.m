@@ -706,7 +706,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             return;
         }
         [self.connection setId:nil];
-        [self transition:ARTRealtimeFailed withErrorInfo:error];
+        [self transition:ARTRealtimeFailed withErrorInfo:message.error];
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
