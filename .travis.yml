@@ -17,7 +17,7 @@ install:
   # CocoaPods
   - pod install
   # Carthage
-  - carthage bootstrap
+  - carthage bootstrap --platform iOS
   # Update fastlane
   - gem install fastlane -v '2.80.0'
 before_script:
