@@ -3313,7 +3313,7 @@ class RealtimeClientConnection: QuickSpec {
                             guard let error = stateChange?.reason else {
                                 fail("Error is nil"); done(); return
                             }
-                            expect(error.message).to(contain("bad response"))
+                            expect(error.message).to(contain("Invalid key in request"))
                             done()
                         }
                     }
