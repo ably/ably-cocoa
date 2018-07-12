@@ -328,6 +328,10 @@ class PushChannel : QuickSpec {
                     options.clientId = "tester"
                     let rest = ARTRest(options: options)
                     rest.storage = MockDeviceStorage()
+                    // Prevent channel name to be prefixed by test-*
+                    let originalChannelNamePrefix = ARTChannels_getChannelNamePrefix
+                    defer { ARTChannels_getChannelNamePrefix = originalChannelNamePrefix }
+                    ARTChannels_getChannelNamePrefix = nil
 
                     // Activate device
                     let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", deviceId: rest.device.id)
