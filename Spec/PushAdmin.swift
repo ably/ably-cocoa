@@ -789,13 +789,16 @@ class PushAdmin : QuickSpec {
                 it("should receive a list of subscriptions") {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                     waitUntil(timeout: testTimeout) { done in
-                        realtime.push.admin.channelSubscriptions.list(["channel": "pushenabled:qux"]) { result, error in
-                            guard let result = result else {
-                                fail("PaginatedResult should not be empty"); done(); return
-                            }
-                            expect(result.items.count) == 1
+                        realtime.push.admin.channelSubscriptions.save(subscription) { error in
                             expect(error).to(beNil())
-                            done()
+                            realtime.push.admin.channelSubscriptions.list(["channel": "pushenabled:qux"]) { result, error in
+                                guard let result = result else {
+                                    fail("PaginatedResult should not be empty"); done(); return
+                                }
+                                expect(result.items.count) == 1
+                                expect(error).to(beNil())
+                                done()
+                            }
                         }
                     }
                 }
