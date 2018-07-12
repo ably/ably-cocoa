@@ -46,7 +46,7 @@
     ARTClientOptions *options = [ARTTestUtil newSandboxApp:self withDescription:__FUNCTION__];
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     @try {
-        [ARTClientOptions setDefaultEnvironment:@"sandbox"];
+        [ARTClientOptions setDefaultEnvironment:@"push-device-auth-dev"];
         ARTRest *rest = [[ARTRest alloc] initWithKey:options.key];
         ARTChannel *c = [rest.channels get:@"test"];
         XCTAssert(c);
@@ -69,7 +69,7 @@
 - (void)testInitWithKeyBad {
     __weak XCTestExpectation *exp = [self expectationWithDescription:@"testInitWithKeyBad"];
     @try {
-        [ARTClientOptions setDefaultEnvironment:@"sandbox"];
+        [ARTClientOptions setDefaultEnvironment:@"push-device-auth-dev"];
         ARTRest *rest = [[ARTRest alloc] initWithKey:@"badkey:secret"];
         ARTChannel *c = [rest.channels get:@"test"];
         XCTAssert(c);
@@ -103,7 +103,7 @@
     __weak XCTestExpectation *expectation = [self expectationWithDescription:[NSString stringWithFormat:@"%s", __FUNCTION__]];
     ARTClientOptions *envOptions = [[ARTClientOptions alloc] init];
     envOptions.key = options.key;
-    envOptions.environment = @"sandbox";
+    envOptions.environment = @"push-device-auth-dev";
     ARTRest *rest = [[ARTRest alloc] initWithOptions:envOptions];
     ARTChannel *c = [rest.channels get:@"test"];
     [c publish:nil data:@"message" callback:^(ARTErrorInfo *error) {
