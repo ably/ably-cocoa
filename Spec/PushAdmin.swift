@@ -190,6 +190,8 @@ class PushAdmin : QuickSpec {
             rest.storage = storage
             localDevice = rest.device
         }
+        
+        let quxChannelName = "pushenabled:qux"
 
         // RSH1a
         describe("publish") {
@@ -672,7 +674,7 @@ class PushAdmin : QuickSpec {
 
         describe("Channel Subscriptions") {
 
-            let subscription = ARTPushChannelSubscription(clientId: "newClient", channel: "pushenabled:qux")
+            let subscription = ARTPushChannelSubscription(clientId: "newClient", channel: quxChannelName)
 
             // RSH1c3
             context("save") {
@@ -742,7 +744,7 @@ class PushAdmin : QuickSpec {
                         realtime.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
                         defer { realtime.rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-                        let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: "pushenabled:qux")
+                        let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: quxChannelName)
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.push.admin.channelSubscriptions.save(subscription) { error in
@@ -764,7 +766,7 @@ class PushAdmin : QuickSpec {
                         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                         realtime.rest.httpExecutor = mockHttpExecutor
 
-                        let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: "pushenabled:qux")
+                        let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: quxChannelName)
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.push.admin.channelSubscriptions.save(subscription) { error in
@@ -791,7 +793,7 @@ class PushAdmin : QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         realtime.push.admin.channelSubscriptions.save(subscription) { error in
                             expect(error).to(beNil())
-                            realtime.push.admin.channelSubscriptions.list(["channel": "pushenabled:qux"]) { result, error in
+                            realtime.push.admin.channelSubscriptions.list(["channel": quxChannelName]) { result, error in
                                 guard let result = result else {
                                     fail("PaginatedResult should not be empty"); done(); return
                                 }
@@ -846,7 +848,7 @@ class PushAdmin : QuickSpec {
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]).to(beNil())
 
                     waitUntil(timeout: testTimeout) { done in
-                        realtime.push.admin.channelSubscriptions.list(["channel": "pushenabled:qux"]) { result, error in
+                        realtime.push.admin.channelSubscriptions.list(["channel": quxChannelName]) { result, error in
                             guard let result = result else {
                                 fail("PaginatedResult should not be empty"); done(); return
                             }
@@ -874,7 +876,7 @@ class PushAdmin : QuickSpec {
                         realtime.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
                         defer { realtime.rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-                        let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: "pushenabled:qux")
+                        let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: quxChannelName)
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.push.admin.channelSubscriptions.remove(subscription) { error in
@@ -896,7 +898,7 @@ class PushAdmin : QuickSpec {
                         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                         realtime.rest.httpExecutor = mockHttpExecutor
 
-                        let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: "pushenabled:qux")
+                        let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: quxChannelName)
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.push.admin.channelSubscriptions.remove(subscription) { error in
