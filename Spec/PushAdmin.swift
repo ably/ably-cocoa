@@ -276,7 +276,7 @@ class PushAdmin : QuickSpec {
                             fail("Error is missing"); done(); return
                         }
                         expect(error.statusCode) == 400
-                        expect(error.message).to(contain("recipient must contain a 'deviceId', 'clientId', or 'transportType'"))
+                        expect(error.message).to(contain("recipient must contain"))
                         done()
                     }
                 }
