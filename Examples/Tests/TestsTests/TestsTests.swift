@@ -47,7 +47,7 @@ class TestsTests: XCTestCase {
         }
 
         let options = ARTClientOptions(key: key as String)
-        options.environment = "sandbox"
+        options.environment = "push-device-auth-dev"
         let client = ARTRealtime(options: options)
 
         let receiveExpectation = self.expectation(description: "message received")

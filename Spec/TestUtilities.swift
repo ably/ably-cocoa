@@ -144,7 +144,7 @@ class AblyTests {
 
     class func clientOptions(_ debug: Bool = false, key: String? = nil, requestToken: Bool = false) -> ARTClientOptions {
         let options = ARTClientOptions()
-        options.environment = "sandbox"
+        options.environment = "push-device-auth-dev"
         options.logExceptionReportingUrl = nil
         if debug {
             options.logLevel = .debug
