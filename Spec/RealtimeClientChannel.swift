@@ -3243,7 +3243,7 @@ class RealtimeClientChannel: QuickSpec {
                                 let start = NSDate()
                                 channel.once(.attaching) { stateChange in
                                     let end = NSDate()
-                                    expect(start).to(beCloseTo(end, within: 0.5))
+                                    expect(start).to(beCloseTo(end, within: 1.5))
                                     expect(stateChange?.reason).to(beNil())
                                     partialDone()
                                 }
