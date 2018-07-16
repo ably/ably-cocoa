@@ -56,19 +56,22 @@ class Push : QuickSpec {
 
             // RSH2c
             it("should handle GotPushDeviceDetails event when platform’s APIs sends the details for push notifications") {
+                let stateMachine = rest.push.activationMachine()
+                let testDeviceToken = "xxxx-xxxx-xxxx-xxxx-xxxx"
+                stateMachine.rest.device.setAndPersistDeviceToken(testDeviceToken)
                 let stateMachineDelegate = StateMachineDelegate()
-                rest.push.activationMachine().delegate = stateMachineDelegate
+                stateMachine.delegate = stateMachineDelegate
                 defer {
-                    rest.push.activationMachine().transitions = nil
-                    rest.push.activationMachine().delegate = nil
+                    stateMachine.transitions = nil
+                    stateMachine.delegate = nil
+                    stateMachine.rest.device.setAndPersistDeviceToken(nil)
                 }
                 waitUntil(timeout: testTimeout) { done in
-                    rest.push.activationMachine().transitions = { event, _, _ in
+                    stateMachine.transitions = { event, _, _ in
                         if event is ARTPushActivationEventGotPushDeviceDetails {
                             done()
                         }
                     }
-                    ARTPush.didRegisterForRemoteNotifications(withDeviceToken: Data(), rest: rest)
                     rest.push.activate()
                 }
             }
