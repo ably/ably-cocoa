@@ -514,6 +514,7 @@ func getJWTToken(invalid: Bool = false, expiresIn: Int = 3600, clientId: String 
         URLQueryItem(name: "capability", value: capability),
         URLQueryItem(name: "jwtType", value: jwtType),
         URLQueryItem(name: "encrypted", value: String(encrypted)),
+        URLQueryItem(name: "environment", value: "push-device-auth-dev") 
     ]
     
     let request = NSMutableURLRequest(url: urlComponents!.url!)
