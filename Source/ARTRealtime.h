@@ -62,7 +62,6 @@ Instance the Ably library using a key only. This is simply a convenience constru
 */
 - (instancetype)initWithKey:(NSString *)key;
 - (instancetype)initWithToken:(NSString *)token;
-- (instancetype)initWithOptions:(ARTClientOptions *)options;
 
 + (instancetype)createWithOptions:(ARTClientOptions *)options NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
 + (instancetype)createWithKey:(NSString *)key NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
