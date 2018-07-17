@@ -20,7 +20,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTHTTPExecutor
 
-@property (nonatomic, weak) ARTLog *logger;
 - (ARTLog *)logger;
 - (void)executeRequest:(NSURLRequest *)request completion:(nullable void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback;
 
@@ -37,8 +36,6 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface ARTHttp : NSObject<ARTHTTPExecutor>
-
-@property (nonatomic, weak) ARTLog *logger;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)init:(dispatch_queue_t)queue logger:(ARTLog *)logger;
