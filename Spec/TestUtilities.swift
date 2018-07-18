@@ -144,7 +144,7 @@ class AblyTests {
 
     class func clientOptions(_ debug: Bool = false, key: String? = nil, requestToken: Bool = false) -> ARTClientOptions {
         let options = ARTClientOptions()
-        options.environment = "push-device-auth-dev"
+        options.environment = getEnvironment()
         options.logExceptionReportingUrl = nil
         if debug {
             options.logLevel = .debug
@@ -514,7 +514,7 @@ func getJWTToken(invalid: Bool = false, expiresIn: Int = 3600, clientId: String 
         URLQueryItem(name: "capability", value: capability),
         URLQueryItem(name: "jwtType", value: jwtType),
         URLQueryItem(name: "encrypted", value: String(encrypted)),
-        URLQueryItem(name: "environment", value: "push-device-auth-dev") 
+        URLQueryItem(name: "environment", value: getEnvironment()) 
     ]
     
     let request = NSMutableURLRequest(url: urlComponents!.url!)
@@ -537,6 +537,14 @@ func getKeys() -> Dictionary<String, String> {
 public func delay(_ seconds: TimeInterval, closure: @escaping ()->()) {
     DispatchQueue.main.asyncAfter(
         deadline: DispatchTime.now() + Double(Int64(seconds * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC), execute: closure)
+}
+
+public func getEnvironment() -> String {
+    let b = Bundle(for: AblyTests.self)
+    if let env = b.infoDictionary!["ABLY_ENV"] as? String {
+        return env
+    }
+    return "sandbox"
 }
 
 class Box<T> {
