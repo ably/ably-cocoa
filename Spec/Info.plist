@@ -20,5 +20,7 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>ABLY_ENV</key>
+	<string>$(ABLY_ENV)</string>
 </dict>
 </plist>

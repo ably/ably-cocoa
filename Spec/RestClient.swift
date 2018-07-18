@@ -59,7 +59,7 @@ class RestClient: QuickSpec {
                 }
 
                 it("should accept a token") {
-                    ARTClientOptions.setDefaultEnvironment("push-device-auth-dev")
+                    ARTClientOptions.setDefaultEnvironment(getEnvironment())
                     defer { ARTClientOptions.setDefaultEnvironment(nil) }
 
                     let client = ARTRest(token: getTestToken())
@@ -99,7 +99,7 @@ class RestClient: QuickSpec {
             context("logging") {
                 // RSC2
                 it("should output to the system log and the log level should be Warn") {
-                    ARTClientOptions.setDefaultEnvironment("push-device-auth-dev")
+                    ARTClientOptions.setDefaultEnvironment(getEnvironment())
                     defer {
                         ARTClientOptions.setDefaultEnvironment(nil)
                     }
@@ -473,7 +473,7 @@ class RestClient: QuickSpec {
                     guard let components = options.key?.components(separatedBy: ":"), let keyName = components.first, let keySecret = components.last else {
                         fail("Invalid API key: \(options.key ?? "nil")"); return
                     }
-                    ARTClientOptions.setDefaultEnvironment("push-device-auth-dev")
+                    ARTClientOptions.setDefaultEnvironment(getEnvironment())
                     defer {
                         ARTClientOptions.setDefaultEnvironment(nil)
                     }
