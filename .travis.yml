@@ -23,6 +23,7 @@ install:
 before_script:
   - xcrun simctl erase all
 script:
+  - export ABLY_ENV="push-device-auth-dev"
   - fastlane $LANE
 after_success:
   - sleep 5
