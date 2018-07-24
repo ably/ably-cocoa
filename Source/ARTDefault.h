@@ -37,4 +37,6 @@
 
 + (NSString *)libraryVersion;
 
++ (NSInteger)maxMessageSize;
+
 @end
