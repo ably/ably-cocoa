@@ -3464,7 +3464,27 @@ class RealtimeClientChannel: QuickSpec {
                     }
                 }
             }
-
+        }
+        
+        describe("message attributes") {
+            
+            // TM2a
+            it("if the message does not contain an id, it should be set to protocolMsgId:index") {
+                let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                defer { client.dispose(); client.close() }
+                let p = ARTProtocolMessage()
+                p.id = "protocolId"
+                let m = ARTMessage(name: nil, data: "message without ID")
+                p.messages = [m]
+                let channel = client.channels.get(NSUUID().uuidString)
+                waitUntil(timeout: testTimeout) { done in
+                    channel.subscribe{ message in
+                        expect(message.id).to(equal("protocolId:0"))
+                        done()
+                    }
+                    channel.onMessage(p)
+                }
+            }
         }
     }
 }
