@@ -23,6 +23,35 @@ class RealtimeClientConnection: QuickSpec {
 
     override func spec() {
         describe("Connection") {
+            
+            // CD2c
+            context("ConnectionDetails") {
+                it("maxMessageSize overrides the default maxMessageSize") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+                    client.setTransport(TestProxyTransport.self)
+                    let defaultMaxMessageSize = ARTDefault.maxMessageSize()
+                    expect(defaultMaxMessageSize).to(equal(65536))
+                    defer {
+                        ARTDefault.setMaxMessageSize(defaultMaxMessageSize)
+                        client.dispose()
+                        client.close()
+                    }
+                    ARTDefault.setMaxMessageSize(1)
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.connected) { _ in
+                            let transport = client.transport as! TestProxyTransport
+                            let firstConnectionDetails = transport.protocolMessagesReceived.filter{ $0.action == .connected }[0].connectionDetails
+                            expect(firstConnectionDetails!.maxMessageSize).to(equal(16384)) // Sandbox apps have a 16384 limit
+                            done()
+                        }
+                        client.connect()
+                    }
+                }
+            }
+            
             // RTN2
             context("url") {
                 it("should connect to the default host") {
