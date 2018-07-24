@@ -20,6 +20,7 @@ NSString *const ARTDefault_platform = @"ios-";
 
 static NSTimeInterval _realtimeRequestTimeout = 10.0;
 static NSTimeInterval _connectionStateTtl = 60.0;
+static NSInteger _maxMessageSize = 65536;
 
 + (NSArray*)fallbackHosts {
     return @[@"a.ably-realtime.com", @"b.ably-realtime.com", @"c.ably-realtime.com", @"d.ably-realtime.com", @"e.ably-realtime.com"];
@@ -57,6 +58,10 @@ static NSTimeInterval _connectionStateTtl = 60.0;
     return _realtimeRequestTimeout;
 }
 
++ (NSInteger)maxMessageSize {
+    return _maxMessageSize;
+}
+
 + (void)setRealtimeRequestTimeout:(NSTimeInterval)value {
     @synchronized (self) {
         _realtimeRequestTimeout = value;
@@ -66,6 +71,12 @@ static NSTimeInterval _connectionStateTtl = 60.0;
 + (void)setConnectionStateTtl:(NSTimeInterval)value {
     @synchronized (self) {
         _connectionStateTtl = value;
+    }
+}
+
++ (void)setMaxMessageSize:(NSInteger)value {
+    @synchronized (self) {
+        _maxMessageSize = value;
     }
 }
 

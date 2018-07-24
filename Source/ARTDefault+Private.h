@@ -12,5 +12,6 @@
 
 + (void)setRealtimeRequestTimeout:(NSTimeInterval)value;
 + (void)setConnectionStateTtl:(NSTimeInterval)value;
++ (void)setMaxMessageSize:(NSInteger)value;
 
 @end
