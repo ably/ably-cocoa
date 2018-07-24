@@ -238,8 +238,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 
     if ([request isKindOfClass:[NSMutableURLRequest class]]) {
         NSMutableURLRequest *mutableRequest = (NSMutableURLRequest *)request;
-        NSString *accept = [[_encoders.allValues valueForKeyPath:@"mimeType"] componentsJoinedByString:@","];
-        [mutableRequest setValue:accept forHTTPHeaderField:@"Accept"];
+        [mutableRequest setValue:[[self defaultEncoder] mimeType] forHTTPHeaderField:@"Accept"];
         [mutableRequest setValue:[ARTDefault version] forHTTPHeaderField:@"X-Ably-Version"];
         [mutableRequest setValue:[ARTDefault libraryVersion] forHTTPHeaderField:@"X-Ably-Lib"];
         [mutableRequest setTimeoutInterval:_options.httpRequestTimeout];
