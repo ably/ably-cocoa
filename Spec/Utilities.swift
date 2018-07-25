@@ -389,6 +389,24 @@ class Utilities: QuickSpec {
                         }
                     }
                 }
+                
+                context("set of listeners") {
+                    
+                    // RTE6a
+                    it("should not change over the course of the emit") {
+                        var firstCallbackCalled = false;
+                        var secondCallbackCalled = false;
+                        eventEmitter.on("a", callback: { _ in
+                            firstCallbackCalled = true
+                            eventEmitter.on("b", callback: { _ in
+                                secondCallbackCalled = true
+                            })
+                        })
+                        eventEmitter.emit("a", with: "123" as AnyObject?)
+                        expect(firstCallbackCalled).to(beTrue())
+                        expect(secondCallbackCalled).to(beFalse())
+                    }
+                }
             }
 
             context("Logger") {
