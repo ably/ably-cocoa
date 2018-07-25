@@ -4135,7 +4135,35 @@ class RealtimeClientPresence: QuickSpec {
                     }
 
                 }
-
+            }
+            
+            context("presence message attributes") {
+                
+                // TP3a
+                it ("if the presence message does not contain an id, it should be set to protocolMsgId:index") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    let protocolMessage = ARTProtocolMessage()
+                    protocolMessage.id = "protocolId"
+                    let presenceMessage = ARTPresenceMessage()
+                    presenceMessage.clientId = "clientId"
+                    presenceMessage.action = .enter
+                    protocolMessage.presence = [presenceMessage]
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.connected) { _ in
+                            let channel = client.channels.get(NSUUID().uuidString)
+                            channel.presence.subscribe(.enter) { message in
+                                expect(message.id).to(equal("protocolId:0"))
+                                done()
+                            }
+                            channel.onPresence(protocolMessage)
+                        }
+                        client.connect()
+                    }
+                }
             }
 
         }
