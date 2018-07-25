@@ -329,6 +329,47 @@ class Auth : QuickSpec {
                         realtime.connect()
                     }
                 }
+                
+                // RSA4d
+                it("if a request by a realtime client to an authUrl results in an HTTP 403 the client library should transition to the FAILED state") {
+                    let options = AblyTests.clientOptions()
+                    options.autoConnect = false
+                    options.authUrl = URL(string: "https://echo.ably.io/respondwith?status=403")!
+                    let realtime = ARTRealtime(options: options)
+                    defer { realtime.dispose(); realtime.close() }
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        realtime.connection.once(.failed) { stateChange in
+                            expect(stateChange?.reason?.code).to(equal(40300))
+                            expect(stateChange?.reason?.statusCode).to(equal(403))
+                            done()
+                        }
+                        realtime.connect()
+                    }
+                }
+                
+                // RSA4d
+                it("if an authCallback results in an HTTP 403 the client library should transition to the FAILED state") {
+                    let options = AblyTests.clientOptions()
+                    options.autoConnect = false
+                    var authCallbackHasBeenInvoked = false
+                    options.authCallback = { tokenParams, completion in
+                        authCallbackHasBeenInvoked = true
+                        completion(nil, ARTErrorInfo(domain: "io.ably.cocoa", code: 40300, userInfo: ["ARTErrorInfoStatusCode": 403]))
+                    }
+                    let realtime = ARTRealtime(options: options)
+                    defer { realtime.dispose(); realtime.close() }
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        realtime.connection.once(.failed) { stateChange in
+                            expect(authCallbackHasBeenInvoked).to(beTrue())
+                            expect(stateChange?.reason?.code).to(equal(40300))
+                            expect(stateChange?.reason?.statusCode).to(equal(403))
+                            done()
+                        }
+                        realtime.connect()
+                    }
+                }
             }
             
             // RSA14
