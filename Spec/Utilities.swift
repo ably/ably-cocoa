@@ -393,7 +393,7 @@ class Utilities: QuickSpec {
                 context("set of listeners") {
                     
                     // RTE6a
-                    fit("should not change over the course of the emit") {
+                    it("should not change over the course of the emit") {
                         var firstCallbackCalled = false;
                         var secondCallbackCalled = false;
                         eventEmitter.on("a", callback: { _ in
