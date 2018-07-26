@@ -1350,6 +1350,37 @@ class RestClient: QuickSpec {
                 }
             }
 
-        } //RestClient
+        }
+        
+        context("if in the course of a REST request an attempt to authenticate using authUrl fails due to a timeout") {
+            // RSA4e
+            it("the request should result in an error with code 40170, statusCode 401, and a suitable error message") {
+                let options = AblyTests.commonAppSetup()
+                let token = getTestToken()
+                options.httpRequestTimeout = 3 // short timeout to make it fail faster
+                options.authUrl = NSURL(string: "http://10.255.255.1")! as URL
+                options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
+                options.authParams?.append(NSURLQueryItem(name: "type", value: "text") as URLQueryItem)
+                options.authParams?.append(NSURLQueryItem(name: "body", value: token) as URLQueryItem)
+                
+                let client = ARTRest(options: options)
+                waitUntil(timeout: testTimeout, action: { done in
+                    let channel = client.channels.get("test-channel")
+                    channel.publish("test", data: "test-data", callback: { error in
+                        guard let error = error else {
+                            fail("Error should not be empty")
+                            done()
+                            return
+                        }
+                        expect(error.statusCode).to(equal(401))
+                        expect(error.code).to(equal(40170))
+                        expect(error.message).to(contain("Error in requesting auth token"))
+                        done()
+                    })
+                })
+                
+                
+            }
+        }
     }
 }
