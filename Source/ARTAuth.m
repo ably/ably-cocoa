@@ -274,6 +274,11 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 
     void (^checkerCallback)(ARTTokenDetails *_Nullable, NSError *_Nullable) = ^(ARTTokenDetails *tokenDetails, NSError *error) {
         if (error) {
+            if (error.code == NSURLErrorTimedOut) {
+                ARTErrorInfo *ablyError = [ARTErrorInfo createWithCode:40170 message:@"Error in requesting auth token"];
+                callback(nil, ablyError);
+                return;
+            }
             callback(nil, error);
             return;
         }
