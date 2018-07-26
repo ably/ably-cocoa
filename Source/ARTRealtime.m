@@ -859,7 +859,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 - (void)handleTokenAuthError:(NSError *)error {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     [self.logger error:@"R:%p token auth failed with %@", self, error.description];
-    if (error.code == 40102 /*incompatible credentials*/) {
+    if (error.code == 40102 /*incompatible credentials*/ || error.code == 40300 /*auth fails with a 403 (RSA4d)*/) {
         // RSA15c
         [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error]];
     }
