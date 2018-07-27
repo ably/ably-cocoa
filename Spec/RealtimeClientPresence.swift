@@ -23,6 +23,7 @@ class RealtimeClientPresence: QuickSpec {
 
             // RTP1
             context("ProtocolMessage bit flag") {
+                let channelName = NSUUID().uuidString
 
                 it("when no members are present") {
                     let options = AblyTests.commonAppSetup()
@@ -31,7 +32,7 @@ class RealtimeClientPresence: QuickSpec {
                     client.setTransport(TestProxyTransport.self)
                     client.connect()
                     defer { client.dispose(); client.close() }
-                    let channel = client.channels.get("test")
+                    let channel = client.channels.get(channelName)
                     channel.attach()
 
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
@@ -57,7 +58,7 @@ class RealtimeClientPresence: QuickSpec {
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 250, options: options) {
+                        disposable += [AblyTests.addMembersSequentiallyToChannel(channelName, members: 250, options: options) {
                             done()
                         }]
                     }
@@ -67,7 +68,7 @@ class RealtimeClientPresence: QuickSpec {
                     client.setTransport(TestProxyTransport.self)
                     client.connect()
                     defer { client.dispose(); client.close() }
-                    let channel = client.channels.get("test")
+                    let channel = client.channels.get(channelName)
                     channel.attach()
 
                     expect(channel.presence.getSyncComplete).to(beFalse())
@@ -163,7 +164,8 @@ class RealtimeClientPresence: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
-                    let channel = client.channels.get("foo")
+                    let channelName = NSUUID().uuidString
+                    let channel = client.channels.get(channelName)
                     waitUntil(timeout: testTimeout) { done in
                         channel.attach() { error in
                             expect(error).to(beNil())
@@ -239,7 +241,8 @@ class RealtimeClientPresence: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
-                    let channel = client.channels.get("foo")
+                    let channelName = NSUUID().uuidString
+                    let channel = client.channels.get(channelName)
                     waitUntil(timeout: testTimeout) { done in
                         channel.attach() { error in
                             expect(error).to(beNil())
@@ -297,18 +300,18 @@ class RealtimeClientPresence: QuickSpec {
 
                 it("should ensure that members no longer present on the channel are removed from the local PresenceMap once the sync is complete") {
                     let options = AblyTests.commonAppSetup()
-
+                    let channelName = NSUUID().uuidString
                     var clientMembers: ARTRealtime?
                     defer { clientMembers?.dispose(); clientMembers?.close() }
                     waitUntil(timeout: testTimeout) { done in
-                        clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 2, options: options) {
+                        clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 2, options: options) {
                             done()
                         }
                     }
 
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
-                    let channel = client.channels.get("foo")
+                    let channel = client.channels.get(channelName)
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.get { members, error in
                             expect(error).to(beNil())
@@ -368,7 +371,8 @@ class RealtimeClientPresence: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
-                    let channel = client.channels.get("foo")
+                    let channelName = NSUUID().uuidString
+                    let channel = client.channels.get(channelName)
 
                     // Inject local members
                     channel.presenceMap.add(ARTPresenceMessage(clientId: "tester1", action: .enter, connectionId: "another", id: "another:0:0"))
@@ -624,7 +628,7 @@ class RealtimeClientPresence: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     let client1 = AblyTests.newRealtime(options)
                     defer { client1.dispose(); client1.close() }
-                    let channel1 = client1.channels.get("room")
+                    let channel1 = client1.channels.get(NSUUID().uuidString)
 
                     waitUntil(timeout: testTimeout) { done in
                         channel1.presence.enterClient("Client 1", data: nil) { errorInfo in
@@ -677,10 +681,10 @@ class RealtimeClientPresence: QuickSpec {
                     // RTP5c1
                     it("if the resumed flag is true and no SYNC is initiated as part of the attach then do nothing, PresenceMap is not affected and no members need to be re-entered") {
                         let options = AblyTests.commonAppSetup()
-
+                        let channelName = NSUUID().uuidString
                         var clientMembers: ARTRealtime?
                         waitUntil(timeout: testTimeout) { done in
-                            clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 3, options: options) {
+                            clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 3, options: options) {
                                 done()
                             }
                         }
@@ -690,7 +694,7 @@ class RealtimeClientPresence: QuickSpec {
                         options.tokenDetails = getTestTokenDetails(key: options.key!, ttl: 5.0)
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("foo")
+                        let channel = client.channels.get(channelName)
 
                         var originalMembers: [ARTPresenceMessage]?
                         waitUntil(timeout: testTimeout) { done in
@@ -749,12 +753,13 @@ class RealtimeClientPresence: QuickSpec {
                     // RTP5c2
                     context("all members not present in the PresenceMap but present in the internal PresenceMap must be re-entered automatically") {
 
+                        let channelName = NSUUID().uuidString
                         it("when SYNC is initiated as part of the attach and the SYNC is complete") {
                             let options = AblyTests.commonAppSetup()
 
                             var clientMembers: ARTRealtime?
                             waitUntil(timeout: testTimeout) { done in
-                                clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 3, options: options) {
+                                clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 3, options: options) {
                                     done()
                                 }
                             }
@@ -762,7 +767,7 @@ class RealtimeClientPresence: QuickSpec {
 
                             let client = AblyTests.newRealtime(options)
                             defer { client.dispose(); client.close() }
-                            let channel = client.channels.get("foo")
+                            let channel = client.channels.get(channelName)
                             waitUntil(timeout: testTimeout) { done in
                                 client.connection.once(.connected) { stateChange in
                                     expect(stateChange?.reason).to(beNil())
@@ -777,7 +782,7 @@ class RealtimeClientPresence: QuickSpec {
                                 fail("TestProxyTransport is not set"); return
                             }
 
-                            waitUntil(timeout: testTimeout) { done in
+                            waitUntil(timeout: testTimeout*2) { done in
                                 let partialDone = AblyTests.splitDone(4, done: done)
                                 let localMember = ARTPresenceMessage(clientId: "local1", action: .enter, connectionId: connectionId, id: "\(connectionId):1:1", timestamp: NSDate() as Date)
 
@@ -843,10 +848,10 @@ class RealtimeClientPresence: QuickSpec {
 
                         it("when resumed flag is false and a SYNC is not expected") {
                             let options = AblyTests.commonAppSetup()
-
+                            let channelName = NSUUID().uuidString
                             var clientMembers: ARTRealtime?
                             waitUntil(timeout: testTimeout) { done in
-                                clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 2, options: options) {
+                                clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 2, options: options) {
                                     done()
                                 }
                             }
@@ -855,7 +860,7 @@ class RealtimeClientPresence: QuickSpec {
                             options.clientId = "local1"
                             let client = AblyTests.newRealtime(options)
                             defer { client.dispose(); client.close() }
-                            let channel = client.channels.get("foo")
+                            let channel = client.channels.get(channelName)
 
                             waitUntil(timeout: testTimeout) { done in
                                 let partialDone = AblyTests.splitDone(2, done: done)
@@ -938,10 +943,11 @@ class RealtimeClientPresence: QuickSpec {
                     // RTP5c3
                     it("if any of the automatic ENTER presence messages published fail then an UPDATE event should be emitted on the channel") {
                         let options = AblyTests.commonAppSetup()
+                        let channelName = NSUUID().uuidString
 
                         var clientMembers: ARTRealtime?
                         waitUntil(timeout: testTimeout) { done in
-                            clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 3, options: options) {
+                            clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 3, options: options) {
                                 done()
                             }
                         }
@@ -949,7 +955,7 @@ class RealtimeClientPresence: QuickSpec {
 
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("foo")
+                        let channel = client.channels.get(channelName)
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.connected) { stateChange in
                                 expect(stateChange?.reason).to(beNil())
@@ -1030,7 +1036,8 @@ class RealtimeClientPresence: QuickSpec {
                         let options = AblyTests.commonAppSetup()
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("foo")
+                        let channelName = NSUUID().uuidString
+                        let channel = client.channels.get(channelName)
 
                         waitUntil(timeout: testTimeout) { done in
                             let partialDone = AblyTests.splitDone(3, done: done)
@@ -1058,10 +1065,11 @@ class RealtimeClientPresence: QuickSpec {
 
                     it("should maintain the PresenceMap and any members present before and after the sync should not emit presence events") {
                         let options = AblyTests.commonAppSetup()
+                        let channelName = NSUUID().uuidString
 
                         var clientMembers: ARTRealtime?
                         waitUntil(timeout: testTimeout) { done in
-                            clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 3, options: options) {
+                            clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 3, options: options) {
                                 done()
                             }
                         }
@@ -1072,7 +1080,7 @@ class RealtimeClientPresence: QuickSpec {
                         let client = AblyTests.newRealtime(options)
                         let transport = client.transport as! TestProxyTransport
                         defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("foo")
+                        let channel = client.channels.get(channelName)
                         waitUntil(timeout: testTimeout) { done in
                             let partialDone = AblyTests.splitDone(2, done: done)
                             channel.presence.enter(nil) { error in
@@ -1709,7 +1717,8 @@ class RealtimeClientPresence: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
-                    let channel = client.channels.get("foo")
+                    let channelName = NSUUID().uuidString
+                    let channel = client.channels.get(channelName)
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.enterClient("tester", data: nil) { error in
@@ -1755,18 +1764,18 @@ class RealtimeClientPresence: QuickSpec {
                         it("compares them by timestamp numerically") {
                             let options = AblyTests.commonAppSetup()
                             let now = NSDate()
-
+                            let channelName = NSUUID().uuidString
                             var clientMembers: ARTRealtime?
                             defer { clientMembers?.dispose(); clientMembers?.close() }
                             waitUntil(timeout: testTimeout) { done in
-                                clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 101, options: options) {
+                                clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 101, options: options) {
                                     done()
                                 }
                             }
 
                             let clientSubscribed = AblyTests.newRealtime(options)
                             defer { clientSubscribed.dispose(); clientSubscribed.close() }
-                            let channelSubscribed = clientSubscribed.channels.get("foo")
+                            let channelSubscribed = clientSubscribed.channels.get(channelName)
 
                             let presenceData: [ARTPresenceMessage] = [
                                 ARTPresenceMessage(clientId: "a", action: .enter, connectionId: "one", id: "one:0:0", timestamp: now as Date),
@@ -1781,7 +1790,7 @@ class RealtimeClientPresence: QuickSpec {
                                 fail("TestProxyTransport is not set"); return
                             }
 
-                            waitUntil(timeout: testTimeout) { done in
+                            waitUntil(timeout: testTimeout*2) { done in
                                 transport.afterProcessingReceivedMessage = { protocolMessage in
                                     // Receive the first Sync message from Ably service
                                     if protocolMessage.action == .sync {
@@ -1839,18 +1848,18 @@ class RealtimeClientPresence: QuickSpec {
                     it("split the id of both presence messages") {
                         let options = AblyTests.commonAppSetup()
                         let now = NSDate()
-
+                        let channelName = NSUUID().uuidString
                         var clientMembers: ARTRealtime?
                         defer { clientMembers?.dispose(); clientMembers?.close() }
                         waitUntil(timeout: testTimeout) { done in
-                            clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 101, options: options) {
+                            clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 101, options: options) {
                                 done()
                             }
                         }
 
                         let clientSubscribed = AblyTests.newRealtime(options)
                         defer { clientSubscribed.dispose(); clientSubscribed.close() }
-                        let channelSubscribed = clientSubscribed.channels.get("foo")
+                        let channelSubscribed = clientSubscribed.channels.get(channelName)
 
                         let presenceData: [ARTPresenceMessage] = [
                             ARTPresenceMessage(clientId: "a", action: .enter, connectionId: "one", id: "one:0:0", timestamp: now as Date),
@@ -1926,11 +1935,11 @@ class RealtimeClientPresence: QuickSpec {
                     it("discard members where messages have arrived before the SYNC") {
                         let options = AblyTests.commonAppSetup()
                         let timeBeforeSync = NSDate()
-
+                        let channelName = NSUUID().uuidString
                         var clientMembers: ARTRealtime?
                         defer { clientMembers?.dispose(); clientMembers?.close() }
                         waitUntil(timeout: testTimeout) { done in
-                            clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 120, options: options) {
+                            clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 120, options: options) {
                                 done()
                             }
                         }
@@ -1940,7 +1949,7 @@ class RealtimeClientPresence: QuickSpec {
 
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("foo")
+                        let channel = client.channels.get(channelName)
 
                         guard let transport = client.transport as? TestProxyTransport else {
                             fail("TestProxyTransport is not set"); return
@@ -1980,11 +1989,11 @@ class RealtimeClientPresence: QuickSpec {
 
                     it("accept members where message have arrived after the SYNC") {
                         let options = AblyTests.commonAppSetup()
-
+                        let channelName = NSUUID().uuidString
                         var clientMembers: ARTRealtime?
                         defer { clientMembers?.dispose(); clientMembers?.close() }
                         waitUntil(timeout: testTimeout) { done in
-                            clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 120, options: options) {
+                            clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 120, options: options) {
                                 done()
                             }
                         }
@@ -1994,13 +2003,13 @@ class RealtimeClientPresence: QuickSpec {
 
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("foo")
+                        let channel = client.channels.get(channelName)
 
                         guard let transport = client.transport as? TestProxyTransport else {
                             fail("TestProxyTransport is not set"); return
                         }
 
-                        waitUntil(timeout: testTimeout) { done in
+                        waitUntil(timeout: testTimeout*2) { done in
                             let partialDone = AblyTests.splitDone(4, done: done)
                             channel.presence.subscribe(.leave) { leave in
                                 expect(leave.clientId).to(equal("user110"))
@@ -2038,7 +2047,8 @@ class RealtimeClientPresence: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
-                    let channel = client.channels.get("foo")
+                    let channelName = NSUUID().uuidString
+                    let channel = client.channels.get(channelName)
 
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
@@ -2060,7 +2070,8 @@ class RealtimeClientPresence: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
-                    let channel = client.channels.get("foo")
+                    let channelName = NSUUID().uuidString
+                    let channel = client.channels.get(channelName)
 
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(3, done: done)
@@ -2085,18 +2096,18 @@ class RealtimeClientPresence: QuickSpec {
                 // RTP2d
                 it("if action of PRESENT arrives, it should be added to the presence map with the action set to PRESENT") {
                     let options = AblyTests.commonAppSetup()
-
+                    let channelName = NSUUID().uuidString
                     var clientMembers: ARTRealtime!
                     defer { clientMembers.dispose(); clientMembers.close() }
                     waitUntil(timeout: testTimeout) { done in
-                        clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 1, options: options) {
+                        clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 1, options: options) {
                             done()
                         }
                     }
 
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
-                    let channel = client.channels.get("foo")
+                    let channel = client.channels.get(channelName)
 
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
@@ -2119,15 +2130,16 @@ class RealtimeClientPresence: QuickSpec {
 
                     var clientMembers: ARTRealtime?
                     defer { clientMembers?.dispose(); clientMembers?.close() }
+                    let channelName = NSUUID().uuidString
                     waitUntil(timeout: testTimeout) { done in
-                        clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 20, options: options) {
+                        clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 20, options: options) {
                             done()
                         }
                     }
 
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
-                    let channel = client.channels.get("foo")
+                    let channel = client.channels.get(channelName)
                     channel.attach()
 
                     guard let transport = client.transport as? TestProxyTransport else {
@@ -2152,7 +2164,7 @@ class RealtimeClientPresence: QuickSpec {
                             expect(presence.clientId).to(equal("user11"))
                             done()
                         }
-                        clientMembers?.channels.get("foo").presence.leaveClient("user11", data: nil)
+                        clientMembers?.channels.get(channelName).presence.leaveClient("user11", data: nil)
                     }
 
                     expect(channel.presenceMap.members.filter{ _, presence in presence.memberKey() == user11MemberKey }).to(beEmpty())
@@ -2161,18 +2173,19 @@ class RealtimeClientPresence: QuickSpec {
                 // RTP2f
                 it("if a SYNC is in progress, then when a presence message with an action of LEAVE arrives, it should be stored in the presence map with the action set to ABSENT") {
                     let options = AblyTests.commonAppSetup()
+                    let channelName = NSUUID().uuidString
 
                     var clientMembers: ARTRealtime?
                     defer { clientMembers?.dispose(); clientMembers?.close() }
                     waitUntil(timeout: testTimeout) { done in
-                        clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 20, options: options) {
+                        clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 20, options: options) {
                             done()
                         }
                     }
 
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
-                    let channel = client.channels.get("foo")
+                    let channel = client.channels.get(channelName)
                     channel.attach()
 
                     guard let transport = client.transport as? TestProxyTransport else {
@@ -2225,7 +2238,8 @@ class RealtimeClientPresence: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
-                    let channel = client.channels.get("foo")
+                    let channelName = NSUUID().uuidString
+                    let channel = client.channels.get(channelName)
 
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
@@ -2475,7 +2489,8 @@ class RealtimeClientPresence: QuickSpec {
 
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
-                    let channel = client.channels.get("foo")
+                    let channelName = NSUUID().uuidString
+                    let channel = client.channels.get(channelName)
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.leave(nil) { error in
@@ -2823,12 +2838,13 @@ class RealtimeClientPresence: QuickSpec {
                     options.clientId = "a"
                     let clientA = ARTRealtime(options: options)
                     defer { clientA.dispose(); clientA.close() }
-                    let channelA = clientA.channels.get("foo")
+                    let channelName = NSUUID().uuidString
+                    let channelA = clientA.channels.get(channelName)
 
                     options.clientId = "b"
                     let clientB = ARTRealtime(options: options)
                     defer { clientB.dispose(); clientB.close() }
-                    let channelB = clientB.channels.get("foo")
+                    let channelB = clientB.channels.get(channelName)
 
                     // ENTER
                     waitUntil(timeout: testTimeout) { done in
@@ -2949,10 +2965,11 @@ class RealtimeClientPresence: QuickSpec {
                 // RTP17a
                 it("all members belonging to the current connection are published as a PresenceMessage on the Channel by the server irrespective of whether the client has permission to subscribe or the Channel is configured to publish presence events") {
                     let options = AblyTests.commonAppSetup()
-                    options.tokenDetails = getTestTokenDetails(capability: "{\"foo\":[\"presence\",\"publish\"]}")
+                    let channelName = NSUUID().uuidString
+                    options.tokenDetails = getTestTokenDetails(capability: "{\"\(channelName)\":[\"presence\",\"publish\"]}")
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
-                    let channel = client.channels.get("foo")
+                    let channel = client.channels.get(channelName)
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.enterClient("tester", data: nil) { error in
                             expect(error).to(beNil())
@@ -3623,7 +3640,8 @@ class RealtimeClientPresence: QuickSpec {
 
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("foo")
+                        let channelName = NSUUID().uuidString
+                        let channel = client.channels.get(channelName)
 
                         let presenceData: [ARTPresenceMessage] = [
                             ARTPresenceMessage(clientId: "a", action: .enter, connectionId: "one", id: "one:0:0", timestamp: now as Date),
@@ -3678,18 +3696,18 @@ class RealtimeClientPresence: QuickSpec {
                     it("should return members filtered by connectionId") {
                         let options = AblyTests.commonAppSetup()
                         let now = NSDate()
-
+                        let channelName = NSUUID().uuidString
                         var clientMembers: ARTRealtime?
                         defer { clientMembers?.dispose(); clientMembers?.close() }
                         waitUntil(timeout: testTimeout) { done in
-                            clientMembers = AblyTests.addMembersSequentiallyToChannel("foo", members: 101, options: options) {
+                            clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 101, options: options) {
                                 done()
                             }
                         }
 
                         let clientSubscribed = AblyTests.newRealtime(options)
                         defer { clientSubscribed.dispose(); clientSubscribed.close() }
-                        let channelSubscribed = clientSubscribed.channels.get("foo")
+                        let channelSubscribed = clientSubscribed.channels.get(channelName)
 
                         let presenceData: [ARTPresenceMessage] = [
                             ARTPresenceMessage(clientId: "a", action: .enter, connectionId: "one", id: "one:0:0", timestamp: now as Date),
@@ -4099,7 +4117,8 @@ class RealtimeClientPresence: QuickSpec {
                 it("should be present all the registered members on a presence channel") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
-                    let channel = client.channels.get("foo")
+                    let channelName = NSUUID().uuidString
+                    let channel = client.channels.get(channelName)
 
                     let john = "john"
                     let max = "max"
