@@ -2842,7 +2842,8 @@ class RealtimeClientConnection: QuickSpec {
                         }                        
                     }
 
-                    it("should transition to Failed when the token renewal fails and the error should be emitted") {
+                    // RTN15h2
+                    it("should transition to disconnected when the token renewal fails and the error should be emitted") {
                         let options = AblyTests.commonAppSetup()
                         options.disconnectedRetryTimeout = 1.0
                         options.autoConnect = false
@@ -2864,7 +2865,6 @@ class RealtimeClientConnection: QuickSpec {
 
                         client.connect()
                         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-                        weak var firstTransport = client.transport as? TestProxyTransport
 
                         waitUntil(timeout: testTimeout) { done in
                             // Wait for token to expire
@@ -2878,8 +2878,8 @@ class RealtimeClientConnection: QuickSpec {
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            // Renewal will fail
-                            client.connection.once(.failed) { stateChange in
+                            // Renewal will lead to a disconnect (again)
+                            client.connection.once(.disconnected) { stateChange in
                                 guard let error = stateChange?.reason else {
                                     fail("Error is nil"); done(); return
                                 }
@@ -2888,8 +2888,6 @@ class RealtimeClientConnection: QuickSpec {
                                 done()
                             }
                         }
-
-                        expect(client.connection.state).to(equal(ARTRealtimeConnectionState.failed))
                     }
 
                 }
