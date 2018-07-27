@@ -1790,7 +1790,7 @@ class RealtimeClientPresence: QuickSpec {
                                 fail("TestProxyTransport is not set"); return
                             }
 
-                            waitUntil(timeout: testTimeout) { done in
+                            waitUntil(timeout: testTimeout*2) { done in
                                 transport.afterProcessingReceivedMessage = { protocolMessage in
                                     // Receive the first Sync message from Ably service
                                     if protocolMessage.action == .sync {
@@ -2009,7 +2009,7 @@ class RealtimeClientPresence: QuickSpec {
                             fail("TestProxyTransport is not set"); return
                         }
 
-                        waitUntil(timeout: testTimeout) { done in
+                        waitUntil(timeout: testTimeout*2) { done in
                             let partialDone = AblyTests.splitDone(4, done: done)
                             channel.presence.subscribe(.leave) { leave in
                                 expect(leave.clientId).to(equal("user110"))
