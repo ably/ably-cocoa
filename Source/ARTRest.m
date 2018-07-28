@@ -438,6 +438,99 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
+- (BOOL)request:(NSString *)method path:(NSString *)path params:(nullable NSDictionary<NSString *, NSString *> *)params body:(nullable id)body headers:(nullable NSDictionary<NSString *, NSString *> *)headers callback:(void (^)(ARTPaginatedResult<NSDictionary *> *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+ART_TRY_OR_REPORT_CRASH_START(self) {
+    if (callback) {
+        void (^userCallback)(ARTPaginatedResult<id> *, ARTErrorInfo *) = callback;
+        callback = ^(ARTPaginatedResult<id> *r, ARTErrorInfo *e) {
+            ART_EXITING_ABLY_CODE(self);
+            dispatch_async(_userQueue, ^{
+                userCallback(r, e);
+            });
+        };
+    }
+
+    if (![[method lowercaseString] isEqualToString:@"get"] &&
+        ![[method lowercaseString] isEqualToString:@"post"] &&
+        ![[method lowercaseString] isEqualToString:@"patch"] &&
+        ![[method lowercaseString] isEqualToString:@"put"]) {
+        if (errorPtr) {
+            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                            code:ARTCustomRequestErrorInvalidMethod
+                                        userInfo:@{NSLocalizedDescriptionKey:@"Method isn't valid."}];
+        }
+        return NO;
+    }
+
+    if (body &&
+        ![body isKindOfClass:[NSDictionary class]] &&
+        ![body isKindOfClass:[NSArray class]]) {
+        if (errorPtr) {
+            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                            code:ARTCustomRequestErrorInvalidBody
+                                        userInfo:@{NSLocalizedDescriptionKey:@"Body should be a Dictionary or an Array."}];
+        }
+        return NO;
+    }
+
+    if ([[path stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] isEqualToString:@""]) {
+        if (errorPtr) {
+            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                            code:ARTCustomRequestErrorInvalidPath
+                                        userInfo:@{NSLocalizedDescriptionKey:@"Path cannot be empty."}];
+        }
+        return NO;
+    }
+
+    NSURL *url = [NSURL URLWithString:path relativeToURL:self.baseUrl];
+    if (!url) {
+        if (errorPtr) {
+            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                            code:ARTCustomRequestErrorInvalidPath
+                                        userInfo:@{NSLocalizedDescriptionKey:@"Path isn't valid for an URL."}];
+        }
+        return NO;
+    }
+
+    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:url resolvingAgainstBaseURL:YES];
+    __block NSMutableArray<NSURLQueryItem *> *queryItems = nil;
+    [params enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, BOOL *stop) {
+        if (!queryItems) {
+            queryItems = [NSMutableArray new];
+        }
+        [queryItems addObject:[NSURLQueryItem queryItemWithName:key value:value]];
+    }];
+    components.queryItems = queryItems;
+
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
+    request.HTTPMethod = method;
+
+    [headers enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, BOOL *stop) {
+        [request addValue:value forHTTPHeaderField:key];
+    }];
+
+    NSError *encodeError = nil;
+    NSData *bodyData = [self.defaultEncoder encode:body error:&encodeError];
+
+    request.HTTPBody = bodyData;
+    [request setValue:[self.defaultEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
+    if ([[method lowercaseString] isEqualToString:@"post"]) {
+        [request setValue:[NSString stringWithFormat:@"%d", (unsigned int)bodyData.length] forHTTPHeaderField:@"Content-Length"];
+    }
+
+    ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
+        id<ARTEncoder> encoder = [self.encoders objectForKey:response.MIMEType];
+        return [encoder decodeToArray:data error:errorPtr];
+    };
+
+    [self.logger debug:__FILE__ line:__LINE__ message:@"request %@ %@", method, path];
+    dispatch_async(_queue, ^{
+        [ARTPaginatedResult executePaginated:self withRequest:request andResponseProcessor:responseProcessor callback:callback];
+    });
+    return YES;
+} ART_TRY_OR_REPORT_CRASH_END
+}
+
 - (id<ARTCancellable>)internetIsUp:(void (^)(BOOL isUp)) cb {
     NSURL *requestUrl = [NSURL URLWithString:@"http://internet-up.ably-realtime.com/is-the-internet-up.txt"];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];

@@ -35,9 +35,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (ARTEncoderFormat)format;
 - (NSString *)formatAsString;
 
-- (id)decode:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
-- (NSData *)encode:(id)obj error:(NSError *_Nullable *_Nullable)error;
+- (nullable id)decode:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+- (nullable NSData *)encode:(id)obj error:(NSError *_Nullable *_Nullable)error;
 
+/// Decode data to an Array of Dictionaries with AnyObjects.
+///  - One use case could be when the response is an array of JSON Objects.
+- (nullable NSArray<NSDictionary *> *)decodeToArray:(NSData *)data error:(NSError **)error NS_SWIFT_NAME(decodeToArray(_:error:));
 
 // TokenRequest
 - (art_nullable NSData *)encodeTokenRequest:(ARTTokenRequest *)request error:(NSError *_Nullable *_Nullable)error;
