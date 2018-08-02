@@ -213,10 +213,11 @@ class Auth : QuickSpec {
                 }
 
                 // RSA4a
-                it("should transition the connection to the FAILED state when the server responds with a token error and there is no way to renew the token") {
+                it("should transition the connection to the disconnected state when the server responds with a token error and there is no way to renew the token") {
                     let options = AblyTests.clientOptions()
                     options.tokenDetails = getTestTokenDetails(ttl: 0.1)
                     options.autoConnect = false
+                    options.logLevel = .verbose
 
                     // Token will expire, expecting 40142
                     waitUntil(timeout: testTimeout) { done in
@@ -234,15 +235,14 @@ class Auth : QuickSpec {
                     let channel = realtime.channels.get("test")
 
                     waitUntil(timeout: testTimeout) { done in
-                        realtime.connect()
-                        channel.publish("message", data: nil) { error in
-                            guard let error = error else {
+                        realtime.connection.on(.disconnected) {stateChange in
+                            guard let error = stateChange?.reason else {
                                 fail("Error is nil"); done(); return
                             }
                             expect(error.code).to(equal(40142))
-                            expect(realtime.connection.state).to(equal(ARTRealtimeConnectionState.failed))
                             done()
                         }
+                        realtime.connect()
                     }
                 }
 
