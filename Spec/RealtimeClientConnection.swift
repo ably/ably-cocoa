@@ -1962,7 +1962,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
-                it("should transition to Failed when the token renewal fails") {
+                it("should transition to disconnected when the token renewal fails") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let tokenTtl = 3.0
@@ -1982,19 +1982,12 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        let partialDone = AblyTests.splitDone(3, done: done)
+                        let partialDone = AblyTests.splitDone(2, done: done)
                         client.connection.once(.connected) { stateChange in
                             expect(stateChange?.reason).to(beNil())
                             partialDone()
                         }
                         client.connection.once(.disconnected) { stateChange in
-                            guard let reason = stateChange?.reason else {
-                                fail("Reason is nil"); done(); return;
-                            }
-                            expect(reason.code) == 40142
-                            partialDone()
-                        }
-                        client.connection.once(.failed) { stateChange in
                             guard let reason = stateChange?.reason else {
                                 fail("Reason is nil"); done(); return;
                             }
