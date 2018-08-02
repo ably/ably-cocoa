@@ -3749,15 +3749,16 @@ class Auth : QuickSpec {
                 }
 
                 context("when token expires") {
-                    let tokenDuration = 5.0
-                    options.authParams = [URLQueryItem]() as [URLQueryItem]?
-                    options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]) as URLQueryItem)
-                    options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]) as URLQueryItem)
-                    options.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))) as URLQueryItem)
-                    let client = ARTRealtime(options: options)
-                    defer { client.dispose(); client.close() }
 
                     it ("receives a 40142 error from the server") {
+                        let tokenDuration = 5.0
+                        options.authParams = [URLQueryItem]() as [URLQueryItem]?
+                        options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]) as URLQueryItem)
+                        options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]) as URLQueryItem)
+                        options.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))) as URLQueryItem)
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+                        
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.connected) { stateChange in
                                 client.connection.once(.disconnected) { stateChange in
