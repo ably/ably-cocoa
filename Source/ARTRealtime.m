@@ -700,16 +700,16 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         [self onChannelMessage:message];
     } else {
         ARTErrorInfo *error = message.error;
+        if (error.code >= 40140 && error.code < 40150) {
+            [self transition:ARTRealtimeDisconnected withErrorInfo:message.error];
+            return;
+        }
         if ([self shouldRenewToken:&error]) {
             [self.transport close];
             [self transportReconnectWithRenewedToken];
             return;
         }
         [self.connection setId:nil];
-        if (error.code >= 40140 && error.code < 40150) {
-            [self transition:ARTRealtimeDisconnected withErrorInfo:message.error];
-            return;
-        }
         [self transition:ARTRealtimeFailed withErrorInfo:message.error];
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
