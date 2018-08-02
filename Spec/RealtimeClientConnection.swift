@@ -4247,6 +4247,7 @@ class RealtimeClientConnection: QuickSpec {
                 // https://github.com/ably/wiki/issues/22
                 it("should encode and decode fixture messages as expected") {
                     let options = AblyTests.commonAppSetup()
+                    options.useBinaryProtocol = false
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
