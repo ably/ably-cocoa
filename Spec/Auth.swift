@@ -233,16 +233,16 @@ class Auth : QuickSpec {
 
                     let channel = realtime.channels.get("test")
 
-                    waitUntil(timeout: testTimeout) { done in
-                        realtime.connection.on(.failed) {stateChange in
-                            guard let error = stateChange?.reason else {
+                    waitUntil(timeout: testTimeout*2) { done in
+                        realtime.connect()
+                        channel.publish("message", data: nil) { error in
+                            guard let error = error else {
                                 fail("Error is nil"); done(); return
                             }
-                            expect(error.statusCode).to(equal(401))
                             expect(error.code).to(equal(40142))
+                            expect(realtime.connection.state).to(equal(ARTRealtimeConnectionState.failed))
                             done()
                         }
-                        realtime.connect()
                     }
                 }
 
