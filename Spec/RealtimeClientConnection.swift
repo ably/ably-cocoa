@@ -2871,8 +2871,8 @@ class RealtimeClientConnection: QuickSpec {
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            // Renewal will lead to a disconnect (again)
-                            client.connection.once(.disconnected) { stateChange in
+                            // Renewal will lead to a failed connection
+                            client.connection.once(.failed) { stateChange in
                                 guard let error = stateChange?.reason else {
                                     fail("Error is nil"); done(); return
                                 }

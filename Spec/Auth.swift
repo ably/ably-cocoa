@@ -213,7 +213,7 @@ class Auth : QuickSpec {
                 }
 
                 // RSA4a
-                it("should transition the connection to the disconnected state when the server responds with a token error and there is no way to renew the token") {
+                it("should transition the connection to the FAILED state when the server responds with a token error and there is no way to renew the token") {
                     let options = AblyTests.clientOptions()
                     options.tokenDetails = getTestTokenDetails(ttl: 0.1)
                     options.autoConnect = false
@@ -234,10 +234,11 @@ class Auth : QuickSpec {
                     let channel = realtime.channels.get("test")
 
                     waitUntil(timeout: testTimeout) { done in
-                        realtime.connection.on(.disconnected) {stateChange in
+                        realtime.connection.on(.failed) {stateChange in
                             guard let error = stateChange?.reason else {
                                 fail("Error is nil"); done(); return
                             }
+                            expect(error.statusCode).to(equal(401))
                             expect(error.code).to(equal(40142))
                             done()
                         }
@@ -3690,7 +3691,7 @@ class Auth : QuickSpec {
 
                     it("fails to connect with reason 'invalid signature'") {
                         waitUntil(timeout: testTimeout) { done in
-                            client.connection.once(.disconnected) { stateChange in
+                            client.connection.once(.failed) { stateChange in
                                 expect(stateChange!.reason!.code).to(equal(40144))
                                 expect(stateChange!.reason!.description).to(contain("invalid signature"))
                                 done()
