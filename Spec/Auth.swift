@@ -217,7 +217,6 @@ class Auth : QuickSpec {
                     let options = AblyTests.clientOptions()
                     options.tokenDetails = getTestTokenDetails(ttl: 0.1)
                     options.autoConnect = false
-                    options.logLevel = .verbose
 
                     // Token will expire, expecting 40142
                     waitUntil(timeout: testTimeout) { done in
