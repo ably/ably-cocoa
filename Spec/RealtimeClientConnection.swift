@@ -1962,7 +1962,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
-                it("should transition to Failed when the token renewal fails") {
+                it("should transition to disconnected when the token renewal fails") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let tokenTtl = 3.0
@@ -1982,19 +1982,12 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        let partialDone = AblyTests.splitDone(3, done: done)
+                        let partialDone = AblyTests.splitDone(2, done: done)
                         client.connection.once(.connected) { stateChange in
                             expect(stateChange?.reason).to(beNil())
                             partialDone()
                         }
                         client.connection.once(.disconnected) { stateChange in
-                            guard let reason = stateChange?.reason else {
-                                fail("Reason is nil"); done(); return;
-                            }
-                            expect(reason.code) == 40142
-                            partialDone()
-                        }
-                        client.connection.once(.failed) { stateChange in
                             guard let reason = stateChange?.reason else {
                                 fail("Reason is nil"); done(); return;
                             }
@@ -2878,8 +2871,8 @@ class RealtimeClientConnection: QuickSpec {
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            // Renewal will lead to a disconnect (again)
-                            client.connection.once(.disconnected) { stateChange in
+                            // Renewal will lead to a failed connection
+                            client.connection.once(.failed) { stateChange in
                                 guard let error = stateChange?.reason else {
                                     fail("Error is nil"); done(); return
                                 }
@@ -4254,6 +4247,7 @@ class RealtimeClientConnection: QuickSpec {
                 // https://github.com/ably/wiki/issues/22
                 it("should encode and decode fixture messages as expected") {
                     let options = AblyTests.commonAppSetup()
+                    options.useBinaryProtocol = false
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
