@@ -235,7 +235,7 @@ class Auth : QuickSpec {
 
                     let channel = realtime.channels.get("test")
 
-                    waitUntil(timeout: testTimeout) { done in
+                    waitUntil(timeout: testTimeout*2) { done in
                         realtime.connect()
                         channel.publish("message", data: nil) { error in
                             guard let error = error else {
@@ -3753,7 +3753,7 @@ class Auth : QuickSpec {
 
                     it("fails to connect with reason 'invalid signature'") {
                         waitUntil(timeout: testTimeout) { done in
-                            client.connection.once(.failed) { stateChange in
+                            client.connection.once(.disconnected) { stateChange in
                                 expect(stateChange!.reason!.code).to(equal(40144))
                                 expect(stateChange!.reason!.description).to(contain("invalid signature"))
                                 done()
@@ -3764,15 +3764,16 @@ class Auth : QuickSpec {
                 }
 
                 context("when token expires") {
-                    let tokenDuration = 5.0
-                    options.authParams = [URLQueryItem]() as [URLQueryItem]?
-                    options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]) as URLQueryItem)
-                    options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]) as URLQueryItem)
-                    options.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))) as URLQueryItem)
-                    let client = ARTRealtime(options: options)
-                    defer { client.dispose(); client.close() }
 
                     it ("receives a 40142 error from the server") {
+                        let tokenDuration = 5.0
+                        options.authParams = [URLQueryItem]() as [URLQueryItem]?
+                        options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]) as URLQueryItem)
+                        options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]) as URLQueryItem)
+                        options.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))) as URLQueryItem)
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+                        
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.connected) { stateChange in
                                 client.connection.once(.disconnected) { stateChange in
@@ -3850,7 +3851,7 @@ class Auth : QuickSpec {
 
                     it("fails to connect") {
                         waitUntil(timeout: testTimeout) { done in
-                            client.connection.once(.failed) { stateChange in
+                            client.connection.once(.disconnected) { stateChange in
                                 expect(stateChange!.reason!.code).to(equal(40144))
                                 expect(stateChange!.reason!.description).to(contain("invalid signature"))
                                 done()

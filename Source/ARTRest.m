@@ -259,7 +259,13 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 
     if ([request isKindOfClass:[NSMutableURLRequest class]]) {
         NSMutableURLRequest *mutableRequest = (NSMutableURLRequest *)request;
-        [mutableRequest setValue:[[self defaultEncoder] mimeType] forHTTPHeaderField:@"Accept"];
+        NSMutableArray *allEncoders = [NSMutableArray arrayWithArray:[_encoders.allValues valueForKeyPath:@"mimeType"]];
+        NSString *defaultMimetype = [[self defaultEncoder] mimeType];
+        // Make the mime type of the default encoder the first element of the Accept header field
+        [allEncoders removeObject:defaultMimetype];
+        [allEncoders insertObject:defaultMimetype atIndex:0];
+        NSString *accept = [allEncoders componentsJoinedByString:@","];
+        [mutableRequest setValue:accept forHTTPHeaderField:@"Accept"];
         [mutableRequest setValue:[ARTDefault version] forHTTPHeaderField:@"X-Ably-Version"];
         [mutableRequest setValue:[ARTDefault libraryVersion] forHTTPHeaderField:@"X-Ably-Lib"];
         [mutableRequest setTimeoutInterval:_options.httpRequestTimeout];

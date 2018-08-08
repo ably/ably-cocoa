@@ -997,6 +997,7 @@ class RestClientChannel: QuickSpec {
             // RSL6b
             it("should deliver with encoding attribute set indicating the residual encoding and error should be emitted") {
                 let options = AblyTests.commonAppSetup()
+                options.useBinaryProtocol = false
                 options.logHandler = ARTLog(capturingOutput: true)
                 let client = ARTRest(options: options)
                 let channelOptions = ARTChannelOptions(cipher: ["key":ARTCrypto.generateRandomKey()] as ARTCipherParamsCompatible)
