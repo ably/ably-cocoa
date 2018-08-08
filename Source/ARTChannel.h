@@ -15,6 +15,7 @@
 @class ARTRest;
 @class ARTChannelOptions;
 @class ARTMessage;
+@class ARTBaseMessage;
 @class ARTPaginatedResult<ItemType>;
 @class ARTDataQuery;
 
@@ -43,6 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)history:(void(^)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
 
+- (BOOL)exceedMaxSize:(NSArray<ARTBaseMessage *> *)messages;
 @end
 
 NS_ASSUME_NONNULL_END

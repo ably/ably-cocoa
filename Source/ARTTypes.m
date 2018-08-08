@@ -175,6 +175,10 @@ NSString *ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event) {
     return (NSDictionary *)json;
 }
 
+- (NSString *)toJSONString {
+    return self;
+}
+
 @end
 
 @implementation NSDictionary (ARTJsonCompatible)
@@ -184,6 +188,16 @@ NSString *ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event) {
         *error = nil;
     }
     return self;
+}
+
+- (NSString *)toJSONString {
+    NSError *err = nil;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:self options:0 error:&err];
+    if (err) {
+        return nil;
+    }
+    NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    return jsonString;
 }
 
 @end
