@@ -547,6 +547,23 @@ public func getEnvironment() -> String {
     return "sandbox"
 }
 
+public func buildMessagesThatExceedMaxMessageSize() -> [ARTMessage] {
+    var messages = [ARTMessage]()
+    for index in 0...5000 {
+        let m = ARTMessage(name: "name-\(index)", data: "data-\(index)")
+        messages.append(m)
+    }
+    return messages
+}
+
+public func buildStringThatExceedMaxMessageSize() -> String {
+    var name = ""
+    for index in 0...10000 {
+        name += "name-\(index)"
+    }
+    return name
+}
+
 class Box<T> {
     let unbox: T
     init(_ value: T) {

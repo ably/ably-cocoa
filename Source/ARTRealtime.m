@@ -632,6 +632,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         case ARTRealtimeConnecting:
             [self.connection setId:message.connectionId];
             [self.connection setKey:message.connectionKey];
+            [self.connection setMaxMessageSize:message.connectionDetails.maxMessageSize];
             if (!_resuming) {
                 [self.connection setSerial:message.connectionSerial];
                 [self.logger debug:@"RT:%p msgSerial of connection \"%@\" has been reset", self, self.connection.id_nosync];

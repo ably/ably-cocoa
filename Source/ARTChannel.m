@@ -15,6 +15,7 @@
 #import "ARTBaseMessage+Private.h"
 #import "ARTDataQuery.h"
 #import "ARTRest+Private.h"
+#import "ARTDefault.h"
 
 @implementation ARTChannel {
     __weak ARTRest *_rest;
@@ -73,6 +74,17 @@
         if (callback) callback([ARTErrorInfo createFromNSError:error]);
         return;
     }
+    
+    // Checked after encoding, so that the client can receive callback with encoding errors
+    if ([self exceedMaxSize:@[message]]) {
+        ARTErrorInfo *sizeError = [ARTErrorInfo createWithCode:40009
+                                                       message:@"maximum message length exceeded"];
+        if (callback) {
+            callback(sizeError);
+        }
+        return;
+    }
+    
     [self internalPostMessages:messagesWithDataEncoded callback:callback];
 }
 
@@ -97,6 +109,17 @@
         if (callback) callback([ARTErrorInfo createFromNSError:error]);
         return;
     }
+    
+    // Checked after encoding, so that the client can receive callback with encoding errors
+    if ([self exceedMaxSize:@[message]]) {
+        ARTErrorInfo *sizeError = [ARTErrorInfo createWithCode:40009
+                                                       message:@"maximum message length exceeded"];
+        if (callback) {
+            callback(sizeError);
+        }
+        return;
+    }
+    
     [self internalPostMessages:messagesWithDataEncoded callback:callback];
 }
 
@@ -106,6 +129,7 @@
 
 - (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
     NSError *error = nil;
+
     NSMutableArray<ARTMessage *> *messagesWithDataEncoded = [NSMutableArray new];
     for (ARTMessage *message in messages) {
         [messagesWithDataEncoded addObject:[self encodeMessageIfNeeded:message error:&error]];
@@ -114,7 +138,26 @@
         callback([ARTErrorInfo createFromNSError:error]);
         return;
     }
+    
+    // Checked after encoding, so that the client can receive callback with encoding errors
+    if ([self exceedMaxSize:messages]) {
+        ARTErrorInfo *sizeError = [ARTErrorInfo createWithCode:40009
+                                                       message:@"maximum message length exceeded"];
+        if (callback) {
+            callback(sizeError);
+        }
+        return;
+    }
+    
     [self internalPostMessages:messagesWithDataEncoded callback:callback];
+}
+
+- (BOOL)exceedMaxSize:(NSArray<ARTBaseMessage *> *)messages {
+    NSInteger size = 0;
+    for (ARTMessage *message in messages) {
+        size += [message messageSize];
+    }
+    return size > [ARTDefault maxMessageSize];
 }
 
 - (ARTMessage *)encodeMessageIfNeeded:(ARTMessage *)message error:(NSError **)error {

@@ -199,6 +199,16 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         if (cb) cb([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
         return;
     }
+    
+    if ([self exceedMaxSize:@[msg]]) {
+        if (cb) {
+            ARTErrorInfo *sizeError = [ARTErrorInfo createWithCode:40009
+                                                           message:@"maximum message length exceeded"];
+            cb(sizeError);
+        }
+        return;
+    }
+    
     _lastPresenceAction = msg.action;
     
     if (msg.data && self.dataEncoder) {
@@ -1115,6 +1125,18 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     }];
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) re-entering local member \"%@\"", _realtime, self, self.name, presence.memberKey];
 } ART_TRY_OR_MOVE_TO_FAILED_END
+}
+
+- (BOOL)exceedMaxSize:(NSArray<ARTBaseMessage *> *)messages {
+    NSInteger size = 0;
+    for (ARTMessage *message in messages) {
+        size += [message messageSize];
+    }
+    NSInteger maxSize = [ARTDefault maxMessageSize];
+    if (self.realtime.connection.maxMessageSize) {
+        maxSize = self.realtime.connection.maxMessageSize;
+    }
+    return size > maxSize;
 }
 
 @end

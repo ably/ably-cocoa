@@ -189,6 +189,7 @@ NSString *generateNonce(void);
 
 @protocol ARTJsonCompatible <NSObject>
 - (NSDictionary *_Nullable)toJSON:(NSError *_Nullable *_Nullable)error;
+- (NSString *_Nullable)toJSONString;
 @end
 
 @interface NSString (ARTEventIdentification) <ARTEventIdentification>

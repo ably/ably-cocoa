@@ -69,4 +69,29 @@
     return description;
 }
 
+- (NSInteger)messageSize {
+    // TO3l8*
+    NSInteger finalResult = 0;
+    finalResult += [self.name lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+    finalResult += [[self.extras toJSONString] lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+    finalResult += [self.clientId lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+    if (self.data) {
+        if ([self.data isKindOfClass:[NSString class]]) {
+            finalResult += [self.data lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+        }
+        else if ([self.data isKindOfClass:[NSData class]]) {
+            finalResult += [self.data length];
+        } else {
+            NSError *error = nil;
+            NSData *jsonData = [NSJSONSerialization dataWithJSONObject:self.data
+                                                               options:NSJSONWritingPrettyPrinted
+                                                                 error:&error];
+            if (!error) {
+                finalResult += [jsonData length];
+            }
+        }
+    }
+    return finalResult;
+}
+
 @end

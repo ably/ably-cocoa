@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setId:(NSString *_Nullable)newId;
 - (void)setKey:(NSString *_Nullable)key;
 - (void)setSerial:(int64_t)serial;
+- (void)setMaxMessageSize:(NSInteger)maxMessageSize;
 - (void)setState:(ARTRealtimeConnectionState)state;
 - (void)setErrorReason:(ARTErrorInfo *_Nullable)errorReason;
 

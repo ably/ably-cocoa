@@ -431,6 +431,30 @@ class Utilities: QuickSpec {
                 }
 
             }
+            
+            context("maxMessageSize") {
+                let data = ["test": "test"]
+                let extras = ["push": ["key": "value"]]
+                let clientId = "clientId"
+                
+                it("calculates maxMessageSize of a Message with name and data") {
+                    let message = ARTMessage(name: "this is name", data: data)
+                    expect(message.messageSize()).to(equal(33))
+                }
+                
+                it("calculates maxMessageSize of a Message with name, data and extras") {
+                    let message = ARTMessage(name: "this is name", data: data)
+                    message.extras = extras as ARTJsonCompatible
+                    expect(message.messageSize()).to(equal(57))
+                }
+                
+                it("calculates maxMessageSize of a Message with name, data, clientId and extras") {
+                    let message = ARTMessage(name: "this is name", data: data)
+                    message.clientId = clientId
+                    message.extras = extras as ARTJsonCompatible
+                    expect(message.messageSize()).to(equal(65))
+                }
+            }
         }
     }
 }

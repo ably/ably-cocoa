@@ -15,6 +15,7 @@
 @class ARTRest;
 @class ARTChannelOptions;
 @class ARTMessage;
+@class ARTBaseMessage;
 @class ARTPaginatedResult<ItemType>;
 @class ARTDataQuery;
 @class ARTLocalDevice;
@@ -47,6 +48,8 @@ NS_ASSUME_NONNULL_BEGIN
 #ifdef TARGET_OS_IOS
 - (ARTLocalDevice *)device;
 #endif
+
+- (BOOL)exceedMaxSize:(NSArray<ARTBaseMessage *> *)messages;
 
 @end
 
