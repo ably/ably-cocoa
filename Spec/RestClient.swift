@@ -1378,8 +1378,42 @@ class RestClient: QuickSpec {
                         done()
                     })
                 })
+            }
+        }
+        
+        // RSL1i
+        context("If the total size of message(s) exceeds the maxMessageSize") {
+            let channelName = "test-message-size"
+            it("the client library should reject the publish and indicate an error") {
+                let options = AblyTests.commonAppSetup()
+                let client = ARTRest(options: options)
+                let channel = client.channels.get(channelName)
+                let messages = buildMessagesThatExceedMaxMessageSize()
                 
+                waitUntil(timeout: testTimeout, action: { done in
+                    channel.publish(messages, callback: { err in
+                        expect(err?.code).to(equal(40009))
+                        expect(err?.message).to(contain("maximum message length exceeded"))
+                        done()
+                    })
+                })
+            }
+            
+            it("also when using publish:data:clientId:extras") {
+                let options = AblyTests.commonAppSetup()
+                let client = ARTRest(options: options)
+                let channel = client.channels.get(channelName)
+                let name = buildStringThatExceedMaxMessageSize()
                 
+                waitUntil(timeout: testTimeout, action: { done in
+                    channel.publish(name, data: nil, extras: nil, callback: {err in
+                        expect(err?.code).to(equal(40009))
+                        expect(err?.message).to(contain("maximum message length exceeded"))
+                        done()
+                    })
+                    
+                    
+                })
             }
         }
     }

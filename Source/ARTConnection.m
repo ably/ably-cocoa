@@ -20,6 +20,7 @@
     _Nonnull dispatch_queue_t _queue;
     NSString *_id;
     NSString *_key;
+    NSInteger _maxMessageSize;
     int64_t _serial;
     ARTRealtimeConnectionState _state;
     ARTErrorInfo *_errorReason;
@@ -132,6 +133,12 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     _serial = serial;
     [ARTSentry setExtras:@"connectionSerial" value: [NSNumber numberWithLongLong:serial]];
+} ART_TRY_OR_MOVE_TO_FAILED_END
+}
+
+- (void)setMaxMessageSize:(NSInteger)maxMessageSize {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
+    _maxMessageSize = maxMessageSize;
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 

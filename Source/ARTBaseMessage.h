@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <Ably/ARTTypes.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -29,7 +30,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic, nullable) id data;
 
+/// The event name, if available
+@property (nullable, readwrite, strong, nonatomic) NSString *name;
+@property (nullable, nonatomic) id<ARTJsonCompatible> extras;
+
 - (NSString *)description;
+
+- (NSInteger)messageSize;
 
 @end
 

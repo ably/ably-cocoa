@@ -12,7 +12,7 @@
 
 - (instancetype)initWithName:(NSString *)name data:(id)data {
     if (self = [self init]) {
-        _name = [name copy];
+        self.name = [name copy];
         if (data) {
             self.data = data;
             self.encoding = @"";
@@ -42,8 +42,8 @@
 
 - (id)copyWithZone:(NSZone *)zone {
     ARTMessage *message = [super copyWithZone:zone];
-    message->_name = self.name;
-    message->_extras = self.extras;
+    message.name = self.name;
+    message.extras = self.extras;
     return message;
 }
 
