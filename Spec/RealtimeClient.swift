@@ -1461,5 +1461,115 @@ class RealtimeClient: QuickSpec {
                 expect(received).toEventually(beTrue(), timeout: testTimeout)
             }
         }
+        
+        // RSL1i
+        context("If the total size of message(s) exceeds the maxMessageSize") {
+            let channelName = "test-message-size"
+            let presenceData = buildStringThatExceedMaxMessageSize()
+            let clientId = "testMessageSizeClientId"
+            
+            it("the client library should reject the publish and indicate an error") {
+                let options = AblyTests.commonAppSetup()
+                let client = ARTRealtime(options: options)
+                let channel = client.channels.get(channelName)
+                let messages = buildMessagesThatExceedMaxMessageSize()
+                
+                waitUntil(timeout: testTimeout, action: { done in
+                    // Wait for connected so that maxMessageSize is loaded from connection details
+                    client.connection.once(.connected) { _ in
+                        channel.publish(messages, callback: { err in
+                            expect(err?.code).to(equal(40009))
+                            expect(err?.message).to(contain("maximum message length exceeded"))
+                            done()
+                        })
+                    }
+                })
+            }
+            
+            it("the client library should reject also presence messages (enter)") {
+                let options = AblyTests.commonAppSetup()
+                options.clientId = clientId
+                let client = ARTRealtime(options: options)
+                let channel = client.channels.get(channelName)
+                
+                waitUntil(timeout: testTimeout, action: { done in
+                    client.connection.once(.connected) { _ in
+                        channel.presence.enter(presenceData, callback: { err in
+                            expect(err?.code).to(equal(40009))
+                            expect(err?.message).to(contain("maximum message length exceeded"))
+                            done()
+                        })
+                    }
+                })
+            }
+            
+            it("the client library should reject also presence messages (leave)") {
+                let options = AblyTests.commonAppSetup()
+                options.clientId = clientId
+                let client = ARTRealtime(options: options)
+                let channel = client.channels.get(channelName)
+                
+                waitUntil(timeout: testTimeout, action: { done in
+                    client.connection.once(.connected) { _ in
+                        channel.presence.leave(presenceData, callback: { err in
+                            expect(err?.code).to(equal(40009))
+                            expect(err?.message).to(contain("maximum message length exceeded"))
+                            done()
+                        })
+                    }
+                })
+            }
+            
+            it("the client library should reject also presence messages (update)") {
+                let options = AblyTests.commonAppSetup()
+                options.clientId = clientId
+                let client = ARTRealtime(options: options)
+                let channel = client.channels.get(channelName)
+                
+                waitUntil(timeout: testTimeout, action: { done in
+                    client.connection.once(.connected) { _ in
+                        channel.presence.update(presenceData, callback: { err in
+                            expect(err?.code).to(equal(40009))
+                            expect(err?.message).to(contain("maximum message length exceeded"))
+                            done()
+                        })
+                    }
+                })
+            }
+            
+            it("the client library should reject also presence messages (updateClient)") {
+                let options = AblyTests.commonAppSetup()
+                options.clientId = clientId
+                let client = ARTRealtime(options: options)
+                let channel = client.channels.get(channelName)
+                
+                waitUntil(timeout: testTimeout, action: { done in
+                    client.connection.once(.connected) { _ in
+                        channel.presence.updateClient(clientId, data: presenceData, callback: { err in
+                            expect(err?.code).to(equal(40009))
+                            expect(err?.message).to(contain("maximum message length exceeded"))
+                            done()
+                        })
+                    }
+                })
+            }
+            
+            it("the client library should reject also presence messages (leaveClient)") {
+                let options = AblyTests.commonAppSetup()
+                options.clientId = clientId
+                let client = ARTRealtime(options: options)
+                let channel = client.channels.get(channelName)
+                
+                waitUntil(timeout: testTimeout, action: { done in
+                    client.connection.once(.connected) { _ in
+                        channel.presence.leaveClient(clientId, data: presenceData, callback: { err in
+                            expect(err?.code).to(equal(40009))
+                            expect(err?.message).to(contain("maximum message length exceeded"))
+                            done()
+                        })
+                    }
+                })
+            }
+        }
     }
 }
