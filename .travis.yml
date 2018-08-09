@@ -19,7 +19,7 @@ install:
   # Carthage
   - carthage bootstrap --platform iOS
   # Update fastlane
-  - gem install fastlane -v '2.100.1'
+  - gem update fastlane
 before_script:
   - xcrun simctl erase all
 script:
