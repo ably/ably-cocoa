@@ -540,11 +540,11 @@ public func delay(_ seconds: TimeInterval, closure: @escaping ()->()) {
 }
 
 public func getEnvironment() -> String {
-    let b = Bundle(for: AblyTests.self)
-    if let env = b.infoDictionary!["ABLY_ENV"] as? String {
-        return env
+    let b = Bundle(for: AblyTests.self)    
+    guard let env = b.infoDictionary!["ABLY_ENV"] as? String, env.count > 0 else {
+        return "sandbox"
     }
-    return "sandbox"
+    return env
 }
 
 public func buildMessagesThatExceedMaxMessageSize() -> [ARTMessage] {
