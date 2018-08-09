@@ -282,7 +282,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
                         expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
                         expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.flatMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
+                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
                         expect(requests).to(haveCount(1))
                         guard let request = httpExecutor.requests.first else {
                             fail("should have a \"/push/deviceRegistrations\" request"); return
@@ -328,7 +328,7 @@ class PushActivationStateMachine : QuickSpec {
 
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
                         expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.flatMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
+                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
                         expect(requests).to(haveCount(1))
                         guard let request = httpExecutor.requests.first else {
                             fail("should have a \"/push/deviceRegistrations\" request"); return
@@ -558,7 +558,7 @@ class PushActivationStateMachine : QuickSpec {
 
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
                         expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.flatMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
+                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
                         expect(requests).to(haveCount(1))
                         guard let request = httpExecutor.requests.first else {
                             fail("should have a \"/push/deviceRegistrations\" request"); return
@@ -606,7 +606,7 @@ class PushActivationStateMachine : QuickSpec {
 
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
                         expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.flatMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
+                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
                         expect(requests).to(haveCount(1))
                         guard let request = httpExecutor.requests.first else {
                             fail("should have a \"/push/deviceRegistrations\" request"); return
@@ -646,7 +646,7 @@ class PushActivationStateMachine : QuickSpec {
 
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
                         expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.flatMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
+                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
                         expect(requests).to(haveCount(1))
                         guard let request = httpExecutor.requests.first else {
                             fail("should have a \"/push/deviceRegistrations\" request"); return
@@ -828,7 +828,7 @@ class PushActivationStateMachine : QuickSpec {
 
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
                         expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.flatMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(stateMachine.rest.device.id)" })
+                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(stateMachine.rest.device.id)" })
                         expect(requests).to(haveCount(1))
                         guard let request = httpExecutor.requests.first else {
                             fail("should have a \"/push/deviceRegistrations\" request"); return
@@ -880,7 +880,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
                         expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
                         expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.flatMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(stateMachine.rest.device.id)" })
+                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(stateMachine.rest.device.id)" })
                         expect(requests).to(haveCount(1))
                         guard let request = httpExecutor.requests.first else {
                             fail("should have a \"/push/deviceRegistrations\" request"); return
@@ -1015,7 +1015,7 @@ class PushActivationStateMachine : QuickSpec {
 
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
                         expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.flatMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(stateMachine.rest.device.id)" })
+                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(stateMachine.rest.device.id)" })
                         expect(requests).to(haveCount(1))
                         guard let request = httpExecutor.requests.first else {
                             fail("should have a \"/push/deviceRegistrations\" request"); return
@@ -1066,7 +1066,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
                         expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
                         expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.flatMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(stateMachine.rest.device.id)" })
+                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(stateMachine.rest.device.id)" })
                         expect(requests).to(haveCount(1))
                         guard let request = httpExecutor.requests.first else {
                             fail("should have a \"/push/deviceRegistrations\" request"); return
@@ -1194,7 +1194,7 @@ class PushActivationStateMachine : QuickSpec {
 
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
                         expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.flatMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
+                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
                         expect(requests).to(haveCount(1))
                         guard let request = httpExecutor.requests.first else {
                             fail("should have a \"/push/deviceRegistrations\" request"); return
@@ -1240,7 +1240,7 @@ class PushActivationStateMachine : QuickSpec {
 
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
                         expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.flatMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
+                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
                         expect(requests).to(haveCount(1))
                         guard let request = httpExecutor.requests.first else {
                             fail("should have a \"/push/deviceRegistrations\" request"); return
@@ -1279,7 +1279,7 @@ class PushActivationStateMachine : QuickSpec {
 
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
                         expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.flatMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
+                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
                         expect(requests).to(haveCount(1))
                         guard let request = httpExecutor.requests.first else {
                             fail("should have a \"/push/deviceRegistrations\" request"); return
