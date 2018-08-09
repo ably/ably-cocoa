@@ -69,7 +69,7 @@ PODS:
   - SAMKeychain (1.5.3)
   - SocketRocket (0.5.1)
   - SwiftyJSON (3.1.4)
-  - ULID (1.0.2)
+  - ULID (1.0.3)
 
 DEPENDENCIES:
   - Aspects
@@ -80,7 +80,7 @@ DEPENDENCIES:
   - SAMKeychain (= 1.5.3)
   - SocketRocket (= 0.5.1)
   - SwiftyJSON (= 3.1.4)
-  - ULID (= 1.0.2)
+  - ULID (= 1.0.3)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
@@ -103,7 +103,7 @@ SPEC CHECKSUMS:
   SAMKeychain: 483e1c9f32984d50ca961e26818a534283b4cd5c
   SocketRocket: d57c7159b83c3c6655745cd15302aa24b6bae531
   SwiftyJSON: c2842d878f95482ffceec5709abc3d05680c0220
-  ULID: fcabaa95746b670beb80c029beb3372da2f729bd
+  ULID: d583a374311df11a7eeecbfd3ce68d02339ce24d
 
 PODFILE CHECKSUM: ed88c4827f19a3b24bccd5e50f645257652ad393
 
