@@ -72,7 +72,6 @@
 - (NSInteger)messageSize {
     // TO3l8*
     NSInteger finalResult = 0;
-    finalResult += [self.name lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
     finalResult += [[self.extras toJSONString] lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
     finalResult += [self.clientId lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
     if (self.data) {
