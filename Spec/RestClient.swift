@@ -1001,7 +1001,7 @@ class RestClient: QuickSpec {
                         let extractHostname = { (request: URLRequest) in
                             NSRegularExpression.extract(request.url!.absoluteString, pattern: "[a-e].ably-realtime.com")
                         }
-                        let resultFallbackHosts = testHTTPExecutor.requests.flatMap(extractHostname)
+                        let resultFallbackHosts = testHTTPExecutor.requests.compactMap(extractHostname)
                         let expectedFallbackHosts = Array(expectedHostOrder.map({ ARTDefault.fallbackHosts()[$0] })[0..<Int(options.httpMaxRetryCount)])
 
                         expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
@@ -1033,7 +1033,7 @@ class RestClient: QuickSpec {
                         let extractHostname = { (request: URLRequest) in
                             NSRegularExpression.extract(request.url!.absoluteString, pattern: "[f-j].ably-realtime.com")
                         }
-                        let resultFallbackHosts = testHTTPExecutor.requests.flatMap(extractHostname)
+                        let resultFallbackHosts = testHTTPExecutor.requests.compactMap(extractHostname)
                         let expectedFallbackHosts = expectedHostOrder.map { customFallbackHosts[$0] }
                         
                         expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
@@ -1059,7 +1059,7 @@ class RestClient: QuickSpec {
                         let extractHostname = { (request: URLRequest) in
                             NSRegularExpression.extract(request.url!.absoluteString, pattern: "[a-e].ably-realtime.com")
                         }
-                        let resultFallbackHosts = testHTTPExecutor.requests.flatMap(extractHostname)
+                        let resultFallbackHosts = testHTTPExecutor.requests.compactMap(extractHostname)
                         let expectedFallbackHosts = expectedHostOrder.map { ARTDefault.fallbackHosts()[$0] }
 
                         expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
@@ -1096,7 +1096,7 @@ class RestClient: QuickSpec {
                         let extractHostname = { (request: URLRequest) in
                             NSRegularExpression.extract(request.url!.absoluteString, pattern: "[f-j].ably-realtime.com")
                         }
-                        let resultFallbackHosts = testHTTPExecutor.requests.flatMap(extractHostname)
+                        let resultFallbackHosts = testHTTPExecutor.requests.compactMap(extractHostname)
                         let expectedFallbackHosts = Array(expectedHostOrder.map({ _fallbackHosts[$0] })[0..<Int(options.httpMaxRetryCount)])
                         
                         expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
@@ -1124,7 +1124,7 @@ class RestClient: QuickSpec {
                         let extractHostname = { (request: URLRequest) in
                             NSRegularExpression.extract(request.url!.absoluteString, pattern: "[f-j].ably-realtime.com")
                         }
-                        let resultFallbackHosts = testHTTPExecutor.requests.flatMap(extractHostname)
+                        let resultFallbackHosts = testHTTPExecutor.requests.compactMap(extractHostname)
                         let expectedFallbackHosts = expectedHostOrder.map { _fallbackHosts[$0] }
                         
                         expect(resultFallbackHosts).to(equal(expectedFallbackHosts))

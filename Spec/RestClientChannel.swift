@@ -399,7 +399,7 @@ class RestClientChannel: QuickSpec {
                     expect(result.hasNext).to(beTrue())
                     expect(result.isLast).to(beFalse())
                     expect(result.items).to(haveCount(2))
-                    let items = result.items.flatMap({ $0.data as? String })
+                    let items = result.items.compactMap({ $0.data as? String })
                     expect(items.first).to(equal("m1"))
                     expect(items.last).to(equal("m2"))
 
@@ -411,7 +411,7 @@ class RestClientChannel: QuickSpec {
                         expect(result.hasNext).to(beTrue())
                         expect(result.isLast).to(beFalse())
                         expect(result.items).to(haveCount(2))
-                        let items = result.items.flatMap({ $0.data as? String })
+                        let items = result.items.compactMap({ $0.data as? String })
                         expect(items.first).to(equal("m3"))
                         expect(items.last).to(equal("m4"))
 
@@ -423,7 +423,7 @@ class RestClientChannel: QuickSpec {
                             expect(result.hasNext).to(beFalse())
                             expect(result.isLast).to(beTrue())
                             expect(result.items).to(haveCount(1))
-                            let items = result.items.flatMap({ $0.data as? String })
+                            let items = result.items.compactMap({ $0.data as? String })
                             expect(items.first).to(equal("m5"))
 
                             result.first { result, error in
@@ -434,7 +434,7 @@ class RestClientChannel: QuickSpec {
                                 expect(result.hasNext).to(beTrue())
                                 expect(result.isLast).to(beFalse())
                                 expect(result.items).to(haveCount(2))
-                                let items = result.items.flatMap({ $0.data as? String })
+                                let items = result.items.compactMap({ $0.data as? String })
                                 expect(items.first).to(equal("m1"))
                                 expect(items.last).to(equal("m2"))
                             }
@@ -497,7 +497,7 @@ class RestClientChannel: QuickSpec {
                                 fail("PaginatedResult has no items"); done()
                                 return
                             }
-                            let messageItems = items.flatMap({ $0.data as? String })
+                            let messageItems = items.compactMap({ $0.data as? String })
                             expect(messageItems.first).to(equal("message2"))
                             expect(messageItems.last).to(equal("message1"))
                             done()
@@ -559,7 +559,7 @@ class RestClientChannel: QuickSpec {
                                 fail("PaginatedResult has no items"); done()
                                 return
                             }
-                            let messageItems = items.flatMap({ $0.data as? String })
+                            let messageItems = items.compactMap({ $0.data as? String })
                             expect(messageItems.first).to(equal("message1"))
                             expect(messageItems.last).to(equal("message2"))
                             done()
@@ -576,7 +576,7 @@ class RestClientChannel: QuickSpec {
                     expect(query.limit) == 100
                     query.limit = 2
 
-                    let messages = (1...10).flatMap{ ARTMessage(name: nil, data: "message\($0)") }
+                    let messages = (1...10).compactMap{ ARTMessage(name: nil, data: "message\($0)") }
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(messages) { _ in
                             done()
@@ -597,7 +597,7 @@ class RestClientChannel: QuickSpec {
                                 fail("PaginatedResult has no items"); done()
                                 return
                             }
-                            let messageItems = items.flatMap({ $0.data as? String })
+                            let messageItems = items.compactMap({ $0.data as? String })
                             expect(messageItems.first).to(equal("message10"))
                             expect(messageItems.last).to(equal("message9"))
                             done()
