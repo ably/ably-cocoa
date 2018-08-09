@@ -59,7 +59,7 @@
         options.environment = @"test";
     }
     else {
-        options.environment = @"sandbox";
+        options.environment = @"push-device-auth-dev";
     }
     if (debug) {
         options.logLevel = ARTLogLevelVerbose;
@@ -152,7 +152,7 @@
 
 + (ARTClientOptions *)clientOptions {
     ARTClientOptions* options = [[ARTClientOptions alloc] init];
-    options.environment = @"sandbox";
+    options.environment = @"push-device-auth-dev";
     return options;
 }
 

@@ -13,12 +13,14 @@
 
 @class ARTRest;
 @class ARTRestPresence;
+@class ARTPushChannel;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRestChannel : ARTChannel
 
-@property (readonly, getter=getPresence) ARTRestPresence *presence;
+@property (readonly) ARTRestPresence *presence;
+@property (readonly) ARTPushChannel *push;
 
 - (BOOL)history:(nullable ARTDataQuery *)query callback:(void(^)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback error:(NSError *_Nullable *_Nullable)errorPtr;
 

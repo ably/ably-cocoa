@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "CompatibilityMacros.h"
 
 #import <Ably/ARTStatus.h>
 #import <Ably/ARTEventEmitter.h>
@@ -21,6 +22,13 @@
 @class ARTTokenDetails;
 @class ARTPaginatedResult<ItemType>;
 @class ARTStats;
+
+// More context
+typedef NSDictionary<NSString *, id> ARTJsonObject;
+typedef NSString ARTDeviceId;
+typedef NSString ARTDeviceSecret;
+typedef NSData ARTDeviceToken;
+typedef ARTJsonObject ARTPushRecipient;
 
 typedef NS_ENUM(NSUInteger, ARTAuthentication) {
     ARTAuthenticationOff,
@@ -103,6 +111,9 @@ NSString *_Nonnull ARTChannelEventToStr(ARTChannelEvent event);
 typedef NS_ENUM(NSInteger, ARTDataQueryError) {
     ARTDataQueryErrorLimit = 1,
     ARTDataQueryErrorTimestampRange = 2,
+    ARTDataQueryErrorMissingRequiredFields = 3,
+    ARTDataQueryErrorInvalidParameters = 4,
+    ARTDataQueryErrorDeviceInactive = 5,
 };
 
 typedef NS_ENUM(NSInteger, ARTRealtimeHistoryError) {
@@ -187,10 +198,29 @@ NSString *generateNonce(void);
 @interface NSString (ARTJsonCompatible) <ARTJsonCompatible>
 @end
 
+@interface NSString (Utilities)
+- (NSString *)shortString;
+- (NSString *)base64Encoded;
+@end
+
+@interface NSDate (Utilities)
++ (NSDate *)dateWithMillisecondsSince1970:(uint64_t)msecs;
+@end
+
 @interface NSDictionary (ARTJsonCompatible) <ARTJsonCompatible>
 @end
 
 @interface NSURL (ARTLog)
+@end
+
+@interface NSDictionary (URLQueryItemAdditions)
+@property (nonatomic, readonly) NSArray<NSURLQueryItem *> *asURLQueryItems;
+@end
+
+@interface NSMutableArray (QueueAdditions)
+- (void)enqueue:(id)object;
+- (id)dequeue;
+- (id)peek;
 @end
 
 NS_ASSUME_NONNULL_END

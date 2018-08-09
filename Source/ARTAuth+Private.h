@@ -78,6 +78,8 @@ NS_ASSUME_NONNULL_BEGIN
 // Private TimeOffset setter for testing only
 - (void)setTimeOffset:(NSTimeInterval)offset;
 
+- (NSString *_Nullable)clientId;
+
 - (NSString *_Nullable)appId;
 
 @end
@@ -87,6 +89,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTEvent (AuthorizationState)
 - (instancetype)initWithAuthorizationState:(ARTAuthorizationState)value;
 + (instancetype)newWithAuthorizationState:(ARTAuthorizationState)value;
+
 @end
 
 NS_ASSUME_NONNULL_END

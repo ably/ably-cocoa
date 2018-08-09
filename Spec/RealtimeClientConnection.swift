@@ -3463,7 +3463,7 @@ class RealtimeClientConnection: QuickSpec {
                     defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
                     ARTDefault.setRealtimeRequestTimeout(1.0)
 
-                    let testHttpExecutor = TestProxyHTTPExecutor()
+                    let testHttpExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.rest.httpExecutor = testHttpExecutor
 
                     client.setTransport(TestProxyTransport.self)
@@ -3517,7 +3517,7 @@ class RealtimeClientConnection: QuickSpec {
                     defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
                     ARTDefault.setRealtimeRequestTimeout(1.0)
 
-                    let testHttpExecutor = TestProxyHTTPExecutor()
+                    let testHttpExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.rest.httpExecutor = testHttpExecutor
                     
                     client.setTransport(TestProxyTransport.self)
@@ -3564,7 +3564,7 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: options)
                     let channel = client.channels.get("test")
                     
-                    let testHttpExecutor = TestProxyHTTPExecutor()
+                    let testHttpExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.rest.httpExecutor = testHttpExecutor
                     
                     client.setTransport(TestProxyTransport.self)
@@ -3599,7 +3599,7 @@ class RealtimeClientConnection: QuickSpec {
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
 
-                    let testHttpExecutor = TestProxyHTTPExecutor()
+                    let testHttpExecutor = TestProxyHTTPExecutor(options.logHandler)
                     client.rest.httpExecutor = testHttpExecutor
 
                     client.setTransport(TestProxyTransport.self)

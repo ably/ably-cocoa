@@ -13,11 +13,12 @@
 
 @protocol ARTEncoder;
 @protocol ARTHTTPExecutor;
+@protocol ARTDeviceStorage;
 
 NS_ASSUME_NONNULL_BEGIN
 
 /// ARTRest private methods that are used internally and for whitebox testing
-@interface ARTRest ()
+@interface ARTRest () <ARTHTTPAuthenticatedExecutor>
 
 @property (nonatomic, strong, readonly) ARTClientOptions *options;
 @property (nonatomic, weak, nullable) ARTRealtime *realtime;
@@ -29,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, strong, atomic, nullable) NSString *prioritizedHost;
 
 @property (nonatomic, weak) id<ARTHTTPExecutor> httpExecutor;
+@property (nonatomic) id<ARTDeviceStorage> storage;
 
 @property (nonatomic, readonly, getter=getBaseUrl) NSURL *baseUrl;
 
@@ -58,6 +60,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)onUncaughtException:(NSException *)e;
 - (void)reportUncaughtException:(NSException *_Nullable)exception;
 - (void)forceReport:(NSString *)message exception:(NSException *_Nullable)e;
+
+- (void)resetDeviceOnceToken;
 
 @end
 

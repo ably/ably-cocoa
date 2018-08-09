@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (id<AspectToken>)testSuite_getReturnValueFrom:(SEL)selector callback:(void (^)(id))callback;
 
 /// Get argument at index from the identified instance method.
-- (void)testSuite_getArgumentFrom:(SEL)selector atIndex:(NSInteger)index callback:(void (^)(id))callback;
+- (id<AspectToken>)testSuite_getArgumentFrom:(SEL)selector atIndex:(NSInteger)index callback:(void (^)(id))callback;
 
 /// Change the returning value using a date from the identified instance method.
 - (id<AspectToken>)testSuite_returnValueFor:(SEL)selector withDate:(NSDate *)value;

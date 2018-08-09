@@ -80,12 +80,7 @@ NSString *WebSocketStateToStr(SRReadyState state);
         if ([decodedObject isKindOfClass:[ARTProtocolMessage class]]) {
             [_protocolMessagesLogger info:@"send %@", [decodedObject description]];
         }
-        #if COCOAPODS
         [self.websocket send:data];
-        #else
-        // https://github.com/facebook/SocketRocket/issues/542
-        [self.websocket sendData:data error:nil];
-        #endif
         return true;
     }
     else {

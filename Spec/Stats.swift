@@ -16,7 +16,6 @@ class Stats: QuickSpec {
     override func spec() {
         describe("Stats") {
             let encoder = ARTJsonLikeEncoder()
-            encoder.delegate = ARTJsonEncoder()
 
             // TS6
             for attribute in ["all", "persisted"] {

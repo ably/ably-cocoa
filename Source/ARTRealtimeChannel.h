@@ -19,12 +19,19 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class ARTRealtimePresence;
+#ifdef TARGET_OS_IPHONE
+@class ARTPushChannel;
+#endif
 
 @interface ARTRealtimeChannel : ARTChannel
 
 @property (readwrite, assign, nonatomic) ARTRealtimeChannelState state;
 @property (readonly, strong, nonatomic, nullable) ARTErrorInfo *errorReason;
-@property (readonly, getter=getPresence) ARTRealtimePresence *presence;
+
+@property (readonly) ARTRealtimePresence *presence;
+#ifdef TARGET_OS_IPHONE
+@property (readonly) ARTPushChannel *push;
+#endif
 
 - (void)attach;
 - (void)attach:(nullable void (^)(ARTErrorInfo *_Nullable))callback;

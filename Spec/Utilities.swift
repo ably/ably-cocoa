@@ -169,7 +169,7 @@ class Utilities: QuickSpec {
                     it("should ignore invalid response payload") {
                         let options = AblyTests.commonAppSetup()
                         let rest = ARTRest(options: options)
-                        let testHTTPExecutor = TestProxyHTTPExecutor()
+                        let testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                         rest.httpExecutor = testHTTPExecutor
                         let channel = rest.channels.get("foo")
 

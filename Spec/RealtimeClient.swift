@@ -174,8 +174,8 @@ class RealtimeClient: QuickSpec {
                     expect(options.restHost).to(equal("test-rest.ably.io"))
                     expect(options.realtimeHost).to(equal("test-realtime.ably.io"))
                     // Extra care
-                    expect(oldRestHost).to(equal("sandbox-rest.ably.io"))
-                    expect(oldRealtimeHost).to(equal("sandbox-realtime.ably.io"))
+                    expect(oldRestHost).to(equal("\(getEnvironment())-rest.ably.io"))
+                    expect(oldRealtimeHost).to(equal("\(getEnvironment())-realtime.ably.io"))
                 }
             }
 

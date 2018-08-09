@@ -18,6 +18,7 @@
 @class ARTBaseMessage;
 @class ARTPaginatedResult<ItemType>;
 @class ARTDataQuery;
+@class ARTLocalDevice;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -44,7 +45,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)history:(void(^)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
 
+#ifdef TARGET_OS_IOS
+- (ARTLocalDevice *)device;
+#endif
+
 - (BOOL)exceedMaxSize:(NSArray<ARTBaseMessage *> *)messages;
+
 @end
 
 NS_ASSUME_NONNULL_END

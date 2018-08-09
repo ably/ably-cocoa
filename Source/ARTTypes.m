@@ -249,3 +249,63 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
             return @"Update"; //7
     }
 }
+
+@implementation NSDictionary (URLQueryItemAdditions)
+
+- (NSArray<NSURLQueryItem *> *)asURLQueryItems {
+    NSMutableArray<NSURLQueryItem *> *items = [NSMutableArray new];
+    for (id key in [self allKeys]) {
+        id value = [self valueForKey:key];
+        if ([key isKindOfClass:[NSString class]] && [value isKindOfClass:[NSString class]]) {
+            [items addObject:[NSURLQueryItem queryItemWithName:key value:value]];
+        }
+    }
+    return items;
+}
+
+@end
+
+@implementation NSMutableArray (QueueAdditions)
+
+- (void)enqueue:(id)object {
+    [self addObject:object];
+}
+
+- (id)dequeue {
+    id item = [self firstObject];
+    if (item) [self removeObjectAtIndex:0];
+    return item;
+
+}
+
+- (id)peek {
+    return [self firstObject];
+}
+
+@end
+
+#pragma mark - NSString (Utilities)
+
+@implementation NSString (Utilities)
+
+- (NSString *)shortString {
+    NSRange stringRange = {0, MIN([self length], 1000)}; //1KB
+    stringRange = [self rangeOfComposedCharacterSequencesForRange:stringRange];
+    return [self substringWithRange:stringRange];
+}
+
+- (NSString *)base64Encoded {
+    return encodeBase64(self);
+}
+
+@end
+
+#pragma mark - NSDate (Utilities)
+
+@implementation NSDate (Utilities)
+
++ (NSDate *)dateWithMillisecondsSince1970:(uint64_t)msecs {
+    return [NSDate dateWithTimeIntervalSince1970:millisecondsToTimeInterval(msecs)];
+}
+
+@end

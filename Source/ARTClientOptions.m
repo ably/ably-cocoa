@@ -35,6 +35,7 @@ NSString *const ARTDefaultProduction = @"production";
     _autoConnect = true;
     _tls = YES;
     _logLevel = ARTLogLevelNone;
+    _logHandler = [[ARTLog alloc] init];
     _disconnectedRetryTimeout = 15.0; //Seconds
     _suspendedRetryTimeout = 30.0; //Seconds
     _channelRetryTimeout = 15.0; //Seconds
@@ -47,6 +48,7 @@ NSString *const ARTDefaultProduction = @"production";
     _logExceptionReportingUrl = @"https://765e1fcaba404d7598d2fd5a2a43c4f0:8d469b2b0fb34c01a12ae217931c4aed@errors.ably.io/3";
     _dispatchQueue = dispatch_get_main_queue();
     _internalDispatchQueue = dispatch_queue_create("io.ably.main", DISPATCH_QUEUE_SERIAL);
+    _pushFullWait = false;
     return self;
 }
 
@@ -124,7 +126,8 @@ NSString *const ARTDefaultProduction = @"production";
     options.logExceptionReportingUrl = self.logExceptionReportingUrl;
     options.dispatchQueue = self.dispatchQueue;
     options.internalDispatchQueue = self.internalDispatchQueue;
-    
+    options.pushFullWait = self.pushFullWait;
+
     return options;
 }
 
