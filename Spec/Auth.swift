@@ -2826,7 +2826,15 @@ class Auth : QuickSpec {
 
                     let encoder = ARTJsonLikeEncoder()
                     encoder.delegate = ARTJsonEncoder()
-                    guard let tokenRequestJSON = String(data: try! encoder.encode(tokenRequest), encoding: .utf8) else {
+                    let encodedTokenRequest: Data
+                    do {
+                        encodedTokenRequest = try encoder.encode(tokenRequest)
+                    }
+                    catch {
+                        fail("Encode failure: \(error)")
+                        return
+                    }
+                    guard let tokenRequestJSON = String(data: encodedTokenRequest, encoding: .utf8) else {
                         XCTFail("JSON Token Request is empty")
                         return
                     }
