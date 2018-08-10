@@ -27,7 +27,7 @@ class RestClient: QuickSpec {
                     channel.publish(nil, data: "message") { error in
                         expect(error).to(beNil())
                         let version = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["X-Ably-Version"]
-                        expect(version).to(equal("1.0"))
+                        expect(version).to(equal(ARTDefault.version()))
                         done()
                     }
                 }
