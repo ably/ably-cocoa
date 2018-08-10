@@ -1,7 +1,38 @@
 # Change Log
 
-## [1.0.14](https://github.com/ably/ably-ios/tree/1.0.14)
+## [1.1.0](https://github.com/ably/ably-ios/tree/1.1.0) (2018-08-10)
 
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.0.14...1.1.0)
+
+**Implemented enhancements:**
+
+- Upgrade to Xcode 9.4 [\#721](https://github.com/ably/ably-ios/issues/721)
+- Update Swift to version 4.1 [\#716](https://github.com/ably/ably-ios/issues/716)
+- Update protocol version to 1.1 [\#777](https://github.com/ably/ably-ios/pull/777)
+- Update push API and push device authentication [\#761](https://github.com/ably/ably-ios/pull/761) ([funkyboy](https://github.com/funkyboy))
+- Add max message size [\#759](https://github.com/ably/ably-ios/pull/759) ([funkyboy](https://github.com/funkyboy))
+
+**Merged pull requests:**
+
+- Update Cocoapods version [\#755](https://github.com/ably/ably-ios/pull/755) ([funkyboy](https://github.com/funkyboy))
+- Fix some JWT tests [\#753](https://github.com/ably/ably-ios/pull/753) ([funkyboy](https://github.com/funkyboy))
+- Add rtn15h2 [\#752](https://github.com/ably/ably-ios/pull/752) ([funkyboy](https://github.com/funkyboy))
+- Fix flaky presence tests [\#751](https://github.com/ably/ably-ios/pull/751) ([funkyboy](https://github.com/funkyboy))
+- Add rsa4e [\#750](https://github.com/ably/ably-ios/pull/750) ([funkyboy](https://github.com/funkyboy))
+- Add rsa4d [\#748](https://github.com/ably/ably-ios/pull/748) ([funkyboy](https://github.com/funkyboy))
+- Add tp3a test [\#747](https://github.com/ably/ably-ios/pull/747) ([funkyboy](https://github.com/funkyboy))
+- Add test for RTE6a [\#746](https://github.com/ably/ably-ios/pull/746) ([funkyboy](https://github.com/funkyboy))
+- Add test for TM2a [\#744](https://github.com/ably/ably-ios/pull/744) ([funkyboy](https://github.com/funkyboy))
+- Set the Accept http header to the mime type of the selected encoder [\#743](https://github.com/ably/ably-ios/pull/743) ([funkyboy](https://github.com/funkyboy))
+- Add cd2c [\#742](https://github.com/ably/ably-ios/pull/742) ([funkyboy](https://github.com/funkyboy))
+- Add ABLY\_ENV support [\#740](https://github.com/ably/ably-ios/pull/740) ([funkyboy](https://github.com/funkyboy))
+- Update ref to ably-common [\#739](https://github.com/ably/ably-ios/pull/739) ([funkyboy](https://github.com/funkyboy))
+- Build Carthage dependencies only for iOS [\#738](https://github.com/ably/ably-ios/pull/738) ([funkyboy](https://github.com/funkyboy))
+- Push missing tests [\#722](https://github.com/ably/ably-ios/pull/722) ([ricardopereira](https://github.com/ricardopereira))
+- Push Activation State Machine missing tests [\#720](https://github.com/ably/ably-ios/pull/720) ([ricardopereira](https://github.com/ricardopereira))
+- Push Channels tests [\#708](https://github.com/ably/ably-ios/pull/708) ([ricardopereira](https://github.com/ricardopereira))
+
+## [1.0.14](https://github.com/ably/ably-ios/tree/1.0.14) (2018-06-18)
 [Full Changelog](https://github.com/ably/ably-ios/compare/1.0.13...1.0.14)
 
 **Implemented enhancements:**
