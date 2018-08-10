@@ -327,15 +327,17 @@ class RestClientChannel: QuickSpec {
             }
 
             // RSL1h, RSL6a2
-            pending("should provide an optional argument that allows the extras value to be specified") {
-                // TODO: pushenabled doesn't appear to be working.
+            it("should provide an optional argument that allows the extras value to be specified") {
                 let client = ARTRest(options: AblyTests.commonAppSetup())
+                let originalARTChannels_getChannelNamePrefix = ARTChannels_getChannelNamePrefix
+                defer { ARTChannels_getChannelNamePrefix = originalARTChannels_getChannelNamePrefix }
+                ARTChannels_getChannelNamePrefix = nil // Force that channel name is not changed.
                 let channel = client.channels.get("pushenabled:test")
-                let extras = ["push": ["key": "value"]] as ARTJsonCompatible
+                let extras = ["hello": ["key": "value"]] as ARTJsonCompatible
 
                 expect((client.encoders["application/json"] as! ARTJsonLikeEncoder).message(from: [
                     "data": "foo",
-                    "extras": ["push": ["key": "value"]]
+                    "extras": ["hello": ["key": "value"]]
                 ]).extras == extras).to(beTrue())
 
                 waitUntil(timeout: testTimeout) { done in
