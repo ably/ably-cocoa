@@ -333,11 +333,11 @@ class RestClientChannel: QuickSpec {
                 defer { ARTChannels_getChannelNamePrefix = originalARTChannels_getChannelNamePrefix }
                 ARTChannels_getChannelNamePrefix = nil // Force that channel name is not changed.
                 let channel = client.channels.get("pushenabled:test")
-                let extras = ["hello": ["key": "value"]] as ARTJsonCompatible
+                let extras = ["notification": ["title": "Hello from Ably!"]] as ARTJsonCompatible
 
                 expect((client.encoders["application/json"] as! ARTJsonLikeEncoder).message(from: [
                     "data": "foo",
-                    "extras": ["hello": ["key": "value"]]
+                    "extras": ["notification": ["title": "Hello from Ably!"]]
                 ]).extras == extras).to(beTrue())
 
                 waitUntil(timeout: testTimeout) { done in
