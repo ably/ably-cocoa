@@ -40,6 +40,7 @@
 #import "ARTPush+Private.h"
 #import "ARTLocalDevice+Private.h"
 #import "ARTLocalDeviceStorage.h"
+#import "ARTNSMutableRequest+ARTRest.h"
 
 #if COCOAPODS
 #import <KSCrashAblyFork/KSCrash.h>
@@ -259,13 +260,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 
     if ([request isKindOfClass:[NSMutableURLRequest class]]) {
         NSMutableURLRequest *mutableRequest = (NSMutableURLRequest *)request;
-        NSMutableArray *allEncoders = [NSMutableArray arrayWithArray:[_encoders.allValues valueForKeyPath:@"mimeType"]];
-        NSString *defaultMimetype = [[self defaultEncoder] mimeType];
-        // Make the mime type of the default encoder the first element of the Accept header field
-        [allEncoders removeObject:defaultMimetype];
-        [allEncoders insertObject:defaultMimetype atIndex:0];
-        NSString *accept = [allEncoders componentsJoinedByString:@","];
-        [mutableRequest setValue:accept forHTTPHeaderField:@"Accept"];
+        [mutableRequest setAcceptHeader:self.defaultEncoder encoders:self.encoders];
         [mutableRequest setValue:[ARTDefault version] forHTTPHeaderField:@"X-Ably-Version"];
         [mutableRequest setValue:[ARTDefault libraryVersion] forHTTPHeaderField:@"X-Ably-Lib"];
         [mutableRequest setTimeoutInterval:_options.httpRequestTimeout];
@@ -517,6 +512,8 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
     if ([[method lowercaseString] isEqualToString:@"post"]) {
         [request setValue:[NSString stringWithFormat:@"%d", (unsigned int)bodyData.length] forHTTPHeaderField:@"Content-Length"];
     }
+
+    [request setAcceptHeader:self.defaultEncoder encoders:self.encoders];
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
         id<ARTEncoder> encoder = [self.encoders objectForKey:response.MIMEType];

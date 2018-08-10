@@ -38,5 +38,6 @@ framework module Ably {
         header "ARTPushAdmin+Private.h"
         header "ARTPushActivationStateMachine+Private.h"
         header "ARTNSMutableRequest+ARTPush.h"
+        header "ARTNSMutableRequest+ARTRest.h"
     }
 }
