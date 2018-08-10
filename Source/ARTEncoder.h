@@ -36,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)formatAsString;
 
 - (nullable id)decode:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
-- (nullable NSData *)encode:(id)obj error:(NSError *_Nullable *_Nullable)error;
+- (nullable NSData *)encode:(id)obj error:(NSError *_Nullable *_Nullable)error NS_SWIFT_NAME(encode(any:error:));
 
 /// Decode data to an Array of Dictionaries with AnyObjects.
 ///  - One use case could be when the response is an array of JSON Objects.
