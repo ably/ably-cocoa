@@ -317,7 +317,7 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 // RTL2f
-                pending("ChannelStateChange will contain a resumed boolean attribute with value @true@ if the bit flag RESUMED was included") {
+                it("ChannelStateChange will contain a resumed boolean attribute with value @true@ if the bit flag RESUMED was included") {
                     let options = AblyTests.commonAppSetup()
                     options.disconnectedRetryTimeout = 1.0
                     options.tokenDetails = getTestTokenDetails(ttl: 5.0)
@@ -343,22 +343,21 @@ class RealtimeClientChannel: QuickSpec {
                                 fail("Error is nil"); done(); return
                             }
                             expect(error.code) == 40142
-                            done()
+
+                            channel.on { stateChange in
+                                guard let stateChange = stateChange else {
+                                    fail("ChannelStageChange is nil"); done(); return
+                                }
+                                if (stateChange.current == .attached) {
+                                    expect(stateChange.resumed).to(beTrue())
+                                    expect(stateChange.reason).to(beNil())
+                                    expect(stateChange.current).to(equal(ARTRealtimeChannelState.attached))
+                                    expect(stateChange.previous).to(equal(ARTRealtimeChannelState.attached))
+                                    done()
+                                }
+                            }
                         }
                         channel.attach()
-                    }
-
-                    waitUntil(timeout: testTimeout) { done in
-                        channel.once(.attached) { stateChange in
-                            guard let stateChange = stateChange else {
-                                fail("ChannelStageChange is nil"); done(); return
-                            }
-                            expect(stateChange.resumed).to(beTrue())
-                            expect(stateChange.reason).to(beNil())
-                            expect(stateChange.current).to(equal(ARTRealtimeChannelState.attached))
-                            expect(stateChange.previous).to(equal(ARTRealtimeChannelState.attached))
-                            done()
-                        }
                     }
                 }
 
