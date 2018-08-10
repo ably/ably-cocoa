@@ -16,6 +16,11 @@ We do not explicitly maintain compatibility with older platform versions; we no 
 
 If you find any issues with unsupported platform versions, please [raise an issue](https://github.com/ably/ably-ios/issues) in this repository or [contact Ably customer support](https://support.ably.io) for advice.
 
+Note: As of version `1.0.15` this library based on the 1.1 library specification. It implements a subset of 1.1 features:
+- updated push API and push device authentication;
+- support for enforcement of the maxMessageSize attribute
+Other minor features and bugfixes are included, as listed in the [changelog](CHANGELOG.md#1015).
+
 ## Documentation
 
 Visit https://www.ably.io/documentation for a complete API reference and more examples.
