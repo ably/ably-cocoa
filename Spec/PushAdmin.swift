@@ -229,9 +229,14 @@ class PushAdmin : QuickSpec {
                 }
             }
 
-            pending("should work as expected") {
-                let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
+            it("should publish successfully") {
+                let options = AblyTests.commonAppSetup()
+                let realtime = ARTRealtime(options: options)
                 let channel = realtime.channels.get("pushenabled:push_admin_publish-ok")
+                let publishObject = ["transportType": "ablyChannel",
+                                     "channel": channel.name,
+                                     "ablyKey": options.key!,
+                                     "ablyUrl": "https://\(options.restHost)"]
 
                 waitUntil(timeout: testTimeout) { done in
                     channel.attach() { error in
@@ -242,16 +247,14 @@ class PushAdmin : QuickSpec {
 
                 waitUntil(timeout: testTimeout) { done in
                     let partialDone = AblyTests.splitDone(2, done: done)
-                    // FIXME: waiting a response
-                    // https://github.com/ably/ably-ios/issues/669
                     channel.subscribe("__ably_push__") { message in
-                        guard let data = message.data as? NSDictionary else {
-                            fail("Data is not a JSON Object"); partialDone(); return
+                        guard let data = message.data as? String else {
+                            fail("Failure in reading returned data"); partialDone(); return
                         }
-                        expect(data).to(equal(["data": ["foo": "bar"]] as NSDictionary))
+                        expect(data).to(contain("foo"))
                         partialDone()
                     }
-                    realtime.push.admin.publish(["ablyChannel": channel.name], data: ["data": ["foo": "bar"]]) { error in
+                    realtime.push.admin.publish(publishObject, data: ["data": ["foo": "bar"]]) { error in
                         expect(error).to(beNil())
                         partialDone()
                     }
