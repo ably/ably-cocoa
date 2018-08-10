@@ -47,4 +47,9 @@
     return message;
 }
 
+- (NSInteger)messageSize {
+    // TO3l8*
+    return [super messageSize] + [self.name lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+}
+
 @end

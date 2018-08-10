@@ -30,8 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic, nullable) id data;
 
-/// The event name, if available
-@property (nullable, readwrite, strong, nonatomic) NSString *name;
 @property (nullable, nonatomic) id<ARTJsonCompatible> extras;
 
 - (NSString *)description;
