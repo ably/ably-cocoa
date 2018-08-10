@@ -3438,7 +3438,7 @@ class Auth : QuickSpec {
                             fail("timestamp is nil"); done(); return
                         }
                         let firstParamsTimestamp = Double((timestamp as NSDate).artToIntegerMs())
-                        expect(firstParamsTimestamp).to(beCloseTo(now, within: 1.5))
+                        expect(firstParamsTimestamp).to(beCloseTo(now, within: 2.5))
                         delay(0.25) {
                             expect(Double((timestamp as NSDate).artToIntegerMs())).to(equal(firstParamsTimestamp))
                             done()
