@@ -111,7 +111,7 @@ class Utilities: QuickSpec {
 
                         // Garbage values (whatever is on the heap)
                         let bytes = UnsafeMutablePointer<Int>.allocate(capacity: 1)
-                        defer { bytes.deallocate(capacity: 1) }
+                        defer { bytes.deallocate() }
                         let data = NSData(bytes: bytes, length: MemoryLayout<Int>.size)
 
                         waitUntil(timeout: testTimeout) { done in
@@ -175,7 +175,7 @@ class Utilities: QuickSpec {
 
                         // Garbage values (whatever is on the heap)
                         let bytes = UnsafeMutablePointer<Int>.allocate(capacity: 1)
-                        defer { bytes.deallocate(capacity: 1) }
+                        defer { bytes.deallocate() }
                         let data = NSData(bytes: bytes, length: MemoryLayout<Int>.size)
 
                         testHTTPExecutor.simulateIncomingPayloadOnNextRequest(data as Data)

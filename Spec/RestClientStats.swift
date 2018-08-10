@@ -67,7 +67,7 @@ class RestClientStats: QuickSpec {
                     dateComponents.minute = 3
                     let date = calendar.date(from: dateComponents as DateComponents)!
                     let dateFormatter = DateFormatter()
-                    dateFormatter.timeZone = NSTimeZone(name: "UTC") as TimeZone!
+                    dateFormatter.timeZone = NSTimeZone(name: "UTC") as TimeZone?
                     dateFormatter.dateFormat = "YYYY-MM-dd:HH:mm"
                     
                     let statsFixtures: JSON = [
