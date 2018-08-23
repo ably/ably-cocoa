@@ -2235,7 +2235,6 @@ class RealtimeClientConnection: QuickSpec {
                 it("should not receive published messages until the connection reconnects successfully") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
-                    options.disconnectedRetryTimeout = 1.0
 
                     let client1 = ARTRealtime(options: options)
                     defer { client1.close() }
@@ -2636,7 +2635,6 @@ class RealtimeClientConnection: QuickSpec {
                 // RTN15f
                 it("ACK and NACK responses for published messages can only ever be received on the transport connection on which those messages were sent") {
                     let options = AblyTests.commonAppSetup()
-                    options.disconnectedRetryTimeout = 1.5
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
@@ -2684,6 +2682,7 @@ class RealtimeClientConnection: QuickSpec {
                     
                     it("uses a new connection") {
                         client = AblyTests.newRealtime(options)
+                        client.suspendImmediateReconnection = true
                         client.connect()
                         defer { client.close() }
                         
@@ -2713,6 +2712,7 @@ class RealtimeClientConnection: QuickSpec {
                     // RTN15g3
                     it("reattaches to the same channels after a new connection has been established") {
                         client = AblyTests.newRealtime(options)
+                        client.suspendImmediateReconnection = true
                         defer { client.close() }
                         let channelName = "test-reattach-after-ttl"
                         let channel = client.channels.get(channelName)
