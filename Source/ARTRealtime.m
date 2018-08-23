@@ -52,6 +52,7 @@
 @implementation ARTRealtime {
     BOOL _resuming;
     BOOL _renewingToken;
+    BOOL _suspendImmediateReconnection;
     ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_pingEventEmitter;
     NSDate *_startedReconnection;
     NSDate *_lastActivity;
