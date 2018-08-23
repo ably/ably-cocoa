@@ -5,6 +5,7 @@ framework module Ably {
     module * { export * }
 
     explicit module Private {
+        header "ARTConstants.h"
         header "ARTAuth+Private.h"
         header "ARTAuthOptions+Private.h"
         header "ARTBaseMessage+Private.h"
@@ -40,5 +41,7 @@ framework module Ably {
         header "ARTNSMutableRequest+ARTPush.h"
         header "ARTNSMutableRequest+ARTRest.h"
         header "ARTHTTPPaginatedResponse+Private.h"
+        header "ARTNSHTTPURLResponse+ARTPaginated.h"
+        header "ARTNSMutableURLRequest+ARTPaginated.h"
     }
 }
