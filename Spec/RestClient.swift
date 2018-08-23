@@ -1576,6 +1576,7 @@ class RestClient: QuickSpec {
                         let proxyHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                         rest.httpExecutor = proxyHTTPExecutor
 
+                        var httpPaginatedResponse: ARTHTTPPaginatedResponse!
                         waitUntil(timeout: testTimeout) { done in
                             do {
                                 try rest.request("get", path: "/channels/\(channel.name)", params: nil, body: nil, headers: nil) { paginatedResponse, error in
@@ -1595,6 +1596,7 @@ class RestClient: QuickSpec {
                                     expect(paginatedResponse.errorCode) == 0
                                     expect(paginatedResponse.errorMessage).to(beNil())
                                     expect(paginatedResponse.headers).toNot(beEmpty())
+                                    httpPaginatedResponse = paginatedResponse
                                     done()
                                 }
                             }
@@ -1609,7 +1611,8 @@ class RestClient: QuickSpec {
                             return
                         }
 
-                        expect(response.statusCode) == 200
+                        expect(response.statusCode) == httpPaginatedResponse.statusCode
+                        expect(response.allHeaderFields as? [String: String]) == httpPaginatedResponse.headers
                     }
 
                     it("should handle response failures") {
