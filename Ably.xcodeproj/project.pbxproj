@@ -126,6 +126,8 @@
 		D75F49C8205AD525003DE04F /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D75F49C6205AD4D4003DE04F /* SAMKeychain.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D768C6AC1E4B5B0200436011 /* ARTDevicePushDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = D768C6AA1E4B5B0200436011 /* ARTDevicePushDetails.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D768C6AD1E4B5B0200436011 /* ARTDevicePushDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = D768C6AB1E4B5B0200436011 /* ARTDevicePushDetails.m */; };
+		D769E15321270F3400DC5CD1 /* ARTHTTPPaginatedResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = D769E15121270F3400DC5CD1 /* ARTHTTPPaginatedResponse.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D769E15421270F3400DC5CD1 /* ARTHTTPPaginatedResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = D769E15221270F3400DC5CD1 /* ARTHTTPPaginatedResponse.m */; };
 		D77394031C6F6FFE00F5478F /* ARTProtocolMessage+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D77394021C6F6FFE00F5478F /* ARTProtocolMessage+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D777EEE0206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = D777EEDE206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D777EEE1206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = D777EEDF206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.m */; };
@@ -137,6 +139,7 @@
 		D780846E1C68B3E50083009D /* NSObject+TestSuite.m in Sources */ = {isa = PBXBuildFile; fileRef = D780846D1C68B3E50083009D /* NSObject+TestSuite.m */; };
 		D785C4291E549E33008FEC05 /* ARTPushChannelSubscription.h in Headers */ = {isa = PBXBuildFile; fileRef = D785C4271E549E33008FEC05 /* ARTPushChannelSubscription.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D785C42A1E549E33008FEC05 /* ARTPushChannelSubscription.m in Sources */ = {isa = PBXBuildFile; fileRef = D785C4281E549E33008FEC05 /* ARTPushChannelSubscription.m */; };
+		D78D780921271FB10016808B /* ARTHTTPPaginatedResponse+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D78D780821271FB10016808B /* ARTHTTPPaginatedResponse+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D7AE18C91E5B40C900478D82 /* ARTPushAdmin.h in Headers */ = {isa = PBXBuildFile; fileRef = D7AE18C71E5B40C900478D82 /* ARTPushAdmin.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7AE18CA1E5B40C900478D82 /* ARTPushAdmin.m in Sources */ = {isa = PBXBuildFile; fileRef = D7AE18C81E5B40C900478D82 /* ARTPushAdmin.m */; };
 		D7AE18CE1E5B40FE00478D82 /* ARTPushDeviceRegistrations.h in Headers */ = {isa = PBXBuildFile; fileRef = D7AE18CC1E5B40FE00478D82 /* ARTPushDeviceRegistrations.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -369,6 +372,8 @@
 		D75F49C6205AD4D4003DE04F /* SAMKeychain.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SAMKeychain.framework; path = Carthage/Build/iOS/SAMKeychain.framework; sourceTree = "<group>"; };
 		D768C6AA1E4B5B0200436011 /* ARTDevicePushDetails.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTDevicePushDetails.h; sourceTree = "<group>"; };
 		D768C6AB1E4B5B0200436011 /* ARTDevicePushDetails.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDevicePushDetails.m; sourceTree = "<group>"; };
+		D769E15121270F3400DC5CD1 /* ARTHTTPPaginatedResponse.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTHTTPPaginatedResponse.h; sourceTree = "<group>"; };
+		D769E15221270F3400DC5CD1 /* ARTHTTPPaginatedResponse.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTHTTPPaginatedResponse.m; sourceTree = "<group>"; };
 		D77394021C6F6FFE00F5478F /* ARTProtocolMessage+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTProtocolMessage+Private.h"; sourceTree = "<group>"; };
 		D777EEDE206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTDeviceIdentityTokenDetails.h; sourceTree = "<group>"; };
 		D777EEDF206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTDeviceIdentityTokenDetails.m; sourceTree = "<group>"; };
@@ -381,6 +386,7 @@
 		D780846D1C68B3E50083009D /* NSObject+TestSuite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+TestSuite.m"; sourceTree = "<group>"; };
 		D785C4271E549E33008FEC05 /* ARTPushChannelSubscription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPushChannelSubscription.h; sourceTree = "<group>"; };
 		D785C4281E549E33008FEC05 /* ARTPushChannelSubscription.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPushChannelSubscription.m; sourceTree = "<group>"; };
+		D78D780821271FB10016808B /* ARTHTTPPaginatedResponse+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTHTTPPaginatedResponse+Private.h"; sourceTree = "<group>"; };
 		D7AE18C71E5B40C900478D82 /* ARTPushAdmin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPushAdmin.h; sourceTree = "<group>"; };
 		D7AE18C81E5B40C900478D82 /* ARTPushAdmin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPushAdmin.m; sourceTree = "<group>"; };
 		D7AE18CC1E5B40FE00478D82 /* ARTPushDeviceRegistrations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPushDeviceRegistrations.h; sourceTree = "<group>"; };
@@ -782,6 +788,9 @@
 				850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */,
 				D746AE2E1BBBE7D7003ECEF8 /* ARTPaginatedResult+Private.h */,
 				850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */,
+				D769E15121270F3400DC5CD1 /* ARTHTTPPaginatedResponse.h */,
+				D78D780821271FB10016808B /* ARTHTTPPaginatedResponse+Private.h */,
+				D769E15221270F3400DC5CD1 /* ARTHTTPPaginatedResponse.m */,
 				1C578E1D1B3435CA00EF46EC /* ARTFallback.h */,
 				D77F02A71DAF8099001B3FF9 /* ARTFallback+Private.h */,
 				1C578E1E1B3435CA00EF46EC /* ARTFallback.m */,
@@ -861,6 +870,7 @@
 				96A507B51A37881C0077CDF8 /* ARTNSDate+ARTUtil.h in Headers */,
 				967A43211A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.h in Headers */,
 				D7C1B8791BBF5F810087B55F /* ARTAuth+Private.h in Headers */,
+				D769E15321270F3400DC5CD1 /* ARTHTTPPaginatedResponse.h in Headers */,
 				96A507A51A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.h in Headers */,
 				D7DEAFD11E65926D00D23F24 /* ARTLocalDevice.h in Headers */,
 				EB8AC6431C6515ED002ABA92 /* ARTTokenParams+Private.h in Headers */,
@@ -872,6 +882,7 @@
 				D746AE281BBB61C9003ECEF8 /* ARTPresence.h in Headers */,
 				EB89D4091C61C5ED007FA5B7 /* ARTRealtimeChannels.h in Headers */,
 				96E408431A38939E00087F77 /* ARTProtocolMessage.h in Headers */,
+				D78D780921271FB10016808B /* ARTHTTPPaginatedResponse+Private.h in Headers */,
 				D746AE381BBC3201003ECEF8 /* ARTMessage.h in Headers */,
 				D746AE471BBD6FE9003ECEF8 /* ARTQueuedMessage.h in Headers */,
 				1C2B0FFD1B136A6D00E3633C /* ARTPresenceMap.h in Headers */,
@@ -1143,6 +1154,7 @@
 				D7B621991E4A762A00684474 /* ARTPushChannel.m in Sources */,
 				EB89D40B1C61C6EA007FA5B7 /* ARTRealtimeChannels.m in Sources */,
 				D746AE231BBB60EE003ECEF8 /* ARTChannel.m in Sources */,
+				D769E15421270F3400DC5CD1 /* ARTHTTPPaginatedResponse.m in Sources */,
 				D7DEAFD21E65926D00D23F24 /* ARTLocalDevice.m in Sources */,
 				EB2D84FD1CD769B800F23CDA /* ARTOSReachability.m in Sources */,
 				D746AE481BBD6FE9003ECEF8 /* ARTQueuedMessage.m in Sources */,
