@@ -264,7 +264,6 @@ class RealtimeClientConnection: QuickSpec {
                 it("should emit events for state changes") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
-                    options.disconnectedRetryTimeout = 0.0
 
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
@@ -975,7 +974,6 @@ class RealtimeClientConnection: QuickSpec {
 
                     it("should reset msgSerial serially if the connection does not resume") {
                         let options = AblyTests.commonAppSetup()
-                        options.disconnectedRetryTimeout = 1.0
                         options.clientId = "tester"
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
@@ -1136,7 +1134,6 @@ class RealtimeClientConnection: QuickSpec {
                     it("lost connection state") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
-                        options.disconnectedRetryTimeout = 0.1
                         let client = ARTRealtime(options: options)
                         client.setTransport(TestProxyTransport.self)
                         client.connect()
@@ -1918,7 +1915,6 @@ class RealtimeClientConnection: QuickSpec {
                 it("should not emit error with a renewable token") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
-                    options.disconnectedRetryTimeout = 0.1
                     options.authCallback = { tokenParams, callback in
                         getTestTokenDetails(key: options.key, capability: tokenParams.capability, ttl: tokenParams.ttl as! TimeInterval?, completion: callback)
                     }
@@ -2289,7 +2285,6 @@ class RealtimeClientConnection: QuickSpec {
                     // RTN15b1, RTN15b2
                     it("resume is the private connection key and connection_serial is the most recent ProtocolMessage#connectionSerial received") {
                         let options = AblyTests.commonAppSetup()
-                        options.disconnectedRetryTimeout = 0.1
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
 
@@ -2317,7 +2312,6 @@ class RealtimeClientConnection: QuickSpec {
                     // RTN15c1
                     it("CONNECTED ProtocolMessage with the same connectionId as the current client, and no error") {
                         let options = AblyTests.commonAppSetup()
-                        options.disconnectedRetryTimeout = 1.0
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
@@ -2345,7 +2339,6 @@ class RealtimeClientConnection: QuickSpec {
                     // RTN15c2
                     it("CONNECTED ProtocolMessage with the same connectionId as the current client and an non-fatal error") {
                         let options = AblyTests.commonAppSetup()
-                        options.disconnectedRetryTimeout = 1.0
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
@@ -2405,7 +2398,6 @@ class RealtimeClientConnection: QuickSpec {
                     // RTN15c3
                     it("CONNECTED ProtocolMessage with a new connectionId and an error") {
                         let options = AblyTests.commonAppSetup()
-                        options.disconnectedRetryTimeout = 1.0
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
@@ -2444,7 +2436,6 @@ class RealtimeClientConnection: QuickSpec {
                     // RTN15c4
                     it("ERROR ProtocolMessage indicating a fatal error in the connection") {
                         let options = AblyTests.commonAppSetup()
-                        options.disconnectedRetryTimeout = 1.0
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
@@ -2476,7 +2467,6 @@ class RealtimeClientConnection: QuickSpec {
 
                     it("should resume the connection after an auth renewal") {
                         let options = AblyTests.commonAppSetup()
-                        options.disconnectedRetryTimeout = 1.0
                         options.tokenDetails = getTestTokenDetails(ttl: 5.0)
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
@@ -2599,7 +2589,6 @@ class RealtimeClientConnection: QuickSpec {
                     it("the connection#key may change and will be provided in the first CONNECTED ProtocolMessage#connectionDetails") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
-                        options.disconnectedRetryTimeout = 1.0
 
                         let client = ARTRealtime(options: options)
                         client.setTransport(TestProxyTransport.self)
@@ -2838,7 +2827,6 @@ class RealtimeClientConnection: QuickSpec {
                     // RTN15h2
                     it("should transition to disconnected when the token renewal fails and the error should be emitted") {
                         let options = AblyTests.commonAppSetup()
-                        options.disconnectedRetryTimeout = 1.0
                         options.autoConnect = false
                         let tokenTtl = 5.0
                         let tokenDetails = getTestTokenDetails(key: options.key, capability: nil, ttl: tokenTtl)!
@@ -3678,7 +3666,6 @@ class RealtimeClientConnection: QuickSpec {
                 // RTN19a
                 it("should resend any ProtocolMessage that is awaiting a ACK/NACK") {
                     let options = AblyTests.commonAppSetup()
-                    options.disconnectedRetryTimeout = 0.1
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
@@ -3709,7 +3696,6 @@ class RealtimeClientConnection: QuickSpec {
                 // RTN19b
                 it("should resent the ATTACH message if there are any pending channels") {
                     let options = AblyTests.commonAppSetup()
-                    options.disconnectedRetryTimeout = 0.1
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
@@ -3742,7 +3728,6 @@ class RealtimeClientConnection: QuickSpec {
                 // RTN19b
                 it("should resent the DETACH message if there are any pending channels") {
                     let options = AblyTests.commonAppSetup()
-                    options.disconnectedRetryTimeout = 1.0
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")

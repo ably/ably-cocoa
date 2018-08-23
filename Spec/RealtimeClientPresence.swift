@@ -93,7 +93,6 @@ class RealtimeClientPresence: QuickSpec {
                 let membersCount = 110
 
                 let options = AblyTests.commonAppSetup()
-                options.disconnectedRetryTimeout = 1.0
                 var clientSecondary: ARTRealtime!
                 defer { clientSecondary.dispose(); clientSecondary.close() }
 
@@ -690,7 +689,6 @@ class RealtimeClientPresence: QuickSpec {
                         }
                         defer { clientMembers?.dispose(); clientMembers?.close() }
 
-                        options.disconnectedRetryTimeout = 1.0
                         options.tokenDetails = getTestTokenDetails(key: options.key!, ttl: 5.0)
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
@@ -3171,7 +3169,6 @@ class RealtimeClientPresence: QuickSpec {
                 // RTP16b
                 it("all presence messages will be queued and delivered as soon as the connection state returns to CONNECTED") {
                     let options = AblyTests.commonAppSetup()
-                    options.disconnectedRetryTimeout = 1.0
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
@@ -3199,7 +3196,6 @@ class RealtimeClientPresence: QuickSpec {
                 // RTP16b
                 it("all presence messages will be lost if queueMessages has been explicitly set to false") {
                     let options = AblyTests.commonAppSetup()
-                    options.disconnectedRetryTimeout = 1.0
                     options.queueMessages = false
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }

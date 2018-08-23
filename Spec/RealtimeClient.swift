@@ -1439,7 +1439,6 @@ class RealtimeClient: QuickSpec {
             
             it("moves to DISCONNECTED on an unexpected normal WebSocket close") {
                 let options = AblyTests.commonAppSetup()
-                options.disconnectedRetryTimeout = 0.3
                 let client = ARTRealtime(options: options)
                 defer { client.dispose(); client.close() }
                 
