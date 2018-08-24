@@ -730,7 +730,7 @@ class RestClientChannel: QuickSpec {
                                 XCTFail("HTTPBody is nil");
                                 done(); return
                             }
-                            var json = AblyTests.msgpackToJSON(httpBody as NSData)
+                            var json = AblyTests.msgpackToJSON(httpBody)
                             if let s = json["data"].string, let data = try? JSONSerialization.jsonObject(with: s.data(using: .utf8)!) {
                                 // Make sure the formatting is the same by parsing
                                 // and reformatting in the same way as the test
@@ -772,7 +772,7 @@ class RestClientChannel: QuickSpec {
                                 XCTFail("HTTPBody is nil");
                                 done(); return
                             }
-                            expect(AblyTests.msgpackToJSON(httpBody as NSData)["encoding"]).to(equal(caseItem.expected))
+                            expect(AblyTests.msgpackToJSON(httpBody)["encoding"]).to(equal(caseItem.expected))
                             done()
                         })
                     }
@@ -791,7 +791,7 @@ class RestClientChannel: QuickSpec {
                                 done(); return
                             }
                             // Binary
-                            let json = AblyTests.msgpackToJSON(httpBody as NSData)
+                            let json = AblyTests.msgpackToJSON(httpBody)
                             expect(json["data"].string).to(equal(binaryData.toBase64))
                             expect(json["encoding"]).to(equal("base64"))
                             done()
@@ -808,7 +808,7 @@ class RestClientChannel: QuickSpec {
 
                             if let request = testHTTPExecutor.requests.last, let http = request.httpBody {
                                 // String (UTF-8)
-                                let json = AblyTests.msgpackToJSON(http as NSData)
+                                let json = AblyTests.msgpackToJSON(http)
                                 expect(json["data"].string).to(equal(text))
                                 expect(json["encoding"].string).to(beNil())
                             }
@@ -832,7 +832,7 @@ class RestClientChannel: QuickSpec {
 
                                 if let request = testHTTPExecutor.requests.last, let http = request.httpBody {
                                     // Array
-                                    let json = AblyTests.msgpackToJSON(http as NSData)
+                                    let json = AblyTests.msgpackToJSON(http)
                                     expect(JSON(data: json["data"].stringValue.data(using: String.Encoding.utf8)!).asArray).to(equal(array as NSArray?))
                                     expect(json["encoding"].string).to(equal("json"))
                                 }
@@ -853,7 +853,7 @@ class RestClientChannel: QuickSpec {
 
                                 if let request = testHTTPExecutor.requests.last, let http = request.httpBody {
                                     // Dictionary
-                                    let json = AblyTests.msgpackToJSON(http as NSData)
+                                    let json = AblyTests.msgpackToJSON(http)
                                     expect(JSON(data: json["data"].stringValue.data(using: String.Encoding.utf8)!).asDictionary).to(equal(dictionary as NSDictionary?))
                                     expect(json["encoding"].string).to(equal("json"))
                                 }
@@ -949,7 +949,7 @@ class RestClientChannel: QuickSpec {
                             fail("HTTPBody is empty")
                             return
                         }
-                        let httpBodyAsJSON = AblyTests.msgpackToJSON(httpBody as NSData)
+                        let httpBodyAsJSON = AblyTests.msgpackToJSON(httpBody)
                         expect(httpBodyAsJSON["encoding"].string).to(equal("utf-8/cipher+aes-\(encryptionKeyLength)-cbc/base64"))
                         expect(httpBodyAsJSON["name"].string).to(equal("test"))
                         expect(httpBodyAsJSON["data"].string).toNot(equal("message1"))
