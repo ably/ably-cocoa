@@ -93,16 +93,19 @@ class RestClientChannel: QuickSpec {
                     var publishError: ARTErrorInfo? = ARTErrorInfo.create(from: NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
 
-                    channel.publish(nil, data: nil) { error in
-                        publishError = error
-                        channel.history { result, _ in
-                            publishedMessage = result?.items.first
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: nil) { error in
+                            publishError = error
+                            channel.history { result, _ in
+                                publishedMessage = result?.items.first
+                                done()
+                            }
                         }
                     }
 
-                    expect(publishError).toEventually(beNil(), timeout: testTimeout)
-                    expect(publishedMessage?.name).toEventually(beNil(), timeout: testTimeout)
-                    expect(publishedMessage?.data).toEventually(beNil(), timeout: testTimeout)
+                    expect(publishError).to(beNil())
+                    expect(publishedMessage?.name).to(beNil())
+                    expect(publishedMessage?.data).to(beNil())
                 }
             }
 
