@@ -365,6 +365,34 @@ class RestClientChannel: QuickSpec {
                     }
                 }
             }
+
+            // RSL1j
+            it("should include attributes supplied by the caller in the encoded message") {
+                let options = AblyTests.commonAppSetup()
+                let client = ARTRest(options: options)
+                let proxyHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                client.httpExecutor = proxyHTTPExecutor
+
+                let channel = client.channels.get("foo")
+                let message = ARTMessage(name: nil, data: "")
+                message.id = "123"
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.publish([message]) { error in
+                        expect(error).to(beNil())
+                        done()
+                    }
+                }
+
+                guard let encodedBody = proxyHTTPExecutor.requests.last?.httpBody else {
+                    fail("Body from the last request is empty"); return
+                }
+
+                let json = AblyTests.msgpackToJSON(encodedBody)
+                expect(json["name"].string).to(equal("null"))
+                expect(json["data"].string).to(equal(""))
+                expect(json["id"].string).to(equal(message.id))
+            }
         }
 
         // RSL2
