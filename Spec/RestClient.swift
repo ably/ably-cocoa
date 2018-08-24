@@ -1252,7 +1252,7 @@ class RestClient: QuickSpec {
                 }
 
                 let transport = realtime.transport as! TestProxyTransport
-                let object = AblyTests.msgpackToJSON(transport.rawDataSent.last! as NSData)
+                let object = AblyTests.msgpackToJSON(transport.rawDataSent.last!)
                 expect(object["messages"][0]["data"].string).to(equal("message"))
             }
 
