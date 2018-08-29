@@ -1326,6 +1326,15 @@ extension ARTPresenceMessage {
 
 }
 
+extension ARTMessage {
+
+    convenience init(id: String, name: String? = nil, data: Any) {
+        self.init(name: name, data: data)
+        self.id = id
+    }
+
+}
+
 extension ARTRealtimeConnectionState : CustomStringConvertible {
     public var description : String {
         return ARTRealtimeConnectionStateToStr(self)
