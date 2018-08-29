@@ -386,6 +386,89 @@ class RestClientChannel: QuickSpec {
                     expect(options.idempotentRestPublishing) == true
                 }
 
+                func assertMessagePayloadId(id: String?, expectedSerial: String) {
+                    guard let id = id else {
+                        fail("Message.id from payload is nil"); return
+                    }
+
+                    let idParts = id.split(separator: ":")
+
+                    if idParts.count != 2 {
+                        fail("Message.id from payload should have baseId and serial separated by a colon"); return
+                    }
+
+                    let baseId = String(idParts[0])
+                    let serial = String(idParts[1])
+
+                    guard let baseIdData = Data(base64Encoded: baseId) else {
+                        fail("BaseId should be a base64 encoded string"); return
+                    }
+
+                    expect(baseIdData.bytes.count) == 9
+                    expect(serial).to(equal(expectedSerial))
+                }
+
+                // RSL1k1
+                context("random idempotent publish id") {
+
+                    it("should generate for one message with empty id") {
+                        let message = ARTMessage(name: nil, data: "foo")
+                        expect(message.id).to(beNil())
+
+                        let rest = ARTRest(key: "xxxx:xxxx")
+                        expect(rest.options.idempotentRestPublishing) == true
+                        let mockHTTPExecutor = MockHTTPExecutor()
+                        rest.httpExecutor = mockHTTPExecutor
+                        let channel = rest.channels.get("idempotent")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish([message]) { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        guard let encodedBody = mockHTTPExecutor.requests.last?.httpBody else {
+                            fail("Body from the last request is empty"); return
+                        }
+
+                        let json = AblyTests.msgpackToJSON(encodedBody)
+                        assertMessagePayloadId(id: json.arrayValue.first?["id"].string, expectedSerial: "0")
+                        expect(message.id).to(beNil())
+                    }
+
+                    it("should generate for multiple messages with empty id") {
+                        let message1 = ARTMessage(name: nil, data: "foo1")
+                        expect(message1.id).to(beNil())
+                        let message2 = ARTMessage(name: "john", data: "foo2")
+                        expect(message2.id).to(beNil())
+
+                        let rest = ARTRest(key: "xxxx:xxxx")
+                        let mockHTTPExecutor = MockHTTPExecutor()
+                        rest.httpExecutor = mockHTTPExecutor
+                        let channel = rest.channels.get("idempotent")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish([message1, message2]) { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        guard let encodedBody = mockHTTPExecutor.requests.last?.httpBody else {
+                            fail("Body from the last request is empty"); return
+                        }
+
+                        let json = AblyTests.msgpackToJSON(encodedBody)
+                        let id1 = json.arrayValue.first?["id"].string
+                        assertMessagePayloadId(id: id1, expectedSerial: "0")
+                        let id2 = json.arrayValue.last?["id"].string
+                        assertMessagePayloadId(id: id2, expectedSerial: "1")
+
+                        // Same Base ID
+                        expect(id1?.split(separator: ":").first).to(equal(id2?.split(separator: ":").first))
+                    }
+                }
             }
         }
 
