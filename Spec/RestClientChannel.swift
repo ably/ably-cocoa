@@ -515,6 +515,34 @@ class RestClientChannel: QuickSpec {
                     let json = AblyTests.msgpackToJSON(encodedBody)
                     assertMessagePayloadId(id: json["id"].string, expectedSerial: "0")
                 }
+
+                // RSL1k3
+                it("should not generate for multiple messages with a non empty id") {
+                    let message1 = ARTMessage(name: nil, data: "foo1")
+                    expect(message1.id).to(beNil())
+                    let message2 = ARTMessage(name: "john", data: "foo2")
+                    message2.id = "123"
+
+                    let rest = ARTRest(key: "xxxx:xxxx")
+                    let mockHTTPExecutor = MockHTTPExecutor()
+                    rest.httpExecutor = mockHTTPExecutor
+                    let channel = rest.channels.get("idempotent")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish([message1, message2]) { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    guard let encodedBody = mockHTTPExecutor.requests.last?.httpBody else {
+                        fail("Body from the last request is empty"); return
+                    }
+
+                    let json = AblyTests.msgpackToJSON(encodedBody)
+                    expect(json.arrayValue.first?["id"].string).to(beNil())
+                    expect(json.arrayValue.last?["id"].string).to(equal("123"))
+                }
             }
         }
 
