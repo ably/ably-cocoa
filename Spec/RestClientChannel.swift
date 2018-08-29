@@ -365,6 +365,11 @@ class RestClientChannel: QuickSpec {
                     }
                 }
             }
+
+            // RSL1k
+            context("idempotent publishing") {
+                
+            }
         }
 
         // RSL2
