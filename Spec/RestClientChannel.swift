@@ -543,6 +543,36 @@ class RestClientChannel: QuickSpec {
                     expect(json.arrayValue.first?["id"].string).to(beNil())
                     expect(json.arrayValue.last?["id"].string).to(equal("123"))
                 }
+
+                it("should not generate when idempotentRestPublishing flag is off") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.idempotentRestPublishing = false
+
+                    let message1 = ARTMessage(name: nil, data: "foo1")
+                    expect(message1.id).to(beNil())
+                    let message2 = ARTMessage(name: "john", data: "foo2")
+                    expect(message2.id).to(beNil())
+
+                    let rest = ARTRest(options: options)
+                    let mockHTTPExecutor = MockHTTPExecutor()
+                    rest.httpExecutor = mockHTTPExecutor
+                    let channel = rest.channels.get("idempotent")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish([message1, message2]) { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    guard let encodedBody = mockHTTPExecutor.requests.last?.httpBody else {
+                        fail("Body from the last request is empty"); return
+                    }
+
+                    let json = AblyTests.msgpackToJSON(encodedBody)
+                    expect(json.arrayValue.first?["id"].string).to(beNil())
+                    expect(json.arrayValue.last?["id"].string).to(beNil())
+                }
             }
         }
 

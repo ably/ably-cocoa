@@ -128,6 +128,7 @@ NSString *const ARTDefaultProduction = @"production";
     options.dispatchQueue = self.dispatchQueue;
     options.internalDispatchQueue = self.internalDispatchQueue;
     options.pushFullWait = self.pushFullWait;
+    options.idempotentRestPublishing = self.idempotentRestPublishing;
 
     return options;
 }
