@@ -469,6 +469,52 @@ class RestClientChannel: QuickSpec {
                         expect(id1?.split(separator: ":").first).to(equal(id2?.split(separator: ":").first))
                     }
                 }
+
+                // RSL1k2
+                it("should not generate for message with a non empty id") {
+                    let message = ARTMessage(name: nil, data: "foo")
+                    message.id = "123"
+
+                    let rest = ARTRest(key: "xxxx:xxxx")
+                    let mockHTTPExecutor = MockHTTPExecutor()
+                    rest.httpExecutor = mockHTTPExecutor
+                    let channel = rest.channels.get("idempotent")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish([message]) { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    guard let encodedBody = mockHTTPExecutor.requests.last?.httpBody else {
+                        fail("Body from the last request is empty"); return
+                    }
+
+                    let json = AblyTests.msgpackToJSON(encodedBody)
+                    expect(json.arrayValue.first?["id"].string).to(equal("123"))
+                }
+
+                it("should generate for internal message that is created in publish(name:data:) method") {
+                    let rest = ARTRest(key: "xxxx:xxxx")
+                    let mockHTTPExecutor = MockHTTPExecutor()
+                    rest.httpExecutor = mockHTTPExecutor
+                    let channel = rest.channels.get("idempotent")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish("john", data: "foo") { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    guard let encodedBody = mockHTTPExecutor.requests.last?.httpBody else {
+                        fail("Body from the last request is empty"); return
+                    }
+
+                    let json = AblyTests.msgpackToJSON(encodedBody)
+                    assertMessagePayloadId(id: json["id"].string, expectedSerial: "0")
+                }
             }
         }
 
