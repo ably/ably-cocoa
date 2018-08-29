@@ -615,6 +615,37 @@ class RestClientChannel: QuickSpec {
                         }
                     }
                 }
+
+                // RSL1k5
+                it("should publish a message with implicit Id only once") {
+                    let options = AblyTests.commonAppSetup()
+                    let rest = ARTRest(options: options)
+                    let channel = rest.channels.get("idempotent")
+
+                    let message = ARTMessage(name: "unique", data: "foo")
+                    message.id = "123"
+
+                    for _ in 1...4 {
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish([message]) { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.history { result, error in
+                            expect(error).to(beNil())
+                            guard let result = result else {
+                                fail("No result"); done(); return
+                            }
+                            expect(result.items.count) == 1
+                            expect(result.items.first?.id).to(equal("123"))
+                            done()
+                        }
+                    }
+                }
             }
         }
 
