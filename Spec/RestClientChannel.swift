@@ -573,6 +573,48 @@ class RestClientChannel: QuickSpec {
                     expect(json.arrayValue.first?["id"].string).to(beNil())
                     expect(json.arrayValue.last?["id"].string).to(beNil())
                 }
+
+                // RSL1k4
+                it("should have only one published message") {
+                    client.httpExecutor = testHTTPExecutor
+                    client.options.fallbackHostsUseDefault = true
+
+                    let forceRetryError = ErrorSimulator(
+                        value: 50000,
+                        description: "force retry",
+                        statusCode: 500,
+                        shouldPerformRequest: true,
+                        stubData: nil
+                    )
+
+                    testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(forceRetryError)
+
+                    let messages = [
+                        ARTMessage(name: nil, data: "test1"),
+                        ARTMessage(name: nil, data: "test2"),
+                        ARTMessage(name: nil, data: "test3"),
+                    ]
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(messages) { error in
+                            expect(error).toNot(beNil())
+                            done()
+                        }
+                    }
+
+                    expect(testHTTPExecutor.requests.count) == 2
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.history { result, error in
+                            expect(error).to(beNil())
+                            guard let result = result else {
+                                fail("No result"); done(); return
+                            }
+                            expect(result.items.count) == 3
+                            done()
+                        }
+                    }
+                }
             }
         }
 
