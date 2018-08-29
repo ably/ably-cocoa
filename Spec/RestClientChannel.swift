@@ -371,6 +371,16 @@ class RestClientChannel: QuickSpec {
 
                 // TO3n
                 it("idempotentRestPublishing option") {
+                    expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "2")) == true
+                    expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "2.0.0")) == true
+                    expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.1")) == true
+                    expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.1.2")) == true
+                    expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.2")) == true
+                    expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.0")) == false
+                    expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.0.5")) == false
+                    expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "0.9")) == false
+                    expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "0.9.1")) == false
+
                     // Current version
                     let options = AblyTests.clientOptions()
                     expect(options.idempotentRestPublishing) == true

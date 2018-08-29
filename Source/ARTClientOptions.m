@@ -49,6 +49,7 @@ NSString *const ARTDefaultProduction = @"production";
     _dispatchQueue = dispatch_get_main_queue();
     _internalDispatchQueue = dispatch_queue_create("io.ably.main", DISPATCH_QUEUE_SERIAL);
     _pushFullWait = false;
+    _idempotentRestPublishing = [ARTClientOptions getDefaultIdempotentRestPublishingForVersion:[ARTDefault version]];
     return self;
 }
 
@@ -177,6 +178,15 @@ NSString *const ARTDefaultProduction = @"production";
 
 - (void)setDefaultTokenParams:(ARTTokenParams *)value {
     _defaultTokenParams = [[ARTTokenParams alloc] initWithTokenParams:value];
+}
+
++ (BOOL)getDefaultIdempotentRestPublishingForVersion:(NSString *)version {
+    if ([@"1.1" compare:version options:NSNumericSearch] == NSOrderedDescending) {
+        return false;
+    }
+    else {
+        return true;
+    }
 }
 
 @end
