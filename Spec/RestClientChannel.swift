@@ -368,7 +368,14 @@ class RestClientChannel: QuickSpec {
 
             // RSL1k
             context("idempotent publishing") {
-                
+
+                // TO3n
+                it("idempotentRestPublishing option") {
+                    // Current version
+                    let options = AblyTests.clientOptions()
+                    expect(options.idempotentRestPublishing) == true
+                }
+
             }
         }
 
