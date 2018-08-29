@@ -93,4 +93,8 @@
     return finalResult;
 }
 
+- (BOOL)isIdEmpty {
+    return self.id == nil || [self.id isEqualToString:@""];
+}
+
 @end

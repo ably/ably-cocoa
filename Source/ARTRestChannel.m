@@ -21,6 +21,9 @@
 #import "ARTTokenDetails.h"
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTPushChannel.h"
+#import "ARTCrypto+Private.h"
+
+static const NSUInteger kIdempotentLibraryGeneratedIdLength = 9; //bytes
 
 @implementation ARTRestChannel {
 @private
@@ -165,6 +168,14 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     
     if ([data isKindOfClass:[ARTMessage class]]) {
         ARTMessage *message = (ARTMessage *)data;
+
+        NSString *baseId = nil;
+        if (self.rest.options.idempotentRestPublishing && message.isIdEmpty) {
+            NSData *baseIdData = [ARTCrypto generateSecureRandomData:kIdempotentLibraryGeneratedIdLength];
+            baseId = [baseIdData base64EncodedStringWithOptions:0];
+            message.id = [NSString stringWithFormat:@"%@:0", baseId];
+        }
+
         if (message.clientId && self.rest.auth.clientId_nosync && ![message.clientId isEqualToString:self.rest.auth.clientId_nosync]) {
             callback([ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
             return;
@@ -172,20 +183,38 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         else {
             message.clientId = self.rest.auth.clientId_nosync;
         }
+
         NSError *encodeError = nil;
         encodedMessage = [self.rest.defaultEncoder encodeMessage:message error:&encodeError];
         if (encodeError) {
             callback([ARTErrorInfo createFromNSError:encodeError]);
             return;
         }
-    } else if ([data isKindOfClass:[NSArray class]]) {
-        __GENERIC(NSArray, ARTMessage *) *messages = (NSArray *)data;
+    }
+    else if ([data isKindOfClass:[NSArray class]]) {
+        NSArray<ARTMessage *> *messages = (NSArray *)data;
+
+        NSString *baseId = nil;
+        if (self.rest.options.idempotentRestPublishing) {
+            BOOL messagesHaveEmptyId = [messages artFilter:^BOOL(ARTMessage *m) { return !m.isIdEmpty; }].count <= 0;
+            if (messagesHaveEmptyId) {
+                NSData *baseIdData = [ARTCrypto generateSecureRandomData:kIdempotentLibraryGeneratedIdLength];
+                baseId = [baseIdData base64EncodedStringWithOptions:0];
+            }
+        }
+
+        NSInteger serial = 0;
         for (ARTMessage *message in messages) {
             if (message.clientId && self.rest.auth.clientId_nosync && ![message.clientId isEqualToString:self.rest.auth.clientId_nosync]) {
                 callback([ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
                 return;
             }
+            if (baseId) {
+                message.id = [NSString stringWithFormat:@"%@:%ld", baseId, (long)serial];
+            }
+            serial += 1;
         }
+
         NSError *encodeError = nil;
         encodedMessage = [self.rest.defaultEncoder encodeMessages:data error:&encodeError];
         if (encodeError) {

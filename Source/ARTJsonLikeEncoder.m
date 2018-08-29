@@ -373,7 +373,10 @@
 
 - (NSDictionary *)messageToDictionary:(ARTMessage *)message {
     NSMutableDictionary *output = [NSMutableDictionary dictionary];
-    
+    if (message.id) {
+        [output setObject:message.id forKey:@"id"];
+    }
+
     if (message.timestamp) {
         [output setObject:[message.timestamp artToNumberMs] forKey:@"timestamp"];
     }
