@@ -980,6 +980,7 @@ class RestClientChannel: QuickSpec {
                     TestCase(value: binaryData, expected: JSON(["data": binaryData.toBase64, "encoding": "base64"])),
                 ]
 
+                client.options.idempotentRestPublishing = false
                 client.httpExecutor = testHTTPExecutor
 
                 validCases.forEach { caseTest in
