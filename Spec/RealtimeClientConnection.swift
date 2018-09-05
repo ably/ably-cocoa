@@ -2100,6 +2100,7 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(0.1)
 
                     let client = ARTRealtime(options: options)
+                    client.suspendImmediateReconnection = true
                     defer {
                         client.connection.off()
                         client.close()
@@ -2177,6 +2178,7 @@ class RealtimeClientConnection: QuickSpec {
 
                 it("on CLOSE the connection should stop connection retries") {
                     let options = AblyTests.commonAppSetup()
+                    // to avoid waiting for the default 15s before trying a reconnection
                     options.disconnectedRetryTimeout = 0.1
                     options.suspendedRetryTimeout = 0.5
                     options.autoConnect = false
@@ -2195,6 +2197,7 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(0.1)
 
                     let client = ARTRealtime(options: options)
+                    client.suspendImmediateReconnection = true
                     defer { client.dispose(); client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
@@ -2546,7 +2549,6 @@ class RealtimeClientConnection: QuickSpec {
                 // RTN15d
                 it("should recover from disconnection and messages should be delivered once the connection is resumed") {
                     let options = AblyTests.commonAppSetup()
-                    options.disconnectedRetryTimeout = 1.0
 
                     let client1 = ARTRealtime(options: options)
                     defer { client1.close() }
@@ -2740,7 +2742,6 @@ class RealtimeClientConnection: QuickSpec {
                 // RTN15g2
                 context("when connection (ttl + idle interval) period has NOT passed since last activity") {
                     let options = AblyTests.commonAppSetup()
-                    options.disconnectedRetryTimeout = 5.0
                     var client: ARTRealtime!
                     var connectionId = ""
                     
@@ -2775,7 +2776,6 @@ class RealtimeClientConnection: QuickSpec {
 
                     it("if the token is renewable then error should not be emitted") {
                         let options = AblyTests.commonAppSetup()
-                        options.disconnectedRetryTimeout = 1.0
                         options.autoConnect = false
                         options.authCallback = { tokenParams, callback in
                             getTestTokenDetails(key: options.key, capability: tokenParams.capability, ttl: TimeInterval(60 * 60), completion: callback)
