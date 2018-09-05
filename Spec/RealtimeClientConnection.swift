@@ -2138,6 +2138,7 @@ class RealtimeClientConnection: QuickSpec {
                 // RTN14e
                 it("connection state has been in the DISCONNECTED state for more than the default connectionStateTtl should change the state to SUSPENDED") {
                     let options = AblyTests.commonAppSetup()
+                    // to not wait the defaul 15s before reconnecting
                     options.disconnectedRetryTimeout = 0.1
                     options.suspendedRetryTimeout = 0.5
                     options.autoConnect = false
@@ -2156,6 +2157,7 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(0.1)
 
                     let client = ARTRealtime(options: options)
+                    client.suspendImmediateReconnection = true
                     defer { client.dispose(); client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
