@@ -11,6 +11,7 @@ matrix:
     - env: NAME="ably-iOS" LANE=test_iOS9
 before_install:
   - gem install cocoapods -v '1.5.3'
+  - pod repo update > /dev/null
 install:
   - brew update
   - brew upgrade carthage
