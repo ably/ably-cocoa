@@ -1955,54 +1955,6 @@ class RealtimeClientChannel: QuickSpec {
                         }
                     }
 
-                    // RTL6c3 (removed from the v1.1 spec)
-                    xit("implicitly attaches the channel; if the channel is in or moves to the FAILED state before the operation succeeds, it should result in an error") {
-                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
-                        defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("test")
-                        waitUntil(timeout: testTimeout) { done in
-                            let protocolError = AblyTests.newErrorProtocolMessage()
-                            expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
-                            channel.publish(nil, data: "message") { error in
-                                expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
-                                expect(error).to(beIdenticalTo(protocolError.error))
-
-                                channel.publish(nil, data: "message") { error in
-                                    expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
-                                    expect(error).toNot(beNil())
-                                    done()
-                                }
-                            }
-                            expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
-                            channel.onError(protocolError)
-                        }
-                    }
-
-                    // RTL6c3 (removed from the v1.1 spec)
-                    xit("implicitly attaches the channel; if the channel is in or moves to the DETACHED state before the operation succeeds, it should result in an error") {
-                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
-                        defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("test")
-
-                        waitUntil(timeout: testTimeout) { done in
-                            let partialDone = AblyTests.splitDone(2, done: done)
-                            expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
-                            channel.once(.attached) { stateChange in
-                                expect(stateChange?.reason).to(beNil())
-                                channel.detach()
-                                partialDone()
-                            }
-                            channel.publish(nil, data: "message") { error in
-                                guard let error = error else {
-                                    fail("Error is nil"); done(); return
-                                }
-                                expect(error.message).to(contain("invalid channel state"))
-                                expect(channel.state).to(satisfyAnyOf(equal(ARTRealtimeChannelState.detaching), equal(ARTRealtimeChannelState.detached)))
-                                partialDone()
-                            }
-                        }
-                    }
-
                     // RTL6c4
                     context("will result in an error if the") {
                         let options = AblyTests.commonAppSetup()
@@ -2092,6 +2044,29 @@ class RealtimeClientChannel: QuickSpec {
                             waitUntil(timeout: testTimeout) { done in
                                 publish(done)
                             }
+                        }
+                    }
+
+                    // RTL6c5
+                    it("publish should not trigger an implicit attach") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("test")
+                        waitUntil(timeout: testTimeout) { done in
+                            let protocolError = AblyTests.newErrorProtocolMessage()
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
+                            channel.publish(nil, data: "message") { error in
+                                expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
+                                expect(error).to(beIdenticalTo(protocolError.error))
+
+                                channel.publish(nil, data: "message") { error in
+                                    expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
+                                    expect(error).toNot(beNil())
+                                    done()
+                                }
+                            }
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
+                            channel.onError(protocolError)
                         }
                     }
                 }
