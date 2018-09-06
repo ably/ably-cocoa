@@ -2283,6 +2283,27 @@ class RealtimeClientConnection: QuickSpec {
 
                     expect(states).toEventually(equal([.connecting, .connected, .disconnected, .connecting, .connected]), timeout: testTimeout)
                 }
+                
+                // RTN15a
+                it ("if a Connection transport is disconnected unexpectedly or if a token expires, then the Connection manager will immediately attempt to reconnect") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    options.tokenDetails = getTestTokenDetails(ttl: 3.0)
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.on(.disconnected) { _ in
+                            let disconnectedTime = Date()
+                            client.connection.on(.connected) { _ in
+                                let reconnectedTime = Date()
+                                expect(reconnectedTime.timeIntervalSince(disconnectedTime)).to(beCloseTo(1, within: 0.9))
+                                done()
+                            }
+                        }
+                        client.connect()
+                    }
+                }
 
                 // RTN15b
                 context("reconnects to the websocket endpoint with additional querystring params") {
