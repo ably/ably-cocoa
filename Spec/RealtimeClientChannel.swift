@@ -1728,21 +1728,113 @@ class RealtimeClientChannel: QuickSpec {
                 context("Connection state conditions") {
 
                     // RTL6c1
-                    it("if the connection is CONNECTED and the channel is ATTACHED then the messages should be published immediately") {
-                        let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
-                        defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("test")
-                        channel.attach()
+                    context("if the connection is CONNECTED and the channel is") {
+                        it("ATTACHED then the messages should be published immediately") {
+                            let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                            defer { client.dispose(); client.close() }
+                            let channel = client.channels.get("test")
+                            channel.attach()
 
-                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-                        expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
+                            expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
 
-                        waitUntil(timeout: testTimeout) { done in
-                            channel.publish(nil, data: "message") { error in
-                                expect(error).to(beNil())
-                                done()
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.publish(nil, data: "message") { error in
+                                    expect(error).to(beNil())
+                                    done()
+                                }
+                                expect((client.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
                             }
-                            expect((client.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
+                        }
+
+                        it("INITIALIZED then the messages should be published immediately") {
+                            let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                            defer { client.dispose(); client.close() }
+                            let channel = client.channels.get("test")
+                            waitUntil(timeout: testTimeout) { done in
+                                client.connection.once(.connected) { _ in
+                                    done()
+                                }
+                            }
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
+
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.publish(nil, data: "message") { error in
+                                    expect(error).to(beNil())
+                                    done()
+                                }
+                                expect((client.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
+                            }
+                        }
+
+                        it("DETACHED then the messages should be published immediately") {
+                            let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                            defer { client.dispose(); client.close() }
+                            let channel = client.channels.get("test")
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.attach() { _ in
+                                    done()
+                                }
+                            }
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.detach() { _ in
+                                    done()
+                                }
+                            }
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.detached))
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
+
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.publish(nil, data: "message") { error in
+                                    expect(error).to(beNil())
+                                    done()
+                                }
+                                expect((client.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
+                            }
+                        }
+
+                        it("ATTACHING then the messages should be published immediately") {
+                            let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                            defer { client.dispose(); client.close() }
+                            let channel = client.channels.get("test")
+                            waitUntil(timeout: testTimeout) { done in
+                                client.connection.once(.connected) { _ in
+                                    done()
+                                }
+                            }
+                            channel.attach()
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
+
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.publish(nil, data: "message") { error in
+                                    expect(error).to(beNil())
+                                    done()
+                                }
+                                expect((client.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
+                            }
+                        }
+
+                        it("DETACHING then the messages should be published immediately") {
+                            let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                            defer { client.dispose(); client.close() }
+                            let channel = client.channels.get("test")
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.attach() { _ in
+                                    done()
+                                }
+                            }
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
+                            channel.detach()
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.detaching))
+
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.publish(nil, data: "message") { error in
+                                    expect(error).to(beNil())
+                                    done()
+                                }
+                                expect((client.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
+                            }
                         }
                     }
 
