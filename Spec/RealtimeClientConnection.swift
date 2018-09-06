@@ -2297,7 +2297,9 @@ class RealtimeClientConnection: QuickSpec {
                             let disconnectedTime = Date()
                             client.connection.on(.connected) { _ in
                                 let reconnectedTime = Date()
-                                expect(reconnectedTime.timeIntervalSince(disconnectedTime)).to(beCloseTo(1, within: 0.9))
+                                // test that reconnection happens within 10 seconds,
+                                // so that we are sure it doesn't wait for the default 15s
+                                expect(reconnectedTime.timeIntervalSince(disconnectedTime)).to(beCloseTo(0, within: 10))
                                 done()
                             }
                         }
