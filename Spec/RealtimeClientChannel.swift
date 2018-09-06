@@ -1839,16 +1839,16 @@ class RealtimeClientChannel: QuickSpec {
                     }
 
                     // RTL6c2
-                    context("the message should be queued and delivered as soon as the connection state returns to CONNECTED if the connection is") {
-                        let options = AblyTests.commonAppSetup()
-                        options.useTokenAuth = true
-                        options.disconnectedRetryTimeout = 0.3
-                        options.autoConnect = false
+                    context("the message") {
                         var client: ARTRealtime!
                         var channel: ARTRealtimeChannel!
 
                         beforeEach {
-                            client = ARTRealtime(options: options)
+                            let options = AblyTests.commonAppSetup()
+                            options.useTokenAuth = true
+                            options.disconnectedRetryTimeout = 0.3
+                            options.autoConnect = false
+                            client = AblyTests.newRealtime(options)
                             channel = client.channels.get("test")
                             expect(client.options.queueMessages).to(beTrue())
                         }
@@ -1862,78 +1862,95 @@ class RealtimeClientChannel: QuickSpec {
                             }
                         }
 
-                        it("INITIALIZED") {
-                            waitUntil(timeout: testTimeout) { done in
-                                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.initialized))
-                                publish(done)
-                                client.connect()
-                                expect(channel.queuedMessages).to(haveCount(1))
-                            }
-                        }
-
-                        it("CONNECTING") {
-                            waitUntil(timeout: testTimeout) { done in
-                                client.connect()
-                                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connecting))
-                                publish(done)
-                                expect(channel.queuedMessages).to(haveCount(1))
-                            }
-                        }
-
-                        it("DISCONNECTED") {
-                            client.connect()
-                            expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-                            client.onDisconnected()
-
-                            waitUntil(timeout: testTimeout) { done in
-                                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.disconnected))
-                                publish(done)
-                                expect(channel.queuedMessages).to(haveCount(1))
-                            }
-                        }
-
-                        it("ATTACHING") {
-                            client.connect()
-                            expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-
-                            waitUntil(timeout: testTimeout) { done in
-                                channel.attach()
-                                expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
-                                publish(done)
-                                expect(channel.queuedMessages).to(haveCount(1))
-                            }
-                        }
-
-                        it("ATTACHED") {
-                            waitUntil(timeout: testTimeout) { done in
-                                channel.attach() { error in
-                                    expect(error).to(beNil())
-                                    done()
-                                }
-                                client.connect()
-                            }
-
-                            waitUntil(timeout: testTimeout) { done in
-                                let tokenParams = ARTTokenParams()
-                                tokenParams.ttl = 5.0
-                                client.auth.authorize(tokenParams, options: nil) { tokenDetails, error in
-                                    expect(error).to(beNil())
-                                    expect(tokenDetails).toNot(beNil())
-                                    done()
+                        context("should be queued and delivered as soon as the connection state returns to CONNECTED if the connection is") {
+                            it("INITIALIZED") {
+                                waitUntil(timeout: testTimeout) { done in
+                                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.initialized))
+                                    publish(done)
+                                    client.connect()
+                                    expect(channel.queuedMessages).to(haveCount(1))
                                 }
                             }
 
-                            waitUntil(timeout: testTimeout) { done in
-                                client.connection.once(.disconnected) { _ in
-                                    done()
+                            it("CONNECTING") {
+                                waitUntil(timeout: testTimeout) { done in
+                                    client.connect()
+                                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connecting))
+                                    publish(done)
+                                    expect(channel.queuedMessages).to(haveCount(1))
                                 }
                             }
 
-                            expect(channel.state).to(equal(ARTRealtimeChannelState.attached))
+                            it("DISCONNECTED") {
+                                client.connect()
+                                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+                                client.onDisconnected()
 
-                            waitUntil(timeout: testTimeout) { done in
-                                publish(done)
-                                expect(channel.queuedMessages).to(haveCount(1))
+                                waitUntil(timeout: testTimeout) { done in
+                                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.disconnected))
+                                    publish(done)
+                                    expect(channel.queuedMessages).to(haveCount(1))
+                                }
+                            }
+                        }
+
+                        context("should NOT be queued instead it should be published if the channel is") {
+                            it("INITIALIZED") {
+                                client.connect()
+                                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+
+                                waitUntil(timeout: testTimeout) { done in
+                                    expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
+                                    publish(done)
+                                    expect(channel.queuedMessages).to(haveCount(0))
+                                    expect((client.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
+                                }
+                            }
+
+                            it("ATTACHING") {
+                                client.connect()
+                                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+
+                                waitUntil(timeout: testTimeout) { done in
+                                    channel.attach()
+                                    expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
+                                    publish(done)
+                                    expect(channel.queuedMessages).to(haveCount(0))
+                                    expect((client.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
+                                }
+                            }
+
+                            it("ATTACHED") {
+                                waitUntil(timeout: testTimeout) { done in
+                                    channel.attach() { error in
+                                        expect(error).to(beNil())
+                                        done()
+                                    }
+                                    client.connect()
+                                }
+
+                                waitUntil(timeout: testTimeout) { done in
+                                    let tokenParams = ARTTokenParams()
+                                    tokenParams.ttl = 5.0
+                                    client.auth.authorize(tokenParams, options: nil) { tokenDetails, error in
+                                        expect(error).to(beNil())
+                                        expect(tokenDetails).toNot(beNil())
+                                        done()
+                                    }
+                                }
+
+                                waitUntil(timeout: testTimeout) { done in
+                                    client.connection.once(.disconnected) { _ in
+                                        done()
+                                    }
+                                }
+
+                                expect(channel.state).to(equal(ARTRealtimeChannelState.attached))
+
+                                waitUntil(timeout: testTimeout) { done in
+                                    publish(done)
+                                    expect(channel.queuedMessages).to(haveCount(1))
+                                }
                             }
                         }
                     }
