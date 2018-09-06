@@ -4044,7 +4044,7 @@ class RealtimeClientConnection: QuickSpec {
 
             }
 
-            // RTN23
+            // RTN23a
             it("should disconnect the transport when no activity exist") {
                 let options = AblyTests.commonAppSetup()
                 let client = AblyTests.newRealtime(options)
