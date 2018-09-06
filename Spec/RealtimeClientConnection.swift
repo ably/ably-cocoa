@@ -1991,7 +1991,9 @@ class RealtimeClientConnection: QuickSpec {
                             guard let reason = stateChange?.reason else {
                                 fail("Reason is nil"); done(); return;
                             }
-                            expect(reason.code) == 40142
+                            expect(reason.code).to(equal(40142))
+                            expect(reason.statusCode).to(equal(401))
+                            expect(reason.message).to(contain("Key/token status changed (expire)"))
                             partialDone()
                         }
                         client.connect()
