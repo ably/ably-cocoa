@@ -1955,8 +1955,8 @@ class RealtimeClientChannel: QuickSpec {
                         }
                     }
 
-                    // RTL6c3
-                    it("implicitly attaches the channel; if the channel is in or moves to the FAILED state before the operation succeeds, it should result in an error") {
+                    // RTL6c3 (removed from the v1.1 spec)
+                    xit("implicitly attaches the channel; if the channel is in or moves to the FAILED state before the operation succeeds, it should result in an error") {
                         let client = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
@@ -1978,8 +1978,8 @@ class RealtimeClientChannel: QuickSpec {
                         }
                     }
 
-                    // RTL6c3
-                    it("implicitly attaches the channel; if the channel is in or moves to the DETACHED state before the operation succeeds, it should result in an error") {
+                    // RTL6c3 (removed from the v1.1 spec)
+                    xit("implicitly attaches the channel; if the channel is in or moves to the DETACHED state before the operation succeeds, it should result in an error") {
                         let client = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
