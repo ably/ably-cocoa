@@ -234,13 +234,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 - (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     __weak __typeof(self) weakSelf = self;
-    ARTStatus *statusInvalidChannel = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:@"channel operation failed (invalid channel state)"]];
+    ARTStatus *statusInvalidConnectionState = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:@"channel operation failed (invalid connection state)"]];
+    ARTStatus *statusInvalidChannelState = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:@"channel operation failed (invalid channel state)"]];
 
     switch (_realtime.connection.state_nosync) {
         case ARTRealtimeClosing:
         case ARTRealtimeClosed: {
             if (cb) {
-                cb(statusInvalidChannel);
+                cb(statusInvalidConnectionState);
             }
             return;
         }
@@ -250,11 +251,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
     void (^queuedCallback)(ARTStatus *) = ^(ARTStatus *status) {
         switch (weakSelf.state_nosync) {
-            case ARTRealtimeChannelDetaching:
-            case ARTRealtimeChannelDetached:
+            case ARTRealtimeChannelSuspended:
             case ARTRealtimeChannelFailed:
                 if (cb) {
-                    cb(status.state == ARTStateOk ? statusInvalidChannel : status);
+                    cb(status.state == ARTStateOk ? statusInvalidChannelState : status);
                 }
                 return;
             default:
@@ -266,23 +266,18 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     };
 
     switch (self.state_nosync) {
-        case ARTRealtimeChannelInitialized:
-            [self addToQueue:pm callback:queuedCallback];
-            [self _attach:nil];
-            break;
-        case ARTRealtimeChannelAttaching:
-            [self addToQueue:pm callback:queuedCallback];
-            break;
         case ARTRealtimeChannelSuspended:
-        case ARTRealtimeChannelDetaching:
-        case ARTRealtimeChannelDetached:
         case ARTRealtimeChannelFailed:
         {
             if (cb) {
-                cb(statusInvalidChannel);
+                cb(statusInvalidChannelState);
             }
             break;
         }
+        case ARTRealtimeChannelInitialized:
+        case ARTRealtimeChannelDetaching:
+        case ARTRealtimeChannelDetached:
+        case ARTRealtimeChannelAttaching:
         case ARTRealtimeChannelAttached:
         {
             if (_realtime.connection.state_nosync == ARTRealtimeConnected) {
