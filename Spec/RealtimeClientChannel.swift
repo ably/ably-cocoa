@@ -2071,28 +2071,6 @@ class RealtimeClientChannel: QuickSpec {
                             }
                         }
 
-                        it("channel is DETACHING") {
-                            client.connect()
-                            channel.attach()
-                            expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-                            channel.detach()
-                            expect(channel.state).to(equal(ARTRealtimeChannelState.detaching))
-                            waitUntil(timeout: testTimeout) { done in
-                                publish(done)
-                            }
-                        }
-
-                        it("channel is DETACHED") {
-                            client.connect()
-                            channel.attach()
-                            expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-                            channel.detach()
-                            expect(channel.state).toEventually(equal(ARTRealtimeChannelState.detached), timeout: testTimeout)
-                            waitUntil(timeout: testTimeout) { done in
-                                publish(done)
-                            }
-                        }
-
                         it("channel is SUSPENDED") {
                             client.connect()
                             channel.attach()
