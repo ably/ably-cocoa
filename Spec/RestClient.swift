@@ -533,7 +533,7 @@ class RestClient: QuickSpec {
                             // Expired token
                             options.tokenDetails = ARTTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires!.addingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
 
-                            options.authUrl = URL(string: "http://test-auth.ably.io") as URL?
+                            options.authUrl = URL(string: "http://test-auth.ably.io")
                             value(options)
                         }
                     }) else {

@@ -382,7 +382,7 @@ class Auth : QuickSpec {
                 //  - authCallback and authUrl are both specified
                 let cases: [String: (ARTAuthOptions) -> ()] = [
                     "useTokenAuth and no key":{ $0.useTokenAuth = true },
-                    "authCallback and authUrl":{ $0.authCallback = { params, callback in /*nothing*/ }; $0.authUrl = URL(string: "http://auth.ably.io") as URL? }
+                    "authCallback and authUrl":{ $0.authCallback = { params, callback in /*nothing*/ }; $0.authUrl = URL(string: "http://auth.ably.io") }
                 ]
                 
                 for (caseName, caseSetter) in cases {
@@ -1256,7 +1256,7 @@ class Auth : QuickSpec {
                     let testToken = getTestToken()
 
                     let options = AblyTests.clientOptions()
-                    options.authUrl = URL(string: "http://echo.ably.io") as URL?
+                    options.authUrl = URL(string: "http://echo.ably.io")
                     expect(options.authUrl).toNot(beNil())
                     // Plain text
                     options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
@@ -1292,7 +1292,7 @@ class Auth : QuickSpec {
                     }
 
                     let options = ARTClientOptions()
-                    options.authUrl = URL(string: "http://echo.ably.io") as URL?
+                    options.authUrl = URL(string: "http://echo.ably.io")
                     expect(options.authUrl).toNot(beNil())
                     // JSON with TokenDetails
                     options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
@@ -1328,7 +1328,7 @@ class Auth : QuickSpec {
                     tokenParams.capability = "{\"test\":[\"subscribe\"]}"
 
                     let options = AblyTests.commonAppSetup()
-                    options.authUrl = URL(string: "http://echo.ably.io") as URL?
+                    options.authUrl = URL(string: "http://echo.ably.io")
                     expect(options.authUrl).toNot(beNil())
 
                     var rest = ARTRest(options: options)
@@ -1384,7 +1384,7 @@ class Auth : QuickSpec {
                     // RSA8c1a
                     it("should be added to the URL when auth method is GET") {
                         let clientOptions = ARTClientOptions()
-                        clientOptions.authUrl = URL(string: "http://auth.ably.io") as URL?
+                        clientOptions.authUrl = URL(string: "http://auth.ably.io")
                         var authParams = [
                             "param1": "value",
                             "param2": "value",
@@ -1437,7 +1437,7 @@ class Auth : QuickSpec {
                     // RSA8c1b
                     it("should added on the body request when auth method is POST") {
                         let clientOptions = ARTClientOptions()
-                        clientOptions.authUrl = URL(string: "http://auth.ably.io") as URL?
+                        clientOptions.authUrl = URL(string: "http://auth.ably.io")
                         clientOptions.authMethod = "POST"
                         clientOptions.authHeaders = ["X-Header-1": "foo", "X-Header-2": "bar"]
                         let tokenParams = ARTTokenParams()
@@ -1469,7 +1469,7 @@ class Auth : QuickSpec {
                 it("TokenParams should take precedence over any configured authParams when a name conflict occurs") {
                     let options = ARTClientOptions()
                     options.clientId = "john"
-                    options.authUrl = URL(string: "http://auth.ably.io") as URL?
+                    options.authUrl = URL(string: "http://auth.ably.io")
                     options.authMethod = "GET"
                     options.authHeaders = ["X-Header-1": "foo1", "X-Header-2": "foo2"]
                     let authParams = [
@@ -1497,11 +1497,11 @@ class Auth : QuickSpec {
                 // RSA8c3
                 it("should override previously configured parameters") {
                     let clientOptions = ARTClientOptions()
-                    clientOptions.authUrl = URL(string: "http://auth.ably.io") as URL?
+                    clientOptions.authUrl = URL(string: "http://auth.ably.io")
                     let rest = ARTRest(options: clientOptions)
                     
                     let authOptions = ARTAuthOptions()
-                    authOptions.authUrl = URL(string: "http://auth.ably.io") as URL?
+                    authOptions.authUrl = URL(string: "http://auth.ably.io")
                     authOptions.authParams = [NSURLQueryItem(name: "ttl", value: "invalid") as URLQueryItem]
                     authOptions.authParams = [NSURLQueryItem(name: "test", value: "1") as URLQueryItem]
                     let url = rest.auth.buildURL(authOptions, with: ARTTokenParams())
