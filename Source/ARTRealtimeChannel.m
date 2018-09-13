@@ -199,7 +199,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         if (cb) cb([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
         return;
     }
-    
+
     if ([self exceedMaxSize:@[msg]]) {
         if (cb) {
             ARTErrorInfo *sizeError = [ARTErrorInfo createWithCode:40009
@@ -208,9 +208,9 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         }
         return;
     }
-    
+
     _lastPresenceAction = msg.action;
-    
+
     if (msg.data && self.dataEncoder) {
         ARTDataEncoderOutput *encoded = [self.dataEncoder encode:msg.data];
         if (encoded.errorInfo) {
@@ -219,29 +219,20 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         msg.data = encoded.data;
         msg.encoding = encoded.encoding;
     }
-    
+
     ARTProtocolMessage *pm = [[ARTProtocolMessage alloc] init];
     pm.action = ARTProtocolMessagePresence;
     pm.channel = self.name;
     pm.presence = @[msg];
-    
-    [self publishProtocolMessage:pm callback:^void(ARTStatus *status) {
-        if (cb) cb(status.errorInfo);
-    }];
-} ART_TRY_OR_MOVE_TO_FAILED_END
-}
 
-- (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     __weak __typeof(self) weakSelf = self;
-    ARTStatus *statusInvalidConnectionState = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:@"channel operation failed (invalid connection state)"]];
-    ARTStatus *statusInvalidChannelState = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:@"channel operation failed (invalid channel state)"]];
+    ARTErrorInfo *invalidChannelError = [ARTErrorInfo createWithCode:90001 message:@"channel operation failed (invalid channel state)"];
 
     switch (_realtime.connection.state_nosync) {
         case ARTRealtimeClosing:
         case ARTRealtimeClosed: {
             if (cb) {
-                cb(statusInvalidConnectionState);
+                cb(invalidChannelError);
             }
             return;
         }
@@ -249,6 +240,65 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
             break;
     }
 
+    void (^queuedCallback)(ARTStatus *) = ^(ARTStatus *status) {
+        switch (weakSelf.state_nosync) {
+            case ARTRealtimeChannelDetaching:
+            case ARTRealtimeChannelDetached:
+            case ARTRealtimeChannelFailed:
+                if (cb) {
+                    cb(status.state == ARTStateOk ? invalidChannelError : status.errorInfo);
+                }
+                return;
+            default:
+                break;
+        }
+        if (cb) {
+            cb(status.errorInfo);
+        }
+    };
+
+    switch (self.state_nosync) {
+        case ARTRealtimeChannelInitialized:
+            [self addToQueue:pm callback:queuedCallback];
+            [self _attach:nil];
+            break;
+        case ARTRealtimeChannelAttaching:
+            [self addToQueue:pm callback:queuedCallback];
+            break;
+        case ARTRealtimeChannelSuspended:
+        case ARTRealtimeChannelDetaching:
+        case ARTRealtimeChannelDetached:
+        case ARTRealtimeChannelFailed: {
+            if (cb) {
+                cb(invalidChannelError);
+            }
+            break;
+        }
+        case ARTRealtimeChannelAttached: {
+            if (_realtime.connection.state_nosync == ARTRealtimeConnected) {
+                [self sendMessage:pm callback:^(ARTStatus *status) {
+                    cb(status.errorInfo);
+                }];
+            }
+            else {
+                [self addToQueue:pm callback:queuedCallback];
+
+                [self.realtime.internalEventEmitter once:[ARTEvent newWithConnectionEvent:ARTRealtimeConnectionEventConnected] callback:^(ARTConnectionStateChange *_Nullable change) {
+                    [weakSelf sendQueuedMessages];
+                }];
+            }
+            break;
+        }
+    }
+} ART_TRY_OR_MOVE_TO_FAILED_END
+}
+
+- (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
+    ARTStatus *statusInvalidConnectionState = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:@"channel operation failed (invalid connection state)"]];
+    ARTStatus *statusInvalidChannelState = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:@"channel operation failed (invalid channel state)"]];
+
+    __weak __typeof(self) weakSelf = self;
     void (^queuedCallback)(ARTStatus *) = ^(ARTStatus *status) {
         switch (weakSelf.state_nosync) {
             case ARTRealtimeChannelSuspended:
@@ -265,10 +315,21 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         }
     };
 
+    switch (_realtime.connection.state_nosync) {
+        case ARTRealtimeClosing:
+        case ARTRealtimeClosed: {
+            if (cb) {
+                cb(statusInvalidConnectionState);
+            }
+            return;
+        }
+        default:
+            break;
+    }
+
     switch (self.state_nosync) {
         case ARTRealtimeChannelSuspended:
-        case ARTRealtimeChannelFailed:
-        {
+        case ARTRealtimeChannelFailed: {
             if (cb) {
                 cb(statusInvalidChannelState);
             }
@@ -278,14 +339,13 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         case ARTRealtimeChannelDetaching:
         case ARTRealtimeChannelDetached:
         case ARTRealtimeChannelAttaching:
-        case ARTRealtimeChannelAttached:
-        {
+        case ARTRealtimeChannelAttached: {
             if (_realtime.connection.state_nosync == ARTRealtimeConnected) {
                 [self sendMessage:pm callback:cb];
-            } else {
+            }
+            else {
                 [self addToQueue:pm callback:queuedCallback];
-
-                [self.realtime.internalEventEmitter once:[ARTEvent newWithConnectionEvent:ARTRealtimeConnectionEventConnected] callback:^(ARTConnectionStateChange *__art_nullable change) {
+                [self.realtime.internalEventEmitter once:[ARTEvent newWithConnectionEvent:ARTRealtimeConnectionEventConnected] callback:^(ARTConnectionStateChange *_Nullable change) {
                     [weakSelf sendQueuedMessages];
                 }];
             }
