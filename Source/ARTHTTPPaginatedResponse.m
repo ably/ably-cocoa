@@ -102,36 +102,36 @@ ART_TRY_OR_REPORT_CRASH_START(rest) {
     [rest.logger debug:__FILE__ line:__LINE__ message:@"HTTP Paginated request: %@", request];
 
     [rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
-        if (response.allHeaderFields[ARTHttpHeaderFieldErrorCodeKey] == nil && error) {
+        if (error && ![error.domain isEqualToString:ARTAblyErrorDomain]) {
             callback(nil, [ARTErrorInfo createFromNSError:error]);
+            return;
         }
-        else {
-            [[rest logger] debug:__FILE__ line:__LINE__ message:@"HTTP Paginated response: %@", response];
-            [[rest logger] debug:__FILE__ line:__LINE__ message:@"HTTP Paginated response data: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
 
-            NSError *decodeError = nil;
+        [[rest logger] debug:__FILE__ line:__LINE__ message:@"HTTP Paginated response: %@", response];
+        [[rest logger] debug:__FILE__ line:__LINE__ message:@"HTTP Paginated response data: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
 
-            ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
-                id<ARTEncoder> encoder = [rest.encoders objectForKey:response.MIMEType];
-                return [encoder decodeToArray:data error:errorPtr];
-            };
-            NSArray *items = error ? nil : responseProcessor(response, data, &decodeError);
+        NSError *decodeError = nil;
 
-            if (decodeError) {
-                callback(nil, [ARTErrorInfo createFromNSError:decodeError]);
-                return;
-            }
+        ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
+            id<ARTEncoder> encoder = [rest.encoders objectForKey:response.MIMEType];
+            return [encoder decodeToArray:data error:errorPtr];
+        };
+        NSArray *items = error ? nil : responseProcessor(response, data, &decodeError);
 
-            NSDictionary *links = [response extractLinks];
-
-            NSMutableURLRequest *firstRel = [NSMutableURLRequest requestWithPath:links[@"first"] relativeTo:request];
-            NSMutableURLRequest *currentRel = [NSMutableURLRequest requestWithPath:links[@"current"] relativeTo:request];
-            NSMutableURLRequest *nextRel = [NSMutableURLRequest requestWithPath:links[@"next"] relativeTo:request];
-
-            ARTHTTPPaginatedResponse *result = [[ARTHTTPPaginatedResponse alloc] initWithResponse:response items:items rest:rest relFirst:firstRel relCurrent:currentRel relNext:nextRel responseProcessor:responseProcessor];
-
-            callback(result, [ARTErrorInfo createFromNSError:error]);
+        if (decodeError) {
+            callback(nil, [ARTErrorInfo createFromNSError:decodeError]);
+            return;
         }
+
+        NSDictionary *links = [response extractLinks];
+
+        NSMutableURLRequest *firstRel = [NSMutableURLRequest requestWithPath:links[@"first"] relativeTo:request];
+        NSMutableURLRequest *currentRel = [NSMutableURLRequest requestWithPath:links[@"current"] relativeTo:request];
+        NSMutableURLRequest *nextRel = [NSMutableURLRequest requestWithPath:links[@"next"] relativeTo:request];
+
+        ARTHTTPPaginatedResponse *result = [[ARTHTTPPaginatedResponse alloc] initWithResponse:response items:items rest:rest relFirst:firstRel relCurrent:currentRel relNext:nextRel responseProcessor:responseProcessor];
+
+        callback(result, nil);
     }];
 } ART_TRY_OR_REPORT_CRASH_END
 }
