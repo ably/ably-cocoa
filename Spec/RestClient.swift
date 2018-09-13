@@ -1632,14 +1632,10 @@ class RestClient: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             do {
                                 try rest.request("get", path: "feature", params: nil, body: nil, headers: nil) { paginatedResponse, error in
-                                    guard let error = error else {
-                                        fail("Error is empty"); done(); return
-                                    }
+                                    expect(error).to(beNil())
                                     guard let paginatedResponse = paginatedResponse else {
                                         fail("PaginatedResult is empty"); done(); return
                                     }
-                                    expect(error.statusCode) == 404
-                                    expect(error.localizedDescription).to(contain("Could not find path"))
                                     expect(paginatedResponse.items.count) == 0
                                     expect(paginatedResponse.hasNext) == false
                                     expect(paginatedResponse.isLast) == true
