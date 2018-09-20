@@ -2937,7 +2937,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN16b
-                it("Connection#recoveryKey should be composed with the connection key and latest serial received") {
+                it("Connection#recoveryKey should be composed with the connection key and latest serial received and msgSerial") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
@@ -2946,7 +2946,7 @@ class RealtimeClientConnection: QuickSpec {
                         let partialDone = AblyTests.splitDone(2, done: done)
                         client.connection.once(.connected) { _ in
                             expect(client.connection.serial).to(equal(-1))
-                            expect(client.connection.recoveryKey).to(equal("\(client.connection.key!):\(client.connection.serial)"))
+                            expect(client.connection.recoveryKey).to(equal("\(client.connection.key!):\(client.connection.serial):\(client.msgSerial)"))
                         }
                         channel.publish(nil, data: "message") { error in
                             expect(error).to(beNil())
@@ -2959,6 +2959,8 @@ class RealtimeClientConnection: QuickSpec {
                             partialDone()
                         }
                     }
+                    expect(client.msgSerial) == 1
+                    expect(client.connection.recoveryKey).to(equal("\(client.connection.key!):\(client.connection.serial):\(client.msgSerial)"))
                 }
 
             }
