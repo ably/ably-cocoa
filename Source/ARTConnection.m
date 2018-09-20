@@ -175,7 +175,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
             if (recStr == nil) {
                 return nil;
             }
-            NSString *str = [recStr stringByAppendingString:[NSString stringWithFormat:@":%ld", (long)self.serial_nosync]];
+            NSString *str = [recStr stringByAppendingString:[NSString stringWithFormat:@":%ld:%ld", (long)self.serial_nosync, (long)_realtime.msgSerial]];
             return str;
         } default:
             return nil;
