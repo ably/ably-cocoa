@@ -3032,8 +3032,11 @@ class RealtimeClientConnection: QuickSpec {
                     defer { client.dispose(); client.close() }
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connected) { stateChange in
-                            expect(stateChange!.reason!.message).to(contain("Unable to recover connection"))
-                            expect(client.connection.errorReason).to(beIdenticalTo(stateChange!.reason))
+                            guard let reason = stateChange?.reason else {
+                                fail("Reason is empty"); done(); return
+                            }
+                            expect(reason.message).to(contain("Unable to recover connection"))
+                            expect(client.connection.errorReason).to(beIdenticalTo(reason))
                             done()
                         }
                     }
