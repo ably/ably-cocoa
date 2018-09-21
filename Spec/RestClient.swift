@@ -1322,7 +1322,7 @@ class RestClient: QuickSpec {
                         let ablyBundleLibVersion = ARTDefault.libraryVersion()
                         expect(headerLibVersion).to(equal(ablyBundleLibVersion))
                         
-                        let patternToMatch = "ios-1.0."
+                        let patternToMatch = "ios-1.1."
                         let match = headerLibVersion?.hasPrefix(patternToMatch)
                         expect(match).to(beTrue())
                         
@@ -1389,7 +1389,7 @@ class RestClient: QuickSpec {
 
                 // RSC19a
                 context("method signature and arguments") {
-                    it("should add a query parameters") {
+                    it("should add query parameters") {
                         let rest = ARTRest(key: "xxxx:xxxx")
                         let mockHttpExecutor = MockHTTPExecutor()
                         rest.httpExecutor = mockHttpExecutor
@@ -1576,20 +1576,27 @@ class RestClient: QuickSpec {
                         let proxyHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                         rest.httpExecutor = proxyHTTPExecutor
 
+                        var httpPaginatedResponse: ARTHTTPPaginatedResponse!
                         waitUntil(timeout: testTimeout) { done in
                             do {
-                                try rest.request("get", path: "/channels/\(channel.name)", params: nil, body: nil, headers: nil) { paginatedResult, error in
+                                try rest.request("get", path: "/channels/\(channel.name)", params: nil, body: nil, headers: nil) { paginatedResponse, error in
                                     expect(error).to(beNil())
-                                    guard let paginatedResult = paginatedResult else {
+                                    guard let paginatedResponse = paginatedResponse else {
                                         fail("PaginatedResult is empty"); done(); return
                                     }
-                                    expect(paginatedResult.items.count) == 1
-                                    guard let channelDetailsDict = paginatedResult.items.first else {
+                                    expect(paginatedResponse.items.count) == 1
+                                    guard let channelDetailsDict = paginatedResponse.items.first else {
                                         fail("PaginatedResult first element is missing"); done(); return
                                     }
                                     expect(channelDetailsDict.value(forKey: "channelId") as? String).to(equal(channel.name))
-                                    expect(paginatedResult.hasNext) == false
-                                    expect(paginatedResult.isLast) == true
+                                    expect(paginatedResponse.hasNext) == false
+                                    expect(paginatedResponse.isLast) == true
+                                    expect(paginatedResponse.statusCode) == 200
+                                    expect(paginatedResponse.success) == true
+                                    expect(paginatedResponse.errorCode) == 0
+                                    expect(paginatedResponse.errorMessage).to(beNil())
+                                    expect(paginatedResponse.headers).toNot(beEmpty())
+                                    httpPaginatedResponse = paginatedResponse
                                     done()
                                 }
                             }
@@ -1604,7 +1611,8 @@ class RestClient: QuickSpec {
                             return
                         }
 
-                        expect(response.statusCode) == 200
+                        expect(response.statusCode) == httpPaginatedResponse.statusCode
+                        expect(response.allHeaderFields as? [String: String]) == httpPaginatedResponse.headers
                     }
 
                     it("should handle response failures") {
@@ -1623,13 +1631,20 @@ class RestClient: QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             do {
-                                try rest.request("get", path: "feature", params: nil, body: nil, headers: nil) { paginatedResult, error in
-                                    guard let error = error else {
-                                        fail("Error is nil"); done(); return
+                                try rest.request("get", path: "feature", params: nil, body: nil, headers: nil) { paginatedResponse, error in
+                                    expect(error).to(beNil())
+                                    guard let paginatedResponse = paginatedResponse else {
+                                        fail("PaginatedResult is empty"); done(); return
                                     }
-                                    expect(error.statusCode) == 404
-                                    expect(error.localizedDescription).to(contain("Could not find path"))
-                                    expect(paginatedResult).to(beNil())
+                                    expect(paginatedResponse.items.count) == 0
+                                    expect(paginatedResponse.hasNext) == false
+                                    expect(paginatedResponse.isLast) == true
+                                    expect(paginatedResponse.statusCode) == 404
+                                    expect(paginatedResponse.success) == false
+                                    expect(paginatedResponse.errorCode) == 40400
+                                    expect(paginatedResponse.errorMessage).to(contain("Could not find path"))
+                                    expect(paginatedResponse.headers).toNot(beEmpty())
+                                    expect(paginatedResponse.headers["X-Ably-Errorcode"]).to(equal("40400"))
                                     done()
                                 }
                             }

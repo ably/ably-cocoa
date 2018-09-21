@@ -41,6 +41,7 @@
 #import "ARTLocalDevice+Private.h"
 #import "ARTLocalDeviceStorage.h"
 #import "ARTNSMutableRequest+ARTRest.h"
+#import "ARTHTTPPaginatedResponse+Private.h"
 
 #if COCOAPODS
 #import <KSCrashAblyFork/KSCrash.h>
@@ -433,11 +434,11 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (BOOL)request:(NSString *)method path:(NSString *)path params:(nullable NSDictionary<NSString *, NSString *> *)params body:(nullable id)body headers:(nullable NSDictionary<NSString *, NSString *> *)headers callback:(void (^)(ARTPaginatedResult<NSDictionary *> *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+- (BOOL)request:(NSString *)method path:(NSString *)path params:(nullable NSDictionary<NSString *, NSString *> *)params body:(nullable id)body headers:(nullable NSDictionary<NSString *, NSString *> *)headers callback:(void (^)(ARTHTTPPaginatedResponse *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr {
 ART_TRY_OR_REPORT_CRASH_START(self) {
     if (callback) {
-        void (^userCallback)(ARTPaginatedResult<id> *, ARTErrorInfo *) = callback;
-        callback = ^(ARTPaginatedResult<id> *r, ARTErrorInfo *e) {
+        void (^userCallback)(ARTHTTPPaginatedResponse *, ARTErrorInfo *) = callback;
+        callback = ^(ARTHTTPPaginatedResponse *r, ARTErrorInfo *e) {
             ART_EXITING_ABLY_CODE(self);
             dispatch_async(_userQueue, ^{
                 userCallback(r, e);
@@ -515,14 +516,9 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 
     [request setAcceptHeader:self.defaultEncoder encoders:self.encoders];
 
-    ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
-        id<ARTEncoder> encoder = [self.encoders objectForKey:response.MIMEType];
-        return [encoder decodeToArray:data error:errorPtr];
-    };
-
     [self.logger debug:__FILE__ line:__LINE__ message:@"request %@ %@", method, path];
     dispatch_async(_queue, ^{
-        [ARTPaginatedResult executePaginated:self withRequest:request andResponseProcessor:responseProcessor callback:callback];
+        [ARTHTTPPaginatedResponse executePaginated:self withRequest:request  callback:callback];
     });
     return YES;
 } ART_TRY_OR_REPORT_CRASH_END
