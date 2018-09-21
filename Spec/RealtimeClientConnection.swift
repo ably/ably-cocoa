@@ -4280,7 +4280,7 @@ class RealtimeClientConnection: QuickSpec {
                                 done()
                             }
 
-                            let request = NSMutableURLRequest(url: NSURL(string: "/channels/\(channel.name)/messages")! as URL)
+                            let request = NSMutableURLRequest(url: URL(string: "/channels/\(channel.name)/messages")! as URL)
                             request.httpMethod = "POST"
                             request.httpBody = try! fixtureMessage.rawData()
                             request.allHTTPHeaderFields = [
@@ -4308,7 +4308,7 @@ class RealtimeClientConnection: QuickSpec {
                                     return
                                 }
 
-                                let request = NSMutableURLRequest(url: NSURL(string: "/channels/\(channel.name)/messages?limit=1")! as URL)
+                                let request = NSMutableURLRequest(url: URL(string: "/channels/\(channel.name)/messages?limit=1")! as URL)
                                 request.httpMethod = "GET"
                                 request.allHTTPHeaderFields = ["Accept" : "application/json"]
                                 client.rest.execute(request as URLRequest, withAuthOption: .on, completion: { _, data, err in
@@ -4366,7 +4366,7 @@ class RealtimeClientConnection: QuickSpec {
                                 partlyDone()
                             }
 
-                            let request = NSMutableURLRequest(url: NSURL(string: "/channels/\(realtimeSubscribeChannelMsgPack.name)/messages")! as URL)
+                            let request = NSMutableURLRequest(url: URL(string: "/channels/\(realtimeSubscribeChannelMsgPack.name)/messages")! as URL)
                             request.httpMethod = "POST"
                             request.httpBody = try! fixtureMessage.rawData()
                             request.allHTTPHeaderFields = [
@@ -4411,7 +4411,7 @@ class RealtimeClientConnection: QuickSpec {
                             }
 
                             waitUntil(timeout: testTimeout) { done in
-                                let request = NSMutableURLRequest(url: NSURL(string: "/channels/\(restPublishChannel.name)/messages?limit=1")! as URL)
+                                let request = NSMutableURLRequest(url: URL(string: "/channels/\(restPublishChannel.name)/messages?limit=1")! as URL)
                                 request.httpMethod = "GET"
                                 request.allHTTPHeaderFields = ["Accept" : "application/json"]
                                 restRetrieveClient.execute(request as URLRequest, withAuthOption: .on, completion: { _, data, err in

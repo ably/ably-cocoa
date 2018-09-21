@@ -533,7 +533,7 @@ class RestClient: QuickSpec {
                             // Expired token
                             options.tokenDetails = ARTTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires!.addingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
 
-                            options.authUrl = NSURL(string: "http://test-auth.ably.io") as URL?
+                            options.authUrl = URL(string: "http://test-auth.ably.io")
                             value(options)
                         }
                     }) else {
@@ -1355,7 +1355,7 @@ class RestClient: QuickSpec {
             it("background behaviour") {
                 let options = AblyTests.commonAppSetup()
                 waitUntil(timeout: testTimeout) { done in
-                  URLSession.shared.dataTask(with: NSURL(string:"https://ably.io")! as URL) { _ , _ , _  in
+                  URLSession.shared.dataTask(with: URL(string:"https://ably.io")! as URL) { _ , _ , _  in
                         let rest = ARTRest(options: options)
                     rest.channels.get("foo").history { _ , _  in
                             done()
@@ -1366,7 +1366,7 @@ class RestClient: QuickSpec {
 
             // https://github.com/ably/ably-ios/issues/589
             it("client should handle error messages in plaintext and HTML format") {
-                let request = NSURLRequest(url: NSURL(string: "https://www.example.com")! as URL)
+                let request = NSURLRequest(url: URL(string: "https://www.example.com")! as URL)
                 waitUntil(timeout: testTimeout) { done in
                     let rest = ARTRest(key: "xxxx:xxxx")
                     rest.execute(request as URLRequest, completion: { response, data, error in
@@ -1390,7 +1390,7 @@ class RestClient: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     let token = getTestToken()
                     options.httpRequestTimeout = 3 // short timeout to make it fail faster
-                    options.authUrl = NSURL(string: "http://10.255.255.1")! as URL
+                    options.authUrl = URL(string: "http://10.255.255.1")! as URL
                     options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
                     options.authParams?.append(NSURLQueryItem(name: "type", value: "text") as URLQueryItem)
                     options.authParams?.append(NSURLQueryItem(name: "body", value: token) as URLQueryItem)
