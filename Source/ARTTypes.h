@@ -120,6 +120,12 @@ typedef NS_ENUM(NSInteger, ARTRealtimeHistoryError) {
     ARTRealtimeHistoryErrorNotAttached = ARTDataQueryErrorTimestampRange + 1
 };
 
+typedef NS_ENUM(NSInteger, ARTCustomRequestError) {
+    ARTCustomRequestErrorInvalidMethod = 1,
+    ARTCustomRequestErrorInvalidBody = 2,
+    ARTCustomRequestErrorInvalidPath = 3,
+};
+
 NS_ASSUME_NONNULL_BEGIN
 
 /// Decompose API key
