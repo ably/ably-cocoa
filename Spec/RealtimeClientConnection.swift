@@ -3042,6 +3042,54 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
+                // RTN16f
+                it("should use msgSerial from recoveryKey to set the client internal msgSerial but is not sent to Ably") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    options.recover = "99999!xxxxxx-xxxxxxxxx-xxxxxxxxx:-1:7"
+
+                    let client = AblyTests.newRealtime(options)
+                    defer { client.dispose(); client.close() }
+
+                    var urlConnections = [NSURL]()
+                    TestProxyTransport.networkConnectEvent = { transport, url in
+                        if client.transport !== transport {
+                            return
+                        }
+                        urlConnections.append(url as NSURL)
+                        if urlConnections.count == 1 {
+                            TestProxyTransport.network = nil
+                        }
+                    }
+                    defer { TestProxyTransport.networkConnectEvent = nil }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.connected) { stateChange in
+                            guard let reason = stateChange?.reason else {
+                                fail("Reason is empty"); done(); return
+                            }
+
+                            expect(urlConnections.count) == 1
+                            guard let urlConnectionQuery = urlConnections.first?.query else {
+                                fail("Missing URL Connection query"); done(); return
+                            }
+
+                            expect(urlConnectionQuery).to(haveParam("recover", withValue: "99999!xxxxxx-xxxxxxxxx-xxxxxxxxx"))
+                            expect(urlConnectionQuery).to(haveParam("connectionSerial", withValue: "-1"))
+                            expect(urlConnectionQuery).toNot(haveParam("msgSerial"))
+
+                            // recover fails, the counter should be reset to 0
+                            expect(client.msgSerial) == 0
+
+                            expect(reason.message).to(contain("Unable to recover connection"))
+                            expect(client.connection.errorReason).to(beIdenticalTo(reason))
+                            done()
+                        }
+                        client.connect()
+                        expect(client.msgSerial) == 7
+                    }
+                }
+
             }
 
             // RTN17
