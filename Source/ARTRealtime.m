@@ -52,6 +52,7 @@
 @implementation ARTRealtime {
     BOOL _resuming;
     BOOL _renewingToken;
+    BOOL _suspendImmediateReconnection;
     ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_pingEventEmitter;
     NSDate *_startedReconnection;
     NSDate *_lastActivity;
@@ -505,7 +506,12 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
             [self.transport close];
             _transport = nil;
-            [stateChange setRetryIn:self.options.disconnectedRetryTimeout];
+            NSTimeInterval retryInterval = self.options.disconnectedRetryTimeout;
+            // RTN15a - retry immediately if client was connected
+            if (stateChange.previous == ARTRealtimeConnected && !_suspendImmediateReconnection) {
+                retryInterval = 0.1;
+            }
+            [stateChange setRetryIn:retryInterval];
             stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
                 [weakSelf transition:ARTRealtimeConnecting];
                 _connectionRetryFromDisconnectedListener = nil;

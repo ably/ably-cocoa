@@ -533,7 +533,7 @@ class RestClient: QuickSpec {
                             // Expired token
                             options.tokenDetails = ARTTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires!.addingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
 
-                            options.authUrl = NSURL(string: "http://test-auth.ably.io") as URL?
+                            options.authUrl = URL(string: "http://test-auth.ably.io")
                             value(options)
                         }
                     }) else {
@@ -1355,7 +1355,7 @@ class RestClient: QuickSpec {
             it("background behaviour") {
                 let options = AblyTests.commonAppSetup()
                 waitUntil(timeout: testTimeout) { done in
-                  URLSession.shared.dataTask(with: NSURL(string:"https://ably.io")! as URL) { _ , _ , _  in
+                  URLSession.shared.dataTask(with: URL(string:"https://ably.io")! as URL) { _ , _ , _  in
                         let rest = ARTRest(options: options)
                     rest.channels.get("foo").history { _ , _  in
                             done()
@@ -1366,7 +1366,7 @@ class RestClient: QuickSpec {
 
             // https://github.com/ably/ably-ios/issues/589
             it("client should handle error messages in plaintext and HTML format") {
-                let request = NSURLRequest(url: NSURL(string: "https://www.example.com")! as URL)
+                let request = NSURLRequest(url: URL(string: "https://www.example.com")! as URL)
                 waitUntil(timeout: testTimeout) { done in
                     let rest = ARTRest(key: "xxxx:xxxx")
                     rest.execute(request as URLRequest, completion: { response, data, error in
@@ -1666,72 +1666,35 @@ class RestClient: QuickSpec {
 
             }
 
-        }
-        
-        context("if in the course of a REST request an attempt to authenticate using authUrl fails due to a timeout") {
-            // RSA4e
-            it("the request should result in an error with code 40170, statusCode 401, and a suitable error message") {
-                let options = AblyTests.commonAppSetup()
-                let token = getTestToken()
-                options.httpRequestTimeout = 3 // short timeout to make it fail faster
-                options.authUrl = NSURL(string: "http://10.255.255.1")! as URL
-                options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
-                options.authParams?.append(NSURLQueryItem(name: "type", value: "text") as URLQueryItem)
-                options.authParams?.append(NSURLQueryItem(name: "body", value: token) as URLQueryItem)
-                
-                let client = ARTRest(options: options)
-                waitUntil(timeout: testTimeout, action: { done in
-                    let channel = client.channels.get("test-channel")
-                    channel.publish("test", data: "test-data", callback: { error in
-                        guard let error = error else {
-                            fail("Error should not be empty")
+            context("if in the course of a REST request an attempt to authenticate using authUrl fails due to a timeout") {
+                // RSA4e
+                it("the request should result in an error with code 40170, statusCode 401, and a suitable error message") {
+                    let options = AblyTests.commonAppSetup()
+                    let token = getTestToken()
+                    options.httpRequestTimeout = 3 // short timeout to make it fail faster
+                    options.authUrl = URL(string: "http://10.255.255.1")! as URL
+                    options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
+                    options.authParams?.append(NSURLQueryItem(name: "type", value: "text") as URLQueryItem)
+                    options.authParams?.append(NSURLQueryItem(name: "body", value: token) as URLQueryItem)
+
+                    let client = ARTRest(options: options)
+                    waitUntil(timeout: testTimeout) { done in
+                        let channel = client.channels.get("test-channel")
+                        channel.publish("test", data: "test-data") { error in
+                            guard let error = error else {
+                                fail("Error should not be empty")
+                                done()
+                                return
+                            }
+                            expect(error.statusCode).to(equal(401))
+                            expect(error.code).to(equal(40170))
+                            expect(error.message).to(contain("Error in requesting auth token"))
                             done()
-                            return
                         }
-                        expect(error.statusCode).to(equal(401))
-                        expect(error.code).to(equal(40170))
-                        expect(error.message).to(contain("Error in requesting auth token"))
-                        done()
-                    })
-                })
+                    }
+                }
             }
-        }
-        
-        // RSL1i
-        context("If the total size of message(s) exceeds the maxMessageSize") {
-            let channelName = "test-message-size"
-            it("the client library should reject the publish and indicate an error") {
-                let options = AblyTests.commonAppSetup()
-                let client = ARTRest(options: options)
-                let channel = client.channels.get(channelName)
-                let messages = buildMessagesThatExceedMaxMessageSize()
-                
-                waitUntil(timeout: testTimeout, action: { done in
-                    channel.publish(messages, callback: { err in
-                        expect(err?.code).to(equal(40009))
-                        expect(err?.message).to(contain("maximum message length exceeded"))
-                        done()
-                    })
-                })
-            }
-            
-            it("also when using publish:data:clientId:extras") {
-                let options = AblyTests.commonAppSetup()
-                let client = ARTRest(options: options)
-                let channel = client.channels.get(channelName)
-                let name = buildStringThatExceedMaxMessageSize()
-                
-                waitUntil(timeout: testTimeout, action: { done in
-                    channel.publish(name, data: nil, extras: nil, callback: {err in
-                        expect(err?.code).to(equal(40009))
-                        expect(err?.message).to(contain("maximum message length exceeded"))
-                        done()
-                    })
-                    
-                    
-                })
-            }
-        }
+
+        } // RestClient
     }
 }
-

@@ -319,7 +319,6 @@ class RealtimeClientChannel: QuickSpec {
                 // RTL2f
                 it("ChannelStateChange will contain a resumed boolean attribute with value @true@ if the bit flag RESUMED was included") {
                     let options = AblyTests.commonAppSetup()
-                    options.disconnectedRetryTimeout = 1.0
                     options.tokenDetails = getTestTokenDetails(ttl: 5.0)
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
@@ -833,7 +832,6 @@ class RealtimeClientChannel: QuickSpec {
 
                     it("DISCONNECTED") {
                         let options = AblyTests.commonAppSetup()
-                        options.disconnectedRetryTimeout = 0.1
                         let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
 
@@ -1491,7 +1489,6 @@ class RealtimeClientChannel: QuickSpec {
 
                     it("DISCONNECTED") {
                         let options = AblyTests.commonAppSetup()
-                        options.disconnectedRetryTimeout = 0.1
                         let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
 
@@ -1750,7 +1747,6 @@ class RealtimeClientChannel: QuickSpec {
                     context("the message should be queued and delivered as soon as the connection state returns to CONNECTED if the connection is") {
                         let options = AblyTests.commonAppSetup()
                         options.useTokenAuth = true
-                        options.disconnectedRetryTimeout = 0.3
                         options.autoConnect = false
                         var client: ARTRealtime!
                         var channel: ARTRealtimeChannel!
@@ -1897,7 +1893,6 @@ class RealtimeClientChannel: QuickSpec {
                     // RTL6c4
                     context("will result in an error if the") {
                         let options = AblyTests.commonAppSetup()
-                        options.disconnectedRetryTimeout = 0.1
                         options.suspendedRetryTimeout = 0.3
                         options.autoConnect = false
                         var client: ARTRealtime!
