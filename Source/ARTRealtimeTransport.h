@@ -65,6 +65,8 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
 - (void)realtimeTransportTooBig:(id<ARTRealtimeTransport>)transport;
 - (void)realtimeTransportFailed:(id<ARTRealtimeTransport>)transport withError:(ARTRealtimeTransportError *)error;
 
+- (void)realtimeTransportSetMsgSerial:(id<ARTRealtimeTransport>)transport msgSerial:(int64_t)msgSerial;
+
 @end
 
 @protocol ARTRealtimeTransport
