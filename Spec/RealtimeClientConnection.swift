@@ -2978,11 +2978,6 @@ class RealtimeClientConnection: QuickSpec {
                     expect(client.connection.recoveryKey).to(equal("\(client.connection.key!):\(client.connection.serial):\(client.msgSerial)"))
                 }
 
-            }
-
-            // RTN16
-            context("Connection recovery") {
-
                 // RTN16d
                 it("when a connection is successfully recovered, Connection#id will be identical to the id of the connection that was recovered and Connection#key will always be updated to the ConnectionDetails#connectionKey provided in the first CONNECTED ProtocolMessage") {
                     let options = AblyTests.commonAppSetup()
@@ -3011,11 +3006,6 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
-            }
-
-            // RTN16
-            context("Connection recovery") {
-
                 // RTN16c
                 it("Connection#recoveryKey should become becomes null when a connection is explicitly CLOSED or CLOSED") {
                     let options = AblyTests.commonAppSetup()
@@ -3034,11 +3024,6 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
-            }
-
-            // RTN16
-            context("Connection recovery") {
-
                 // RTN16e
                 it("should connect anyway if the recoverKey is no longer valid") {
                     let options = AblyTests.commonAppSetup()
@@ -3047,10 +3032,61 @@ class RealtimeClientConnection: QuickSpec {
                     defer { client.dispose(); client.close() }
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connected) { stateChange in
-                            expect(stateChange!.reason!.message).to(contain("Unable to recover connection"))
-                            expect(client.connection.errorReason).to(beIdenticalTo(stateChange!.reason))
+                            guard let reason = stateChange?.reason else {
+                                fail("Reason is empty"); done(); return
+                            }
+                            expect(reason.message).to(contain("Unable to recover connection"))
+                            expect(client.connection.errorReason).to(beIdenticalTo(reason))
                             done()
                         }
+                    }
+                }
+
+                // RTN16f
+                it("should use msgSerial from recoveryKey to set the client internal msgSerial but is not sent to Ably") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    options.recover = "99999!xxxxxx-xxxxxxxxx-xxxxxxxxx:-1:7"
+
+                    let client = AblyTests.newRealtime(options)
+                    defer { client.dispose(); client.close() }
+
+                    var urlConnections = [NSURL]()
+                    TestProxyTransport.networkConnectEvent = { transport, url in
+                        if client.transport !== transport {
+                            return
+                        }
+                        urlConnections.append(url as NSURL)
+                        if urlConnections.count == 1 {
+                            TestProxyTransport.network = nil
+                        }
+                    }
+                    defer { TestProxyTransport.networkConnectEvent = nil }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.connected) { stateChange in
+                            guard let reason = stateChange?.reason else {
+                                fail("Reason is empty"); done(); return
+                            }
+
+                            expect(urlConnections.count) == 1
+                            guard let urlConnectionQuery = urlConnections.first?.query else {
+                                fail("Missing URL Connection query"); done(); return
+                            }
+
+                            expect(urlConnectionQuery).to(haveParam("recover", withValue: "99999!xxxxxx-xxxxxxxxx-xxxxxxxxx"))
+                            expect(urlConnectionQuery).to(haveParam("connectionSerial", withValue: "-1"))
+                            expect(urlConnectionQuery).toNot(haveParam("msgSerial"))
+
+                            // recover fails, the counter should be reset to 0
+                            expect(client.msgSerial) == 0
+
+                            expect(reason.message).to(contain("Unable to recover connection"))
+                            expect(client.connection.errorReason).to(beIdenticalTo(reason))
+                            done()
+                        }
+                        client.connect()
+                        expect(client.msgSerial) == 7
                     }
                 }
 
