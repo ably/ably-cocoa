@@ -2850,6 +2850,29 @@ class RealtimeClientConnection: QuickSpec {
                             }
                         }                        
                     }
+                    
+                    // RTN15h1
+                    it("and the library does not have a means to renew the token, the connection will transition to the FAILED state") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let key = options.key
+                        // set the key to nil so that the client can't sign further token requests
+                        options.key = nil
+                        let tokenTtl = 3.0
+                        let tokenDetails = getTestTokenDetails(key: key, ttl: tokenTtl)!
+                        options.token = tokenDetails.token
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.failed) { stateChange in
+                                expect(stateChange?.reason?.code).to(equal(40142))
+                                expect(stateChange?.reason?.message).to(contain("Token expired"))
+                                done()
+                            }
+                            client.connect()
+                        }
+                    }
 
                     // RTN15h2
                     it("should transition to disconnected when the token renewal fails and the error should be emitted") {
