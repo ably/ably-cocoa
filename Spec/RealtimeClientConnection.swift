@@ -2978,11 +2978,6 @@ class RealtimeClientConnection: QuickSpec {
                     expect(client.connection.recoveryKey).to(equal("\(client.connection.key!):\(client.connection.serial):\(client.msgSerial)"))
                 }
 
-            }
-
-            // RTN16
-            context("Connection recovery") {
-
                 // RTN16d
                 it("when a connection is successfully recovered, Connection#id will be identical to the id of the connection that was recovered and Connection#key will always be updated to the ConnectionDetails#connectionKey provided in the first CONNECTED ProtocolMessage") {
                     let options = AblyTests.commonAppSetup()
@@ -3011,11 +3006,6 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
-            }
-
-            // RTN16
-            context("Connection recovery") {
-
                 // RTN16c
                 it("Connection#recoveryKey should become becomes null when a connection is explicitly CLOSED or CLOSED") {
                     let options = AblyTests.commonAppSetup()
@@ -3033,11 +3023,6 @@ class RealtimeClientConnection: QuickSpec {
                         }
                     }
                 }
-
-            }
-
-            // RTN16
-            context("Connection recovery") {
 
                 // RTN16e
                 it("should connect anyway if the recoverKey is no longer valid") {
