@@ -2066,13 +2066,13 @@ class RealtimeClientChannel: QuickSpec {
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test-maxMessageSize")
                     // This amount of messages would be beyond maxMessageSize, if bundled together
-                    let messagesToBeSent = 5000
+                    let messagesToBeSent = 1000
                     
                     // call publish before connecting, so messages are queued
                     waitUntil(timeout: testTimeout*2) { done in
                         let partialDone = AblyTests.splitDone(messagesToBeSent, done: done)
                         for i in 1...messagesToBeSent {
-                            channel.publish("initial\(i)", data: "message\(i)") { error in
+                            channel.publish("initial initial\(i)", data: "message message\(i)") { error in
                                 expect(error).to(beNil())
                                 partialDone()
                             }
