@@ -2057,6 +2057,37 @@ class RealtimeClientChannel: QuickSpec {
                         }
                     }
                 }
+                
+                // RTL6d1
+                it("The resulting ProtocolMessage must not exceed the maxMessageSize") {
+                    let options = AblyTests.commonAppSetup()
+                    options.autoConnect = false
+                    let client = AblyTests.newRealtime(options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("test-maxMessageSize")
+                    // This amount of messages would be beyond maxMessageSize, if bundled together
+                    let messagesToBeSent = 5000
+                    
+                    // call publish before connecting, so messages are queued
+                    waitUntil(timeout: testTimeout*2) { done in
+                        let partialDone = AblyTests.splitDone(messagesToBeSent, done: done)
+                        for i in 1...messagesToBeSent {
+                            channel.publish("initial\(i)", data: "message\(i)") { error in
+                                expect(error).to(beNil())
+                                partialDone()
+                            }
+                        }
+                        client.connect()
+                    }
+                    
+                    let transport = client.transport as! TestProxyTransport
+                    let protocolMessages = transport.protocolMessagesSent.filter{ $0.action == .message }
+                    // verify that messages are not bundled in a single protocol message
+                    expect(protocolMessages.count).to(beGreaterThan(1))
+                    // verify that all the messages have been sent
+                    let messagesSent = protocolMessages.compactMap{$0.messages?.count}.reduce(0, +)
+                    expect(messagesSent).to(equal(messagesToBeSent))
+                }
 
                 // RTL6e
                 context("Unidentified clients using Basic Auth") {
