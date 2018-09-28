@@ -45,14 +45,4 @@ platform :ios do
     )
   end
 
-  lane :test_iOS8 do
-    run_tests(devices: ["iPhone 6 (8.4)"],
-              test_without_building: false)
-    slack(
-      message: "Completed tests on iOS8",
-      success: :test_result,
-      default_payloads: [:test_result, :git_branch, :git_author, :last_git_commit_message]
-    )
-  end
-
 end
