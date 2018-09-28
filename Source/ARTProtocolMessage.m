@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
+#import "ARTDefault.h"
 #import "ARTProtocolMessage.h"
 #import "ARTProtocolMessage+Private.h"
 #import "ARTStatus.h"
@@ -85,6 +86,9 @@
      if (![other.channel isEqualToString:self.channel] || other.action != self.action) {
          return NO;
      }
+     if ([self mergeWouldExceedMaxSize:self.messages]) {
+         return NO;
+     }
 
      switch (self.action) {
          case ARTProtocolMessageMessage:
@@ -97,6 +101,24 @@
              return NO;
      }
 }
+
+- (BOOL)mergeWouldExceedMaxSize:(NSArray<ARTMessage*>*)messages {
+    NSInteger queuedMessagesSize = 0;
+    for (ARTMessage *message in self.messages) {
+        queuedMessagesSize += [message messageSize];
+    }
+    NSInteger messagesSize = 0;
+    for (ARTMessage *message in messages) {
+        messagesSize += [message messageSize];
+    }
+    NSInteger totalSize = queuedMessagesSize + messagesSize;
+    NSInteger maxSize = [ARTDefault maxMessageSize];
+    if (_connectionDetails.maxMessageSize) {
+        maxSize = _connectionDetails.maxMessageSize;
+    }
+    return totalSize > maxSize;
+}
+
 
 - (void)setConnectionSerial:(int64_t)connectionSerial {
     _connectionSerial =connectionSerial;
