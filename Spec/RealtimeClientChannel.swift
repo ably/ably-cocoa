@@ -2066,7 +2066,7 @@ class RealtimeClientChannel: QuickSpec {
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test-maxMessageSize")
                     // This amount of messages would be beyond maxMessageSize, if bundled together
-                    let messagesToBeSent = 1000
+                    let messagesToBeSent = 2000
                     
                     // call publish before connecting, so messages are queued
                     waitUntil(timeout: testTimeout*2) { done in
