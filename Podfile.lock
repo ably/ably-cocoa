@@ -67,7 +67,7 @@ PODS:
   - Nimble (7.0.3)
   - Quick (1.2.0)
   - SAMKeychain (1.5.3)
-  - SocketRocket (0.5.1)
+  - SocketRocketAblyFork (0.5.2-ably-2)
   - SwiftyJSON (3.1.4)
   - ULID (1.0.2)
 
@@ -78,7 +78,7 @@ DEPENDENCIES:
   - Nimble (= 7.0.3)
   - Quick (= 1.2.0)
   - SAMKeychain (= 1.5.3)
-  - SocketRocket (= 0.5.1)
+  - SocketRocketAblyFork (= 0.5.2-ably-2)
   - SwiftyJSON (= 3.1.4)
   - ULID (= 1.0.2)
 
@@ -90,7 +90,7 @@ SPEC REPOS:
     - Nimble
     - Quick
     - SAMKeychain
-    - SocketRocket
+    - SocketRocketAblyFork
     - SwiftyJSON
     - ULID
 
@@ -101,7 +101,7 @@ SPEC CHECKSUMS:
   Nimble: 7f5a9c447a33002645a071bddafbfb24ea70e0ac
   Quick: 58d203b1c5e27fff7229c4c1ae445ad7069a7a08
   SAMKeychain: 483e1c9f32984d50ca961e26818a534283b4cd5c
-  SocketRocket: d57c7159b83c3c6655745cd15302aa24b6bae531
+  SocketRocketAblyFork: 8337d4d53e49a8af8dbe76c8416ef55605f758c6
   SwiftyJSON: c2842d878f95482ffceec5709abc3d05680c0220
   ULID: fcabaa95746b670beb80c029beb3372da2f729bd
 
