@@ -2,6 +2,16 @@ default_platform(:ios)
 
 platform :ios do
 
+  lane :test_iOS12 do
+    run_tests(devices: ["iPhone XS (12.0)"],
+              xcargs: { ABLY_ENV: ENV['ABLY_ENV'] })
+    slack(
+      message: "Completed tests on iOS12",
+      success: :test_result,
+      default_payloads: [:test_result, :git_branch, :git_author, :last_git_commit_message]
+    )
+  end
+
   lane :test_iOS11 do
     run_tests(devices: ["iPhone 8 (11.4)"],
               test_without_building: false,
