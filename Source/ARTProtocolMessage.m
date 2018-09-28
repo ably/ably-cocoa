@@ -11,6 +11,7 @@
 #import "ARTProtocolMessage+Private.h"
 #import "ARTStatus.h"
 #import "ARTConnectionDetails.h"
+#import "ARTNSString+ARTUtil.h"
 
 @implementation ARTProtocolMessage
 
@@ -89,6 +90,9 @@
      if ([self mergeWouldExceedMaxSize:self.messages]) {
          return NO;
      }
+     if ([self clientIdsAreDifferent:other.messages]) {
+         return NO;
+     }
 
      switch (self.action) {
          case ARTProtocolMessageMessage:
@@ -100,6 +104,23 @@
          default:
              return NO;
      }
+}
+
+- (BOOL)clientIdsAreDifferent:(NSArray<ARTMessage*>*)messages {
+    NSMutableSet *queuedClientIds = [NSMutableSet new];
+    NSMutableSet *incomingClientIds = [NSMutableSet new];
+    for (ARTMessage *message in self.messages) {
+        [queuedClientIds addObject:[NSString nilToEmpty:message.clientId]];
+    }
+    for (ARTMessage *message in messages) {
+        [incomingClientIds addObject:[NSString nilToEmpty:message.clientId]];
+    }
+    [queuedClientIds unionSet:incomingClientIds];
+    if (queuedClientIds.count == 1) {
+        return NO;
+    } else {
+        return YES;
+    }
 }
 
 - (BOOL)mergeWouldExceedMaxSize:(NSArray<ARTMessage*>*)messages {
