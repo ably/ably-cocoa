@@ -2088,6 +2088,84 @@ class RealtimeClientChannel: QuickSpec {
                     let messagesSent = protocolMessages.compactMap{$0.messages?.count}.reduce(0, +)
                     expect(messagesSent).to(equal(messagesToBeSent))
                 }
+                
+                //RTL6d2
+                context("Messages with differing clientId values must not be bundled together") {
+                    
+                    it("messages with different (non empty) clientIds are posted via different protocol messages") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = AblyTests.newRealtime(options)
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("test-message-bundling-prevention")
+                        let clientIDs = ["client1", "client2", "client3"]
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(clientIDs.count, done: done)
+                            for (i, el) in clientIDs.enumerated() {
+                                channel.publish("name\(i)", data: "data\(i)", clientId: el) { error in
+                                    expect(error).to(beNil())
+                                    partialDone()
+                                }
+                            }
+                            client.connect()
+                        }
+                        
+                        let transport = client.transport as! TestProxyTransport
+                        let protocolMessages = transport.protocolMessagesSent.filter{ $0.action == .message }
+                        expect(protocolMessages.count).to(equal(clientIDs.count))
+                    }
+                    
+                    it("messages with mixed empty/non empty clientIds are posted via different protocol messages") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = AblyTests.newRealtime(options)
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("test-message-bundling-prevention")
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
+                            channel.publish("name1", data: "data1", clientId: "clientID1") { error in
+                                expect(error).to(beNil())
+                                partialDone()
+                            }
+                            channel.publish("name2", data: "data2") { error in
+                                expect(error).to(beNil())
+                                partialDone()
+                            }
+                            client.connect()
+                        }
+                        
+                        let transport = client.transport as! TestProxyTransport
+                        let protocolMessages = transport.protocolMessagesSent.filter{ $0.action == .message }
+                        expect(protocolMessages.count).to(equal(2))
+                    }
+                    
+                    it("messages bundled by the user are posted in a single protocol message even if they have mixed clientIds") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = AblyTests.newRealtime(options)
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("test-message-bundling-prevention")
+                        var messages = [ARTMessage]()
+                        for i in 1...3 {
+                            messages.append(ARTMessage(name: "name\(i)", data: "data\(i)", clientId: "clientId\(i)"))
+                        }
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(messages) { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                            client.connect()
+                        }
+                        
+                        let transport = client.transport as! TestProxyTransport
+                        let protocolMessages = transport.protocolMessagesSent.filter{ $0.action == .message }
+                        expect(protocolMessages.count).to(equal(1))
+                    }
+                    
+                }
 
                 // RTL6e
                 context("Unidentified clients using Basic Auth") {
