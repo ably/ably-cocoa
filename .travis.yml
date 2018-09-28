@@ -6,6 +6,7 @@ env:
   - LANG=en_US.UTF-8
 matrix:
   include:
+    - env: NAME="ably-iOS" LANE=test_iOS12
     - env: NAME="ably-iOS" LANE=test_iOS11
     - env: NAME="ably-iOS" LANE=test_iOS10
     - env: NAME="ably-iOS" LANE=test_iOS9
