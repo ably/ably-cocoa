@@ -66,21 +66,21 @@ ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
     if (cb) {
         void (^userCallback)(ARTErrorInfo *error) = cb;
         cb = ^(ARTErrorInfo *error) {
-            ART_EXITING_ABLY_CODE(_realtime.rest);
-            dispatch_async(_userQueue, ^{
+            ART_EXITING_ABLY_CODE(self->_realtime.rest);
+            dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
     }
 
 dispatch_sync(_queue, ^{
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
-    if (![_channels _exists:name]) {
+ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
+    if (![self->_channels _exists:name]) {
         if (cb) cb(nil);
         return;
     }
 
-    ARTRealtimeChannel *channel = [_channels _get:name];
+    ARTRealtimeChannel *channel = [self->_channels _get:name];
     [channel _detach:^(ARTErrorInfo *errorInfo) {
         [channel off_nosync];
         [channel _unsubscribe];
@@ -91,8 +91,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         // a new channel, created between the first call releases the stored
         // one and the second call's detach callback is called, can be
         // released unwillingly.
-        if ([_channels _exists:name] && [_channels _get:name] == channel) {
-            [_channels _release:name];
+        if ([self->_channels _exists:name] && [self->_channels _get:name] == channel) {
+            [self->_channels _release:name];
         }
 
         if (cb) cb(errorInfo);

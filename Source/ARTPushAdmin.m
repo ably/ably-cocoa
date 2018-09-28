@@ -38,15 +38,15 @@
     if (callback) {
         void (^userCallback)(ARTErrorInfo *error) = callback;
         callback = ^(ARTErrorInfo *error) {
-            ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_userQueue, ^{
+            ART_EXITING_ABLY_CODE(self->_rest);
+            dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
     }
 
     dispatch_async(_queue, ^{
-        ART_TRY_OR_REPORT_CRASH_START(_rest) {
+        ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
             if (![[recipient allKeys] count]) {
                 if (callback) callback([ARTErrorInfo createWithCode:0 message:@"Recipient is missing"]);
                 return;
@@ -62,13 +62,13 @@
             NSMutableDictionary *body = [NSMutableDictionary dictionary];
             [body setObject:recipient forKey:@"recipient"];
             [body addEntriesFromDictionary:data];
-            request.HTTPBody = [[_rest defaultEncoder] encode:body error:nil];
-            [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
+            request.HTTPBody = [[self->_rest defaultEncoder] encode:body error:nil];
+            [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
-            [_logger debug:__FILE__ line:__LINE__ message:@"push notification to a single device %@", request];
-            [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+            [self->_logger debug:__FILE__ line:__LINE__ message:@"push notification to a single device %@", request];
+            [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
                 if (error) {
-                    [_logger error:@"%@: push notification to a single device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+                    [self->_logger error:@"%@: push notification to a single device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
                     if (callback) callback([ARTErrorInfo createFromNSError:error]);
                     return;
                 }

@@ -143,8 +143,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     if (callback) {
         void (^userCallback)(ARTErrorInfo *__art_nullable error) = callback;
         callback = ^(ARTErrorInfo *__art_nullable error) {
-            ART_EXITING_ABLY_CODE(_realtime.rest);
-            dispatch_async(_userQueue, ^{
+            ART_EXITING_ABLY_CODE(self->_realtime.rest);
+            dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
@@ -175,7 +175,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     msg.channel = self.name;
 
     [self.realtime send:msg sentCallback:nil ackCallback:^(ARTStatus *status) {
-        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) continue sync, status is %@", _realtime, self, self.name, status];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) continue sync, status is %@", self->_realtime, self, self.name, status];
     }];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -379,8 +379,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     if (cb) {
         void (^userCallback)(ARTMessage *__art_nullable m) = cb;
         cb = ^(ARTMessage *__art_nullable m) {
-            ART_EXITING_ABLY_CODE(_realtime.rest);
-            dispatch_async(_userQueue, ^{
+            ART_EXITING_ABLY_CODE(self->_realtime.rest);
+            dispatch_async(self->_userQueue, ^{
                 userCallback(m);
             });
         };
@@ -388,8 +388,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     if (onAttach) {
         void (^userOnAttach)(ARTErrorInfo *__art_nullable m) = onAttach;
         onAttach = ^(ARTErrorInfo *__art_nullable m) {
-            ART_EXITING_ABLY_CODE(_realtime.rest);
-            dispatch_async(_userQueue, ^{
+            ART_EXITING_ABLY_CODE(self->_realtime.rest);
+            dispatch_async(self->_userQueue, ^{
                 userOnAttach(m);
             });
         };
@@ -397,7 +397,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
     __block ARTEventListener *listener = nil;
 dispatch_sync(_queue, ^{
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
+ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
     if (self.state_nosync == ARTRealtimeChannelFailed) {
         if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
         return;
@@ -419,8 +419,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     if (cb) {
         void (^userCallback)(ARTMessage *__art_nullable m) = cb;
         cb = ^(ARTMessage *__art_nullable m) {
-            ART_EXITING_ABLY_CODE(_realtime.rest);
-            dispatch_async(_userQueue, ^{
+            ART_EXITING_ABLY_CODE(self->_realtime.rest);
+            dispatch_async(self->_userQueue, ^{
                 userCallback(m);
             });
         };
@@ -428,7 +428,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
     __block ARTEventListener *listener = nil;
 dispatch_sync(_queue, ^{
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
+ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
     if (self.state_nosync == ARTRealtimeChannelFailed) {
         if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
         return;
@@ -442,7 +442,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
 - (void)unsubscribe {
 dispatch_sync(_queue, ^{
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
+ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
     [self _unsubscribe];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 });
@@ -454,7 +454,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
 - (void)unsubscribe:(ARTEventListener *)listener {
 dispatch_sync(_queue, ^{
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
+ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
     [self.messagesEventEmitter off:listener];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 });
@@ -462,7 +462,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
 - (void)unsubscribe:(NSString *)name listener:(ARTEventListener *)listener {
 dispatch_sync(_queue, ^{
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
+ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
     [self.messagesEventEmitter off:name listener:listener];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 });
@@ -831,8 +831,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     if (callback) {
         void (^userCallback)(ARTErrorInfo *__art_nullable error) = callback;
         callback = ^(ARTErrorInfo *__art_nullable error) {
-            ART_EXITING_ABLY_CODE(_realtime.rest);
-            dispatch_async(_userQueue, ^{
+            ART_EXITING_ABLY_CODE(self->_realtime.rest);
+            dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
@@ -950,8 +950,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     if (callback) {
         void (^userCallback)(ARTErrorInfo *__art_nullable error) = callback;
         callback = ^(ARTErrorInfo *__art_nullable error) {
-            ART_EXITING_ABLY_CODE(_realtime.rest);
-            dispatch_async(_userQueue, ^{
+            ART_EXITING_ABLY_CODE(self->_realtime.rest);
+            dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
@@ -1029,7 +1029,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTStateDetachTimedOut message:@"detach timed out"];
         ARTStatus *status = [ARTStatus state:ARTStateDetachTimedOut info:errorInfo];
         [self transition:ARTRealtimeChannelAttached status:status];
-        [_detachedEventEmitter emit:nil with:errorInfo];
+        [self->_detachedEventEmitter emit:nil with:errorInfo];
     }] startTimer];
 
     if (![self.realtime shouldQueueEvents]) {
