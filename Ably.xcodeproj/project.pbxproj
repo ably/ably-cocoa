@@ -1049,26 +1049,16 @@
 			inputPaths = (
 				"${SRCROOT}/Pods/Target Support Files/Pods-AblySpec/Pods-AblySpec-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Aspects/Aspects.framework",
-				"${BUILT_PRODUCTS_DIR}/KSCrashAblyFork/KSCrashAblyFork.framework",
 				"${BUILT_PRODUCTS_DIR}/Nimble/Nimble.framework",
 				"${BUILT_PRODUCTS_DIR}/Quick/Quick.framework",
-				"${BUILT_PRODUCTS_DIR}/SAMKeychain/SAMKeychain.framework",
-				"${BUILT_PRODUCTS_DIR}/SocketRocketAblyFork/SocketRocketAblyFork.framework",
 				"${BUILT_PRODUCTS_DIR}/SwiftyJSON/SwiftyJSON.framework",
-				"${BUILT_PRODUCTS_DIR}/ULID/ULID.framework",
-				"${BUILT_PRODUCTS_DIR}/msgpack/msgpack.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Aspects.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/KSCrashAblyFork.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Nimble.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Quick.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SAMKeychain.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SocketRocketAblyFork.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftyJSON.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ULID.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/msgpack.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1223,8 +1213,13 @@
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"TEST_SUITE=1",
+				);
 				INFOPLIST_FILE = Spec/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"TEST_SUITE\"";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = AblySpec;
 				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
@@ -1247,8 +1242,13 @@
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"TEST_SUITE=1",
+				);
 				INFOPLIST_FILE = Spec/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"TEST_SUITE\"";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = AblySpec;
 				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
