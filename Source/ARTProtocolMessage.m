@@ -86,7 +86,7 @@
      if (![other.channel isEqualToString:self.channel] || other.action != self.action) {
          return NO;
      }
-     if ([self mergeWouldExceedMaxSize:self.messages]) {
+     if ([self mergeWouldExceedMaxSize:other.messages]) {
          return NO;
      }
 
