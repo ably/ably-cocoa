@@ -14,8 +14,6 @@ before_install:
   - gem install cocoapods -v '1.5.3'
   - pod repo update > /dev/null
 install:
-  - brew update
-  - brew upgrade carthage
   # CocoaPods
   - pod install
   # Carthage
