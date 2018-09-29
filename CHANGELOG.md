@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.1.1](https://github.com/ably/ably-ios/tree/1.1.1) (2018-09-29)
+
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.1.0...1.1.1)
+
+**Fixed bugs:**
+
+- Update SocketRocket dependency [\#804](https://github.com/ably/ably-ios/issues/804)
+
 ## [1.1.0](https://github.com/ably/ably-ios/tree/1.1.0) (2018-08-10)
 
 [Full Changelog](https://github.com/ably/ably-ios/compare/1.0.14...1.1.0)
