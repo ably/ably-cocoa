@@ -8,7 +8,12 @@
 
 #import <Ably/ARTWebSocketTransport.h>
 #import <Ably/CompatibilityMacros.h>
+#if COCOAPODS && !TEST_SUITE
+#import <SocketRocketAblyFork/SRWebSocket.h>
+#else
+// Carthage
 #import <SocketRocket/SRWebSocket.h>
+#endif
 #import <Ably/ARTEncoder.h>
 #import <Ably/ARTAuth.h>
 
