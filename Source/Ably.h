@@ -55,6 +55,7 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import <Ably/ARTJsonEncoder.h>
 #import <Ably/ARTMsgPackEncoder.h>
 #import <Ably/ARTPaginatedResult.h>
+#import <Ably/ARTHTTPPaginatedResponse.h>
 #import <Ably/ARTReachability.h>
 #import <Ably/ARTOSReachability.h>
 #import <Ably/ARTGCD.h>

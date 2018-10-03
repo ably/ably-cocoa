@@ -40,6 +40,8 @@
 #import "ARTPush+Private.h"
 #import "ARTLocalDevice+Private.h"
 #import "ARTLocalDeviceStorage.h"
+#import "ARTNSMutableRequest+ARTRest.h"
+#import "ARTHTTPPaginatedResponse+Private.h"
 
 #if COCOAPODS
 #import <KSCrashAblyFork/KSCrash.h>
@@ -259,13 +261,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 
     if ([request isKindOfClass:[NSMutableURLRequest class]]) {
         NSMutableURLRequest *mutableRequest = (NSMutableURLRequest *)request;
-        NSMutableArray *allEncoders = [NSMutableArray arrayWithArray:[_encoders.allValues valueForKeyPath:@"mimeType"]];
-        NSString *defaultMimetype = [[self defaultEncoder] mimeType];
-        // Make the mime type of the default encoder the first element of the Accept header field
-        [allEncoders removeObject:defaultMimetype];
-        [allEncoders insertObject:defaultMimetype atIndex:0];
-        NSString *accept = [allEncoders componentsJoinedByString:@","];
-        [mutableRequest setValue:accept forHTTPHeaderField:@"Accept"];
+        [mutableRequest setAcceptHeader:self.defaultEncoder encoders:self.encoders];
         [mutableRequest setValue:[ARTDefault version] forHTTPHeaderField:@"X-Ably-Version"];
         [mutableRequest setValue:[ARTDefault libraryVersion] forHTTPHeaderField:@"X-Ably-Lib"];
         [mutableRequest setTimeoutInterval:_options.httpRequestTimeout];
@@ -435,6 +431,96 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
             callback(time, decodeError);
         }
     }];
+} ART_TRY_OR_REPORT_CRASH_END
+}
+
+- (BOOL)request:(NSString *)method path:(NSString *)path params:(nullable NSDictionary<NSString *, NSString *> *)params body:(nullable id)body headers:(nullable NSDictionary<NSString *, NSString *> *)headers callback:(void (^)(ARTHTTPPaginatedResponse *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+ART_TRY_OR_REPORT_CRASH_START(self) {
+    if (callback) {
+        void (^userCallback)(ARTHTTPPaginatedResponse *, ARTErrorInfo *) = callback;
+        callback = ^(ARTHTTPPaginatedResponse *r, ARTErrorInfo *e) {
+            ART_EXITING_ABLY_CODE(self);
+            dispatch_async(_userQueue, ^{
+                userCallback(r, e);
+            });
+        };
+    }
+
+    if (![[method lowercaseString] isEqualToString:@"get"] &&
+        ![[method lowercaseString] isEqualToString:@"post"] &&
+        ![[method lowercaseString] isEqualToString:@"patch"] &&
+        ![[method lowercaseString] isEqualToString:@"put"]) {
+        if (errorPtr) {
+            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                            code:ARTCustomRequestErrorInvalidMethod
+                                        userInfo:@{NSLocalizedDescriptionKey:@"Method isn't valid."}];
+        }
+        return NO;
+    }
+
+    if (body &&
+        ![body isKindOfClass:[NSDictionary class]] &&
+        ![body isKindOfClass:[NSArray class]]) {
+        if (errorPtr) {
+            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                            code:ARTCustomRequestErrorInvalidBody
+                                        userInfo:@{NSLocalizedDescriptionKey:@"Body should be a Dictionary or an Array."}];
+        }
+        return NO;
+    }
+
+    if ([[path stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] isEqualToString:@""]) {
+        if (errorPtr) {
+            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                            code:ARTCustomRequestErrorInvalidPath
+                                        userInfo:@{NSLocalizedDescriptionKey:@"Path cannot be empty."}];
+        }
+        return NO;
+    }
+
+    NSURL *url = [NSURL URLWithString:path relativeToURL:self.baseUrl];
+    if (!url) {
+        if (errorPtr) {
+            *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
+                                            code:ARTCustomRequestErrorInvalidPath
+                                        userInfo:@{NSLocalizedDescriptionKey:@"Path isn't valid for an URL."}];
+        }
+        return NO;
+    }
+
+    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:url resolvingAgainstBaseURL:YES];
+    __block NSMutableArray<NSURLQueryItem *> *queryItems = nil;
+    [params enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, BOOL *stop) {
+        if (!queryItems) {
+            queryItems = [NSMutableArray new];
+        }
+        [queryItems addObject:[NSURLQueryItem queryItemWithName:key value:value]];
+    }];
+    components.queryItems = queryItems;
+
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
+    request.HTTPMethod = method;
+
+    [headers enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, BOOL *stop) {
+        [request addValue:value forHTTPHeaderField:key];
+    }];
+
+    NSError *encodeError = nil;
+    NSData *bodyData = [self.defaultEncoder encode:body error:&encodeError];
+
+    request.HTTPBody = bodyData;
+    [request setValue:[self.defaultEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
+    if ([[method lowercaseString] isEqualToString:@"post"]) {
+        [request setValue:[NSString stringWithFormat:@"%d", (unsigned int)bodyData.length] forHTTPHeaderField:@"Content-Length"];
+    }
+
+    [request setAcceptHeader:self.defaultEncoder encoders:self.encoders];
+
+    [self.logger debug:__FILE__ line:__LINE__ message:@"request %@ %@", method, path];
+    dispatch_async(_queue, ^{
+        [ARTHTTPPaginatedResponse executePaginated:self withRequest:request  callback:callback];
+    });
+    return YES;
 } ART_TRY_OR_REPORT_CRASH_END
 }
 

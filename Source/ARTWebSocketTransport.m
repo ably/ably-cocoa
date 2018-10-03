@@ -149,7 +149,7 @@ NSString *WebSocketStateToStr(SRReadyState state);
 
     if (options.recover) {
         NSArray *recoverParts = [options.recover componentsSeparatedByString:@":"];
-        if ([recoverParts count] == 2) {
+        if (recoverParts.count > 1 && recoverParts.count <= 3) {
             NSString *key = [recoverParts objectAtIndex:0];
             NSString *serial = [recoverParts objectAtIndex:1];
             [self.logger info:@"R:%p WS:%p ARTWebSocketTransport: attempting recovery of connection %@", _delegate, self, key];
@@ -159,6 +159,11 @@ NSString *WebSocketStateToStr(SRReadyState state);
 
             NSURLQueryItem *connectionSerialParam = [NSURLQueryItem queryItemWithName:@"connectionSerial" value:serial];
             queryItems = [queryItems arrayByAddingObject:connectionSerialParam];
+
+            int64_t msgSerial = [[recoverParts lastObject] longLongValue];
+            if (msgSerial) {
+                [_delegate realtimeTransportSetMsgSerial:self msgSerial:msgSerial];
+            }
         }
         else {
             [self.logger error:@"R:%p WS:%p ARTWebSocketTransport: recovery string is malformed, ignoring: '%@'", _delegate, self, options.recover];

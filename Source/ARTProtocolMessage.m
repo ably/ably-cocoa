@@ -6,10 +6,12 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
+#import "ARTDefault.h"
 #import "ARTProtocolMessage.h"
 #import "ARTProtocolMessage+Private.h"
 #import "ARTStatus.h"
 #import "ARTConnectionDetails.h"
+#import "ARTNSString+ARTUtil.h"
 
 @implementation ARTProtocolMessage
 
@@ -85,6 +87,12 @@
      if (![other.channel isEqualToString:self.channel] || other.action != self.action) {
          return NO;
      }
+     if ([self mergeWouldExceedMaxSize:other.messages]) {
+         return NO;
+     }
+     if ([self clientIdsAreDifferent:other.messages]) {
+         return NO;
+     }
 
      switch (self.action) {
          case ARTProtocolMessageMessage:
@@ -97,6 +105,41 @@
              return NO;
      }
 }
+
+- (BOOL)clientIdsAreDifferent:(NSArray<ARTMessage*>*)messages {
+    NSMutableSet *queuedClientIds = [NSMutableSet new];
+    NSMutableSet *incomingClientIds = [NSMutableSet new];
+    for (ARTMessage *message in self.messages) {
+        [queuedClientIds addObject:[NSString nilToEmpty:message.clientId]];
+    }
+    for (ARTMessage *message in messages) {
+        [incomingClientIds addObject:[NSString nilToEmpty:message.clientId]];
+    }
+    [queuedClientIds unionSet:incomingClientIds];
+    if (queuedClientIds.count == 1) {
+        return NO;
+    } else {
+        return YES;
+    }
+}
+
+- (BOOL)mergeWouldExceedMaxSize:(NSArray<ARTMessage*>*)messages {
+    NSInteger queuedMessagesSize = 0;
+    for (ARTMessage *message in self.messages) {
+        queuedMessagesSize += [message messageSize];
+    }
+    NSInteger messagesSize = 0;
+    for (ARTMessage *message in messages) {
+        messagesSize += [message messageSize];
+    }
+    NSInteger totalSize = queuedMessagesSize + messagesSize;
+    NSInteger maxSize = [ARTDefault maxMessageSize];
+    if (_connectionDetails.maxMessageSize) {
+        maxSize = _connectionDetails.maxMessageSize;
+    }
+    return totalSize > maxSize;
+}
+
 
 - (void)setConnectionSerial:(int64_t)connectionSerial {
     _connectionSerial =connectionSerial;

@@ -919,6 +919,17 @@
     return obj;
 }
 
+- (NSArray<NSDictionary *> *)decodeToArray:(NSData *)data error:(NSError **)error {
+    id obj = [self decode:data error:error];
+    if ([obj isKindOfClass:[NSDictionary class]]) {
+        return @[obj];
+    }
+    if (![obj isKindOfClass:[NSArray class]]) {
+        return nil;
+    }
+    return obj;
+}
+
 - (id)decode:(NSData *)data error:(NSError **)error {
     NSError *e = nil;
     id decoded = [_delegate decode:data error:&e];
