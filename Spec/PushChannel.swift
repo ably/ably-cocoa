@@ -65,7 +65,14 @@ class PushChannel : QuickSpec {
                     guard let rawBody = request.httpBody else {
                         fail("should have a body"); return
                     }
-                    guard let body = rest.defaultEncoder.decode(rawBody, error: nil) as? NSDictionary else {
+                    let decodedBody: Any
+                    do {
+                        decodedBody = try rest.defaultEncoder.decode(rawBody)
+                    }
+                    catch {
+                        fail("Decode failed: \(error)"); return
+                    }
+                    guard let body = decodedBody as? NSDictionary else {
                         fail("body is invalid"); return
                     }
 
@@ -125,7 +132,14 @@ class PushChannel : QuickSpec {
                     guard let rawBody = request.httpBody else {
                         fail("should have a body"); return
                     }
-                    guard let body = rest.defaultEncoder.decode(rawBody, error: nil) as? NSDictionary else {
+                    let decodedBody: Any
+                    do {
+                        decodedBody = try rest.defaultEncoder.decode(rawBody)
+                    }
+                    catch {
+                        fail("Decode failed: \(error)"); return
+                    }
+                    guard let body = decodedBody as? NSDictionary else {
                         fail("body is invalid"); return
                     }
 
