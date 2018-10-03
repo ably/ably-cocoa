@@ -4292,7 +4292,7 @@ class RealtimeClientConnection: QuickSpec {
             }
 
             context("with fixture messages") {
-                let fixtures = JSON(data: NSData(contentsOfFile: pathForTestResource(testResourcesPath + "messages-encoding.json"))! as Data, options: .mutableContainers)
+                let fixtures = try! JSON(data: NSData(contentsOfFile: pathForTestResource(testResourcesPath + "messages-encoding.json"))! as Data, options: .mutableContainers)
 
                 func expectDataToMatch(_ message: ARTMessage, _ fixtureMessage: JSON) {
                     switch fixtureMessage["expectedType"].string! {
@@ -4378,7 +4378,7 @@ class RealtimeClientConnection: QuickSpec {
                                         done()
                                         return
                                     }
-                                    let persistedMessage = JSON(data: data!).array!.first!
+                                    let persistedMessage = try! JSON(data: data!).array!.first!
                                     expect(persistedMessage["data"]).to(equal(fixtureMessage["data"]))
                                     expect(persistedMessage["encoding"]).to(equal(fixtureMessage["encoding"]))
                                     done()
@@ -4481,7 +4481,7 @@ class RealtimeClientConnection: QuickSpec {
                                         done()
                                         return
                                     }
-                                    let persistedMessage = JSON(data: data!).array!.first!
+                                    let persistedMessage = try! JSON(data: data!).array!.first!
                                     expect(persistedMessage["data"]).to(equal(persistedMessage["data"]))
                                     expect(persistedMessage["encoding"]).to(equal(fixtureMessage["encoding"]))
                                     done()

@@ -55,7 +55,7 @@ class AblyTests {
     class func msgpackToJSON(_ data: NSData) -> JSON {
         let decoded = try! ARTMsgPackEncoder().decode(data as Data)
         let encoded = try! ARTJsonEncoder().encode(decoded)
-        return JSON(data: encoded)
+        return try! JSON(data: encoded)
     }
 
     class func checkError(_ errorInfo: ARTErrorInfo?, withAlternative message: String) {
@@ -121,7 +121,7 @@ class AblyTests {
                 fatalError(error.localizedDescription)
             }
 
-            testApplication = JSON(data: responseData!)
+            testApplication = try! JSON(data: responseData!)
             
             if debug {
                 options.logLevel = .verbose
