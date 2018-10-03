@@ -3931,10 +3931,14 @@ class Auth : QuickSpec {
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
 
+                    let originalARTChannels_getChannelNamePrefix = ARTChannels_getChannelNamePrefix
+                    defer { ARTChannels_getChannelNamePrefix = originalARTChannels_getChannelNamePrefix }
+                    ARTChannels_getChannelNamePrefix = nil // Force that channel name is not changed.
+
                     waitUntil(timeout: testTimeout) { done in
                         client.channels.get(channelName).publish(messageName, data: nil, callback: { error in
-                            expect(error?.code).to(equal(90001))
-                            expect(error?.message).to(contain("channel operation failed"))
+                            expect(error?.code).to(equal(40160))
+                            expect(error?.message).to(contain("permission denied"))
                             done()
                         })
                     }
