@@ -23,7 +23,7 @@ install:
 before_script:
   - xcrun simctl erase all
 script:
-  - export ABLY_ENV="sandbox"
+  - export ABLY_ENV="idempotent-dev"
   - fastlane $LANE
 after_success:
   - sleep 5
