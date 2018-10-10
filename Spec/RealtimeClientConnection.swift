@@ -2662,29 +2662,51 @@ class RealtimeClientConnection: QuickSpec {
                     var resumed = false
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connected) { _ in
-                            var sentQueuedMessage: ARTMessage?
-                            channel.publish(nil, data: "message") { _ in
-                                if resumed {
-                                    let transport = client.transport as! TestProxyTransport
-                                    expect(transport.protocolMessagesReceived.filter{ $0.action == .ack }).to(haveCount(1))
-                                    let sentTransportMessage = transport.protocolMessagesSent.filter{ $0.action == .message }.first!.messages![0]
-                                    expect(sentQueuedMessage).to(beIdenticalTo(sentTransportMessage))
-                                    done()
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+
+                        guard let transport1 = client.transport as? TestProxyTransport else {
+                            fail("TestProxyTransport not setup"); done(); return
+                        }
+
+                        var sentPendingMessage: ARTMessage?
+                        channel.publish(nil, data: "message") { _ in
+                            if resumed {
+                                guard let transport2 = client.transport as? TestProxyTransport else {
+                                    fail("TestProxyTransport not setup"); done(); return
                                 }
-                                else {
-                                    fail("Shouldn't be called")
+                                expect(transport2.protocolMessagesReceived.filter{ $0.action == .ack }).to(haveCount(1))
+
+                                guard let sentTransportMessage1 = transport1.protocolMessagesSent.filter({ $0.action == .message }).first?.messages?.first else {
+                                    fail("Message that has been re-sent isn't available"); done(); return
                                 }
+                                guard let sentTransportMessage2 = transport2.protocolMessagesSent.filter({ $0.action == .message }).first?.messages?.first else {
+                                    fail("Message that has been re-sent isn't available"); done(); return
+                                }
+
+                                expect(transport1).toNot(beIdenticalTo(transport2))
+                                expect(sentPendingMessage).to(beIdenticalTo(sentTransportMessage2))
+
+                                partialDone()
                             }
-                            delay(0) {
-                                client.onDisconnected()
+                            else {
+                                fail("Shouldn't be called")
                             }
-                            client.connection.once(.connected) { _ in
-                                resumed = true
-                                channel.testSuite_injectIntoMethod(before: #selector(channel.sendQueuedMessages)) {
-                                    channel.testSuite_getArgument(from: #selector(channel.send), at: 0) { arg0 in
-                                        sentQueuedMessage = (arg0 as? ARTProtocolMessage)?.messages?[0]
-                                    }
-                                }
+                        }
+                        delay(0) {
+                            client.onDisconnected()
+                        }
+                        client.connection.once(.connected) { _ in
+                            resumed = true
+                        }
+                        client.testSuite_injectIntoMethod(before: Selector(("resendPendingMessages"))) {
+                            client.testSuite_getArgument(from: #selector(ARTRealtime.send(_:sentCallback:ackCallback:)), at: 0) { arg0 in
+                                sentPendingMessage = (arg0 as? ARTProtocolMessage)?.messages?[0]
+                                partialDone()
                             }
                         }
                     }
