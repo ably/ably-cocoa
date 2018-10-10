@@ -2350,6 +2350,7 @@ class RealtimeClientConnection: QuickSpec {
                         let expectedConnectionId = client.connection.id
                         client.onDisconnected()
 
+                        channel.attach()
                         channel.publish(nil, data: "queued message")
                         expect(client.queuedMessages).toEventually(haveCount(1), timeout: testTimeout)
 
@@ -2378,6 +2379,7 @@ class RealtimeClientConnection: QuickSpec {
                         let expectedConnectionId = client.connection.id
                         client.onDisconnected()
 
+                        channel.attach()
                         channel.publish(nil, data: "queued message")
                         expect(client.queuedMessages).toEventually(haveCount(1), timeout: testTimeout)
 
