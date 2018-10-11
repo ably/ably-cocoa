@@ -3692,11 +3692,11 @@ class Auth : QuickSpec {
                 let options = AblyTests.clientOptions()
 
                 context("with valid credentials") {
-                    options.token = getJWTToken()
-                    let client = AblyTests.newRealtime(options)
-                    defer { client.dispose(); client.close() }
-
                     it("pulls stats successfully") {
+                        options.token = getJWTToken()
+                        let client = AblyTests.newRealtime(options)
+                        defer { client.dispose(); client.close() }
+
                         waitUntil(timeout: testTimeout) { done in
                             client.stats { stats, error in
                                 expect(error).to(beNil())
@@ -3732,13 +3732,13 @@ class Auth : QuickSpec {
                 options.authUrl = URL(string: echoServerAddress)! as URL
 
                 context("with valid credentials") {
-                    options.authParams = [URLQueryItem]() as [URLQueryItem]?
-                    options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]) as URLQueryItem)
-                    options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]) as URLQueryItem)
-                    let client = ARTRealtime(options: options)
-                    defer { client.dispose(); client.close() }
-
                     it("fetches a channels and posts a message") {
+                        options.authParams = [URLQueryItem]() as [URLQueryItem]?
+                        options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]) as URLQueryItem)
+                        options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]) as URLQueryItem)
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.connected, callback: { _ in
                                 let channel = client.channels.get(channelName)
@@ -3753,13 +3753,13 @@ class Auth : QuickSpec {
                 }
 
                 context("with wrong credentials") {
-                    options.authParams = [URLQueryItem]() as [URLQueryItem]?
-                    options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]) as URLQueryItem)
-                    options.authParams?.append(URLQueryItem(name: "keySecret", value: "INVALID") as URLQueryItem)
-                    let client = ARTRealtime(options: options)
-                    defer { client.dispose(); client.close() }
-
                     it("fails to connect with reason 'invalid signature'") {
+                        options.authParams = [URLQueryItem]() as [URLQueryItem]?
+                        options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]) as URLQueryItem)
+                        options.authParams?.append(URLQueryItem(name: "keySecret", value: "INVALID") as URLQueryItem)
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.disconnected) { stateChange in
                                 expect(stateChange!.reason!.code).to(equal(40144))
@@ -3832,14 +3832,14 @@ class Auth : QuickSpec {
                 let options = AblyTests.clientOptions()
 
                 context("with valid credentials") {
-                    options.authCallback = { tokenParams, completion in
-                        let token = ARTTokenDetails(token: getJWTToken()!)
-                        completion(token, nil)
-                    }
-                    let client = ARTRealtime(options: options)
-                    defer { client.dispose(); client.close() }
-
                     it("pulls stats successfully") {
+                        options.authCallback = { tokenParams, completion in
+                            let token = ARTTokenDetails(token: getJWTToken()!)
+                            completion(token, nil)
+                        }
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+
                         waitUntil(timeout: testTimeout) { done in
                             client.stats { stats, error in
                                 expect(error).to(beNil())
@@ -3850,14 +3850,14 @@ class Auth : QuickSpec {
                 }
 
                 context("with invalid credentials") {
-                    options.authCallback = { tokenParams, completion in
-                        let token = ARTTokenDetails(token: getJWTToken(invalid: true)!)
-                        completion(token, nil)
-                    }
-                    let client = ARTRealtime(options: options)
-                    defer { client.dispose(); client.close() }
-
                     it("fails to connect") {
+                        options.authCallback = { tokenParams, completion in
+                            let token = ARTTokenDetails(token: getJWTToken(invalid: true)!)
+                            completion(token, nil)
+                        }
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.disconnected) { stateChange in
                                 expect(stateChange!.reason!.code).to(equal(40144))
@@ -3906,13 +3906,13 @@ class Auth : QuickSpec {
             }
             
             context("when the token request includes a clientId") {
-                let clientId = "JWTClientId"
-                let options = AblyTests.clientOptions()
-                options.tokenDetails = ARTTokenDetails(token: getJWTToken(clientId: clientId)!)
-                let client = ARTRealtime(options: options)
-                defer { client.dispose(); client.close() }
-                
                 it("the clientId is the same specified in the JWT token request") {
+                    let clientId = "JWTClientId"
+                    let options = AblyTests.clientOptions()
+                    options.tokenDetails = ARTTokenDetails(token: getJWTToken(clientId: clientId)!)
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connected) { _ in
                             expect(client.auth.clientId).to(equal(clientId))
@@ -3924,17 +3924,21 @@ class Auth : QuickSpec {
             }
             
             context("when the token request includes subscribe-only capabilities") {
-                let capability = "{\"\(channelName)\":[\"subscribe\"]}"
-                let options = AblyTests.clientOptions()
-                options.tokenDetails = ARTTokenDetails(token: getJWTToken(capability: capability)!)
-                let client = ARTRealtime(options: options)
-                defer { client.dispose(); client.close() }
-
                 it("fails to publish to a channel with subscribe-only capability") {
+                    let capability = "{\"\(channelName)\":[\"subscribe\"]}"
+                    let options = AblyTests.clientOptions()
+                    options.tokenDetails = ARTTokenDetails(token: getJWTToken(capability: capability)!)
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+
+                    let originalARTChannels_getChannelNamePrefix = ARTChannels_getChannelNamePrefix
+                    defer { ARTChannels_getChannelNamePrefix = originalARTChannels_getChannelNamePrefix }
+                    ARTChannels_getChannelNamePrefix = nil // Force that channel name is not changed.
+
                     waitUntil(timeout: testTimeout) { done in
                         client.channels.get(channelName).publish(messageName, data: nil, callback: { error in
-                            expect(error?.code).to(equal(90001))
-                            expect(error?.message).to(contain("channel operation failed"))
+                            expect(error?.code).to(equal(40160))
+                            expect(error?.message).to(contain("permission denied"))
                             done()
                         })
                     }
