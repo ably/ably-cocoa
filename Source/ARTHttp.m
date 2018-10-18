@@ -8,6 +8,7 @@
 
 #import "ARTHttp.h"
 #import "ARTURLSessionServerTrust.h"
+#import "ARTConstants.h"
 
 @interface ARTHttp ()
 
@@ -51,7 +52,7 @@
         } else {
             [self.logger debug:@"%@ %@: statusCode %ld", request.HTTPMethod, request.URL.absoluteString, (long)httpResponse.statusCode];
             [self.logger verbose:@"Headers %@", httpResponse.allHeaderFields];
-            NSString *headerErrorMessage = httpResponse.allHeaderFields[@"X-Ably-ErrorMessage"];
+            NSString *headerErrorMessage = httpResponse.allHeaderFields[ARTHttpHeaderFieldErrorMessageKey];
             if (headerErrorMessage && ![headerErrorMessage isEqualToString:@""]) {
                 [self.logger warn:@"%@", headerErrorMessage];
             }

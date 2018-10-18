@@ -93,7 +93,6 @@ class RealtimeClientPresence: QuickSpec {
                 let membersCount = 110
 
                 let options = AblyTests.commonAppSetup()
-                options.disconnectedRetryTimeout = 1.0
                 var clientSecondary: ARTRealtime!
                 defer { clientSecondary.dispose(); clientSecondary.close() }
 
@@ -690,7 +689,6 @@ class RealtimeClientPresence: QuickSpec {
                         }
                         defer { clientMembers?.dispose(); clientMembers?.close() }
 
-                        options.disconnectedRetryTimeout = 1.0
                         options.tokenDetails = getTestTokenDetails(key: options.key!, ttl: 5.0)
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
@@ -2830,7 +2828,7 @@ class RealtimeClientPresence: QuickSpec {
             }
 
             // RTP17
-            pending("private and internal PresenceMap containing only members that match the current connectionId") {
+            context("private and internal PresenceMap containing only members that match the current connectionId") {
 
                 it("any ENTER, PRESENT, UPDATE or LEAVE event that matches the current connectionId should be applied to this object") {
                     let options = AblyTests.commonAppSetup()
@@ -2966,12 +2964,17 @@ class RealtimeClientPresence: QuickSpec {
                 it("all members belonging to the current connection are published as a PresenceMessage on the Channel by the server irrespective of whether the client has permission to subscribe or the Channel is configured to publish presence events") {
                     let options = AblyTests.commonAppSetup()
                     let channelName = NSUUID().uuidString
-                    options.tokenDetails = getTestTokenDetails(capability: "{\"\(channelName)\":[\"presence\",\"publish\"]}")
+                    let clientId = NSUUID().uuidString
+                    options.tokenDetails = getTestTokenDetails(clientId: clientId, capability: "{\"\(channelName)\":[\"presence\",\"publish\"]}")
                     let client = ARTRealtime(options: options)
+                    // Prevent channel name to be prefixed by test-*
+                    let originalChannelNamePrefix = ARTChannels_getChannelNamePrefix
+                    defer { ARTChannels_getChannelNamePrefix = originalChannelNamePrefix }
+                    ARTChannels_getChannelNamePrefix = nil
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get(channelName)
                     waitUntil(timeout: testTimeout) { done in
-                        channel.presence.enterClient("tester", data: nil) { error in
+                        channel.presence.enterClient(clientId, data: nil) { error in
                             expect(error).to(beNil())
                             done()
                         }
@@ -3171,7 +3174,6 @@ class RealtimeClientPresence: QuickSpec {
                 // RTP16b
                 it("all presence messages will be queued and delivered as soon as the connection state returns to CONNECTED") {
                     let options = AblyTests.commonAppSetup()
-                    options.disconnectedRetryTimeout = 1.0
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
@@ -3199,7 +3201,6 @@ class RealtimeClientPresence: QuickSpec {
                 // RTP16b
                 it("all presence messages will be lost if queueMessages has been explicitly set to false") {
                     let options = AblyTests.commonAppSetup()
-                    options.disconnectedRetryTimeout = 1.0
                     options.queueMessages = false
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }

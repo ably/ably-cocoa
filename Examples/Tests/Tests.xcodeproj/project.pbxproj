@@ -142,7 +142,6 @@
 				EBF38F551CE3D0E000F0D574 /* Frameworks */,
 				EBF38F561CE3D0E000F0D574 /* Resources */,
 				751C5C44401069CC5CAAEE9B /* [CP] Embed Pods Frameworks */,
-				C74FEE28A2A489B53329CB85 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -162,7 +161,6 @@
 				EBF38F691CE3D0E000F0D574 /* Frameworks */,
 				EBF38F6A1CE3D0E000F0D574 /* Resources */,
 				FA8F5A3794314A107D832B82 /* [CP] Embed Pods Frameworks */,
-				CC1B59CE6E42A6645FE6AF9E /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -280,7 +278,8 @@
 				"${SRCROOT}/Pods/Target Support Files/Pods-Tests/Pods-Tests-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Ably/Ably.framework",
 				"${BUILT_PRODUCTS_DIR}/KSCrashAblyFork/KSCrashAblyFork.framework",
-				"${BUILT_PRODUCTS_DIR}/SocketRocket/SocketRocket.framework",
+				"${BUILT_PRODUCTS_DIR}/SAMKeychain/SAMKeychain.framework",
+				"${BUILT_PRODUCTS_DIR}/SocketRocketAblyFork/SocketRocketAblyFork.framework",
 				"${BUILT_PRODUCTS_DIR}/ULID/ULID.framework",
 				"${BUILT_PRODUCTS_DIR}/msgpack/msgpack.framework",
 			);
@@ -288,43 +287,14 @@
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Ably.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/KSCrashAblyFork.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SocketRocket.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SAMKeychain.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SocketRocketAblyFork.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ULID.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/msgpack.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Tests/Pods-Tests-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		C74FEE28A2A489B53329CB85 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Tests/Pods-Tests-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		CC1B59CE6E42A6645FE6AF9E /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-TestsTests/Pods-TestsTests-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FA8F5A3794314A107D832B82 /* [CP] Embed Pods Frameworks */ = {
@@ -336,7 +306,8 @@
 				"${SRCROOT}/Pods/Target Support Files/Pods-TestsTests/Pods-TestsTests-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/Ably/Ably.framework",
 				"${BUILT_PRODUCTS_DIR}/KSCrashAblyFork/KSCrashAblyFork.framework",
-				"${BUILT_PRODUCTS_DIR}/SocketRocket/SocketRocket.framework",
+				"${BUILT_PRODUCTS_DIR}/SAMKeychain/SAMKeychain.framework",
+				"${BUILT_PRODUCTS_DIR}/SocketRocketAblyFork/SocketRocketAblyFork.framework",
 				"${BUILT_PRODUCTS_DIR}/ULID/ULID.framework",
 				"${BUILT_PRODUCTS_DIR}/msgpack/msgpack.framework",
 			);
@@ -344,7 +315,8 @@
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Ably.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/KSCrashAblyFork.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SocketRocket.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SAMKeychain.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SocketRocketAblyFork.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ULID.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/msgpack.framework",
 			);

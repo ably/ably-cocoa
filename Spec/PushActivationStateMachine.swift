@@ -293,7 +293,14 @@ class PushActivationStateMachine : QuickSpec {
                         guard let rawBody = request.httpBody else {
                             fail("should have a body"); return
                         }
-                        guard let body = stateMachine.rest.defaultEncoder.decode(rawBody, error: nil) as? NSDictionary else {
+                        let decodedBody: Any
+                        do {
+                            decodedBody = try stateMachine.rest.defaultEncoder.decode(rawBody)
+                        }
+                        catch {
+                            fail("Decode failed: \(error)"); return
+                        }
+                        guard let body = decodedBody as? NSDictionary else {
                             fail("body is invalid"); return
                         }
                         expect(request.httpMethod) == "POST"
@@ -339,7 +346,14 @@ class PushActivationStateMachine : QuickSpec {
                         guard let rawBody = request.httpBody else {
                             fail("should have a body"); return
                         }
-                        guard let body = stateMachine.rest.defaultEncoder.decode(rawBody, error: nil) as? NSDictionary else {
+                        let decodedBody: Any
+                        do {
+                            decodedBody = try stateMachine.rest.defaultEncoder.decode(rawBody)
+                        }
+                        catch {
+                            fail("Decode failed: \(error)"); return
+                        }
+                        guard let body = decodedBody as? NSDictionary else {
                             fail("body is invalid"); return
                         }
                         expect(body.value(forKey: "id") as? String).to(equal(rest.device.id))
@@ -839,7 +853,14 @@ class PushActivationStateMachine : QuickSpec {
                         guard let rawBody = request.httpBody else {
                             fail("should have a body"); return
                         }
-                        guard let body = stateMachine.rest.defaultEncoder.decode(rawBody, error: nil) as? NSDictionary else {
+                        let decodedBody: Any
+                        do {
+                            decodedBody = try stateMachine.rest.defaultEncoder.decode(rawBody)
+                        }
+                        catch {
+                            fail("Decode failed: \(error)"); return
+                        }
+                        guard let body = decodedBody as? NSDictionary else {
                             fail("body is invalid"); return
                         }
                         expect(request.httpMethod) == "PATCH"
@@ -891,7 +912,14 @@ class PushActivationStateMachine : QuickSpec {
                         guard let rawBody = request.httpBody else {
                             fail("should have a body"); return
                         }
-                        guard let body = stateMachine.rest.defaultEncoder.decode(rawBody, error: nil) as? NSDictionary else {
+                        let decodedBody: Any
+                        do {
+                            decodedBody = try stateMachine.rest.defaultEncoder.decode(rawBody)
+                        }
+                        catch {
+                            fail("Decode failed: \(error)"); return
+                        }
+                        guard let body = decodedBody as? NSDictionary else {
                             fail("body is invalid"); return
                         }
                         expect(request.httpMethod) == "PATCH"
@@ -1026,7 +1054,14 @@ class PushActivationStateMachine : QuickSpec {
                         guard let rawBody = request.httpBody else {
                             fail("should have a body"); return
                         }
-                        guard let body = stateMachine.rest.defaultEncoder.decode(rawBody, error: nil) as? NSDictionary else {
+                        let decodedBody: Any
+                        do {
+                            decodedBody = try stateMachine.rest.defaultEncoder.decode(rawBody)
+                        }
+                        catch {
+                            fail("Decode failed: \(error)"); return
+                        }
+                        guard let body = decodedBody as? NSDictionary else {
                             fail("body is invalid"); return
                         }
                         expect(body.value(forKey: "id")).to(beNil())
@@ -1077,7 +1112,14 @@ class PushActivationStateMachine : QuickSpec {
                         guard let rawBody = request.httpBody else {
                             fail("should have a body"); return
                         }
-                        guard let body = stateMachine.rest.defaultEncoder.decode(rawBody, error: nil) as? NSDictionary else {
+                        let decodedBody: Any
+                        do {
+                            decodedBody = try stateMachine.rest.defaultEncoder.decode(rawBody)
+                        }
+                        catch {
+                            fail("Decode failed: \(error)"); return
+                        }
+                        guard let body = decodedBody as? NSDictionary else {
                             fail("body is invalid"); return
                         }
                         expect(request.httpMethod) == "PATCH"

@@ -85,8 +85,8 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (callback) {
         void (^userCallback)(__GENERIC(ARTPaginatedResult, ARTMessage *) *result, ARTErrorInfo *error) = callback;
         callback = ^(__GENERIC(ARTPaginatedResult, ARTMessage *) *result, ARTErrorInfo *error) {
-            ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_userQueue, ^{
+            ART_EXITING_ABLY_CODE(self->_rest);
+            dispatch_async(self->_userQueue, ^{
                 userCallback(result, error);
             });
         };
@@ -94,7 +94,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 
     __block BOOL ret;
 dispatch_sync(_queue, ^{
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
+ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     if (query.limit > 1000) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
@@ -114,7 +114,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         return;
     }
 
-    NSURLComponents *componentsUrl = [NSURLComponents componentsWithString:[_basePath stringByAppendingPathComponent:@"messages"]];
+    NSURLComponents *componentsUrl = [NSURLComponents componentsWithString:[self->_basePath stringByAppendingPathComponent:@"messages"]];
     NSError *error = nil;
     componentsUrl.queryItems = [query asQueryItems:&error];
     if (error) {
@@ -128,20 +128,20 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:componentsUrl.URL];
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^NSArray<ARTMessage *> *(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
-        id<ARTEncoder> encoder = [_rest.encoders objectForKey:response.MIMEType];
+        id<ARTEncoder> encoder = [self->_rest.encoders objectForKey:response.MIMEType];
         return [[encoder decodeMessages:data error:errorPtr] artMap:^(ARTMessage *message) {
             NSError *error = nil;
             message = [message decodeWithEncoder:self.dataEncoder error:&error];
             if (error != nil) {
                 ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createFromNSError:error] prepend:@"Failed to decode data: "];
-                [self.logger error:@"RS:%p C:%p (%@) %@", _rest, self, self.name, errorInfo.message];
+                [self.logger error:@"RS:%p C:%p (%@) %@", self->_rest, self, self.name, errorInfo.message];
             }
             return message;
         }];
     };
 
-    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p C:%p (%@) stats request %@", _rest, self, self.name, request];
-    [ARTPaginatedResult executePaginated:_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p C:%p (%@) stats request %@", self->_rest, self, self.name, request];
+    [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
     ret = YES;
 } ART_TRY_OR_REPORT_CRASH_END
 });
@@ -152,15 +152,15 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (callback) {
         void (^userCallback)(ARTErrorInfo *__art_nullable error) = callback;
         callback = ^(ARTErrorInfo *__art_nullable error) {
-            ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_userQueue, ^{
+            ART_EXITING_ABLY_CODE(self->_rest);
+            dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
     }
 
 dispatch_async(_queue, ^{
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
+ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     NSData *encodedMessage = nil;
     
     if ([data isKindOfClass:[ARTMessage class]]) {
@@ -194,7 +194,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         }
     }
     
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:[_basePath stringByAppendingPathComponent:@"messages"]]];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:[self->_basePath stringByAppendingPathComponent:@"messages"]]];
     request.HTTPMethod = @"POST";
     request.HTTPBody = encodedMessage;
     
@@ -202,8 +202,8 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         [request setValue:self.rest.defaultEncoding forHTTPHeaderField:@"Content-Type"];
     }
 
-    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p C:%p (%@) post message %@", _rest, self, self.name, [[NSString alloc] initWithData:encodedMessage encoding:NSUTF8StringEncoding]];
-    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p C:%p (%@) post message %@", self->_rest, self, self.name, [[NSString alloc] initWithData:encodedMessage encoding:NSUTF8StringEncoding]];
+    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (callback) {
             ARTErrorInfo *errorInfo = error ? [ARTErrorInfo createFromNSError:error] : nil;
             callback(errorInfo);

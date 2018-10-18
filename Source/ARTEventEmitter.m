@@ -90,7 +90,7 @@
     [self invalidate];
     if (_eventHandler && _eventHandler.userQueue) {
         dispatch_async(_eventHandler.userQueue, ^{
-            [_center removeObserver:_token];
+            [self->_center removeObserver:self->_token];
         });
     }
     else {
@@ -342,8 +342,8 @@
     if (cb) {
         void (^userCallback)(id _Nullable) = cb;
         cb = ^(id _Nullable v) {
-            ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_userQueue, ^{
+            ART_EXITING_ABLY_CODE(self->_rest);
+            dispatch_async(self->_userQueue, ^{
                 userCallback(v);
             });
         };
@@ -360,8 +360,8 @@ dispatch_sync(_queue, ^{
     if (cb) {
         void (^userCallback)(id _Nullable) = cb;
         cb = ^(id _Nullable v) {
-            ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_userQueue, ^{
+            ART_EXITING_ABLY_CODE(self->_rest);
+            dispatch_async(self->_userQueue, ^{
                 userCallback(v);
             });
         };
@@ -378,8 +378,8 @@ dispatch_sync(_queue, ^{
     if (cb) {
         void (^userCallback)(id _Nullable) = cb;
         cb = ^(id _Nullable v) {
-            ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_userQueue, ^{
+            ART_EXITING_ABLY_CODE(self->_rest);
+            dispatch_async(self->_userQueue, ^{
                 userCallback(v);
             });
         };
@@ -396,8 +396,8 @@ dispatch_sync(_queue, ^{
     if (cb) {
         void (^userCallback)(id _Nullable) = cb;
         cb = ^(id _Nullable v) {
-            ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_userQueue, ^{
+            ART_EXITING_ABLY_CODE(self->_rest);
+            dispatch_async(self->_userQueue, ^{
                 userCallback(v);
             });
         };

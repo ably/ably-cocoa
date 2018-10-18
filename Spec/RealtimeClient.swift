@@ -103,7 +103,7 @@ class RealtimeClient: QuickSpec {
                                 done()
                             case .connected:
                                 self.checkError(errorInfo)
-                                expect(client.connection.recoveryKey).to(equal("\(client.connection.key ?? ""):\(client.connection.serial)"), description: "recoveryKey wrong formed")
+                                expect(client.connection.recoveryKey).to(equal("\(client.connection.key ?? ""):\(client.connection.serial):\(client.msgSerial)"), description: "recoveryKey wrong formed")
                                 options.recover = client.connection.recoveryKey
                                 done()
                             default:
@@ -1231,7 +1231,7 @@ class RealtimeClient: QuickSpec {
             // https://github.com/ably/ably-ios/issues/577
             it("background behaviour") {
                 waitUntil(timeout: testTimeout) { done in
-                  URLSession.shared.dataTask(with: NSURL(string:"https://ably.io")! as URL) { _ , _ , _  in
+                  URLSession.shared.dataTask(with: URL(string:"https://ably.io")! as URL) { _ , _ , _  in
                         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                         realtime.channels.get("foo").attach { error in
                             expect(error).to(beNil())
@@ -1439,7 +1439,6 @@ class RealtimeClient: QuickSpec {
             
             it("moves to DISCONNECTED on an unexpected normal WebSocket close") {
                 let options = AblyTests.commonAppSetup()
-                options.disconnectedRetryTimeout = 0.3
                 let client = ARTRealtime(options: options)
                 defer { client.dispose(); client.close() }
                 

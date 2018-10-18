@@ -93,16 +93,19 @@ class RestClientChannel: QuickSpec {
                     var publishError: ARTErrorInfo? = ARTErrorInfo.create(from: NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
 
-                    channel.publish(nil, data: nil) { error in
-                        publishError = error
-                        channel.history { result, _ in
-                            publishedMessage = result?.items.first
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: nil) { error in
+                            publishError = error
+                            channel.history { result, _ in
+                                publishedMessage = result?.items.first
+                                done()
+                            }
                         }
                     }
 
-                    expect(publishError).toEventually(beNil(), timeout: testTimeout)
-                    expect(publishedMessage?.name).toEventually(beNil(), timeout: testTimeout)
-                    expect(publishedMessage?.data).toEventually(beNil(), timeout: testTimeout)
+                    expect(publishError).to(beNil())
+                    expect(publishedMessage?.name).to(beNil())
+                    expect(publishedMessage?.data).to(beNil())
                 }
             }
 
@@ -111,16 +114,19 @@ class RestClientChannel: QuickSpec {
                     var publishError: ARTErrorInfo? = ARTErrorInfo.create(from: NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
 
-                    channel.publish([ARTMessage(name: name, data: data)]) { error in
-                        publishError = error
-                        channel.history { result, _ in
-                            publishedMessage = result?.items.first
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish([ARTMessage(name: name, data: data)]) { error in
+                            publishError = error
+                            channel.history { result, _ in
+                                publishedMessage = result?.items.first
+                                done()
+                            }
                         }
                     }
 
-                    expect(publishError).toEventually(beNil(), timeout: testTimeout)
-                    expect(publishedMessage?.name).toEventually(beNil(), timeout: testTimeout)
-                    expect(publishedMessage?.data).toEventually(beNil(), timeout: testTimeout)
+                    expect(publishError).to(beNil())
+                    expect(publishedMessage?.name).to(equal(name))
+                    expect(publishedMessage?.data as? String).to(equal(data))
                 }
             }
 
@@ -366,6 +372,41 @@ class RestClientChannel: QuickSpec {
                 }
             }
 
+            // RSL1i
+            context("If the total size of message(s) exceeds the maxMessageSize") {
+                let channelName = "test-message-size"
+
+                it("the client library should reject the publish and indicate an error") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRest(options: options)
+                    let channel = client.channels.get(channelName)
+                    let messages = buildMessagesThatExceedMaxMessageSize()
+
+                    waitUntil(timeout: testTimeout, action: { done in
+                        channel.publish(messages, callback: { err in
+                            expect(err?.code).to(equal(40009))
+                            expect(err?.message).to(contain("maximum message length exceeded"))
+                            done()
+                        })
+                    })
+                }
+
+                it("also when using publish:data:clientId:extras") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRest(options: options)
+                    let channel = client.channels.get(channelName)
+                    let name = buildStringThatExceedMaxMessageSize()
+
+                    waitUntil(timeout: testTimeout, action: { done in
+                        channel.publish(name, data: nil, extras: nil, callback: {err in
+                            expect(err?.code).to(equal(40009))
+                            expect(err?.message).to(contain("maximum message length exceeded"))
+                            done()
+                        })
+                    })
+                }
+            }
+          
             // RSL1j
             it("should include attributes supplied by the caller in the encoded message") {
                 let options = AblyTests.commonAppSetup()
@@ -839,7 +880,7 @@ class RestClientChannel: QuickSpec {
                                 if let request = testHTTPExecutor.requests.last, let http = request.httpBody {
                                     // Array
                                     let json = AblyTests.msgpackToJSON(http)
-                                    expect(JSON(data: json["data"].stringValue.data(using: String.Encoding.utf8)!).asArray).to(equal(array as NSArray?))
+                                    expect(try! JSON(data: json["data"].stringValue.data(using: .utf8)!).asArray).to(equal(array as NSArray?))
                                     expect(json["encoding"].string).to(equal("json"))
                                 }
                                 else {
@@ -860,7 +901,7 @@ class RestClientChannel: QuickSpec {
                                 if let request = testHTTPExecutor.requests.last, let http = request.httpBody {
                                     // Dictionary
                                     let json = AblyTests.msgpackToJSON(http)
-                                    expect(JSON(data: json["data"].stringValue.data(using: String.Encoding.utf8)!).asDictionary).to(equal(dictionary as NSDictionary?))
+                                    expect(try! JSON(data: json["data"].stringValue.data(using: .utf8)!).asDictionary).to(equal(dictionary as NSDictionary?))
                                     expect(json["encoding"].string).to(equal("json"))
                                 }
                                 else {

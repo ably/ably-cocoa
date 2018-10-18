@@ -533,7 +533,7 @@ class RestClient: QuickSpec {
                             // Expired token
                             options.tokenDetails = ARTTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires!.addingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
 
-                            options.authUrl = NSURL(string: "http://test-auth.ably.io") as URL?
+                            options.authUrl = URL(string: "http://test-auth.ably.io")
                             value(options)
                         }
                     }) else {
@@ -1355,7 +1355,7 @@ class RestClient: QuickSpec {
             it("background behaviour") {
                 let options = AblyTests.commonAppSetup()
                 waitUntil(timeout: testTimeout) { done in
-                  URLSession.shared.dataTask(with: NSURL(string:"https://ably.io")! as URL) { _ , _ , _  in
+                  URLSession.shared.dataTask(with: URL(string:"https://ably.io")! as URL) { _ , _ , _  in
                         let rest = ARTRest(options: options)
                     rest.channels.get("foo").history { _ , _  in
                             done()
@@ -1366,7 +1366,7 @@ class RestClient: QuickSpec {
 
             // https://github.com/ably/ably-ios/issues/589
             it("client should handle error messages in plaintext and HTML format") {
-                let request = NSURLRequest(url: NSURL(string: "https://www.example.com")! as URL)
+                let request = NSURLRequest(url: URL(string: "https://www.example.com")! as URL)
                 waitUntil(timeout: testTimeout) { done in
                     let rest = ARTRest(key: "xxxx:xxxx")
                     rest.execute(request as URLRequest, completion: { response, data, error in
@@ -1384,71 +1384,317 @@ class RestClient: QuickSpec {
                 }
             }
 
-        }
-        
-        context("if in the course of a REST request an attempt to authenticate using authUrl fails due to a timeout") {
-            // RSA4e
-            it("the request should result in an error with code 40170, statusCode 401, and a suitable error message") {
-                let options = AblyTests.commonAppSetup()
-                let token = getTestToken()
-                options.httpRequestTimeout = 3 // short timeout to make it fail faster
-                options.authUrl = NSURL(string: "http://10.255.255.1")! as URL
-                options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
-                options.authParams?.append(NSURLQueryItem(name: "type", value: "text") as URLQueryItem)
-                options.authParams?.append(NSURLQueryItem(name: "body", value: token) as URLQueryItem)
-                
-                let client = ARTRest(options: options)
-                waitUntil(timeout: testTimeout, action: { done in
-                    let channel = client.channels.get("test-channel")
-                    channel.publish("test", data: "test-data", callback: { error in
-                        guard let error = error else {
-                            fail("Error should not be empty")
-                            done()
+            // RSC19
+            context("request") {
+
+                // RSC19a
+                context("method signature and arguments") {
+                    it("should add query parameters") {
+                        let rest = ARTRest(key: "xxxx:xxxx")
+                        let mockHttpExecutor = MockHTTPExecutor()
+                        rest.httpExecutor = mockHttpExecutor
+                        let params = ["foo": "1"]
+
+                        waitUntil(timeout: testTimeout) { done in
+                            do {
+                                try rest.request("patch", path: "feature", params: params, body: nil, headers: nil) { paginatedResult, error in
+                                    expect(error).to(beNil())
+                                    expect(paginatedResult).toNot(beNil())
+                                    done()
+                                }
+                            }
+                            catch {
+                                fail(error.localizedDescription)
+                                done()
+                            }
+                        }
+
+                        guard let request = mockHttpExecutor.requests.first else {
+                            fail("No requests found")
                             return
                         }
-                        expect(error.statusCode).to(equal(401))
-                        expect(error.code).to(equal(40170))
-                        expect(error.message).to(contain("Error in requesting auth token"))
-                        done()
-                    })
-                })
+
+                        guard let url = request.url, url.absoluteString == "https://rest.ably.io:443/feature?foo=1" else {
+                            fail("should have a \"/feature\" URL with query \(params)"); return
+                        }
+                        expect(request.httpMethod) == "patch"
+
+                        guard let acceptHeaderValue = request.allHTTPHeaderFields?["Accept"] else {
+                            fail("Accept HTTP Header is missing"); return
+                        }
+                        expect(acceptHeaderValue).to(equal("application/x-msgpack,application/json"))
+                    }
+
+                    it("should add a HTTP body") {
+                        let rest = ARTRest(key: "xxxx:xxxx")
+                        let mockHttpExecutor = MockHTTPExecutor()
+                        rest.httpExecutor = mockHttpExecutor
+                        let bodyDict = ["blockchain": true]
+
+                        waitUntil(timeout: testTimeout) { done in
+                            do {
+                                try rest.request("post", path: "feature", params: nil, body: bodyDict, headers: nil) { paginatedResult, error in
+                                    expect(error).to(beNil())
+                                    expect(paginatedResult).toNot(beNil())
+                                    done()
+                                }
+                            }
+                            catch {
+                                fail(error.localizedDescription)
+                                done()
+                            }
+                        }
+
+                        guard let request = mockHttpExecutor.requests.first else {
+                            fail("No requests found")
+                            return
+                        }
+                        guard let rawBody = request.httpBody else {
+                            fail("should have a body"); return
+                        }
+
+                        let decodedBody: Any
+                        do {
+                            decodedBody = try rest.defaultEncoder.decode(rawBody)
+                        }
+                        catch {
+                            fail("decode failure: \(error)"); return
+                        }
+
+                        guard let body = decodedBody as? NSDictionary else {
+                            fail("body is invalid"); return
+                        }
+                        expect(body.value(forKey: "blockchain") as? Bool).to(beTrue())
+                    }
+
+                    it("should add a HTTP header") {
+                        let rest = ARTRest(key: "xxxx:xxxx")
+                        let mockHttpExecutor = MockHTTPExecutor()
+                        rest.httpExecutor = mockHttpExecutor
+                        let headers = ["X-foo": "ok"]
+
+                        waitUntil(timeout: testTimeout) { done in
+                            do {
+                                try rest.request("get", path: "feature", params: nil, body: nil, headers: headers) { paginatedResult, error in
+                                    expect(error).to(beNil())
+                                    expect(paginatedResult).toNot(beNil())
+                                    done()
+                                }
+                            }
+                            catch {
+                                fail(error.localizedDescription)
+                                done()
+                            }
+                        }
+
+                        guard let request = mockHttpExecutor.requests.first else {
+                            fail("No requests found")
+                            return
+                        }
+
+                        let authorization = request.allHTTPHeaderFields?["X-foo"]
+                        expect(authorization).to(equal("ok"))
+                    }
+
+                    it("should error if method is invalid") {
+                        let rest = ARTRest(key: "xxxx:xxxx")
+                        rest.httpExecutor = MockHTTPExecutor()
+
+                        do {
+                            try rest.request("A", path: "feature", params: nil, body: nil, headers: nil) { paginatedResult, error in
+                                fail("Completion closure should not be called")
+                            }
+                        }
+                        catch let error as NSError {
+                            expect(error.code).to(equal(ARTCustomRequestError.invalidMethod.rawValue))
+                            expect(error.localizedDescription).to(contain("Method isn't valid"))
+                        }
+
+                        do {
+                            try rest.request("", path: "feature", params: nil, body: nil, headers: nil) { paginatedResult, error in
+                                fail("Completion closure should not be called")
+                            }
+                        }
+                        catch let error as NSError {
+                            expect(error.code).to(equal(ARTCustomRequestError.invalidMethod.rawValue))
+                            expect(error.localizedDescription).to(contain("Method isn't valid"))
+                        }
+                    }
+
+                    it("should error if path is invalid") {
+                        let rest = ARTRest(key: "xxxx:xxxx")
+                        rest.httpExecutor = MockHTTPExecutor()
+
+                        do {
+                            try rest.request("get", path: "new feature", params: nil, body: nil, headers: nil) { paginatedResult, error in
+                                fail("Completion closure should not be called")
+                            }
+                        }
+                        catch let error as NSError {
+                            expect(error.code).to(equal(ARTCustomRequestError.invalidPath.rawValue))
+                            expect(error.localizedDescription).to(contain("Path isn't valid"))
+                        }
+
+                        do {
+                            try rest.request("get", path: "", params: nil, body: nil, headers: nil) { paginatedResult, error in
+                                fail("Completion closure should not be called")
+                            }
+                        }
+                        catch let error as NSError {
+                            expect(error.code).to(equal(ARTCustomRequestError.invalidPath.rawValue))
+                            expect(error.localizedDescription).to(contain("Path cannot be empty"))
+                        }
+                    }
+
+                    it("should error if body is not a Dictionary or an Array") {
+                        let rest = ARTRest(key: "xxxx:xxxx")
+                        let mockHttpExecutor = MockHTTPExecutor()
+                        rest.httpExecutor = mockHttpExecutor
+
+                        do {
+                            try rest.request("get", path: "feature", params: nil, body: mockHttpExecutor, headers: nil) { paginatedResult, error in
+                                fail("Completion closure should not be called")
+                            }
+                        }
+                        catch let error as NSError {
+                            expect(error.code).to(equal(ARTCustomRequestError.invalidBody.rawValue))
+                            expect(error.localizedDescription).to(contain("should be a Dictionary or an Array"))
+                        }
+                    }
+
+                    it("should do a request and receive a valid response") {
+                        let options = AblyTests.commonAppSetup()
+                        let rest = ARTRest(options: options)
+                        let channel = rest.channels.get("request-method-test")
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish("a", data: nil) { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        let proxyHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                        rest.httpExecutor = proxyHTTPExecutor
+
+                        var httpPaginatedResponse: ARTHTTPPaginatedResponse!
+                        waitUntil(timeout: testTimeout) { done in
+                            do {
+                                try rest.request("get", path: "/channels/\(channel.name)", params: nil, body: nil, headers: nil) { paginatedResponse, error in
+                                    expect(error).to(beNil())
+                                    guard let paginatedResponse = paginatedResponse else {
+                                        fail("PaginatedResult is empty"); done(); return
+                                    }
+                                    expect(paginatedResponse.items.count) == 1
+                                    guard let channelDetailsDict = paginatedResponse.items.first else {
+                                        fail("PaginatedResult first element is missing"); done(); return
+                                    }
+                                    expect(channelDetailsDict.value(forKey: "channelId") as? String).to(equal(channel.name))
+                                    expect(paginatedResponse.hasNext) == false
+                                    expect(paginatedResponse.isLast) == true
+                                    expect(paginatedResponse.statusCode) == 200
+                                    expect(paginatedResponse.success) == true
+                                    expect(paginatedResponse.errorCode) == 0
+                                    expect(paginatedResponse.errorMessage).to(beNil())
+                                    expect(paginatedResponse.headers).toNot(beEmpty())
+                                    httpPaginatedResponse = paginatedResponse
+                                    done()
+                                }
+                            }
+                            catch {
+                                fail(error.localizedDescription)
+                                done()
+                            }
+                        }
+
+                        guard let response = proxyHTTPExecutor.responses.first else {
+                            fail("No responses found")
+                            return
+                        }
+
+                        expect(response.statusCode) == httpPaginatedResponse.statusCode
+                        expect(response.allHeaderFields as? [String: String]) == httpPaginatedResponse.headers
+                    }
+
+                    it("should handle response failures") {
+                        let options = AblyTests.commonAppSetup()
+                        let rest = ARTRest(options: options)
+                        let channel = rest.channels.get("request-method-test")
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish("a", data: nil) { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        let proxyHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                        rest.httpExecutor = proxyHTTPExecutor
+
+                        waitUntil(timeout: testTimeout) { done in
+                            do {
+                                try rest.request("get", path: "feature", params: nil, body: nil, headers: nil) { paginatedResponse, error in
+                                    expect(error).to(beNil())
+                                    guard let paginatedResponse = paginatedResponse else {
+                                        fail("PaginatedResult is empty"); done(); return
+                                    }
+                                    expect(paginatedResponse.items.count) == 0
+                                    expect(paginatedResponse.hasNext) == false
+                                    expect(paginatedResponse.isLast) == true
+                                    expect(paginatedResponse.statusCode) == 404
+                                    expect(paginatedResponse.success) == false
+                                    expect(paginatedResponse.errorCode) == 40400
+                                    expect(paginatedResponse.errorMessage).to(contain("Could not find path"))
+                                    expect(paginatedResponse.headers).toNot(beEmpty())
+                                    expect(paginatedResponse.headers["X-Ably-Errorcode"]).to(equal("40400"))
+                                    done()
+                                }
+                            }
+                            catch {
+                                fail(error.localizedDescription)
+                                done()
+                            }
+                        }
+
+                        guard let response = proxyHTTPExecutor.responses.first else {
+                            fail("No responses found")
+                            return
+                        }
+
+                        expect(response.statusCode) == 404
+                        expect(response.allHeaderFields["X-Ably-Errorcode"] as? String).to(equal("40400"))
+                    }
+                }
+
             }
-        }
-        
-        // RSL1i
-        context("If the total size of message(s) exceeds the maxMessageSize") {
-            let channelName = "test-message-size"
-            it("the client library should reject the publish and indicate an error") {
-                let options = AblyTests.commonAppSetup()
-                let client = ARTRest(options: options)
-                let channel = client.channels.get(channelName)
-                let messages = buildMessagesThatExceedMaxMessageSize()
-                
-                waitUntil(timeout: testTimeout, action: { done in
-                    channel.publish(messages, callback: { err in
-                        expect(err?.code).to(equal(40009))
-                        expect(err?.message).to(contain("maximum message length exceeded"))
-                        done()
-                    })
-                })
+
+            context("if in the course of a REST request an attempt to authenticate using authUrl fails due to a timeout") {
+                // RSA4e
+                it("the request should result in an error with code 40170, statusCode 401, and a suitable error message") {
+                    let options = AblyTests.commonAppSetup()
+                    let token = getTestToken()
+                    options.httpRequestTimeout = 3 // short timeout to make it fail faster
+                    options.authUrl = URL(string: "http://10.255.255.1")! as URL
+                    options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
+                    options.authParams?.append(NSURLQueryItem(name: "type", value: "text") as URLQueryItem)
+                    options.authParams?.append(NSURLQueryItem(name: "body", value: token) as URLQueryItem)
+
+                    let client = ARTRest(options: options)
+                    waitUntil(timeout: testTimeout) { done in
+                        let channel = client.channels.get("test-channel")
+                        channel.publish("test", data: "test-data") { error in
+                            guard let error = error else {
+                                fail("Error should not be empty")
+                                done()
+                                return
+                            }
+                            expect(error.statusCode).to(equal(401))
+                            expect(error.code).to(equal(40170))
+                            expect(error.message).to(contain("Error in requesting auth token"))
+                            done()
+                        }
+                    }
+                }
             }
-            
-            it("also when using publish:data:clientId:extras") {
-                let options = AblyTests.commonAppSetup()
-                let client = ARTRest(options: options)
-                let channel = client.channels.get(channelName)
-                let name = buildStringThatExceedMaxMessageSize()
-                
-                waitUntil(timeout: testTimeout, action: { done in
-                    channel.publish(name, data: nil, extras: nil, callback: {err in
-                        expect(err?.code).to(equal(40009))
-                        expect(err?.message).to(contain("maximum message length exceeded"))
-                        done()
-                    })
-                    
-                    
-                })
-            }
-        }
+
+        } // RestClient
     }
 }

@@ -71,7 +71,7 @@ const NSUInteger ARTDefaultLimit = 100;
     [_logger debug:__FILE__ line:__LINE__ message:@"subscribe notifications for device %@ in channel %@", deviceId, _channel.name];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
-            [_logger error:@"%@: subscribe notifications for device %@ in channel %@ failed (%@)", NSStringFromClass(self.class), deviceId, _channel.name, error.localizedDescription];
+            [self->_logger error:@"%@: subscribe notifications for device %@ in channel %@ failed (%@)", NSStringFromClass(self.class), deviceId, self->_channel.name, error.localizedDescription];
         }
         if (callback) callback(error ? [ARTErrorInfo createFromNSError:error] : nil);
     }];
@@ -94,7 +94,7 @@ const NSUInteger ARTDefaultLimit = 100;
     [_logger debug:__FILE__ line:__LINE__ message:@"subscribe notifications for clientId %@ in channel %@", clientId, _channel.name];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
-            [_logger error:@"%@: subscribe notifications for clientId %@ in channel %@ failed (%@)", NSStringFromClass(self.class), clientId, _channel.name, error.localizedDescription];
+            [self->_logger error:@"%@: subscribe notifications for clientId %@ in channel %@ failed (%@)", NSStringFromClass(self.class), clientId, self->_channel.name, error.localizedDescription];
         }
         if (callback) callback(error ? [ARTErrorInfo createFromNSError:error] : nil);
     }];
@@ -120,7 +120,7 @@ const NSUInteger ARTDefaultLimit = 100;
     [_logger debug:__FILE__ line:__LINE__ message:@"unsubscribe notifications for device %@ in channel %@", deviceId, _channel.name];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
-            [_logger error:@"%@: unsubscribe notifications for device %@ in channel %@ failed (%@)", NSStringFromClass(self.class), deviceId, _channel.name, error.localizedDescription];
+            [self->_logger error:@"%@: unsubscribe notifications for device %@ in channel %@ failed (%@)", NSStringFromClass(self.class), deviceId, self->_channel.name, error.localizedDescription];
         }
         if (callback) callback(error ? [ARTErrorInfo createFromNSError:error] : nil);
     }];
@@ -144,7 +144,7 @@ const NSUInteger ARTDefaultLimit = 100;
     [_logger debug:__FILE__ line:__LINE__ message:@"unsubscribe notifications for clientId %@ in channel %@", clientId, _channel.name];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
-            [_logger error:@"%@: unsubscribe notifications for clientId %@ in channel %@ failed (%@)", NSStringFromClass(self.class), clientId, _channel.name, error.localizedDescription];
+            [self->_logger error:@"%@: unsubscribe notifications for clientId %@ in channel %@ failed (%@)", NSStringFromClass(self.class), clientId, self->_channel.name, error.localizedDescription];
         }
         if (callback) callback(error ? [ARTErrorInfo createFromNSError:error] : nil);
     }];
@@ -178,7 +178,7 @@ const NSUInteger ARTDefaultLimit = 100;
     request.HTTPMethod = @"GET";
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **error) {
-        return [_rest.encoders[response.MIMEType] decodePushChannelSubscriptions:data error:error];
+        return [self->_rest.encoders[response.MIMEType] decodePushChannelSubscriptions:data error:error];
     };
 
     [ARTPaginatedResult executePaginated:_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
