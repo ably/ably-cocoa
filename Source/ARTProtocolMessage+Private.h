@@ -8,9 +8,15 @@
 
 /// ARTProtocolMessageFlag bitmask
 typedef NS_OPTIONS(NSUInteger, ARTProtocolMessageFlag) {
-    ARTProtocolMessageFlagHasPresence = (1UL << 0), //1
-    ARTProtocolMessageFlagHasBacklog = (1UL << 1), //2
-    ARTProtocolMessageFlagResumed = (1UL << 2) //4
+    ARTProtocolMessageFlagHasPresence = (1UL << 0),
+    ARTProtocolMessageFlagHasBacklog = (1UL << 1),
+    ARTProtocolMessageFlagResumed = (1UL << 2),
+    ARTProtocolMessageFlagHasLocalPresence = (1UL << 3),
+    ARTProtocolMessageFlagTransient = (1UL << 4),
+    ARTProtocolMessageFlagPresence = (1UL << 16),
+    ARTProtocolMessageFlagPublish = (1UL << 17),
+    ARTProtocolMessageFlagSubscribe = (1UL << 18),
+    ARTProtocolMessageFlagPresenceSubscribe = (1UL << 19)
 };
 
 NS_ASSUME_NONNULL_BEGIN

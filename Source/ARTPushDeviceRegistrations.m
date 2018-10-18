@@ -40,8 +40,8 @@
     if (callback) {
         void (^userCallback)(ARTErrorInfo *error) = callback;
         callback = ^(ARTErrorInfo *error) {
-            ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_userQueue, ^{
+            ART_EXITING_ABLY_CODE(self->_rest);
+            dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
@@ -50,37 +50,37 @@
     ARTLocalDevice *local = _rest.device;
 
 dispatch_async(_queue, ^{
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
+ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceDetails.id] resolvingAgainstBaseURL:NO];
-    if (_rest.options.pushFullWait) {
+    if (self->_rest.options.pushFullWait) {
         components.queryItems = @[[NSURLQueryItem queryItemWithName:@"fullWait" value:@"true"]];
     }
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"PUT";
-    request.HTTPBody = [[_rest defaultEncoder] encodeDeviceDetails:deviceDetails error:nil];
-    [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
-    [request setDeviceAuthentication:deviceDetails.id localDevice:local logger:_logger];
+    request.HTTPBody = [[self->_rest defaultEncoder] encodeDeviceDetails:deviceDetails error:nil];
+    [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
+    [request setDeviceAuthentication:deviceDetails.id localDevice:local logger:self->_logger];
 
-    [_logger debug:__FILE__ line:__LINE__ message:@"save device with request %@", request];
-    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [self->_logger debug:__FILE__ line:__LINE__ message:@"save device with request %@", request];
+    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*OK*/) {
             NSError *decodeError = nil;
-            ARTDeviceDetails *deviceDetails = [[_rest defaultEncoder] decodeDeviceDetails:data error:&decodeError];
+            ARTDeviceDetails *deviceDetails = [[self->_rest defaultEncoder] decodeDeviceDetails:data error:&decodeError];
             if (decodeError) {
-                [_logger debug:__FILE__ line:__LINE__ message:@"%@: decode device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+                [self->_logger debug:__FILE__ line:__LINE__ message:@"%@: decode device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
                 callback([ARTErrorInfo createFromNSError:decodeError]);
             }
             else {
-                [_logger debug:__FILE__ line:__LINE__ message:@"%@: successfully saved device %@", NSStringFromClass(self.class), deviceDetails.id];
+                [self->_logger debug:__FILE__ line:__LINE__ message:@"%@: successfully saved device %@", NSStringFromClass(self.class), deviceDetails.id];
                 callback(nil);
             }
         }
         else if (error) {
-            [_logger error:@"%@: save device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            [self->_logger error:@"%@: save device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
             callback([ARTErrorInfo createFromNSError:error]);
         }
         else {
-            [_logger error:@"%@: save device failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
+            [self->_logger error:@"%@: save device failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
             NSString *plain = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
             callback([ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[plain shortString]]);
         }
@@ -93,8 +93,8 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (callback) {
         void (^userCallback)(ARTDeviceDetails *, ARTErrorInfo *error) = callback;
         callback = ^(ARTDeviceDetails *device, ARTErrorInfo *error) {
-            ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_userQueue, ^{
+            ART_EXITING_ABLY_CODE(self->_rest);
+            dispatch_async(self->_userQueue, ^{
                 userCallback(device, error);
             });
         };
@@ -103,35 +103,35 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     ARTLocalDevice *local = _rest.device;
 
 dispatch_async(_queue, ^{
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
+ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceId]];
     request.HTTPMethod = @"GET";
-    [request setDeviceAuthentication:deviceId localDevice:local logger:_logger];
+    [request setDeviceAuthentication:deviceId localDevice:local logger:self->_logger];
 
-    [_logger debug:__FILE__ line:__LINE__ message:@"get device with request %@", request];
-    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [self->_logger debug:__FILE__ line:__LINE__ message:@"get device with request %@", request];
+    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*OK*/) {
             NSError *decodeError = nil;
-            ARTDeviceDetails *device = [_rest.encoders[response.MIMEType] decodeDeviceDetails:data error:&decodeError];
+            ARTDeviceDetails *device = [self->_rest.encoders[response.MIMEType] decodeDeviceDetails:data error:&decodeError];
             if (decodeError) {
-                [_logger debug:__FILE__ line:__LINE__ message:@"%@: decode device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+                [self->_logger debug:__FILE__ line:__LINE__ message:@"%@: decode device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
                 callback(nil, [ARTErrorInfo createFromNSError:decodeError]);
             }
             else if (device) {
-                [_logger debug:__FILE__ line:__LINE__ message:@"%@: get device successfully", NSStringFromClass(self.class)];
+                [self->_logger debug:__FILE__ line:__LINE__ message:@"%@: get device successfully", NSStringFromClass(self.class)];
                 callback(device, nil);
             }
             else {
-                [_logger debug:__FILE__ line:__LINE__ message:@"%@: get device failed with unknown error", NSStringFromClass(self.class)];
+                [self->_logger debug:__FILE__ line:__LINE__ message:@"%@: get device failed with unknown error", NSStringFromClass(self.class)];
                 callback(nil, [ARTErrorInfo createUnknownError]);
             }
         }
         else if (error) {
-            [_logger error:@"%@: get device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            [self->_logger error:@"%@: get device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
             callback(nil, [ARTErrorInfo createFromNSError:error]);
         }
         else {
-            [_logger error:@"%@: get device failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
+            [self->_logger error:@"%@: get device failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
             NSString *plain = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
             callback(nil, [ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[plain shortString]]);
         }
@@ -144,24 +144,24 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (callback) {
         void (^userCallback)(ARTPaginatedResult *, ARTErrorInfo *error) = callback;
         callback = ^(ARTPaginatedResult *result, ARTErrorInfo *error) {
-            ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_userQueue, ^{
+            ART_EXITING_ABLY_CODE(self->_rest);
+            dispatch_async(self->_userQueue, ^{
                 userCallback(result, error);
             });
         };
     }
 
 dispatch_async(_queue, ^{
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
+ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"] resolvingAgainstBaseURL:NO];
     components.queryItems = [params asURLQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"GET";
 
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **error) {
-        return [_rest.encoders[response.MIMEType] decodeDevicesDetails:data error:error];
+        return [self->_rest.encoders[response.MIMEType] decodeDevicesDetails:data error:error];
     };
-    [ARTPaginatedResult executePaginated:_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
+    [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
 } ART_TRY_OR_REPORT_CRASH_END
 });
 }
@@ -170,35 +170,35 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (callback) {
         void (^userCallback)(ARTErrorInfo *error) = callback;
         callback = ^(ARTErrorInfo *error) {
-            ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_userQueue, ^{
+            ART_EXITING_ABLY_CODE(self->_rest);
+            dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
     }
 
 dispatch_async(_queue, ^{
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
+ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceId] resolvingAgainstBaseURL:NO];
-    if (_rest.options.pushFullWait) {
+        if (self->_rest.options.pushFullWait) {
         components.queryItems = @[[NSURLQueryItem queryItemWithName:@"fullWait" value:@"true"]];
     }
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"DELETE";
-    [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
+    [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
-    [_logger debug:__FILE__ line:__LINE__ message:@"remove device with request %@", request];
-    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [self->_logger debug:__FILE__ line:__LINE__ message:@"remove device with request %@", request];
+    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*Ok*/ || response.statusCode == 204 /*not returning any content*/) {
-            [_logger debug:__FILE__ line:__LINE__ message:@"%@: save device successfully", NSStringFromClass(self.class)];
+            [self->_logger debug:__FILE__ line:__LINE__ message:@"%@: save device successfully", NSStringFromClass(self.class)];
             callback(nil);
         }
         else if (error) {
-            [_logger error:@"%@: remove device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            [self->_logger error:@"%@: remove device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
             callback([ARTErrorInfo createFromNSError:error]);
         }
         else {
-            [_logger error:@"%@: remove device failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
+            [self->_logger error:@"%@: remove device failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
             NSString *plain = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
             callback([ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[plain shortString]]);
         }
@@ -211,8 +211,8 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (callback) {
         void (^userCallback)(ARTErrorInfo *error) = callback;
         callback = ^(ARTErrorInfo *error) {
-            ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_userQueue, ^{
+            ART_EXITING_ABLY_CODE(self->_rest);
+            dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
@@ -221,28 +221,28 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     ARTLocalDevice *local = _rest.device;
 
 dispatch_async(_queue, ^{
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
+ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"] resolvingAgainstBaseURL:NO];
     components.queryItems = [params asURLQueryItems];
-    if (_rest.options.pushFullWait) {
+    if (self->_rest.options.pushFullWait) {
         components.queryItems = [components.queryItems arrayByAddingObject:[NSURLQueryItem queryItemWithName:@"fullWait" value:@"true"]];
     }
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"DELETE";
     [request setDeviceAuthentication:[params objectForKey:@"deviceId"] localDevice:local];
 
-    [_logger debug:__FILE__ line:__LINE__ message:@"remove devices with request %@", request];
-    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [self->_logger debug:__FILE__ line:__LINE__ message:@"remove devices with request %@", request];
+    [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*Ok*/ || response.statusCode == 204 /*not returning any content*/) {
-            [_logger debug:__FILE__ line:__LINE__ message:@"%@: remove devices successfully", NSStringFromClass(self.class)];
+            [self->_logger debug:__FILE__ line:__LINE__ message:@"%@: remove devices successfully", NSStringFromClass(self.class)];
             callback(nil);
         }
         else if (error) {
-            [_logger error:@"%@: remove devices failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            [self->_logger error:@"%@: remove devices failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
             callback([ARTErrorInfo createFromNSError:error]);
         }
         else {
-            [_logger error:@"%@: remove devices failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
+            [self->_logger error:@"%@: remove devices failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
             NSString *plain = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
             callback([ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[plain shortString]]);
         }

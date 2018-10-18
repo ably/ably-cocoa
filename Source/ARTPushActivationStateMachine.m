@@ -182,14 +182,14 @@ dispatch_async(_queue, ^{
     [[_rest logger] debug:__FILE__ line:__LINE__ message:@"device registration with request %@", request];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
-            [[_rest logger] error:@"%@: device registration failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            [[self->_rest logger] error:@"%@: device registration failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
             [self sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
             return;
         }
         NSError *decodeError = nil;
-        ARTDeviceIdentityTokenDetails *identityTokenDetails = [[_rest defaultEncoder] decodeDeviceIdentityTokenDetails:data error:&decodeError];
+        ARTDeviceIdentityTokenDetails *identityTokenDetails = [[self->_rest defaultEncoder] decodeDeviceIdentityTokenDetails:data error:&decodeError];
         if (decodeError) {
-            [[_rest logger] error:@"%@: decode identity token details failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            [[self->_rest logger] error:@"%@: decode identity token details failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
             [self sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
             return;
         }
@@ -258,14 +258,14 @@ dispatch_async(_queue, ^{
     [[_rest logger] debug:__FILE__ line:__LINE__ message:@"update device with request %@", request];
     [_rest executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
-            [[_rest logger] error:@"%@: update device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            [[self->_rest logger] error:@"%@: update device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
             [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
             return;
         }
         NSError *decodeError = nil;
-        ARTDeviceIdentityTokenDetails *identityTokenDetails = [[_rest defaultEncoder] decodeDeviceIdentityTokenDetails:data error:&decodeError];
+        ARTDeviceIdentityTokenDetails *identityTokenDetails = [[self->_rest defaultEncoder] decodeDeviceIdentityTokenDetails:data error:&decodeError];
         if (decodeError) {
-            [[_rest logger] error:@"%@: decode identity token details failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            [[self->_rest logger] error:@"%@: decode identity token details failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
             [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
             return;
         }
@@ -322,11 +322,11 @@ dispatch_async(_queue, ^{
     [[_rest logger] debug:__FILE__ line:__LINE__ message:@"device deregistration with request %@", request];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
-            [[_rest logger] error:@"%@: device deregistration failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            [[self->_rest logger] error:@"%@: device deregistration failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
             [self sendEvent:[ARTPushActivationEventDeregistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
             return;
         }
-        [[_rest logger] debug:__FILE__ line:__LINE__ message:@"successfully deactivate device"];
+        [[self->_rest logger] debug:__FILE__ line:__LINE__ message:@"successfully deactivate device"];
         [self sendEvent:[ARTPushActivationEventDeregistered new]];
     }];
     #endif

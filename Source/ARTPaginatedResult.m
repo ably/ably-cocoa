@@ -11,6 +11,8 @@
 #import "ARTHttp.h"
 #import "ARTAuth.h"
 #import "ARTRest+Private.h"
+#import "ARTNSMutableURLRequest+ARTPaginated.h"
+#import "ARTNSHTTPURLResponse+ARTPaginated.h"
 
 @implementation ARTPaginatedResult {
     __weak ARTRest *_rest;
@@ -21,6 +23,13 @@
     NSMutableURLRequest *_relNext;
     ARTPaginatedResultResponseProcessor _responseProcessor;
 }
+
+@synthesize rest = _rest;
+@synthesize userQueue = _userQueue;
+@synthesize queue = _queue;
+@synthesize relFirst = _relFirst;
+@synthesize relCurrent = _relCurrent;
+@synthesize relNext = _relNext;
 
 - (instancetype)initWithItems:(NSArray *)items
                      rest:(ARTRest *)rest
@@ -53,8 +62,8 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (callback) {
         void (^userCallback)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) = callback;
         callback = ^(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) {
-            ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_userQueue, ^{
+            ART_EXITING_ABLY_CODE(self->_rest);
+            dispatch_async(self->_userQueue, ^{
                 userCallback(result, error);
             });
         };
@@ -69,8 +78,8 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (callback) {
         void (^userCallback)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) = callback;
         callback = ^(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) {
-            ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_userQueue, ^{
+            ART_EXITING_ABLY_CODE(self->_rest);
+            dispatch_async(self->_userQueue, ^{
                 userCallback(result, error);
             });
         };
@@ -85,46 +94,6 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     }
     [self.class executePaginated:_rest withRequest:_relNext andResponseProcessor:_responseProcessor callback:callback];
 } ART_TRY_OR_REPORT_CRASH_END
-}
-
-static NSDictionary *extractLinks(NSHTTPURLResponse *response) {
-    NSString *linkHeader = response.allHeaderFields[@"Link"];
-    if (!linkHeader) {
-        return nil;
-    }
-    
-    static NSRegularExpression *linkRegex;
-    static dispatch_once_t onceToken;
-    
-    dispatch_once(&onceToken, ^{
-        linkRegex = [NSRegularExpression regularExpressionWithPattern:@"\\s*<([^>]*)>;\\s*rel=\"([^\"]*)\"" options:0 error:nil];
-    });
-    
-    NSMutableDictionary *links = [NSMutableDictionary dictionary];
-    
-    NSArray *matches = [linkRegex matchesInString:linkHeader options:0 range:NSMakeRange(0, linkHeader.length)];
-    for (NSTextCheckingResult *match in matches) {
-        NSRange linkUrlRange = [match rangeAtIndex:1];
-        NSRange linkRelRange = [match rangeAtIndex:2];
-        
-        NSString *linkUrl = [linkHeader substringWithRange:linkUrlRange];
-        NSString *linkRels = [linkHeader substringWithRange:linkRelRange];
-        
-        for (NSString *linkRel in [linkRels componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]) {
-            [links setObject:linkUrl forKey:linkRel];
-        }
-    }
-    
-    return links;
-}
-
-static NSMutableURLRequest *requestRelativeTo(NSMutableURLRequest *request, NSString *path) {
-    if (!path) {
-        return nil;
-    }
-    
-    NSURL *url = [NSURL URLWithString:path relativeToURL:request.URL];
-    return [NSMutableURLRequest requestWithURL:url];
 }
 
 + (void)executePaginated:(ARTRest *)rest withRequest:(NSMutableURLRequest *)request andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor callback:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
@@ -146,11 +115,11 @@ ART_TRY_OR_REPORT_CRASH_START(rest) {
                 return;
             }
 
-            NSDictionary *links = extractLinks(response);
+            NSDictionary *links = [response extractLinks];
 
-            NSMutableURLRequest *firstRel = requestRelativeTo(request, links[@"first"]);
-            NSMutableURLRequest *currentRel = requestRelativeTo(request, links[@"current"]);;
-            NSMutableURLRequest *nextRel = requestRelativeTo(request, links[@"next"]);;
+            NSMutableURLRequest *firstRel = [NSMutableURLRequest requestWithPath:links[@"first"] relativeTo:request];
+            NSMutableURLRequest *currentRel = [NSMutableURLRequest requestWithPath:links[@"current"] relativeTo:request];
+            NSMutableURLRequest *nextRel = [NSMutableURLRequest requestWithPath:links[@"next"] relativeTo:request];
 
             ARTPaginatedResult *result = [[ARTPaginatedResult alloc] initWithItems:items
                                                                               rest:rest
