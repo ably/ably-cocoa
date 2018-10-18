@@ -49,7 +49,7 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
     static dispatch_once_t once;
     static id activationMachineInstance;
     dispatch_once(&once, ^{
-        activationMachineInstance = [[ARTPushActivationStateMachine alloc] init:_rest];
+        activationMachineInstance = [[ARTPushActivationStateMachine alloc] init:self->_rest];
     });
     return activationMachineInstance;
 }

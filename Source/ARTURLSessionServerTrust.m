@@ -31,7 +31,7 @@
 
 - (void)get:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
     NSURLSessionDataTask *task = [_session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-        dispatch_async(_queue, ^{
+        dispatch_async(self->_queue, ^{
             callback((NSHTTPURLResponse *)response, data, error);
         });
     }];

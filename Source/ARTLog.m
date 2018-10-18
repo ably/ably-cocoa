@@ -130,20 +130,20 @@ static const char *logLevelName(ARTLogLevel level) {
 
 - (void)log:(NSString *)message level:(ARTLogLevel)level {
     dispatch_sync(_queue, ^{
-        ARTLogLine *logLine = [[ARTLogLine alloc] initWithDate:[NSDate date] level:level message:message breadcrumbsKey:_breadcrumbsKey];
+        ARTLogLine *logLine = [[ARTLogLine alloc] initWithDate:[NSDate date] level:level message:message breadcrumbsKey:self->_breadcrumbsKey];
         if (level >= self.logLevel) {
             NSLog(@"%@", [logLine toString]);
-            if (_captured) {
-                [_captured addObject:logLine];
+            if (self->_captured) {
+                [self->_captured addObject:logLine];
             }
         }
-        if (_historyLines > 0) {
-            [_history insertObject:logLine atIndex:0];
-            if (_history.count > _historyLines) {
-                [_history removeLastObject];
+        if (self->_historyLines > 0) {
+            [self->_history insertObject:logLine atIndex:0];
+            if (self->_history.count > self->_historyLines) {
+                [self->_history removeLastObject];
             }
-            if (_shouldSaveBreadcrumbs) {
-                [ARTSentry setBreadcrumbs:_breadcrumbsKey value:_history];
+            if (self->_shouldSaveBreadcrumbs) {
+                [ARTSentry setBreadcrumbs:self->_breadcrumbsKey value:self->_history];
             }
         }
     });
