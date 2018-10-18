@@ -1135,7 +1135,7 @@ class RestClientChannel: QuickSpec {
                                 if let request = testHTTPExecutor.requests.last, let http = request.httpBody {
                                     // Array
                                     let json = AblyTests.msgpackToJSON(http)
-                                    expect(JSON(data: json["data"].stringValue.data(using: String.Encoding.utf8)!).asArray).to(equal(array as NSArray?))
+                                    expect(try! JSON(data: json["data"].stringValue.data(using: .utf8)!).asArray).to(equal(array as NSArray?))
                                     expect(json["encoding"].string).to(equal("json"))
                                 }
                                 else {
@@ -1156,7 +1156,7 @@ class RestClientChannel: QuickSpec {
                                 if let request = testHTTPExecutor.requests.last, let http = request.httpBody {
                                     // Dictionary
                                     let json = AblyTests.msgpackToJSON(http)
-                                    expect(JSON(data: json["data"].stringValue.data(using: String.Encoding.utf8)!).asDictionary).to(equal(dictionary as NSDictionary?))
+                                    expect(try! JSON(data: json["data"].stringValue.data(using: .utf8)!).asDictionary).to(equal(dictionary as NSDictionary?))
                                     expect(json["encoding"].string).to(equal("json"))
                                 }
                                 else {
