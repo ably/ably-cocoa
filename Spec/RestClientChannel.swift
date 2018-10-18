@@ -417,6 +417,7 @@ class RestClientChannel: QuickSpec {
                 let channel = client.channels.get("foo")
                 let message = ARTMessage(name: nil, data: "")
                 message.id = "123"
+                message.name = "tester"
 
                 waitUntil(timeout: testTimeout) { done in
                     channel.publish([message]) { error in
@@ -429,10 +430,12 @@ class RestClientChannel: QuickSpec {
                     fail("Body from the last request is empty"); return
                 }
 
-                let json = AblyTests.msgpackToJSON(encodedBody)
-                expect(json["name"].string).to(equal("null"))
-                expect(json["data"].string).to(equal(""))
-                expect(json["id"].string).to(equal(message.id))
+                guard let jsonMessage = AblyTests.msgpackToJSON(encodedBody).array?.first else {
+                    fail("Body from the last request is invalid"); return
+                }
+                expect(jsonMessage["name"].string).to(equal("tester"))
+                expect(jsonMessage["data"].string).to(equal(""))
+                expect(jsonMessage["id"].string).to(equal(message.id))
             }
         }
 
