@@ -298,8 +298,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     if (cb) {
         void (^userCallback)(ARTErrorInfo *_Nullable error) = cb;
         cb = ^(ARTErrorInfo *_Nullable error) {
-            ART_EXITING_ABLY_CODE(_rest);
-            dispatch_async(_userQueue, ^{
+            ART_EXITING_ABLY_CODE(self->_rest);
+            dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
         };
@@ -319,12 +319,12 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     case ARTRealtimeDisconnected:
     case ARTRealtimeConnected:
         if (![self shouldSendEvents]) {
-            [_connectedEventEmitter once:^(NSNull *n) {
+            [self->_connectedEventEmitter once:^(NSNull *n) {
                 [self ping:cb];
             }];
             return;
         }
-        [[[_pingEventEmitter once:cb] setTimer:[ARTDefault realtimeRequestTimeout] onTimeout:^{
+        [[[self->_pingEventEmitter once:cb] setTimer:[ARTDefault realtimeRequestTimeout] onTimeout:^{
             [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p ping timed out", self];
             cb([ARTErrorInfo createWithCode:ARTCodeErrorConnectionTimedOut status:ARTStateConnectionFailed message:@"timed out"]);
         }] startTimer];
@@ -492,7 +492,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                 _startedReconnection = [NSDate date];
                 [_internalEventEmitter on:^(ARTConnectionStateChange *change) {
                     if (change.current != ARTRealtimeDisconnected && change.current != ARTRealtimeConnecting) {
-                        _startedReconnection = nil;
+                        self->_startedReconnection = nil;
                     }
                 }];
             }
@@ -514,7 +514,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             [stateChange setRetryIn:retryInterval];
             stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
                 [weakSelf transition:ARTRealtimeConnecting];
-                _connectionRetryFromDisconnectedListener = nil;
+                self->_connectionRetryFromDisconnectedListener = nil;
             }];
             _connectionRetryFromDisconnectedListener = stateChangeEventListener;
             break;
@@ -525,7 +525,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             [stateChange setRetryIn:self.options.suspendedRetryTimeout];
             stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
                 [weakSelf transition:ARTRealtimeConnecting];
-                _connectionRetryFromSuspendedListener = nil;
+                self->_connectionRetryFromSuspendedListener = nil;
             }];
             _connectionRetryFromSuspendedListener = stateChangeEventListener;
             [_authorizationEmitter emit:[ARTEvent newWithAuthorizationState:ARTAuthorizationFailed] with:[ARTErrorInfo createWithCode:ARTStateAuthorizationFailed message:@"Connection has been suspended"]];
@@ -854,8 +854,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             @try {
                 [self.auth _authorize:nil options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
                     // Cancel scheduled work
-                    artDispatchCancel(_authenitcatingTimeoutWork);
-                    _authenitcatingTimeoutWork = nil;
+                    artDispatchCancel(self->_authenitcatingTimeoutWork);
+                    self->_authenitcatingTimeoutWork = nil;
 
                     // It's still valid?
                     switch (weakSelf.connection.state_nosync) {
@@ -873,9 +873,9 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                     }
 
                     if (forceNewToken && !keepConnection) {
-                        [_transport close];
-                        _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:_transport.resumeKey connectionSerial:_transport.connectionSerial];
-                        _transport.delegate = self;
+                        [self->_transport close];
+                        self->_transport = [[self->_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:self->_transport.resumeKey connectionSerial:self->_transport.connectionSerial];
+                        self->_transport.delegate = self;
                     }
                     if (!keepConnection) {
                         [[weakSelf transport] connectWithToken:tokenDetails.token];
@@ -1235,7 +1235,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     }
     artDispatchCancel(_idleTimer);
     _idleTimer = artDispatchScheduled([ARTDefault realtimeRequestTimeout] + self.maxIdleInterval, _rest.queue, ^{
-        [self.logger error:@"R:%p No activity seen from realtime in %f seconds; assuming connection has dropped", self, [[NSDate date] timeIntervalSinceDate:_lastActivity]];
+        [self.logger error:@"R:%p No activity seen from realtime in %f seconds; assuming connection has dropped", self, [[NSDate date] timeIntervalSinceDate:self->_lastActivity]];
 
         [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createWithCode:80003 status:408 message:@"Idle timer expired"]];
     });
@@ -1393,8 +1393,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p host is down; can retry with fallback host", self];
         if (!_fallbacks && [error.url.host isEqualToString:[ARTDefault realtimeHost]]) {
             [self.rest internetIsUp:^void(BOOL isUp) {
-                _fallbacks = [[ARTFallback alloc] initWithOptions:[self getClientOptions]];
-                (_fallbacks != nil) ? [self reconnectWithFallback] : [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
+                self->_fallbacks = [[ARTFallback alloc] initWithOptions:[self getClientOptions]];
+                (self->_fallbacks != nil) ? [self reconnectWithFallback] : [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
             }];
             return;
         } else if (_fallbacks && [self reconnectWithFallback]) {

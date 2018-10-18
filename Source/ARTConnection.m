@@ -158,7 +158,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 - (NSString *)getRecoveryKey {
     __block NSString *ret;
 dispatch_sync(_queue, ^{
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
+ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
     ret = [self recoveryKey_nosync];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 });

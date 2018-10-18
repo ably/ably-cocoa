@@ -274,7 +274,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
             NSString *contentType = [response.allHeaderFields objectForKey:@"Content-Type"];
 
             BOOL validContentType = NO;
-            for (NSString *mimeType in [_encoders.allValues valueForKeyPath:@"mimeType"]) {
+            for (NSString *mimeType in [self->_encoders.allValues valueForKeyPath:@"mimeType"]) {
                 if ([contentType containsString:mimeType]) {
                     validContentType = YES;
                     break;
@@ -297,7 +297,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
                 if ([self shouldRenewToken:&dataError] && [request isKindOfClass:[NSMutableURLRequest class]]) {
                     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p retry request %@", self, request];
                     // Make a single attempt to reissue the token and resend the request
-                    if (_tokenErrorRetries < 1) {
+                    if (self->_tokenErrorRetries < 1) {
                         [self executeRequest:(NSMutableURLRequest *)request withAuthOption:ARTAuthenticationTokenRetry completion:callback];
                         return;
                     }
@@ -314,9 +314,9 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
                 error = [ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
             }
         }
-        if (retries < _options.httpMaxRetryCount && [self shouldRetryWithFallback:request response:response error:error]) {
-            if (!blockFallbacks && [ARTFallback restShouldFallback:request.URL withOptions:_options]) {
-                blockFallbacks = [[ARTFallback alloc] initWithOptions:_options];
+        if (retries < self->_options.httpMaxRetryCount && [self shouldRetryWithFallback:request response:response error:error]) {
+            if (!blockFallbacks && [ARTFallback restShouldFallback:request.URL withOptions:self->_options]) {
+                blockFallbacks = [[ARTFallback alloc] initWithOptions:self->_options];
             }
             if (blockFallbacks) {
                 NSString *host = [blockFallbacks popFallbackHost];
@@ -399,7 +399,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         void (^userCallback)(NSDate *time, NSError *error) = callback;
         callback = ^(NSDate *time, NSError *error) {
             ART_EXITING_ABLY_CODE(self);
-            dispatch_async(_userQueue, ^{
+            dispatch_async(self->_userQueue, ^{
                 userCallback(time, error);
             });
         };
@@ -440,7 +440,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         void (^userCallback)(ARTHTTPPaginatedResponse *, ARTErrorInfo *) = callback;
         callback = ^(ARTHTTPPaginatedResponse *r, ARTErrorInfo *e) {
             ART_EXITING_ABLY_CODE(self);
-            dispatch_async(_userQueue, ^{
+            dispatch_async(self->_userQueue, ^{
                 userCallback(r, e);
             });
         };
@@ -552,7 +552,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         void (^userCallback)(ARTPaginatedResult<ARTStats *> *, ARTErrorInfo *) = callback;
         callback = ^(ARTPaginatedResult<ARTStats *> *r, ARTErrorInfo *e) {
             ART_EXITING_ABLY_CODE(self);
-            dispatch_async(_userQueue, ^{
+            dispatch_async(self->_userQueue, ^{
                 userCallback(r, e);
             });
         };
