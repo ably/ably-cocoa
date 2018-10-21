@@ -714,6 +714,7 @@ class RestClient: QuickSpec {
                     testHTTPExecutor.afterRequest = { request, callback in
                         if testHTTPExecutor.requests.count == 2 {
                             // Stop
+                            testHTTPExecutor.afterRequest = nil
                             testHTTPExecutor.http = nil
                             callback!(nil, nil, nil)
                         }
@@ -747,6 +748,7 @@ class RestClient: QuickSpec {
                     testHTTPExecutor.afterRequest = { request, callback in
                         if testHTTPExecutor.requests.count == 2 {
                             // Stop
+                            testHTTPExecutor.afterRequest = nil
                             testHTTPExecutor.http = nil
                             callback!(nil, nil, nil)
                         }
@@ -781,6 +783,7 @@ class RestClient: QuickSpec {
                     testHTTPExecutor.afterRequest = { request, callback in
                         if testHTTPExecutor.requests.count == 2 {
                             // Stop
+                            testHTTPExecutor.afterRequest = nil
                             testHTTPExecutor.http = nil
                             callback!(nil, nil, nil)
                         }
