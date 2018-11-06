@@ -1,10 +1,10 @@
 PODS:
-  - Ably (1.1.0):
+  - Ably (1.1.2):
     - KSCrashAblyFork (= 1.15.8-ably-2)
     - msgpack (= 0.1.8)
     - SAMKeychain (= 1.5.3)
     - SocketRocketAblyFork (= 0.5.2-ably-2)
-    - ULID (= 1.0.2)
+    - ULID (= 1.0.3)
   - KSCrashAblyFork (1.15.8-ably-2):
     - KSCrashAblyFork/Installations (= 1.15.8-ably-2)
   - KSCrashAblyFork/Installations (1.15.8-ably-2):
@@ -71,7 +71,7 @@ PODS:
   - msgpack (0.1.8)
   - SAMKeychain (1.5.3)
   - SocketRocketAblyFork (0.5.2-ably-2)
-  - ULID (1.0.2)
+  - ULID (1.0.3)
 
 DEPENDENCIES:
   - Ably (from `../..`)
@@ -89,12 +89,12 @@ EXTERNAL SOURCES:
     :path: "../.."
 
 SPEC CHECKSUMS:
-  Ably: 20db31b014cccfcae04bd10566d2878996c57e75
+  Ably: 1f1232175d54ffc1cc00ee5c537e9a963f38fc34
   KSCrashAblyFork: d356f10dcde9359db775334e38e93a48df6508f7
   msgpack: 97491d2ea799408f4694f2c7d7fd79baf77853dd
   SAMKeychain: 483e1c9f32984d50ca961e26818a534283b4cd5c
   SocketRocketAblyFork: 8337d4d53e49a8af8dbe76c8416ef55605f758c6
-  ULID: fcabaa95746b670beb80c029beb3372da2f729bd
+  ULID: d583a374311df11a7eeecbfd3ce68d02339ce24d
 
 PODFILE CHECKSUM: 6af34bf7f91045b23539816c1d0cfe253bec5ea5
 
