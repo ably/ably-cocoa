@@ -1,7 +1,53 @@
 # Change Log
 
-## [1.1.1](https://github.com/ably/ably-ios/tree/1.1.1) (2018-09-29)
+## [1.1.2](https://github.com/ably/ably-ios/tree/1.1.2) (2018-11-06)
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.1.1...1.1.2)
 
+**Implemented enhancements:**
+
+- Replace NSURL with URL in Swift code [\#794](https://github.com/ably/ably-ios/issues/794)
+- Address SocketRocket warnings [\#688](https://github.com/ably/ably-ios/issues/688)
+
+**Fixed bugs:**
+
+- Unable to submit to AppStore [\#803](https://github.com/ably/ably-ios/issues/803)
+- After connection recovery, the client resets msgSerial [\#799](https://github.com/ably/ably-ios/issues/799)
+- Investigate implementation of RTN15a [\#727](https://github.com/ably/ably-ios/issues/727)
+- SocketRocket - missing required key when submitting to the App Store [\#701](https://github.com/ably/ably-ios/issues/701)
+
+**Closed issues:**
+
+- Issue while subscribe device for Push Notifications [\#796](https://github.com/ably/ably-ios/issues/796)
+- Potential code that could stall some CI executions [\#758](https://github.com/ably/ably-ios/issues/758)
+- Check use of `dev:push-device-auth` environment [\#781](https://github.com/ably/ably-ios/issues/781)
+- Check behavior of RTN15h\* [\#731](https://github.com/ably/ably-ios/issues/731)
+- Investigate implementation of RTN14b [\#730](https://github.com/ably/ably-ios/issues/730)
+
+**Merged pull requests:**
+
+- Update to Xcode10 Swift 4.2 [\#813](https://github.com/ably/ably-ios/pull/813) ([funkyboy](https://github.com/funkyboy))
+- Xcode 10 minimal support [\#812](https://github.com/ably/ably-ios/pull/812) ([ricardopereira](https://github.com/ricardopereira))
+- Fix Realtime clients creation outside the `it` method scope [\#811](https://github.com/ably/ably-ios/pull/811) ([ricardopereira](https://github.com/ricardopereira))
+- Add RTL6d2 [\#806](https://github.com/ably/ably-ios/pull/806) ([funkyboy](https://github.com/funkyboy))
+- SocketRocketAblyFork [\#808](https://github.com/ably/ably-ios/pull/808) ([ricardopereira](https://github.com/ricardopereira))
+- Fix RTL6d1 [\#807](https://github.com/ably/ably-ios/pull/807) ([funkyboy](https://github.com/funkyboy))
+- Add rtl6d1 [\#802](https://github.com/ably/ably-ios/pull/802) ([funkyboy](https://github.com/funkyboy))
+- RTN16f [\#801](https://github.com/ably/ably-ios/pull/801) ([ricardopereira](https://github.com/ricardopereira))
+- Update RTN16b [\#800](https://github.com/ably/ably-ios/pull/800) ([ricardopereira](https://github.com/ricardopereira))
+- Add test for RTN15h1 [\#798](https://github.com/ably/ably-ios/pull/798) ([funkyboy](https://github.com/funkyboy))
+- NSURL -\> URL in Swift code [\#797](https://github.com/ably/ably-ios/pull/797) ([funkyboy](https://github.com/funkyboy))
+- Add TR3\* [\#793](https://github.com/ably/ably-ios/pull/793) ([funkyboy](https://github.com/funkyboy))
+- Add ref to RTN23a [\#792](https://github.com/ably/ably-ios/pull/792) ([funkyboy](https://github.com/funkyboy))
+- Improve RTN14b test [\#791](https://github.com/ably/ably-ios/pull/791) ([funkyboy](https://github.com/funkyboy))
+- Reactivate and fix RTP17 tests [\#790](https://github.com/ably/ably-ios/pull/790) ([funkyboy](https://github.com/funkyboy))
+- Add RTN15a [\#789](https://github.com/ably/ably-ios/pull/789) ([funkyboy](https://github.com/funkyboy))
+- Fix RSL1b [\#788](https://github.com/ably/ably-ios/pull/788) ([ricardopereira](https://github.com/ricardopereira))
+- Move RSL1i to RestClientChannel file [\#785](https://github.com/ably/ably-ios/pull/785) ([ricardopereira](https://github.com/ricardopereira))
+- HTTP Paginated Response [\#783](https://github.com/ably/ably-ios/pull/783) ([ricardopereira](https://github.com/ricardopereira))
+- Fix RSC7b test [\#782](https://github.com/ably/ably-ios/pull/782) ([funkyboy](https://github.com/funkyboy))
+- RSC19a [\#754](https://github.com/ably/ably-ios/pull/754) ([ricardopereira](https://github.com/ricardopereira))
+
+## [1.1.1](https://github.com/ably/ably-ios/tree/1.1.1) (2018-09-29)
 [Full Changelog](https://github.com/ably/ably-ios/compare/1.1.0...1.1.1)
 
 **Fixed bugs:**
@@ -9,7 +55,6 @@
 - Update SocketRocket dependency [\#804](https://github.com/ably/ably-ios/issues/804)
 
 ## [1.1.0](https://github.com/ably/ably-ios/tree/1.1.0) (2018-08-10)
-
 [Full Changelog](https://github.com/ably/ably-ios/compare/1.0.14...1.1.0)
 
 **Implemented enhancements:**
