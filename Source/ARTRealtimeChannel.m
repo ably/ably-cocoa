@@ -133,9 +133,11 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 }
 #endif
 
+#if TARGET_OS_IOS
 - (ARTLocalDevice *)device {
     return _realtime.device;
 }
+#endif
 
 - (void)internalPostMessages:(id)data callback:(void (^)(ARTErrorInfo *__art_nullable error))callback {
     if (callback) {

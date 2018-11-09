@@ -82,6 +82,7 @@
         return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
+        #if TARGET_OS_IOS
         ARTLocalDevice *local = self.machine.rest.device_nosync;
 
         if (local.identityTokenDetails) {
@@ -92,6 +93,7 @@
         if ([local deviceToken]) {
             [self.machine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
         }
+        #endif
 
         return [ARTPushActivationStateWaitingForPushDeviceDetails newWithMachine:self.machine];
     }
@@ -109,8 +111,10 @@
     }
     else if ([event isKindOfClass:[ARTPushActivationEventGotDeviceRegistration class]]) {
         ARTPushActivationEventGotDeviceRegistration *gotDeviceRegistrationEvent = (ARTPushActivationEventGotDeviceRegistration *)event;
+        #if TARGET_OS_IOS
         ARTLocalDevice *local = self.machine.rest.device_nosync;
         [local setAndPersistIdentityTokenDetails:gotDeviceRegistrationEvent.identityTokenDetails];
+        #endif
         [self.machine callActivatedCallback:nil];
         return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
     }
@@ -174,8 +178,10 @@
     }
     else if ([event isKindOfClass:[ARTPushActivationEventRegistrationUpdated class]]) {
         ARTPushActivationEventRegistrationUpdated *registrationUpdatedEvent = (ARTPushActivationEventRegistrationUpdated *)event;
+        #if TARGET_OS_IOS
         ARTLocalDevice *local = self.machine.rest.device_nosync;
         [local setAndPersistIdentityTokenDetails:registrationUpdatedEvent.identityTokenDetails];
+        #endif
         [self.machine callActivatedCallback:nil];
         return [ARTPushActivationStateWaitingForRegistrationUpdate newWithMachine:self.machine];
     }
@@ -214,8 +220,10 @@
         return [ARTPushActivationStateWaitingForDeregistration newWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventDeregistered class]]) {
+        #if TARGET_OS_IOS
         ARTLocalDevice *local = self.machine.rest.device_nosync;
         [local setAndPersistIdentityTokenDetails:nil];
+        #endif
         [self.machine callDeactivatedCallback:nil];
         return [ARTPushActivationStateNotActivated newWithMachine:self.machine];
     }

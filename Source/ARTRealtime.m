@@ -1473,8 +1473,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     [_rest reportUncaughtException:e];
 }
 
+#if TARGET_OS_IOS
 - (ARTLocalDevice *)device {
     return _rest.device;
 }
+#endif
 
 @end
