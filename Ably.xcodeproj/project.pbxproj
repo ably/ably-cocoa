@@ -539,6 +539,8 @@
 		D7B621951E4A6FE600684474 /* ARTDeviceDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = D7B621931E4A6FE600684474 /* ARTDeviceDetails.m */; };
 		D7B621981E4A762A00684474 /* ARTPushChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = D7B621961E4A762A00684474 /* ARTPushChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7B621991E4A762A00684474 /* ARTPushChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = D7B621971E4A762A00684474 /* ARTPushChannel.m */; };
+		D7BDDD3E21959CC100CC0632 /* CompatibilityMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = 85B2C2181B6FE8DE00EA5254 /* CompatibilityMacros.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D7BDDD3F21959CC200CC0632 /* CompatibilityMacros.h in Headers */ = {isa = PBXBuildFile; fileRef = 85B2C2181B6FE8DE00EA5254 /* CompatibilityMacros.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7C1B8771BBEA81A0087B55F /* Auth.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C1B8761BBEA81A0087B55F /* Auth.swift */; };
 		D7C1B8791BBF5F810087B55F /* ARTAuth+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7C1B8781BBF5F460087B55F /* ARTAuth+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D7CEF12D1C8D821D004FB242 /* ARTRealtimeChannels+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7CEF12C1C8D821D004FB242 /* ARTRealtimeChannels+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -1511,6 +1513,7 @@
 				D710D51721949C42008F54AD /* ARTPushChannel.h in Headers */,
 				D710D51E21949C42008F54AD /* ARTLocalDeviceStorage.h in Headers */,
 				D710D50721949C18008F54AD /* ARTConnectionDetails+Private.h in Headers */,
+				D7BDDD3E21959CC100CC0632 /* CompatibilityMacros.h in Headers */,
 				D710D51B21949C42008F54AD /* ARTDeviceIdentityTokenDetails.h in Headers */,
 				D710D48021949A42008F54AD /* ARTDefault.h in Headers */,
 				D710D58021949D28008F54AD /* ARTAuthDetails.h in Headers */,
@@ -1628,6 +1631,7 @@
 				D710D52921949C44008F54AD /* ARTPushChannel.h in Headers */,
 				D710D53021949C44008F54AD /* ARTLocalDeviceStorage.h in Headers */,
 				D710D51321949C19008F54AD /* ARTConnectionDetails+Private.h in Headers */,
+				D7BDDD3F21959CC200CC0632 /* CompatibilityMacros.h in Headers */,
 				D710D52D21949C44008F54AD /* ARTDeviceIdentityTokenDetails.h in Headers */,
 				D710D48221949A43008F54AD /* ARTDefault.h in Headers */,
 				D710D5A621949D2A008F54AD /* ARTAuthDetails.h in Headers */,
