@@ -19,7 +19,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class ARTRealtimePresence;
-#ifdef TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE
 @class ARTPushChannel;
 #endif
 
@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic, nullable) ARTErrorInfo *errorReason;
 
 @property (readonly) ARTRealtimePresence *presence;
-#ifdef TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE
 @property (readonly) ARTPushChannel *push;
 #endif
 

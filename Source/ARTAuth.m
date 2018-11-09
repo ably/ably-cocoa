@@ -8,7 +8,7 @@
 
 #import "ARTAuth+Private.h"
 
-#ifdef TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
 #endif
 
@@ -52,7 +52,7 @@ ART_TRY_OR_REPORT_CRASH_START(rest) {
                                                      name:NSCurrentLocaleDidChangeNotification
                                                    object:nil];
 
-        #ifdef TARGET_OS_IPHONE
+        #if TARGET_OS_IPHONE
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(didReceiveApplicationSignificantTimeChangeNotification:)
                                                      name:UIApplicationSignificantTimeChangeNotification
@@ -69,7 +69,7 @@ ART_TRY_OR_REPORT_CRASH_START(rest) {
 
 - (void)removeTimeOffsetObserver {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:NSCurrentLocaleDidChangeNotification object:nil];
-    #ifdef TARGET_OS_IPHONE
+    #if TARGET_OS_IPHONE
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationSignificantTimeChangeNotification object:nil];
     #endif
 }

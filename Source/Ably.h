@@ -60,7 +60,7 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import <Ably/ARTOSReachability.h>
 #import <Ably/ARTGCD.h>
 #import <Ably/ARTPush.h>
-#ifdef TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE
 #import <Ably/ARTPushChannel.h>
 #endif
 #import <Ably/ARTPushChannelSubscription.h>

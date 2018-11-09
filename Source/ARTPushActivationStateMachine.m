@@ -21,7 +21,7 @@
 #import "ARTDeviceIdentityTokenDetails.h"
 #import "ARTNSMutableRequest+ARTPush.h"
 
-#ifdef TARGET_OS_IOS
+#if TARGET_OS_IOS
 #import <UIKit/UIKit.h>
 
 NSString *const ARTPushActivationCurrentStateKey = @"ARTPushActivationCurrentState";
@@ -130,7 +130,7 @@ dispatch_async(_queue, ^{
 }
 
 - (void)deviceRegistration:(ARTErrorInfo *)error {
-    #ifdef TARGET_OS_IOS
+    #if TARGET_OS_IOS
     ARTLocalDevice *local = _rest.device_nosync;
 
     __block id delegate;
@@ -199,7 +199,7 @@ dispatch_async(_queue, ^{
 }
 
 - (void)deviceUpdateRegistration:(ARTErrorInfo *)error {
-    #ifdef TARGET_OS_IOS
+    #if TARGET_OS_IOS
     ARTLocalDevice *local = _rest.device_nosync;
 
     __block id delegate;
@@ -275,7 +275,7 @@ dispatch_async(_queue, ^{
 }
 
 - (void)deviceUnregistration:(ARTErrorInfo *)error {
-    #ifdef TARGET_OS_IOS
+    #if TARGET_OS_IOS
     ARTLocalDevice *local = _rest.device_nosync;
 
     __block id delegate;
@@ -333,7 +333,7 @@ dispatch_async(_queue, ^{
 }
 
 - (void)callActivatedCallback:(ARTErrorInfo *)error {
-    #ifdef TARGET_OS_IOS
+    #if TARGET_OS_IOS
 dispatch_async(_userQueue, ^{
     id delegate;
     if (self.delegate) {
@@ -354,7 +354,7 @@ dispatch_async(_userQueue, ^{
 }
 
 - (void)callDeactivatedCallback:(ARTErrorInfo *)error {
-    #ifdef TARGET_OS_IOS
+    #if TARGET_OS_IOS
 dispatch_async(_userQueue, ^{
     id delegate;
     if (self.delegate) {
@@ -375,7 +375,7 @@ dispatch_async(_userQueue, ^{
 }
 
 - (void)callUpdateFailedCallback:(nullable ARTErrorInfo *)error {
-    #ifdef TARGET_OS_IOS
+    #if TARGET_OS_IOS
 dispatch_async(_userQueue, ^{
     id delegate;
     if (self.delegate) {
