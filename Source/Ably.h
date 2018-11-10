@@ -56,9 +56,6 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import <Ably/ARTMsgPackEncoder.h>
 #import <Ably/ARTPaginatedResult.h>
 #import <Ably/ARTHTTPPaginatedResponse.h>
-#import <Ably/ARTReachability.h>
-#import <Ably/ARTOSReachability.h>
-#import <Ably/ARTGCD.h>
 #import <Ably/ARTPush.h>
 #if TARGET_OS_IPHONE
 #import <Ably/ARTPushChannel.h>
@@ -76,7 +73,3 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import <Ably/ARTDeviceStorage.h>
 #import <Ably/ARTLocalDevice.h>
 #import <Ably/ARTLocalDeviceStorage.h>
-
-#import <Ably/ARTNSDictionary+ARTDictionaryUtil.h>
-#import <Ably/ARTNSDate+ARTUtil.h>
-#import <Ably/ARTNSArray+ARTFunctional.h>
