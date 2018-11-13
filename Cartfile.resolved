@@ -1,5 +1,5 @@
 github "ably-forks/KSCrash" "1.15.8-ably-2"
 github "ably-forks/SocketRocket" "0.5.2-ably-2"
-github "rvi/msgpack-objective-C" "ad0a627becfd27ca45dfa6684b3fc79f058f5ce9"
+github "ably-forks/msgpack-objective-C" "fc7577a0dfaefd763430cd42476b5d09ce1ef394"
 github "soffes/SAMKeychain" "v1.5.3"
-github "whitesmith/ulid" "1.0.3"
+github "whitesmith/ulid" "5c3b29ed81e4ee1c12900138c2ffa8f3e9beaf9e"
