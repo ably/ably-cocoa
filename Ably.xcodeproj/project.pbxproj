@@ -640,7 +640,7 @@
 
 /* Begin PBXFileReference section */
 		1C05CF1E1AC1D7EB00687AC9 /* ARTRealtime+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTRealtime+Private.h"; sourceTree = "<group>"; };
-		1C118A5B1AE63D89006AD19E /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1C118A5B1AE63D89006AD19E /* Info-iOS.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-iOS.plist"; sourceTree = "<group>"; };
 		1C2B0FFB1B136A6D00E3633C /* ARTPresenceMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPresenceMap.h; sourceTree = "<group>"; };
 		1C2B0FFC1B136A6D00E3633C /* ARTPresenceMap.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPresenceMap.m; sourceTree = "<group>"; };
 		1C55427C1B148306003068DB /* ARTStatus.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTStatus.m; sourceTree = "<group>"; };
@@ -709,9 +709,9 @@
 		D70EECAA1FEAF331008A50CD /* ARTPendingMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPendingMessage.h; sourceTree = "<group>"; };
 		D70EECAB1FEAF331008A50CD /* ARTPendingMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPendingMessage.m; sourceTree = "<group>"; };
 		D710D45B219495E2008F54AD /* Ably.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Ably.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		D710D45E219495E2008F54AD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D710D45E219495E2008F54AD /* Info-macOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-macOS.plist"; sourceTree = "<group>"; };
 		D710D475219495FC008F54AD /* Ably.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Ably.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		D710D478219495FC008F54AD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D710D478219495FC008F54AD /* Info-tvOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-tvOS.plist"; sourceTree = "<group>"; };
 		D710D6A22194A09C008F54AD /* SAMKeychain.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SAMKeychain.framework; path = Carthage/Build/Mac/SAMKeychain.framework; sourceTree = "<group>"; };
 		D710D6A32194A09D008F54AD /* KSCrash.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KSCrash.framework; path = Carthage/Build/Mac/KSCrash.framework; sourceTree = "<group>"; };
 		D710D6A42194A09D008F54AD /* msgpack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = msgpack.framework; path = Carthage/Build/Mac/msgpack.framework; sourceTree = "<group>"; };
@@ -972,8 +972,6 @@
 				D7EE14F51F07964500C178D5 /* Version.xcconfig */,
 				96BF61331A35B2AB004CF2B3 /* Source */,
 				856AAC8B1B6E304B00B07119 /* Spec */,
-				D710D45C219495E2008F54AD /* Ably-macOS */,
-				D710D476219495FC008F54AD /* Ably-tvOS */,
 				96BF61321A35B2AB004CF2B3 /* Products */,
 				FAFEC5BB8312EB69E84C28D4 /* Frameworks */,
 				C2844A182B571552271C6EE2 /* Pods */,
@@ -1018,7 +1016,9 @@
 			isa = PBXGroup;
 			children = (
 				85F0A60C1B6D03B700EFF45A /* Ably.modulemap */,
-				1C118A5B1AE63D89006AD19E /* Info.plist */,
+				1C118A5B1AE63D89006AD19E /* Info-iOS.plist */,
+				D710D45E219495E2008F54AD /* Info-macOS.plist */,
+				D710D478219495FC008F54AD /* Info-tvOS.plist */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -1030,22 +1030,6 @@
 				835951C92224788FBB2948C4 /* Pods-AblySpec.release.xcconfig */,
 			);
 			name = Pods;
-			sourceTree = "<group>";
-		};
-		D710D45C219495E2008F54AD /* Ably-macOS */ = {
-			isa = PBXGroup;
-			children = (
-				D710D45E219495E2008F54AD /* Info.plist */,
-			);
-			path = "Ably-macOS";
-			sourceTree = "<group>";
-		};
-		D710D476219495FC008F54AD /* Ably-tvOS */ = {
-			isa = PBXGroup;
-			children = (
-				D710D478219495FC008F54AD /* Info.plist */,
-			);
-			path = "Ably-tvOS";
 			sourceTree = "<group>";
 		};
 		D71966E61E5DFFB2000974DD /* Admin */ = {
@@ -2341,7 +2325,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
-				INFOPLIST_FILE = Source/Info.plist;
+				INFOPLIST_FILE = "Source/Info-iOS.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MACH_O_TYPE = mh_dylib;
@@ -2366,7 +2350,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
-				INFOPLIST_FILE = Source/Info.plist;
+				INFOPLIST_FILE = "Source/Info-iOS.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MACH_O_TYPE = mh_dylib;
@@ -2401,14 +2385,14 @@
 				);
 				FRAMEWORK_VERSION = A;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = "Ably-macOS/Info.plist";
+				INFOPLIST_FILE = "Source/Info-macOS.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MODULEMAP_FILE = Source/Ably.modulemap;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.Ably-macOS";
+				PRODUCT_BUNDLE_IDENTIFIER = io.ably.Ably;
 				PRODUCT_NAME = Ably;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -2439,13 +2423,13 @@
 				);
 				FRAMEWORK_VERSION = A;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = "Ably-macOS/Info.plist";
+				INFOPLIST_FILE = "Source/Info-macOS.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MODULEMAP_FILE = Source/Ably.modulemap;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.Ably-macOS";
+				PRODUCT_BUNDLE_IDENTIFIER = io.ably.Ably;
 				PRODUCT_NAME = Ably;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -2473,13 +2457,13 @@
 					"$(PROJECT_DIR)/Carthage/Build/tvOS",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = "Ably-tvOS/Info.plist";
+				INFOPLIST_FILE = "Source/Info-tvOS.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = Source/Ably.modulemap;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.Ably-tvOS";
+				PRODUCT_BUNDLE_IDENTIFIER = io.ably.Ably;
 				PRODUCT_NAME = Ably;
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
@@ -2510,12 +2494,12 @@
 					"$(PROJECT_DIR)/Carthage/Build/tvOS",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = "Ably-tvOS/Info.plist";
+				INFOPLIST_FILE = "Source/Info-tvOS.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = Source/Ably.modulemap;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.Ably-tvOS";
+				PRODUCT_BUNDLE_IDENTIFIER = io.ably.Ably;
 				PRODUCT_NAME = Ably;
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
