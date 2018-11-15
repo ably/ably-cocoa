@@ -44,7 +44,7 @@
 		96A507A91A37806A0077CDF8 /* ARTEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507A71A37806A0077CDF8 /* ARTEncoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		96A507AD1A3780F60077CDF8 /* ARTJsonEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507AB1A3780F60077CDF8 /* ARTJsonEncoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		96A507AE1A3780F60077CDF8 /* ARTJsonEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 96A507AC1A3780F60077CDF8 /* ARTJsonEncoder.m */; };
-		96A507B51A37881C0077CDF8 /* ARTNSDate+ARTUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507B31A37881C0077CDF8 /* ARTNSDate+ARTUtil.h */; };
+		96A507B51A37881C0077CDF8 /* ARTNSDate+ARTUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507B31A37881C0077CDF8 /* ARTNSDate+ARTUtil.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		96A507B61A37881C0077CDF8 /* ARTNSDate+ARTUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 96A507B41A37881C0077CDF8 /* ARTNSDate+ARTUtil.m */; };
 		96A507BD1A3791490077CDF8 /* ARTRealtime.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507BB1A3791490077CDF8 /* ARTRealtime.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		96A507BE1A3791490077CDF8 /* ARTRealtime.m in Sources */ = {isa = PBXBuildFile; fileRef = 96A507BC1A3791490077CDF8 /* ARTRealtime.m */; };
@@ -420,8 +420,8 @@
 		D710D68621949ECF008F54AD /* ARTNSDictionary+ARTDictionaryUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507A31A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.h */; };
 		D710D68721949ED5008F54AD /* ARTNSArray+ARTFunctional.h in Headers */ = {isa = PBXBuildFile; fileRef = 967A431F1A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.h */; };
 		D710D68921949ED6008F54AD /* ARTNSArray+ARTFunctional.h in Headers */ = {isa = PBXBuildFile; fileRef = 967A431F1A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.h */; };
-		D710D68A21949EDA008F54AD /* ARTNSDate+ARTUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507B31A37881C0077CDF8 /* ARTNSDate+ARTUtil.h */; };
-		D710D68C21949EDB008F54AD /* ARTNSDate+ARTUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507B31A37881C0077CDF8 /* ARTNSDate+ARTUtil.h */; };
+		D710D68A21949EDA008F54AD /* ARTNSDate+ARTUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507B31A37881C0077CDF8 /* ARTNSDate+ARTUtil.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		D710D68C21949EDB008F54AD /* ARTNSDate+ARTUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 96A507B31A37881C0077CDF8 /* ARTNSDate+ARTUtil.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D710D68D21949EED008F54AD /* ARTEventEmitter.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE3E1BBC5B14003ECEF8 /* ARTEventEmitter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D710D68F21949EEE008F54AD /* ARTEventEmitter.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE3E1BBC5B14003ECEF8 /* ARTEventEmitter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D710D69021949EFF008F54AD /* ARTCrypto.h in Headers */ = {isa = PBXBuildFile; fileRef = 960D07911A45F1D800ED8C8C /* ARTCrypto.h */; settings = {ATTRIBUTES = (Public, ); }; };

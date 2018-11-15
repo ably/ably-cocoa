@@ -7,6 +7,7 @@
 //
 
 import Ably
+import Ably.Private
 import Nimble
 import Quick
 import Aspects
