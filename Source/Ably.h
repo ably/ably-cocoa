@@ -57,9 +57,7 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import <Ably/ARTPaginatedResult.h>
 #import <Ably/ARTHTTPPaginatedResponse.h>
 #import <Ably/ARTPush.h>
-#if TARGET_OS_IPHONE
 #import <Ably/ARTPushChannel.h>
-#endif
 #import <Ably/ARTPushChannelSubscription.h>
 #import <Ably/ARTPushActivationStateMachine.h>
 #import <Ably/ARTPushActivationEvent.h>
