@@ -1,7 +1,3 @@
-scheme "Ably"
-
 open_report false
-
 clean true
-
 skip_slack true

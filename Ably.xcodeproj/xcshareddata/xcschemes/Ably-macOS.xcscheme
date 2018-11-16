@@ -28,7 +28,26 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D7093C09219E2DB200723F17"
+               BuildableName = "Ably-macOS-Tests.xctest"
+               BlueprintName = "Ably-macOS-Tests"
+               ReferencedContainer = "container:Ably.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "D710D45A219495E2008F54AD"
+            BuildableName = "Ably.framework"
+            BlueprintName = "Ably-macOS"
+            ReferencedContainer = "container:Ably.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
       <AdditionalOptions>
       </AdditionalOptions>
    </TestAction>
