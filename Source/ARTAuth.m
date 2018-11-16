@@ -57,6 +57,11 @@ ART_TRY_OR_REPORT_CRASH_START(rest) {
                                                  selector:@selector(didReceiveApplicationSignificantTimeChangeNotification:)
                                                      name:UIApplicationSignificantTimeChangeNotification
                                                    object:nil];
+        #else
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(didReceiveApplicationSignificantTimeChangeNotification:)
+                                                     name:NSSystemClockDidChangeNotification
+                                                   object:nil];
         #endif
     }
     return self;
@@ -71,6 +76,8 @@ ART_TRY_OR_REPORT_CRASH_START(rest) {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:NSCurrentLocaleDidChangeNotification object:nil];
     #if TARGET_OS_IPHONE
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationSignificantTimeChangeNotification object:nil];
+    #else
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:NSSystemClockDidChangeNotification object:nil];
     #endif
 }
 

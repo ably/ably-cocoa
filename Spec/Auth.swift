@@ -3414,7 +3414,7 @@ class Auth : QuickSpec {
                     }
                     defer { hook.remove() }
 
-                    #if TARGET_OS_IOS
+                    #if TARGET_OS_IPHONE
                     // Force notification
                     NotificationCenter.default.post(name: UIApplication.significantTimeChangeNotification, object: nil)
 
@@ -3423,7 +3423,13 @@ class Auth : QuickSpec {
                     // Force notification
                     NotificationCenter.default.post(name: NSLocale.currentLocaleDidChangeNotification, object: nil)
                     #else
-                    // TODO
+                    // Force notification
+                    NotificationCenter.default.post(name: NSNotification.Name.NSSystemClockDidChange, object: nil)
+
+                    expect(discardTimeOffsetCallCount).toEventually(equal(1), timeout: testTimeout)
+
+                    // Force notification
+                    NotificationCenter.default.post(name: NSLocale.currentLocaleDidChangeNotification, object: nil)
                     #endif
 
                     expect(discardTimeOffsetCallCount).toEventually(equal(2), timeout: testTimeout)
