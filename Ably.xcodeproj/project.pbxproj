@@ -100,6 +100,38 @@
 		D7093C49219EDC9B00723F17 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6A42194A09D008F54AD /* msgpack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C4B219EDCAB00723F17 /* ULID.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6A62194A09D008F54AD /* ULID.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C5B219EDE3200723F17 /* ably-common in Resources */ = {isa = PBXBuildFile; fileRef = 856AAC9A1B6E326E00B07119 /* ably-common */; };
+		D7093C65219EE1AE00723F17 /* Ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D475219495FC008F54AD /* Ably.framework */; };
+		D7093C70219EE25400723F17 /* TestUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC961B6E30C800B07119 /* TestUtilities.swift */; };
+		D7093C71219EE25800723F17 /* NSObject+TestSuite.m in Sources */ = {isa = PBXBuildFile; fileRef = D780846D1C68B3E50083009D /* NSObject+TestSuite.m */; };
+		D7093C72219EE25B00723F17 /* NSObject+TestSuite.swift in Sources */ = {isa = PBXBuildFile; fileRef = D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */; };
+		D7093C73219EE26000723F17 /* ReadmeExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBAB9A6E1C69702800AF036B /* ReadmeExamples.swift */; };
+		D7093C74219EE26400723F17 /* Auth.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C1B8761BBEA81A0087B55F /* Auth.swift */; };
+		D7093C75219EE26400723F17 /* RestClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC981B6E312F00B07119 /* RestClient.swift */; };
+		D7093C76219EE26400723F17 /* RestClientStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 853ED7C31B7A1A3C006F1C6F /* RestClientStats.swift */; };
+		D7093C77219EE26400723F17 /* RestClientChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D746AE2A1BBB625E003ECEF8 /* RestClientChannel.swift */; };
+		D7093C78219EE26400723F17 /* RestClientChannels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D746AE2B1BBB625E003ECEF8 /* RestClientChannels.swift */; };
+		D7093C79219EE26400723F17 /* RestClientPresence.swift in Sources */ = {isa = PBXBuildFile; fileRef = D72768201C9C19040022F8B2 /* RestClientPresence.swift */; };
+		D7093C7A219EE26400723F17 /* RestPaginated.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74CBC09212EC02C00D090E4 /* RestPaginated.swift */; };
+		D7093C7B219EE26400723F17 /* RealtimeClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = D723046F1BB72CED00F1ABDA /* RealtimeClient.swift */; };
+		D7093C7C219EE26400723F17 /* RealtimeClientConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7EBE5A21BE8391E0086E675 /* RealtimeClientConnection.swift */; };
+		D7093C7D219EE26400723F17 /* RealtimeClientChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74EFAEA1C4D09B500CFF98E /* RealtimeClientChannel.swift */; };
+		D7093C7E219EE26400723F17 /* RealtimeClientChannels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71D30031C5F7B2F002115B0 /* RealtimeClientChannels.swift */; };
+		D7093C7F219EE26400723F17 /* RealtimeClientPresence.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7CEF1311C8DD3BC004FB242 /* RealtimeClientPresence.swift */; };
+		D7093C80219EE26400723F17 /* Stats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851674EE1B7BA5CD00D35169 /* Stats.swift */; };
+		D7093C81219EE26400723F17 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1AE0CD1C5C3A4900D62250 /* Utilities.swift */; };
+		D7093C82219EE26400723F17 /* Crypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB7913A71C6E54C3000ABF9B /* Crypto.swift */; };
+		D7093C87219EE28100723F17 /* ably-common in Resources */ = {isa = PBXBuildFile; fileRef = 856AAC9A1B6E326E00B07119 /* ably-common */; };
+		D7093C8B219EE3C900723F17 /* Quick.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7093C88219EE3C900723F17 /* Quick.framework */; };
+		D7093C8C219EE3C900723F17 /* Nimble.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7093C89219EE3C900723F17 /* Nimble.framework */; };
+		D7093C8D219EE3C900723F17 /* SwiftyJSON.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7093C8A219EE3C900723F17 /* SwiftyJSON.framework */; };
+		D7093C92219EE3E800723F17 /* Nimble.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7093C89219EE3C900723F17 /* Nimble.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D7093C93219EE3E800723F17 /* Quick.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7093C88219EE3C900723F17 /* Quick.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D7093C94219EE3E800723F17 /* SwiftyJSON.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7093C8A219EE3C900723F17 /* SwiftyJSON.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D7093C98219EE3E800723F17 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6B82194A1FD008F54AD /* msgpack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D7093C9A219EE3E800723F17 /* KSCrash.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6AF2194A0B2008F54AD /* KSCrash.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D7093C9B219EE3E800723F17 /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6AE2194A0B2008F54AD /* SAMKeychain.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D7093C9C219EE3E800723F17 /* SocketRocket.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6AC2194A0B1008F54AD /* SocketRocket.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D7093C9D219EE3E800723F17 /* ULID.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6AD2194A0B2008F54AD /* ULID.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D70EAAED1BC3376200CD8B9E /* ARTRestChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = D70EAAEB1BC3376200CD8B9E /* ARTRestChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D70EAAEE1BC3376200CD8B9E /* ARTRestChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = D70EAAEC1BC3376200CD8B9E /* ARTRestChannel.m */; };
 		D70EECAC1FEAF331008A50CD /* ARTPendingMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = D70EECAA1FEAF331008A50CD /* ARTPendingMessage.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -659,6 +691,13 @@
 			remoteGlobalIDString = D710D45A219495E2008F54AD;
 			remoteInfo = "Ably-macOS";
 		};
+		D7093C66219EE1AE00723F17 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 96BF61281A35B2AB004CF2B3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D710D474219495FC008F54AD;
+			remoteInfo = "Ably-tvOS";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -677,6 +716,24 @@
 				D7093C3E219EDC1800723F17 /* Quick.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C3C219EDC0900723F17 /* Nimble.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C3B219EDBFC00723F17 /* SocketRocket.framework in Copy Carthage Frameworks to Test bundle */,
+			);
+			name = "Copy Carthage Frameworks to Test bundle";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D7093C6F219EE23700723F17 /* Copy Carthage Frameworks to Test bundle */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				D7093C92219EE3E800723F17 /* Nimble.framework in Copy Carthage Frameworks to Test bundle */,
+				D7093C93219EE3E800723F17 /* Quick.framework in Copy Carthage Frameworks to Test bundle */,
+				D7093C94219EE3E800723F17 /* SwiftyJSON.framework in Copy Carthage Frameworks to Test bundle */,
+				D7093C98219EE3E800723F17 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */,
+				D7093C9A219EE3E800723F17 /* KSCrash.framework in Copy Carthage Frameworks to Test bundle */,
+				D7093C9B219EE3E800723F17 /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */,
+				D7093C9C219EE3E800723F17 /* SocketRocket.framework in Copy Carthage Frameworks to Test bundle */,
+				D7093C9D219EE3E800723F17 /* ULID.framework in Copy Carthage Frameworks to Test bundle */,
 			);
 			name = "Copy Carthage Frameworks to Test bundle";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -770,6 +827,12 @@
 		D7093C31219ED41A00723F17 /* Aspects.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Aspects.framework; path = Carthage/Build/Mac/Aspects.framework; sourceTree = "<group>"; };
 		D7093C32219ED41A00723F17 /* Quick.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quick.framework; path = Carthage/Build/Mac/Quick.framework; sourceTree = "<group>"; };
 		D7093C3F219EDC3C00723F17 /* SwiftyJSON.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftyJSON.framework; path = Carthage/Build/Mac/SwiftyJSON.framework; sourceTree = "<group>"; };
+		D7093C60219EE1AE00723F17 /* Ably-tvOS-Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Ably-tvOS-Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D7093C64219EE1AE00723F17 /* Info-tvOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-tvOS.plist"; sourceTree = "<group>"; };
+		D7093C88219EE3C900723F17 /* Quick.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quick.framework; path = Carthage/Build/tvOS/Quick.framework; sourceTree = "<group>"; };
+		D7093C89219EE3C900723F17 /* Nimble.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Nimble.framework; path = Carthage/Build/tvOS/Nimble.framework; sourceTree = "<group>"; };
+		D7093C8A219EE3C900723F17 /* SwiftyJSON.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftyJSON.framework; path = Carthage/Build/tvOS/SwiftyJSON.framework; sourceTree = "<group>"; };
+		D7093C8E219EE3D800723F17 /* Aspects.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Aspects.framework; path = Carthage/Build/iOS/Aspects.framework; sourceTree = "<group>"; };
 		D70EAAEB1BC3376200CD8B9E /* ARTRestChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTRestChannel.h; sourceTree = "<group>"; };
 		D70EAAEC1BC3376200CD8B9E /* ARTRestChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestChannel.m; sourceTree = "<group>"; };
 		D70EECAA1FEAF331008A50CD /* ARTPendingMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPendingMessage.h; sourceTree = "<group>"; };
@@ -983,6 +1046,17 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D7093C5D219EE1AE00723F17 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D7093C65219EE1AE00723F17 /* Ably.framework in Frameworks */,
+				D7093C8B219EE3C900723F17 /* Quick.framework in Frameworks */,
+				D7093C8C219EE3C900723F17 /* Nimble.framework in Frameworks */,
+				D7093C8D219EE3C900723F17 /* SwiftyJSON.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D710D458219495E2008F54AD /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -1016,6 +1090,7 @@
 				856AAC9A1B6E326E00B07119 /* ably-common */,
 				856AAC8E1B6E304B00B07119 /* Info-iOS.plist */,
 				D7093C0E219E2DB200723F17 /* Info-macOS.plist */,
+				D7093C64219EE1AE00723F17 /* Info-tvOS.plist */,
 				856AAC961B6E30C800B07119 /* TestUtilities.swift */,
 				D780846C1C68B3E50083009D /* NSObject+TestSuite.h */,
 				D780846D1C68B3E50083009D /* NSObject+TestSuite.m */,
@@ -1067,6 +1142,7 @@
 				D710D45B219495E2008F54AD /* Ably.framework */,
 				D710D475219495FC008F54AD /* Ably.framework */,
 				D7093C0A219E2DB200723F17 /* Ably-macOS-Tests.xctest */,
+				D7093C60219EE1AE00723F17 /* Ably-tvOS-Tests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1358,7 +1434,11 @@
 		FAFEC5BB8312EB69E84C28D4 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D7093C8E219EE3D800723F17 /* Aspects.framework */,
 				D7093C3F219EDC3C00723F17 /* SwiftyJSON.framework */,
+				D7093C89219EE3C900723F17 /* Nimble.framework */,
+				D7093C88219EE3C900723F17 /* Quick.framework */,
+				D7093C8A219EE3C900723F17 /* SwiftyJSON.framework */,
 				D7093C31219ED41A00723F17 /* Aspects.framework */,
 				D7093C30219ED41A00723F17 /* Nimble.framework */,
 				D7093C32219ED41A00723F17 /* Quick.framework */,
@@ -1801,6 +1881,25 @@
 			productReference = D7093C0A219E2DB200723F17 /* Ably-macOS-Tests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		D7093C5F219EE1AE00723F17 /* Ably-tvOS-Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D7093C68219EE1AE00723F17 /* Build configuration list for PBXNativeTarget "Ably-tvOS-Tests" */;
+			buildPhases = (
+				D7093C5C219EE1AE00723F17 /* Sources */,
+				D7093C5D219EE1AE00723F17 /* Frameworks */,
+				D7093C5E219EE1AE00723F17 /* Resources */,
+				D7093C6F219EE23700723F17 /* Copy Carthage Frameworks to Test bundle */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D7093C67219EE1AE00723F17 /* PBXTargetDependency */,
+			);
+			name = "Ably-tvOS-Tests";
+			productName = "Ably-tvOS-Tests";
+			productReference = D7093C60219EE1AE00723F17 /* Ably-tvOS-Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		D710D45A219495E2008F54AD /* Ably-macOS */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D710D462219495E2008F54AD /* Build configuration list for PBXNativeTarget "Ably-macOS" */;
@@ -1862,6 +1961,11 @@
 						LastSwiftMigration = 1010;
 						ProvisioningStyle = Automatic;
 					};
+					D7093C5F219EE1AE00723F17 = {
+						CreatedOnToolsVersion = 10.1;
+						LastSwiftMigration = 1010;
+						ProvisioningStyle = Automatic;
+					};
 					D710D45A219495E2008F54AD = {
 						CreatedOnToolsVersion = 10.1;
 						ProvisioningStyle = Automatic;
@@ -1889,6 +1993,7 @@
 				D710D45A219495E2008F54AD /* Ably-macOS */,
 				D7093C09219E2DB200723F17 /* Ably-macOS-Tests */,
 				D710D474219495FC008F54AD /* Ably-tvOS */,
+				D7093C5F219EE1AE00723F17 /* Ably-tvOS-Tests */,
 			);
 		};
 /* End PBXProject section */
@@ -1914,6 +2019,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				D7093C5B219EDE3200723F17 /* ably-common in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D7093C5E219EE1AE00723F17 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D7093C87219EE28100723F17 /* ably-common in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2115,6 +2228,32 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D7093C5C219EE1AE00723F17 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D7093C75219EE26400723F17 /* RestClient.swift in Sources */,
+				D7093C7D219EE26400723F17 /* RealtimeClientChannel.swift in Sources */,
+				D7093C7F219EE26400723F17 /* RealtimeClientPresence.swift in Sources */,
+				D7093C73219EE26000723F17 /* ReadmeExamples.swift in Sources */,
+				D7093C71219EE25800723F17 /* NSObject+TestSuite.m in Sources */,
+				D7093C70219EE25400723F17 /* TestUtilities.swift in Sources */,
+				D7093C80219EE26400723F17 /* Stats.swift in Sources */,
+				D7093C77219EE26400723F17 /* RestClientChannel.swift in Sources */,
+				D7093C7E219EE26400723F17 /* RealtimeClientChannels.swift in Sources */,
+				D7093C79219EE26400723F17 /* RestClientPresence.swift in Sources */,
+				D7093C78219EE26400723F17 /* RestClientChannels.swift in Sources */,
+				D7093C76219EE26400723F17 /* RestClientStats.swift in Sources */,
+				D7093C82219EE26400723F17 /* Crypto.swift in Sources */,
+				D7093C7C219EE26400723F17 /* RealtimeClientConnection.swift in Sources */,
+				D7093C74219EE26400723F17 /* Auth.swift in Sources */,
+				D7093C72219EE25B00723F17 /* NSObject+TestSuite.swift in Sources */,
+				D7093C7B219EE26400723F17 /* RealtimeClient.swift in Sources */,
+				D7093C7A219EE26400723F17 /* RestPaginated.swift in Sources */,
+				D7093C81219EE26400723F17 /* Utilities.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D710D457219495E2008F54AD /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2287,6 +2426,11 @@
 			isa = PBXTargetDependency;
 			target = D710D45A219495E2008F54AD /* Ably-macOS */;
 			targetProxy = D7093C10219E2DB200723F17 /* PBXContainerItemProxy */;
+		};
+		D7093C67219EE1AE00723F17 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D710D474219495FC008F54AD /* Ably-tvOS */;
+			targetProxy = D7093C66219EE1AE00723F17 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -2576,6 +2720,72 @@
 			};
 			name = Release;
 		};
+		D7093C69219EE1AE00723F17 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/tvOS",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "Spec/Info-tvOS.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.Ably-tvOS-Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 12.1;
+			};
+			name = Debug;
+		};
+		D7093C6A219EE1AE00723F17 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/tvOS",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "Spec/Info-tvOS.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.Ably-tvOS-Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
+				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 12.1;
+			};
+			name = Release;
+		};
 		D710D460219495E2008F54AD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -2757,6 +2967,15 @@
 			buildConfigurations = (
 				D7093C13219E2DB200723F17 /* Debug */,
 				D7093C14219E2DB200723F17 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D7093C68219EE1AE00723F17 /* Build configuration list for PBXNativeTarget "Ably-tvOS-Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D7093C69219EE1AE00723F17 /* Debug */,
+				D7093C6A219EE1AE00723F17 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
