@@ -678,6 +678,7 @@ class MockHTTP: ARTHttp {
 
 }
 
+#if TARGET_OS_IOS
 class MockDeviceStorage: NSObject, ARTDeviceStorage {
 
     var keysRead: [String] = []
@@ -732,6 +733,7 @@ class MockDeviceStorage: NSObject, ARTDeviceStorage {
     }
 
 }
+#endif
 
 fileprivate struct ErrorSimulator {
     let value: Int
