@@ -2458,7 +2458,7 @@
 				);
 				INFOPLIST_FILE = "Spec/Info-iOS.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"TEST_SUITE\"";
+				OTHER_SWIFT_FLAGS = "$(inherited) -D TEST_SUITE -D TARGET_OS_IOS -D TARGET_OS_IPHONE -D TARGET_OS_MAC";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = AblySpec;
 				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
@@ -2487,7 +2487,7 @@
 				);
 				INFOPLIST_FILE = "Spec/Info-iOS.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"TEST_SUITE\"";
+				OTHER_SWIFT_FLAGS = "$(inherited) -D TEST_SUITE -D TARGET_OS_IOS -D TARGET_OS_IPHONE -D TARGET_OS_MAC";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = AblySpec;
 				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
@@ -2682,6 +2682,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
+				OTHER_SWIFT_FLAGS = "-D TARGET_OS_OSX -D TARGET_OS_MAC";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.Ably-macOS-Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -2716,6 +2717,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MTL_FAST_MATH = YES;
+				OTHER_SWIFT_FLAGS = "-D TARGET_OS_OSX -D TARGET_OS_MAC";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.Ably-macOS-Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -2746,6 +2748,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
+				OTHER_SWIFT_FLAGS = "-D TARGET_OS_TV -D TARGET_OS_IPHONE -D TARGET_OS_MAC";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.Ably-tvOS-Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
@@ -2780,6 +2783,7 @@
 				INFOPLIST_FILE = "Spec/Info-tvOS.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MTL_FAST_MATH = YES;
+				OTHER_SWIFT_FLAGS = "-D TARGET_OS_TV -D TARGET_OS_IPHONE -D TARGET_OS_MAC";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.Ably-tvOS-Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
