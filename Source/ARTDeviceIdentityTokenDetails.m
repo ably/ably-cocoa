@@ -66,11 +66,11 @@ NSString *const ARTCoderDeviceIdKey = @"deviceId";
 #pragma mark - Archive/Unarchive
 
 - (NSData *)archive {
-    return [NSKeyedArchiver archivedDataWithRootObject:self];
+    return [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:nil];
 }
 
 + (ARTDeviceIdentityTokenDetails *)unarchive:(NSData *)data {
-    return [NSKeyedUnarchiver unarchiveObjectWithData:data];
+    return [NSKeyedUnarchiver unarchivedObjectOfClass:[self class] fromData:data error:nil];
 }
 
 @end

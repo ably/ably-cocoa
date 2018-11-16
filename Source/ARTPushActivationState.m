@@ -57,11 +57,11 @@
 #pragma mark - Archive/Unarchive
 
 - (NSData *)archive {
-    return [NSKeyedArchiver archivedDataWithRootObject:self];
+    return [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:nil];
 }
 
 + (ARTPushActivationState *)unarchive:(NSData *)data {
-    return [NSKeyedUnarchiver unarchiveObjectWithData:data];
+    return [NSKeyedUnarchiver unarchivedObjectOfClass:[self class] fromData:data error:nil];
 }
 
 @end
@@ -110,8 +110,8 @@
         return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventGotDeviceRegistration class]]) {
-        ARTPushActivationEventGotDeviceRegistration *gotDeviceRegistrationEvent = (ARTPushActivationEventGotDeviceRegistration *)event;
         #if TARGET_OS_IOS
+        ARTPushActivationEventGotDeviceRegistration *gotDeviceRegistrationEvent = (ARTPushActivationEventGotDeviceRegistration *)event;
         ARTLocalDevice *local = self.machine.rest.device_nosync;
         [local setAndPersistIdentityTokenDetails:gotDeviceRegistrationEvent.identityTokenDetails];
         #endif
@@ -177,8 +177,8 @@
         return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventRegistrationUpdated class]]) {
-        ARTPushActivationEventRegistrationUpdated *registrationUpdatedEvent = (ARTPushActivationEventRegistrationUpdated *)event;
         #if TARGET_OS_IOS
+        ARTPushActivationEventRegistrationUpdated *registrationUpdatedEvent = (ARTPushActivationEventRegistrationUpdated *)event;
         ARTLocalDevice *local = self.machine.rest.device_nosync;
         [local setAndPersistIdentityTokenDetails:registrationUpdatedEvent.identityTokenDetails];
         #endif
