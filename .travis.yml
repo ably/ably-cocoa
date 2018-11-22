@@ -13,8 +13,8 @@ matrix:
     - env: NAME="ably-macOS" LANE=test_macOS
 install:
   # Carthage
-  - carthage bootstrap --platform iOS
-  - carthage bootstrap --platform macOS
+  - if [[ ${NAME} == "ably-iOS" ]]; then carthage update --platform iOS --cache-builds; fi
+  - if [[ ${NAME} == "ably-macOS" ]]; then carthage update --platform macOS --cache-builds; fi
   # Update fastlane
   - gem install fastlane -v '2.108.0'
 before_script:
@@ -24,3 +24,6 @@ script:
   - fastlane $LANE
 after_success:
   - sleep 5
+cache:
+  directories:
+  - Carthage
