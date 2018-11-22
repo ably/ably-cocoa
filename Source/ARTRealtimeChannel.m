@@ -312,6 +312,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     if (!merged) {
         ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg sentCallback:nil ackCallback:cb];
         [self.queuedMessages addObject:qm];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) protocol message %p has been queued (not merged)", _realtime, self, self.name, msg];
+    }
+    else {
+        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) protocol message %p has been queued and merged in an existing message", _realtime, self, self.name, msg];
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
