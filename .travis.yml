@@ -11,17 +11,12 @@ matrix:
     - env: NAME="ably-iOS" LANE=test_iOS10
     - env: NAME="ably-iOS" LANE=test_iOS9
     - env: NAME="ably-macOS" LANE=test_macOS
-before_install:
-  - gem install cocoapods -v '1.5.3'
-  - pod repo update > /dev/null
 install:
-  # CocoaPods
-  - pod install
   # Carthage
   - carthage bootstrap --platform iOS
   - carthage bootstrap --platform macOS
   # Update fastlane
-  - gem install fastlane -v '2.100.1'
+  - gem install fastlane -v '2.108.0'
 before_script:
   - xcrun simctl erase all
 script:
