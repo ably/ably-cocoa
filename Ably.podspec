@@ -3,7 +3,7 @@ Pod::Spec.new do |s|
   s.version           = `Scripts/get-version.sh`
   s.summary           = "iOS client for Ably"
   s.description       = <<-DESC
-                        iOS client library for ably.io, the realtime messaging service, written in Objective-C and ready for Swift 3.0.
+                        iOS client library for ably.io, the realtime messaging service, written in Objective-C and ready for Swift 4.0 and later.
                         DESC
   s.homepage          = "https://www.ably.io"
   s.license           = { :type => 'Apache 2.0', :file => 'LICENSE' }

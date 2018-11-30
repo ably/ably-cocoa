@@ -1,40 +1,54 @@
 # [Ably](https://www.ably.io) iOS client library
 
+[![Build Status](https://travis-ci.org/ably/ably-ios.svg?branch=master)](https://travis-ci.org/ably/ably-ios)
+[![CocoaPods Compatible](https://img.shields.io/cocoapods/v/Ably.svg)](https://img.shields.io/cocoapods/v/Ably.svg)
+[![Carthage Compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
+![Platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20macOS-333333.svg)
+![Languages](https://img.shields.io/badge/languages-Swift%20%7C%20ObjC-333333.svg)
+
 An iOS client library for [ably.io](https://www.ably.io), the realtime messaging service, written in Objective-C.
 
 ## Supported platforms
 
 This SDK is compatible with projects that target:
 
-- iOS9
-- iOS10 
-- iOS11
+- iOS 9.0+
+- macOS 10.10+
 
 We maintain compatibility and explicitly support these platform versions, including performing CI testing on all library revisions.
 
-We do not explicitly maintain compatibility with older platform versions; we no longer perform CI testing on iOS8 as of version 1.0.12 (released on January 31st 2018). Any known incompatibilities with older versions can be found [here](https://github.com/ably/ably-ios/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
+We do not explicitly maintain compatibility with older platform versions; we no longer perform CI testing on iOS 8 as of version 1.0.12 (released on January 31st 2018). Any known incompatibilities with older versions can be found [here](https://github.com/ably/ably-ios/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
 
 If you find any issues with unsupported platform versions, please [raise an issue](https://github.com/ably/ably-ios/issues) in this repository or [contact Ably customer support](https://support.ably.io) for advice.
 
-Note: As of version `1.1.2` this library based on the 1.1 library specification. It implements a subset of 1.1 features:
+#### Acknowledgments
+
+As of version `1.1.2` this library based on the 1.1 library specification. It implements a subset of 1.1 features:
 - updated push API and push device authentication;
-- support for enforcement of the maxMessageSize attribute
+- support for enforcement of the `maxMessageSize` attribute
 Other minor features and bugfixes are included, as listed in the [changelog](CHANGELOG.md#112-2018-11-06).
+
+##### ⚠️ macOS
+
+The macOS support hasn't been officially released and it's only available from the `mac-support` branch. Please be aware that Push Notifications are currently unsupported. There is a demo available [here](https://github.com/ably/demo-macos).
 
 ## Documentation
 
-Visit https://www.ably.io/documentation for a complete API reference and more examples.
+Visit [ably.io/documentation](https://www.ably.io/documentation) for a complete API reference and more examples.
 
-## Installation
+## Installation Guide
 
-You can install Ably for iOS through CocoaPods, Carthage or manually.
+You can install Ably for iOS and macOS through CocoaPods, Carthage or manually.
 
-### Installing through [CocoaPods](https://cocoapods.org/) (recommended)
+### Installing through [CocoaPods](https://cocoapods.org/)
 
 Add this line to your application's Podfile:
 
     # For Xcode 7.3 and newer
     pod 'Ably', '~> 1.0'
+    
+    # With macOS Support (not officially released)
+    pod 'Ably', :git => 'https://github.com/ably/ably-ios.git', :branch => 'mac-support'
 
 And then install the dependency:
 
@@ -46,6 +60,9 @@ Add this line to your application's Cartfile:
 
     # For Xcode 7.3 and newer
     github "ably/ably-ios" ~> 1.0
+    
+    # With macOS Support (not officially released)
+    github "ably/ably-ios" "mac-support"
 
 And then run `carthage update` to build the framework and drag the built Ably.framework into your Xcode project.
 
@@ -57,8 +74,8 @@ If you see, for example, a `dyld: Library not loaded: @rpath/SocketRocket.framew
 
 1. Get the code from GitHub [from the release page](https://github.com/ably/ably-ios/releases/tag/1.1.2), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-ios.git`
 2. Drag the directory `ably-ios/ably-ios` into your project as a group.
-3. Ably depends on [SocketRocket](https://github.com/facebook/SocketRocket) 0.5.1; get it [from the releases page](https://github.com/facebook/SocketRocket/releases/tag/0.5.1) and follow [its manual installation instructions](https://github.com/facebook/SocketRocket#installing-ios).
-4. Ably also depends on [msgpack](https://github.com/rvi/msgpack-objective-C) 0.1.8; get it [from the releases page](https://github.com/rvi/msgpack-objective-C/releases/tag/0.1.8) and link it into your project.
+3. Ably depends on our [SocketRocket Fork](https://github.com/ably-forks/SocketRocket) 0.5.2; get it [from the releases page](https://github.com/ably-forks/SocketRocket/releases/tag/0.5.2-ably-2) and follow [its manual installation instructions](https://github.com/ably-forks/SocketRocket/#installing).
+4. Ably also depends on our [MessagePack Fork](https://github.com/ably-forks/msgpack-objective-C) 0.2.0; get it [from the releases page](https://github.com/ably-forks/msgpack-objective-C/releases/tag/0.2.0-ably-1) and link it into your project.
 
 ## Thread-safety
 
@@ -68,14 +85,10 @@ The library makes the following thread-safety guarantees:
 * "Value" objects (e. g. `ARTTokenDetails`, data from messages) returned by the library can be safely read from and written to.
 * Objects passed to the library must not be mutated afterwards. They can be safely passed again, or read from; they won't be written to by the library.
 
-All internal operations are dispatched to a single serial GCD queue. You can specify
-a custom queue for this, which must be serial, with `ARTClientOptions.internalDispatchQueue`.
+All internal operations are dispatched to a single serial GCD queue. You can specify a custom queue for this, which must be serial, with `ARTClientOptions.internalDispatchQueue`.
 
 All calls to callbacks provided by the user are dispatched to the main queue by default.
-This allows you to react to Ably's output by doing UI operations directly. You
-can specify a different queue with `ARTClientOptions.dispatchQueue`. It shouldn't
-be the same queue as the `ARTClientOptions.internalDispatchQueue`, since that can
-lead to deadlocks.
+This allows you to react to Ably's output by doing UI operations directly. You can specify a different queue with `ARTClientOptions.dispatchQueue`. It shouldn't be the same queue as the `ARTClientOptions.internalDispatchQueue`, since that can lead to deadlocks.
 
 ## Using the Realtime API
 
@@ -571,7 +584,7 @@ You can also view the [community reported Github issues](https://github.com/ably
 In this repo the `master` branch contains the latest stable version of the Ably SDK. Pushing changes to the `master` branch is locked. All the development (bug fixing, feature implementation, etc.) is done against the `develop` branch, which you should branch from whenever you'd like to make modifications. Here's the steps to follow when contributing to this repo.
 
 1. Fork it
-2. Install dependencies by running `pod install` and `carthage bootstrap`
+2. Install dependencies by running `carthage bootstrap`
 3. Create your feature branch from `develop` (`git checkout develop && git checkout -b my-new-feature-branch`)
 4. Commit your changes (`git commit -am 'Add some feature'`)
 5. Ensure you have added suitable tests and the test suite is passing
@@ -580,7 +593,7 @@ In this repo the `master` branch contains the latest stable version of the Ably 
 
 ## Running tests
 
-The project supports fastlane. To run tests use `fastlane scan --scheme "Ably"`.
+The project supports `fastlane`. To run tests use `fastlane scan`.
 
 ## Release Process
 
@@ -599,4 +612,4 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
 
 ## License
 
-Copyright (c) 2017 Ably Real-time Ltd, Licensed under the Apache License, Version 2.0.  Refer to [LICENSE](LICENSE) for the license terms.
+Copyright (c) 2018 Ably Real-time Ltd, Licensed under the Apache License, Version 2.0.  Refer to [LICENSE](LICENSE) for the license terms.
