@@ -62,8 +62,34 @@ setup: \
 	update_carthage_dependencies \
 	install_fastlane
 
+## Update dependencies.
+update: \
+	submodules \
+	update_carthage \
+	update_carthage_dependencies \
+	update_fastlane
+
 install_fastlane:
+	$(info Installing Fastlane…)
+
 	gem install fastlane -v 2.108.0
+
+update_fastlane:
+	$(info Updating Fastlane…)
+
+	gem update fastlane -v 2.108.0
+
+install_carthage:
+	$(info Installing Carthage…)
+
+	brew unlink carthage || true
+	brew install carthage
+	brew link --overwrite carthage
+
+update_carthage:
+	$(info Updating Carthage…)
+
+	brew upgrade carthage
 
 ## -- Source Code Tasks --
 
@@ -75,15 +101,15 @@ submodules:
 	
 ## -- Testing --
 
-## [Tests] Run test on iOS 12 using sandbox environment
-test_iosOS:
+## [Tests] Run tests on iOS 12 using sandbox environment
+test_iOS:
 	ABLY_ENV="sandbox" NAME="ably-iOS" fastlane test_iOS12
 
-## [Tests] Run test on tvOS 12 using sandbox environment
+## [Tests] Run tests on tvOS 12 using sandbox environment
 test_tvOS:
 	ABLY_ENV="sandbox" NAME="ably-tvOS" fastlane test_tvOS
 
-## [Tests] Run test on macOS using sandbox environment
+## [Tests] Run tests on macOS using sandbox environment
 test_macOS:
 	ABLY_ENV="sandbox" NAME="ably-macOS" fastlane test_macOS
 
@@ -106,13 +132,6 @@ carthage_clean:
 	$(info Deleting Carthage caches…)
 
 	rm -rf ~/Library/Caches/org.carthage.CarthageKit/dependencies/
-
-install_carthage:
-	$(info Installing Carthage…)
-
-	brew unlink carthage || true
-	brew install carthage
-	brew link --overwrite carthage
 
 ## [Carthage] Update dependencies
 update_carthage_dependencies:
