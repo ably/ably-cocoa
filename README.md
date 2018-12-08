@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/ably/ably-ios.svg?branch=master)](https://travis-ci.org/ably/ably-ios)
 [![CocoaPods Compatible](https://img.shields.io/cocoapods/v/Ably.svg)](https://img.shields.io/cocoapods/v/Ably.svg)
 [![Carthage Compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
-![Platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20macOS-333333.svg)
+![Platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20tvOS%20%7C%20macOS-333333.svg)
 ![Languages](https://img.shields.io/badge/languages-Swift%20%7C%20ObjC-333333.svg)
 
 An iOS client library for [ably.io](https://www.ably.io), the realtime messaging service, written in Objective-C.
@@ -13,6 +13,7 @@ An iOS client library for [ably.io](https://www.ably.io), the realtime messaging
 This SDK is compatible with projects that target:
 
 - iOS 9.0+
+- tvOS 9.0+
 - macOS 10.10+
 
 We maintain compatibility and explicitly support these platform versions, including performing CI testing on all library revisions.
@@ -32,6 +33,10 @@ Other minor features and bugfixes are included, as listed in the [changelog](CHA
 
 The macOS support hasn't been officially released and it's only available from the `mac-support` branch. Please be aware that Push Notifications are currently unsupported. There is a demo available [here](https://github.com/ably/demo-macos).
 
+##### ⚠️ tvOS
+
+The tvOS support hasn't been officially released and it's only available from the `tv-support` branch.
+
 ## Documentation
 
 Visit [ably.io/documentation](https://www.ably.io/documentation) for a complete API reference and more examples.
@@ -49,6 +54,9 @@ Add this line to your application's Podfile:
     
     # With macOS Support (not officially released)
     pod 'Ably', :git => 'https://github.com/ably/ably-ios.git', :branch => 'mac-support'
+    
+    # With tvOS Support (not officially released)
+    pod 'Ably', :git => 'https://github.com/ably/ably-ios.git', :branch => 'tv-support'
 
 And then install the dependency:
 
@@ -63,6 +71,9 @@ Add this line to your application's Cartfile:
     
     # With macOS Support (not officially released)
     github "ably/ably-ios" "mac-support"
+    
+    # With tvOS Support (not officially released)
+    github "ably/ably-ios" "tv-support"
 
 And then run `carthage update` to build the framework and drag the built Ably.framework into your Xcode project.
 
