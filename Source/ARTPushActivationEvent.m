@@ -34,7 +34,7 @@ NSString *const ARTCoderIdentityTokenDetailsKey = @"identityTokenDetails";
 #pragma mark - Archive/Unarchive
 
 - (NSData *)archive {
-    if (@available(macOS 10.13, iOS 11, *)) {
+    if (@available(macOS 10.13, iOS 11, tvOS 11, *)) {
         return [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:nil];
     }
     else {
@@ -43,7 +43,7 @@ NSString *const ARTCoderIdentityTokenDetailsKey = @"identityTokenDetails";
 }
 
 + (ARTPushActivationEvent *)unarchive:(NSData *)data {
-    if (@available(macOS 10.13, iOS 11, *)) {
+    if (@available(macOS 10.13, iOS 11, tvOS 11, *)) {
         return [NSKeyedUnarchiver unarchivedObjectOfClass:[self class] fromData:data error:nil];
     }
     else {
