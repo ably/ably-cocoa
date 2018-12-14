@@ -54,11 +54,22 @@
     // Just to persist the class info, no properties
 }
 
+#pragma mark - NSSecureCoding
+
++ (BOOL)supportsSecureCoding {
+    return true;
+}
+
 #pragma mark - Archive/Unarchive
 
 - (NSData *)archive {
     if (@available(macOS 10.13, iOS 11, tvOS 11, *)) {
-        return [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:nil];
+        NSError *error;
+        NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:&error];
+        if (error) {
+            NSLog(@"ARTPushActivationState Archive failed: %@", error);
+        }
+        return data;
     }
     else {
         return [NSKeyedArchiver archivedDataWithRootObject:self];
@@ -67,7 +78,12 @@
 
 + (ARTPushActivationState *)unarchive:(NSData *)data {
     if (@available(macOS 10.13, iOS 11, tvOS 11, *)) {
-        return [NSKeyedUnarchiver unarchivedObjectOfClass:[self class] fromData:data error:nil];
+        NSError *error;
+        ARTPushActivationState *result = [NSKeyedUnarchiver unarchivedObjectOfClass:[self class] fromData:data error:&error];
+        if (error) {
+            NSLog(@"ARTPushActivationState Unarchive failed: %@", error);
+        }
+        return result;
     }
     else {
         return [NSKeyedUnarchiver unarchiveObjectWithData:data];
