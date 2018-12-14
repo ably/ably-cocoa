@@ -10,8 +10,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-NSString *const ARTPushActivationCurrentStateKey;
-NSString *const ARTPushActivationPendingEventsKey;
+extern NSString *const ARTPushActivationCurrentStateKey;
+extern NSString *const ARTPushActivationPendingEventsKey;
 
 @interface ARTPushActivationStateMachine ()
 
