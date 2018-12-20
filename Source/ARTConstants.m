@@ -10,4 +10,3 @@
 
 NSString *const ARTHttpHeaderFieldErrorCodeKey = @"X-Ably-Errorcode";
 NSString *const ARTHttpHeaderFieldErrorMessageKey = @"X-Ably-Errormessage";
-

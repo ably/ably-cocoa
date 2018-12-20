@@ -2038,7 +2038,7 @@ class RealtimeClientConnection: QuickSpec {
                             }
                         }
                         client.connect()
-                        transport = client.transport as! TestProxyTransport
+                        transport = (client.transport as! TestProxyTransport)
                     }
 
                     let failures = transport.protocolMessagesReceived.filter({ $0.action == .error })

@@ -31,13 +31,13 @@
 #import "ARTConnection+Private.h"
 #import "ARTRestChannels+Private.h"
 #import "ARTEventEmitter+Private.h"
-#ifdef TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE
 #import "ARTPushChannel.h"
 #endif
 
 @interface ARTRealtimeChannel () {
     ARTRealtimePresence *_realtimePresence;
-    #ifdef TARGET_OS_IPHONE
+    #if TARGET_OS_IPHONE
     ARTPushChannel *_pushChannel;
     #endif
     CFRunLoopTimerRef _attachTimer;
@@ -124,7 +124,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-#ifdef TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE
 - (ARTPushChannel *)push {
     if (!_pushChannel) {
         _pushChannel = [[ARTPushChannel alloc] init:self.realtime.rest withChannel:self];
@@ -133,7 +133,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 }
 #endif
 
-#ifdef TARGET_OS_IOS
+#if TARGET_OS_IOS
 - (ARTLocalDevice *)device {
     return _realtime.device;
 }
@@ -312,6 +312,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     if (!merged) {
         ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg sentCallback:nil ackCallback:cb];
         [self.queuedMessages addObject:qm];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) protocol message %p has been queued (not merged)", _realtime, self, self.name, msg];
+    }
+    else {
+        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) protocol message %p has been queued and merged in an existing message", _realtime, self, self.name, msg];
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }

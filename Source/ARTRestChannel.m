@@ -213,7 +213,7 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
 });
 }
 
-#ifdef TARGET_OS_IOS
+#if TARGET_OS_IOS
 - (ARTLocalDevice *)device {
     return _rest.device;
 }

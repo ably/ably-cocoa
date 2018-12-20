@@ -525,7 +525,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 }
 
 - (id<ARTCancellable>)internetIsUp:(void (^)(BOOL isUp)) cb {
-    NSURL *requestUrl = [NSURL URLWithString:@"http://internet-up.ably-realtime.com/is-the-internet-up.txt"];
+    NSURL *requestUrl = [NSURL URLWithString:@"https://internet-up.ably-realtime.com/is-the-internet-up.txt"];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
     request.HTTPMethod = @"GET";
 
@@ -673,6 +673,7 @@ void ARTstopHandlingUncaughtExceptions(ARTRest *self) {
     [ARTSentry setUserInfo:@"reportToAbly" value:[NSNumber numberWithBool:false]];
 }
 
+#if TARGET_OS_IOS
 - (ARTLocalDevice *)device {
     __block ARTLocalDevice *ret;
     dispatch_sync(_queue, ^{
@@ -680,6 +681,7 @@ void ARTstopHandlingUncaughtExceptions(ARTRest *self) {
     });
     return ret;
 }
+#endif
 
 // Store address of once_token to access it in debug function.
 static dispatch_once_t *device_once_token;

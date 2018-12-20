@@ -17,7 +17,7 @@
 
 #pragma mark ARTPushRegisterer interface
 
-#ifdef TARGET_OS_IOS
+#if TARGET_OS_IOS
 
 @protocol ARTPushRegistererDelegate
 
@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init NS_UNAVAILABLE;
 
-#ifdef TARGET_OS_IOS
+#if TARGET_OS_IOS
 
 /// Push Registration token
 
