@@ -915,6 +915,7 @@
 		D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTURLSessionServerTrust.m; sourceTree = "<group>"; };
 		D75A3F191DDE5B62002A4AAD /* ARTGCD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTGCD.h; path = Private/ARTGCD.h; sourceTree = "<group>"; };
 		D75A3F1A1DDE5B62002A4AAD /* ARTGCD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ARTGCD.m; path = Private/ARTGCD.m; sourceTree = "<group>"; };
+		D75B85F921BAF8F900FD8DD2 /* Ably.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Ably.xcconfig; sourceTree = "<group>"; };
 		D75F49C2205ACFEC003DE04F /* ARTDeviceStorage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTDeviceStorage.h; sourceTree = "<group>"; };
 		D75F49C6205AD4D4003DE04F /* SAMKeychain.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SAMKeychain.framework; path = Carthage/Build/iOS/SAMKeychain.framework; sourceTree = "<group>"; };
 		D768C6AA1E4B5B0200436011 /* ARTDevicePushDetails.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTDevicePushDetails.h; sourceTree = "<group>"; };
@@ -1134,6 +1135,7 @@
 		96BF61271A35B2AB004CF2B3 = {
 			isa = PBXGroup;
 			children = (
+				D75B85F921BAF8F900FD8DD2 /* Ably.xcconfig */,
 				D7EE14F51F07964500C178D5 /* Version.xcconfig */,
 				96BF61331A35B2AB004CF2B3 /* Source */,
 				856AAC8B1B6E304B00B07119 /* Spec */,
@@ -2450,6 +2452,7 @@
 		};
 		96BF61451A35B2AB004CF2B3 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D75B85F921BAF8F900FD8DD2 /* Ably.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -2478,7 +2481,6 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -2501,7 +2503,6 @@
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
-				SHARED_VERSION_NUMBER = 1.1.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -2510,6 +2511,7 @@
 		};
 		96BF61461A35B2AB004CF2B3 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D75B85F921BAF8F900FD8DD2 /* Ably.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -2538,7 +2540,6 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
-				CURRENT_PROJECT_VERSION = 1;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -2553,7 +2554,6 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
-				SHARED_VERSION_NUMBER = 1.1.2;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;

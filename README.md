@@ -584,7 +584,7 @@ You can also view the [community reported Github issues](https://github.com/ably
 In this repo the `master` branch contains the latest stable version of the Ably SDK. Pushing changes to the `master` branch is locked. All the development (bug fixing, feature implementation, etc.) is done against the `develop` branch, which you should branch from whenever you'd like to make modifications. Here's the steps to follow when contributing to this repo.
 
 1. Fork it
-2. Install dependencies by running `carthage bootstrap`
+2. Setup or update your machine by running `make setup|update`
 3. Create your feature branch from `develop` (`git checkout develop && git checkout -b my-new-feature-branch`)
 4. Commit your changes (`git commit -am 'Add some feature'`)
 5. Ensure you have added suitable tests and the test suite is passing
@@ -593,14 +593,16 @@ In this repo the `master` branch contains the latest stable version of the Ably 
 
 ## Running tests
 
-The project supports `fastlane`. To run tests use `fastlane scan`.
+To run tests use `make test_[iOS|tvOS|macOS]`.
+
+Note: [Fastlane](https://fastlane.tools) should be installed.
 
 ## Release Process
 
 This library uses [semantic versioning](http://semver.org/). For each release, the following needs to be done:
 
 * Create a new branch `release-x.x.x` (where `x.x.x` is the new version number) from the `develop` branch
-* Run script `./Scripts/set-version.sh x.x.x` to assign the new version number.
+* Run `make bump_[major|minor|patch]` to bump the new version number.
 * Run [`github_changelog_generator`](https://github.com/skywinder/Github-Changelog-Generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). Once the CHANGELOG has completed, manually change the `Unreleased` heading and link with the current version number such as `v1.0.0`. Also ensure that the `Full Changelog` link points to the new version tag instead of the `HEAD`. Commit this change.
 * Push tag to origin such as `git push origin x.x.x`.
 * Make a PR against `develop`

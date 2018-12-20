@@ -18,9 +18,7 @@ echo "Old version: $OLD_VERSION"
 # Assign new version
 echo "$VERSION_CONFIG_VAR = $NEW_VERSION" > $VERSION_CONFIG_FILE
 
-sed -i '' -e 's/'"$OLD_VERSION"'/'"$NEW_VERSION"'/g' Source/Info.plist
 sed -i '' -e 's/'"$OLD_VERSION"'/'"$NEW_VERSION"'/g' README.md
-sed -i '' -e 's/'"$OLD_VERSION"'/'"$NEW_VERSION"'/g' Source/ARTDefault.m
 sed -i '' -e 's/'"$OLD_VERSION"'/'"$NEW_VERSION"'/g' Spec/RealtimeClientConnection.swift
 
 git add . && git commit -m "Bump version to $NEW_VERSION."
