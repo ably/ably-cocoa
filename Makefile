@@ -107,7 +107,7 @@ test_iOS:
 
 ## [Tests] Run tests on tvOS 12 using sandbox environment
 test_tvOS:
-	ABLY_ENV="sandbox" NAME="ably-tvOS" fastlane test_tvOS
+	ABLY_ENV="sandbox" NAME="ably-tvOS" fastlane test_tvOS12
 
 ## [Tests] Run tests on macOS using sandbox environment
 test_macOS:

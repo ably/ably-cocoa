@@ -15,7 +15,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTPushActivationState : NSObject <NSCoding>
+@interface ARTPushActivationState : NSObject <NSSecureCoding>
 
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine;

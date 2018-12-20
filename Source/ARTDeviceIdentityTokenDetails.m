@@ -46,11 +46,11 @@ NSString *const ARTCoderDeviceIdKey = @"deviceId";
         return nil;
     }
 
-    _token = [aDecoder decodeObjectForKey:ARTCoderTokenKey];
-    _issued = [aDecoder decodeObjectForKey:ARTCoderIssuedKey];
-    _expires = [aDecoder decodeObjectForKey:ARTCoderExpiresKey];
-    _capability = [aDecoder decodeObjectForKey:ARTCoderCapabilityKey];
-    _deviceId = [aDecoder decodeObjectForKey:ARTCoderDeviceIdKey];
+    _token = [aDecoder decodeObjectOfClass:[NSString class] forKey:ARTCoderTokenKey];
+    _issued = [aDecoder decodeObjectOfClass:[NSDate class] forKey:ARTCoderIssuedKey];
+    _expires = [aDecoder decodeObjectOfClass:[NSDate class] forKey:ARTCoderExpiresKey];
+    _capability = [aDecoder decodeObjectOfClass:[NSString class] forKey:ARTCoderCapabilityKey];
+    _deviceId = [aDecoder decodeObjectOfClass:[NSString class] forKey:ARTCoderDeviceIdKey];
 
     return self;
 }
@@ -63,11 +63,22 @@ NSString *const ARTCoderDeviceIdKey = @"deviceId";
     [aCoder encodeObject:self.deviceId forKey:ARTCoderDeviceIdKey];
 }
 
+#pragma mark - NSSecureCoding
+
++ (BOOL)supportsSecureCoding {
+    return true;
+}
+
 #pragma mark - Archive/Unarchive
 
 - (NSData *)archive {
-    if (@available(macOS 10.13, iOS 11, *)) {
-        return [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:nil];
+    if (@available(macOS 10.13, iOS 11, tvOS 11, *)) {
+        NSError *error;
+        NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:&error];
+        if (error) {
+            NSLog(@"ARTDeviceIdentityTokenDetails Archive failed: %@", error);
+        }
+        return data;
     }
     else {
         return [NSKeyedArchiver archivedDataWithRootObject:self];
@@ -75,8 +86,13 @@ NSString *const ARTCoderDeviceIdKey = @"deviceId";
 }
 
 + (ARTDeviceIdentityTokenDetails *)unarchive:(NSData *)data {
-    if (@available(macOS 10.13, iOS 11, *)) {
-        return [NSKeyedUnarchiver unarchivedObjectOfClass:[self class] fromData:data error:nil];
+    if (@available(macOS 10.13, iOS 11, tvOS 11, *)) {
+        NSError *error;
+        ARTDeviceIdentityTokenDetails *result = [NSKeyedUnarchiver unarchivedObjectOfClass:[self class] fromData:data error:&error];
+        if (error) {
+            NSLog(@"ARTDeviceIdentityTokenDetails Unarchive failed: %@", error);
+        }
+        return result;
     }
     else {
         return [NSKeyedUnarchiver unarchiveObjectWithData:data];

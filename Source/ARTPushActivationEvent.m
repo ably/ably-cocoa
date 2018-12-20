@@ -31,11 +31,22 @@ NSString *const ARTCoderIdentityTokenDetailsKey = @"identityTokenDetails";
     // Just to persist the class info, no properties
 }
 
+#pragma mark - NSSecureCoding
+
++ (BOOL)supportsSecureCoding {
+    return true;
+}
+
 #pragma mark - Archive/Unarchive
 
 - (NSData *)archive {
-    if (@available(macOS 10.13, iOS 11, *)) {
-        return [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:nil];
+    if (@available(macOS 10.13, iOS 11, tvOS 11, *)) {
+        NSError *error;
+        NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:&error];
+        if (error) {
+            NSLog(@"ARTPushActivationEvent Archive failed: %@", error);
+        }
+        return data;
     }
     else {
         return [NSKeyedArchiver archivedDataWithRootObject:self];
@@ -43,8 +54,13 @@ NSString *const ARTCoderIdentityTokenDetailsKey = @"identityTokenDetails";
 }
 
 + (ARTPushActivationEvent *)unarchive:(NSData *)data {
-    if (@available(macOS 10.13, iOS 11, *)) {
-        return [NSKeyedUnarchiver unarchivedObjectOfClass:[self class] fromData:data error:nil];
+    if (@available(macOS 10.13, iOS 11, tvOS 11, *)) {
+        NSError *error;
+        ARTPushActivationEvent *result = [NSKeyedUnarchiver unarchivedObjectOfClass:[self class] fromData:data error:&error];
+        if (error) {
+            NSLog(@"ARTPushActivationEvent Unarchive failed: %@", error);
+        }
+        return result;
     }
     else {
         return [NSKeyedUnarchiver unarchiveObjectWithData:data];
@@ -70,7 +86,7 @@ NSString *const ARTCoderIdentityTokenDetailsKey = @"identityTokenDetails";
 
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
-        _error = [aDecoder decodeObjectForKey:ARTCoderErrorKey];
+        _error = [aDecoder decodeObjectOfClass:[ARTErrorInfo class] forKey:ARTCoderErrorKey];
     }
     return self;
 }
@@ -99,7 +115,7 @@ NSString *const ARTCoderIdentityTokenDetailsKey = @"identityTokenDetails";
 
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
-        _identityTokenDetails = [aDecoder decodeObjectForKey:ARTCoderIdentityTokenDetailsKey];
+        _identityTokenDetails = [aDecoder decodeObjectOfClass:[ARTDeviceIdentityTokenDetails class] forKey:ARTCoderIdentityTokenDetailsKey];
     }
     return self;
 }

@@ -14,7 +14,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTPushActivationEvent : NSObject <NSCoding>
+@interface ARTPushActivationEvent : NSObject <NSSecureCoding>
 
 - (NSData *)archive;
 + (nullable ARTPushActivationState *)unarchive:(NSData *)data;

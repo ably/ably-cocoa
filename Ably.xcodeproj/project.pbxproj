@@ -569,6 +569,8 @@
 		D7588AF41BFF91B800BB8279 /* ARTURLSessionServerTrust.m in Sources */ = {isa = PBXBuildFile; fileRef = D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */; };
 		D75A3F1B1DDE5B62002A4AAD /* ARTGCD.h in Headers */ = {isa = PBXBuildFile; fileRef = D75A3F191DDE5B62002A4AAD /* ARTGCD.h */; };
 		D75A3F1C1DDE5B62002A4AAD /* ARTGCD.m in Sources */ = {isa = PBXBuildFile; fileRef = D75A3F1A1DDE5B62002A4AAD /* ARTGCD.m */; };
+		D75B861621BB48C900FD8DD2 /* Aspects.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D75B861521BB48C900FD8DD2 /* Aspects.framework */; };
+		D75B861721BB48E200FD8DD2 /* Aspects.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D75B861521BB48C900FD8DD2 /* Aspects.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D75F49C4205ACFEC003DE04F /* ARTDeviceStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = D75F49C2205ACFEC003DE04F /* ARTDeviceStorage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D75F49C7205AD4D4003DE04F /* SAMKeychain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D75F49C6205AD4D4003DE04F /* SAMKeychain.framework */; };
 		D75F49C8205AD525003DE04F /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D75F49C6205AD4D4003DE04F /* SAMKeychain.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -731,6 +733,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				D75B861721BB48E200FD8DD2 /* Aspects.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C92219EE3E800723F17 /* Nimble.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C93219EE3E800723F17 /* Quick.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C94219EE3E800723F17 /* SwiftyJSON.framework in Copy Carthage Frameworks to Test bundle */,
@@ -916,6 +919,7 @@
 		D75A3F191DDE5B62002A4AAD /* ARTGCD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTGCD.h; path = Private/ARTGCD.h; sourceTree = "<group>"; };
 		D75A3F1A1DDE5B62002A4AAD /* ARTGCD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ARTGCD.m; path = Private/ARTGCD.m; sourceTree = "<group>"; };
 		D75B85F921BAF8F900FD8DD2 /* Ably.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Ably.xcconfig; sourceTree = "<group>"; };
+		D75B861521BB48C900FD8DD2 /* Aspects.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Aspects.framework; path = Carthage/Build/tvOS/Aspects.framework; sourceTree = "<group>"; };
 		D75F49C2205ACFEC003DE04F /* ARTDeviceStorage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTDeviceStorage.h; sourceTree = "<group>"; };
 		D75F49C6205AD4D4003DE04F /* SAMKeychain.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SAMKeychain.framework; path = Carthage/Build/iOS/SAMKeychain.framework; sourceTree = "<group>"; };
 		D768C6AA1E4B5B0200436011 /* ARTDevicePushDetails.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTDevicePushDetails.h; sourceTree = "<group>"; };
@@ -1062,6 +1066,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D7093C65219EE1AE00723F17 /* Ably.framework in Frameworks */,
+				D75B861621BB48C900FD8DD2 /* Aspects.framework in Frameworks */,
 				D7093C8B219EE3C900723F17 /* Quick.framework in Frameworks */,
 				D7093C8C219EE3C900723F17 /* Nimble.framework in Frameworks */,
 				D7093C8D219EE3C900723F17 /* SwiftyJSON.framework in Frameworks */,
@@ -1437,6 +1442,7 @@
 		FAFEC5BB8312EB69E84C28D4 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D75B861521BB48C900FD8DD2 /* Aspects.framework */,
 				D7EEE6AC21A6E048000E8474 /* Nimble.framework */,
 				D7EEE6AD21A6E048000E8474 /* Quick.framework */,
 				D7EEE6AB21A6E048000E8474 /* SwiftyJSON.framework */,
