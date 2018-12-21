@@ -8,10 +8,10 @@
 
 #import <Foundation/Foundation.h>
 #import <Ably/ARTTypes.h>
-#import <Ably/ARTPushAdmin.h>
 
 @class ARTRest;
 @class ARTRealtime;
+@class ARTPushAdmin;
 @class ARTDeviceDetails;
 @class ARTDeviceIdentityTokenDetails;
 
@@ -61,6 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Unregister a device.
 - (void)deactivate;
+
 #endif
 
 @end

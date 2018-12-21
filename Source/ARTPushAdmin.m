@@ -26,8 +26,8 @@
     if (self = [super init]) {
         _rest = rest;
         _logger = [rest logger];
-        _deviceRegistrations = [[ARTPushDeviceRegistrations alloc] init:rest];
-        _channelSubscriptions = [[ARTPushChannelSubscriptions alloc] init:rest];
+        _deviceRegistrations = [[ARTPushDeviceRegistrations alloc] initWithRest:rest];
+        _channelSubscriptions = [[ARTPushChannelSubscriptions alloc] initWithRest:rest];
         _userQueue = rest.userQueue;
         _queue = rest.queue;
     }

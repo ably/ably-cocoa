@@ -38,7 +38,7 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
     if (self = [super init]) {
         _rest = rest;
         _logger = [rest logger];
-        _admin = [[ARTPushAdmin alloc] init:rest];
+        _admin = [[ARTPushAdmin alloc] initWithRest:rest];
     }
     return self;
 }
