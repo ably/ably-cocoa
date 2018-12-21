@@ -22,6 +22,6 @@ Pod::Spec.new do |s|
   s.dependency 'SocketRocketAblyFork', '0.5.2-ably-2'
   s.dependency 'MsgPackAblyFork', '0.2.0-ably-1'
   s.dependency 'KSCrashAblyFork', '1.15.18-ably-1'
-  s.dependency 'ULID', '1.0.4'
+  s.dependency 'ULID', '1.1.0'
   s.dependency 'SAMKeychain', '1.5.3'
 end
