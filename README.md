@@ -12,8 +12,8 @@ An iOS client library for [ably.io](https://www.ably.io), the realtime messaging
 
 This SDK is compatible with projects that target:
 
-- iOS 9.0+
-- tvOS 9.0+
+- iOS 8.0+
+- tvOS 10.0+
 - macOS 10.10+
 
 We maintain compatibility and explicitly support these platform versions, including performing CI testing on all library revisions.
