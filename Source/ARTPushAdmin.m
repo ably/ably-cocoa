@@ -22,7 +22,7 @@
     dispatch_queue_t _queue;
 }
 
-- (instancetype)init:(ARTRest *)rest {
+- (instancetype)initWithRest:(ARTRest *)rest {
     if (self = [super init]) {
         _rest = rest;
         _logger = [rest logger];

@@ -17,6 +17,7 @@
 #if TARGET_OS_IOS
 #import "ARTPushActivationStateMachine.h"
 #endif
+#import "ARTPushAdmin.h"
 #import "ARTPushActivationEvent.h"
 #import "ARTClientOptions+Private.h"
 #import "ARTPushAdmin+Private.h"
