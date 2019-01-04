@@ -86,6 +86,9 @@ NSString *const ARTCoderDeviceIdKey = @"deviceId";
 }
 
 + (ARTDeviceIdentityTokenDetails *)unarchive:(NSData *)data {
+    if (!data) {
+        return nil;
+    }
     if (@available(macOS 10.13, iOS 11, tvOS 11, *)) {
         NSError *error;
         ARTDeviceIdentityTokenDetails *result = [NSKeyedUnarchiver unarchivedObjectOfClass:[self class] fromData:data error:&error];
