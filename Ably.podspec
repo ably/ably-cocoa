@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   s.osx.deployment_target = '10.10'
   s.requires_arc      = true
   s.swift_version     = '4.2'
-  s.source_files      = 'Source/**/*.{h,m}'
+  s.source_files      = 'Source/**/*.{h,m,swift}'
   s.private_header_files = 'Source/*+Private.h', 'Source/Private/*.h'
   s.module_map        = 'Source/Ably.modulemap'
   s.dependency 'SocketRocketAblyFork', '0.5.2-ably-2'
