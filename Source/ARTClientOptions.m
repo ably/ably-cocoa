@@ -182,7 +182,7 @@ NSString *const ARTDefaultProduction = @"production";
 }
 
 + (BOOL)getDefaultIdempotentRestPublishingForVersion:(NSString *)version {
-    if ([@"1.1" compare:version options:NSNumericSearch] == NSOrderedDescending) {
+    if ([@"1.2" compare:version options:NSNumericSearch] == NSOrderedDescending) {
         return false;
     }
     else {
