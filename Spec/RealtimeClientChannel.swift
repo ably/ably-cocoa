@@ -2067,9 +2067,9 @@ class RealtimeClientChannel: QuickSpec {
                     let channel = client.channels.get("test-maxMessageSize")
                     // This amount of messages would be beyond maxMessageSize, if bundled together
                     let messagesToBeSent = 2000
-                    
-                    // call publish before connecting, so messages are queued
-                    waitUntil(timeout: testTimeout*2) { done in
+
+                    // Call publish before connecting, so messages are queued
+                    waitUntil(timeout: testTimeout*6) { done in
                         let partialDone = AblyTests.splitDone(messagesToBeSent, done: done)
                         for i in 1...messagesToBeSent {
                             channel.publish("initial initial\(i)", data: "message message\(i)") { error in
@@ -2079,7 +2079,7 @@ class RealtimeClientChannel: QuickSpec {
                         }
                         client.connect()
                     }
-                    
+
                     let transport = client.transport as! TestProxyTransport
                     let protocolMessages = transport.protocolMessagesSent.filter{ $0.action == .message }
                     // verify that messages are not bundled in a single protocol message

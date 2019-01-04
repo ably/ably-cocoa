@@ -14,7 +14,7 @@
 #import "ARTJsonEncoder.h"
 #import "ARTJsonLikeEncoder.h"
 #import "ARTEventEmitter.h"
-#ifdef TARGET_OS_IOS
+#if TARGET_OS_IOS
 #import "ARTPushActivationStateMachine.h"
 #endif
 #import "ARTPushActivationEvent.h"
@@ -43,7 +43,7 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
     return self;
 }
 
-#ifdef TARGET_OS_IOS
+#if TARGET_OS_IOS
 
 - (ARTPushActivationStateMachine *)activationMachine {
     static dispatch_once_t once;

@@ -42,12 +42,12 @@ class TestsTests: XCTestCase {
             .flatMap({ $0[0] as? NSDictionary })
             .flatMap({ $0["keyStr"] as? NSString })
         else {
-            XCTFail("Expected key in response data, got: \(responseData)")
+            XCTFail("Expected key in response data, got: \(String(describing: responseData))")
             return
         }
 
         let options = ARTClientOptions(key: key as String)
-        options.environment = "push-device-auth-dev"
+        options.environment = "sandbox"
         let client = ARTRealtime(options: options)
 
         let receiveExpectation = self.expectation(description: "message received")
@@ -64,7 +64,7 @@ class TestsTests: XCTestCase {
 
         let backgroundRealtimeExpectation = self.expectation(description: "Realtime in a Background Queue")
         var realtime: ARTRealtime! //strong reference
-        URLSession.shared.dataTask(with: URL(string: "https://ably.io")!) { _ in
+        URLSession.shared.dataTask(with: URL(string: "https://ably.io")!) { _,_,_  in
             realtime = ARTRealtime(key: key as String)
             realtime.channels.get("foo").attach { _ in
                 defer { backgroundRealtimeExpectation.fulfill() }
@@ -74,9 +74,9 @@ class TestsTests: XCTestCase {
 
         let backgroundRestExpectation = self.expectation(description: "Rest in a Background Queue")
         var rest: ARTRest! //strong reference
-        URLSession.shared.dataTask(with: URL(string: "https://ably.io")!) { _ in
+        URLSession.shared.dataTask(with: URL(string: "https://ably.io")!) { _,_,_  in
             rest = ARTRest(key: key as String)
-            rest.channels.get("foo").history { _ in
+            rest.channels.get("foo").history { result, error in
                 defer { backgroundRestExpectation.fulfill() }
             }
         }.resume()

@@ -714,6 +714,7 @@ class RestClient: QuickSpec {
                     testHTTPExecutor.afterRequest = { request, callback in
                         if testHTTPExecutor.requests.count == 2 {
                             // Stop
+                            testHTTPExecutor.afterRequest = nil
                             testHTTPExecutor.http = nil
                             callback!(nil, nil, nil)
                         }
@@ -747,6 +748,7 @@ class RestClient: QuickSpec {
                     testHTTPExecutor.afterRequest = { request, callback in
                         if testHTTPExecutor.requests.count == 2 {
                             // Stop
+                            testHTTPExecutor.afterRequest = nil
                             testHTTPExecutor.http = nil
                             callback!(nil, nil, nil)
                         }
@@ -781,6 +783,7 @@ class RestClient: QuickSpec {
                     testHTTPExecutor.afterRequest = { request, callback in
                         if testHTTPExecutor.requests.count == 2 {
                             // Stop
+                            testHTTPExecutor.afterRequest = nil
                             testHTTPExecutor.http = nil
                             callback!(nil, nil, nil)
                         }
@@ -1498,7 +1501,8 @@ class RestClient: QuickSpec {
 
                     it("should error if method is invalid") {
                         let rest = ARTRest(key: "xxxx:xxxx")
-                        rest.httpExecutor = MockHTTPExecutor()
+                        let mockHTTPExecutor = MockHTTPExecutor()
+                        rest.httpExecutor = mockHTTPExecutor
 
                         do {
                             try rest.request("A", path: "feature", params: nil, body: nil, headers: nil) { paginatedResult, error in
@@ -1523,7 +1527,8 @@ class RestClient: QuickSpec {
 
                     it("should error if path is invalid") {
                         let rest = ARTRest(key: "xxxx:xxxx")
-                        rest.httpExecutor = MockHTTPExecutor()
+                        let mockHTTPExecutor = MockHTTPExecutor()
+                        rest.httpExecutor = mockHTTPExecutor
 
                         do {
                             try rest.request("get", path: "new feature", params: nil, body: nil, headers: nil) { paginatedResult, error in

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1000"
+   LastUpgradeVersion = "1010"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -9,14 +9,14 @@
          <BuildActionEntry
             buildForTesting = "YES"
             buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "96BF61301A35B2AB004CF2B3"
-               BuildableName = "Ably.framework"
-               BlueprintName = "Ably"
+               BlueprintIdentifier = "D7093C09219E2DB200723F17"
+               BuildableName = "Ably-macOS-Tests.xctest"
+               BlueprintName = "Ably-macOS-Tests"
                ReferencedContainer = "container:Ably.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -26,35 +26,19 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "NO">
+      shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
          <TestableReference
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "856AAC891B6E304B00B07119"
-               BuildableName = "AblySpec.xctest"
-               BlueprintName = "AblySpec"
+               BlueprintIdentifier = "D7093C09219E2DB200723F17"
+               BuildableName = "Ably-macOS-Tests.xctest"
+               BlueprintName = "Ably-macOS-Tests"
                ReferencedContainer = "container:Ably.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "96BF61301A35B2AB004CF2B3"
-            BuildableName = "Ably.framework"
-            BlueprintName = "Ably"
-            ReferencedContainer = "container:Ably.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
-      <EnvironmentVariables>
-         <EnvironmentVariable
-            key = "ARTUnitTests"
-            value = "YES"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-      </EnvironmentVariables>
       <AdditionalOptions>
       </AdditionalOptions>
    </TestAction>
@@ -71,9 +55,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "96BF61301A35B2AB004CF2B3"
-            BuildableName = "Ably.framework"
-            BlueprintName = "Ably"
+            BlueprintIdentifier = "D7093C09219E2DB200723F17"
+            BuildableName = "Ably-macOS-Tests.xctest"
+            BlueprintName = "Ably-macOS-Tests"
             ReferencedContainer = "container:Ably.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -89,9 +73,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "96BF61301A35B2AB004CF2B3"
-            BuildableName = "Ably.framework"
-            BlueprintName = "Ably"
+            BlueprintIdentifier = "D7093C09219E2DB200723F17"
+            BuildableName = "Ably-macOS-Tests.xctest"
+            BlueprintName = "Ably-macOS-Tests"
             ReferencedContainer = "container:Ably.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

@@ -54,14 +54,40 @@
     // Just to persist the class info, no properties
 }
 
+#pragma mark - NSSecureCoding
+
++ (BOOL)supportsSecureCoding {
+    return true;
+}
+
 #pragma mark - Archive/Unarchive
 
 - (NSData *)archive {
-    return [NSKeyedArchiver archivedDataWithRootObject:self];
+    if (@available(macOS 10.13, iOS 11, tvOS 11, *)) {
+        NSError *error;
+        NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:&error];
+        if (error) {
+            NSLog(@"ARTPushActivationState Archive failed: %@", error);
+        }
+        return data;
+    }
+    else {
+        return [NSKeyedArchiver archivedDataWithRootObject:self];
+    }
 }
 
 + (ARTPushActivationState *)unarchive:(NSData *)data {
-    return [NSKeyedUnarchiver unarchiveObjectWithData:data];
+    if (@available(macOS 10.13, iOS 11, tvOS 11, *)) {
+        NSError *error;
+        ARTPushActivationState *result = [NSKeyedUnarchiver unarchivedObjectOfClass:[self class] fromData:data error:&error];
+        if (error) {
+            NSLog(@"ARTPushActivationState Unarchive failed: %@", error);
+        }
+        return result;
+    }
+    else {
+        return [NSKeyedUnarchiver unarchiveObjectWithData:data];
+    }
 }
 
 @end
@@ -82,6 +108,7 @@
         return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
+        #if TARGET_OS_IOS
         ARTLocalDevice *local = self.machine.rest.device_nosync;
 
         if (local.identityTokenDetails) {
@@ -92,6 +119,7 @@
         if ([local deviceToken]) {
             [self.machine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
         }
+        #endif
 
         return [ARTPushActivationStateWaitingForPushDeviceDetails newWithMachine:self.machine];
     }
@@ -108,9 +136,11 @@
         return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventGotDeviceRegistration class]]) {
+        #if TARGET_OS_IOS
         ARTPushActivationEventGotDeviceRegistration *gotDeviceRegistrationEvent = (ARTPushActivationEventGotDeviceRegistration *)event;
         ARTLocalDevice *local = self.machine.rest.device_nosync;
         [local setAndPersistIdentityTokenDetails:gotDeviceRegistrationEvent.identityTokenDetails];
+        #endif
         [self.machine callActivatedCallback:nil];
         return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
     }
@@ -173,9 +203,11 @@
         return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventRegistrationUpdated class]]) {
+        #if TARGET_OS_IOS
         ARTPushActivationEventRegistrationUpdated *registrationUpdatedEvent = (ARTPushActivationEventRegistrationUpdated *)event;
         ARTLocalDevice *local = self.machine.rest.device_nosync;
         [local setAndPersistIdentityTokenDetails:registrationUpdatedEvent.identityTokenDetails];
+        #endif
         [self.machine callActivatedCallback:nil];
         return [ARTPushActivationStateWaitingForRegistrationUpdate newWithMachine:self.machine];
     }
@@ -214,8 +246,10 @@
         return [ARTPushActivationStateWaitingForDeregistration newWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventDeregistered class]]) {
+        #if TARGET_OS_IOS
         ARTLocalDevice *local = self.machine.rest.device_nosync;
         [local setAndPersistIdentityTokenDetails:nil];
+        #endif
         [self.machine callDeactivatedCallback:nil];
         return [ARTPushActivationStateNotActivated newWithMachine:self.machine];
     }
