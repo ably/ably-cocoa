@@ -425,7 +425,7 @@ class RestClientChannel: QuickSpec {
 
                     // Current version
                     let options = AblyTests.clientOptions()
-                    expect(options.idempotentRestPublishing) == true
+                    expect(options.idempotentRestPublishing) == false
                 }
 
                 func assertMessagePayloadId(id: String?, expectedSerial: String) {
@@ -458,7 +458,7 @@ class RestClientChannel: QuickSpec {
                         expect(message.id).to(beNil())
 
                         let rest = ARTRest(key: "xxxx:xxxx")
-                        expect(rest.options.idempotentRestPublishing) == true
+                        rest.options.idempotentRestPublishing = true
                         let mockHTTPExecutor = MockHTTPExecutor()
                         rest.httpExecutor = mockHTTPExecutor
                         let channel = rest.channels.get("idempotent")
@@ -486,6 +486,7 @@ class RestClientChannel: QuickSpec {
                         expect(message2.id).to(beNil())
 
                         let rest = ARTRest(key: "xxxx:xxxx")
+                        rest.options.idempotentRestPublishing = true
                         let mockHTTPExecutor = MockHTTPExecutor()
                         rest.httpExecutor = mockHTTPExecutor
                         let channel = rest.channels.get("idempotent")
@@ -518,6 +519,7 @@ class RestClientChannel: QuickSpec {
                     message.id = "123"
 
                     let rest = ARTRest(key: "xxxx:xxxx")
+                    rest.options.idempotentRestPublishing = true
                     let mockHTTPExecutor = MockHTTPExecutor()
                     rest.httpExecutor = mockHTTPExecutor
                     let channel = rest.channels.get("idempotent")
@@ -539,6 +541,7 @@ class RestClientChannel: QuickSpec {
 
                 it("should generate for internal message that is created in publish(name:data:) method") {
                     let rest = ARTRest(key: "xxxx:xxxx")
+                    rest.options.idempotentRestPublishing = true
                     let mockHTTPExecutor = MockHTTPExecutor()
                     rest.httpExecutor = mockHTTPExecutor
                     let channel = rest.channels.get("idempotent")
@@ -566,6 +569,7 @@ class RestClientChannel: QuickSpec {
                     message2.id = "123"
 
                     let rest = ARTRest(key: "xxxx:xxxx")
+                    rest.options.idempotentRestPublishing = true
                     let mockHTTPExecutor = MockHTTPExecutor()
                     rest.httpExecutor = mockHTTPExecutor
                     let channel = rest.channels.get("idempotent")
@@ -618,6 +622,7 @@ class RestClientChannel: QuickSpec {
 
                 // RSL1k4
                 it("should have only one published message") {
+                    client.options.idempotentRestPublishing = true
                     client.httpExecutor = testHTTPExecutor
                     client.options.fallbackHostsUseDefault = true
 
@@ -662,6 +667,7 @@ class RestClientChannel: QuickSpec {
                 it("should publish a message with implicit Id only once") {
                     let options = AblyTests.commonAppSetup()
                     let rest = ARTRest(options: options)
+                    rest.options.idempotentRestPublishing = true
                     let channel = rest.channels.get("idempotent")
 
                     let message = ARTMessage(name: "unique", data: "foo")
