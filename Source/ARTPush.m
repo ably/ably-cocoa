@@ -17,6 +17,7 @@
 #if TARGET_OS_IOS
 #import "ARTPushActivationStateMachine.h"
 #endif
+#import "ARTPushAdmin.h"
 #import "ARTPushActivationEvent.h"
 #import "ARTClientOptions+Private.h"
 #import "ARTPushAdmin+Private.h"
@@ -38,7 +39,7 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
     if (self = [super init]) {
         _rest = rest;
         _logger = [rest logger];
-        _admin = [[ARTPushAdmin alloc] init:rest];
+        _admin = [[ARTPushAdmin alloc] initWithRest:rest];
     }
     return self;
 }

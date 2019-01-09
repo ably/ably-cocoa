@@ -1,5 +1,5 @@
 github "ably-forks/SocketRocket" == 0.5.2-ably-2
 github "ably-forks/msgpack-objective-C" == 0.2.0-ably-1
 github "ably-forks/KSCrash" == 1.15.18-ably-1
-github "whitesmith/ulid" == 1.0.4
+github "whitesmith/ulid" == 1.1.0
 github "soffes/SAMKeychain" == 1.5.3
