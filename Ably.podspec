@@ -13,7 +13,7 @@ Pod::Spec.new do |s|
   s.documentation_url = "https://www.ably.io/documentation"
   s.ios.deployment_target = '8.0'
   s.tvos.deployment_target = '10.0'
-  s.osx.deployment_target = '10.10'
+  s.osx.deployment_target = '10.11'
   s.requires_arc      = true
   s.swift_version     = '4.2'
   s.source_files      = 'Source/**/*.{h,m,swift}'

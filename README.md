@@ -14,7 +14,7 @@ This SDK is compatible with projects that target:
 
 - iOS 8.0+
 - tvOS 10.0+
-- macOS 10.10+
+- macOS 10.11+
 
 We maintain compatibility and explicitly support these platform versions, including performing CI testing on all library revisions.
 
@@ -24,18 +24,35 @@ If you find any issues with unsupported platform versions, please [raise an issu
 
 #### Acknowledgments
 
-As of version `1.1.2` this library based on the 1.1 library specification. It implements a subset of 1.1 features:
+As of version `1.1.3` this library based on the 1.1 library specification. It implements a subset of 1.1 features:
 - updated push API and push device authentication;
 - support for enforcement of the `maxMessageSize` attribute
-Other minor features and bugfixes are included, as listed in the [changelog](CHANGELOG.md#112-2018-11-06).
+Other minor features and bugfixes are included, as listed in the [changelog](CHANGELOG.md#113-2019-01-10).
 
-##### ⚠️ macOS
+##### macOS & tvOS
 
-The macOS support hasn't been officially released and it's only available from the `mac-support` branch. Please be aware that Push Notifications are currently unsupported. There is a demo available [here](https://github.com/ably/demo-macos).
+Please be aware that Push Notifications are currently unsupported. You can only use the [Push Admin](https://www.ably.io/documentation/general/push/admin) functionalities, for example:
 
-##### ⚠️ tvOS
+```swift
+let recipient: [String: Any] = [
+    "clientId": "C04BC116-8004-4D78-A71F-8CA3122734DB"
+]
+let data: [String: Any] = [
+    "notification": [
+        "title": "Hello from Ably!",
+        "body": "Example push notification from Ably."
+    ],
+    "data": [
+        "foo": "bar",
+        "baz": "qux"
+    ]
+]
+realtime.push.admin.publish(recipient, data: data) { error in
+    print("Push published:", error ?? "nil")
+}
+```
 
-The tvOS support hasn't been officially released and it's only available from the `tv-support` branch.
+Demos available: [macOS](https://github.com/ably/demo-macos) and [tvOS](https://github.com/ably/demo-tvos).
 
 ## Documentation
 
@@ -50,13 +67,7 @@ You can install Ably for iOS and macOS through CocoaPods, Carthage or manually.
 Add this line to your application's Podfile:
 
     # For Xcode 7.3 and newer
-    pod 'Ably', '~> 1.0'
-    
-    # With macOS Support (not officially released)
-    pod 'Ably', :git => 'https://github.com/ably/ably-ios.git', :branch => 'mac-support'
-    
-    # With tvOS Support (not officially released)
-    pod 'Ably', :git => 'https://github.com/ably/ably-ios.git', :branch => 'tv-support'
+    pod 'Ably', '~> 1.1'
 
 And then install the dependency:
 
@@ -67,13 +78,7 @@ And then install the dependency:
 Add this line to your application's Cartfile:
 
     # For Xcode 7.3 and newer
-    github "ably/ably-ios" ~> 1.0
-    
-    # With macOS Support (not officially released)
-    github "ably/ably-ios" "mac-support"
-    
-    # With tvOS Support (not officially released)
-    github "ably/ably-ios" "tv-support"
+    github "ably/ably-ios" ~> 1.1
 
 And then run `carthage update` to build the framework and drag the built Ably.framework into your Xcode project.
 
@@ -83,7 +88,7 @@ If you see, for example, a `dyld: Library not loaded: @rpath/SocketRocket.framew
 
 ### Manual installation 
 
-1. Get the code from GitHub [from the release page](https://github.com/ably/ably-ios/releases/tag/1.1.2), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-ios.git`
+1. Get the code from GitHub [from the release page](https://github.com/ably/ably-ios/releases/tag/1.1.3), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-ios.git`
 2. Drag the directory `ably-ios/ably-ios` into your project as a group.
 3. Ably depends on our [SocketRocket Fork](https://github.com/ably-forks/SocketRocket) 0.5.2; get it [from the releases page](https://github.com/ably-forks/SocketRocket/releases/tag/0.5.2-ably-2) and follow [its manual installation instructions](https://github.com/ably-forks/SocketRocket/#installing).
 4. Ably also depends on our [MessagePack Fork](https://github.com/ably-forks/msgpack-objective-C) 0.2.0; get it [from the releases page](https://github.com/ably-forks/msgpack-objective-C/releases/tag/0.2.0-ably-1) and link it into your project.

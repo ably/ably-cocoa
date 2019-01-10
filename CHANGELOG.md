@@ -1,5 +1,15 @@
 # Change Log
 
+## [1.1.3](https://github.com/ably/ably-ios/tree/1.1.3) (2019-01-10)
+[Full Changelog](https://github.com/ably/ably-ios/compare/1.1.2...1.1.3)
+
+**Merged pull requests:**
+
+- Multi platform [\#823](https://github.com/ably/ably-ios/pull/823) ([ricardopereira](https://github.com/ricardopereira))
+- TV support [\#821](https://github.com/ably/ably-ios/pull/821) ([ricardopereira](https://github.com/ricardopereira))
+- Makefile \(and fix version bump\) [\#820](https://github.com/ably/ably-ios/pull/820) ([ricardopereira](https://github.com/ricardopereira))
+- Mac support [\#817](https://github.com/ably/ably-ios/pull/817) ([ricardopereira](https://github.com/ricardopereira))
+
 ## [1.1.2](https://github.com/ably/ably-ios/tree/1.1.2) (2018-11-06)
 [Full Changelog](https://github.com/ably/ably-ios/compare/1.1.1...1.1.2)
 
