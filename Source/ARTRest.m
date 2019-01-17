@@ -686,7 +686,7 @@ void ARTstopHandlingUncaughtExceptions(ARTRest *self) {
 // Store address of once_token to access it in debug function.
 static dispatch_once_t *device_once_token;
 
-- (NSString *)device_nosync {
+- (ARTLocalDevice *)device_nosync {
     static dispatch_once_t once;
     device_once_token = &once;
     static id device;
