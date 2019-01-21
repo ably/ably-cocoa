@@ -15,7 +15,8 @@
 #import "ARTJsonLikeEncoder.h"
 #import "ARTEventEmitter.h"
 #if TARGET_OS_IOS
-#import "ARTPushActivationStateMachine.h"
+#import <UIKit/UIKit.h>
+#import "ARTPushActivationStateMachine+Private.h"
 #endif
 #import "ARTPushAdmin.h"
 #import "ARTPushActivationEvent.h"
@@ -55,7 +56,6 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
     return activationMachineInstance;
 }
 
-
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceTokenData rest:(ARTRest *)rest {
     // HEX string, i.e.: <12ce7dda 8032c423 8f8bd40f 3484e5bb f4698da5 8b7fdf8d 5c55e0a2 XXXXXXXX>
     // Normalizing token by removing symbols and spaces, i.e.: 12ce7dda8032c4238f8bd40f3484e5bbf4698da58b7fdf8d5c55e0a2XXXXXXXX
@@ -87,11 +87,29 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 }
 
 - (void)activate {
-    [[self activationMachine] sendEvent:[ARTPushActivationEventCalledActivate new]];
+    if (!self.activationMachine.delegate) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // -[UIApplication delegate] is an UI API call
+            self.activationMachine.delegate = UIApplication.sharedApplication.delegate;
+            [self.activationMachine sendEvent:[ARTPushActivationEventCalledActivate new]];
+        });
+    }
+    else {
+        [self.activationMachine sendEvent:[ARTPushActivationEventCalledActivate new]];
+    }
 }
 
 - (void)deactivate {
-    [[self activationMachine] sendEvent:[ARTPushActivationEventCalledDeactivate new]];
+    if (!self.activationMachine.delegate) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // -[UIApplication delegate] is an UI API call
+            self.activationMachine.delegate = UIApplication.sharedApplication.delegate;
+            [self.activationMachine sendEvent:[ARTPushActivationEventCalledDeactivate new]];
+        });
+    }
+    else {
+        [self.activationMachine sendEvent:[ARTPushActivationEventCalledDeactivate new]];
+    }
 }
 
 #endif
