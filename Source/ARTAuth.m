@@ -194,11 +194,10 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 
 - (NSMutableURLRequest *)buildRequest:(ARTAuthOptions *)options withParams:(ARTTokenParams *)params {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
-    if (!params.timestamp) params.timestamp = [self currentDate];
     NSURL *url = [self buildURL:options withParams:params];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     request.HTTPMethod = options.authMethod;
-    
+
     // HTTP Header Fields
     if ([options isMethodPOST]) {
         // TokenParams take precedence over any configured authParams when a name conflict occurs
@@ -212,11 +211,11 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     else {
         [request setValue:[_rest.defaultEncoder mimeType] forHTTPHeaderField:@"Accept"];
     }
-    
+
     for (NSString *key in options.authHeaders) {
         [request setValue:options.authHeaders[key] forHTTPHeaderField:key];
     }
-    
+
     return request;
 } ART_TRY_OR_REPORT_CRASH_END
 }

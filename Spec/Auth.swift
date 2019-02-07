@@ -1470,6 +1470,7 @@ class Auth : QuickSpec {
                         clientOptions.authMethod = "POST"
                         clientOptions.authHeaders = ["X-Header-1": "foo", "X-Header-2": "bar"]
                         let tokenParams = ARTTokenParams()
+                        tokenParams.timestamp = Date()
                         
                         let rest = ARTRest(options: clientOptions)
                         
