@@ -882,6 +882,34 @@ class Auth : QuickSpec {
                 let tokenParams = ARTTokenParams()
                 expect(tokenParams.ttl).to(beNil())
             }
+
+            it("should URL query be correctly encoded") {
+                let tokenParams = ARTTokenParams()
+                tokenParams.capability = "{\"*\":[\"*\"]}"
+
+                if #available(iOS 10.0, *) {
+                    let dateFormatter = ISO8601DateFormatter()
+                    tokenParams.timestamp = dateFormatter.date(from: "2016-10-08T22:31:00Z")
+                }
+                else {
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.dateFormat = "yyyy/MM/dd HH:mm zzz"
+                    tokenParams.timestamp = dateFormatter.date(from: "2016/10/08 22:31 GMT")
+                }
+
+                let options = ARTClientOptions()
+                options.authUrl = URL(string: "https://ably-test-suite.io")
+                let rest = ARTRest(options: options)
+                let request = rest.auth.buildRequest(options, with: tokenParams)
+
+                if let query = request.url?.query {
+                    expect(query).to(haveParam("capability", withValue: "%7B%22*%22:%5B%22*%22%5D%7D"))
+                    expect(query).to(haveParam("timestamp", withValue: "1475965860000"))
+                }
+                else {
+                    fail("URL is empty")
+                }
+            }
             
             // RSA6
             it("should allow all operations when capability is not specified") {
