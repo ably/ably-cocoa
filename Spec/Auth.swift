@@ -1490,7 +1490,7 @@ class Auth : QuickSpec {
                         expect(httpBodyJSON).toNot(beNil(), description: "HTTPBody is empty")
                         expect(httpBodyJSON!["timestamp"]).toNot(beNil(), description: "HTTPBody has no timestamp")
                         
-                        let expectedJSON = ["capability":"{\"*\":[\"*\"]}", "timestamp":httpBodyJSON!["timestamp"]!]
+                        let expectedJSON = ["timestamp": httpBodyJSON!["timestamp"]!]
                         
                         expect(httpBodyJSON) == expectedJSON as NSDictionary
 
@@ -1588,7 +1588,8 @@ class Auth : QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.requestToken(nil, with: nil, callback: { tokenDetails, error in
                             expect(tokenDetails?.clientId).to(equal(defaultTokenParams.clientId))
-                            expect(tokenDetails?.capability).to(equal(defaultTokenParams.capability))
+                            expect(defaultTokenParams.capability).to(beNil())
+                            expect(tokenDetails?.capability).to(equal("{\"*\":[\"*\"]}")) //Ably supplied capabilities of the underlying key
                             expect(tokenDetails?.issued).toNot(beNil())
                             expect(tokenDetails?.expires).toNot(beNil())
                             if let issued = tokenDetails?.issued, let expires = tokenDetails?.expires {
@@ -1828,6 +1829,7 @@ class Auth : QuickSpec {
 
                 let tokenParams = ARTTokenParams()
                 let defaultCapability = tokenParams.capability
+                expect(defaultCapability).to(beNil())
 
                 waitUntil(timeout: testTimeout) { done in
                     rest.auth.createTokenRequest(nil, options: nil) { tokenRequest, error in
@@ -1837,7 +1839,7 @@ class Auth : QuickSpec {
                         }
                         expect(tokenRequest.clientId).to(equal(options.clientId))
                         expect(tokenRequest.ttl).to(beNil())
-                        expect(tokenRequest.capability).to(equal(defaultCapability))
+                        expect(tokenRequest.capability).to(beNil())
                         done()
                     }
                 }
@@ -2020,7 +2022,7 @@ class Auth : QuickSpec {
                         }
                         expect(tokenRequest.clientId).to(beNil())
                         expect(tokenRequest.ttl).to(beNil())
-                        expect(tokenRequest.capability) == "{\"*\":[\"*\"]}"
+                        expect(tokenRequest.capability).to(beNil())
                         done()
                     }
                 }

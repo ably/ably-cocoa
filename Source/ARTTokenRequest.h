@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Contains the capability JSON stringified.
  */
-@property (nonatomic, copy) NSString *capability;
+@property (nonatomic, copy, nullable) NSString *capability;
 
 /**
  Represents time to live (expiry) of this token as a NSTimeInterval.
