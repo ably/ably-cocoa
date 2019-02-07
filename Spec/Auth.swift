@@ -900,7 +900,7 @@ class Auth : QuickSpec {
                             fail(e.localizedDescription); done(); return
                         }
                         expect(tokenParams.capability).to(beNil())
-                        expect(tokenDetails?.capability).to(beNil())
+                        expect(tokenDetails?.capability).to(equal("{\"*\":[\"*\"]}"))
                         done()
                     }
                 }
@@ -910,6 +910,35 @@ class Auth : QuickSpec {
                     fail(error)
                 case .success(let httpBody):
                     expect(httpBody.unbox["capability"]).to(beNil())
+                }
+            }
+
+            // RSA6
+            it("should add capability field if the user specifies it") {
+                let tokenParams = ARTTokenParams()
+                tokenParams.capability = "{\"*\":[\"*\"]}"
+
+                let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                let rest = ARTRest(options: options)
+                let testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                rest.httpExecutor = testHTTPExecutor
+
+                waitUntil(timeout: testTimeout) { done in
+                    // Token
+                    rest.auth.requestToken(tokenParams, with: options) { tokenDetails, error in
+                        if let e = error {
+                            fail(e.localizedDescription); done(); return
+                        }
+                        expect(tokenDetails?.capability).to(equal(tokenParams.capability))
+                        done()
+                    }
+                }
+
+                switch extractBodyAsMsgPack(testHTTPExecutor.requests.first) {
+                case .failure(let error):
+                    fail(error)
+                case .success(let httpBody):
+                    expect(httpBody.unbox["capability"] as? String).to(equal("{\"*\":[\"*\"]}"))
                 }
             }
             
@@ -1456,7 +1485,7 @@ class Auth : QuickSpec {
                         
                         let request = rest.auth.buildRequest(clientOptions, with: tokenParams)
                         
-                        let httpBodyJSON = try! JSONSerialization.jsonObject(with: request.httpBody ?? NSData() as Data, options: .mutableLeaves) as? NSDictionary
+                        let httpBodyJSON = try! JSONSerialization.jsonObject(with: request.httpBody ?? Data(), options: .mutableLeaves) as? NSDictionary
                         
                         expect(httpBodyJSON).toNot(beNil(), description: "HTTPBody is empty")
                         expect(httpBodyJSON!["timestamp"]).toNot(beNil(), description: "HTTPBody has no timestamp")
