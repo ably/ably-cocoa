@@ -884,23 +884,32 @@ class Auth : QuickSpec {
             }
             
             // RSA6
-            it("should allow all operations when capability is not specified") {
+            it("should omit capability field if it is not specified") {
                 let tokenParams = ARTTokenParams()
-                expect(tokenParams.capability) == "{\"*\":[\"*\"]}"
+                expect(tokenParams.capability).to(beNil())
                 
                 let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-                options.logLevel = .debug
                 let rest = ARTRest(options: options)
+                let testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                rest.httpExecutor = testHTTPExecutor
 
                 waitUntil(timeout: testTimeout) { done in
                     // Token
                     rest.auth.requestToken(tokenParams, with: options) { tokenDetails, error in
                         if let e = error {
-                            XCTFail((e as! ARTErrorInfo).description)
+                            fail(e.localizedDescription); done(); return
                         }
-                        expect(tokenDetails?.capability).to(equal(tokenParams.capability))
+                        expect(tokenParams.capability).to(beNil())
+                        expect(tokenDetails?.capability).to(beNil())
                         done()
                     }
+                }
+
+                switch extractBodyAsMsgPack(testHTTPExecutor.requests.first) {
+                case .failure(let error):
+                    fail(error)
+                case .success(let httpBody):
+                    expect(httpBody.unbox["capability"]).to(beNil())
                 }
             }
             
