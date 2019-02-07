@@ -76,8 +76,8 @@
         [params addObject:[NSURLQueryItem queryItemWithName:@"ttl" value:[NSString stringWithFormat:@"%@", self.ttl]]];
     if (self.capability)
         [params addObject:[NSURLQueryItem queryItemWithName:@"capability" value:self.capability]];
-    if (self.timestamp > 0)
-        [params addObject:[NSURLQueryItem queryItemWithName:@"timestamp" value:[NSString stringWithFormat:@"%f", self.timestamp.timeIntervalSince1970]]];
+    if (self.timestamp)
+        [params addObject:[NSURLQueryItem queryItemWithName:@"timestamp" value:[NSString stringWithFormat:@"%llu", dateToMilliseconds(self.timestamp)]]];
     
     return params;
 }
@@ -91,8 +91,8 @@
         params[@"ttl"] = [NSString stringWithFormat:@"%@", self.ttl];
     if (self.capability)
         params[@"capability"] = self.capability;
-    if (self.timestamp > 0)
-        params[@"timestamp"] = [NSString stringWithFormat:@"%f", self.timestamp.timeIntervalSince1970];
+    if (self.timestamp)
+        params[@"timestamp"] = [NSString stringWithFormat:@"%llu", dateToMilliseconds(self.timestamp)];
     
     return params;
 }

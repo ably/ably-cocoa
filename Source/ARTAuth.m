@@ -175,12 +175,14 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 - (NSURL *)buildURL:(ARTAuthOptions *)options withParams:(ARTTokenParams *)params {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSURLComponents *urlComponents = [NSURLComponents componentsWithURL:options.authUrl resolvingAgainstBaseURL:YES];
-    
+
     if ([options isMethodGET]) {
         // TokenParams take precedence over any configured authParams when a name conflict occurs
         NSArray *unitedParams = [params toArrayWithUnion:options.authParams];
         // When GET, use query string params
-        if (!urlComponents.queryItems) urlComponents.queryItems = @[];
+        if (!urlComponents.queryItems) {
+            urlComponents.queryItems = @[];
+        }
         urlComponents.queryItems = [urlComponents.queryItems arrayByAddingObjectsFromArray:unitedParams];
     }
 
