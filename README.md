@@ -6,7 +6,7 @@
 ![Platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20tvOS%20%7C%20macOS-333333.svg)
 ![Languages](https://img.shields.io/badge/languages-Swift%20%7C%20ObjC-333333.svg)
 
-iOS, tvOS and macOS Objective-C and Swift client library SDK for [Ably realtime messaging service](https://www.ably.io), written in Objective-C.
+iOS, tvOS and macOS Objective-C and Swift client library SDK for [Ably realtime messaging service](https://www.ably.io), written in Objective-C. This library currently targets the [Ably 1.1 client library specification](https://www.ably.io/documentation/client-lib-development-guide/features/). You can jump to the '[Known Limitations](#known-limitations)' section to see the features this client library does not yet support.
 
 ## Supported platforms
 
@@ -21,6 +21,14 @@ We maintain compatibility and explicitly support these platform versions, includ
 We do not explicitly maintain compatibility with older platform versions; we no longer perform CI testing on iOS 8 as of version 1.0.12 (released on January 31st 2018). Any known incompatibilities with older versions can be found [here](https://github.com/ably/ably-ios/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
 
 If you find any issues with unsupported platform versions, please [raise an issue](https://github.com/ably/ably-ios/issues) in this repository or [contact Ably customer support](https://support.ably.io) for advice.
+
+## Known Limitations
+
+This client library is currently *not compatible* with some of the Ably features:
+
+| Feature | Spec reference |
+| :--- | :--- |
+| Custom transportParams | [RTC1f](https://docs.ably.io/client-lib-development-guide/features/#RTC1f) |
 
 #### Acknowledgments
 
