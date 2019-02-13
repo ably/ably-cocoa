@@ -60,9 +60,9 @@ This client library is currently *not compatible* with some of the Ably features
 
 | Feature | Spec reference |
 | :--- | :--- |
-| Custom transportParams | [RTC1f](https://docs.ably.io/client-lib-development-guide/features/#RTC1f) |
-| Remember fallback host during failures | [RSC15f](https://docs.ably.io/client-lib-development-guide/features/#RSC15f) |
-| ErrorInfo URLs to help debug issues | [TI4 and TI5](https://docs.ably.io/client-lib-development-guide/features/#TI4) |
+| Custom transportParams | [RTC1f](https://ably.io/documentation/client-lib-development-guide/features/#RTC1f) |
+| Remember fallback host during failures | [RSC15f](https://ably.io/documentation/client-lib-development-guide/features/#RSC15f) |
+| ErrorInfo URLs to help debug issues | [TI4 and TI5](https://ably.io/documentation/client-lib-development-guide/features/#TI4) |
 
 ## Documentation
 
