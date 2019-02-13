@@ -22,16 +22,6 @@ We do not explicitly maintain compatibility with older platform versions; we no 
 
 If you find any issues with unsupported platform versions, please [raise an issue](https://github.com/ably/ably-ios/issues) in this repository or [contact Ably customer support](https://support.ably.io) for advice.
 
-## Known Limitations
-
-This client library is currently *not compatible* with some of the Ably features:
-
-| Feature | Spec reference |
-| :--- | :--- |
-| Custom transportParams | [RTC1f](https://docs.ably.io/client-lib-development-guide/features/#RTC1f) |
-| Remember fallback host during failures | [RSC15f](https://docs.ably.io/client-lib-development-guide/features/#RSC15f) |
-| ErrorInfo URLs to help debug issues | [TI4 and TI5](https://docs.ably.io/client-lib-development-guide/features/#TI4) |
-
 #### Acknowledgments
 
 As of version `1.1.3` this library based on the 1.1 library specification. It implements a subset of 1.1 features:
@@ -63,6 +53,16 @@ realtime.push.admin.publish(recipient, data: data) { error in
 ```
 
 Demos available: [macOS](https://github.com/ably/demo-macos) and [tvOS](https://github.com/ably/demo-tvos).
+
+## Known Limitations
+
+This client library is currently *not compatible* with some of the Ably features:
+
+| Feature | Spec reference |
+| :--- | :--- |
+| Custom transportParams | [RTC1f](https://docs.ably.io/client-lib-development-guide/features/#RTC1f) |
+| Remember fallback host during failures | [RSC15f](https://docs.ably.io/client-lib-development-guide/features/#RSC15f) |
+| ErrorInfo URLs to help debug issues | [TI4 and TI5](https://docs.ably.io/client-lib-development-guide/features/#TI4) |
 
 ## Documentation
 
