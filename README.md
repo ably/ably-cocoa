@@ -6,7 +6,7 @@
 ![Platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20tvOS%20%7C%20macOS-333333.svg)
 ![Languages](https://img.shields.io/badge/languages-Swift%20%7C%20ObjC-333333.svg)
 
-iOS, tvOS and macOS Objective-C and Swift client library SDK for [Ably realtime messaging service](https://www.ably.io), written in Objective-C. This library currently targets the [Ably 1.1 client library specification](https://www.ably.io/documentation/client-lib-development-guide/features/). You can jump to the '[Known Limitations](#known-limitations)' section to see the features this client library does not yet support or visit the [Feature Support Matrix](https://www.ably.io/feature-support-matrix) to see the list of all the available features.
+iOS, tvOS and macOS Objective-C and Swift client library SDK for [Ably realtime messaging service](https://www.ably.io), written in Objective-C. This library currently targets the [Ably 1.1 client library specification](https://www.ably.io/documentation/client-lib-development-guide/features/). You can jump to the '[Known Limitations](#known-limitations)' section to see the features this client library does not yet support or [view our client library SDKs feature support matrix](https://www.ably.io/feature-support-matrix) to see the list of all the available features.
 
 ## Supported platforms
 
@@ -58,11 +58,11 @@ Demos available: [macOS](https://github.com/ably/demo-macos) and [tvOS](https://
 
 This client library is currently *not compatible* with some of the Ably features:
 
-| Feature | Spec reference |
-| :--- | :--- |
-| Custom transportParams | [RTC1f](https://ably.io/documentation/client-lib-development-guide/features/#RTC1f) |
-| Remember fallback host during failures | [RSC15f](https://ably.io/documentation/client-lib-development-guide/features/#RSC15f) |
-| ErrorInfo URLs to help debug issues | [TI4 and TI5](https://ably.io/documentation/client-lib-development-guide/features/#TI4) |
+| Feature |
+| :--- |
+| [Custom transportParams](https://ably.io/documentation/realtime/usage#client-options) |
+| [Remember fallback host during failures](https://ably.io/documentation/realtime/usage#client-options) | 
+| [ErrorInfo URLs to help debug issues](https://ably.io/documentation/realtime/types#error-info) |
 
 ## Documentation
 
