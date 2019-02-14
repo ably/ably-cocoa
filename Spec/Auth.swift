@@ -1508,7 +1508,8 @@ class Auth : QuickSpec {
                         clientOptions.authMethod = "POST"
                         clientOptions.authHeaders = ["X-Header-1": "foo", "X-Header-2": "bar"]
                         let tokenParams = ARTTokenParams()
-                        tokenParams.timestamp = Date()
+                        tokenParams.ttl = 2000
+                        tokenParams.capability = "{\"cansubscribe:*\":[\"subscribe\"]}"
                         
                         let rest = ARTRest(options: clientOptions)
                         
@@ -1517,9 +1518,8 @@ class Auth : QuickSpec {
                         let httpBodyJSON = try! JSONSerialization.jsonObject(with: request.httpBody ?? Data(), options: .mutableLeaves) as? NSDictionary
                         
                         expect(httpBodyJSON).toNot(beNil(), description: "HTTPBody is empty")
-                        expect(httpBodyJSON!["timestamp"]).toNot(beNil(), description: "HTTPBody has no timestamp")
-                        
-                        let expectedJSON = ["timestamp": httpBodyJSON!["timestamp"]!]
+
+                        let expectedJSON = ["capability": httpBodyJSON!["capability"]!, "ttl": httpBodyJSON!["ttl"]!]
                         
                         expect(httpBodyJSON) == expectedJSON as NSDictionary
 
