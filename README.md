@@ -1,4 +1,4 @@
-# [Ably](https://www.ably.io) iOS client library
+# [Ably](https://www.ably.io) iOS, tvOS and macOS Objective-C and Swift client library SDK
 
 [![Build Status](https://travis-ci.org/ably/ably-ios.svg?branch=master)](https://travis-ci.org/ably/ably-ios)
 [![CocoaPods Compatible](https://img.shields.io/cocoapods/v/Ably.svg)](https://img.shields.io/cocoapods/v/Ably.svg)
@@ -6,7 +6,7 @@
 ![Platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20tvOS%20%7C%20macOS-333333.svg)
 ![Languages](https://img.shields.io/badge/languages-Swift%20%7C%20ObjC-333333.svg)
 
-An iOS client library for [ably.io](https://www.ably.io), the realtime messaging service, written in Objective-C.
+iOS, tvOS and macOS Objective-C and Swift client library SDK for [Ably realtime messaging service](https://www.ably.io), written in Objective-C.
 
 ## Supported platforms
 

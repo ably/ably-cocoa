@@ -569,16 +569,19 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     ARTTokenParams *currentTokenParams = tokenParams ? : [_tokenParams copy]; // copy since _tokenParams should be read-only
     currentTokenParams.timestamp = [self currentDate];
 
-    // Validate: Capability JSON text
-    NSError *errorCapability = nil;
-    [NSJSONSerialization JSONObjectWithData:[currentTokenParams.capability dataUsingEncoding:NSUTF8StringEncoding] options:0 error:&errorCapability];
+    if (currentTokenParams.capability) {
+        // Validate: Capability JSON text
+        NSError *errorCapability = nil;
+        
+        [NSJSONSerialization JSONObjectWithData:[currentTokenParams.capability dataUsingEncoding:NSUTF8StringEncoding] options:0 error:&errorCapability];
 
-    if (errorCapability) {
-        NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Capability: %@", errorCapability.localizedDescription] };
-        callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:errorCapability.code userInfo:userInfo]);
-        return;
+        if (errorCapability) {
+            NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Capability: %@", errorCapability.localizedDescription] };
+            callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:errorCapability.code userInfo:userInfo]);
+            return;
+        }
     }
-    
+
     if (replacedOptions.key == nil) {
         NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : @"no key provided for signing token requests" };
         callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:userInfo]);

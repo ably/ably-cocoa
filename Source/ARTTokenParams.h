@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Contains the capability JSON stringified.
  */
-@property (nonatomic, copy) NSString *capability;
+@property (nonatomic, copy, nullable) NSString *capability;
 
 /**
  A clientId to associate with this token.
