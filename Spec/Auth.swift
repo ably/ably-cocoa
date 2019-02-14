@@ -884,23 +884,61 @@ class Auth : QuickSpec {
             }
             
             // RSA6
-            it("should allow all operations when capability is not specified") {
+            it("should omit capability field if it is not specified") {
                 let tokenParams = ARTTokenParams()
-                expect(tokenParams.capability) == "{\"*\":[\"*\"]}"
+                expect(tokenParams.capability).to(beNil())
                 
                 let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-                options.logLevel = .debug
                 let rest = ARTRest(options: options)
+                let testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                rest.httpExecutor = testHTTPExecutor
 
                 waitUntil(timeout: testTimeout) { done in
                     // Token
                     rest.auth.requestToken(tokenParams, with: options) { tokenDetails, error in
                         if let e = error {
-                            XCTFail((e as! ARTErrorInfo).description)
+                            fail(e.localizedDescription); done(); return
+                        }
+                        expect(tokenParams.capability).to(beNil())
+                        expect(tokenDetails?.capability).to(equal("{\"*\":[\"*\"]}"))
+                        done()
+                    }
+                }
+
+                switch extractBodyAsMsgPack(testHTTPExecutor.requests.first) {
+                case .failure(let error):
+                    fail(error)
+                case .success(let httpBody):
+                    expect(httpBody.unbox["capability"]).to(beNil())
+                }
+            }
+
+            // RSA6
+            it("should add capability field if the user specifies it") {
+                let tokenParams = ARTTokenParams()
+                tokenParams.capability = "{\"*\":[\"*\"]}"
+
+                let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                let rest = ARTRest(options: options)
+                let testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                rest.httpExecutor = testHTTPExecutor
+
+                waitUntil(timeout: testTimeout) { done in
+                    // Token
+                    rest.auth.requestToken(tokenParams, with: options) { tokenDetails, error in
+                        if let e = error {
+                            fail(e.localizedDescription); done(); return
                         }
                         expect(tokenDetails?.capability).to(equal(tokenParams.capability))
                         done()
                     }
+                }
+
+                switch extractBodyAsMsgPack(testHTTPExecutor.requests.first) {
+                case .failure(let error):
+                    fail(error)
+                case .success(let httpBody):
+                    expect(httpBody.unbox["capability"] as? String).to(equal("{\"*\":[\"*\"]}"))
                 }
             }
             
@@ -1447,12 +1485,12 @@ class Auth : QuickSpec {
                         
                         let request = rest.auth.buildRequest(clientOptions, with: tokenParams)
                         
-                        let httpBodyJSON = try! JSONSerialization.jsonObject(with: request.httpBody ?? NSData() as Data, options: .mutableLeaves) as? NSDictionary
+                        let httpBodyJSON = try! JSONSerialization.jsonObject(with: request.httpBody ?? Data(), options: .mutableLeaves) as? NSDictionary
                         
                         expect(httpBodyJSON).toNot(beNil(), description: "HTTPBody is empty")
                         expect(httpBodyJSON!["timestamp"]).toNot(beNil(), description: "HTTPBody has no timestamp")
                         
-                        let expectedJSON = ["capability":"{\"*\":[\"*\"]}", "timestamp":httpBodyJSON!["timestamp"]!]
+                        let expectedJSON = ["timestamp": httpBodyJSON!["timestamp"]!]
                         
                         expect(httpBodyJSON) == expectedJSON as NSDictionary
 
@@ -1550,7 +1588,8 @@ class Auth : QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.requestToken(nil, with: nil, callback: { tokenDetails, error in
                             expect(tokenDetails?.clientId).to(equal(defaultTokenParams.clientId))
-                            expect(tokenDetails?.capability).to(equal(defaultTokenParams.capability))
+                            expect(defaultTokenParams.capability).to(beNil())
+                            expect(tokenDetails?.capability).to(equal("{\"*\":[\"*\"]}")) //Ably supplied capabilities of the underlying key
                             expect(tokenDetails?.issued).toNot(beNil())
                             expect(tokenDetails?.expires).toNot(beNil())
                             if let issued = tokenDetails?.issued, let expires = tokenDetails?.expires {
@@ -1790,6 +1829,7 @@ class Auth : QuickSpec {
 
                 let tokenParams = ARTTokenParams()
                 let defaultCapability = tokenParams.capability
+                expect(defaultCapability).to(beNil())
 
                 waitUntil(timeout: testTimeout) { done in
                     rest.auth.createTokenRequest(nil, options: nil) { tokenRequest, error in
@@ -1799,7 +1839,7 @@ class Auth : QuickSpec {
                         }
                         expect(tokenRequest.clientId).to(equal(options.clientId))
                         expect(tokenRequest.ttl).to(beNil())
-                        expect(tokenRequest.capability).to(equal(defaultCapability))
+                        expect(tokenRequest.capability).to(beNil())
                         done()
                     }
                 }
@@ -1982,7 +2022,7 @@ class Auth : QuickSpec {
                         }
                         expect(tokenRequest.clientId).to(beNil())
                         expect(tokenRequest.ttl).to(beNil())
-                        expect(tokenRequest.capability) == "{\"*\":[\"*\"]}"
+                        expect(tokenRequest.capability).to(beNil())
                         done()
                     }
                 }
