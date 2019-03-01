@@ -3415,8 +3415,12 @@ class Auth : QuickSpec {
                             guard let tokenDetails = tokenDetails else {
                                 fail("TokenDetails is nil"); done(); return
                             }
-                            expect(rest.auth.timeOffset).toNot(equal(0))
-                            let calculatedServerDate = currentDate.addingTimeInterval(rest.auth.timeOffset)
+                            guard let timeOffset = rest.auth.timeOffset?.doubleValue else {
+                                fail("Server Time Offset is nil"); done(); return
+                            }
+                            expect(timeOffset).toNot(equal(0))
+                            expect(rest.auth.timeOffset).toNot(beNil())
+                            let calculatedServerDate = currentDate.addingTimeInterval(timeOffset)
                             expect(calculatedServerDate).to(beCloseTo(mockServerDate, within: 0.5))
                             expect(serverTimeRequestCount) == 1
                             done()
@@ -3431,8 +3435,11 @@ class Auth : QuickSpec {
                             guard let tokenDetails = tokenDetails else {
                                 fail("TokenDetails is nil"); done(); return
                             }
-                            expect(rest.auth.timeOffset).toNot(equal(0))
-                            let calculatedServerDate = currentDate.addingTimeInterval(rest.auth.timeOffset)
+                            guard let timeOffset = rest.auth.timeOffset?.doubleValue else {
+                                fail("Server Time Offset is nil"); done(); return
+                            }
+                            expect(timeOffset).toNot(equal(0))
+                            let calculatedServerDate = currentDate.addingTimeInterval(timeOffset)
                             expect(calculatedServerDate).to(beCloseTo(mockServerDate, within: 0.5))
                             expect(serverTimeRequestCount) == 1
                             done()
@@ -3463,8 +3470,11 @@ class Auth : QuickSpec {
                             guard let tokenRequest = tokenRequest else {
                                 fail("TokenRequest is nil"); done(); return
                             }
-                            expect(rest.auth.timeOffset).toNot(equal(0))
-                            expect(mockServerDate.timeIntervalSinceNow).to(beCloseTo(rest.auth.timeOffset, within: 0.1))
+                            guard let timeOffset = rest.auth.timeOffset?.doubleValue else {
+                                fail("Server Time Offset is nil"); done(); return
+                            }
+                            expect(timeOffset).toNot(equal(0))
+                            expect(mockServerDate.timeIntervalSinceNow).to(beCloseTo(timeOffset, within: 0.1))
                             expect(tokenRequest.timestamp).to(beCloseTo(mockServerDate))
                             expect(serverTimeRequestCount) == 1
                             done()
@@ -3489,16 +3499,22 @@ class Auth : QuickSpec {
                             guard let tokenDetails = tokenDetails else {
                                 fail("TokenDetails is nil"); done(); return
                             }
-                            expect(rest.auth.timeOffset).toNot(beCloseTo(0))
-                            let calculatedServerDate = NSDate().addingTimeInterval(rest.auth.timeOffset)
+                            guard let timeOffset = rest.auth.timeOffset?.doubleValue else {
+                                fail("Server Time Offset is nil"); done(); return
+                            }
+                            expect(timeOffset).toNot(beCloseTo(0))
+                            let calculatedServerDate = NSDate().addingTimeInterval(timeOffset)
                             expect(tokenDetails.expires).to(beCloseTo(calculatedServerDate.addingTimeInterval(ARTDefault.ttl()), within: 1.0))
                             expect(serverTimeRequestCount) == 1
                             done()
                         }
                     }
 
-                    rest.auth.discardTimeOffset()
-                    expect(rest.auth.timeOffset) == 0
+                    #if TARGET_OS_IPHONE
+                    NotificationCenter.default.post(name: UIApplication.significantTimeChangeNotification, object: nil)
+                    #else
+                    NotificationCenter.default.post(name: .NSSystemClockDidChange, object: nil)
+                    #endif
 
                     rest.auth.testSuite_forceTokenToExpire()
 
@@ -3508,7 +3524,7 @@ class Auth : QuickSpec {
                             guard let tokenDetails = tokenDetails else {
                                 fail("TokenDetails is nil"); done(); return
                             }
-                            expect(rest.auth.timeOffset) == 0
+                            expect(rest.auth.timeOffset).to(beNil())
                             expect(serverTimeRequestCount) == 1
                             done()
                         }
@@ -3532,8 +3548,11 @@ class Auth : QuickSpec {
                             guard let tokenRequest = tokenRequest else {
                                 fail("TokenRequest is nil"); done(); return
                             }
-                            expect(rest.auth.timeOffset) == fakeOffset
-                            let calculatedServerDate = NSDate().addingTimeInterval(rest.auth.timeOffset)
+                            guard let timeOffset = rest.auth.timeOffset?.doubleValue else {
+                                fail("Server Time Offset is nil"); done(); return
+                            }
+                            expect(timeOffset) == fakeOffset
+                            let calculatedServerDate = NSDate().addingTimeInterval(timeOffset)
                             expect(tokenRequest.timestamp).to(beCloseTo(calculatedServerDate, within: 0.5))
                             done()
                         }
@@ -3558,12 +3577,14 @@ class Auth : QuickSpec {
                     authOptions.queryTime = true
 
                     waitUntil(timeout: testTimeout) { done in
-                        expect(rest.auth.timeOffset).to(equal(fakeOffset))
                         rest.auth.authorize(nil, options: authOptions) { tokenDetails, error in
                             expect(error).to(beNil())
                             expect(tokenDetails).toNot(beNil())
-                            expect(rest.auth.timeOffset).toNot(equal(fakeOffset))
                             expect(serverTimeRequestCount) == 1
+                            guard let timeOffset = rest.auth.timeOffset?.doubleValue else {
+                                fail("Server Time Offset is nil"); done(); return
+                            }
+                            expect(timeOffset).toNot(equal(fakeOffset))
                             done()
                         }
                     }
