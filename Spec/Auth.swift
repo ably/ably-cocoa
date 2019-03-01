@@ -333,7 +333,102 @@ class Auth : QuickSpec {
                         realtime.connect()
                     }
                 }
-                
+
+                // RSA4b1
+                context("local token validity check") {
+                    it("should be done if queryTime is true and local time is in sync with server") {
+                        let options = AblyTests.commonAppSetup()
+                        let testKey = options.key!
+
+                        let tokenDetails = getTestTokenDetails(key: testKey, ttl: 5.0, queryTime: true)
+
+                        options.queryTime = true
+                        options.tokenDetails = tokenDetails
+                        options.key = nil
+
+                        let rest = ARTRest(options: options)
+                        let proxyHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+
+                        // Sync server time offset
+                        let authOptions = ARTAuthOptions(key: testKey)
+                        authOptions.queryTime = true
+                        waitUntil(timeout: testTimeout) { done in
+                            rest.auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
+                                expect(error).to(beNil())
+                                expect(tokenRequest).toNot(beNil())
+                                done()
+                            })
+                        }
+
+                        // Let the token expire
+                        waitUntil(timeout: testTimeout) { done in
+                            delay(5.0) {
+                                done()
+                            }
+                        }
+
+                        expect(rest.auth.timeOffset).toNot(beNil())
+
+                        rest.httpExecutor = proxyHTTPExecutor
+                        waitUntil(timeout: testTimeout) { done in
+                            rest.channels.get("foo").history { _, error in
+                                guard let error = error else {
+                                    fail("Error is nil"); done(); return
+                                }
+                                expect((error ).code).to(equal(Int(ARTState.requestTokenFailed.rawValue)))
+                                expect(error.message).to(contain("no means to renew the token is provided"))
+
+                                expect(proxyHTTPExecutor.requests.count).to(equal(0))
+                                done()
+                            }
+                        }
+
+                        expect(rest.auth.tokenDetails).to(beNil())
+                    }
+
+                    it("should NOT be done if queryTime is false and local time is NOT in sync with server") {
+                        let options = AblyTests.commonAppSetup()
+                        let testKey = options.key!
+
+                        let tokenDetails = getTestTokenDetails(key: testKey, ttl: 5.0, queryTime: true)
+
+                        options.queryTime = false
+                        options.tokenDetails = tokenDetails
+                        options.key = nil
+
+                        let rest = ARTRest(options: options)
+                        let proxyHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                        rest.httpExecutor = proxyHTTPExecutor
+
+                        // No server time offset
+                        rest.auth.clearTimeOffset()
+
+                        // Let the token expire
+                        waitUntil(timeout: testTimeout) { done in
+                            delay(5.0) {
+                                done()
+                            }
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            rest.channels.get("foo").history { _, error in
+                                guard let error = error else {
+                                    fail("Error is nil"); done(); return
+                                }
+                                expect((error ).code).to(equal(Int(ARTState.requestTokenFailed.rawValue)))
+                                expect(error.message).to(contain("no means to renew the token is provided"))
+                                expect(proxyHTTPExecutor.requests.count).to(equal(1))
+                                expect(proxyHTTPExecutor.responses.count).to(equal(1))
+                                guard let response = proxyHTTPExecutor.responses.first else {
+                                    fail("Response is nil"); done(); return
+                                }
+                                expect(response.allHeaderFields["X-Ably-Errorcode"] as? String).to(equal("40142"))
+                                done()
+                            }
+                        }
+                    }
+                }
+
                 // RSA4d
                 it("if a request by a realtime client to an authUrl results in an HTTP 403 the client library should transition to the FAILED state") {
                     let options = AblyTests.clientOptions()
