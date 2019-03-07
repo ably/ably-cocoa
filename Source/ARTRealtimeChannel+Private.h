@@ -76,6 +76,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)broadcastPresence:(ARTPresenceMessage *)pm;
 - (void)detachChannel:(ARTStatus *)status;
 
+- (void)sync;
+- (void)sync:(nullable void (^)(ARTErrorInfo *_Nullable))callback;
 - (void)requestContinueSync;
 
 @end
