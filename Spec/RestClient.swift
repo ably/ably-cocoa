@@ -423,7 +423,7 @@ class RestClient: QuickSpec {
                             expect(error).to(beNil())
                             expect(result).toNot(beNil())
 
-                            guard let headerErrorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-Errorcode"] as? String else {
+                            guard let headerErrorCode = testHTTPExecutor.responses.first?.objc_allHeaderFields["X-Ably-Errorcode"] as? String else {
                                 fail("X-Ably-Errorcode not found"); done();
                                 return
                             }
@@ -454,7 +454,7 @@ class RestClient: QuickSpec {
                         expect(errorCode).to(equal(40160))
                         expect(result).to(beNil())
 
-                        guard let headerErrorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-Errorcode"] as? String else {
+                        guard let headerErrorCode = testHTTPExecutor.responses.first?.objc_allHeaderFields["X-Ably-Errorcode"] as? String else {
                             fail("X-Ably-Errorcode not found"); done();
                             return
                         }
@@ -549,7 +549,7 @@ class RestClient: QuickSpec {
                         delay(TimeInterval(truncating: tokenParams.ttl!)) {
                             // [40140, 40150) - token expired and will not recover because authUrl is invalid
                             publishTestMessage(rest) { error in
-                                guard let errorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-Errorcode"] as? String else {
+                                guard let errorCode = testHTTPExecutor.responses.first?.objc_allHeaderFields["X-Ably-Errorcode"] as? String else {
                                     fail("expected X-Ably-Errorcode header in request")
                                     return
                                 }
@@ -598,7 +598,7 @@ class RestClient: QuickSpec {
                             delay(TimeInterval(truncating: tokenParams.ttl!)) {
                                 // [40140, 40150) - token expired and will not recover because authUrl is invalid
                                 publishTestMessage(rest) { error in
-                                    guard let errorCode = testHTTPExecutor.responses.first?.allHeaderFields["X-Ably-Errorcode"] as? String else {
+                                    guard let errorCode = testHTTPExecutor.responses.first?.objc_allHeaderFields["X-Ably-Errorcode"] as? String else {
                                         fail("expected X-Ably-Errorcode header in request")
                                         return
                                     }
@@ -1617,7 +1617,7 @@ class RestClient: QuickSpec {
                         }
 
                         expect(response.statusCode) == httpPaginatedResponse.statusCode
-                        expect(response.allHeaderFields as? [String: String]) == httpPaginatedResponse.headers
+                        expect(response.allHeaderFields as NSDictionary) == httpPaginatedResponse.headers
                     }
 
                     it("should handle response failures") {
@@ -1649,7 +1649,7 @@ class RestClient: QuickSpec {
                                     expect(paginatedResponse.errorCode) == 40400
                                     expect(paginatedResponse.errorMessage).to(contain("Could not find path"))
                                     expect(paginatedResponse.headers).toNot(beEmpty())
-                                    expect(paginatedResponse.headers["X-Ably-Errorcode"]).to(equal("40400"))
+                                    expect(paginatedResponse.headers["X-Ably-Errorcode"] as? String).to(equal("40400"))
                                     done()
                                 }
                             }
@@ -1665,7 +1665,7 @@ class RestClient: QuickSpec {
                         }
 
                         expect(response.statusCode) == 404
-                        expect(response.allHeaderFields["X-Ably-Errorcode"] as? String).to(equal("40400"))
+                        expect(response.objc_allHeaderFields["X-Ably-Errorcode"] as? String).to(equal("40400"))
                     }
                 }
 
