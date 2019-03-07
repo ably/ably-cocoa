@@ -1719,9 +1719,16 @@ class RealtimeClientPresence: QuickSpec {
                     let channel = client.channels.get(channelName)
 
                     waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        channel.presence.subscribe { presence in
+                            expect(presence.clientId).to(equal("tester"))
+                            expect(presence.action).to(equal(.enter))
+                            channel.presence.unsubscribe()
+                            partialDone()
+                        }
                         channel.presence.enterClient("tester", data: nil) { error in
                             expect(error).to(beNil())
-                            done()
+                            partialDone()
                         }
                     }
 
@@ -1732,7 +1739,7 @@ class RealtimeClientPresence: QuickSpec {
                     expect(intialPresenceMessage.memberKey()).to(equal("\(client.connection.id!):tester"))
 
                     var compareForNewnessMethodCalls = 0
-                    let hook = channel.presenceMap.testSuite_injectIntoMethod(after: NSSelectorFromString("isNewestPresence:comparingWith:")) {
+                    let hook = ARTPresenceMessage.testSuite_injectIntoMethod(after: NSSelectorFromString("isNewerThan:")) {
                         compareForNewnessMethodCalls += 1
                     }
                     defer { hook.remove() }
@@ -1749,7 +1756,7 @@ class RealtimeClientPresence: QuickSpec {
                     }
 
                     expect(intialPresenceMessage.memberKey()).to(equal(updatedPresenceMessage.memberKey()))
-                    expect(intialPresenceMessage.timestamp).toNot(equal(updatedPresenceMessage.timestamp))
+                    expect(intialPresenceMessage.timestamp).to(beLessThan(updatedPresenceMessage.timestamp))
 
                     expect(compareForNewnessMethodCalls) == 1
                 }
