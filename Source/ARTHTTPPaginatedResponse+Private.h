@@ -8,11 +8,15 @@
 
 #import <Ably/ARTHTTPPaginatedResponse.h>
 
+#import <Ably/ARTPaginatedResult+Private.h>
+
 @class ARTRest;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTHTTPPaginatedResponse ()
+
+@property (nonatomic, strong) NSHTTPURLResponse *response;
 
 + (void)executePaginated:(ARTRest *)rest withRequest:(NSMutableURLRequest *)request andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor callback:(void (^)(ARTPaginatedResult * _Nullable, ARTErrorInfo * _Nullable))callback UNAVAILABLE_ATTRIBUTE;
 

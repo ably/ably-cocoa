@@ -20,10 +20,10 @@ NS_ASSUME_NONNULL_BEGIN
 /// Returns true when the HTTP status code indicates success i.e. 200 <= statusCode < 300
 @property (nonatomic, readonly) BOOL success;
 
-/// Returns the error code if the X-Ably-Errorcode HTTP header is sent in the response
+/// Returns the error code if the X-Ably-ErrorCode HTTP header is sent in the response
 @property (nonatomic, readonly) NSInteger errorCode;
 
-/// Returns error message if the X-Ably-Errormessage HTTP header is sent in the response
+/// Returns error message if the X-Ably-ErrorMessage HTTP header is sent in the response
 @property (nullable, nonatomic, readonly) NSString *errorMessage;
 
 /// Returns a dictionary containing all the HTTP header fields of the response header.
