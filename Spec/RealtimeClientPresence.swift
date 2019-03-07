@@ -1104,15 +1104,12 @@ class RealtimeClientPresence: QuickSpec {
                                 expect(channel.presenceMap.localMembers).to(haveCount(1))
                                 partialDone()
                             }
-                            channel.once(.attaching) { stateChange in
+                            channel.once(.attached) { stateChange in
                                 expect(stateChange?.reason).to(beNil())
                                 channel.presence.leave(nil) { error in
                                     expect(error).to(beNil())
                                     partialDone()
                                 }
-                            }
-                            channel.once(.attached) { stateChange in
-                                expect(stateChange?.reason).to(beNil())
                                 partialDone()
                             }
                             channel.setSuspended(ARTStatus.state(.ok))

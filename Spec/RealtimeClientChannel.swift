@@ -3344,7 +3344,7 @@ class RealtimeClientChannel: QuickSpec {
 
                                 // Check retry
                                 let start = NSDate()
-                                channel.once(.attaching) { stateChange in
+                                channel.once(.attached) { stateChange in
                                     let end = NSDate()
                                     expect(start).to(beCloseTo(end, within: 1.5))
                                     expect(stateChange?.reason).to(beNil())
