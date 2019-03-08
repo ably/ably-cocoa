@@ -46,7 +46,6 @@
 
     [_urlSession get:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-
         if (error) {
             [self.logger error:@"%@ %@: error %@", request.HTTPMethod, request.URL.absoluteString, error];
         } else {
