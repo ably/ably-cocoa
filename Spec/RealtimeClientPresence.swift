@@ -10,6 +10,7 @@ import Ably
 import Quick
 import Nimble
 import Foundation
+import Aspects
 
 class RealtimeClientPresence: QuickSpec {
 
@@ -1736,10 +1737,9 @@ class RealtimeClientPresence: QuickSpec {
                     expect(intialPresenceMessage.memberKey()).to(equal("\(client.connection.id!):tester"))
 
                     var compareForNewnessMethodCalls = 0
-                    let hook = ARTPresenceMessage.testSuite_injectIntoMethod(after: NSSelectorFromString("isNewerThan:")) {
+                    let hook = ARTPresenceMessage.testSuite_injectIntoClassMethod(#selector(ARTPresenceMessage.isNewerThan(_:))) {
                         compareForNewnessMethodCalls += 1
                     }
-                    defer { hook.remove() }
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.enterClient("tester", data: nil) { error in
@@ -1756,6 +1756,8 @@ class RealtimeClientPresence: QuickSpec {
                     expect(intialPresenceMessage.timestamp).to(beLessThan(updatedPresenceMessage.timestamp))
 
                     expect(compareForNewnessMethodCalls) == 1
+
+                    hook?.remove()
                 }
 
                 // RTP2b
@@ -2194,9 +2196,10 @@ class RealtimeClientPresence: QuickSpec {
                         fail("TestProxyTransport is not set"); return
                     }
 
+                    var hook: AspectToken?
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(3, done: done)
-                        channel.presenceMap.testSuite_injectIntoMethod(after: #selector(ARTPresenceMap.startSync)) {
+                        hook = channel.presenceMap.testSuite_injectIntoMethod(after: #selector(ARTPresenceMap.startSync)) {
                             expect(channel.presenceMap.syncInProgress).to(beTrue())
 
                             AblyTests.extraQueue.async {
@@ -2230,6 +2233,7 @@ class RealtimeClientPresence: QuickSpec {
                             partialDone()
                         }
                     }
+                    hook?.remove()
 
                     // A single clientId may be present multiple times on the same channel via different client connections and that's way user11 is present because user11 presences messages were in distinct connections.
                     expect(channel.presenceMap.members).to(haveCount(20))
@@ -3882,16 +3886,22 @@ class RealtimeClientPresence: QuickSpec {
                     let rest = ARTRest(options: options)
 
                     let realtime = ARTRealtime(options: options)
-                    defer { realtime.close() }
-
-                    var restPresenceHistoryMethodWasCalled = false
-                    var hook = ARTRestPresence.testSuite_injectIntoClassMethod(#selector(ARTRestPresence.history(_:callback:))) {
-                        restPresenceHistoryMethodWasCalled = true
-                    }
-                    defer { hook?.remove() }
+                    defer { realtime.dispose(); realtime.close() }
 
                     let channelRest = rest.channels.get("test")
                     let channelRealtime = realtime.channels.get("test")
+
+                    var restPresenceHistoryMethodWasCalled = false
+                    
+                    var hookRest = channelRest.presence.testSuite_injectIntoMethod(after: #selector(ARTRestPresence.history(_:callback:))) {
+                        restPresenceHistoryMethodWasCalled = true
+                    }
+                    defer { hookRest.remove() }
+
+                    var hookRealtime = channelRealtime.presence.testSuite_injectIntoMethod(after: #selector(ARTRestPresence.history(_:callback:))) {
+                        restPresenceHistoryMethodWasCalled = true
+                    }
+                    defer { hookRealtime.remove() }
 
                     let queryRealtime = ARTRealtimeHistoryQuery()
                     queryRealtime.start = NSDate() as Date
