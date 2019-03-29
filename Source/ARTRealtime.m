@@ -19,7 +19,7 @@
 #import "ARTClientOptions.h"
 #import "ARTChannelOptions.h"
 #import "ARTPresenceMessage.h"
-#import "ARTWebSocketTransport.h"
+#import "ARTWebSocketTransport+Private.h"
 #import "ARTOSReachability.h"
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTPresenceMap.h"
@@ -67,9 +67,8 @@
     dispatch_block_t _idleTimer;
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
-}
 
-@synthesize authorizationEmitter = _authorizationEmitter;
+}
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options {
     self = [super init];
@@ -91,9 +90,9 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         _queuedMessages = [NSMutableArray array];
         _pendingMessages = [NSMutableArray array];
         _pendingMessageStartSerial = 0;
+        _pendingAuthorizations = [NSMutableArray array];
         _connection = [[ARTConnection alloc] initWithRealtime:self];
         _connectionStateTtl = [ARTDefault connectionStateTtl];
-        _authorizationEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
         self.auth.delegate = self;
 
         [self.connection setState:ARTRealtimeInitialized];
@@ -110,51 +109,92 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     return self;
 }
 
-- (void)auth:(ARTAuth *)auth didAuthorize:(ARTTokenDetails *)tokenDetails {
+#pragma mark - ARTAuthDelegate
+
+- (void)auth:(ARTAuth *)auth didAuthorize:(ARTTokenDetails *)tokenDetails completion:(void (^)(ARTAuthorizationState, ARTErrorInfo *_Nullable))completion {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
+    void (^waitForResponse)(void) = ^{
+        [self.pendingAuthorizations enqueue:^(ARTRealtimeConnectionState state, ARTErrorInfo *_Nullable error){
+            switch (state) {
+                case ARTRealtimeConnected:
+                    completion(ARTAuthorizationSucceeded, nil);
+                    break;
+                case ARTRealtimeFailed:
+                    completion(ARTAuthorizationFailed, error);
+                    break;
+                case ARTRealtimeSuspended:
+                    completion(ARTAuthorizationFailed, [ARTErrorInfo createWithCode:ARTStateAuthorizationFailed message:@"Connection has been suspended"]);
+                    break;
+                case ARTRealtimeClosed:
+                    completion(ARTAuthorizationFailed, [ARTErrorInfo createWithCode:ARTStateAuthorizationFailed message:@"Connection has been closed"]);
+                    break;
+                case ARTRealtimeDisconnected:
+                    completion(ARTAuthorizationCancelled, nil);
+                    break;
+                case ARTRealtimeInitialized:
+                case ARTRealtimeConnecting:
+                case ARTRealtimeClosing:
+                    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p authorize completion has been ignored because the connection state is unexpected (%@)", self.rest, ARTRealtimeConnectionStateToStr(state)];
+                    break;
+            }
+        }];
+    };
+
+    void (^haltCurrentConnectionAndReconnect)(void) = ^{
+        // Halt the current connection and reconnect with the most recent token
+        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p halt current connection and reconnect with %@", self.rest, tokenDetails];
+        [self->_transport abort:[ARTStatus state:ARTStateOk]];
+        self->_transport = [[self->_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:self->_transport.resumeKey connectionSerial:self->_transport.connectionSerial];
+        self->_transport.delegate = self;
+        [self->_transport connectWithToken:tokenDetails.token];
+        waitForResponse();
+    };
+
     switch (self.connection.state_nosync) {
         case ARTRealtimeConnected: {
                 // Update (send AUTH message)
-                [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p AUTH message using %@", _rest, tokenDetails];
+                [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p AUTH message using %@", self.rest, tokenDetails];
                 ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
                 msg.action = ARTProtocolMessageAuth;
                 msg.auth = [[ARTAuthDetails alloc] initWithToken:tokenDetails.token];
                 [self send:msg sentCallback:nil ackCallback:nil];
+                waitForResponse();
             }
             break;
         case ARTRealtimeConnecting: {
                 switch (_transport.state) {
                     case ARTRealtimeTransportStateOpening:
                     case ARTRealtimeTransportStateOpened: {
-                            // Halt the current connection and reconnect with the most recent token
-                            [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p halt current connection and reconnect with %@", _rest, tokenDetails];
-                            [_transport abort:[ARTStatus state:ARTStateOk]];
-                            _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:_transport.resumeKey connectionSerial:_transport.connectionSerial];
-                            _transport.delegate = self;
-                            [_transport connectWithToken:tokenDetails.token];
+                            haltCurrentConnectionAndReconnect();
                         }
                         break;
-                    case ARTRealtimeTransportStateClosed:
                     case ARTRealtimeTransportStateClosing:
-                        // Ignore
-                        [_authorizationEmitter off];
+                        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p new connection from authorize has been ignored because the transport is closing but the connection is connecting)", self.rest];
+                        break;
+                    case ARTRealtimeTransportStateClosed:
+                        // Waiting for Token to start the connection
+                        [_transport.stateEmitter once:[ARTEvent newWithTransportState:ARTRealtimeTransportStateOpened] callback:^(id sender) {
+                            haltCurrentConnectionAndReconnect();
+                        }];
                         break;
                 }
             }
             break;
         case ARTRealtimeClosing: {
                 // Should ignore because the connection is being closed
-                [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p new connection from authorize has been ignored because the connection is being closed", _rest];
+                [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p new connection from authorize has been ignored because the connection is closing", self.rest];
                 break;
             }
         default:
             // Client state is NOT Connecting or Connected, so it should start a new connection
-            [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p new connection from successfull authorize %@", _rest, tokenDetails];
+            [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p new connection from successfull authorize %@", self.rest, tokenDetails];
             [self transition:ARTRealtimeConnecting];
             break;
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
+
+#pragma mark - Realtime
 
 - (instancetype)initWithKey:(NSString *)key {
     return [self initWithOptions:[[ARTClientOptions alloc] initWithKey:key]];
@@ -400,7 +440,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
     switch (stateChange.current) {
         case ARTRealtimeConnecting: {
-            
+
             // RTN15g We want to enforce a new connection also when there hasn't been activity for longer than (idle interval + TTL)
             if (stateChange.previous == ARTRealtimeDisconnected || stateChange.previous == ARTRealtimeSuspended) {
                 NSTimeInterval intervalSinceLast = [[NSDate date] timeIntervalSinceDate:_lastActivity];
@@ -410,7 +450,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                     [self.connection setSerial:0];
                 }
             }
-            
+
             stateChangeEventListener = [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
                 [weakSelf onConnectionTimeOut];
             }];
@@ -430,10 +470,12 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                 }
                 _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:resumeKey connectionSerial:connectionSerial];
                 _transport.delegate = self;
-                [self transportConnectForcingNewToken:_renewingToken keepConnection:false];
+                [self transportConnectForcingNewToken:_renewingToken newConnection:true];
             }
 
-            if (self.connection.state_nosync != ARTRealtimeFailed && self.connection.state_nosync != ARTRealtimeClosed && self.connection.state_nosync != ARTRealtimeDisconnected) {
+            if (self.connection.state_nosync != ARTRealtimeFailed &&
+                self.connection.state_nosync != ARTRealtimeClosed &&
+                self.connection.state_nosync != ARTRealtimeDisconnected) {
                 [_reachability listenForHost:[_transport host] callback:^(BOOL reachable) {
                     if (reachable) {
                         switch (weakSelf.connection.state_nosync) {
@@ -476,18 +518,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             _connection.id = nil;
             _transport = nil;
             self.rest.prioritizedHost = nil;
-            [_authorizationEmitter emit:[ARTEvent newWithAuthorizationState:ARTAuthorizationFailed] with:[ARTErrorInfo createWithCode:ARTStateAuthorizationFailed message:@"Connection has been closed"]];
             break;
         case ARTRealtimeFailed:
             status = [ARTStatus state:ARTStateConnectionFailed info:stateChange.reason];
             [self.transport abort:status];
             _transport = nil;
             self.rest.prioritizedHost = nil;
-            [_authorizationEmitter emit:[ARTEvent newWithAuthorizationState:ARTAuthorizationFailed] with:stateChange.reason];
             break;
         case ARTRealtimeDisconnected: {
-            [_authorizationEmitter emit:[ARTEvent newWithAuthorizationState:ARTAuthorizationCancelled] with:nil];
-
             if (!_startedReconnection) {
                 _startedReconnection = [NSDate date];
                 [_internalEventEmitter on:^(ARTConnectionStateChange *change) {
@@ -528,7 +566,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                 self->_connectionRetryFromSuspendedListener = nil;
             }];
             _connectionRetryFromSuspendedListener = stateChangeEventListener;
-            [_authorizationEmitter emit:[ARTEvent newWithAuthorizationState:ARTAuthorizationFailed] with:[ARTErrorInfo createWithCode:ARTStateAuthorizationFailed message:@"Connection has been suspended"]];
             break;
         }
         case ARTRealtimeConnected: {
@@ -541,7 +578,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                 [self resendPendingMessages];
             }
             [_connectedEventEmitter emit:nil with:nil];
-            [_authorizationEmitter emit:[ARTEvent newWithAuthorizationState:ARTAuthorizationSucceeded] with:nil];
             break;
         }
         case ARTRealtimeInitialized:
@@ -574,6 +610,12 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     }
 
     [self.connection emit:stateChange.event with:stateChange];
+
+    void (^pendingAuthorization)(ARTRealtimeConnectionState, ARTErrorInfo *_Nullable) = [self.pendingAuthorizations dequeue];
+    if (pendingAuthorization) {
+        pendingAuthorization(stateChange.current, stateChange.reason);
+    }
+
     return stateChangeEventListener;
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -713,7 +755,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     switch (self.connection.state_nosync) {
         case ARTRealtimeConnecting:
         case ARTRealtimeConnected:
-            [self transportConnectForcingNewToken:true keepConnection:true];
+            [self transportConnectForcingNewToken:true newConnection:false];
             break;
         default:
             [self.logger error:@"Invalid Realtime state: expected Connecting or Connected, has %@", ARTRealtimeConnectionStateToStr(self.connection.state_nosync)];
@@ -778,7 +820,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     _authenitcatingTimeoutWork = nil;
 
     ARTErrorInfo *error;
-    if (self.auth.authorizing && (self.options.authUrl || self.options.authCallback)) {
+    if (self.auth.authorizing_nosync && (self.options.authUrl || self.options.authCallback)) {
         error = [ARTErrorInfo createWithCode:ARTCodeErrorAuthConfiguredProviderFailure status:ARTStateConnectionFailed message:@"timed out"];
     }
     else {
@@ -811,18 +853,18 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 - (void)transportReconnectWithHost:(NSString *)host {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     [self.transport setHost:host];
-    [self transportConnectForcingNewToken:false keepConnection:false];
+    [self transportConnectForcingNewToken:false newConnection:true];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)transportReconnectWithRenewedToken {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     _renewingToken = true;
-    [self transportConnectForcingNewToken:true keepConnection:false];
+    [self transportConnectForcingNewToken:true newConnection:true];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (void)transportConnectForcingNewToken:(BOOL)forceNewToken keepConnection:(BOOL)keepConnection {
+- (void)transportConnectForcingNewToken:(BOOL)forceNewToken newConnection:(BOOL)newConnection {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     ARTClientOptions *options = [self.options copy];
     if ([options isBasicAuth]) {
@@ -850,7 +892,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             });
 
             id<ARTAuthDelegate> delegate = self.auth.delegate;
-            if (!keepConnection) {
+            if (newConnection) {
                 // Deactivate use of `ARTAuthDelegate`: `authorize` should complete without waiting for a CONNECTED state.
                 self.auth.delegate = nil;
             }
@@ -875,12 +917,12 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                         return;
                     }
 
-                    if (forceNewToken && !keepConnection) {
+                    if (forceNewToken && newConnection) {
                         [self->_transport close];
                         self->_transport = [[self->_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:self->_transport.resumeKey connectionSerial:self->_transport.connectionSerial];
                         self->_transport.delegate = self;
                     }
-                    if (!keepConnection) {
+                    if (newConnection) {
                         [[weakSelf transport] connectWithToken:tokenDetails.token];
                     }
                 }];

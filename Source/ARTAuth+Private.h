@@ -19,8 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Messages related to the ARTAuth
 @protocol ARTAuthDelegate <NSObject>
-@property (nonatomic, readonly) ARTEventEmitter<ARTEvent *, id> *authorizationEmitter;
-- (void)auth:(ARTAuth *)auth didAuthorize:(ARTTokenDetails *)tokenDetails;
+- (void)auth:(ARTAuth *)auth didAuthorize:(ARTTokenDetails *)tokenDetails completion:(void (^)(ARTAuthorizationState, ARTErrorInfo *_Nullable))completion;
 @end
 
 @interface ARTAuth ()
@@ -35,7 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, readonly, strong) NSNumber *timeOffset;
 
 @property (nullable, weak) id<ARTAuthDelegate> delegate;
-@property (readonly, assign) BOOL authorizing;
+@property (readonly) BOOL authorizing;
+@property (readonly) BOOL authorizing_nosync;
 
 - (void)_authorize:(nullable ARTTokenParams *)tokenParams options:(nullable ARTAuthOptions *)authOptions
          callback:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback;
