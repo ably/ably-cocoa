@@ -784,11 +784,11 @@ class RealtimeClient: QuickSpec {
                     }
                     defer { hook1?.remove() }
 
-                    var connectionsOpened = 0
-                    let hook2 = TestProxyTransport.testSuite_injectIntoClassMethod(#selector(TestProxyTransport.webSocketDidOpen)) {
-                        connectionsOpened += 1
+                    var connectionsConnected = 0
+                    let hook2 = client.connection.on(.connected) { _ in
+                        connectionsConnected += 1
                     }
-                    defer { hook2?.remove() }
+                    defer { client.connection.off(hook2) }
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connecting) { stateChange in
@@ -816,7 +816,7 @@ class RealtimeClient: QuickSpec {
                     }
 
                     expect(connections) == 2
-                    expect(connectionsOpened) == 1
+                    expect(connectionsConnected) == 1
 
                     expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
                 }
