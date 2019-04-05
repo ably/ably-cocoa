@@ -281,15 +281,16 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
 });
 }
 
-- (void)_requestToken:(ARTTokenParams *)tokenParams withOptions:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
+- (NSObject<ARTCancellable> *)_requestToken:(ARTTokenParams *)tokenParams withOptions:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
     // If options, params passed in, they're used instead of stored, don't merge them
     ARTAuthOptions *replacedOptions = authOptions ? authOptions : self.options;
     ARTTokenParams *currentTokenParams = [tokenParams ? tokenParams : _tokenParams copy];
     currentTokenParams.timestamp = [self currentDate];
+    __block NSObject<ARTCancellable> *task;
 
     if (![self canRenewTokenAutomatically:replacedOptions]) {
         callback(nil, [ARTErrorInfo createWithCode:ARTStateRequestTokenFailed message:ARTAblyMessageNoMeansToRenewToken]);
-        return;
+        return nil;
     }
 
     void (^checkerCallback)(ARTTokenDetails *_Nullable, NSError *_Nullable) = ^(ARTTokenDetails *tokenDetails, NSError *error) {
@@ -311,10 +312,10 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
 
     if (replacedOptions.authUrl) {
         NSMutableURLRequest *request = [self buildRequest:replacedOptions withParams:currentTokenParams];
-        
+
         [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p using authUrl (%@ %@)", _rest, request.HTTPMethod, request.URL];
-        
-        [_rest executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+
+        task = [_rest executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (error) {
                 checkerCallback(nil, error);
             } else {
@@ -349,18 +350,24 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
         } else {
             tokenDetailsFactory = ^(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *_Nullable, NSError *_Nullable)) {
                 // Create a TokenRequest and execute it
-                [self _createTokenRequest:currentTokenParams options:replacedOptions callback:^(ARTTokenRequest *tokenRequest, NSError *error) {
+                NSObject<ARTCancellable> *timeTask;
+                timeTask = [self _createTokenRequest:currentTokenParams options:replacedOptions callback:^(ARTTokenRequest *tokenRequest, NSError *error) {
                     if (error) {
                         callback(nil, error);
                     } else {
-                        [self executeTokenRequest:tokenRequest callback:callback];
+                        task = [self executeTokenRequest:tokenRequest callback:callback];
                     }
                 }];
+                if (timeTask) {
+                    task = timeTask;
+                }
             };
         };
 
         tokenDetailsFactory(currentTokenParams, checkerCallback);
     }
+
+    return task;
 }
 
 - (void)handleAuthUrlResponse:(NSHTTPURLResponse *)response withData:(NSData *)data completion:(void (^)(ARTTokenDetails *, NSError *))callback {
@@ -399,7 +406,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (void)executeTokenRequest:(ARTTokenRequest *)tokenRequest callback:(void (^)(ARTTokenDetails *, NSError *))callback {
+- (NSObject<ARTCancellable> *)executeTokenRequest:(ARTTokenRequest *)tokenRequest callback:(void (^)(ARTTokenDetails *, NSError *))callback {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     id<ARTEncoder> encoder = _rest.defaultEncoder;
 
@@ -413,12 +420,12 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     request.HTTPBody = [encoder encodeTokenRequest:tokenRequest error:&encodeError];
     if (encodeError) {
         callback(nil, encodeError);
-        return;
+        return nil;
     }
     [request setValue:[encoder mimeType] forHTTPHeaderField:@"Accept"];
     [request setValue:[encoder mimeType] forHTTPHeaderField:@"Content-Type"];
-    
-    [_rest executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+
+    return [_rest executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             callback(nil, error);
         } else {
@@ -483,8 +490,9 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSString *authorizeId = [[NSUUID new] UUIDString];
     // Request always a new token
     [self.logger verbose:@"RS:%p ARTAuth [authorize.%@, delegate=%@]: requesting new token", _rest, authorizeId, lastDelegate ? @"YES" : @"NO"];
+    NSObject<ARTCancellable> *task;
     self->_authorizationsCount += 1;
-    [self _requestToken:currentTokenParams withOptions:replacedOptions callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+    task = [self _requestToken:currentTokenParams withOptions:replacedOptions callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
         self->_authorizationsCount -= 1;
 
         void (^successBlock)(void) = ^{
@@ -541,6 +549,8 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
             successBlock();
         }
     }];
+
+    return task;
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
@@ -566,7 +576,7 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)_createTokenRequest:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)options callback:(void (^)(ARTTokenRequest *, NSError *))callback {
+- (NSObject<ARTCancellable> *)_createTokenRequest:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)options callback:(void (^)(ARTTokenRequest *, NSError *))callback {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     ARTAuthOptions *replacedOptions = options ? : self.options;
     ARTTokenParams *currentTokenParams = tokenParams ? : [_tokenParams copy]; // copy since _tokenParams should be read-only
@@ -581,23 +591,24 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         if (errorCapability) {
             NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Capability: %@", errorCapability.localizedDescription] };
             callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:errorCapability.code userInfo:userInfo]);
-            return;
+            return nil;
         }
     }
 
     if (replacedOptions.key == nil) {
         NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : @"no key provided for signing token requests" };
         callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:userInfo]);
-        return;
+        return nil;
     }
 
     if ([self hasTimeOffsetWithValue] && !replacedOptions.queryTime) {
         currentTokenParams.timestamp = [self currentDate];
         callback([currentTokenParams sign:replacedOptions.key], nil);
+        return nil;
     }
     else {
         if (replacedOptions.queryTime) {
-            [_rest _time:^(NSDate *time, NSError *error) {
+            return [_rest _time:^(NSDate *time, NSError *error) {
                 if (error) {
                     callback(nil, error);
                 } else {
@@ -609,6 +620,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
             }];
         } else {
             callback([currentTokenParams sign:replacedOptions.key], nil);
+            return nil;
         }
     }
 } ART_TRY_OR_REPORT_CRASH_END

@@ -37,10 +37,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) BOOL authorizing;
 @property (readonly) BOOL authorizing_nosync;
 
-- (void)_authorize:(nullable ARTTokenParams *)tokenParams options:(nullable ARTAuthOptions *)authOptions
+- (nullable NSObject<ARTCancellable> *)_authorize:(nullable ARTTokenParams *)tokenParams options:(nullable ARTAuthOptions *)authOptions
          callback:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback;
 
-- (void)_requestToken:(ARTTokenParams *_Nullable)tokenParams withOptions:(ARTAuthOptions *_Nullable)authOptions callback:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback;
+- (nullable NSObject<ARTCancellable> *)_requestToken:(ARTTokenParams *_Nullable)tokenParams withOptions:(ARTAuthOptions *_Nullable)authOptions callback:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback;
 
 @end
 
@@ -55,7 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSMutableURLRequest *)buildRequest:(nullable ARTAuthOptions *)options withParams:(nullable ARTTokenParams *)params;
 
 // Execute the received ARTTokenRequest
-- (void)executeTokenRequest:(ARTTokenRequest *)tokenRequest callback:(void (^)(ARTTokenDetails *_Nullable tokenDetails, NSError *_Nullable error))callback;
+- (nullable NSObject<ARTCancellable> *)executeTokenRequest:(ARTTokenRequest *)tokenRequest callback:(void (^)(ARTTokenDetails *_Nullable tokenDetails, NSError *_Nullable error))callback;
 
 // CONNECTED ProtocolMessage may contain a clientId
 - (void)setProtocolClientId:(NSString *)clientId;
