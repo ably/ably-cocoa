@@ -147,6 +147,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         self->_transport = [[self->_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:self->_transport.resumeKey connectionSerial:self->_transport.connectionSerial];
         self->_transport.delegate = self;
         [self->_transport connectWithToken:tokenDetails.token];
+        [self cancelAllPendingAuthorizations];
         waitForResponse();
     };
 
@@ -162,24 +163,11 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             }
             break;
         case ARTRealtimeConnecting: {
-                switch (_transport.state) {
-                    case ARTRealtimeTransportStateOpening:
-                    case ARTRealtimeTransportStateOpened: {
-                            haltCurrentConnectionAndReconnect();
-                        }
-                        break;
-                    case ARTRealtimeTransportStateClosing:
-                        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p new connection from authorize has been ignored because the transport is closing but the connection is connecting)", self.rest];
-                        break;
-                    case ARTRealtimeTransportStateClosed:
-                        // Waiting for Token to start the connection
-                        [_transport.stateEmitter once:[ARTEvent newWithTransportState:ARTRealtimeTransportStateOpened] callback:^(id sender) {
-                            haltCurrentConnectionAndReconnect();
-                        }];
-                        break;
-                }
-            }
+            [_transport.stateEmitter once:[ARTEvent newWithTransportState:ARTRealtimeTransportStateOpened] callback:^(id sender) {
+                haltCurrentConnectionAndReconnect();
+            }];
             break;
+        }
         case ARTRealtimeClosing: {
                 // Should ignore because the connection is being closed
                 [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p new connection from authorize has been ignored because the connection is closing", self.rest];
@@ -192,6 +180,36 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             break;
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
+}
+
+- (void)performPendingAuthorizationWithState:(ARTRealtimeConnectionState)state error:(nullable ARTErrorInfo *)error {
+    void (^pendingAuthorization)(ARTRealtimeConnectionState, ARTErrorInfo *_Nullable) = [self.pendingAuthorizations dequeue];
+    if (!pendingAuthorization) {
+        return;
+    }
+    switch (state) {
+        case ARTRealtimeConnected:
+            pendingAuthorization(state, nil);
+            break;
+        case ARTRealtimeFailed:
+            pendingAuthorization(state, error);
+            break;
+        default:
+            [self discardPendingAuthorizations];
+            pendingAuthorization(state, error);
+            break;
+    }
+}
+
+- (void)cancelAllPendingAuthorizations {
+    [self.pendingAuthorizations enumerateObjectsUsingBlock:^(void (^pendingAuthorization)(ARTRealtimeConnectionState, ARTErrorInfo * _Nullable), NSUInteger idx, BOOL * _Nonnull stop) {
+        pendingAuthorization(ARTRealtimeDisconnected, nil);
+    }];
+    [self.pendingAuthorizations removeAllObjects];
+}
+
+- (void)discardPendingAuthorizations {
+    [self.pendingAuthorizations removeAllObjects];
 }
 
 #pragma mark - Realtime
@@ -611,10 +629,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
     [self.connection emit:stateChange.event with:stateChange];
 
-    void (^pendingAuthorization)(ARTRealtimeConnectionState, ARTErrorInfo *_Nullable) = [self.pendingAuthorizations dequeue];
-    if (pendingAuthorization) {
-        pendingAuthorization(stateChange.current, stateChange.reason);
-    }
+    [self performPendingAuthorizationWithState:stateChange.current error:stateChange.reason];
 
     return stateChangeEventListener;
 } ART_TRY_OR_MOVE_TO_FAILED_END
