@@ -39,6 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable NSObject<ARTCancellable> *)_authorize:(nullable ARTTokenParams *)tokenParams options:(nullable ARTAuthOptions *)authOptions
          callback:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback;
+- (void)cancelAuthorization:(nullable ARTErrorInfo *)error;
 
 - (nullable NSObject<ARTCancellable> *)_requestToken:(ARTTokenParams *_Nullable)tokenParams withOptions:(ARTAuthOptions *_Nullable)authOptions callback:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback;
 
@@ -82,14 +83,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *_Nullable)clientId;
 
 - (NSString *_Nullable)appId;
-
-@end
-
-#pragma mark - ARTEvent
-
-@interface ARTEvent (AuthorizationState)
-- (instancetype)initWithAuthorizationState:(ARTAuthorizationState)value;
-+ (instancetype)newWithAuthorizationState:(ARTAuthorizationState)value;
 
 @end
 

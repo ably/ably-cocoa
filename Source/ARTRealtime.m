@@ -74,7 +74,7 @@
     self = [super init];
     if (self) {
         NSAssert(options, @"ARTRealtime: No options provided");
-        
+
         _rest = [[ARTRest alloc] initWithOptions:options realtime:self];
         _userQueue = _rest.userQueue;
         _queue = _rest.queue;
@@ -153,15 +153,15 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
     switch (self.connection.state_nosync) {
         case ARTRealtimeConnected: {
-                // Update (send AUTH message)
-                [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p AUTH message using %@", self.rest, tokenDetails];
-                ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
-                msg.action = ARTProtocolMessageAuth;
-                msg.auth = [[ARTAuthDetails alloc] initWithToken:tokenDetails.token];
-                [self send:msg sentCallback:nil ackCallback:nil];
-                waitForResponse();
-            }
+            // Update (send AUTH message)
+            [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p AUTH message using %@", self.rest, tokenDetails];
+            ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
+            msg.action = ARTProtocolMessageAuth;
+            msg.auth = [[ARTAuthDetails alloc] initWithToken:tokenDetails.token];
+            [self send:msg sentCallback:nil ackCallback:nil];
+            waitForResponse();
             break;
+        }
         case ARTRealtimeConnecting: {
             [_transport.stateEmitter once:[ARTEvent newWithTransportState:ARTRealtimeTransportStateOpened] callback:^(id sender) {
                 haltCurrentConnectionAndReconnect();
@@ -169,15 +169,18 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             break;
         }
         case ARTRealtimeClosing: {
-                // Should ignore because the connection is being closed
-                [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p new connection from authorize has been ignored because the connection is closing", self.rest];
-                break;
-            }
-        default:
+            // Should ignore because the connection is being closed
+            [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p authorize has been cancelled because the connection is closing", self.rest];
+            [self cancelAllPendingAuthorizations];
+            break;
+        }
+        default: {
             // Client state is NOT Connecting or Connected, so it should start a new connection
             [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p new connection from successfull authorize %@", self.rest, tokenDetails];
             [self transition:ARTRealtimeConnecting];
+            waitForResponse();
             break;
+        }
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -536,12 +539,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             _connection.id = nil;
             _transport = nil;
             self.rest.prioritizedHost = nil;
+            [self.auth cancelAuthorization:nil];
             break;
         case ARTRealtimeFailed:
             status = [ARTStatus state:ARTStateConnectionFailed info:stateChange.reason];
             [self.transport abort:status];
             _transport = nil;
             self.rest.prioritizedHost = nil;
+            [self.auth cancelAuthorization:stateChange.reason];
             break;
         case ARTRealtimeDisconnected: {
             if (!_startedReconnection) {
@@ -584,6 +589,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                 self->_connectionRetryFromSuspendedListener = nil;
             }];
             _connectionRetryFromSuspendedListener = stateChangeEventListener;
+            [self.auth cancelAuthorization:nil];
             break;
         }
         case ARTRealtimeConnected: {
