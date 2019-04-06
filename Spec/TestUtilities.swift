@@ -1437,18 +1437,36 @@ extension String {
 
 extension HTTPURLResponse {
 
-    /*!
-     @abstract Returns a dictionary containing all the HTTP header fields
-     of the receiver.
-     @discussion This is broken since Swift 3. The access is now case-sensitive.
+    /**
+     This is broken since Swift 3. The access is now case-sensitive.
      Regression: HTTPURLResponse allHeaderFields is now case-sensitive
      https://bugs.swift.org/browse/SR-2429
-     @result A dictionary containing all the HTTP header fields of the
+     - Returns: A dictionary containing all the HTTP header fields of the
      receiver.
      */
     var objc_allHeaderFields: NSDictionary {
-        // Disables bridging and calls the Objective-C implementation of the private NSDictionary subclass in CFNetwork directly
+        // Disables bridging and calls the Objective-C implementation
+        //of the private NSDictionary subclass in CFNetwork directly
         return allHeaderFields as NSDictionary
+    }
+
+    /**
+     Don't use 'allHeaderFields' property.
+     It's not case-insensitive.
+     Please use `value(forHTTPHeaderField:)` method.
+     - Warning: Don't use 'allHeaderFields' property. See discussion.
+     */
+    @available(*, deprecated, message: "Don't use 'allHeaderFields'. It's not case-insensitive. Please use 'value(forHTTPHeaderField:)' method")
+    open var _allHeaderFields: [AnyHashable : Any] { return [:] }
+
+    /**
+     The value which corresponds to the given header
+     field. Note that, in keeping with the HTTP RFC, HTTP header field
+     names are case-insensitive.
+     - Parameter field: the header field name to use for the lookup (case-insensitive).
+     */
+    func value(forHTTPHeaderField field: String) -> String? {
+        return objc_allHeaderFields.object(forKey: field) as? String
     }
 
 }
