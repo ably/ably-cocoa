@@ -641,8 +641,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             [self.connection setMaxMessageSize:message.connectionDetails.maxMessageSize];
             if (!_resuming) {
                 [self.connection setSerial:message.connectionSerial];
-                [self.logger debug:@"RT:%p msgSerial of connection \"%@\" has been reset", self, self.connection.id_nosync];
-                self.msgSerial = 0;
+                if (message.error != nil || self.options.recover == nil || [[self.options.recover stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] isEqualToString:@""]) {
+                    [self.logger debug:@"RT:%p msgSerial of connection \"%@\" has been reset", self, self.connection.id_nosync];
+                    self.msgSerial = 0;
+                }
                 self.pendingMessageStartSerial = 0;
             }
             if (message.connectionDetails && message.connectionDetails.connectionStateTtl) {
