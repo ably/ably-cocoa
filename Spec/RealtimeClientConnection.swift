@@ -1429,6 +1429,7 @@ class RealtimeClientConnection: QuickSpec {
                     expect(lastSerial).to(equal(4))
 
                     options.recover = client.connection.recoveryKey
+                    client.onError(AblyTests.newErrorProtocolMessage())
 
                     let recoveredClient = ARTRealtime(options: options)
                     defer { recoveredClient.close() }
