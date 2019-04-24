@@ -681,11 +681,12 @@ class MockHTTP: ARTHttp {
 
 }
 
-fileprivate struct ErrorSimulator {
+struct ErrorSimulator {
     let value: Int
     let description: String
     let serverId = "server-test-suite"
     var statusCode: Int = 401
+    var shouldPerformRequest: Bool = false
 
     mutating func stubResponse(_ url: URL) -> HTTPURLResponse? {
         return HTTPURLResponse(url: url, statusCode: statusCode, httpVersion: "HTTP/1.1", headerFields: [
@@ -792,8 +793,17 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
         self.requests.append(request)
 
         if var simulatedError = errorSimulator, var requestURL = request.url {
-            defer { errorSimulator = nil }
-            callback?(simulatedError.stubResponse(requestURL), simulatedError.stubData, nil)
+            defer {
+                errorSimulator = nil
+            }
+            if simulatedError.shouldPerformRequest {
+                http.execute(request, completion: { response, data, error in
+                    callback?(simulatedError.stubResponse(requestURL), simulatedError.stubData, nil)
+                })
+            }
+            else {
+                callback?(simulatedError.stubResponse(requestURL), simulatedError.stubData, nil)
+            }
             return
         }
 
@@ -817,11 +827,15 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
     }
 
     func simulateIncomingServerErrorOnNextRequest(_ errorValue: Int, description: String) {
-        errorSimulator = ErrorSimulator(value: errorValue, description: description, statusCode: 401, stubData: nil)
+        errorSimulator = ErrorSimulator(value: errorValue, description: description, statusCode: 401, shouldPerformRequest: false, stubData: nil)
+    }
+
+    func simulateIncomingServerErrorOnNextRequest(_ error: ErrorSimulator) {
+        errorSimulator = error
     }
 
     func simulateIncomingPayloadOnNextRequest(_ data: Data) {
-        errorSimulator = ErrorSimulator(value: 0, description: "", statusCode: 200, stubData: data)
+        errorSimulator = ErrorSimulator(value: 0, description: "", statusCode: 200, shouldPerformRequest: false, stubData: data)
     }
 
 }
@@ -1256,6 +1270,15 @@ extension ARTPresenceMessage {
         self.connectionId = connectionId
         self.id = id
         self.timestamp = timestamp
+    }
+
+}
+
+extension ARTMessage {
+
+    convenience init(id: String, name: String? = nil, data: Any) {
+        self.init(name: name, data: data)
+        self.id = id
     }
 
 }

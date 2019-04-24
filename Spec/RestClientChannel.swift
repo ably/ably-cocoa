@@ -382,13 +382,13 @@ class RestClientChannel: QuickSpec {
                     let channel = client.channels.get(channelName)
                     let messages = buildMessagesThatExceedMaxMessageSize()
 
-                    waitUntil(timeout: testTimeout, action: { done in
-                        channel.publish(messages, callback: { err in
-                            expect(err?.code).to(equal(40009))
-                            expect(err?.message).to(contain("maximum message length exceeded"))
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(messages) { error in
+                            expect(error?.code).to(equal(40009))
+                            expect(error?.message).to(contain("maximum message length exceeded"))
                             done()
-                        })
-                    })
+                        }
+                    }
                 }
 
                 it("also when using publish:data:clientId:extras") {
@@ -397,13 +397,302 @@ class RestClientChannel: QuickSpec {
                     let channel = client.channels.get(channelName)
                     let name = buildStringThatExceedMaxMessageSize()
 
-                    waitUntil(timeout: testTimeout, action: { done in
-                        channel.publish(name, data: nil, extras: nil, callback: {err in
-                            expect(err?.code).to(equal(40009))
-                            expect(err?.message).to(contain("maximum message length exceeded"))
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(name, data: nil, extras: nil) { error in
+                            expect(error?.code).to(equal(40009))
+                            expect(error?.message).to(contain("maximum message length exceeded"))
                             done()
-                        })
-                    })
+                        }
+                    }
+                }
+            }
+
+            // RSL1k
+            context("idempotent publishing") {
+
+                // TO3n
+                it("idempotentRestPublishing option") {
+                    expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "2")) == true
+                    expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "2.0.0")) == true
+                    expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.1")) == false
+                    expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.1.2")) == false
+                    expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.2")) == true
+                    expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.2.2")) == true
+                    expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.0")) == false
+                    expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.0.5")) == false
+                    expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "0.9")) == false
+                    expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "0.9.1")) == false
+
+                    // Current version
+                    let options = AblyTests.clientOptions()
+                    expect(options.idempotentRestPublishing) == false
+                }
+
+                func assertMessagePayloadId(id: String?, expectedSerial: String) {
+                    guard let id = id else {
+                        fail("Message.id from payload is nil"); return
+                    }
+
+                    let idParts = id.split(separator: ":")
+
+                    if idParts.count != 2 {
+                        fail("Message.id from payload should have baseId and serial separated by a colon"); return
+                    }
+
+                    let baseId = String(idParts[0])
+                    let serial = String(idParts[1])
+
+                    guard let baseIdData = Data(base64Encoded: baseId) else {
+                        fail("BaseId should be a base64 encoded string"); return
+                    }
+
+                    expect(baseIdData.bytes.count) == 9
+                    expect(serial).to(equal(expectedSerial))
+                }
+
+                // RSL1k1
+                context("random idempotent publish id") {
+
+                    it("should generate for one message with empty id") {
+                        let message = ARTMessage(name: nil, data: "foo")
+                        expect(message.id).to(beNil())
+
+                        let rest = ARTRest(key: "xxxx:xxxx")
+                        rest.options.idempotentRestPublishing = true
+                        let mockHTTPExecutor = MockHTTPExecutor()
+                        rest.httpExecutor = mockHTTPExecutor
+                        let channel = rest.channels.get("idempotent")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish([message]) { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        guard let encodedBody = mockHTTPExecutor.requests.last?.httpBody else {
+                            fail("Body from the last request is empty"); return
+                        }
+
+                        let json = AblyTests.msgpackToJSON(encodedBody)
+                        assertMessagePayloadId(id: json.arrayValue.first?["id"].string, expectedSerial: "0")
+                        expect(message.id).to(beNil())
+                    }
+
+                    it("should generate for multiple messages with empty id") {
+                        let message1 = ARTMessage(name: nil, data: "foo1")
+                        expect(message1.id).to(beNil())
+                        let message2 = ARTMessage(name: "john", data: "foo2")
+                        expect(message2.id).to(beNil())
+
+                        let rest = ARTRest(key: "xxxx:xxxx")
+                        rest.options.idempotentRestPublishing = true
+                        let mockHTTPExecutor = MockHTTPExecutor()
+                        rest.httpExecutor = mockHTTPExecutor
+                        let channel = rest.channels.get("idempotent")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish([message1, message2]) { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        guard let encodedBody = mockHTTPExecutor.requests.last?.httpBody else {
+                            fail("Body from the last request is empty"); return
+                        }
+
+                        let json = AblyTests.msgpackToJSON(encodedBody)
+                        let id1 = json.arrayValue.first?["id"].string
+                        assertMessagePayloadId(id: id1, expectedSerial: "0")
+                        let id2 = json.arrayValue.last?["id"].string
+                        assertMessagePayloadId(id: id2, expectedSerial: "1")
+
+                        // Same Base ID
+                        expect(id1?.split(separator: ":").first).to(equal(id2?.split(separator: ":").first))
+                    }
+                }
+
+                // RSL1k2
+                it("should not generate for message with a non empty id") {
+                    let message = ARTMessage(name: nil, data: "foo")
+                    message.id = "123"
+
+                    let rest = ARTRest(key: "xxxx:xxxx")
+                    rest.options.idempotentRestPublishing = true
+                    let mockHTTPExecutor = MockHTTPExecutor()
+                    rest.httpExecutor = mockHTTPExecutor
+                    let channel = rest.channels.get("idempotent")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish([message]) { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    guard let encodedBody = mockHTTPExecutor.requests.last?.httpBody else {
+                        fail("Body from the last request is empty"); return
+                    }
+
+                    let json = AblyTests.msgpackToJSON(encodedBody)
+                    expect(json.arrayValue.first?["id"].string).to(equal("123"))
+                }
+
+                it("should generate for internal message that is created in publish(name:data:) method") {
+                    let rest = ARTRest(key: "xxxx:xxxx")
+                    rest.options.idempotentRestPublishing = true
+                    let mockHTTPExecutor = MockHTTPExecutor()
+                    rest.httpExecutor = mockHTTPExecutor
+                    let channel = rest.channels.get("idempotent")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish("john", data: "foo") { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    guard let encodedBody = mockHTTPExecutor.requests.last?.httpBody else {
+                        fail("Body from the last request is empty"); return
+                    }
+
+                    let json = AblyTests.msgpackToJSON(encodedBody)
+                    assertMessagePayloadId(id: json["id"].string, expectedSerial: "0")
+                }
+
+                // RSL1k3
+                it("should not generate for multiple messages with a non empty id") {
+                    let message1 = ARTMessage(name: nil, data: "foo1")
+                    expect(message1.id).to(beNil())
+                    let message2 = ARTMessage(name: "john", data: "foo2")
+                    message2.id = "123"
+
+                    let rest = ARTRest(key: "xxxx:xxxx")
+                    rest.options.idempotentRestPublishing = true
+                    let mockHTTPExecutor = MockHTTPExecutor()
+                    rest.httpExecutor = mockHTTPExecutor
+                    let channel = rest.channels.get("idempotent")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish([message1, message2]) { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    guard let encodedBody = mockHTTPExecutor.requests.last?.httpBody else {
+                        fail("Body from the last request is empty"); return
+                    }
+
+                    let json = AblyTests.msgpackToJSON(encodedBody)
+                    expect(json.arrayValue.first?["id"].string).to(beNil())
+                    expect(json.arrayValue.last?["id"].string).to(equal("123"))
+                }
+
+                it("should not generate when idempotentRestPublishing flag is off") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.idempotentRestPublishing = false
+
+                    let message1 = ARTMessage(name: nil, data: "foo1")
+                    expect(message1.id).to(beNil())
+                    let message2 = ARTMessage(name: "john", data: "foo2")
+                    expect(message2.id).to(beNil())
+
+                    let rest = ARTRest(options: options)
+                    let mockHTTPExecutor = MockHTTPExecutor()
+                    rest.httpExecutor = mockHTTPExecutor
+                    let channel = rest.channels.get("idempotent")
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish([message1, message2]) { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    guard let encodedBody = mockHTTPExecutor.requests.last?.httpBody else {
+                        fail("Body from the last request is empty"); return
+                    }
+
+                    let json = AblyTests.msgpackToJSON(encodedBody)
+                    expect(json.arrayValue.first?["id"].string).to(beNil())
+                    expect(json.arrayValue.last?["id"].string).to(beNil())
+                }
+
+                // RSL1k4
+                it("should have only one published message") {
+                    client.options.idempotentRestPublishing = true
+                    client.httpExecutor = testHTTPExecutor
+                    client.options.fallbackHostsUseDefault = true
+
+                    let forceRetryError = ErrorSimulator(
+                        value: 50000,
+                        description: "force retry",
+                        statusCode: 500,
+                        shouldPerformRequest: true,
+                        stubData: nil
+                    )
+
+                    testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(forceRetryError)
+
+                    let messages = [
+                        ARTMessage(name: nil, data: "test1"),
+                        ARTMessage(name: nil, data: "test2"),
+                        ARTMessage(name: nil, data: "test3"),
+                    ]
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(messages) { error in
+                            expect(error).toNot(beNil())
+                            done()
+                        }
+                    }
+
+                    expect(testHTTPExecutor.requests.count) == 2
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.history { result, error in
+                            expect(error).to(beNil())
+                            guard let result = result else {
+                                fail("No result"); done(); return
+                            }
+                            expect(result.items.count) == 3
+                            done()
+                        }
+                    }
+                }
+
+                // RSL1k5
+                it("should publish a message with implicit Id only once") {
+                    let options = AblyTests.commonAppSetup()
+                    let rest = ARTRest(options: options)
+                    rest.options.idempotentRestPublishing = true
+                    let channel = rest.channels.get("idempotent")
+
+                    let message = ARTMessage(name: "unique", data: "foo")
+                    message.id = "123"
+
+                    for _ in 1...4 {
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish([message]) { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.history { result, error in
+                            expect(error).to(beNil())
+                            guard let result = result else {
+                                fail("No result"); done(); return
+                            }
+                            expect(result.items.count) == 1
+                            expect(result.items.first?.id).to(equal("123"))
+                            done()
+                        }
+                    }
                 }
             }
           
@@ -770,6 +1059,7 @@ class RestClientChannel: QuickSpec {
                     TestCase(value: binaryData, expected: JSON(["data": binaryData.toBase64, "encoding": "base64"])),
                 ]
 
+                client.options.idempotentRestPublishing = false
                 client.httpExecutor = testHTTPExecutor
 
                 validCases.forEach { caseTest in
