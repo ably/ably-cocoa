@@ -636,7 +636,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
     switch (self.connection.state_nosync) {
         case ARTRealtimeConnecting:
-            if (![message.connectionId isEqualToString:self.connection.id_nosync]) {
+            if (self.connection.id_nosync && ![message.connectionId isEqualToString:self.connection.id_nosync]) {
                 [self.logger debug:@"RT:%p msgSerial of connection \"%@\" has been reset", self, self.connection.id_nosync];
                 self.msgSerial = 0;
                 self.pendingMessageStartSerial = 0;
