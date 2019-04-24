@@ -645,10 +645,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             [self.connection setId:message.connectionId];
             [self.connection setKey:message.connectionKey];
             [self.connection setMaxMessageSize:message.connectionDetails.maxMessageSize];
+            [self.connection setSerial:message.connectionSerial];
 
-            if (!_resuming) {
-                [self.connection setSerial:message.connectionSerial];
-            }
             if (message.connectionDetails && message.connectionDetails.connectionStateTtl) {
                 _connectionStateTtl = message.connectionDetails.connectionStateTtl;
             }
