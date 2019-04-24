@@ -63,6 +63,7 @@ NSString *const ARTAuthOptionsMethodDefault = @"GET";
     
     options.key = self.key;
     options.token = self.token;
+    options.tokenDetails = self.tokenDetails;
     options.authCallback = self.authCallback;
     options.authUrl = self.authUrl;
     options.authMethod = self.authMethod;

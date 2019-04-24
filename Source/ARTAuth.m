@@ -238,7 +238,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         if (self.tokenDetails.expires == nil) {
             return YES;
         }
-        else if ([self.tokenDetails.expires timeIntervalSinceDate:[self currentDate]] > 0) {
+        else if (![self hasTimeOffset] || [self.tokenDetails.expires timeIntervalSinceDate:[self currentDate]] > 0) {
             return YES;
         }
     }
@@ -588,7 +588,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         return;
     }
 
-    if (_timeOffset && !replacedOptions.queryTime) {
+    if ([self hasTimeOffsetWithValue] && !replacedOptions.queryTime) {
         currentTokenParams.timestamp = [self currentDate];
         callback([currentTokenParams sign:replacedOptions.key], nil);
     }
@@ -599,7 +599,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
                     callback(nil, error);
                 } else {
                     NSDate *serverTime = [self handleServerTime:time];
-                    self->_timeOffset = [serverTime timeIntervalSinceNow];
+                    self->_timeOffset = @([serverTime timeIntervalSinceNow]);
                     currentTokenParams.timestamp = serverTime;
                     callback([currentTokenParams sign:replacedOptions.key], nil);
                 }
@@ -646,10 +646,18 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     }
 }
 
-- (NSDate*)currentDate {
+- (NSDate *)currentDate {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
-    return [[NSDate date] dateByAddingTimeInterval:_timeOffset];
+    return [[NSDate date] dateByAddingTimeInterval:_timeOffset.doubleValue];
 } ART_TRY_OR_REPORT_CRASH_END
+}
+
+- (BOOL)hasTimeOffset {
+    return _timeOffset != nil;
+}
+
+- (BOOL)hasTimeOffsetWithValue {
+    return _timeOffset != nil && _timeOffset.doubleValue > 0;
 }
 
 - (void)discardTimeOffset {
@@ -667,7 +675,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 // Called from NSNotificationCenter, so must put change in the queue.
 dispatch_sync(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
-        self->_timeOffset = 0;
+    [self clearTimeOffset];
 } ART_TRY_OR_REPORT_CRASH_END
 });
 }
@@ -680,7 +688,13 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 
 - (void)setTimeOffset:(NSTimeInterval)offset {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
-    _timeOffset = offset;
+    _timeOffset = @(offset);
+} ART_TRY_OR_REPORT_CRASH_END
+}
+
+- (void)clearTimeOffset; {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
+    _timeOffset = nil;
 } ART_TRY_OR_REPORT_CRASH_END
 }
 

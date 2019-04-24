@@ -448,7 +448,7 @@ func getTestToken(key: String? = nil, clientId: String? = nil, capability: Strin
 }
 
 /// Access TokenDetails
-func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, completion: @escaping (ARTTokenDetails?, Error?) -> Void) {
+func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, queryTime: Bool? = nil, completion: @escaping (ARTTokenDetails?, Error?) -> Void) {
     let options: ARTClientOptions
     if let key = key {
         options = AblyTests.clientOptions()
@@ -456,6 +456,9 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
     }
     else {
         options = AblyTests.commonAppSetup()
+    }
+    if let queryTime = queryTime {
+        options.queryTime = queryTime
     }
 
     let client = ARTRest(options: options)
@@ -480,9 +483,9 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
     }
 }
 
-func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, file: FileString = #file, line: UInt = #line) -> ARTTokenDetails? {
+func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, queryTime: Bool? = nil, file: FileString = #file, line: UInt = #line) -> ARTTokenDetails? {
     guard let (tokenDetails, error) = (AblyTests.waitFor(timeout: testTimeout, file: file, line: line) { value in
-        getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl) { tokenDetails, error in
+        getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl, queryTime: queryTime) { tokenDetails, error in
             value((tokenDetails, error))
         }
     }) else {
