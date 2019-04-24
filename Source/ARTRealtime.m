@@ -839,6 +839,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         }
         else {
             // New Token
+            [self.auth setTokenDetails:nil];
             // Transport instance couldn't exist anymore when `authorize` completes or reaches time out.
             __weak __typeof(self) weakSelf = self;
 

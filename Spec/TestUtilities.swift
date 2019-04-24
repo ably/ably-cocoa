@@ -52,8 +52,8 @@ class AblyTests {
         return Data(base64Encoded: base64, options: NSData.Base64DecodingOptions(rawValue: 0))!
     }
 
-    class func msgpackToJSON(_ data: NSData) -> JSON {
-        let decoded = try! ARTMsgPackEncoder().decode(data as Data)
+    class func msgpackToJSON(_ data: Data) -> JSON {
+        let decoded = try! ARTMsgPackEncoder().decode(data)
         let encoded = try! ARTJsonEncoder().encode(decoded)
         return try! JSON(data: encoded)
     }
@@ -448,7 +448,7 @@ func getTestToken(key: String? = nil, clientId: String? = nil, capability: Strin
 }
 
 /// Access TokenDetails
-func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, completion: @escaping (ARTTokenDetails?, Error?) -> Void) {
+func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, queryTime: Bool? = nil, completion: @escaping (ARTTokenDetails?, Error?) -> Void) {
     let options: ARTClientOptions
     if let key = key {
         options = AblyTests.clientOptions()
@@ -456,6 +456,9 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
     }
     else {
         options = AblyTests.commonAppSetup()
+    }
+    if let queryTime = queryTime {
+        options.queryTime = queryTime
     }
 
     let client = ARTRest(options: options)
@@ -480,9 +483,9 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
     }
 }
 
-func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, file: FileString = #file, line: UInt = #line) -> ARTTokenDetails? {
+func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, queryTime: Bool? = nil, file: FileString = #file, line: UInt = #line) -> ARTTokenDetails? {
     guard let (tokenDetails, error) = (AblyTests.waitFor(timeout: testTimeout, file: file, line: line) { value in
-        getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl) { tokenDetails, error in
+        getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl, queryTime: queryTime) { tokenDetails, error in
             value((tokenDetails, error))
         }
     }) else {
@@ -678,11 +681,12 @@ class MockHTTP: ARTHttp {
 
 }
 
-fileprivate struct ErrorSimulator {
+struct ErrorSimulator {
     let value: Int
     let description: String
     let serverId = "server-test-suite"
     var statusCode: Int = 401
+    var shouldPerformRequest: Bool = false
 
     mutating func stubResponse(_ url: URL) -> HTTPURLResponse? {
         return HTTPURLResponse(url: url, statusCode: statusCode, httpVersion: "HTTP/1.1", headerFields: [
@@ -789,8 +793,17 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
         self.requests.append(request)
 
         if var simulatedError = errorSimulator, var requestURL = request.url {
-            defer { errorSimulator = nil }
-            callback?(simulatedError.stubResponse(requestURL), simulatedError.stubData, nil)
+            defer {
+                errorSimulator = nil
+            }
+            if simulatedError.shouldPerformRequest {
+                http.execute(request, completion: { response, data, error in
+                    callback?(simulatedError.stubResponse(requestURL), simulatedError.stubData, nil)
+                })
+            }
+            else {
+                callback?(simulatedError.stubResponse(requestURL), simulatedError.stubData, nil)
+            }
             return
         }
 
@@ -814,11 +827,15 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
     }
 
     func simulateIncomingServerErrorOnNextRequest(_ errorValue: Int, description: String) {
-        errorSimulator = ErrorSimulator(value: errorValue, description: description, statusCode: 401, stubData: nil)
+        errorSimulator = ErrorSimulator(value: errorValue, description: description, statusCode: 401, shouldPerformRequest: false, stubData: nil)
+    }
+
+    func simulateIncomingServerErrorOnNextRequest(_ error: ErrorSimulator) {
+        errorSimulator = error
     }
 
     func simulateIncomingPayloadOnNextRequest(_ data: Data) {
-        errorSimulator = ErrorSimulator(value: 0, description: "", statusCode: 200, stubData: data)
+        errorSimulator = ErrorSimulator(value: 0, description: "", statusCode: 200, shouldPerformRequest: false, stubData: data)
     }
 
 }
@@ -1253,6 +1270,15 @@ extension ARTPresenceMessage {
         self.connectionId = connectionId
         self.id = id
         self.timestamp = timestamp
+    }
+
+}
+
+extension ARTMessage {
+
+    convenience init(id: String, name: String? = nil, data: Any) {
+        self.init(name: name, data: data)
+        self.id = id
     }
 
 }

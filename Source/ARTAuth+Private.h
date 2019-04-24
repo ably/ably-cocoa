@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, weak) ARTLog *logger;
 @property (nullable, nonatomic, readonly, strong) ARTTokenDetails *tokenDetails;
-@property (nonatomic, readonly, assign) NSTimeInterval timeOffset;
+@property (nullable, nonatomic, readonly, strong) NSNumber *timeOffset;
 
 @property (nullable, weak) id<ARTAuthDelegate> delegate;
 @property (readonly, assign) BOOL authorizing;
@@ -73,10 +73,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)tokenRemainsValid;
 
 // Private TokenDetails setter for testing only
-- (void)setTokenDetails:(ARTTokenDetails *)tokenDetails;
+- (void)setTokenDetails:(nullable ARTTokenDetails *)tokenDetails;
 
 // Private TimeOffset setter for testing only
 - (void)setTimeOffset:(NSTimeInterval)offset;
+- (void)clearTimeOffset;
 
 - (NSString *_Nullable)clientId;
 
