@@ -1434,3 +1434,29 @@ extension String {
         }
     }
 }
+
+extension HTTPURLResponse {
+
+    /*!
+     @abstract Returns a dictionary containing all the HTTP header fields
+     of the receiver.
+     @discussion This is broken since Swift 3. The access is now case-sensitive.
+     Regression: HTTPURLResponse allHeaderFields is now case-sensitive
+     https://bugs.swift.org/browse/SR-2429
+     @result A dictionary containing all the HTTP header fields of the
+     receiver.
+     */
+    var objc_allHeaderFields: NSDictionary {
+        // Disables bridging and calls the Objective-C implementation of the private NSDictionary subclass in CFNetwork directly
+        return allHeaderFields as NSDictionary
+    }
+
+}
+
+extension ARTHTTPPaginatedResponse {
+
+    var headers: NSDictionary {
+        return response.objc_allHeaderFields
+    }
+
+}
