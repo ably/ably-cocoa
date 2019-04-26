@@ -131,7 +131,6 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
     }
     else {
         [_members removeObjectForKey:message.memberKey];
-        [_localMembers removeObject:message];
     }
 }
 
