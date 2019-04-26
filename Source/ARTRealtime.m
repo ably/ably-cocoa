@@ -635,8 +635,13 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     }
 
     switch (self.connection.state_nosync) {
-        case ARTRealtimeConnecting:
-            if (self.connection.id_nosync && ![message.connectionId isEqualToString:self.connection.id_nosync]) {
+        case ARTRealtimeConnecting: {
+            // If no previous connectionId, don't reset the msgSerial
+            //as it may have been set by recover data (unless the recover failed)
+            NSString *prevConnId = self.connection.id_nosync;
+            BOOL connIdChanged = prevConnId && ![message.connectionId isEqualToString:prevConnId];
+            BOOL recoverFailure = !prevConnId && message.error;
+            if (connIdChanged || recoverFailure) {
                 [self.logger debug:@"RT:%p msgSerial of connection \"%@\" has been reset", self, self.connection.id_nosync];
                 self.msgSerial = 0;
                 self.pendingMessageStartSerial = 0;
@@ -657,6 +662,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             }
             [self transition:ARTRealtimeConnected withErrorInfo:message.error];
             break;
+        }
         case ARTRealtimeConnected: {
             // Renewing token.
             [self updateWithErrorInfo:message.error];
