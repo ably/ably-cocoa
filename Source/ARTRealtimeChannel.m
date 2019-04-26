@@ -581,7 +581,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) channel state transitions to %tu - %@", _realtime, self, self.name, state, ARTRealtimeChannelStateToStr(state)];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) channel state transitions from %tu - %@ to %tu - %@", _realtime, self, self.name, self.state_nosync, ARTRealtimeChannelStateToStr(self.state_nosync), state, ARTRealtimeChannelStateToStr(state)];
     ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:self.state_nosync event:(ARTChannelEvent)state reason:status.errorInfo];
     self.state = state;
 
