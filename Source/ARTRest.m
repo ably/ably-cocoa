@@ -233,6 +233,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         }
         else {
             // New Token
+            [self.auth setTokenDetails:nil];
             [self.auth _authorize:nil options:self.options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
                 if (error) {
                     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p ARTRest reissuing token failed %@", self, error];
