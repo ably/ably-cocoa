@@ -198,11 +198,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     ARTProtocolMessage * msg = [[ARTProtocolMessage alloc] init];
     msg.action = ARTProtocolMessageSync;
     msg.channel = self.name;
-
-    if (self.presenceMap.syncMsgSerial) {
-        msg.channelSerial = self.presenceMap.syncChannelSerial;
-        msg.msgSerial = [NSNumber numberWithLongLong:self.presenceMap.syncMsgSerial];
-    }
+    msg.channelSerial = self.presenceMap.syncChannelSerial;
 
     [self.realtime send:msg sentCallback:^(ARTErrorInfo *error) {
         if (error) {
