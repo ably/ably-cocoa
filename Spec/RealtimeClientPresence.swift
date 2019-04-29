@@ -201,7 +201,7 @@ class RealtimeClientPresence: QuickSpec {
                         sync1Message.channel = channel.name
                         sync1Message.channelSerial = "sequenceid:cursor"
                         sync1Message.connectionSerial = lastConnectionSerial + 1
-                        sync1Message.timestamp = NSDate() as Date
+                        sync1Message.timestamp = Date()
                         sync1Message.presence = [
                             ARTPresenceMessage(clientId: "a", action: .present, connectionId: "another", id: "another:0:0"),
                             ARTPresenceMessage(clientId: "b", action: .present, connectionId: "another", id: "another:0:1"),
@@ -214,7 +214,7 @@ class RealtimeClientPresence: QuickSpec {
                         sync2Message.channel = channel.name
                         sync2Message.channelSerial = "sequenceid:" //indicates SYNC is complete
                         sync2Message.connectionSerial = lastConnectionSerial + 2
-                        sync2Message.timestamp = NSDate() as Date
+                        sync2Message.timestamp = Date()
                         sync2Message.presence = [
                             ARTPresenceMessage(clientId: "a", action: .leave, connectionId: "another", id: "another:1:0"),
                         ]
@@ -271,7 +271,7 @@ class RealtimeClientPresence: QuickSpec {
                         syncMessage.action = .sync
                         syncMessage.channel = channel.name
                         syncMessage.connectionSerial = lastConnectionSerial + 1
-                        syncMessage.timestamp = NSDate() as Date
+                        syncMessage.timestamp = Date()
                         syncMessage.presence = [
                             ARTPresenceMessage(clientId: "a", action: .present, connectionId: "another", id: "another:0:0"),
                             ARTPresenceMessage(clientId: "b", action: .present, connectionId: "another", id: "another:0:1"),
@@ -783,7 +783,7 @@ class RealtimeClientPresence: QuickSpec {
 
                             waitUntil(timeout: testTimeout*2) { done in
                                 let partialDone = AblyTests.splitDone(4, done: done)
-                                let localMember = ARTPresenceMessage(clientId: "local1", action: .enter, connectionId: connectionId, id: "\(connectionId):1:1", timestamp: NSDate() as Date)
+                                let localMember = ARTPresenceMessage(clientId: "local1", action: .enter, connectionId: connectionId, id: "\(connectionId):1:1", timestamp: Date())
 
                                 channel.once(.attaching) { stateChange in
                                     // Local member
@@ -971,7 +971,7 @@ class RealtimeClientPresence: QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             let partialDone = AblyTests.splitDone(3, done: done)
-                            let localMember = ARTPresenceMessage(clientId: "local1", action: .enter, connectionId: connectionId, id: "\(connectionId):1:1", timestamp: NSDate() as Date)
+                            let localMember = ARTPresenceMessage(clientId: "local1", action: .enter, connectionId: connectionId, id: "\(connectionId):1:1", timestamp: Date())
 
                             channel.once(.attaching) { stateChange in
                                 // Local member
@@ -1804,7 +1804,7 @@ class RealtimeClientPresence: QuickSpec {
                                         presenceMessage.action = .presence
                                         presenceMessage.channel = protocolMessage.channel
                                         presenceMessage.connectionSerial = protocolMessage.connectionSerial + 1
-                                        presenceMessage.timestamp = NSDate() as Date
+                                        presenceMessage.timestamp = Date()
                                         presenceMessage.presence = presenceData
 
                                         transport.receive(presenceMessage)
@@ -1815,7 +1815,7 @@ class RealtimeClientPresence: QuickSpec {
                                         endSyncMessage.channel = protocolMessage.channel
                                         endSyncMessage.channelSerial = "validserialprefix:" //with no part after the `:` this indicates the end to the SYNC
                                         endSyncMessage.connectionSerial = protocolMessage.connectionSerial + 2
-                                        endSyncMessage.timestamp = NSDate() as Date
+                                        endSyncMessage.timestamp = Date()
 
                                         transport.afterProcessingReceivedMessage = nil
                                         transport.receive(endSyncMessage)
@@ -1888,7 +1888,7 @@ class RealtimeClientPresence: QuickSpec {
                                     presenceMessage.action = .presence
                                     presenceMessage.channel = protocolMessage.channel
                                     presenceMessage.connectionSerial = protocolMessage.connectionSerial + 1
-                                    presenceMessage.timestamp = NSDate() as Date
+                                    presenceMessage.timestamp = Date()
                                     presenceMessage.presence = presenceData
 
                                     transport.receive(presenceMessage)
@@ -1899,7 +1899,7 @@ class RealtimeClientPresence: QuickSpec {
                                     endSyncMessage.channel = protocolMessage.channel
                                     endSyncMessage.channelSerial = "validserialprefix:" //with no part after the `:` this indicates the end to the SYNC
                                     endSyncMessage.connectionSerial = protocolMessage.connectionSerial + 2
-                                    endSyncMessage.timestamp = NSDate() as Date
+                                    endSyncMessage.timestamp = Date()
 
                                     transport.afterProcessingReceivedMessage = nil
                                     transport.receive(endSyncMessage)
@@ -2025,7 +2025,7 @@ class RealtimeClientPresence: QuickSpec {
                                     injectLeave.action = .leave
                                     injectLeave.connectionId = membersConnectionId
                                     injectLeave.clientId = "user110"
-                                    injectLeave.timestamp = (NSDate() as Date) + 1
+                                    injectLeave.timestamp = (Date()) + 1
                                     protocolMessage.presence?.append(injectLeave)
                                     transport.beforeProcessingReceivedMessage = nil
                                     partialDone()
@@ -3766,7 +3766,7 @@ class RealtimeClientPresence: QuickSpec {
                                 let presenceMessage = ARTProtocolMessage()
                                 presenceMessage.action = .presence
                                 presenceMessage.channel = channel.name
-                                presenceMessage.timestamp = NSDate() as Date
+                                presenceMessage.timestamp = Date()
                                 presenceMessage.presence = presenceData
 
                                 transport.receive(presenceMessage)
@@ -3834,7 +3834,7 @@ class RealtimeClientPresence: QuickSpec {
                                     presenceMessage.action = .presence
                                     presenceMessage.channel = protocolMessage.channel
                                     presenceMessage.connectionSerial = protocolMessage.connectionSerial + 1
-                                    presenceMessage.timestamp = NSDate() as Date
+                                    presenceMessage.timestamp = Date()
                                     presenceMessage.presence = presenceData
 
                                     transport.receive(presenceMessage)
@@ -3845,7 +3845,7 @@ class RealtimeClientPresence: QuickSpec {
                                     endSyncMessage.channel = protocolMessage.channel
                                     endSyncMessage.channelSerial = "validserialprefix:" //with no part after the `:` this indicates the end to the SYNC
                                     endSyncMessage.connectionSerial = protocolMessage.connectionSerial + 2
-                                    endSyncMessage.timestamp = NSDate() as Date
+                                    endSyncMessage.timestamp = Date()
 
                                     transport.afterProcessingReceivedMessage = nil
                                     transport.receive(endSyncMessage)
@@ -3910,8 +3910,8 @@ class RealtimeClientPresence: QuickSpec {
                     defer { hookRealtime.remove() }
 
                     let queryRealtime = ARTRealtimeHistoryQuery()
-                    queryRealtime.start = NSDate() as Date
-                    queryRealtime.end = NSDate() as Date
+                    queryRealtime.start = Date()
+                    queryRealtime.end = Date()
                     queryRealtime.direction = .forwards
                     queryRealtime.limit = 50
 
