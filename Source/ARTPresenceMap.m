@@ -111,7 +111,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
     // Local member
     if ([message.connectionId isEqualToString:self.delegate.connectionId]) {
         [_localMembers addObject:message];
-        [_logger debug:__FILE__ line:__LINE__ message:@"local member %@ added", message.memberKey];
+        [_logger debug:__FILE__ line:__LINE__ message:@"local member %@ with action %@ has been added", message.memberKey, ARTPresenceActionToStr(message.action).uppercaseString];
     }
 }
 

@@ -34,7 +34,7 @@ NSString *const ARTAblyMessageInvalidPresenceId = @"Received presence message id
     NSMutableString *description = [[super description] mutableCopy];
     [description deleteCharactersInRange:NSMakeRange(description.length - (description.length>2 ? 2:0), 2)];
     [description appendFormat:@",\n"];
-    [description appendFormat:@" action: %lu\n", (unsigned long)self.action];
+    [description appendFormat:@" action: %lu,\n", (unsigned long)self.action];
     [description appendFormat:@" syncSessionId: %lu\n", (unsigned long)self.syncSessionId];
     [description appendFormat:@"}"];
     return description;
