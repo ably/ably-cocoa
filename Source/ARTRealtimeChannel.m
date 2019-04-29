@@ -195,14 +195,16 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
     [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) requesting a sync operation", _realtime, self, self.name];
 
-    ARTProtocolMessage * msg = [[ARTProtocolMessage alloc] init];
+    ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
     msg.action = ARTProtocolMessageSync;
     msg.channel = self.name;
     msg.channelSerial = self.presenceMap.syncChannelSerial;
 
+    [self.presenceMap startSync];
     [self.realtime send:msg sentCallback:^(ARTErrorInfo *error) {
         if (error) {
             [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) SYNC request failed with %@", self->_realtime, self, self.name, error];
+            [self.presenceMap endSync];
             callback(error);
         }
         else {
@@ -223,8 +225,12 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     msg.channelSerial = self.presenceMap.syncChannelSerial;
     msg.channel = self.name;
 
+    [self.presenceMap startSync];
     [self.realtime send:msg sentCallback:^(ARTErrorInfo *error) {
         [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) continue sync, error is %@", self->_realtime, self, self.name, error];
+        if (error) {
+            [self.presenceMap endSync];
+        }
     } ackCallback:nil];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -680,7 +686,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
     if (message.hasPresence) {
         [self.presenceMap startSync];
-        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) PresenceMap sync started", _realtime, self, self.name];
     }
     else if ([self.presenceMap.members count] > 0 || [self.presenceMap.localMembers count] > 0) {
         if (!message.resumed) {
@@ -844,7 +849,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
     if (!self.presenceMap.syncInProgress) {
         [self.presenceMap startSync];
-        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) PresenceMap sync started", _realtime, self, self.name];
     }
 
     for (int i=0; i<[message.presence count]; i++) {

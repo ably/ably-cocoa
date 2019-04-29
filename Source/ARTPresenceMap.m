@@ -170,18 +170,21 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
 }
 
 - (void)startSync {
+    [_logger debug:__FILE__ line:__LINE__ message:@"%p PresenceMap sync started", self];
     _syncSessionId++;
     _syncState = ARTPresenceSyncStarted;
     [_syncEventEmitter emit:[ARTEvent newWithPresenceSyncState:_syncState] with:nil];
 }
 
 - (void)endSync {
+    [_logger verbose:__FILE__ line:__LINE__ message:@"%p PresenceMap sync ending", self];
     [self cleanUpAbsentMembers];
     [self leaveMembersNotPresentInSync];
     _syncState = ARTPresenceSyncEnded;
     [self reenterLocalMembersMissingFromSync];
     [_syncEventEmitter emit:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncEnded] with:[_members allValues]];
     [_syncEventEmitter off];
+    [_logger debug:__FILE__ line:__LINE__ message:@"%p PresenceMap sync ended", self];
 }
 
 - (void)failsSync:(ARTErrorInfo *)error {
@@ -192,18 +195,11 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
 }
 
 - (void)onceSyncEnds:(void (^)(NSArray<ARTPresenceMessage *> *))callback {
-    if (self.syncInProgress) {
-        [_syncEventEmitter once:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncEnded] callback:callback];
-    }
-    else {
-        callback([_members allValues]);
-    }
+    [_syncEventEmitter once:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncEnded] callback:callback];
 }
 
 - (void)onceSyncFails:(void (^)(ARTErrorInfo *))callback {
-    if (self.syncInProgress) {
-        [_syncEventEmitter once:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncFailed] callback:callback];
-    }
+    [_syncEventEmitter once:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncFailed] callback:callback];
 }
 
 - (BOOL)syncComplete {
