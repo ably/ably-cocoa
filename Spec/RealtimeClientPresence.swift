@@ -3038,6 +3038,8 @@ class RealtimeClientPresence: QuickSpec {
                     })
                     expect(client.connection.state).to(equal(.suspended))
 
+                    expect(channel.presenceMap.localMembers).to(haveCount(2))
+
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
                         channel.once(.attached) { stateChange in
@@ -3053,6 +3055,10 @@ class RealtimeClientPresence: QuickSpec {
                     }
 
                     expect(channel.presenceMap.syncComplete).toEventually(beTrue(), timeout: testTimeout)
+
+                    // Should remove the "two" member that was added manually because the connectionId
+                    //doesn't match and it's not synthesized, it will be re-entered.
+                    expect(channel.presenceMap.localMembers).to(haveCount(1))
 
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
