@@ -2999,96 +2999,152 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP17b
-                it("should be applied to ENTER, PRESENT or UPDATE events with a connectionId that matches the current client’s connectionId and any LEAVE event with a connectionId that matches the current client’s connectionId and is not a synthesized") {
-                    let options = AblyTests.commonAppSetup()
-                    let client = ARTRealtime(options: options)
-                    defer { client.dispose(); client.close() }
+                context("events applied to presence map") {
 
-                    let channel = client.channels.get("rtp17b")
-                    waitUntil(timeout: testTimeout) { done in
-                        let partialDone = AblyTests.splitDone(2, done: done)
-                        channel.presence.subscribe(.enter) { presence in
-                            expect(presence.clientId).to(equal("one"))
-                            channel.presence.unsubscribe()
-                            partialDone()
-                        }
-                        channel.presence.enterClient("one", data: nil) { error in
-                            expect(error).to(beNil())
-                            partialDone()
-                        }
-                    }
+                    it("should be applied to ENTER, PRESENT or UPDATE events with a connectionId that matches the current client’s connectionId") {
+                        let options = AblyTests.commonAppSetup()
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
 
-                    guard let connectionId = client.connection.id else {
-                        fail("connectionId is empty"); return
-                    }
-
-                    expect(channel.presenceMap.localMembers).to(haveCount(1))
-
-                    let additionalMember = ARTPresenceMessage(
-                        clientId: "two",
-                        action: .enter,
-                        connectionId: connectionId,
-                        id: connectionId + ":0:0"
-                    )
-
-                    // Inject an additional member into the myMember set, then force a suspended state
-                    client.simulateSuspended(beforeSuspension: { done in
-                        channel.presenceMap.localMembers.add(additionalMember)
-                        done()
-                    })
-                    expect(client.connection.state).to(equal(.suspended))
-
-                    expect(channel.presenceMap.localMembers).to(haveCount(2))
-
-                    waitUntil(timeout: testTimeout) { done in
-                        let partialDone = AblyTests.splitDone(2, done: done)
-                        channel.once(.attached) { stateChange in
-                            expect(stateChange?.reason).to(beNil())
-                            partialDone()
-                        }
-                        // Reconnect
-                        client.connect()
-                        // Await Sync
-                        channel.presenceMap.onceSyncEnds { _ in
-                            partialDone()
-                        }
-                    }
-
-                    expect(channel.presenceMap.syncComplete).toEventually(beTrue(), timeout: testTimeout)
-
-                    // Should remove the "two" member that was added manually because the connectionId
-                    //doesn't match and it's not synthesized, it will be re-entered.
-                    expect(channel.presenceMap.localMembers).to(haveCount(1))
-
-                    waitUntil(timeout: testTimeout) { done in
-                        let partialDone = AblyTests.splitDone(2, done: done)
-                        channel.presence.subscribe(.enter) { presence in
-                            expect(presence.clientId).to(equal("two"))
-                            channel.presence.unsubscribe()
-                            partialDone()
-                        }
-                        if channel.presenceMap.syncComplete {
-                            channel.sync { error in
+                        let channel = client.channels.get("foo")
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
+                            channel.presence.subscribe(.enter) { presence in
+                                expect(presence.clientId).to(equal("one"))
+                                channel.presence.unsubscribe()
+                                partialDone()
+                            }
+                            channel.presence.enterClient("one", data: nil) { error in
                                 expect(error).to(beNil())
-                                channel.presenceMap.onceSyncEnds { _ in
-                                    partialDone()
+                                partialDone()
+                            }
+                        }
+
+                        guard let connectionId = client.connection.id else {
+                            fail("connectionId is empty"); return
+                        }
+
+                        expect(channel.presenceMap.localMembers).to(haveCount(1))
+
+                        let additionalMember = ARTPresenceMessage(
+                            clientId: "two",
+                            action: .enter,
+                            connectionId: connectionId,
+                            id: connectionId + ":0:0"
+                        )
+
+                        // Inject an additional member into the myMember set, then force a suspended state
+                        client.simulateSuspended(beforeSuspension: { done in
+                            channel.presenceMap.localMembers.add(additionalMember)
+                            done()
+                        })
+                        expect(client.connection.state).toEventually(equal(.suspended), timeout: testTimeout)
+
+                        expect(channel.presenceMap.localMembers).to(haveCount(2))
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
+                            channel.once(.attached) { stateChange in
+                                expect(stateChange?.reason).to(beNil())
+                                partialDone()
+                            }
+                            // Reconnect
+                            client.connect()
+                            // Await Sync
+                            channel.presenceMap.onceSyncEnds { _ in
+                                partialDone()
+                            }
+                        }
+
+                        expect(channel.presenceMap.syncComplete).toEventually(beTrue(), timeout: testTimeout)
+
+                        // Should remove the "two" member that was added manually because the connectionId
+                        //doesn't match and it's not synthesized, it will be re-entered.
+                        expect(channel.presenceMap.localMembers).to(haveCount(1))
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
+                            channel.presence.subscribe(.enter) { presence in
+                                expect(presence.clientId).to(equal("two"))
+                                channel.presence.unsubscribe()
+                                partialDone()
+                            }
+                            if channel.presenceMap.syncComplete {
+                                channel.sync { error in
+                                    expect(error).to(beNil())
+                                    channel.presenceMap.onceSyncEnds { _ in
+                                        partialDone()
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    waitUntil(timeout: testTimeout) { done in
-                        channel.presence.get { presences, error in
-                            expect(error).to(beNil())
-                            guard let presences = presences else {
-                                fail("Presences is nil"); done(); return
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.presence.get { presences, error in
+                                expect(error).to(beNil())
+                                guard let presences = presences else {
+                                    fail("Presences is nil"); done(); return
+                                }
+                                expect(channel.presenceMap.syncComplete).to(beTrue())
+                                expect(presences).to(haveCount(2))
+                                expect(presences.map({$0.clientId})).to(contain(["one", "two"]))
+                                done()
                             }
-                            expect(channel.presenceMap.syncComplete).to(beTrue())
-                            expect(presences).to(haveCount(2))
-                            expect(presences.map({$0.clientId})).to(contain(["one", "two"]))
-                            done()
                         }
                     }
+
+                    it("should be applied to any LEAVE event with a connectionId that matches the current client’s connectionId and is not a synthesized") {
+                        let options = AblyTests.commonAppSetup()
+                        let client = ARTRealtime(options: options)
+                        client.suspendImmediateReconnection = true
+                        defer { client.dispose(); client.close() }
+
+                        let channel = client.channels.get("foo")
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
+                            channel.presence.subscribe(.enter) { presence in
+                                expect(presence.clientId).to(equal("one"))
+                                channel.presence.unsubscribe()
+                                partialDone()
+                            }
+                            channel.presence.enterClient("one", data: nil) { error in
+                                expect(error).to(beNil())
+                                partialDone()
+                            }
+                        }
+
+                        waitUntil(timeout: 20) { done in
+                            channel.presenceMap.onceSyncEnds { _ in
+                                // Synthesized leave
+                                expect(channel.presenceMap.localMembers).to(beEmpty())
+                                done()
+                            }
+                            client.onDisconnected()
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.presence.subscribe(.enter) { presence in
+                                // Re-entering...
+                                expect(presence.clientId).to(equal("one"))
+                                channel.presence.unsubscribe()
+                                done()
+                            }
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.presence.get { presences, error in
+                                expect(error).to(beNil())
+                                guard let presences = presences else {
+                                    fail("Presences is nil"); done(); return
+                                }
+                                expect(channel.presenceMap.syncComplete).to(beTrue())
+                                expect(presences).to(haveCount(1))
+                                expect(presences.map({$0.clientId})).to(contain(["one"]))
+                                done()
+                            }
+                        }
+                    }
+
                 }
 
             }
