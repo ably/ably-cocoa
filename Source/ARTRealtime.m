@@ -552,9 +552,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         [self sendQueuedMessages];
         // For every Channel
         for (ARTRealtimeChannel* channel in self.channels.nosyncIterable) {
-            if (channel.state_nosync == ARTRealtimeChannelSuspended) {
-                [channel _attach:nil];
-            }
+            [channel sendQueuedMessages];
         }
     } else if (![self shouldQueueEvents]) {
         ARTStatus *channelStatus = status;

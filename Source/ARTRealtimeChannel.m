@@ -282,10 +282,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
             }
             else {
                 [self addToQueue:pm callback:queuedCallback];
-
-                [self.realtime.internalEventEmitter once:[ARTEvent newWithConnectionEvent:ARTRealtimeConnectionEventConnected] callback:^(ARTConnectionStateChange *_Nullable change) {
-                    [weakSelf sendQueuedMessages];
-                }];
             }
             break;
         }
@@ -345,9 +341,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
             }
             else {
                 [self addToQueue:pm callback:queuedCallback];
-                [self.realtime.internalEventEmitter once:[ARTEvent newWithConnectionEvent:ARTRealtimeConnectionEventConnected] callback:^(ARTConnectionStateChange *_Nullable change) {
-                    [weakSelf sendQueuedMessages];
-                }];
             }
             break;
         }
